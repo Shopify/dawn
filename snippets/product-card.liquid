@@ -1,0 +1,105 @@
+{% comment %}
+    Renders a product card
+
+    Accepts:
+    - product_card_product: {Object} Product Liquid object (optional)
+    - media_size: {String} Size of the product image card. Values are "square" and "portrait". Default is "square" (optional)
+    - show_secondary_image: {Boolean} Show the secondary image on hover. Default: false (optional)
+    - add_image_padding: {Boolean} Enables padding on the image to space out the grid
+    - show_vendor: {Boolean} Show the product vendor. Default: false
+
+    Usage:
+    {% render 'product-card', show_vendor: section.settings.show_vendor %}
+{% endcomment %}
+
+<div class="card-wrapper">
+  <a href="{{ product_card_product.url | default: '#' }}" class="full-unstyled-link">
+    <span class="visually-hidden">{{ product_card_product.title | escape }}</span>
+
+    <div class="card card--product{% if product_card_product.featured_media == nil %} card--text-only card--soft{% endif %}" tabindex="-1">
+      <div class="card__inner">
+        {%- if product_card_product.featured_media -%}
+          {%- liquid
+            assign featured_media_aspect_ratio = product_card_product.featured_media.aspect_ratio
+
+            if product_card_product.featured_media.aspect_ratio == nil
+              assign featured_media_aspect_ratio = 1
+            endif
+          -%}
+
+          <div{% if add_image_padding %} class="card__media-full-spacer"{% endif %}>
+            <div class="media media--transparent media--{{ media_size }} media--hover-effect"
+              {% if media_size == 'adapt' and product_card_product.featured_media %} style="padding-bottom: {{ 1 | divided_by: featured_media_aspect_ratio | times: 100 }}%;"{% endif %}
+            >
+              <img srcset="{%- if product_card_product.featured_media.width >= 165 -%}{{ product_card_product.featured_media | img_url: '165x' }} 165w,{%- endif -%}
+                {%- if product_card_product.featured_media.width >= 360 -%}{{ product_card_product.featured_media | img_url: '360x' }} 360w,{%- endif -%}
+                {%- if product_card_product.featured_media.width >= 533 -%}{{ product_card_product.featured_media | img_url: '533x' }} 533w,{%- endif -%}
+                {%- if product_card_product.featured_media.width >= 720 -%}{{ product_card_product.featured_media | img_url: '720x' }} 720w,{%- endif -%}
+                {%- if product_card_product.featured_media.width >= 940 -%}{{ product_card_product.featured_media | img_url: '940x' }} 940w,{%- endif -%}
+                {%- if product_card_product.featured_media.width >= 1066 -%}{{ product_card_product.featured_media | img_url: '1066x' }} 1066w{%- endif -%}"
+                src="{{ product_card_product.featured_media | img_url: '533x' }}"
+                sizes="(min-width: 1100px) 535px, (min-width: 750px) calc((100vw - 130px) / 2), calc((100vw - 50px) / 2)"
+                alt="{{ product_card_product.featured_media.alt | escape }}"
+                loading="lazy"
+                class="motion-reduce"
+                width="{{ product_card_product.featured_media.width }}"
+                height="{{ product_card_product.featured_media.height }}"
+              >
+
+              {%- if product_card_product.media[1] != nil and show_secondary_image -%}
+                <img srcset="{%- if product_card_product.media[1].width >= 165 -%}{{ product_card_product.media[1] | img_url: '165x' }} 165w,{%- endif -%}
+                  {%- if product_card_product.media[1].width >= 360 -%}{{ product_card_product.media[1] | img_url: '360x' }} 360w,{%- endif -%}
+                  {%- if product_card_product.media[1].width >= 533 -%}{{ product_card_product.media[1] | img_url: '533x' }} 533w,{%- endif -%}
+                  {%- if product_card_product.media[1].width >= 720 -%}{{ product_card_product.media[1] | img_url: '720x' }} 720w,{%- endif -%}
+                  {%- if product_card_product.media[1].width >= 940 -%}{{ product_card_product.media[1] | img_url: '940x' }} 940w,{%- endif -%}
+                  {%- if product_card_product.media[1].width >= 1066 -%}{{ product_card_product.media[1] | img_url: '1066x' }} 1066w{%- endif -%}"
+                  src="{{ product_card_product.media[1] | img_url: '533x' }}"
+                  sizes="(min-width: 1100px) 535px, (min-width: 750px) calc((100vw - 130px) / 2), calc((100vw - 50px) / 2)"
+                  alt="{{ product_card_product.media[1].alt | escape }}"
+                  loading="lazy"
+                  class="motion-reduce"
+                width="{{ product_card_product.media[1].width }}"
+                height="{{ product_card_product.media[1].height }}"
+                >
+              {%- endif -%}
+            </div>
+          </div>
+        {%- else -%}
+          <div class="card__content"><h2 class="card__text h2">{{ product_card_product.title }}</h2></div>
+        {%- endif -%}
+
+        <div class="card__badge">
+          {%- if product_card_product.available == false -%}
+            <span class="badge badge--bottom-left color-{{ settings.sold_out_badge_color_scheme }}" aria-hidden="true">
+              {{ 'products.product.sold_out' | t }}
+            </span>
+          {%- elsif product_card_product.compare_at_price > product_card_product.price and product_card_product.available -%}
+            <span class="badge badge--bottom-left color-{{ settings.sale_badge_color_scheme }}" aria-hidden="true">
+              {{ 'products.product.on_sale' | t }}
+            </span>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+
+    <div class="card-information">
+      <div class="card-information__wrapper">
+        {%- if show_vendor -%}
+          <span class="visually-hidden">{{ 'accessibility.vendor' | t }}</span>
+          <div class="caption-with-letter-spacing light">{{ product_card_product.vendor }}</div>
+        {%- endif -%}
+
+        {%- if product_card_product.featured_media -%}
+          <span class="card-information__text h5">
+            {{ product_card_product.title | escape }}
+          </span>
+        {%- endif -%}
+
+        {% comment %} TODO: metafield {% endcomment %}
+        <span class="caption-large light">{{ block.settings.description | escape }}</span>
+
+        {% render 'price', product: product_card_product, price_class: '' %}
+      </div>
+    </div>
+  </a>
+</div>
