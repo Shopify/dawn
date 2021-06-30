@@ -12,7 +12,33 @@
       <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
     {%- endunless -%}
 
-    <title>{{ shop.name }}</title>
+    {%- liquid
+      capture seo_title
+      if request.page_type == 'search' and search.performed == true
+        if search.results_count == 1
+          echo 'general.search.results_with_count.one' | t: count: search.results_count, terms: search.terms
+        elsif search.results_count > 1
+          echo 'general.search.results_with_count.other' | t: count: search.results_count, terms: search.terms
+        else
+          echo 'general.search.no_results' | t: terms: search.terms
+        endif
+      else
+        echo page_title
+      endif
+
+      if current_page != 1
+        echo ' &ndash; '
+        echo 'general.meta.page' | t: page: current_page
+      endif
+
+      assign escaped_page_title =  page_title | escape
+      unless escaped_page_title contains shop.name
+        echo ' &ndash; '
+        echo shop.name
+      endunless
+    endcapture -%}
+
+    <title>{{ seo_title | strip }}</title>
 
     {% if page_description %}
       <meta name="description" content="{{ page_description | escape }}">
