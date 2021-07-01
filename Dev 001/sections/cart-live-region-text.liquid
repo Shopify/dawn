@@ -1,0 +1,1 @@
+{{ 'sections.cart.new_subtotal' | t }}: {{ cart.total_price | money_with_currency }}
