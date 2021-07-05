@@ -9,7 +9,8 @@ labels: 'type:bug'
 
 **Describe the expected behavior**
 
-**Device information (browsers and operating system)**
+**Version information (Dawn, browsers and operating systems)**
+- Dawn Version: 1.0.0
 - Chrome Version 91.0.4472.114
 - macOS Version 11.3.1
 
