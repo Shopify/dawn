@@ -32,7 +32,7 @@ Before contributing to Dawn, please read the following theme code principles to 
 
 ### Why these principles?
 
-Browsers provide APIs to solve many problems: from [WebGL](https://en.wikipedia.org/wiki/WebGL) and [WASM](https://en.wikipedia.org/wiki/WebAssembly)-powered apps to static websites. The best APIs to use depends on the thing you’re building. Themes power ecommerce websites. In most cases, [Web-native](https://docs.google.com/document/d/11c0EpBmzIPiNrt8hHFz3pnTmEfC7vsC4kktZFoPhhPI/edit#heading=h.fdenrwz0rwne) is a perfect fit for ecommerce websites. Ecommerce needs incredibly fast websites for mostly “logged out” traffic.
+Browsers provide APIs to solve many problems: from [WebGL](https://en.wikipedia.org/wiki/WebGL) and [WASM](https://en.wikipedia.org/wiki/WebAssembly)-powered apps to static websites. The best APIs to use depends on the thing you’re building. Themes power ecommerce websites. In most cases, _Web-native_—making the most of the built-in features of browsers: HTTP, HTML, CSS, JavaScript, and the DOM—is a perfect fit for ecommerce websites. Ecommerce needs incredibly fast websites for mostly “logged out” traffic.
 
 ### Web-native in its purest form
 
