@@ -24,7 +24,7 @@ class CollectionFiltersForm extends HTMLElement {
   onActiveFilterClick(event) {
     event.preventDefault();
     this.toggleActiveFacets();
-    this.renderPage(new URL(event.target.href).searchParams.toString());
+    this.renderPage(new URL(event.currentTarget.href).searchParams.toString());
   }
 
   onHistoryChange(event) {
