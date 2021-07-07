@@ -5,7 +5,7 @@
 
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 
-<div class="collection-list-wrapper page-width{% if section.settings.swipe_on_mobile == true %} page-width-desktop{% endif %}">
+<div class="collection-list-wrapper page-width{% if section.settings.swipe_on_mobile == true %} page-width-desktop{% endif %}{% if section.settings.title == blank %} no-heading{% endif %}{% if section.settings.show_view_all == false or section.blocks.size > collections.size %} no-mobile-link{% endif %}">
   <div class="title-wrapper-with-link{% if section.settings.swipe_on_mobile == true %} title-wrapper--self-padded-tablet-down{% else %} title-wrapper--self-padded-mobile{% endif %}{% if section.settings.title == blank %} title-wrapper-with-link--no-heading{% endif %}">
     <h2 class="collection-list-title">{{ section.settings.title | escape }}</h2>
 
@@ -15,12 +15,12 @@
   </div>
 
   <slider-component class="slider-mobile-gutter">
-    <ul class="collection-list grid grid--1-col{% if section.blocks.size < 5 %} grid--{{ section.blocks.size }}-col-tablet{% else %} grid--3-col-tablet{% endif %}{% if section.settings.swipe_on_mobile %} slider slider--tablet grid--peek{% endif %} collection-list--{{ section.blocks.size }}-items"
+    <ul class="collection-list grid grid--1-col{% if section.blocks.size < 5 %} grid--{{ section.blocks.size }}-col-tablet{% else %} grid--3-col-tablet{% endif %}{% if section.settings.swipe_on_mobile %} slider slider--tablet grid--peek{% endif %} collection-list--{{ section.blocks.size }}-items{% if section.settings.show_view_all == false or section.blocks.size > collections.size %} negative-margin--small{% endif %}"
       id="Slider-{{ section.id }}"
       role="list"
     >
       {%- for block in section.blocks -%}
-        <li class="collection-list__item grid__item{% if section.settings.swipe_on_mobile %} slider__slide{% endif %}">
+        <li class="collection-list__item grid__item{% if section.settings.swipe_on_mobile %} slider__slide{% endif %}" {{ block.shopify_attributes }}>
           <a{% if block.settings.collection != blank and block.settings.collection.all_products_count > 0 %} href="{{ block.settings.collection.url }}"{% endif %}
             class="card animate-arrow link{% if block.settings.collection.image != blank %} card--media{% else %}{% if section.settings.image_ratio != 'adapt' %} card--stretch{% endif %}{% endif %}{% unless section.settings.image_padding %} card--light-border{% endunless %}"
           >
@@ -107,21 +107,19 @@
 {% schema %}
 {
   "name": "t:sections.collection-list.name",
-  "class": "spaced-section",
   "tag": "section",
+  "class": "spaced-section collection-list-section",
   "max_blocks": 12,
   "settings": [
     {
       "type": "text",
       "id": "title",
-      "label": "t:sections.collection-list.settings.title.label",
-      "default": "Collections"
+      "default": "Collections",
+      "label": "t:sections.collection-list.settings.title.label"
     },
     {
       "type": "select",
       "id": "image_ratio",
-      "label": "t:sections.collection-list.settings.image_ratio.label",
-      "default": "square",
       "options": [
         {
           "value": "adapt",
@@ -136,11 +134,13 @@
           "label": "t:sections.collection-list.settings.image_ratio.options__3.label"
         }
       ],
+      "default": "square",
+      "label": "t:sections.collection-list.settings.image_ratio.label",
       "info": "t:sections.collection-list.settings.image_ratio.info"
     },
     {
-      "id": "color_scheme",
       "type": "select",
+      "id": "color_scheme",
       "options": [
         {
           "value": "accent-1",
@@ -169,20 +169,20 @@
     {
       "type": "checkbox",
       "id": "swipe_on_mobile",
-      "label": "t:sections.collection-list.settings.swipe_on_mobile.label",
-      "default": false
+      "default": false,
+      "label": "t:sections.collection-list.settings.swipe_on_mobile.label"
     },
     {
       "type": "checkbox",
       "id": "image_padding",
-      "label": "t:sections.collection-list.settings.image_padding.label",
-      "default": false
+      "default": false,
+      "label": "t:sections.collection-list.settings.image_padding.label"
     },
     {
       "type": "checkbox",
       "id": "show_view_all",
-      "label": "t:sections.collection-list.settings.show_view_all.label",
-      "default": false
+      "default": false,
+      "label": "t:sections.collection-list.settings.show_view_all.label"
     }
   ],
   "blocks": [
@@ -191,9 +191,9 @@
       "name": "t:sections.collection-list.blocks.featured_collection.name",
       "settings": [
         {
-          "label": "t:sections.collection-list.blocks.featured_collection.settings.collection.label",
+          "type": "collection",
           "id": "collection",
-          "type": "collection"
+          "label": "t:sections.collection-list.blocks.featured_collection.settings.collection.label"
         }
       ]
     }
@@ -216,5 +216,3 @@
   ]
 }
 {% endschema %}
-
-
