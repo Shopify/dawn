@@ -45,14 +45,14 @@ class CollectionFiltersForm extends HTMLElement {
       const filterDataUrl = element => element.url === url;
 
       this.filterData.some(filterDataUrl) ?
-        this.renderSectionFromCache(filterDataUrl, section, event) :
-        this.renderSectionFromFetch(url, section, event);
+        this.renderSectionFromCache(filterDataUrl, event) :
+        this.renderSectionFromFetch(url, event);
     });
 
     if (updateURLHash) this.updateURLHash(searchParams);
   }
 
-  renderSectionFromFetch(url, section, event) {
+  renderSectionFromFetch(url, event) {
     fetch(url)
       .then(response => response.text())
       .then((responseText) => {
