@@ -10,8 +10,6 @@ class CollectionFiltersForm extends HTMLElement {
 
     this.querySelector('form').addEventListener('input', this.debouncedOnSubmit.bind(this));
     window.addEventListener('popstate', this.onHistoryChange.bind(this));
-
-    this.bindActiveFacetButtonEvents();
   }
 
   onSubmitHandler(event) {
@@ -93,7 +91,7 @@ class CollectionFiltersForm extends HTMLElement {
     });
 
     this.renderActiveFacets(parsedHTML);
-    this.renderMobileElements(parsedHTML);
+    this.renderAdditionalElements(parsedHTML);
 
     if (countsToRender) this.renderCounts(countsToRender, event.target.closest('.js-filter'));
   }
@@ -107,12 +105,11 @@ class CollectionFiltersForm extends HTMLElement {
       document.querySelector(selector).innerHTML = activeFacetsElement.innerHTML;
     })
 
-    this.bindActiveFacetButtonEvents();
     this.toggleActiveFacets(false);
   }
 
-  renderMobileElements(html) {
-    const mobileElementSelectors = ['.mobile-facets__open', '.mobile-facets__count'];
+  renderAdditionalElements(html) {
+    const mobileElementSelectors = ['.mobile-facets__open', '.mobile-facets__count', '.sorting'];
 
     mobileElementSelectors.forEach((selector) => {
       document.querySelector(selector).innerHTML = html.querySelector(selector).innerHTML;
@@ -130,12 +127,6 @@ class CollectionFiltersForm extends HTMLElement {
       if (sourceElement && targetElement) {
         target.querySelector(selector).outerHTML = source.querySelector(selector).outerHTML;
       }
-    });
-  }
-
-  bindActiveFacetButtonEvents() {
-    document.querySelectorAll('.js-facet-remove').forEach((element) => {
-      element.addEventListener('click', this.onActiveFilterClick, { once: true });
     });
   }
 
@@ -190,3 +181,16 @@ class PriceRange extends HTMLElement {
 }
 
 customElements.define('price-range', PriceRange);
+
+class FacetRemove extends HTMLElement {
+  constructor() {
+    super();
+    this.querySelector('a').addEventListener('click', (event) => {
+      event.preventDefault();
+      const form = this.closest('collection-filters-form') || document.querySelector('collection-filters-form');
+      form.onActiveFilterClick(event);
+    });
+  }
+}
+
+customElements.define('facet-remove', FacetRemove);
