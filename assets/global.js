@@ -289,7 +289,7 @@ class MenuDrawer extends HTMLElement {
     });
     summaryElement.setAttribute('aria-expanded', true);
     trapFocus(this.mainDetailsToggle, summaryElement);
-    document.body.classList.add('overflow-hidden-mobile');
+    document.body.classList.add(`overflow-hidden-${this.dataset.breakpoint}`);
   }
 
   closeMenuDrawer(event, elementToFocus = false) {
@@ -300,7 +300,7 @@ class MenuDrawer extends HTMLElement {
         details.classList.remove('menu-opening');
       });
       this.mainDetailsToggle.querySelector('summary').setAttribute('aria-expanded', false);
-      document.body.classList.remove('overflow-hidden-mobile');
+      document.body.classList.remove(`overflow-hidden-${this.dataset.breakpoint}`);
       removeTrapFocus(elementToFocus);
       this.closeAnimation(this.mainDetailsToggle);
     }
@@ -365,7 +365,7 @@ class HeaderDrawer extends MenuDrawer {
 
     summaryElement.setAttribute('aria-expanded', true);
     trapFocus(this.mainDetailsToggle, summaryElement);
-    document.body.classList.add('overflow-hidden-mobile');
+    document.body.classList.add(`overflow-hidden-${this.dataset.breakpoint}`);
   }
 }
 
