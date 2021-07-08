@@ -63,7 +63,7 @@ class CollectionFiltersForm extends HTMLElement {
       });
   }
 
-  renderSectionFromCache(filterDataUrl, section, event) {
+  renderSectionFromCache(filterDataUrl, event) {
     const html = this.filterData.find(filterDataUrl).html;
     this.renderFilters(html, event);
     this.renderProductGrid(html);
