@@ -107,7 +107,31 @@ const serializeForm = form => {
   const obj = {};
   const formData = new FormData(form);
   for (const key of formData.keys()) {
-    obj[key] = formData.get(key);
+
+    // nest line item properties for ajax json body
+    if(key.indexOf('properties') !== -1){
+      // create properties obj
+      obj.properties = obj.properties || {};
+
+      // unwrap property name
+      let start = key.indexOf('[');
+      let end = key.indexOf(']');
+      if(start !== -1 && end !== -1){
+        let property = key.substring(start + 1, end);
+
+        // property overwrite support (same behaviour as with form submit, accept the last added property in the form )
+        if(obj.properties.hasOwnProperty(property)){
+          let values = formData.getAll(key);
+          obj.properties[property] = values[values.length - 1];
+        } else {
+          obj.properties[property] = formData.get(key);
+        }
+
+      }
+    } else {
+      obj[key] = formData.get(key);
+    }
+
   }
   return JSON.stringify(obj);
 };
