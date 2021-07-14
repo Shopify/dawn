@@ -69,12 +69,13 @@
                   </div>
                 </details>
               {% when 'price_range' %}
-                {% assign currencies_using_comma_decimals = "ANG,ARS,BRL,BYN,BYR,CLF,CLP,COP,CRC,CZK,DKK,EUR,HRK,HUF,IDR,ISK,MZN,NOK,PLN,RON,RUB,SEK,TRY,UYU,VES,VND" | split: ',' %}
-                {% assign uses_comma_decimals = false %}
-                {% if currencies_using_comma_decimals contains cart.currency.iso_code %}
-                  {% assign uses_comma_decimals = true %}
-                {% endif %}
-
+                {% liquid
+                  assign currencies_using_comma_decimals = 'ANG,ARS,BRL,BYN,BYR,CLF,CLP,COP,CRC,CZK,DKK,EUR,HRK,HUF,IDR,ISK,MZN,NOK,PLN,RON,RUB,SEK,TRY,UYU,VES,VND' | split: ','
+                  assign uses_comma_decimals = false
+                  if currencies_using_comma_decimals contains cart.currency.iso_code
+                    assign uses_comma_decimals = true
+                  endif
+                %}
                 <details class="disclosure-has-popup facets__disclosure js-filter" data-index="{{ forloop.index }}">
                   <summary class="facets__summary">
                     <div>
@@ -94,7 +95,7 @@
                         <span class="field__currency">{{ cart.currency.symbol }}</span>
                         <input class="field__input"
                           name="{{ filter.min_value.param_name }}"
-                          id="Filter-{{ filter.label | escape }}-{{ forloop.index }}"
+                          id="Filter-{{ filter.label | escape }}-GTE"
                           {%- if filter.min_value.value -%}
                             {%- if uses_comma_decimals -%}
                               value="{{ filter.min_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
@@ -107,13 +108,13 @@
                           min="0"
                           max="{{ filter.range_max | money_without_currency | replace: ',', '' }}">
                         </input>
-                        <label class="field__label" for="Search-In-Modal">{{ 'sections.collection_template.from' | t }}</label>
+                        <label class="field__label" for="Filter-{{ filter.label | escape }}-GTE">{{ 'sections.collection_template.from' | t }}</label>
                       </div>
                       <div class="field">
                         <span class="field__currency">{{ cart.currency.symbol }}</span>
                         <input class="field__input"
                           name="{{ filter.max_value.param_name }}"
-                          id="Filter-{{ filter.label | escape }}-{{ forloop.index }}"
+                          id="Filter-{{ filter.label | escape }}-LTE"
                           {%- if filter.max_value.value -%}
                             {%- if uses_comma_decimals -%}
                               value="{{ filter.max_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
@@ -126,7 +127,7 @@
                           min="0"
                           max="{{ filter.range_max | money_without_currency | replace: ',', '' }}">
                         </input>
-                        <label class="field__label" for="Search-In-Modal">{{ 'sections.collection_template.to' | t }}</label>
+                        <label class="field__label" for="Filter-{{ filter.label | escape }}-LTE">{{ 'sections.collection_template.to' | t }}</label>
                       </div>
                     </div>
                   </price-range>
@@ -209,7 +210,7 @@
               <div class="mobile-facets__header">
                 <div class="mobile-facets__header-inner">
                   <h2 class="mobile-facets__heading">{{ 'sections.collection_template.filter_and_sort' | t }}</h2>
-                  <p class="mobile-facets__count">{{ 'sections.collection_template.product_count' | t: count: collection.products_count, total: collection.all_products_count }}</p>
+                  <p class="mobile-facets__count">{{ 'sections.collection_template.product_count' | t: product_count: collection.products_count, count: collection.all_products_count }}</p>
                 </div>
               </div>
               <div class="mobile-facets__main">
@@ -291,7 +292,7 @@
                             <span class="field__currency">{{ cart.currency.symbol }}</span>
                             <input class="field__input"
                               name="{{ filter.min_value.param_name }}"
-                              id="Filter-{{ filter.label | escape }}-{{ forloop.index }}"
+                              id="Mobile-Filter-{{ filter.label | escape }}-GTE"
                               {%- if filter.min_value.value -%}
                                 {%- if uses_comma_decimals -%}
                                   value="{{ filter.min_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
@@ -304,13 +305,13 @@
                               min="0"
                               max="{{ filter.range_max | divided_by: 100 | ceil }}">
                             </input>
-                            <label class="field__label" for="Search-In-Modal">{{ 'sections.collection_template.from' | t }}</label>
+                            <label class="field__label" for="Mobile-Filter-{{ filter.label | escape }}-GTE">{{ 'sections.collection_template.from' | t }}</label>
                           </div>
                           <div class="field">
                             <span class="field__currency">{{ cart.currency.symbol }}</span>
                             <input class="field__input"
                               name="{{ filter.max_value.param_name }}"
-                              id="Filter-{{ filter.label | escape }}-{{ forloop.index }}"
+                              id="Mobile-Filter-{{ filter.label | escape }}-LTE"
                               {%- if filter.max_value.value -%}
                                 {%- if uses_comma_decimals -%}
                                   value="{{ filter.max_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
@@ -323,7 +324,7 @@
                               min="0"
                               max="{{ filter.range_max | divided_by: 100 | ceil }}">
                             </input>
-                            <label class="field__label" for="Search-In-Modal">{{ 'sections.collection_template.to' | t }}</label>
+                            <label class="field__label" for="Mobile-Filter-{{ filter.label | escape }}-LTE">{{ 'sections.collection_template.to' | t }}</label>
                           </div>
                         </price-range>
                       </div>
@@ -410,8 +411,8 @@
           </div>
         </div>
 
-        <p class="collection-product-count light">
-          {{ 'sections.collection_template.product_count' | t: count: collection.products_count, total: collection.all_products_count }}
+        <p class="collection-product-count light" role="status">
+          {{ 'sections.collection_template.product_count' | t: product_count: collection.products_count, count: collection.all_products_count }}
         </p>
 
         <div class="title-wrapper center">
@@ -431,11 +432,15 @@
           </div>
         </div>
 
-        <p class="collection-product-count light">
-          {{ 'sections.collection_template.product_count' | t: count: collection.products_count, total: collection.all_products_count }}
+        <p class="collection-product-count light" role="status">
+          {{ 'sections.collection_template.product_count' | t: product_count: collection.products_count, count: collection.all_products_count }}
         </p>
 
-        <ul id="main-collection-product-grid" data-id="{{ section.id }}" class="grid grid--2-col grid--3-col-tablet grid--one-third-max grid--4-col-desktop{% if collection.products_count > 4 %} grid--quarter-max{% endif %}">
+        <ul id="main-collection-product-grid" data-id="{{ section.id }}" class="
+          grid grid--2-col
+          {% if collection.products_count < 4 %} grid--{{ collection.products_count }}-col-tablet{% else %}
+            {% if collection.products_count == 4 %} grid--4-col-desktop{% else %} grid--3-col-tablet grid--one-third-max grid--4-col-desktop grid--quarter-max{% endif %}
+          {% endif %} negative-margin">
           {%- for product in collection.products -%}
             <li class="grid__item">
               {% render 'product-card',
@@ -445,9 +450,8 @@
                 add_image_padding: section.settings.add_image_padding,
                 show_vendor: section.settings.show_vendor
               %}
-            {% render 'collection-swatch', product: product %}
             </li>
-
+            {% render 'collection-swatch', product: product %}
           {%- endfor -%}
         </ul>
 
@@ -465,8 +469,8 @@
   "class": "spaced-section collection-grid-section",
   "settings": [
     {
-      "id": "products_per_page",
       "type": "range",
+      "id": "products_per_page",
       "min": 8,
       "max": 24,
       "step": 4,
@@ -480,8 +484,6 @@
     {
       "type": "select",
       "id": "image_ratio",
-      "label": "t:sections.main-collection-product-grid.settings.image_ratio.label",
-      "default": "adapt",
       "options": [
         {
           "value": "adapt",
@@ -495,23 +497,25 @@
           "value": "square",
           "label": "t:sections.main-collection-product-grid.settings.image_ratio.options__3.label"
         }
-      ]
+      ],
+      "default": "adapt",
+      "label": "t:sections.main-collection-product-grid.settings.image_ratio.label"
     },
     {
-      "id": "show_secondary_image",
       "type": "checkbox",
+      "id": "show_secondary_image",
       "default": false,
       "label": "t:sections.main-collection-product-grid.settings.show_secondary_image.label"
     },
     {
-      "id": "add_image_padding",
       "type": "checkbox",
+      "id": "add_image_padding",
       "default": false,
       "label": "t:sections.main-collection-product-grid.settings.add_image_padding.label"
     },
     {
-      "id": "show_vendor",
       "type": "checkbox",
+      "id": "show_vendor",
       "default": false,
       "label": "t:sections.main-collection-product-grid.settings.show_vendor.label"
     },
@@ -520,17 +524,17 @@
       "content": "t:sections.main-collection-product-grid.settings.header__1.content"
     },
     {
-      "id": "enable_filtering",
       "type": "checkbox",
-      "label": "t:sections.main-collection-product-grid.settings.enable_filtering.label",
+      "id": "enable_filtering",
       "default": true,
+      "label": "t:sections.main-collection-product-grid.settings.enable_filtering.label",
       "info": "t:sections.main-collection-product-grid.settings.enable_filtering.info"
     },
     {
-      "id": "enable_sorting",
       "type": "checkbox",
-      "label": "t:sections.main-collection-product-grid.settings.enable_sorting.label",
-      "default": true
+      "id": "enable_sorting",
+      "default": true,
+      "label": "t:sections.main-collection-product-grid.settings.enable_sorting.label"
     }
   ]
 }
