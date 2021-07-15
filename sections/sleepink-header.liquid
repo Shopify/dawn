@@ -12,6 +12,23 @@
 <script src="{{ 'details-modal.js' | asset_url }}" defer="defer"></script>
 {{ 'sleepink-header.css' | asset_url | stylesheet_tag }}
 
+{% liquid 
+  case section.settings.color_scheme
+    when 'background-1'
+      assign backgroundColor = settings.colors_background_1
+    when 'background-2'
+      assign backgroundColor = settings.colors_background_2
+    when 'inverse'
+      assign backgroundColor = settings.colors_text
+    when 'accent-1'
+      assign backgroundColor = settings.colors_accent_1
+    when 'accent-2'
+      assign backgroundColor = settings.colors_accent_2
+    else
+      assign backgroundColor = settings.colors_background_1
+  endcase
+%}
+
 <{% if section.settings.enable_sticky_header %}sticky-header{% else %}div{% endif %} class="header-wrapper{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %} SectionGrid shadow sticky color-{{ section.settings.color_scheme }}">
   <header class="SectionGrid-Wide header header--has-menu flex row jc-spb ai-c px-6 h-80 z-100 shadow sticky z-10000 color-{{ section.settings.color_scheme }}" id="shopify-section-header">
     {% comment  %} Hamburger-Menü {% endcomment %}
@@ -23,20 +40,72 @@
             {%- render 'icon-close' -%}
           </span>
         </summary>
-        <div id="menu-drawer" class="menu-drawer motion-reduce flex column tor-top trans-lin w-100p pos-abs z-10000 shadow-mobmenu color-{{ section.settings.color_scheme }}" tabindex="-1">
+        <div id="menu-drawer" class="menu-drawer motion-reduce flex column tor-top trans-lin w-100p pos-abs z-10000 shadow-mobmenu color-{{ section.settings.color_scheme }}" tabindex="-1" style="background-color: {{ backgroundColor }}; opacity: 1;">
           <div class="menu-drawer__inner-container color-{{ section.settings.color_scheme }}">
             <div class="menu-drawer__navigation-container color-{{ section.settings.color_scheme }}">
               <nav class="menu-drawer__navigation color-{{ section.settings.color_scheme }}">
-                <ul class="menu-drawer__menu list-menu color-{{ section.settings.color_scheme }} bgcol-bg" id="mmenu" role="list">
+                <ul class="menu-drawer__menu list-menu color-{{ section.settings.color_scheme }}" id="mmenu" role="list">
+                  {% comment %} Langform des Menüs {% endcomment %}
                   {%- for link in section.settings.menu.links -%}
-                    <li class="nobullets li-outside color-{{ section.settings.color_scheme }}">
-                      {%- if link.url != blank -%}
+                    <li>
+                      {%- if link.links != blank -%}
+                        <details>
+                          <summary class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.child_active %} menu-drawer__menu-item--active{% endif %} mx-7 nodec col-fg uppercase ff-heading fs-3 fw-400 p-6 bdt-link">
+                            {{ link.title | escape }}
+                            {% render 'icon-arrow' %}
+                            {% render 'icon-caret' %}
+                          </summary>
+                          <div id="link-{{ link.title | escape }}" class="menu-drawer__submenu motion-reduce" tabindex="-1">
+                            <div class="menu-drawer__inner-submenu">
+                              <button class="menu-drawer__close-button link link--text focus-inset mx-7 nodec col-fg uppercase ff-heading fs-3 fw-400 p-6 bdt-link" aria-expanded="true">
+                                {% render 'icon-arrow' %}
+                                {{ link.title | escape }}
+                              </button>
+                              <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
+                                {%- for childlink in link.links -%}
+                                  <li>
+                                    {%- if childlink.links == blank -%}
+                                      <a href="{{ childlink.url }}" class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if childlink.current %} menu-drawer__menu-item--active{% endif %} mx-7 nodec col-fg uppercase ff-heading fs-3 fw-400 p-6 bdt-link"{% if childlink.current %} aria-current="page"{% endif %}>
+                                        {{ childlink.title | escape }}
+                                      </a>
+                                    {%- else -%}
+                                      <details>
+                                        <summary class="menu-drawer__menu-item link link--text list-menu__item focus-inset">
+                                          {{ childlink.title | escape }}
+                                          {% render 'icon-arrow' %}
+                                          {% render 'icon-caret' %}
+                                        </summary>
+                                        <div id="childlink-{{ childlink.title | escape }}" class="menu-drawer__submenu motion-reduce">
+                                          <button class="menu-drawer__close-button link link--text focus-inset mx-7 nodec col-fg uppercase ff-heading fs-3 fw-400 p-6 bdt-link" aria-expanded="true">
+                                            {% render 'icon-arrow' %}
+                                            {{ childlink.title | escape }}
+                                          </button>
+                                          <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
+                                            {%- for grandchildlink in childlink.links -%}
+                                              <li>
+                                                <a href="{{ grandchildlink.url }}" class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if grandchildlink.current %} menu-drawer__menu-item--active{% endif %} mx-7 nodec col-fg uppercase ff-heading fs-3 fw-400 p-6 bdt-link"{% if grandchildlink.current %} aria-current="page"{% endif %}>
+                                                  {{ grandchildlink.title | escape }}
+                                                </a>
+                                              </li>
+                                            {%- endfor -%}
+                                          </ul>
+                                        </div>
+                                      </details>
+                                    {%- endif -%}
+                                  </li>
+                                {%- endfor -%}
+                              </ul>
+                            </div>
+                          </div>
+                        </details>
+                      {%- else -%}
                         <a href="{{ link.url }}" class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.current %} menu-drawer__menu-item--active{% endif %} mx-7 nodec col-fg uppercase ff-heading fs-3 fw-400 p-6 bdt-link"{% if link.current %} aria-current="page"{% endif %}>
-                          {{ link.title }}
+                          {{ link.title | escape }}
                         </a>
                       {%- endif -%}
                     </li>
                   {%- endfor -%}
+                  {% comment %} Ende des Menüs {% endcomment %}
                 </ul>
               </nav>
             </div>
@@ -72,7 +141,7 @@
     </div>
     {% comment %} Header-Icons (Suche, Account, Cart) {% endcomment %}
     <div class="header__icons">
-      <details-modal class="header__search">
+      <details-modal class="header__search" style="background-color: {{ backgroundColor }}; opacity: 1;">
         <details>
           <summary class="header__icon header__icon--search header__icon--summary link link--text focus-inset modal__toggle" aria-haspopup="dialog" aria-label="{{ 'general.search.search' | t }}">
             <span>
@@ -84,7 +153,7 @@
               </svg>
             </span>
           </summary>
-          <div class="search-modal modal__content" role="dialog" aria-modal="true" aria-label="{{ 'general.search.search' | t }}">
+          <div class="search-modal modal__content" role="dialog" aria-modal="true" aria-label="{{ 'general.search.search' | t }}" style="background-color: {{ backgroundColor }}; opacity: 1;">
             <div class="search-modal__content" tabindex="-1">
               <form action="{{ routes.search_url }}" method="get" role="search" class="search search-modal__form">
                 <div class="field">
@@ -275,7 +344,7 @@
 {% schema %}
 {
   "name": "t:sections.header.name",
-  "class": "z-10000 pos-rel bgcol-bgi",
+  "class": "z-10000 pos-rel",
   "settings": [
     {
       "type": "select",
@@ -319,26 +388,6 @@
       "default": 100,
       "unit": "t:sections.header.settings.logo_width.unit",
       "label": "t:sections.header.settings.logo_width.label"
-    },
-    {
-      "type": "select",
-      "id": "logo_position",
-      "options": [
-        {
-          "value": "middle-left",
-          "label": "t:sections.header.settings.logo_position.options__1.label"
-        },
-        {
-          "value": "top-left",
-          "label": "t:sections.header.settings.logo_position.options__2.label"
-        },
-        {
-          "value": "top-center",
-          "label": "t:sections.header.settings.logo_position.options__3.label"
-        }
-      ],
-      "default": "middle-left",
-      "label": "t:sections.header.settings.logo_position.label"
     },
     {
       "type": "link_list",
