@@ -5,6 +5,8 @@
     - blog: {Object} Blog object
     - article: {Object} Article object
     - show_image: {String} The setting either show the article image or not. If it's not included it will show the image by default
+    - show_date: {String} The setting either show the article date or not. If it's not included it will not show the image by default
+    - show_author: {String} The setting either show the article author or not. If it's not included it will not show the author by default
 
     Usage:
     {% render 'article-card' blog: blog, article: article, show_image: section.settings.show_image %}
@@ -35,46 +37,33 @@
     {%- endif -%}
 
     <div class="article-card__info">
-      {%- for block in section.blocks -%}
-        {%- case block.type -%}
-          {%- when 'title'-%}
-            <header class="article-card__header" {{ block.shopify_attributes }}>
-              <h2 class="article-card__title" id="Article-{{ article.id }}">
-                {{ article.title | escape }}
-              </h2>
-              {%- if block.settings.show_date -%}
-                <span class="circle-divider caption-with-letter-spacing">
-                  {{- article.published_at | time_tag: format: 'month_year' -}}
-                </span>
-              {%- endif -%}
-              {%- if block.settings.show_author -%}
-                <span class="caption-with-letter-spacing">{{ article.author -}}</span>
-              {%- endif -%}
-            </header>
-
-          {%- when 'summary'-%}
-            {%- if article.excerpt.size > 0 or article.content.size > 0 -%}
-              <p class="article-card__excerpt rte-width" {{ block.shopify_attributes }}>
-                {%- if article.excerpt.size > 0 -%}
-                  {{ article.excerpt | strip_html | truncatewords: 30 }}
-                {%- else -%}
-                  {{ article.content | strip_html | truncatewords: 30 }}
-                {%- endif -%}
-              </p>
-            {%- endif -%}
-
-          {%- when 'link'-%}
-            <div class="article-card__footer" {{ block.shopify_attributes }}>
-              <span class="link article-card__link" aria-label="{{ 'blogs.article.read_more_title' | t: title: article.title | escape }}">
-                {{ 'blogs.article.read_more' | t }}
-              </span>
-
-              {%- if article.comments_count > 0 and blog.comments_enabled? -%}
-                <span>{{ 'blogs.article.comments' | t: count: article.comments_count }}</span>
-              {%- endif -%}
-            </div>
-        {%- endcase -%}
-      {%- endfor -%}
+      <header class="article-card__header">
+        <h2 class="article-card__title" id="Article-{{ article.id }}">
+          {{ article.title | escape }}
+        </h2>
+        {%- if show_date -%}
+          <span class="circle-divider caption-with-letter-spacing">
+            {{- article.published_at | time_tag: format: 'month_year' -}}
+          </span>
+        {%- endif -%}
+        {%- if show_author -%}
+          <span class="caption-with-letter-spacing">{{ article.author -}}</span>
+        {%- endif -%}
+      </header>
+      {%- if article.excerpt.size > 0 or article.content.size > 0 -%}
+        <p class="article-card__excerpt rte-width">
+          {%- if article.excerpt.size > 0 -%}
+            {{ article.excerpt | strip_html | truncatewords: 30 }}
+          {%- else -%}
+            {{ article.content | strip_html | truncatewords: 30 }}
+          {%- endif -%}
+        </p>
+      {%- endif -%}
+      <div class="article-card__footer">
+        {%- if article.comments_count > 0 and blog.comments_enabled? -%}
+          <span>{{ 'blogs.article.comments' | t: count: article.comments_count }}</span>
+        {%- endif -%}
+      </div>
     </div>
   </a>
 </article>
