@@ -1,6 +1,6 @@
 # Dawn
 
-[![Build status](https://github.com/shopify/dawn/actions/workflows/lighthouse-ci.yml/badge.svg?branch=main)](https://github.com/Shopify/dawn/actions/workflows/lighthouse-ci.yml?query=branch%3Amain)
+[![Build status](https://github.com/shopify/dawn/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Shopify/dawn/actions/workflows/ci.yml?query=branch%3Amain)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?color=informational)](/CONTRIBUTING.md)
 
 [Getting started](#getting-started) |
@@ -71,13 +71,23 @@ We recommend using [Theme Check](https://github.com/shopify/theme-check) as a wa
 
 We've added Theme Check to Dawn's [list of VS Code extensions](https://github.com/Shopify/dawn/blob/update-README/.vscode/extensions.json) so if you're using Visual Studio Code as your code editor of choice, you'll be prompted to install the [Theme Check VS Code](https://marketplace.visualstudio.com/items?itemName=Shopify.theme-check-vscode) extension upon opening VS Code after you've forked and cloned Dawn.
 
-Theme Check is included as part of [Dawn's GitHub Actions](https://github.com/Shopify/dawn/tree/main/.github/workflows) and can also be run via Shopify CLI's `shopify theme check` command.
+You can also run it from a terminal with the following Shopify CLI command:
 
-### Shopify/lighthouse-ci-action
+```bash
+shopify theme check
+```
 
-We love performant websites! Which is why we created [Shopify/lighthouse-ci-action](https://github.com/Shopify/lighthouse-ci-action). This runs a series of [Google Lighthouse](https://developers.google.com/web/tools/lighthouse) audits for the home, product and collections pages on a store for every commmit to ensure code that gets added doesn't degrade storefront performance over time.
+### Continuous Integration
 
-Dawn uses [GitHub Actions](https://github.com/features/actions) to run Shopify/lighthouse-ci-action for every commit. [This is a starting point](https://github.com/Shopify/dawn/blob/main/.github/workflows/lighthouse-ci.yml) and what we suggest to use in order to ensure you're building better themes. Feel free to build off of it!
+Dawn uses [GitHub Actions](https://github.com/features/actions) to maintain the quality of the theme. [This is a starting point](https://github.com/Shopify/dawn/blob/main/.github/workflows/ci.yml) and what we suggest to use in order to ensure you're building better themes. Feel free to build off of it!
+
+#### Shopify/lighthouse-ci-action
+
+We love fast websites! Which is why we created [Shopify/lighthouse-ci-action](https://github.com/Shopify/lighthouse-ci-action). This runs a series of [Google Lighthouse](https://developers.google.com/web/tools/lighthouse) audits for the home, product and collections pages on a store to ensure code that gets added doesn't degrade storefront performance over time.
+
+#### Shopify/theme-check-action
+
+Dawn runs [Theme Check](#Theme-Check) on every commit via [Shopify/theme-check-action](https://github.com/Shopify/theme-check-action).
 
 ## Contributing
 
