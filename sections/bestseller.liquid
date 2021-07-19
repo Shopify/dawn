@@ -127,6 +127,109 @@
       </div>
     </div>
     {% comment %} End of Mobile Slider {% endcomment %}
+    {% comment %} Tablet Slider {% endcomment %}
+    <div class="collection page-width page-width-desktop bs-tablet">
+      <sleepink-slider class="slider-mobile-gutter">
+        <ul class="grid slider slider--tablet grid--peek negative-margin negative-margin--small" role="list">
+          {% assign products = section.blocks | where: 'type', 'product' %}
+          {% assign numberOfSlides = products.size | divided_by: 2 | ceil %}
+          {%- for s in (1..numberOfSlides) -%}
+            <li class="grid__item slider__slide bs-w-100p bs-px-0">
+                <div class="bs-grid bs-2col">
+                  {%- for p in (0..1) -%}
+                    {% assign index = s | times: 2 | minus: 2 | plus: p %}
+                    {% assign product = products[index] %}
+                    <div class="bs-flex bs-column bs-ai-c bs-pb-5 bs-mx-auto bs-mx-lg-unset bs-mxw-300px bs-mxw-lg-unset bs-mnw-300px bs-mnw-md-210px bs-mnw-lg-unset bs-w-100p">
+                      <a href="{{ product.url }}" class="bs-w-100p bs-mt-6 bs-mb-5 bs-grid bs-1col bs-1row bs-pos-rel bs-square-outer" style="background-color:{{ product.settings.background }};">
+                        <div class="bs-square bs-gc1 bs-gr1">
+                          <img src="{{ product.settings.image | img_url: '400x' }}" alt="{{ product.settings.image.alt }}" width="300" height="300" loading="lazy">
+                          <div class="bs-gc1 bs-gr1 bs-pos-abs bs-l-0 bs-t-10px bs-t-lg-16px">
+                            {% assign tags = product.settings.tags | split: ", " %}
+                            {% for t in tags %}
+                              <div class="bs-fw-400 bs-fs-12px bs-ml-0 bs-left bs-px-3 bs-lh-100 bs-py-2 bs-mb-1" style="background-color: {{ tagBackground }}; color: {{ tagForeground }}">
+                                {{ t | escape }}
+                              </div>
+                            {% endfor %}
+                          </div>
+                        </div>
+                      </a>
+                      <div>
+                        <div class="bs-flex bs-row bs-jc-c bs-ai-c bs-ml-2 bs-mr-3 bs-mb-2">
+                          {% assign missing_stars = 5 | minus: product.settings.rating %}
+                          {% if product.settings.rating > 0 %}
+                            {% for i in (1..product.settings.rating) %}
+                              <span>
+                                {%- render 'icon-star', currentColor: "#ffd900" -%}
+                              </span>
+                            {% endfor %}
+                          {% endif %}
+                          {% if missing_stars > 0 %}
+                            {% for j in (1..missing_stars) %}
+                              <span>
+                                {%- render 'icon-star', currentColor: "#dddddd" -%}
+                              </span>
+                            {% endfor %}
+                          {% endif %}
+                        </div>
+                        <div class="bs-ff-body bs-fw-400 bs-fs-12px bs-lh-100 bs-mt-0 bs-center">
+                          ({{ product.settings.recensions }} {% if product.settings.recensions > 1 %}Bewertungen{% else %} Bewertung{% endif %})
+                        </div>
+                        <h3 class="bs-ff-heading bs-fs-1 bs-fs-lg-3 bs-lh-100 bs-lh-md-114 bs-lh-lg-110 bs-ls-m100 bs-ls-md-m067 bs-ls-lg-m098 bs-fw-400 bs-center bs-mb-1 bs-mt-5">
+                          {{ product.settings.name | escape }}
+                        </h3>
+                        <p class="bs-ff-body bs-fs-11px bs-fs-md-12px bs-lh-145 bs-lh-md-136 bs-lh-lg-133 bs-fw-300 bs-center bs-mb-5">
+                          {{ product.settings.description | escape }}
+                        </p>
+                        <p class="bs-center bs-ff-body bs-fs-1 bs-fs-lg-3 bs-lh-100 bs-lh-lg-111 bs-fw-500 bs-mb-1">
+                          {% for variant in product.settings.product.variants %}
+                            {% if variant.sku == product.settings.variant %}
+                              {% assign variant_id = variant.id %}
+                              {{ variant.price | money_without_currency }} €
+                              {% if variant.compare_at_price %}
+                                <span class="bs-fw-400 bs-fs-87p bs-fs-lg-90p bs-td-lt bs-ml-2">
+                                  {{ variant.compare_at_price | money_without_currency }} €
+                                </span>
+                              {% endif %}
+                            {% endif %}
+                          {% endfor %}
+                        </p>
+                        <div class="bs-flex bs-row bs-jc-c bs-ai-c">
+                          <form method="post" action="/cart/add">
+                            <input type="hidden" name="id" value="{{ variant_id }}" />
+                            <input type="hidden" name="quantity" value="1" id="quantity" />
+                            <button type="submit" class="bs-submit" style="background-color: {{ tagBackground }}; color: {{ tagForeground }}">
+                              {%- render 'icon-cart2', currentColor: '#ffffff' -%}
+                            </button>
+                          </form>
+                          <a href="{{ product.settings.page }}">
+                            <button class="button" style="background-color: {{ tagBackground }}; color: {{ tagForeground }};">
+                              {{ section.settings.linkProductPage | escape }}
+                            </button>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+            </li>
+          {%- endfor -%}
+        </ul>
+          {%- if numberOfSlides > 1 and section.settings.swipe_on_mobile -%}
+            <div class="slider-buttons no-js-hidden">
+              <div class="slider-counter caption">
+                <span class="slider-counter--current">1</span>
+                <span aria-hidden="true"> / </span>
+                <span class="visually-hidden">{{ 'accessibility.of' | t }}</span>
+                <span class="slider-counter--total">{{ numberOfSlides }}</span>
+              </div>
+              <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'accessibility.previous_slide' | t }}">{% render 'icon-caret' %}</button>
+              <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'accessibility.next_slide' | t }}">{% render 'icon-caret' %}</button>
+            </div>
+          {%- endif -%}
+        </sleepink-slider>
+      </div>
+    </div>
+    {% comment %} End of Tablet Slider {% endcomment %}
   </div>
 </div>
 
