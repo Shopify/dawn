@@ -3,6 +3,29 @@
 
 {{ 'bestseller.css' | asset_url | stylesheet_tag }}
 
+{% liquid 
+  case section.settings.color_scheme
+    when 'background-1'
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_1
+    when 'background-2'
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_2
+    when 'inverse'
+      assign tagBackground = settings.colors_background_1
+      assign tagForeground = settings.colors_text
+    when 'accent-1'
+      assign tagBackground = settings.colors_solid_button_labels
+      assign tagForeground = settings.colors_accent_1
+    when 'accent-2'
+      assign tagBackground = settings.colors_solid_button_labels
+      assign tagForeground = settings.colors_accent_2
+    else
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_1
+  endcase
+%}
+
 <div class="bs-SectionGrid bs-pt-10 bs-pt-md-13 bs-pb-7 bs-pb-md-8 bs-px-4 bs-px-md-5 bs-px-lg-6">
   <div class="bs-SectionGrid-Wide">
     <h2 class="{% if section.settings.titleAlignment == 'left' %}bs-left {% else %}bs-center {% endif %}bs-ff-heading bs-fs-7 bs-fs-lg-38px bs-lh-30px bs-lh-lg-44px bs-fw-500 bs-fw-lg-400 bs-ls-m124 bs-mb-2 bs-mb-lg-5">{{ section.settings.title | escape }}</h2>
@@ -12,22 +35,41 @@
         <ul class="grid slider slider--tablet grid--peek negative-margin negative-margin--small" role="list">
           {% assign products = section.blocks | where: 'type', 'product' %}
           {%- for product in products -%}
-            <li class="grid__item slider__slide">
+            <li class="grid__item slider__slide bs-w-100p bs-px-0">
                 <div>
                   <div class="bs-flex bs-column bs-ai-c bs-pb-5 bc-mx-auto bs-mx-lg-unset bs-mxw-300px bs-mxw-lg-unset bs-mnw-300px bs-mnw-md-210px bs-mnw-lg-unset bs-w-100p">
                     <a href="{{ product.url }}" class="bs-w-100p bs-mt-6 bs-mb-5 bs-grid bs-1col bs-1row bs-pos-rel bs-square-outer" style="background-color:{{ product.settings.background }};">
                       <div class="bs-square bs-gc1 bs-gr1">
-                        <img src="{{ product.settings.image | img_url }}" alt="{{ product.settings.image.alt }}" width="300" height="300" loading="lazy">
+                        <img src="{{ product.settings.image | img_url: '400x' }}" alt="{{ product.settings.image.alt }}" width="300" height="300" loading="lazy">
                         <div class="bs-gc1 bs-gr1 bs-pos-abs bs-l-0 bs-t-10px bs-t-lg-16px">
                           {% assign tags = product.settings.tags | split: ", " %}
                           {% for t in tags %}
-                            <div class="color-invert bs-fw-400 bs-fs-12px bs-ml-0 bs-left bs-px-3 bs-lh-100 bs-py-2 bs-mb-1">
+                            <div class="bs-fw-400 bs-fs-12px bs-ml-0 bs-left bs-px-3 bs-lh-100 bs-py-2 bs-mb-1" style="background-color: {{ tagBackground }}; color: {{ tagForeground }}">
                               {{ t | escape }}
                             </div>
                           {% endfor %}
                         </div>
                       </div>
                     </a>
+                    <div>
+                      <div class="bs-flex bs-row bs-jc-c bs-ml-2 bs-mr-3 bs-mb-2">
+                        {% assign missing_stars = 5 | minus: product.settings.rating %}
+                        {% if product.settings.rating > 0 %}
+                          {% for i in (1..product.settings.rating) %}
+                            <span>
+                              {%- render 'icon-star', currentColor: "#ffd900" -%}
+                            </span>
+                          {% endfor %}
+                        {% endif %}
+                        {% if missing_stars > 0 %}
+                          {% for j in (1..missing_stars) %}
+                            <span>
+                              {%- render 'icon-star', currentColor: "#dddddd" -%}
+                            </span>
+                          {% endfor %}
+                        {% endif %}
+                      </div>
+                    </div>
                   </div>
                 </div>
             </li>
@@ -199,6 +241,20 @@
           "type": "url",
           "id": "page",
           "label": "URL der Produktseite"
+        },
+        {
+          "type": "text",
+          "id": "tags",
+          "label": "Tags (durch Komma getrennt)"
+        },
+        {
+          "type": "range",
+          "id": "rating",
+          "label": "Rating (in Sternen)",
+          "default": 5,
+          "min": 1,
+          "max": 5,
+          "step": 1
         }
       ]
     }
