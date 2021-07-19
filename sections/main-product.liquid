@@ -9,6 +9,11 @@
 <link rel="stylesheet" href="{{ 'component-cart-notification.css' | asset_url }}" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="{{ 'component-deferred-media.css' | asset_url }}" media="print" onload="this.media='all'">
 
+{%- assign variants_available_arr = product.variants | map: 'available' -%}
+{%- assign variants_option1_arr = product.variants | map: 'option1' -%}
+{%- assign variants_option2_arr = product.variants | map: 'option2' -%}
+{%- assign variants_option3_arr = product.variants | map: 'option3' -%}
+
 <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
 
 {%- assign first_3d_model = product.media | where: "media_type", "model" | first -%}
@@ -225,37 +230,55 @@
           {%- when 'variant_picker' -%}
             {%- unless product.has_only_default_variant -%}
               {%- if block.settings.picker_type == 'button' -%}
-                <variant-radios class="no-js-hidden" data-section="{{ section.id }}" data-url="{{ product.url }}" {{ block.shopify_attributes }}>
+                <variant-radios class="no-js-hidden" data-section="{{ section.id }}" data-url="{{ product.url }}" {{ block.shopify_attributes }} data-variant-picker>
                   {%- for option in product.options_with_values -%}
-                      <fieldset class="js product-form__input">
-                        <legend class="form__label">{{ option.name }}</legend>
-                        {%- for value in option.values -%}
-                          <input type="radio" id="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}"
-                                name="{{ option.name }}"
-                                value="{{ value | escape }}"
-                                form="product-form-{{ section.id }}"
-                                {% if option.selected_value == value %}checked{% endif %}
-                          >
-                          {%- if option.name contains 'olor' or option.name contains 'olour' or option.name contains 'COLOR' or option.name contains 'COLOUR' -%}
-                        	<label class="color" for="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}">
-                              {%- for variant in product.variants -%}
-                              	{%- if variant.option1 == value or variant.option2 == value or variant.option3 == value -%}
-                              	  {%- if variant.image -%}{{ variant.image | img_url: 'compact' | img_tag }}{%- break -%}{%- endif -%}
-                                {%- endif -%}
-                              {%- endfor -%}
-                        	</label>
-                          {%- else -%}
-                            <label for="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}">{{ value }}</label>
-                          {%- endif -%}
-                        {%- endfor -%}
-                      </fieldset>
+                    <fieldset class="js product-form__input">
+                      <legend class="form__label">{{ option.name }}</legend>
+                      {%- for value in option.values -%}
+                        {%- assign option_disabled = true -%}
+                        {% for option1_name in variants_option1_arr %}
+                          {% case option.position %}
+                            {% when 1 %}
+                              {% if variants_option1_arr[forloop.index0] == value and variants_available_arr[forloop.index0] == true %}
+                                {%- assign option_disabled = false -%}
+                              {% endif %}
+                            {% when 2 %}
+                              {% if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == value and variants_available_arr[forloop.index0] == true %}
+                                {%- assign option_disabled = false -%}
+                              {% endif %}
+                            {% when 3 %}
+                              {% if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == product.selected_or_first_available_variant.option2 and variants_option3_arr[forloop.index0] == value and variants_available_arr[forloop.index0] == true %}
+                                {%- assign option_disabled = false -%}
+                              {% endif %}
+                          {% endcase %}
+                        {% endfor %}
+                        <input type="radio" id="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}"
+                              name="{{ option.name }}"
+                              value="{{ value | escape }}"
+                              form="product-form-{{ section.id }}"
+                              {% if option.selected_value == value %}checked{% endif %}
+                              {% if option_disabled %}class="disabled"{% endif %}
+                        >
+                        {%- if option.name contains 'olor' or option.name contains 'olour' or option.name contains 'COLOR' or option.name contains 'COLOUR' -%}
+                          <label class="color" for="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}">
+                            {%- for variant in product.variants -%}
+                              {%- if variant.option1 == value or variant.option2 == value or variant.option3 == value -%}
+                                {%- if variant.image -%}{{ variant.image | img_url: 'compact' | img_tag }}{%- break -%}{%- endif -%}
+                              {%- endif -%}
+                            {%- endfor -%}
+                          </label>
+                        {%- else -%}
+                          <label for="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}">{{ value }}</label>
+                        {%- endif -%}
+                      {%- endfor -%}
+                    </fieldset>
                   {%- endfor -%}
                   <script type="application/json">
                     {{ product.variants | json }}
                   </script>
                 </variant-radios>
               {%- else -%}
-                <variant-selects class="no-js-hidden" data-section="{{ section.id }}" data-url="{{ product.url }}" {{ block.shopify_attributes }}>
+                <variant-selects class="no-js-hidden" data-section="{{ section.id }}" data-url="{{ product.url }}" {{ block.shopify_attributes }} data-variant-picker>
                   {%- for option in product.options_with_values -%}
                     <div class="product-form__input product-form__input--dropdown">
                       <label class="form__label" for="Option-{{ section.id }}-{{ forloop.index0 }}">
@@ -268,7 +291,24 @@
                           form="product-form-{{ section.id }}"
                         >
                           {%- for value in option.values -%}
-                            <option value="{{ value | escape }}" {% if option.selected_value == value %}selected="selected"{% endif %}>
+                            {%- assign option_disabled = true -%}
+                            {% for option1_name in variants_option1_arr %}
+                              {% case option.position %}
+                                {% when 1 %}
+                                  {% if variants_option1_arr[forloop.index0] == value and variants_available_arr[forloop.index0] == true %}
+                                    {%- assign option_disabled = false -%}
+                                  {% endif %}
+                                {% when 2 %}
+                                  {% if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == value and variants_available_arr[forloop.index0] == true %}
+                                    {%- assign option_disabled = false -%}
+                                  {% endif %}
+                                {% when 3 %}
+                                  {% if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == product.selected_or_first_available_variant.option2 and variants_option3_arr[forloop.index0] == value and variants_available_arr[forloop.index0] == true %}
+                                    {%- assign option_disabled = false -%}
+                                  {% endif %}
+                              {% endcase %}
+                            {% endfor %}
+                            <option value="{{ value | escape }}" {% if option.selected_value == value %}selected="selected"{% endif %}{% if option_disabled %} disabled{% endif %}>
                               {{ value }}
                             </option>
                           {%- endfor -%}

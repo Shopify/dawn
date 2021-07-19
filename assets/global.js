@@ -573,8 +573,11 @@ class VariantSelects extends HTMLElement {
         const html = new DOMParser().parseFromString(responseText, 'text/html')
         const destination = document.getElementById(id);
         const source = html.getElementById(id);
+        const variantPickerDestination = document.querySelector('[data-variant-picker]')
+        const variantPickerSource = html.querySelector('[data-variant-picker]');
 
         if (source && destination) destination.innerHTML = source.innerHTML;
+        if (variantPickerSource && variantPickerDestination) variantPickerDestination.innerHTML = variantPickerSource.innerHTML;
 
         document.getElementById(`price-${this.dataset.section}`)?.classList.remove('visibility-hidden');
         this.toggleAddButton(!this.currentVariant.available, window.variantStrings.soldOut);
