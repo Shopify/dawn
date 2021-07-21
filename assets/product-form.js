@@ -3,6 +3,7 @@ class ProductForm extends HTMLElement {
     super();   
 
     this.form = this.querySelector('form');
+    this.form.querySelector('[name=id]').disabled = false;
     this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
     this.cartNotification = document.querySelector('cart-notification');
   }
