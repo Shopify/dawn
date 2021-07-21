@@ -1,0 +1,190 @@
+{{ 'preview-slider.css' | asset_url | stylesheet_tag }}
+<link rel="stylesheet" href="{{ 'component-slider.css' | asset_url }}" media="print" onload="this.media='all'">
+
+<noscript>{{ 'component-slider.css' | asset_url | stylesheet_tag }}</noscript>
+
+{% liquid 
+  case section.settings.color_scheme
+    when 'background-1'
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_1
+    when 'background-2'
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_2
+    when 'inverse'
+      assign tagBackground = settings.colors_background_1
+      assign tagForeground = settings.colors_text
+    when 'accent-1'
+      assign tagBackground = settings.colors_solid_button_labels
+      assign tagForeground = settings.colors_accent_1
+    when 'accent-2'
+      assign tagBackground = settings.colors_solid_button_labels
+      assign tagForeground = settings.colors_accent_2
+    else
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_1
+  endcase
+%}
+
+
+
+<div class="pv-SectionGrid pv-py-11 color-{{ section.settings.color_scheme }}">
+  <div class="pv-SectionGrid-Narrow">
+    <div class="collection page-width{% if section.settings.swipe_on_mobile == true %} page-width-desktop{% endif%}">
+      <sleepink-slider class="slider-mobile-gutter">
+        {% assign products = section.blocks | where: 'type', 'product' %}
+        <ul class="grid-slider slider--tablet grid--peek negative-margin negative-margin--small">
+          {% for product in products %}
+            <li class="slider__slide pv-w-100p">
+              <div class="pv-flex pv-column pv-jc-c">
+                <div class="pv-2col pv-lg-5sect">
+                  <div class="pv-col-1-2 pv-lg-col-3 pv-grid pv-1col pv-lg-2col pv-row-1-4 pv-lg-row-1">
+                    <img src="{{ product.settings.image | img_url: '500x' }}" alt="{{ product.settings.image.alt | escape }}" width="500" height="400" loading="lazy" class="pv-h-400px pv-col-1-2 pv-lg-col-1 pv-row-2 pv-lg-row-1-2 pv-as-c pv-contain pv-op-cc">
+                    <div class="pv-col-1-2 pv-lg-col-2 pv-row-1-2 pv-lg-row-unset pv-ta-c pv-ai-c pv-grid pv-mxh-150px">
+                      <h4 class="pv-ff-heading pv-fs-4 pv-lg-fs-7 pv-fw-400 pv-lg-fw-500 pv-lh-26px pv-lg-lh-32px pv-lg-ls-m100 pv-my-2">{{ product.settings.brand | escape }}</h4>
+                      <h3 class="pv-ff-heading pv-fs-7 pv-lg-fs-38px pv-lh-30px pv-lg-lh-44px pv-ls-m124 pv-fw-500 pv-lg-fw-400 pv-mt-2 pv-mb-5">{{ product.settings.name | escape }}</h3>
+                      <div class="pv-flex pv-js-c">
+                        <div>({{ product.settings.reviewCount }})</div>
+                        <div class="pv-flex pv-row pv-ml-2 pv-mr-3">
+                          {% liquid 
+                            assign missingStars = 5 | minus: product.settings.rating
+                            if product.settings.rating > 0
+                              for i in (1..product.settings.rating)
+                                render 'icon-star', currentColor: '#ffd900'
+                              endfor
+                            endif
+                            if missingStars > 0
+                              for j in (1..missingStars)
+                                render 'icon-star', currentColor: '#dddddd'
+                              endfor
+                            endif
+                          %}
+                          <a href="https://www.trustedshops.de/bewertung/bewerten_X171CC05C7CF0FBC03EB75B9E6E73D132.html" class="pv-nodec pv-mt-1 pv-ml-1" style="color: {{ tagBackground }};">Jetzt bewerten</a>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="pv-col-2 pv-grid">
+                      <div class="pv-flex pv-column pv-js-c pv-w-90p pv-mt-6 pv-mb-4">
+                        {% for reason in product.settings.product.metafield.reasons %}
+                          <div class="pv-flex pv-row pv-ai-c pv-my-4">
+                            <img src="{{ reason.image | img_url: '50x' }}" alt="{{ reason.image.alt | escape }}" width="22" height="22" loading="lazy" class="pv-w-22px pv-h-22px">
+                            <div class="pv-ml-3">{{ reason.title | escape }}</div>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </sleepink-slider>
+    </div>
+  </div>
+</div>
+
+
+{% schema %}
+{
+  "name": "Produktvorschauslider",
+  "tag": "section",
+  "class": "spaced-section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "swipe_on_mobile",
+      "default": true,
+      "label": "Swipen auf Mobilgeräten erlaubt"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.footer.settings.color_scheme.options__1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.footer.settings.color_scheme.options__2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.footer.settings.color_scheme.options__3.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.footer.settings.color_scheme.options__4.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.footer.settings.color_scheme.options__5.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.footer.settings.color_scheme.label"
+    }
+  ],
+  "blocks": [
+    {
+      "name": "product",
+      "type": "product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Produkt"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Produktbild"
+        },
+        {
+          "id": "brand",
+          "label": "Marke",
+          "type": "text",
+          "default": "sleep.ink"
+        },
+        {
+          "id": "name",
+          "label": "Name",
+          "type": "text",
+          "default": "Schlafdrink"
+        },
+        {
+          "id": "reviewCount",
+          "label": "Anzahl der Bewertungen",
+          "type": "number",
+          "default": 100
+        },
+        {
+          "id": "rating",
+          "label": "durchschnittliche Bewertung (in Sternen)",
+          "type": "range",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "default": 5
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Presseslider",
+      "settings": {
+        "color_scheme": "background-1",
+        "swipe_on_mobile": true
+      },
+      "blocks": [
+        {
+          "type": "product",
+          "settings": {}
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
