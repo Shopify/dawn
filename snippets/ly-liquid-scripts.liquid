@@ -1,0 +1,206 @@
+{%- if request.locale.primary == true -%}
+
+  {%- assign strings = content | strip_newlines | split: '<ly-' -%}
+  {%- for each_string in strings -%}
+    {%- if each_string contains '</ly' -%}
+      {%- assign ly_string = each_string | split: '</ly' | first -%}
+      {%- assign ly_tag = ly_string | split: '>' | first -%}
+	  {%- assign ly_open_tag = '<ly-' | append: ly_tag | append: '>' -%}
+	  {%- assign ly_close_tag = '</ly-' | append: ly_tag | append: '>' -%}
+	  {%- assign delim = ly_tag | append: '>' -%}
+	  {%- assign ly_content = ly_string | split: delim | last -%}
+	  {%- assign src = ly_open_tag | append: ly_content | append: ly_close_tag -%}
+	  {%- assign content = content | replace: src, ly_content -%}
+    {%- endif -%}
+  {%- endfor -%}
+
+  {%- assign strings = content | strip_newlines | split: '&lt;ly-' -%}
+  {%- for each_string in strings -%}
+	{%- if each_string contains '&lt;/ly' -%}
+	  {%- assign ly_string = each_string | split: '&lt;/ly' | first -%}
+	  {%- assign ly_tag = ly_string | split: '&gt;' | first -%}
+	  {%- assign ly_open_tag = '&lt;ly-' | append: ly_tag | append: '&gt;' -%}
+	  {%- assign ly_close_tag = '&lt;/ly-' | append: ly_tag | append: '&gt;' -%}
+	  {%- assign delim = ly_tag | append: '&gt;' -%}
+	  {%- assign ly_content = ly_string | split: delim | last -%}
+	  {%- assign src = ly_open_tag | append: ly_content | append: ly_close_tag -%}
+	  {%- assign content = content | replace: src, ly_content -%}
+    {%- endif -%}
+  {%- endfor -%}
+
+  {{- content -}}
+{%- else -%}
+  {%- assign current_language_num = 0 -%}
+  {%- for language in shop.metafields.language_codes -%}
+    {%- if language.last == request.locale.iso_code  -%}
+      {%- assign language_id_num = language.first | replace: "ly", "" | plus: 0 %}
+      {%- if current_language_num < language_id_num  -%}
+        {%- assign current_language = language.first -%}
+        {%- assign current_language_num = language_id_num -%}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- assign language = current_language -%}
+
+  {%- assign strings = content | strip_newlines | split: '<ly-' -%}
+  {%- for each_string in strings -%}
+    {%- if each_string contains '</ly' -%}
+      {%- assign ly_string = each_string | split: '</ly' | first -%}
+      {%- assign ly_tag = ly_string | split: '>' | first -%}
+	  {%- assign ly_open_tag = '<ly-' | append: ly_tag | append: '>' -%}
+	  {%- assign ly_close_tag = '</ly-' | append: ly_tag | append: '>' -%}
+	  {%- assign ly_complete_tag = ly_open_tag | append: ly_close_tag -%}
+	  {%- assign delim = ly_tag | append: '>' -%}
+	  {%- assign ly_content = ly_string | split: delim | last -%}
+	  {%- assign tag_parts = ly_tag | split: '-' -%}
+ 	  {%- assign type = tag_parts | first -%}
+	  {%- assign id = tag_parts | last -%}
+	  {%- assign src = ly_open_tag | append: ly_content | append: ly_close_tag -%}
+	  {%- assign used_translation = nil -%}
+	  {%- assign namespace = language | append: 'as' -%}
+	  {%- assign key = 'tid' | append: theme.id -%}
+	  {%- if shop.metafields[namespace][key] -%}
+	    {%- assign data = shop.metafields[namespace][key] -%}
+		{%- assign splitter = '[ly' | append: id | append: ']' -%}
+		{%- if data contains splitter -%}
+		  {%- assign used_translation =  data | split: splitter | last | split: '[ly]' | first -%}
+		{%- endif -%}
+	  {%- endif -%}
+	  {%- if used_translation -%}
+		{%- assign content = content | replace: src, used_translation -%}
+	  {%- else -%}
+		{%- assign namespace = language | append: type -%}
+		{%- assign key = 'id' | append: id -%}
+		{%- if shop.metafields[namespace][key] -%}
+		  {%- assign content = content | replace: src, shop.metafields[namespace][key] -%}
+		{%- else -%}
+		  {%- assign content = content | replace: src, ly_content -%}
+		{%- endif -%}
+	  {%- endif -%}
+    {%- endif -%}
+  {%- endfor -%}
+
+  {%- assign strings = content | strip_newlines | split: '&lt;ly-' -%}
+  {%- for each_string in strings -%}
+	{%- if each_string contains '&lt;/ly' -%}
+	  {%- assign ly_string = each_string | split: '&lt;/ly' | first -%}
+	  {%- assign ly_tag = ly_string | split: '&gt;' | first -%}
+	  {%- assign ly_open_tag = '&lt;ly-' | append: ly_tag | append: '&gt;' -%}
+	  {%- assign ly_close_tag = '&lt;/ly-' | append: ly_tag | append: '&gt;' -%}
+	  {%- assign ly_complete_tag = ly_open_tag | append: ly_close_tag -%}
+	  {%- assign delim = ly_tag | append: '&gt;' -%}
+	  {%- assign ly_content = ly_string | split: delim | last -%}
+	  {%- assign tag_parts = ly_tag | split: '-' -%}
+	  {%- assign type = tag_parts | first -%}
+	  {%- assign id = tag_parts | last -%}
+	  {%- assign src = ly_open_tag | append: ly_content | append: ly_close_tag -%}
+	  {%- assign used_translation = nil -%}
+	  {%- assign namespace = language | append: 'as' -%}
+	  {%- assign key = 'tid' | append: theme.id -%}
+	  {%- if shop.metafields[namespace][key] -%}
+	    {%- assign data = shop.metafields[namespace][key] -%}
+		{%- assign splitter = '[ly' | append: id | append: ']' -%}
+		{%- if data contains splitter -%}
+		  {%- assign used_translation =  data | split: splitter | last | split: '[ly]' | first -%}
+		{%- endif -%}
+	  {%- endif -%}
+	  {%- if used_translation -%}
+		{%- assign content = content | replace: src, used_translation -%}
+  	  {%- else -%}
+		{%- assign namespace = language | append: type -%}
+		{%- assign key = 'id' | append: id -%}
+		{%- if shop.metafields[namespace][key] -%}
+		  {%- assign content = content | replace: src, shop.metafields[namespace][key] -%}
+		{%- else -%}
+		  {%- assign content = content | replace: src, ly_content -%}
+		{%- endif -%}
+	  {%- endif -%}
+	{%- endif -%}
+  {%- endfor -%}
+
+  {%- capture customs -%}{%- render 'ly-get-customs' -%}{%- endcapture -%}
+  {%- assign customs = customs | split : '[ly_custom]' -%}
+  {%- for custom in customs -%}
+    {%- assign used_custom = custom | split: '[ly_custom_split]' -%}
+    {%- assign src = used_custom | first -%}
+    {%- assign dst = used_custom | last -%}
+	{%- assign src1 = '"' | append: src | append: '"' -%}
+	{%- assign dst1 = '"' | append: dst | append: '"' -%}
+	{%- assign src2 = "'" | append: src | append: "'" -%}
+	{%- assign dst2 = "'" | append: dst | append: "'" -%}
+	{%- assign src3 = ">" | append: src | append: "<" -%}
+	{%- assign dst3 = ">" | append: dst | append: "<" -%}
+	{%- assign content = content | replace: src1, dst1 -%}
+	{%- assign content = content | replace: src2, dst2 -%}
+	{%- assign content = content | replace: src3, dst3 -%}
+  {%- endfor -%}
+
+  {%- assign tag_translation_namespace = "ta" | append: language -%}
+  {%- for tag_translation in shop.metafields[tag_translation_namespace] -%}
+	{%- assign src = tag_translation | first -%}
+	{%- if src contains 'ly_tag_' -%}
+	  {%- assign tmp_tag_namespace = 'l_ta' | append: language -%}
+	  {%- if shop.metafields[tmp_tag_namespace][src] -%}
+		{%- assign src = shop.metafields[tmp_tag_namespace][src] -%}
+	  {%- endif -%}
+	{%- endif -%}
+	{%- assign translation = tag_translation | last -%}
+	{%- assign src1 = '"' | append: src | append: '"' -%}
+	{%- assign dst1 = '"' | append: translation | append: '"' -%}
+	{%- assign src2 = "'" | append: src | append: "'" -%}
+	{%- assign dst2 = "'" | append: translation | append: "'" -%}
+	{%- assign src3 = ">" | append: src | append: "<" -%}
+	{%- assign dst3 = ">" | append: translation | append: "<" -%}
+	{%- assign content = content | replace: src1, dst1 -%}
+	{%- assign content = content | replace: src2, dst2 -%}
+	{%- assign content = content | replace: src3, dst3 -%}
+  {%- endfor -%}
+
+  {%- assign translation_mode_key = 'ly' | append: theme.id -%}
+  {%- if shop.metafields.translation_mode[translation_mode_key] == 'non-strict' -%}
+	{%- assign vendor_translation_namespace = 've' | append: language -%}
+	{%- for vendor_translation in shop.metafields[vendor_translation_namespace] -%}
+	  {%- assign src = vendor_translation | first -%}
+	  {%- if src contains 'ly_vendor_' -%}
+		{%- assign tmp_vendor_namespace = 'l_ve' | append: language -%}
+		{%- if shop.metafields[tmp_vendor_namespace][src] -%}
+		  {%- assign src = shop.metafields[tmp_vendor_namespace][src] -%}
+		{%- endif -%}
+	  {%- endif -%}
+	  {%- assign translation = vendor_translation | last -%}
+	  {%- assign src1 = '"' | append: src | append: '"' -%}
+	  {%- assign dst1 = '"' | append: translation | append: '"' -%}
+	  {%- assign src2 = "'" | append: src | append: "'" -%}
+	  {%- assign dst2 = "'" | append: translation | append: "'" -%}
+	  {%- assign src3 = ">" | append: src | append: "<" -%}
+	  {%- assign dst3 = ">" | append: translation | append: "<" -%}
+	  {%- assign content = content | replace: src1, dst1 -%}
+	  {%- assign content = content | replace: src2, dst2 -%}
+	  {%- assign content = content | replace: src3, dst3 -%}
+	{%- endfor -%}
+
+	{%- assign type_translation_namespace = "ty" | append: language -%}
+	{%- for type_translation in shop.metafields[type_translation_namespace] -%}
+	  {%- assign src = type_translation | first -%}
+	  {%- if src contains 'ly_type_' -%}
+		{%- assign tmp_type_namespace = 'l_ty' | append: language -%}
+		{%- if shop.metafields[tmp_type_namespace][src] -%}
+		  {%- assign src = shop.metafields[tmp_type_namespace][src] -%}
+		{%- endif -%}
+	  {%- endif -%}
+	  {%- assign translation = type_translation | last -%}
+	  {%- assign src1 = '"' | append: src | append: '"' -%}
+	  {%- assign dst1 = '"' | append: translation | append: '"' -%}
+	  {%- assign src2 = "'" | append: src | append: "'" -%}
+	  {%- assign dst2 = "'" | append: translation | append: "'" -%}
+	  {%- assign src3 = ">" | append: src | append: "<" -%}
+	  {%- assign dst3 = ">" | append: translation | append: "<" -%}
+	  {%- assign content = content | replace: src1, dst1 -%}
+	  {%- assign content = content | replace: src2, dst2 -%}
+	  {%- assign content = content | replace: src3, dst3 -%}
+	{%- endfor -%}
+  {%- endif -%}
+  {%- assign content = content | replace: '#ly_cu', '' -%}
+
+  {{- content -}}
+{%- endif -%}
