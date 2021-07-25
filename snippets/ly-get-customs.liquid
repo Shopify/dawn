@@ -1,0 +1,85 @@
+{%- assign current_language_num = 0 -%}
+{%- for language in shop.metafields.language_codes -%}
+  {%- if language.last == request.locale.iso_code  -%}
+    {%- assign language_id_num = language.first | replace: "ly", "" | plus: 0 %}
+    {%- if current_language_num < language_id_num  -%}
+      {%- assign current_language = language.first -%}
+      {%- assign current_language_num = language_id_num -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- assign language = current_language -%}
+
+{%- for custom in shop.metafields.custom -%}
+  {%- assign src = custom | last -%}
+  {%- assign key = custom | first -%}
+  {%- assign key = key | split: "ly" | last -%}
+  {%- assign translation_namespace = language | append: "cu" -%}
+  {%- assign translation_key = "id" | append: key -%}
+  {%- if shop.metafields[translation_namespace][translation_key] -%}
+    {%- assign translation = shop.metafields[translation_namespace][translation_key] -%}
+    [ly_custom]{{- src -}}[ly_custom_split]{{- translation -}}
+  {%- endif-%}
+{%- endfor -%}
+
+{%- for custom in shop.metafields.ly_global_cu -%}
+  {%- assign src = custom | last -%}
+  {%- assign key = custom | first -%}
+  {%- assign key = key | split: "ly" | last -%}
+  {%- assign translation_namespace = language | append: "ncu" -%}
+  {%- assign translation_key = "id" | append: key -%}
+  {%- if shop.metafields[translation_namespace][translation_key] -%}
+	{%- assign translation = shop.metafields[translation_namespace][translation_key] -%}
+    [ly_custom]{{- src.text -}}[ly_custom_split]{{- translation -}}
+  {%- endif-%}
+{%- endfor -%}
+
+{%- case request.page_type -%}
+{%- when 'index' -%}
+  {%- assign used_scope = 'ly_frontpage_cu' -%}
+{%- when 'product' -%}
+  {%- assign used_scope = 'ly_products_cu' -%}
+  {%- assign used_object = product -%}
+{%- when 'collection' -%}
+  {%- assign used_scope = 'ly_collections_cu' -%}
+  {%- assign used_object = collection -%}
+{%- when 'list-collections' -%}
+  {% assign used_scope = 'ly_collections_cu' -%}
+{%- when 'blog' -%}
+  {%- assign used_scope = 'ly_blogs_cu' -%}
+  {%- assign used_object = blog -%}
+{%- when 'article' -%}
+  {%- assign used_scope = 'ly_articles_cu' -%}
+  {%- assign used_object = article -%}
+{%- when 'page' -%}
+  {% assign used_scope = 'ly_pages_cu' -%}
+  {%- assign used_object = page -%}
+{%- else -%}
+  {%- assign used_scope = 'ly_system_cu' -%}
+{%- endcase -%}
+
+{%- for custom in shop.metafields[used_scope] -%}
+  {%- assign src = custom | last -%}
+  {%- assign key = custom | first -%}
+  {%- assign key = key | split: "ly" | last -%}
+  {%- assign translation_namespace = language | append: "ncu" -%}
+  {%- assign translation_key = "id" | append: key -%}
+  {%- if shop.metafields[translation_namespace][translation_key] -%}
+	{%- assign translation = shop.metafields[translation_namespace][translation_key] -%}
+    [ly_custom]{{- src.text -}}[ly_custom_split]{{- translation -}}
+  {%- endif-%}
+{%- endfor -%}
+
+{%- if used_object -%}
+  {%- for custom in used_object.metafields.custom -%}
+    {%- assign src = custom | last -%}
+    {%- assign key = custom | first -%}
+    {%- assign key = key | split: "ly" | last -%}
+    {%- assign translation_namespace = language | append: "cu" -%}
+    {%- assign translation_key = "id" | append: key -%}
+    {%- if used_object.metafields[translation_namespace][translation_key] -%}
+      {%- assign translation = used_object.metafields[translation_namespace][translation_key] -%}
+      [ly_custom]{{- src.text -}}[ly_custom_split]{{- translation -}}
+    {%- endif-%}
+  {%- endfor -%}
+{%- endif -%}
