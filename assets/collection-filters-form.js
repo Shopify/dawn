@@ -70,11 +70,9 @@ class CollectionFiltersForm extends HTMLElement {
   }
 
   renderProductGrid(html) {
-    const innerHTML = new DOMParser()
-      .parseFromString(html, 'text/html')
-      .getElementById('CollectionProductGrid').innerHTML;
-
-    document.getElementById('CollectionProductGrid').innerHTML = innerHTML;
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    document.getElementById('CollectionProductCount').innerHTML = doc.getElementById('CollectionProductCount').innerHTML;
+    document.getElementById('CollectionProductGrid').innerHTML = doc.getElementById('CollectionProductGrid').innerHTML;
   }
 
   renderFilters(html, event) {

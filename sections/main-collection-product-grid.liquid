@@ -24,7 +24,7 @@
           {% if section.settings.enable_filtering %}
             <div class="facets__wrapper">
               {%- unless collection.filters == empty -%}
-                <p class="facets__heading">{{ 'sections.collection_template.filter_by_label' | t }}</p>
+                <p class="facets__heading caption">{{ 'sections.collection_template.filter_by_label' | t }}</p>
               {%- endunless -%}
 
               {%- for filter in collection.filters -%}
@@ -185,7 +185,7 @@
                   {%- endif -%}
                 {% endif %}
               {%- endfor -%}
-              <facet-remove>
+              <facet-remove class="active-facets__button-wrapper">
                 <a href="{{ collection.url }}?sort_by={{ sort_by }}">
                   <span class="link">{{ 'sections.collection_template.clear_all' | t }}</span>
                 </a>
@@ -198,7 +198,7 @@
           {% endif %}
 
           {%- if section.settings.enable_sorting -%}
-            <div class="collection-filters__item sorting">
+            <div class="collection-filters__item sorting caption">
               <div class="collection-filters__field">
                 <label class="collection-filters__label" for="SortBy">{{ 'sections.collection_template.sort_by_label' | t }}</label>
                 <div class="select">
@@ -221,10 +221,10 @@
       </collection-filters-form>
     {%- endunless -%}
 
-    <menu-drawer class="mobile-facets__wrapper" data-breakpoint="mobile">
-      <details class="disclosure-has-popup{% unless section.settings.collapse_on_larger_devices %} medium-hide large-up-hide{% endunless %}">
+    <menu-drawer class="mobile-facets__wrapper {% unless section.settings.collapse_on_larger_devices %} medium-hide large-up-hide{% endunless %}" data-breakpoint="mobile">
+      <details class="disclosure-has-popup">
         <summary class="mobile-facets__open-wrapper">
-          <span class="mobile-facets__open button button--secondary">
+          <span class="mobile-facets__open">
             {% render 'icon-filter' %}
             <span>{{ 'sections.collection_template.filter_and_sort' | t }}</span>
             <span class="count-bubble">
@@ -285,8 +285,8 @@
                         </ul>
 
                         <div class="no-js-hidden mobile-facets__footer">
-                          <facet-remove>
-                            <a href="{{ collection.url }}" class="mobile-facets__clear button button--secondary">{{ 'sections.collection_template.clear' | t }}</a>
+                          <facet-remove class="mobile-facets__clear-wrapper">
+                            <a href="{{ collection.url }}" class="mobile-facets__clear link">{{ 'sections.collection_template.clear' | t }}</a>
                           </facet-remove>
                           <button type="button" class="no-js-hidden button button--primary" onclick="this.closest('.mobile-facets__wrapper').querySelector('summary').click()">{{ 'sections.collection_template.apply' | t }}</button>
                           <noscript><button class="button button--primary">{{ 'sections.collection_template.apply' | t }}</button></noscript>
@@ -375,7 +375,7 @@
                 {%- endif -%}
 
                 <div class="mobile-facets__footer">
-                  <facet-remove>
+                  <facet-remove class="mobile-facets__clear-wrapper">
                     <a href="{{ collection.url }}" class="mobile-facets__clear link">{{ 'sections.collection_template.clear_all' | t }}</a>
                   </facet-remove>
                   <button type="button" class="no-js-hidden button button--primary" onclick="this.closest('.mobile-facets__wrapper').querySelector('summary').click()">{{ 'sections.collection_template.apply' | t }}</button>
@@ -393,8 +393,10 @@
     </menu-drawer>
 
     <div class="active-facets active-facets-mobile {% unless section.settings.collapse_on_larger_devices %} medium-hide large-up-hide{% endunless %}">
+      {%- assign has_active_filter = false -%}
       {%- for filter in collection.filters -%}
         {%- for value in filter.active_values -%}
+          {%- assign has_active_filter = true -%}
           <facet-remove>
             <a href="{{ value.url_to_remove }}" class="active-facets__button active-facets__button--light">
               <span class="active-facets__button-inner button button--tertiary">
@@ -405,8 +407,9 @@
           </facet-remove>
         {%- endfor -%}
 
-        {% if filter.type == "price_range" %}
+        {%- if filter.type == "price_range" -%}
           {%- if filter.min_value.value != nil or filter.max_value.value != nil -%}
+            {%- assign has_active_filter = true -%}
             <facet-remove>
               <a href="{{ filter.url_to_remove }}" class="active-facets__button active-facets__button--light">
                 <span class="active-facets__button-inner button button--tertiary">
@@ -416,16 +419,25 @@
               </a>
             </facet-remove>
           {%- endif -%}
-        {% endif %}
+        {%- endif -%}
       {%- endfor -%}
-      <facet-remove>
-        <a href="{{ collection.url }}?sort_by={{ sort_by }}">
-          <span class="link">
-            {{ 'sections.collection_template.clear_all' | t }}
-          </span>
-        </a>
-      </facet-remove>
+      {%- if has_active_filter -%}
+        <facet-remove class="active-facets__button-wrapper">
+          <a href="{{ collection.url }}?sort_by={{ sort_by }}">
+            <span class="link">
+              {{ 'sections.collection_template.clear_all' | t }}
+            </span>
+          </a>
+        </facet-remove>
+      {%- endif -%}
     </div>
+    <p id="CollectionProductCount" class="collection-product-count light" role="status">
+      {%- if collection.products_count == collection.all_products_count -%}
+        {{ 'sections.collection_template.product_count_simple' | t: count: collection.products_count }}
+      {%- else -%}
+        {{ 'sections.collection_template.product_count' | t: product_count: collection.products_count, count: collection.all_products_count }}
+      {%- endif -%}
+    </p>
   {%- endif -%}
 </div>
 
@@ -465,14 +477,6 @@
             </svg>
           </div>
         </div>
-
-        <p class="collection-product-count light" role="status">
-          {%- if collection.products_count == collection.all_products_count -%}
-            {{ 'sections.collection_template.product_count_simple' | t: count: collection.products_count }}
-          {%- else -%}
-            {{ 'sections.collection_template.product_count' | t: product_count: collection.products_count, count: collection.all_products_count }}
-          {%- endif -%}
-        </p>
 
         <ul id="main-collection-product-grid" data-id="{{ section.id }}" class="
           grid grid--2-col negative-margin product-grid
