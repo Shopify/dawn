@@ -43,9 +43,10 @@
                     {% comment %} Sterne {% endcomment %} 
                     <div class="ks-flex ks-ai-c">
                       <div class="ks-flex ks-pos-rel">
-                        {% assign missingStars = 5 | minus: recension.settings.rating %}
+                        {% assign missingStars = 5 | minus: recension.settings.rating | floor %}
+                        {% assign fullRating = recension.settings.rating | floor %}
                         {% if recension.settings.rating > 0 %}
-                          {% for i in (1..recension.settings.rating) %}
+                          {% for i in (1..fullRating) %}
                             <span>
                               {%- render 'icon-star', currentColor: "#ffd900" -%}
                             </span>
@@ -136,13 +137,27 @@
                         {% comment %} Sterne {% endcomment %} 
                         <div class="ks-flex ks-ai-c">
                           <div class="ks-flex ks-pos-rel">
-                            {% assign missingStars = 5 | minus: recensions[index].settings.rating %}
+                            {% liquid 
+                              assign missingStars = 5 | minus: recensions[index].settings.rating | floor
+                              assign fullRating = recensions[index].settings.rating | floor
+                              assign sumStars = fullRating | plus: missingStars
+                              if sumStars != 5
+                                assign halfStars = 1
+                              else
+                                assign halfStars = 0
+                              endif
+                            %}
                             {% if recensions[index].settings.rating > 0 %}
-                              {% for i in (1..recensions[index].settings.rating) %}
+                              {% for i in (1..fullRating) %}
                                 <span>
                                   {%- render 'icon-star', currentColor: "#ffd900" -%}
                                 </span>
                               {% endfor %}
+                            {% endif %}
+                            {% if halfStars == 1 %}
+                              <span>
+                                {%- render 'icon-star-half'-%}
+                              </span>
                             {% endif %}
                             {% if missingStars > 0 %}
                               {% for j in (1..missingStars) %}
@@ -261,7 +276,7 @@
           "id": "rating",
           "min": 1,
           "max": 5,
-          "step": 1,
+          "step": 0.5,
           "default": 5,
           "label": "Bewertung in Sternen"
         },
