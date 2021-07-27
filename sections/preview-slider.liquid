@@ -39,26 +39,52 @@
               <div class="pv-flex pv-column pv-jc-c pv-w-100p">
                 <div class="pv-grid pv-2col pv-lg-5sect">
                   <div class="pv-col-1-2 pv-lg-col-3 pv-grid pv-1col pv-lg-2col pv-row-1-4 pv-lg-row-1">
-                    <img src="{{ product.settings.image | img_url: '500x' }}" alt="{{ product.settings.image.alt | escape }}" width="300" height="400" loading="lazy" class="pv-h-400px pv-col-1 pv-lg-col-1 pv-row-2 pv-lg-row-1-2 pv-as-c pv-contain pv-op-cc pv-mx-auto">
+                    {% if product.settings.image %}
+                      {% assign image = product.settings.image %}
+                    {% else %}
+                      {% assign image = product.settings.product.featured_image %}
+                    {% endif %}
+                    <img src="{{ image | img_url: '500x' }}" alt="{{ product.settings.image.alt | escape }}" width="300" height="400" loading="lazy" class="pv-h-400px pv-col-1 pv-lg-col-1 pv-row-2 pv-lg-row-1-2 pv-as-c pv-contain pv-op-cc pv-mx-auto">
                     <div class="pv-col-1 pv-lg-col-2 pv-row-1 pv-lg-row-unset pv-ta-c pv-ai-c pv-grid pv-mxh-150px">
-                      <h4 class="pv-ff-heading pv-fs-4 pv-lg-fs-7 pv-fw-400 pv-lg-fw-500 pv-lh-26px pv-lg-lh-32px pv-lg-ls-m100 pv-my-2">{{ product.settings.brand | escape }}</h4>
-                      <h3 class="pv-ff-heading pv-fs-7 pv-lg-fs-38px pv-lh-30px pv-lg-lh-44px pv-ls-m124 pv-fw-500 pv-lg-fw-400 pv-mt-2 pv-mb-5">{{ product.settings.name | escape }}</h3>
+                      <h4 class="pv-ff-heading pv-fs-4 pv-lg-fs-7 pv-fw-400 pv-lg-fw-500 pv-lh-26px pv-lg-lh-32px pv-lg-ls-m100 pv-my-2">
+                        {% if product.settings.product.id == '6730410033332' %}
+                          resleep
+                        {% else %}
+                          sleep.ink
+                        {% endif %}
+                    </h4>
+                      <h3 class="pv-ff-heading pv-fs-7 pv-lg-fs-38px pv-lh-30px pv-lg-lh-44px pv-ls-m124 pv-fw-500 pv-lg-fw-400 pv-mt-2 pv-mb-5">{{ product.settings.product.title | escape }}</h3>
                       <div class="pv-flex pv-js-c">
-                        <div>({{ product.settings.reviewCount }})</div>
+                        <div>({{ product.settings.product.metafields.shopData.reviewCount }})</div>
                         <div class="pv-flex pv-row pv-ml-2 pv-mr-3 pv-ai-c">
                           {% liquid 
-                            assign missingStars = 5 | minus: product.settings.rating
-                            if product.settings.rating > 0
-                              for i in (1..product.settings.rating)
-                                render 'icon-star', currentColor: '#ffd900'
-                              endfor
-                            endif
-                            if missingStars > 0
-                              for j in (1..missingStars)
-                                render 'icon-star', currentColor: '#dddddd'
-                              endfor
+                            assign rating = product.settings.product.metafields.shopData.rating
+                            assign wholeRating = rating | floor
+                            assign missing_stars = 5 | minus: rating | floor
+                            assign sum = wholeRating | plus: missing_stars
+                            if sum != 5
+                              assign halfStars = 1
+                            else
+                              assign halfStars = 0
                             endif
                           %}
+                          {% if wholeRating > 0 %}
+                            {% for i in (1..wholeRating) %}
+                              <span>
+                                {%- render 'icon-star', currentColor: '#ffd000' -%}
+                              </span>
+                            {% endfor %}
+                          {% endif %}
+                          {% if halfStars == 1 %}
+                            <span>
+                              {%- render 'icon-star-half' -%}
+                            </span>
+                          {% endif %}
+                          {% for j in (1..missing_stars) %}
+                            <span>
+                              {%- render 'icon-star', currentColor: '#dddddd' -%}
+                            </span>
+                          {% endfor %}
                         </div>
                         <a href="https://www.trustedshops.de/bewertung/bewerten_X171CC05C7CF0FBC03EB75B9E6E73D132.html" class="pv-nodec pv-mt-1 pv-ml-1" style="color: {{ tagBackground }};">Jetzt bewerten</a>
                       </div>
@@ -78,7 +104,7 @@
                           <div class="pv-ml-3 pv-ff-body pv-fs-2 pv-lh-150 pv-fw-400"">{{ product.settings.reason3Title | escape }}</div>
                         </div>
                       </div>
-                      <a href="{{ product.settings.productPage | escape }}" class="pv-py-5 pv-w-90p pv-mxh-60px pv-ta-c pv-ff-heading pv-uppercase pv-js-c pv-nodec" style="background-color: {{ tagBackground }}; color: {{ tagForeground }}">{{ section.settings.buttonText | escape }}</a>
+                      <a href="{{ product.settings.product.url }}" class="pv-py-5 pv-w-90p pv-mxh-60px pv-ta-c pv-ff-heading pv-uppercase pv-js-c pv-nodec" style="background-color: {{ tagBackground }}; color: {{ tagForeground }}">{{ section.settings.buttonText | escape }}</a>
                     </div>
                   </div>
                 </div>
@@ -167,33 +193,6 @@
           "label": "Produktbild"
         },
         {
-          "id": "brand",
-          "label": "Marke",
-          "type": "text",
-          "default": "sleep.ink"
-        },
-        {
-          "id": "name",
-          "label": "Name",
-          "type": "text",
-          "default": "Schlafdrink"
-        },
-        {
-          "id": "reviewCount",
-          "label": "Anzahl der Bewertungen",
-          "type": "number",
-          "default": 100
-        },
-        {
-          "id": "rating",
-          "label": "durchschnittliche Bewertung (in Sternen)",
-          "type": "range",
-          "min": 1,
-          "max": 5,
-          "step": 1,
-          "default": 5
-        },
-        {
           "type": "image_picker",
           "id": "reason1Image",
           "label": "Icon für 1. Kaufgrund"
@@ -222,11 +221,6 @@
           "type": "text",
           "id": "reason3Title",
           "label": "Text für 3. Kaufgrund"
-        },
-        {
-          "type": "url",
-          "id": "productPage",
-          "label": "Produktseite"
         }
       ]
     }
@@ -236,7 +230,8 @@
       "name": "Produktvorschauslider",
       "settings": {
         "color_scheme": "background-1",
-        "swipe_on_mobile": true
+        "swipe_on_mobile": true,
+        "buttonText": "Mehr erfahren"
       },
       "blocks": [
         {
