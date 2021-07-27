@@ -1,0 +1,170 @@
+{{ 'page-hero.css' | asset_url | stylesheet_tag }}
+
+{%- if section.settings.adapt_height_first_image and section.settings.image != blank -%}
+  {%- style -%}
+    #Banner-{{ section.id }}::before, #Banner-{{ section.id }} .banner__media::before {
+      padding-bottom: {{ 1 | divided_by: section.settings.image.aspect_ratio | times: 100 }}%;
+      content: '';
+      display: block;
+    }
+  {%- endstyle -%}
+{%- endif -%}
+
+{% liquid 
+  case section.settings.color_scheme
+    when 'background-1'
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_1
+    when 'background-2'
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_2
+    when 'inverse'
+      assign tagBackground = settings.colors_background_1
+      assign tagForeground = settings.colors_text
+    when 'accent-1'
+      assign tagBackground = settings.colors_solid_button_labels
+      assign tagForeground = settings.colors_accent_1
+    when 'accent-2'
+      assign tagBackground = settings.colors_solid_button_labels
+      assign tagForeground = settings.colors_accent_2
+    else
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_1
+  endcase
+%}
+
+<div class="ph-SectionGrid color-{{ section.settings.color_scheme }}">
+  <div class="ph-SectionGrid-Full">
+    <div class="ph-ndesktop ph-w-100p">
+      <img src="{{ section.settings.imageMobile | img_url: '1200x' }}" alt="{{ section.settings.image.alt | escape }}" class="ph-w-100p ph-cover" width="1000" height="700" loading="lazy">
+      <div class="ph-w-100p ph-flex ph-column ph-jc-fe">
+        <h1 class="ph-ta-c {% if section.settings.uppercaseTitle %}ph-uppercase {% endif %}ph-my-0 ph-py-0 ph-lh-117">
+          {{ section.settings.title | escape }}
+        </h1>
+        <p class="ph-ff-body ph-fs-3 ph-lh-133 ph-mt-3 ph-mb-5 ph-ta-c">
+          {{ section.settings.text | escape }}
+        </p>
+        <div class="ph-ta-c ph-w-100p ph-mt-4 ph-mb-8">
+          <a href="{{ section.settings.url }}" class="ph-py-3 ph-px-8 ph-mxh-60px ph-inlblock ph-ta-c ph-ff-heading ph-uppercase ph-z-1000 ph-nodec ph-button" style="background-color: {{ tagBackground }}; color: {{ tagForeground }};">
+            {{ section.settings.buttonText | escape }}
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="ph-w-100p ph-SectionGrid ph-desktopgrid ph-1row">
+      <img src="{{ section.settings.imageDesktop | img_url: '2000x' }}" alt="{{ section.settings.image.alt | escape }}" class="ph-col-1-5 ph-row-1 ph-w-100p ph-cover" width="1500" height="700" loading="lazy">
+      <div class="ph-col-2-4 ph-row-1 ph-grid ph-2col ph-z-5">
+        <div class="ph-col-1 ph-flex ph-column ph-jc-c ph-ai-fs ph-mxh-700px ph-ml-5">
+          <h1 class="ph-mb-8 ph-mt-0 ph-z-5 ph-ff-heading ph-fs-62px ph-fw-500 ph-lh-60px ph-ta-l{% if section.settings.uppercaseTitle %} ph-uppercase{% endif %}" style="max-width: 450px;">
+            {% liquid 
+              assign titleSections = section.settings.title | split: ' '
+              assign titlePartA = titleSections[0] | append: ' ' | append: titleSections[1]
+              assign titlePartB = titleSections[2] | append: ' ' |append: titleSections[3] | append: ' ' | append:  titleSections[4]
+            %}
+            {{ titlePartA | escape }}<br>
+            {{ titlePartB | escape }}
+          </h1>
+          <p class="ph-ff-body ph-fs-22px ph-lh-32px ph-fw-300 ph-z-5 ph-mt-0 ph-mb-8 ph-ta-l">
+            {{ section.settings.text | escape }}
+          </p>
+          <div class="ph-ta-l ph-w-100p ph-mt-4 ph-mb-5">
+            <a href="{{ section.settings.url }}" class="ph-py-5 ph-px-7 ph-ta-c ph-ff-heading ph-uppercase ph-fs-1 ph-lh-100 ph-fw-300 ph-nodec ph-button" style="background-color: {{ tagBackground }}; color: {{ tagForeground }};">
+              {{ section.settings.buttonText | escape }}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Pageheader",
+  "tag": "section",
+  "class": "spaced-section--full-width",
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.image-banner.settings.color_scheme.options__1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.image-banner.settings.color_scheme.options__2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.image-banner.settings.color_scheme.options__3.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.image-banner.settings.color_scheme.options__4.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.image-banner.settings.color_scheme.options__5.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "Farbschema"
+    },
+    {
+      "type": "image_picker",
+      "id": "imageDesktop",
+      "label": "Hintergrundbild für Desktop"
+    },
+    {
+      "type": "image_picker",
+      "id": "imageMobile",
+      "label": "Hintergrundbild für Mobil/Tablet"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "default": "All you need is sleep.",
+      "label": "Überschrift"
+    },
+    {
+      "type": "checkbox",
+      "id": "uppercaseTitle",
+      "default": true,
+      "label": "Überschrift in Großbuchstaben?"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "default": "Ihre Experten für Premium-Schlafprodukte",
+      "label": "Subline"
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "default": "/collections/all",
+      "label": "URL hinter dem Button"
+    },
+    {
+      "type": "text",
+      "id": "buttonText",
+      "default": "Mehr erfahren",
+      "label": "Aufschrift des Buttons"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Page Hero",
+      "settings": {
+        "color_scheme": "background-1",
+        "title": "All you need is sleep.",
+        "uppercaseTitle": true,
+        "text": "Ihre Experten für Premium-Schlafprodukte",
+        "url": "/collections/all",
+        "buttonText": "Mehr erfahren"
+      }
+    }
+  ]
+}
+{% endschema %}
