@@ -1,7 +1,87 @@
+{% liquid 
+  assign decider = 0
+  assign outerProduct = section.blocks | where: 'type', 'product'
+  assign pSettings = outerProduct | map: 'settings'
+  assign innerProduct = pSettings | map: 'product'
+  if innerProduct.metafields.nutrition.toggleIngredientList
+    assign decider = decider | plus: 1
+  endif
+  if innerProduct.metafields.nutrition.toggleNutritionTable
+    assign decider = decider | plus: 2
+  endif
+  if innerProduct.metafields.nutrition.toggleActiveList
+    assign decider = decider | plus: 4
+  endif
+  if innerProduct.metafields.nutrition.toggleActiveTable
+    assign decider = decider | plus: 8
+  endif
+  if innerProduct.metafields.nutrition.portionSize
+    assign cellAlign = 'nu-ta-c'
+  else
+    assign cellAlign = 'nu-ta-r'
+  endif
+%}
+
+{% capture Line_23 %}
+{% liquid 
+  if innerProduct.metafields.nutrition.portionSize
+    assign classGrid = 'nu-col-1-3'
+  else
+    assign classGrid = 'nu-col-1-2'
+  endif
+%}
+<div class="nu-h-1px nu-h-md-038px nu-h-lg-06px nu-h-xl-1px nu-w-100p nu-bs-solid nu-bw-1px nu-bw-md-038px nu-bw-lg-06px nu-bw-xl-1px nu-my-10px {{ classGrid }}">
+  &nbsp;
+</div>
+{% endcapture %}
+
+{% capture nutritiontable %}
+<div class="nu-grid nu-col-1 nu-col-lg-2-4 {% if innerProduct.metafields.nutrition.portionSize %}nu-3col-4-2-2{% else %}nu-2col-4-2{% endif %} nu-mb-25px nu-ff-body">
+  {% comment %} Table Headline {% endcomment %}
+  <div class="nu-fs-2 nu-fw-300 nu-lh-26px nu-ls-p024">
+    {{ section.settings.titleNutritionTable | escape }}
+  </div>
+  <div class="nu-fs-2 nu-fw-300 nu-lh-26px nu-ls-p024 {{ cellAlign }}">
+    {{ innerProduct.metafields.nutrition.referenceAmount | escape }}
+  </div>
+  {% if innerProduct.metafields.nutrition.portionSize %}
+    <div class="nu-fs-2 nu-fw-300 nu-lh-26px nu-ls-p024 nu-ta-r">
+      {{ innerProduct.metafields.nutrition.portionSize }} Portion
+    </div>
+  {% endif %}
+  {{ Line_23 }}
+  <div class="nu-fs-1 nu-fw-400 nu-fw-lg-300 nu-lh-150 nu-ls-p024">
+    Energie
+  </div>
+</div>
+{% endcapture %}
 
 
 
 <div class="nu-SectionGrid color-{{ section.settings.color_scheme }} nu-my-25px nu-w-90p nu-w-lg-unset nu-mx-auto">
   <div class="nu-SectionGrid-Narrow">
+    <div class="nu-grid nu-1col nu-lg-2col-3-4 nu-gap-20px">
+      {% case decider %}
+        {% when 1 %}
+          <section class="nu-col-1 nu-col-lg-1-2">
+            <h3 class="nu-ff-heading nu-fs-3 nu-fw-300 nu-lh-26px nu-uppercase">
+              {{ section.settings.titleIngredientList | escape }}
+            </h3>
+            <div class="nu-w-100p nu-mxw-100p nu-ff-body nu-fs-1 nu-fw-400 nu-fw-lg-300 nu-lh-150">
+              {{ innerProduct.metafields.nutrition.ingredients | join: ', ' }}
+            </div>
+          </section>
+        {% when 3 %}
+          <section class="nu-col-1">
+            <h3 class="nu-ff-heading nu-fs-3 nu-fw-300 nu-lh-26px nu-uppercase">
+              {{ section.settings.titleIngredientList | escape }}
+            </h3>
+            <div class="nu-w-100p nu-mxw-100p nu-ff-body nu-fs-1 nu-fw-400 nu-fw-lg-300 nu-lh-150">
+              {{ innerProduct.metafields.nutrition.ingredients | join: ', ' }}
+            </div>
+          </section>
+          {{ nutritiontable }}
+      {% endcase %}
+    </div>
   </div>
 </div>
