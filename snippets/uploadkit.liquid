@@ -1,0 +1,90 @@
+{% comment %}Please don't edit this file -- it may be replaced automatically at any moment!{% endcomment %}
+
+{% capture header_content %}{{content_for_header}}{% endcapture %}
+{% if header_content contains 'uploadkit-client' %}
+
+  <script>
+    window.UploadKit = window.UploadKit || {};
+    window.UploadKit.config = {% if shop.metafields.uploadkit.config == blank %}{}{% else %}{{ shop.metafields.uploadkit.config }}{{ shop.metafields.uploadkit.config2 }}{{ shop.metafields.uploadkit.config3 }}{{ shop.metafields.uploadkit.config4 }}{% endif %};
+    window.UPLOADCARE_PUBLIC_KEY = window.UploadKit.ucKey;
+    window.UPLOADCARE_MANUAL_START = true;
+    window.UPLOADCARE_LIVE = false;
+  </script>
+
+  {% if template contains 'product' %}
+    <script>
+      window.UploadKit = window.UploadKit || {};
+      window.UploadKit.product = window.UploadKit.product || {{ product | json }};
+      window.UploadKit.collections = window.UploadKit.collections || {{ product.collections | json }};
+    </script>
+    <script src="https://assets.getuploadkit.com/assets/uploadkit-app.js"></script>
+  {% endif %}
+
+  <script>
+    window.UploadKit = window.UploadKit || {};
+    if(false && !window.UploadKit.attributesScanned) {
+      window.UploadKit.attributesScanned = true;
+      var regex = new RegExp('https:\/\/cdn2?\.shopify\.com\/.*\?.*id=[^&]*&uu=([^&]*)&mo=([^&]*)&fi=([^&]*)(?:(?!&image).)*(&image=true)?', 'g');
+      function acceptNode () {
+        return NodeFilter.FILTER_ACCEPT;
+      }
+      function replaceUploadKitLinks(match, uuid, modifiers, filename, isImage) {
+        if(isImage) {
+          return '<a href="https://cdn.getuploadkit.com/' + uuid + '/' + modifiers + '-/preview/1200x1200" class="uploadkit-preview-link-image" title="' + atob(filename) + '"><img src="https://cdn.getuploadkit.com/' + uuid + '/' + modifiers + '-/resize/300x/" style="max-width: 50px; max-height: 50px; vertical-align: middle;" /></a>';
+        } else {
+          return '<a href="https://cdn.getuploadkit.com/' + uuid + '/' + '" class="uploadkit-preview-link">' + atob(filename) + '</a>'
+        }
+      }
+      // Work around Internet Explorer wanting a function instead of an object.
+      // IE also *requires* this argument where other browsers don't.
+      var filter = acceptNode;
+      filter.acceptNode = acceptNode;
+      var treeWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_ALL, filter, false);
+      var foundNodes = [];
+      while (treeWalker.nextNode()) {
+        var node = treeWalker.currentNode;
+        regex.lastIndex = 0;
+        if(node.nodeType === 3 && regex.exec(node.textContent)) {
+          foundNodes.push(node);
+        }
+        if(node.nodeType === 3 && node.textContent.indexOf('_') > -1) {
+          for(var i = 0; i < window.UploadKit.config.uploaders.length; i++) {
+            node.textContent = node.textContent.replace('_' + window.UploadKit.config.uploaders[i].name, window.UploadKit.config.uploaders[i].name);
+          }
+        }
+      }
+      for(var i = 0; i < foundNodes.length; i++) {
+        var node = foundNodes[i];
+        regex.lastIndex = 0;
+        var match = regex.exec(node.textContent);
+        if(match) {
+          var replacementNode = document.createElement('span');
+          replacementNode.innerHTML = node.textContent.replace(regex, replaceUploadKitLinks);
+          /*if(match[4]) {
+            // ?image
+            replacementNode.innerHTML = node.textContent.replace(regex, '<a href="https://cdn.getuploadkit.com/' + '$1/$2-/preview/1200x1200" class="uploadkit-preview-link-image" title="$3"><img src="https://cdn.getuploadkit.com/$1/$2-/resize/300x/" style="max-width: 50px; max-height: 50px; vertical-align: middle;" /></a>');
+          } else {
+            replacementNode.innerHTML = node.textContent.replace(regex, '<a href="https://cdn.getuploadkit.com/' + '$1/$2" class="uploadkit-preview-link">$3</a>');
+          }*/
+          node.parentNode.insertBefore(replacementNode, node);
+          node.parentNode.removeChild(node);
+        }
+      }
+      if(foundNodes.length > 0) {
+        var lightboxStyles = document.createElement("link");
+        lightboxStyles.type = "text/css";
+        lightboxStyles.rel = "stylesheet";
+        lightboxStyles.href = 'https://assets.getuploadkit.com/assets/luminous.css';
+  	    document.head.appendChild(lightboxStyles);
+        var lightboxScript = document.createElement('script');
+        lightboxScript.type = 'text/javascript';
+        lightboxScript.async = false;
+        lightboxScript.src = 'https://assets.getuploadkit.com/assets/luminous.js';
+        document.head.appendChild(lightboxScript);
+        lightboxScript.onload = function() {
+  	       new LuminousGallery(document.querySelectorAll('a.uploadkit-preview-link-image'));
+        }
+      }
+    }
+  </script>
+{% endif %}
