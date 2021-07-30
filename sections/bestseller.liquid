@@ -1,0 +1,583 @@
+<link rel="stylesheet" href="{{ 'component-slider.css' | asset_url }}" media="print" onload="this.media='all'">
+<noscript>{{ 'component-slider.css' | asset_url | stylesheet_tag }}</noscript>
+
+{{ 'bestseller.css' | asset_url | stylesheet_tag }}
+
+{% liquid 
+  case section.settings.color_scheme
+    when 'background-1'
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_1
+    when 'background-2'
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_2
+    when 'inverse'
+      assign tagBackground = settings.colors_background_1
+      assign tagForeground = settings.colors_text
+    when 'accent-1'
+      assign tagBackground = settings.colors_solid_button_labels
+      assign tagForeground = settings.colors_accent_1
+    when 'accent-2'
+      assign tagBackground = settings.colors_solid_button_labels
+      assign tagForeground = settings.colors_accent_2
+    else
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_1
+  endcase
+%}
+
+<div class="bs-SectionGrid bs-pt-10 bs-pt-md-13 bs-pb-7 bs-pb-md-8 bs-px-4 bs-px-md-5 bs-px-lg-6">
+  <div class="bs-SectionGrid-Wide">
+    <h2 class="{% if section.settings.titleAlignment == 'left' %}bs-left {% else %}bs-center {% endif %}bs-ff-heading bs-fs-7 bs-fs-lg-38px bs-lh-30px bs-lh-lg-44px bs-fw-500 bs-fw-lg-400 bs-ls-m124 bs-mb-2 bs-mb-lg-5">{{ section.settings.title | escape }}</h2>
+    {% comment %} Mobile Slider {% endcomment %}
+    <div class="collection page-width page-width-desktop bs-mobile">
+      <sleepink-slider class="slider-mobile-gutter">
+        <ul class="grid slider slider--tablet grid--peek negative-margin negative-margin--small" role="list">
+          {% assign products = section.blocks | where: 'type', 'product' %}
+          {%- for product in products -%}
+            {% liquid 
+              assign variants = product.settings.product.variants
+              if variants.size == 1
+                assign sku = variants[0].sku
+              else
+                assign sku = product.settings.variant
+              endif 
+            %}
+            {% for variant in product.settings.product.variants %}
+              {% if variant.sku == sku %}
+                {% assign variant_id = variant.id %}
+                <li class="grid__item slider__slide bs-w-100p bs-px-0">
+                  <div>
+                    <div class="bs-flex bs-column bs-ai-c bs-pb-5 bs-mx-auto bs-mx-lg-unset bs-mxw-300px bs-mxw-lg-unset bs-mnw-300px bs-mnw-md-210px bs-mnw-lg-unset bs-w-100p">
+                      <a href="{{ product.settings.product.url }}?variant={{ variant_id }}" class="bs-w-100p bs-mt-6 bs-mb-5 bs-grid bs-1col bs-1row bs-pos-rel bs-square-outer" style="background-color:{{ section.settings.backgroundProductCards }};">
+                        <div class="bs-square bs-gc1 bs-gr1">
+                          {% if product.settings.image %}
+                            <img src="{{ product.settings.image | img_url: '400x' }}" alt="{{ product.settings.image.alt }}" width="300" height="300" loading="lazy" class="bs-contain bs-w-300px bs-h-300px">
+                          {% elsif variant.featured_image %}
+                            <img src="{{ variant.featured_image | img_url: '400x' }}" alt="{{ variant.featured_image.alt }}" width="300" height="300" loading="lazy" class="bs-contain bs-w-300px bs-h-300px">
+                          {% else %}
+                            <img src="{{ product.settings.product.featured_image | img_url: '400x' }}" alt="{{ product.settings.product.featured_image.alt }}" width="300" height="300" loading="lazy" class="bs-contain bs-w-300px bs-h-300px">
+                          {% endif %}
+                          <div class="bs-gc1 bs-gr1 bs-pos-abs bs-l-0 bs-t-10px bs-t-lg-16px">
+                            {% assign tags = product.settings.product.metafields.global.tags | split: ', ' %}
+                            {% for t in tags %}
+                              <div class="bs-fw-400 bs-fs-12px bs-ml-0 bs-left bs-px-3 bs-lh-100 bs-py-2 bs-mb-1" style="background-color: {{ tagBackground }}; color: {{ tagForeground }}">
+                                {{ t | escape }}
+                              </div>
+                            {% endfor %}
+                          </div>
+                        </div>
+                      </a>
+                      <div>
+                        <div class="bs-flex bs-row bs-jc-c bs-ai-c bs-ml-2 bs-mr-3 bs-mb-2">
+                          {% liquid 
+                            assign rating = product.settings.metafields.global.rating
+                            assign wholeRating = rating | floor
+                            assign missing_stars = 5 | minus: rating | floor
+                            assign sum = wholeRating | plus: missing_stars
+                            if sum != 5
+                              assign halfStars = 1
+                            else
+                              assign halfStars = 0
+                            endif
+                          %}
+                          {% if product.settings.rating > 0 %}
+                            {% for i in (1..wholeRating) %}
+                              <span>
+                                {%- render 'icon-star', currentColor: "#ffd900" -%}
+                              </span>
+                            {% endfor %}
+                          {% endif %}
+                          {% if halfStars == 1 %}
+                            <span>
+                              {%- render 'icon-star-half' -%}
+                            </span>
+                          {% endif %}
+                          {% if missing_stars > 0 %}
+                            {% for j in (1..missing_stars) %}
+                              <span>
+                                {%- render 'icon-star', currentColor: "#dddddd" -%}
+                              </span>
+                            {% endfor %}
+                          {% endif %}
+                        </div>
+                        {% assign reviewCount = product.settings.product.metafields.global.reviewCount %}
+                        <div class="bs-ff-body bs-fw-400 bs-fs-12px bs-lh-100 bs-mt-0 bs-center">
+                          ({% if reviewCount > 0 %}{{ reviewCount }} {% else %}0 {% endif %}
+                          {% if reviewCount == 1 %}Bewertung{% else %}Bewertungen{% endif %})
+                        </div>
+                        <h3 class="bs-ff-heading bs-fs-1 bs-fs-lg-3 bs-lh-100 bs-lh-md-114 bs-lh-lg-110 bs-ls-m100 bs-ls-md-m067 bs-ls-lg-m098 bs-fw-400 bs-center bs-mb-1 bs-mt-5">
+                          {% if variant.name %}
+                            {{ variant.name | escape }}
+                          {% else %}
+                            {{ product.settings.product.title | escape }}
+                          {% endif %}
+                        </h3>
+                        <p class="bs-ff-body bs-fs-11px bs-fs-md-12px bs-lh-145 bs-lh-md-136 bs-lh-lg-133 bs-fw-300 bs-center bs-mb-5">
+                          {% if variant.metafields.global.description %}
+                            {{ variant.metafields.global.description | escape }}
+                          {% elsif product.settings.product.metafields.global.description %}
+                            {{ product.settings.product.metafields.global.description | escape }}
+                          {% else %}
+                            &nbsp;
+                          {% endif %}
+                        </p>
+                        <p class="bs-center bs-ff-body bs-fs-1 bs-fs-lg-3 bs-lh-100 bs-lh-lg-111 bs-fw-500 bs-mb-1">
+                          {{ variant.price | money_without_currency }} €
+                          {% if variant.compare_at_price %}
+                            <span class="bs-fw-400 bs-fs-87p bs-fs-lg-90p bs-td-lt bs-ml-2">
+                              {{ variant.compare_at_price | money_without_currency }} €
+                            </span>
+                          {% endif %}
+                        </p>
+                        <div class="bs-flex bs-row bs-jc-c bs-ai-c">
+                          <form method="post" action="/cart/add">
+                            <input type="hidden" name="id" value="{{ variant_id }}" />
+                            <input type="hidden" name="quantity" value="1" id="quantity" />
+                            <button type="submit" class="bs-submit" style="background-color: {{ tagBackground }}; color: {{ tagForeground }}">
+                              {%- render 'icon-cart2', currentColor: '#ffffff' -%}
+                            </button>
+                          </form>
+                          <a href="{{ product.settings.product.url }}?variant={{ variant_id }}">
+                            <button class="button" style="background-color: {{ tagBackground }}; color: {{ tagForeground }};">
+                              {{ section.settings.linkProductPage | escape }}
+                            </button>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              {% endif %}
+            {% endfor %}
+          {%- endfor -%}
+        </ul>
+        {%- if products.size > 1 and section.settings.swipe_on_mobile -%}
+          <div class="slider-buttons no-js-hidden">
+            <div class="slider-counter caption">
+              <span class="slider-counter--current">1</span>
+              <span aria-hidden="true"> / </span>
+              <span class="visually-hidden">{{ 'accessibility.of' | t }}</span>
+              <span class="slider-counter--total">{{ products.size }}</span>
+            </div>
+            <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'accessibility.previous_slide' | t }}">{% render 'icon-caret' %}</button>
+            <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'accessibility.next_slide' | t }}">{% render 'icon-caret' %}</button>
+          </div>
+        {%- endif -%}
+      </sleepink-slider>
+    </div>
+    {% comment %} End of Mobile Slider {% endcomment %}
+    {% comment %} Tablet Slider {% endcomment %}
+    <div class="collection page-width page-width-desktop bs-tablet">
+      <sleepink-slider class="slider-mobile-gutter">
+        <ul class="grid slider slider--tablet grid--peek negative-margin negative-margin--small" role="list">
+          {% liquid 
+            assign products = section.blocks | where: 'type', 'product'
+            assign numberOfSlidesRaw = products.size | divided_by: 2
+            assign remainder = products.size | modulo: 2
+            if remainder > 0
+              assign numberOfSlides = numberOfSlidesRaw | plus: 1
+            else
+              assign numberOfSlides = numberOfSlidesRaw
+            endif
+          %}
+
+          {%- for s in (1..numberOfSlides) -%}
+            <li class="grid__item slider__slide bs-w-100p bs-px-0">
+              <div class="bs-grid bs-2col bs-gap-4">
+                {%- for p in (0..1) -%}
+                  {% assign index = s | times: 2 | minus: 2 | plus: p %}
+                  {% assign product = products[index] %}
+                  {% if product %}
+                    {% liquid 
+                      assign variants = product.settings.product.variants
+                      if variants.size == 1
+                        assign sku = variants[0].sku
+                      else
+                        assign sku = product.settings.variant
+                      endif 
+                    %}
+                    {% for variant in product.settings.product.variants %}
+                      {% if variant.sku == sku %}
+                        {% assign variant_id = variant.id %}
+                        <div class="bs-flex bs-column bs-ai-c bs-pb-5 bs-mx-auto bs-mx-lg-unset bs-mxw-300px bs-mxw-lg-unset bs-mnw-300px bs-mnw-md-210px bs-mnw-lg-unset bs-w-100p">
+                          <a href="{{ product.settings.product.url }}?variant={{ variant_id }}" class="bs-w-100p bs-mt-6 bs-mb-5 bs-grid bs-1col bs-1row bs-pos-rel bs-square-outer" style="background-color:{{ section.settings.backgroundProductCards }};">
+                            <div class="bs-square bs-gc1 bs-gr1">
+                              {% if product.settings.image %}
+                                <img src="{{ product.settings.image | img_url: '400x' }}" alt="{{ product.settings.image.alt }}" width="300" height="300" loading="lazy" class="bs-contain bs-w-100p bs-h-md-auto">
+                              {% elsif variant.featured_image %}
+                                <img src="{{ variant.featured_image | img_url: '400x' }}" alt="{{ variant.featured_image.alt }}" width="300" height="300" loading="lazy" class="bs-contain bs-w-100p bs-h-md-auto">
+                              {% else %}
+                                <img src="{{ product.settings.product.featured_image | img_url: '400x' }}" alt="{{ product.settings.product.featured_image.alt }}" width="300" height="300" loading="lazy" class="bs-contain bs-w-100p bs-h-md-auto">
+                              {% endif %}
+                              <div class="bs-gc1 bs-gr1 bs-pos-abs bs-l-0 bs-t-10px bs-t-lg-16px">
+                                {% assign tags = product.settings.product.metafields.global.tags | split: ', ' %}
+                                {% for t in tags %}
+                                  <div class="bs-fw-400 bs-fs-12px bs-ml-0 bs-left bs-px-3 bs-lh-100 bs-py-2 bs-mb-1" style="background-color: {{ tagBackground }}; color: {{ tagForeground }}">
+                                  {{ t | escape }}
+                                  </div>
+                                {% endfor %}
+                              </div>
+                            </div>
+                          </a>
+                          <div>
+                            <div class="bs-flex bs-row bs-jc-c bs-ai-c bs-ml-2 bs-mr-3 bs-mb-2">
+                              {% liquid 
+                                assign rating = product.settings.metafields.global.rating
+                                assign wholeRating = rating | floor
+                                assign missing_stars = 5 | minus: rating | floor
+                                assign sum = wholeRating | plus: missing_stars
+                                if sum != 5
+                                  assign halfStars = 1
+                                else
+                                  assign halfStars = 0
+                                endif
+                              %}
+                              {% if wholeRating > 0 %}
+                                {% for i in (1..wholeRating) %}
+                                  <span>
+                                    {%- render 'icon-star', currentColor: "#ffd900" -%}
+                                  </span>
+                                {% endfor %}
+                              {% endif %}
+                              {% if halfStars == 1 %}
+                                <span>
+                                  {%- render 'icon-star-half' -%}
+                                </span>
+                              {% endif %}
+                              {% if missing_stars > 0 %}
+                                {% for j in (1..missing_stars) %}
+                                  <span>
+                                    {%- render 'icon-star', currentColor: "#dddddd" -%}
+                                  </span>
+                                {% endfor %}
+                              {% endif %}
+                            </div>
+                            <div class="bs-ff-body bs-fw-400 bs-fs-12px bs-lh-100 bs-mt-0 bs-center">
+                              {% assign reviewCount = product.settings.product.metafields.global.reviewCount %}
+                              ({% if reviewCount > 0 %}{{ reviewCount }} {% else %}0 {% endif %}
+                              {% if reviewCount == 1 %}Bewertung{% else %}Bewertungen{% endif %})
+                            </div>
+                            <h3 class="bs-ff-heading bs-fs-1 bs-fs-lg-3 bs-lh-100 bs-lh-md-114 bs-lh-lg-110 bs-ls-m100 bs-ls-md-m067 bs-ls-lg-m098 bs-fw-400 bs-center bs-mb-1 bs-mt-5">
+                              {% if variant.name %}
+                                {{ variant.name | escape }}
+                              {% else %}
+                                {{ product.settings.product.title | escape }}
+                              {% endif %}
+                            </h3>
+                            <p class="bs-ff-body bs-fs-11px bs-fs-md-12px bs-lh-145 bs-lh-md-136 bs-lh-lg-133 bs-fw-300 bs-center bs-mb-5">
+                              {% if variant.metafields.global.description %}
+                                {{ variant.metafields.global.description | escape }}
+                              {% elsif product.settings.product.metafields.global.description %}
+                                {{ product.settings.product.metafields.global.description | escape }}
+                              {% else %}
+                                &nbsp;
+                              {% endif %}
+                            </p>
+                            <p class="bs-center bs-ff-body bs-fs-1 bs-fs-lg-3 bs-lh-100 bs-lh-lg-111 bs-fw-500 bs-mb-1">
+                              {{ variant.price | money_without_currency }} €
+                              {% if variant.compare_at_price %}
+                                <span class="bs-fw-400 bs-fs-87p bs-fs-lg-90p bs-td-lt bs-ml-2">
+                                  {{ variant.compare_at_price | money_without_currency }} €
+                                </span>
+                              {% endif %}
+                            </p>
+                            <div class="bs-flex bs-row bs-jc-c bs-ai-c">
+                              <form method="post" action="/cart/add">
+                                <input type="hidden" name="id" value="{{ variant_id }}" />
+                                <input type="hidden" name="quantity" value="1" id="quantity" />
+                                <button type="submit" class="bs-submit" style="background-color: {{ tagBackground }}; color: {{ tagForeground }}">
+                                  {%- render 'icon-cart2', currentColor: '#ffffff' -%}
+                                </button>
+                              </form>
+                              <a href="{{ product.settings.product.url }}?variant={{ variant_id }}">
+                                <button class="button" style="background-color: {{ tagBackground }}; color: {{ tagForeground }};">
+                                  {{ section.settings.linkProductPage | escape }}
+                                </button>
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      {% endif %}
+                    {% endfor %}
+                  {% else %}
+                    <div>&nbsp;</div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </li>
+          {%- endfor -%}
+        </ul>
+        {%- if numberOfSlides > 1 and section.settings.swipe_on_mobile -%}
+          <div class="slider-buttons no-js-hidden">
+            <div class="slider-counter caption">
+              <span class="slider-counter--current">1</span>
+              <span aria-hidden="true"> / </span>
+              <span class="visually-hidden">{{ 'accessibility.of' | t }}</span>
+              <span class="slider-counter--total">{{ numberOfSlides }}</span>
+            </div>
+            <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'accessibility.previous_slide' | t }}">{% render 'icon-caret' %}</button>
+            <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'accessibility.next_slide' | t }}">{% render 'icon-caret' %}</button>
+          </div>
+        {%- endif -%}
+      </sleepink-slider>
+    </div>
+    {% comment %} End of Tablet Slider {% endcomment %}
+    {% comment %} Desktop Slider {% endcomment %}
+    <div class="collection page-width-desktop bs-desktop bs-px-0">
+      <sleepink-slider class="slider-mobile-gutter">
+        <ul class="grid slider slider--desktop grid--peek negative-margin negative-margin--small" role="list">
+          {% liquid 
+            assign products = section.blocks | where: 'type', 'product'
+            assign numberOfSlidesRaw = products.size | divided_by: 4
+            assign remainder = products.size | modulo: 4
+            if remainder > 0
+              assign numberOfSlides = numberOfSlidesRaw | plus: 1
+            else
+              assign numberOfSlides = numberOfSlidesRaw
+            endif
+          %}
+
+          {%- for s in (1..numberOfSlides) -%}
+            <li class="grid__item slider__slide bs-w-100p bs-px-0">
+              <div class="bs-grid bs-4col bs-gap-4">
+                {%- for p in (0..3) -%}
+                  {% assign index = s | times: 4 | minus: 4 | plus: p %}
+                  {% assign product = products[index] %}
+                  {% if product %}
+                    {% liquid 
+                      assign variants = product.settings.product.variants
+                      if variants.size == 1
+                        assign sku = variants[0].sku
+                      else
+                        assign sku = product.settings.variant
+                      endif 
+                    %}
+                    {% for variant in product.settings.product.variants %}
+                      {% if variant.sku == sku %}
+                        {% assign variant_id = variant.id %}
+                        <div class="bs-flex bs-column bs-ai-c bs-pb-5 bs-mx-auto bs-mx-lg-unset bs-mxw-300px bs-mxw-lg-unset bs-mnw-300px bs-mnw-md-210px bs-mnw-lg-unset bs-w-100p">
+                          <a href="{{ product.settings.product.url }}?variant={{ variant_id }}" class="bs-w-100p bs-mt-6 bs-mb-5 bs-grid bs-1col bs-1row bs-pos-rel bs-square-outer" style="background-color:{{ section.settings.backgroundProductCards }};">
+                            <div class="bs-square bs-gc1 bs-gr1">
+                              {% if product.settings.image %}
+                                <img src="{{ product.settings.image | img_url: '400x' }}" alt="{{ product.settings.image.alt }}" width="300" height="300" loading="lazy" class="bs-contain bs-w-100p bs-h-lg-auto">
+                              {% elsif variant.featured_image %}
+                                <img src="{{ variant.featured_image | img_url: '400x' }}" alt="{{ variant.featured_image.alt }}" width="300" height="300" loading="lazy" class="bs-contain bs-w-100p bs-h-lg-auto">
+                              {% else %}
+                                <img src="{{ product.settings.product.featured_image | img_url: '400x' }}" alt="{{ product.settings.product.featured_image.alt }}" width="300" height="300" loading="lazy" class="bs-contain bs-w-100p bs-h-lg-auto">
+                              {% endif %}
+                              <div class="bs-gc1 bs-gr1 bs-pos-abs bs-l-0 bs-t-10px bs-t-lg-16px">
+                                {% assign tags = product.settings.product.metafields.global.tags | split: ", " %}
+                                {% for t in tags %}
+                                  <div class="bs-fw-400 bs-fs-12px bs-ml-0 bs-left bs-px-3 bs-lh-100 bs-py-2 bs-mb-1" style="background-color: {{ tagBackground }}; color: {{ tagForeground }}">
+                                    {{ t | escape }}
+                                  </div>
+                                {% endfor %}
+                              </div>
+                            </div>
+                          </a>
+                          <div>
+                            <div class="bs-flex bs-row bs-jc-c bs-ai-c bs-ml-2 bs-mr-3 bs-mb-2">
+                              {% liquid 
+                                assign rating = product.settings.product.metafields.global.rating
+                                assign wholeRating = rating | floor
+                                assign missing_stars = 5 | minus: rating | floor
+                                assign sum = wholeRating | plus: missing_stars
+                                if sum != 5
+                                  assign halfStars = 1
+                                else
+                                  assign halfStars = 0
+                                endif
+                              %}
+                              {% if wholeRating > 0 %}
+                                {% for i in (1..wholeRating) %}
+                                  <span>
+                                    {%- render 'icon-star', currentColor: "#ffd900" -%}
+                                  </span>
+                                {% endfor %}
+                              {% endif %}
+                              {% if halfStars == 1 %}
+                                {%- render 'icon-star-half' -%}
+                              {% endif %}
+                              {% if missing_stars > 0 %}
+                                {% for j in (1..missing_stars) %}
+                                  <span>
+                                    {%- render 'icon-star', currentColor: "#dddddd" -%}
+                                  </span>
+                                {% endfor %}
+                              {% endif %}
+                            </div>
+                            <div class="bs-ff-body bs-fw-400 bs-fs-12px bs-lh-100 bs-mt-0 bs-center">
+                              {% assign reviewCount = product.settings.product.metafields.global.reviewCount %}
+                              ({% if reviewCount > 0 %}{{ reviewCount }} {% else %}0 {% endif %}
+                              {% if reviewCount == 1 %}Bewertung{% else %}Bewertungen{% endif %})
+                            </div>
+                            <h3 class="bs-ff-heading bs-fs-1 bs-fs-lg-3 bs-lh-100 bs-lh-md-114 bs-lh-lg-110 bs-ls-m100 bs-ls-md-m067 bs-ls-lg-m098 bs-fw-400 bs-center bs-mb-1 bs-mt-5">
+                              {% if variant.name %}
+                                {{ variant.name | escape }}
+                              {% else %}
+                                {{ product.settings.product.title | escape }}
+                              {% endif %}
+                            </h3>
+                            <p class="bs-ff-body bs-fs-11px bs-fs-md-12px bs-lh-145 bs-lh-md-136 bs-lh-lg-133 bs-fw-300 bs-center bs-mb-5">
+                              {% if variant.metafields.global.description %}
+                                {{ variant.metafields.global.description | escape }}
+                              {% elsif product.settings.product.metafields.global.description %}
+                                {{ product.settings.product.metafields.global.description | escape }}
+                              {% else %}
+                                &nbsp;
+                              {% endif %}
+                            </p>
+                            <p class="bs-center bs-ff-body bs-fs-1 bs-fs-lg-3 bs-lh-100 bs-lh-lg-111 bs-fw-500 bs-mb-1">
+                              {{ variant.price | money_without_currency }} €
+                              {% if variant.compare_at_price %}
+                                <span class="bs-fw-400 bs-fs-87p bs-fs-lg-90p bs-td-lt bs-ml-2">
+                                  {{ variant.compare_at_price | money_without_currency }} €
+                                </span>
+                              {% endif %}
+                            </p>
+                            <div class="bs-flex bs-row bs-jc-c bs-ai-c">
+                              <form method="post" action="/cart/add">
+                                <input type="hidden" name="id" value="{{ variant_id }}" />
+                                <input type="hidden" name="quantity" value="1" id="quantity" />
+                                <button type="submit" class="bs-submit" style="background-color: {{ tagBackground }}; color: {{ tagForeground }}">
+                                  {%- render 'icon-cart2', currentColor: '#ffffff' -%}
+                                </button>
+                              </form>
+                              <a href="{{ product.settings.product.url }}?variant={{ variant_id }}">
+                                <button class="button" style="background-color: {{ tagBackground }}; color: {{ tagForeground }};">
+                                  {{ section.settings.linkProductPage | escape }}
+                                </button>
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      {% endif %}
+                    {% endfor %}
+                  {% else %}
+                    <div>&nbsp;</div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </li>
+          {%- endfor -%}
+        </ul>
+        {%- if numberOfSlides > 1 and section.settings.swipe_on_mobile -%}
+          <div class="slider-buttons no-js-hidden">
+            <div class="slider-counter caption">
+              <span class="slider-counter--current">1</span>
+              <span aria-hidden="true"> / </span>
+              <span class="visually-hidden">{{ 'accessibility.of' | t }}</span>
+              <span class="slider-counter--total">{{ numberOfSlides }}</span>
+            </div>
+            <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'accessibility.previous_slide' | t }}">{% render 'icon-caret' %}</button>
+            <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'accessibility.next_slide' | t }}">{% render 'icon-caret' %}</button>
+          </div>
+        {%- endif -%}
+      </sleepink-slider>
+    </div>
+    {% comment %} End of Desktop Slider {% endcomment %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Bestseller",
+  "tag": "section",
+  "class": "spaced-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "default": "Unsere Bestseller",
+      "label": "Überschrift des Abschnitts"
+    },
+    {
+      "type": "checkbox",
+      "id": "swipe_on_mobile",
+      "default": true,
+      "label": "t:sections.featured-collection.settings.swipe_on_mobile.label"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.footer.settings.color_scheme.options__1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.footer.settings.color_scheme.options__2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.footer.settings.color_scheme.options__3.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.footer.settings.color_scheme.options__4.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.footer.settings.color_scheme.options__5.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.footer.settings.color_scheme.label"
+    },
+    {
+      "type": "color",
+      "id": "backgroundProductCards",
+      "label": "Hintergrund der Produktkacheln",
+      "default": "#F9F9FA"
+    },
+    {
+      "type": "text",
+      "id": "linkProductPage",
+      "label": "Beschriftung des Buttons zur Produktseite",
+      "default": "Mehr erfahren"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "featured_product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Produkt"
+        },
+        {
+          "type": "text",
+          "id": "variant",
+          "label": "SKU der Produktvariante"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Bild (optional)"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Bestseller",
+      "settings": {
+        "title": "Unsere Bestseller",
+        "swipe_on_mobile": true,
+        "color_scheme": "background-1",
+        "backgroundProductCards": "#F9F9FA"
+      },
+      "blocks": [
+        {
+          "type": "product",
+          "settings": {}
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
