@@ -60,6 +60,7 @@ class CollectionFiltersForm extends HTMLElement {
         this.filterData = [...this.filterData, { html, url }];
         this.renderFilters(html, event);
         this.renderProductGrid(html);
+        this.renderProductCount(html);
       });
   }
 
@@ -67,14 +68,20 @@ class CollectionFiltersForm extends HTMLElement {
     const html = this.filterData.find(filterDataUrl).html;
     this.renderFilters(html, event);
     this.renderProductGrid(html);
+    this.renderProductCount(html);
   }
 
   renderProductGrid(html) {
-    const innerHTML = new DOMParser()
-      .parseFromString(html, 'text/html')
-      .getElementById('CollectionProductGrid').innerHTML;
+    document.getElementById('CollectionProductGrid').innerHTML = new DOMParser().parseFromString(html, 'text/html').getElementById('CollectionProductGrid').innerHTML;
+  }
 
-    document.getElementById('CollectionProductGrid').innerHTML = innerHTML;
+  renderProductCount(html) {
+    const count = new DOMParser().parseFromString(html, 'text/html').getElementById('CollectionProductCount').innerHTML
+    const containerDesktop = document.getElementById('CollectionProductCountDesktop');
+    document.getElementById('CollectionProductCount').innerHTML = count;
+    if (containerDesktop) {
+      containerDesktop.innerHTML = count;
+    }
   }
 
   renderFilters(html, event) {
@@ -112,6 +119,7 @@ class CollectionFiltersForm extends HTMLElement {
     const mobileElementSelectors = ['.mobile-facets__open', '.mobile-facets__count', '.sorting'];
 
     mobileElementSelectors.forEach((selector) => {
+      if (!html.querySelector(selector)) return;
       document.querySelector(selector).innerHTML = html.querySelector(selector).innerHTML;
     });
 
