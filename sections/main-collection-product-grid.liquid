@@ -1,15 +1,14 @@
 {{ 'template-collection.css' | asset_url | stylesheet_tag }}
 {{ 'component-loading-overlay.css' | asset_url | stylesheet_tag }}
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+{{ 'component-product-grid.css' | asset_url | stylesheet_tag }}
 
-<link rel="preload" href="{{ 'component-card.css' | asset_url }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-<link rel="preload" href="{{ 'component-price.css' | asset_url }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-<link rel="preload" href="{{ 'component-badge.css' | asset_url }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <link rel="preload" href="{{ 'component-rte.css' | asset_url }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
 
-<noscript>{{ 'component-card.css' | asset_url | stylesheet_tag }}</noscript>
-<noscript>{{ 'component-price.css' | asset_url | stylesheet_tag }}</noscript>
-<noscript>{{ 'component-badge.css' | asset_url | stylesheet_tag }}</noscript>
 <noscript>{{ 'component-rte.css' | asset_url | stylesheet_tag }}</noscript>
+
+<script src="{{ 'collection-filters-form.js' | asset_url }}" defer="defer"></script>
 
 {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
 
@@ -102,7 +101,7 @@
                   </summary>
                   <div class="facets__display">
                     <div class="facets__header">
-                      {%- assign max_price_amount = filter.range_max | money | escape -%}
+                      {%- assign max_price_amount = filter.range_max | money | strip_html | escape -%}
                       <span class="facets__selected">{{ "sections.collection_template.max_price" | t: price: max_price_amount }}</span>
                       <facet-remove>
                         <a href="{{ filter.url_to_remove }}" class="facets__reset link underlined-link" >
@@ -111,41 +110,40 @@
                       </facet-remove>
                     </div>
                     <price-range class="facets__price">
+                      <span class="field-currency">{{ cart.currency.symbol }}</span>
                       <div class="field">
-                        <span class="field__currency">{{ cart.currency.symbol }}</span>
                         <input class="field__input"
                           name="{{ filter.min_value.param_name }}"
                           id="Filter-{{ filter.label | escape }}-GTE"
                           {%- if filter.min_value.value -%}
-                            {%- if uses_comma_decimals -%}
-                              value="{{ filter.min_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
-                            {%- else -%}
-                              value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"
-                            {% endif %}
+                            {%- if uses_comma_decimals -%}value="{{ filter.min_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"{%- else -%}value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"{% endif %}
                           {%- endif -%}
                           type="number"
                           placeholder="0"
                           min="0"
-                          max="{{ filter.range_max | money_without_currency | replace: ',', '' }}">
+                          {%- if uses_comma_decimals -%}max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"{%- else -%}max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"{% endif %}
+                        >
                         </input>
                         <label class="field__label" for="Filter-{{ filter.label | escape }}-GTE">{{ 'sections.collection_template.from' | t }}</label>
                       </div>
+
+                      <span class="field-currency">{{ cart.currency.symbol }}</span>
                       <div class="field">
-                        <span class="field__currency">{{ cart.currency.symbol }}</span>
                         <input class="field__input"
                           name="{{ filter.max_value.param_name }}"
                           id="Filter-{{ filter.label | escape }}-LTE"
-                          {%- if filter.max_value.value -%}
-                            {%- if uses_comma_decimals -%}
-                              value="{{ filter.max_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
-                            {%- else -%}
-                              value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"
-                            {% endif %}
+                          {%- if filter.max_value.value -%}{%- if uses_comma_decimals -%}value="{{ filter.max_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"{%- else -%}value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"{% endif %}
                           {%- endif -%}
                           type="number"
-                          placeholder="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
                           min="0"
-                          max="{{ filter.range_max | money_without_currency | replace: ',', '' }}">
+                          {%- if uses_comma_decimals -%}
+                            placeholder="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
+                            max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
+                          {%- else -%}
+                            placeholder="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+                            max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+                          {% endif %}
+                        >
                         </input>
                         <label class="field__label" for="Filter-{{ filter.label | escape }}-LTE">{{ 'sections.collection_template.to' | t }}</label>
                       </div>
@@ -312,41 +310,41 @@
                         <p class="mobile-facets__info">{{ "sections.collection_template.max_price" | t: price: max_price_amount }}</p>
 
                         <price-range class="facets__price">
+                          <span class="field-currency">{{ cart.currency.symbol }}</span>
                           <div class="field">
-                            <span class="field__currency">{{ cart.currency.symbol }}</span>
                             <input class="field__input"
                               name="{{ filter.min_value.param_name }}"
                               id="Mobile-Filter-{{ filter.label | escape }}-GTE"
                               {%- if filter.min_value.value -%}
-                                {%- if uses_comma_decimals -%}
-                                  value="{{ filter.min_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
-                                {%- else -%}
-                                  value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"
-                                {% endif %}
+                                {%- if uses_comma_decimals -%}value="{{ filter.min_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"{%- else -%}value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"{% endif %}
                               {%- endif -%}
                               type="number"
                               placeholder="0"
                               min="0"
-                              max="{{ filter.range_max | divided_by: 100 | ceil }}">
+                              {%- if uses_comma_decimals -%}max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"{%- else -%}max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"{% endif %}
+                            >
                             </input>
                             <label class="field__label" for="Mobile-Filter-{{ filter.label | escape }}-GTE">{{ 'sections.collection_template.from' | t }}</label>
                           </div>
+
+                          <span class="field-currency">{{ cart.currency.symbol }}</span>
                           <div class="field">
-                            <span class="field__currency">{{ cart.currency.symbol }}</span>
                             <input class="field__input"
                               name="{{ filter.max_value.param_name }}"
                               id="Mobile-Filter-{{ filter.label | escape }}-LTE"
                               {%- if filter.max_value.value -%}
-                                {%- if uses_comma_decimals -%}
-                                  value="{{ filter.max_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
-                                {%- else -%}
-                                  value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"
-                                {% endif %}
+                                {%- if uses_comma_decimals -%}value="{{ filter.max_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"{%- else -%}value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"{% endif %}
                               {%- endif -%}
                               type="number"
-                              placeholder="{{ filter.range_max | divided_by: 100 | ceil }}"
                               min="0"
-                              max="{{ filter.range_max | divided_by: 100 | ceil }}">
+                              {%- if uses_comma_decimals -%}
+                                placeholder="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
+                                max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
+                              {%- else -%}
+                                placeholder="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+                                max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+                              {% endif %}
+                            >
                             </input>
                             <label class="field__label" for="Mobile-Filter-{{ filter.label | escape }}-LTE">{{ 'sections.collection_template.to' | t }}</label>
                           </div>
@@ -429,8 +427,6 @@
   {%- endif -%}
 </div>
 
-<script src="{{ 'collection-filters-form.js' | asset_url }}" defer="defer"></script>
-
 <div id="CollectionProductGrid">
   {%- paginate collection.products by section.settings.products_per_page -%}
     {%- if collection.products.size == 0 -%}
@@ -469,25 +465,19 @@
         </p>
 
         <ul id="main-collection-product-grid" data-id="{{ section.id }}" class="
-          grid grid--2-col
+          grid grid--2-col negative-margin product-grid
           {% if collection.products_count < 4 %} grid--{{ collection.products_count }}-col-tablet{% else %}
             {% if collection.products_count == 4 %} grid--4-col-desktop{% else %} grid--3-col-tablet grid--one-third-max grid--4-col-desktop grid--quarter-max{% endif %}
-          {% endif %} negative-margin">
+          {% endif %}">
           {%- for product in collection.products -%}
             <li class="grid__item">
-              {% render 'product-card',
-                product_card_product: product,
-                media_size: section.settings.image_ratio,
-                show_secondary_image: section.settings.show_secondary_image,
-                add_image_padding: section.settings.add_image_padding,
-                show_vendor: section.settings.show_vendor
-              %}
+              {% render 'product-card', product_card_product: product, media_size: section.settings.image_ratio, show_secondary_image: section.settings.show_secondary_image, add_image_padding: section.settings.add_image_padding, show_vendor: section.settings.show_vendor, show_image_outline: section.settings.show_image_outline %}
             </li>
           {%- endfor -%}
         </ul>
 
         {%- if paginate.pages > 1 -%}
-          {% render 'pagination', paginate: paginate, anchor: '', class: '' %}
+          {% render 'pagination', paginate: paginate, anchor: '' %}
         {%- endif -%}
       </div>
     {%- endif -%}
@@ -543,6 +533,12 @@
       "id": "add_image_padding",
       "default": false,
       "label": "t:sections.main-collection-product-grid.settings.add_image_padding.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image_outline",
+      "default": true,
+      "label": "t:sections.main-collection-product-grid.settings.show_image_outline.label"
     },
     {
       "type": "checkbox",
