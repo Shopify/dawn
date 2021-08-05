@@ -456,15 +456,17 @@ class SliderComponent extends HTMLElement {
   }
 
   initPages() {
-    if (!this.sliderItems.length === 0) return;
-    this.slidesPerPage = Math.floor(this.slider.clientWidth / this.sliderItems[0].clientWidth);
-    this.totalPages = this.sliderItems.length - this.slidesPerPage + 1;
+    this.sliderItemsToShow = Array.from(this.sliderItems).filter(element => element.clientWidth > 0);
+    this.sliderLastItem = this.sliderItemsToShow[this.sliderItemsToShow.length - 1];
+    if (this.sliderItemsToShow.length === 0) return;
+    this.slidesPerPage = Math.floor(this.slider.clientWidth / this.sliderItemsToShow[0].clientWidth);
+    this.totalPages = this.sliderItemsToShow.length - this.slidesPerPage + 1;
     this.update();
   }
 
   update() {
     if (!this.pageCount || !this.pageTotal) return;
-    this.currentPage = Math.round(this.slider.scrollLeft / this.sliderItems[0].clientWidth) + 1;
+    this.currentPage = Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
 
     if (this.currentPage === 1) {
       this.prevButton.setAttribute('disabled', true);
@@ -484,7 +486,11 @@ class SliderComponent extends HTMLElement {
 
   onButtonClick(event) {
     event.preventDefault();
-    const slideScrollPosition = event.currentTarget.name === 'next' ? this.slider.scrollLeft + this.sliderItems[0].clientWidth : this.slider.scrollLeft - this.sliderItems[0].clientWidth;
+    const slideScrollPosition = event.currentTarget.name === 'next' ? this.slider.scrollLeft + this.sliderLastItem.clientWidth : this.slider.scrollLeft - this.sliderLastItem.clientWidth;
+    this.slider.scrollTo({
+      left: slideScrollPosition
+    });
+
     this.slider.scrollTo({
       left: slideScrollPosition
     });
@@ -496,7 +502,9 @@ customElements.define('slider-component', SliderComponent);
 class VariantSelects extends HTMLElement {
   constructor() {
     super();
+    this.header = document.querySelector('sticky-header');
     this.addEventListener('change', this.onVariantChange);
+    this.mediaChangeEvent = new Event('mediaChange', {"bubbles": true});
   }
 
   onVariantChange() {
@@ -533,10 +541,18 @@ class VariantSelects extends HTMLElement {
     const newMedia = document.querySelector(
       `[data-media-id="${this.dataset.section}-${this.currentVariant.featured_media.id}"]`
     );
+    const modalContent = document.querySelector('.product-media-modal__content');
+    const newMediaModal = modalContent.querySelector( `[data-media-id="${this.currentVariant.featured_media.id}"]`);
+
     if (!newMedia) return;
     const parent = newMedia.parentElement;
+    if (parent.firstChild == newMedia) return;
+    modalContent.prepend(newMediaModal);
     parent.prepend(newMedia);
-    window.setTimeout(() => { parent.scroll(0, 0) });
+    parent.dispatchEvent(this.mediaChangeEvent);
+    parent.scrollLeft = 0;
+    window.setTimeout(() => { parent.scrollIntoView({behavior: "smooth", inline: "start"}); });
+    window.setTimeout(() => { this.header.productMediaIsChanging = false;}, 800);
   }
 
   updateURL() {
