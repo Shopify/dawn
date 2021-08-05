@@ -437,15 +437,21 @@
       this.header = document.getElementById('shopify-section-header');
       this.headerBounds = {};
       this.currentScrollTop = 0;
+      this.productMediaIsChanging = false;
+
+      this.productSection = document.querySelector('.product-section');
 
       this.onScrollHandler = this.onScroll.bind(this);
+      this.productMediaScroll = this.productMediaChanged.bind(this);
 
+      this.productSection?.addEventListener('mediaChange', this.productMediaScroll)
       window.addEventListener('scroll', this.onScrollHandler, false);
 
       this.createObserver();
     }
 
     disconnectedCallback() {
+      this.productSection?.removeEventListener('mediaChange', this.productMediaScroll)
       window.removeEventListener('scroll', this.onScrollHandler);
     }
 
@@ -458,18 +464,27 @@
       observer.observe(this.header);
     }
 
+    productMediaChanged() {
+      this.productMediaIsChanging = true;
+    }
+
     onScroll() {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-      if (scrollTop > this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
+      if (this.productMediaIsChanging) {
         requestAnimationFrame(this.hide.bind(this));
-      } else if (scrollTop < this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
-        requestAnimationFrame(this.reveal.bind(this));
-      } else if (scrollTop <= this.headerBounds.top) {
-        requestAnimationFrame(this.reset.bind(this));
-      }
+        this.currentScrollTop = scrollTop;
+      } else {
+        if (scrollTop > this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
+          requestAnimationFrame(this.hide.bind(this));
+        } else if (scrollTop < this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
+          requestAnimationFrame(this.reveal.bind(this));
+        } else if (scrollTop <= this.headerBounds.top) {
+          requestAnimationFrame(this.reset.bind(this));
+        }
 
-      this.currentScrollTop = scrollTop;
+        this.currentScrollTop = scrollTop;
+      }
     }
 
     hide() {
