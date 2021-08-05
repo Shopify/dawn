@@ -550,8 +550,7 @@ class VariantSelects extends HTMLElement {
     modalContent.prepend(newMediaModal);
     parent.prepend(newMedia);
     parent.dispatchEvent(this.mediaChangeEvent);
-    parent.scrollLeft = 0;
-    window.setTimeout(() => { parent.scrollIntoView({behavior: "smooth", inline: "start"}); });
+    window.setTimeout(() => { parent.scrollLeft = 0; parent.scrollIntoView({behavior: "smooth", inline: "start"}); });
     window.setTimeout(() => { this.header.productMediaIsChanging = false;}, 800);
   }
 
