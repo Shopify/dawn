@@ -12,6 +12,9 @@
     Usage:
     {% render 'product-card', show_vendor: section.settings.show_vendor %}
 {% endcomment %}
+<link rel="stylesheet" href="{{ 'component-cart-notification.css' | asset_url }}" media="print" onload="this.media='all'">
+<script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+
 
 <div class="card-wrapper">
   <a href="{{ product_card_product.url | default: '#' }}" class="full-unstyled-link">
@@ -98,7 +101,24 @@
         <span class="caption-large light">{{ block.settings.description | escape }}</span>
 
         {% render 'price', product: product_card_product, price_class: '' %}
+
       </div>
     </div>
   </a>
+  <product-form class="product-form">
+    {%- form 'product', product_card_product, id: product_card_product.id, class: 'form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+      <input type="hidden" name="id" value="{{ product_card_product.selected_or_first_available_variant.id }}">
+      <div class="product-form__buttons">
+        <button
+          type="submit"
+          name="add"
+          class="product-form__submit button button--full-width {% if block.settings.show_dynamic_checkout and product.selling_plan_groups == empty %}button--secondary{% else %}button--primary{% endif %}"
+        {% if product.selected_or_first_available_variant.available == false %}disabled{% endif %}>
+              {{ 'products.product.add_to_cart' | t }}
+        </button>
+      </div>
+    {%- endform -%}
+  </product-form>
 </div>
+{%- render 'cart-notification' -%}
+
