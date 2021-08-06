@@ -1,41 +1,102 @@
-<div class="cf-SectionGrid cf-pt-10 cf-pt-md-13 cf-pb-7 cf-pb-md-8 cf-px-5 cf-px-md-0 color-{{ section.settings.color_scheme }}">
- <div class="cf-SectionGrid-Narrow">
-  <h2 class="cf-ff-heading cf-fs-30px cf-fs-md-38px cf-lh-32px cf-lh-md-44px cf-fw-400 cf-mb-5 cf-ls-m124">
-    {{ section.settings.title | escape }}
-  </h2>
-  <div class="cf-mb-11">
-    {{ section.settings.subline }}
-  </div>
-  {%- form 'contact' -%}
-    {% for block in section.blocks %}
-      {% assign itemName = block.settings.label | handleize | camelcase %}
-      <label for="{{ itemName | escape }}" class="cf-block cf-fs-0 cf-fs-md-1 cf-lh-20px cf-fw-500 cf-mb-3">
-        {{ block.settings.label | escape }}{% if block.settings.required %}*{% endif %}
-      </label>
-      {% capture inputText %}
-      <input type="text" id="{{ itemName | escape }}" name="{{ itemName | escape }}" class="cf-block cf-noborder cf-nooutline cf-bg-f6 cf-col-33 cf-w-100p cf-h-50px cf-mb-6 cf-p-5 cf-fs-0 cf-ff-body cf-lh-142 cf-va-m"{% if block.settings.required %} required{% endif %}>
-      {% endcapture %}
-      {% capture inputMail %}
-      <input type="email" id="{{ itemName | escape }}" name="{{ itemName | escape }}" class="cf-block cf-noborder cf-nooutline cf-bg-f6 cf-col-33 cf-w-100p cf-h-50px cf-mb-6 cf-p-5 cf-fs-0 cf-ff-body cf-lh-142 cf-va-m"{% if block.settings.required %} required{% endif %}>
-      {% endcapture %}
-      {% capture textArea %}
-      <textarea name="{{ itemName | escape }}" id="{{ itemName | escape }}" class="cf-block cf-noborder cf-nooutline cf-bg-f6 cf-col-33 cf-w-100p cf-h-250px cf-mb-8 cf-p-5 cf-ff-body cf-fs-0 cf-lh-142 cf-va-m"></textarea>
-      {% endcapture %}
-      {% liquid
-        case block.settings.inputType
-          when 'inputText'
-            echo inputText
-          when 'inputEmail'
-            echo inputMail
-          when 'textarea'
-            echo textArea
-          else 
-            echo inputText
-        endcase
-      %}
-    {% endfor %}
+{{ 'section-contact-form.css' | asset_url | stylesheet_tag }}
+{{ 'sleepink-contact-form.css' | asset_url | stylesheet_tag }}
+
+{% liquid 
+  case section.settings.color_scheme
+    when 'background-1'
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_1
+    when 'background-2'
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_2
+    when 'inverse'
+      assign tagBackground = settings.colors_background_1
+      assign tagForeground = settings.colors_text
+    when 'accent-1'
+      assign tagBackground = settings.colors_solid_button_labels
+      assign tagForeground = settings.colors_accent_1
+    when 'accent-2'
+      assign tagBackground = settings.colors_solid_button_labels
+      assign tagForeground = settings.colors_accent_2
+    else
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_1
+  endcase
+%}
+
+<div class="cf-SectionGrid cf-pt-10 cf-pt-md-13 cf-pb-7 cf-pb-md-8 cf-px-5 cf-px-md-0">
+<div class="contact cf-SectionGrid-Narrow">
+  <h2 class="title cf-ff-heading cf-fs-30px cf-fs-md-38px cf-lh-32px cf-lh-md-44px cf-fw-400 cf-mb-5 cf-ls-m124">{{ section.settings.heading | escape }}</h2>
+  <div class="cf-mb-11">{{ section.settings.subline }}</div>
+  {%- form 'contact', id: 'ContactForm' -%}
+    {%- if form.posted_successfully? -%}
+      <div class="form-status form-status-list form__message" tabindex="-1" autofocus>{% render 'icon-success' %} {{ 'templates.contact.form.post_success' | t }}</div>
+    {%- elsif form.errors -%}
+      <div class="form__message">
+        <h2 class="form-status caption-large" role="alert" tabindex="-1" autofocus>{% render 'icon-error' %} {{ 'templates.contact.form.error_heading' | t }}</h2>
+      </div>
+      <ul class="form-status-list caption-large" role="list">
+        <li>
+          <a href="#ContactForm-email" class="link">
+            {{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}
+          </a>
+        </li>
+      </ul>
+    {%- endif -%}
+    <div class="contact__fields">
+      <label class="field__label" for="ContactForm-name">Name*</label>
+      <div class="field cf-noborder cf-nooutline">
+        <input class="field__input cf-noborder cf-nooutline" autocomplete="name" type="text" id="ContactForm-name" name="contact[{{ 'templates.contact.form.name' | t }}]" value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}" placeholder="{{ 'templates.contact.form.name' | t }}">
+      </div>
+      <label class="field__label" for="ContactForm-email">E-Mail*</label>
+      <div class="field field--with-error">
+        <input
+          autocomplete="email"
+          type="email"
+          id="ContactForm-email"
+          class="field__input"
+          name="contact[email]"
+          spellcheck="false"
+          autocapitalize="off"
+          value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+          aria-required="true"
+          {% if form.errors contains 'email' %}
+            aria-invalid="true"
+            aria-describedby="ContactForm-email-error"
+          {% endif %}
+          placeholder="{{ 'templates.contact.form.email' | t }}"
+        >
+        {%- if form.errors contains 'email' -%}
+          <small class="contact__field-error" id="ContactForm-email-error">
+            <span class="visually-hidden">{{ 'accessibility.error' | t }}</span>
+            <span class="form__message">{% render 'icon-error' %}{{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}</span>
+          </small>
+        {%- endif -%}
+      </div>
+    </div>
+    {% comment %} <div class="field">
+      <input type="tel" id="ContactForm-phone" class="field__input" autocomplete="tel" name="contact[{{ 'templates.contact.form.phone' | t }}]" pattern="[0-9\-]*" value="{% if form.phone %}{{ form.phone }}{% elsif customer %}{{ customer.phone }}{% endif %}" placeholder="{{ 'templates.contact.form.phone' | t }}">
+      <label class="field__label" for="ContactForm-phone">{{ 'templates.contact.form.phone' | t }}</label>
+    </div> {% endcomment %}
+    <label class="form__label field__label" for="ContactForm-body">Ihre Nachricht*</label>
+    <div class="field cf-mb-8">
+      <textarea
+        rows="10"
+        id="ContactForm-body"
+        class="text-area field__input"
+        name="contact[{{ 'templates.contact.form.comment' | t }}]"
+        placeholder="{{ 'templates.contact.form.comment' | t }}"
+      >
+        {{- form.body -}}
+      </textarea>
+    </div>
+    <div class="contact__button">
+      <button type="submit" class="button cf-uppercase" style="background-color: {{ tagBackground }}; color: {{ tagForeground }};">
+        Absenden
+      </button>
+    </div>
   {%- endform -%}
- </div>
+</div>
 </div>
 
 {% schema %}
@@ -45,38 +106,10 @@
   "class": "spaced-section",
   "settings": [
     {
-      "type": "select",
-      "id": "color_scheme",
-      "options": [
-        {
-          "value": "accent-1",
-          "label": "t:sections.footer.settings.color_scheme.options__1.label"
-        },
-        {
-          "value": "accent-2",
-          "label": "t:sections.footer.settings.color_scheme.options__2.label"
-        },
-        {
-          "value": "background-1",
-          "label": "t:sections.footer.settings.color_scheme.options__3.label"
-        },
-        {
-          "value": "background-2",
-          "label": "t:sections.footer.settings.color_scheme.options__4.label"
-        },
-        {
-          "value": "inverse",
-          "label": "t:sections.footer.settings.color_scheme.options__5.label"
-        }
-      ],
-      "default": "background-1",
-      "label": "t:sections.footer.settings.color_scheme.label"
-    },
-    {
       "type": "text",
-      "id": "title",
-      "label": "Überschrift",
-      "default": "Wir sind für Sie da!"
+      "id": "heading",
+      "default": "Wir sind für Sie da!",
+      "label": "Heading"
     },
     {
       "type": "richtext",
@@ -84,56 +117,13 @@
       "label": "Text"
     }
   ],
-  "blocks": [
-    {
-      "type": "text",
-      "name": "field",
-      "settings": [
-        {
-          "type": "text",
-          "id": "label",
-          "label": "Bezeichnung des Eingabefeldes (Label)"
-        },
-        {
-          "type": "select",
-          "id": "inputType",
-          "label": "Art des Eingabefeldes",
-          "options": [
-            {
-              "value": "inputText",
-              "label": "einfaches Feld für Text"
-            },
-            {
-              "value": "inputEmail",
-              "label": "einfaches Feld für E-Mail-Adressen"
-            },
-            {
-              "value": "textarea",
-              "label": "größeres Feld zur Eingabe von Text"
-            }
-          ],
-          "default": "inputText"
-        },
-        {
-          "type": "checkbox",
-          "id": "required",
-          "label": "notwendige Angabe",
-          "default": false
-        }
-      ]
-    }
-  ],
   "presets": [
-  {
-    "name": "Kontaktformular",
-    "blocks": [
-      { "type": "text" }
-    ],
-    "settings": {
-      "color_scheme": "background-1",
-      "title": "Wir sind für Sie da!"
+    {
+      "name": "Kontaktformular",
+      "settings": {
+        "heading": "Wir sind für Sie da!"
+      }
     }
-  }
-]
+  ]
 }
 {% endschema %}
