@@ -11,6 +11,7 @@
 {%- endif -%}
 
 {% liquid 
+  comment
   case section.settings.color_scheme
     when 'background-1'
       assign tagBackground = settings.colors_text 
@@ -31,6 +32,7 @@
       assign tagBackground = settings.colors_text 
       assign tagForeground = settings.colors_background_1
   endcase
+  endcomment
 
   case section.settings.heroWidth
     when 'full'
@@ -44,25 +46,54 @@
   endcase
 
   case section.settings.alignment
-    when left
+    when 'left'
       assign justify = "sph-ta-l"
+      assign align = "sph-ai-fs"
       assign column = "sph-col-2-4"
-    when center
+      assign pl = "sph-pl-0"
+      assign margins = "sph-ml-5"
+    when 'center'
       assign justify = "sph-ta-c"
+      assign align = "sph-ai-c"
       assign column = "sph-col-3"
+      assign pl = "sph-pl-8"
+      assign margins = "sph-mx-auto"
     else
       assign justify = "sph-ta-c"
+      assign align = "sph-ai-c"
       assign column = "sph-col-3"
+      assign pl = "sph-pl-8"
+      assign margins = "sph-mx-auto"
+  endcase
+
+  case section.settings.fontColor
+    when 'dark'
+      assign color = settings.colors_text
+    when 'bright'
+      assign color = settings.colors_background_1
+    else
+      assign color = settings.colors_background_1
   endcase
 %}
 
 <div class="sph-SectionGrid color-{{ section.settings.color_scheme }}">
   <div class="{{ heroWidth | escape }}">
-    <div class="sph-desktopgrid {% if section.settings.height == 'high' %}sph-h-600px{% else %}sph-h-350px{% endif %} sph-grid-5col" style="background-color: {{ section.settings.backgroundColor }};">
+    <div class="sph-desktopgrid {% if section.settings.height == 'high' %}sph-h-600px{% else %}sph-h-350px{% endif %} sph-5col" style="background-color: {{ section.settings.backgroundColor }};">
       {% if section.settings.imageDesktop %}
-        <img src="{{ section.settings.imageDesktop | img_url: '2000x' }}" alt="{{ section.settings.imageDesktop.alt }}" class="sph-col-1-5 sph-row-1 sph-w-100p" width="1200" height="600">
+        <img src="{{ section.settings.imageDesktop | img_url: '4000x' }}" alt="{{ section.settings.imageDesktop.alt }}" class="sph-col-1-5 sph-row-1 sph-w-100p {% if section.settings.height == 'high' %}sph-h-600px{% else %}sph-h-350px{% endif %}" width="1200" height="600" loading="lazy">
       {% endif %}
-      <div class="sph-flex sph-row sph-ai-c {{ justify | escape }} {{ column | escape }} sph-row-1 sph-w-95p sph-my-7 sph-my-md-12">
+      <div class="sph-flex sph-row sph-ai-c {{ justify | escape }} {{ column | escape }} sph-row-1 sph-w-95p sph-my-7 sph-my-md-12 {{ pl | escape }}" style="color: {{ color | escape }}">
+        {{ section.settings.text }}
+      </div>
+    </div>
+    <div class="sph-ndesktopgrid {% if section.settings.height == 'high' %}sph-h-470px{% else %}sph-h-145px sph-h-md-230px{% endif %} sph-1col sph-1row" style="background-color: {{ section.settings.backgroundColor }};">
+      {% if section.settings.imageMobile %}
+        <img src="{{ section.settings.imageMobile | img_url: '2000x' }}" alt="{{ section.settings.imageMobile.alt }}" class="sph-col-1 sph-row-1 sph-w-100p {% if section.settings.height == 'high' %}sph-h-470px{% else %}sph-h-145px sph-h-md-230px{% endif %}" width="375" height="145" loading="lazy">
+      {% endif %}
+      <div class="sph-flex sph-column sph-jc-c {{ align | escape }} sph-col-1 sph-row-1 sph-w-100p sph-my-7 sph-my-md-12">
+        <div class="sph-w-90p {{ margins | escape }} {{ justify | escape }} sph-fs-6 sph-fs-md-42px sph-lh-32px sph-lh-md-46px sph-ls-m100 sph-ls-md-m200 sph-hyphen" lang="de" style="color: {{ color | escape }}">
+          {{ section.settings.text }}
+        </div>
       </div>
     </div>
   </div>
@@ -70,7 +101,7 @@
 
 {% schema %}
 {
-  "name": "Pageheader",
+  "name": "kleiner Header",
   "tag": "section",
   "class": "spaced-section--full-width",
   "settings": [
@@ -103,6 +134,79 @@
       "label": "Farbschema"
     },
     {
+      "type": "select",
+      "id": "heroWidth",
+      "label": "Breite des Elements",
+      "options": [
+        {
+          "value": "full",
+          "label": "volle Bildschirmbreite"
+        },
+        {
+          "value": "wide",
+          "label": "breit (max. 1300px)"
+        },
+        {
+          "value": "narrow",
+          "label": "schmal (max. 900px)"
+        }
+      ],
+      "default": "full"
+    },
+    {
+      "type": "select",
+      "id": "height",
+      "label": "Höhe des Elements",
+      "options": [
+        {
+          "value": "high",
+          "label": "hoch (ca. 600px)"
+        },
+        {
+          "value": "flat",
+          "label": "flach (ca. 350px)"
+        }
+      ],
+      "default": "flat"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Ausrichtung des Textes",
+      "options": [
+        {
+          "value": "left",
+          "label": "linksbündig"
+        },
+        {
+          "value": "center",
+          "label": "zentriert"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "color",
+      "id": "backgroundColor",
+      "label": "Hintergrundfarbe des Elements"
+    },
+    {
+      "type": "select",
+      "id": "fontColor",
+      "label": "Schriftfarbe",
+      "options": [
+        {
+          "value": "dark",
+          "label": "dunkel"
+        },
+        {
+          "value": "bright",
+          "label": "hell"
+        }
+      ],
+      "default": "bright"
+    },
+    {
       "type": "image_picker",
       "id": "imageDesktop",
       "label": "Hintergrundbild für Desktop"
@@ -113,46 +217,19 @@
       "label": "Hintergrundbild für Mobil/Tablet"
     },
     {
-      "type": "text",
-      "id": "title",
-      "default": "All you need is sleep.",
-      "label": "Überschrift"
-    },
-    {
-      "type": "checkbox",
-      "id": "uppercaseTitle",
-      "default": true,
-      "label": "Überschrift in Großbuchstaben?"
-    },
-    {
-      "type": "textarea",
+      "type": "richtext",
       "id": "text",
-      "default": "Ihre Experten für Premium-Schlafprodukte",
-      "label": "Subline"
-    },
-    {
-      "type": "url",
-      "id": "url",
-      "default": "/collections/all",
-      "label": "URL hinter dem Button"
-    },
-    {
-      "type": "text",
-      "id": "buttonText",
-      "default": "Mehr erfahren",
-      "label": "Aufschrift des Buttons"
+      "label": "Text"
     }
   ],
   "presets": [
     {
-      "name": "Page Hero",
+      "name": "kleiner Header",
       "settings": {
         "color_scheme": "background-1",
-        "title": "All you need is sleep.",
-        "uppercaseTitle": true,
-        "text": "Ihre Experten für Premium-Schlafprodukte",
-        "url": "/collections/all",
-        "buttonText": "Mehr erfahren"
+        "heroWidth": "full",
+        "height": "flat",
+        "alignment": "center"
       }
     }
   ]
