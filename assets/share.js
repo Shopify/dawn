@@ -13,7 +13,7 @@ class ShareButton extends DetailsDisclosure {
       this.elements.shareButton.addEventListener('click', () => { navigator.share({ url: document.location.href, title: document.title }) });
     } else {
       this.mainDetailsToggle.addEventListener('toggle', this.toggleDetails.bind(this));
-      this.mainDetailsToggle.querySelector('button').addEventListener('click', this.copyToClipboard.bind(this));
+      this.mainDetailsToggle.querySelector('.share-button__copy').addEventListener('click', this.copyToClipboard.bind(this));
     }
   }
 
