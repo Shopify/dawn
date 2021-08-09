@@ -1,0 +1,87 @@
+{% liquid 
+  case section.settings.width
+    when 'full'
+      assign width = 'if-SectionGrid-Full'
+    when 'wide'
+      assign width = 'if-SectionGrid-Wide'
+    when 'narrow'
+      assign width = 'if-SectionGrid-Narrow'
+    else
+      assign width = 'if-SectionGrid-Wide'
+    endcase
+%}
+
+<div class="if-SectionGrid">
+  <div class="{{ width }} w-100p h-100p">
+    <iframe title="{{ section.settings.title | escape }}" src="{{ section.settings.url }}" scrolling="no" class="w-100p noborder" id="iframe"></iframe>
+  </div>
+</div>
+
+<script>
+const findHeight = e => {
+  const heights = [];
+  if (e.data.hasOwnProperty("frameHeight")) {
+    heights.push(e.data["frameHeight"]);
+  }
+  if (e.data.hasOwnProperty("offset")) {
+    heights.push(e.data["offset"]);
+  }
+  if (e.data.hasOwnProperty("scroll")) {
+    heights.push(e.data["scroll"]);
+  }
+  if (heights.length > 0) {
+    const maxHeight = Math.max(...heights);
+    const height = `${maxHeight + 30}px`;
+    document.getElementById("iframe").height = height;
+  }
+}
+window.addEventListener("message", findHeight);
+</script>
+
+{% schema %}
+{
+  "name": "Iframe",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Überschrift"
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "label": "Adresse der darzustellenden Seite"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Breite des Elements",
+      "options": [
+        {
+          "value": "full",
+          "label": "volle Seitenbreite"
+        },
+        {
+          "value": "wide",
+          "label": "breites Layout (max. 1300px)"
+        },
+        {
+          "value": "narrow",
+          "label": "schmales Layout (max. 900px)"
+        }
+      ],
+      "default": "wide"
+    }
+  ],
+  "presets": [
+    {
+    "name": "Iframe",
+    "settings": {
+      "width": "wide"
+    }
+  }
+]
+}
+{% endschema %}
