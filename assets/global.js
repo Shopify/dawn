@@ -551,7 +551,6 @@ class VariantSelects extends HTMLElement {
     parent.prepend(newMedia);
     parent.dispatchEvent(this.mediaChangeEvent);
     window.setTimeout(() => { parent.querySelector('li.product__media-item').scrollIntoView({behavior: "smooth"}); });
-    window.setTimeout(() => { this.header.productMediaIsChanging = false;}, 800);
   }
 
   updateURL() {
