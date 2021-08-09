@@ -39,6 +39,8 @@ class CollectionFiltersForm extends HTMLElement {
   renderPage(searchParams, event, updateURLHash = true) {
     const sections = this.getSections();
     document.getElementById('CollectionProductGrid').querySelector('.collection').classList.add('loading');
+    document.getElementById('CollectionProductCount').classList.add('loading');
+    document.getElementById('CollectionProductCountDesktop').classList.add('loading');
 
     sections.forEach((section) => {
       const url = `${window.location.pathname}?section_id=${section.section}&${searchParams}`;
@@ -77,10 +79,13 @@ class CollectionFiltersForm extends HTMLElement {
 
   renderProductCount(html) {
     const count = new DOMParser().parseFromString(html, 'text/html').getElementById('CollectionProductCount').innerHTML
+    const container = document.getElementById('CollectionProductCount');
     const containerDesktop = document.getElementById('CollectionProductCountDesktop');
-    document.getElementById('CollectionProductCount').innerHTML = count;
+    container.innerHTML = count;
+    container.classList.remove('loading');
     if (containerDesktop) {
       containerDesktop.innerHTML = count;
+      containerDesktop.classList.remove('loading');
     }
   }
 
