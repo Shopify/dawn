@@ -504,7 +504,7 @@ class VariantSelects extends HTMLElement {
     super();
     this.header = document.querySelector('sticky-header');
     this.addEventListener('change', this.onVariantChange);
-    this.mediaChangeEvent = new Event('mediaChange', {"bubbles": true});
+    this.mediaChangeEvent = new Event('mediaChange', {'bubbles': true});
   }
 
   onVariantChange() {
@@ -550,7 +550,7 @@ class VariantSelects extends HTMLElement {
     modalContent.prepend(newMediaModal);
     parent.prepend(newMedia);
     parent.dispatchEvent(this.mediaChangeEvent);
-    window.setTimeout(() => { parent.scrollLeft = 0; parent.scrollIntoView({behavior: "smooth", inline: "start"}); });
+    window.setTimeout(() => { parent.querySelector('li.product__media-item').scrollIntoView({behavior: "smooth"}); });
     window.setTimeout(() => { this.header.productMediaIsChanging = false;}, 800);
   }
 
