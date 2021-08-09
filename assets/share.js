@@ -4,7 +4,6 @@ class ShareButton extends DetailsDisclosure {
 
     this.elements = {
       shareButton: this.querySelector('button'),
-      copyButton: this.querySelector('.share-button__copy'),
       closeButton: this.querySelector('.share-button__close'),
       successMessage: this.querySelector('[id^="ShareMessage"]'),
       urlInput: this.querySelector('input')
