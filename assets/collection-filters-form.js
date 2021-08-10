@@ -38,9 +38,12 @@ class CollectionFiltersForm extends HTMLElement {
 
   renderPage(searchParams, event, updateURLHash = true) {
     const sections = this.getSections();
+    const countContainerDesktop = document.getElementById('CollectionProductCountDesktop');
     document.getElementById('CollectionProductGrid').querySelector('.collection').classList.add('loading');
     document.getElementById('CollectionProductCount').classList.add('loading');
-    document.getElementById('CollectionProductCountDesktop').classList.add('loading');
+    if (countContainerDesktop){
+      countContainerDesktop.classList.add('loading');
+    }
 
     sections.forEach((section) => {
       const url = `${window.location.pathname}?section_id=${section.section}&${searchParams}`;
