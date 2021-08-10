@@ -67,30 +67,61 @@
     else
       assign color = settings.colors_background_1
   endcase
+
+  case section.settings.height
+    when 'high'
+      assign paddings = "sph-my-5 sph-my-md-7 sph-my-lg-11"
+    when 'flat'
+      assign paddings = "sph-my-4 sph-my-md-5 sph-my-lg-5"
+    else
+      assign paddings = "sph-my-4 sph-my-md-5 sph-my-lg-5"
+  endcase
 %}
 
 <div class="sph-SectionGrid color-{{ section.settings.color_scheme }}">
   <div class="{{ heroWidth | escape }}">
-    <div class="sph-desktopgrid {% if section.settings.height == 'high' %}sph-h-600px{% else %}sph-h-350px{% endif %} sph-5col" style="background-color: {{ section.settings.backgroundColor }};">
+    <div class="sph-desktopgrid sph-5col" style="background-color: {{ section.settings.backgroundColor }};">
       {% if section.settings.imageDesktop %}
-        <img src="{{ section.settings.imageDesktop | img_url: '4000x' }}" alt="{{ section.settings.imageDesktop.alt }}" class="sph-col-1-5 sph-row-1 sph-w-100p {% if section.settings.height == 'high' %}sph-h-600px{% else %}sph-h-350px{% endif %} sph-cover" width="1200" height="600" loading="lazy">
+        <img src="{{ section.settings.imageDesktop | img_url: '4000x' }}" alt="{{ section.settings.imageDesktop.alt }}" class="sph-col-1-5 sph-row-1 sph-w-100p sph-h-auto sph-cover" id="header-img-desktop" width="1200" height="600" loading="lazy">
       {% endif %}
-      <div class="sph-flex sph-row sph-ai-c {{ justify | escape }} {{ column | escape }} {{ jc | escape }} sph-row-1 sph-w-95p sph-my-12 {{ pl | escape }} sph-fs-52px sph-lh-60px sph-ls-m200" style="color: {{ color | escape }}">
+      <div class="sph-flex sph-row sph-ai-c {{ justify | escape }} {{ column | escape }} {{ jc | escape }} sph-row-1 sph-w-95p {{ pl | escape }} sph-fs-52px sph-lh-60px sph-ls-m200" style="color: {{ color | escape }} {{ paddings | escape }}">
+        <div id="header-content-desktop">
         {{ section.settings.text }}
+        </div>
       </div>
     </div>
-    <div class="sph-ndesktopgrid {% if section.settings.height == 'high' %}sph-h-470px{% else %}sph-h-145px sph-h-md-230px{% endif %} sph-1col sph-1row" style="background-color: {{ section.settings.backgroundColor }};">
+    <div class="sph-ndesktopgrid sph-1col sph-1row" style="background-color: {{ section.settings.backgroundColor }};">
       {% if section.settings.imageMobile %}
-        <img src="{{ section.settings.imageMobile | img_url: '2000x' }}" alt="{{ section.settings.imageMobile.alt }}" class="sph-col-1 sph-row-1 sph-w-100p {% if section.settings.height == 'high' %}sph-h-470px{% else %}sph-h-145px sph-h-md-230px{% endif %} sph-cover" width="375" height="145" loading="lazy">
+        <img src="{{ section.settings.imageMobile | img_url: '2000x' }}" alt="{{ section.settings.imageMobile.alt }}" class="sph-col-1 sph-row-1 sph-w-100p sph-h-auto sph-cover" id="header-img-mobile" width="375" height="145" loading="lazy">
       {% endif %}
-      <div class="sph-flex sph-column sph-jc-c {{ align | escape }} sph-col-1 sph-row-1 sph-w-100p sph-my-7 sph-my-md-12">
-        <div class="sph-w-90p {{ margins | escape }} {{ justify | escape }} sph-fs-6 sph-fs-md-42px sph-lh-32px sph-lh-md-46px sph-ls-m100 sph-ls-md-m200 sph-hyphen" lang="de" style="color: {{ color | escape }}">
+      <div class="sph-flex sph-column sph-jc-c {{ align | escape }} sph-col-1 sph-row-1 sph-w-100p {{ paddings | escape }}">
+        <div class="sph-w-90p {{ margins | escape }} {{ justify | escape }} sph-fs-6 sph-fs-md-42px sph-lh-32px sph-lh-md-46px sph-ls-m100 sph-ls-md-m200 sph-hyphen {{ paddings | escape }}" lang="de" style="color: {{ color | escape }}" id="header-content-mobile">
           {{ section.settings.text }}
         </div>
       </div>
     </div>
   </div>
 </div>
+<script>
+function resizeImage(){
+  const contentDesktop = document.getElementById("header-content-desktop").offsetHeight;
+  const contentMobile = document.getElementById("header-content-mobile").offsetHeight;
+  const idealDesktopHeight = "{{ section.settings.height }}" === "high" ? `${contentDesktop + 112}` : `${contentDesktop + 32}`;
+  console.log(idealDesktopHeight);
+  const idealMobileHeight = "{{ section.settings.height }}" === "high" ? `${contentMobile + 32}` : `${contentMobile + 24}`;
+  const idealTabletHeight = "{{ section.settings.height }}" === "high" ? `${contentMobile + 48}` : `${contentMobile + 32}`;
+  const screenWidth = document.body.offsetWidth;
+  if (screenWidth >= 500) {
+    document.getElementById("header-img-mobile").height = idealTabletHeight;
+    document.getElementById("header-img-desktop").height = idealDesktopHeight;
+  } else {
+    document.getElementById("header-img-mobile").height = idealMobileHeight;
+    document.getElementById("header-img-desktop").height = idealDesktopHeight;
+  }
+}
+window.addEventListener("load",resizeImage);
+window.addEventListener("resize",resizeImage);
+</script>
 
 {% schema %}
 {
