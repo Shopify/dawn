@@ -33,7 +33,7 @@ class ShareButton extends DetailsDisclosure {
       this.elements.successMessage.textContent = '';
       this.elements.closeButton.classList.add('hidden');
       this.elements.shareSummary.setAttribute('aria-expanded', 'false');
-      this.elements.shareButton.focus();
+      this.elements.shareSummary.focus();
     } else {
       this.elements.shareSummary.setAttribute('aria-expanded', 'true');
     }
