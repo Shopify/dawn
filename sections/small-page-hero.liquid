@@ -1,0 +1,261 @@
+{{ 'small-page-hero.css' | asset_url | stylesheet_tag }}
+
+{% liquid 
+  comment
+  case section.settings.color_scheme
+    when 'background-1'
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_1
+    when 'background-2'
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_2
+    when 'inverse'
+      assign tagBackground = settings.colors_background_1
+      assign tagForeground = settings.colors_text
+    when 'accent-1'
+      assign tagBackground = settings.colors_solid_button_labels
+      assign tagForeground = settings.colors_accent_1
+    when 'accent-2'
+      assign tagBackground = settings.colors_solid_button_labels
+      assign tagForeground = settings.colors_accent_2
+    else
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_1
+  endcase
+  endcomment
+
+  case section.settings.heroWidth
+    when 'full'
+      assign heroWidth = "sph-SectionGrid-Full"
+    when 'wide'
+      assign heroWidth = "sph-SectionGrid-Wide"
+    when 'narrow'
+      assign heroWidth = "sph-SectionGrid-Narrow"
+    else
+      assign heroWidth = "sph-SectionGrid-Full"
+  endcase
+
+  case section.settings.alignment
+    when 'left'
+      assign justify = "sph-ta-l"
+      assign align = "sph-ai-fs"
+      assign jc = "sph-jc-fs"
+      assign column = "sph-col-2-4"
+      assign pl = "sph-pl-0"
+      assign margins = "sph-ml-5"
+    when 'center'
+      assign justify = "sph-ta-c"
+      assign align = "sph-ai-c"
+      assign jc = "sph-jc-c"
+      assign column = "sph-col-3"
+      assign pl = "sph-pl-8"
+      assign margins = "sph-mx-auto"
+    else
+      assign justify = "sph-ta-c"
+      assign jc = "sph-jc-c"
+      assign align = "sph-ai-c"
+      assign column = "sph-col-3"
+      assign pl = "sph-pl-8"
+      assign margins = "sph-mx-auto"
+  endcase
+
+  case section.settings.fontColor
+    when 'dark'
+      assign color = settings.colors_text
+    when 'bright'
+      assign color = settings.colors_background_1
+    else
+      assign color = settings.colors_background_1
+  endcase
+
+  case section.settings.height
+    when 'high'
+      assign paddings = "sph-my-219px sph-my-md-212px sph-my-lg-270px"
+    when 'flat'
+      assign paddings = "sph-my-56d sph-my-md-92px sph-my-lg-145px"
+    else
+      assign paddings = "sph-my-56d sph-my-md-92px sph-my-lg-145px"
+  endcase
+%}
+
+<div class="sph-SectionGrid color-{{ section.settings.color_scheme }}">
+  <div class="{{ heroWidth | escape }}">
+    <div class="sph-desktopgrid sph-5col" style="background-color: {{ section.settings.backgroundColor }};">
+      {% if section.settings.imageDesktop %}
+        <img src="{{ section.settings.imageDesktop | img_url: '4000x' }}" alt="{{ section.settings.imageDesktop.alt }}" class="sph-col-1-5 sph-row-1 sph-w-100p sph-h-auto sph-cover" id="header-img-desktop" width="1200" height="600" loading="lazy">
+      {% endif %}
+      <div class="sph-flex sph-row sph-ai-c {{ justify | escape }} {{ column | escape }} {{ jc | escape }} sph-row-1 sph-w-95p {{ pl | escape }} sph-fs-52px sph-lh-60px sph-ls-m200 {{ paddings | escape }}" style="color: {{ color | escape }}">
+        <div id="header-content-desktop">
+        {{ section.settings.text }}
+        </div>
+      </div>
+    </div>
+    <div class="sph-ndesktopgrid sph-1col sph-1row" style="background-color: {{ section.settings.backgroundColor }};">
+      {% if section.settings.imageMobile %}
+        <img src="{{ section.settings.imageMobile | img_url: '2000x' }}" alt="{{ section.settings.imageMobile.alt }}" class="sph-col-1 sph-row-1 sph-w-100p sph-h-auto sph-cover" id="header-img-mobile" width="375" height="145" loading="lazy">
+      {% endif %}
+      <div class="sph-flex sph-column sph-jc-c {{ align | escape }} sph-col-1 sph-row-1 sph-w-100p">
+        <div class="sph-w-90p {{ margins | escape }} {{ justify | escape }} sph-fs-6 sph-fs-md-42px sph-lh-32px sph-lh-md-46px sph-ls-m100 sph-ls-md-m200 sph-hyphen {{ paddings | escape }}" lang="de" style="color: {{ color | escape }}" id="header-content-mobile">
+          {{ section.settings.text }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function resizeImage(){
+  const contentDesktop = document.getElementById("header-content-desktop").offsetHeight;
+  const contentMobile = document.getElementById("header-content-mobile").offsetHeight;
+  const idealDesktopHeight = "{{ section.settings.height }}" === "high" ? `${contentDesktop + 540}` : `${contentDesktop + 290}`;
+  console.log(idealDesktopHeight);
+  const idealMobileHeight = "{{ section.settings.height }}" === "high" ? `${contentMobile + 438}` : `${contentMobile + 113}`;
+  const idealTabletHeight = "{{ section.settings.height }}" === "high" ? `${contentMobile + 424}` : `${contentMobile + 184}`;
+  const screenWidth = document.body.offsetWidth;
+  if (screenWidth >= 500) {
+    document.getElementById("header-img-mobile").height = idealTabletHeight;
+    document.getElementById("header-img-desktop").height = idealDesktopHeight;
+  } else {
+    document.getElementById("header-img-mobile").height = idealMobileHeight;
+    document.getElementById("header-img-desktop").height = idealDesktopHeight;
+  }
+}
+window.addEventListener("load",resizeImage);
+window.addEventListener("resize",resizeImage);
+</script>
+
+{% schema %}
+{
+  "name": "kleiner Header",
+  "tag": "section",
+  "class": "spaced-section--full-width",
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.image-banner.settings.color_scheme.options__1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.image-banner.settings.color_scheme.options__2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.image-banner.settings.color_scheme.options__3.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.image-banner.settings.color_scheme.options__4.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.image-banner.settings.color_scheme.options__5.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "Farbschema"
+    },
+    {
+      "type": "select",
+      "id": "heroWidth",
+      "label": "Breite des Elements",
+      "options": [
+        {
+          "value": "full",
+          "label": "volle Bildschirmbreite"
+        },
+        {
+          "value": "wide",
+          "label": "breit (max. 1300px)"
+        },
+        {
+          "value": "narrow",
+          "label": "schmal (max. 900px)"
+        }
+      ],
+      "default": "full"
+    },
+    {
+      "type": "select",
+      "id": "height",
+      "label": "Höhe des Elements",
+      "options": [
+        {
+          "value": "high",
+          "label": "hoch (ca. 600px)"
+        },
+        {
+          "value": "flat",
+          "label": "flach (ca. 350px)"
+        }
+      ],
+      "default": "flat"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Ausrichtung des Textes",
+      "options": [
+        {
+          "value": "left",
+          "label": "linksbündig"
+        },
+        {
+          "value": "center",
+          "label": "zentriert"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "color",
+      "id": "backgroundColor",
+      "label": "Hintergrundfarbe des Elements"
+    },
+    {
+      "type": "select",
+      "id": "fontColor",
+      "label": "Schriftfarbe",
+      "options": [
+        {
+          "value": "dark",
+          "label": "dunkel"
+        },
+        {
+          "value": "bright",
+          "label": "hell"
+        }
+      ],
+      "default": "bright"
+    },
+    {
+      "type": "image_picker",
+      "id": "imageDesktop",
+      "label": "Hintergrundbild für Desktop"
+    },
+    {
+      "type": "image_picker",
+      "id": "imageMobile",
+      "label": "Hintergrundbild für Mobil/Tablet"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text"
+    }
+  ],
+  "presets": [
+    {
+      "name": "kleiner Header",
+      "settings": {
+        "color_scheme": "background-1",
+        "heroWidth": "full",
+        "height": "flat",
+        "alignment": "center"
+      }
+    }
+  ]
+}
+{% endschema %}
