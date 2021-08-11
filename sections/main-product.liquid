@@ -240,7 +240,7 @@
               {%- endif -%}
             {%- endunless -%}
 
-            <noscript>
+            <noscript class="product-form__noscript-wrapper">
               <div class="product-form__input{% if product.has_only_default_variant %} hidden{% endif %}">
                 <label class="form__label" for="Variants-{{ section.id }}">{{ 'products.product.product_variants' | t }}</label>
                 <div class="select">
@@ -481,6 +481,21 @@
 
   customElements.define('product-modal', ProductModal);
 {% endjavascript %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    if (!isIE()) return;
+    const hiddenInput = document.querySelector('product-form input[name="id"]');
+    const noScriptInputWrapper = document.createElement('div');
+    const variantSwitcher = document.querySelector('variant-radios') || document.querySelector('variant-selects');
+    noScriptInputWrapper.innerHTML = document.querySelector('.product-form__noscript-wrapper').textContent;
+    variantSwitcher.outerHTML = noScriptInputWrapper.outerHTML;
+
+    document.querySelector('select[name="id"]').addEventListener('change', function(event) {
+      hiddenInput.value = event.currentTarget.value;
+    });
+  });
+</script>
 
 {%- if first_3d_model -%}
   <script type="application/json" id="ProductJSON-{{ product.id }}">
