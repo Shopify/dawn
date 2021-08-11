@@ -24,14 +24,16 @@ class ShareButton extends DetailsDisclosure {
   addAccessibilityAttributes() {
     this.elements.shareSummary.setAttribute('role', 'button');
     this.elements.shareSummary.setAttribute('aria-expanded', 'false');
-    this.elements.shareSummary.setAttribute('aria-controls', this.id);
+    this.elements.shareSummary.setAttribute('aria-controls', this.elements.shareSummary.nextElementSibling.id);
   }
 
   toggleDetails() {
     if (!this.mainDetailsToggle.open) {
       this.elements.successMessage.classList.add('hidden');
+      this.elements.successMessage.textContent = '';
       this.elements.closeButton.classList.add('hidden');
       this.elements.shareSummary.setAttribute('aria-expanded', 'false');
+      this.elements.shareButton.focus();
     } else {
       this.elements.shareSummary.setAttribute('aria-expanded', 'true');
     }
@@ -40,13 +42,9 @@ class ShareButton extends DetailsDisclosure {
   copyToClipboard() {
     navigator.clipboard.writeText(this.elements.urlInput.value).then(() => {
       this.elements.successMessage.classList.remove('hidden');
-      this.elements.successMessage.setAttribute('aria-hidden', false);
+      this.elements.successMessage.textContent = window.accessibilityStrings.shareSuccess;
       this.elements.closeButton.classList.remove('hidden');
       this.elements.closeButton.focus();
-
-      setTimeout(() => {
-        this.elements.successMessage.setAttribute('aria-hidden', true);
-      }, 6000);
     });
   }
 }
