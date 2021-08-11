@@ -107,7 +107,13 @@ const serializeForm = form => {
   const obj = {};
   const formData = new FormData(form);
   for (const key of formData.keys()) {
-    obj[key] = formData.get(key);
+    const bracketMatch = key.match(/(.+?)\[(.*?)\]/);
+    if (bracketMatch) {
+      obj[bracketMatch[1]] = obj[bracketMatch[1]] || {};
+      obj[bracketMatch[1]][bracketMatch[2]] = formData.get(key);
+    } else {
+      obj[key] = formData.get(key);
+    }
   }
   return JSON.stringify(obj);
 };
