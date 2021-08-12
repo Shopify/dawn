@@ -1,21 +1,32 @@
 class DeliveryOptions extends HTMLElement {
     constructor() {
       super();
-      this.fetchAvailability(this.dataset.productIds);
+
+      const { dataCollectionId, paginationOffset, productsPerPage } = this.dataset
+      this.fetchAvailability(dataCollectionId, paginationOffset, productsPerPage);
     }
   
-    fetchAvailability(productIds) {
-      productIds.forEach((productId) => {
+    fetchAvailability(collectionId, paginationOffset, productsPerPage) {
+      
+      // fetch the delivery options for the collection (per page)
+      // Hardcoded return value
+
+      const deliveryOptions = {
+        "7001560088776": "$2.39",
+        "7001604096200": "$50"
+      }
+
+      Object.keys(deliveryOptions).forEach((productId) => {
         const cardInformation = document.body.querySelector("card-information", `[data-id=${productId}]`)
         const deliveryOptionElement = cardInformation.querySelector("product_delivery_options")
 
-        this.renderPreview(deliveryOptionElement, productId);
+        this.renderPreview(deliveryOptionElement, deliveryOptions[productId]);
       })
     }
   
-  renderPreview(deliveryOptionElement, productId) {
+  renderPreview(deliveryOptionElement, deliveryOption) {
     const p = document.createElement('p');
-    p.innerHTML = `Delivery Options for: ${productId}`
+    p.innerHTML = `Deliver from as low as ${deliveryOption}`
     deliveryOptionElement.appendChild(p)
   }
 }
