@@ -541,7 +541,7 @@ class VariantSelects extends HTMLElement {
     const newMedia = document.querySelector(
       `[data-media-id="${this.dataset.section}-${this.currentVariant.featured_media.id}"]`
     );
-    const modalContent = document.querySelector('.product-media-modal__content');
+    const modalContent = document.querySelector(`#ProductModal-${this.dataset.section}`);
     const newMediaModal = modalContent.querySelector( `[data-media-id="${this.currentVariant.featured_media.id}"]`);
 
     if (!newMedia) return;
