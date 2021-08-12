@@ -7,7 +7,6 @@ class DeliveryOptions extends HTMLElement {
     }
   
     fetchAvailability(collectionId, paginationOffset, productsPerPage) {
-      
       // fetch the delivery options for the collection (per page)
       // Hardcoded return value
 
