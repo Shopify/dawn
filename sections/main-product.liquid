@@ -1,7 +1,6 @@
 {% comment %}theme-check-disable TemplateLength{% endcomment %}
 {{ 'section-main-product.css' | asset_url | stylesheet_tag }}
 {{ 'component-accordion.css' | asset_url | stylesheet_tag }}
-{{ 'component-badge.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
 {{ 'component-rte.css' | asset_url | stylesheet_tag }}
 {{ 'component-slider.css' | asset_url | stylesheet_tag }}
@@ -91,7 +90,7 @@
             <a href="#looxReviews">
               <div class="loox-rating" style="color:black;" data-id="{{ product.id }}" data-rating="{{ product.metafields.loox.avg_rating }}" data-raters="{{ product.metafields.loox.num_reviews }}"></div>
             </a>
-        
+
           {%- when 'price' -%}
             <div class="no-js-hidden" id="price-{{ section.id }}" {{ block.shopify_attributes }}>
               {%- render 'price', product: product, use_variant: true, show_badges: true, price_class: 'price--large' -%}
@@ -114,8 +113,8 @@
               {% capture sizing_recommendation %}{{ 'products.sizing_recommendation_normal' | t }}{% endcapture %}
             {% endif %}
 
-                        {% if tag contains "pre-order" %}
-                            {% capture pre_order_information %}{{ "products.pre_order_information" | t }} {% endcapture %}
+            {% if tag contains "pre-order" %}
+              {% capture pre_order_information %}{{ "products.pre_order_information" | t }} {% endcapture %}
             {% endif %}
 
           {% endfor %}
@@ -125,26 +124,39 @@
           {% render 'product-bullets' %}
 
             <p><b>{{ sizing_recommendation }}</b></p>
-                    <p><b>{{ pre_order_information }} {{ product.metafields.my_fields.pre_order_arrival_date }}</b></p>
+            {% if pre_order_information %}
+              <p><b>Dette er en  <a href="/blogs/baerekraft/pre-order">forhåndsbestillingsvare</a></b></p>
+              <ul>
+                <li>{{ "products.pre_order_information_estimated_arrival" | t }} {{ product.metafields.my_fields.pre_order_arrival_date }} </li>
+                <li>{{ "products.pre_order_information_50_off" | t }}</li>
+                <li>{{ "products.pre_order_information_free_shipping" | t }}</li>
+                <li>{{ "products.pre_order_information_price_reserving" | t }}</li>
+                <li>{{ "products.pre_order_information_free_cancel" | t }}</li>
+                <li>{{ "products.pre_order_information_in_stock_items_seperated" | t }}  </li>
+                <li>{{ "products.pre_order_information_not_produced" | t }}  </li>
+              </ul>
+            {% endif %}
 
             {%- if product.description != blank -%}
               <div class="product__description rte">
                 {{ product.description }}
 
 
-                            {% if product.metafields.my_fields.model_size %}
-                                <p>{{ "products.model_sizes" | t }}{{ product.metafields.my_fields.model_size }}</p>
+                {% if product.metafields.my_fields.model_size %}
+                  <p>{{ "products.model_sizes" | t }}{{ product.metafields.my_fields.model_size }}</p>
                 {% endif %}
-                            {% if product.metafields.my_fields.melange_color_composition %}
-                                <p>{{ "products.composition" | t }}{{ product.metafields.my_fields.melange_color_composition }}</p>
-                            {% elsif product.metafields.my_fields.solid_color_composition %}
-                                <p> {{ "products.composition" | t }} {{ product.metafields.my_fields.solid_color_composition }} </p>
+                {% if product.metafields.my_fields.melange_color_composition %}
+                  <p>{{ "products.composition" | t }}{{ product.metafields.my_fields.melange_color_composition }}</p>
+                {% elsif product.metafields.my_fields.solid_color_composition %}
+                  <p> {{ "products.composition" | t }} {{ product.metafields.my_fields.solid_color_composition }} </p>
                 {% endif %}
-                            {% if product.metafields.my_fields.model_height %}
-                                <p>{{ "products.model_height" | t }}{{ product.metafields.my_fields.model_height }}</p>
+                {% if product.metafields.my_fields.model_height %}
+                  <p>{{ "products.model_height" | t }}{{ product.metafields.my_fields.model_height }}</p>
                 {% endif %}
               </div>
             {%- endif -%}
+          {%- when 'custom_liquid' -%}
+            {{ block.settings.custom_liquid }}
           {%- when 'collapsible_tab' -%}
             <div class="product__accordion accordion" {{ block.shopify_attributes }}>
               <details>
@@ -358,7 +370,11 @@
                     {% if product.selected_or_first_available_variant.available == false %}disabled{% endif %}
                     >
                         {%- if product.selected_or_first_available_variant.available -%}
-                          {{ 'products.product.add_to_cart' | t }}
+                          {% if product.tags contains "pre-order" %}
+                            {{ 'products.product.add_to_cart_pre_order' | t }}
+                          {% else %}
+                            {{ 'products.product.add_to_cart' | t }}
+                          {% endif %}
                         {%- else -%}
                           {{ 'products.product.sold_out' | t }}
                         {%- endif -%}
@@ -411,6 +427,7 @@
               srcset="{%- if media.preview_image.width >= 550 -%}{{ media.preview_image | img_url: '550x' }} 550w,{%- endif -%}
                       {%- if media.preview_image.width >= 1100 -%}{{ media.preview_image | img_url: '1100x' }} 1100w,{%- endif -%}
                       {%- if media.preview_image.width >= 1680 -%}{{ media.preview_image | img_url: '1680x' }} 1680w,{%- endif -%}
+                      {%- if media.preview_image.width >= 1920 -%}{{ media.preview_image | img_url: '1920x' }} 1920w,{%- endif -%}
                       {%- if media.preview_image.width >= 2048 -%}{{ media.preview_image | img_url: '2048x' }} 2048w,{%- endif -%}
                       {%- if media.preview_image.width >= 4096 -%}{{ media.preview_image | img_url: '4096x' }} 4096w{%- endif -%}"
               sizes="(min-width: 750px) calc(100vw - 12rem), 100vw"
@@ -440,10 +457,11 @@
                 <img
                   srcset="{% if media.preview_image.width >= 288 %}{{ media.preview_image | img_url: '288x' }} 288w,{% endif %}
                           {% if media.preview_image.width >= 576 %}{{ media.preview_image | img_url: '576x' }} 576w,{% endif %}
-                          {% if media.preview_image.width >= 550 %}{{ media.preview_image | img_url: '550x' }} 550w,{% endif %}
-                          {% if media.preview_image.width >= 1100 %}{{ media.preview_image | img_url: '1100x' }} 1100w{% endif %}"
+                          {% if media.preview_image.width >= 750 %}{{ media.preview_image | img_url: '750x' }} 750w,{% endif %}
+                          {% if media.preview_image.width >= 1100 %}{{ media.preview_image | img_url: '1100x' }} 1100w,{% endif %}
+                          {% if media.preview_image.width >= 1500 %}{{ media.preview_image | img_url: '1500x' }} 1500w{% endif %}"
                   src="{{ media | img_url: '550x550' }}"
-                  sizes="(min-width: 1200px) calc((1200px - 10rem) / 2), (min-width: 750px) calc((100vw - 11.5rem) / 2), calc(100vw - 4rem)"
+                  sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 2 }}px, (min-width: 750px) calc((100vw - 11.5rem) / 2), calc(100vw - 4rem)"
                   loading="lazy"
                   width="576"
                   height="{{ 576 | divided_by: media.preview_image.aspect_ratio }}"
@@ -659,6 +677,17 @@
       ]
     },
     {
+      "type": "custom_liquid",
+      "name": "t:sections.main-product.blocks.custom_liquid.name",
+      "settings": [
+        {
+          "type": "liquid",
+          "id": "custom_liquid",
+          "label": "t:sections.main-product.blocks.custom_liquid.settings.custom_liquid.label"
+        }
+      ]
+    },
+    {
       "type": "collapsible_tab",
       "name": "t:sections.main-product.blocks.collapsible_tab.name",
       "settings": [
@@ -825,21 +854,6 @@
 }
 {% endschema %}
 
-{% if product.metafields.loox.num_reviews %}
-<script id="looxSchemaJson" type="application/ld+json">
-{
-	"@context": "http://schema.org",
-	"@type": "Product",
-	"@id": {{ canonical_url | json }},
-	"aggregateRating": {
-		"@type": "AggregateRating",
-		"ratingValue": "{{ product.metafields.loox.avg_rating }}",
-		"reviewCount": "{{ product.metafields.loox.num_reviews }}"
-	},
-	"name": {{ product.title | json }}
-}
-</script>
-{% endif %}
 
 
 	<div id="looxReviews" data-product-id="{{product.id}}" class="loox-reviews-default">{{ product.metafields.loox.reviews }}</div>
