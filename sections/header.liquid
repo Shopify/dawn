@@ -437,21 +437,21 @@
       this.header = document.getElementById('shopify-section-header');
       this.headerBounds = {};
       this.currentScrollTop = 0;
-      this.productMediaIsChanging = false;
+      this.preventReveal = false;
 
-      this.productSection = document.querySelector('.product-section');
+      window.preventHeaderReveal = new Event('preventHeaderReveal', {'bubbles': true});
 
       this.onScrollHandler = this.onScroll.bind(this);
-      this.productMediaScroll = this.productMediaChanged.bind(this);
+      this.hideHeaderOnScrollUp = this.setPreventReveal.bind(this);
 
-      this.productSection?.addEventListener('mediaChange', this.productMediaScroll);
+      document.addEventListener('preventHeaderReveal', this.hideHeaderOnScrollUp);
       window.addEventListener('scroll', this.onScrollHandler, false);
 
       this.createObserver();
     }
 
     disconnectedCallback() {
-      this.productSection?.removeEventListener('mediaChange', this.productMediaScroll);
+      document.removeEventListener('preventHeaderReveal', this.hideHeaderOnScrollUp);
       window.removeEventListener('scroll', this.onScrollHandler);
     }
 
@@ -464,22 +464,20 @@
       observer.observe(this.header);
     }
 
-    productMediaChanged() {
-      this.productMediaIsChanging = true;
+    setPreventReveal() {
+      this.preventReveal = true;
     }
 
     onScroll() {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-      if (this.productSection) {
-        window.clearTimeout(this.isScrolling);
+      window.clearTimeout(this.isScrolling);
 
-        this.isScrolling = setTimeout(() => {
-          this.productMediaIsChanging = false;
-        }, 66);
-      }
+      this.isScrolling = setTimeout(() => {
+        this.preventReveal = false;
+      }, 66);
 
-      if (this.productMediaIsChanging) {
+      if (this.preventReveal) {
         requestAnimationFrame(this.hide.bind(this));
         this.currentScrollTop = scrollTop;
       } else {

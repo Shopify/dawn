@@ -502,9 +502,7 @@ customElements.define('slider-component', SliderComponent);
 class VariantSelects extends HTMLElement {
   constructor() {
     super();
-    this.header = document.querySelector('sticky-header');
     this.addEventListener('change', this.onVariantChange);
-    this.mediaChangeEvent = new Event('mediaChange', {'bubbles': true});
   }
 
   onVariantChange() {
@@ -549,7 +547,7 @@ class VariantSelects extends HTMLElement {
     if (parent.firstChild == newMedia) return;
     modalContent.prepend(newMediaModal);
     parent.prepend(newMedia);
-    parent.dispatchEvent(this.mediaChangeEvent);
+    parent.dispatchEvent(window.preventHeaderReveal);
     window.setTimeout(() => { parent.querySelector('li.product__media-item').scrollIntoView({behavior: "smooth"}); });
   }
 
