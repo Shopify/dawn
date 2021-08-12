@@ -17,7 +17,10 @@ class DeliveryOptions extends HTMLElement {
 
       Object.keys(deliveryOptions).forEach((productId) => {
         const cardInformation = document.body.querySelector(".card-information", `[data-id=${productId}]`) 
+        console.log("productId", productId)
+        console.log("cardInformation", cardInformation)
         const deliveryOptionElement = cardInformation.querySelector(".product_delivery_options")
+        console.log("deliveryOptionElement", deliveryOptionElement)
 
         this.renderPreview(deliveryOptionElement, deliveryOptions[productId]);
       })
