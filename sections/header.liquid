@@ -439,10 +439,8 @@
       this.currentScrollTop = 0;
       this.preventReveal = false;
 
-      window.preventHeaderReveal = new Event('preventHeaderReveal', {'bubbles': true});
-
       this.onScrollHandler = this.onScroll.bind(this);
-      this.hideHeaderOnScrollUp = this.setPreventReveal.bind(this);
+      this.hideHeaderOnScrollUp = () => this.preventReveal = true;
 
       document.addEventListener('preventHeaderReveal', this.hideHeaderOnScrollUp);
       window.addEventListener('scroll', this.onScrollHandler, false);
@@ -464,22 +462,17 @@
       observer.observe(this.header);
     }
 
-    setPreventReveal() {
-      this.preventReveal = true;
-    }
-
     onScroll() {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-      window.clearTimeout(this.isScrolling);
-
-      this.isScrolling = setTimeout(() => {
-        this.preventReveal = false;
-      }, 66);
-
       if (this.preventReveal) {
+        window.clearTimeout(this.isScrolling);
+
+        this.isScrolling = setTimeout(() => {
+          this.preventReveal = false;
+        }, 66);
+
         requestAnimationFrame(this.hide.bind(this));
-        this.currentScrollTop = scrollTop;
       } else {
         if (scrollTop > this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
           requestAnimationFrame(this.hide.bind(this));
@@ -488,9 +481,9 @@
         } else if (scrollTop <= this.headerBounds.top) {
           requestAnimationFrame(this.reset.bind(this));
         }
-
-        this.currentScrollTop = scrollTop;
       }
+
+      this.currentScrollTop = scrollTop;
     }
 
     hide() {

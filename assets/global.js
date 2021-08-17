@@ -456,11 +456,11 @@ class SliderComponent extends HTMLElement {
   }
 
   initPages() {
-    this.sliderItemsToShow = Array.from(this.sliderItems).filter(element => element.clientWidth > 0);
-    this.sliderLastItem = this.sliderItemsToShow[this.sliderItemsToShow.length - 1];
-    if (this.sliderItemsToShow.length === 0) return;
-    this.slidesPerPage = Math.floor(this.slider.clientWidth / this.sliderItemsToShow[0].clientWidth);
-    this.totalPages = this.sliderItemsToShow.length - this.slidesPerPage + 1;
+    const sliderItemsToShow = Array.from(this.sliderItems).filter(element => element.clientWidth > 0);
+    this.sliderLastItem = sliderItemsToShow[sliderItemsToShow.length - 1];
+    if (sliderItemsToShow.length === 0) return;
+    this.slidesPerPage = Math.floor(this.slider.clientWidth / sliderItemsToShow[0].clientWidth);
+    this.totalPages = sliderItemsToShow.length - this.slidesPerPage + 1;
     this.update();
   }
 
@@ -539,15 +539,15 @@ class VariantSelects extends HTMLElement {
     const newMedia = document.querySelector(
       `[data-media-id="${this.dataset.section}-${this.currentVariant.featured_media.id}"]`
     );
-    const modalContent = document.querySelector(`#ProductModal-${this.dataset.section}`);
-    const newMediaModal = modalContent.querySelector( `[data-media-id="${this.currentVariant.featured_media.id}"]`);
 
     if (!newMedia) return;
+    const modalContent = document.querySelector(`#ProductModal-${this.dataset.section}`);
+    const newMediaModal = modalContent.querySelector( `[data-media-id="${this.currentVariant.featured_media.id}"]`);
     const parent = newMedia.parentElement;
     if (parent.firstChild == newMedia) return;
     modalContent.prepend(newMediaModal);
     parent.prepend(newMedia);
-    parent.dispatchEvent(window.preventHeaderReveal);
+    parent.dispatchEvent(new Event('preventHeaderReveal', {'bubbles': true}));
     window.setTimeout(() => { parent.querySelector('li.product__media-item').scrollIntoView({behavior: "smooth"}); });
   }
 
