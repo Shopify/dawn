@@ -10,10 +10,12 @@ if (!customElements.get('share-button')) {
         successMessage: this.querySelector('[id^="ShareMessage"]'),
         urlInput: this.querySelector('input')
       }
+      this.urlToShare = this.elements.urlInput?.value || document.location.href;
+
       if (navigator.share) {
         this.mainDetailsToggle.setAttribute('hidden', '');
         this.elements.shareButton.classList.remove('hidden');
-        this.elements.shareButton.addEventListener('click', () => { navigator.share({ url: document.location.href, title: document.title }) });
+        this.elements.shareButton.addEventListener('click', () => { navigator.share({ url: this.urlToShare, title: document.title }) });
       } else {
         this.addAccessibilityAttributes();
         this.mainDetailsToggle.addEventListener('toggle', this.toggleDetails.bind(this));
