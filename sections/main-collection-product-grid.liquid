@@ -182,7 +182,7 @@
                 {% endif %}
               {%- endfor -%}
               <facet-remove class="active-facets__button-wrapper">
-                <a href="{{ collection.url }}?sort_by={{ sort_by }}" class="underlined-link">
+                <a href="{{ collection.url }}?sort_by={{ sort_by }}" class="active-facets__button-remove underlined-link">
                   <span>{{ 'sections.collection_template.clear_all' | t }}</span>
                 </a>
               </facet-remove>
@@ -214,13 +214,20 @@
             </div>
           {%- endif -%}
 
-          <p id="CollectionProductCountDesktop" class="collection-product-count light" role="status">
-            {%- if collection.products_count == collection.all_products_count -%}
-              {{ 'sections.collection_template.product_count_simple' | t: count: collection.products_count }}
-            {%- else -%}
-              {{ 'sections.collection_template.product_count' | t: product_count: collection.products_count, count: collection.all_products_count }}
-            {%- endif -%}
-          </p>
+          <div class="collection-product-count light" role="status">
+            <p id="CollectionProductCountDesktop" class="collection-product-count__text">
+              {%- if collection.products_count == collection.all_products_count -%}
+                {{ 'sections.collection_template.product_count_simple' | t: count: collection.products_count }}
+              {%- else -%}
+                {{ 'sections.collection_template.product_count' | t: product_count: collection.products_count, count: collection.all_products_count }}
+              {%- endif -%}
+            </p>
+            <div class="loading-overlay__spinner">
+              <svg aria-hidden="true" focusable="false" role="presentation" class="spinner" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+                <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+              </svg>
+            </div>
+          </div>          
         </form>
       </collection-filters-form>
     {%- endunless -%}
@@ -323,6 +330,7 @@
                               type="number"
                               placeholder="0"
                               min="0"
+                              inputmode="decimal"
                               {%- if uses_comma_decimals -%}max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"{%- else -%}max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"{% endif %}
                             >
                             </input>
@@ -339,6 +347,7 @@
                               {%- endif -%}
                               type="number"
                               min="0"
+                              inputmode="decimal"
                               {%- if uses_comma_decimals -%}
                                 placeholder="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
                                 max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
@@ -351,6 +360,13 @@
                             <label class="field__label" for="Mobile-Filter-{{ filter.label | escape }}-LTE">{{ 'sections.collection_template.to' | t }}</label>
                           </div>
                         </price-range>
+                        <div class="no-js-hidden mobile-facets__footer">
+                          <facet-remove class="mobile-facets__clear-wrapper">
+                            <a href="{{ collection.url }}" class="mobile-facets__clear underlined-link">{{ 'sections.collection_template.clear' | t }}</a>
+                          </facet-remove>
+                          <button type="button" class="no-js-hidden button button--primary" onclick="this.closest('.mobile-facets__wrapper').querySelector('summary').click()">{{ 'sections.collection_template.apply' | t }}</button>
+                          <noscript><button class="button button--primary">{{ 'sections.collection_template.apply' | t }}</button></noscript>
+                        </div>
                       </div>
                     </details>
                   {% endcase %}
@@ -393,10 +409,8 @@
     </menu-drawer>
 
     <div class="active-facets active-facets-mobile {% unless section.settings.collapse_on_larger_devices %} medium-hide large-up-hide{% endunless %}">
-      {%- assign has_active_filter = false -%}
       {%- for filter in collection.filters -%}
         {%- for value in filter.active_values -%}
-          {%- assign has_active_filter = true -%}
           <facet-remove>
             <a href="{{ value.url_to_remove }}" class="active-facets__button active-facets__button--light">
               <span class="active-facets__button-inner button button--tertiary">
@@ -409,7 +423,6 @@
 
         {%- if filter.type == "price_range" -%}
           {%- if filter.min_value.value != nil or filter.max_value.value != nil -%}
-            {%- assign has_active_filter = true -%}
             <facet-remove>
               <a href="{{ filter.url_to_remove }}" class="active-facets__button active-facets__button--light">
                 <span class="active-facets__button-inner button button--tertiary">
@@ -421,21 +434,26 @@
           {%- endif -%}
         {%- endif -%}
       {%- endfor -%}
-      {%- if has_active_filter -%}
-        <facet-remove class="active-facets__button-wrapper">
-          <a href="{{ collection.url }}?sort_by={{ sort_by }}" class="underlined-link">
-            <span>{{ 'sections.collection_template.clear_all' | t }}</span>
-          </a>
-        </facet-remove>
-      {%- endif -%}
+      <facet-remove class="active-facets__button-wrapper">
+        <a href="{{ collection.url }}?sort_by={{ sort_by }}" class="active-facets__button-remove underlined-link">
+          <span>{{ 'sections.collection_template.clear_all' | t }}</span>
+        </a>
+      </facet-remove>
     </div>
-    <p id="CollectionProductCount" class="collection-product-count light{% unless section.settings.collapse_on_larger_devices %} medium-hide large-up-hide{% endunless %}" role="status">
-      {%- if collection.products_count == collection.all_products_count -%}
-        {{ 'sections.collection_template.product_count_simple' | t: count: collection.products_count }}
-      {%- else -%}
-        {{ 'sections.collection_template.product_count' | t: product_count: collection.products_count, count: collection.all_products_count }}
-      {%- endif -%}
-    </p>
+    <div class="collection-product-count light{% unless section.settings.collapse_on_larger_devices %} medium-hide large-up-hide{% endunless %}" role="status">
+      <p id="CollectionProductCount" class="collection-product-count__text">
+        {%- if collection.products_count == collection.all_products_count -%}
+          {{ 'sections.collection_template.product_count_simple' | t: count: collection.products_count }}
+        {%- else -%}
+          {{ 'sections.collection_template.product_count' | t: product_count: collection.products_count, count: collection.all_products_count }}
+        {%- endif -%}
+      </p>
+      <div class="loading-overlay__spinner">
+        <svg aria-hidden="true" focusable="false" role="presentation" class="spinner" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+          <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+        </svg>
+      </div>
+    </div>
   {%- endif -%}
 </div>
 
@@ -443,13 +461,7 @@
   {%- paginate collection.products by section.settings.products_per_page -%}
     {%- if collection.products.size == 0 -%}
       <div class="collection collection--empty page-width" id="main-collection-product-grid" data-id="{{ section.id }}">
-        <div class="loading-overlay">
-          <div class="loading-overlay__spinner">
-            <svg aria-hidden="true" focusable="false" role="presentation" class="spinner" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
-              <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
-            </svg>
-          </div>
-        </div>
+        <div class="loading-overlay"></div>
 
         <p class="collection-product-count light" role="status">
           {%- if collection.products_count == collection.all_products_count -%}
@@ -468,13 +480,7 @@
       </div>
     {%- else -%}
       <div class="collection page-width">
-        <div class="loading-overlay">
-          <div class="loading-overlay__spinner">
-            <svg aria-hidden="true" focusable="false" role="presentation" class="spinner" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
-              <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
-            </svg>
-          </div>
-        </div>
+        <div class="loading-overlay"></div>
 
         <ul id="main-collection-product-grid" data-id="{{ section.id }}" class="
           grid grid--2-col negative-margin product-grid
