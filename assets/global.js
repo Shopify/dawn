@@ -378,10 +378,17 @@ class ModalDialog extends HTMLElement {
       'click',
       this.hide.bind(this)
     );
+    this.querySelectorAll('img[data-media-id], [role="document"]').forEach(element => {
+      element.addEventListener('pointerup', (event) => {
+        if (event.pointerType === 'mouse' && event.target === event.currentTarget) {
+          this.hide();
+        }
+      })
+    });
     this.addEventListener('click', (event) => {
       if (event.target.nodeName === 'MODAL-DIALOG') this.hide();
     });
-    this.addEventListener('keyup', () => {
+    this.addEventListener('keyup', (event) => {
       if (event.code.toUpperCase() === 'ESCAPE') this.hide();
     });
   }
