@@ -547,7 +547,8 @@ class VariantSelects extends HTMLElement {
     if (parent.firstChild == newMedia) return;
     modalContent.prepend(newMediaModal);
     parent.prepend(newMedia);
-    parent.dispatchEvent(new Event('preventHeaderReveal', {'bubbles': true}));
+    this.stickyHeader = this.stickyHeader || document.querySelector('sticky-header');
+    this.stickyHeader.dispatchEvent(new Event('preventHeaderReveal'));
     window.setTimeout(() => { parent.querySelector('li.product__media-item').scrollIntoView({behavior: "smooth"}); });
   }
 
