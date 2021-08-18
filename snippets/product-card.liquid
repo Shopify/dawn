@@ -102,13 +102,22 @@
 
         {% render 'price', product: product_card_product, price_class: '' %}
         {%- if show_rating and product_card_product.metafields.reviews.rating.value != blank -%}
-          <div class="rating" role="img" aria-label="{{ 'accessibility.star_reviews_info' | t: rating_value: product_card_product.metafields.reviews.rating.value, rating_max: product_card_product.metafields.reviews.rating.value.scale_max }}">
-            <span aria-hidden="true" class="rating-star color-icon-{{ settings.accent_icons }}" style="--rating: {{ product_card_product.metafields.reviews.rating.value }}; --rating-max: {{ product_card_product.metafields.reviews.rating.value.scale_max }};"></span>
-          </div>
-          <p class="caption">
-            <span aria-hidden="true">({{ product_card_product.metafields.reviews.rating_count }})</span>
-            <span class="visually-hidden">{{ product_card_product.metafields.reviews.rating_count }} {{ "accessibility.total_reviews" | t }}</span>
-          </p>
+        {% liquid
+          assign rating_decimal = 0 
+          assign decimal = product_card_product.metafields.reviews.rating.value.rating | modulo: 1 
+          if decimal >= 0.3 and decimal <= 0.7
+           assign rating_decimal = 0.5
+          endif 
+         %}
+         <div class="rating" role="img" aria-label="{{ 'accessibility.star_reviews_info' | t: rating_value: product_card_product.metafields.reviews.rating.value, rating_max: product_card_product.metafields.reviews.rating.value.scale_max }}">
+           <span aria-hidden="true" class="rating-star color-icon-{{ settings.accent_icons }}" style="--rating: {{ product_card_product.metafields.reviews.rating.value.rating | floor }}; --rating-max: {{ product_card_product.metafields.reviews.rating.value.scale_max }}; --rating-decimal: {{ rating_decimal }};"></span>
+         </div>
+         <p class="rating-text caption">
+           <span aria-hidden="true">{{ product_card_product.metafields.reviews.rating.value }} / {{ product_card_product.metafields.reviews.rating.value.scale_max }}</span>
+         </p>
+         <p class="rating-count caption">
+           <span aria-hidden="true">({{ product_card_product.metafields.reviews.rating_count }})</span>
+           <span class="visually-hidden">{{ product_card_product.metafields.reviews.rating_count }} {{ "accessibility.total_reviews" | t }}</span>
         {%- endif -%}
       </div>
     </div>
