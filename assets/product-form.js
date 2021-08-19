@@ -1,40 +1,40 @@
-class ProductForm extends HTMLElement {
-  constructor() {
-    super();   
+if (!customElements.get('product-form')) {
+  customElements.define('product-form', class ProductForm extends HTMLElement {
+    constructor() {
+      super();
 
-    this.form = this.querySelector('form');
-    this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
-    this.cartNotification = document.querySelector('cart-notification');
-  }
+      this.form = this.querySelector('form');
+      this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
+      this.cartNotification = document.querySelector('cart-notification');
+    }
 
-  onSubmitHandler(evt) {
-    evt.preventDefault();
-    this.cartNotification.setActiveElement(document.activeElement);
-    
-    const submitButton = this.querySelector('[type="submit"]');
+    onSubmitHandler(evt) {
+      evt.preventDefault();
+      this.cartNotification.setActiveElement(document.activeElement);
 
-    submitButton.setAttribute('disabled', true);
-    submitButton.classList.add('loading');
+      const submitButton = this.querySelector('[type="submit"]');
 
-    const body = JSON.stringify({
-      ...JSON.parse(serializeForm(this.form)),
-      sections: this.cartNotification.getSectionsToRender().map((section) => section.id),
-      sections_url: window.location.pathname
-    });
+      submitButton.setAttribute('disabled', true);
+      submitButton.classList.add('loading');
 
-    fetch(`${routes.cart_add_url}`, { ...fetchConfig('javascript'), body })
-      .then((response) => response.json())
-      .then((parsedState) => {
-        this.cartNotification.renderContents(parsedState);
-      })
-      .catch((e) => {
-        console.error(e);
-      })
-      .finally(() => {
-        submitButton.classList.remove('loading');
-        submitButton.removeAttribute('disabled');
+      const body = JSON.stringify({
+        ...JSON.parse(serializeForm(this.form)),
+        sections: this.cartNotification.getSectionsToRender().map((section) => section.id),
+        sections_url: window.location.pathname
       });
-  }
-}
 
-customElements.define('product-form', ProductForm);
+      fetch(`${routes.cart_add_url}`, { ...fetchConfig('javascript'), body })
+        .then((response) => response.json())
+        .then((parsedState) => {
+          this.cartNotification.renderContents(parsedState);
+        })
+        .catch((e) => {
+          console.error(e);
+        })
+        .finally(() => {
+          submitButton.classList.remove('loading');
+          submitButton.removeAttribute('disabled');
+        });
+    }
+  });
+}
