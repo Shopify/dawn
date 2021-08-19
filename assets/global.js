@@ -537,7 +537,7 @@ class VariantSelects extends HTMLElement {
     );
 
     if (!newMedia) return;
-    const modalContent = document.querySelector(`#ProductModal-${this.dataset.section}`);
+    const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
     const newMediaModal = modalContent.querySelector( `[data-media-id="${this.currentVariant.featured_media.id}"]`);
     const parent = newMedia.parentElement;
     if (parent.firstChild == newMedia) return;
