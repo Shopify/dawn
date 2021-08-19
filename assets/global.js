@@ -490,10 +490,6 @@ class SliderComponent extends HTMLElement {
     this.slider.scrollTo({
       left: slideScrollPosition
     });
-
-    this.slider.scrollTo({
-      left: slideScrollPosition
-    });
   }
 }
 
