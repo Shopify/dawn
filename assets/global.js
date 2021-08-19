@@ -456,15 +456,17 @@ class SliderComponent extends HTMLElement {
   }
 
   initPages() {
-    if (!this.sliderItems.length === 0) return;
-    this.slidesPerPage = Math.floor(this.slider.clientWidth / this.sliderItems[0].clientWidth);
-    this.totalPages = this.sliderItems.length - this.slidesPerPage + 1;
+    const sliderItemsToShow = Array.from(this.sliderItems).filter(element => element.clientWidth > 0);
+    this.sliderLastItem = sliderItemsToShow[sliderItemsToShow.length - 1];
+    if (sliderItemsToShow.length === 0) return;
+    this.slidesPerPage = Math.floor(this.slider.clientWidth / sliderItemsToShow[0].clientWidth);
+    this.totalPages = sliderItemsToShow.length - this.slidesPerPage + 1;
     this.update();
   }
 
   update() {
     if (!this.pageCount || !this.pageTotal) return;
-    this.currentPage = Math.round(this.slider.scrollLeft / this.sliderItems[0].clientWidth) + 1;
+    this.currentPage = Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
 
     if (this.currentPage === 1) {
       this.prevButton.setAttribute('disabled', true);
@@ -484,7 +486,7 @@ class SliderComponent extends HTMLElement {
 
   onButtonClick(event) {
     event.preventDefault();
-    const slideScrollPosition = event.currentTarget.name === 'next' ? this.slider.scrollLeft + this.sliderItems[0].clientWidth : this.slider.scrollLeft - this.sliderItems[0].clientWidth;
+    const slideScrollPosition = event.currentTarget.name === 'next' ? this.slider.scrollLeft + this.sliderLastItem.clientWidth : this.slider.scrollLeft - this.sliderLastItem.clientWidth;
     this.slider.scrollTo({
       left: slideScrollPosition
     });
@@ -533,10 +535,17 @@ class VariantSelects extends HTMLElement {
     const newMedia = document.querySelector(
       `[data-media-id="${this.dataset.section}-${this.currentVariant.featured_media.id}"]`
     );
+
     if (!newMedia) return;
+    const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
+    const newMediaModal = modalContent.querySelector( `[data-media-id="${this.currentVariant.featured_media.id}"]`);
     const parent = newMedia.parentElement;
+    if (parent.firstChild == newMedia) return;
+    modalContent.prepend(newMediaModal);
     parent.prepend(newMedia);
-    window.setTimeout(() => { parent.scroll(0, 0) });
+    this.stickyHeader = this.stickyHeader || document.querySelector('sticky-header');
+    this.stickyHeader.dispatchEvent(new Event('preventHeaderReveal'));
+    window.setTimeout(() => { parent.querySelector('li.product__media-item').scrollIntoView({behavior: "smooth"}); });
   }
 
   updateURL() {
