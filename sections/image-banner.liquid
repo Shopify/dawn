@@ -58,7 +58,7 @@
     </div>
   {%- endif -%}
   <div class="banner__content page-width" style="align-items: {{ section.settings.desktop_text_box_position }};">
-    <div class="banner__box color-{{ section.settings.color_scheme }}">
+    <div class="banner__box color-{{ section.settings.color_scheme }} {%- unless section.settings.show_content_background -%}bg-transparent{%- endunless -%}">
       {%- for block in section.blocks -%}
         {%- case block.type -%}
           {%- when 'heading' -%}
@@ -83,6 +83,28 @@
     </div>
   </div>
 </div>
+
+<style>
+  {%- if section.settings.show_overlay -%}
+    #Banner-{{ section.id }}:before {
+      {%- assign overlay_opacity = section.settings.overlay_opacity | divided_by: 100.0 -%}
+      background: {{ section.settings.overlay_color | color_modify: 'alpha', overlay_opacity }};
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      z-index: 1;
+      content: '';
+    }
+
+    #Banner-{{ section.id }} .banner__content {
+      z-index: 2;
+    }
+  {%- endif -%}
+
+  #Banner-{{ section.id }} .bg-transparent {
+    background: transparent;
+  }
+</style>
 
 {% schema %}
 {
@@ -156,9 +178,38 @@
     },
     {
       "type": "checkbox",
+      "id": "show_content_background",
+      "label": "Show content background",
+      "default": true
+    },
+    {
+      "type": "checkbox",
       "id": "adapt_height_first_image",
       "default": false,
       "label": "t:sections.image-banner.settings.adapt_height_first_image.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_overlay",
+      "label": "Show overlay",
+      "info": "Increase text readability on busy images.",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Overlay Color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 30
     }
   ],
   "blocks": [
