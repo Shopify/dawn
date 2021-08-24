@@ -10,6 +10,8 @@ class CollectionFiltersForm extends HTMLElement {
 
     this.querySelector('form').addEventListener('input', this.debouncedOnSubmit.bind(this));
     window.addEventListener('popstate', this.onHistoryChange.bind(this));
+
+    this.querySelector('#FacetsWrapperDesktop')?.addEventListener('keyup', this.onKeyUp);
   }
 
   onSubmitHandler(event) {
@@ -28,6 +30,17 @@ class CollectionFiltersForm extends HTMLElement {
   onHistoryChange(event) {
     const searchParams = event.state?.searchParams || '';
     this.renderPage(searchParams, null, false);
+  }
+
+  onKeyUp(event) {
+    if(event.code.toUpperCase() !== 'ESCAPE') return;
+
+    const openDetailsElement = event.target.closest('details[open]');
+    if (!openDetailsElement) return;
+
+    const summaryElement = openDetailsElement.querySelector('summary');
+    openDetailsElement.removeAttribute('open');
+    summaryElement.focus();
   }
 
   toggleActiveFacets(disable = true) {
