@@ -54,6 +54,37 @@ function trapFocus(container, elementToFocus = container) {
   elementToFocus.focus();
 }
 
+// Here I can run the querySelector to figure out if the browser supports :focus-visible or not and run code based on it.
+try {
+  document.querySelector(":focus-visible");
+  console.log('not an error')
+} catch {
+  // Here I could run the function that deals with browsers not supporting :focus-visible.
+  focusVisiblePolyfill();
+}
+
+function focusVisiblePolyfill() {
+  const navKeys = ['ARROWLEFT', 'ARROWRIGHT', 'TAB']
+  let currentFocusedElement = null;
+
+  window.addEventListener('keydown', (event) => {
+    if(navKeys.includes(event.code.toUpperCase())) {
+      currentFocusedElement?.classList.remove('focused');
+
+      window.setTimeout(() => {
+        currentFocusedElement = document.activeElement;
+        console.log(currentFocusedElement);
+        currentFocusedElement.classList.add('focused');
+      });
+    }
+  });
+
+  window.addEventListener('click', (event) => {
+    currentFocusedElement?.classList.remove('focused');
+  });
+
+}
+
 function pauseAllMedia() {
   document.querySelectorAll('.js-youtube').forEach((video) => {
     video.contentWindow.postMessage('{"event":"command","func":"' + 'pauseVideo' + '","args":""}', '*');
