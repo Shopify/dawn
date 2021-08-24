@@ -10,7 +10,20 @@ if (!customElements.get('product-form')) {
 
     onSubmitHandler(evt) {
       evt.preventDefault();
-      this.cartNotification.setActiveElement(document.activeElement);
+      let sections = [];
+      let onSuccess;
+
+      if (window.location.pathname !== '/cart') {
+        this.cartNotification.setActiveElement(document.activeElement);
+        sections = this.cartNotification.getSectionsToRender().map((section) => section.id),
+        onSuccess = (parsedState) => {
+          this.cartNotification.renderContents(parsedState);
+        }
+      } else {
+        onSuccess = (parsedState) => {
+          window.location.reload();
+        }
+      }
 
       const submitButton = this.querySelector('[type="submit"]');
 
@@ -19,15 +32,13 @@ if (!customElements.get('product-form')) {
 
       const body = JSON.stringify({
         ...JSON.parse(serializeForm(this.form)),
-        sections: this.cartNotification.getSectionsToRender().map((section) => section.id),
+        sections,
         sections_url: window.location.pathname
       });
 
       fetch(`${routes.cart_add_url}`, { ...fetchConfig('javascript'), body })
         .then((response) => response.json())
-        .then((parsedState) => {
-          this.cartNotification.renderContents(parsedState);
-        })
+        .then(onSuccess)
         .catch((e) => {
           console.error(e);
         })

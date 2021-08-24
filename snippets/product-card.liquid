@@ -10,7 +10,7 @@
     - show_image_outline: {Boolean} Show card outline. Default: true (optional)
 
     Usage:
-    {% render 'product-card', show_vendor: section.settings.show_vendor %}
+    {% render 'product-card', show_vendor: product_card_product.settings.show_vendor %}
 {% endcomment %}
 
 <div class="card-wrapper">
@@ -96,6 +96,135 @@
 
         {% comment %} TODO: metafield {% endcomment %}
         <span class="caption-large light">{{ block.settings.description | escape }}</span>
+
+        {% if settings.show_add_to_cart %}
+          {%- assign product_form_id = 'product-form-' | append: product_card_product.id -%}
+          <product-form class="product-form">
+            {%- form 'product', product_card_product, id: product_form_id, class: 'form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+              {%- unless product_card_product.has_only_default_variant -%}
+                  {%- if settings.picker_type == 'button' -%}
+                    <variant-radios class="no-js-hidden" data-section="{{ section.id }}" data-url="{{ product.url }}">
+                    {%- for option in product_card_product.options_with_values -%}
+                        <fieldset class="js product-form__input">
+                          <div class="flex-row align-items_center">
+                            <legend class="form__label m0 mr2">{{ option.name }}</legend>
+                            {%- for value in option.values -%}
+                              <input type="radio" id="{{ product_card_product.id }}-{{ option.name }}-{{ forloop.index0 }}"
+                                    name="{{ option.name }}"
+                                    value="{{ value | escape }}"
+                                    form="product-form-{{ product_card_product.id }}"
+                                    {% if option.selected_value == value %}checked{% endif %}
+                              >
+                              <label for="{{ product_card_product.id }}-{{ option.name }}-{{ forloop.index0 }}" style="margin: 0 1rem 0 0 !important">
+                                {{ value }}
+                              </label>
+                            {%- endfor -%}
+                          </div>
+                        </fieldset>
+                    {%- endfor -%}
+                    <script type="application/json">
+                      {{ product.variants | json }}
+                    </script>
+                  </variant-radios>
+                  {%- else -%}
+                    <variant-selects class="no-js-hidden">
+                      {%- for option in product_card_product.options_with_values -%}
+                        <div class="product-form__input product-form__input--dropdown flex-row align-items_center">
+                          <label class="form__label m0 mr2" for="Option-{{ product_card_product.id }}-{{ forloop.index0 }}">
+                            {{ option.name }}
+                          </label>
+                          <div class="select">
+                            <select id="Option-{{ product_card_product.id }}-{{ forloop.index0 }}"
+                              class="select__select m0"
+                              name="options[{{ option.name | escape }}]"
+                              form="product-form-{{ product_card_product.id }}"
+                            >
+                              {%- for value in option.values -%}
+                                <option value="{{ value | escape }}" {% if option.selected_value == value %}selected="selected"{% endif %}>
+                                  {{ value }}
+                                </option>
+                              {%- endfor -%}
+                            </select>
+                            {% render 'icon-caret' %}
+                          </div>
+                        </div>
+                      {%- endfor -%}
+
+                      <script type="application/json">
+                        {{ product_card_product.variants | json }}
+                      </script>
+                    </variant-selects>
+                  {%- endif -%}
+              {%- endunless -%}
+
+              <noscript>
+                <div class="product-form__input{% if product_card_product.has_only_default_variant %} hidden{% endif %}">
+                  <label class="form__label" for="Variants-{{ product_card_product.id }}">{{ 'products.product.product_variants' | t }}</label>
+                  <div class="select">
+                    <select name="id" id="Variants-{{ product_card_product.id }}" class="select__select" form="product-form">
+                      {%- for variant in product_card_product.variants -%}
+                        <option
+                          {% if variant == product_card_product.selected_or_first_available_variant %}selected="selected"{% endif %}
+                          {% if variant.available == false %}disabled{% endif %}
+                          value="{{ variant.id }}"
+                        >
+                          {{ variant.title }}
+                          {%- if variant.available == false %} - {{ 'products.product.sold_out' | t }}{% endif %}
+                          - {{ variant.price | money | strip_html }}
+                        </option>
+                      {%- endfor -%}
+                    </select>
+                    {% render 'icon-caret' %}
+                  </div>
+                </div>
+              </noscript>
+
+              <div class="product-add__horizontal">
+                <div class="product-form__input product-form__quantity">
+                  <quantity-input class="quantity">
+                    <button class="quantity__button no-js-hidden" name="minus" type="button">
+                      <span class="visually-hidden">{{ 'products.product.quantity.decrease' | t: product: product_card_product.title | escape }}</span>
+                      {% render 'icon-minus' %}
+                    </button>
+                    <input class="quantity__input"
+                        type="number"
+                        name="quantity"
+                        id="Quantity-{{ product_card_product.id }}"
+                        min="1"
+                        value="1"
+                        form="product-form-{{ product_card_product.id }}"
+                      >
+                    <button class="quantity__button no-js-hidden" name="plus" type="button">
+                      <span class="visually-hidden">{{ 'products.product.quantity.increase' | t: product: product_card_product.title | escape }}</span>
+                      {% render 'icon-plus' %}
+                    </button>
+                  </quantity-input>
+                </div>
+
+                <div class="product-form__buttons-wrapper">
+                  <input type="hidden" name="id" value="{{ product_card_product.selected_or_first_available_variant.id }}">
+                  <div class="product-form__buttons">
+                    <button
+                      type="submit"
+                      name="add"
+                      class="product-form__submit button button--full-width {% if block.settings.show_dynamic_checkout and product_card_product.selling_plan_groups == empty %}button--secondary{% else %}button--primary{% endif %}"
+                    {% if product_card_product.selected_or_first_available_variant.available == false %}disabled{% endif %}
+                    >
+                        {%- if product_card_product.selected_or_first_available_variant.available -%}
+                          {{ 'products.product.add_to_cart' | t }}
+                        {%- else -%}
+                          {{ 'products.product.sold_out' | t }}
+                        {%- endif -%}
+                    </button>
+                    {%- if block.settings.show_dynamic_checkout -%}
+                      {{ form | payment_button }}
+                    {%- endif -%}
+                  </div>
+                </div>
+                </div>
+            {%- endform -%}
+          </product-form>
+        {% endif %}
 
         {% render 'price', product: product_card_product, price_class: '' %}
       </div>
