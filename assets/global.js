@@ -64,7 +64,7 @@ try {
 }
 
 function focusVisiblePolyfill() {
-  const navKeys = ['ARROWLEFT', 'ARROWRIGHT', 'TAB']
+  const navKeys = ['ARROWUP', 'ARROWDOWN', 'ARROWLEFT', 'ARROWRIGHT', 'TAB', 'ENTER', 'SPACE']
   let currentFocusedElement = null;
 
   window.addEventListener('keydown', (event) => {
