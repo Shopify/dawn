@@ -387,8 +387,8 @@ class ModalDialog extends HTMLElement {
       });
     } else {
       this.addEventListener('click', (event) => {
-      if (event.target.nodeName === 'MODAL-DIALOG') this.hide();
-    });
+        if (event.target.nodeName === 'MODAL-DIALOG') this.hide();
+      });
     }
   }
 
@@ -428,12 +428,12 @@ class DeferredMedia extends HTMLElement {
   }
 
   loadContent() {
+    window.pauseAllMedia();
     if (!this.getAttribute('loaded')) {
       const content = document.createElement('div');
       content.appendChild(this.querySelector('template').content.firstElementChild.cloneNode(true));
 
       this.setAttribute('loaded', true);
-      window.pauseAllMedia();
       this.appendChild(content.querySelector('video, model-viewer, iframe')).focus();
     }
   }
