@@ -33,7 +33,6 @@
   .list-menu--inline {
     display: inline-flex;
     flex-wrap: wrap;
-    align-items:center;
   }
 
   summary.list-menu__item {
@@ -44,7 +43,6 @@
     display: flex;
     align-items: center;
     line-height: 1.3;
-    padding-right: 2.7rem;
   }
 
   .list-menu__item--link {
@@ -53,48 +51,6 @@
     padding-top: 1rem;
     line-height: 1.8;
   }
-
-
-  .header__menu-title {
-    text-transform:uppercase;
-    margin-bottom: .7rem;
-  }
-  .grandchild-list {
-    margin: -1rem 0 1.5rem .3rem;
-  }
-  .dropdown__menu {
-    display:flex;
-    flex-direction: row;
-    justify-content: space-between;
-    flex-wrap: nowrap;
-    list-style: none;
-    margin: 0 auto;
-    max-width: 100%;
-    width:100%;
-    padding: 2em 0;
-    box-shadow: 0 2px 40px -40px rgb(0 0 0 / 15%);
-    position:absolute;
-    left:0;
-  }
-  .nav-dropdown__column {
-    width:20%;
-    padding:0 .5rem;
-  }
-  .list-menu  li .header__menu-item > span{
-    color:#fff;
-    font-weight:600;
-    font-size:14px;
-    text-transform:uppercase;
-    letter-spacing:.1em;
-    text-align:center;
-  }
-  .list-menu  li .header__menu-item >  svg  {
-    color:#fff;
-  }
-  .js details:not([open])+.good2go-mega {
-    visibility:hidden;
-  }
-
 
   @media screen and (min-width: 750px) {
     .list-menu__item--link {
@@ -134,12 +90,11 @@
                 <nav class="menu-drawer__navigation">
                   <ul class="menu-drawer__menu list-menu" role="list">
                     {%- for link in section.settings.menu.links -%}
-                    {%- assign link_title_parts = link.title | split: '-' -%}
                       <li>
                         {%- if link.links != blank -%}
                           <details>
                             <summary class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.child_active %} menu-drawer__menu-item--active{% endif %}">
-                              {{ link_title_parts[0] }} {% if link_title_parts[1] %}{{ link_title_parts[1] }}{%endif%}
+                              {{ link.title | escape }}
                               {% render 'icon-arrow' %}
                               {% render 'icon-caret' %}
                             </summary>
@@ -188,7 +143,7 @@
                           </details>
                         {%- else -%}
                           <a href="{{ link.url }}" class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.current %} menu-drawer__menu-item--active{% endif %}"{% if link.current %} aria-current="page"{% endif %}>
-                            {{ link_title_parts[0] }} {% if link_title_parts[1] %}{{ link_title_parts[1] }}{%endif%}
+                            {{ link.title | escape }}
                           </a>
                         {%- endif -%}
                       </li>
@@ -345,13 +300,51 @@
     {%- if section.settings.menu != blank -%}
       <nav class="header__inline-menu">
         <ul class="list-menu list-menu--inline" role="list">
-          {% include 'top-menu-item', menu_item: section.settings.menu.links[0], sub_menu: 'menu-food' %}
-          {% include 'top-menu-item', menu_item: section.settings.menu.links[1], sub_menu: 'menu-water' %}
-          {% include 'top-menu-item', menu_item: section.settings.menu.links[2], sub_menu: 'menu-gear' %}
-          {% include 'top-menu-item', menu_item: section.settings.menu.links[3], sub_menu: 'menu-appliances' %}
-          {% include 'top-menu-item', menu_item: section.settings.menu.links[4], sub_menu: 'menu-home' %}
-          {% include 'top-menu-item', menu_item: section.settings.menu.links[5], sub_menu: 'menu-solar' %}
-          {% include 'top-menu-item', menu_item: section.settings.menu.links[6], sub_menu: 'menu-clothing' %}
+          {%- for link in section.settings.menu.links -%}
+            <li>
+              {%- if link.links != blank -%}
+                <details-disclosure>
+                  <details>
+                    <summary class="header__menu-item list-menu__item link focus-inset">
+                      <span {%- if link.child_active %} class="header__active-menu-item"{% endif %}>{{ link.title | escape }}</span>
+                      {% render 'icon-caret' %}
+                    </summary>
+                    <ul class="header__submenu list-menu list-menu--disclosure caption-large motion-reduce" role="list" tabindex="-1">
+                      {%- for childlink in link.links -%}
+                        <li>
+                          {%- if childlink.links == blank -%}
+                            <a href="{{ childlink.url }}" class="header__menu-item list-menu__item link link--text focus-inset caption-large{% if childlink.current %} list-menu__item--active{% endif %}"{% if childlink.current %} aria-current="page"{% endif %}>
+                              {{ childlink.title | escape }}
+                            </a>
+                          {%- else -%}
+                            <details>
+                              <summary class="header__menu-item link link--text list-menu__item focus-inset caption-large">
+                                {{ childlink.title | escape }}
+                                {% render 'icon-caret' %}
+                              </summary>
+                              <ul class="header__submenu list-menu motion-reduce">
+                                {%- for grandchildlink in childlink.links -%}
+                                  <li>
+                                    <a href="{{ grandchildlink.url }}" class="header__menu-item list-menu__item link link--text focus-inset caption-large{% if grandchildlink.current %} list-menu__item--active{% endif %}"{% if grandchildlink.current %} aria-current="page"{% endif %}>
+                                      {{ grandchildlink.title | escape }}
+                                    </a>
+                                  </li>
+                                {%- endfor -%}
+                              </ul>
+                            </details>
+                          {%- endif -%}
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  </details>
+                </details-disclosure>
+              {%- else -%}
+                <a href="{{ link.url }}" class="header__menu-item header__menu-item list-menu__item link link--text focus-inset"{% if link.current %} aria-current="page"{% endif %}>
+                  <span {%- if link.current %} class="header__active-menu-item"{% endif %}>{{ link.title | escape }}</span>
+                </a>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
         </ul>
       </nav>
     {%- endif -%}
