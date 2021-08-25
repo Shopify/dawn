@@ -73,9 +73,9 @@ function focusVisiblePolyfill() {
 
       window.setTimeout(() => {
         currentFocusedElement = document.activeElement;
-        console.log(currentFocusedElement);
         currentFocusedElement.classList.add('focused');
-      });
+      }, 120);
+      // adding a timeout value here helps as for some reasons when pressing the space bar (qty selector for example), adding the class is happening too quickly and the button is loosing its focus ring. Though similarly the cart dropdown doesn't receive focus on its wrapper due to the time it takes for it to show up.
     }
   });
 
