@@ -13,9 +13,7 @@ class CollectionFiltersForm extends HTMLElement {
 
     const facetWrapper = this.querySelector('#FacetsWrapperDesktop');
     if(!facetWrapper) return;
-    
     this.querySelector('#FacetsWrapperDesktop').addEventListener('keyup', onKeyUpEscape);
-    this.querySelector('#FacetsWrapperDesktop').addEventListener('focusout', this.onFocusOut);
   }
 
   onSubmitHandler(event) {
@@ -34,17 +32,6 @@ class CollectionFiltersForm extends HTMLElement {
   onHistoryChange(event) {
     const searchParams = event.state?.searchParams || '';
     this.renderPage(searchParams, null, false);
-  }
-
-  onFocusOut(event) {
-    setTimeout(() => {
-      const openDetailsElement = event.target.closest('details[open]');
-      if (!openDetailsElement) return;
-      
-      if (!openDetailsElement.contains(document.activeElement)) {
-        openDetailsElement.removeAttribute('open');
-      }
-    })
   }
 
   toggleActiveFacets(disable = true) {
