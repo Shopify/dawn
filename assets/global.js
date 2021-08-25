@@ -378,12 +378,18 @@ class ModalDialog extends HTMLElement {
       'click',
       this.hide.bind(this)
     );
-    this.addEventListener('click', (event) => {
-      if (event.target.nodeName === 'MODAL-DIALOG') this.hide();
-    });
-    this.addEventListener('keyup', () => {
+    this.addEventListener('keyup', (event) => {
       if (event.code.toUpperCase() === 'ESCAPE') this.hide();
     });
+    if (this.classList.contains('media-modal')) {
+      this.addEventListener('pointerup', (event) => {
+        if (event.pointerType === 'mouse' && !event.target.closest('deferred-media, product-model')) this.hide();
+      });
+    } else {
+      this.addEventListener('click', (event) => {
+        if (event.target.nodeName === 'MODAL-DIALOG') this.hide();
+      });
+    }
   }
 
   show(opener) {
@@ -422,12 +428,12 @@ class DeferredMedia extends HTMLElement {
   }
 
   loadContent() {
+    window.pauseAllMedia();
     if (!this.getAttribute('loaded')) {
       const content = document.createElement('div');
       content.appendChild(this.querySelector('template').content.firstElementChild.cloneNode(true));
 
       this.setAttribute('loaded', true);
-      window.pauseAllMedia();
       this.appendChild(content.querySelector('video, model-viewer, iframe')).focus();
     }
   }
