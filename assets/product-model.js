@@ -53,4 +53,4 @@ window.ProductModel = {
   },
 };
 
-window.addEventListener('DOMContentLoaded', () => { window.ProductModel?.loadShopifyXR(); });
+window.addEventListener('DOMContentLoaded', () => { if (window.ProductModel) window.ProductModel.loadShopifyXR(); });

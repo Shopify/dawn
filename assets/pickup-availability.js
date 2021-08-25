@@ -1,7 +1,7 @@
 if (!customElements.get('pickup-availability')) {
   customElements.define('pickup-availability', class PickupAvailability extends HTMLElement {
     constructor() {
-      super();
+      super(); 
 
       if(!this.hasAttribute('available')) return;
 
@@ -22,7 +22,8 @@ if (!customElements.get('pickup-availability')) {
           this.renderPreview(sectionInnerHTML);
         })
         .catch(e => {
-          this.querySelector('button')?.removeEventListener('click', this.onClickRefreshList);
+          const button = this.querySelector('button');
+          if (button) button.removeEventListener('click', this.onClickRefreshList);
           this.renderError();
         });
     }
