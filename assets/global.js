@@ -64,7 +64,7 @@ try {
 }
 
 function focusVisiblePolyfill() {
-  const navKeys = ['ARROWUP', 'ARROWDOWN', 'ARROWLEFT', 'ARROWRIGHT', 'TAB', 'ENTER', 'SPACE']
+  const navKeys = ['ARROWUP', 'ARROWDOWN', 'ARROWLEFT', 'ARROWRIGHT', 'TAB', 'ENTER', 'SPACE', 'ESCAPE']
   let currentFocusedElement = null;
 
   window.addEventListener('keydown', (event) => {
@@ -74,15 +74,16 @@ function focusVisiblePolyfill() {
       window.setTimeout(() => {
         currentFocusedElement = document.activeElement;
         currentFocusedElement.classList.add('focused');
-      }, 120);
+      });
       // adding a timeout value here helps as for some reasons when pressing the space bar (qty selector for example), adding the class is happening too quickly and the button is loosing its focus ring. Though similarly the cart dropdown doesn't receive focus on its wrapper due to the time it takes for it to show up.
     }
   });
 
   window.addEventListener('click', (event) => {
+    // this is a way for me to check if the click event was triggered by the keyboard. And if it is, don't remove the class.
+    if (event.offsetX === 0 && event.offsetY == 0) return;
     currentFocusedElement?.classList.remove('focused');
   });
-
 }
 
 function pauseAllMedia() {
