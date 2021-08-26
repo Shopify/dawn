@@ -192,16 +192,33 @@
                   {%- for option in product.options_with_values -%}
                       <fieldset class="js product-form__input">
                         <legend class="form__label">{{ option.name }}</legend>
+                        {% comment %} option.value[0] is allways the pre selected variant{% endcomment %}
+                        {% assign defaultVariantValue = option.values[0] %}
                         {%- for value in option.values -%}
-                          <input type="radio" id="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}"
-                                name="{{ option.name }}"
-                                value="{{ value | escape }}"
-                                form="product-form-{{ section.id }}"
-                                {% if option.selected_value == value %}checked{% endif %}
-                          >
-                          <label for="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}">
-                            {{ value }}
-                          </label>
+                          {% comment %} If index isn't 0 and the pre selected should be inserted at this position, the ordinary variant of this inde must be inserted first {% endcomment %}
+                          {% if forloop.index0 !=  0%}
+                            <input type="radio" id="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}"
+                              name="{{ option.name }}"
+                              value="{{ value | escape }}"
+                              form="product-form-{{ section.id }}"
+                              {% if option.selected_value == value %}checked{% endif %}
+                            >
+                            <label for="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}">
+                              {{ value }}
+                            </label>
+                          {% endif %}
+                          {% comment %} insert default variant at defined position {% endcomment %}
+                          {% if forloop.index0 == block.settings.default_variant_position %}
+                            <input type="radio" id="{{ section.id }}-{{ option.name }}-0"
+                              name="{{ option.name }}"
+                              value="{{ defaultVariantValue | escape }}"
+                              form="product-form-{{ section.id }}"
+                              {% if option.selected_value == defaultVariantValue %}checked{% endif %}
+                            >
+                            <label for="{{ section.id }}-{{ option.name }}-0">
+                              {{ defaultVariantValue }}
+                            </label>
+                          {% endif %}
                         {%- endfor -%}
                       </fieldset>
                   {%- endfor -%}
@@ -222,10 +239,21 @@
                           name="options[{{ option.name | escape }}]"
                           form="product-form-{{ section.id }}"
                         >
+                        {% comment %} option.value[0] is allways the pre selected variant{% endcomment %}
+                        {% assign defaultVariantValue = option.values[0] %}
                           {%- for value in option.values -%}
-                            <option value="{{ value | escape }}" {% if option.selected_value == value %}selected="selected"{% endif %}>
-                              {{ value }}
-                            </option>
+                            {% comment %} If index isn't 0 and the pre selected should be inserted at this position, the ordinary variant of this inde must be inserted first {% endcomment %}
+                            {% if forloop.index0 !=  0%}
+                              <option value="{{ value | escape }}" {% if option.selected_value == value %}selected="selected"{% endif %}>
+                                {{ value }}
+                              </option>
+                            {% endif %}
+                            {% comment %} insert default variant at defined position {% endcomment %}
+                            {% if forloop.index0 == block.settings.default_variant_position %}
+                              <option value="{{ defaultVariantValue | escape }}" {% if option.selected_value == defaultVariantValue %}selected="selected"{% endif %}>
+                                {{ defaultVariantValue }}
+                              </option>
+                            {% endif %}
                           {%- endfor -%}
                         </select>
                         {% render 'icon-caret' %}
@@ -564,6 +592,12 @@
           ],
           "default": "button",
           "label": "t:sections.main-product.blocks.variant_picker.settings.picker_type.label"
+        },
+        {
+          "type": "number",
+          "id": "default_variant_position",
+          "label": "t:sections.main-product.blocks.variant_picker.settings.default_position.label",
+          "default": 0
         }
       ]
     },
