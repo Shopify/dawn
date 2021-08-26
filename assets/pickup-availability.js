@@ -1,7 +1,7 @@
 if (!customElements.get('pickup-availability')) {
   customElements.define('pickup-availability', class PickupAvailability extends HTMLElement {
     constructor() {
-      super(); 
+      super();
 
       if(!this.hasAttribute('available')) return;
 

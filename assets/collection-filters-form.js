@@ -99,10 +99,10 @@ class CollectionFiltersForm extends HTMLElement {
       parsedHTML.querySelectorAll('#CollectionFiltersForm .js-filter, #CollectionFiltersFormMobile .js-filter');
     const matchesIndex = (element) => { 
       const jsFilter = event ? event.target.closest('.js-filter') : undefined;
-      return element.dataset.index === jsFilter.dataset.index
+      return jsFilter ? element.dataset.index === jsFilter.dataset.index : false; 
     }
     const facetsToRender = Array.from(facetDetailsElements).filter(element => !matchesIndex(element));
-    const countsToRender = Array.from(facetDetailsElements).find(matchesIndex); 
+    const countsToRender = Array.from(facetDetailsElements).find(matchesIndex);
 
     facetsToRender.forEach((element) => {
       document.querySelector(`.js-filter[data-index="${element.dataset.index}"]`).innerHTML = element.innerHTML;
