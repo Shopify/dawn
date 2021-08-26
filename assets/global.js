@@ -550,7 +550,9 @@ class VariantSelects extends HTMLElement {
     modalContent.prepend(newMediaModal);
     parent.prepend(newMedia);
     this.stickyHeader = this.stickyHeader || document.querySelector('sticky-header');
-    this.stickyHeader.dispatchEvent(new Event('preventHeaderReveal'));
+    if(this.stickyHeader) {
+      this.stickyHeader.dispatchEvent(new Event('preventHeaderReveal'));
+    }
     window.setTimeout(() => { parent.querySelector('li.product__media-item').scrollIntoView({behavior: "smooth"}); });
   }
 
