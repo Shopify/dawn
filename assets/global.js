@@ -64,7 +64,7 @@ try {
 }
 
 function focusVisiblePolyfill() {
-  const navKeys = ['ARROWUP', 'ARROWDOWN', 'ARROWLEFT', 'ARROWRIGHT', 'TAB', 'ENTER', 'SPACE', 'ESCAPE']
+  const navKeys = ['ARROWUP', 'ARROWDOWN', 'ARROWLEFT', 'ARROWRIGHT', 'TAB', 'ENTER', 'SPACE', 'ESCAPE', 'HOME', 'END', 'PAGEUP', 'PAGEDOWN']
   let currentFocusedElement = null;
   let mouseClick = null;
 
@@ -76,19 +76,17 @@ function focusVisiblePolyfill() {
 
   window.addEventListener('mousedown', (event) => {
     // this is a way for me to check if the click event was triggered by the keyboard. And if it is, don't remove the class.
-    if (event.offsetX === 0 && event.offsetY == 0) return;
     mouseClick = true;
   });
 
   window.addEventListener('focus', () => {
-    currentFocusedElement?.classList.remove('focused');
+    if (currentFocusedElement) currentFocusedElement.classList.remove('focused');
 
     if (mouseClick) return;
 
-    window.setTimeout(() => {
-      currentFocusedElement = document.activeElement;
-      currentFocusedElement.classList.add('focused');
-    });
+    currentFocusedElement = document.activeElement;
+    currentFocusedElement.classList.add('focused');
+
   }, true);
 }
 
