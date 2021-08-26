@@ -106,9 +106,18 @@ function debounce(fn, wait) {
 const serializeForm = form => {
   const obj = {};
   const formData = new FormData(form);
+
   for (const key of formData.keys()) {
-    obj[key] = formData.get(key);
+    if(key.indexOf('properties[') !== -1) {
+      obj.properties = obj.properties || {};
+      const lineItem = key.split('[');
+      const propertyKey = lineItem[1].substring(0, lineItem[1].length-1)
+      obj.properties[propertyKey] = formData.get(key);
+    } else {
+      obj[key] = formData.get(key);
+    }
   }
+
   return JSON.stringify(obj);
 };
 
