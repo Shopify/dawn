@@ -465,23 +465,24 @@
     onScroll() {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-      if (this.preventReveal) {
-        window.clearTimeout(this.isScrolling);
-
-        this.isScrolling = setTimeout(() => {
-          this.preventReveal = false;
-        }, 66);
-
+      if (scrollTop > this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
         requestAnimationFrame(this.hide.bind(this));
-      } else {
-        if (scrollTop > this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
-          requestAnimationFrame(this.hide.bind(this));
-        } else if (scrollTop < this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
+      } else if (scrollTop < this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
+        if (!this.preventReveal) {
           requestAnimationFrame(this.reveal.bind(this));
-        } else if (scrollTop <= this.headerBounds.top) {
-          requestAnimationFrame(this.reset.bind(this));
+        } else {
+          window.clearTimeout(this.isScrolling);
+
+          this.isScrolling = setTimeout(() => {
+            this.preventReveal = false;
+          }, 66);
+
+          requestAnimationFrame(this.hide.bind(this));
         }
+      } else if (scrollTop <= this.headerBounds.top) {
+        requestAnimationFrame(this.reset.bind(this));
       }
+
 
       this.currentScrollTop = scrollTop;
     }
