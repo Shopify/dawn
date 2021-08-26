@@ -62,7 +62,9 @@ function pauseAllMedia() {
     video.contentWindow.postMessage('{"method":"pause"}', '*');
   });
   document.querySelectorAll('video').forEach((video) => video.pause());
-  document.querySelectorAll('product-model').forEach((model) => { if(model.modelViewerUI) modelViewerUI.pause()});
+  document.querySelectorAll('product-model').forEach((model) => {
+    if (model.modelViewerUI) modelViewerUI.pause();
+  });
 }
 
 function removeTrapFocus(elementToFocus = null) {
