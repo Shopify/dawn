@@ -108,11 +108,11 @@ const serializeForm = form => {
   const formData = new FormData(form);
 
   for (const key of formData.keys()) {
-    if(key.indexOf('properties[') !== -1) {
+    const regex = /(?:^(properties\[))(.*?)(?:\])/;
+
+    if (regex.test(key)) { 
       obj.properties = obj.properties || {};
-      const lineItem = key.split('[');
-      const propertyKey = lineItem[1].substring(0, lineItem[1].length-1)
-      obj.properties[propertyKey] = formData.get(key);
+      obj.properties[regex.exec(key)[2]] = formData.get(key);
     } else {
       obj[key] = formData.get(key);
     }
