@@ -26,7 +26,7 @@ class CollectionFiltersForm extends HTMLElement {
   }
 
   onHistoryChange(event) {
-    const searchParams = event.state?.searchParams || '';
+    const searchParams = event.state ? event.state.searchParams : '';
     this.renderPage(searchParams, null, false);
   }
 
@@ -97,7 +97,10 @@ class CollectionFiltersForm extends HTMLElement {
 
     const facetDetailsElements =
       parsedHTML.querySelectorAll('#CollectionFiltersForm .js-filter, #CollectionFiltersFormMobile .js-filter');
-    const matchesIndex = (element) => element.dataset.index === event?.target.closest('.js-filter')?.dataset.index
+    const matchesIndex = (element) => { 
+      const jsFilter = event ? event.target.closest('.js-filter') : undefined;
+      return jsFilter ? element.dataset.index === jsFilter.dataset.index : false; 
+    }
     const facetsToRender = Array.from(facetDetailsElements).filter(element => !matchesIndex(element));
     const countsToRender = Array.from(facetDetailsElements).find(matchesIndex);
 
