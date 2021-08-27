@@ -108,7 +108,7 @@ const serializeForm = form => {
   const formData = new FormData(form);
 
   for (const key of formData.keys()) {
-    const regex = /(?:^(properties\[))(.*?)(?:\])/;
+    const regex = /(?:^(properties\[))(.*?)(?:\]$)/;
 
     if (regex.test(key)) { 
       obj.properties = obj.properties || {};
