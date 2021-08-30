@@ -9,6 +9,9 @@ class PredictiveSearch extends HTMLElement {
   }
 
   setupEventListeners() {
+    const form = this.querySelector('form.search');
+    form.addEventListener('submit', this.onFormSubmit.bind(this));
+
     this.input.addEventListener('input', debounce((event) => {
       this.onChange(event);
     }, 300).bind(this));
@@ -32,6 +35,10 @@ class PredictiveSearch extends HTMLElement {
     }
 
     this.getSearchResults(searchTerm);
+  }
+
+  onFormSubmit(event) {
+    if (!this.getQuery().length || this.querySelector('[aria-selected="true"] a')) event.preventDefault();
   }
 
   onFocus() {
@@ -101,7 +108,8 @@ class PredictiveSearch extends HTMLElement {
 
     activeElement.setAttribute('aria-selected', true);
     if (selectedElement) selectedElement.setAttribute('aria-selected', false);
-
+ 
+    this.statusElement.textContent = activeElement.textContent;
     this.input.setAttribute('aria-activedescendant', activeElement.id);
   }
 
