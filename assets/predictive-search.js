@@ -162,7 +162,6 @@ class PredictiveSearch extends HTMLElement {
     this.statusElement.textContent = statusText;
     
     setTimeout(() => {
-      console.log(statusText);
       this.statusElement.setAttribute('aria-hidden', 'true');
     }, 1000);
   }
