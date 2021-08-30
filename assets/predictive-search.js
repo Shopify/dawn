@@ -109,7 +109,7 @@ class PredictiveSearch extends HTMLElement {
     activeElement.setAttribute('aria-selected', true);
     if (selectedElement) selectedElement.setAttribute('aria-selected', false);
  
-    this.statusElement.textContent = activeElement.textContent;
+    this.setLiveRegionText(activeElement.textContent);
     this.input.setAttribute('aria-activedescendant', activeElement.id);
   }
 
@@ -152,8 +152,19 @@ class PredictiveSearch extends HTMLElement {
   setLiveRegionLoadingState() {
     this.statusElement = this.statusElement || this.querySelector('.predictive-search-status');
     this.loadingText = this.loadingText || this.getAttribute('data-loading-text');
+
+    this.setLiveRegionText(this.loadingText);
     this.setAttribute('loading', true);
-    this.statusElement.textContent = this.loadingText; 
+  }
+
+  setLiveRegionText(statusText) {
+    this.statusElement.setAttribute('aria-hidden', 'false');
+    this.statusElement.textContent = statusText;
+    
+    setTimeout(() => {
+      console.log(statusText);
+      this.statusElement.setAttribute('aria-hidden', 'true');
+    }, 1000);
   }
 
   renderSearchResults(resultsMarkup) {
@@ -166,7 +177,7 @@ class PredictiveSearch extends HTMLElement {
 
   setLiveRegionResults() { 
     this.removeAttribute('loading');
-    this.statusElement.textContent = this.querySelector('[data-predictive-search-live-region-count-value]').textContent;
+    this.setLiveRegionText(this.querySelector('[data-predictive-search-live-region-count-value]').textContent);
   } 
 
   getResultsMaxHeight() {
