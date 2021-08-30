@@ -98,7 +98,9 @@ function pauseAllMedia() {
     video.contentWindow.postMessage('{"method":"pause"}', '*');
   });
   document.querySelectorAll('video').forEach((video) => video.pause());
-  document.querySelectorAll('product-model').forEach((model) => model.modelViewerUI?.pause());
+  document.querySelectorAll('product-model').forEach((model) => {
+    if (model.modelViewerUI) modelViewerUI.pause();
+  });
 }
 
 function removeTrapFocus(elementToFocus = null) {
@@ -414,19 +416,26 @@ class ModalDialog extends HTMLElement {
       'click',
       this.hide.bind(this)
     );
-    this.addEventListener('click', (event) => {
-      if (event.target.nodeName === 'MODAL-DIALOG') this.hide();
-    });
-    this.addEventListener('keyup', () => {
+    this.addEventListener('keyup', (event) => {
       if (event.code.toUpperCase() === 'ESCAPE') this.hide();
     });
+    if (this.classList.contains('media-modal')) {
+      this.addEventListener('pointerup', (event) => {
+        if (event.pointerType === 'mouse' && !event.target.closest('deferred-media, product-model')) this.hide();
+      });
+    } else {
+      this.addEventListener('click', (event) => {
+        if (event.target.nodeName === 'MODAL-DIALOG') this.hide();
+      });
+    }
   }
 
   show(opener) {
     this.openedBy = opener;
+    const popup = this.querySelector('.template-popup');
     document.body.classList.add('overflow-hidden');
     this.setAttribute('open', '');
-    this.querySelector('.template-popup')?.loadContent();
+    if (popup) popup.loadContent();
     trapFocus(this, this.querySelector('[role="dialog"]'));
   }
 
@@ -444,8 +453,11 @@ class ModalOpener extends HTMLElement {
     super();
 
     const button = this.querySelector('button');
-    button?.addEventListener('click', () => {
-      document.querySelector(this.getAttribute('data-modal'))?.show(button);
+    
+    if (!button) return;
+    button.addEventListener('click', () => {
+      const modal = document.querySelector(this.getAttribute('data-modal'));
+      if (modal) modal.show(button);
     });
   }
 }
@@ -454,16 +466,18 @@ customElements.define('modal-opener', ModalOpener);
 class DeferredMedia extends HTMLElement {
   constructor() {
     super();
-    this.querySelector('[id^="Deferred-Poster-"]')?.addEventListener('click', this.loadContent.bind(this));
+    const poster = this.querySelector('[id^="Deferred-Poster-"]');
+    if (!poster) return;
+    poster.addEventListener('click', this.loadContent.bind(this)); 
   }
 
   loadContent() {
+    window.pauseAllMedia();
     if (!this.getAttribute('loaded')) {
       const content = document.createElement('div');
       content.appendChild(this.querySelector('template').content.firstElementChild.cloneNode(true));
 
       this.setAttribute('loaded', true);
-      window.pauseAllMedia();
       this.appendChild(content.querySelector('video, model-viewer, iframe')).focus();
     }
   }
@@ -567,7 +581,8 @@ class VariantSelects extends HTMLElement {
   }
 
   updateMedia() {
-    if (!this.currentVariant || !this.currentVariant?.featured_media) return;
+    if (!this.currentVariant) return; 
+    if (!this.currentVariant.featured_media) return;
     const newMedia = document.querySelector(
       `[data-media-id="${this.dataset.section}-${this.currentVariant.featured_media.id}"]`
     );
@@ -580,7 +595,9 @@ class VariantSelects extends HTMLElement {
     modalContent.prepend(newMediaModal);
     parent.prepend(newMedia);
     this.stickyHeader = this.stickyHeader || document.querySelector('sticky-header');
-    this.stickyHeader.dispatchEvent(new Event('preventHeaderReveal'));
+    if(this.stickyHeader) {
+      this.stickyHeader.dispatchEvent(new Event('preventHeaderReveal'));
+    }
     window.setTimeout(() => { parent.querySelector('li.product__media-item').scrollIntoView({behavior: "smooth"}); });
   }
 
@@ -602,7 +619,7 @@ class VariantSelects extends HTMLElement {
     const pickUpAvailability = document.querySelector('pickup-availability');
     if (!pickUpAvailability) return;
 
-    if (this.currentVariant?.available) {
+    if (this.currentVariant && this.currentVariant.available) {
       pickUpAvailability.fetchAvailability(this.currentVariant.id);
     } else {
       pickUpAvailability.removeAttribute('available');
@@ -621,13 +638,17 @@ class VariantSelects extends HTMLElement {
 
         if (source && destination) destination.innerHTML = source.innerHTML;
 
-        document.getElementById(`price-${this.dataset.section}`)?.classList.remove('visibility-hidden');
+        const price = document.getElementById(`price-${this.dataset.section}`);
+
+        if (price) price.classList.remove('visibility-hidden');
         this.toggleAddButton(!this.currentVariant.available, window.variantStrings.soldOut);
       });
   }
 
   toggleAddButton(disable = true, text, modifyClass = true) {
-    const addButton = document.getElementById(`product-form-${this.dataset.section}`)?.querySelector('[name="add"]');
+    const productForm = document.getElementById(`product-form-${this.dataset.section}`);
+    if (!productForm) return;
+    const addButton = productForm.querySelector('[name="add"]');
 
     if (!addButton) return;
 
@@ -643,10 +664,12 @@ class VariantSelects extends HTMLElement {
   }
 
   setUnavailable() {
-    const addButton = document.getElementById(`product-form-${this.dataset.section}`)?.querySelector('[name="add"]');
+    const button = document.getElementById(`product-form-${this.dataset.section}`);
+    const addButton = button.querySelector('[name="add"]');
+    const price = document.getElementById(`price-${this.dataset.section}`);
     if (!addButton) return;
     addButton.textContent = window.variantStrings.unavailable;
-    document.getElementById(`price-${this.dataset.section}`)?.classList.add('visibility-hidden');
+    if (price) price.classList.add('visibility-hidden');
   }
 
   getVariantData() {
