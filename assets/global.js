@@ -54,12 +54,10 @@ function trapFocus(container, elementToFocus = container) {
   elementToFocus.focus();
 }
 
-// Here I can run the querySelector to figure out if the browser supports :focus-visible or not and run code based on it.
+// Here run the querySelector to figure out if the browser supports :focus-visible or not and run code based on it.
 try {
   document.querySelector(":focus-visible");
-  console.log('not an error')
 } catch {
-  // Here I could run the function that deals with browsers not supporting :focus-visible.
   focusVisiblePolyfill();
 }
 
@@ -75,7 +73,6 @@ function focusVisiblePolyfill() {
   });
 
   window.addEventListener('mousedown', (event) => {
-    // this is a way for me to check if the click event was triggered by the keyboard. And if it is, don't remove the class.
     mouseClick = true;
   });
 
@@ -453,7 +450,7 @@ class ModalOpener extends HTMLElement {
     super();
 
     const button = this.querySelector('button');
-    
+
     if (!button) return;
     button.addEventListener('click', () => {
       const modal = document.querySelector(this.getAttribute('data-modal'));
@@ -468,7 +465,7 @@ class DeferredMedia extends HTMLElement {
     super();
     const poster = this.querySelector('[id^="Deferred-Poster-"]');
     if (!poster) return;
-    poster.addEventListener('click', this.loadContent.bind(this)); 
+    poster.addEventListener('click', this.loadContent.bind(this));
   }
 
   loadContent() {
@@ -581,7 +578,7 @@ class VariantSelects extends HTMLElement {
   }
 
   updateMedia() {
-    if (!this.currentVariant) return; 
+    if (!this.currentVariant) return;
     if (!this.currentVariant.featured_media) return;
     const newMedia = document.querySelector(
       `[data-media-id="${this.dataset.section}-${this.currentVariant.featured_media.id}"]`
