@@ -423,9 +423,7 @@
   </header>
 </{% if section.settings.enable_sticky_header %}sticky-header{% else %}div{% endif %}>
 
-{%- if request.page_type != 'cart' -%}
-  {%- render 'cart-notification', color_scheme: section.settings.color_scheme -%}
-{%- endif -%}
+{%- render 'cart-notification', color_scheme: section.settings.color_scheme -%}
 
 {% javascript %}
   class StickyHeader extends HTMLElement {
@@ -465,23 +463,24 @@
     onScroll() {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-      if (this.preventReveal) {
-        window.clearTimeout(this.isScrolling);
-
-        this.isScrolling = setTimeout(() => {
-          this.preventReveal = false;
-        }, 66);
-
+      if (scrollTop > this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
         requestAnimationFrame(this.hide.bind(this));
-      } else {
-        if (scrollTop > this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
-          requestAnimationFrame(this.hide.bind(this));
-        } else if (scrollTop < this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
+      } else if (scrollTop < this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
+        if (!this.preventReveal) {
           requestAnimationFrame(this.reveal.bind(this));
-        } else if (scrollTop <= this.headerBounds.top) {
-          requestAnimationFrame(this.reset.bind(this));
+        } else {
+          window.clearTimeout(this.isScrolling);
+
+          this.isScrolling = setTimeout(() => {
+            this.preventReveal = false;
+          }, 66);
+
+          requestAnimationFrame(this.hide.bind(this));
         }
+      } else if (scrollTop <= this.headerBounds.top) {
+        requestAnimationFrame(this.reset.bind(this));
       }
+
 
       this.currentScrollTop = scrollTop;
     }

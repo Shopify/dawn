@@ -10,7 +10,7 @@ if (!customElements.get('share-button')) {
         successMessage: this.querySelector('[id^="ShareMessage"]'),
         urlInput: this.querySelector('input')
       }
-      this.urlToShare = this.elements.urlInput?.value || document.location.href;
+      this.urlToShare = this.elements.urlInput ? this.elements.urlInput.value : document.location.href;
 
       if (navigator.share) {
         this.mainDetailsToggle.setAttribute('hidden', '');
