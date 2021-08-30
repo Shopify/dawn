@@ -54,6 +54,39 @@ function trapFocus(container, elementToFocus = container) {
   elementToFocus.focus();
 }
 
+// Here run the querySelector to figure out if the browser supports :focus-visible or not and run code based on it.
+try {
+  document.querySelector(":focus-visible");
+} catch {
+  focusVisiblePolyfill();
+}
+
+function focusVisiblePolyfill() {
+  const navKeys = ['ARROWUP', 'ARROWDOWN', 'ARROWLEFT', 'ARROWRIGHT', 'TAB', 'ENTER', 'SPACE', 'ESCAPE', 'HOME', 'END', 'PAGEUP', 'PAGEDOWN']
+  let currentFocusedElement = null;
+  let mouseClick = null;
+
+  window.addEventListener('keydown', (event) => {
+    if(navKeys.includes(event.code.toUpperCase())) {
+      mouseClick = false;
+    }
+  });
+
+  window.addEventListener('mousedown', (event) => {
+    mouseClick = true;
+  });
+
+  window.addEventListener('focus', () => {
+    if (currentFocusedElement) currentFocusedElement.classList.remove('focused');
+
+    if (mouseClick) return;
+
+    currentFocusedElement = document.activeElement;
+    currentFocusedElement.classList.add('focused');
+
+  }, true);
+}
+
 function pauseAllMedia() {
   document.querySelectorAll('.js-youtube').forEach((video) => {
     video.contentWindow.postMessage('{"event":"command","func":"' + 'pauseVideo' + '","args":""}', '*');
@@ -437,7 +470,7 @@ class ModalOpener extends HTMLElement {
     super();
 
     const button = this.querySelector('button');
-    
+
     if (!button) return;
     button.addEventListener('click', () => {
       const modal = document.querySelector(this.getAttribute('data-modal'));
@@ -452,7 +485,7 @@ class DeferredMedia extends HTMLElement {
     super();
     const poster = this.querySelector('[id^="Deferred-Poster-"]');
     if (!poster) return;
-    poster.addEventListener('click', this.loadContent.bind(this)); 
+    poster.addEventListener('click', this.loadContent.bind(this));
   }
 
   loadContent() {
@@ -565,7 +598,7 @@ class VariantSelects extends HTMLElement {
   }
 
   updateMedia() {
-    if (!this.currentVariant) return; 
+    if (!this.currentVariant) return;
     if (!this.currentVariant.featured_media) return;
     const newMedia = document.querySelector(
       `[data-media-id="${this.dataset.section}-${this.currentVariant.featured_media.id}"]`
