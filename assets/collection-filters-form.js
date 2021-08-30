@@ -12,8 +12,7 @@ class CollectionFiltersForm extends HTMLElement {
     window.addEventListener('popstate', this.onHistoryChange.bind(this));
 
     const facetWrapper = this.querySelector('#FacetsWrapperDesktop');
-    if(!facetWrapper) return;
-    this.querySelector('#FacetsWrapperDesktop').addEventListener('keyup', onKeyUpEscape);
+    if (facetWrapper) facetWrapper.addEventListener('keyup', onKeyUpEscape);
   }
 
   onSubmitHandler(event) {

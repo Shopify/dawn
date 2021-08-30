@@ -74,7 +74,7 @@ function removeTrapFocus(elementToFocus = null) {
 }
 
 function onKeyUpEscape(event) {
-  if(event.code.toUpperCase() !== 'ESCAPE') return;
+  if (event.code.toUpperCase() !== 'ESCAPE') return;
 
   const openDetailsElement = event.target.closest('details[open]');
   if (!openDetailsElement) return;
