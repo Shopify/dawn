@@ -156,7 +156,7 @@ const serializeForm = form => {
   for (const key of formData.keys()) {
     const regex = /(?:^(properties\[))(.*?)(?:\]$)/;
 
-    if (regex.test(key)) { 
+    if (regex.test(key)) {
       obj.properties = obj.properties || {};
       obj.properties[regex.exec(key)[2]] = formData.get(key);
     } else {
@@ -514,8 +514,11 @@ class SliderComponent extends HTMLElement {
 
     if (!this.slider || !this.nextButton) return;
 
-    const resizeObserver = new ResizeObserver(entries => this.initPages());
-    resizeObserver.observe(this.slider);
+    // const resizeObserver = new ResizeObserver(entries => this.initPages());
+    // resizeObserver.observe(this.slider);
+
+    this.initPages()
+    window.addEventListener('resize', () => { this.initPages()});
 
     this.slider.addEventListener('scroll', this.update.bind(this));
     this.prevButton.addEventListener('click', this.onButtonClick.bind(this));
