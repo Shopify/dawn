@@ -159,8 +159,7 @@ class CollectionFiltersForm extends HTMLElement {
   getSections() {
     return [
       {
-        id: 'main-collection-product-grid',
-        section: document.getElementById('main-collection-product-grid').dataset.id,
+        section: document.getElementById('product-grid').dataset.id,
       }
     ]
   }

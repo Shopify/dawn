@@ -1,3 +1,4 @@
+{{ 'template-collection.css' | asset_url | stylesheet_tag }}
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
 {{ 'component-product-grid.css' | asset_url | stylesheet_tag }}
@@ -5,6 +6,8 @@
 <link rel="stylesheet" href="{{ 'component-search.css' | asset_url }}" media="print" onload="this.media='all'">
 
 <noscript>{{ 'component-search.css' | asset_url | stylesheet_tag }}</noscript>
+
+<script src="{{ 'collection-filters-form.js' | asset_url }}" defer="defer"></script>
 
 <style>
   .template-search__search {
@@ -104,18 +107,25 @@
 
     </div>
     {%- if search.performed -%}
-      <p class="element-margin" role="status">
-        {%- if search.results_count == 0 -%}
-          {{ 'templates.search.no_results' | t: terms: search.terms }}
-        {%- else -%}
-          {{ 'templates.search.results_with_count' | t: terms: search.terms, count: search.results_count }}
-        {%- endif -%}
-      </p>
+      {%- if search.results_count == 0 -%}
+        <p class="element-margin" role="status">{{ 'templates.search.no_results' | t: terms: search.terms }}</p>
+      {%- elsif section.settings.enable_filtering == false and section.settings.enable_sorting == false -%}
+        <p class="element-margin" role="status">{{ 'templates.search.results_with_count_and_term' | t: terms: search.terms, count: search.results_count }}</p>    
+      {%- endif -%}
     {%- endif -%}
   </div>
+  <div id="CollectionProductGrid">
   {%- if search.performed and search.results.size > 0 -%}
+
+    {%- if section.settings.enable_filtering or section.settings.enable_sorting -%}
+      <div class="page-width">
+        {% render 'facets', collection: search, enable_filtering: section.settings.enable_filtering, enable_sorting: section.settings.enable_sorting, collapse_on_larger_devices: section.settings.collapse_on_larger_devices %}
+      </div>
+    {%- endif -%}
+
     {% paginate search.results by 24 %}
-      <div class="template-search__results page-width">
+      <div class="template-search__results collection page-width" id="product-grid" data-id="{{ section.id }}">
+        <div class="loading-overlay gradient"></div>
         <ul class="grid grid--4-col-desktop grid--3-col-tablet grid--2-col grid--one-third-max grid--quarter-max negative-margin product-grid" role="list">
           {%- for item in search.results -%}
             <li class="grid__item{% unless item.object_type == 'product' %} grid__item--small{% endunless %}">
@@ -191,6 +201,7 @@
       </div>
     {% endpaginate %}
   {%- endif -%}
+  </div>  
 </div>
 
 {% schema %}
@@ -253,6 +264,29 @@
       "default": false,
       "label": "t:sections.main-search.settings.show_rating.label",
       "info": "t:sections.main-search.settings.show_rating.info"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.main-collection-product-grid.settings.header__1.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_filtering",
+      "default": true,
+      "label": "t:sections.main-collection-product-grid.settings.enable_filtering.label",
+      "info": "t:sections.main-collection-product-grid.settings.enable_filtering.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sorting",
+      "default": true,
+      "label": "t:sections.main-collection-product-grid.settings.enable_sorting.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "collapse_on_larger_devices",
+      "default": false,
+      "label": "t:sections.main-collection-product-grid.settings.collapse_on_larger_devices.label"
     },
     {
       "type": "header",
