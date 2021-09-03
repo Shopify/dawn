@@ -2,29 +2,43 @@
     Renders facets (filtering and sorting)
 
     Accepts:
+    - results: {Object} Collection or Search object
     - enable_filtering: {Boolean} Show filtering when true
     - enable_sorting: {Boolean} Show sorting when true
     - collapse_on_larger_devices: {Boolean} Collapse filtering/sorting into menu on larger devices when true
 
     Usage:
-    {% render 'facets', collection: collection, enable_filtering: true, enable_sorting: true, collapse_on_larger_devices: false %}
+    {% render 'facets', results: collection, enable_filtering: true, enable_sorting: true, collapse_on_larger_devices: false %}
 {% endcomment %}
 
-{%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
-{%- assign total_active_values = 0 -%}
+{%- liquid
+  assign sort_by = results.sort_by | default: results.default_sort_by
+  assign total_active_values = 0
+  if results.url
+    assign results_url = results.url
+  else 
+    assign terms = results.terms | escape
+    assign results_url = '?q=' | append: terms | append: '&options%5Bprefix%5D=last&sort_by=' | append: sort_by
+  endif
+-%}
 
 <div class="facets-container">
   {%- unless collapse_on_larger_devices -%}
     <collection-filters-form class="facets small-hide">
       <form id="CollectionFiltersForm" class="facets__form">
-        <input type="hidden" name="q" value="{{ search.terms | escape }}">
+
+        {%- if results.terms -%}
+          <input type="hidden" name="q" value="{{ results.terms | escape }}">
+          <input name="options[prefix]" type="hidden" value="last">
+        {%- endif -%}
+
         {% if enable_filtering %}
           <div id="FacetsWrapperDesktop" class="facets__wrapper">
-            {%- unless collection.filters == empty -%}
+            {%- unless results.filters == empty -%}
               <p class="facets__heading caption-large">{{ 'sections.collection_template.filter_by_label' | t }}</p>
             {%- endunless -%}
 
-            {%- for filter in collection.filters -%}
+            {%- for filter in results.filters -%}
               {%- assign total_active_values = total_active_values | plus: filter.active_values.size -%}
               {% case filter.type %}
               {% when 'list' %}
@@ -156,7 +170,7 @@
           </div>
 
           <div class="active-facets active-facets-desktop">
-            {%- for filter in collection.filters -%}
+            {%- for filter in results.filters -%}
               {%- for value in filter.active_values -%}
                 <facet-remove>
                   <a href="{{ value.url_to_remove }}" class="active-facets__button active-facets__button--light">
@@ -181,15 +195,15 @@
               {% endif %}
             {%- endfor -%}
             <facet-remove class="active-facets__button-wrapper">
-              <a href="{{ collection.url }}?sort_by={{ sort_by }}&q={{ search.terms | escape }}" class="active-facets__button-remove underlined-link">
+              <a href="{{ results_url }}" class="active-facets__button-remove underlined-link">
                 <span>{{ 'sections.collection_template.clear_all' | t }}</span>
               </a>
             </facet-remove>
           </div>
         {% endif %}
 
-        {% if collection.current_vendor or collection.current_type %}
-          <input type="hidden" name="q" value="{{ collection.current_vendor }}{{ collection.current_type }}">
+        {% if results.current_vendor or results.current_type %}
+          <input type="hidden" name="q" value="{{ results.current_vendor }}{{ results.current_type }}">
         {% endif %}
 
         {%- if enable_sorting -%}
@@ -197,9 +211,9 @@
             <div class="collection-filters__field">
               <label class="collection-filters__label caption-large" for="SortBy">{{ 'sections.collection_template.sort_by_label' | t }}</label>
               <div class="select">
-                {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
+                {%- assign sort_by = results.sort_by | default: results.default_sort_by -%}
                 <select name="sort_by" class="collection-filters__sort select__select caption-large" id="SortBy" aria-describedby="a11y-refresh-page-message">
-                  {%- for option in collection.sort_options -%}
+                  {%- for option in results.sort_options -%}
                     <option value="{{ option.value | escape }}"{% if option.value == sort_by %} selected="selected"{% endif %}>{{ option.name | escape }}</option>
                   {%- endfor -%}
                 </select>
@@ -215,12 +229,12 @@
 
         <div class="collection-product-count light" role="status">
           <p id="ProductCountDesktop" class="collection-product-count__text">
-            {%- if collection.results_count -%}
-              {{ 'templates.search.results_with_count' | t: terms: collection.terms, count: collection.results_count }}
-            {%- elsif collection.products_count == collection.all_products_count -%}
-              {{ 'sections.collection_template.product_count_simple' | t: count: collection.products_count }}
+            {%- if results.results_count -%}
+              {{ 'templates.search.results_with_count' | t: terms: results.terms, count: results.results_count }}
+            {%- elsif results.products_count == results.all_products_count -%}
+              {{ 'sections.collection_template.product_count_simple' | t: count: results.products_count }}
             {%- else -%}
-              {{ 'sections.collection_template.product_count' | t: product_count: collection.products_count, count: collection.all_products_count }}
+              {{ 'sections.collection_template.product_count' | t: product_count: results.products_count, count: results.all_products_count }}
             {%- endif -%}
           </p>
           <div class="loading-overlay__spinner">
@@ -249,18 +263,18 @@
               <div class="mobile-facets__header-inner">
                 <h2 class="mobile-facets__heading">{{ 'sections.collection_template.filter_and_sort' | t }}</h2>
                 <p class="mobile-facets__count">
-                    {%- if collection.results_count -%}
-                      {{ 'templates.search.results_with_count' | t: terms: collection.terms, count: collection.results_count }}
-                    {%- elsif collection.products_count == collection.all_products_count -%}
-                      {{ 'sections.collection_template.product_count_simple' | t: count: collection.products_count }}
+                    {%- if results.results_count -%}
+                      {{ 'templates.search.results_with_count' | t: terms: results.terms, count: results.results_count }}
+                    {%- elsif results.products_count == results.all_products_count -%}
+                      {{ 'sections.collection_template.product_count_simple' | t: count: results.products_count }}
                     {%- else -%}
-                      {{ 'sections.collection_template.product_count' | t: product_count: collection.products_count, count: collection.all_products_count }}
+                      {{ 'sections.collection_template.product_count' | t: product_count: results.products_count, count: results.all_products_count }}
                     {%- endif -%}
                 </p>
               </div>
             </div>
             <div class="mobile-facets__main">
-              {%- for filter in collection.filters -%}
+              {%- for filter in results.filters -%}
                 {% case filter.type %}
                 {% when 'list' %}
                   <details class="mobile-facets__details js-filter" data-index="mobile-{{ forloop.index }}">
@@ -303,7 +317,7 @@
 
                       <div class="no-js-hidden mobile-facets__footer">
                         <facet-remove class="mobile-facets__clear-wrapper">
-                          <a href="{{ collection.url }}" class="mobile-facets__clear underlined-link">{{ 'sections.collection_template.clear' | t }}</a>
+                          <a href="{{ results_url }}" class="mobile-facets__clear underlined-link">{{ 'sections.collection_template.clear' | t }}</a>
                         </facet-remove>
                         <button type="button" class="no-js-hidden button button--primary" onclick="this.closest('.mobile-facets__wrapper').querySelector('summary').click()">{{ 'sections.collection_template.apply' | t }}</button>
                         <noscript><button class="button button--primary">{{ 'sections.collection_template.apply' | t }}</button></noscript>
@@ -371,7 +385,7 @@
                       </price-range>
                       <div class="no-js-hidden mobile-facets__footer">
                         <facet-remove class="mobile-facets__clear-wrapper">
-                          <a href="{{ collection.url }}" class="mobile-facets__clear underlined-link">{{ 'sections.collection_template.clear' | t }}</a>
+                          <a href="{{ results_url }}" class="mobile-facets__clear underlined-link">{{ 'sections.collection_template.clear' | t }}</a>
                         </facet-remove>
                         <button type="button" class="no-js-hidden button button--primary" onclick="this.closest('.mobile-facets__wrapper').querySelector('summary').click()">{{ 'sections.collection_template.apply' | t }}</button>
                         <noscript><button class="button button--primary">{{ 'sections.collection_template.apply' | t }}</button></noscript>
@@ -388,7 +402,7 @@
                       <label for="SortBy-mobile">{{ 'sections.collection_template.sort_by_label' | t }}</label>
                       <div class="select">
                         <select name="sort_by" class="select__select" id="SortBy-mobile" aria-describedby="a11y-refresh-page-message">
-                          {%- for option in collection.sort_options -%}
+                          {%- for option in results.sort_options -%}
                             <option value="{{ option.value | escape }}"{% if option.value == sort_by %} selected="selected"{% endif %}>{{ option.name | escape }}</option>
                           {%- endfor -%}
                         </select>
@@ -401,18 +415,21 @@
 
               <div class="mobile-facets__footer">
                 <facet-remove class="mobile-facets__clear-wrapper">
-                  <a href="{{ collection.url }}" class="mobile-facets__clear underlined-link">{{ 'sections.collection_template.clear_all' | t }}</a>
+                  <a href="{{ results_url }}" class="mobile-facets__clear underlined-link">{{ 'sections.collection_template.clear_all' | t }}</a>
                 </facet-remove>
                 <button type="button" class="no-js-hidden button button--primary" onclick="this.closest('.mobile-facets__wrapper').querySelector('summary').click()">{{ 'sections.collection_template.apply' | t }}</button>
                 <noscript><button class="button button--primary">{{ 'sections.collection_template.apply' | t }}</button></noscript>
               </div>
             </div>
 
-            {% if collection.current_vendor or collection.current_type %}
-              <input type="hidden" name="q" value="{{ collection.current_vendor }}{{ collection.current_type }}">
+            {% if results.current_vendor or results.current_type %}
+              <input type="hidden" name="q" value="{{ results.current_vendor }}{{ results.current_type }}">
             {% endif %}
 
-            <input type="hidden" name="q" value="{{ search.terms | escape }}">
+            {%- if results.terms -%}
+              <input type="hidden" name="q" value="{{ results.terms | escape }}">
+              <input name="options[prefix]" type="hidden" value="last">
+            {%- endif -%}            
           </div>
         </form>
       </collection-filters-form>
@@ -420,7 +437,7 @@
   </menu-drawer>
 
   <div class="active-facets active-facets-mobile {% unless collapse_on_larger_devices %} medium-hide large-up-hide{% endunless %}">
-    {%- for filter in collection.filters -%}
+    {%- for filter in results.filters -%}
       {%- for value in filter.active_values -%}
         <facet-remove>
           <a href="{{ value.url_to_remove }}" class="active-facets__button active-facets__button--light">
@@ -446,19 +463,19 @@
       {%- endif -%}
     {%- endfor -%}
     <facet-remove class="active-facets__button-wrapper">
-      <a href="{{ collection.url }}?sort_by={{ sort_by }}&q={{ search.terms | escape }}" class="active-facets__button-remove underlined-link">
+      <a href="{{ results_url }}" class="active-facets__button-remove underlined-link">
         <span>{{ 'sections.collection_template.clear_all' | t }}</span>
       </a>
     </facet-remove>
   </div>
   <div class="collection-product-count light{% unless collapse_on_larger_devices %} medium-hide large-up-hide{% endunless %}" role="status">
     <p id="ProductCount" class="collection-product-count__text">
-      {%- if collection.results_count -%}
-        {{ 'templates.search.results_with_count' | t: terms: collection.terms, count: collection.results_count }}
-      {%- elsif collection.products_count == collection.all_products_count -%}
-        {{ 'sections.collection_template.product_count_simple' | t: count: collection.products_count }}
+      {%- if results.results_count -%}
+        {{ 'templates.search.results_with_count' | t: terms: results.terms, count: results.results_count }}
+      {%- elsif results.products_count == results.all_products_count -%}
+        {{ 'sections.collection_template.product_count_simple' | t: count: results.products_count }}
       {%- else -%}
-        {{ 'sections.collection_template.product_count' | t: product_count: collection.products_count, count: collection.all_products_count }}
+        {{ 'sections.collection_template.product_count' | t: product_count: results.products_count, count: results.all_products_count }}
       {%- endif -%}
     </p>
     <div class="loading-overlay__spinner">

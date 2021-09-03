@@ -48,7 +48,8 @@
 
 {%- liquid
   assign sort_by = search.sort_by | default: search.default_sort_by
-  assign search_url = '?q=' | append: search.terms | append: '&options%5Bprefix%5D=last&sort_by=' | append: sort_by
+  assign terms = search.terms | escape
+  assign search_url = '?q=' | append: terms | append: '&options%5Bprefix%5D=last&sort_by=' | append: sort_by
 -%}
 
 <div class="template-search spaced-section{% unless search.performed and search.results_count > 0 %} template-search--empty{% endunless %}">
@@ -113,23 +114,24 @@
     </div>
     {%- if search.performed -%}
       {%- unless section.settings.enable_filtering or section.settings.enable_sorting -%} 
-        <p role="status">{{ 'templates.search.results_with_count_and_term' | t: terms: search.terms, count: search.results_count }}</p>
+        {%- if search.results_count > 0 -%}        
+          <p role="status">{{ 'templates.search.results_with_count_and_term' | t: terms: search.terms, count: search.results_count }}</p>
+        {%- endif -%}
       {%- endunless -%}
       {%- if search.results_count == 0 and search.filters == empty -%}        
         <p role="status">{{ 'templates.search.no_results' | t: terms: search.terms }}</p>
       {%- endif -%}
     {%- endif -%}
   </div>
-
-  <div id="ProductGrid">
-    {%- if search.performed -%}
-      {%- if search.filters != empty -%}
-        {%- if section.settings.enable_filtering or section.settings.enable_sorting -%}
-          <div class="page-width">
-            {% render 'facets', collection: search, enable_filtering: section.settings.enable_filtering, enable_sorting: section.settings.enable_sorting, collapse_on_larger_devices: section.settings.collapse_on_larger_devices %}
-          </div>
-        {%- endif -%}
+  {%- if search.performed -%}
+    {%- if search.filters != empty -%}
+      {%- if section.settings.enable_filtering or section.settings.enable_sorting -%}
+        <div class="page-width">
+          {% render 'facets', results: search, enable_filtering: section.settings.enable_filtering, enable_sorting: section.settings.enable_sorting, collapse_on_larger_devices: section.settings.collapse_on_larger_devices %}
+        </div>
       {%- endif -%}
+    {%- endif -%}
+    <div id="ProductGrid">
       {%- if search.results.size == 0 and search.filters != empty -%}
         <div class="collection collection--empty page-width" id="product-grid" data-id="{{ section.id }}">
           <div class="loading-overlay gradient"></div>
@@ -219,8 +221,8 @@
           </div>
         {% endpaginate %}    
       {%- endif -%}
-    {%- endif -%}
-  </div> 
+    </div> 
+  {%- endif -%}
 </div>
 
 {% schema %}
