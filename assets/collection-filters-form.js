@@ -41,9 +41,12 @@ class CollectionFiltersForm extends HTMLElement {
 
   renderPage(searchParams, event, updateURLHash = true) {
     const sections = this.getSections();
-    const countContainerDesktop = document.getElementById('CollectionProductCountDesktop');
-    document.getElementById('CollectionProductGrid').querySelector('.collection').classList.add('loading');
-    document.getElementById('CollectionProductCount').classList.add('loading');
+    const countContainer = document.getElementById('ProductCount');
+    const countContainerDesktop = document.getElementById('ProductCountDesktop');
+    document.getElementById('ProductGrid').querySelector('.collection').classList.add('loading');
+    if (countContainer){
+      countContainer.classList.add('loading');
+    }    
     if (countContainerDesktop){
       countContainerDesktop.classList.add('loading');
     }
@@ -80,13 +83,13 @@ class CollectionFiltersForm extends HTMLElement {
   }
 
   renderProductGrid(html) {
-    document.getElementById('CollectionProductGrid').innerHTML = new DOMParser().parseFromString(html, 'text/html').getElementById('CollectionProductGrid').innerHTML;
+    document.getElementById('ProductGrid').innerHTML = new DOMParser().parseFromString(html, 'text/html').getElementById('ProductGrid').innerHTML;
   }
 
   renderProductCount(html) {
-    const count = new DOMParser().parseFromString(html, 'text/html').getElementById('CollectionProductCount').innerHTML
-    const container = document.getElementById('CollectionProductCount');
-    const containerDesktop = document.getElementById('CollectionProductCountDesktop');
+    const count = new DOMParser().parseFromString(html, 'text/html').getElementById('ProductCount').innerHTML
+    const container = document.getElementById('ProductCount');
+    const containerDesktop = document.getElementById('ProductCountDesktop');
     container.innerHTML = count;
     container.classList.remove('loading');
     if (containerDesktop) {
