@@ -144,15 +144,12 @@ class CollectionFiltersForm extends HTMLElement {
   }
 
   renderCounts(source, target) {
-    const countElementSelectors = ['.count-bubble','.facets__selected'];
-    countElementSelectors.forEach((selector) => {
-      const targetElement = target.querySelector(selector);
-      const sourceElement = source.querySelector(selector);
+    const targetElement = target.querySelector('.facets__selected');
+    const sourceElement = source.querySelector('.facets__selected');
 
-      if (sourceElement && targetElement) {
-        target.querySelector(selector).outerHTML = source.querySelector(selector).outerHTML;
-      }
-    });
+    if (sourceElement && targetElement) {
+      target.querySelector('.facets__selected').outerHTML = source.querySelector('.facets__selected').outerHTML;
+    }
   }
 
   updateURLHash(searchParams) {
