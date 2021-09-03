@@ -1,4 +1,4 @@
-class CollectionFiltersForm extends HTMLElement {
+class FacetFiltersForm extends HTMLElement {
   constructor() {
     super();
     this.filterData = [];
@@ -102,7 +102,7 @@ class CollectionFiltersForm extends HTMLElement {
     const parsedHTML = new DOMParser().parseFromString(html, 'text/html');
 
     const facetDetailsElements =
-      parsedHTML.querySelectorAll('#CollectionFiltersForm .js-filter, #CollectionFiltersFormMobile .js-filter');
+      parsedHTML.querySelectorAll('#FacetFiltersForm .js-filter, #FacetFiltersFormMobile .js-filter');
     const matchesIndex = (element) => { 
       const jsFilter = event ? event.target.closest('.js-filter') : undefined;
       return jsFilter ? element.dataset.index === jsFilter.dataset.index : false; 
@@ -140,7 +140,7 @@ class CollectionFiltersForm extends HTMLElement {
       document.querySelector(selector).innerHTML = html.querySelector(selector).innerHTML;
     });
 
-    document.getElementById('CollectionFiltersFormMobile').closest('menu-drawer').bindEvents();
+    document.getElementById('FacetFiltersFormMobile').closest('menu-drawer').bindEvents();
   }
 
   renderCounts(source, target) {
@@ -165,7 +165,7 @@ class CollectionFiltersForm extends HTMLElement {
   }
 }
 
-customElements.define('collection-filters-form', CollectionFiltersForm);
+customElements.define('facet-filters-form', FacetFiltersForm);
 
 class PriceRange extends HTMLElement {
   constructor() {
@@ -208,7 +208,7 @@ class FacetRemove extends HTMLElement {
     super();
     this.querySelector('a').addEventListener('click', (event) => {
       event.preventDefault();
-      const form = this.closest('collection-filters-form') || document.querySelector('collection-filters-form');
+      const form = this.closest('facet-filters-form') || document.querySelector('facet-filters-form');
       form.onActiveFilterClick(event);
     });
   }
