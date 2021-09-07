@@ -10,6 +10,7 @@ if (!customElements.get('product-form')) {
 
     onSubmitHandler(evt) {
       evt.preventDefault();
+      this.handleErrorMessage();
       this.cartNotification.setActiveElement(document.activeElement);
 
       const submitButton = this.querySelector('[type="submit"]');
