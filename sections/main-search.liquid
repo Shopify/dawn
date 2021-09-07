@@ -2,16 +2,14 @@
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
 {{ 'component-product-grid.css' | asset_url | stylesheet_tag }}
 
-<link rel="stylesheet" href="{{ 'component-badge.css' | asset_url }}" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="{{ 'component-search.css' | asset_url }}" media="print" onload="this.media='all'">
 
-<noscript>{{ 'component-badge.css' | asset_url | stylesheet_tag }}</noscript>
 <noscript>{{ 'component-search.css' | asset_url | stylesheet_tag }}</noscript>
 
 <style>
   .template-search__search {
     margin: 0 auto;
-    max-width: 29.5rem;
+    max-width: 47.8rem;
   }
 
   .template-search__search .search {
@@ -26,16 +24,16 @@
     padding-bottom: 18rem;
   }
 
-  .template-search .grid__item--small {
+  .template-search .grid__item--small:not(:last-child) {
     padding-bottom: 0.5rem;
   }
 
   @media screen and (min-width: 750px) {
-    .template-search__search {
-      max-width: 47.8rem;
+    .template-search__results {
+      margin-top: 9rem;
     }
 
-    .template-search .grid__item--small {
+    .template-search .grid__item--small:not(:last-child) {
       padding-bottom: 1rem;
     }
   }
@@ -53,26 +51,57 @@
       <h1 class="h2">{{ 'general.search.search' | t }}</h1>
     {%- endif -%}
     <div class="template-search__search">
-      <form action="{{ routes.search_url }}" method="get" role="search" class="search">
-        <div class="field">
-          <input
-            class="search__input field__input"
-            id="Search-In-Template"
-            type="search"
-            name="q"
-            value="{{ search.terms | escape }}"
-            {% if search.performed %}autofocus{% endif %}
-            placeholder="{{ 'general.search.search' | t }}"
-          >
-          <label class="field__label" for="Search-In-Template" aria-hidden="true">{{ 'general.search.search' | t }}</label>
-          <input name="options[prefix]" type="hidden" value="last">
-          <button type="submit" class="search__button field__button focus-inset" aria-label="{{ 'general.search.search' | t }}">
-            <svg class="icon icon-search">
-              <use xlink:href="#icon-search">
-            </svg>
-          </button>
-        </div>
-      </form>
+      {%- if settings.predictive_search_enabled -%}
+        <predictive-search data-loading-text="{{ 'accessibility.loading' | t }}">
+      {%- endif -%} 
+        <form action="{{ routes.search_url }}" method="get" role="search" class="search">
+          <div class="field">
+            <input
+              class="search__input field__input"
+              id="Search-In-Template"
+              type="search"
+              name="q"
+              value="{{ search.terms | escape }}"
+              placeholder="{{ 'general.search.search' | t }}"
+              {%- if settings.predictive_search_enabled -%}
+                role="combobox"
+                aria-expanded="false"
+                aria-owns="predictive-search-results-list"
+                aria-controls="predictive-search-results-list"
+                aria-haspopup="listbox"
+                aria-autocomplete="list" 
+                autocorrect="off"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+              {%- endif -%}
+            >
+            <label class="field__label" for="Search-In-Template">{{ 'general.search.search' | t }}</label>
+            <input name="options[prefix]" type="hidden" value="last">
+
+            {%- if settings.predictive_search_enabled -%}
+              <div class="predictive-search predictive-search--search-template" tabindex="-1" data-predictive-search>
+                <div class="predictive-search__loading-state">
+                  <svg aria-hidden="true" focusable="false" role="presentation" class="spinner" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+                    <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+                  </svg>
+                </div>
+              </div>
+  
+              <span class="predictive-search-status visually-hidden" role="status" aria-hidden="true"></span> 
+            {%- endif -%}
+                
+            <button type="submit" class="search__button field__button" aria-label="{{ 'general.search.search' | t }}">
+              <svg class="icon icon-search">
+                <use xlink:href="#icon-search">
+              </svg>
+            </button>
+          </div>
+        </form>
+      {%- if settings.predictive_search_enabled -%}
+        </predictive-search>
+      {%- endif -%} 
+
     </div>
     {%- if search.performed -%}
       <p class="element-margin" role="status">
@@ -85,7 +114,7 @@
     {%- endif -%}
   </div>
   {%- if search.performed and search.results.size > 0 -%}
-    {% paginate search.results by 16 %}
+    {% paginate search.results by 24 %}
       <div class="template-search__results page-width">
         <ul class="grid grid--4-col-desktop grid--3-col-tablet grid--2-col grid--one-third-max grid--quarter-max negative-margin product-grid" role="list">
           {%- for item in search.results -%}
@@ -97,8 +126,10 @@
                     product_card_product: item,
                     media_size: section.settings.image_ratio,
                     show_secondary_image: section.settings.show_secondary_image,
-                    enable_image_padding: section.settings.enable_image_padding,
-                    show_vendor: section.settings.show_vendor
+                    add_image_padding: section.settings.add_image_padding,
+                    show_vendor: section.settings.show_vendor,
+                    show_image_outline: section.settings.show_image_outline,
+                    show_rating: section.settings.show_rating
                   %}
                 {%- when 'article' -%}
                   <a href="{{ item.url }}" class="card-wrapper">
@@ -108,13 +139,14 @@
                           <div class="media media--cropped">
                             <img
                               srcset="{%- if item.image.src.width >= 165 -%}{{ item.image.src | img_url: '165x' }} 165w,{%- endif -%}
-                                  {%- if item.image.src.width >= 360 -%}{{ item.image.src | img_url: '360x' }} 268w,{%- endif -%}
-                                  {%- if item.image.src.width >= 533 -%}{{ item.image.src | img_url: '533x' }} 357w,{%- endif -%}
-                                  {%- if item.image.src.width >= 720 -%}{{ item.image.src | img_url: '720x' }} 536w,{%- endif -%}
-                                  {%- if item.image.src.width >= 940 -%}{{ item.image.src | img_url: '940x' }} 714w{%- endif -%}"
-                              src="{{ item.image.src | img_url: '533x' }}"
+                                {%- if item.image.src.width >= 360 -%}{{ item.image.src | img_url: '360x' }} 360w,{%- endif -%}
+                                {%- if item.image.src.width >= 533 -%}{{ item.image.src | img_url: '533x' }} 533w,{%- endif -%}
+                                {%- if item.image.src.width >= 720 -%}{{ item.image.src | img_url: '720x' }} 720w,{%- endif -%}
+                                {%- if item.image.src.width >= 940 -%}{{ item.image.src | img_url: '940x' }} 940w,{%- endif -%}
+                                {%- if item.image.src.width >= 1065 -%}{{ item.image.src | img_url: '1065x' }} 1065w{%- endif -%}"
+                              src="{{ item.image.src | img_url: '940x' }}"
                               loading="lazy"
-                              sizes="(min-width: 1200px) 268px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)"
+                              sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 130 | divided_by: 4 }}px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)"
                               width="{{ item.image.src.width }}"
                               height="{{ item.image.src.height }}"
                               alt="{{ item.image.src.alt | escape }}"
@@ -122,7 +154,7 @@
                           </div>
                         {%- endif -%}
                         <div class="card__content">
-                          <h2 class="card__heading h3">{{ item.title | truncate: 50 | escape }}</h2>
+                          <h2 class="card__text h3">{{ item.title | truncate: 50 | escape }}</h2>
                           <div class="card-article-info caption-with-letter-spacing h5">
                             {%- if section.settings.article_show_date -%}
                               <span class="circle-divider">{{ item.published_at | time_tag: format: 'month_year' }}</span>
@@ -142,7 +174,7 @@
                   <a href="{{ item.url }}" class="card-wrapper">
                     <div class="card card--search card--soft card--text-only">
                       <div class="card__inner">
-                        <div class="card__content"><h2 class="card__heading h3">{{ item.title | truncate: 50 | escape }}</h2></div>
+                        <div class="card__content"><h2 class="card__text h3">{{ item.title | truncate: 50 | escape }}</h2></div>
                         <div class="card__badge">
                           <span class="badge color-background-1">{{ 'templates.search.page' | t }}</span>
                         </div>
@@ -154,7 +186,7 @@
           {%- endfor -%}
         </ul>
         {%- if paginate.pages > 1 -%}
-          {% render 'pagination', paginate: paginate, class: 'pagination-wrapper-small' %}
+          {% render 'pagination', paginate: paginate %}
         {%- endif -%}
       </div>
     {% endpaginate %}
@@ -199,15 +231,28 @@
     },
     {
       "type": "checkbox",
-      "id": "enable_image_padding",
+      "id": "add_image_padding",
       "default": false,
-      "label": "t:sections.main-search.settings.enable_image_padding.label"
+      "label": "t:sections.main-search.settings.add_image_padding.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image_outline",
+      "default": true,
+      "label": "t:sections.main-search.settings.show_image_outline.label"
     },
     {
       "type": "checkbox",
       "id": "show_vendor",
       "default": false,
       "label": "t:sections.main-search.settings.show_vendor.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "default": false,
+      "label": "t:sections.main-search.settings.show_rating.label",
+      "info": "t:sections.main-search.settings.show_rating.info"
     },
     {
       "type": "header",

@@ -72,7 +72,9 @@ class CartItems extends HTMLElement {
       .then((state) => {
         const parsedState = JSON.parse(state);
         this.classList.toggle('is-empty', parsedState.item_count === 0);
-        document.getElementById('main-cart-footer')?.classList.toggle('is-empty', parsedState.item_count === 0);
+        const cartFooter = document.getElementById('main-cart-footer');
+
+        if (cartFooter) cartFooter.classList.toggle('is-empty', parsedState.item_count === 0);
 
         this.getSectionsToRender().forEach((section => {
           const elementToReplace =
@@ -83,7 +85,8 @@ class CartItems extends HTMLElement {
         }));
 
         this.updateLiveRegions(line, parsedState.item_count);
-        document.getElementById(`CartItem-${line}`)?.querySelector(`[name="${name}"]`)?.focus();
+        const lineItem =  document.getElementById(`CartItem-${line}`);
+        if (lineItem) lineItem.querySelector(`[name="${name}"]`).focus();
         this.disableLoading();
       }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
@@ -121,7 +124,7 @@ class CartItems extends HTMLElement {
 
   enableLoading(line) {
     document.getElementById('main-cart-items').classList.add('cart__items--disabled');
-    this.querySelectorAll('.loading-overlay')[line - 1].classList.remove('hidden');
+    this.querySelectorAll(`#CartItem-${line} .loading-overlay`).forEach((overlay) => overlay.classList.remove('hidden'));
     document.activeElement.blur();
     this.lineItemStatusElement.setAttribute('aria-hidden', false);
   }

@@ -14,13 +14,14 @@
               itemprop="image"
               {% if block.settings.image_height == 'adapt' and article.image %} style="padding-bottom: {{ 1 | divided_by: article.image.aspect_ratio | times: 100 }}%;"{% endif %}
             >
-              <img srcset="{% if article.image.width >= 350 %}{{ article.image | img_url: '350x' }} 350w,{% endif %}
-                  {% if article.image.width >= 700 %}{{ article.image | img_url: '700x' }} 700w,{% endif %}
-                  {% if article.image.width >= 749 %}{{ article.image | img_url: '749x' }} 749w,{% endif %}
-                  {% if article.image.width >= 1498 %}{{ article.image | img_url: '1498x' }} 1498w,{% endif %}
+              <img
+                srcset="{% if article.image.width >= 350 %}{{ article.image | img_url: '350x' }} 350w,{% endif %}
+                  {% if article.image.width >= 750 %}{{ article.image | img_url: '750x' }} 750w,{% endif %}
                   {% if article.image.width >= 1100 %}{{ article.image | img_url: '1100x' }} 1100w,{% endif %}
-                  {% if article.image.width >= 2200 %}{{ article.image | img_url: '2200x' }} 2200w,{% endif %}"
-                sizes="(min-width: 1200px) 1100px, (min-width: 750px) calc(100vw - 10rem), 100vw"
+                  {% if article.image.width >= 1500 %}{{ article.image | img_url: '1500x' }} 1500w,{% endif %}
+                  {% if article.image.width >= 2200 %}{{ article.image | img_url: '2200x' }} 2200w,{% endif %}
+                  {% if article.image.width >= 3000 %}{{ article.image | img_url: '3000x' }} 3000w,{% endif %}"
+                sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 }}px, (min-width: 750px) calc(100vw - 10rem), 100vw"
                 src="{{ article.image | img_url: '1100x' }}"
                 loading="lazy"
                 width="{{ article.image.width }}"
@@ -51,17 +52,19 @@
         {%- when 'share' -%}
           <div class="article-template__social-sharing page-width page-width--narrow" {{ block.shopify_attributes }}>
             <share-button class="share-button" {{ block.shopify_attributes }}>
-              <button class="share-button__button button button--tertiary hidden">
+              <button class="share-button__button hidden">
                 {% render 'icon-share' %}
-                {{ 'general.share.share' | t }}
+                {{ block.settings.share_label | escape }}
               </button>
               <details>
-                <summary class="share-button__button button button--tertiary">
+                <summary class="share-button__button">
                   {% render 'icon-share' %}
-                  {{ 'general.share.share' | t }}
+                  {{ block.settings.share_label | escape }}
                 </summary>
-                <div class="share-button__fallback">
+                <div id="Article-share-{{ section.id }}" class="share-button__fallback motion-reduce">
                   <div class="field">
+                    <span id="ShareMessage-{{ section.id }}" class="share-button__message hidden" role="status">
+                    </span>
                     <input type="text"
                           class="field__input"
                           id="url"
@@ -72,13 +75,14 @@
                     >
                     <label class="field__label" for="url">{{ 'general.share.share_url' | t }}</label>
                   </div>
-                  <button class="button button--tertiary">
-                    {% render 'icon-clipboard' %}
-                    {{ 'general.share.copy_to_clipboard' | t }}
+                  <button class="share-button__close hidden no-js-hidden">
+                    {% render 'icon-close' %}
+                    <span class="visually-hidden">{{ 'general.share.close' | t }}</span>
                   </button>
-                  <span id="ShareMessage-{{ section.id }}" class="share-button__message hidden" role="status" aria-hidden="true">
-                    {{ 'general.share.success_message' | t }}
-                  </span>
+                  <button class="share-button__copy no-js-hidden">
+                    {% render 'icon-clipboard' %}
+                    <span class="visually-hidden">{{ 'general.share.copy_to_clipboard' | t }}</span>
+                  </button>
                 </div>
               </details>
             </share-button>
@@ -239,6 +243,47 @@
   {%- endif -%}
 </article>
 
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "articleBody": {{ article.content | strip_html | json }},
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": {{ shop.url | append: page.url | json }}
+    },
+    "headline": {{ article.title | json }},
+    {% if article.excerpt != blank %}
+      "description": {{ article.excerpt | strip_html | json }},
+    {% endif %}
+    {% if article.image %}
+      {% assign image_size = article.image.width | append: 'x' %}
+      "image": [
+        {{ article | img_url: image_size | prepend: "https:" | json }}
+      ],
+    {% endif %}
+    "datePublished": {{ article.published_at | date: '%Y-%m-%dT%H:%M:%SZ' | json }},
+    "dateCreated": {{ article.created_at | date: '%Y-%m-%dT%H:%M:%SZ' | json }},
+    "author": {
+      "@type": "Person",
+      "name": {{ article.author | json }}
+    },
+    "publisher": {
+      "@type": "Organization",
+      {% if settings.share_image %}
+        {% assign image_size = settings.share_image.width | append: 'x' %}
+        "logo": {
+          "@type": "ImageObject",
+          "height": {{ settings.share_image.height | json }},
+          "url": {{ settings.share_image | img_url: image_size | prepend: "https:" | json }},
+          "width": {{ settings.share_image.width | json }}
+        },
+      {% endif %}
+      "name": {{ shop.name | json }}
+    }
+  }
+  </script>
+
 
 {% schema %}
 {
@@ -303,8 +348,14 @@
     {
       "type": "share",
       "name": "t:sections.main-article.blocks.share.name",
-      "limit": 1,
+      "limit": 2,
       "settings": [
+        {
+          "type": "text",
+          "id": "share_label",
+          "label": "t:sections.main-article.blocks.share.settings.text.label",
+          "default": "Share"
+        },
         {
           "type": "paragraph",
           "content": "t:sections.main-article.blocks.share.settings.featured_image_info.content"

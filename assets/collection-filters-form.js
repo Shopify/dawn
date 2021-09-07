@@ -10,6 +10,9 @@ class CollectionFiltersForm extends HTMLElement {
 
     this.querySelector('form').addEventListener('input', this.debouncedOnSubmit.bind(this));
     window.addEventListener('popstate', this.onHistoryChange.bind(this));
+
+    const facetWrapper = this.querySelector('#FacetsWrapperDesktop');
+    if (facetWrapper) facetWrapper.addEventListener('keyup', onKeyUpEscape);
   }
 
   onSubmitHandler(event) {
@@ -26,7 +29,7 @@ class CollectionFiltersForm extends HTMLElement {
   }
 
   onHistoryChange(event) {
-    const searchParams = event.state?.searchParams || '';
+    const searchParams = event.state ? event.state.searchParams : '';
     this.renderPage(searchParams, null, false);
   }
 
@@ -38,7 +41,12 @@ class CollectionFiltersForm extends HTMLElement {
 
   renderPage(searchParams, event, updateURLHash = true) {
     const sections = this.getSections();
+    const countContainerDesktop = document.getElementById('CollectionProductCountDesktop');
     document.getElementById('CollectionProductGrid').querySelector('.collection').classList.add('loading');
+    document.getElementById('CollectionProductCount').classList.add('loading');
+    if (countContainerDesktop){
+      countContainerDesktop.classList.add('loading');
+    }
 
     sections.forEach((section) => {
       const url = `${window.location.pathname}?section_id=${section.section}&${searchParams}`;
@@ -60,6 +68,7 @@ class CollectionFiltersForm extends HTMLElement {
         this.filterData = [...this.filterData, { html, url }];
         this.renderFilters(html, event);
         this.renderProductGrid(html);
+        this.renderProductCount(html);
       });
   }
 
@@ -67,14 +76,23 @@ class CollectionFiltersForm extends HTMLElement {
     const html = this.filterData.find(filterDataUrl).html;
     this.renderFilters(html, event);
     this.renderProductGrid(html);
+    this.renderProductCount(html);
   }
 
   renderProductGrid(html) {
-    const innerHTML = new DOMParser()
-      .parseFromString(html, 'text/html')
-      .getElementById('CollectionProductGrid').innerHTML;
+    document.getElementById('CollectionProductGrid').innerHTML = new DOMParser().parseFromString(html, 'text/html').getElementById('CollectionProductGrid').innerHTML;
+  }
 
-    document.getElementById('CollectionProductGrid').innerHTML = innerHTML;
+  renderProductCount(html) {
+    const count = new DOMParser().parseFromString(html, 'text/html').getElementById('CollectionProductCount').innerHTML
+    const container = document.getElementById('CollectionProductCount');
+    const containerDesktop = document.getElementById('CollectionProductCountDesktop');
+    container.innerHTML = count;
+    container.classList.remove('loading');
+    if (containerDesktop) {
+      containerDesktop.innerHTML = count;
+      containerDesktop.classList.remove('loading');
+    }
   }
 
   renderFilters(html, event) {
@@ -82,7 +100,10 @@ class CollectionFiltersForm extends HTMLElement {
 
     const facetDetailsElements =
       parsedHTML.querySelectorAll('#CollectionFiltersForm .js-filter, #CollectionFiltersFormMobile .js-filter');
-    const matchesIndex = (element) => element.dataset.index === event?.target.closest('.js-filter')?.dataset.index
+    const matchesIndex = (element) => { 
+      const jsFilter = event ? event.target.closest('.js-filter') : undefined;
+      return jsFilter ? element.dataset.index === jsFilter.dataset.index : false; 
+    }
     const facetsToRender = Array.from(facetDetailsElements).filter(element => !matchesIndex(element));
     const countsToRender = Array.from(facetDetailsElements).find(matchesIndex);
 
@@ -112,6 +133,7 @@ class CollectionFiltersForm extends HTMLElement {
     const mobileElementSelectors = ['.mobile-facets__open', '.mobile-facets__count', '.sorting'];
 
     mobileElementSelectors.forEach((selector) => {
+      if (!html.querySelector(selector)) return;
       document.querySelector(selector).innerHTML = html.querySelector(selector).innerHTML;
     });
 
