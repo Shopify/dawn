@@ -1,0 +1,204 @@
+{{ 'video-section.css' | asset_url | stylesheet_tag }}
+{{ 'component-deferred-media.css' | asset_url | stylesheet_tag }}
+<div>
+    <div>
+      <div class="container">
+        <h3> {{ section.settings.text-box }} </h3>
+        <P> {{ section.settings.text }} </P>
+        <a href="{{ section.settings.link }}" class="button">{{ section.settings.linktext }}</a>
+      </div>
+    </div>
+    <div class="video-section{% unless section.settings.full_width %} page-width{% endunless %}">
+      <div
+        {% if section.settings.full_width %} class="page-width"{% endif %}>
+        <h2 class="title">{{ section.settings.heading }}</h2>
+      </div>
+      <noscript>
+        <div class="video-section__media"
+          {% if section.settings.cover_image != blank %} style="padding-bottom: {{ 1 | divided_by: section.settings.cover_image.aspect_ratio | times: 100 }}%;"{% endif %}
+        >
+          <a href="{{ section.settings.video_url }}" class="video-section__poster media media--transparent media--landscape{% if section.settings.cover_image == blank %} video-section__placeholder{% endif %}">
+            {%- if section.settings.cover_image != blank -%}
+              <img
+                src="{{ section.settings.cover_image | img_url: '1920x' }}"
+                loading="lazy"
+              >
+            {%- else -%}
+              {{ 'collection-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+            {%- endif -%}
+          </a>
+        </div>
+      </noscript>
+      <deferred-media class="video-section__media deferred-media no-js-hidden" data-media-id="{{ section.settings.video_url.id }}"
+        {% if section.settings.cover_image != blank %} style="padding-bottom: {{ 1 | divided_by: section.settings.cover_image.aspect_ratio | times: 100 }}%;"{% endif %}
+      >
+        <button
+          id="Deferred-Poster-Modal-{{ section.settings.video_url.id }}"
+          class="video-section__poster media deferred-media__poster media--landscape"
+          type="button"
+        >
+          {%- if section.settings.cover_image != blank -%}
+            <img
+              src="{{ section.settings.cover_image | img_url: '500x' }}"
+              loading="lazy"
+            >
+          {%- else -%}
+            {{ 'collection-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+          {%- endif -%}
+          <span class="deferred-media__poster-button motion-reduce">
+            {%- render 'icon-play' -%}
+          </span>
+        </button>
+        <template>
+          {%- if section.settings.video_url.type == 'youtube' -%}
+            <iframe src="https://www.youtube.com/embed/{{ section.settings.video_url.id }}?enablejsapi=1" class="js-youtube" allow="autoplay; encrypted-media" allowfullscreen ></iframe>
+          {%- else -%}
+            <iframe src="https://player.vimeo.com/video/{{ section.settings.video_url.id }}" class="js-vimeo" allow="autoplay; encrypted-media" allowfullscreen title="{{ section.settings.description | escape }}"></iframe>
+          {%- endif -%}
+        </template>
+      </deferred-media>
+    </div>
+    <div class="multicolumn background-{{ section.settings.background_style }}{% if section.settings.title == blank %} no-heading{% endif %}">
+      <div class="page-width">
+        <div class="title-wrapper-with-link title-wrapper--self-padded-mobile{% if section.settings.title == blank %} title-wrapper-with-link--no-heading{% endif %}">
+          <h2 class="title">
+            {{ section.settings.title | escape }}
+          </h2>
+        </div>
+        <slider-component class="slider-mobile-gutter">
+          <ul class="multicolumn-list grid grid--1-col{% if section.blocks.size > 3 and section.settings.image_width != 'full' %} grid--2-col-tablet grid--4-col-desktop{% elsif section.blocks.size > 3 and section.settings.image_width == 'full' %} grid--2-col-tablet{% else %} grid--3-col-tablet{% endif %}{% if section.settings.swipe_on_mobile and section.blocks.size > 1 %} slider slider--mobile grid--peek{% endif %}"
+            id="Slider-{{ section.id }}"
+            role="list"
+          >
+            {%- for block in section.blocks -%}
+              <li class="multicolumn-list__item grid__item slider__slide " {{ block.shopify_attributes }}>
+                <div class="multicolumn-card">
+                  <div class="multicolumn-card__info">
+                    {%- if block.settings.title != blank -%}
+                      <h3>{{ block.settings.title | escape }}</h3>
+                    {%- endif -%}
+                    {%- if block.settings.text != blank -%}
+                      <div class="rte">{{ block.settings.text }}</div>
+                    {%- endif -%}
+                  </div>
+                </div>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </slider-component>
+      </div>
+    </div>
+</div>
+
+{% schema %}
+{
+  "name": "Why Choose AndyCab",
+  "class": "spaced-section spaced-section--full-width",
+  "tag": "section",
+  "settings": [
+    {
+      "id": "text-box",
+      "type": "text",
+      "label": "Heading",
+      "default": "Why Choose AndyCab"
+    },
+    {
+      "id": "text",
+      "type": "text",
+      "label": "Description",
+      "default": "Enter the text description"
+    },
+    {
+      "type": "image_picker",
+      "id": "cover_image",
+      "label": "t:sections.video.settings.cover_image.label"
+    },
+    {
+      "type": "video_url",
+      "id": "video_url",
+      "accept": [
+        "youtube",
+        "vimeo"
+      ],
+      "default": "https:\/\/www.youtube.com\/watch?v=_9VUPq3SxOc",
+      "label": "t:sections.video.settings.video_url.label",
+      "placeholder": "t:sections.video.settings.video_url.placeholder",
+      "info": "t:sections.video.settings.video_url.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "t:sections.video.settings.full_width.label",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "name": "t:sections.video.name",
+      "type": "video",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "cover_image",
+          "label": "t:sections.video.settings.cover_image.label"
+        },
+        {
+          "type": "video_url",
+          "id": "video_url",
+          "accept": [
+            "youtube",
+            "vimeo"
+          ],
+          "default": "https:\/\/www.youtube.com\/watch?v=_9VUPq3SxOc",
+          "label": "t:sections.video.settings.video_url.label",
+          "placeholder": "t:sections.video.settings.video_url.placeholder",
+          "info": "t:sections.video.settings.video_url.info"
+        },
+        {
+          "type": "checkbox",
+          "id": "full_width",
+          "label": "t:sections.video.settings.full_width.label",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "column",
+      "name": "t:sections.multicolumn.blocks.column.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "default": "Column",
+          "label": "t:sections.multicolumn.blocks.column.settings.title.label"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "default": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
+          "label": "t:sections.multicolumn.blocks.column.settings.text.label"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Why Choose AndyCab CTA",
+      "blocks": [
+        {
+          "type" : "video"
+        },
+        {
+          "type": "column"
+        },
+        {
+          "type": "column"
+        },
+        {
+          "type": "column"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
