@@ -130,12 +130,10 @@ class QuantityInput extends HTMLElement {
     );
 
     this.input.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-          event.preventDefault();
-          this.input.dispatchEvent(this.changeEvent);
-        }
-      }
-    );
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      this.input.dispatchEvent(this.changeEvent);
+    });
   }
 
   onButtonClick(event) {
