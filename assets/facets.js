@@ -18,11 +18,12 @@ class FacetFiltersForm extends HTMLElement {
   static searchParamsPrev = window.location.search.slice(1);
 
   static setListeners() {
-    window.addEventListener('popstate', (event) => {
+    const onHistoryChange = (event) => {
       const searchParams = event.state ? event.state.searchParams : FacetFiltersForm.searchParamsInitial;
       if (searchParams === FacetFiltersForm.searchParamsPrev) return;
       FacetFiltersForm.renderPage(searchParams, null, false);
-    });
+    }
+    window.addEventListener('popstate', onHistoryChange);
   }
 
   static toggleActiveFacets(disable = true) {
