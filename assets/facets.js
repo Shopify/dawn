@@ -13,10 +13,6 @@ class FacetFiltersForm extends HTMLElement {
     if (facetWrapper) facetWrapper.addEventListener('keyup', onKeyUpEscape);
   }
 
-  static filterData = [];
-  static searchParamsInitial = window.location.search.slice(1);
-  static searchParamsPrev = window.location.search.slice(1);
-
   static setListeners() {
     const onHistoryChange = (event) => {
       const searchParams = event.state ? event.state.searchParams : FacetFiltersForm.searchParamsInitial;
@@ -172,6 +168,9 @@ class FacetFiltersForm extends HTMLElement {
   }
 }
 
+FacetFiltersForm.filterData = [];
+FacetFiltersForm.searchParamsInitial = window.location.search.slice(1);
+FacetFiltersForm.searchParamsPrev = window.location.search.slice(1);
 customElements.define('facet-filters-form', FacetFiltersForm);
 FacetFiltersForm.setListeners();
 
