@@ -621,6 +621,9 @@ class VariantSelects extends HTMLElement {
   updateURL() {
     if (!this.currentVariant || this.dataset.updateUrl === 'false') return;
     window.history.replaceState({ }, '', `${this.dataset.url}?variant=${this.currentVariant.id}`);
+
+    // ADD SKU CHANGE ON VARIANT CHANGE
+    document.getElementById("psku").innerHTML = this.currentVariant.sku; 
   }
 
   updateVariantInput() {
