@@ -10,15 +10,16 @@ if (!customElements.get('product-form')) {
 
     onSubmitHandler(evt) {
       evt.preventDefault();
+      const submitButton = this.querySelector('[type="submit"]');
+      if (submitButton.classList.contains('loading')) return; 
+
       this.handleErrorMessage();
       this.cartNotification.setActiveElement(document.activeElement);
 
-      const submitButton = this.querySelector('[type="submit"]');
-
-      submitButton.setAttribute('disabled', true);
+      submitButton.setAttribute('aria-disabled', true);
       submitButton.classList.add('loading');
 
-      var config = fetchConfig('javascript');
+      const config = fetchConfig('javascript');
       config.headers['X-Requested-With'] = 'XMLHttpRequest';
       config.body = JSON.stringify({
         ...JSON.parse(serializeForm(this.form)),
@@ -41,7 +42,7 @@ if (!customElements.get('product-form')) {
         })
         .finally(() => {
           submitButton.classList.remove('loading');
-          submitButton.removeAttribute('disabled');
+          submitButton.removeAttribute('aria-disabled');
         });
     }
 
@@ -51,7 +52,7 @@ if (!customElements.get('product-form')) {
 
       this.errorMessageWrapper.toggleAttribute('hidden', !errorMessage);
 
-      if (errorMessage ) {
+      if (errorMessage) {
         this.errorMessage.textContent = errorMessage;
       }
     }
