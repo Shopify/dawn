@@ -128,12 +128,6 @@ class QuantityInput extends HTMLElement {
     this.querySelectorAll('button').forEach(
       (button) => button.addEventListener('click', this.onButtonClick.bind(this))
     );
-
-    this.input.addEventListener('keydown', (event) => {
-      if (event.key !== 'Enter') return;
-      event.preventDefault();
-      this.input.dispatchEvent(this.changeEvent);
-    });
   }
 
   onButtonClick(event) {
@@ -162,7 +156,7 @@ const serializeForm = form => {
   for (const key of formData.keys()) {
     const regex = /(?:^(properties\[))(.*?)(?:\]$)/;
 
-    if (regex.test(key)) {
+    if (regex.test(key)) { 
       obj.properties = obj.properties || {};
       obj.properties[regex.exec(key)[2]] = formData.get(key);
     } else {
