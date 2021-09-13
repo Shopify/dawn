@@ -9,7 +9,7 @@ function getFocusableElements(container) {
 document.querySelectorAll('[id^="Details-"] summary').forEach((summary) => {
   summary.addEventListener('click', (event) => {
     const isOpen = event.currentTarget.closest('details').hasAttribute('open');
-    console.log(isOpen);
+    
     if(isOpen) {
       event.currentTarget.setAttribute('aria-expanded', false);
     } else {
