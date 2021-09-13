@@ -6,6 +6,20 @@ function getFocusableElements(container) {
   );
 }
 
+document.querySelectorAll('[id^="Details-"] summary').forEach((summary) => {
+  summary.addEventListener('click', (event) => {
+    const isOpen = event.currentTarget.closest('details').hasAttribute('open');
+    console.log(isOpen);
+    if(isOpen) {
+      event.currentTarget.setAttribute('aria-expanded', false);
+    } else {
+      event.currentTarget.setAttribute('aria-expanded', true);
+    }
+  });
+
+  summary.addEventListener('keyup', onKeyUpEscape);
+});
+
 const trapFocusHandlers = {};
 
 function trapFocus(container, elementToFocus = container) {
@@ -116,6 +130,7 @@ function onKeyUpEscape(event) {
 
   const summaryElement = openDetailsElement.querySelector('summary');
   openDetailsElement.removeAttribute('open');
+  summaryElement.setAttribute('aria-expanded', false);
   summaryElement.focus();
 }
 
@@ -374,6 +389,7 @@ class MenuDrawer extends HTMLElement {
 
   closeSubmenu(detailsElement) {
     detailsElement.classList.remove('menu-opening');
+    detailsElement.querySelector('summary').setAttribute('aria-expanded', false);
     removeTrapFocus();
     this.closeAnimation(detailsElement);
   }
