@@ -349,6 +349,7 @@ class MenuDrawer extends HTMLElement {
 
       setTimeout(() => {
         detailsElement.classList.add('menu-opening');
+        summaryElement.setAttribute('aria-expanded', true);
       });
     }
   }
