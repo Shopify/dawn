@@ -11,6 +11,13 @@
   #subs:checked ~ .subscription {
     display: block;
   }
+  .make-subscription {
+    display: block;
+    margin-bottom: 10px;
+  }
+  .hidden-element {
+    display: none !important;
+  }
 </style>
 {% liquid
   if product.has_only_default_variant
@@ -21,7 +28,7 @@
 %}
 {% if curr_variant.metafields.global.subscriptions.size > 0 %}
   <div class="product-form__input product-form__subscription" {{ block.shopify_attributes }}>
-  <input type="radio" value="once" name="mode" id="once"><label for="once">einmalige Lieferung</label>
+  <input type="radio" value="once" name="mode" id="once" checked><label for="once">einmalige Lieferung</label>
   <input type="radio" value="subs" name="mode" id="subs"><label for="subs">Abonnieren und sparen</label>
   <quantity-input class="quantity">
     <button class="quantity__button no-js-hidden" name="minus" type="button">
@@ -43,7 +50,7 @@
   </quantity-input>
   <div class="subscription">
     {%- for sub in curr_variant.metafields.global.subscriptions -%}
-      <input type="radio" value="sub-{{ forloop.index0 }}" name="subscription" id="sub-{{ forloop.index0 }}"><label for="sub-{{ forloop.index0 }}"><div><p>alle {{ sub.period }} Tage</p><p>{{ sub.cost | money_without_currency }} €</p></div></label>
+      <input type="radio" value="sub-{{ forloop.index0 }}" name="subscription" id="sub-{{ forloop.index0 }}"{% if forloop.index0 == 0 %} checked{% endif %}><label for="sub-{{ forloop.index0 }}"><div><p>alle {{ sub.period }} Tage</p><p>{{ sub.cost | money_without_currency }} €</p></div></label>
     {%- endfor -%}
   </div>
 </div>
@@ -74,3 +81,28 @@
   </div>
   {% endif %}
 </div>
+<div {{ block.shopify_attributes }} id="subscription-btn-wrapper" class="hidden-element">
+  <div>
+    <a href="" class="make-subscription nodec">
+      <button
+        type="button"
+        class="button button--full-width"
+      >
+        Abonnement abschließen
+      </button>
+    </a>
+  </div>
+</div>
+<script>
+  function changeButtons() {
+    if(document.getElementById("once").checked) {
+      document.getElementById("subscription-btn-wrapper").classList.add("hidden-element")
+      document.getElementById("buy-buttons").classList.remove("hidden-element")
+    }
+    if(document.getElementById("subs").checked) {
+      document.getElementById("subscription-btn-wrapper").classList.remove("hidden-element")
+      document.getElementById("buy-buttons").classList.add("hidden-element")
+    }
+  }
+  document.querySelectorAll("input[name='mode']").forEach(element => element.addEventListener("change",changeButtons))
+</script>
