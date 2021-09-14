@@ -1,6 +1,21 @@
 var swiper = new Swiper(".mySwiper", {
     spaceBetween: 5,
     slidesPerView: 7,
+
+    breakpoints: {
+      320: {
+        slidesPerView: 3,
+        spaceBetween: 5
+      },
+      375: {
+        slidesPerView: 4,
+        spaceBetween: 5
+      },
+      768: {
+        slidesPerView: 5,
+        spaceBetween: 5
+      }
+    },
     freeMode: true,
     watchSlidesProgress: true,
   });
