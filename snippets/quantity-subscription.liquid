@@ -1,4 +1,11 @@
-{% if product.variant.metafields.global.subscriptions.size > 0 %}
+{% liquid
+  if product.has_only_default_variant
+    assign curr_variant = product.variants[0]
+  else
+    assign curr_variant = product.first_available_variant
+  endif
+%}
+{% if curr_variant.metafields.global.subscriptions.size > 0 %}
   <div class="product-form__input product-form__subscription" {{ block.shopify_attributes }}>
   <input type="radio" value="once" name="mode" id="once"><label for="once">einmalige Lieferung</label>
   <input type="radio" value="subs" name="mode" id="subs"><label for="subs">Abonnieren und sparen</label>
@@ -21,11 +28,8 @@
     </button>
   </quantity-input>
   <div class="subscription">
-    {%- for sub in product.variant.metafields.global.subscriptions -%}
-      <button>
-        <div>
-        </div>
-      </button>
+    {%- for sub in curr_variant.metafields.global.subscriptions -%}
+      <input type="radio" value="sub-{{ forloop.index0 }}" name="subscription" id="sub-{{ forloop.index0 }}"><label for="sub-{{ forloop.index0 }}"><div><p>alle {{ sub.period }} Tage</p><p>{{ sub.cost | money_without_currency }} €</p></div></label>
     {%- endfor -%}
   </div>
 </div>
