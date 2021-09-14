@@ -50,7 +50,7 @@
   </quantity-input>
   <div class="subscription">
     {%- for sub in curr_variant.metafields.global.subscriptions -%}
-      <input type="radio" value="sub-{{ forloop.index0 }}" name="subscription" id="sub-{{ forloop.index0 }}"{% if forloop.index0 == 0 %} checked{% endif %}><label for="sub-{{ forloop.index0 }}"><div><p>alle {{ sub.period }} Tage</p><p>{{ sub.cost | money_without_currency }} €</p></div></label>
+      <input type="radio" value="{{ forloop.index0 }}" name="subscription" id="sub-{{ forloop.index0 }}"{% if forloop.index0 == 0 %} checked{% endif %}><label for="sub-{{ forloop.index0 }}"><div><p>alle {{ sub.period }} Tage</p><p>{{ sub.cost | money_without_currency }} €</p></div></label>
     {%- endfor -%}
   </div>
 </div>
@@ -83,7 +83,7 @@
 </div>
 <div {{ block.shopify_attributes }} id="subscription-btn-wrapper" class="hidden-element">
   <div>
-    <a href="" class="make-subscription nodec">
+    <a href="https://abo.schlafdrink.de/cart/{{ curr_variant.metafields.global.subscriptions[0].vid | escape }}:1" class="make-subscription nodec" id="subscription-link">
       <button
         type="button"
         class="button button--full-width"
@@ -104,5 +104,13 @@
       document.getElementById("buy-buttons").classList.add("hidden-element")
     }
   }
+  function changeLink(e) {
+    const subscriptions = {{ curr_variant.metafields.global.subscriptions | json }}
+    const checkedValue = Number(e.target.value)
+    const vid = subscriptions[checkedValue].vid
+    const url = `https://abo.schlafdrink.de/cart/${vid}:1`
+    document.getElementById("subscription-link").href = url
+  }
   document.querySelectorAll("input[name='mode']").forEach(element => element.addEventListener("change",changeButtons))
+  document.querySelectorAll("input[name='subscription']").forEach(element => element.addEventListener("change", changeLink))
 </script>
