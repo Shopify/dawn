@@ -80,17 +80,15 @@ class CartItems extends HTMLElement {
           const elementToReplace =
             document.getElementById(section.id).querySelector(section.selector) || document.getElementById(section.id);
 
-            console.log(elementToReplace)
-
           elementToReplace.innerHTML =
             this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
         }));
 
         this.updateLiveRegions(line, parsedState.item_count);
         const lineItem =  document.getElementById(`CartItem-${line}`);
-        if (lineItem) lineItem.querySelector(`[name="${name}"]`).focus();
+        if (lineItem && lineItem.querySelector(`[name="${name}"]`)) lineItem.querySelector(`[name="${name}"]`).focus();
         this.disableLoading();
-      }).catch(() => {
+      }).catch((error) => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         document.getElementById('cart-errors').textContent = window.cartStrings.error;
         this.disableLoading();
@@ -98,17 +96,13 @@ class CartItems extends HTMLElement {
   }
 
   updateLiveRegions(line, itemCount) {
-    console.log('updating live region')
     if (this.currentItemCount === itemCount) {
-      console.log('same quantity')
       document.getElementById(`Line-item-error-${line}`)
         .querySelector('.cart-item__error-text')
         .innerHTML = window.cartStrings.quantityError.replace(
           '[quantity]',
           document.getElementById(`Quantity-${line}`).value
         );
-    } else if (this.currentItemCount < itemCount) {
-      console.log( itemCount, this.currentItemCount)
     }
 
     this.currentItemCount = itemCount;
