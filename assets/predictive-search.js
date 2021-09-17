@@ -4,8 +4,10 @@ class PredictiveSearch extends HTMLElement {
     this.cachedResults = {};
     this.input = this.querySelector('input[type="search"]');
     this.predictiveSearchResults = this.querySelector('[data-predictive-search]');
+    this.touchListener = this.handleTouchMove.bind(this);
 
     this.setupEventListeners();
+    console.log('setup');
   }
 
   setupEventListeners() {
@@ -30,18 +32,20 @@ class PredictiveSearch extends HTMLElement {
     console.log(event.target)
     const targetIsElement = event.target.classList.contains('predictive-search');
     const targetIsPartOfList = this.querySelector('.predictive-search').contains(event.target);
-    if (!targetIsPartOfList) {
+    const shouldPreventDefault = !(targetIsElement || targetIsPartOfList);
+    console.log(targetIsElement, targetIsPartOfList, shouldPreventDefault);
+    if (shouldPreventDefault) {
       event.preventDefault()
       console.log('prevent');
     } else {
-      true;
+      return true;
     };
   }
 
   onChange() {
     const searchTerm = this.getQuery();
 
-    window.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false});
+    window.addEventListener('touchmove', this.touchListener, { passive: false})
 
     if (!searchTerm.length) {
       this.close(true);
@@ -222,7 +226,8 @@ class PredictiveSearch extends HTMLElement {
     this.resultsMaxHeight = false
     this.predictiveSearchResults.removeAttribute('style');
     console.log('close')
-    window.removeEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false})
+    console.log(this.touchListener)
+    window.removeEventListener('touchmove', this.touchListener, { passive: false})
   }
 }
 
