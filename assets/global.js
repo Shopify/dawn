@@ -675,11 +675,6 @@ class VariantSelects extends HTMLElement {
     const productForm = document.getElementById(`product-form-${this.dataset.section}`);
     if (!productForm) return;
     const addButton = productForm.querySelector('[name="add"]');
-    const spinner = `<div class="loading-overlay__spinner hidden">
-    <svg aria-hidden="true" focusable="false" role="presentation" class="spinner" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
-      <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
-    </svg>
-    </div>`;
 
     if (!addButton) return;
 
@@ -689,7 +684,6 @@ class VariantSelects extends HTMLElement {
     } else {
       addButton.removeAttribute('disabled');
       addButton.textContent = window.variantStrings.addToCart;
-      addButton.innerHTML += spinner;
     }
 
     if (!modifyClass) return;
