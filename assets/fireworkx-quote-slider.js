@@ -1,28 +1,40 @@
 var swiper = new Swiper(".mySwiper", {
+  allowTouchMove : false,
   pagination: {
     el: ".swiper-pagination",
     type: "fraction",
   },
   navigation: {
-    nextEl: ".swiper-button-next",
     prevEl: ".swiper-button-prev",
   },
 });
 
-// Get collections 
+const buttons = document.querySelectorAll('.button-quote-type')
+const brands = document.querySelectorAll('li.brand-name')
+const products = document.querySelectorAll('li.product-name')
 
-async function fetchData() {
-    const response = await fetch('http://127.0.0.1:9292/collections.json');
-    const result = await response.json();
-    const data = result.collections;
+buttons.forEach((button) => {
+  button.addEventListener('click', () => {
+    const quoteType = button.dataset.quote;    
+    if(quoteType === 'new-canopies'){
+      swiper.slideTo(1)
+    } else if(quoteType === 'accessories'){
+      swiper.slideTo(3)
+    }
+  })
+})
 
-    const canopies = data.filter(collection => collection.title.includes('Canopies'))
+brands.forEach((brand) => {
+  brand.addEventListener('click', () => {
+    let brandName = brand.dataset.brand
+    sortListProducts(brandName);
+    swiper.slideTo(2)
+  })
+})
 
-    const accessories = data.filter(collection => collection.title)
 
-    console.log(canopies)
-  }
-
-  fetchData()
-
-//   console.log()
+function sortListProducts(brand){
+  products.forEach(product => { product.classList.remove('show-product')})
+  let filteredProducts = [... products].filter(product =>  product.dataset.vendor === brand)
+  filteredProducts.forEach(product => { product.classList.add('show-product')})
+}
