@@ -12,6 +12,7 @@ class PredictiveSearch extends HTMLElement {
       this.searchIcon = this.stickyHeader.querySelector('.header__icon--search');
       this.scrollTopValue = null;
     } else {
+      //leaving this while the PR is being reviewed
       console.log('This is Not a IOS device');
     }
 
@@ -38,8 +39,11 @@ class PredictiveSearch extends HTMLElement {
 
   onSearchOpen() {
     this.scrollTopValue = window.pageYOffset;
+    // this is needed to prevent the onscreen keyboard to push the content up.
+    window.setTimeout( () =>{
+      document.body.classList.add('body-fixed');
     document.body.style.top = `-${this.scrollTopValue}px`;
-    document.body.classList.add('body-fixed');
+    });
     this.stickyHeader.dispatchEvent(new Event('predictiveSearchOpen'));
   }
 
@@ -226,6 +230,7 @@ class PredictiveSearch extends HTMLElement {
     if (!this.isIOS) return;
     this.stickyHeader.dispatchEvent(new Event('predictiveSearchClosed'));
     document.body.classList.remove('body-fixed');
+    document.body.removeAttribute('style');
     window.scrollTo(0, this.scrollTopValue);
   }
 }
