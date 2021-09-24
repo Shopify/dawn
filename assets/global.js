@@ -18,7 +18,7 @@ document.querySelectorAll('[id^="Details-"] summary').forEach((summary) => {
     event.currentTarget.setAttribute('aria-expanded', !event.currentTarget.closest('details').hasAttribute('open'));
   });
 
-  summary.addEventListener('keyup', onKeyUpEscape);
+  summary.parentElement.addEventListener('keyup', onKeyUpEscape);
 });
 
 const trapFocusHandlers = {};
