@@ -1,4 +1,4 @@
-var swiper = new Swiper(".mySwiper", {
+var swiper = new Swiper(".fwx-product-thumbs-swiper", {
 	spaceBetween: 10,
 	slidesPerView: 2,
 	breakpoints: {
@@ -16,9 +16,11 @@ var swiper = new Swiper(".mySwiper", {
 		}
 	},
 	freeMode: true,
+	watchSlidesVisibility: true,
 	watchSlidesProgress: true
 });
-var swiper2 = new Swiper(".mySwiper2", {
+
+var swiper2 = new Swiper(".fwx-product-images-swiper", {
 	spaceBetween: 10,
 	navigation: {
 		nextEl: ".swiper-button-next",
@@ -26,5 +28,9 @@ var swiper2 = new Swiper(".mySwiper2", {
 	},
 	thumbs: {
 		swiper: swiper
+	},
+	pagination: {
+		el: ".swiper-pagination",
+		clickable: true
 	}
 });
