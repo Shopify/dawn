@@ -1,5 +1,5 @@
 var swiper = new Swiper(".fwx-enquiry-swiper", {
-	// allowTouchMove: false,
+	allowTouchMove: false,
 	pagination: {
 		el: ".swiper-pagination",
 		type: "fraction"
