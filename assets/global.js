@@ -454,6 +454,7 @@ class ModalDialog extends HTMLElement {
     this.setAttribute('open', '');
     if (popup) popup.loadContent();
     trapFocus(this, this.querySelector('[role="dialog"]'));
+    window.pauseAllMedia();
   }
 
   hide() {
