@@ -1,5 +1,5 @@
 var swiper = new Swiper(".fwx-enquiry-swiper", {
-	allowTouchMove: false,
+	// allowTouchMove: false,
 	pagination: {
 		el: ".swiper-pagination",
 		type: "fraction"
@@ -8,6 +8,33 @@ var swiper = new Swiper(".fwx-enquiry-swiper", {
 		prevEl: ".swiper-button-prev"
 	}
 });
+
+
+window.onload = () => {
+	const body = document.querySelector('body'),
+	buttons = document.querySelectorAll('[data-modal="open-modal"]'),
+	modal = document.querySelector('.modal'),
+	closeElems = document.querySelectorAll(['[data-modal="close-modal"]', '.fwx-slide-container'])
+
+	if(buttons){
+	  buttons.forEach(elem => {
+		elem.addEventListener('click', () => {
+		  body.classList.add('modal-open');
+		})
+	  })
+	}
+
+	if(closeElems){
+	  closeElems.forEach(elem => {
+		elem.addEventListener('click', (e) => {
+		  if(e.target === elem){
+			body.classList.remove('modal-open')
+		  }
+		})
+	  })
+	}
+};
+
 
 const buttons = document.querySelectorAll(".button-quote-type");
 const brands = document.querySelectorAll("li.brand-name");
@@ -42,6 +69,7 @@ function sortListProducts(brand) {
 	filteredProducts.forEach((product) => {
 		product.classList.add("show-product");
 	});
+	console.log(filteredProducts)
 }
 
 products.forEach((product) => {
@@ -60,6 +88,7 @@ accessories.forEach((product) => {
 	});
 });
 
+let count = 0
 function showProductDetails(productTitle) {
 	singleProductList.forEach((singleProduct) => {
 		singleProduct.classList.remove("show-single-product");
@@ -67,6 +96,7 @@ function showProductDetails(productTitle) {
 	const products = [...singleProductList].filter(
 		(singleProduct) => singleProduct.dataset.singleproduct === productTitle
 	);
+	console.log(products)
 	products.forEach((product) => {
 		product.classList.add("show-single-product");
 	});
