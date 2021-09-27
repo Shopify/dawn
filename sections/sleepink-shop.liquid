@@ -1,0 +1,246 @@
+{{ 'sleepink-shop.css' | asset_url | stylesheet_tag }}
+
+{% liquid 
+  case section.settings.color_scheme
+    when 'background-1'
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_1
+    when 'background-2'
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_2
+    when 'inverse'
+      assign tagBackground = settings.colors_background_1
+      assign tagForeground = settings.colors_text
+    when 'accent-1'
+      assign tagBackground = settings.colors_solid_button_labels
+      assign tagForeground = settings.colors_accent_1
+    when 'accent-2'
+      assign tagBackground = settings.colors_solid_button_labels
+      assign tagForeground = settings.colors_accent_2
+    else
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_1
+  endcase
+%}
+
+<div class="sg-SectionGrid sg-py-8 sg-py-md-11 sg-py-lg-13 color-{{ section.settings.color_scheme }}">
+  <div class="sg-SectionGrid-Wide sg-px-10px sg-px-md-5 sg-px-lg-unset">
+    <h2 class="sg-ff-heading sg-fw-400 sg-fs-3 sg-fs-md-6 sg-lh-130 sg-lh-md-123 sg-lh-lg-100 sg-ls-m050 sg-ls-md-unset sg-mb-0">
+      {{ section.settings.title | escape }}
+    </h2>
+    <div class="sg-grid sg-2col sg-md-3col sg-lg-4col sg-cgap-3 sg-cgap-md-7 sg-cgap-lg-30px sg-rgap-5">
+      {% for thisProduct in section.blocks %}
+        {% assign product = thisProduct.settings.product %}
+        {% liquid 
+          assign variants = product.variants
+          if variants.size == 1
+            assign sku = variants[0].sku
+          else
+            assign sku = thisProduct.settings.variant
+          endif 
+        %}
+        {% for variant in product.variants %}
+          {% if variant.sku == sku %}
+            {% assign variant_id = variant.id %}
+            <div class="sg-flex sg-column sg-ai-c sg-pb-5 sg-mx-auto sg-mx-lg-unset sg-mxw-300px sg-mxw-lg-unset sg-w-100p sg-ta-c">
+              <a href="{{ product.url }}?variant={{ variant_id }}" class="sg-w-100p sg-mt-6 sg-mb-5 sg-grid sg-1col sg-1row sg-pos-rel sg-square-outer" style="background-color:{{ section.settings.backgroundProductCards }};">
+                <div class="sg-square sg-gc1 sg-gr1">
+                  {% if thisProduct.settings.image %}
+                    <img src="{{ thisProduct.settings.image | img_url: '400x' }}" alt="{{ thisProduct.settings.image.alt }}" width="300" height="300" loading="lazy" class="sg-contain sg-image">
+                  {% elsif variant.featured_image %}
+                    <img src="{{ variant.featured_image | img_url: '400x' }}" alt="{{ variant.featured_image.alt }}" width="300" height="300" loading="lazy" class="sg-contain sg-image">
+                  {% else %}
+                    <img src="{{ product.featured_image | img_url: '400x' }}" alt="{{ product.featured_image.alt }}" width="300" height="300" loading="lazy" class="sg-contain sg-image">
+                  {% endif %}
+                  <div class="sg-gc1 sg-gr1 sg-pos-abs sg-l-0 sg-t-10px sg-t-lg-16px">
+                    {% assign tags = product.metafields.global.tags | split: ', ' %}
+                    {% for t in tags %}
+                      <div class="sg-fw-400 sg-fs-12px sg-ml-0 sg-left sg-px-3 sg-lh-100 sg-py-2 sg-mb-1" style="background-color: {{ tagBackground }}; color: {{ tagForeground }}">
+                        {{ t | escape }}
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </a>
+              <div>
+                <div class="sg-flex sg-row sg-jc-c sg-ai-c sg-ml-2 sg-mr-3 sg-mb-2">
+                  {% liquid 
+                    assign rating = product.metafields.global.rating.value
+                    assign wholeRating = rating | floor
+                    assign missing_stars = 5 | minus: rating | floor
+                    assign sum = wholeRating | plus: missing_stars
+                    if sum != 5
+                      assign halfStars = 1
+                    else
+                      assign halfStars = 0
+                    endif
+                  %}
+                  {% if rating > 0 %}
+                    {% for i in (1..wholeRating) %}
+                      <span>
+                        {%- render 'icon-star', currentColor: "#ffd900" -%}
+                      </span>
+                    {% endfor %}
+                  {% endif %}
+                  {% if halfStars == 1 %}
+                    <span>
+                      {%- render 'icon-star-half' -%}
+                    </span>
+                  {% endif %}
+                  {% if missing_stars > 0 %}
+                    {% for j in (1..missing_stars) %}
+                      <span>
+                        {%- render 'icon-star', currentColor: "#dddddd" -%}
+                      </span>
+                    {% endfor %}
+                  {% endif %}
+                </div>
+                {% assign reviewCount = product.metafields.global.reviewCount.value %}
+                <div class="sg-ff-body sg-fw-400 sg-fs-12px sg-lh-100 sg-mt-0 sg-center">
+                  ({% if reviewCount > 0 %}{{ reviewCount }} {% else %}0 {% endif %}
+                  {% if reviewCount == 1 %}Bewertung{% else %}Bewertungen{% endif %})
+                </div>
+                <div class="sg-w-100p sg-h-32px sg-h-md-37px sg-h-44px sg-flex sg-column sg-jc-fs sg-ai-c sg-mb-1 sg-mt-5">
+                  <h3 class="sg-ff-heading sg-fs-1 sg-fs-lg-3 sg-lh-100 sg-lh-md-114 sg-lh-lg-110 sg-ls-m100 sg-ls-md-m067 sg-ls-lg-m098 sg-fw-400 sg-center">
+                    {% liquid 
+                      if variant.name
+                        assign name = variant.name
+                      else
+                        assign name = product.title
+                      endif
+                      assign pureName = name | remove: 'sleep.ink'
+                    %}
+                    {{ pureName | escape }}
+                  </h3>
+                </div>
+                <div class="sg-w-100p sg-h-32px sg-h-md-33px sg-h-lg-32px sg-flex sg-column sg-jc-fs sg-ai-c sg-mb-5">
+                  <p class="sg-ff-body sg-fs-11px sg-fs-md-12px sg-lh-145 sg-lh-md-136 sg-lh-lg-133 sg-fw-300 sg-center">
+                    {% if variant.metafields.global.description %}
+                      {{ variant.metafields.global.description.value | escape }}
+                    {% elsif product.metafields.global.description %}
+                      {{ product.metafields.global.description.value | escape }}
+                    {% else %}
+                      &nbsp;
+                    {% endif %}
+                  </p>
+                </div>
+                <p class="sg-center sg-ff-body sg-fs-1 sg-fs-lg-3 sg-lh-100 sg-lh-lg-111 sg-fw-500 sg-mb-1">
+                  {{ variant.price | money_without_currency }} €
+                  {% if variant.compare_at_price %}
+                    <span class="sg-fw-400 sg-fs-87p sg-fs-lg-90p sg-td-lt sg-ml-2">
+                      {{ variant.compare_at_price | money_without_currency }} €
+                    </span>
+                  {% endif %}
+                </p>
+                <div class="sg-flex sg-row sg-jc-c sg-ai-c">
+                  <form method="post" action="/cart/add">
+                    <input type="hidden" name="id" value="{{ variant_id }}" />
+                    <input type="hidden" name="quantity" value="1" id="quantity" />
+                    <button type="submit" class="sg-submit" style="background-color: {{ tagBackground }}; color: {{ tagForeground }}">
+                      {%- render 'icon-cart2', currentColor: '#ffffff' -%}
+                    </button>
+                  </form>
+                  <a href="{{ product.url }}?variant={{ variant_id }}">
+                    <button class="sg-button" style="background-color: {{ tagBackground }}; color: {{ tagForeground }};">
+                      {{ section.settings.linkProductPage | escape }}
+                    </button>
+                  </a>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Produktgitter",
+  "tag": "section",
+  "class": "spaced-section collection-list-section",
+  "max_blocks": 15,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "default": "Alle Produkte in der Übersicht",
+      "label": "Überschrift"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.collection-list.settings.color_scheme.options__1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.collection-list.settings.color_scheme.options__2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.collection-list.settings.color_scheme.options__3.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.collection-list.settings.color_scheme.options__4.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.collection-list.settings.color_scheme.options__5.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.collection-list.settings.color_scheme.label"
+    },
+    {
+      "type": "color",
+      "id": "backgroundProductCards",
+      "label": "Hintergrund der Produktkacheln",
+      "default": "#F9F9FA"
+    },
+    {
+      "type": "text",
+      "id": "linkProductPage",
+      "label": "Beschriftung des Buttons zur Produktseite",
+      "default": "Mehr erfahren"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Produkt",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Produkt"
+        },
+        {
+          "type": "text",
+          "id": "variant",
+          "label": "Produktvariante"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Produktbild (optional)"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Produktgitter",
+      "blocks": [
+        {
+          "type": "product"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
