@@ -96,7 +96,7 @@ function pauseAllMedia() {
   });
   document.querySelectorAll('video').forEach((video) => video.pause());
   document.querySelectorAll('product-model').forEach((model) => {
-    if (model.modelViewerUI) modelViewerUI.pause();
+    if (model.modelViewerUI) model.modelViewerUI.pause();
   });
 }
 
@@ -454,6 +454,7 @@ class ModalDialog extends HTMLElement {
     this.setAttribute('open', '');
     if (popup) popup.loadContent();
     trapFocus(this, this.querySelector('[role="dialog"]'));
+    window.pauseAllMedia();
   }
 
   hide() {
