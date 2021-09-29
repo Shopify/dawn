@@ -7,54 +7,25 @@ const makeEnquiry = {
 		'[data-modal="close-modal"]',
 		".fwx-slide-container"
 	]),
-	enquiryType: "",
-	collectionHandle: "",
-	productHandle: "",
-
-	// Initialise swiper
-	swiper: new Swiper(".fwx-enquiry-swiper", {
-		allowTouchMove: false,
-		pagination: {
-			el: ".swiper-pagination",
-			type: "fraction"
-		},
-		navigation: {
-			prevEl: ".swiper-button-prev"
-		}
-	}),
-
-	// Enquiry Swiper
-
 	enquiryChoiceButtons: document.querySelectorAll("[data-enquiry-type]"),
 	brands: document.querySelectorAll("li.brand-name"),
 	products: document.querySelectorAll("li.product-name"),
-	productsHeading: document.querySelector(".product-heading"),
-	singleProductList: document.querySelectorAll("li.single-product"),
-
-	sortListProducts(brand) {
-		productsHeading.textContent = brand;
-		// Reset all products
-		products.forEach((product) => {
-			product.classList.remove("show-product");
-		});
-		// Filter by brand
-		let filteredProducts = [...products].filter((product) => product.dataset.vendor === brand);
-		filteredProducts.forEach((product) => {
-			product.classList.add("show-product");
-		});
-	},
-
-	showProductDetails(productTitle) {
-		singleProductList.forEach((singleProduct) => {
-			singleProduct.classList.remove("show-single-product");
-		});
-		const products = [...singleProductList].filter(
-			(singleProduct) => singleProduct.dataset.singleProduct === productTitle
-		);
-		console.log(products);
-		products.forEach((product) => {
-			product.classList.add("show-single-product");
-		});
+	initSwiper() {
+		// Only init swiper is element exists
+		if (document.querySelector(".fwx-enquiry-swiper")) {
+			// Initialise swiper
+			makeEnquiry.swiper = new Swiper(".fwx-enquiry-swiper", {
+				allowTouchMove: false,
+				spaceBetween: 80,
+				pagination: {
+					el: ".swiper-pagination",
+					type: "fraction"
+				},
+				navigation: {
+					prevEl: ".swiper-button-prev"
+				}
+			});
+		}
 	},
 
 	openModal() {
@@ -71,8 +42,10 @@ const makeEnquiry = {
 	},
 
 	resetSwiper() {
-		makeEnquiry.swiper.slideTo(0);
-		makeEnquiry.modal.removeEventListener("transitionend", makeEnquiry.resetSwiper);
+		if (makeEnquiry.swiper) {
+			makeEnquiry.swiper.slideTo(0);
+			makeEnquiry.modal.removeEventListener("transitionend", makeEnquiry.resetSwiper);
+		}
 	},
 
 	chooseEnquiry(button) {
@@ -114,25 +87,10 @@ if (makeEnquiry.enquiryChoiceButtons) {
 	});
 }
 
-if (makeEnquiry.brands) {
-	makeEnquiry.brands.forEach((brand) => {
-		brand.addEventListener("click", () => {
-			let brandName = brand.dataset.brand;
-			window.location.href = `/collections/${brandName}?enquiry=open`;
-		});
-	});
-}
-
-if (makeEnquiry.products) {
-	makeEnquiry.products.forEach((product) => {
-		product.addEventListener("click", () => {
-			const handle = product.dataset.handle;
-			window.location.href = `/products/${handle}?enquiry=open`;
-		});
-	});
-}
-
 document.addEventListener("DOMContentLoaded", () => {
+	// Init Swiper
+	makeEnquiry.initSwiper();
+	// Check if enquiry is in URL params and open modal
 	let params = new URLSearchParams(window.location.search);
 	if (params.has("enquiry")) {
 		makeEnquiry.openModal();
