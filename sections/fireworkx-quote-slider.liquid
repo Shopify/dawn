@@ -1,19 +1,72 @@
-<script src="https://unpkg.com/swiper/swiper-bundle.min.js"  defer="defer"></script>
 <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css"/>
 
 {{ 'fireworkx-quote-slider.css' | asset_url | stylesheet_tag }}
-<script src="{{ 'fireworkx-quote-slider.js' | asset_url }}" defer="defer"></script>
 
 {% assign newCanopiesImage = collections['new-canopies'].featured_image %}
 {% assign accessoriesImage = collections['accessories'].featured_image %}
 
 <div class="modal">
   <div class="modal-overlay" data-modal="close-modal"></div>
-  <div class="modal-content-container">
-      {% if template.name == 'index' or collection.title == 'Used Canopies' %}
+    <div class="modal-content-container">
+      {% if template.name == 'collection' and collection.title != "Used Canopies" %}
+        <div class="swiper fwx-enquiry-swiper">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide product-list">
+              <div class="fwx-slide-container">
+                <div class="fwx-slide-contents">
+                  <h2 class="product-heading">{{ collection.title }}</h2>
+                  {% if collection.title == "New Canopies" %}
+                    <h6>Choose a Vehicle</h6>
+                  {% endif %}
+                  <ul class="product-list-items">
+                    {%- for product in collection.products -%}
+                      <li class="product-name show-product" data-handle="{{ product.handle }}">
+                        <img src="{{ product.featured_media | img_url: '155px' }}" class="product-icon">
+                        {% if collection.title == "New Canopies" %}
+                          {% render 'fireworkx-product-title', 
+                            features: product.metafields.fwx.canopy_features, 
+                            year: product.metafields.fwx.year,
+                            model: product.metafields.fwx.model,
+                            size: product.metafields.fwx.size
+                          %} 
+                        {% else %}
+                          <h3>{{ product.title }}</h3>
+                        {% endif %}
+                      </li> 
+                    {%- endfor -%}
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="fwx-slide-container">
+                <div class="fwx-slide-contents">
+                  <ul>
+                    {%- for product in collection.products -%}
+                      <li class="single-product show-single-product" data-singleProduct="{{ product.title}}">
+                        {%- render 'fireworkx-product-form' 
+                          title: product.title,
+                          image : product.featured_media
+                        -%}
+                      </li>
+                    {%- endfor-%}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% elsif template.name == 'product' %}
+        <div class="fwx-product-enquiry-modal">
+          {{ product.title }}
+           {%- render 'fireworkx-product-form' 
+              title: product.title,
+              image : product.featured_media
+          -%}
+           </div>
+      {% else %}
         <div class="fwx-enquiry-swiper">
           <div class="swiper-wrapper">
-
             <div class="swiper-slide enquiry-type-container">
               <div class="fwx-slide-container">
                 <div class="fwx-slide-contents">
@@ -57,101 +110,13 @@
               </div>
             </div>
           </div>
-          <div class="swiper-button-prev"></div>
         </div>
-      {% elsif template.name == 'collection' %}
-        {% if collection.title contains 'Canopies' and collection.title != 'Used Canopies' %}
-          <div class="swiper fwx-enquiry-swiper">
-            <div class="swiper-wrapper">
-              <div class="swiper-slide product-list">
-                <div class="fwx-slide-container">
-                  <div class="fwx-slide-contents">
-                    <h2 class="product-heading">{{ collection.title }}</h2>
-                    <h6>Choose a Vehicle</h6>
-                    <ul class="product-list-items">
-                      {%- for product in collection.products -%}
-                        <li class="product-name show-product" data-vendor="{{ product.vendor}}-Canopies" data-title="{{ product.title}}">
-                          <img src="{{product.featured_media | img_url: '155px'}}" class="product-icon">
-                            {% render 'fireworkx-product-title', 
-                              features: product.metafields.fwx.canopy_features, 
-                              year: product.metafields.fwx.year,
-                              model: product.metafields.fwx.model,
-                              size: product.metafields.fwx.size
-                            %} 
-                        </li> 
-                      {%- endfor -%}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <div class="swiper-slide">
-                <div class="fwx-slide-container">
-                  <div class="fwx-slide-contents">
-                    <ul>
-                      {%- for product in collection.products -%}
-                        <li class="single-product show-single-product" data-singleProduct="{{ product.title}}">
-                          {%- render 'fireworkx-product-form' 
-                            title: product.title,
-                            image : product.featured_media
-                          -%}
-                        </li>
-                      {%- endfor-%}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        {% endif %}
-        {% if collection.title contains 'Accessories' %}
-          <div class="swiper fwx-enquiry-swiper">
-            <div class="swiper-wrapper">
-              <div class="swiper-slide">
-                <div class="fwx-slide-container">
-                  <div class="fwx-slide-contents">
-                    <h2>{{ collection.title }}</h2>
-                    <ul>
-                      {% for product in collection.products %}
-                        <li class="accessory-product" data-title="{{ product.title}}"> 
-                        <img src="{{product.featured_media | img_url: '155px'}}" class="product-icon">
-                        {{ product.title }} </li>
-                      {% endfor %}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <div class="swiper-slide">
-                <div class="fwx-slide-container">
-                  <div class="fwx-slide-contents">
-                    <ul>
-                      {%- for product in collection.products -%}
-                        <li class="single-product show-single-product" data-singleProduct="{{ product.title}}">
-                            {%- render 'fireworkx-product-form' 
-                              title: product.title,
-                              image : product.featured_media
-                            -%}
-                        </li>
-                      {%- endfor-%}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-      {% endif %}
-      {% elsif template.name == 'product' %}
-        <div class="fwx-product-enquiry-modal">
-          {{ product.title }}
-           {%- render 'fireworkx-product-form' 
-                  title: product.title,
-                  image : product.featured_media
-          -%}
-           </div>
       {% endif %}
   </div>
 </div>
 
 <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+<script src="{{ 'fireworkx-quote-slider.js' | asset_url }}"></script>
 
 {% schema %}
 {
