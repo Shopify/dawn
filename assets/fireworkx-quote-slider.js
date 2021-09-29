@@ -11,7 +11,7 @@ const makeEnquiry = {
 	brands: document.querySelectorAll("li.brand-name"),
 	products: document.querySelectorAll("li.product-name"),
 	initSwiper() {
-		// Only init swiper is element exists
+		// Only init swiper if element exists
 		if (document.querySelector(".fwx-enquiry-swiper")) {
 			// Initialise swiper
 			makeEnquiry.swiper = new Swiper(".fwx-enquiry-swiper", {
@@ -49,13 +49,13 @@ const makeEnquiry = {
 	},
 
 	chooseEnquiry(button) {
-		const quoteType = button.dataset.enquiryType;
-		this.enquiryType = quoteType;
-		if (quoteType === "new-canopies") {
+		const enquiry = button.dataset.enquiryType;
+		this.enquiryType = enquiry;
+		if (enquiry === "new-canopies") {
 			this.swiper.slideTo(1);
 		}
-		if (quoteType === "accessories") {
-			window.location.href = "/collections/accessories?enquiry";
+		if (enquiry === "accessories") {
+			window.location.href = "/collections/accessories?enquiry=open";
 		}
 	}
 };
