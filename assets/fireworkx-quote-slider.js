@@ -10,6 +10,13 @@ const makeEnquiry = {
 	enquiryChoiceButtons: document.querySelectorAll("[data-enquiry-type]"),
 	brands: document.querySelectorAll("li.brand-name"),
 	products: document.querySelectorAll("li.product-name"),
+	enquiryForm: document.querySelector("#fwx-enquiry-form"),
+	enquiryFormInputs: document.querySelectorAll(
+		"#fwx-enquiry-form input, #fwx-enquiry-form select, #fwx-enquiry-form textarea"
+	),
+	formIsValid: false,
+	submitButton: document.querySelector("#fwx-enquiry-submit-button"),
+	api: "https://pinewood-api.dev.fireworkx.com/api/v1/lead",
 	initSwiper() {
 		// Only init swiper if element exists
 		if (document.querySelector(".fwx-enquiry-swiper")) {
@@ -33,11 +40,16 @@ const makeEnquiry = {
 	},
 
 	closeModal(elem, e) {
-		if (e.target === elem) {
+		if (!e) {
 			this.body.classList.remove("modal-open");
-			// Reset swiper position when modal is closed
-			// Add/Remove transition event listener to avoid swipe events happening while modal is closing
-			makeEnquiry.modal.addEventListener("transitionend", makeEnquiry.resetSwiper);
+		}
+		if (e) {
+			if (e.target === elem) {
+				this.body.classList.remove("modal-open");
+				// Reset swiper position when modal is closed
+				// Add/Remove transition event listener to avoid swipe events happening while modal is closing
+				makeEnquiry.modal.addEventListener("transitionend", makeEnquiry.resetSwiper);
+			}
 		}
 	},
 
@@ -57,6 +69,47 @@ const makeEnquiry = {
 		if (enquiry === "accessories") {
 			window.location.href = "/collections/accessories?enquiry=open";
 		}
+	},
+
+	sendForm() {
+		let messageElem = document.querySelector("#fwx-enquiry-messsage"),
+			productTitle = document.querySelector("#fwx-field-product-title").value,
+			possession = document.querySelector('input[name="Possession"]:checked').value,
+			callback = document.querySelector('input[name="Callback"]:checked').value,
+			promotions = document.querySelector('input[name="Promotions"]:checked').value,
+			city = document.querySelector("#fwx-enquiry-city").value,
+			province = document.querySelector("#fwx-enquiry-province").value,
+			message = `Product: ${productTitle}\n\nMessage: ${messageElem.value}\n\nPossession of Vehicle: ${possession}\n\nRequest Callback: ${callback}\n\nAllow Promotional Material: ${promotions}\n\nProvince: ${province}\n\nCity: ${city}`,
+			formData = new FormData(this.enquiryForm);
+		formData.append("URL", window.location.href);
+		formData.append("Message", message);
+		this.submitButton.disabled = true;
+		const formDataJson = JSON.stringify(Object.fromEntries(formData));
+		fetch(this.api, {
+			method: "POST",
+			body: formDataJson,
+			headers: {
+				"Content-Type": "application/json"
+			}
+		})
+			.catch((error) => {
+				if ((this.formIsValid = false)) {
+					this.submitButton.disabled = false;
+				}
+				console.error("Error:", error);
+			})
+			.then((response) => {
+				if (response.status !== 200) {
+					if ((this.formIsValid = false)) {
+						this.submitButton.disabled = false;
+					}
+				}
+				if (response.status == 200) {
+					this.closeModal();
+					this.submitButton.disabled = false;
+					this.formIsValid = false;
+				}
+			});
 	}
 };
 
@@ -87,6 +140,28 @@ if (makeEnquiry.enquiryChoiceButtons) {
 	});
 }
 
+// Enquiry Submit button
+if (makeEnquiry.submitButton) {
+	makeEnquiry.submitButton.addEventListener("click", function () {
+		this.disabled = true;
+		makeEnquiry.sendForm();
+	});
+}
+
+// Form Validation
+if (makeEnquiry.enquiryFormInputs) {
+	makeEnquiry.enquiryFormInputs.forEach((input) => {
+		input.addEventListener("change", () => {
+			if (makeEnquiry.enquiryForm.checkValidity()) {
+				makeEnquiry.formIsValid = true;
+				makeEnquiry.submitButton.disabled = false;
+			} else {
+				makeEnquiry.formIsValid = false;
+				makeEnquiry.submitButton.disabled = true;
+			}
+		});
+	});
+}
 document.addEventListener("DOMContentLoaded", () => {
 	// Init Swiper
 	makeEnquiry.initSwiper();
