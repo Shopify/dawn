@@ -151,7 +151,23 @@ if (makeEnquiry.submitButton) {
 // Form Validation
 if (makeEnquiry.enquiryFormInputs) {
 	makeEnquiry.enquiryFormInputs.forEach((input) => {
+		input.addEventListener("input", () => {
+			input.setCustomValidity("");
+			input.classList.remove("invalid");
+		});
 		input.addEventListener("change", () => {
+			input.reportValidity();
+			if (!input.checkValidity()) {
+				input.classList.add("invalid");
+				// Tel
+				if (input.type == "tel") {
+					input.setCustomValidity("Please enter a valid phone number");
+				}
+				// Email
+				if (input.type == "email") {
+					input.setCustomValidity("Please enter a valid email address");
+				}
+			}
 			if (makeEnquiry.enquiryForm.checkValidity()) {
 				makeEnquiry.formIsValid = true;
 				makeEnquiry.submitButton.disabled = false;
