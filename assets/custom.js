@@ -46,6 +46,79 @@ class SleepinkSlider extends HTMLElement {
 
     this.pageCount.textContent = this.currentPage
     this.pageTotal.textContent = this.totalPages
+  }
+
+  onButtonClick(event) {
+    event.preventDefault()
+    this.currentPage =
+      Math.round(this.slider.scrollLeft / this.sliderItems[0].clientWidth) + 1
+    this.totalPages = this.sliderItems.length - this.slidesPerPage + 1
+    const slideScrollPosition =
+      event.currentTarget.name === "next"
+        ? this.currentPage === this.totalPages
+          ? this.slider.scrollLeft -
+            (this.totalPages - 1) * this.sliderItems[0].clientWidth
+          : this.slider.scrollLeft + this.sliderItems[0].clientWidth
+        : this.currentPage === 1
+        ? this.slider.scrollLeft +
+          (this.totalPages - 1) * this.sliderItems[0].clientWidth
+        : this.slider.scrollLeft - this.sliderItems[0].clientWidth
+    this.slider.scrollTo({
+      left: slideScrollPosition,
+    })
+  }
+}
+
+customElements.define("sleepink-slider", SleepinkSlider)
+
+class PressSlider extends HTMLElement {
+  constructor() {
+    super()
+    this.slider = this.querySelector("ul")
+    this.sliderItems = this.querySelectorAll("li")
+    this.pageCount = this.querySelector(".slider-counter--current")
+    this.pageTotal = this.querySelector(".slider-counter--total")
+    this.prevButton = this.querySelector('button[name="previous"]')
+    this.nextButton = this.querySelector('button[name="next"]')
+
+    if (!this.slider || !this.nextButton) return
+
+    const resizeObserver = new ResizeObserver((entries) => this.initPages())
+    resizeObserver.observe(this.slider)
+
+    this.slider.addEventListener("scroll", this.update.bind(this))
+    this.prevButton.addEventListener("click", this.onButtonClick.bind(this))
+    this.nextButton.addEventListener("click", this.onButtonClick.bind(this))
+  }
+
+  initPages() {
+    if (!this.sliderItems.length === 0) return
+    this.slidesPerPage = Math.floor(
+      this.slider.clientWidth / this.sliderItems[0].clientWidth
+    )
+    this.totalPages = this.sliderItems.length - this.slidesPerPage + 1
+    this.update()
+  }
+
+  update() {
+    if (!this.pageCount || !this.pageTotal) return
+    this.currentPage =
+      Math.round(this.slider.scrollLeft / this.sliderItems[0].clientWidth) + 1
+
+    // if (this.currentPage === 1) {
+    //   this.prevButton.setAttribute("disabled", true)
+    // } else {
+    this.prevButton.removeAttribute("disabled")
+    // }
+
+    // if (this.currentPage === this.totalPages) {
+    //   this.nextButton.setAttribute("disabled", true)
+    // } else {
+    this.nextButton.removeAttribute("disabled")
+    // }
+
+    this.pageCount.textContent = this.currentPage
+    this.pageTotal.textContent = this.totalPages
     const previousSlide =
       Number(this.pageCount.textContent) > 1
         ? this.sliderItems[Number(this.pageCount.textContent) - 2]
@@ -81,7 +154,7 @@ class SleepinkSlider extends HTMLElement {
   }
 }
 
-customElements.define("sleepink-slider", SleepinkSlider)
+customElements.define("press-slider", PressSlider)
 
 class AnimatedSlider extends HTMLElement {
   constructor() {
