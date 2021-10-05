@@ -46,6 +46,18 @@ class SleepinkSlider extends HTMLElement {
 
     this.pageCount.textContent = this.currentPage
     this.pageTotal.textContent = this.totalPages
+    const previousSlide =
+      Number(this.pageCount.textContent) > 1
+        ? this.sliderItems[Number(this.pageCount.textContent) - 2]
+        : this.sliderItems[this.totalPages - 1]
+    const prevSlideCont = document.getElementById("prevSlide")
+    prevSlideCont.innerHTML = previousSlide.childNodes[1].innerHTML
+    const nextSlide =
+      Number(this.pageCount.textContent) === this.sliderItems.length
+        ? this.sliderItems[0]
+        : this.sliderItems[Number(this.pageCount.textContent)]
+    const nextSlideCont = document.getElementById("nextSlide")
+    nextSlideCont.innerHTML = nextSlide.childNodes[1].innerHTML
   }
 
   onButtonClick(event) {
