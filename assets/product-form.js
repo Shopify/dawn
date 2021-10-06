@@ -10,9 +10,11 @@ if (!customElements.get('product-form')) {
     }
 
     onSubmitHandler(evt) {
+      if (this.dataset.addToCartBehavior == 'go_to_cart') return;
+
       evt.preventDefault();
       const submitButton = this.querySelector('[type="submit"]');
-      if (submitButton.classList.contains('loading')) return; 
+      if (submitButton.classList.contains('loading')) return;
 
       this.handleErrorMessage();
       this.cartNotification.setActiveElement(document.activeElement);
