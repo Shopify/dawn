@@ -30,7 +30,8 @@
                     {%- if block.settings.image.width >= 1100 -%}{{ block.settings.image | img_url: '1100x' }} 1100w,{%- endif -%}
                     {%- if block.settings.image.width >= 1500 -%}{{ block.settings.image | img_url: '1500x' }} 1500w,{%- endif -%}
                     {%- if block.settings.image.width >= 2200 -%}{{ block.settings.image | img_url: '2200x' }} 2200w,{%- endif -%}
-                    {%- if block.settings.image.width >= 3000 -%}{{ block.settings.image | img_url: '3000x' }} 3000w,{%- endif -%}"
+                    {%- if block.settings.image.width >= 3000 -%}{{ block.settings.image | img_url: '3000x' }} 3000w,{%- endif -%}
+                    {{ block.settings.image | img_url: 'master' }} {{ block.settings.image.width }}w"
                   src="{{ block.settings.image | img_url: '1500x' }}"
                   sizes="(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px)"
                   alt="{{ block.settings.image.alt | escape }}"
@@ -49,8 +50,13 @@
           <div class="collage-card collage-product card-wrapper{% if focus_card_left %} collage-card--left{% elsif focus_card_right %} collage-card--right{% endif %}">
             {%- if block.settings.product != blank -%}
               {%- assign featured_media = block.settings.product.selected_or_first_available_variant.featured_media | default: block.settings.product.featured_media -%}
-              <a href="{{ block.settings.product.url }}" class="collage-content full-unstyled-link card{% if block.settings.secondary_background %} card-colored color-background-1{% endif %}{% if block.settings.image_padding %} collage-card-spacing{% endif %}" {{ block.shopify_attributes }}>
+              <div class="collage-content card{% if block.settings.secondary_background %} card-colored color-background-1{% endif %}{% if block.settings.image_padding %} collage-card-spacing{% endif %}" {{ block.shopify_attributes }}>
                 {%- if featured_media != blank -%}
+                  <div class="collage-content__info card-information card-information__wrapper">
+                    <h3 class="card-information__text h4"><a href="{{ block.settings.product.url }}" class="full-unstyled-link">{{ block.settings.product.title | escape }}</a></h3>
+                    <span class="price">{% render 'price', product: block.settings.product %}</span>
+                  </div>
+                  
                   <div class="collage-card__image-wrapper media media--transparent media--hover-effect"
                     {% if focus_card_left and forloop.first %}
                       style="padding-bottom: {{ 1 | divided_by: featured_media.aspect_ratio | times: 100 }}%;"
@@ -65,7 +71,8 @@
                         {%- if featured_media.width >= 1100 -%}{{ featured_media | img_url: '1100x' }} 1100w,{%- endif -%}
                         {%- if featured_media.width >= 1500 -%}{{ featured_media | img_url: '1500x' }} 1500w,{%- endif -%}
                         {%- if featured_media.width >= 2200 -%}{{ featured_media | img_url: '2200x' }} 2200w,{%- endif -%}
-                        {%- if featured_media.width >= 3000 -%}{{ featured_media | img_url: '3000x' }} 3000w,{%- endif -%}"
+                        {%- if featured_media.width >= 3000 -%}{{ featured_media | img_url: '3000x' }} 3000w,{%- endif -%}
+                        {{ featured_media | img_url: 'master' }} {{ featured_media.width }}w"
                       src="{{ featured_media | img_url: '1500x' }}"
                       sizes="(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px)"
                       alt="{{ featured_media.alt | escape }}"
@@ -83,7 +90,8 @@
                           {%- if block.settings.product.media[1].width >= 1100 -%}{{ block.settings.product.media[1] | img_url: '1100x' }} 1100w,{%- endif -%}
                           {%- if block.settings.product.media[1].width >= 1500 -%}{{ block.settings.product.media[1] | img_url: '1500x' }} 1500w,{%- endif -%}
                           {%- if block.settings.product.media[1].width >= 2200 -%}{{ block.settings.product.media[1] | img_url: '2200x' }} 2200w,{%- endif -%}
-                          {%- if block.settings.product.media[1].width >= 3000 -%}{{ block.settings.product.media[1] | img_url: '3000x' }} 3000w,{%- endif -%}"
+                          {%- if block.settings.product.media[1].width >= 3000 -%}{{ block.settings.product.media[1] | img_url: '3000x' }} 3000w,{%- endif -%}
+                          {{ block.settings.product.media[1] | img_url: 'master' }} {{ block.settings.product.media[1].width }}w"
                         src="{{ block.settings.product.media[1] | img_url: '533x' }}"
                         sizes="(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px)"
                         alt="{{ block.settings.product.media[1].alt | escape }}"
@@ -97,28 +105,24 @@
                   <div class="collage-product__badge">
                     <div class="card__badge">
                       {%- if block.settings.product.available == false -%}
-                        <span class="badge badge--bottom-left color-{{ settings.sold_out_badge_color_scheme }}" aria-hidden="true">{{ 'products.product.sold_out' | t }}</span>
+                        <span class="badge badge--bottom-left color-{{ settings.sold_out_badge_color_scheme }}">{{ 'products.product.sold_out' | t }}</span>
                       {%- elsif block.settings.product.compare_at_price > block.settings.product.price and block.settings.product.available -%}
-                        <span class="badge badge--bottom-left color-{{ settings.sale_badge_color_scheme }}" aria-hidden="true">{{ 'products.product.on_sale' | t }}</span>
+                        <span class="badge badge--bottom-left color-{{ settings.sale_badge_color_scheme }}">{{ 'products.product.on_sale' | t }}</span>
                       {%- endif -%}
                     </div>
                   </div>
-                  <div class="collage-content__info card-information card-information__wrapper">
-                    <h3 class="card-information__text h4">{{ block.settings.product.title | escape }}</h3>
-                    <span class="price">{% render 'price', product: block.settings.product %}</span>
-                  </div>
                 {%- else -%}
                   <div class="collage-card__no-image card-colored color-background-1 card__text-spacing center">
-                    <h3 class="h2">{{ block.settings.product.title | escape }}</h3>
+                    <h3 class="h2"><a href="{{ block.settings.product.url }}" class="full-unstyled-link">{{ block.settings.product.title | escape }}</a></h3>
                   </div>
                   <div class="collage-product__badge">
                     <div class="card__badge">
                       {%- if block.settings.product.available == false -%}
-                        <span class="badge badge--bottom-left color-{{ settings.sold_out_badge_color_scheme }}" aria-hidden="true">
+                        <span class="badge badge--bottom-left color-{{ settings.sold_out_badge_color_scheme }}">
                           {{ 'products.product.sold_out' | t }}
                         </span>
                       {%- elsif block.settings.product.compare_at_price > block.settings.product.price and block.settings.product.available -%}
-                        <span class="badge badge--bottom-left color-{{ settings.sale_badge_color_scheme }}" aria-hidden="true">
+                        <span class="badge badge--bottom-left color-{{ settings.sale_badge_color_scheme }}">
                           {{ 'products.product.on_sale' | t }}
                         </span>
                       {%- endif -%}
@@ -128,7 +132,7 @@
                     {% render 'price', product: block.settings.product %}
                   </div>
                 {%- endif -%}
-              </a>
+              </div>
             {%- else -%}
               <div class="collage-content">
                 <div class="collage-card__no-image card-colored color-background-1 card__text-spacing center">
@@ -142,7 +146,7 @@
           </div>
 
         {%- when 'collection'-%}
-          <div class="collage-card color-{{ block.settings.color_scheme }}{% if focus_card_left %} collage-card--left{% elsif focus_card_right %} collage-card--right{% endif %}" {{ block.shopify_attributes }}>
+          <div class="collage-card collage-collection color-{{ block.settings.color_scheme }}{% if focus_card_left %} collage-card--left{% elsif focus_card_right %} collage-card--right{% endif %}" {{ block.shopify_attributes }}>
               {%- if block.settings.collection != blank -%}
                 <a href="{{ block.settings.collection.url }}" class="card animate-arrow">
                   <div class="collage-content card-colored color-{{ block.settings.color_scheme }}{% if block.settings.image_padding %} collage-card-spacing{% endif %}">
@@ -155,7 +159,8 @@
                             {%- if block.settings.collection.featured_image.width >= 1100 -%}{{ block.settings.collection.featured_image | img_url: '1100x' }} 1100w,{%- endif -%}
                             {%- if block.settings.collection.featured_image.width >= 1500 -%}{{ block.settings.collection.featured_image | img_url: '1500x' }} 1500w,{%- endif -%}
                             {%- if block.settings.collection.featured_image.width >= 2200 -%}{{ block.settings.collection.featured_image | img_url: '2200x' }} 2200w,{%- endif -%}
-                            {%- if block.settings.collection.featured_image.width >= 3000 -%}{{ block.settings.collection.featured_image | img_url: '3000x' }} 3000w,{%- endif -%}"
+                            {%- if block.settings.collection.featured_image.width >= 3000 -%}{{ block.settings.collection.featured_image | img_url: '3000x' }} 3000w,{%- endif -%}
+                            {{ block.settings.collection.featured_image | img_url: 'master' }} {{ block.settings.collection.featured_image.width }}w"
                           src="{{ block.settings.collection.featured_image | img_url: '1500x' }}"
                           sizes="(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px)"
                           alt="{{ block.settings.collection.featured_image.alt | escape }}"
@@ -216,7 +221,8 @@
                         {%- if block.settings.cover_image.width >= 1100 -%}{{ block.settings.cover_image | img_url: '1100x' }} 1100w,{%- endif -%}
                         {%- if block.settings.cover_image.width >= 1500 -%}{{ block.settings.cover_image | img_url: '1500x' }} 1500w,{%- endif -%}
                         {%- if block.settings.cover_image.width >= 2200 -%}{{ block.settings.cover_image | img_url: '2200x' }} 2200w,{%- endif -%}
-                        {%- if block.settings.cover_image.width >= 3000 -%}{{ block.settings.cover_image | img_url: '3000x' }} 3000w,{%- endif -%}"
+                        {%- if block.settings.cover_image.width >= 3000 -%}{{ block.settings.cover_image | img_url: '3000x' }} 3000w,{%- endif -%}
+                        {{ block.settings.cover_image | img_url: 'master' }} {{ block.settings.cover_image.width }}w"
                       src="{{ block.settings.cover_image | img_url: '1500x' }}"
                       sizes="(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px)"
                       alt="{{ block.settings.description | escape }}"
@@ -252,7 +258,8 @@
                         {%- if block.settings.cover_image.width >= 1100 -%}{{ block.settings.cover_image | img_url: '1100x' }} 1100w,{%- endif -%}
                         {%- if block.settings.cover_image.width >= 1500 -%}{{ block.settings.cover_image | img_url: '1500x' }} 1500w,{%- endif -%}
                         {%- if block.settings.cover_image.width >= 2200 -%}{{ block.settings.cover_image | img_url: '2200x' }} 2200w,{%- endif -%}
-                        {%- if block.settings.cover_image.width >= 3000 -%}{{ block.settings.cover_image | img_url: '3000x' }} 3000w,{%- endif -%}"
+                        {%- if block.settings.cover_image.width >= 3000 -%}{{ block.settings.cover_image | img_url: '3000x' }} 3000w,{%- endif -%}
+                        {{ block.settings.cover_image | img_url: 'master' }} {{ block.settings.cover_image.width }}w"
                       src="{{ block.settings.cover_image | img_url: '1500x' }}"
                       sizes="(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px)"
                       alt="{{ block.settings.description | escape }}"
@@ -297,7 +304,8 @@
                           {%- if block.settings.cover_image.width >= 1100 -%}{{ block.settings.cover_image | img_url: '1100x' }} 1100w,{%- endif -%}
                           {%- if block.settings.cover_image.width >= 1500 -%}{{ block.settings.cover_image | img_url: '1500x' }} 1500w,{%- endif -%}
                           {%- if block.settings.cover_image.width >= 2200 -%}{{ block.settings.cover_image | img_url: '2200x' }} 2200w,{%- endif -%}
-                          {%- if block.settings.cover_image.width >= 3000 -%}{{ block.settings.cover_image | img_url: '3000x' }} 3000w,{%- endif -%}"
+                          {%- if block.settings.cover_image.width >= 3000 -%}{{ block.settings.cover_image | img_url: '3000x' }} 3000w,{%- endif -%}
+                          {{ block.settings.cover_image | img_url: 'master' }} {{ block.settings.cover_image.width }}w"
                         src="{{ block.settings.cover_image | img_url: '1500x' }}"
                         sizes="(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px)"
                         alt="{{ block.settings.description | escape }}"

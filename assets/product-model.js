@@ -54,5 +54,8 @@ window.ProductModel = {
 };
 
 window.addEventListener('DOMContentLoaded', () => { 
+  if (Shopify.designMode) {
+    document.querySelectorAll("[data-shopify-xr-hidden]").forEach(element => element.classList.add('hidden'));
+  }
   if (window.ProductModel) window.ProductModel.loadShopifyXR();
 });
