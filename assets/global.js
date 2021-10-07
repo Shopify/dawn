@@ -149,24 +149,6 @@ function debounce(fn, wait) {
   };
 }
 
-const serializeForm = form => {
-  const obj = {};
-  const formData = new FormData(form);
-
-  for (const key of formData.keys()) {
-    const regex = /(?:^(properties\[))(.*?)(?:\]$)/;
-
-    if (regex.test(key)) {
-      obj.properties = obj.properties || {};
-      obj.properties[regex.exec(key)[2]] = formData.get(key);
-    } else {
-      obj[key] = formData.get(key);
-    }
-  }
-
-  return JSON.stringify(obj);
-};
-
 function fetchConfig(type = 'json') {
   return {
     method: 'POST',
