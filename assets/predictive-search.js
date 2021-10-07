@@ -42,9 +42,9 @@ class PredictiveSearch extends HTMLElement {
     // this is needed to prevent the onscreen keyboard to push the content up.
     window.setTimeout( () =>{
       document.body.classList.add('body-fixed');
-    document.body.style.top = `-${this.scrollTopValue}px`;
+      document.body.style.top = `-${this.scrollTopValue}px`;
     });
-    this.stickyHeader.dispatchEvent(new Event('predictiveSearchOpen'));
+    this.stickyHeader.dispatchEvent(new Event('predictiveSearchChange'));
   }
 
   onChange() {
@@ -228,7 +228,7 @@ class PredictiveSearch extends HTMLElement {
     this.predictiveSearchResults.removeAttribute('style');
 
     if (!this.isIOS) return;
-    this.stickyHeader.dispatchEvent(new Event('predictiveSearchClosed'));
+    this.stickyHeader.dispatchEvent(new Event('predictiveSearchChange'));
     document.body.classList.remove('body-fixed');
     document.body.removeAttribute('style');
     window.scrollTo(0, this.scrollTopValue);
