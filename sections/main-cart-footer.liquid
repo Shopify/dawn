@@ -13,11 +13,13 @@
         </cart-note>
       {%- endif -%}
 
-      <div>
+      <div class="cart__blocks">
         {% for block in section.blocks %}
           {%- case block.type -%}
+            {%- when '@app' -%}
+              {% render block %}
             {%- when 'subtotal' -%}
-              <div class="js-contents">
+              <div class="js-contents" {{ block.shopify_attributes }}>
                 <div class="totals">
                   <h3 class="totals__subtotal">{{ 'sections.cart.subtotal' | t }}</h3>
                   <p class="totals__subtotal-value">{{ cart.total_price | money_with_currency }}</p>
@@ -50,14 +52,14 @@
                 </small>
               </div>
             {%- else -%}
-              <div class="cart__ctas">
+              <div class="cart__ctas" {{ block.shopify_attributes }}>
                 <noscript>
                   <button type="submit" class="cart__update-button button button--secondary" form="cart">
                     {{ 'sections.cart.update' | t }}
                   </button>
                 </noscript>
 
-                <button type="submit" class="cart__checkout-button button" name="checkout"{% if cart == empty %} disabled{% endif %} form="cart">
+                <button type="submit" id="checkout" class="cart__checkout-button button" name="checkout"{% if cart == empty %} disabled{% endif %} form="cart">
                   {{ 'sections.cart.checkout' | t }}
                 </button>
               </div>
@@ -91,6 +93,27 @@
   customElements.define('cart-note', CartNote);
 {% endjavascript %}
 
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    function isIE() {
+      const ua = window.navigator.userAgent;
+      const msie = ua.indexOf('MSIE ');
+      const trident = ua.indexOf('Trident/');
+
+      return (msie > 0 || trident > 0);
+    }
+
+    if (!isIE()) return;
+    const cartSubmitInput = document.createElement('input');
+    cartSubmitInput.setAttribute('name', 'checkout');
+    cartSubmitInput.setAttribute('type', 'hidden');
+    document.querySelector('#cart').appendChild(cartSubmitInput);
+    document.querySelector('#checkout').addEventListener('click', function(event) {
+      document.querySelector('#cart').submit();
+    });
+  });
+</script>
+
 {% schema %}
 {
   "name": "t:sections.main-cart-footer.name",
@@ -113,6 +136,9 @@
       "type": "buttons",
       "name": "t:sections.main-cart-footer.blocks.buttons.name",
       "limit": 1
+    },
+    {
+      "type": "@app"
     }
   ]
 }
