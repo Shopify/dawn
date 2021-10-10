@@ -9,11 +9,6 @@
 
 <link rel="stylesheet" href="{{ 'component-deferred-media.css' | asset_url }}" media="print" onload="this.media='all'">
 
-{%- assign variants_available_arr = product.variants | map: 'available' -%}
-{%- assign variants_option1_arr = product.variants | map: 'option1' -%}
-{%- assign variants_option2_arr = product.variants | map: 'option2' -%}
-{%- assign variants_option3_arr = product.variants | map: 'option3' -%}
-
 <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
 
 {%- assign first_3d_model = product.media | where: "media_type", "model" | first -%}
@@ -86,73 +81,32 @@
             </p>
           {%- when 'title' -%}
             <h1 class="product__title" {{ block.shopify_attributes }}>
-              {% if product.tags contains "pre-order" %}
-                {{ product.title | escape }} - Reserveringsvare
-              {% else %}
-                {{ product.title | escape }}
-              {% endif %}
+              {{ product.title | escape }}
             </h1>
-
-            <a href="#looxReviews">
-              <div class="loox-rating" style="color:black;" data-id="{{ product.id }}" data-rating="{{ product.metafields.loox.avg_rating }}" data-raters="{{ product.metafields.loox.num_reviews }}"></div>
-            </a>
-
           {%- when 'price' -%}
             <div class="no-js-hidden" id="price-{{ section.id }}" {{ block.shopify_attributes }}>
               {%- render 'price', product: product, use_variant: true, show_badges: true, price_class: 'price--large' -%}
             </div>
-
+            {%- if shop.taxes_included or shop.shipping_policy.body != blank -%}
+              <div class="product__tax caption rte">
+                {%- if shop.taxes_included -%}
+                  {{ 'products.product.include_taxes' | t }}
+                {%- endif -%}
+                {%- if shop.shipping_policy.body != blank -%}
+                  {{ 'products.product.shipping_policy_html' | t: link: shop.shipping_policy.url }}
+                {%- endif -%}
+              </div>
+            {%- endif -%}
             <div {{ block.shopify_attributes }}>
               {%- form 'product', product, id: 'product-form-installment', class: 'installment caption-large' -%}
                 <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
                 {{ form | payment_terms }}
               {%- endform -%}
             </div>
-
-          {% for tag in product.tags %}
-            {% if tag == "sizing_recommendation:up" %}
-              {% capture sizing_recommendation %}{{ 'products.sizing_recommendation_up' | t }}{% endcapture %}
-
-            {% elsif tag == "sizing_recommendation:down" %}
-              {% capture sizing_recommendation %}{{ 'products.sizing_recommendation_down' | t }}{% endcapture %}
-
-            {% elsif tag == "sizing_recommendation:normal" %}
-              {% capture sizing_recommendation %}{{ 'products.sizing_recommendation_normal' | t }}{% endcapture %}
-            {% endif %}
-
-          {% endfor %}
-
           {%- when 'description' -%}
-            {% if product.tags contains "pre-order" %}
-              <p><b>NB! DET KOSTER 0 KR Å RESERVERE, DET ER IKKE PRISEN FOR VAREN</b></p>
-            {% endif %}
-            {% render 'product-bullets' %}
-            <p><b>{{ sizing_recommendation }}</b></p>
-            {% if product.tags contains "pre-order" %}
-              <p><b>Dette er en  <a href="/blogs/baerekraft/pre-order">reserveringsvare</a></b></p>
-              <ul>
-                <li>{{ "products.pre_order_information_estimated_arrival" | t }} {{ product.metafields.my_fields.pre_order_arrival_date }} </li>
-                <li>{{ "products.pre_order_information_price_reserving" | t }}</li>
-                <li>{{ "products.pre_order_information_in_stock_items_seperated" | t }}  </li>
-              </ul>
-            {% endif %}
-
             {%- if product.description != blank -%}
               <div class="product__description rte">
                 {{ product.description }}
-
-
-                {% if product.metafields.my_fields.model_size %}
-                  <p>{{ "products.model_sizes" | t }}{{ product.metafields.my_fields.model_size }}</p>
-                {% endif %}
-                {% if product.metafields.my_fields.melange_color_composition %}
-                  <p>{{ "products.composition" | t }}{{ product.metafields.my_fields.melange_color_composition }}</p>
-                {% elsif product.metafields.my_fields.solid_color_composition %}
-                  <p> {{ "products.composition" | t }} {{ product.metafields.my_fields.solid_color_composition }} </p>
-                {% endif %}
-                {% if product.metafields.my_fields.model_height %}
-                  <p>{{ "products.model_height" | t }}{{ product.metafields.my_fields.model_height }}</p>
-                {% endif %}
               </div>
             {%- endif -%}
           {%- when 'custom_liquid' -%}
@@ -245,55 +199,29 @@
           {%- when 'variant_picker' -%}
             {%- unless product.has_only_default_variant -%}
               {%- if block.settings.picker_type == 'button' -%}
-                <variant-radios class="no-js-hidden" data-section="{{ section.id }}" data-url="{{ product.url }}" {{ block.shopify_attributes }} data-variant-picker>
+                <variant-radios class="no-js-hidden" data-section="{{ section.id }}" data-url="{{ product.url }}" {{ block.shopify_attributes }}>
                   {%- for option in product.options_with_values -%}
-                    <fieldset class="js product-form__input">
-                      <legend class="form__label">{{ option.name }}</legend>
-                      {%- for value in option.values -%}
-                        {%- assign option_disabled = true -%}
-                        {% for option1_name in variants_option1_arr %}
-                          {% case option.position %}
-                            {% when 1 %}
-                              {% if variants_option1_arr[forloop.index0] == value and variants_available_arr[forloop.index0] == true %}
-                                {%- assign option_disabled = false -%}
-                              {% endif %}
-                            {% when 2 %}
-                              {% if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == value and variants_available_arr[forloop.index0] == true %}
-                                {%- assign option_disabled = false -%}
-                              {% endif %}
-                            {% when 3 %}
-                              {% if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == product.selected_or_first_available_variant.option2 and variants_option3_arr[forloop.index0] == value and variants_available_arr[forloop.index0] == true %}
-                                {%- assign option_disabled = false -%}
-                              {% endif %}
-                          {% endcase %}
-                        {% endfor %}
-                        <input type="radio" id="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}"
-                              name="{{ option.name }}"
-                              value="{{ value | escape }}"
-                              form="product-form-{{ section.id }}"
-                              {% if option.selected_value == value %}checked{% endif %}
-                              {% if option_disabled %}class="disabled"{% endif %}
-                        >
-                        {%- if option.name contains 'olor' or option.name contains 'olour' or option.name contains 'COLOR' or option.name contains 'COLOUR' or option.name contains 'Far' -%}
-                          <label class="color" for="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}">
-                            {%- for variant in product.variants -%}
-                              {%- if variant.option1 == value or variant.option2 == value or variant.option3 == value -%}
-                                {%- if variant.image -%}{{ variant.image | img_url: 'compact' | img_tag }}{%- break -%}{%- endif -%}
-                              {%- endif -%}
-                            {%- endfor -%}
+                      <fieldset class="js product-form__input">
+                        <legend class="form__label">{{ option.name }}</legend>
+                        {%- for value in option.values -%}
+                          <input type="radio" id="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}"
+                                name="{{ option.name }}"
+                                value="{{ value | escape }}"
+                                form="product-form-{{ section.id }}"
+                                {% if option.selected_value == value %}checked{% endif %}
+                          >
+                          <label for="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}">
+                            {{ value }}
                           </label>
-                        {%- else -%}
-                          <label for="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}">{{ value }}</label>
-                        {%- endif -%}
-                      {%- endfor -%}
-                    </fieldset>
+                        {%- endfor -%}
+                      </fieldset>
                   {%- endfor -%}
                   <script type="application/json">
                     {{ product.variants | json }}
                   </script>
                 </variant-radios>
               {%- else -%}
-                <variant-selects class="no-js-hidden" data-section="{{ section.id }}" data-url="{{ product.url }}" {{ block.shopify_attributes }} data-variant-picker>
+                <variant-selects class="no-js-hidden" data-section="{{ section.id }}" data-url="{{ product.url }}" {{ block.shopify_attributes }}>
                   {%- for option in product.options_with_values -%}
                     <div class="product-form__input product-form__input--dropdown">
                       <label class="form__label" for="Option-{{ section.id }}-{{ forloop.index0 }}">
@@ -306,24 +234,7 @@
                           form="product-form-{{ section.id }}"
                         >
                           {%- for value in option.values -%}
-                            {%- assign option_disabled = true -%}
-                            {% for option1_name in variants_option1_arr %}
-                              {% case option.position %}
-                                {% when 1 %}
-                                  {% if variants_option1_arr[forloop.index0] == value and variants_available_arr[forloop.index0] == true %}
-                                    {%- assign option_disabled = false -%}
-                                  {% endif %}
-                                {% when 2 %}
-                                  {% if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == value and variants_available_arr[forloop.index0] == true %}
-                                    {%- assign option_disabled = false -%}
-                                  {% endif %}
-                                {% when 3 %}
-                                  {% if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == product.selected_or_first_available_variant.option2 and variants_option3_arr[forloop.index0] == value and variants_available_arr[forloop.index0] == true %}
-                                    {%- assign option_disabled = false -%}
-                                  {% endif %}
-                              {% endcase %}
-                            {% endfor %}
-                            <option value="{{ value | escape }}" {% if option.selected_value == value %}selected="selected"{% endif %}{% if option_disabled %} disabled{% endif %}>
+                            <option value="{{ value | escape }}" {% if option.selected_value == value %}selected="selected"{% endif %}>
                               {{ value }}
                             </option>
                           {%- endfor -%}
@@ -344,7 +255,7 @@
               <div class="product-form__input{% if product.has_only_default_variant %} hidden{% endif %}">
                 <label class="form__label" for="Variants-{{ section.id }}">{{ 'products.product.product_variants' | t }}</label>
                 <div class="select">
-                  <select name="id" id="Variants-{{ section.id }}" class="select__select" form="product-form">
+                  <select name="id" id="Variants-{{ section.id }}" class="select__select" form="{{ product_form_id }}">
                     {%- for variant in product.variants -%}
                       <option
                         {% if variant == product.selected_or_first_available_variant %}selected="selected"{% endif %}
@@ -375,7 +286,7 @@
                 </div>
 
                 {%- form 'product', product, id: product_form_id, class: 'form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
-                  <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+                  <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" disabled>
                   <div class="product-form__buttons">
                     <button
                       type="submit"
@@ -383,11 +294,13 @@
                       class="product-form__submit button button--full-width {% if block.settings.show_dynamic_checkout and product.selling_plan_groups == empty %}button--secondary{% else %}button--primary{% endif %}"
                     {% if product.selected_or_first_available_variant.available == false %}disabled{% endif %}
                     >
-                        {%- if product.selected_or_first_available_variant.available -%}
-                          {{ 'products.product.add_to_cart' | t }}
-                        {%- else -%}
-                          {{ 'products.product.sold_out' | t }}
-                        {%- endif -%}
+                        <span>
+                          {%- if product.selected_or_first_available_variant.available -%}
+                            {{ 'products.product.add_to_cart' | t }}
+                          {%- else -%}
+                            {{ 'products.product.sold_out' | t }}
+                          {%- endif -%}
+                        </span>
                         <div class="loading-overlay__spinner hidden">
                           <svg aria-hidden="true" focusable="false" role="presentation" class="spinner" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
                             <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
@@ -503,7 +416,6 @@
 
     hide() {
       super.hide();
-      window.pauseAllMedia();
     }
 
     show(opener) {
@@ -569,13 +481,6 @@
     "@context": "http://schema.org/",
     "@type": "Product",
     "name": {{ product.title | json }},
-    {% if product.metafields.loox.num_reviews %}
-      "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "{{ product.metafields.loox.avg_rating }}",
-            "reviewCount": "{{ product.metafields.loox.num_reviews }}"
-        },
-    {% endif %}
     "url": {{ shop.url | append: product.url | json }},
     {%- if product.selected_or_first_available_variant.featured_media -%}
       {%- assign media_size = product.selected_or_first_available_variant.featured_media.preview_image.width | append: 'x' -%}
@@ -589,7 +494,7 @@
     {%- endif -%}
     "brand": {
       "@type": "Thing",
-      "name": "Famme"
+      "name": {{ product.vendor | json }}
     },
     "offers": [
       {%- for variant in product.variants -%}
@@ -600,7 +505,6 @@
           {%- endif -%}
           "availability" : "http://schema.org/{% if variant.available %}InStock{% else %}OutOfStock{% endif %}",
           "price" : {{ variant.price | divided_by: 100.00 | json }},
-          "priceValidUntil": "2025-01-01",
           "priceCurrency" : {{ cart.currency.iso_code | json }},
           "url" : {{ shop.url | append: variant.url | json }}
         }{% unless forloop.last %},{% endunless %}
@@ -923,8 +827,3 @@
   ]
 }
 {% endschema %}
-
-{% if product.metafields.loox.num_reviews %}
-  <div id="looxReviews" data-product-id="{{product.id}}" class="loox-reviews-default">{{ product.metafields.loox.reviews }}</div>
-{% endif %}
-

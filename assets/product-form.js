@@ -4,6 +4,7 @@ if (!customElements.get('product-form')) {
       super();
 
       this.form = this.querySelector('form');
+      this.form.querySelector('[name=id]').disabled = false;
       this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
       this.cartNotification = document.querySelector('cart-notification');
     }
@@ -18,7 +19,7 @@ if (!customElements.get('product-form')) {
 
       submitButton.setAttribute('aria-disabled', true);
       submitButton.classList.add('loading');
-      if (this.querySelector('.loading-overlay__spinner')) this.querySelector('.loading-overlay__spinner').classList.remove('hidden');
+      this.querySelector('.loading-overlay__spinner').classList.remove('hidden');
 
       const config = fetchConfig('javascript');
       config.headers['X-Requested-With'] = 'XMLHttpRequest';
