@@ -1,0 +1,242 @@
+{% liquid 
+  case section.settings.color_scheme
+    when 'background-1'
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_1
+    when 'background-2'
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_2
+    when 'inverse'
+      assign tagBackground = settings.colors_background_1
+      assign tagForeground = settings.colors_text
+    when 'accent-1'
+      assign tagBackground = settings.colors_solid_button_labels
+      assign tagForeground = settings.colors_accent_1
+    when 'accent-2'
+      assign tagBackground = settings.colors_solid_button_labels
+      assign tagForeground = settings.colors_accent_2
+    else
+      assign tagBackground = settings.colors_text 
+      assign tagForeground = settings.colors_background_1
+  endcase
+%}
+
+<div class="SectionGrid py-8 py-md-11 py-lg-13 color-{{ section.settings.color_scheme }}">
+  <div class="SectionGrid-Wide px-10px px-md-5 px-lg-unset">
+    <h2 class="ff-heading fw-400 fs-3 fs-md-6 lh-130 lh-md-123 lh-lg-100 ls-m050 ls-md-unset mb-0">
+      {{ section.settings.title | escape }}
+    </h2>
+    <div class="ngrid twocol md-3col lg-4col cgap-3 cgap-md-7 cgap-lg-30px rgap-5">
+      {% for thisProduct in section.blocks %}
+        {% assign product = thisProduct.settings.product %}
+        {% liquid 
+          assign variants = product.variants
+          if variants.size == 1
+            assign sku = variants[0].sku
+          else
+            assign sku = thisProduct.settings.variant
+          endif 
+        %}
+        {% for variant in product.variants %}
+          {% if variant.sku == sku %}
+            {% assign variant_id = variant.id %}
+            <div class="flex column ai-c pb-5 mx-auto mx-lg-unset mxw-300px mxw-lg-unset w-100p ta-c">
+              <a href="{{ product.url }}?variant={{ variant_id }}" class="w-100p mt-6 mb-5 ngrid onecol onerow pos-rel square-outer" style="background-color:{{ section.settings.backgroundProductCards }};">
+                <div class="square col-1 row-1">
+                  {% if thisProduct.settings.image %}
+                    <img src="{{ thisProduct.settings.image | img_url: '400x' }}" alt="{{ thisProduct.settings.image.alt }}" width="300" height="300" loading="lazy" class="contain productimage">
+                  {% elsif variant.featured_image %}
+                    <img src="{{ variant.featured_image | img_url: '400x' }}" alt="{{ variant.featured_image.alt }}" width="300" height="300" loading="lazy" class="contain productimage">
+                  {% else %}
+                    <img src="{{ product.featured_image | img_url: '400x' }}" alt="{{ product.featured_image.alt }}" width="300" height="300" loading="lazy" class="contain productimage">
+                  {% endif %}
+                  <div class="col-1 row-1 pos-abs l-0 t-10px t-lg-16px">
+                    {% assign tags = product.metafields.global.tags | split: ', ' %}
+                    {% for t in tags %}
+                      <div class="fw-400 fs-12px ml-0 ta-l px-3 lh-100 py-2 mb-1" style="background-color: {{ tagBackground }}; color: {{ tagForeground }}">
+                        {{ t | escape }}
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </a>
+              <div>
+                <div class="flex row jc-c ai-c ml-2 mr-3 mb-2 h-16px">
+                  {% liquid 
+                    assign rating = product.metafields.global.rating.value
+                    assign wholeRating = rating | floor
+                    assign missing_stars = 5 | minus: rating | floor
+                    assign sum = wholeRating | plus: missing_stars
+                    if sum != 5
+                      assign halfStars = 1
+                    else
+                      assign halfStars = 0
+                    endif
+                  %}
+                  {% if rating > 0 %}
+                    {% for i in (1..wholeRating) %}
+                      <span>
+                        {%- render 'icon-star', currentColor: "#ffd900" -%}
+                      </span>
+                    {% endfor %}
+                  {% endif %}
+                  {% if halfStars == 1 %}
+                    <span>
+                      {%- render 'icon-star-half' -%}
+                    </span>
+                  {% endif %}
+                  {% if missing_stars > 0 %}
+                    {% for j in (1..missing_stars) %}
+                      <span>
+                        {%- render 'icon-star', currentColor: "#dddddd" -%}
+                      </span>
+                    {% endfor %}
+                  {% endif %}
+                </div>
+                {% assign reviewCount = product.metafields.global.reviewCount.value %}
+                <div class="ff-body fw-400 fs-12px lh-100 mt-0 ta-c">
+                  ({% if reviewCount > 0 %}{{ reviewCount }} {% else %}0 {% endif %}
+                  {% if reviewCount == 1 %}Bewertung{% else %}Bewertungen{% endif %})
+                </div>
+                <h3 class="ff-heading fs-1 fs-lg-3 lh-100 lh-md-114 lh-lg-110 ls-m100 ls-md-m067 ls-lg-m098 fw-400 ta-c w-100p mb-1 mt-5">
+                  {% if variant.metafields.global.variantName.value %}
+                    {{ variant.metafields.global.variantName.value | escape }}
+                  {% elsif product.metafields.global.productName.value %}
+                    {{ product.metafields.global.productName.value | escape }}
+                  {% elsif variant.name %}
+                    {{ variant.name | remove: 'sleep.ink' }}
+                  {% else %}
+                    {{ product.title | remove: 'sleep.ink' }}
+                  {% endif %}
+                </h3>
+                <div class="w-100p h-32px h-md-16px flex column jc-fs ai-c mb-5">
+                  <p class="ff-body fs-11px fs-md-12px lh-145 lh-md-136 lh-lg-133 fw-300 ta-c w-100p mb-5">
+                    {% if variant.metafields.global.description %}
+                      {{ variant.metafields.global.description.value | escape }}
+                    {% elsif product.metafields.global.description %}
+                      {{ product.metafields.global.description.value | escape }}
+                    {% else %}
+                      &nbsp;
+                    {% endif %}
+                  </p>
+                </div>
+                <p class="ta-c ff-body fs-1 fs-lg-3 lh-100 lh-lg-111 fw-500 mb-1">
+                  {{ variant.price | money_without_currency }} €
+                  {% if variant.compare_at_price %}
+                    <span class="fw-400 fs-87p fs-lg-90p td-lt ml-2">
+                      {{ variant.compare_at_price | money_without_currency }} €
+                    </span>
+                  {% endif %}
+                </p>
+                <div class="flex row jc-c ai-c">
+                  <form method="post" action="/cart/add">
+                    <input type="hidden" name="id" value="{{ variant_id }}" />
+                    <input type="hidden" name="quantity" value="1" id="quantity" />
+                    <button type="submit" class="submit" style="background-color: {{ tagBackground }}; color: {{ tagForeground }}">
+                      {%- render 'icon-cart2', currentColor: '#ffffff' -%}
+                    </button>
+                  </form>
+                  <a href="{{ product.url }}?variant={{ variant_id }}">
+                    <button class="linkbutton-to-product-page" style="background-color: {{ tagBackground }}; color: {{ tagForeground }};">
+                      {{ section.settings.linkProductPage | escape }}
+                    </button>
+                  </a>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Produktgitter",
+  "tag": "section",
+  "class": "spaced-section collection-list-section",
+  "max_blocks": 15,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "default": "Alle Produkte in der Übersicht",
+      "label": "Überschrift"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.collection-list.settings.color_scheme.options__1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.collection-list.settings.color_scheme.options__2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.collection-list.settings.color_scheme.options__3.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.collection-list.settings.color_scheme.options__4.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.collection-list.settings.color_scheme.options__5.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.collection-list.settings.color_scheme.label"
+    },
+    {
+      "type": "color",
+      "id": "backgroundProductCards",
+      "label": "Hintergrund der Produktkacheln",
+      "default": "#F9F9FA"
+    },
+    {
+      "type": "text",
+      "id": "linkProductPage",
+      "label": "Beschriftung des Buttons zur Produktseite",
+      "default": "Mehr erfahren"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Produkt",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Produkt"
+        },
+        {
+          "type": "text",
+          "id": "variant",
+          "label": "Produktvariante"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Produktbild (optional)"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Produktgitter",
+      "blocks": [
+        {
+          "type": "product"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
