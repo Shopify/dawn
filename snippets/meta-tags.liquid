@@ -21,7 +21,7 @@
 <meta property="og:type" content="{{ og_type }}">
 <meta property="og:description" content="{{ og_description | escape }}">
 
-{%- if page_image -%}
+{%- if page_image and request.page_type != 'product' -%}
   <meta property="og:image" content="http:{{ page_image | img_url: 'master' }}">
   <meta property="og:image:secure_url" content="https:{{ page_image | img_url: 'master' }}">
   <meta property="og:image:width" content="{{ page_image.width }}">
@@ -29,6 +29,26 @@
 {%- endif -%}
 
 {%- if request.page_type == 'product' -%}
+  {% comment %}
+    TODO: The following should eventually go into a new drop `social_image`
+    https://github.com/Shopify/hackdays-social-image-previews/issues/2
+
+    The cache_buster is currently set by price, update_at doesn't seem to
+    be exposed in the drip. Changing the price will invalidate the cache.
+    However social media platforms do have their own caching.
+  {% endcomment %}
+  {% liquid
+    assign height = "630"
+    assign width = "1200"
+    assign cache_buster = product.price
+    assign permanent_subdomain = shop.permanent_domain | replace: ".myshopify.com", ""
+    assign og_image = "//cdn.shopify.com/screenshots/social/" | append: permanent_subdomain | append: product.url | append: "?height=" | append: height | append: "&width=" | append: width | append: "&cb=" | append: cache_buster
+  %}
+
+  <meta property="og:image" content="http:{{ og_image }}">
+  <meta property="og:image:secure_url" content="https:{{ og_image }}">
+  <meta property="og:image:width" content="{{ width }}">
+  <meta property="og:image:height" content="{{ height }}">
   <meta property="og:price:amount" content="{{ product.price | money_without_currency | strip_html }}">
   <meta property="og:price:currency" content="{{ cart.currency.iso_code }}">
 {%- endif -%}
