@@ -10,44 +10,48 @@ if (!customElements.get('product-form')) {
     }
 
     onSubmitHandler(evt) {
-      evt.preventDefault();
-      const submitButton = this.querySelector('[type="submit"]');
-      if (submitButton.classList.contains('loading')) return;
+      try {
+        evt.preventDefault();
+        const submitButton = this.querySelector('[type="submit"]');
+        if (submitButton.classList.contains('loading')) return;
 
-      this.handleErrorMessage();
-      this.cartNotification.setActiveElement(document.activeElement);
+        this.handleErrorMessage();
+        this.cartNotification.setActiveElement(document.activeElement);
 
-      submitButton.setAttribute('aria-disabled', true);
-      submitButton.classList.add('loading');
-      this.querySelector('.loading-overlay__spinner').classList.remove('hidden');
+        submitButton.setAttribute('aria-disabled', true);
+        submitButton.classList.add('loading');
+        this.querySelector('.loading-overlay__spinner').classList.remove('hidden');
 
-      const config = fetchConfig('javascript');
-      config.headers['X-Requested-With'] = 'XMLHttpRequest';
-      delete config.headers['Content-Type'];
+        const config = fetchConfig('javascript');
+        config.headers['X-Requested-With'] = 'XMLHttpRequest';
+        delete config.headers['Content-Type'];
 
-      const formData = new FormData(this.form);
-      formData.append('sections', this.cartNotification.getSectionsToRender().map((section) => section.id));
-      formData.append('sections_url', window.location.pathname);
-      config.body = formData;
+        const formData = new FormData(this.form);
+        formData.append('sections', this.cartNotification.getSectionsToRender().map((section) => section.id));
+        formData.append('sections_url', window.location.pathname);
+        config.body = formData;
 
-      fetch(`${routes.cart_add_url}`, config)
-        .then((response) => response.json())
-        .then((response) => {
-          if (response.status) {
-            this.handleErrorMessage(response.description);
-            return;
-          }
+        fetch(`${routes.cart_add_url}`, config)
+          .then((response) => response.json())
+          .then((response) => {
+            if (response.status) {
+              this.handleErrorMessage(response.description);
+              return;
+            }
 
-          this.cartNotification.renderContents(response);
-        })
-        .catch((e) => {
-          console.error(e);
-        })
-        .finally(() => {
-          submitButton.classList.remove('loading');
-          submitButton.removeAttribute('aria-disabled');
-          this.querySelector('.loading-overlay__spinner').classList.add('hidden');
-        });
+            this.cartNotification.renderContents(response);
+          })
+          .catch((e) => {
+            console.error(e);
+          })
+          .finally(() => {
+            submitButton.classList.remove('loading');
+            submitButton.removeAttribute('aria-disabled');
+            this.querySelector('.loading-overlay__spinner').classList.add('hidden');
+          });
+      } catch (e) {
+        evt.target.submit();
+      }
     }
 
     handleErrorMessage(errorMessage = false) {
