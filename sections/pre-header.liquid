@@ -1,6 +1,6 @@
 {{ 'custom.css' | asset_url | stylesheet_tag }}
 {%- if section.settings.hidden != true -%}
-    <div class="color-{{ section.settings.color_scheme }}" role="region" aria-label="{{ 'sections.header.announcement' | t }}" {{ section.shopify_attributes }}>
+    <div class="color-{{ section.settings.color_scheme }}" role="region" aria-label="{{ 'sections.header.announcement' | t }}" {{ section.shopify_attributes }} style="background-color: {{ section.settings.backgroundColor | escape }}">
       <div class="SectionGrid">
         <div class="WideGrid">
         <div class="pre-header">
@@ -13,6 +13,21 @@
                     {%- case block.type -%}
                     {%- when 'pre-header' -%}    
                         <div class="pre-head-combo">
+                          {% if block.settings.showTrustedShops %}
+                            <div class="ts-logo flex row jc-c ai-c">
+                              {% render 'logo-trusted-shops' %}
+                            </div>
+                            <div class="ts-stars flex row jc-c ai-c">
+                              {% for i in (1..5) %}
+                                <span>
+                                  {% render 'icon-star', currentColor: '#ffd900' %}
+                                </span>
+                              {% endfor %}
+                            </div>
+                            <div class="ts-text">
+                              <span id="ts-reviewCount">1481</span> Kundenbewertungen (<span id="ts-rating">4.71</span>/5.00)
+                            </div>
+                          {% else %}
                             <div class="pre-head-img">
                                 <img
                                 src="{{ block.settings.image | img_url: '44x' }}"
@@ -24,11 +39,12 @@
                             </div>  
                             <div class="pre-head-txt">
                                 {%- if block.settings.text != blank -%}
-                                    <p class="pre-header__message h5">
+                                    <p class="pre-header__message">
                                         {{ block.settings.text | escape }}
                                     </p>
                                 {%- endif -%}   
-                            </div>       
+                            </div>
+                          {% endif %}
                         </div>
                     {%- endcase -%}
               {%- if block.settings.link != blank -%}
@@ -40,6 +56,26 @@
         </div>
       </div>
       </div>
+      <script>
+        const tsReviewCount = document.getElementById("ts-review-count")
+        if(tsReviewCount != null) {
+          const getTSData = async () => {
+            const shopId = {{ section.settings.tsId | escape }}
+            const url = `https://api.trustedshops.com/rest.public/v2/shops/${shopId}/quality`
+            const fetchResponse = await fetch(url)
+            const data = await fetchResponse.json()
+            const { response } = await data
+            const { data: innerData } = await response
+            const { shop } = await innerData
+            const { qualityIndicators } = await shop
+            const { reviewIndicators } = await qualityIndicators
+            const { totalReviewCount, overallMark } = await reviewIndicators
+            document.getElementById("ts-reviewCount").innerHTML = await totalReviewCount
+            document.getElementById("ts-rating").innerHTML = await overallMark
+          }
+          document.addEventListener("load", getTSData)
+        }
+      </script>
     </div> 
 {%- endif -%}
 
@@ -79,10 +115,22 @@
         "label": "t:sections.announcement-bar.blocks.announcement.settings.color_scheme.label"
     },
     {
+      "type": "color",
+      "id": "backgroundColor",
+      "default": "#FAF9F8",
+      "label": "Hintergrundfarbe der Section"
+    },
+    {
         "type": "checkbox",
         "id": "hidden",
         "label": "Pre-Header ausblenden", 
         "default": false
+    },
+    {
+      "type": "text",
+      "id": "tsId",
+      "default": "X171CC05C7CF0FBC03EB75B9E6E73D132",
+      "label": "TrustedShops-ID"
     }
   ],
   "blocks": [
@@ -105,6 +153,12 @@
           "type": "url",
           "id": "link",
           "label": "Link"
+        },
+        {
+          "type": "checkbox",
+          "id": "showTrustedShops",
+          "default": false,
+          "label": "Trusted-Shops-Bewertung anzeigen"
         }
       ]
     }
