@@ -8,7 +8,7 @@ class FacetFiltersForm extends HTMLElement {
     }, 500);
 
     this.querySelector('form').addEventListener('input', this.debouncedOnSubmit.bind(this));
-    
+
     const facetWrapper = this.querySelector('#FacetsWrapperDesktop');
     if (facetWrapper) facetWrapper.addEventListener('keyup', onKeyUpEscape);
   }
@@ -36,7 +36,7 @@ class FacetFiltersForm extends HTMLElement {
     document.getElementById('ProductGridContainer').querySelector('.collection').classList.add('loading');
     if (countContainer){
       countContainer.classList.add('loading');
-    }    
+    }
     if (countContainerDesktop){
       countContainerDesktop.classList.add('loading');
     }
@@ -93,9 +93,9 @@ class FacetFiltersForm extends HTMLElement {
 
     const facetDetailsElements =
       parsedHTML.querySelectorAll('#FacetFiltersForm .js-filter, #FacetFiltersFormMobile .js-filter');
-    const matchesIndex = (element) => { 
+    const matchesIndex = (element) => {
       const jsFilter = event ? event.target.closest('.js-filter') : undefined;
-      return jsFilter ? element.dataset.index === jsFilter.dataset.index : false; 
+      return jsFilter ? element.dataset.index === jsFilter.dataset.index : false;
     }
     const facetsToRender = Array.from(facetDetailsElements).filter(element => !matchesIndex(element));
     const countsToRender = Array.from(facetDetailsElements).find(matchesIndex);
@@ -164,7 +164,8 @@ class FacetFiltersForm extends HTMLElement {
   onActiveFilterClick(event) {
     event.preventDefault();
     FacetFiltersForm.toggleActiveFacets();
-    FacetFiltersForm.renderPage(new URL(event.currentTarget.href).searchParams.toString());
+    const url = event.currentTarget.href.indexOf('?') == -1 ? '' : event.currentTarget.href.slice(event.currentTarget.href.indexOf('?') + 1);
+    FacetFiltersForm.renderPage(url);
   }
 }
 
