@@ -3,7 +3,6 @@ class DetailsDisclosure extends HTMLElement {
     super();
     this.mainDetailsToggle = this.querySelector('details');
 
-    this.addEventListener('keyup', onKeyUpEscape);
     this.mainDetailsToggle.addEventListener('focusout', this.onFocusOut.bind(this));
   }
 
@@ -14,7 +13,8 @@ class DetailsDisclosure extends HTMLElement {
   }
 
   close() {
-    this.mainDetailsToggle.removeAttribute('open')
+    this.mainDetailsToggle.removeAttribute('open');
+    this.mainDetailsToggle.querySelector('summary').setAttribute('aria-expanded', false);
   }
 }
 
