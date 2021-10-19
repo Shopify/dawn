@@ -1,6 +1,6 @@
 {{ 'custom.css' | asset_url | stylesheet_tag }}
 {%- if section.settings.hidden != true -%}
-    <div class="color-{{ section.settings.color_scheme }}" role="region" aria-label="{{ 'sections.header.announcement' | t }}" {{ section.shopify_attributes }} style="background-color: {{ section.settings.backgroundColor | escape }}">
+    <div class="color-{{ section.settings.color_scheme }}" role="region" aria-label="{{ 'sections.header.announcement' | t }}" {{ section.shopify_attributes }} style="background-color: {{ section.settings.backgroundColor | escape }}" id="pre-header">
       <div class="SectionGrid">
         <div class="WideGrid">
         <div class="pre-header">
@@ -56,27 +56,22 @@
         </div>
       </div>
       </div>
-      <script>
-        const tsReviewCount = document.getElementById("ts-review-count")
-        if(tsReviewCount != null) {
-          const getTSData = async () => {
-            const shopId = {{ section.settings.tsId | escape }}
-            const url = `https://api.trustedshops.com/rest/public/v2/shops/${shopId}/quality`
-            const fetchResponse = await fetch(url)
-            const data = await fetchResponse.json()
-            const { response } = await data
-            const { data: innerData } = await response
-            const { shop } = await innerData
-            const { qualityIndicators } = await shop
-            const { reviewIndicators } = await qualityIndicators
-            const { totalReviewCount, overallMark } = await reviewIndicators
-            document.getElementById("ts-reviewCount").innerHTML = await totalReviewCount
-            document.getElementById("ts-rating").innerHTML = await overallMark
-          }
-          document.addEventListener("load", getTSData)
-        }
-      </script>
     </div> 
+    <script>
+          const tsReviewCount = document.getElementById("ts-reviewCount")
+          const headers = { "Access-Control-Allow-Origin": "*" }
+          if(tsReviewCount != null) {
+            const url = `https://ts-proxy.vercel.app/?`
+            fetch(url, headers)
+            .then(response => response.json())
+            .then(data => {
+              const { totalReviewCount, overallMark } = data
+              document.getElementById("ts-reviewCount").innerHTML = totalReviewCount
+              document.getElementById("ts-rating").innerHTML = overallMark.toFixed(2)
+            })
+            .catch(err => console.error(err))
+          }
+    </script>
 {%- endif -%}
 
 
