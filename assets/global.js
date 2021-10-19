@@ -314,7 +314,7 @@ class MenuDrawer extends HTMLElement {
     const detailsElement = summaryElement.parentNode;
     const isOpen = detailsElement.hasAttribute('open');
 
-    function addTrapFocus(event) {
+    function addTrapFocus() {
       trapFocus(summaryElement.nextElementSibling, detailsElement.querySelector('button'));
       summaryElement.nextElementSibling.removeEventListener('transitionend', addTrapFocus);
     }
