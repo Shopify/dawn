@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="{{ 'component-deferred-media.css' | asset_url }}" media="print" onload="this.media='all'">
 
 <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
 
 {%- assign first_3d_model = product.media | where: "media_type", "model" | first -%}
 {%- if first_3d_model -%}
@@ -160,6 +161,12 @@
               </modal-opener>
               <a href="{{ block.settings.page.url }}" class="product-popup-modal__button link no-js">{{ block.settings.text }}</a>
           {%- when 'share' -%}
+            {%- liquid 
+              assign share_link = product.url
+              if product.selected_variant.url != blank
+                assign share_link = product.selected_variant.url
+              endif
+            -%}
             <share-button class="share-button" {{ block.shopify_attributes }}>
               <button class="share-button__button hidden">
                 {% render 'icon-share' %}
@@ -177,10 +184,12 @@
                     <input type="text"
                           class="field__input"
                           id="url"
-                          value="{{ shop.url | append: product.selected_variant.url }}"
+                          value="{{ shop.url | append: share_link }}"
                           placeholder="{{ 'general.share.share_url' | t }}"
                           onclick="this.select();"
                           readonly
+                          share-input
+                          data-url="{{ shop.url }}"
                     >
                     <label class="field__label" for="url">{{ 'general.share.share_url' | t }}</label>
                   </div>

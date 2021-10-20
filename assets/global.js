@@ -574,6 +574,7 @@ class VariantSelects extends HTMLElement {
       this.updateURL();
       this.updateVariantInput();
       this.renderProductInfo();
+      this.updateShareUrl();
     }
   }
 
@@ -613,6 +614,12 @@ class VariantSelects extends HTMLElement {
   updateURL() {
     if (!this.currentVariant || this.dataset.updateUrl === 'false') return;
     window.history.replaceState({ }, '', `${this.dataset.url}?variant=${this.currentVariant.id}`);
+  }
+
+  updateShareUrl() {
+    if (!this.currentVariant) return;
+    console.log(document.querySelector("[share-input]").dataset, document.querySelector("[share-input]"))
+    document.querySelector("[share-input]").value = `${ document.querySelector("[share-input]").dataset.url}${this.dataset.url}?variant=${this.currentVariant.id}`;
   }
 
   updateVariantInput() {
