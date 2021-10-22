@@ -618,7 +618,6 @@ class VariantSelects extends HTMLElement {
 
   updateShareUrl() {
     if (!this.currentVariant) return;
-    console.log(document.querySelector("[data-share]").dataset, document.querySelector("[data-share]"))
     document.querySelector("[data-share]").value = `${ document.querySelector("[data-share]").dataset.url}${this.dataset.url}?variant=${this.currentVariant.id}`;
   }
 
