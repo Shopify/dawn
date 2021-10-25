@@ -617,9 +617,9 @@ class VariantSelects extends HTMLElement {
   }
 
   updateShareUrl() {
-    const shareInput = document.querySelector(`#Product-share-${this.dataset.section} input`)
-    if (!shareInput) return;
-    shareInput.value = `${window.shopUrl}${this.dataset.url}?variant=${this.currentVariant.id}`;
+    const shareButton = document.querySelector(`share-button#Share-${this.dataset.section}`);
+    if (!shareButton) return;
+    shareButton.updateUrl(`${window.shopUrl}${this.dataset.url}?variant=${this.currentVariant.id}`);
   }
 
   updateVariantInput() {

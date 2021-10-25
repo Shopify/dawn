@@ -40,5 +40,9 @@ if (!customElements.get('share-button')) {
         this.elements.closeButton.focus();
       });
     }
+
+    updateUrl(url) {
+      this.elements.urlInput.value = url;
+    }
   });
 }
