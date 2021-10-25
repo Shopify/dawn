@@ -619,7 +619,7 @@ class VariantSelects extends HTMLElement {
   updateShareUrl() {
     const shareInput = document.querySelector(`#Product-share-${this.dataset.section} input`)
     if (!shareInput) return;
-    shareInput.value = `${shareInput.dataset.shareUrl}${this.dataset.url}?variant=${this.currentVariant.id}`;
+    shareInput.value = `${window.shopUrl}${this.dataset.url}?variant=${this.currentVariant.id}`;
   }
 
   updateVariantInput() {
