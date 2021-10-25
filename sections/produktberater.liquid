@@ -31,7 +31,7 @@
   endcase
 %}
 
-<div class="SectionGrid color-{{ section.settings.color_scheme }}">
+<div class="SectionGrid color-{{ section.settings.color_scheme }}" id="produktberater">
   <div class="SectionGrid-Wide">
     <div class="w-100p py-8 px-45px px-lg-unset">
       <h1 class="mb-2 mb-lg-6px mt-6 ff-heading fs-36px fs-lg-44px fw-600 lh-38px lh-lg-100 ta-l ls-m100" >{{ section.settings.title | escape }}</h1>
@@ -86,15 +86,15 @@
         </button>
       </div>
       <div id="produktempfehlung" class="section-4 wf-section">
-        <h2 id="probieraktion" class="h2-produkt-shop-berater"> Unsere Empfehlungen für dich</h2>
+        <h2 id="probieraktion" class="h2-produkt-shop-berater">Unsere Empfehlungen für dich</h2>
         <div class="centered-all w-container">
           <div>
             <p class="paragraph-sub-shop-info">
               Nur solange der Vorrat reicht. Versandkostenfrei ab 29€<br>
             </p>
             <div class="social-proof-sub">
-              <img class="proof-image" src="https://assets.website-files.com/5fdb4589274da4119131bbf0/5fdb4589274da449b731bcb0_Meis-iPad.png" loading="lazy" alt="" height="">
-              <div class="text-proof-sub"><strong>Sylvie Meis</strong> und <strong>801 andere Personen</strong> lieben unsere Produkte</div>
+              <img class="proof-image" src="{{ section.settings.influencerImage | img_url: 'x60' }}" loading="lazy" alt="{{ section.settings.influencerImage.alt | escape }}" width="" height="">
+              <div class="text-proof-sub"><strong>{{ section.settings.influencerName | escape }}</strong> und <strong>801 andere Personen</strong> lieben unsere Produkte</div>
             </div>
             <div class="cards-grid-container-all">
               {% for product in section.blocks %}
@@ -174,13 +174,104 @@
                 {% endfor %}
               {% endfor %}
             </div>
-            <div class="container-6 w-container"><a id="back-btn" href="#" class="questionaire-button w-button">Zurück zum Schlafberater</a></div>
+            <div class="container-6 w-container"><button id="back-btn" class="questionaire-button w-button">Zurück zum Schlafberater</button></div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+<script>
+  const questions = {
+    einschlafen: "Einschlafen",
+    durchschlafen: "Durchschlafen",
+    entspannen: "Abends besser entspannen",
+    "nichts-verbessern": "Gar nichts",
+    stress: "Stress",
+    krankheit: "Krankheit",
+    schicht: "Schichtarbeit",
+    altern: "Älterwerden",
+    "ursache-unbekannt": "Ich weiß es nicht",
+    natuerlich: "Natürliche Wirkung",
+    nebenwirkungen: "Keine Nebenwirkungen",
+    gewoehnung: "Keine Gewöhnungseffekte",
+    kater: "Kein 'Kater'-Gefühl am Morgen",
+    "keine-produkteigenschaft": "Keine (Produkteigenschaft)",
+    zuckerfrei: "zuckerfrei",
+    vegan: "vegan",
+    glutenfrei: "glutenfrei",
+    laktosefrei: "laktosefrei",
+    "keine-eigenschaft": "Keine (Eigenschaft)"
+  }
+  const produkte = [
+    "drink7",
+    "drink14",
+    "drink28",
+    "essenz",
+    "spray",
+    "duo",
+    "resleep",
+    "gute-nacht",
+    "relax",
+    "kerze",
+    "matte",
+    "maske",
+    "teeflasche",
+    "allyouneed",
+    "letstalk"
+  ]
+  function calcCongruence() {
+    const answersGiven = Object.keys(questions).reduce((acc, currKey) => {
+      const arr = [ ...acc ]
+      if(document.getElementById(currKey).checked) {
+        arr.push(questions[currKey])
+      }
+      return arr
+    },[])
+    const durchschlafen = ["duo"]
+    const einschlafenZuckerfrei = ["spray", "resleep"]
+    const einschlafen = ["drink7", "drink14", "drink28", "essenz", "spray", "resleep"]
+    const entspannung = ["gute-nacht", "relax", "kerze", "matte"]
+    const others = ["maske", "teeflasche", "allyouneed", "letstalk"]
+    const empfehlung =
+      answersGiven.includes("Durchschlafen")
+        ? durchschlafen
+        : answersGiven.includes("Einschlafen")
+          ? answersGiven.includes("zuckerfrei")
+            ? einschlafenZuckerfrei
+            : einschlafen
+          : answersGiven.includes("Abends besser entspannen")
+            ? entspannung
+            : others
+    produkte.forEach((item) => {
+      const element = document.getElementById(item)
+      if ( empfehlung.includes(item) ) {
+        if (element) {
+          element.style.display = "block"
+        } 
+      } else {
+        if (element) {
+          element.style.display = "none"
+        }
+      }
+    })
+    document.getElementById("produktempfehlung").scrollIntoView({behavior: "smooth"})
+  }
+  function returnToQuestions() {
+    Object.keys(questions).forEach((item) => {
+      document.getElementById(item).checked = false
+    })
+    produkte.forEach((item) => {
+      const element = document.getElementById(item)
+      if (element) {
+        element.style.display = "block"
+      }
+    })
+    document.getElementById("produktberater").scrollIntoView({ behavior: "smooth" })
+  }
+  document.getElementById("produkt-btn").addEventListener("click", calcCongruence)
+  document.getElementById("back-btn").addEventListener("click",returnToQuestions)
+</script>
 
 {% schema %}
 {
@@ -232,6 +323,17 @@
       "id": "buttonText",
       "default": "Zur Produktempfehlung",
       "label": "Aufschrift des Buttons"
+    },
+    {
+      "type": "image_picker",
+      "id": "influencerImage",
+      "label": "Bild des Influencers"
+    },
+    {
+      "type": "text",
+      "id": "influencerName",
+      "label": "Name des Influencers",
+      "default": "Sylvie Meis"
     }
   ],
   "blocks": [
