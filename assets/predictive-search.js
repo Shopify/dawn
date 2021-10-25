@@ -4,7 +4,7 @@ class PredictiveSearch extends HTMLElement {
     this.cachedResults = {};
     this.input = this.querySelector('input[type="search"]');
     this.predictiveSearchResults = this.querySelector('[data-predictive-search]');
-    this.predictiveSearchOpen = false;
+    this.isOpen = false;
 
     this.setupEventListeners();
   }
@@ -189,10 +189,9 @@ class PredictiveSearch extends HTMLElement {
     this.setAttribute('open', true);
     this.input.setAttribute('aria-expanded', true);
 
-    if (this.predictiveSearchOpen) return;
+    if (this.isOpen) return;
 
-    this.predictiveSearchOpen = true;
-    this.dispatchEvent(new Event('predictiveSearchChange'));
+    this.isOpen = true;
   }
 
   close(clearSearchTerm = false) {
@@ -211,8 +210,7 @@ class PredictiveSearch extends HTMLElement {
     this.resultsMaxHeight = false
     this.predictiveSearchResults.removeAttribute('style');
 
-    this.predictiveSearchOpen = false;
-    this.dispatchEvent(new Event('predictiveSearchChange'));
+    this.isOpen = false;
   }
 }
 
