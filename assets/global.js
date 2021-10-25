@@ -327,9 +327,9 @@ class MenuDrawer extends HTMLElement {
     } else {
       setTimeout(() => {
         detailsElement.classList.add('menu-opening');
-        !reducedMotion || reducedMotion.matches ? addTrapFocus() : summaryElement.nextElementSibling.addEventListener('transitionend', addTrapFocus);
         summaryElement.setAttribute('aria-expanded', true);
-      });
+        !reducedMotion || reducedMotion.matches ? addTrapFocus() : summaryElement.nextElementSibling.addEventListener('transitionend', addTrapFocus);
+      }, 100);
     }
   }
 
