@@ -314,6 +314,11 @@ class MenuDrawer extends HTMLElement {
     const detailsElement = summaryElement.parentNode;
     const isOpen = detailsElement.hasAttribute('open');
 
+    function addTrapFocus(event) {
+      trapFocus(summaryElement.nextElementSibling, detailsElement.querySelector('button'));
+      summaryElement.nextElementSibling.removeEventListener('transitionend', addTrapFocus);
+    }
+
     if (detailsElement === this.mainDetailsToggle) {
       if(isOpen) event.preventDefault();
       isOpen ? this.closeMenuDrawer(summaryElement) : this.openMenuDrawer(summaryElement);
@@ -322,10 +327,6 @@ class MenuDrawer extends HTMLElement {
         detailsElement.classList.add('menu-opening');
         summaryElement.setAttribute('aria-expanded', true);
       });
-
-      setTimeout(() => {
-        trapFocus(summaryElement.nextElementSibling, detailsElement.querySelector('button'));
-      },100);
     }
   }
 
