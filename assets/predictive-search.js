@@ -4,17 +4,7 @@ class PredictiveSearch extends HTMLElement {
     this.cachedResults = {};
     this.input = this.querySelector('input[type="search"]');
     this.predictiveSearchResults = this.querySelector('[data-predictive-search]');
-
-    this.isIOS = /iPad|iPhone|iPod/.test(navigator.platform)
-    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    if (this.isIOS) {
-      this.stickyHeader = this.stickyHeader || document.querySelector('sticky-header');
-      this.searchIcon = this.stickyHeader.querySelector('.header__icon--search');
-      this.scrollTopValue = null;
-    } else {
-      //leaving this while the PR is being reviewed
-      console.log('This is Not a IOS device');
-    }
+    this.predictiveSearchOpen = false;
 
     this.setupEventListeners();
   }
@@ -30,21 +20,10 @@ class PredictiveSearch extends HTMLElement {
     this.addEventListener('focusout', this.onFocusOut.bind(this));
     this.addEventListener('keyup', this.onKeyup.bind(this));
     this.addEventListener('keydown', this.onKeydown.bind(this));
-    if (this.isIOS) this.searchIcon.addEventListener('click', this.onSearchOpen.bind(this));
   }
 
   getQuery() {
     return this.input.value.trim();
-  }
-
-  onSearchOpen() {
-    this.scrollTopValue = window.pageYOffset;
-    // this is needed to prevent the onscreen keyboard to push the content up.
-    window.setTimeout( () =>{
-      document.body.classList.add('body-fixed');
-      document.body.style.top = `-${this.scrollTopValue}px`;
-    });
-    this.stickyHeader.dispatchEvent(new Event('predictiveSearchChange'));
   }
 
   onChange() {
@@ -209,6 +188,11 @@ class PredictiveSearch extends HTMLElement {
     this.predictiveSearchResults.style.maxHeight = this.resultsMaxHeight || `${this.getResultsMaxHeight()}px`;
     this.setAttribute('open', true);
     this.input.setAttribute('aria-expanded', true);
+
+    if (this.predictiveSearchOpen) return;
+
+    this.predictiveSearchOpen = true;
+    this.dispatchEvent(new Event('predictiveSearchChange'));
   }
 
   close(clearSearchTerm = false) {
@@ -227,11 +211,8 @@ class PredictiveSearch extends HTMLElement {
     this.resultsMaxHeight = false
     this.predictiveSearchResults.removeAttribute('style');
 
-    if (!this.isIOS) return;
-    this.stickyHeader.dispatchEvent(new Event('predictiveSearchChange'));
-    document.body.classList.remove('body-fixed');
-    document.body.removeAttribute('style');
-    window.scrollTo(0, this.scrollTopValue);
+    this.predictiveSearchOpen = false;
+    this.dispatchEvent(new Event('predictiveSearchChange'));
   }
 }
 
