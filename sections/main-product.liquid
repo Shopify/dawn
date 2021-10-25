@@ -19,7 +19,7 @@
 {%- endif -%}
 
 <section class="page-width">
-  <div class="product grid grid--1-col product-gallery--{{ section.settings.gallery_layout }} product-media--{{ section.settings.media_size }} product-media--{{ section.settings.media_position }} {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
+  <div class="product grid grid--1-col product-gallery--{{ section.settings.gallery_layout }} product-media--{{ section.settings.media_size }} {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
     <div class="grid__item product__media-wrapper product__media-wrapper--left">
       <div class="product__media-container {% if section.settings.enable_sticky_info and section.settings.gallery_layout == 'thumbnail' %} product__info-container--sticky{% endif %}">
         <slider-component class="slider-mobile-gutter">
@@ -30,13 +30,13 @@
             {%- assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src' -%}
             {%- if product.selected_or_first_available_variant.featured_media != null -%}
               {%- assign media = product.selected_or_first_available_variant.featured_media -%}
-              <li class="product__media-item grid__item slider__slide{% if media.media_type != 'image' %} product__media-item--full{% endif %}{% if section.settings.hide_variants and variant_images contains media.src %} product__media-item--variant{% endif %}" data-media-id="{{ section.id }}-{{ media.id }}">
+              <li class="product__media-item is-active grid__item slider__slide{% if media.media_type != 'image' %} product__media-item--full{% endif %}{% if section.settings.hide_variants and variant_images contains media.src %} product__media-item--variant{% endif %}" data-media-id="{{ section.id }}-{{ media.id }}">
                 {% render 'product-thumbnail', media: media, position: 'featured', loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: true %}
               </li>
             {%- endif -%}
             {%- for media in product.media -%}
               {%- unless media.id == product.selected_or_first_available_variant.featured_media.id -%}
-                <li class="product__media-item grid__item slider__slide{% if media.media_type != 'image' %} product__media-item--full{% endif %}{% if section.settings.hide_variants and variant_images contains media.src %} product__media-item--variant{% endif %}" data-media-id="{{ section.id }}-{{ media.id }}">
+                <li class="product__media-item {% if product.selected_or_first_available_variant.featured_media == null and forloop.index == 1 %}is-active{% endif %} grid__item slider__slide{% if media.media_type != 'image' %} product__media-item--full{% endif %}{% if section.settings.hide_variants and variant_images contains media.src %} product__media-item--variant{% endif %}" data-media-id="{{ section.id }}-{{ media.id }}">
                   {% render 'product-thumbnail', media: media, position: forloop.index, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: true %}
                 </li>
               {%- endunless -%}
@@ -66,6 +66,33 @@
             {% render 'icon-3d-model' %}
             {{ 'products.product.xr_button' | t }}
           </button>
+        {%- endif -%}
+
+        {%- if product.media.size > 1 and section.settings.gallery_layout == 'thumbnail' -%}
+          <ul class="thumbnails list-unstyled" role="list">
+            {%- for media in product.media -%}
+              <li>
+                <thumbnail-switcher data-media-id="{{ section.id }}-{{ media.id }}">
+                  <button class="thumbnail media media--square{% if media == product.selected_or_first_available_variant.featured_media %} is-active{% endif %} {% if product.selected_or_first_available_variant.featured_media == null and forloop.index == 1 %}is-active{% endif %}"
+                    aria-label="{{ media.alt | escape }}">
+                    <img srcset="{% if media.preview_image.width >= 59 %}{{ media.preview_image | img_url: '59x' }} 59x,{% endif %}
+                              {% if media.preview_image.width >= 118 %}{{ media.preview_image | img_url: '118x' }} 118w,{% endif %}
+                              {% if media.preview_image.width >= 84 %}{{ media.preview_image | img_url: '84x' }} 84w,{% endif %}
+                              {% if media.preview_image.width >= 168 %}{{ media.preview_image | img_url: '168x' }} 168w,{% endif %}
+                              {% if media.preview_image.width >= 130 %}{{ media.preview_image | img_url: '130x' }} 130w,{% endif %}
+                              {% if media.preview_image.width >= 260 %}{{ media.preview_image | img_url: '260x' }} 260w{% endif %}"
+                      src="{{ media | img_url: '84x84' }}"
+                      sizes="(min-width: 1200px) calc((1200px - 19.5rem) / 12), (min-width: 750px) calc((100vw - 16.5rem) / 8), calc((100vw - 8rem) / 5)"
+                      alt="{{ media.alt | escape }}"
+                      height="200"
+                      width="200"
+                      loading="lazy"
+                    >
+                  </button>
+                </thumbnail-switcher>
+              </li>
+            {%- endfor -%}
+          </ul>
         {%- endif -%}
       </div>
     </div>
@@ -365,55 +392,6 @@
         {%- endfor -%}
       </div>
     </div>
-    <div class="grid__item product__media-wrapper product__media-wrapper--right">
-      <div class="product__media-container {% if section.settings.enable_sticky_info and section.settings.gallery_layout == 'thumbnail' %} product__info-container--sticky{% endif %}">
-        <slider-component class="slider-mobile-gutter">
-          <a class="skip-to-content-link button visually-hidden" href="#ProductInfo-{{ section.id }}">
-            {{ "accessibility.skip_to_product_info" | t }}
-          </a>
-          <ul class="product__media-list grid grid--peek list-unstyled slider slider--mobile" role="list">
-            {%- assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src' -%}
-            {%- if product.selected_or_first_available_variant.featured_media != null -%}
-              {%- assign media = product.selected_or_first_available_variant.featured_media -%}
-              <li class="product__media-item grid__item slider__slide{% if media.media_type != 'image' %} product__media-item--full{% endif %}{% if section.settings.hide_variants and variant_images contains media.src %} product__media-item--variant{% endif %}" data-media-id="{{ section.id }}-{{ media.id }}">
-                {% render 'product-thumbnail', media: media, position: 'featured', loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: true %}
-              </li>
-            {%- endif -%}
-            {%- for media in product.media -%}
-              {%- unless media.id == product.selected_or_first_available_variant.featured_media.id -%}
-                <li class="product__media-item grid__item slider__slide{% if media.media_type != 'image' %} product__media-item--full{% endif %}{% if section.settings.hide_variants and variant_images contains media.src %} product__media-item--variant{% endif %}" data-media-id="{{ section.id }}-{{ media.id }}">
-                  {% render 'product-thumbnail', media: media, position: forloop.index, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: true %}
-                </li>
-              {%- endunless -%}
-            {%- endfor -%}
-          </ul>
-          <div class="slider-buttons no-js-hidden{% if product.media.size < 2 %} small-hide{% endif %}">
-            <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'accessibility.previous_slide' | t }}">{% render 'icon-caret' %}</button>
-            <div class="slider-counter caption">
-              <span class="slider-counter--current">1</span>
-              <span aria-hidden="true"> / </span>
-              <span class="visually-hidden">{{ 'accessibility.of' | t }}</span>
-              <span class="slider-counter--total">{% if section.settings.hide_variants %}{{ product.media.size | minus: variant_images.size | plus: 1 }}{% else %}{{ product.media.size }}{% endif %}</span>
-            </div>
-            <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'accessibility.next_slide' | t }}">{% render 'icon-caret' %}</button>
-          </div>
-        </slider-component>
-        {%- if first_3d_model -%}
-          <button
-            class="button button--full-width product__xr-button"
-            type="button"
-            aria-label="{{ 'products.product.xr_button_label' | t }}"
-            data-shopify-xr
-            data-shopify-model3d-id="{{ first_3d_model.id }}"
-            data-shopify-title="{{ product.title | escape }}"
-            data-shopify-xr-hidden
-          >
-            {% render 'icon-3d-model' %}
-            {{ 'products.product.xr_button' | t }}
-          </button>
-        {%- endif -%}
-      </div>
-    </div>
   </div>
 
   <product-modal id="ProductModal-{{ section.id }}" class="product-media-modal media-modal">
@@ -494,6 +472,40 @@
   }
 
   customElements.define('product-modal', ProductModal);
+
+  class ThumbnailSwitcher extends HTMLElement {
+    constructor() {
+      super();
+      this.button = this.querySelector('button');
+      console.log(this.parentElement);
+      this.button.addEventListener(
+        'click',
+        this.show.bind(this)
+      );
+    }
+
+    show(opener) {
+      this.closest('.thumbnails').querySelectorAll('button').forEach((element) => {
+          element.classList.remove('is-active');
+        }
+      );
+      this.button.classList.add('is-active');
+
+      this.closest('.product__media-container').querySelectorAll(`.product__media-item`).forEach((element) => {
+          element.classList.remove('is-active');
+        }
+      )
+      const activeItem = document.querySelector(`.product__media-item[data-media-id="${this.dataset.mediaId}"]`);
+      activeItem.classList.add('is-active');
+
+      window.pauseAllMedia();
+      const activeMedia = activeItem.querySelector('.deferred-media');
+      if (activeMedia) activeMedia.loadContent();
+    }
+  }
+
+  customElements.define('thumbnail-switcher', ThumbnailSwitcher);
+
 {% endjavascript %}
 
 <script>
@@ -878,22 +890,6 @@
     ],
     "default": "stacked",
     "label": "Large screens gallery layout"
-    },
-    {
-      "type": "select",
-      "id": "media_position",
-      "options": [
-        {
-          "value": "left",
-          "label": "Left"
-        },
-        {
-          "value": "right",
-          "label": "Right"
-        }
-      ],
-      "default": "left",
-      "label": "Position"
     },
     {
       "type": "select",
