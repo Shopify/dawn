@@ -16,7 +16,7 @@ const makeEnquiry = {
 	),
 	formIsValid: false,
 	submitButton: document.querySelector("#fwx-enquiry-submit-button"),
-	api: "https://pinewood-api.dev.fireworkx.com/api/v1/lead",
+	api: "https://pinewood-api.dev.fireworkx.com/api/v1/leadsubmit",
 	initSwiper() {
 		// Only init swiper if element exists
 		if (document.querySelector(".fwx-enquiry-swiper")) {
@@ -81,10 +81,20 @@ const makeEnquiry = {
 			province = document.querySelector("#fwx-enquiry-province").value,
 			message = `Product: ${productTitle}\n\nMessage: ${messageElem.value}\n\nPossession of Vehicle: ${possession}\n\nRequest Callback: ${callback}\n\nAllow Promotional Material: ${promotions}\n\nProvince: ${province}\n\nCity: ${city}`,
 			formData = new FormData(this.enquiryForm);
-		formData.append("URL", window.location.href);
-		formData.append("Message", message);
+			formData.append("URL", window.location.href);
+			formData.append("Message", message);
+			formData.append("StocklistApiId", "d03b9d61-76d7-4b37-b4c3-c21bbebfb0a4");
+			formData.delete("Province");
+			formData.delete( "City");
+			formData.delete("Additional Information");
+			formData.delete("Callback");
+			formData.delete("Possession");
+			formData.delete("Promotions");
+			formData.delete("Title");
+			
 		this.submitButton.disabled = true;
 		const formDataJson = JSON.stringify(Object.fromEntries(formData));
+		console.log(formDataJson)
 		fetch(this.api, {
 			method: "POST",
 			body: formDataJson,
