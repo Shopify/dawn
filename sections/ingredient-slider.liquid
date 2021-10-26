@@ -1,31 +1,46 @@
-{{ 'ingredient-slider.css' | asset_url | stylesheet_tag }}
 <link rel="stylesheet" href="{{ 'component-slider.css' | asset_url }}" media="print" onload="this.media='all'">
 
 <noscript>{{ 'component-slider.css' | asset_url | stylesheet_tag }}</noscript>
 
-<div class="is-SectionGrid color-{{ section.settings.color_scheme }} is-py-11">
-  <div class="is-SectionGrid-Narrow is-flex is-column is-lg-row is-jc-c is-ai-c is-curs-def is-nooutline">
-    <div class="is-w-100p is-h-95p is-h-lg-90p is-curs-def is-mxw-1200px is-desktop">
-      <div class="is-w-100p is-h-100p">
+<div class="SectionGrid color-{{ section.settings.color_scheme | escape }} py-11">
+  <div class="SectionGrid-Wide flex column lg-row  jc-c ai-c nooutline">
+    {% comment %} Desktop Slider {% endcomment %}
+    <div class="w-100p h-95p h-lg-90p mxw-1300px desktop">
+      <div class="w-100p h-100p">
         <div class="collection page-width{% if section.settings.swipe_on_mobile == true %} page-width-desktop{% endif %}">
           {% assign ingredients = section.blocks | where: 'type', 'image' %}
           <sleepink-slider class="slider-mobile-gutter">
             <ul class="grid slider slider--tablet slider--desktop grid--peek negative-margin negative-margin--small" role="list">
-              {% for ingredient in ingredients %}
-                <li class="slider__slide is-w-100p">
-                  <div class="is-flex is-lg-grid is-column is-jc-c is-ai-c is-5col-2-3 is-1row">
-                    <div class="is-row-1 is-col-4-5 is-flex is-column is-jc-c is-ff-body is-fs-2 is-fw-300 is-lh-26px is-ls-p024 is-mnw-320px is-mnw-md-unset is-mnw-lg-367px is-mxw-320px is-mxw-md-420px is-mxw-lg-550px is-h-auto is-h-lg-100p is-px-10px is-px-md-15px is-pt-5px is-pt-md-10px is-pt-lg-unset is-pb-20px is-pb-md-50px is-pb-lg-unset">
-                      <h4 class="is-ff-heading is-fs-4 is-lh-26px is-ls-p04 is-ls-md-p082 is-mb-3">{{ ingredient.settings.name }}</h4>
-                      <div>{{ ingredient.settings.text }}</div>
-                    </div>
-                    <div class="is-row-1 is-col-2 is-h-169px is-h-md-460px is-w-90p is-w-lg-auto is-mx-auto is-ta-c">
-                      <img src="{{ ingredient.settings.image | img_url: '600x' }}" alt="{{ ingredient.settings.image.alt | escape }}" width="400" height="400" loading="lazy" class="is-w-100p is-w-md-400px is-h-169px is-h-md-400px is-cover">
-                    </div>
+              {% liquid 
+                assign number_modulo = ingredients.size | modulo: 3
+                if number_modulo == 0
+                  assign number_remaining = 0
+                else
+                  assign number_remaining = 3 | minus: number_modulo
+                endif
+                assign number_of_slides = ingredients.size | plus: number_remaining | divided_by: 3
+              %}
+              {% for slideno in (1..number_of_slides) %}
+                <li class="slider__slide w-100p">
+                  <div class="ngrid threecol onerow gap-96px">
+                    {% for ingredientno in (0..2) %}
+                      {% assign index = slideno | times: 3 | minus: 3 | plus: ingredientno %}
+                      {% assign ingredient = ingredients[index] %}
+                      {% if index < ingredients.size %}
+                        <div class="flex column ai-c jc-spa">
+                          <img src="{{ ingredient.settings.image | img_url: '600x' }}" alt="{{ ingredient.settings.image.alt | escape }}" loading="lazy" width="100" height="100" class="w-100px h-100px bdr-50p mb-7">
+                          <h3 class="ff-heading fs-3 lh-100 fw-600 ta-c mt-0 mb-3">{{ ingredient.settings.name | escape }}</h3>
+                          <div class="rt-zutaten">{{ ingredient.settings.text }}</div>
+                        </div>
+                      {% else %}
+                        <div>&nbsp;</div>
+                      {% endif %}
+                    {% endfor%}
                   </div>
                 </li>
               {% endfor %}
             </ul>
-            {%- if ingredients.size > 1 and section.settings.swipe_on_mobile -%}
+            {%- if number_of_slides > 1 and section.settings.swipe_on_mobile -%}
               <div class="slider-buttons no-js-hidden">
                 <div class="slider-counter caption">
                   <span class="slider-counter--current">1</span>
@@ -41,29 +56,78 @@
         </div>
       </div>
     </div>
-    <div class="is-w-100p is-h-95p is-h-lg-90p is-curs-def is-mxw-1200px is-ndesktop">
-      <div class="is-w-100p is-h-100p">
+    {% comment %} Tablet Slider {% endcomment %}
+    <div class="w-100p h-95p h-lg-90p mxw-1300px tablet">
+      <div class="w-100p h-100p">
+        <div class="collection page-width{% if section.settings.swipe_on_mobile == true %} page-width-desktop{% endif %}">
+          {% assign ingredients = section.blocks | where: 'type', 'image' %}
+          <sleepink-slider class="slider-mobile-gutter">
+            <ul class="grid slider slider--tablet slider--desktop grid--peek negative-margin negative-margin--small" role="list">
+              {% liquid 
+                assign number_modulo = ingredients.size | modulo: 2
+                if number_modulo == 0
+                  assign number_remaining = 0
+                else
+                  assign number_remaining = 2 | minus: number_modulo
+                endif
+                assign number_of_slides = ingredients.size | plus: number_remaining | divided_by: 2
+              %}
+              {% for slideno in (1..number_of_slides) %}
+                <li class="slider__slide w-100p">
+                  <div class="ngrid twocol onerow gap-96px px-10">
+                    {% for ingredientno in (0..1) %}
+                      {% assign index = slideno | times: 2 | minus: 2 | plus: ingredientno %}
+                      {% assign ingredient = ingredients[index] %}
+                      {% if index < ingredients.size %}
+                        <div class="flex column ai-c jc-spa">
+                          <img src="{{ ingredient.settings.image | img_url: '600x' }}" alt="{{ ingredient.settings.image.alt | escape }}" loading="lazy" width="100" height="100" class="w-100px h-100px bdr-50p mb-7">
+                          <h3 class="ff-heading fs-3 lh-100 fw-600 ta-c mt-0 mb-3">{{ ingredient.settings.name | escape }}</h3>
+                          <div class="rt-zutaten">{{ ingredient.settings.text }}</div>
+                        </div>
+                      {% else %}
+                        <div>&nbsp;</div>
+                      {% endif %}
+                    {% endfor%}
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+            {%- if number_of_slides > 1 and section.settings.swipe_on_mobile -%}
+              <div class="slider-buttons no-js-hidden">
+                <div class="slider-counter caption">
+                  <span class="slider-counter--current">1</span>
+                  <span aria-hidden="true"> / </span>
+                  <span class="visually-hidden">{{ 'accessibility.of' | t }}</span>
+                  <span class="slider-counter--total">{{ ingredients.size }}</span>
+                </div>
+                <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'accessibility.previous_slide' | t }}">{% render 'icon-caret' %}</button>
+                <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'accessibility.next_slide' | t }}">{% render 'icon-caret' %}</button>
+              </div>
+            {%- endif -%}
+          </sleepink-slider>
+        </div>
+      </div>
+    </div>
+    {% comment %} Mobile Slider {% endcomment %}
+    <div class="w-100p h-95p h-lg-90p mxw-1300px mobile">
+      <div class="w-100p h-100p">
         <div class="collection page-width{% if section.settings.swipe_on_mobile == true %} page-width-desktop{% endif %}">
           {% assign ingredients = section.blocks | where: 'type', 'image' %}
           <sleepink-slider class="slider-mobile-gutter">
             <ul class="grid slider slider--tablet slider--desktop grid--peek negative-margin negative-margin--small" role="list">
               {% for ingredient in ingredients %}
-                <li class="slider__slide is-w-100p">
-                  <div class="is-grid is-lg-grid is-3col">
-                    <div class="is-col-2 is-flex is-column is-jc-c is-ff-body is-fs-2 is-fw-300 is-lh-26px is-ls-p024 is-mnw-320px is-mnw-md-unset is-mnw-lg-367px is-mxw-320px is-mxw-md-420px is-mxw-lg-550px is-h-auto is-h-lg-100p is-px-10px is-px-md-15px is-pt-5px is-pt-md-10px is-pt-lg-unset is-pb-20px">
-                      <h4 class="is-ff-heading is-fs-4 is-lh-26px is-ls-p04 is-ls-md-p082">{{ ingredient.settings.name }}</h4>
-                    </div>
-                    <div class="is-col-2 is-w-100p is-w-lg-auto is-px-10px is-px-md-15px is-ta-c">
-                      <img src="{{ ingredient.settings.image | img_url: '600x' }}" alt="{{ ingredient.settings.image.alt | escape }}" width="400" height="400" loading="lazy" class="is-w-100p is-h-169px is-h-md-400px is-cover">
-                    </div>
-                    <div class="is-col-2 is-flex is-column is-jc-c is-ff-body is-fs-2 is-fw-300 is-lh-26px is-ls-p024 is-mnw-320px is-mnw-md-unset is-mnw-lg-367px is-h-auto is-h-lg-100p is-px-10px is-px-md-15px is-pt-5px is-pt-md-10px is-pt-lg-unset is-pb-20px is-pb-md-50px is-pb-lg-unset">
-                      <div>{{ ingredient.settings.text }}</div>
-                    </div>
+                <li class="slider__slide w-100p">
+                  <div class="ngrid onecol onerow gap-96px px-10">
+                      <div class="flex column ai-c jc-spa">
+                        <img src="{{ ingredient.settings.image | img_url: '600x' }}" alt="{{ ingredient.settings.image.alt | escape }}" loading="lazy" width="100" height="100" class="w-100px h-100px bdr-50p mb-7">
+                        <h3 class="ff-heading fs-3 lh-100 fw-600 ta-c mt-0 mb-3">{{ ingredient.settings.name | escape }}</h3>
+                        <div class="rt-zutaten">{{ ingredient.settings.text }}</div>
+                      </div>
                   </div>
                 </li>
               {% endfor %}
             </ul>
-            {%- if ingredients.size > 1 and section.settings.swipe_on_mobile -%}
+            {%- if number_of_slides > 1 and section.settings.swipe_on_mobile -%}
               <div class="slider-buttons no-js-hidden">
                 <div class="slider-counter caption">
                   <span class="slider-counter--current">1</span>
@@ -81,6 +145,7 @@
     </div>
   </div>
 </div>
+
 
 
 {% schema %}
