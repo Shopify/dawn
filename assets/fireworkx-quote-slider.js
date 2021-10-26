@@ -90,7 +90,6 @@ const makeEnquiry = {
 			formData.delete("Callback");
 			formData.delete("Possession");
 			formData.delete("Promotions");
-			formData.delete("Title");
 			
 		this.submitButton.disabled = true;
 		const formDataJson = JSON.stringify(Object.fromEntries(formData));
