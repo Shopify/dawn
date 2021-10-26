@@ -42,6 +42,7 @@ if (!customElements.get('share-button')) {
     }
 
     updateUrl(url) {
+      this.urlToShare = url;
       this.elements.urlInput.value = url;
     }
   });
