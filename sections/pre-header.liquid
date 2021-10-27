@@ -1,18 +1,32 @@
 {{ 'custom.css' | asset_url | stylesheet_tag }}
 {%- if section.settings.hidden != true -%}
-    <div class="color-{{ section.settings.color_scheme }}" role="region" aria-label="{{ 'sections.header.announcement' | t }}" {{ section.shopify_attributes }}>
+    <div class="color-{{ section.settings.color_scheme }}" role="region" aria-label="{{ 'sections.header.announcement' | t }}" {{ section.shopify_attributes }} style="background-color: {{ section.settings.backgroundColor | escape }}" id="pre-header">
       <div class="SectionGrid">
         <div class="WideGrid">
         <div class="pre-header">
             {%- for block in section.blocks -%}
-              {%- if block.settings.link != blank -%}
-                <a class="pre-head-wrapper pre-header__link link link--text focus-inset animate-arrow" href="{{ block.settings.link }}">
-              {%- else -%}
-                <div class="pre-head-wrapper">
-              {%- endif -%}
+              <div class="pre-head-wrapper">
+                {%- if block.settings.link != blank -%}
+                  <a class="pre-head-wrapper pre-header__link link link--text focus-inset animate-arrow" href="{{ block.settings.link }}">
+                {%- endif -%}
                     {%- case block.type -%}
                     {%- when 'pre-header' -%}    
                         <div class="pre-head-combo">
+                          {% if block.settings.showTrustedShops %}
+                            <div class="ts-logo flex row jc-c ai-c mt-2">
+                              {% render 'logo-trusted-shops' %}
+                            </div>
+                            <div class="ts-stars flex row jc-c ai-c mt-2 pos-rel t-1" id="ts-stars">
+                              {% for i in (1..5) %}
+                                <span>
+                                  {% render 'icon-star', currentColor: '#ffd900' %}
+                                </span>
+                              {% endfor %}
+                            </div>
+                            <div class="ts-text mt-2 pos-rel t-2px">
+                              <span id="ts-reviewCount">1481</span> Kundenbewertungen (<span id="ts-rating">4.71</span>/5.00)
+                            </div>
+                          {% else %}
                             <div class="pre-head-img">
                                 <img
                                 src="{{ block.settings.image | img_url: '44x' }}"
@@ -20,27 +34,43 @@
                                 width="22"
                                 height="22"
                                 loading="lazy"
+                                class="pre-head-img-inner"
                                 >
                             </div>  
                             <div class="pre-head-txt">
                                 {%- if block.settings.text != blank -%}
-                                    <p class="pre-header__message h5">
+                                    <p class="pre-header__message">
                                         {{ block.settings.text | escape }}
                                     </p>
                                 {%- endif -%}   
-                            </div>       
+                            </div>
+                          {% endif %}
                         </div>
                     {%- endcase -%}
               {%- if block.settings.link != blank -%}
                 </a>
-              {%- else -%}
-              </div>
               {%- endif -%}
+            </div>
             {%- endfor -%}
         </div>
       </div>
       </div>
     </div> 
+    <script>
+          const tsReviewCount = document.getElementById("ts-reviewCount")
+          const headers = { "Access-Control-Allow-Origin": "*" }
+          if(tsReviewCount != null) {
+            const url = `https://ts-proxy.vercel.app/?`
+            fetch(url, headers)
+            .then(response => response.json())
+            .then(data => {
+              const { totalReviewCount, overallMark } = data
+              document.getElementById("ts-reviewCount").innerHTML = totalReviewCount
+              document.getElementById("ts-rating").innerHTML = overallMark.toFixed(2)
+            })
+            .catch(err => console.error(err))
+          }
+    </script>
 {%- endif -%}
 
 
@@ -79,10 +109,22 @@
         "label": "t:sections.announcement-bar.blocks.announcement.settings.color_scheme.label"
     },
     {
+      "type": "color",
+      "id": "backgroundColor",
+      "default": "#FAF9F8",
+      "label": "Hintergrundfarbe der Section"
+    },
+    {
         "type": "checkbox",
         "id": "hidden",
         "label": "Pre-Header ausblenden", 
         "default": false
+    },
+    {
+      "type": "text",
+      "id": "tsId",
+      "default": "X171CC05C7CF0FBC03EB75B9E6E73D132",
+      "label": "TrustedShops-ID"
     }
   ],
   "blocks": [
@@ -105,6 +147,12 @@
           "type": "url",
           "id": "link",
           "label": "Link"
+        },
+        {
+          "type": "checkbox",
+          "id": "showTrustedShops",
+          "default": false,
+          "label": "Trusted-Shops-Bewertung anzeigen"
         }
       ]
     }
