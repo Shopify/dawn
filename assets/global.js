@@ -497,7 +497,7 @@ class SliderComponent extends HTMLElement {
   constructor() {
     super();
     this.slider = this.querySelector('ul');
-    this.sliderItems = this.querySelectorAll('li');
+    this.sliderItems = this.querySelectorAll('li.slider__slide');
     this.pageCount = this.querySelector('.slider-counter--current');
     this.pageTotal = this.querySelector('.slider-counter--total');
     this.prevButton = this.querySelector('button[name="previous"]');
