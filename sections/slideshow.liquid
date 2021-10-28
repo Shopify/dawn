@@ -39,10 +39,12 @@
   >
     {%- for block in section.blocks -%}
       <li class="slideshow__slide grid__item grid--1-col slider__slide"
+        id="Slide-{{ section.id }}-{{ forloop.index }}"
         {{ block.shopify_attributes }}
         role="group"
         aria-roledescription="slide"
         aria-label="{{ forloop.index }} of {{ forloop.length}}"
+        tabindex="0"
       >
         <div class="banner__media media">
           <img
@@ -84,14 +86,38 @@
 
   <div class="slider-buttons no-js-hidden">
     <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'accessibility.previous_slide' | t }}">{% render 'icon-caret' %}</button>
-    <div class="slider-counter caption">
-      <span class="slider-counter--current">1</span>
+    <div class="slider-counter{% if section.settings.slider_visual == 'counter' or section.settings.slider_visual == 'numbers' %} caption{% endif %}">
+      {%- if section.settings.slider_visual == 'counter'-%}
+        <span class="slider-counter--current">1</span>
         <span aria-hidden="true"> / </span>
         <span class="visually-hidden">{{ 'accessibility.of' | t }}</span>
-      <span class="slider-counter--total">{{ section.blocks.size }}</span>
+        <span class="slider-counter--total">{{ section.blocks.size }}</span>
+      {%- else-%}
+        {%- for block in section.blocks -%}
+          <a href="#Slide-{{ section.id }}-{{ forloop.index }}" class="slider-counter__link link{% if section.settings.slider_visual == 'dots' %} slider-counter__link--dots{% endif %}">
+            <span class="visually-hidden">{{ 'accessibility.slide_number'}}</span>
+            {%- if section.settings.slider_visual == 'numbers' -%}{{ forloop.index }}{%- endif -%}
+          </a>
+        {%- endfor -%}
+      {%- endif -%}
     </div>
     <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'accessibility.next_slide' | t }}">{% render 'icon-caret' %}</button>
   </div>
+
+  <noscript>
+    <div class="slider-buttons">
+      <div class="slider-counter">
+        {%- for block in section.blocks -%}
+          <a href="#Slide-{{ section.id }}-{{ forloop.index }}" class="slider-counter__link link">
+            <span class="visually-hidden">{{ 'accessibility.slide_number'}}</span>
+            {{ forloop.index }}
+          </a>
+        {%- endfor -%}
+      </div>
+    </div>
+  </noscript>
+
+
 
 </slider-component>
 
