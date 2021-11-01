@@ -323,7 +323,7 @@ class MenuDrawer extends HTMLElement {
 
     if (detailsElement === this.mainDetailsToggle) {
       if(isOpen) event.preventDefault();
-      isOpen ? this.closeMenuDrawer(summaryElement) : this.openMenuDrawer(summaryElement);
+      isOpen ? this.closeMenuDrawer(event, summaryElement) : this.openMenuDrawer(summaryElement);
     } else {
       setTimeout(() => {
         detailsElement.classList.add('menu-opening');
