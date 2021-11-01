@@ -1,0 +1,575 @@
+{% comment %} 
+  Redirect logged in users back to the homepage
+{% endcomment %}
+
+{%- if customer.tags contains 'b2b' -%}
+    <script>
+        window.location.href = '/index#spark-account';
+    </script>
+{% endif %}
+
+<div class="page-width">
+
+  <div class="b2b-login-wrapper">
+    
+      <div class="b2b-intro-image" style="background-image: url('{{ section.settings.featured_image.src | img_url: '1000x' }}');background-color: {{ section.settings.background_color }}; background-repeat: no-repeat;">
+
+      </div>
+
+      <div class="b2b-login-area" style="background: {{ section.settings.background_color }};">
+
+          <h1>{{ section.settings.title }}</h1>
+
+          <div class="intro-text">
+              <p>{{ section.settings.intro_text }}</p>
+          </div>
+
+          <div class="form-vertical">
+
+            {% comment %} 
+              Login form
+            {% endcomment %}
+            
+            <form method="post" action="/account/login" id="customer_login" accept-charset="UTF-8" novalidate="novalidate"><input type="hidden" name="form_type" value="customer_login">
+
+                <input type="hidden" name="utf8" value="✓">
+                <input type="hidden" name="checkout_url" value="/index#spark-account">
+
+                <div class="field">
+                  <input
+                    id="CustomerEmail"
+                    type="email"
+                    name="customer[email]"
+                    class="field__input"
+                    aria-required="true"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    autocomplete="email"
+                    {% if form.errors %}
+                      autofocus
+                      aria-invalid="true"
+                    {% elsif form.posted_successfully? %}
+                      aria-describedby="ContactFooter-success"
+                    {% endif %}
+                    placeholder="{{ 'customer.login_page.email' | t }}"
+                    required
+                    value="test@b2b.com"
+                  >
+                  <label class="field__label" for="NewsletterForm--{{ section.id }}">
+                    {{ 'customer.login_page.email' | t }}
+                  </label>
+                </div>
+
+                <div class="field">
+                  <input
+                    id="CustomerPassword"
+                    type="password"
+                    name="customer[password]"
+                    class="field__input"
+                    aria-required="true"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    autocomplete="email"
+                    {% if form.errors %}
+                      autofocus
+                      aria-invalid="true"
+                    {% elsif form.posted_successfully? %}
+                      aria-describedby="ContactFooter-success"
+                    {% endif %}
+                    placeholder="{{ 'customer.login_page.password' | t }}"
+                    required
+                    value="password"
+                  >
+                  <label class="field__label" for="NewsletterForm--{{ section.id }}">
+                    {{ 'customer.login_page.password' | t }}
+                  </label>
+                </div>
+
+                <div class="password-container">                 
+                    <a href="/account/login#recover">
+                        {{ 'customer.login_page.forgot_password' | t }}
+                    </a>
+                </div>
+
+                <button class="button">
+                  {{ 'customer.login_page.sign_in' | t }}
+                </button>
+
+            </form>
+
+
+            {% comment %} 
+              Apply for an account
+            {% endcomment %}
+
+            <div class="b2b-apply-account" id="b2b-apply">
+
+                <h3>{{ section.settings.open_account_title }}</h3>
+
+                {{ section.settings.open_account_text }}
+
+                <a href="#b2b-apply" onclick="b2bRegister()" class="button button--secondary">
+                    {{ section.settings.open_account_button }}
+                </a>
+
+                {% comment %} 
+                  Application form
+
+                  Use a custom form or use a standard Shopify contact form
+                {% endcomment %}
+                
+                {% if section.settings.use_custom_form %}
+                    <div id="b2b-register" class="b2b-registration-form" style="height: 0;">
+                        <div class="b2b-application-form-wrapper">
+                            {{ section.settings.open_account_form }}
+                        </div>
+                    </div>
+                {% else %}
+
+                    {%- form 'contact', id: 'ContactForm' -%}
+                    {%- if form.posted_successfully? -%}
+                    <div class="form-status form-status-list form__message" tabindex="-1" autofocus>{% render 'icon-success' %} {{ 'templates.contact.form.post_success' | t }}</div>
+                    {%- elsif form.errors -%}
+                    <div class="form__message">
+                        <div class="form-status form-status-list caption-large text-body" role="alert" tabindex="-1" autofocus>{% render 'icon-error' %} {{ 'templates.contact.form.error_heading' | t }} 
+                       
+                        {{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}
+
+                        </div>
+                    </div>
+            
+                    {%- endif -%}
+
+                    <div id="b2b-register" class="b2b-registration-form" style="height: 0;">
+                                    
+                        <div class="contact__fields">
+
+                        <input class="field__input" autocomplete="name" type="hidden" id="ContactForm-Trade" name="contact[Trade Application]"  value="New trade customer application to review">
+
+                        <div class="field">
+                            <input class="field__input" autocomplete="name" type="text" id="ContactForm-name" name="contact[{{ 'templates.contact.form.name' | t }}]" value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}" placeholder="{{ 'templates.contact.form.name' | t }}">
+                            <label class="field__label" for="ContactForm-name">{{ 'templates.contact.form.name' | t }}</label>
+                        </div>
+                        <div class="field field--with-error">
+                            <input
+                            autocomplete="email"
+                            type="email"
+                            id="ContactForm-email"
+                            class="field__input"
+                            name="contact[email]"
+                            spellcheck="false"
+                            autocapitalize="off"
+                            value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+                            aria-required="true"
+                            {% if form.errors contains 'email' %}
+                                aria-invalid="true"
+                                aria-describedby="ContactForm-email-error"
+                            {% endif %}
+                            placeholder="{{ 'templates.contact.form.email' | t }}"
+                            >
+                            <label class="field__label" for="ContactForm-email">{{ 'templates.contact.form.email' | t }} <span aria-hidden="true">*</span></label>
+                            {%- if form.errors contains 'email' -%}
+                            <small class="contact__field-error" id="ContactForm-email-error">
+                                <span class="visually-hidden">{{ 'accessibility.error' | t }}</span>
+                                <span class="form__message">{% render 'icon-error' %}{{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}</span>
+                            </small>
+                            {%- endif -%}
+                        </div>
+                        </div>
+                        <div class="field">
+                        <input type="tel" id="ContactForm-phone" class="field__input" name="contact[{{ 'templates.contact.form.phone' | t }}]" pattern="[0-9\-]*" value="{% if form.phone %}{{ form.phone }}{% elsif customer %}{{ customer.phone }}{% endif %}" placeholder="{{ 'templates.contact.form.phone' | t }}">
+                        <label class="field__label" for="ContactForm-phone">{{ 'templates.contact.form.phone' | t }}</label>
+                        </div>
+                        <div class="field">
+                            <input class="field__input" autocomplete="name" type="text" id="ContactForm-company" name="contact[Company]" placeholder="Company">
+                            <label class="field__label" for="ContactForm-company">Company</label>
+                        </div>
+
+                        <div class="field">
+                            <input class="field__input" autocomplete="name" type="text" id="ContactForm-website" name="contact[Website]" placeholder="Website">
+                            <label class="field__label" for="ContactForm-website">Website</label>
+                        </div>
+                    
+                        <div class="field">
+                        <textarea
+                            rows="10"
+                            id="ContactForm-body"
+                            class="text-area field__input"
+                            name="contact[{{ 'templates.contact.form.comment' | t }}]"
+                            placeholder="{{ 'templates.contact.form.comment' | t }}"
+                        >
+                            {{- form.body -}}
+                        </textarea>
+                        <label class="form__label field__label" for="ContactForm-body">{{ 'templates.contact.form.comment' | t }}</label>
+                        </div>
+                        <div class="contact__button">
+                        <button type="submit" class="button">
+                            {{ 'templates.contact.form.send' | t }}
+                        </button>
+                        </div>
+    
+                    </div>
+                    {%- endform -%}
+                {% endif %}
+
+            </div>
+
+            {% if section.settings.show_faqs %}
+                {% comment %} 
+                FAQs
+                {% endcomment %}
+
+                <div class="b2b-faqs" id="faqs">
+    
+                    <h3>{{ section.settings.faq_title }}</h3>
+
+                    {% for block in section.blocks limit:5 %}
+
+                    <div class="faq-tab">
+                        <a class="item-accordion">
+                        {{ block.settings.block_title }}
+                        {% render 'icon-caret' %}
+                        </a>
+                        <div class="panel">
+                            {{ block.settings.block_text }}
+                        </div>
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+          </div>
+
+      </div>
+
+  </div>
+
+
+<script>
+    var acc = document.getElementsByClassName("faq-tab");
+    var i;
+
+    for (i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+
+        });
+    }
+  function b2bRegister() {
+      var x = document.getElementById("b2b-register");
+      if (x.style.height === "0") {
+          x.style.height = "0";
+      } else {
+          x.style.height = "auto";
+      }
+    }       
+</script>
+
+{% schema %}
+    {
+        "name": "Login Page",
+        "settings" : [
+            {
+                "type": "image_picker",
+                "id": "featured_image",
+                "label": "Background Image",
+                "info": "The image should ideally be rectangular"
+            },
+            {
+                "type": "color",
+                "id": "background_color",
+                "label": "Background color",
+                "default": "#f1f1f1"
+            },
+            {
+                "type": "text",
+                "id": "title",
+                "label": "Title",
+                "default": "Welcome to our trade login"
+            },
+            {
+                "type": "textarea",
+                "id": "intro_text",
+                "label": "Intoduction Text",
+                "default": "Sign in below to get instant access to your trade account and to start placing orders."
+            },
+            {
+                "type": "text",
+                "id": "open_account_title",
+                "label": "Open Account Title",
+                "default": "Interest in opening an account?"
+            },
+            {
+                "type": "richtext",
+                "id": "open_account_text",
+                "label": "Open Account Text",
+                "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>"
+            },
+            {
+                "type": "text",
+                "id": "open_account_button",
+                "label": "Open Account Button Title",
+                "default": "Apply for an account"
+            },
+            {
+                "type": "checkbox",
+                "id": "use_custom_form",
+                "label": "Use custom contact form",
+                "info": "If enabled, you can paste in your HTML below. If disabled, the standard Shopify contact form will be used and the fields can be customised within the trade-application.liquid template",
+                "default": false
+            },
+            {
+                "type": "html",
+                "id": "open_account_form",
+                "label": "Custom Account Application Form",
+                "default": "Paste in form HTML here"
+            },
+            {
+                "type": "checkbox",
+                "id": "show_faqs",
+                "label": "Show FAQs",
+                "info": "If enabled, you can manually add FAQs",
+                "default": true
+            },
+            {
+                "type": "text",
+                "id": "faq_title",
+                "label": "FAQs title",
+                "default": "Question & Answers"
+            }
+        ],
+        "blocks": [
+            {
+                "type": "feature",
+                "name": "FAQs",
+                "settings": [
+                    {
+                        "type": "text",
+                        "id": "block_title",
+                        "label": "Question"
+                    },
+                    {
+                        "type": "richtext",
+                        "id": "block_text",
+                        "label": "Answer"
+                    }
+
+                ]
+            }
+        ],
+        "presets": [
+            {
+                "name": {
+                    "en": "Login Page"
+                },
+                "category": {
+                    "en": "Wholesale & B2B"
+                }
+            }
+        ]
+        
+    }
+{% endschema %}
+
+
+{% stylesheet %}
+
+
+
+/*================ B2B Login page ================*/
+
+.b2b-login-wrapper {
+    display: flex;
+    margin: 2em 0;
+}
+
+/* Main image */
+
+.b2b-login-wrapper .b2b-intro-image {
+    width: 50%;
+    padding: 8%;
+    background-repeat: no-repeat; 
+    background-position: top center;
+    background-size: 115%;
+    min-height: 300px;
+}
+
+/* Login area */
+
+.b2b-login-wrapper .b2b-login-area {
+    width: 50%;
+    padding: 7%;
+}
+
+.b2b-login-wrapper .b2b-login-area h1 {
+    margin-top: 0;
+}
+
+.b2b-login-wrapper .b2b-login-area .form-vertical {
+    position: relative;
+}
+
+.b2b-login-wrapper .b2b-login-area .form-vertical .intro-text {
+    padding: 0 0 1.5em;
+}
+
+.b2b-login-wrapper .b2b-login-area .form-vertical input,
+.b2b-login-wrapper .b2b-login-area .form-vertical textarea {
+    width: 100%;
+    background: #fff;
+    margin: 0 0 1em;
+}
+
+.b2b-login-wrapper .b2b-login-area .form-vertical .password-container {
+    position: relative;
+}
+
+.b2b-login-wrapper .b2b-login-area .form-vertical .password-container a {
+    position: absolute;
+    right: 0;
+    top: 13px;
+    font-size: 14px;
+    line-height: 14px;
+    color: #999;
+    text-decoration: underline;
+}
+
+
+/* Apply for an account */
+
+.b2b-apply-account {
+    padding: 3em 0 0;
+    scroll-behavior: smooth;
+}
+
+.b2b-apply-account h3 {
+    margin: 0
+}
+
+.b2b-apply-account ul li {
+    list-style: square;
+}
+
+.b2b-apply-account .form-status-list {
+    margin: 2rem 0 0;
+    background: #fff;
+    padding: 1em;
+}
+
+.b2b-apply-account .form__message {
+    display: block;
+}
+
+/* Registration form */
+
+.b2b-registration-form {
+    transition: all 0.3s;
+    overflow: hidden;
+    padding: 0 1px;
+    margin: 0 -1px;
+}
+
+.b2b-registration-form form {
+    margin: 1em 0;
+}
+
+.b2b-registration-form .contact__fields {
+    margin: 1em 0 0;
+}
+
+.b2b-application-form-wrapper {
+    margin: 1em 0;
+}
+
+
+/* FAQs */
+
+.b2b-faqs {
+    margin: 3em 0 0;
+    border-top: 1px solid #ccc;
+    padding: 3em 0 0;
+}
+
+.b2b-faqs h3 {
+    margin: 0 0 1.5em;
+}
+
+.faq-tab a.item-accordion {
+    display: block;
+    background: #fff;
+    padding: 1rem 3rem 1rem 1.5rem;
+    margin-bottom: 1em;
+    position: relative;
+    color: #333;
+    text-decoration: none;
+    cursor: pointer;
+    position: relative;
+}
+
+.faq-tab a.item-accordion svg {
+    width: 18px;
+    position: absolute;
+    right: 15px;
+    top: 19px;
+    transition: all 0.2s;
+}
+
+.faq-tab.active a.item-accordion svg {
+    transform: rotate(180deg);
+}
+
+.faq-tab .panel {
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease-in;
+}
+
+.faq-tab.active .panel {
+    max-height: 2500px;
+}
+
+.faq-tab .panel p {
+    padding: 1em 1em 1em;
+    margin: 0;
+}
+
+.faq-tab .panel p:last-of-type {
+    padding-bottom: 2em;
+}
+
+.faq-tab .panel ul {
+    margin: 0 0 0 2em;
+}
+
+.faq-tab .panel ul li {
+    list-style-type: square;
+}
+
+.faq-tab .panel ul li a {
+    text-decoration: underline;
+}
+
+
+/* Responsive */
+
+@media only screen and (max-width: 850px) {
+
+    .b2b-login-wrapper {
+        display: block;
+        margin: 1em 0;
+    }
+    .b2b-login-wrapper .b2b-intro-image,
+    .b2b-login-wrapper .b2b-login-area  {
+        width: 100%;
+    }
+
+    .b2b-login-wrapper .b2b-intro-image {
+        background-size: cover;
+    }
+}
+
+
+{% endstylesheet %}
