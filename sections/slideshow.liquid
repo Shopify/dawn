@@ -31,7 +31,7 @@
   }
 {%- endstyle -%}
 
-<slider-component class="slider-mobile-gutter{%if section.settings.layout == 'grid' %} page-width{% endif %}">
+<slideshow-component class="slider-mobile-gutter{%if section.settings.layout == 'grid' %} page-width{% endif %}" aria-roledescription="carousel">
   <ul class="slideshow banner banner--{{ section.settings.slide_height }} grid grid--1-col slider slider--everywhere{% if section.settings.show_text_below %} banner--mobile-bottom{% endif %}{% if section.settings.show_text_box == false %} banner--desktop-transparent{% endif %}{% if section.blocks.first.settings.image == blank %} slideshow--placeholder{% endif %}"
     id="Slider-{{ section.id }}"
     role="list"
@@ -80,7 +80,7 @@
               </div>
             {%- endif -%}
             {%- if block.settings.button_label != blank -%}
-              <a{% if block.settings.link %} href="{{ block.settings.link }}"{% else %} role="link" aria-disabled="true"{% endif %} class="button{% if block.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}">{{ block.settings.button_label | escape }}</a>
+              <a{% if block.settings.link %} href="{{ block.settings.link }}"{% else %} role="link" aria-disabled="true"{% endif %} class="button button--primary">{{ block.settings.button_label | escape }}</a>
             {%- endif -%}
           </div>
         </div>
@@ -88,43 +88,42 @@
     {%- endfor -%}
   </ul>
 
-  <div class="slider-buttons no-js-hidden">
-    <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'accessibility.previous_slide' | t }}">{% render 'icon-caret' %}</button>
-    <div class="slider-counter{% if section.settings.slider_visual == 'counter' or section.settings.slider_visual == 'numbers' %} caption{% endif %}">
-      {%- if section.settings.slider_visual == 'counter'-%}
-        <span class="slider-counter--current">1</span>
-        <span aria-hidden="true"> / </span>
-        <span class="visually-hidden">{{ 'accessibility.of' | t }}</span>
-        <span class="slider-counter--total">{{ section.blocks.size }}</span>
-      {%- else-%}
-        {%- for block in section.blocks -%}
-          <a href="#Slide-{{ section.id }}-{{ forloop.index }}" class="slider-counter__link link{% if section.settings.slider_visual == 'dots' %} slider-counter__link--dots{% endif %}">
-            <span class="visually-hidden">{{ 'accessibility.slide_number'}}</span>
-            {%- if section.settings.slider_visual == 'numbers' -%}{{ forloop.index }}{%- endif -%}
-          </a>
-        {%- endfor -%}
-      {%- endif -%}
-    </div>
-    <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'accessibility.next_slide' | t }}">{% render 'icon-caret' %}</button>
-  </div>
-
-  <noscript>
-    <div class="slider-buttons">
-      <div class="slider-counter">
-        {%- for block in section.blocks -%}
-          <a href="#Slide-{{ section.id }}-{{ forloop.index }}" class="slider-counter__link link">
-            <span class="visually-hidden">{{ 'accessibility.slide_number'}}</span>
-            {{ forloop.index }}
-          </a>
-        {%- endfor -%}
+  {%- if section.blocks.size > 1 -%}
+    <div class="slider-buttons no-js-hidden">
+      <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'accessibility.previous_slide' | t }}" aria-controls="Slider-{{ section.id }}">{% render 'icon-caret' %}</button>
+      <div class="slider-counter{% if section.settings.slider_visual == 'counter' or section.settings.slider_visual == 'numbers' %} caption{% endif %}">
+        {%- if section.settings.slider_visual == 'counter'-%}
+          <span class="slider-counter--current">1</span>
+          <span aria-hidden="true"> / </span>
+          <span class="visually-hidden">{{ 'accessibility.of' | t }}</span>
+          <span class="slider-counter--total">{{ section.blocks.size }}</span>
+        {%- else-%}
+          {%- for block in section.blocks -%}
+            <a href="#Slide-{{ section.id }}-{{ forloop.index }}" class="slider-counter__link slider-counter__link--{{ section.settings.slider_visual }} link">
+              <span class="visually-hidden">{{ 'accessibility.slide_number'}}</span>
+              {%- if section.settings.slider_visual == 'numbers' -%}{{ forloop.index }}{%- endif -%}
+            </a>
+          {%- endfor -%}
+        {%- endif -%}
       </div>
+      <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'accessibility.next_slide' | t }}" aria-controls="Slider-{{ section.id }}">{% render 'icon-caret' %}</button>
     </div>
-  </noscript>
 
+    <noscript>
+      <div class="slider-buttons">
+        <div class="slider-counter">
+          {%- for block in section.blocks -%}
+            <a href="#Slide-{{ section.id }}-{{ forloop.index }}" class="slider-counter__link link">
+              <span class="visually-hidden">{{ 'accessibility.slide_number'}}</span>
+              {{ forloop.index }}
+            </a>
+          {%- endfor -%}
+        </div>
+      </div>
+    </noscript>
+  {%- endif -%}
 
-
-</slider-component>
-
+</slideshow-component>
 
 {% schema %}
 {
@@ -339,13 +338,8 @@
         {
           "type": "url",
           "id": "link",
-          "label": "t:sections.slideshow.blocks.slide.settings.link.label"
-        },
-        {
-          "type": "checkbox",
-          "id": "button_style_secondary",
-          "label": "t:sections.slideshow.blocks.slide.settings.button_style_secondary.label",
-          "default": false
+          "label": "t:sections.slideshow.blocks.slide.settings.link.label",
+          "info": "t:sections.slideshow.blocks.slide.settings.link.info"
         },
         {
           "type": "select",
@@ -372,8 +366,9 @@
               "label": "t:sections.slideshow.blocks.slide.settings.color_scheme.options__5.label"
             }
           ],
-          "default": "background-1",
-          "label": "t:sections.slideshow.blocks.slide.settings.color_scheme.label"
+          "default": "accent-1",
+          "label": "t:sections.slideshow.blocks.slide.settings.color_scheme.label",
+          "info": "t:sections.slideshow.blocks.slide.settings.color_scheme.info"
         }
       ],
       "limit": 6
@@ -383,6 +378,9 @@
     {
       "name": "t:sections.slideshow.presets.name",
       "blocks": [
+        {
+          "type": "slide"
+        },
         {
           "type": "slide"
         }

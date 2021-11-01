@@ -513,6 +513,7 @@ class SliderComponent extends HTMLElement {
     const resizeObserver = new ResizeObserver(entries => this.initPages());
     resizeObserver.observe(this.slider);
 
+    // this scroll event can be initiated only if the slider button style is counter.
     this.slider.addEventListener('scroll', this.update.bind(this));
     this.prevButton.addEventListener('click', this.onButtonClick.bind(this));
     this.nextButton.addEventListener('click', this.onButtonClick.bind(this));
@@ -528,6 +529,7 @@ class SliderComponent extends HTMLElement {
   }
 
   update() {
+    // If I don't prevent the scroll event from above then I could set some conditions in here and run what is needed based on the slider control style.
     if (!this.pageCount || !this.pageTotal) return;
     this.currentPage = Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
 
@@ -557,6 +559,34 @@ class SliderComponent extends HTMLElement {
 }
 
 customElements.define('slider-component', SliderComponent);
+
+class SlideshowComponent extends SliderComponent {
+  constructor() {
+    super();
+    this.sliderControls = this.querySelector('.slider-buttons');
+    this.bannerContents = this.slider.querySelectorAll('.banner__content');
+    //here I could setup the auto-slide
+    //here I could add the styling for the controls (number and dots) unless I do it in the slider class so different styles can be used for all sliders
+    // here I could add the styling for the controls (move the container in between the image and text on mobile?)
+    this.mediaQueryMobile = window.matchMedia('(max-width: 749px)');
+
+    const resizeObserverControls = new ResizeObserver(entries => this.styleSlideshowControls());
+    resizeObserverControls.observe(this);
+  }
+
+  styleSlideshowControls() {
+    if (this.slider.classList.contains('banner--mobile-bottom') && this.mediaQueryMobile.matches) {
+      this.sliderControls.classList.add('slider-buttons--in-between');
+      this.sliderControls.style.top = this.slider.querySelector('.slideshow__media').offsetHeight + 'px';
+      this.bannerContents.forEach(banner => banner.style.marginTop = this.sliderControls.offsetHeight + 'px');
+    } else {
+      this.sliderControls.classList.remove('slider-buttons--in-between');
+      this.bannerContents.forEach(banner => banner.removeAttribute('style'));
+    }
+  }
+}
+
+customElements.define('slideshow-component', SlideshowComponent);
 
 class VariantSelects extends HTMLElement {
   constructor() {
