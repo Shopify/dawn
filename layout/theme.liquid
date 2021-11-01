@@ -207,55 +207,167 @@
       document.documentElement.classList.add('shopify-design-mode');
     }
     </script>
+
+     {%- if customer.metafields.sparklayer.authentication -%}
+    <!-- Start of SparkLayer core script-->
+    <!-- Enter the SparkLayer script by logging into the SparkLayer Dashboard. Click Configuration and then Frontend, and copy the code snippet under 'Core Script' -->
+    <!-- End of SparkLayer core script-->
+
+    <style>
+      :root {
+    /* Update colours */
+    --spark-default-body-color: #555555; /* Main body colour*/
+    --spark-primary-color: #000000; /* Main title colour*/
+    --spark-secondary-color: #334fb4; /* Main highlight colour*/
+    --spark-link-color: #334fb4; /* Link colour*/
+
+    /* Typefaces */
+    --spark-font-default: Assistant, sans-serif; /* Body typeface*/
+    --spark-font-highlight: Assistant, sans-serif; /* Highlight typeface*/
+    --spark-font-weight-default: 400; /* Default font weight*/
+    --spark-font-weight-medium: 500; /* Medium font weight*/
+    --spark-font-weight-heavy: 600; /* Bold font weight*/
+
+    /* General */
+    --spark-border-radius-default: 0; /* Default border radius*/
+    --spark-drawer-max-width: 700px; /* Width of overlay*/
+    --spark-drawer-max-width-wide: 1000px; /* Width of overlay in maximised view*/
+
+    /* Font sizes */
+    --spark-font-default-size: 15px; /* Default font size*/
+    --spark-font-default-size-small: 14px; /* Default font size - small screens*/
+    --spark-header-font: Assistant, sans-serif; /* Header typeface*/
+    --spark-header-font-weight: 400; /* Header font weight*/
+    --spark-h1-fontsize: 24px; /* Header 1 font size*/
+    --spark-h2-fontsize: 22px; /* Header 2 font size*/
+    --spark-h3-fontsize: 20px; /* Header 3 font size*/
+    --spark-h4-fontsize: 16px; /* Header 4 font size*/
+    --spark-h5-fontsize: 15px; /* Header 5 font size*/
+    --spark-h6-fontsize: 14px; /* Header 6 font size*/
+    --spark-pricing-fontsize: 20px; /* Font size of pricing*/
+    --spark-pricing-font-weight: 400; /* Font weight of pricing*/
+    --spark-pricing-fontsize-small: 18px; /* Font size of pricing on mobile*/
+
+    --spark-product-code-fontsize: 16px; /* Font size of product code*/
+    --spark-product-code-font-weight: 500; /* Font weight of product code*/
+    --spark-product-code-fontsize-small: 14px; /* Font size of product code on mobile*/
+    --spark-product-stockstatus-fontsize: 14px;
+
+    /* Buttons */
+    --spark-button-font-family: Assistant, sans-serif; /* Button typeface*/
+    --spark-button-color: #334fb4; /* Default sutton colour*/
+    --spark-button-color-highlight: #617bd8; /* Default button colour hover*/
+    --spark-button-large-color: #334fb4; /* Large button colour*/
+    --spark-button-large-color-highlight: #617bd8; /* Large button colour hover*/
+    --spark-border-radius-button: 0; /* Button border radius*/
+    --spark-button-font-weight: 400; /* Button font weight*/
+    --spark-button-text-transform: none; /* Button text transform*/
+    --spark-button-text-letter-spacing: 1px; /* Button letter spacing*/
+    --spark-button-padding: 1.25rem 2.75rem; /* Button padding*/
+
+    /* Tables */
+    --spark-table-border-color: #CCCCCC; /* Table border colour*/
+    --spark-table-header-background-color: #F1F1F1; /* Table header background*/
+    --spark-table-header-text-color: #222222; /* Table header font colour*/
+    --spark-table-header-font-weight: 500; /* Table header font weight*/
+
+    /* Product Card */
+    --spark-product-card-button-radius: 0; /* Button radius*/
+    --spark-product-card-button-padding: 1rem 1rem; /* Button padding*/
+    --spark-product-card-pricing-font-size: 16px; /* Pricng font size*/
+    --spark-product-card-pricing-font-size-small: 14px; /* Pricng font size on mobile*/
+    --spark-product-card-select-min-height: 0px; /* Set a min-height for select menu*/
+
+  }
+
+  .cart-count-bubble {
+    display: none;
+  }
+    </style>
+    {%- endif -%}
+
   </head>
 
   <body class="gradient">
-    <a class="skip-to-content-link button visually-hidden" href="#MainContent">
-      {{ "accessibility.skip_to_text" | t }}
-    </a>
 
-    {% section 'announcement-bar' %}
-    {% section 'header' %}
-    <main id="MainContent" class="content-for-layout focus-none" role="main" tabindex="-1">
-      {{ content_for_layout }}
-    </main>
+      {% comment %} Define accessible pages {% endcomment %}
+      {%- if customer.tags contains 'b2b' or template contains 'customers/' or request.path == '/challenge'  or request.path == '/pages/trade-login' -%}
+      {% assign showSiteForB2B = true %}
+      {% endif %}
+      {%- if showSiteForB2B == blank -%}
+        {% assign showB2BLogin = true %}
+      {% endif %}
 
-    {% section 'footer' %}
+      {% comment %} Show content for logged in users {% endcomment %}
+      {%- unless showB2BLogin -%}
 
-    <ul hidden>
-      <li id="a11y-refresh-page-message">{{ 'accessibility.refresh_page' | t }}</li>
-    </ul>
+      {%- if customer.tags contains 'b2b' -%}
+        {%- if template contains 'customers/' or request.path == '/cart' -%}
+          <script>
+            window.location.href = '/index#spark-account';
+          </script>
+        {% endif %}
+      {% endif %}
 
-    <script>
-      window.shopUrl = '{{ shop.url }}';
-      window.routes = {
-        cart_add_url: '{{ routes.cart_add_url }}',
-        cart_change_url: '{{ routes.cart_change_url }}',
-        cart_update_url: '{{ routes.cart_update_url }}',
-        predictive_search_url: '{{ routes.predictive_search_url }}'
-      };
+        <a class="skip-to-content-link button visually-hidden" href="#MainContent">
+          {{ "accessibility.skip_to_text" | t }}
+        </a>
 
-      window.cartStrings = {
-        error: `{{ 'sections.cart.cart_error' | t }}`,
-        quantityError: `{{ 'sections.cart.cart_quantity_error_html' | t: quantity: '[quantity]' }}`
-      }
+        {% section 'announcement-bar' %}
+        {% section 'header' %}
+        <main id="MainContent" class="content-for-layout focus-none" role="main" tabindex="-1">
+          {{ content_for_layout }}
+        </main>
 
-      window.variantStrings = {
-        addToCart: `{{ 'products.product.add_to_cart' | t }}`,
-        soldOut: `{{ 'products.product.sold_out' | t }}`,
-        unavailable: `{{ 'products.product.unavailable' | t }}`,
-      }
+        {% section 'footer' %}
 
-      window.accessibilityStrings = {
-        imageAvailable: `{{ 'products.product.media.image_available' | t: index: '[index]' }}`,
-        shareSuccess: `{{ 'general.share.success_message' | t }}`,
-        pauseSlideshow: `{{ 'sections.slideshow.pause_slideshow' | t }}`,
-        playSlideshow: `{{ 'sections.slideshow.play_slideshow' | t }}`,
-      }
-    </script>
+        <ul hidden>
+          <li id="a11y-refresh-page-message">{{ 'accessibility.refresh_page' | t }}</li>
+        </ul>
 
-    {%- if settings.predictive_search_enabled -%}
-      <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
-    {%- endif -%}
+        <script>
+          window.routes = {
+            cart_add_url: '{{ routes.cart_add_url }}',
+            cart_change_url: '{{ routes.cart_change_url }}',
+            cart_update_url: '{{ routes.cart_update_url }}',
+            predictive_search_url: '{{ routes.predictive_search_url }}'
+          };
+
+          window.cartStrings = {
+            error: `{{ 'sections.cart.cart_error' | t }}`,
+            quantityError: `{{ 'sections.cart.cart_quantity_error_html' | t }}`
+          }
+
+          window.variantStrings = {
+            addToCart: `{{ 'products.product.add_to_cart' | t }}`,
+            soldOut: `{{ 'products.product.sold_out' | t }}`,
+            unavailable: `{{ 'products.product.unavailable' | t }}`,
+          }
+
+          window.accessibilityStrings = {
+            imageAvailable: `{{ 'products.product.media.image_available' | t: index: '[index]' }}`,
+            shareSuccess: `{{ 'general.share.success_message' | t }}`,
+            pauseSlideshow: `{{ 'sections.slideshow.pause_slideshow' | t }}`,
+            playSlideshow: `{{ 'sections.slideshow.play_slideshow' | t }}`,
+          }
+
+        </script>
+
+        {%- if settings.predictive_search_enabled -%}
+          <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
+        {%- endif -%}
+
+    {% endunless %}
+
+    {% comment %}
+      Show content for logged out users
+    {% endcomment %}
+      {%- if showB2BLogin -%}
+        <script>
+          window.location.href = '/pages/trade-login';
+        </script>
+      {% endif %}
+  {% comment %} END {% endcomment %}
+
   </body>
 </html>
