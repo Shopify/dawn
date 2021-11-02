@@ -501,10 +501,13 @@ customElements.define('deferred-media', DeferredMedia);
 class SliderComponent extends HTMLElement {
   constructor() {
     super();
-    this.slider = this.querySelector('ul');
-    this.sliderItems = this.querySelectorAll('li');
+    this.slider = this.querySelector('[id^="Slider-"]');
+    this.sliderItems = this.querySelectorAll('[id^="Slide-"]');
+    this.sliderItemsToShow = Array.from(this.sliderItems).filter(element => element.clientWidth > 0);
+    this.sliderLastItem = this.sliderItemsToShow[this.sliderItemsToShow.length - 1];
     this.pageCount = this.querySelector('.slider-counter--current');
     this.pageTotal = this.querySelector('.slider-counter--total');
+    this.currentPage = Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
     this.prevButton = this.querySelector('button[name="previous"]');
     this.nextButton = this.querySelector('button[name="next"]');
 
@@ -513,25 +516,35 @@ class SliderComponent extends HTMLElement {
     const resizeObserver = new ResizeObserver(entries => this.initPages());
     resizeObserver.observe(this.slider);
 
-    // this scroll event can be initiated only if the slider button style is counter.
     this.slider.addEventListener('scroll', this.update.bind(this));
     this.prevButton.addEventListener('click', this.onButtonClick.bind(this));
     this.nextButton.addEventListener('click', this.onButtonClick.bind(this));
   }
 
   initPages() {
-    const sliderItemsToShow = Array.from(this.sliderItems).filter(element => element.clientWidth > 0);
-    this.sliderLastItem = sliderItemsToShow[sliderItemsToShow.length - 1];
-    if (sliderItemsToShow.length === 0) return;
-    this.slidesPerPage = Math.floor(this.slider.clientWidth / sliderItemsToShow[0].clientWidth);
-    this.totalPages = sliderItemsToShow.length - this.slidesPerPage + 1;
+    if (this.sliderItemsToShow.length === 0) return;
+    this.slidesPerPage = Math.floor(this.slider.clientWidth / this.sliderItemsToShow[0].clientWidth);
+    this.totalPages = this.sliderItemsToShow.length - this.slidesPerPage + 1;
     this.update();
   }
 
   update() {
-    // If I don't prevent the scroll event from above then I could set some conditions in here and run what is needed based on the slider control style.
-    if (!this.pageCount || !this.pageTotal) return;
     this.currentPage = Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
+    this.sliderControlButtons = this.querySelectorAll('.slider-counter__link');
+
+    if (this.sliderControlButtons.length > 0) {
+      this.sliderControlButtons.forEach(link => {
+        link.classList.remove('slider-counter__link--active');
+        link.removeAttribute('aria-current', true);
+      });
+      this.sliderControlButtons[this.currentPage - 1].classList.add('slider-counter__link--active');
+      this.sliderControlButtons[this.currentPage - 1].setAttribute('aria-current', true);
+    } else {
+      if (!this.pageCount || !this.pageTotal) return;
+
+      this.pageCount.textContent = this.currentPage;
+      this.pageTotal.textContent = this.totalPages;
+    }
 
     if (this.currentPage === 1) {
       this.prevButton.setAttribute('disabled', 'disabled');
@@ -544,9 +557,6 @@ class SliderComponent extends HTMLElement {
     } else {
       this.nextButton.removeAttribute('disabled');
     }
-
-    this.pageCount.textContent = this.currentPage;
-    this.pageTotal.textContent = this.totalPages;
   }
 
   onButtonClick(event) {
@@ -563,26 +573,44 @@ customElements.define('slider-component', SliderComponent);
 class SlideshowComponent extends SliderComponent {
   constructor() {
     super();
-    this.sliderControls = this.querySelector('.slider-buttons');
+    this.sliderControlWrapper = this.querySelector('.slider-buttons');
     this.bannerContents = this.slider.querySelectorAll('.banner__content');
-    //here I could setup the auto-slide
-    //here I could add the styling for the controls (number and dots) unless I do it in the slider class so different styles can be used for all sliders
-    // here I could add the styling for the controls (move the container in between the image and text on mobile?)
+
+    if (!this.sliderControlWrapper) return;
+    this.sliderControlLinks = this.sliderControlWrapper.querySelectorAll('.slider-counter__link');
+    this.sliderControlLinksArray = Array.from(this.sliderControlLinks);
+    // here I could setup the auto-slide
+    //use an interval to scrollIntoView the next element
+
     this.mediaQueryMobile = window.matchMedia('(max-width: 749px)');
 
     const resizeObserverControls = new ResizeObserver(entries => this.styleSlideshowControls());
     resizeObserverControls.observe(this);
+    this.sliderControlLinks.forEach(link => link.addEventListener('click', this.linkToSlide.bind(this)));
+    setInterval(this.autoRotateSlides.bind(this), 5000);
   }
 
   styleSlideshowControls() {
     if (this.slider.classList.contains('banner--mobile-bottom') && this.mediaQueryMobile.matches) {
-      this.sliderControls.classList.add('slider-buttons--in-between');
-      this.sliderControls.style.top = this.slider.querySelector('.slideshow__media').offsetHeight + 'px';
-      this.bannerContents.forEach(banner => banner.style.marginTop = this.sliderControls.offsetHeight + 'px');
+      this.sliderControlWrapper.classList.add('slider-buttons--in-between');
+      this.sliderControlWrapper.style.top = this.slider.querySelector('.slideshow__media').offsetHeight + 'px';
+      this.bannerContents.forEach(banner => banner.style.marginTop = this.sliderControlWrapper.offsetHeight + 'px');
     } else {
-      this.sliderControls.classList.remove('slider-buttons--in-between');
+      this.sliderControlWrapper.classList.remove('slider-buttons--in-between');
       this.bannerContents.forEach(banner => banner.removeAttribute('style'));
     }
+  }
+
+  autoRotateSlides() {
+    const nextPageToShow = this.currentPage === this.sliderItemsToShow.length ? this.sliderItemsToShow[0] : this.sliderItemsToShow[this.currentPage];
+    nextPageToShow.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+  }
+
+  linkToSlide(event) {
+    event.preventDefault();
+    // Here i want to scroll into view the slide that matches the button.
+    const slideToShow = this.sliderItemsToShow[this.sliderControlLinksArray.indexOf(event.target)];
+    slideToShow.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
   }
 }
 
