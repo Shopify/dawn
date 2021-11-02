@@ -507,7 +507,7 @@ class SliderComponent extends HTMLElement {
     this.sliderLastItem = this.sliderItemsToShow[this.sliderItemsToShow.length - 1];
     this.pageCount = this.querySelector('.slider-counter--current');
     this.pageTotal = this.querySelector('.slider-counter--total');
-    this.currentPage = Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
+    this.currentPage = !this.pageCount || !this.pageTotal ? null : Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
     this.prevButton = this.querySelector('button[name="previous"]');
     this.nextButton = this.querySelector('button[name="next"]');
 
@@ -577,17 +577,16 @@ class SlideshowComponent extends SliderComponent {
     this.bannerContents = this.slider.querySelectorAll('.banner__content');
 
     if (!this.sliderControlWrapper) return;
+
     this.sliderControlLinks = this.sliderControlWrapper.querySelectorAll('.slider-counter__link');
     this.sliderControlLinksArray = Array.from(this.sliderControlLinks);
-    // here I could setup the auto-slide
-    //use an interval to scrollIntoView the next element
-
     this.mediaQueryMobile = window.matchMedia('(max-width: 749px)');
 
     const resizeObserverControls = new ResizeObserver(entries => this.styleSlideshowControls());
     resizeObserverControls.observe(this);
     this.sliderControlLinks.forEach(link => link.addEventListener('click', this.linkToSlide.bind(this)));
-    setInterval(this.autoRotateSlides.bind(this), 5000);
+    // here I could setup the auto-slide
+    //this.autoplay = setInterval(this.autoRotateSlides.bind(this), 5000);
   }
 
   styleSlideshowControls() {
