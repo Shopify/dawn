@@ -503,11 +503,8 @@ class SliderComponent extends HTMLElement {
     super();
     this.slider = this.querySelector('[id^="Slider-"]');
     this.sliderItems = this.querySelectorAll('[id^="Slide-"]');
-    this.sliderItemsToShow = Array.from(this.sliderItems).filter(element => element.clientWidth > 0);
-    this.sliderLastItem = this.sliderItemsToShow[this.sliderItemsToShow.length - 1];
     this.pageCount = this.querySelector('.slider-counter--current');
     this.pageTotal = this.querySelector('.slider-counter--total');
-    this.currentPage = !this.pageCount || !this.pageTotal ? null : Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
     this.prevButton = this.querySelector('button[name="previous"]');
     this.nextButton = this.querySelector('button[name="next"]');
 
@@ -522,6 +519,8 @@ class SliderComponent extends HTMLElement {
   }
 
   initPages() {
+    this.sliderItemsToShow = Array.from(this.sliderItems).filter(element => element.clientWidth > 0);
+    this.sliderLastItem = this.sliderItemsToShow[this.sliderItemsToShow.length - 1];
     if (this.sliderItemsToShow.length === 0) return;
     this.slidesPerPage = Math.floor(this.slider.clientWidth / this.sliderItemsToShow[0].clientWidth);
     this.totalPages = this.sliderItemsToShow.length - this.slidesPerPage + 1;
@@ -578,15 +577,74 @@ class SlideshowComponent extends SliderComponent {
 
     if (!this.sliderControlWrapper) return;
 
+    this.sliderItemsToShow = Array.from(this.sliderItems).filter(element => element.clientWidth > 0);
+    this.sliderLastItem = this.sliderItemsToShow[this.sliderItemsToShow.length - 1];
+    if( this.sliderItemsToShow.length > 0) this.currentPage = !this.pageCount || !this.pageTotal ? null : Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
+
     this.sliderControlLinks = this.sliderControlWrapper.querySelectorAll('.slider-counter__link');
     this.sliderControlLinksArray = Array.from(this.sliderControlLinks);
+    this.sliderAutoplay = this.slider.hasAttribute('data-autoplay');
+    this.sliderAutoplayButton = this.sliderControlWrapper.querySelector('.slideshow__autoplay');
     this.mediaQueryMobile = window.matchMedia('(max-width: 749px)');
+    this.isPlaying = false;
+    this.autoPlayEnabled = false;
 
     const resizeObserverControls = new ResizeObserver(entries => this.styleSlideshowControls());
     resizeObserverControls.observe(this);
     this.sliderControlLinks.forEach(link => link.addEventListener('click', this.linkToSlide.bind(this)));
-    // here I could setup the auto-slide
-    //this.autoplay = setInterval(this.autoRotateSlides.bind(this), 5000);
+
+    if (!this.sliderAutoplay) return;
+    this.sliderAutoplayButton.addEventListener('click', this.autoPlayToggle.bind(this));
+    this.slider.addEventListener('mouseenter', this.autoplayFocusHandling.bind(this));
+    this.slider.addEventListener('mouseleave', this.autoplayFocusHandling.bind(this));
+    this.slider.addEventListener('focusin', this.autoplayFocusHandling.bind(this));
+    this.slider.addEventListener('focusout', this.autoplayFocusHandling.bind(this));
+    this.prevButton.addEventListener('focusout', this.autoplayFocusHandling.bind(this));
+    this.prevButton.addEventListener('focusin', this.autoplayFocusHandling.bind(this));
+    this.nextButton.addEventListener('focusin', this.autoplayFocusHandling.bind(this));
+    this.nextButton.addEventListener('focusout', this.autoplayFocusHandling.bind(this));
+    this.prevButton.addEventListener('mouseenter', this.autoplayFocusHandling.bind(this));
+    this.prevButton.addEventListener('mouseleave', this.autoplayFocusHandling.bind(this));
+    this.nextButton.addEventListener('mouseenter', this.autoplayFocusHandling.bind(this));
+    this.nextButton.addEventListener('mouseleave', this.autoplayFocusHandling.bind(this));
+    this.play();
+  }
+
+  autoPlayToggle() {
+    this.isPlaying ? this.pause() : this.play();
+  }
+
+  autoplayFocusHandling(event) {
+    const shouldPause = event.type === 'mouseenter' || event.type === 'focusin';
+    const shouldPlay = event.type === 'mouseleave' || event.type === 'focusout';
+    if (this.isPlaying && shouldPause) {
+      this.wasPlaying = true;
+      this.pause();
+    } else if (this.wasPlaying && shouldPlay) {
+      this.play();
+    } else {
+      this.wasPlaying = false;
+    }
+  }
+
+  play() {
+    if (this.isPlaying) return;
+
+    this.isPlaying = true;
+    this.sliderAutoplayButton.classList.remove('slideshow__autoplay--paused');
+    this.slider.setAttribute('aria-live', 'off');
+    this.sliderAutoplayButton.setAttribute('aria-label', 'Pause slideshow');
+    this.autoplay = setInterval(this.autoRotateSlides.bind(this), 3000);
+  }
+
+  pause() {
+    if (this.isPlaying = false) return;
+
+    this.isPlaying = false;
+    this.sliderAutoplayButton.classList.add('slideshow__autoplay--paused');
+    this.slider.setAttribute('aria-live', 'polite');
+    this.sliderAutoplayButton.setAttribute('aria-label', 'Play slideshow');
+    clearInterval(this.autoplay);
   }
 
   styleSlideshowControls() {
@@ -607,7 +665,7 @@ class SlideshowComponent extends SliderComponent {
 
   linkToSlide(event) {
     event.preventDefault();
-    // Here i want to scroll into view the slide that matches the button.
+    // Here i want to scroll into view the slide that matches the button. ScrollIntoView moves the slides properly but also scrolls you back to the container unfortunately.
     const slideToShow = this.sliderItemsToShow[this.sliderControlLinksArray.indexOf(event.target)];
     slideToShow.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
   }
