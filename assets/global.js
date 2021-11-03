@@ -18,6 +18,7 @@ document.querySelectorAll('[id^="Details-"] summary').forEach((summary) => {
     event.currentTarget.setAttribute('aria-expanded', !event.currentTarget.closest('details').hasAttribute('open'));
   });
 
+  if (summary.closest('header-drawer')) return;
   summary.parentElement.addEventListener('keyup', onKeyUpEscape);
 });
 
@@ -306,24 +307,29 @@ class MenuDrawer extends HTMLElement {
     const openDetailsElement = event.target.closest('details[open]');
     if(!openDetailsElement) return;
 
-    openDetailsElement === this.mainDetailsToggle ? this.closeMenuDrawer(this.mainDetailsToggle.querySelector('summary')) : this.closeSubmenu(openDetailsElement);
+    openDetailsElement === this.mainDetailsToggle ? this.closeMenuDrawer(event, this.mainDetailsToggle.querySelector('summary')) : this.closeSubmenu(openDetailsElement);
   }
 
   onSummaryClick(event) {
     const summaryElement = event.currentTarget;
     const detailsElement = summaryElement.parentNode;
     const isOpen = detailsElement.hasAttribute('open');
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    function addTrapFocus() {
+      trapFocus(summaryElement.nextElementSibling, detailsElement.querySelector('button'));
+      summaryElement.nextElementSibling.removeEventListener('transitionend', addTrapFocus);
+    }
 
     if (detailsElement === this.mainDetailsToggle) {
       if(isOpen) event.preventDefault();
-      isOpen ? this.closeMenuDrawer(summaryElement) : this.openMenuDrawer(summaryElement);
+      isOpen ? this.closeMenuDrawer(event, summaryElement) : this.openMenuDrawer(summaryElement);
     } else {
-      trapFocus(summaryElement.nextElementSibling, detailsElement.querySelector('button'));
-
       setTimeout(() => {
         detailsElement.classList.add('menu-opening');
         summaryElement.setAttribute('aria-expanded', true);
-      });
+        !reducedMotion || reducedMotion.matches ? addTrapFocus() : summaryElement.nextElementSibling.addEventListener('transitionend', addTrapFocus);
+      }, 100);
     }
   }
 
@@ -343,7 +349,6 @@ class MenuDrawer extends HTMLElement {
         details.removeAttribute('open');
         details.classList.remove('menu-opening');
       });
-      this.mainDetailsToggle.querySelector('summary').setAttribute('aria-expanded', false);
       document.body.classList.remove(`overflow-hidden-${this.dataset.breakpoint}`);
       removeTrapFocus(elementToFocus);
       this.closeAnimation(this.mainDetailsToggle);
