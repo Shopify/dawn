@@ -152,6 +152,7 @@ if (makeEnquiry.enquiryChoiceButtons) {
 // Enquiry Submit button
 if (makeEnquiry.submitButton) {
 	makeEnquiry.submitButton.addEventListener("click", function () {
+		window.dataLayer.push({'event_name': 'enquiry_submit'});
 		this.disabled = true;
 		makeEnquiry.sendForm();
 	});
