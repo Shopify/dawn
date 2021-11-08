@@ -1,0 +1,101 @@
+{% comment %}
+/**************************************************
+* DO NOT MODIFY THIS FILE!!!                      *
+* IT WILL BE OVERWRITTEN BY UPDATES FROM GROWAVE! *
+**************************************************/
+{% endcomment %}
+{% if page.handle == 'collections' %}
+  <div id="ssw-page" class="ssw-page ssw-clearfix gw-container">
+    {% render 'ssw-widget-listing' %}
+    <script type="text/javascript" defer>
+      var collectionTrackerInterval = setInterval(function () {
+        if (typeof trackShopStats == "function") {
+          clearInterval(collectionTrackerInterval);
+          trackShopStats('collection_page_view', 'all');
+        }
+      }, 1000);
+    </script>
+  </div>
+{% else %}
+  {% if page.handle == 'share-review' %}
+    <div id="ssw-page" class="ssw-page ssw-clearfix gw-container">
+      {% render 'ssw-widget-share-review' %}
+    </div>
+  {% else %}
+    <div id="ssw-page" class="ssw-page ssw-clearfix gw-container">
+      <div class="ssw-page-loading">
+        <span class="ssw-spin ssw-loader"></span>
+      </div>
+    </div>
+     {% if page.handle == 'reviews' %}
+       {% if shop.metafields.ssw.reviews_stats %}
+         {% assign sswstats = shop.metafields.ssw.reviews_stats %}
+           <div itemscope itemtype="https://schema.org/Product">
+             <meta itemprop="name" content="{{ shop.name | escape }}"/>
+             <div itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">
+               <meta itemprop="ratingCount" content="{{ sswstats.count }}"/>
+               <meta itemprop="ratingValue" content="{{ sswstats.avg }}"/>
+             </div>
+           </div>
+       {% endif %}
+     {% endif %}
+    <script type="text/javascript" defer>
+      if (typeof sswPageInterval == 'undefined') {
+        var sswPageInterval = setInterval(function () {
+          if (typeof sswJqLoaded != 'undefined' && sswJqLoaded) {
+            clearInterval(sswPageInterval);
+            var path_name = window.location.pathname;
+            var ssw_substr = '/pages/';
+            var ssw_index = path_name.indexOf(ssw_substr) + ssw_substr.length;
+            var ssw_request_url = sswProxyUrl + '/lite2/' + path_name.substr(ssw_index);
+            if (path_name.indexOf('pages/profile-edit') > -1) {
+              ssw_request_url = sswProxyUrl + '/lite2/profile-edit';
+            }
+            else if (path_name.substr(ssw_index) == 'feed' || path_name.indexOf('pages/profile') > -1)
+              ssw_request_url = sswProxyUrl + '/lite2/' + path_name.substr(ssw_index) + '/';
+            else if (path_name.substr(ssw_index) == 'collections' || path_name.substr(ssw_index) == 'people' || path_name.substr(ssw_index) == 'invite' || path_name.substr(ssw_index) == 'faves' || path_name.substr(ssw_index) == 'edit-notifications' || path_name.substr(ssw_index) == 'reviews')
+              ssw_request_url = sswProxyUrl + '/lite2/' + path_name.substr(ssw_index);
+            var params = location.search.substring(1).replace(/_sid\=[0-9a-f-]+\&*|\bhash_key\b\=[0-9a-f-]+\&*/ig, '');
+            if (path_name.indexOf('pages/collections') && window.location.hash.substring(1)) {
+              if (params) {
+                params += '&' + window.location.hash.substring(1);
+              }
+              else {
+                params = window.location.hash.substring(1);
+              }
+            }
+            var data = '_sid=' + sswCookie('hesid');
+            if (typeof sswApp !== 'undefined' && typeof sswApp.accounts_enabled !== 'undefined') {
+              data += '&accounts_enabled=' + sswApp.accounts_enabled;
+            }
+            if (params) {
+              data += '&' + params;
+            }
+
+            if (sswCookie('mail_id')) {
+              data += '&resource_id=' + sswCookie('mail_id') + '&resource_type=mail';
+            }
+            sswUserChecked(function () {
+              data += '&hash_key=' + sswCookie('hash_key');
+              ssw.post(ssw_request_url, data, 'html').done(function (response) {
+                ssw('#ssw-page').css('opacity', 0);
+                ssw('#ssw-page').html(response).animate({
+                  opacity: "1"
+                }, 50, function () {
+                  if (typeof window.afterSswPageLoadedCallback === 'function') {
+                    window.afterSswPageLoadedCallback(response);
+                  }
+                  sswDispatchEvent('sswPageLoaded', {
+                    detail: {},
+                    bubbles: true,
+                    cancelable: false
+                  });
+                });
+              });
+            });
+          }
+        }, 300);
+      }
+    </script>
+  {% endif %}
+{% endif %}

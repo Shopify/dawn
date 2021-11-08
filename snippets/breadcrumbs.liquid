@@ -1,0 +1,173 @@
+<nav class="breadcrumbs {% unless section.settings.include_pagination %}negative-left {% endunless %}{% if section.settings.include_pagination and section.settings.layout == 'form' %}negative-left {% endif %}{% unless section.settings.include_sort %}negative-right {% endunless %}{% if section.settings.include_pagination == false and section.settings.include_sort == false %}text-center{% elsif section.settings.include_pagination == false or section.settings.layout == 'form' %}text-left{% elsif section.settings.include_sort == false %}text-right{% else %}text-center{% endif %}" aria-label="{{ 'general.breadcrumbs.breadcrumbs' | t }}">
+  <span class="form">
+    <span class="breadcrumb_text">
+      <span><a href="{{ routes.root_url }}" title="{{ 'general.breadcrumbs.home_link_title' | t }}">{{ 'general.breadcrumbs.home' | t }}</a></span>
+      {%- liquid
+        unless settings.filtering
+          capture active_filters
+            for filter in collection.filters
+              assign last = false
+              for value in filter.active_values
+                echo '<span class="separator" aria-hidden="true"></span>'
+                echo '<span><a href="'
+                echo value.url_to_remove
+                echo '" title="'
+                echo 'collections.sidebar.filter_remove' | t
+                echo ' '
+                echo filter.label | escape
+                echo ' '
+                echo value.label | escape
+                echo '">'
+                echo value.label | escape
+                echo '</a></span>'
+              endfor
+              if filter.type == "price_range"
+                if filter.min_value.value != nil or filter.max_value.value != nil
+                  echo '<span class="separator" aria-hidden="true"></span>'
+                  echo '<span><a href="'
+                  echo filter.url_to_remove
+                  echo '" title="'
+                  echo 'collections.sidebar.filter_remove' | t
+                  echo ' '
+                  echo filter.label | escape
+                  echo '">'
+                    if filter.min_value.value
+                      echo filter.min_value.value | money
+                    else
+                      echo '0' | money | escape
+                    endif
+                  echo ' - '
+                    if filter.max_value.value
+                      echo filter.max_value.value | money
+                    else
+                      echo filter.range_max | money | escape
+                    endif
+                  echo '</a></span>'
+                endif    
+              endif
+            endfor
+          endcapture
+        endunless     
+        if finalCt > 0
+          echo '<span class="separator" aria-hidden="true"></span>'
+          if current_tags or active_filters != empty
+            echo '<span><a href="'
+            echo collection.url
+            echo '" title="'
+            echo collection.title | escape
+            echo '" aria-current="page">'
+            echo collection.title
+            echo '</a></span>'
+          else
+          	echo '<span aria-current="page">'
+            echo collection.title
+            echo '</span>'
+          endif
+        else        
+          capture tags
+          	echo current_tags
+          endcapture
+          assign tags = tags | split: '_' | last | split:'^' | last
+          assign current = false
+          for link in linklists[settings.menu].links
+            if link.active or link.child_active or sub_link.child_active
+              echo '<span class="separator" aria-hidden="true"></span>'
+              if current_tags or active_filters != empty or link.child_active
+                echo '<span><a href="'
+                echo link.url
+                echo '" title="'
+                echo link.title | escape
+                echo '" aria-current="page">'
+                echo link.title
+                echo '</a></span>'
+              else
+                echo '<span aria-current="page">'
+                echo link.title
+                echo '</span>'
+              endif
+              if link.links != blank
+                for sub_link in link.links
+                  if sub_link.active or sub_link.child_active or sub_sub_link.child_active
+                    unless sub_link.title == tags
+                      echo '<span class="separator" aria-hidden="true"></span>'
+                      if current_tags or active_filters != empty or sub_link.child_active
+                        echo '<span><a href="'
+                        echo sub_link.url
+                        echo '" title="'
+                        echo sub_link.title | escape
+                        echo '" aria-current="page">'
+                        echo sub_link.title
+                        echo '</a></span>'
+                      else
+                        echo '<span aria-current="page">'
+                        echo sub_link.title
+                        echo '</span>'
+                      endif
+                      if sub_link.links != blank
+                        for sub_sub_link in sub_link.links
+                          if sub_sub_link.active
+                            unless sub_sub_link.title == tags
+                              echo '<span class="separator" aria-hidden="true"></span>'
+                              if current_tags or active_filters != empty
+                                echo '<span><a href="'
+                                echo sub_sub_link.url
+                                echo '" title="'
+                                echo sub_sub_link.title | escape
+                                echo '" aria-current="page">'
+                                echo sub_sub_link.title
+                                echo '</a></span>'
+                              else
+                                echo '<span aria-current="page">'
+                                echo sub_sub_link.title
+                                echo '</span>'
+                              endif
+                              assign current = true
+                            endunless
+                          endif
+                        endfor
+                      endif
+                      assign current = true
+                    endunless
+                  endif
+                endfor
+              endif
+              assign current = true
+            endif
+          endfor          
+          unless current
+            echo '<span class="separator" aria-hidden="true"></span>'
+            if current_tags or active_filters != empty
+            	echo '<span><a href="'
+                echo collection.url
+                echo '" title="'
+                echo collection.title | escape
+                echo '" aria-current="page">'
+                echo collection.title
+                echo '</a></span>'
+            else
+            	echo '<span aria-current="page">'
+                echo collection.title
+                echo '</span>'
+            endif
+          endunless        
+        endif      
+        if current_tags
+          for tag in current_tags
+            echo '<span class="separator" aria-hidden="true"></span>'
+            if forloop.last
+              echo '<span>'
+              echo tag | split: '_' | last | split:'^' | last
+              echo '</span>'
+            else
+              echo '<span>'
+              echo tag | split: '_' | last | split:'^' | last | link_to_tag: tag
+              echo '</span>'
+            endif
+          endfor
+        elsif active_filters != empty
+          echo active_filters
+        endif        
+      -%}
+    </span>
+  </span>
+</nav>

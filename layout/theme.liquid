@@ -54,9 +54,6 @@
         --font-heading-style: {{ settings.type_header_font.style }};
         --font-heading-weight: {{ settings.type_header_font.weight }};
 
-        --font-body-scale: {{ settings.body_scale | divided_by: 100.0 }};
-        --font-heading-scale: {{ settings.heading_scale | times: 1.0 | divided_by: settings.body_scale }};
-
         --color-base-text: {{ settings.colors_text.red }}, {{ settings.colors_text.green }}, {{ settings.colors_text.blue }};
         --color-base-background-1: {{ settings.colors_background_1.red }}, {{ settings.colors_background_1.green }}, {{ settings.colors_background_1.blue }};
         --color-base-background-2: {{ settings.colors_background_2.red }}, {{ settings.colors_background_2.green }}, {{ settings.colors_background_2.blue }};
@@ -83,7 +80,7 @@
 
       html {
         box-sizing: border-box;
-        font-size: calc(var(--font-body-scale) * 62.5%);
+        font-size: 62.5%;
         height: 100%;
       }
 
@@ -95,7 +92,7 @@
         margin: 0;
         font-size: 1.5rem;
         letter-spacing: 0.06rem;
-        line-height: calc(1 + 0.8 / var(--font-body-scale));
+        line-height: 1.8;
         font-family: var(--font-body-family);
         font-style: var(--font-body-style);
         font-weight: var(--font-body-weight);
@@ -122,6 +119,8 @@
     {%- endif -%}
 
     <script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
+    
+    {{ 'socialshopwave-custom.css' | asset_url | stylesheet_tag }}
   </head>
 
   <body class="gradient">
@@ -142,7 +141,6 @@
     </ul>
 
     <script>
-      window.shopUrl = '{{ shop.url }}';
       window.routes = {
         cart_add_url: '{{ routes.cart_add_url }}',
         cart_change_url: '{{ routes.cart_change_url }}',
@@ -152,7 +150,7 @@
 
       window.cartStrings = {
         error: `{{ 'sections.cart.cart_error' | t }}`,
-        quantityError: `{{ 'sections.cart.cart_quantity_error_html' | t: quantity: '[quantity]' }}`
+        quantityError: `{{ 'sections.cart.cart_quantity_error_html' | t }}`
       }
 
       window.variantStrings = {
@@ -169,5 +167,72 @@
     {%- if settings.predictive_search_enabled -%}
       <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
+    
+    <script>
+      window.addEventListener('sswhelperload', () => {
+        if(typeof sswRun == 'function') {
+          sswRun(function(){
+            var reviewWidget = setInterval(function(){
+              if(ssw('.product.grid').length) {
+                ssw('.product.grid').after(ssw('#ssw-widget-recommends-html'));
+              }
+              clearInterval(reviewWidget);
+            }, 1000);
+          });
+        }
+      });
+    </script>
+    
+    <script>
+      window.addEventListener('sswhelperload', () => {
+        if (typeof sswRun == "function") {
+          sswRun(function () {
+            var waitForContainer = setInterval(function () {
+              if (ssw('.product-grid .grid__item').length) {
+                function addWidgets() {
+                  window.ssw_widgets_products = [];
+                  ssw('.product-grid .grid__item').each(function (index, element) {
+                    if (!ssw(element).find(ssw('.ssw-faveicon-custom')).length) {
+                      var getUrl = ssw(element).find('.full-unstyled-link').attr('href');
+                      // var sswFaveIcon = `<div class="ssw-faveicon-custom" data-product-id="${getUrl}"></div>`;
+                      var sswReviewListing = `<div class="ssw-review-custom" data-product-id="${getUrl}"></div>`;
+                      window.ssw_widgets_products.push(getUrl);
+                      //ssw(element).find('.full-unstyled-link').before(ssw(sswFaveIcon));
+                      ssw(element).find(ssw('.card-information__text')).after(ssw(sswReviewListing));
+                    }
+                  });
+                  function ssw_widgets(handles) {
+                    handles.forEach((handle) => {
+                      ssw.get(handle, { view: 'ssw-metafield' }, function (res) {
+                        let tmp = ssw('<div>', { html: res });
+                        //tmp.find('.ssw-faveiticon').each(function (e, i) {
+                        //ssw(`.ssw-faveicon-custom[data-product-id="${handle}"]`).html(i);
+                        //});
+                        tmp.find('.ssw-widget-avg-rate-listing').each(function (e, i) {
+                          ssw(`.ssw-review-custom[data-product-id="${handle}"]`).html(i);
+                        });
+                      });
+                    });
+                    window.ssw_widgets_products = [];
+                  }
+                  ssw_widgets(window.ssw_widgets_products);
+                }
+                addWidgets()
+                const observer = new MutationObserver(function (mutations) {
+                  for (let mutation of mutations) {
+                    if (mutation.type === 'childList') {
+                      addWidgets()
+                    }
+                  }
+                })
+                observer.observe(ssw('.product-grid').get(0), { childList: true })
+                clearInterval(waitForContainer)
+              }
+            }, 1000);
+          });
+        }
+      });
+    </script>
+    
   </body>
 </html>

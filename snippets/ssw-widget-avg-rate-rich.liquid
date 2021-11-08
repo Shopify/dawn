@@ -1,0 +1,47 @@
+{% if product %}
+    {% assign ssw_review_enabled = 1 %}
+    {% if shop.metafields.ssw['review_enabled'] %}
+        {% assign ssw_review_enabled = shop.metafields.ssw['review_enabled'] | plus: 0 %}
+    {% endif %}
+    {% assign ssw_unite_reviews = 0 %}
+    {% if shop.metafields.ssw['unite_reviews'] %}
+        {% assign ssw_unite_reviews = shop.metafields.ssw['unite_reviews'] | plus: 0 %}
+    {% endif %}
+    {% if ssw_review_enabled == 1 %}
+        {% assign ssw_count_rate = 0 %}
+        {% assign ssw_avg_rate = 0 %}
+        {% assign ssw_rate_data_key = 'review' %}
+        {% if ssw_unite_reviews == 1 %}
+            {% if shop.metafields.ssw['unite_product_ids'] %}
+                {% assign ssw_unite_product_ids = shop.metafields.ssw['unite_product_ids'] | split: ',' %}
+                {% assign unite_product_id = product.id | downcase %}
+                {% if ssw_unite_product_ids contains unite_product_id %}
+                    {% assign ssw_rate_data_key = 'unite_review' %}
+                {% endif %}
+            {% endif %}
+        {% endif %}
+        {% if product.metafields.ssw[ssw_rate_data_key] %}
+            {% assign ssw_count_rate = product.metafields.ssw[ssw_rate_data_key].count | plus: 0 %}
+            {% assign ssw_avg_rate = product.metafields.ssw[ssw_rate_data_key].avg | plus: 0 %}
+            {% assign ssw_product_id = product.id %}
+            {% if product.metafields.ssw[ssw_rate_data_key].product_id %}
+                {% assign ssw_product_id = product.metafields.ssw[ssw_rate_data_key].product_id | plus: 0 %}
+            {% endif %}
+            {% if ssw_product_id != product.id %}
+                {% assign ssw_count_rate  = 0 %}
+                {% assign ssw_avg_rate = 0 %}
+            {% endif %}
+        {% endif %}
+        {% if ssw_count_rate != 0 %}
+            {% if rich_snippet_type == 'json' %}
+                ,
+                "aggregateRating": {
+                    "@type": "AggregateRating",
+                    "ratingValue": "{{ ssw_avg_rate }}",
+                    "ratingCount": "{{ ssw_count_rate }}"
+                }
+            {% else %}
+                <div itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating"><meta itemprop="ratingCount" content="{{ ssw_count_rate }}"/><meta itemprop="ratingValue" content="{{ ssw_avg_rate }}"/></div> {% endif %}
+        {% endif %}
+    {% endif %}
+{% endif %}

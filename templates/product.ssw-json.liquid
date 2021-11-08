@@ -1,0 +1,119 @@
+{% layout none %}
+{%assign options_size =  product.options_with_values | size %}
+{%assign variants_size =  product.variants | size %}
+{%assign images_size =  product.images | size %}
+{%- assign current_variant = product.selected_or_first_available_variant -%}
+
+{%assign options_i =  0 %}
+{%assign variants_i =  0 %}
+{%assign images_i =  0 %}
+{%assign divided_price =  current_variant.price | divided_by: 100 %}
+{%assign modulo_price =  current_variant.price | modulo: 100 %}
+{% if modulo_price > 9 %}
+  {%assign modulo_price = '.' | append: modulo_price %}
+{% elsif modulo_price > 0 %}
+  {%assign modulo_price = '.0' | append: modulo_price %}
+{% else %}
+    {%assign modulo_price = '.00' %}
+{% endif %}
+{%assign price =  divided_price | append: modulo_price %}
+
+{%assign divided_compare_at_price =  current_variant.compare_at_price | divided_by: 100 %}
+{%assign modulo_compare_at_price =  current_variant.compare_at_price | modulo: 100 %}
+{% if modulo_compare_at_price > 0 %}
+  {%assign modulo_compare_at_price = '.' | append: modulo_compare_at_price %}
+{% else %}
+    {%assign modulo_compare_at_price = '.00' %}
+{% endif %}
+{%assign compare_at_price =  divided_compare_at_price | append: modulo_compare_at_price %}
+{
+"product": {
+"body_html": {{ product.description | json }},
+"compare_at_price": {{ compare_at_price | json }},
+"created_at": "{{ product.created_at }}",
+"handle": {{ product.handle | json }},
+"id": {{ product.id | json }},
+"featured_image": {{ product.featured_image | json }},
+"image": {
+{% if images_size %}
+  {%assign image = product.images | first %}
+  "height": {{ image.height | json }},
+  "id": {{ image.id | json }},
+  "position": {{ image.position | json }},
+  "src": {{ image.src | json }},
+  "width": {{ image.width | json }}
+{% endif %}
+},
+"images": [
+{% for image in product.images %}
+  {%assign images_i = images_i | plus: 1 %}
+  {
+  "height": {{ image.height | json }},
+  "id": {{ image.id | json }},
+  "position": {{ image.position | json }},
+  "src": {{ image.src | json }},
+  "width": {{ image.width | json }}
+  }{% if images_i < images_size %},{% endif %}
+{% endfor %}
+],
+"options": [
+{% for option in product.options_with_values %}
+  {%assign options_i = options_i | plus: 1 %}
+  {{ option | json }}{% if options_i < options_size %},{% endif %}
+{% endfor %}
+],
+"price": {{ price | json }},
+"product_type": {{ product.type | json }},
+"published_at": "{{ product.published_at }}",
+"tags": {{ product.tags | join: ', ' | json }},
+"template_suffix": {{ product.template_suffix | json }},
+"title": {{ product.title | json }},
+"updated_at": "{{ product.updated_at }}",
+"variants": [
+{% for variant in product.variants %}
+  {%assign variants_i = variants_i | plus: 1 %}
+
+  {%assign divided_price =  variant.price | divided_by: 100 %}
+  {%assign modulo_price =  variant.price | modulo: 100 %}
+  {% if modulo_price >9 %}
+    {%assign modulo_price = '.' | append: modulo_price %}
+  {% elsif modulo_price > 0 %}
+    {%assign modulo_price = '.0' | append: modulo_price %}
+  {% else %}
+    {%assign modulo_price = '.00' %}
+  {% endif %}
+  {%assign price =  divided_price | append: modulo_price %}
+
+  {%assign divided_compare_at_price =  variant.compare_at_price | divided_by: 100 %}
+  {%assign modulo_compare_at_price =  variant.compare_at_price | modulo: 100 %}
+  {% if modulo_compare_at_price > 0 %}
+    {%assign modulo_compare_at_price = '.' | append: modulo_compare_at_price %}
+  {% else %}
+    {%assign modulo_compare_at_price = '.00' %}
+  {% endif %}
+  {%assign compare_at_price =  divided_compare_at_price | append: modulo_compare_at_price %}
+
+  {
+  "available": {{ variant.available | json }},
+  "compare_at_price": {{ compare_at_price | json }},
+  "id": {{ variant.id | json }},
+{% for image in product.images %}
+{% if image.src == variant.image %}"image_id": {{ image.id | json }},{% endif %}
+{% endfor %}
+"image": {{ variant.image | json }},
+"inventory_management": {{ variant.inventory_management | json }},
+"inventory_quantity": {{ variant.inventory_quantity | json }},
+"inventory_policy": {{ variant.inventory_policy | json }},
+"option1": {{ variant.option1 | json }},
+"option2": {{ variant.option2 | json }},
+"option3": {{ variant.option3 | json }},
+"price": {{ price | json }},
+"sku": {{ variant.sku | json }},
+"title": {{ variant.title | json }},
+"weight": {{ variant.weight | json }}
+}{% if variants_i < variants_size %},{% endif %}
+{% endfor %}
+],
+"vendor": {{ product.vendor | json }}
+}
+}

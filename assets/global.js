@@ -6,22 +6,6 @@ function getFocusableElements(container) {
   );
 }
 
-document.querySelectorAll('[id^="Details-"] summary').forEach((summary) => {
-  summary.setAttribute('role', 'button');
-  summary.setAttribute('aria-expanded', 'false');
-
-  if(summary.nextElementSibling.getAttribute('id')) {
-    summary.setAttribute('aria-controls', summary.nextElementSibling.id);
-  }
-
-  summary.addEventListener('click', (event) => {
-    event.currentTarget.setAttribute('aria-expanded', !event.currentTarget.closest('details').hasAttribute('open'));
-  });
-
-  if (summary.closest('header-drawer')) return;
-  summary.parentElement.addEventListener('keyup', onKeyUpEscape);
-});
-
 const trapFocusHandlers = {};
 
 function trapFocus(container, elementToFocus = container) {
@@ -132,7 +116,6 @@ function onKeyUpEscape(event) {
 
   const summaryElement = openDetailsElement.querySelector('summary');
   openDetailsElement.removeAttribute('open');
-  summaryElement.setAttribute('aria-expanded', false);
   summaryElement.focus();
 }
 
@@ -165,6 +148,24 @@ function debounce(fn, wait) {
     t = setTimeout(() => fn.apply(this, args), wait);
   };
 }
+
+const serializeForm = form => {
+  const obj = {};
+  const formData = new FormData(form);
+
+  for (const key of formData.keys()) {
+    const regex = /(?:^(properties\[))(.*?)(?:\]$)/;
+
+    if (regex.test(key)) {
+      obj.properties = obj.properties || {};
+      obj.properties[regex.exec(key)[2]] = formData.get(key);
+    } else {
+      obj[key] = formData.get(key);
+    }
+  }
+
+  return JSON.stringify(obj);
+};
 
 function fetchConfig(type = 'json') {
   return {
@@ -288,6 +289,8 @@ class MenuDrawer extends HTMLElement {
     super();
 
     this.mainDetailsToggle = this.querySelector('details');
+    const summaryElements = this.querySelectorAll('summary');
+    this.addAccessibilityAttributes(summaryElements);
 
     if (navigator.platform === 'iPhone') document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
 
@@ -301,35 +304,37 @@ class MenuDrawer extends HTMLElement {
     this.querySelectorAll('button').forEach(button => button.addEventListener('click', this.onCloseButtonClick.bind(this)));
   }
 
+  addAccessibilityAttributes(summaryElements) {
+    summaryElements.forEach(element => {
+      element.setAttribute('role', 'button');
+      element.setAttribute('aria-expanded', false);
+      element.setAttribute('aria-controls', element.nextElementSibling.id);
+    });
+  }
+
   onKeyUp(event) {
     if(event.code.toUpperCase() !== 'ESCAPE') return;
 
     const openDetailsElement = event.target.closest('details[open]');
     if(!openDetailsElement) return;
 
-    openDetailsElement === this.mainDetailsToggle ? this.closeMenuDrawer(event, this.mainDetailsToggle.querySelector('summary')) : this.closeSubmenu(openDetailsElement);
+    openDetailsElement === this.mainDetailsToggle ? this.closeMenuDrawer(this.mainDetailsToggle.querySelector('summary')) : this.closeSubmenu(openDetailsElement);
   }
 
   onSummaryClick(event) {
     const summaryElement = event.currentTarget;
     const detailsElement = summaryElement.parentNode;
     const isOpen = detailsElement.hasAttribute('open');
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    function addTrapFocus() {
-      trapFocus(summaryElement.nextElementSibling, detailsElement.querySelector('button'));
-      summaryElement.nextElementSibling.removeEventListener('transitionend', addTrapFocus);
-    }
 
     if (detailsElement === this.mainDetailsToggle) {
       if(isOpen) event.preventDefault();
-      isOpen ? this.closeMenuDrawer(event, summaryElement) : this.openMenuDrawer(summaryElement);
+      isOpen ? this.closeMenuDrawer(summaryElement) : this.openMenuDrawer(summaryElement);
     } else {
+      trapFocus(summaryElement.nextElementSibling, detailsElement.querySelector('button'));
+
       setTimeout(() => {
         detailsElement.classList.add('menu-opening');
-        summaryElement.setAttribute('aria-expanded', true);
-        !reducedMotion || reducedMotion.matches ? addTrapFocus() : summaryElement.nextElementSibling.addEventListener('transitionend', addTrapFocus);
-      }, 100);
+      });
     }
   }
 
@@ -349,6 +354,7 @@ class MenuDrawer extends HTMLElement {
         details.removeAttribute('open');
         details.classList.remove('menu-opening');
       });
+      this.mainDetailsToggle.querySelector('summary').setAttribute('aria-expanded', false);
       document.body.classList.remove(`overflow-hidden-${this.dataset.breakpoint}`);
       removeTrapFocus(elementToFocus);
       this.closeAnimation(this.mainDetailsToggle);
@@ -368,7 +374,6 @@ class MenuDrawer extends HTMLElement {
 
   closeSubmenu(detailsElement) {
     detailsElement.classList.remove('menu-opening');
-    detailsElement.querySelector('summary').setAttribute('aria-expanded', false);
     removeTrapFocus();
     this.closeAnimation(detailsElement);
   }
@@ -532,13 +537,13 @@ class SliderComponent extends HTMLElement {
     this.currentPage = Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
 
     if (this.currentPage === 1) {
-      this.prevButton.setAttribute('disabled', 'disabled');
+      this.prevButton.setAttribute('disabled', true);
     } else {
       this.prevButton.removeAttribute('disabled');
     }
 
     if (this.currentPage === this.totalPages) {
-      this.nextButton.setAttribute('disabled', 'disabled');
+      this.nextButton.setAttribute('disabled', true);
     } else {
       this.nextButton.removeAttribute('disabled');
     }
@@ -579,7 +584,6 @@ class VariantSelects extends HTMLElement {
       this.updateURL();
       this.updateVariantInput();
       this.renderProductInfo();
-      this.updateShareUrl();
     }
   }
 
@@ -613,21 +617,12 @@ class VariantSelects extends HTMLElement {
     if(this.stickyHeader) {
       this.stickyHeader.dispatchEvent(new Event('preventHeaderReveal'));
     }
-    window.setTimeout(() => {
-      parent.scrollLeft = 0;
-      parent.querySelector('li.product__media-item').scrollIntoView({behavior: 'smooth'});
-    });
+    window.setTimeout(() => { parent.querySelector('li.product__media-item').scrollIntoView({behavior: "smooth"}); });
   }
 
   updateURL() {
     if (!this.currentVariant || this.dataset.updateUrl === 'false') return;
     window.history.replaceState({ }, '', `${this.dataset.url}?variant=${this.currentVariant.id}`);
-  }
-
-  updateShareUrl() {
-    const shareButton = document.getElementById(`Share-${this.dataset.section}`);
-    if (!shareButton) return;
-    shareButton.updateUrl(`${window.shopUrl}${this.dataset.url}?variant=${this.currentVariant.id}`);
   }
 
   updateVariantInput() {
@@ -686,7 +681,7 @@ class VariantSelects extends HTMLElement {
     if (!addButton) return;
 
     if (disable) {
-      addButton.setAttribute('disabled', 'disabled');
+      addButton.setAttribute('disabled', true);
       if (text) addButtonText.textContent = text;
     } else {
       addButton.removeAttribute('disabled');
