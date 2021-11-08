@@ -594,6 +594,7 @@ class SlideshowComponent extends SliderComponent {
 
     if (!this.sliderAutoplay) return;
     this.sliderAutoplayButton = this.sliderControlWrapper.querySelector('.slideshow__autoplay');
+    this.autoplaySpeed = this.slider.dataset.speed * 1000;
 
     this.sliderAutoplayButton.addEventListener('click', this.autoPlayToggle.bind(this));
     this.slider.addEventListener('mouseenter', this.autoplayFocusHandling.bind(this));
@@ -635,7 +636,7 @@ class SlideshowComponent extends SliderComponent {
     this.sliderAutoplayButton.classList.remove('slideshow__autoplay--paused');
     this.slider.setAttribute('aria-live', 'off');
     this.sliderAutoplayButton.setAttribute('aria-label', 'Pause slideshow');
-    this.autoplay = setInterval(this.autoRotateSlides.bind(this), 3000);
+    this.autoplay = setInterval(this.autoRotateSlides.bind(this), this.autoplaySpeed);
   }
 
   pause() {
