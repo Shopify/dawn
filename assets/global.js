@@ -655,6 +655,7 @@ class SlideshowComponent extends SliderComponent {
       this.bannerContents.forEach(banner => banner.style.marginTop = this.sliderControlWrapper.offsetHeight + 'px');
     } else {
       this.sliderControlWrapper.classList.remove('slider-buttons--in-between');
+      this.sliderControlWrapper.style.top = 0;
       this.bannerContents.forEach(banner => banner.removeAttribute('style'));
     }
   }
