@@ -57,8 +57,8 @@ if (!customElements.get('pickup-availability')) {
 
       document.body.appendChild(sectionInnerHTML.querySelector('pickup-availability-drawer'));
 
-      if (!this.querySelector('button')) return;
-      this.querySelector('button').addEventListener('click', (evt) => {
+      const button = this.querySelector('button');
+      if (button) button.addEventListener('click', (evt) => {
         document.querySelector('pickup-availability-drawer').show(evt.target);
       });
     }
