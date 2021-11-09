@@ -530,12 +530,19 @@ class SliderComponent extends HTMLElement {
   }
 
   update() {
+    const previousPage = this.currentPage;
     this.currentPage = Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
 
     if (!this.currentPageElement || !this.pageTotal) return;
 
     this.currentPageElement.textContent = this.currentPage;
     this.pageTotal.textContent = this.totalPages;
+
+    if (this.currentPage != previousPage) {
+      this.dispatchEvent(new CustomEvent('slideChanged', { detail: {
+        currentPage: this.currentPage
+      }}));
+    }
 
     if (this.enableSliderLooping) return;
 
@@ -552,9 +559,16 @@ class SliderComponent extends HTMLElement {
     }
   }
 
+  scrollIntoView(element) {
+    const lastVisibleSlide = this.slider.clientWidth + this.slider.scrollLeft - 10;
+    const isSlideVisible = element.offsetLeft < lastVisibleSlide && element.offsetLeft > this.slider.scrollLeft;
+    if (!isSlideVisible) this.slider.scrollTo({ left: element.offsetLeft });
+  }
+
   onButtonClick(event) {
     event.preventDefault();
-    this.slideScrollPosition = event.currentTarget.name === 'next' ? this.slider.scrollLeft + this.sliderLastItem.clientWidth : this.slider.scrollLeft - this.sliderLastItem.clientWidth;
+    const step = event.currentTarget.dataset.step || 1;
+    this.slideScrollPosition = event.currentTarget.name === 'next' ? this.slider.scrollLeft + (step * this.sliderLastItem.clientWidth) : this.slider.scrollLeft - (step * this.sliderLastItem.clientWidth);
     this.slider.scrollTo({
       left: this.slideScrollPosition
     });
@@ -742,25 +756,16 @@ class VariantSelects extends HTMLElement {
   updateMedia() {
     if (!this.currentVariant) return;
     if (!this.currentVariant.featured_media) return;
-    const newMedia = document.querySelector(
-      `[data-media-id="${this.dataset.section}-${this.currentVariant.featured_media.id}"]`
-    );
 
-    if (!newMedia) return;
+    this.stickyHeader = this.stickyHeader || document.querySelector('sticky-header');
+    if (this.stickyHeader) this.stickyHeader.dispatchEvent(new Event('preventHeaderReveal'));
+
+    const mediaGallery = document.getElementById(`MediaGallery-${this.dataset.section}`);
+    mediaGallery.setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media.id}`, true);
+
     const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
     const newMediaModal = modalContent.querySelector( `[data-media-id="${this.currentVariant.featured_media.id}"]`);
-    const parent = newMedia.parentElement;
-    if (parent.firstChild == newMedia) return;
     modalContent.prepend(newMediaModal);
-    parent.prepend(newMedia);
-    this.stickyHeader = this.stickyHeader || document.querySelector('sticky-header');
-    if(this.stickyHeader) {
-      this.stickyHeader.dispatchEvent(new Event('preventHeaderReveal'));
-    }
-    window.setTimeout(() => {
-      parent.scrollLeft = 0;
-      parent.querySelector('li.product__media-item').scrollIntoView({behavior: 'smooth'});
-    });
   }
 
   updateURL() {
