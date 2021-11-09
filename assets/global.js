@@ -591,7 +591,6 @@ class SlideshowComponent extends SliderComponent {
     const resizeObserverControls = new ResizeObserver(entries => this.styleSlideshowControls());
     resizeObserverControls.observe(this);
     this.sliderControlLinks.forEach(link => link.addEventListener('click', this.linkToSlide.bind(this)));
-    //this.setAriaHidden();
 
     if (!this.sliderAutoplay) return;
     this.sliderAutoplayButton = this.sliderControlWrapper.querySelector('.slideshow__autoplay');
@@ -674,18 +673,17 @@ class SlideshowComponent extends SliderComponent {
     this.slider.scrollTo({
       left: slideScrollPosition
     });
-    this.setAriaHidden();
   }
 
   linkToSlide(event) {
     event.preventDefault();
-    // Here i want to scroll into view the slide that matches the button. ScrollIntoView moves the slides properly but also scrolls you back to the container unfortunately.
-    const slideToShow = this.sliderItemsToShow[this.sliderControlLinksArray.indexOf(event.target)];
-    slideToShow.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
-    this.setAriaHidden();
+    const slideScrollPosition = this.slider.scrollLeft + this.sliderLastItem.clientWidth * (this.sliderControlLinksArray.indexOf(event.target) + 1 - this.currentPage);
+    this.slider.scrollTo({
+      left: slideScrollPosition
+    });
     // I think it should announce it but not actually focus on the slide, otherwise you end up needing to tab again to get to the controls.
     // Maybe I change a state on the element being aria-hidden kind of thing.
-    slideToShow.focus();
+    //slideToShow.focus();
   }
 }
 
