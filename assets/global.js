@@ -673,6 +673,9 @@ class SlideshowComponent extends SliderComponent {
     // Here i want to scroll into view the slide that matches the button. ScrollIntoView moves the slides properly but also scrolls you back to the container unfortunately.
     const slideToShow = this.sliderItemsToShow[this.sliderControlLinksArray.indexOf(event.target)];
     slideToShow.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+    // I think it should announce it but not actually focus on the slide, otherwise you end up needing to tab again to get to the controls.
+    // Maybe I change a state on the element being aria-hidden kind of thing.
+    slideToShow.focus();
   }
 }
 
