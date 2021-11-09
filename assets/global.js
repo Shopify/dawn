@@ -579,7 +579,7 @@ class SlideshowComponent extends SliderComponent {
 
     this.sliderItemsToShow = Array.from(this.sliderItems).filter(element => element.clientWidth > 0);
     this.sliderLastItem = this.sliderItemsToShow[this.sliderItemsToShow.length - 1];
-    if( this.sliderItemsToShow.length > 0) this.currentPage = !this.pageCount || !this.pageTotal ? null : Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
+    if( this.sliderItemsToShow.length > 0) this.currentPage = 1;
 
     this.sliderControlLinks = this.sliderControlWrapper.querySelectorAll('.slider-counter__link');
     this.sliderControlLinksArray = Array.from(this.sliderControlLinks);
@@ -591,6 +591,7 @@ class SlideshowComponent extends SliderComponent {
     const resizeObserverControls = new ResizeObserver(entries => this.styleSlideshowControls());
     resizeObserverControls.observe(this);
     this.sliderControlLinks.forEach(link => link.addEventListener('click', this.linkToSlide.bind(this)));
+    //this.setAriaHidden();
 
     if (!this.sliderAutoplay) return;
     this.sliderAutoplayButton = this.sliderControlWrapper.querySelector('.slideshow__autoplay');
@@ -649,6 +650,13 @@ class SlideshowComponent extends SliderComponent {
     clearInterval(this.autoplay);
   }
 
+  setAriaHidden() {
+    // I would need to run this in the update() function of the slider component as well. Would it make sense to add it for all slider ?
+    this.sliderItemsToShow.forEach(item => item.setAttribute('aria-hidden', 'true'));
+    console.log(this.currentPage);
+    this.sliderItemsToShow[this.currentPage - 1].setAttribute('aria-hidden', 'false');
+  }
+
   styleSlideshowControls() {
     if (this.slider.classList.contains('banner--mobile-bottom') && this.mediaQueryMobile.matches) {
       this.sliderControlWrapper.classList.add('slider-buttons--in-between');
@@ -666,6 +674,7 @@ class SlideshowComponent extends SliderComponent {
     this.slider.scrollTo({
       left: slideScrollPosition
     });
+    this.setAriaHidden();
   }
 
   linkToSlide(event) {
@@ -673,6 +682,7 @@ class SlideshowComponent extends SliderComponent {
     // Here i want to scroll into view the slide that matches the button. ScrollIntoView moves the slides properly but also scrolls you back to the container unfortunately.
     const slideToShow = this.sliderItemsToShow[this.sliderControlLinksArray.indexOf(event.target)];
     slideToShow.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+    this.setAriaHidden();
     // I think it should announce it but not actually focus on the slide, otherwise you end up needing to tab again to get to the controls.
     // Maybe I change a state on the element being aria-hidden kind of thing.
     slideToShow.focus();
