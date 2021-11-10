@@ -591,6 +591,8 @@ class SlideshowComponent extends SliderComponent {
     const resizeObserverControls = new ResizeObserver(entries => this.styleSlideshowControls());
     resizeObserverControls.observe(this);
     this.sliderControlLinks.forEach(link => link.addEventListener('click', this.linkToSlide.bind(this)));
+    this.slider.addEventListener('scroll', this.setSlideVisibility.bind(this));
+    this.setSlideVisibility();
 
     if (!this.sliderAutoplay) return;
     this.sliderAutoplayButton = this.sliderControlWrapper.querySelector('.slideshow__autoplay');
@@ -649,11 +651,17 @@ class SlideshowComponent extends SliderComponent {
     clearInterval(this.autoplay);
   }
 
-  setAriaHidden() {
-    // I would need to run this in the update() function of the slider component as well. Would it make sense to add it for all slider ?
-    this.sliderItemsToShow.forEach(item => item.setAttribute('aria-hidden', 'true'));
-    console.log(this.currentPage);
-    this.sliderItemsToShow[this.currentPage - 1].setAttribute('aria-hidden', 'false');
+  setSlideVisibility() {
+    this.sliderItemsToShow.forEach((item, index) => {
+      const button = item.querySelector('.button');
+      if (index === this.currentPage - 1) {
+        if (button) button.removeAttribute('tabindex');
+        item.setAttribute('aria-hidden', 'false');
+      } else {
+        if (button) button.setAttribute('tabindex', '-1');
+        item.setAttribute('aria-hidden', 'true');
+      }
+    });
   }
 
   styleSlideshowControls() {
