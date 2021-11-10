@@ -689,9 +689,6 @@ class SlideshowComponent extends SliderComponent {
     this.slider.scrollTo({
       left: slideScrollPosition
     });
-    // I think it should announce it but not actually focus on the slide, otherwise you end up needing to tab again to get to the controls.
-    // Maybe I change a state on the element being aria-hidden kind of thing.
-    //slideToShow.focus();
   }
 }
 
