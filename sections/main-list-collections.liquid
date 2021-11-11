@@ -19,54 +19,84 @@
 
   <ul class="collection-list grid grid--1-col grid--3-col-tablet" role="list">
     {%- for collection in collections -%}
+      {%- liquid
+        assign ratio = 1
+        if collection.featured_image and section.settings.image_ratio == 'portrait'
+          assign ratio = 0.8
+        elsif collection.featured_image and section.settings.image_ratio == 'adapt'
+          assign ratio = collection.featured_image.aspect_ratio
+        endif
+      -%}
       <li class="collection-list__item grid__item">
-        <a{% if collection.all_products_count > 0 %} href="{{ collection.url }}"{% endif %}
-          class="card animate-arrow{% if collection.featured_image != blank %} card--media{% else %}{% if section.settings.image_ratio != 'adapt' %} card--stretch{% endif %}{% endif %}{% unless section.settings.image_padding %} card--light-border{% endunless %}"
-        >
-          <div class="card--stretch card-colored color-{{ section.settings.color_scheme }}">
-            {%- if collection.featured_image != blank -%}
-              <div{% if section.settings.image_padding %} class="card__media-spacer"{% endif %}>
-                {% if section.settings.image_padding %}<div class="overlay-card"></div>{% endif %}
-                <div class="media media--{{ section.settings.image_ratio }} media--hover-effect overflow-hidden"
-                  {% if section.settings.image_ratio == 'adapt' %}style="padding-bottom: {{ 1 | divided_by: collection.featured_image.aspect_ratio | times: 100 }}%;"{% endif %}>
-
-                  <img
-                    srcset="{%- if collection.featured_image.width >= 165 -%}{{ collection.featured_image | img_url: '165x' }} 165w,{%- endif -%}
-                      {%- if collection.featured_image.width >= 360 -%}{{ collection.featured_image | img_url: '360x' }} 360w,{%- endif -%}
-                      {%- if collection.featured_image.width >= 535 -%}{{ collection.featured_image | img_url: '535x' }} 535w,{%- endif -%}
-                      {%- if collection.featured_image.width >= 750 -%}{{ collection.featured_image | img_url: '750x' }} 750w,{%- endif -%}
-                      {%- if collection.featured_image.width >= 1000 -%}{{ collection.featured_image | img_url: '1000x' }} 1000w,{%- endif -%}
-                      {%- if collection.featured_image.width >= 1500 -%}{{ collection.featured_image | img_url: '1500x' }} 1500w,{%- endif -%}
-                      {{ collection.featured_image | img_url: 'master' }} {{ collection.featured_image.width }}w"
-                    src="{{ collection.featured_image | img_url: '1500x' }}"
-                    sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 3 }}px, (min-width: 750px) calc((100vw - 130px) / 3), calc(100vw - 30px)"
-                    alt="{{ collection.title | escape }}"
-                    height="{{ collection.featured_image.height }}"
-                    width="{{ collection.featured_image.width }}"
-                    loading="lazy"
-                  >
+        <div class="card-wrapper">
+          <div class="card
+            card--{{ settings.card_style }}
+            {% if collection.featured_image %} card--media{% else %} card--text{% endif %}
+            {% if settings.card_style == 'card' %} color-{{ settings.card_color_scheme }}{% endif %}
+            {% if collection.featured_image == nil and settings.card_style == 'card' %} ratio{% endif %}"
+            style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%;"
+          >
+            <div class="card__inner {% if settings.card_style == 'standard' %}color-{{ settings.card_color_scheme }}{% endif %}{% if collection.featured_image or settings.card_style == 'standard' %} ratio{% endif %}" style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%;">
+              {%- if collection.featured_image -%}
+                <div class="card__media">
+                  <div class="media media--transparent media--hover-effect">
+                    <img
+                      srcset="{%- if collection.featured_image.width >= 165 -%}{{ collection.featured_image | img_url: '165x' }} 165w,{%- endif -%}
+                        {%- if collection.featured_image.width >= 360 -%}{{ collection.featured_image | img_url: '360x' }} 360w,{%- endif -%}
+                        {%- if collection.featured_image.width >= 535 -%}{{ collection.featured_image | img_url: '535x' }} 535w,{%- endif -%}
+                        {%- if collection.featured_image.width >= 750 -%}{{ collection.featured_image | img_url: '750x' }} 750w,{%- endif -%}
+                        {%- if collection.featured_image.width >= 1000 -%}{{ collection.featured_image | img_url: '1000x' }} 1000w,{%- endif -%}
+                        {%- if collection.featured_image.width >= 1500 -%}{{ collection.featured_image | img_url: '1500x' }} 1500w,{%- endif -%}
+                        {{ collection.featured_image | img_url: 'master' }} {{ collection.featured_image.width }}w"
+                      src="{{ collection.featured_image | img_url: '1500x' }}"
+                      sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 3 }}px, (min-width: 750px) calc((100vw - 130px) / 3), calc(100vw - 30px)"
+                      alt="{{ collection.title | escape }}"
+                      height="{{ collection.featured_image.height }}"
+                      width="{{ collection.featured_image.width }}"
+                      loading="lazy"
+                    >
+                  </div>
                 </div>
+              {%- endif -%}
+              <div class="card__content">        
+                <div class="card__information">
+                  <h3 class="card__heading h1">
+                    <a href="{{ collection.url }}" class="full-unstyled-link">
+                      {%- if collection.title != blank -%}
+                        {{- collection.title | escape -}}{%- if collection.description == blank -%}<span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span>{% endif %}
+                      {%- else -%}
+                        {{ 'onboarding.collection_title' | t }}
+                      {%- endif -%}
+                    </a>
+                  </h3>
+                  {%- if collection.description != blank -%}
+                    <p class="card__caption">
+                      {{- collection.description | strip_html | truncatewords: 12 -}}<span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span>
+                    </p>
+                  {%- endif -%}
+                </div>   
               </div>
-              <div class="card__text card__text-spacing card__text-hover">
-                {% unless section.settings.image_padding %}<div class="overlay-card"></div>{% endunless %}
-                <h2 class="h3">{{- collection.title -}}<span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span></h2>
-              </div>
-            {%- else -%}
-              <div class="overlay-card"></div>
-              <div class="card__text-spacing card__text-hover">
-                <h2 class="h1">
-                  {{- collection.title -}}{%- if collection.description == blank -%}<span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span>{% endif %}
-                </h2>
-
-                {%- if collection.description != blank -%}
-                  <p>
+            </div>
+            <div class="card__content">
+              <div class="card__information">
+                <h3 class="card__heading{% if collection.featured_image == nil %} h1{% endif %}">
+                  <a href="{{ collection.url }}" class="full-unstyled-link">
+                    {%- if collection.title != blank -%}
+                      {{- collection.title | escape -}}{%- if collection.featured_image -%}<span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span>{% endif %}
+                    {%- else -%}
+                      {{ 'onboarding.collection_title' | t }}
+                    {%- endif -%}
+                  </a>
+                </h3>
+                {%- if collection.featured_image == nil and collection.description != blank -%}
+                  <p class="card__caption">
                     {{- collection.description | strip_html | truncatewords: 12 -}}<span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span>
                   </p>
                 {%- endif -%}
               </div>
-            {%- endif -%}
+            </div>
           </div>
-        </a>
+        </div>
       </li>
     {%- endfor -%}
   </ul>
