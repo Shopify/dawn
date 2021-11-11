@@ -19,100 +19,15 @@
       id="Slider-{{ section.id }}"
       role="list"
     >
-
       {%- liquid
         assign columns = section.blocks.size
         if columns > 3
           assign columns = 3
         endif
       -%}
-
       {%- for block in section.blocks -%}
-        {%- liquid
-          assign ratio = 1
-          if block.settings.collection.featured_image and section.settings.image_ratio == 'portrait'
-            assign ratio = 0.8
-          elsif block.settings.collection.featured_image and section.settings.image_ratio == 'adapt'
-            assign ratio = block.settings.collection.featured_image.aspect_ratio
-          endif
-        -%}
         <li class="collection-list__item grid__item{% if section.settings.swipe_on_mobile %} slider__slide{% endif %}" {{ block.shopify_attributes }}>
-          <div class="card-wrapper animate-arrow">
-            <div class="card
-              card--{{ settings.card_style }}
-              {% if block.settings.collection.featured_image %} card--media{% else %} card--text{% endif %}
-              {% if settings.card_style == 'card' %} color-{{ settings.card_color_scheme }}{% endif %}
-              {% if block.settings.collection.featured_image == nil and settings.card_style == 'card' %} ratio{% endif %}"
-              style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%;"
-            >
-              <div class="card__inner {% if settings.card_style == 'standard' %}color-{{ settings.card_color_scheme }}{% endif %}{% if block.settings.collection.featured_image or settings.card_style == 'standard' %} ratio{% endif %}" style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%;">
-                {%- if block.settings.collection.featured_image -%}
-                  <div class="card__media">
-                    <div class="media media--transparent media--hover-effect">
-                      <img
-                        srcset="{%- if block.settings.collection.featured_image.width >= 165 -%}{{ block.settings.collection.featured_image | img_url: '165x' }} 165w,{%- endif -%}
-                          {%- if block.settings.collection.featured_image.width >= 330 -%}{{ block.settings.collection.featured_image | img_url: '330x' }} 330w,{%- endif -%}
-                          {%- if block.settings.collection.featured_image.width >= 535 -%}{{ block.settings.collection.featured_image | img_url: '535x' }} 535w,{%- endif -%}
-                          {%- if block.settings.collection.featured_image.width >= 750 -%}{{ block.settings.collection.featured_image | img_url: '750x' }} 750w,{%- endif -%}
-                          {%- if block.settings.collection.featured_image.width >= 1000 -%}{{ block.settings.collection.featured_image | img_url: '1000x' }} 1000w,{%- endif -%}
-                          {%- if block.settings.collection.featured_image.width >= 1500 -%}{{ block.settings.collection.featured_image | img_url: '1500x' }} 1500w,{%- endif -%}
-                          {%- if block.settings.collection.featured_image.width >= 3000 -%}{{ block.settings.collection.featured_image | img_url: '3000x' }} 3000w,{%- endif -%}
-                          {{ block.settings.collection.featured_image | img_url: 'master' }} {{ block.settings.collection.featured_image.width }}w"
-                        src="{{ block.settings.collection.featured_image | img_url: '1500x' }}"
-                        sizes="
-                        (min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: columns }}px,
-                        (min-width: 750px) {% if section.blocks.size > 1 %}calc((100vw - 10rem) / 2){% else %}calc(100vw - 10rem){% endif %},
-                        calc(100vw - 3rem)"
-                        alt="{{ block.settings.collection.title | escape }}"
-                        height="{{ block.settings.collection.featured_image.height }}"
-                        width="{{ block.settings.collection.featured_image.width }}"
-                        loading="lazy"
-                        class="motion-reduce"
-                      >
-                    </div>
-                  </div>
-                {%- endif -%}
-                <div class="card__content">        
-                  <div class="card__information">
-                    <h3 class="card__heading h1">
-                      <a href="{{ block.settings.collection.url }}" class="full-unstyled-link">
-                        {%- if block.settings.collection.title != blank -%}
-                          {{- block.settings.collection.title | escape -}}
-                        {%- else -%}
-                          {{ 'onboarding.collection_title' | t }}
-                        {%- endif -%}
-                        {%- if block.settings.collection.description == blank -%}<span class="icon-wrap">{% render 'icon-arrow' %}</span>{% endif %}
-                      </a>
-                    </h3>
-                    {%- if block.settings.collection.description != blank -%}
-                      <p class="card__caption">
-                        {{- block.settings.collection.description | strip_html | truncatewords: 12 -}}<span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span>
-                      </p>
-                    {%- endif -%}
-                  </div>   
-                </div>
-              </div>
-              <div class="card__content">
-                <div class="card__information">
-                  <h3 class="card__heading{% if block.settings.collection.featured_image == nil %} h1{% endif %}">
-                    <a href="{{ block.settings.collection.url }}" class="full-unstyled-link">
-                      {%- if block.settings.collection.title != blank -%}
-                        {{- block.settings.collection.title | escape -}}
-                      {%- else -%}
-                        {{ 'onboarding.collection_title' | t }}
-                      {%- endif -%}
-                      {%- if block.settings.collection.featured_image or collection.description == blank -%}<span class="icon-wrap">{% render 'icon-arrow' %}</span>{% endif %}
-                    </a>
-                  </h3>
-                  {%- if block.settings.collection.featured_image == nil and block.settings.collection.description != blank -%}
-                    <p class="card__caption">
-                      {{- block.settings.collection.description | strip_html | truncatewords: 12 -}}<span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span>
-                    </p>
-                  {%- endif -%}
-                </div>
-              </div>
-            </div>
-          </div>
+          {% render 'card-collection', card_collection: block.settings.collection , media_aspect_ratio: section.settings.image_ratio, columns: columns %}
         </li>
       {%- endfor -%}
     </ul>
