@@ -402,22 +402,30 @@
   <script src="{{ 'product-model.js' | asset_url }}" defer></script>
 {%- endif -%}
 
+{%- liquid
+  if product.selected_or_first_available_variant.featured_media
+    assign seo_media = product.selected_or_first_available_variant.featured_media
+  else
+    assign seo_media = product.featured_media
+  endif
+-%}
+
 <script type="application/ld+json">
   {
     "@context": "http://schema.org/",
     "@type": "Product",
     "name": {{ product.title | json }},
     "url": {{ shop.url | append: product.url | json }},
-    {%- if product.selected_or_first_available_variant.featured_media -%}
-      {%- assign media_size = product.selected_or_first_available_variant.featured_media.preview_image.width | append: 'x' -%}
+    {% if seo_media -%}
+      {%- assign media_size = seo_media.preview_image.width | append: 'x' -%}
       "image": [
-        {{ product.featured_media | img_url: media_size | prepend: "https:" | json }}
+        {{ seo_media | img_url: media_size | prepend: "https:" | json }}
       ],
-    {%- endif -%}
+    {%- endif %}
     "description": {{ product.description | strip_html | json }},
-    {%- if product.selected_or_first_available_variant.sku != blank -%}
+    {% if product.selected_or_first_available_variant.sku != blank -%}
       "sku": {{ product.selected_or_first_available_variant.sku | json }},
-    {%- endif -%}
+    {%- endif %}
     "brand": {
       "@type": "Thing",
       "name": {{ product.vendor | json }}
