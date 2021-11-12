@@ -41,13 +41,14 @@
             {%- endunless -%}
           {%- endfor -%}
         </ul>
-        <div class="slider-buttons no-js-hidden{% if product.media.size < 2 %} small-hide{% endif %}">
+        {%- assign filtered_media_size = product.media.size | minus: variant_images.size | plus: 1 -%}
+        <div class="slider-buttons no-js-hidden{% if product.media.size < 2 or section.settings.hide_variants and filtered_media_size < 2 %} small-hide{% endif %}">
           <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'accessibility.previous_slide' | t }}">{% render 'icon-caret' %}</button>
           <div class="slider-counter caption">
             <span class="slider-counter--current">1</span>
             <span aria-hidden="true"> / </span>
             <span class="visually-hidden">{{ 'accessibility.of' | t }}</span>
-            <span class="slider-counter--total">{% if section.settings.hide_variants %}{{ product.media.size | minus: variant_images.size | plus: 1 }}{% else %}{{ product.media.size }}{% endif %}</span>
+            <span class="slider-counter--total">{% if section.settings.hide_variants %}{{ filtered_media_size }}{% else %}{{ product.media.size }}{% endif %}</span>
           </div>
           <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'accessibility.next_slide' | t }}">{% render 'icon-caret' %}</button>
         </div>
@@ -320,7 +321,7 @@
 
               <pickup-availability class="product__pickup-availabilities no-js-hidden"
                 {% if product.selected_or_first_available_variant.available and pick_up_availabilities.size > 0 %} available{% endif %}
-                data-base-url="{{ shop.url }}{{ routes.root_url }}"
+                data-root-url="{{ routes.root_url }}"
                 data-variant-id="{{ product.selected_or_first_available_variant.id }}"
                 data-has-only-default-variant="{{ product.has_only_default_variant }}"
               >
@@ -476,22 +477,30 @@
   <script src="{{ 'product-model.js' | asset_url }}" defer></script>
 {%- endif -%}
 
+{%- liquid
+  if product.selected_or_first_available_variant.featured_media
+    assign seo_media = product.selected_or_first_available_variant.featured_media
+  else
+    assign seo_media = product.featured_media
+  endif
+-%}
+
 <script type="application/ld+json">
   {
     "@context": "http://schema.org/",
     "@type": "Product",
     "name": {{ product.title | json }},
     "url": {{ shop.url | append: product.url | json }},
-    {%- if product.selected_or_first_available_variant.featured_media -%}
-      {%- assign media_size = product.selected_or_first_available_variant.featured_media.preview_image.width | append: 'x' -%}
+    {% if seo_media -%}
+      {%- assign media_size = seo_media.preview_image.width | append: 'x' -%}
       "image": [
-        {{ product.selected_or_first_available_variant.featured_media | img_url: media_size | prepend: "https:" | json }}
+        {{ seo_media | img_url: media_size | prepend: "https:" | json }}
       ],
-    {%- endif -%}
+    {%- endif %}
     "description": {{ product.description | strip_html | json }},
-    {%- if product.selected_or_first_available_variant.sku != blank -%}
+    {% if product.selected_or_first_available_variant.sku != blank -%}
       "sku": {{ product.selected_or_first_available_variant.sku | json }},
-    {%- endif -%}
+    {%- endif %}
     "brand": {
       "@type": "Thing",
       "name": {{ product.vendor | json }}
