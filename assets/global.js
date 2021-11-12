@@ -671,10 +671,20 @@ class VariantSelects extends HTMLElement {
         if (source && destination) destination.innerHTML = source.innerHTML;
 
         const price = document.getElementById(`price-${this.dataset.section}`);
+        const inventory = document.getElementById(`inventory-${this.dataset.section}`);
 
         if (price) price.classList.remove('visibility-hidden');
+        if (inventory) inventory.classList.remove('visibility-hidden'), this.updateInventory(html);
         this.toggleAddButton(!this.currentVariant.available, window.variantStrings.soldOut);
       });
+  }
+
+  updateInventory(html) {
+    const id = `inventory-${this.dataset.section}`;
+    const destination = document.getElementById(id);
+    const source = html.getElementById(id);
+
+    if (source && destination) destination.innerHTML = source.innerHTML;
   }
 
   toggleAddButton(disable = true, text, modifyClass = true) {
@@ -701,9 +711,11 @@ class VariantSelects extends HTMLElement {
     const addButton = button.querySelector('[name="add"]');
     const addButtonText = button.querySelector('[name="add"] > span');
     const price = document.getElementById(`price-${this.dataset.section}`);
+    const inventory = document.getElementById(`inventory-${this.dataset.section}`);
     if (!addButton) return;
     addButtonText.textContent = window.variantStrings.unavailable;
     if (price) price.classList.add('visibility-hidden');
+    if (inventory) inventory.classList.add('visibility-hidden');
   }
 
   getVariantData() {
