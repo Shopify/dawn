@@ -529,21 +529,6 @@ class SliderComponent extends HTMLElement {
 
   update() {
     this.currentPage = Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
-    this.sliderControlButtons = this.querySelectorAll('.slider-counter__link');
-
-    if (this.sliderControlButtons.length > 0) {
-      this.sliderControlButtons.forEach(link => {
-        link.classList.remove('slider-counter__link--active');
-        link.removeAttribute('aria-current');
-      });
-      this.sliderControlButtons[this.currentPage - 1].classList.add('slider-counter__link--active');
-      this.sliderControlButtons[this.currentPage - 1].setAttribute('aria-current', true);
-    } else {
-      if (!this.pageCount || !this.pageTotal) return;
-
-      this.pageCount.textContent = this.currentPage;
-      this.pageTotal.textContent = this.totalPages;
-    }
 
     if (this.currentPage === 1) {
       this.prevButton.setAttribute('disabled', 'disabled');
@@ -556,6 +541,11 @@ class SliderComponent extends HTMLElement {
     } else {
       this.nextButton.removeAttribute('disabled');
     }
+
+    if (!this.pageCount || !this.pageTotal) return;
+
+    this.pageCount.textContent = this.currentPage;
+    this.pageTotal.textContent = this.totalPages;
   }
 
   onButtonClick(event) {
@@ -581,20 +571,24 @@ class SlideshowComponent extends SliderComponent {
     this.sliderLastItem = this.sliderItemsToShow[this.sliderItemsToShow.length - 1];
     if( this.sliderItemsToShow.length > 0) this.currentPage = 1;
 
-    this.sliderControlLinks = this.sliderControlWrapper.querySelectorAll('.slider-counter__link');
-    this.sliderControlLinksArray = Array.from(this.sliderControlLinks);
+    this.sliderControlLinksArray = Array.from(this.sliderControlWrapper.querySelectorAll('.slider-counter__link'));
     this.sliderAutoplay = this.slider.hasAttribute('data-autoplay');
     this.mediaQueryMobile = window.matchMedia('(max-width: 749px)');
     this.isPlaying = false;
-    this.autoPlayEnabled = false;
 
     const resizeObserverControls = new ResizeObserver(entries => this.styleSlideshowControls());
     resizeObserverControls.observe(this);
-    this.sliderControlLinks.forEach(link => link.addEventListener('click', this.linkToSlide.bind(this)));
+    this.sliderControlLinksArray.forEach(link => link.addEventListener('click', this.linkToSlide.bind(this)));
     this.slider.addEventListener('scroll', this.setSlideVisibility.bind(this));
     this.setSlideVisibility();
 
     if (!this.sliderAutoplay) return;
+
+    this.setAutoPlay();
+  }
+
+
+  setAutoPlay() {
     this.sliderAutoplayButton = this.sliderControlWrapper.querySelector('.slideshow__autoplay');
     this.autoplaySpeed = this.slider.dataset.speed * 1000;
 
@@ -631,23 +625,33 @@ class SlideshowComponent extends SliderComponent {
     }
   }
 
-  play() {
-    if (this.isPlaying) return;
+  update() {
+    super.update();
+    this.sliderControlButtons = this.querySelectorAll('.slider-counter__link');
 
+    if (!this.sliderControlButtons.length) return;
+
+    this.sliderControlButtons.forEach(link => {
+      link.classList.remove('slider-counter__link--active');
+      link.removeAttribute('aria-current');
+    });
+    this.sliderControlButtons[this.currentPage - 1].classList.add('slider-counter__link--active');
+    this.sliderControlButtons[this.currentPage - 1].setAttribute('aria-current', true);
+  }
+
+  play() {
     this.isPlaying = true;
     this.sliderAutoplayButton.classList.remove('slideshow__autoplay--paused');
     this.slider.setAttribute('aria-live', 'off');
-    this.sliderAutoplayButton.setAttribute('aria-label', 'Pause slideshow');
+    this.sliderAutoplayButton.setAttribute('aria-label', window.accessibilityStrings.pauseSlideshow);
     this.autoplay = setInterval(this.autoRotateSlides.bind(this), this.autoplaySpeed);
   }
 
   pause() {
-    if (this.isPlaying = false) return;
-
     this.isPlaying = false;
     this.sliderAutoplayButton.classList.add('slideshow__autoplay--paused');
     this.slider.setAttribute('aria-live', 'polite');
-    this.sliderAutoplayButton.setAttribute('aria-label', 'Play slideshow');
+    this.sliderAutoplayButton.setAttribute('aria-label', window.accessibilityStrings.playSlideshow);
     clearInterval(this.autoplay);
   }
 
