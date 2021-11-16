@@ -6,6 +6,9 @@
 {{ 'component-slider.css' | asset_url | stylesheet_tag }}
 {{ 'component-rating.css' | asset_url | stylesheet_tag }}
 {{ 'component-loading-overlay.css' | asset_url | stylesheet_tag }}
+{{ 'component-product-guarantee.css' | asset_url | stylesheet_tag }}
+{{ 'recharge.css' | asset_url | stylesheet_tag }}
+{{ 'stickycart.css' | asset_url | stylesheet_tag }}
 
 <link rel="stylesheet" href="{{ 'component-deferred-media.css' | asset_url }}" media="print" onload="this.media='all'">
 
@@ -18,6 +21,55 @@
   <link id="ModelViewerOverride" rel="stylesheet" href="{{ 'component-model-viewer-ui.css' | asset_url }}" media="print" onload="this.media='all'">
 {%- endif -%}
 
+<div class="stickycart">
+  <button id="stickysubmit" name="add" class="product-form__submit button button--full-width button--primary">
+      <span>Add to cart</span>
+    </button>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("stickysubmit").addEventListener("click", function () {
+            const form = document.querySelector('.product__info-wrapper');
+
+            form.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"});
+        });
+        var productCartButton = document.querySelector('.product-form__buttons'), stickyAddToCartButton = document.querySelector('.stickycart'), previousTop = 0;
+
+        const buttons = document.querySelector('.product-form__buttons');
+        const bounding = buttons.getBoundingClientRect();
+
+        if (
+            bounding.top >= 0 &&
+            bounding.left >= 0 &&
+            bounding.right <= (window.innerWidth || document.documentElement.clientWidth) &&
+            bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+        ) {
+            console.log('In the viewport!');
+        } else {
+            stickyAddToCartButton.classList.add('stickyshow');
+        }
+
+
+        if ("IntersectionObserver" in window && "IntersectionObserverEntry" in window && "intersectionRatio" in window.IntersectionObserverEntry.prototype) {
+            let productCartButtonObserver = new IntersectionObserver(function (entries, observer) {
+                entries.forEach(function (entry) {
+                    let addToCartButton = entry.target,
+                        showstickyAddToCartButton = (entry.boundingClientRect.top < previousTop && entry.boundingClientRect.top < 0);
+                    if (showstickyAddToCartButton) {
+                        stickyAddToCartButton.classList.add('stickyshow');
+                    } else {
+                        stickyAddToCartButton.classList.remove('stickyshow');
+                    }
+
+                    // Set new top
+                    previousTop = entry.boundingClientRect.top;
+                });
+            }, { threshold: 0.5});
+
+            productCartButtonObserver.observe(productCartButton);
+        }
+    });
+</script>
 <section class="page-width">
   <div class="product grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
     <div class="grid__item product__media-wrapper">
@@ -113,7 +165,8 @@
           {%- when 'custom_liquid' -%}
             {{ block.settings.custom_liquid }}
           {%- when 'collapsible_tab' -%}
-            <div class="product__accordion accordion" {{ block.shopify_attributes }}>
+            {% if block.settings.content != blank or block.settings.page.content != blank %}
+              <div class="product__accordion accordion" {{ block.shopify_attributes }}>
               <details id="Details-{{ block.id }}-{{ section.id }}">
                 <summary>
                   <div class="summary__title">
@@ -130,6 +183,7 @@
                 </div>
               </details>
             </div>
+            {% endif %}
           {%- when 'quantity_selector' -%}
             <div class="product-form__input product-form__quantity" {{ block.shopify_attributes }}>
               <label class="form__label" for="Quantity-{{ section.id }}">
@@ -349,6 +403,7 @@
                 assign rating_decimal = 1
                endif
               %}
+            <div class="rating-container">
               <div class="rating" role="img" aria-label="{{ 'accessibility.star_reviews_info' | t: rating_value: product.metafields.reviews.rating.value, rating_max: product.metafields.reviews.rating.value.scale_max }}">
                 <span aria-hidden="true" class="rating-star color-icon-{{ settings.accent_icons }}" style="--rating: {{ product.metafields.reviews.rating.value.rating | floor }}; --rating-max: {{ product.metafields.reviews.rating.value.scale_max }}; --rating-decimal: {{ rating_decimal }};"></span>
               </div>
@@ -359,7 +414,21 @@
                 <span aria-hidden="true">({{ product.metafields.reviews.rating_count }})</span>
                 <span class="visually-hidden">{{ product.metafields.reviews.rating_count }} {{ "accessibility.total_reviews" | t }}</span>
               </p>
+            </div>
             {%- endif -%}
+          {%- when 'guarantee' -%}
+            <div class="product-detail-points mb-5">
+              <div class="product-details-box free-shipping center">
+                {% render 'icon-truck',class:"w-6 h-6" %}
+                <h2>FREE Shipping</h2>
+                <p>At Evyana, we're committed to giving you the most bang for your buck. That's why every order receives FREE shipping within the USA, courtesy of Evyana!</p>
+              </div>
+              <div class="product-details-box money-back-guarantee center">
+                {% render 'icon-refresh' %}
+                <h2>Money Back Guarantee</h2>
+                <p>We stand behind our products. If for any reason you are not completely satisfied with your Evyana Skincare, we offer a full refund less shipping.</p>
+              </div>
+            </div>
           {%- endcase -%}
         {%- endfor -%}
       </div>
@@ -805,6 +874,17 @@
         {
           "type": "paragraph",
           "content": "t:sections.main-product.blocks.rating.settings.paragraph.content"
+        }
+      ]
+    },
+    {
+      "type": "guarantee",
+      "name": "Product Guarantee",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "This component does not have any settings"
         }
       ]
     }
