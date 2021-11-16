@@ -614,6 +614,11 @@ class SlideshowComponent extends SliderComponent {
   onButtonClick(event) {
     super.onButtonClick(event);
     let slideScrollPosition;
+    const firstOrLast = this.currentPage === 1 || this.currentPage === this.sliderItemsToShow.length;
+
+    if (this.sliderAutoplay) this.togglePlayButtonState(true);
+
+    if (!firstOrLast) return;
     if (this.currentPage === 1 && event.currentTarget.name === 'previous' ) {
       slideScrollPosition = this.slider.scrollLeft + this.sliderLastItem.clientWidth * this.sliderItemsToShow.length;
     } else if (this.currentPage === this.sliderItemsToShow.length && event.currentTarget.name === 'next') {
@@ -622,9 +627,20 @@ class SlideshowComponent extends SliderComponent {
     this.slider.scrollTo({
       left: slideScrollPosition
     });
+  }
 
-    if (!this.sliderAutoplay) return;
-    this.togglePlayButtonState(true);
+  update() {
+    super.update();
+    this.sliderControlButtons = this.querySelectorAll('.slider-counter__link');
+
+    if (!this.sliderControlButtons.length) return;
+
+    this.sliderControlButtons.forEach(link => {
+      link.classList.remove('slider-counter__link--active');
+      link.removeAttribute('aria-current');
+    });
+    this.sliderControlButtons[this.currentPage - 1].classList.add('slider-counter__link--active');
+    this.sliderControlButtons[this.currentPage - 1].setAttribute('aria-current', true);
   }
 
   autoPlayToggle() {
@@ -643,20 +659,6 @@ class SlideshowComponent extends SliderComponent {
     } else {
       this.wasPlaying = false;
     }
-  }
-
-  update() {
-    super.update();
-    this.sliderControlButtons = this.querySelectorAll('.slider-counter__link');
-
-    if (!this.sliderControlButtons.length) return;
-
-    this.sliderControlButtons.forEach(link => {
-      link.classList.remove('slider-counter__link--active');
-      link.removeAttribute('aria-current');
-    });
-    this.sliderControlButtons[this.currentPage - 1].classList.add('slider-counter__link--active');
-    this.sliderControlButtons[this.currentPage - 1].setAttribute('aria-current', true);
   }
 
   play() {
@@ -679,6 +681,13 @@ class SlideshowComponent extends SliderComponent {
       this.sliderAutoplayButton.classList.remove('slideshow__autoplay--paused');
       this.sliderAutoplayButton.setAttribute('aria-label', window.accessibilityStrings.pauseSlideshow);
     }
+  }
+
+  autoRotateSlides() {
+    const slideScrollPosition = this.currentPage === this.sliderItems.length ? 0 : this.slider.scrollLeft + this.sliderLastItem.clientWidth;
+    this.slider.scrollTo({
+      left: slideScrollPosition
+    });
   }
 
   setSlideVisibility() {
@@ -704,13 +713,6 @@ class SlideshowComponent extends SliderComponent {
       this.sliderControlWrapper.style.top = 0;
       this.bannerContents.forEach(banner => banner.removeAttribute('style'));
     }
-  }
-
-  autoRotateSlides() {
-    const slideScrollPosition = this.currentPage === this.sliderItems.length ? 0 : this.slider.scrollLeft + this.sliderLastItem.clientWidth;
-    this.slider.scrollTo({
-      left: slideScrollPosition
-    });
   }
 
   linkToSlide(event) {
