@@ -8,6 +8,7 @@
 {{ 'component-loading-overlay.css' | asset_url | stylesheet_tag }}
 {{ 'component-product-guarantee.css' | asset_url | stylesheet_tag }}
 {{ 'recharge.css' | asset_url | stylesheet_tag }}
+{{ 'stickycart.css' | asset_url | stylesheet_tag }}
 
 <link rel="stylesheet" href="{{ 'component-deferred-media.css' | asset_url }}" media="print" onload="this.media='all'">
 
@@ -20,6 +21,55 @@
   <link id="ModelViewerOverride" rel="stylesheet" href="{{ 'component-model-viewer-ui.css' | asset_url }}" media="print" onload="this.media='all'">
 {%- endif -%}
 
+<div class="stickycart">
+  <button id="stickysubmit" name="add" class="product-form__submit button button--full-width button--primary">
+      <span>Add to cart</span>
+    </button>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("stickysubmit").addEventListener("click", function () {
+            const form = document.querySelector('.product__info-wrapper');
+
+            form.scrollIntoView({behavior: "smooth", block: "start", inline: "nearest"});
+        });
+        var productCartButton = document.querySelector('.product-form__buttons'), stickyAddToCartButton = document.querySelector('.stickycart'), previousTop = 0;
+
+        const buttons = document.querySelector('.product-form__buttons');
+        const bounding = buttons.getBoundingClientRect();
+
+        if (
+            bounding.top >= 0 &&
+            bounding.left >= 0 &&
+            bounding.right <= (window.innerWidth || document.documentElement.clientWidth) &&
+            bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+        ) {
+            console.log('In the viewport!');
+        } else {
+            stickyAddToCartButton.classList.add('stickyshow');
+        }
+
+
+        if ("IntersectionObserver" in window && "IntersectionObserverEntry" in window && "intersectionRatio" in window.IntersectionObserverEntry.prototype) {
+            let productCartButtonObserver = new IntersectionObserver(function (entries, observer) {
+                entries.forEach(function (entry) {
+                    let addToCartButton = entry.target,
+                        showstickyAddToCartButton = (entry.boundingClientRect.top < previousTop && entry.boundingClientRect.top < 0);
+                    if (showstickyAddToCartButton) {
+                        stickyAddToCartButton.classList.add('stickyshow');
+                    } else {
+                        stickyAddToCartButton.classList.remove('stickyshow');
+                    }
+
+                    // Set new top
+                    previousTop = entry.boundingClientRect.top;
+                });
+            }, { threshold: 0.5});
+
+            productCartButtonObserver.observe(productCartButton);
+        }
+    });
+</script>
 <section class="page-width">
   <div class="product grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
     <div class="grid__item product__media-wrapper">
