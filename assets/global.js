@@ -608,6 +608,13 @@ class SlideshowComponent extends SliderComponent {
     this.prevButton.addEventListener('mouseleave', this.autoplayFocusHandling.bind(this));
     this.nextButton.addEventListener('mouseenter', this.autoplayFocusHandling.bind(this));
     this.nextButton.addEventListener('mouseleave', this.autoplayFocusHandling.bind(this));
+    this.sliderControlLinksArray.forEach(link => {
+      link.addEventListener('focusout', this.autoplayFocusHandling.bind(this));
+      link.addEventListener('focusin', this.autoplayFocusHandling.bind(this));
+      link.addEventListener('mouseenter', this.autoplayFocusHandling.bind(this));
+      link.addEventListener('mouseleave', this.autoplayFocusHandling.bind(this));
+
+    })
     this.play();
   }
 
@@ -616,9 +623,8 @@ class SlideshowComponent extends SliderComponent {
     let slideScrollPosition;
     const firstOrLast = this.currentPage === 1 || this.currentPage === this.sliderItemsToShow.length;
 
-    if (this.sliderAutoplay) this.togglePlayButtonState(true);
-
     if (!firstOrLast) return;
+
     if (this.currentPage === 1 && event.currentTarget.name === 'previous' ) {
       slideScrollPosition = this.slider.scrollLeft + this.sliderLastItem.clientWidth * this.sliderItemsToShow.length;
     } else if (this.currentPage === this.sliderItemsToShow.length && event.currentTarget.name === 'next') {
@@ -656,8 +662,6 @@ class SlideshowComponent extends SliderComponent {
       this.pause();
     } else if (this.wasPlaying && shouldPlay) {
       this.play();
-    } else {
-      this.wasPlaying = false;
     }
   }
 
