@@ -503,6 +503,7 @@ class SliderComponent extends HTMLElement {
     super();
     this.slider = this.querySelector('[id^="Slider-"]');
     this.sliderItems = this.querySelectorAll('[id^="Slide-"]');
+    this.enableSliderLooping = false;
     this.pageCount = this.querySelector('.slider-counter--current');
     this.pageTotal = this.querySelector('.slider-counter--total');
     this.prevButton = this.querySelector('button[name="previous"]');
@@ -530,6 +531,13 @@ class SliderComponent extends HTMLElement {
   update() {
     this.currentPage = Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
 
+    if (!this.pageCount || !this.pageTotal) return;
+
+    this.pageCount.textContent = this.currentPage;
+    this.pageTotal.textContent = this.totalPages;
+
+    if (this.enableSliderLooping) return;
+
     if (this.currentPage === 1) {
       this.prevButton.setAttribute('disabled', 'disabled');
     } else {
@@ -541,11 +549,6 @@ class SliderComponent extends HTMLElement {
     } else {
       this.nextButton.removeAttribute('disabled');
     }
-
-    if (!this.pageCount || !this.pageTotal) return;
-
-    this.pageCount.textContent = this.currentPage;
-    this.pageTotal.textContent = this.totalPages;
   }
 
   onButtonClick(event) {
@@ -564,6 +567,7 @@ class SlideshowComponent extends SliderComponent {
     super();
     this.sliderControlWrapper = this.querySelector('.slider-buttons');
     this.bannerContents = this.slider.querySelectorAll('.banner__content');
+    this.enableSliderLooping = true;
 
     if (!this.sliderControlWrapper) return;
 
@@ -606,6 +610,19 @@ class SlideshowComponent extends SliderComponent {
     this.nextButton.addEventListener('mouseenter', this.autoplayFocusHandling.bind(this));
     this.nextButton.addEventListener('mouseleave', this.autoplayFocusHandling.bind(this));
     this.play();
+  }
+
+  onButtonClick(event) {
+    super.onButtonClick(event);
+    let slideScrollPosition;
+    if (this.currentPage === 1 && event.currentTarget.name === 'previous' ) {
+      slideScrollPosition = this.slider.scrollLeft + this.sliderLastItem.clientWidth * this.sliderItemsToShow.length;
+    } else if (this.currentPage === this.sliderItemsToShow.length && event.currentTarget.name === 'next') {
+      slideScrollPosition = 0;
+    }
+    this.slider.scrollTo({
+      left: slideScrollPosition
+    });
   }
 
   autoPlayToggle() {
