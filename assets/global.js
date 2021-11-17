@@ -595,12 +595,30 @@ class SlideshowComponent extends SliderComponent {
     this.sliderAutoplayButton = this.sliderControlWrapper.querySelector('.slideshow__autoplay');
     this.autoplaySpeed = this.slider.dataset.speed * 1000;
 
-    this.sliderAutoplayButton.addEventListener('click', this.autoPlayToggle.bind(this));
-    this.addEventListener('mouseenter', this.autoplayFocusHandling.bind(this));
-    this.addEventListener('mouseleave', this.autoplayFocusHandling.bind(this));
-    this.addEventListener('focusin', this.autoplayFocusHandling.bind(this));
-    this.addEventListener('focusout', this.autoplayFocusHandling.bind(this));
+    // this.sliderAutoplayButton.addEventListener('click', this.autoPlayToggle.bind(this));
+    // this.addEventListener('mouseenter', this.autoplayFocusHandling.bind(this));
+    // this.addEventListener('mouseleave', this.autoplayFocusHandling.bind(this));
+    // this.addEventListener('focusin', this.autoplayFocusHandling.bind(this));
+    // this.addEventListener('focusout', this.autoplayFocusHandling.bind(this));
 
+    this.slider.addEventListener('mouseenter', this.autoplayFocusHandling.bind(this));
+    this.slider.addEventListener('mouseleave', this.autoplayFocusHandling.bind(this));
+    this.slider.addEventListener('focusin', this.autoplayFocusHandling.bind(this));
+    this.slider.addEventListener('focusout', this.autoplayFocusHandling.bind(this));
+    this.prevButton.addEventListener('focusout', this.autoplayFocusHandling.bind(this));
+    this.prevButton.addEventListener('focusin', this.autoplayFocusHandling.bind(this));
+    this.nextButton.addEventListener('focusin', this.autoplayFocusHandling.bind(this));
+    this.nextButton.addEventListener('focusout', this.autoplayFocusHandling.bind(this));
+    this.prevButton.addEventListener('mouseenter', this.autoplayFocusHandling.bind(this));
+    this.prevButton.addEventListener('mouseleave', this.autoplayFocusHandling.bind(this));
+    this.nextButton.addEventListener('mouseenter', this.autoplayFocusHandling.bind(this));
+    this.nextButton.addEventListener('mouseleave', this.autoplayFocusHandling.bind(this));
+    this.sliderControlLinksArray.forEach(link => {
+      link.addEventListener('focusout', this.autoplayFocusHandling.bind(this));
+      link.addEventListener('focusin', this.autoplayFocusHandling.bind(this));
+      link.addEventListener('mouseenter', this.autoplayFocusHandling.bind(this));
+      link.addEventListener('mouseleave', this.autoplayFocusHandling.bind(this));
+    })
     this.play();
   }
 
