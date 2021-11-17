@@ -595,6 +595,7 @@ class SlideshowComponent extends SliderComponent {
     this.sliderAutoplayButton = this.sliderControlWrapper.querySelector('.slideshow__autoplay');
     this.autoplaySpeed = this.slider.dataset.speed * 1000;
 
+    this.sliderAutoplayButton.addEventListener('click', this.autoPlayToggle.bind(this));
     this.slider.addEventListener('mouseenter', this.autoplayFocusHandling.bind(this));
     this.slider.addEventListener('mouseleave', this.autoplayFocusHandling.bind(this));
     this.slider.addEventListener('focusin', this.autoplayFocusHandling.bind(this));
@@ -650,6 +651,7 @@ class SlideshowComponent extends SliderComponent {
   autoplayFocusHandling(event) {
     const shouldPause = event.type === 'mouseenter' || event.type === 'focusin';
     const shouldPlay = event.type === 'mouseleave' || event.type === 'focusout';
+
     if (this.isPlaying && shouldPause) {
       this.wasPlaying = true;
       this.pause();
