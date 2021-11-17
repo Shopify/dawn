@@ -592,24 +592,22 @@ class SlideshowComponent extends SliderComponent {
   }
 
   setAutoPlay() {
-    this.sliderAutoplayButton = this.sliderControlWrapper.querySelector('.slideshow__autoplay');
+    this.sliderAutoplayButton = this.querySelector('.slideshow__autoplay');
     this.autoplaySpeed = this.slider.dataset.speed * 1000;
 
     this.sliderAutoplayButton.addEventListener('click', this.autoPlayToggle.bind(this));
-    this.slider.addEventListener('mouseenter', this.autoplayFocusHandling.bind(this));
-    this.slider.addEventListener('mouseleave', this.autoplayFocusHandling.bind(this));
-    this.slider.addEventListener('focusin', this.autoplayFocusHandling.bind(this));
-    this.slider.addEventListener('focusout', this.autoplayFocusHandling.bind(this));
+    this.slider.addEventListener('mouseenter', this.focusInHandling.bind(this));
+    this.slider.addEventListener('mouseleave', this.focusOutHandling.bind(this));
+    this.slider.addEventListener('focusin', this.focusInHandling.bind(this));
+    this.slider.addEventListener('focusout', this.focusOutHandling.bind(this));
 
-    Array.from(this.sliderControlWrapper.children).forEach(element => {
-      if (element === this.sliderAutoplayButton) return;
-      element.addEventListener('mouseenter', this.autoplayFocusHandling.bind(this));
-      element.addEventListener('mouseleave', this.autoplayFocusHandling.bind(this));
-      element.addEventListener('focusin', this.autoplayFocusHandling.bind(this));
-      element.addEventListener('focusout', this.autoplayFocusHandling.bind(this));
-    })
+    this.sliderControlWrapper.addEventListener('mouseenter', this.focusInHandling.bind(this));
+    this.sliderControlWrapper.addEventListener('mouseleave', this.focusOutHandling.bind(this));
+    this.sliderControlWrapper.addEventListener('focusin', this.focusInHandling.bind(this));
+    this.sliderControlWrapper.addEventListener('focusout', this.focusOutHandling.bind(this));
 
     this.play();
+    this.wasPlaying = true;
   }
 
   onButtonClick(event) {
@@ -648,15 +646,17 @@ class SlideshowComponent extends SliderComponent {
     this.isPlaying ? this.pause() : this.play();
   }
 
-  autoplayFocusHandling(event) {
-    const shouldPause = event.type === 'mouseenter' || event.type === 'focusin';
-    const shouldPlay = event.type === 'mouseleave' || event.type === 'focusout';
+  focusOutHandling() {
+    if (!this.wasPlaying) return;
+    this.play();
+  }
 
-    if (this.isPlaying && shouldPause) {
+  focusInHandling() {
+    if (this.isPlaying) {
       this.wasPlaying = true;
       this.pause();
-    } else if (this.wasPlaying && shouldPlay) {
-      this.play();
+    } else {
+      this.wasPlaying = false;
     }
   }
 
@@ -706,10 +706,12 @@ class SlideshowComponent extends SliderComponent {
     if (this.slider.classList.contains('banner--mobile-bottom') && this.mediaQueryMobile.matches) {
       this.sliderControlWrapper.classList.add('slider-buttons--in-between');
       this.sliderControlWrapper.style.top = this.slider.querySelector('.slideshow__media').offsetHeight + 'px';
+      if (this.sliderAutoplayButton) this.sliderAutoplayButton.style.top = this.slider.querySelector('.slideshow__media').offsetHeight + 'px';
       this.bannerContents.forEach(banner => banner.style.marginTop = this.sliderControlWrapper.offsetHeight + 'px');
     } else {
       this.sliderControlWrapper.classList.remove('slider-buttons--in-between');
       this.sliderControlWrapper.style.top = 0;
+      if (this.sliderAutoplayButton) this.sliderAutoplayButton.removeAttribute('style');
       this.bannerContents.forEach(banner => banner.removeAttribute('style'));
     }
   }
