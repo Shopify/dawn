@@ -1198,6 +1198,7 @@ deferred-media {
 /* component-button */
 /* Button - default */
 
+/* base button is an invisible element that manages the physical space the button takes (shadow margin, etc)  */
 .button,
 .shopify-challenge__button,
 .customer button {
@@ -1205,6 +1206,7 @@ deferred-media {
   --shadow-vertical-offset: var(--buttons-shadow-vertical-offset);
   --shadow-blur-radius: var(--buttons-shadow-blur-radius);
   --shadow-opacity: var(--buttons-shadow-opacity);
+  --buttons-border-color: var(--color-button);
   cursor: pointer;
   display: inline-flex;
   justify-content: center;
@@ -1214,32 +1216,48 @@ deferred-media {
   font-size: 1.5rem;
   padding: var(--buttons-padding) calc(var(--buttons-padding) * 3);
   text-decoration: none;
-  border: 1px solid transparent;
+  border: var(--buttons-border-width) solid transparent;
+  /* TODO: incorporate horizontal offset and negative offset */
+  border-bottom-width: calc(var(--buttons-border-width) + var(--shadow-vertical-offset));
   border-radius: var(--buttons-radius);
-  background-color: rgba(var(--color-button), var(--alpha-button-background));
-  box-shadow: 0 0 0 var(--buttons-border-width) rgba(var(--color-button), var(--buttons-border-opacity));
+  background-color: transparent;
   color: rgb(var(--color-button-text));
   min-width: 12rem;
   min-height: 4.5rem;
-  transition: box-shadow var(--duration-short) ease;
   -webkit-appearance: none;
   appearance: none;
-  filter: drop-shadow(
-    var(--shadow-horizontal-offset)
-    var(--shadow-vertical-offset)
-    var(--shadow-blur-radius)
-    rgba(var(--color-button), var(--shadow-opacity))
-  );
+  position: relative;
 }
 
+.button:before,
+.button:after {
+  display: block;
+  content: '';
+  position: absolute;
+  box-sizing: content-box;
+  z-index: -1;
+  border-radius: var(--buttons-radius);
+  width: 100%;
+  height: 100%;
+}
+/* creates a facade to display the background and border */
+.button:before {
+  background-color: rgba(var(--color-button), var(--alpha-button-background));
+  box-shadow: none; /* animated to 1px on hover */
+  border: var(--buttons-border-width) solid rgba(var(--buttons-border-color), var(--buttons-border-opacity));
+  transition: box-shadow var(--duration-short) ease;
+}
+/* creates an invisible element to cast a static shadow */
+.button:after {
+  background-color: transparent;
+  box-shadow: var(--shadow-horizontal-offset) var(--shadow-vertical-offset) var(--shadow-blur-radius) rgba(var(--buttons-border-color), var(--buttons-shadow-opacity));
+  border: var(--buttons-border-width) solid transparent;
+}
+
+/* TODO: apply to focus */
+
 .button--secondary {
-  box-shadow: 0 0 0 var(--buttons-border-width) rgba(var(--color-button-text), var(--buttons-border-opacity));
-  filter: drop-shadow(
-    var(--shadow-horizontal-offset)
-    var(--shadow-vertical-offset)
-    var(--shadow-blur-radius)
-    rgba(var(--color-button-text), var(--shadow-opacity))
-  );
+  --buttons-border-color: var(--color-button-text);
 }
 
 .button:focus-visible {
@@ -1286,14 +1304,10 @@ deferred-media {
 
 /* Button - hover */
 
-.button:not([disabled]):hover,
-.shopify-challenge__button:hover,
-.customer button:hover {
-  box-shadow: 0 0 0 0.2rem rgba(var(--color-button), var(--alpha-button-border));
-}
-
-.button--secondary:not([disabled]):hover {
-  box-shadow: 0 0 0 0.2rem rgba(var(--color-button-text), var(--alpha-button-border));
+.button:not([disabled]):hover::before,
+.shopify-challenge__button:hover::before,
+.customer button:hover::before {
+  box-shadow: 0 0 0 1px rgba(var(--buttons-border-color), var(--buttons-border-opacity));
 }
 
 /* Button - other */
