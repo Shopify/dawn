@@ -578,7 +578,6 @@ class SlideshowComponent extends SliderComponent {
     this.sliderControlLinksArray = Array.from(this.sliderControlWrapper.querySelectorAll('.slider-counter__link'));
     this.sliderAutoplay = this.slider.hasAttribute('data-autoplay');
     this.mediaQueryMobile = window.matchMedia('(max-width: 749px)');
-    this.isPlaying = false;
 
     const resizeObserverControls = new ResizeObserver(entries => this.styleSlideshowControls());
     resizeObserverControls.observe(this);
@@ -607,7 +606,7 @@ class SlideshowComponent extends SliderComponent {
     this.sliderControlWrapper.addEventListener('focusout', this.focusOutHandling.bind(this));
 
     this.play();
-    this.wasPlaying = true;
+    this.isPlaying = true;
   }
 
   onButtonClick(event) {
@@ -643,31 +642,31 @@ class SlideshowComponent extends SliderComponent {
 
   autoPlayToggle() {
     this.togglePlayButtonState(this.isPlaying);
-    this.isPlaying ? this.pause() : this.play();
+    if (this.isPlaying) {
+      this.pause()
+      this.isPlaying = false;
+    } else {
+      this.play();
+      this.isPlaying = true;
+    }
   }
 
   focusOutHandling() {
-    if (!this.wasPlaying) return;
+    if (!this.isPlaying) return;
+    clearInterval(this.autoplay);
     this.play();
   }
 
   focusInHandling() {
-    if (this.isPlaying) {
-      this.wasPlaying = true;
-      this.pause();
-    } else {
-      this.wasPlaying = false;
-    }
+    if (this.isPlaying) this.pause();
   }
 
   play() {
-    this.isPlaying = true;
     this.slider.setAttribute('aria-live', 'off');
     this.autoplay = setInterval(this.autoRotateSlides.bind(this), this.autoplaySpeed);
   }
 
   pause() {
-    this.isPlaying = false;
     this.slider.setAttribute('aria-live', 'polite');
     clearInterval(this.autoplay);
   }
