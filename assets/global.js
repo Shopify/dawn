@@ -585,9 +585,7 @@ class SlideshowComponent extends SliderComponent {
     this.slider.addEventListener('scroll', this.setSlideVisibility.bind(this));
     this.setSlideVisibility();
 
-    if (!this.sliderAutoplay) return;
-
-    this.setAutoPlay();
+    if (this.sliderAutoplay) this.setAutoPlay();
   }
 
   setAutoPlay() {
@@ -595,15 +593,14 @@ class SlideshowComponent extends SliderComponent {
     this.autoplaySpeed = this.slider.dataset.speed * 1000;
 
     this.sliderAutoplayButton.addEventListener('click', this.autoPlayToggle.bind(this));
-    this.slider.addEventListener('mouseenter', this.focusInHandling.bind(this));
-    this.slider.addEventListener('mouseleave', this.focusOutHandling.bind(this));
-    this.slider.addEventListener('focusin', this.focusInHandling.bind(this));
-    this.slider.addEventListener('focusout', this.focusOutHandling.bind(this));
+    Array.from(this.children).forEach(child => {
+      if (child.classList.contains('slideshow__autoplay')) return;
 
-    this.sliderControlWrapper.addEventListener('mouseenter', this.focusInHandling.bind(this));
-    this.sliderControlWrapper.addEventListener('mouseleave', this.focusOutHandling.bind(this));
-    this.sliderControlWrapper.addEventListener('focusin', this.focusInHandling.bind(this));
-    this.sliderControlWrapper.addEventListener('focusout', this.focusOutHandling.bind(this));
+      child.addEventListener('mouseenter', this.focusInHandling.bind(this));
+      child.addEventListener('mouseleave', this.focusOutHandling.bind(this));
+      child.addEventListener('focusin', this.focusInHandling.bind(this));
+      child.addEventListener('focusout', this.focusOutHandling.bind(this));
+    });
 
     this.play();
     this.isPlaying = true;
@@ -612,13 +609,14 @@ class SlideshowComponent extends SliderComponent {
   onButtonClick(event) {
     super.onButtonClick(event);
     let slideScrollPosition;
-    const firstOrLast = this.currentPage === 1 || this.currentPage === this.sliderItemsToShow.length;
+    const isFirstSlide = this.currentPage === 1;
+    const isLastSlide = this.currentPage === this.sliderItemsToShow.length;
 
-    if (!firstOrLast) return;
+    if (!isFirstSlide && !isLastSlide) return;
 
-    if (this.currentPage === 1 && event.currentTarget.name === 'previous' ) {
+    if (isFirstSlide && event.currentTarget.name === 'previous' ) {
       slideScrollPosition = this.slider.scrollLeft + this.sliderLastItem.clientWidth * this.sliderItemsToShow.length;
-    } else if (this.currentPage === this.sliderItemsToShow.length && event.currentTarget.name === 'next') {
+    } else if (isLastSlide && event.currentTarget.name === 'next') {
       slideScrollPosition = 0;
     }
     this.slider.scrollTo({
