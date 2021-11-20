@@ -528,7 +528,6 @@ class SliderComponent extends HTMLElement {
   }
 
   update() {
-    if (!this.pageCount || !this.pageTotal) return;
     const previousPage = this.currentPage;
     this.currentPage = Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
 
@@ -550,6 +549,8 @@ class SliderComponent extends HTMLElement {
         currentElement: this.sliderItemsToShow[this.currentPage - 1]
       }}));
     }
+
+    if (!this.pageCount || !this.pageTotal) return;
 
     this.pageCount.textContent = this.currentPage;
     this.pageTotal.textContent = this.totalPages;
