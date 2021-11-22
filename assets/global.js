@@ -593,14 +593,10 @@ class SlideshowComponent extends SliderComponent {
     this.autoplaySpeed = this.slider.dataset.speed * 1000;
 
     this.sliderAutoplayButton.addEventListener('click', this.autoPlayToggle.bind(this));
-    Array.from(this.children).forEach(child => {
-      if (child.classList.contains('slideshow__autoplay')) return;
-
-      child.addEventListener('mouseenter', this.focusInHandling.bind(this));
-      child.addEventListener('mouseleave', this.focusOutHandling.bind(this));
-      child.addEventListener('focusin', this.focusInHandling.bind(this));
-      child.addEventListener('focusout', this.focusOutHandling.bind(this));
-    });
+    this.addEventListener('mouseover', this.focusInHandling.bind(this));
+    this.addEventListener('mouseleave', this.focusOutHandling.bind(this));
+    this.addEventListener('focusin', this.focusInHandling.bind(this));
+    this.addEventListener('focusout', this.focusOutHandling.bind(this));
 
     this.play();
     this.isPlaying = true;
@@ -649,18 +645,24 @@ class SlideshowComponent extends SliderComponent {
     }
   }
 
-  focusOutHandling() {
-    if (!this.isPlaying) return;
-    clearInterval(this.autoplay);
+  focusOutHandling(event) {
+    const focusedOnAutoplayButton = event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
+    if (!this.isPlaying || focusedOnAutoplayButton) return;
     this.play();
   }
 
-  focusInHandling() {
-    if (this.isPlaying) this.pause();
+  focusInHandling(event) {
+    const focusedOnAutoplayButton = event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
+    if (focusedOnAutoplayButton && this.isPlaying) {
+      this.play();
+    } else if (this.isPlaying) {
+      this.pause();
+    }
   }
 
   play() {
     this.slider.setAttribute('aria-live', 'off');
+    clearInterval(this.autoplay);
     this.autoplay = setInterval(this.autoRotateSlides.bind(this), this.autoplaySpeed);
   }
 
@@ -703,12 +705,10 @@ class SlideshowComponent extends SliderComponent {
     if (this.slider.classList.contains('banner--mobile-bottom') && this.mediaQueryMobile.matches) {
       this.sliderControlWrapper.classList.add('slider-buttons--in-between');
       this.sliderControlWrapper.style.top = this.slider.querySelector('.slideshow__media').offsetHeight + 'px';
-      if (this.sliderAutoplayButton) this.sliderAutoplayButton.style.top = this.slider.querySelector('.slideshow__media').offsetHeight + 'px';
       this.bannerContents.forEach(banner => banner.style.marginTop = this.sliderControlWrapper.offsetHeight + 'px');
     } else {
       this.sliderControlWrapper.classList.remove('slider-buttons--in-between');
       this.sliderControlWrapper.style.top = 0;
-      if (this.sliderAutoplayButton) this.sliderAutoplayButton.removeAttribute('style');
       this.bannerContents.forEach(banner => banner.removeAttribute('style'));
     }
   }
