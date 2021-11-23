@@ -16,7 +16,7 @@ const makeEnquiry = {
 	),
 	formIsValid: false,
 	submitButton: document.querySelector("#fwx-enquiry-submit-button"),
-	api: "https://pinewood-api.dev.fireworkx.com/api/v1/leadsubmit",
+	api: "https://pinewood-api.dev.fireworkx.com/api/v1/leadsubmi",
 	initSwiper() {
 		// Only init swiper if element exists
 		if (document.querySelector(".fwx-enquiry-swiper")) {
@@ -93,7 +93,6 @@ const makeEnquiry = {
 			
 		this.submitButton.disabled = true;
 		const formDataJson = JSON.stringify(Object.fromEntries(formData));
-		console.log(formDataJson)
 		fetch(this.api, {
 			method: "POST",
 			body: formDataJson,
@@ -104,6 +103,8 @@ const makeEnquiry = {
 			.catch((error) => {
 				if ((this.formIsValid = false)) {
 					this.submitButton.disabled = false;
+						// Error message
+						document.querySelector('.error-message-container').style.display = 'flex';
 				}
 				console.error("Error:", error);
 			})
@@ -111,6 +112,7 @@ const makeEnquiry = {
 				if (response.status !== 200) {
 					if ((this.formIsValid = false)) {
 						this.submitButton.disabled = false;
+						document.querySelector('.error-message-container').style.display = 'flex';
 					}
 				}
 				if (response.status == 200) {
@@ -149,12 +151,27 @@ if (makeEnquiry.enquiryChoiceButtons) {
 	});
 }
 
+const successMessage = document.querySelector('.message-container');
+const formContainer = document.querySelector('.fwx-modal-content');
+
 // Enquiry Submit button
 if (makeEnquiry.submitButton) {
 	makeEnquiry.submitButton.addEventListener("click", function () {
 		window.dataLayer.push({'event_name': 'enquiry_submit'});
 		this.disabled = true;
 		makeEnquiry.sendForm();
+		// Open success message by adding a class to it 
+		makeEnquiry.enquiryForm.reset();
+		makeEnquiry.closeModal();
+		successMessage.style.display = "flex";
+		
+		setTimeout(() => {
+			successMessage.style.transform = "translateY(0%)";
+		},500)
+
+		setTimeout(() => {
+			successMessage.style.transform = "translateY(100%)";
+		},4000)
 	});
 }
 
