@@ -555,10 +555,15 @@ class SliderComponent extends HTMLElement {
     this.pageTotal.textContent = this.totalPages;
   }
 
+  scrollIntoView(element) {
+    const lastVisibleSlide = this.slider.clientWidth + this.slider.scrollLeft - 10;
+    const isSlideVisible = element.offsetLeft < lastVisibleSlide && element.offsetLeft > this.slider.scrollLeft;
+    if (!isSlideVisible) this.slider.scrollTo({ left: element.offsetLeft });
+  }
+
   onButtonClick(event) {
     event.preventDefault();
     const step = event.currentTarget.dataset.step || 1;
-
     const slideScrollPosition = event.currentTarget.name === 'next' ? this.slider.scrollLeft + (step * this.sliderLastItem.clientWidth) : this.slider.scrollLeft - (step * this.sliderLastItem.clientWidth);
     this.slider.scrollTo({
       left: slideScrollPosition
@@ -610,7 +615,7 @@ class VariantSelects extends HTMLElement {
     if (!this.currentVariant.featured_media) return;
 
     this.stickyHeader = this.stickyHeader || document.querySelector('sticky-header');
-    if(this.stickyHeader) this.stickyHeader.dispatchEvent(new Event('preventHeaderReveal'));
+    if (this.stickyHeader) this.stickyHeader.dispatchEvent(new Event('preventHeaderReveal'));
 
     const mediaGallery = document.getElementById(`MediaGallery-${this.dataset.section}`);
     mediaGallery.setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media.id}`, true);

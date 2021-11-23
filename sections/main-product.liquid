@@ -542,69 +542,49 @@
         viewer: this.querySelector('[id^="GalleryViewer"]'),
         thumbnails: this.querySelector('[id^="GalleryThumbnails"]')
       }
-
       this.mql = window.matchMedia('(min-width: 750px)');
-
       if (!this.elements.thumbnails) return;
       this.elements.viewer.addEventListener('slideChanged', debounce(this.onSlideChanged.bind(this), 500));
-      this.elements.thumbnails.querySelectorAll('[data-target] button').forEach((button) => {
-        const mediaToSwitch = button.closest('[data-target]').dataset.target;
-        button.addEventListener('click', this.setActiveMedia.bind(this, mediaToSwitch, false));
+      this.elements.thumbnails.querySelectorAll('[data-target]').forEach((mediaToSwitch) => {
+        mediaToSwitch.querySelector('button').addEventListener('click', this.setActiveMedia.bind(this, mediaToSwitch.dataset.target, false));
       });
     }
 
     onSlideChanged(event) {
       const thumbnail = this.elements.thumbnails.querySelector(`[data-target]:nth-child(${ event.detail.currentPage })`);
-      if (!thumbnail) return;
-
       this.setActiveThumbnail(thumbnail);
     }
 
     setActiveMedia(mediaId, prepend) {
-      const activeItem = this.elements.viewer.querySelector(`[data-media-id="${ mediaId }"]`);
-      if (prepend) {
-        activeItem.parentElement.prepend(activeItem);
-        if (this.elements.thumbnails) {
-          const activeThumbnail = this.elements.thumbnails.querySelector(`[data-target="${ mediaId }"]`);
-          activeThumbnail.parentElement.prepend(activeThumbnail);
-          window.setTimeout(() => {
-            activeThumbnail.parentElement.scrollLeft = 0;
-          });
-        }
-      }
-
+      const activeMedia = this.elements.viewer.querySelector(`[data-media-id="${ mediaId }"]`);
       this.elements.viewer.querySelectorAll('[data-media-id]').forEach((element) => {
         element.classList.remove('is-active');
       });
-      activeItem.classList.add('is-active');
+      activeMedia.classList.add('is-active');
 
-      if (!this.elements.thumbnails) {
-        window.setTimeout(() => {
-          activeItem.scrollIntoView({behavior: 'smooth'});
-        });
-      } else {
-        this.setActiveThumbnail(this.elements.thumbnails.querySelector(`[data-target="${ mediaId }"]`));
-        window.setTimeout(() => {
-          activeItem.parentElement.scrollTo({ left: activeItem.offsetLeft });
-        });
+      if (prepend) {
+        activeMedia.parentElement.prepend(activeMedia);
+        if (this.elements.thumbnails) {
+          const activeThumbnail = this.elements.thumbnails.querySelector(`[data-target="${ mediaId }"]`);
+          activeThumbnail.parentElement.prepend(activeThumbnail);
+        }
       }
 
-      if (!this.mql.matches) return;
-      this.playActiveMedia(activeItem);
+      this.setActiveThumbnail(this.elements.thumbnails.querySelector(`[data-target="${ mediaId }"]`));
+      window.setTimeout(() => {
+        activeMedia.scrollIntoView({behavior: 'smooth'});
+      });
+      if (this.mql.matches) this.playActiveMedia(activeMedia);
     }
 
     setActiveThumbnail(thumbnail) {
-      this.elements.thumbnails.querySelectorAll('button').forEach((element) => {
-          element.removeAttribute('aria-current');
-        }
-      );
+      if (!this.elements.thumbnails || !thumbnail) return;
+
+      this.elements.thumbnails.querySelectorAll('button').forEach((element) => element.removeAttribute('aria-current'));
       thumbnail.querySelector('button').setAttribute('aria-current', true);
 
       if (this.mql.matches) return;
-
-      const maxVisible = thumbnail.parentElement.clientWidth + thumbnail.parentElement.scrollLeft - 5;
-      const isSlideVisible = thumbnail.offsetLeft < maxVisible && thumbnail.offsetLeft > thumbnail.parentElement.scrollLeft;
-      if (!isSlideVisible) thumbnail.parentElement.scrollTo({ left: thumbnail.offsetLeft });
+      this.elements.thumbnails.scrollIntoView(thumbnail);
     }
 
     playActiveMedia(activeItem) {
