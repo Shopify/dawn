@@ -16,7 +16,7 @@ const makeEnquiry = {
 	),
 	formIsValid: false,
 	submitButton: document.querySelector("#fwx-enquiry-submit-button"),
-	api: "https://pinewood-api.dev.fireworkx.com/api/v1/leadsubmi",
+	api: "https://pinewood-api.dev.fireworkx.com/api/v1/leadsubmit",
 	initSwiper() {
 		// Only init swiper if element exists
 		if (document.querySelector(".fwx-enquiry-swiper")) {
