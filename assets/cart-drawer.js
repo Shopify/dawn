@@ -2,29 +2,28 @@ class CartDrawer extends HTMLElement {
   constructor() {
     super();
 
-    this.drawer = document.getElementById('cart-drawer');
-    this.header = document.querySelector('sticky-header');
     this.onBodyClick = this.handleBodyClick.bind(this);
+    this.addEventListener('keyup', (evt) => evt.code === 'Escape' && this.close());
 
-    this.drawer.addEventListener('keyup', (evt) => evt.code === 'Escape' && this.close());
-    this.querySelectorAll('button[type="button"]').forEach((closeButton) =>
+    this.querySelectorAll('.drawer__close').forEach((closeButton) =>
       closeButton.addEventListener('click', this.close.bind(this))
     );
   }
 
   open() {
-    this.drawer.classList.add('animate', 'active');
+    this.classList.add('animate', 'active');
 
-    this.drawer.addEventListener('transitionend', () => {
-      this.drawer.focus();
-      trapFocus(this.drawer);
+    this.addEventListener('transitionend', () => {
+      this.focus();
+      const cartDrawer = document.getElementById('cart-drawer');
+      const focusElement = cartDrawer.querySelector('.cart-item__link');
+      trapFocus(cartDrawer, focusElement);
     }, { once: true });
-
-    document.body.addEventListener('click', this.onBodyClick);
   }
 
   close() {
-    this.drawer.classList.remove('active');
+    console.log('Close');
+    this.classList.remove('active');
 
     document.body.removeEventListener('click', this.onBodyClick);
 
@@ -58,7 +57,7 @@ class CartDrawer extends HTMLElement {
 
   handleBodyClick(evt) {
     const target = evt.target;
-    if (target !== this.drawer && !target.closest('cart-notification')) {
+    if (target !== this && !target.closest('cart-notification')) {
       const disclosure = target.closest('details-disclosure');
       this.activeElement = disclosure ? disclosure.querySelector('summary') : null;
       this.close();
