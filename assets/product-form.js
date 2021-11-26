@@ -7,7 +7,6 @@ if (!customElements.get('product-form')) {
       this.form.querySelector('[name=id]').disabled = false;
       this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
       this.cart = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
-      this.cartDrawer = document.querySelector('cart-drawer');
     }
 
     onSubmitHandler(evt) {

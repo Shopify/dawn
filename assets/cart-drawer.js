@@ -22,7 +22,6 @@ class CartDrawer extends HTMLElement {
   }
 
   close() {
-    console.log('Close');
     this.classList.remove('active');
 
     document.body.removeEventListener('click', this.onBodyClick);
@@ -33,18 +32,24 @@ class CartDrawer extends HTMLElement {
   renderContents(parsedState) {
       this.productId = parsedState.id;
       this.getSectionsToRender().forEach((section => {
+        console.log(section);
+
         document.getElementById(section.id).innerHTML =
           this.getSectionInnerHTML(parsedState.sections[section.id], section.selector);
       }));
 
-      if (this.header) this.header.reveal();
+      this.querySelectorAll('.drawer__close').forEach((closeButton) =>
+        closeButton.addEventListener('click', this.close.bind(this))
+      );
+
       this.open();
   }
 
   getSectionsToRender() {
     return [
       {
-        id: 'cart-drawer'
+        id: 'cart-drawer',
+        selector: 'cart-drawer'
       }
     ];
   }
