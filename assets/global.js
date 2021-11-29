@@ -553,9 +553,9 @@ class SliderComponent extends HTMLElement {
 
   onButtonClick(event) {
     event.preventDefault();
-    const slideScrollPosition = event.currentTarget.name === 'next' ? this.slider.scrollLeft + this.sliderLastItem.clientWidth : this.slider.scrollLeft - this.sliderLastItem.clientWidth;
+    this.slideScrollPosition = event.currentTarget.name === 'next' ? this.slider.scrollLeft + this.sliderLastItem.clientWidth : this.slider.scrollLeft - this.sliderLastItem.clientWidth;
     this.slider.scrollTo({
-      left: slideScrollPosition
+      left: this.slideScrollPosition
     });
   }
 }
@@ -604,19 +604,18 @@ class SlideshowComponent extends SliderComponent {
 
   onButtonClick(event) {
     super.onButtonClick(event);
-    let slideScrollPosition;
     const isFirstSlide = this.currentPage === 1;
     const isLastSlide = this.currentPage === this.sliderItemsToShow.length;
 
     if (!isFirstSlide && !isLastSlide) return;
 
     if (isFirstSlide && event.currentTarget.name === 'previous' ) {
-      slideScrollPosition = this.slider.scrollLeft + this.sliderLastItem.clientWidth * this.sliderItemsToShow.length;
+      this.slideScrollPosition = this.slider.scrollLeft + this.sliderLastItem.clientWidth * this.sliderItemsToShow.length;
     } else if (isLastSlide && event.currentTarget.name === 'next') {
-      slideScrollPosition = 0;
+      this.slideScrollPosition = 0;
     }
     this.slider.scrollTo({
-      left: slideScrollPosition
+      left: this.slideScrollPosition
     });
   }
 
