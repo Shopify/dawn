@@ -577,10 +577,7 @@ class SlideshowComponent extends SliderComponent {
 
     this.sliderControlLinksArray = Array.from(this.sliderControlWrapper.querySelectorAll('.slider-counter__link'));
     this.sliderAutoplay = this.slider.hasAttribute('data-autoplay');
-    this.mediaQueryMobile = window.matchMedia('(max-width: 749px)');
 
-    const resizeObserverControls = new ResizeObserver(entries => this.styleSlideshowControls());
-    resizeObserverControls.observe(this);
     this.sliderControlLinksArray.forEach(link => link.addEventListener('click', this.linkToSlide.bind(this)));
     this.slider.addEventListener('scroll', this.setSlideVisibility.bind(this));
     this.setSlideVisibility();
@@ -698,18 +695,6 @@ class SlideshowComponent extends SliderComponent {
         item.setAttribute('aria-hidden', 'true');
       }
     });
-  }
-
-  styleSlideshowControls() {
-    if (this.slider.classList.contains('banner--mobile-bottom') && this.mediaQueryMobile.matches) {
-      this.sliderControlWrapper.classList.add('slider-buttons--in-between');
-      this.sliderControlWrapper.style.top = this.slider.querySelector('.slideshow__media').offsetHeight + 'px';
-      this.bannerContents.forEach(banner => banner.style.marginTop = this.sliderControlWrapper.offsetHeight + 'px');
-    } else {
-      this.sliderControlWrapper.classList.remove('slider-buttons--in-between');
-      this.sliderControlWrapper.style.top = 0;
-      this.bannerContents.forEach(banner => banner.removeAttribute('style'));
-    }
   }
 
   linkToSlide(event) {
