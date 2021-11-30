@@ -1,4 +1,5 @@
 {{ 'component-accordion.css' | asset_url | stylesheet_tag }}
+{{ 'tabs.css' | asset_url | stylesheet_tag }}
 
 <div class="tabs color-{{ section.settings.color_scheme }}">
   <div class="page-width page-width--narrow">
@@ -6,26 +7,7 @@
       <p class="caption-with-letter-spacing"> {{ section.settings.caption }}</p>
       <h2 class="h1"> {{ section.settings.heading }}</h2>
     </div>
-    <div class="grid grid--gapless grid--1-col grid--2-col-tablet">
-      {%- if section.settings.image != blank -%}
-        <div class="grid__item media">
-          <img
-            srcset="{%- if section.settings.image.width >= 165 -%}{{ section.settings.image | img_url: '165x' }} 165w,{%- endif -%}
-              {%- if section.settings.image.width >= 360 -%}{{ section.settings.image | img_url: '360x' }} 360w,{%- endif -%}
-              {%- if section.settings.image.width >= 535 -%}{{ section.settings.image | img_url: '535x' }} 535w,{%- endif -%}
-              {%- if section.settings.image.width >= 750 -%}{{ section.settings.image | img_url: '750x' }} 750w,{%- endif -%}
-              {%- if section.settings.image.width >= 1070 -%}{{ section.settings.image | img_url: '1070x' }} 1070w,{%- endif -%}
-              {%- if section.settings.image.width >= 1500 -%}{{ section.settings.image | img_url: '1500x' }} 1500w,{%- endif -%}
-              {{ section.settings.image | img_url: 'master' }} {{ section.settings.image.width }}w"
-            src="{{ section.settings.image | img_url: '1500x' }}"
-            sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 2 }}px, (min-width: 750px) calc((100vw - 130px) / 2), calc((100vw - 50px) / 2)"
-            alt="{{ section.settings.image.alt | escape }}"
-            loading="lazy"
-            width="{{ section.settings.image.width }}"
-            height="{{ section.settings.image.height }}"
-        >
-        </div>
-      {% endif %}
+    <div class="grid grid--1-col grid--2-col-tablet tabs__grid{% if section.settings.desktop_layout == 'image_first' %} tabs__grid--reverse{% endif %}">
       <div class="grid__item">
         {%- for block in section.blocks -%}
           <div class="accordion" {{ block.shopify_attributes }}>
@@ -44,9 +26,32 @@
                 {{ block.settings.page.content }}
               </div>
             </details>
+          </div>
         {%- endfor -%}
-     </div>
-     </div>
+      </div>
+      {%- if section.settings.image != blank -%}
+        <div class="grid__item">
+          <div class="tabs__media tabs__media--{{ section.settings.image_ratio }} media"
+            {% if section.settings.image_ratio == 'adapt' and section.settings.image != blank %} style="padding-bottom: {{ 1 | divided_by: section.settings.image.aspect_ratio | times: 100 }}%;"{% endif %}
+          >
+            <img
+              srcset="{%- if section.settings.image.width >= 165 -%}{{ section.settings.image | img_url: '165x' }} 165w,{%- endif -%}
+                {%- if section.settings.image.width >= 360 -%}{{ section.settings.image | img_url: '360x' }} 360w,{%- endif -%}
+                {%- if section.settings.image.width >= 535 -%}{{ section.settings.image | img_url: '535x' }} 535w,{%- endif -%}
+                {%- if section.settings.image.width >= 750 -%}{{ section.settings.image | img_url: '750x' }} 750w,{%- endif -%}
+                {%- if section.settings.image.width >= 1070 -%}{{ section.settings.image | img_url: '1070x' }} 1070w,{%- endif -%}
+                {%- if section.settings.image.width >= 1500 -%}{{ section.settings.image | img_url: '1500x' }} 1500w,{%- endif -%}
+                {{ section.settings.image | img_url: 'master' }} {{ section.settings.image.width }}w"
+              src="{{ section.settings.image | img_url: '1500x' }}"
+              sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 2 }}px, (min-width: 750px) calc((100vw - 130px) / 2), calc((100vw - 50px) / 2)"
+              alt="{{ section.settings.image.alt | escape }}"
+              loading="lazy"
+              width="{{ section.settings.image.width }}"
+              height="{{ section.settings.image.height }}"
+           >
+          </div>
+        </div>
+      {% endif %}
     </div>
   </div>
 </div>
@@ -110,23 +115,23 @@
       "id": "color_scheme",
       "options": [
         {
-          "value": "accent-1",
+          "value": "background-1",
           "label": "t:sections.tabs.settings.color_scheme.options__1.label"
         },
         {
-          "value": "accent-2",
+          "value": "background-2",
           "label": "t:sections.tabs.settings.color_scheme.options__2.label"
         },
         {
-          "value": "background-1",
+          "value": "inverse",
           "label": "t:sections.tabs.settings.color_scheme.options__3.label"
         },
         {
-          "value": "background-2",
+          "value": "accent-1",
           "label": "t:sections.tabs.settings.color_scheme.options__4.label"
         },
         {
-          "value": "inverse",
+          "value": "accent-2",
           "label": "t:sections.tabs.settings.color_scheme.options__5.label"
         }
       ],
@@ -150,23 +155,23 @@
     },
     {
       "type": "select",
-      "id": "image_size",
+      "id": "image_ratio",
       "options": [
         {
           "value": "adapt",
-          "label": "t:sections.tabs.settings.image_size.options__1.label"
+          "label": "t:sections.tabs.settings.image_ratio.options__1.label"
         },
         {
-          "value": "portrait",
-          "label": "t:sections.tabs.settings.image_size.options__2.label"
+          "value": "small",
+          "label": "t:sections.tabs.settings.image_ratio.options__2.label"
         },
         {
-          "value": "square",
-          "label": "t:sections.tabs.settings.image_size.options__3.label"
+          "value": "medium",
+          "label": "t:sections.tabs.settings.image_ratio.options__3.label"
         }
       ],
       "default": "adapt",
-      "label": "t:sections.tabs.settings.image_size.label"
+      "label": "t:sections.tabs.settings.image_ratio.label"
     },
     {
       "type": "select",
