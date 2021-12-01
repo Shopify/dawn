@@ -679,7 +679,7 @@ class SlideshowComponent extends SliderComponent {
 
   setSlideVisibility() {
     this.sliderItemsToShow.forEach((item, index) => {
-      const button = item.querySelector('.button');
+      const button = item.querySelector('a');
       if (index === this.currentPage - 1) {
         if (button) button.removeAttribute('tabindex');
         item.setAttribute('aria-hidden', 'false');
