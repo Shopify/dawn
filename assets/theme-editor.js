@@ -1,5 +1,4 @@
 document.addEventListener('shopify:block:select', function(event) {
-  console.log('block selected')
   const blockSelectedIsSlide = event.target.classList.contains('slideshow__slide');
   if (!blockSelectedIsSlide) return;
 
