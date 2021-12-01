@@ -576,13 +576,12 @@ class SlideshowComponent extends SliderComponent {
     if( this.sliderItemsToShow.length > 0) this.currentPage = 1;
 
     this.sliderControlLinksArray = Array.from(this.sliderControlWrapper.querySelectorAll('.slider-counter__link'));
-    this.sliderAutoplay = this.slider.hasAttribute('data-autoplay');
 
     this.sliderControlLinksArray.forEach(link => link.addEventListener('click', this.linkToSlide.bind(this)));
     this.slider.addEventListener('scroll', this.setSlideVisibility.bind(this));
     this.setSlideVisibility();
 
-    if (this.sliderAutoplay) this.setAutoPlay();
+    if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
   }
 
   setAutoPlay() {
@@ -596,7 +595,7 @@ class SlideshowComponent extends SliderComponent {
     this.addEventListener('focusout', this.focusOutHandling.bind(this));
 
     this.play();
-    this.isPlaying = true;
+    this.autoplayButtonIsSetToPlay = true;
   }
 
   onButtonClick(event) {
@@ -631,27 +630,22 @@ class SlideshowComponent extends SliderComponent {
   }
 
   autoPlayToggle() {
-    this.togglePlayButtonState(this.isPlaying);
-    if (this.isPlaying) {
-      this.pause()
-      this.isPlaying = false;
-    } else {
-      this.play();
-      this.isPlaying = true;
-    }
+    this.togglePlayButtonState(this.autoplayButtonIsSetToPlay);
+    this.autoplayButtonIsSetToPlay ? this.pause() : this.play();
+    this.autoplayButtonIsSetToPlay = !this.autoplayButtonIsSetToPlay;
   }
 
   focusOutHandling(event) {
     const focusedOnAutoplayButton = event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
-    if (!this.isPlaying || focusedOnAutoplayButton) return;
+    if (!this.autoplayButtonIsSetToPlay || focusedOnAutoplayButton) return;
     this.play();
   }
 
   focusInHandling(event) {
     const focusedOnAutoplayButton = event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
-    if (focusedOnAutoplayButton && this.isPlaying) {
+    if (focusedOnAutoplayButton && this.autoplayButtonIsSetToPlay) {
       this.play();
-    } else if (this.isPlaying) {
+    } else if (this.autoplayButtonIsSetToPlay) {
       this.pause();
     }
   }
