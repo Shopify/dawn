@@ -572,7 +572,7 @@ class SlideshowComponent extends SliderComponent {
     if (!this.sliderControlWrapper) return;
 
     this.sliderItemsToShow = Array.from(this.sliderItems).filter(element => element.clientWidth > 0);
-    this.sliderLastItem = this.sliderItemsToShow[this.sliderItemsToShow.length - 1];
+    this.sliderFirstItem = this.slider.querySelector('.slideshow__slide');
     if (this.sliderItemsToShow.length > 0) this.currentPage = 1;
 
     this.sliderControlLinksArray = Array.from(this.sliderControlWrapper.querySelectorAll('.slider-counter__link'));
@@ -605,7 +605,7 @@ class SlideshowComponent extends SliderComponent {
     if (!isFirstSlide && !isLastSlide) return;
 
     if (isFirstSlide && event.currentTarget.name === 'previous') {
-      this.slideScrollPosition = this.slider.scrollLeft + this.sliderLastItem.clientWidth * this.sliderItemsToShow.length;
+      this.slideScrollPosition = this.slider.scrollLeft + this.sliderFirstItem.clientWidth * this.sliderItemsToShow.length;
     } else if (isLastSlide && event.currentTarget.name === 'next') {
       this.slideScrollPosition = 0;
     }
@@ -671,7 +671,7 @@ class SlideshowComponent extends SliderComponent {
   }
 
   autoRotateSlides() {
-    const slideScrollPosition = this.currentPage === this.sliderItems.length ? 0 : this.slider.scrollLeft + this.sliderLastItem.clientWidth;
+    const slideScrollPosition = this.currentPage === this.sliderItems.length ? 0 : this.slider.scrollLeft + this.slider.querySelector('.slideshow__slide').clientWidth;
     this.slider.scrollTo({
       left: slideScrollPosition
     });
@@ -692,7 +692,7 @@ class SlideshowComponent extends SliderComponent {
 
   linkToSlide(event) {
     event.preventDefault();
-    const slideScrollPosition = this.slider.scrollLeft + this.sliderLastItem.clientWidth * (this.sliderControlLinksArray.indexOf(event.currentTarget) + 1 - this.currentPage);
+    const slideScrollPosition = this.slider.scrollLeft + this.sliderFirstItem.clientWidth * (this.sliderControlLinksArray.indexOf(event.currentTarget) + 1 - this.currentPage);
     this.slider.scrollTo({
       left: slideScrollPosition
     });

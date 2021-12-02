@@ -5,7 +5,7 @@ document.addEventListener('shopify:block:select', function(event) {
   const parentSlideshowComponent = event.target.closest('slideshow-component');
   parentSlideshowComponent.pause();
 
-  const slideScrollPosition = parentSlideshowComponent.slider.scrollLeft + parentSlideshowComponent.sliderLastItem.clientWidth * (parentSlideshowComponent.sliderItemsToShow.indexOf(event.target) + 1 - parentSlideshowComponent.currentPage);
+  const slideScrollPosition = parentSlideshowComponent.slider.scrollLeft + parentSlideshowComponent.sliderFirstItem.clientWidth * (parentSlideshowComponent.sliderItemsToShow.indexOf(event.target) + 1 - parentSlideshowComponent.currentPage);
   setTimeout(function() {
     parentSlideshowComponent.slider.scrollTo({
       left: slideScrollPosition
