@@ -567,12 +567,11 @@ class SlideshowComponent extends SliderComponent {
   constructor() {
     super();
     this.sliderControlWrapper = this.querySelector('.slider-buttons');
-    this.bannerContents = this.slider.querySelectorAll('.banner__content');
     this.enableSliderLooping = true;
 
     if (!this.sliderControlWrapper) return;
 
-    this.sliderFirstItem = this.slider.querySelector('.slideshow__slide');
+    this.sliderFirstItemNode = this.slider.querySelector('.slideshow__slide');
     if (this.sliderItemsToShow.length > 0) this.currentPage = 1;
 
     this.sliderControlLinksArray = Array.from(this.sliderControlWrapper.querySelectorAll('.slider-counter__link'));
