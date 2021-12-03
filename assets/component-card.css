@@ -15,15 +15,16 @@
   background-clip: border-box;
   border-radius: var(--card-corner-radius);
   border: var(--card-border-width) solid rgba(var(--color-foreground), var(--card-border-opacity));
-  overflow: hidden;
   position: relative;
+  overflow: visible;
 }
-/* creates card style card shadows */
-.grid.card-style-card {
-  filter: drop-shadow(var(--grid-shadow-horizontal-offset) var(--grid-shadow-vertical-offset) var(--grid-shadow-blur-radius) rgba(var(--color-foreground), var(--grid-shadow-opacity)));
+
+.card--standard .card__inner {
+  overflow: hidden;
 }
-/* creates standard style card shadows */
-.grid .card--standard:after {
+
+/* creates card shadows */
+.grid .card:after {
   content: "";
   overflow: hidden;
   position: absolute;
@@ -37,17 +38,75 @@
   box-shadow: var(--grid-shadow-horizontal-offset) var(--grid-shadow-vertical-offset) var(--grid-shadow-blur-radius) rgba(var(--color-foreground), var(--grid-shadow-opacity));
 }
 
+/* adjusts shadow caster dimensions for card--card */
+.grid .card--card:after {
+  width: calc(var(--card-border-width) * 2 + 100%);
+  height: calc(var(--card-border-width) * 2 + 100%);
+  top: calc(var(--card-border-width) * -1);
+  left: calc(var(--card-border-width) * -1);
+  padding-bottom: 0;
+}
+
+/* clips top corners of card--card image */
+.card--card .card__inner {
+  overflow: hidden;
+  border-top-left-radius: calc(var(--card-corner-radius) - var(--card-border-width));
+  border-top-right-radius: calc(var(--card-corner-radius) - var(--card-border-width));
+}
+
 @media screen and (max-width: 749px) {
-  .grid.grid--no-gap-mobile .card--standard:after {
+  .grid.grid--no-gap-mobile .card--card {
+    overflow: visible;
+  }
+
+  .grid--no-gap-mobile .card--standard:after {
+    left: calc(var(--grid-border-width) * -1);
+    padding-bottom: calc(var(--ratio-percent) - var(--ratio) + var(--grid-border-width));
     border-radius: var(--top-left-radius) var(--top-right-radius) var(--bottom-right-radius) var(--bottom-left-radius);
+  }
+
+  .grid--no-gap-mobile .card--card .card__inner {
+    overflow: hidden;
+    border-top-left-radius: calc(var(--top-left-radius) - var(--card-border-width));
+    border-top-right-radius: calc(var(--top-right-radius) - var(--card-border-width));
+  }
+
+  .grid--no-gap-mobile .card--card:after {
+    width: calc(var(--card-border-width) * 1 + 100%);
+    border: 0;
+    border-radius: var(--top-left-radius) var(--top-right-radius) var(--bottom-right-radius) var(--bottom-left-radius);
+  }
+
+  .grid--no-gap-mobile .card--card .card-inner:after {
+    border-radius: var(--top-left-radius) var(--top-right-radius) 0 0;
   }
 }
 
 @media screen and (min-width: 750px) {
-  .grid.grid--no-gap .card--standard:after {
+  .grid.grid--no-gap .card--card {
+    overflow: visible;
+  }
+
+  .grid--no-gap .card--standard:after {
     left: calc(var(--grid-border-width) * -1);
     padding-bottom: calc(var(--ratio-percent) - var(--ratio) + var(--grid-border-width));
     border-radius: var(--top-left-radius) var(--top-right-radius) var(--bottom-right-radius) var(--bottom-left-radius);
+  }
+
+  .grid--no-gap .card--card .card__inner {
+    overflow: hidden;
+    border-top-left-radius: calc(var(--top-left-radius) - var(--card-border-width));
+    border-top-right-radius: calc(var(--top-right-radius) - var(--card-border-width));
+  }
+
+  .grid--no-gap .card--card:after {
+    width: calc(var(--card-border-width) * 1 + 100%);
+    border: 0;
+    border-radius: var(--top-left-radius) var(--top-right-radius) var(--bottom-right-radius) var(--bottom-left-radius);
+  }
+
+  .grid--no-gap .card--card .card-inner:after {
+    border-radius: var(--top-left-radius) var(--top-right-radius) 0 0;
   }
 }
 
@@ -161,10 +220,63 @@
   z-index: 1;
 }
 
-.card-wrapper:focus-within .card {
-  box-shadow: 0 0 0 .3rem rgb(var(--color-background)),0 0 .5rem .4rem rgba(var(--color-foreground),.3);
-  outline-offset: 0.3rem;
-  outline: .2rem solid rgba(var(--color-foreground),.5);
+.card-wrapper:focus-within .card:before {
+  --card-outline-offset: 0.3rem;
+  /* box-shadow: 0 0 0 var(--card-outline-offset) rgb(var(--color-background)),0 0 .5rem .4rem rgba(var(--color-foreground),.3); */
+  outline-offset: var(--card-outline-offset);
+  outline: .2rem solid rgba(var(--color-foreground), .5);
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  content: '';
+  position: absolute;
+  z-index: 2;
+  border-radius: var(--card-corner-radius);
+  pointer-events: none;
+}
+
+.card-wrapper:focus-within .card--card:before {
+  width: calc(var(--card-border-width) * 2 + 100%);
+  height: calc(var(--card-border-width) * 2 + 100%);
+  top: calc(var(--card-border-width) * -1);
+  left: calc(var(--card-border-width) * -1);
+}
+
+@media screen and (max-width: 749px) {
+  .grid.grid--no-gap-mobile .card-wrapper:focus-within .card--standard:before {
+    width: calc(var(--card-border-width) * 1 + 100%);
+    height: calc(var(--card-border-width) * 1 + 100%);
+    top: 0;
+    left: calc(var(--card-border-width) * -1);
+    border-radius: var(--top-left-radius) var(--top-right-radius) 0 0;
+  }
+
+  .grid.grid--no-gap-mobile .card-wrapper:focus-within .card--card:before {
+    border-radius: var(--top-left-radius) var(--top-right-radius) var(--bottom-right-radius) var(--bottom-left-radius);
+  }
+
+  .grid.grid--no-gap-mobile .card-wrapper:focus-within .card--standard:before {
+    width: calc(var(--card-border-width) * 1 + 100%);
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .grid.grid--no-gap .card-wrapper:focus-within .card--standard:before {
+    width: calc(var(--card-border-width) * 1 + 100%);
+    height: calc(var(--card-border-width) * 1 + 100%);
+    top: 0;
+    left: calc(var(--card-border-width) * -1);
+    border-radius: var(--top-left-radius) var(--top-right-radius) 0 0;
+  }
+
+  .grid.grid--no-gap .card-wrapper:focus-within .card--card:before {
+    border-radius: var(--top-left-radius) var(--top-right-radius) var(--bottom-right-radius) var(--bottom-left-radius);
+  }
+
+  .grid.grid--no-gap .card-wrapper:focus-within .card--standard:before {
+    width: calc(var(--card-border-width) * 1 + 100%);
+  }
 }
 
 .card-wrapper:focus-within .card__heading a {
