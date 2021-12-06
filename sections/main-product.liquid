@@ -41,13 +41,14 @@
             {%- endunless -%}
           {%- endfor -%}
         </ul>
-        <div class="slider-buttons no-js-hidden{% if product.media.size < 2 %} small-hide{% endif %}">
+        {%- assign filtered_media_size = product.media.size | minus: variant_images.size | plus: 1 -%}
+        <div class="slider-buttons no-js-hidden{% if product.media.size < 2 or section.settings.hide_variants and filtered_media_size < 2 %} small-hide{% endif %}">
           <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'accessibility.previous_slide' | t }}">{% render 'icon-caret' %}</button>
           <div class="slider-counter caption">
             <span class="slider-counter--current">1</span>
             <span aria-hidden="true"> / </span>
             <span class="visually-hidden">{{ 'accessibility.of' | t }}</span>
-            <span class="slider-counter--total">{% if section.settings.hide_variants %}{{ product.media.size | minus: variant_images.size | plus: 1 }}{% else %}{{ product.media.size }}{% endif %}</span>
+            <span class="slider-counter--total">{% if section.settings.hide_variants %}{{ filtered_media_size }}{% else %}{{ product.media.size }}{% endif %}</span>
           </div>
           <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'accessibility.next_slide' | t }}">{% render 'icon-caret' %}</button>
         </div>
@@ -84,7 +85,7 @@
               {{ product.title | escape }}
             </h1>
           {%- when 'price' -%}
-            <div class="no-js-hidden" id="price-{{ section.id }}" {{ block.shopify_attributes }}>
+            <div class="no-js-hidden" id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
               {%- render 'price', product: product, use_variant: true, show_badges: true, price_class: 'price--large' -%}
             </div>
             {%- if shop.taxes_included or shop.shipping_policy.body != blank -%}
@@ -113,7 +114,7 @@
             {{ block.settings.custom_liquid }}
           {%- when 'collapsible_tab' -%}
             <div class="product__accordion accordion" {{ block.shopify_attributes }}>
-              <details>
+              <details id="Details-{{ block.id }}-{{ section.id }}">
                 <summary>
                   <div class="summary__title">
                     {% render 'icon-accordion', icon: block.settings.icon %}
@@ -123,7 +124,7 @@
                   </div>
                   {% render 'icon-caret' %}
                 </summary>
-                <div class="accordion__content rte">
+                <div class="accordion__content rte" id="ProductAccordion-{{ block.id }}-{{ section.id }}">
                   {{ block.settings.content }}
                   {{ block.settings.page.content }}
                 </div>
@@ -146,7 +147,7 @@
                     id="Quantity-{{ section.id }}"
                     min="1"
                     value="1"
-                    form="product-form-{{ section.id }}"
+                    form="{{ product_form_id }}"
                   >
                 <button class="quantity__button no-js-hidden" name="plus" type="button">
                   <span class="visually-hidden">{{ 'products.product.quantity.increase' | t: product: product.title | escape }}</span>
@@ -160,12 +161,12 @@
               </modal-opener>
               <a href="{{ block.settings.page.url }}" class="product-popup-modal__button link no-js">{{ block.settings.text }}</a>
           {%- when 'share' -%}
-            <share-button class="share-button" {{ block.shopify_attributes }}>
+            <share-button id="Share-{{ section.id }}" class="share-button" {{ block.shopify_attributes }}>
               <button class="share-button__button hidden">
                 {% render 'icon-share' %}
                 {{ block.settings.share_label | escape }}
               </button>
-              <details>
+              <details id="Details-{{ block.id }}-{{ section.id }}">
                 <summary class="share-button__button">
                   {% render 'icon-share' %}
                   {{ block.settings.share_label | escape }}
@@ -177,7 +178,7 @@
                     <input type="text"
                           class="field__input"
                           id="url"
-                          value="{{ shop.url | append: product.url }}"
+                          value="{{ product.selected_variant.url | default: product.url | prepend: shop.url }}"
                           placeholder="{{ 'general.share.share_url' | t }}"
                           onclick="this.select();"
                           readonly
@@ -204,13 +205,13 @@
                       <fieldset class="js product-form__input">
                         <legend class="form__label">{{ option.name }}</legend>
                         {%- for value in option.values -%}
-                          <input type="radio" id="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}"
+                          <input type="radio" id="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
                                 name="{{ option.name }}"
                                 value="{{ value | escape }}"
-                                form="product-form-{{ section.id }}"
+                                form="{{ product_form_id }}"
                                 {% if option.selected_value == value %}checked{% endif %}
                           >
-                          <label for="{{ section.id }}-{{ option.name }}-{{ forloop.index0 }}">
+                          <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}">
                             {{ value }}
                           </label>
                         {%- endfor -%}
@@ -231,7 +232,7 @@
                         <select id="Option-{{ section.id }}-{{ forloop.index0 }}"
                           class="select__select"
                           name="options[{{ option.name | escape }}]"
-                          form="product-form-{{ section.id }}"
+                          form="{{ product_form_id }}"
                         >
                           {%- for value in option.values -%}
                             <option value="{{ value | escape }}" {% if option.selected_value == value %}selected="selected"{% endif %}>
@@ -320,7 +321,7 @@
 
               <pickup-availability class="product__pickup-availabilities no-js-hidden"
                 {% if product.selected_or_first_available_variant.available and pick_up_availabilities.size > 0 %} available{% endif %}
-                data-base-url="{{ shop.url }}{{ routes.root_url }}"
+                data-root-url="{{ routes.root_url }}"
                 data-variant-id="{{ product.selected_or_first_available_variant.id }}"
                 data-has-only-default-variant="{{ product.has_only_default_variant }}"
               >
@@ -476,22 +477,30 @@
   <script src="{{ 'product-model.js' | asset_url }}" defer></script>
 {%- endif -%}
 
+{%- liquid
+  if product.selected_or_first_available_variant.featured_media
+    assign seo_media = product.selected_or_first_available_variant.featured_media
+  else
+    assign seo_media = product.featured_media
+  endif
+-%}
+
 <script type="application/ld+json">
   {
     "@context": "http://schema.org/",
     "@type": "Product",
     "name": {{ product.title | json }},
     "url": {{ shop.url | append: product.url | json }},
-    {%- if product.selected_or_first_available_variant.featured_media -%}
-      {%- assign media_size = product.selected_or_first_available_variant.featured_media.preview_image.width | append: 'x' -%}
+    {% if seo_media -%}
+      {%- assign media_size = seo_media.preview_image.width | append: 'x' -%}
       "image": [
-        {{ product.selected_or_first_available_variant.featured_media | img_url: media_size | prepend: "https:" | json }}
+        {{ seo_media | img_url: media_size | prepend: "https:" | json }}
       ],
-    {%- endif -%}
+    {%- endif %}
     "description": {{ product.description | strip_html | json }},
-    {%- if product.selected_or_first_available_variant.sku != blank -%}
+    {% if product.selected_or_first_available_variant.sku != blank -%}
       "sku": {{ product.selected_or_first_available_variant.sku | json }},
-    {%- endif -%}
+    {%- endif %}
     "brand": {
       "@type": "Thing",
       "name": {{ product.vendor | json }}
