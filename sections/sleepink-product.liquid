@@ -81,7 +81,7 @@
               {{- block.settings.text -}}
             </p>
           {%- when 'title' -%}
-            <h1 class="product__title ff-heading fs-30px lh-34px fw-600 ls-m140" {{ block.shopify_attributes }}>
+            <h1 class="product__title ff-heading fs-30px lh-34px fw-600 ls-m140 mr-auto mb-3i" {{ block.shopify_attributes }}>
               {{ product.title | escape }}
             </h1>
           {%- when 'price' -%}
@@ -314,27 +314,44 @@
 
             <script src="{{ 'pickup-availability.js' | asset_url }}" defer="defer"></script>
           {%- when 'rating' -%}
-            {%- if product.metafields.reviews.rating.value != blank -%}
-              {% liquid
-               assign rating_decimal = 0
-               assign decimal = product.metafields.reviews.rating.value.rating | modulo: 1
-               if decimal >= 0.3 and decimal <= 0.7
-                assign rating_decimal = 0.5
-              elsif decimal > 0.7
-                assign rating_decimal = 1
-               endif
+            <div class="flex row jc-fs ai-c mb-7i h-12px mt-0i">
+              <div class="flex row jc-fs ai-c h-12px mt-0i mr-2i">
+              {% liquid 
+                assign rating = product.metafields.global.rating.value
+                assign wholeRating = rating | floor
+                assign missing_stars = 5 | minus: rating | floor
+                assign sum = wholeRating | plus: missing_stars
+                if sum != 5
+                  assign halfStars = 1
+                else
+                  assign halfStars = 0
+                endif
               %}
-              <div class="rating" role="img" aria-label="{{ 'accessibility.star_reviews_info' | t: rating_value: product.metafields.reviews.rating.value, rating_max: product.metafields.reviews.rating.value.scale_max }}">
-                <span aria-hidden="true" class="rating-star color-icon-{{ settings.accent_icons }}" style="--rating: {{ product.metafields.reviews.rating.value.rating | floor }}; --rating-max: {{ product.metafields.reviews.rating.value.scale_max }}; --rating-decimal: {{ rating_decimal }};"></span>
+              {% if wholeRating > 0 %}
+                {% for i in (1..wholeRating) %}
+                  <span>
+                    {%- render 'icon-star', currentColor: "#ffd900" -%}
+                  </span>
+                {% endfor %}
+              {% endif %}
+              {% if halfStars == 1 %}
+                <span>
+                  {%- render 'icon-star-half' -%}
+                </span>
+              {% endif %}
+              {% if missing_stars > 0 %}
+                {% for j in (1..missing_stars) %}
+                  <span>
+                    {%- render 'icon-star', currentColor: "#dddddd" -%}
+                  </span>
+                {% endfor %}
+              {% endif %}
+            </div>
+              {% assign reviewCount = product.metafields.global.reviewCount %}
+              <div class="ff-body fw-400 fs-12px lh-100 mt-0 ta-c italic">
+                ({% if reviewCount > 0 %}{{ reviewCount }}{% else %}0{% endif %})
               </div>
-              <p class="rating-text caption">
-                <span aria-hidden="true">{{ product.metafields.reviews.rating.value }} / {{ product.metafields.reviews.rating.value.scale_max }}</span>
-              </p>
-              <p class="rating-count caption">
-                <span aria-hidden="true">({{ product.metafields.reviews.rating_count }})</span>
-                <span class="visually-hidden">{{ product.metafields.reviews.rating_count }} {{ "accessibility.total_reviews" | t }}</span>
-              </p>
-            {%- endif -%}
+            </div>
           {%- when 'nutrition' -%}
             {% liquid 
               if product.metafields.global.showIngredientList.value
