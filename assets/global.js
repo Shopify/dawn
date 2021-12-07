@@ -529,6 +529,11 @@ class SliderComponent extends HTMLElement {
     this.update();
   }
 
+  resetPages() {
+    this.sliderItems = this.slider.querySelectorAll('li');
+    this.initPages();
+  }
+
   update() {
     const previousPage = this.currentPage;
     this.currentPage = Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
@@ -540,7 +545,8 @@ class SliderComponent extends HTMLElement {
 
     if (this.currentPage != previousPage) {
       this.dispatchEvent(new CustomEvent('slideChanged', { detail: {
-        currentPage: this.currentPage
+        currentPage: this.currentPage,
+        currentElement: this.sliderItemsToShow[this.currentPage - 1]
       }}));
     }
 
@@ -756,9 +762,6 @@ class VariantSelects extends HTMLElement {
   updateMedia() {
     if (!this.currentVariant) return;
     if (!this.currentVariant.featured_media) return;
-
-    this.stickyHeader = this.stickyHeader || document.querySelector('sticky-header');
-    if (this.stickyHeader) this.stickyHeader.dispatchEvent(new Event('preventHeaderReveal'));
 
     const mediaGallery = document.getElementById(`MediaGallery-${this.dataset.section}`);
     mediaGallery.setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media.id}`, true);
