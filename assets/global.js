@@ -484,14 +484,15 @@ class DeferredMedia extends HTMLElement {
     poster.addEventListener('click', this.loadContent.bind(this));
   }
 
-  loadContent() {
+  loadContent(focus = true) {
     window.pauseAllMedia();
     if (!this.getAttribute('loaded')) {
       const content = document.createElement('div');
       content.appendChild(this.querySelector('template').content.firstElementChild.cloneNode(true));
 
       this.setAttribute('loaded', true);
-      this.appendChild(content.querySelector('video, model-viewer, iframe')).focus();
+      const deferredElement = this.appendChild(content.querySelector('video, model-viewer, iframe'));
+      if (focus) deferredElement.focus();
     }
   }
 }
@@ -565,8 +566,8 @@ class SliderComponent extends HTMLElement {
     }
   }
 
-  scrollIntoView(element) {
-    const lastVisibleSlide = this.slider.clientWidth + this.slider.scrollLeft - 10;
+  scrollIntoView(element, offset = 0) {
+    const lastVisibleSlide = this.slider.clientWidth + this.slider.scrollLeft - offset;
     const isSlideVisible = element.offsetLeft < lastVisibleSlide && element.offsetLeft > this.slider.scrollLeft;
     if (!isSlideVisible) this.slider.scrollTo({ left: element.offsetLeft });
   }

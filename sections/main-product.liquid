@@ -21,7 +21,7 @@
 <section class="page-width">
   <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.gallery_layout }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
     <div class="grid__item product__media-wrapper">
-      <media-gallery id="MediaGallery-{{ section.id }}" role="region" {% if section.settings.enable_sticky_info %} class="product__media-gallery"{% endif %} aria-label="{{ 'products.product.media.gallery_viewer' | t }}">
+      <media-gallery id="MediaGallery-{{ section.id }}" role="region" {% if section.settings.enable_sticky_info %} class="product__media-gallery"{% endif %} aria-label="{{ 'products.product.media.gallery_viewer' | t }}" data-desktop-layout="{{ section.settings.gallery_layout }}">
         <div id="GalleryStatus-{{ section.id }}" class="visually-hidden" role="status"></div>
         <slider-component id="GalleryViewer-{{ section.id }}" class="slider-mobile-gutter">
           <a class="skip-to-content-link button visually-hidden" href="#ProductInfo-{{ section.id }}">
@@ -79,9 +79,16 @@
             <button type="button" class="slider-button slider-button--prev{% if media_count <= 3 %} small-hide{% endif %}{% if media_count <= 4 %} medium-hide large-up-hide{% endif %}" name="previous" aria-label="{{ 'accessibility.previous_slide' | t }}" aria-controls="GalleryThumbnails-{{ section.id }}" data-step="3">{% render 'icon-caret' %}</button>
             <ul id="Slider-Thumbnails-{{ section.id }}" class="thumbnail-list list-unstyled slider slider--mobile{% if section.settings.gallery_layout == 'thumbnail_slider' %} slider--tablet-up{% endif %}">
               {%- if featured_media != null -%}
-                <li class="thumbnail-list__item slider__slide{% if section.settings.hide_variants and variant_images contains featured_media.src %} thumbnail-list_item--variant{% endif %}" data-target="{{ section.id }}-{{ featured_media.id }}" data-media-position="0">
+                {%- capture media_index -%}
+                  {%- if featured_media.media_type == 'model' -%}{%- increment model_index -%}
+                  {%- elsif featured_media.media_type == 'video' or featured_media.media_type == 'external_video' -%}{%- increment video_index -%}
+                  {%- elsif featured_media.media_type == 'image'%}{%- increment image_index -%}
+                  {%- endif -%}
+                {%- endcapture -%}
+                {%- assign media_index = media_index | plus: 1 -%}
+                <li class="thumbnail-list__item slider__slide{% if section.settings.hide_variants and variant_images contains featured_media.src %} thumbnail-list_item--variant{% endif %}" data-target="{{ section.id }}-{{ featured_media.id }}" data-media-position="{{ media_index }}">
                   <button class="thumbnail {% if featured_media.preview_image.aspect_ratio > 1 %}thumbnail--wide{% else %}thumbnail--narrow{% endif %}"
-                    aria-label="{%- if featured_media.media_type == 'image' -%}{{ 'products.product.media.load_image' | t: index: 0 }}{%- elsif featured_media.media_type == 'model' -%}{{ 'products.product.media.load_model' | t: index: 0 }}{%- elsif featured_media.media_type == 'video' or featured_media.media_type == 'external_video' -%}{{ 'products.product.media.load_video' | t: index: 0 }}{%- endif -%}"
+                    aria-label="{%- if featured_media.media_type == 'image' -%}{{ 'products.product.media.load_image' | t: index: media_index }}{%- elsif featured_media.media_type == 'model' -%}{{ 'products.product.media.load_model' | t: index: media_index }}{%- elsif featured_media.media_type == 'video' or featured_media.media_type == 'external_video' -%}{{ 'products.product.media.load_video' | t: index: media_index }}{%- endif -%}"
                     aria-current="true"
                     aria-controls="GalleryViewer-{{ section.id }}"
                     aria-describedby="Thumbnail-{{ section.id }}-0"
@@ -105,12 +112,9 @@
               {%- for media in product.media -%}
                 {%- unless media.id == product.selected_or_first_available_variant.featured_media.id -%}
                   {%- capture media_index -%}
-                    {%- if media.media_type == 'model' -%}
-                    {%- increment model_index -%}
-                    {%- elsif media.media_type == 'video' or media.media_type == 'external_video' -%}
-                    {%- increment video_index -%}
-                    {%- elsif media.media_type == 'image'%}
-                    {%- increment image_index -%}
+                    {%- if media.media_type == 'model' -%}{%- increment model_index -%}
+                    {%- elsif media.media_type == 'video' or media.media_type == 'external_video' -%}{%- increment video_index -%}
+                    {%- elsif media.media_type == 'image'%}{%- increment image_index -%}
                     {%- endif -%}
                   {%- endcapture -%}
                   {%- assign media_index = media_index | plus: 1 -%}
@@ -546,7 +550,7 @@
       this.elements.thumbnails.querySelectorAll('[data-target]').forEach((mediaToSwitch) => {
         mediaToSwitch.querySelector('button').addEventListener('click', this.setActiveMedia.bind(this, mediaToSwitch.dataset.target, false));
       });
-      if (this.mql.matches) this.removeListSemantic();
+      if (this.dataset.desktopLayout !== 'stacked' && this.mql.matches) this.removeListSemantic();
     }
 
     onSlideChanged(event) {
@@ -574,7 +578,8 @@
       window.setTimeout(() => {
         if (this.elements.thumbnails) {
           activeMedia.parentElement.scrollTo({ left: activeMedia.offsetLeft });
-        } else {
+        }
+        if (!this.elements.thumbnails || this.dataset.desktopLayout === 'stacked') {
           activeMedia.scrollIntoView({behavior: 'smooth'});
         }
       });
@@ -591,17 +596,21 @@
 
       this.elements.thumbnails.querySelectorAll('button').forEach((element) => element.removeAttribute('aria-current'));
       thumbnail.querySelector('button').setAttribute('aria-current', true);
-      this.elements.thumbnails.scrollIntoView(thumbnail);
+      this.elements.thumbnails.scrollIntoView(thumbnail, 10);
     }
 
     announceLiveRegion(activeItem, position) {
       const image = activeItem.querySelector('.product__modal-opener--image img');
       if (!image) return;
       image.onload = () => {
+        this.elements.liveRegion.setAttribute('aria-hidden', false);
         this.elements.liveRegion.innerHTML = window.accessibilityStrings.imageAvailable.replace(
           '[index]',
           position
         );
+        setTimeout(() => {
+          this.elements.liveRegion.setAttribute('aria-hidden', true);
+        }, 2000);
       };
       image.src = image.src;
     }
@@ -609,7 +618,7 @@
     playActiveMedia(activeItem) {
       window.pauseAllMedia();
       const deferredMedia = activeItem.querySelector('.deferred-media');
-      if (deferredMedia) deferredMedia.loadContent();
+      if (deferredMedia) deferredMedia.loadContent(false);
     }
 
     preventStickyHeader() {
