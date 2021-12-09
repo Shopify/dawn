@@ -7,19 +7,41 @@
     display: none !important;
   }
   .product-form__input > #tabheadings > label {
-    background-color: #888888;
-    color: rgb(var(--color-background));
+    background-color: rgba(0,0,0,0);
     border-radius: unset;
     padding: 1rem;
+    border: none !important;
   }
-  .product-form__input > #tabheadings > .checked {
-    background-color: rgb(var(--color-background)) !important;
-    color: rgb(var(--color-foreground)) !important;
-    border-bottom: none !important;
+
+  #oncelabel {
+    color: rgba(17,17,17,0.5);
+    margin-bottom: 0;
+  }
+
+  #subslabel {
+    color: rgba(0,0,0,1);
+    margin-bottom: 0;
+  }
+
+
+  .product-form__input > #tabheadings > input:checked + label {
+    opacity: 1;
+    background-color: #fbf9f7;
   }
   label svg {
     height: 17px;
   }
+
+  #quantity-subscription-body {
+    background-color: #fbf9f7;
+    width: 100%;
+    padding: 5%;
+  }
+
+  quantity-input {
+    background-color: #ffffff;
+  }
+
   .qs-flex {
     display: flex;
   }
@@ -53,42 +75,55 @@
   .product-form__input #subscription input[type="radio"]:checked + label p {
     color: rgb(var(--color-foreground));
   }
+  #subscription-btn-wrapper button {
+    color: #000000;
+    background-color: #ffcc00;
+    border: none;
+    box-shadow: none;
+  }
+  #subscription-btn-wrapper button:hover {
+    background: #ffd940;
+  }
 </style>
-{% liquid
-  if product.has_only_default_variant
-    assign curr_variant = product.variants[0]
-  else
-    assign curr_variant = product.first_available_variant
-  endif
-%}
 {% if curr_variant.metafields.global.subscriptions.value.size > 0 %}
   <div class="product-form__input product-form__subscription qs-w-100p" {{ block.shopify_attributes }}>
     <div class="qs-flex qs-row qs-jc-fs qs-ai-c" id="tabheadings">
-      <input type="radio" value="once" name="mode" id="once" checked><label for="once" class="checked" id="oncelabel">einmalige Lieferung <span>{% render 'icon-checkmark' %}</span></label>
-      <input type="radio" value="subs" name="mode" id="subs"><label for="subs" id="subslabel">Abonnieren und sparen <span class="hidden-element">{% render 'icon-checkmark' %}</span></label>
+      <input type="radio" value="once" name="mode" id="once" checked><label for="once" class="checked" id="oncelabel">Einzelkauf</label>
+      <input type="radio" value="subs" name="mode" id="subs"><label for="subs" id="subslabel">Sparabo</label>
     </div>
-    <quantity-input class="quantity" id="quantity-input">
-      <button class="quantity__button no-js-hidden" name="minus" type="button">
-        <span class="visually-hidden">{{ 'products.product.quantity.decrease' | t: product: product.title | escape }}</span>
-          {% render 'icon-minus' %}
-      </button>
-      <input class="quantity__input"
-        type="number"
-        name="quantity"
-        id="Quantity-{{ section.id }}"
-        min="1"
-        value="1"
-        form="product-form-{{ section.id }}"
-      >
-      <button class="quantity__button no-js-hidden" name="plus" type="button">
-        <span class="visually-hidden">{{ 'products.product.quantity.increase' | t: product: product.title | escape }}</span>
-        {% render 'icon-plus' %}
-      </button>
-    </quantity-input>
-    <div class="subscription hidden-element" id="subscription">
+    <div id="quantity-subscription-body">
+      <div id="quantity-wrapper" class="flex column">
+        {%- for price in curr_variant.metafields.global.prices.value -%}
+          <div class="w-100p flex row jc-spb ai-c py-4 px-4">
+            <img src="{{ product.featured_image | img_url: '100x' }}" alt="{{ product.featured_image.alt | escape }}" width="50" height="50" loading="lazy">
+            <p>{{ price.quantity }} {% if price.quantity == 1 %}Packung{% else %}Packungen{% endif %}</p>
+            <p>{{ price.cost | money_without_currency }} €</p>
+          </div>
+        {%- endfor-%}
+        <quantity-input class="quantity" id="quantity-input">
+          <button class="quantity__button no-js-hidden" name="minus" type="button">
+            <span class="visually-hidden">{{ 'products.product.quantity.decrease' | t: product: product.title | escape }}</span>
+              {% render 'icon-minus' %}
+          </button>
+          <input class="quantity__input"
+            type="number"
+            name="quantity"
+            id="Quantity-{{ section.id }}"
+            min="1"
+            value="1"
+            form="product-form-{{ section.id }}"
+          >
+          <button class="quantity__button no-js-hidden" name="plus" type="button">
+            <span class="visually-hidden">{{ 'products.product.quantity.increase' | t: product: product.title | escape }}</span>
+            {% render 'icon-plus' %}
+          </button>
+        </quantity-input>
+      </div>
+    <div class="subscription hidden-element flex column" id="subscription">
       {%- for sub in curr_variant.metafields.global.subscriptions.value -%}
-        <input type="radio" value="{{ forloop.index0 }}" name="subscription" id="sub-{{ forloop.index0 }}"{% if forloop.index0 == 0 %} checked{% endif %}><label for="sub-{{ forloop.index0 }}"><div><p>alle {{ sub.period }} Tage</p><p>{{ sub.cost | money_without_currency }} €</p><p{%if forloop.index0 != 0 %} class="hidden-vis"{% endif %}>{% render 'icon-checkmark' %}</p></div></label>
+        <input type="radio" value="{{ forloop.index0 }}" name="subscription" id="sub-{{ forloop.index0 }}"{% if forloop.index0 == 0 %} checked{% endif %}><label for="sub-{{ forloop.index0 }}"><div><p>alle {{ sub.period }} Tage</p><p>{{ sub.cost | money_without_currency }} €</p></div></label>
       {%- endfor -%}
+    </div>
     </div>
   </div>
 {% else %}
@@ -135,35 +170,23 @@
     if(document.getElementById("once").checked) {
       document.getElementById("subscription-btn-wrapper").classList.add("hidden-element")
       document.getElementById("buy-buttons").classList.remove("hidden-element")
-      document.getElementById("quantity-input").classList.remove("hidden-element")
+      document.getElementById("quantity-wrapper").classList.remove("hidden-element")
       document.getElementById("subscription").classList.add("hidden-element")
       document.getElementById("oncelabel").classList.add("checked")
       document.getElementById("subslabel").classList.remove("checked")
-      document.querySelector("#once + label > span").classList.remove("hidden-element")
-      document.querySelector("#subs + label > span").classList.add("hidden-element")
     }
     if(document.getElementById("subs").checked) {
       document.getElementById("subscription-btn-wrapper").classList.remove("hidden-element")
       document.getElementById("buy-buttons").classList.add("hidden-element")
-      document.getElementById("quantity-input").classList.add("hidden-element")
+      document.getElementById("quantity-wrapper").classList.add("hidden-element")
       document.getElementById("subscription").classList.remove("hidden-element")
       document.getElementById("oncelabel").classList.remove("checked")
       document.getElementById("subslabel").classList.add("checked")
-      document.querySelector("#once + label > span").classList.add("hidden-element")
-      document.querySelector("#subs + label > span").classList.remove("hidden-element")
     }
   }
   function changeLink(e) {
     const subscriptions = {{ curr_variant.metafields.global.subscriptions.value | json }}
     const checkedValue = Number(e.target.value)
-    for(let i = 0; i < subscriptions.length; i++){
-      const id = `#sub-${i}`
-      if (i == checkedValue) {
-        document.querySelector(`${id} + label > div > p:last-child`).classList.remove("hidden-vis")
-      } else {
-        document.querySelector(`${id} + label > div > p:last-child`).classList.add("hidden-vis")
-      }
-    }
     const vid = subscriptions[checkedValue].vid
     const url = `https://abo.schlafdrink.de/cart/${vid}:1`
     document.getElementById("subscription-link").href = url
