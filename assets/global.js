@@ -604,7 +604,7 @@ class SlideshowComponent extends SliderComponent {
     if (!isFirstSlide && !isLastSlide) return;
 
     if (isFirstSlide && event.currentTarget.name === 'previous') {
-      this.slideScrollPosition = this.slider.scrollLeft + this.sliderFirstItem.clientWidth * this.sliderItemsToShow.length;
+      this.slideScrollPosition = this.slider.scrollLeft + this.sliderFirstItemNode.clientWidth * this.sliderItemsToShow.length;
     } else if (isLastSlide && event.currentTarget.name === 'next') {
       this.slideScrollPosition = 0;
     }
@@ -691,7 +691,7 @@ class SlideshowComponent extends SliderComponent {
 
   linkToSlide(event) {
     event.preventDefault();
-    const slideScrollPosition = this.slider.scrollLeft + this.sliderFirstItem.clientWidth * (this.sliderControlLinksArray.indexOf(event.currentTarget) + 1 - this.currentPage);
+    const slideScrollPosition = this.slider.scrollLeft + this.sliderFirstItemNode.clientWidth * (this.sliderControlLinksArray.indexOf(event.currentTarget) + 1 - this.currentPage);
     this.slider.scrollTo({
       left: slideScrollPosition
     });
