@@ -32,5 +32,10 @@ var swiper2 = new Swiper(".fwx-product-images-swiper", {
 	pagination: {
 		el: ".swiper-pagination",
 		clickable: true
+	},
+	on: {
+		slideChange: function () {
+			gallerySwiper.activeIndex = this.activeIndex;
+		}
 	}
 });
