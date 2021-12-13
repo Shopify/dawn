@@ -166,8 +166,8 @@
       {%- endfor -%}
     </div>
     </div>
-    <div class="w-100p py-7" style="background-color: #ffffff;" id="quantity-input-wrapper">
-      <quantity-input class="quantity" id="quantity-input">
+    <div class="w-100p py-7 flex row ai-c" style="background-color: #ffffff;" id="quantity-input-wrapper">
+      <quantity-input class="quantity mr-4" id="quantity-input">
         <button class="quantity__button no-js-hidden" name="minus" type="button">
           <span class="visually-hidden">{{ 'products.product.quantity.decrease' | t: product: product.title | escape }}</span>
             {% render 'icon-minus' %}
@@ -185,6 +185,24 @@
           {% render 'icon-plus' %}
         </button>
       </quantity-input>
+      <div class="flex column ai-fs jc-fs">
+        <p class="my-0 fs-2 lh-100">
+          <span id="total" class="fw-700 ls-m080">{{ curr_variant.price | money_without_currency }} €</span>
+          <span id="totalcompare" class="fw-400 td-lt"></span>
+          <span class="fs-12px fw-300">inkl. MwSt.</span>
+        </p>
+        <p class="my-0 fs-12px lh-100 fw-300">
+          <span id="unitprice">
+            {% liquid
+              assign reference = curr_variant.metafields.global.prices.value[0].reference
+              assign unit = curr_variant.metafields.global.prices.value[0].unit
+              assign content = curr_variant.metafields.global.prices.value[0].content 
+              assign cost = curr_variant.metafields.global.prices.value[0].cost 
+            %}
+            {{ reference | times: cost | divided_by: content | money_without_currency }} €/{{ reference }} {{ unit }}
+          </span>
+        </p>
+      </div>
     </div>
   </div>
 {% else %}
@@ -247,6 +265,30 @@
       document.getElementById("subslabel").classList.add("checked")
     }
   }
+  document.querySelector("quantity-input > input[type=number]").addEventListener("change", (e) => {
+    const quantity = e.target.value
+    const prices = {{ curr_variant.metafields.global.prices }}
+    let unitPrice
+    if(quantity == 1) {
+      document.getElementById("once-0").checked = true
+      document.getElementById("total").innerHTML = `${(prices[0].cost / 100).toFixed(2).replace(".",",")} €`
+      document.getElementById("totalcompare").innerHTML = ""
+      unitPrice = prices[0].reference * prices[0].cost / prices[0].content
+      document.getElementById("unitprice").innerHTML = `${(unitPrice / 100).toFixed(2).replace(".",",")} €/${prices[0].reference} ${prices[0].unit}`
+    } else if (quantity == 2) {
+      document.getElementById("once-1").checked = true
+      document.getElementById("total").innerHTML = `${(2 * prices[1].cost / 100).toFixed(2).replace(".",",")} €`
+      document.getElementById("totalcompare").innerHTML = `${(2 * prices[0].cost / 100).toFixed(2).replace(".",",")} €`
+      unitPrice = prices[1].reference * (2 * prices[1].cost) / prices[1].content
+      document.getElementById("unitprice").innerHTML = `${(unitPrice / 100).toFixed(2).replace(".",",")} €/${prices[1].reference} ${prices[1].unit}`
+    } else {
+      document.getElementById("once-2").checked = true
+      document.getElementById("total").innerHTML = `${(Number(quantity) * prices[2].cost / 100).toFixed(2).replace(".",",")} €`
+      document.getElementById("totalcompare").innerHTML = `${(Number(quantity) * prices[0].cost / 100).toFixed(2).replace(".",",")} €`
+      unitPrice = prices[2].reference * (3 * prices[2].cost) / prices[2].content
+      document.getElementById("unitprice").innerHTML = `${(unitPrice / 100).toFixed(2).replace(".",",")} €/${prices[2].reference} ${prices[2].unit}`
+    }
+  })
   function changeLink(e) {
     const subscriptions = {{ curr_variant.metafields.global.subscriptions.value | json }}
     const checkedValue = Number(e.target.value)
