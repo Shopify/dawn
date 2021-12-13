@@ -692,6 +692,7 @@ class SlideshowComponent extends SliderComponent {
   linkToSlide(event) {
     event.preventDefault();
     const slideScrollPosition = this.slider.scrollLeft + this.sliderFirstItemNode.clientWidth * (this.sliderControlLinksArray.indexOf(event.currentTarget) + 1 - this.currentPage);
+    this.slider.setAttribute('aria-live', 'polite');
     this.slider.scrollTo({
       left: slideScrollPosition
     });
