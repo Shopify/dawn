@@ -106,11 +106,27 @@
   #subscription-btn-wrapper button:hover {
     background: #ffd940;
   }
+  #sparabo-info {
+    background-color: rgba(var(--color-background), 1);
+    color: rgba(var(--color-foreground), 1);
+    box-shadow: 0 0 14px 0 rgba(0,0,0,0.15);
+  }
+  #sparabo-close {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    align-self: flex-end;
+  }
+  #sparabo-close svg {
+    width: 12px;
+    height: 12px;
+  }
 </style>
 {% if curr_variant.metafields.global.subscriptions.value.size > 0 %}
   <div class="product-form__input product-form__subscription w-100p" {{ block.shopify_attributes }}>
     <div class="flex row jc-fs ai-c" id="tabheadings">
-      <input type="radio" value="once" name="mode" id="once" checked><label for="once" class="checked" id="oncelabel">Einzelkauf</label>
+      <input type="radio" value="once" name="mode" id="once" checked>
+      <label for="once" class="checked" id="oncelabel">Einzelkauf</label>
       <input type="radio" value="subs" name="mode" id="subs">
       <label for="subs" id="subslabel" class="flex row ai-c">
         <span>
@@ -121,62 +137,84 @@
         </span>
       </label>
     </div>
+    <div id="sparabo-info" class="hidden-element flex column ai-c pos-abs z-10000 px-5 py-5 w-350px" style="opacity: 1; transform: none">
+      <button type="button" id="sparabo-close">
+        {% render 'icon-close' %}
+      </button>
+      <svg viewBox="0 0 102 102" fill="none" aria-label="Savings Icon" class="w-100px h-100px">
+        <path d="M90.826 57.537L57.584 90.78a9.272 9.272 0 01-13.121 0L4.636 51V4.636H51l39.826 39.827a9.273 9.273 0 010 13.074v0zM27.818 27.818h.046" stroke="#25282B" stroke-width="9.273" stroke-linecap="round" stroke-linejoin="round">
+        </path>
+      </svg>
+      <h2>Spar-Abo</h2>
+      <ol class="inside mb-5">
+        <li>Produkte für regelmäßige Lieferung auswählen</li>
+        <li>Häkchen setzen</li>
+        <li>Lieferintervall auswähen</li>
+        <li>Wie gewohnt bestellen... fertig!</li>
+      </ol>
+      <h3>Bequem, Flexibel, Risikofrei!</h3>
+      <ul class="inside">
+        <li>10-16% Rabatt (für diese und alle Folgebestellungen des Abos)</li>
+        <li>Keine Mindestvertragslaufzeit</li>
+        <li>Jederzeit kündbar</li>
+      </ul>
+    </div>
     <div id="quantity-subscription-body">
       <div id="quantity-wrapper" class="flex column">
         {%- for price in curr_variant.metafields.global.prices.value -%}
           <div class="flex row ai-c px-4 py-5" style="{% if forloop.index0 != 0 %}border-top: 2px solid white;{% endif %}">
-          <input type="radio" name="onetime" id="once-{{ forloop.index0 }}" {% if forloop.index0 == 0 %}checked{% endif %} class="mr-5">
-          <label class="w-100p flexi row jc-fs ai-c mx-0i my-0i px-0i py-0i">
-            <img src="{{ product.featured_image | img_url: '100x' }}" alt="{{ product.featured_image.alt | escape }}" width="50" height="50" loading="lazy" class="mr-4">
-            <div class="flex row jc-spb ai-c w-100p">
-              <span class="flex column jc-fs ai-fs fs-0">
-                <span class="fw-500">
-                  {{ price.title }}
+            <input type="radio" name="onetime" id="once-{{ forloop.index0 }}" {% if forloop.index0 == 0 %}checked{% endif %} class="mr-5">
+            <label class="w-100p flexi row jc-fs ai-c mx-0i my-0i px-0i py-0i">
+              <img src="{{ product.featured_image | img_url: '100x' }}" alt="{{ product.featured_image.alt | escape }}" width="50" height="50" loading="lazy" class="mr-4">
+              <div class="flex row jc-spb ai-c w-100p">
+                <span class="flex column jc-fs ai-fs fs-0">
+                  <span class="fw-500">
+                    {{ price.title }}
+                  </span>
+                  <span class="fw-300">
+                    {{ price.subtitle }}
+                  </span>
                 </span>
-                <span class="fw-300">
-                  {{ price.subtitle }}
+                <span class="flex column jc-fe ai-fe">
+                  {% if price.saving %}
+                    <span style="background-color: #ffcc00; padding: 6px 13px; color: black; font-weight: 500; border-radius: 40px;" class="mb-3">{{ price.saving }} gespart</span>
+                  {% endif %}
+                  <span class="fs-2 fw-700 ta-r">{% if price.perUnit %}<span class="fw-300 fs-0">je </span>{% endif %}{{ price.cost | money_without_currency }} €</span>
                 </span>
-              </span>
-              <span class="flex column jc-fe ai-fe">
-                {% if price.saving %}
-                  <span style="background-color: #ffcc00; padding: 6px 13px; color: black; font-weight: 500; border-radius: 40px;" class="mb-3">{{ price.saving }} gespart</span>
-                {% endif %}
-                <span class="fs-2 fw-700 ta-r">{% if price.perUnit %}<span class="fw-300 fs-0">je </span>{% endif %}{{ price.cost | money_without_currency }} €</span>
-              </span>
-            </div>
-          </label>
-        </div>
+              </div>
+            </label>
+          </div>
         {%- endfor-%}
       </div>
-    <div class="subscription hidden-element flex column" id="subscription">
-      {%- for sub in curr_variant.metafields.global.subscriptions.value -%}
-        <div class="flex row jc-fs ai-c w-100p px-4 py-5" style="{% if forloop.index0 != 0 %}border-top: 2px solid white;{% endif %}">
-          <input type="radio" value="{{ forloop.index0 }}" name="subscription" id="sub-{{ forloop.index0 }}"{% if forloop.index0 == 0 %} checked{% endif %} class="mr-5">
-          <label for="sub-{{ forloop.index0 }}" class="flexi row jc-spb ai-c w-100p my-0i mx-0i px-0i py-0i">
-            <p class="flex column jc-c ai-fs fs-0">
-              <span class="fw-500">
-                {{ sub.title }}
+      <div class="subscription hidden-element flex column" id="subscription">
+        {%- for sub in curr_variant.metafields.global.subscriptions.value -%}
+          <div class="flex row jc-fs ai-c w-100p px-4 py-5" style="{% if forloop.index0 != 0 %}border-top: 2px solid white;{% endif %}">
+            <input type="radio" value="{{ forloop.index0 }}" name="subscription" id="sub-{{ forloop.index0 }}"{% if forloop.index0 == 0 %} checked{% endif %} class="mr-5">
+            <label for="sub-{{ forloop.index0 }}" class="flexi row jc-spb ai-c w-100p my-0i mx-0i px-0i py-0i">
+              <p class="flex column jc-c ai-fs fs-0">
+                <span class="fw-500">
+                  {{ sub.title }}
+                </span>
+                <span class="fw-300">
+                  {{ sub.subtitle }}
+                </span>
+              </p>
+              <span class="flex column jc-fe ai-fe">
+                {% if sub.saving %}
+                  <span style="background-color: #ffcc00; padding: 6px 13px; color: black; font-weight: 500; border-radius: 40px;" class="mb-3">{{ sub.saving }} gespart</span>
+                {% endif %}
+                <span class="fs-2 fw-700 ta-r">{{ sub.cost | money_without_currency }} €</span>
               </span>
-              <span class="fw-300">
-                {{ sub.subtitle }}
-              </span>
-            </p>
-            <span class="flex column jc-fe ai-fe">
-              {% if sub.saving %}
-                <span style="background-color: #ffcc00; padding: 6px 13px; color: black; font-weight: 500; border-radius: 40px;" class="mb-3">{{ sub.saving }} gespart</span>
-              {% endif %}
-              <span class="fs-2 fw-700 ta-r">{{ sub.cost | money_without_currency }} €</span>
-            </span>
-          </label>
-        </div>
-      {%- endfor -%}
-    </div>
+            </label>
+          </div>
+        {%- endfor -%}
+      </div>
     </div>
     <div class="w-100p py-7 flex row ai-c" style="background-color: #ffffff;" id="quantity-input-wrapper">
       <quantity-input class="quantity mr-4" id="quantity-input">
         <button class="quantity__button no-js-hidden" name="minus" type="button">
           <span class="visually-hidden">{{ 'products.product.quantity.decrease' | t: product: product.title | escape }}</span>
-            {% render 'icon-minus' %}
+          {% render 'icon-minus' %}
         </button>
         <input class="quantity__input"
           type="number"
