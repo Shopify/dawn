@@ -206,17 +206,17 @@
     </div>
     <div class="flex column ai-fs jc-fs py-7 hidden-element" id="subscription-price-wrapper">
       <p class="my-0 fs-2 lh-100">
-        <span id="total" class="fw-700 ls-m080">{{ curr_variant.price | money_without_currency }} €</span>
-        <span id="totalcompare" class="fw-400 td-lt"></span>
+        <span id="substotal" class="fw-700 ls-m080">{{ curr_variant.metafields.global.subscriptions.value[0].cost | money_without_currency }} €</span>
+        <span id="substotalcompare" class="fw-400 td-lt">{{ curr_variant.price | money_without_currency }} €</span>
         <span class="fs-12px fw-300">inkl. MwSt.</span>
       </p>
       <p class="my-0 fs-12px lh-100 fw-300">
-        <span id="unitprice">
+        <span id="subsunitprice">
           {% liquid
-            assign reference = curr_variant.metafields.global.prices.value[0].reference
-            assign unit = curr_variant.metafields.global.prices.value[0].unit
-            assign content = curr_variant.metafields.global.prices.value[0].content 
-            assign cost = curr_variant.metafields.global.prices.value[0].cost 
+            assign reference = curr_variant.metafields.global.subscriptions.value[0].reference
+            assign unit = curr_variant.metafields.global.subscriptions.value[0].unit
+            assign content = curr_variant.metafields.global.subscriptions.value[0].content 
+            assign cost = curr_variant.metafields.global.subscriptions.value[0].cost 
           %}
           {{ reference | times: cost | divided_by: content | money_without_currency }} €/{{ reference }} {{ unit }}
         </span>
@@ -308,6 +308,24 @@
       unitPrice = prices[2].reference * (3 * prices[2].cost) / prices[2].content
       document.getElementById("unitprice").innerHTML = `${(unitPrice / 100).toFixed(2).replace(".",",")} €/${prices[2].reference} ${prices[2].unit}`
     }
+  })
+  document.querySelectorAll("#subscription input[type=radio]").forEach((element) => {
+    element.addEventListener("change", (e) => {
+      if(e.target.checked) {
+        const subscriptions = {{ curr_variant.metafields.global.subscriptions }}
+        const prices = {{ curr_variant.metafields.global.prices }}
+        const number = Number(e.target.id.replace("sub-",""))
+        document.getElementById("substotal").innerHTML = `${(subscriptions[number].cost / 100).toFixed(2).replace(".", ",")} €`
+        const compareIndex = prices.findIndex(obj => obj.content === subscriptions[number].content)
+        const quantity = compareIndex + 1
+        const compareGood = prices[compareIndex] || null
+        document.getElementById("substotalcompare").innerHTML = compareGood
+          ?  subscriptions[number].cost < (quantity * compareGood.cost)
+            ? `${(quantity * compareGood.cost / 100).toFixed(2).replace(".", ",")} €` 
+            : ""
+          : ""
+      }
+    })
   })
   function changeLink(e) {
     const subscriptions = {{ curr_variant.metafields.global.subscriptions.value | json }}
