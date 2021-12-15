@@ -531,7 +531,7 @@ class SliderComponent extends HTMLElement {
   }
 
   resetPages() {
-    this.sliderItems = this.slider.querySelectorAll('li');
+    this.sliderItems = this.querySelectorAll('[id^="Slide-"]');
     this.initPages();
   }
 
@@ -568,7 +568,7 @@ class SliderComponent extends HTMLElement {
 
   isSlideVisible(element, offset = 0) {
     const lastVisibleSlide = this.slider.clientWidth + this.slider.scrollLeft - offset;
-    return element.offsetLeft < lastVisibleSlide && element.offsetLeft > this.slider.scrollLeft;
+    return (element.offsetLeft + element.clientWidth) < lastVisibleSlide && element.offsetLeft > this.slider.scrollLeft;
   }
 
   onButtonClick(event) {
