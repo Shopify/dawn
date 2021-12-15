@@ -10,8 +10,6 @@
 
 <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
 
-{{ 'sleepink-product.css' | asset_url | stylesheet_tag }}
-
 {%- assign first_3d_model = product.media | where: "media_type", "model" | first -%}
 {%- if first_3d_model -%}
   {{ 'component-product-model.css' | asset_url | stylesheet_tag }}
@@ -19,9 +17,9 @@
   <link id="ModelViewerOverride" rel="stylesheet" href="{{ 'component-model-viewer-ui.css' | asset_url }}" media="print" onload="this.media='all'">
 {%- endif -%}
 
-<section class="page-width">
-  <div class="product grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
-    <div class="grid__item product__media-wrapper">
+<section class="SectionGrid">
+  <div class="SectionGrid-Wide ngrid twocol-32">
+    <div class="col-1">
       <slider-component class="slider-mobile-gutter">
         <a class="skip-to-content-link button visually-hidden" href="#ProductInfo-{{ section.id }}">
           {{ "accessibility.skip_to_product_info" | t }}
@@ -68,7 +66,8 @@
         </button>
       {%- endif -%}
     </div>
-    <div class="product__info-wrapper grid__item">
+    <div class="col-2">
+      <div class="px-7 py-7 bxsh">
       <div id="ProductInfo-{{ section.id }}" class="product__info-container{% if section.settings.enable_sticky_info %} product__info-container--sticky{% endif %}">
         {%- assign product_form_id = 'product-form-' | append: section.id -%}
 
@@ -81,7 +80,7 @@
               {{- block.settings.text -}}
             </p>
           {%- when 'title' -%}
-            <h1 class="product__title" {{ block.shopify_attributes }}>
+            <h1 class="product__title ff-heading fs-30px lh-34px fw-600 ls-m140 mr-auto mb-3i" {{ block.shopify_attributes }}>
               {{ product.title | escape }}
             </h1>
           {%- when 'price' -%}
@@ -146,12 +145,12 @@
               </quantity-input>
             </div>
           {%- when 'subscription_selector' -%}
-            {% render 'quantity-subscription' %}
-          {%- when 'popup' -%}
+            {% render 'quantity-subscription', curr_product: product, curr_variant: product.variants[0] %}
+          {% comment %} {%- when 'popup' -%}
               <modal-opener class="product-popup-modal__opener no-js-hidden" data-modal="#PopupModal-{{ block.id }}" {{ block.shopify_attributes }}>
                 <button id="ProductPopup-{{ block.id }}" class="product-popup-modal__button link" type="button" aria-haspopup="dialog">{{ block.settings.text | default: block.settings.page.title }}</button>
               </modal-opener>
-              <a href="{{ block.settings.page.url }}" class="product-popup-modal__button link no-js">{{ block.settings.text }}</a>
+              <a href="{{ block.settings.page.url }}" class="product-popup-modal__button link no-js">{{ block.settings.text }}</a> {% endcomment %}
           {%- when 'share' -%}
             <share-button class="share-button" {{ block.shopify_attributes }}>
               <button class="share-button__button hidden">
@@ -268,27 +267,48 @@
           {%- when 'buy_buttons' -%}
             <div {{ block.shopify_attributes }} id="buy-buttons">
               <product-form class="product-form">
+                <div class="product-form__error-message-wrapper" role="alert" hidden>
+                  <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-error" viewBox="0 0 13 13">
+                    <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
+                    <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
+                    <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
+                    <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
+                  </svg>
+                  <span class="product-form__error-message"></span>
+                </div>
+
                 {%- form 'product', product, id: product_form_id, class: 'form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
                   <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
                   <div class="product-form__buttons">
                     <button
                       type="submit"
                       name="add"
-                      class="product-form__submit button button--full-width {% if block.settings.show_dynamic_checkout and product.selling_plan_groups == empty %}button--secondary{% else %}button--primary{% endif %}"
+                      class="product-form__submit button button--full-width {% if block.settings.show_dynamic_checkout and product.selling_plan_groups == empty %}button--secondary{% else %}button--primary{% endif %} py-5 px-7 fw-700 ls-p080 fs-0 ff-body uppercase"
                     {% if product.selected_or_first_available_variant.available == false %}disabled{% endif %}
                     >
                         {%- if product.selected_or_first_available_variant.available -%}
-                          {{ 'products.product.add_to_cart' | t }}
+                          In den Warenkorb
                         {%- else -%}
-                          {{ 'products.product.sold_out' | t }}
+                          Ausverkauft
                         {%- endif -%}
                     </button>
+                    {% comment %}
                     {%- if block.settings.show_dynamic_checkout -%}
                       {{ form | payment_button }}
                     {%- endif -%}
+                  {% endcomment %}
                   </div>
                 {%- endform -%}
               </product-form>
+              <div class="mt-4 flex row jc-c ai-c green checkmark ff-body fs-0 lh-100">
+                {% render 'icon-checkmark' %}
+                <span>
+                  <b>
+                    Auf Lager –
+                  </b>
+                  in 1-3 Tagen bei Dir
+                </span>
+              </div>
 
               {{ 'component-pickup-availability.css' | asset_url | stylesheet_tag }}
 
@@ -314,217 +334,306 @@
 
             <script src="{{ 'pickup-availability.js' | asset_url }}" defer="defer"></script>
           {%- when 'rating' -%}
-            {%- if product.metafields.reviews.rating.value != blank -%}
-              {% liquid
-               assign rating_decimal = 0
-               assign decimal = product.metafields.reviews.rating.value.rating | modulo: 1
-               if decimal >= 0.3 and decimal <= 0.7
-                assign rating_decimal = 0.5
-              elsif decimal > 0.7
-                assign rating_decimal = 1
-               endif
+            <div class="flex row jc-fs ai-c mb-7i h-12px mt-0i">
+              <div class="flex row jc-fs ai-c h-12px mt-0i mr-2i">
+              {% liquid 
+                assign rating = product.metafields.global.rating.value
+                assign wholeRating = rating | floor
+                assign missing_stars = 5 | minus: rating | floor
+                assign sum = wholeRating | plus: missing_stars
+                if sum != 5
+                  assign halfStars = 1
+                else
+                  assign halfStars = 0
+                endif
               %}
-              <div class="rating" role="img" aria-label="{{ 'accessibility.star_reviews_info' | t: rating_value: product.metafields.reviews.rating.value, rating_max: product.metafields.reviews.rating.value.scale_max }}">
-                <span aria-hidden="true" class="rating-star color-icon-{{ settings.accent_icons }}" style="--rating: {{ product.metafields.reviews.rating.value.rating | floor }}; --rating-max: {{ product.metafields.reviews.rating.value.scale_max }}; --rating-decimal: {{ rating_decimal }};"></span>
+              {% if wholeRating > 0 %}
+                {% for i in (1..wholeRating) %}
+                  <span>
+                    {%- render 'icon-star', currentColor: "#ffd900" -%}
+                  </span>
+                {% endfor %}
+              {% endif %}
+              {% if halfStars == 1 %}
+                <span>
+                  {%- render 'icon-star-half' -%}
+                </span>
+              {% endif %}
+              {% if missing_stars > 0 %}
+                {% for j in (1..missing_stars) %}
+                  <span>
+                    {%- render 'icon-star', currentColor: "#dddddd" -%}
+                  </span>
+                {% endfor %}
+              {% endif %}
+            </div>
+              {% assign reviewCount = product.metafields.global.reviewCount %}
+              <div class="ff-body fw-400 fs-12px lh-100 mt-0 ta-c italic">
+                ({% if reviewCount > 0 %}{{ reviewCount }}{% else %}0{% endif %})
               </div>
-              <p class="rating-text caption">
-                <span aria-hidden="true">{{ product.metafields.reviews.rating.value }} / {{ product.metafields.reviews.rating.value.scale_max }}</span>
-              </p>
-              <p class="rating-count caption">
-                <span aria-hidden="true">({{ product.metafields.reviews.rating_count }})</span>
-                <span class="visually-hidden">{{ product.metafields.reviews.rating_count }} {{ "accessibility.total_reviews" | t }}</span>
-              </p>
-            {%- endif -%}
-          {%- when 'nutrition' -%}
-            {% liquid 
-              if product.metafields.global.showIngredientList.value
-                assign completeBool = true
-              elsif product.metafields.global.showNutritionTable.value
-                assign completeBool = true
-              elsif product.metafields.global.showActiveIngredients.value
-                assign completeBool = true 
-              else
-                assign completeBool = false
-              endif
-              if product.metafields.global.showIngredientList.value 
-                if product.metafields.global.showNutritionTable.value 
-                  assign firstSpace = true
+            </div>
+            {%- when 'nutrition' -%}
+              {% liquid 
+                if product.metafields.global.showIngredientList.value
+                  assign completeBool = true
+                elsif product.metafields.global.showNutritionTable.value
+                  assign completeBool = true
+                elsif product.metafields.global.showActiveIngredients.value
+                  assign completeBool = true 
+                else
+                  assign completeBool = false
+                endif
+                if product.metafields.global.showIngredientList.value 
+                  if product.metafields.global.showNutritionTable.value 
+                    assign firstSpace = true
+                  else
+                    assign firstSpace = false
+                  endif
                 else
                   assign firstSpace = false
                 endif
-              else
-                assign firstSpace = false
-              endif
-            %}
-            {% if completeBool %}
-            <div class="accordion" {{ block.shopify_attributes }}>
-              <details>
-                <summary class="sp-flex sp-row sp-ai-c">
-                  <div class="summary__title">
-                    <h2 class="h4 accordion__title sp-ff-heading sp-fw-500 sp-fs-2 sp-fs-lg-3 sp-lh-145 sp-pt-3">
-                      {{ block.settings.accordionTitle }}
-                    </h2>
+              %}
+              {% if completeBool %}
+              <div class="accordion" {{ block.shopify_attributes }}>
+                <details>
+                  <summary class="flex row ai-c">
+                    <div class="summary__title">
+                      <h2 class="h4 accordion__title ff-heading fw-400 fs-1 lh-100 pt-3">
+                        {{ block.settings.accordionTitle }}
+                      </h2>
+                    </div>
+                    {% render 'icon-caret' %}
+                  </summary>
+                  <div class="accordion__content rte ff-body my-0 hyphen pr-9 pr-md-15 pb-6" lang="de">
+                    {% if product.metafields.global.showIngredientList.value %}
+                      <h3 class="fs-1 ff-heading fw-300 lh-100">Zutatenliste</h3>
+                      <div class="w-100p fs-0 fw-300 lh-150">
+                        {{ product.metafields.global.ingredientList.value }}
+                      </div>
+                    {% endif %}
+                    {% if firstSpace %}
+                      <div class="h-12px">&nbsp;</div>
+                    {% endif %}
+                    {% if product.metafields.global.showNutritionTable.value %}
+                      <div class="ngrid threecol-422 w-100p ff-body mb-25px">
+                        <div class="fs-1 fw-300 lh-100 pl-5px">
+                          {{ product.metafields.global.titleNutritionTable.value | escape }}
+                        </div>
+                        <div class="fs-1 fw-300 lh-100 ta-c">
+                          {{ product.metafields.global.referenceAmount.value | escape }}
+                        </div>
+                        <div class="fs-1 fw-300 lh-100 ta-r pr-10px">
+                          {{ product.metafields.global.portionAmount.value | escape }} <br> Portion
+                        </div>
+                        <div class="line-1-3 my-10px w-100p">&nbsp;</div>
+                        <div class="fs-0 fw-300 lh-150 pl-5px">
+                          Energie
+                        </div>
+                        <div class="fs-0 fw-300 lh-150 ta-c">
+                          {{ product.metafields.global.referenceEnergyKcal.value | escape }} kcal 
+                        </div>
+                        <div class="fs-0 fw-300 lh-150 ta-r pr-10px">
+                          {{ product.metafields.global.portionEnergyKcal.value | escape }} kcal 
+                        </div>
+                        <div class="fs-0 fw-300 lh-150">&nbsp;</div>
+                        <div class="fs-0 fw-300 lh-150 ta-c">
+                          {{ product.metafields.global.referenceEnergyKj.value | escape }} kJ
+                        </div><div class="fs-0 fw-300 lh-150 ta-r pr-10px">
+                          {{ product.metafields.global.portionEnergyKj.value | escape }} kJ 
+                        </div>
+                        <div class="line-1-3 my-10px w-100p">&nbsp;</div>
+                        <div class="fs-0 fw-300 lh-150 pl-5px">
+                          Fett
+                        </div>
+                        <div class="fs-0 fw-300 lh-150 ta-c">
+                          {{ product.metafields.global.referenceFat.value | escape }} g
+                        </div>
+                        <div class="fs-0 fw-300 lh-150 ta-r pr-10px">
+                          {{ product.metafields.global.portionFat.value | escape }} g
+                        </div>
+                        <div class="fs-0 fw-300 lh-150 pl-5px">
+                          (gesättigte Fettsäuren)
+                        </div>
+                        <div class="fs-0 fw-300 lh-150 ta-c">
+                          {{ product.metafields.global.referenceSaturated.value | escape }} g
+                        </div><div class="fs-0 fw-300 lh-150 ta-r pr-10px">
+                          {{ product.metafields.global.portionSaturated.value | escape }} g 
+                        </div>
+                        <div class="line-1-3 my-10px w-100p">&nbsp;</div>
+                        <div class="fs-0 fw-300 lh-150 pl-5px">
+                          Kohlenhydrate
+                        </div>
+                        <div class="fs-0 fw-300 lh-150 ta-c">
+                          {{ product.metafields.global.referenceCarbs.value | escape }} g
+                        </div>
+                        <div class="fs-0 fw-300 lh-150 ta-r pr-10px">
+                          {{ product.metafields.global.portionCarbs.value | escape }} g
+                        </div>
+                        <div class="fs-0 fw-300 lh-150 pl-5px">
+                          (Zucker)
+                        </div>
+                        <div class="fs-0 fw-300 lh-150 ta-c">
+                          {{ product.metafields.global.referenceSugar.value | escape }} g
+                        </div><div class="fs-0 fw-300 lh-150 ta-r pr-10px">
+                          {{ product.metafields.global.portionSugar.value | escape }} g 
+                        </div>
+                        <div class="line-1-3 my-10px w-100p">&nbsp;</div>
+                        <div class="fs-0 fw-300 lh-150 pl-5px">
+                          Ballaststoffe
+                        </div>
+                        <div class="fs-0 fw-300 lh-150 ta-c">
+                          {{ product.metafields.global.referenceFiber.value | escape }} g
+                        </div><div class="fs-0 fw-300 lh-150 ta-r pr-10px">
+                          {{ product.metafields.global.portionFiber.value | escape }} g 
+                        </div>
+                        <div class="line-1-3 my-10px w-100p">&nbsp;</div>
+                        <div class="fs-0 fw-300 lh-150 pl-5px">
+                          Protein
+                        </div>
+                        <div class="fs-0 fw-300 lh-150 ta-c">
+                          {{ product.metafields.global.referenceProtein.value | escape }} g
+                        </div><div class="fs-0 fw-300 lh-150 ta-r pr-10px">
+                          {{ product.metafields.global.portionProtein.value | escape }} g 
+                        </div>
+                        <div class="line-1-3 my-10px w-100p">&nbsp;</div>
+                        <div class="fs-0 fw-300 lh-150 pl-5px">
+                          Salz
+                        </div>
+                        <div class="fs-0 fw-300 lh-150 ta-c">
+                          {{ product.metafields.global.referenceSalt.value | escape }} g
+                        </div><div class="fs-0 fw-300 lh-150 ta-r pr-10px">
+                          {{ product.metafields.global.portionSalt.value | escape }} g 
+                        </div>
+                      </div>
+                    {% endif %}
+                    {% if product.metafields.global.showActiveIngredients.value %}
+                      {% assign activeList = product.metafields.global.activeIngredients.value | map: 'name' | join: ', ' %}
+                      <h3 class="fs-1 ff-heading fw-300 lh-100">Inhaltsstoffe</h3>
+                      <div class="w-100p fs-0 fw-300 lh-150 mb-4">
+                        {{ activeList | escape }}
+                      </div>
+                      <div class="ngrid threecol-843 w-100p ff-body">
+                        <div class="fs-1 col-1-2 fw-300 lh-100">
+                          {{ product.metafields.global.titleActiveTable.value | escape }}
+                        </div>
+                        <div class="fs-1 col-3 fw-300 lh-100 ta-r">
+                          %NRV*
+                        </div>
+                        <div class="line-1-3 my-10px w-100p">&nbsp;</div>
+                        {% for ingredient in product.metafields.global.activeIngredients.value %}
+                          <div class="fs-0 fw-300 lh-150 pl-5px">
+                            {{ ingredient.name | escape }}
+                          </div>
+                          <div class="fs-0 fw-300 lh-150 ta-r">
+                            {{ ingredient.amount | escape }}
+                          </div>
+                          <div class="fs-0 fw-300 lh-150 ta-r">
+                            {% if ingredient.percent %}
+                              {{ ingredient.percent | escape }} %
+                            {% else %}
+                              —**
+                            {% endif %}
+                          </div>
+                          <div class="line-1-3 my-10px w-100p">&nbsp;</div>
+                        {% endfor %}
+                      </div>
+                      <div class="fs-0 fw-300 lh-150">
+                        * empfohlene tägliche Aufnahme
+                      </div>
+                      <div class="fs-0 fw-300 lh-150">
+                        {{ block.settings.messageMissingReference | escape }}
+                      </div>
+                    {% endif %}
                   </div>
-                  {% render 'icon-caret' %}
-                </summary>
-                <div class="accordion__content rte sp-ff-body sp-my-0 sp-hyphen sp-pr-9 sp-pr-md-15 sp-pb-6" lang="de">
-                  {% if product.metafields.global.showIngredientList.value %}
-                    <h3 class="sp-fs-3 sp-ff-heading sp-fw-300 sp-lh-130">Zutatenliste</h3>
-                    <div class="sp-w-100p sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024">
-                      {{ product.metafields.global.ingredientList.value }}
+                </details>
+              </div>
+              {% endif %}
+            {%- when 'accordion_rt' -%}
+              <div class="accordion" {{ block.shopify_attributes }}>
+                <details>
+                  <summary class="flex row ai-c">
+                    <div class="summary__title">
+                      <h2 class="h4 accordion__title ff-heading fw-400 fs-1 lh-100 pt-3">
+                        {{ block.settings.accordionTitle }}
+                      </h2>
                     </div>
-                  {% endif %}
-                  {% if firstSpace %}
-                    <div class="sp-space-4">&nbsp;</div>
-                  {% endif %}
-                  {% if product.metafields.global.showNutritionTable.value %}
-                    <div class="sp-grid sp-3col-422 sp-w-100p sp-ff-body sp-mb-25px">
-                      <div class="sp-fs-2 sp-fw-300 sp-lh-26px sp-ls-p024 sp-pl-5px">
-                        {{ product.metafields.global.titleNutritionTable.value | escape }}
-                      </div>
-                      <div class="sp-fs-2 sp-fw-300 sp-lh-26px sp-ls-p024 sp-ta-c">
-                        {{ product.metafields.global.referenceAmount.value | escape }}
-                      </div>
-                      <div class="sp-fs-2 sp-fw-300 sp-lh-26px sp-ls-p024 sp-ta-r sp-pr-10px">
-                        {{ product.metafields.global.portionAmount.value | escape }} <br> Portion
-                      </div>
-                      <div class="sp-line-1-3 sp-my-10px sp-w-100p">&nbsp;</div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-pl-5px">
-                        Energie
-                      </div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-c">
-                        {{ product.metafields.global.referenceEnergyKcal.value | escape }} kcal 
-                      </div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-r sp-pr-10px">
-                        {{ product.metafields.global.portionEnergyKcal.value | escape }} kcal 
-                      </div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024">&nbsp;</div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-c">
-                        {{ product.metafields.global.referenceEnergyKj.value | escape }} kJ
-                      </div><div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-r sp-pr-10px">
-                        {{ product.metafields.global.portionEnergyKj.value | escape }} kJ 
-                      </div>
-                      <div class="sp-line-1-3 sp-my-10px sp-w-100p">&nbsp;</div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-pl-5px">
-                        Fett
-                      </div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-c">
-                        {{ product.metafields.global.referenceFat.value | escape }} g
-                      </div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-r sp-pr-10px">
-                        {{ product.metafields.global.portionFat.value | escape }} g
-                      </div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-pl-5px">
-                        (gesättigte Fettsäuren)
-                      </div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-c">
-                        {{ product.metafields.global.referenceSaturated.value | escape }} g
-                      </div><div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-r sp-pr-10px">
-                        {{ product.metafields.global.portionSaturated.value | escape }} g 
-                      </div>
-                      <div class="sp-line-1-3 sp-my-10px sp-w-100p">&nbsp;</div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-pl-5px">
-                        Kohlenhydrate
-                      </div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-c">
-                        {{ product.metafields.global.referenceCarbs.value | escape }} g
-                      </div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-r sp-pr-10px">
-                        {{ product.metafields.global.portionCarbs.value | escape }} g
-                      </div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-pl-5px">
-                        (Zucker)
-                      </div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-c">
-                        {{ product.metafields.global.referenceSugar.value | escape }} g
-                      </div><div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-r sp-pr-10px">
-                        {{ product.metafields.global.portionSugar.value | escape }} g 
-                      </div>
-                      <div class="sp-line-1-3 sp-my-10px sp-w-100p">&nbsp;</div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-pl-5px">
-                        Ballaststoffe
-                      </div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-c">
-                        {{ product.metafields.global.referenceFiber.value | escape }} g
-                      </div><div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-r sp-pr-10px">
-                        {{ product.metafields.global.portionFiber.value | escape }} g 
-                      </div>
-                      <div class="sp-line-1-3 sp-my-10px sp-w-100p">&nbsp;</div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-pl-5px">
-                        Protein
-                      </div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-c">
-                        {{ product.metafields.global.referenceProtein.value | escape }} g
-                      </div><div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-r sp-pr-10px">
-                        {{ product.metafields.global.portionProtein.value | escape }} g 
-                      </div>
-                      <div class="sp-line-1-3 sp-my-10px sp-w-100p">&nbsp;</div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-pl-5px">
-                        Salz
-                      </div>
-                      <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-c">
-                        {{ product.metafields.global.referenceSalt.value | escape }} g
-                      </div><div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-r sp-pr-10px">
-                        {{ product.metafields.global.portionSalt.value | escape }} g 
-                      </div>
-                    </div>
-                  {% endif %}
-                  {% if product.metafields.global.showActiveIngredients.value %}
-                    {% assign activeList = product.metafields.global.activeIngredients.value | map: 'name' | join: ', ' %}
-                    <h3 class="sp-fs-3 sp-ff-heading sp-fw-300 sp-lh-130">Inhaltsstoffe</h3>
-                    <div class="sp-w-100p sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-mb-4">
-                      {{ activeList | escape }}
-                    </div>
-                    <div class="sp-grid sp-3col-421 sp-w-100p sp-ff-body">
-                      <div class="sp-fs-2 sp-col-1-3 sp-fw-300 sp-lh-26px sp-ls-p024">
-                        {{ product.metafields.global.titleActiveTable.value | escape }}
-                      </div>
-                      <div class="sp-line-1-3 sp-my-10px sp-w-100p">&nbsp;</div>
-                      {% for ingredient in product.metafields.global.activeIngredients.value %}
-                        <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-pl-5px">
-                          {{ ingredient.name | escape }}
-                        </div>
-                        <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-r">
-                          {{ ingredient.amount | escape }}
-                        </div>
-                        <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-r">
-                          {% if ingredient.percent %}
-                            {{ ingredient.percent | escape }} %
-                          {% else %}
-                            —*
-                          {% endif %}
-                        </div>
-                        <div class="sp-line-1-3 sp-my-10px sp-w-100p">&nbsp;</div>
-                      {% endfor %}
-                    </div>
-                    <div class="sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-ta-r">
-                      {{ block.settings.messageMissingReference | escape }}
-                    </div>
-                  {% endif %}
-                </div>
-              </details>
-            </div>
-            {% endif %}
-          {%- when 'accordion_rt' -%}
-            <div class="accordion" {{ block.shopify_attributes }}>
-              <details>
-                <summary class="sp-flex sp-row sp-ai-c">
-                  <div class="summary__title">
-                    <h2 class="h4 accordion__title sp-ff-heading sp-fw-500 sp-fs-2 sp-fs-lg-3 sp-lh-145 sp-pt-3">
-                      {{ block.settings.accordionTitle }}
-                    </h2>
+                    {% render 'icon-caret' %}
+                  </summary>
+                  <div class="accordion__content rte ff-body fs-0 fw-300 lh-150 my-0 hyphen pr-9 pr-md-15 pb-6" lang="de">
+                    {{ block.settings.accordionText }}
                   </div>
-                  {% render 'icon-caret' %}
-                </summary>
-                <div class="accordion__content rte sp-ff-body sp-fs-1 sp-fw-400 sp-fw-lg-300 sp-lh-150 sp-ls-p024 sp-my-0 sp-hyphen sp-pr-9 sp-pr-md-15 sp-pb-6" lang="de">
-                  {{ block.settings.accordionText }}
+                </details>
+              </div>
+            {%- when 'advantages' -%}
+              <div class="advantages mb-5">
+                  <div class="flex row ai-c mb-3">
+                    <div class="h-16px mr-3">
+                      {% render "advantage-icon", { icon: block.settings.iconA } %}
+                    </div>
+                    <p class="fs-15px lh-20px fw-300 ff-body">
+                      {{ block.settings.textA | escape }}
+                    </p>
+                  </div>
+                  <div class="flex row ai-c mb-3">
+                    <div class="h-16px mr-3">
+                      {% render "advantage-icon", { icon: block.settings.iconB } %}
+                    </div>
+                    <p class="fs-15px lh-20px fw-300 ff-body">
+                      {{ block.settings.textB | escape }}
+                    </p>
+                  </div>
+                  <div class="flex row ai-c mb-3">
+                    <div class="h-16px mr-3">
+                      {% render "advantage-icon", { icon: block.settings.iconC } %}
+                    </div>
+                    <p class="fs-15px lh-20px fw-300 ff-body">
+                      {{ block.settings.textC | escape }}
+                    </p>
+                  </div>
+              </div>
+              {%- when 'features' -%}
+                <div class="features mb-5 pt-7 bdtw-1px bdts-sol bdtcfg mt-7">
+                    <div class="flex row ai-c mb-4">
+                      <div class="h-16px mr-3 pos-rel b-2">
+                        {% render "advantage-icon", { icon: 'parcel' } %}
+                      </div>
+                      <p class="fs-15px lh-18px fw-300 ff-body">
+                        Schneller Versand
+                      </p>
+                    </div>
+                    <div class="flex row ai-c mb-4">
+                      <div class="h-16px mr-3 pos-rel b-2">
+                        {% render "advantage-icon", { icon: 'euro' } %}
+                      </div>
+                      <p class="fs-15px lh-18px fw-300 ff-body">
+                        30 Tage Geld-zurück-Garantie
+                      </p>
+                    </div>
+                    <div class="flex row ai-c mb-4">
+                      <div class="h-16px mr-3 pos-rel b-2">
+                        {% render "advantage-icon", { icon: 'secure-payment' } %}
+                      </div>
+                      <p class="fs-15px lh-18px fw-300 ff-body">
+                        Sichere Zahlung
+                      </p>
+                    </div>
                 </div>
-              </details>
-            </div>
+              {% when 'payment_icons' %}
+                <div class="payment flex row jc-spb ai-c">
+                  {% assign paymentArray = 'PayPal, VISA, Mastercard, Klarna, Amex' | split: ', ' %}
+                  {% for icon in paymentArray %}
+                    {% render 'icon-payment', icon: icon %}
+                  {% endfor %}
+                </div>
+              {% when 'paragraph_title' %}
+                <div class="paragraph-title pt-8 mb-3">
+                  <h2 class="fs-3 lh-120 fw-500 ls-m024">{{ block.settings.title | escape }}</h2>
+                </div>
           {%- endcase -%}
         {%- endfor -%}
       </div>
     </div>
+  </div>
   </div>
 
   <product-modal id="ProductModal-{{ section.id }}" class="product-media-modal media-modal">
@@ -678,7 +787,7 @@
 
 {% schema %}
 {
-  "name": "Produktseite",
+  "name": "t:sections.main-product.name",
   "tag": "section",
   "class": "product-section spaced-section",
   "blocks": [
@@ -999,6 +1108,321 @@
           "type": "richtext",
           "id": "accordionText",
           "label": "Inhalt des Akkordeons"
+        }
+      ]
+    },
+    {
+      "type": "advantages",
+      "name": "Produktvorteile (kurz)",
+      "settings": [
+        {
+          "type": "select",
+          "id": "iconA",
+          "label": "erstes Icon",
+          "options": [
+            {
+              "value": "bed",
+              "label": "Bett"
+            },
+            {
+              "value": "germany",
+              "label": "Deutschland"
+            },
+            {
+              "value": "dosierung",
+              "label": "Dosierung"
+            },
+            {
+              "value": "euro",
+              "label": "Euro"
+            },
+            {
+              "value": "brain",
+              "label": "Gehirn (von der Seite)"
+            },
+            {
+              "value": "potenzial-brain",
+              "label": "Gehirn (von oben)"
+            },
+            {
+              "value": "money",
+              "label": "Geld"
+            },
+            {
+              "value": "drink-drop",
+              "label": "Glas und Tropfen"
+            },
+            {
+              "value": "capsule",
+              "label": "Kapsel"
+            },
+            {
+              "value": "keine-nebenwirkungen",
+              "label": "keine Nebenwirkungen"
+            },
+            {
+              "value": "cherry",
+              "label": "Kirsche"
+            },
+            {
+              "value": "microscope",
+              "label": "Mikroskop"
+            },
+            {
+              "value": "molecule",
+              "label": "Molekül"
+            },
+            {
+              "value": "moon-sleep",
+              "label": "Mond mit ZZZ"
+            },
+            {
+              "value": "tired",
+              "label": "müde"
+            },
+            {
+              "value": "overleaf",
+              "label": "Ring und Blatt"
+            },
+            {
+              "value": "secure-payment",
+              "label": "sichere Bezahlung"
+            },
+            {
+              "value": "sofortwirkung",
+              "label": "Sofortwirkung"
+            },
+            {
+              "value": "watch",
+              "label": "Stoppuhr"
+            },
+            {
+              "value": "drops",
+              "label": "Tropfen"
+            },
+            {
+              "value": "cycle",
+              "label": "Zyklus" 
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "textA",
+          "label": "erster Text"
+        },
+        {
+          "type": "select",
+          "id": "iconB",
+          "label": "zweites Icon",
+          "options": [
+            {
+              "value": "bed",
+              "label": "Bett"
+            },
+            {
+              "value": "germany",
+              "label": "Deutschland"
+            },
+            {
+              "value": "dosierung",
+              "label": "Dosierung"
+            },
+            {
+              "value": "euro",
+              "label": "Euro"
+            },
+            {
+              "value": "brain",
+              "label": "Gehirn (von der Seite)"
+            },
+            {
+              "value": "potenzial-brain",
+              "label": "Gehirn (von oben)"
+            },
+            {
+              "value": "money",
+              "label": "Geld"
+            },
+            {
+              "value": "drink-drop",
+              "label": "Glas und Tropfen"
+            },
+            {
+              "value": "capsule",
+              "label": "Kapsel"
+            },
+            {
+              "value": "keine-nebenwirkungen",
+              "label": "keine Nebenwirkungen"
+            },
+            {
+              "value": "cherry",
+              "label": "Kirsche"
+            },
+            {
+              "value": "microscope",
+              "label": "Mikroskop"
+            },
+            {
+              "value": "molecule",
+              "label": "Molekül"
+            },
+            {
+              "value": "moon-sleep",
+              "label": "Mond mit ZZZ"
+            },
+            {
+              "value": "tired",
+              "label": "müde"
+            },
+            {
+              "value": "overleaf",
+              "label": "Ring und Blatt"
+            },
+            {
+              "value": "secure-payment",
+              "label": "sichere Bezahlung"
+            },
+            {
+              "value": "sofortwirkung",
+              "label": "Sofortwirkung"
+            },
+            {
+              "value": "watch",
+              "label": "Stoppuhr"
+            },
+            {
+              "value": "drops",
+              "label": "Tropfen"
+            },
+            {
+              "value": "cycle",
+              "label": "Zyklus" 
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "textB",
+          "label": "zweiter Text"
+        },
+        {
+          "type": "select",
+          "id": "iconC",
+          "label": "drittes Icon",
+          "options": [
+            {
+              "value": "bed",
+              "label": "Bett"
+            },
+            {
+              "value": "germany",
+              "label": "Deutschland"
+            },
+            {
+              "value": "dosierung",
+              "label": "Dosierung"
+            },
+            {
+              "value": "euro",
+              "label": "Euro"
+            },
+            {
+              "value": "brain",
+              "label": "Gehirn (von der Seite)"
+            },
+            {
+              "value": "potenzial-brain",
+              "label": "Gehirn (von oben)"
+            },
+            {
+              "value": "money",
+              "label": "Geld"
+            },
+            {
+              "value": "drink-drop",
+              "label": "Glas und Tropfen"
+            },
+            {
+              "value": "capsule",
+              "label": "Kapsel"
+            },
+            {
+              "value": "keine-nebenwirkungen",
+              "label": "keine Nebenwirkungen"
+            },
+            {
+              "value": "cherry",
+              "label": "Kirsche"
+            },
+            {
+              "value": "microscope",
+              "label": "Mikroskop"
+            },
+            {
+              "value": "molecule",
+              "label": "Molekül"
+            },
+            {
+              "value": "moon-sleep",
+              "label": "Mond mit ZZZ"
+            },
+            {
+              "value": "tired",
+              "label": "müde"
+            },
+            {
+              "value": "overleaf",
+              "label": "Ring und Blatt"
+            },
+            {
+              "value": "secure-payment",
+              "label": "sichere Bezahlung"
+            },
+            {
+              "value": "sofortwirkung",
+              "label": "Sofortwirkung"
+            },
+            {
+              "value": "watch",
+              "label": "Stoppuhr"
+            },
+            {
+              "value": "drops",
+              "label": "Tropfen"
+            },
+            {
+              "value": "cycle",
+              "label": "Zyklus" 
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "textC",
+          "label": "dritter Text"
+        }
+      ]
+    },
+    {
+      "type": "features",
+      "name": "Vorteile (unter dem CTA)",
+      "settings": []
+    },
+    {
+      "type": "payment_icons",
+      "name": "Payment Icons",
+      "settings": []
+    },
+    {
+      "type": "paragraph_title",
+      "name": "Abschnittsüberschrift",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Überschrift"
         }
       ]
     }
