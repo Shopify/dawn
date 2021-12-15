@@ -135,6 +135,9 @@
   .red {
     color: #ff0000;
   }
+  .active-variant {
+    background-color: hsl(30,18.2%,90%);
+  }
 </style>
 {% if curr_variant.metafields.global.subscriptions.value.size > 0 %}
   <div class="product-form__input product-form__subscription w-100p" {{ block.shopify_attributes }}>
@@ -183,7 +186,7 @@
             assign diffs = currs | minus: refs | abs
             assign savings = 100 | times: diffs | divided_by: refs | round
           %}
-          <div class="flex row ai-c px-4 py-5" style="{% if forloop.index0 != 0 %}border-top: 2px solid white;{% endif %}">
+          <div class="flex row ai-c px-4 py-5{% if forloop.index0 == 0 %} active-variant{% endif %}" style="{% if forloop.index0 != 0 %}border-top: 2px solid white;{% endif %}" id="once-{{ forloop.index0 }}-wrapper">
             <input type="radio" name="onetime" id="once-{{ forloop.index0 }}" disabled {% if forloop.index0 == 0 %}checked{% endif %} class="mr-5">
             <label class="w-100p flexi row jc-fs ai-c mx-0i my-0i px-0i py-0i">
               <img src="{{ product.featured_image | img_url: '100x' }}" alt="{{ product.featured_image.alt | escape }}" width="50" height="50" loading="lazy" class="mr-4">
@@ -217,7 +220,7 @@
             assign diff = curr | minus: ref | abs
             assign saving = 100 | times: diff | divided_by: ref | round
           %}
-          <div class="flex row jc-fs ai-c w-100p px-4 py-5" style="{% if forloop.index0 != 0 %}border-top: 2px solid white;{% endif %}">
+          <div class="flex row jc-fs ai-c w-100p px-4 py-5{% if forloop.index0 == 0 %} active-variant{% endif %}" style="{% if forloop.index0 != 0 %}border-top: 2px solid white;{% endif %}" id="sub-{{ forloop.index0 }}-wrapper">
             <input type="radio" value="{{ forloop.index0 }}" name="subscription" id="sub-{{ forloop.index0 }}"{% if forloop.index0 == 0 %} checked{% endif %} class="mr-5">
             <label for="sub-{{ forloop.index0 }}" class="flexi row jc-spb ai-c w-100p my-0i mx-0i px-0i py-0i">
               <p class="flex column jc-c ai-fs fs-0">
@@ -385,18 +388,36 @@
     let unitPrice
     if(quantity == 1) {
       document.getElementById("once-0").checked = true
+      document.getElementById("once-0-wrapper").classList.add("active-variant")
+      prices.forEach((price, index) => {
+        if(index != 0) {
+          document.getElementById(`once-${index}-wrapper`).classList.remove("active-variant")
+        }
+      })
       document.getElementById("total").innerHTML = `${(prices[0].cost / 100).toFixed(2).replace(".",",")} €`
       document.getElementById("totalcompare").innerHTML = ""
       unitPrice = prices[0].reference * prices[0].cost / prices[0].content
       document.getElementById("unitprice").innerHTML = `${(unitPrice / 100).toFixed(2).replace(".",",")} €/${prices[0].reference} ${prices[0].unit}`
     } else if (quantity == 2) {
       document.getElementById("once-1").checked = true
+      document.getElementById("once-1-wrapper").classList.add("active-variant")
+      prices.forEach((price, index) => {
+        if(index != 1) {
+          document.getElementById(`once-${index}-wrapper`).classList.remove("active-variant")
+        }
+      })
       document.getElementById("total").innerHTML = `${(2 * prices[1].cost / 100).toFixed(2).replace(".",",")} €`
       document.getElementById("totalcompare").innerHTML = `${(2 * prices[0].cost / 100).toFixed(2).replace(".",",")} €`
       unitPrice = prices[1].reference * (2 * prices[1].cost) / prices[1].content
       document.getElementById("unitprice").innerHTML = `${(unitPrice / 100).toFixed(2).replace(".",",")} €/${prices[1].reference} ${prices[1].unit}`
     } else {
       document.getElementById("once-2").checked = true
+      document.getElementById("once-2-wrapper").classList.add("active-variant")
+      prices.forEach((price, index) => {
+        if(index != 2) {
+          document.getElementById(`once-${index}-wrapper`).classList.remove("active-variant")
+        }
+      })
       document.getElementById("total").innerHTML = `${(Number(quantity) * prices[2].cost / 100).toFixed(2).replace(".",",")} €`
       document.getElementById("totalcompare").innerHTML = `${(Number(quantity) * prices[0].cost / 100).toFixed(2).replace(".",",")} €`
       unitPrice = prices[2].reference * (3 * prices[2].cost) / prices[2].content
@@ -409,6 +430,12 @@
         const subscriptions = {{ curr_variant.metafields.global.subscriptions }}
         const prices = {{ curr_variant.metafields.global.prices }}
         const number = Number(e.target.id.replace("sub-",""))
+        document.getElementById(`sub-${number}-wrapper`).classList.add("active-variant")
+        subscriptions.forEach((subscription, index) => {
+        if(index != number) {
+          document.getElementById(`sub-${index}-wrapper`).classList.remove("active-variant")
+        }
+      })
         document.getElementById("substotal").innerHTML = `${(subscriptions[number].cost / 100).toFixed(2).replace(".", ",")} €`
         const compareIndex = prices.findIndex(obj => obj.content === subscriptions[number].content)
         const quantity = compareIndex + 1
