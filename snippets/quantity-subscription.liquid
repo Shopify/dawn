@@ -170,6 +170,13 @@
     <div id="quantity-subscription-body">
       <div id="quantity-wrapper" class="flex column">
         {%- for price in curr_variant.metafields.global.prices.value -%}
+          {% liquid 
+            assign currs = price.cost
+            assign references = curr_variant.metafields.global.prices.value[0]
+            assign refs = references.cost
+            assign diffs = currs | minus: refs | abs
+            assign savings = 100 | times: diffs | divided_by: refs | round
+          %}
           <div class="flex row ai-c px-4 py-5" style="{% if forloop.index0 != 0 %}border-top: 2px solid white;{% endif %}">
             <input type="radio" name="onetime" id="once-{{ forloop.index0 }}" disabled {% if forloop.index0 == 0 %}checked{% endif %} class="mr-5">
             <label class="w-100p flexi row jc-fs ai-c mx-0i my-0i px-0i py-0i">
@@ -184,8 +191,8 @@
                   </span>
                 </span>
                 <span class="flex column jc-fe ai-fe">
-                  {% if price.saving %}
-                    <span style="background-color: #ffcc00; padding: 6px 13px; color: black; font-weight: 500; border-radius: 40px;" class="mb-3">{{ price.saving }} gespart</span>
+                  {% if savings > 0 %}
+                    <span style="background-color: #ffcc00; padding: 6px 13px; color: black; font-weight: 500; border-radius: 40px;" class="mb-3">{{ savings }}% gespart</span>
                   {% endif %}
                   <span class="fs-2 fw-700 ta-r">{% if price.perUnit %}<span class="fw-300 fs-0">je </span>{% endif %}{{ price.cost | money_without_currency }} €</span>
                 </span>
@@ -196,6 +203,14 @@
       </div>
       <div class="subscription hidden-element flex column" id="subscription">
         {%- for sub in curr_variant.metafields.global.subscriptions.value -%}
+          {% liquid 
+            assign curr = sub.cost
+            assign content = sub.content
+            assign reference = curr_variant.metafields.global.prices.value | where: 'content', content | first
+            assign ref = reference.cost | times: reference.number
+            assign diff = curr | minus: ref | abs
+            assign saving = 100 | times: diff | divided_by: ref | round
+          %}
           <div class="flex row jc-fs ai-c w-100p px-4 py-5" style="{% if forloop.index0 != 0 %}border-top: 2px solid white;{% endif %}">
             <input type="radio" value="{{ forloop.index0 }}" name="subscription" id="sub-{{ forloop.index0 }}"{% if forloop.index0 == 0 %} checked{% endif %} class="mr-5">
             <label for="sub-{{ forloop.index0 }}" class="flexi row jc-spb ai-c w-100p my-0i mx-0i px-0i py-0i">
@@ -208,8 +223,8 @@
                 </span>
               </p>
               <span class="flex column jc-fe ai-fe">
-                {% if sub.saving %}
-                  <span style="background-color: #ffcc00; padding: 6px 13px; color: black; font-weight: 500; border-radius: 40px;" class="mb-3">{{ sub.saving }} gespart</span>
+                {% if saving %}
+                  <span style="background-color: #ffcc00; padding: 6px 13px; color: black; font-weight: 500; border-radius: 40px;" class="mb-3">{{ saving }}% gespart</span>
                 {% endif %}
                 <span class="fs-2 fw-700 ta-r">{{ sub.cost | money_without_currency }} €</span>
               </span>
