@@ -440,6 +440,8 @@ class ModalDialog extends HTMLElement {
         if (event.target.nodeName === 'MODAL-DIALOG') this.hide();
       });
     }
+
+    document.body.appendChild(this);
   }
 
   show(opener) {
