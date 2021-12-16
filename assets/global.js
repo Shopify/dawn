@@ -616,6 +616,9 @@ class SlideshowComponent extends SliderComponent {
   update() {
     super.update();
     this.sliderControlButtons = this.querySelectorAll('.slider-counter__link');
+    if (this.prevButton.hasAttribute('disabled')) {
+      this.prevButton.removeAttribute('disabled');
+    }
 
     if (!this.sliderControlButtons.length) return;
 
