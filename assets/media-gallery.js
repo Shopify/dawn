@@ -94,6 +94,7 @@ if (!customElements.get('media-gallery')) {
     }
 
     removeListSemantic() {
+      if (!this.elements.viewer.slider) return;
       this.elements.viewer.slider.setAttribute('role', 'presentation');
       this.elements.viewer.sliderItems.forEach(slide => slide.setAttribute('role', 'presentation'));
     }
