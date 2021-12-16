@@ -484,14 +484,15 @@ class DeferredMedia extends HTMLElement {
     poster.addEventListener('click', this.loadContent.bind(this));
   }
 
-  loadContent() {
+  loadContent(focus = true) {
     window.pauseAllMedia();
     if (!this.getAttribute('loaded')) {
       const content = document.createElement('div');
       content.appendChild(this.querySelector('template').content.firstElementChild.cloneNode(true));
 
       this.setAttribute('loaded', true);
-      this.appendChild(content.querySelector('video, model-viewer, iframe')).focus();
+      const deferredElement = this.appendChild(content.querySelector('video, model-viewer, iframe'));
+      if (focus) deferredElement.focus();
     }
   }
 }
@@ -505,7 +506,7 @@ class SliderComponent extends HTMLElement {
     this.sliderItems = this.querySelectorAll('[id^="Slide-"]');
     this.enableSliderLooping = false;
     this.currentPageElement = this.querySelector('.slider-counter--current');
-    this.pageTotal = this.querySelector('.slider-counter--total');
+    this.pageTotalElement = this.querySelector('.slider-counter--total');
     this.prevButton = this.querySelector('button[name="previous"]');
     this.nextButton = this.querySelector('button[name="next"]');
 
@@ -529,32 +530,51 @@ class SliderComponent extends HTMLElement {
     this.update();
   }
 
+  resetPages() {
+    this.sliderItems = this.querySelectorAll('[id^="Slide-"]');
+    this.initPages();
+  }
+
   update() {
+    const previousPage = this.currentPage;
     this.currentPage = Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
 
-    if (!this.currentPageElement || !this.pageTotal) return;
+    if (this.currentPageElement && this.pageTotalElement) {
+      this.currentPageElement.textContent = this.currentPage;
+      this.pageTotalElement.textContent = this.totalPages;
+    }
 
-    this.currentPageElement.textContent = this.currentPage;
-    this.pageTotal.textContent = this.totalPages;
+    if (this.currentPage != previousPage) {
+      this.dispatchEvent(new CustomEvent('slideChanged', { detail: {
+        currentPage: this.currentPage,
+        currentElement: this.sliderItemsToShow[this.currentPage - 1]
+      }}));
+    }
 
     if (this.enableSliderLooping) return;
 
-    if (this.currentPage === 1) {
+    if (this.isSlideVisible(this.sliderItemsToShow[0])) {
       this.prevButton.setAttribute('disabled', 'disabled');
     } else {
       this.prevButton.removeAttribute('disabled');
     }
 
-    if (this.currentPage === this.totalPages) {
+    if (this.isSlideVisible(this.sliderLastItem)) {
       this.nextButton.setAttribute('disabled', 'disabled');
     } else {
       this.nextButton.removeAttribute('disabled');
     }
   }
 
+  isSlideVisible(element, offset = 0) {
+    const lastVisibleSlide = this.slider.clientWidth + this.slider.scrollLeft - offset;
+    return (element.offsetLeft + element.clientWidth) <= lastVisibleSlide && element.offsetLeft >= this.slider.scrollLeft;
+  }
+
   onButtonClick(event) {
     event.preventDefault();
-    this.slideScrollPosition = event.currentTarget.name === 'next' ? this.slider.scrollLeft + this.sliderLastItem.clientWidth : this.slider.scrollLeft - this.sliderLastItem.clientWidth;
+    const step = event.currentTarget.dataset.step || 1;
+    this.slideScrollPosition = event.currentTarget.name === 'next' ? this.slider.scrollLeft + (step * this.sliderLastItem.clientWidth) : this.slider.scrollLeft - (step * this.sliderLastItem.clientWidth);
     this.slider.scrollTo({
       left: this.slideScrollPosition
     });
@@ -742,25 +762,13 @@ class VariantSelects extends HTMLElement {
   updateMedia() {
     if (!this.currentVariant) return;
     if (!this.currentVariant.featured_media) return;
-    const newMedia = document.querySelector(
-      `[data-media-id="${this.dataset.section}-${this.currentVariant.featured_media.id}"]`
-    );
 
-    if (!newMedia) return;
+    const mediaGallery = document.getElementById(`MediaGallery-${this.dataset.section}`);
+    mediaGallery.setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media.id}`, true);
+
     const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
     const newMediaModal = modalContent.querySelector( `[data-media-id="${this.currentVariant.featured_media.id}"]`);
-    const parent = newMedia.parentElement;
-    if (parent.firstChild == newMedia) return;
     modalContent.prepend(newMediaModal);
-    parent.prepend(newMedia);
-    this.stickyHeader = this.stickyHeader || document.querySelector('sticky-header');
-    if(this.stickyHeader) {
-      this.stickyHeader.dispatchEvent(new Event('preventHeaderReveal'));
-    }
-    window.setTimeout(() => {
-      parent.scrollLeft = 0;
-      parent.querySelector('li.product__media-item').scrollIntoView({behavior: 'smooth'});
-    });
   }
 
   updateURL() {
