@@ -4,6 +4,36 @@
 <noscript>{{ 'component-rte.css' | asset_url | stylesheet_tag }}</noscript>
 <noscript>{{ 'section-rich-text.css' | asset_url | stylesheet_tag }}</noscript>
 
+
+{% liquid
+  assign mobile_threshold = 10
+  assign mobile_high = 50
+  assign desktop_high = 100
+
+  assign value_minus_mobile_threshold_top = section.settings.padding_top | minus: mobile_threshold
+  assign value_minus_mobile_threshold_bottom = section.settings.padding_bottom | minus: mobile_threshold
+
+  assign desktop_high_minus_mobile_threshold = desktop_high | minus: mobile_threshold | times: 1.0
+
+  assign initial_ratio_top = value_minus_mobile_threshold_top | divided_by: desktop_high_minus_mobile_threshold
+  assign initial_ratio_bottom = value_minus_mobile_threshold_bottom | divided_by: desktop_high_minus_mobile_threshold
+
+  assign mobile_high_minus_mobile_threshold = mobile_high | minus: mobile_threshold
+  assign mobile_value_top = initial_ratio_top | times: mobile_high_minus_mobile_threshold
+  assign mobile_value_bottom = initial_ratio_bottom | times: mobile_high_minus_mobile_threshold
+
+  assign mobile_value_top = mobile_value_top | plus: mobile_threshold | round: 0
+  assign mobile_value_bottom = mobile_value_bottom | plus: mobile_threshold | round: 0
+
+  if section.settings.padding_top < mobile_threshold
+    assign mobile_value_top = section.settings.padding_top
+  endif
+
+  if section.settings.padding_bottom < mobile_threshold
+    assign mobile_value_bottom = section.settings.padding_bottom
+  endif
+%}
+
 {%- style -%}
   .section-{{ section.id }}-padding {
     padding-top: calc({{ section.settings.padding_top }}px * 0.75);
@@ -17,6 +47,9 @@
     }
   }
 {%- endstyle -%}
+
+<div>{{ section.settings.padding_top }} becomes {{ mobile_value_top }}</div>
+<div>{{ section.settings.padding_bottom }} becomes {{ mobile_value_bottom }}</div>
 
 <div class="{% unless section.settings.full_width %}page-width{% endunless %}">
   <div class="rich-text color-{{ section.settings.color_scheme }} gradient{% if section.settings.full_width %} rich-text--full-width{% endif %} section-{{ section.id }}-padding">
