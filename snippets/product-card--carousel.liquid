@@ -1,24 +1,31 @@
 <div class="product-card--carousel">
 
-  <div class="product-img-container">
+  <div class="product-card__img-container">
     <a href="{{ product.url | within: collection }}" class="text-decoration-none">
       <img src="{{ product.featured_image.src | img_url: 'large' }}" height='500' width='300' 
-      class="product-img" alt="{{ product.featured_image.alt | escape }}" loading="lazy">      
+      class="product-card__img" alt="{{ product.featured_image.alt | escape }}" loading="lazy">      
     </a>
+    {% for tag in product.tags %}
+      {% if tag contains 'new' %}
+        <div class="product-card__new-tag">NEW</div>
+      {% endif %}
+    {% endfor %}
   </div>
 
   <div class="card-info">
     <a href="{{ product.url | within: collection }}">
-        <h3 class="card-title fw-normal base-text">{{ product.title }}</h3>
-      <p class="card-prices">
-        <span class="product-card__price">{{ product.price | money }}</span>
-        {% if product.compare_at_price_min %}
-          <span class="product-card__price--compare">{{ product.compare_at_price | money }}</span>
-        {% endif %}
-      </p>
+      <h3 class="product-card__title">{{ product.title }}</h3>
     </a>
+    <div class="product-card__description">{{ product.description | slice: 0, 120 }}...</div>
+    <div class="card-prices">
+      <span class="product-card__price">{{ product.price | money }}</span>
+      {% if product.compare_at_price_min %}
+        <span class="product-card__price--compare">{{ product.compare_at_price | money }}</span>
+      {% endif %}
+    </div>
   </div>
 
+  {% comment %} 'Add to bag' form/button {% endcomment %}
   <product-form class="product-form">
     <div class="product-form__error-message-wrapper" role="alert" hidden>
       <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-error" viewBox="0 0 13 13">
@@ -36,14 +43,14 @@
         <button
           type="submit"
           name="add"
-          class="product-form__submit button button--full-width {% if block.settings.show_dynamic_checkout and product.selling_plan_groups == empty %}button--secondary{% else %}button--primary{% endif %}"
+          class="product-form__cta"
         {% if product.selected_or_first_available_variant.available == false %}disabled{% endif %}
         >
             <span>
               {%- if product.selected_or_first_available_variant.available -%}
-                {{ 'products.product.add_to_cart' | t }}
+                Add to bag
               {%- else -%}
-                {{ 'products.product.sold_out' | t }}
+                Sold out
               {%- endif -%}
             </span>
             <div class="loading-overlay__spinner hidden">
