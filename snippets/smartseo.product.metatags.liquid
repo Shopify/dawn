@@ -1,0 +1,175 @@
+{%- assign product_seo_metafield_namespace = 'product_seo' -%}
+{%- assign product_seo_metafield_key = 'seo_tags' -%}
+{%- assign shop_product_bulk_seo_metafield_namespace = 'product-bulk' -%}
+{%- assign shop_product_bulk_seo_metafield_key = 'seo-template' -%}
+{%- assign shop_seo_metafield_by_collection_namespace = 'collection' -%}
+{%- assign shop_seo_metafield_by_tag_namespace = 'product-tag' -%}
+{%- assign shop_seo_metafield_by_vendor_namespace = 'vendor' -%}
+{%- assign shop_seo_metafield_by_collection_and_vendor_namespace = 'collection-vendor' -%}
+{%- assign shop_seo_metafield_by_tag_and_vendor_namespace = 'tag-vendor' -%}
+{%- assign metafield_parts_separator = '=||=' -%}
+{%- assign template_value_parts_separator = ':||:' -%}
+
+{%- assign smartseo_title = page_title -%}
+{%- assign smartseo_description = page_description -%}
+{%- assign smartseo_keywords = blank -%}
+
+{%- assign active_seo_template = null -%}
+{%- assign active_seo_template_timestamp = 0 -%}
+
+{%- comment -%} Individual product template {%- endcomment -%}
+{%- assign product_seo_template_metafield = product.metafields[product_seo_metafield_namespace][product_seo_metafield_key] -%}
+{%- if product_seo_template_metafield -%}
+    {%- assign seo_template_metafield_parts = product_seo_template_metafield | split: metafield_parts_separator -%}
+    {%- assign seo_template_metafield_timestamp = seo_template_metafield_parts | last | times: 1 -%}
+
+    {%- assign active_seo_template = seo_template_metafield_parts[0] -%}
+    {%- assign active_seo_template_timestamp = seo_template_metafield_timestamp -%}
+{%- endif -%}
+
+{%- comment -%} Template metafield by vendor {%- endcomment -%}
+{%- assign vendor_metafield_key_hash = product.vendor | md5 | slice: 0, 30 -%}
+{%- assign seo_template_metafield_by_vendor = shop.metafields[shop_seo_metafield_by_vendor_namespace][vendor_metafield_key_hash] -%}
+{%- if seo_template_metafield_by_vendor -%}
+    {%- assign seo_template_metafield_by_vendor_parts = seo_template_metafield_by_vendor | split: metafield_parts_separator -%}
+    {%- assign seo_template_metafield_by_vendor_timestamp = seo_template_metafield_by_vendor_parts | last | times: 1 -%}
+    {%- if seo_template_metafield_by_vendor_timestamp > active_seo_template_timestamp -%}
+        {%- assign active_seo_template = seo_template_metafield_by_vendor_parts[0] -%}
+        {%- assign active_seo_template_timestamp = seo_template_metafield_by_vendor_timestamp -%}
+    {%- endif -%}
+{%- endif -%}
+
+{%- comment -%} Template metafield by collection {%- endcomment -%}
+{%- for collection in product.collections -%}
+    {%- assign collection_metafield_key_hash = collection.title | md5 | slice: 0, 30 -%}
+    {%- assign seo_template_metafield_by_collection = shop.metafields[shop_seo_metafield_by_collection_namespace][collection_metafield_key_hash] -%}
+    {%- if seo_template_metafield_by_collection -%}
+        {%- assign seo_template_metafield_by_collection_parts = seo_template_metafield_by_collection | split: metafield_parts_separator -%}
+        {%- assign seo_template_metafield_by_collection_timestamp = seo_template_metafield_by_collection_parts | last | times: 1 -%}
+        {%- if seo_template_metafield_by_collection_timestamp > active_seo_template_timestamp -%}
+            {%- assign active_seo_template = seo_template_metafield_by_collection_parts[0] -%}
+            {%- assign active_seo_template_timestamp = seo_template_metafield_by_collection_timestamp -%}
+        {%- endif -%}
+    {%- endif -%}
+
+    {%- capture collection_vendor_metafield_key -%}{{ collection.title }}-{{product.vendor}}{%- endcapture -%}
+    {%- assign collection_vendor_metafield_key_hash = collection_vendor_metafield_key | md5 | slice: 0, 30 -%}
+    {%- assign seo_template_metafield_by_collection_and_vendor = shop.metafields[shop_seo_metafield_by_collection_and_vendor_namespace][collection_vendor_metafield_key_hash] -%}
+    {%- if seo_template_metafield_by_collection_and_vendor -%}
+        {%- assign seo_template_metafield_by_collection_vendor_parts = seo_template_metafield_by_collection_and_vendor | split: metafield_parts_separator -%}
+        {%- assign seo_template_metafield_by_collection_vendor_timestamp = seo_template_metafield_by_collection_vendor_parts | last | times: 1 -%}
+        {%- if seo_template_metafield_by_collection_vendor_timestamp > active_seo_template_timestamp -%}
+            {%- assign active_seo_template = seo_template_metafield_by_collection_vendor_parts[0] -%}
+            {%- assign active_seo_template_timestamp = seo_template_metafield_by_collection_vendor_timestamp -%}
+        {%- endif -%}
+    {%- endif -%}
+{%- endfor -%}
+
+{%- comment -%} Template metafield by tag {%- endcomment -%}
+{%- for tag in product.tags -%}
+    {%- assign tag_metafield_key_hash = tag | md5 | slice: 0, 30 -%}
+    {%- assign seo_template_metafield_by_tag = shop.metafields[shop_seo_metafield_by_tag_namespace][tag_metafield_key_hash] -%}
+    {%- if seo_template_metafield_by_tag -%}
+        {%- assign seo_template_metafield_by_tag_parts = seo_template_metafield_by_tag | split: metafield_parts_separator -%}
+        {%- assign seo_template_metafield_by_tag_timestamp = seo_template_metafield_by_tag_parts | last | times: 1 -%}
+        {%- if seo_template_metafield_by_tag_timestamp > active_seo_template_timestamp -%}
+            {%- assign active_seo_template = seo_template_metafield_by_tag_parts[0] -%}
+            {%- assign active_seo_template_timestamp = seo_template_metafield_by_tag_timestamp -%}
+        {%- endif -%}
+    {%- endif -%}
+
+    {%- capture tag_vendor_metafield_key -%}{{ tag }}-{{product.vendor}}{%- endcapture -%}
+    {%- assign tag_vendor_metafield_key_hash = tag_vendor_metafield_key | md5 | slice: 0, 30 -%}
+    {%- assign seo_template_metafield_by_tag_and_vendor = shop.metafields[shop_seo_metafield_by_tag_and_vendor_namespace][tag_vendor_metafield_key_hash] -%}
+    {%- if seo_template_metafield_by_tag_and_vendor -%}
+        {%- assign seo_template_metafield_by_tag_vendor_parts = seo_template_metafield_by_tag_and_vendor | split: metafield_parts_separator -%}
+        {%- assign seo_template_metafield_by_tag_vendor_timestamp = seo_template_metafield_by_tag_vendor_parts | last | times: 1 -%}
+        {%- if seo_template_metafield_by_tag_vendor_timestamp > active_seo_template_timestamp -%}
+            {%- assign active_seo_template = seo_template_metafield_by_tag_vendor_parts[0] -%}
+            {%- assign active_seo_template_timestamp = seo_template_metafield_by_tag_vendor_timestamp -%}
+        {%- endif -%}
+    {%- endif -%}
+{%- endfor -%}
+
+{%- comment -%} Bulk template metafield {%- endcomment -%}
+{%- assign seo_template_metafield_bulk = shop.metafields[shop_product_bulk_seo_metafield_namespace][shop_product_bulk_seo_metafield_key] -%}
+{%- if seo_template_metafield_bulk -%}
+    {%- assign seo_template_metafield_bulk_parts = seo_template_metafield_bulk | split: metafield_parts_separator -%}
+    {%- assign seo_template_metafield_bulk_timestamp = seo_template_metafield_bulk_parts | last | times: 1 -%}
+    {%- if seo_template_metafield_bulk_timestamp > active_seo_template_timestamp -%}
+        {%- assign active_seo_template = seo_template_metafield_bulk_parts[0] -%}
+        {%- assign active_seo_template_timestamp = seo_template_metafield_bulk_timestamp -%}
+    {%- endif -%}
+{%- endif -%}
+
+{%- if active_seo_template != blank -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${title}', product.title -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${description}', product.description -%}
+
+    {%- capture product_tags -%}{{ product.tags | join: ', ' }}{%- endcapture -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${tags}', product_tags -%}
+
+    {%- assign active_seo_template = active_seo_template | replace: '${product-type}', product.type -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${vendor}', product.vendor -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${variant-title}', variant.title -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${default-meta-title}', page_title -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${default-meta-description}', page_description -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${shop-name}', shop.name -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${shop-description}', shop.description -%}
+
+    {%- assign active_seo_template = active_seo_template | replace: '${sku}', product.selected_or_first_available_variant.sku -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${barcode}', product.selected_or_first_available_variant.barcode -%}
+
+    {%- assign product_price = product.selected_or_first_available_variant.price | money -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${price}', product_price -%}
+
+    {%- assign product_min_price = product.price_min | money -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${min-price}', product_min_price -%}
+
+    {%- assign product_max_price = product.price_max | money -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${max-price}', product_max_price -%}
+
+    {%- assign product_compare_at_price = product.selected_or_first_available_variant.compare_at_price | money -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${compare-at-price}', product_compare_at_price -%}
+
+    {%- assign product_compare_at_price_min = product.compare_at_price_min | money -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${min-compare-at-price}', product_compare_at_price_min -%}
+
+    {%- assign product_compare_at_price_max = product.compare_at_price_max | money -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${max-compare-at-price}', product_compare_at_price_max -%}
+
+    {%- assign option1_value = '' -%}
+    {%- assign option2_value = '' -%}
+    {%- assign option3_value = '' -%}
+    {% for option in product.options_with_values -%}
+        {%- if option.position == 1 and option.name != 'Title' and option.selected_value != 'Default Title' -%}
+            {% assign option1_value = option.name | append: ' ' | append: option.selected_value -%}
+        {%- elsif option.position == 2 -%}
+            {% assign option2_value = option.name | append: ' ' | append: option.selected_value -%}
+        {%- else -%}
+            {% assign option3_value = option.name | append: ' ' | append: option.selected_value -%}
+        {%- endif -%}
+    {%- endfor %}
+    {%- assign active_seo_template = active_seo_template | replace: '${option1}', option1_value -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${option2}', option2_value -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${option3}', option3_value -%}
+
+    {%- assign template_value_parts = active_seo_template | split: template_value_parts_separator -%}
+
+    {%- assign smartseo_title = template_value_parts[0] | replace: 'null', '' | newline_to_br | replace: '<br />', ' ' | strip_newlines | replace: '   ', ' ' | replace: '  ', ' ' | replace: ', , ,', ',' | replace: ',,,', ',' | replace: ', ,', ',' | replace: ',,', ',' | replace: '| | |', '|' | replace: '|||', '|' | replace: '| |', '|' | replace: '||', '|' | replace: ': : :', ':' | replace: ':::', ':' | replace: ': :', ':' | replace: '::', ':' | strip | prepend: '$#' | append: '$#' | replace: '$# ,', '' | replace: '$#,', '' | replace: ', $#', '' | replace: ',$#', '' | replace: '$# |', '' | replace: '$#|', '' | replace: '| $#', '' | replace: '|$#', '' | replace: '$# :', '' | replace: '$#:', '' | replace: ': $#', '' | replace: ':$#', '' | replace: '$#', ''| replace: '\', '\\\\'  | strip | strip_html | escape_once | escape_once -%}
+    {%- assign smartseo_full_description = template_value_parts[1] | replace: 'null', '' | newline_to_br | replace: '<br />', ' ' | strip_newlines | replace: '   ', ' ' | replace: '  ', ' ' | replace: ', , ,', ',' | replace: ',,,', ',' | replace: ', ,', ',' | replace: ',,', ',' | replace: '| | |', '|' | replace: '|||', '|' | replace: '| |', '|' | replace: '||', '|' | replace: ': : :', ':' | replace: ':::', ':' | replace: ': :', ':' | replace: '::', ':' | strip | prepend: '$#' | append: '$#' | replace: '$# ,', '' | replace: '$#,', '' | replace: ', $#', '' | replace: ',$#', '' | replace: '$# |', '' | replace: '$#|', '' | replace: '| $#', '' | replace: '|$#', '' | replace: '$# :', '' | replace: '$#:', '' | replace: ': $#', '' | replace: ':$#', '' | replace: '$#', ''| replace: '\', '\\\\'  | strip | strip_html | escape_once | escape_once -%}
+    {%- assign smartseo_description = smartseo_full_description | truncate: 300 -%}
+    {%- if template_value_parts.size == 3 -%}
+        {%- assign keywords_template_value = template_value_parts[2] | replace: 'null', '' | newline_to_br | replace: '<br />', ' ' | strip_newlines | replace: '   ', ' ' | replace: '  ', ' ' | replace: ', , ,', ',' | replace: ',,,', ',' | replace: ', ,', ',' | replace: ',,', ',' | replace: '| | |', '|' | replace: '|||', '|' | replace: '| |', '|' | replace: '||', '|' | replace: ': : :', ':' | replace: ':::', ':' | replace: ': :', ':' | replace: '::', ':' | strip | prepend: '$#' | append: '$#' | replace: '$# ,', '' | replace: '$#,', '' | replace: ', $#', '' | replace: ',$#', '' | replace: '$# |', '' | replace: '$#|', '' | replace: '| $#', '' | replace: '|$#', '' | replace: '$# :', '' | replace: '$#:', '' | replace: ': $#', '' | replace: ':$#', '' | replace: '$#', ''| replace: '\', '\\\\'  | strip | strip_html | escape_once | escape_once -%}
+        {%- if keywords_template_value != '' or keywords_template_value != blank or keywords_template_value != nil -%}
+            {%- assign smartseo_keywords = keywords_template_value -%}
+        {%- endif -%}
+    {%- endif -%}
+{%- endif -%}
+
+<title>{{ smartseo_title }}</title>
+<meta name="description" content="{{ smartseo_description }}" />
+<meta name="smartseo-keyword" content="{{ smartseo_keywords }}" />
+<meta name="smartseo-timestamp" content="{{ active_seo_template_timestamp }}" />
+
+{%- assign stop_template_processing = true -%}

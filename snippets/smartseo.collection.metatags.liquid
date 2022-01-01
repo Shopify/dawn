@@ -1,0 +1,155 @@
+{%- assign collection_individual_seo_metafield_namespace = 'collection_seo' -%}
+{%- assign individual_seo_metafield_key = 'seo_tags' -%}
+{%- assign shop_seo_collection_bulk_metafield_namespace = 'collection-bulk' -%}
+{%- assign shop_seo_collection_bulk_metafield_key = 'seo-template' -%}
+{%- assign metafield_parts_separator = '=||=' -%}
+{%- assign template_value_parts_separator = ':||:' -%}
+
+{%- assign smartseo_title = page_title -%}
+{%- assign smartseo_description = page_description -%}
+{%- assign smartseo_keywords = blank -%}
+
+{%- assign active_seo_template = blank -%}
+{%- assign active_seo_template_timestamp = 0 -%}
+
+{%- comment -%} Individual collection template {%- endcomment -%}
+{%- assign collection_seo_template_metafield = collection.metafields[collection_individual_seo_metafield_namespace][individual_seo_metafield_key] -%}
+{%- if collection_seo_template_metafield -%}
+    {%- assign seo_template_metafield_parts = collection_seo_template_metafield | split: metafield_parts_separator -%}
+    {%- assign seo_template_metafield_timestamp = seo_template_metafield_parts | last | times: 1 -%}
+    {%- assign active_seo_template = seo_template_metafield_parts[0] -%}
+    {%- assign active_seo_template_timestamp = seo_template_metafield_timestamp -%}
+{%- endif -%}
+
+{%- comment -%} Bulk template metafield {%- endcomment -%}
+{%- assign seo_template_bulk_collection_metafield = shop.metafields[shop_seo_collection_bulk_metafield_namespace][shop_seo_collection_bulk_metafield_key] -%}
+{%- if seo_template_bulk_collection_metafield -%}
+    {%- assign seo_template_bulk_collection_metafield_parts = seo_template_bulk_collection_metafield | split: metafield_parts_separator -%}
+    {%- assign seo_template_bulk_collection_metafield_timestamp = seo_template_bulk_collection_metafield_parts | last | times: 1 -%}
+    {%- if seo_template_bulk_collection_metafield_timestamp > active_seo_template_timestamp -%}
+        {%- assign active_seo_template = seo_template_bulk_collection_metafield_parts[0] -%}
+        {%- assign active_seo_template_timestamp = seo_template_bulk_collection_metafield_timestamp -%}
+    {%- endif -%}
+{%- endif -%}
+
+{%- if active_seo_template != blank -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${title}', collection.title -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${description}', collection.description -%}
+
+    {%- assign current_tags_string = current_tags | join : ', ' -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${current-tags}', current_tags_string -%}
+
+    {%- if active_seo_template contains '-product-titles}' -%}
+        {%- comment -%}extract the number of product titles-begin{%- endcomment -%}
+        {%- assign seo_template_token_parts = active_seo_template | split: '-product-titles}' -%}
+        {%- assign product_number_template_part = seo_template_token_parts[0] -%}
+        {%- assign product_number_template_part_parts = product_number_template_part | split: '${' -%}
+        {%- assign product_number_string = product_number_template_part_parts | last -%}
+        {%- assign product_number = product_number_string | plus: 0 -%}
+        {%- if product_number_string == 'n' -%}
+            {%- assign product_number = 30 -%}
+        {%- endif -%}
+        {%- comment -%}extract the number of product titles-end{%- endcomment -%}
+        {%- capture product_titles -%}
+            {% for product in collection.products limit: product_number %}{{ product.title }}{% if forloop.last != true %}, {% endif %}{% endfor %}
+        {%- endcapture -%}
+        {%- assign token_string_to_replace = '${' | append: product_number_string | append: '-product-titles}' -%}
+        {%- assign active_seo_template = active_seo_template | replace: token_string_to_replace, product_titles -%}
+    {%- endif -%}
+
+    {%- if active_seo_template contains '-product-tags}' -%}
+        {%- comment -%}extract the number of product tags-begin{%- endcomment -%}
+        {%- assign seo_template_token_parts = active_seo_template | split: '-product-tags}' -%}
+        {%- assign product_number_template_part = seo_template_token_parts[0] -%}
+        {%- assign product_number_template_part_parts = product_number_template_part | split: '${' -%}
+        {%- assign product_number_string = product_number_template_part_parts | last -%}
+        {%- assign product_number = product_number_string | plus: 0 -%}
+        {%- if product_number_string == 'n' -%}
+            {%- assign product_number = 30 -%}
+        {%- endif -%}
+        {%- comment -%}extract the number of product tags-end{%- endcomment -%}
+        {%- capture product_tags -%}
+            {% for tag in collection.tags limit: product_number %}{{ tag }}{% if forloop.last != true %}, {% endif %}{% endfor %}
+        {%- endcapture -%}
+        {%- assign token_string_to_replace = '${' | append: product_number_string | append: '-product-tags}' -%}
+        {%- assign active_seo_template = active_seo_template | replace: token_string_to_replace, product_tags -%}
+    {%- endif -%}
+
+    {%- if active_seo_template contains '-product-types}' -%}
+        {%- comment -%}extract the number of product types-begin{%- endcomment -%}
+        {%- assign seo_template_token_parts = active_seo_template | split: '-product-types}' -%}
+        {%- assign product_number_template_part = seo_template_token_parts[0] -%}
+        {%- assign product_number_template_part_parts = product_number_template_part | split: '${' -%}
+        {%- assign product_number_string = product_number_template_part_parts | last -%}
+        {%- assign product_number = product_number_string | plus: 0 -%}
+        {%- if product_number_string == 'n' -%}
+            {%- assign product_number = 30 -%}
+        {%- endif -%}
+        {%- comment -%}extract the number of product types-end{%- endcomment -%}
+        {%- capture product_types -%}
+            {% for type in collection.all_types limit: product_number %}{{ type }}{% if forloop.last != true %}, {% endif %}{% endfor %}
+        {%- endcapture -%}
+        {%- assign token_string_to_replace = '${' | append: product_number_string | append: '-product-types}' -%}
+        {%- assign active_seo_template = active_seo_template | replace: token_string_to_replace, product_types -%}
+    {%- endif -%}
+
+    {%- if active_seo_template contains '-vendors}' -%}
+        {%- comment -%}extract the number of collection vendors-begin{%- endcomment -%}
+        {%- assign seo_template_token_parts = active_seo_template | split: '-vendors}' -%}
+        {%- assign vendors_number_template_part = seo_template_token_parts[0] -%}
+        {%- assign vendors_number_template_part_parts = vendors_number_template_part | split: '${' -%}
+        {%- assign vendors_number_string = vendors_number_template_part_parts | last -%}
+        {%- assign vendors_number = vendors_number_string | plus: 0 -%}
+        {%- if vendors_number_string == 'n' -%}
+            {%- assign vendors_number = 30 -%}
+        {%- endif -%}
+        {%- comment -%}extract the number of collection vendors-end{%- endcomment -%}
+        {%- capture collection_vendors -%}
+            {% for vendor in collection.all_vendors limit: vendors_number %}{{ vendor }}{% if forloop.last != true %}, {% endif %}{% endfor %}
+        {%- endcapture -%}
+        {%- assign token_string_to_replace = '${' | append: vendors_number_string | append: '-vendors}' -%}
+        {%- assign active_seo_template = active_seo_template | replace: token_string_to_replace, collection_vendors -%}
+    {%- endif -%}
+
+    {%- if active_seo_template contains '-product-titles-with-vendor-names}' -%}
+        {%- comment -%}extract the number of product titles with vendor names-begin{%- endcomment -%}
+        {%- assign seo_template_token_parts = active_seo_template | split: '-product-titles-with-vendor-names}' -%}
+        {%- assign titles_vendors_number_template_part = seo_template_token_parts[0] -%}
+        {%- assign titles_vendors_number_template_part_parts = titles_vendors_number_template_part | split: '${' -%}
+        {%- assign titles_vendors_number_string = titles_vendors_number_template_part_parts | last -%}
+        {%- assign titles_vendors_number = titles_vendors_number_string | plus: 0 -%}
+        {%- if titles_vendors_number_string == 'n' -%}
+            {%- assign titles_vendors_number = 30 -%}
+        {%- endif -%}
+        {%- comment -%}extract the number of product titles with vendor names-end{%- endcomment -%}
+        {%- capture product_titles_with_vendor_names -%}
+            {% for product in collection.products limit: titles_vendors_number %}{{ product.vendor }} {{ product.title }}{% if forloop.last != true %}, {% endif %}{% endfor %}
+        {%- endcapture -%}
+        {%- assign token_string_to_replace = '${' | append: titles_vendors_number_string | append: '-product-titles-with-vendor-names}' -%}
+        {%- assign active_seo_template = active_seo_template | replace: token_string_to_replace, product_titles_with_vendor_names -%}
+    {%- endif -%}
+
+    {%- assign active_seo_template = active_seo_template | replace: '${default-meta-title}', page_title -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${default-meta-description}', page_description -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${shop-name}', shop.name -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${shop-description}', shop.description -%}
+
+    {%- assign template_value_parts = active_seo_template | split: template_value_parts_separator -%}
+
+    {%- assign smartseo_title = template_value_parts[0] | replace: 'null', '' | newline_to_br | replace: '<br />', ' ' | strip_newlines | replace: '   ', ' ' | replace: '  ', ' ' | replace: ', , ,', ',' | replace: ',,,', ',' | replace: ', ,', ',' | replace: ',,', ',' | replace: '| | |', '|' | replace: '|||', '|' | replace: '| |', '|' | replace: '||', '|' | replace: ': : :', ':' | replace: ':::', ':' | replace: ': :', ':' | replace: '::', ':' | strip | prepend: '$#' | append: '$#' | replace: '$# ,', '' | replace: '$#,', '' | replace: ', $#', '' | replace: ',$#', '' | replace: '$# |', '' | replace: '$#|', '' | replace: '| $#', '' | replace: '|$#', '' | replace: '$# :', '' | replace: '$#:', '' | replace: ': $#', '' | replace: ':$#', '' | replace: '$#', ''| replace: '\', '\\\\'  | strip | strip_html | escape_once | escape_once -%}
+    {%- assign smartseo_full_description = template_value_parts[1] | replace: 'null', '' | newline_to_br | replace: '<br />', ' ' | strip_newlines | replace: '   ', ' ' | replace: '  ', ' ' | replace: ', , ,', ',' | replace: ',,,', ',' | replace: ', ,', ',' | replace: ',,', ',' | replace: '| | |', '|' | replace: '|||', '|' | replace: '| |', '|' | replace: '||', '|' | replace: ': : :', ':' | replace: ':::', ':' | replace: ': :', ':' | replace: '::', ':' | strip | prepend: '$#' | append: '$#' | replace: '$# ,', '' | replace: '$#,', '' | replace: ', $#', '' | replace: ',$#', '' | replace: '$# |', '' | replace: '$#|', '' | replace: '| $#', '' | replace: '|$#', '' | replace: '$# :', '' | replace: '$#:', '' | replace: ': $#', '' | replace: ':$#', '' | replace: '$#', ''| replace: '\', '\\\\'  | strip | strip_html | escape_once | escape_once -%}
+    {%- assign smartseo_description = smartseo_full_description | truncate: 300 -%}
+    {%- if template_value_parts.size == 3 -%}
+        {%- assign keywords_template_value = template_value_parts[2] | replace: 'null', '' | newline_to_br | replace: '<br />', ' ' | strip_newlines | replace: '   ', ' ' | replace: '  ', ' ' | replace: ', , ,', ',' | replace: ',,,', ',' | replace: ', ,', ',' | replace: ',,', ',' | replace: '| | |', '|' | replace: '|||', '|' | replace: '| |', '|' | replace: '||', '|' | replace: ': : :', ':' | replace: ':::', ':' | replace: ': :', ':' | replace: '::', ':' | strip | prepend: '$#' | append: '$#' | replace: '$# ,', '' | replace: '$#,', '' | replace: ', $#', '' | replace: ',$#', '' | replace: '$# |', '' | replace: '$#|', '' | replace: '| $#', '' | replace: '|$#', '' | replace: '$# :', '' | replace: '$#:', '' | replace: ': $#', '' | replace: ':$#', '' | replace: '$#', ''| replace: '\', '\\\\'  | strip | strip_html | escape_once | escape_once -%}
+        {%- if keywords_template_value != '' or keywords_template_value != blank or keywords_template_value != nil -%}
+            {%- assign smartseo_keywords = keywords_template_value -%}
+        {%- endif -%}
+    {%- endif -%}
+{%- endif -%}
+
+<title>{{ smartseo_title }}</title>
+<meta name="description" content="{{ smartseo_description }}" />
+<meta name="smartseo-keyword" content="{{ smartseo_keywords }}" />
+<meta name="smartseo-timestamp" content="{{ active_seo_template_timestamp }}" />
+
+{%- assign stop_template_processing = true -%}

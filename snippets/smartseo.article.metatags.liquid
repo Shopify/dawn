@@ -1,0 +1,109 @@
+{%- assign article_seo_metafield_namespace = 'article_seo' -%}
+{%- assign article_seo_metafield_key = 'seo_tags' -%}
+{%- assign shop_article_bulk_seo_metafield_namespace = 'article-bulk' -%}
+{%- assign shop_article_bulk_seo_metafield_key = 'seo-template' -%}
+{%- assign shop_seo_metafield_by_blog_namespace = 'blog' -%}
+{%- assign shop_seo_metafield_by_tag_namespace = 'article-tag' -%}
+{%- assign shop_seo_metafield_by_blog_and_tag_namespace = 'blog-tag' -%}
+{%- assign metafield_parts_separator = '=||=' -%}
+{%- assign template_value_parts_separator = ':||:' -%}
+
+{%- assign smartseo_title = page_title -%}
+{%- assign smartseo_description = page_description -%}
+{%- assign smartseo_keywords = blank -%}
+
+{%- assign active_seo_template = blank -%}
+{%- assign active_seo_template_timestamp = 0 -%}
+
+{%- comment -%} Individual article template {%- endcomment -%}
+{%- assign article_seo_template_metafield = article.metafields[article_seo_metafield_namespace][article_seo_metafield_key] -%}
+{%- if article_seo_template_metafield -%}
+    {%- assign seo_template_metafield_parts = article_seo_template_metafield | split: metafield_parts_separator -%}
+    {%- assign seo_template_metafield_timestamp = seo_template_metafield_parts | last | times: 1 -%}
+
+    {%- assign active_seo_template = seo_template_metafield_parts[0] -%}
+    {%- assign active_seo_template_timestamp = seo_template_metafield_timestamp -%}
+{%- endif -%}
+
+{%- comment -%} Template metafield by blog {%- endcomment -%}
+{%- assign blog_metafield_key_hash = blog.title | md5 | slice: 0, 30 -%}
+{%- assign seo_template_metafield_by_blog = shop.metafields[shop_seo_metafield_by_blog_namespace][blog_metafield_key_hash] -%}
+{%- if seo_template_metafield_by_blog -%}
+    {%- assign seo_template_metafield_by_blog_parts = seo_template_metafield_by_blog | split: metafield_parts_separator -%}
+    {%- assign seo_template_metafield_by_blog_timestamp = seo_template_metafield_by_blog_parts | last | times: 1 -%}
+    {%- if seo_template_metafield_by_blog_timestamp > active_seo_template_timestamp -%}
+        {%- assign active_seo_template = seo_template_metafield_by_blog_parts[0] -%}
+        {%- assign active_seo_template_timestamp = seo_template_metafield_by_blog_timestamp -%}
+    {%- endif -%}
+{%- endif -%}
+
+{%- comment -%} Template metafield by tag {%- endcomment -%}
+{%- for tag in article.tags -%}
+    {%- assign tag_metafield_key_hash = tag | md5 | slice: 0, 30 -%}
+    {%- assign seo_template_metafield_by_tag = shop.metafields[shop_seo_metafield_by_tag_namespace][tag_metafield_key_hash] -%}
+    {%- if seo_template_metafield_by_tag -%}
+        {%- assign seo_template_metafield_by_tag_parts = seo_template_metafield_by_tag | split: metafield_parts_separator -%}
+        {%- assign seo_template_metafield_by_tag_timestamp = seo_template_metafield_by_tag_parts | last | times: 1 -%}
+        {%- if seo_template_metafield_by_tag_timestamp > active_seo_template_timestamp -%}
+            {%- assign active_seo_template = seo_template_metafield_by_tag_parts[0] -%}
+            {%- assign active_seo_template_timestamp = seo_template_metafield_by_tag_timestamp -%}
+        {%- endif -%}
+    {%- endif -%}
+
+    {%- capture blog_tag_metafield_key -%}{{ blog.title }}-{{ tag }}{%- endcapture -%}
+    {%- assign blog_tag_metafield_key_hash = blog_tag_metafield_key | md5 | slice: 0, 30 -%}
+    {%- assign seo_template_metafield_by_blog_and_tag = shop.metafields[shop_seo_metafield_by_blog_and_tag_namespace][blog_tag_metafield_key_hash] -%}
+    {%- if seo_template_metafield_by_blog_and_tag -%}
+        {%- assign seo_template_metafield_by_blog_and_tag_parts = seo_template_metafield_by_blog_and_tag | split: metafield_parts_separator -%}
+        {%- assign seo_template_metafield_by_blog_and_tag_timestamp = seo_template_metafield_by_blog_and_tag_parts | last | times: 1 -%}
+        {%- if seo_template_metafield_by_blog_and_tag_timestamp > active_seo_template_timestamp -%}
+            {%- assign active_seo_template = seo_template_metafield_by_blog_and_tag_parts[0] -%}
+            {%- assign active_seo_template_timestamp = seo_template_metafield_by_blog_and_tag_timestamp -%}
+        {%- endif -%}
+    {%- endif -%}
+{%- endfor -%}
+
+{%- comment -%} Bulk template metafield {%- endcomment -%}
+{%- assign seo_template_metafield_bulk = shop.metafields[shop_article_bulk_seo_metafield_namespace][shop_article_bulk_seo_metafield_key] -%}
+{%- if seo_template_metafield_bulk -%}
+    {%- assign seo_template_metafield_bulk_parts = seo_template_metafield_bulk | split: metafield_parts_separator -%}
+    {%- assign seo_template_metafield_bulk_timestamp = seo_template_metafield_bulk_parts | last | times: 1 -%}
+    {%- if seo_template_metafield_bulk_timestamp > active_seo_template_timestamp -%}
+        {%- assign active_seo_template = seo_template_metafield_bulk_parts[0] -%}
+        {%- assign active_seo_template_timestamp = seo_template_metafield_bulk_timestamp -%}
+    {%- endif -%}
+{%- endif -%}
+
+{%- if active_seo_template != blank -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${title}', article.title -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${description}', article.excerpt -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${summary}', article.excerpt -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${author}', article.author -%}
+
+    {%- capture article_tags -%}{{ article.tags | join: ', ' }}{%- endcapture -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${tags}', article_tags -%}
+
+    {%- assign active_seo_template = active_seo_template | replace: '${default-meta-title}', page_title -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${default-meta-description}', page_description -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${shop-name}', shop.name -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${shop-description}', shop.description -%}
+
+    {%- assign template_value_parts = active_seo_template | split: template_value_parts_separator -%}
+
+    {%- assign smartseo_title = template_value_parts[0] | replace: 'null', '' | newline_to_br | replace: '<br />', ' ' | strip_newlines | replace: '   ', ' ' | replace: '  ', ' ' | replace: ', , ,', ',' | replace: ',,,', ',' | replace: ', ,', ',' | replace: ',,', ',' | replace: '| | |', '|' | replace: '|||', '|' | replace: '| |', '|' | replace: '||', '|' | replace: ': : :', ':' | replace: ':::', ':' | replace: ': :', ':' | replace: '::', ':' | strip | prepend: '$#' | append: '$#' | replace: '$# ,', '' | replace: '$#,', '' | replace: ', $#', '' | replace: ',$#', '' | replace: '$# |', '' | replace: '$#|', '' | replace: '| $#', '' | replace: '|$#', '' | replace: '$# :', '' | replace: '$#:', '' | replace: ': $#', '' | replace: ':$#', '' | replace: '$#', ''| replace: '\', '\\\\'  | strip | strip_html | escape_once | escape_once -%}
+    {%- assign smartseo_full_description = template_value_parts[1] | replace: 'null', '' | newline_to_br | replace: '<br />', ' ' | strip_newlines | replace: '   ', ' ' | replace: '  ', ' ' | replace: ', , ,', ',' | replace: ',,,', ',' | replace: ', ,', ',' | replace: ',,', ',' | replace: '| | |', '|' | replace: '|||', '|' | replace: '| |', '|' | replace: '||', '|' | replace: ': : :', ':' | replace: ':::', ':' | replace: ': :', ':' | replace: '::', ':' | strip | prepend: '$#' | append: '$#' | replace: '$# ,', '' | replace: '$#,', '' | replace: ', $#', '' | replace: ',$#', '' | replace: '$# |', '' | replace: '$#|', '' | replace: '| $#', '' | replace: '|$#', '' | replace: '$# :', '' | replace: '$#:', '' | replace: ': $#', '' | replace: ':$#', '' | replace: '$#', ''| replace: '\', '\\\\'  | strip | strip_html | escape_once | escape_once -%}
+    {%- assign smartseo_description = smartseo_full_description | truncate: 300 -%}
+    {%- if template_value_parts.size == 3 -%}
+        {%- assign keywords_template_value = template_value_parts[2] | replace: 'null', '' | newline_to_br | replace: '<br />', ' ' | strip_newlines | replace: '   ', ' ' | replace: '  ', ' ' | replace: ', , ,', ',' | replace: ',,,', ',' | replace: ', ,', ',' | replace: ',,', ',' | replace: '| | |', '|' | replace: '|||', '|' | replace: '| |', '|' | replace: '||', '|' | replace: ': : :', ':' | replace: ':::', ':' | replace: ': :', ':' | replace: '::', ':' | strip | prepend: '$#' | append: '$#' | replace: '$# ,', '' | replace: '$#,', '' | replace: ', $#', '' | replace: ',$#', '' | replace: '$# |', '' | replace: '$#|', '' | replace: '| $#', '' | replace: '|$#', '' | replace: '$# :', '' | replace: '$#:', '' | replace: ': $#', '' | replace: ':$#', '' | replace: '$#', ''| replace: '\', '\\\\'  | strip | strip_html | escape_once | escape_once -%}
+        {%- if keywords_template_value != '' or keywords_template_value != blank or keywords_template_value != nil -%}
+            {%- assign smartseo_keywords = keywords_template_value -%}
+        {%- endif -%}
+    {%- endif -%}
+{%- endif -%}
+
+<title>{{ smartseo_title }}</title>
+<meta name="description" content="{{ smartseo_description }}" />
+<meta name="smartseo-keyword" content="{{ smartseo_keywords }}" />
+<meta name="smartseo-timestamp" content="{{ active_seo_template_timestamp }}" />
+
+{%- assign stop_template_processing = true -%}

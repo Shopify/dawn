@@ -1,0 +1,66 @@
+{%- assign blog_seo_metafield_namespace = 'blog_seo' -%}
+{%- assign blog_seo_metafield_key = 'seo_tags' -%}
+{%- assign shop_seo_blog_bulk_metafield_namespace = 'blog-bulk' -%}
+{%- assign shop_seo_blog_bulk_metafield_key = 'seo-template' -%}
+{%- assign metafield_parts_separator = '=||=' -%}
+{%- assign template_value_parts_separator = ':||:' -%}
+
+{%- assign smartseo_title = page_title -%}
+{%- assign smartseo_description = page_description -%}
+{%- assign smartseo_keywords = blank -%}
+
+{%- assign active_seo_template = blank -%}
+{%- assign active_seo_template_timestamp = 0 -%}
+
+{%- comment -%} Individual blog template {%- endcomment -%}
+{%- assign blog_seo_template_metafield = blog.metafields[blog_seo_metafield_namespace][blog_seo_metafield_key] -%}
+{%- if blog_seo_template_metafield -%}
+    {%- assign seo_template_metafield_parts = blog_seo_template_metafield | split: metafield_parts_separator -%}
+    {%- assign seo_template_metafield_timestamp = seo_template_metafield_parts | last | times: 1 -%}
+    {%- assign active_seo_template = seo_template_metafield_parts[0] -%}
+    {%- assign active_seo_template_timestamp = seo_template_metafield_timestamp -%}
+{%- endif -%}
+
+{%- comment -%} Bulk template metafield {%- endcomment -%}
+{%- assign seo_template_bulk_blog_metafield = shop.metafields[shop_seo_blog_bulk_metafield_namespace][shop_seo_blog_bulk_metafield_key] -%}
+{%- if seo_template_bulk_blog_metafield -%}
+    {%- assign seo_template_bulk_blog_metafield_parts = seo_template_bulk_blog_metafield | split: metafield_parts_separator -%}
+    {%- assign seo_template_bulk_blog_metafield_timestamp = seo_template_bulk_blog_metafield_parts | last | times: 1 -%}
+    {%- if seo_template_bulk_blog_metafield_timestamp > active_seo_template_timestamp -%}
+        {%- assign active_seo_template = seo_template_bulk_blog_metafield_parts[0] -%}
+        {%- assign active_seo_template_timestamp = seo_template_bulk_blog_metafield_timestamp -%}
+    {%- endif -%}
+{%- endif -%}
+
+{%- if active_seo_template != blank -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${title}', blog.title -%}
+
+    {%- capture blog_tags -%}{{ blog.tags | join: ', ' }}{%- endcapture -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${tags}', blog_tags -%}
+
+    {%- capture current_tags -%}{{ current_tags | join: ', ' }}{%- endcapture -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${current-tags}', current_tags -%}
+
+    {%- assign active_seo_template = active_seo_template | replace: '${default-meta-title}', page_title -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${default-meta-description}', page_description -%}
+    {%- assign active_seo_template = active_seo_template | replace: '${shop-name}', shop.name -%}
+
+    {%- assign template_value_parts = active_seo_template | split: template_value_parts_separator -%}
+
+    {%- assign smartseo_title = template_value_parts[0] | replace: 'null', '' | newline_to_br | replace: '<br />', ' ' | strip_newlines | replace: '   ', ' ' | replace: '  ', ' ' | replace: ', , ,', ',' | replace: ',,,', ',' | replace: ', ,', ',' | replace: ',,', ',' | replace: '| | |', '|' | replace: '|||', '|' | replace: '| |', '|' | replace: '||', '|' | replace: ': : :', ':' | replace: ':::', ':' | replace: ': :', ':' | replace: '::', ':' | strip | prepend: '$#' | append: '$#' | replace: '$# ,', '' | replace: '$#,', '' | replace: ', $#', '' | replace: ',$#', '' | replace: '$# |', '' | replace: '$#|', '' | replace: '| $#', '' | replace: '|$#', '' | replace: '$# :', '' | replace: '$#:', '' | replace: ': $#', '' | replace: ':$#', '' | replace: '$#', ''| replace: '\', '\\\\'  | strip | strip_html | escape_once | escape_once -%}
+    {%- assign smartseo_full_description = template_value_parts[1] | replace: 'null', '' | newline_to_br | replace: '<br />', ' ' | strip_newlines | replace: '   ', ' ' | replace: '  ', ' ' | replace: ', , ,', ',' | replace: ',,,', ',' | replace: ', ,', ',' | replace: ',,', ',' | replace: '| | |', '|' | replace: '|||', '|' | replace: '| |', '|' | replace: '||', '|' | replace: ': : :', ':' | replace: ':::', ':' | replace: ': :', ':' | replace: '::', ':' | strip | prepend: '$#' | append: '$#' | replace: '$# ,', '' | replace: '$#,', '' | replace: ', $#', '' | replace: ',$#', '' | replace: '$# |', '' | replace: '$#|', '' | replace: '| $#', '' | replace: '|$#', '' | replace: '$# :', '' | replace: '$#:', '' | replace: ': $#', '' | replace: ':$#', '' | replace: '$#', ''| replace: '\', '\\\\'  | strip | strip_html | escape_once | escape_once -%}
+    {%- assign smartseo_description = smartseo_full_description | truncate: 300 -%}
+    {%- if template_value_parts.size == 3 -%}
+        {%- assign keywords_template_value = template_value_parts[2] | replace: 'null', '' | newline_to_br | replace: '<br />', ' ' | strip_newlines | replace: '   ', ' ' | replace: '  ', ' ' | replace: ', , ,', ',' | replace: ',,,', ',' | replace: ', ,', ',' | replace: ',,', ',' | replace: '| | |', '|' | replace: '|||', '|' | replace: '| |', '|' | replace: '||', '|' | replace: ': : :', ':' | replace: ':::', ':' | replace: ': :', ':' | replace: '::', ':' | strip | prepend: '$#' | append: '$#' | replace: '$# ,', '' | replace: '$#,', '' | replace: ', $#', '' | replace: ',$#', '' | replace: '$# |', '' | replace: '$#|', '' | replace: '| $#', '' | replace: '|$#', '' | replace: '$# :', '' | replace: '$#:', '' | replace: ': $#', '' | replace: ':$#', '' | replace: '$#', ''| replace: '\', '\\\\'  | strip | strip_html | escape_once | escape_once -%}
+        {%- if keywords_template_value != '' or keywords_template_value != blank or keywords_template_value != nil -%}
+            {%- assign smartseo_keywords = keywords_template_value -%}
+        {%- endif -%}
+    {%- endif -%}
+{%- endif -%}
+
+<title>{{ smartseo_title }}</title>
+<meta name="description" content="{{ smartseo_description }}" />
+<meta name="smartseo-keyword" content="{{ smartseo_keywords }}" />
+<meta name="smartseo-timestamp" content="{{ active_seo_template_timestamp }}" />
+
+{%- assign stop_template_processing = true -%}
