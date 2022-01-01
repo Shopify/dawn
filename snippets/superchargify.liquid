@@ -1,0 +1,41 @@
+{%- comment -%}Superchargify v2.0.f2988a4c | (c) Superchargify (https://www.superchargify.com){%- endcomment -%}
+{%- comment -%}Do not move/edit this snippet. It will be reset next time your store interacts with Superchargify. If you have any questions, please reach out to us on support@superchargify.com. Thank you.{%- endcomment -%}
+<!-- Superchargify v2.0.f2988a4c (https://www.superchargify.com) -->
+{%- assign sc_config = shop.metafields.superchargify.config -%}
+{%- assign sc_features = sc_config.features -%}
+{%- assign sc_status = sc_config.settings.status -%}
+
+{%- if sc_status.amp and request.locale.primary -%}
+{%- unless canonical_url contains "?" -%}
+  {%- if template.name == 'product' and product -%}
+    {%- assign sc_item = product -%}
+    {%- assign sc_item_disable = sc_status.disable_amp_products -%}
+  {%- elsif template.name == 'collection' and collection and sc_features.collections -%}
+    {%- unless current_tags or collection.handle == "vendors" or collection.handle == "types" -%}
+      {%- assign sc_item = collection -%}
+      {%- assign sc_item_disable = sc_status.disable_amp_collections -%}
+    {%- endunless -%}
+  {%- elsif template.name == 'list-collections' and sc_features.collections -%}
+    {%- unless current_tags or sc_status.disable_amp_collections == true -%}
+      {%- assign sc_item = true -%}
+      {%- assign sc_item_url = '/collections' -%}
+      {%- assign sc_item_disable = sc_status.disable_amp_collections -%}
+    {%- endunless -%}
+  {%- elsif template.name == 'article' and article and sc_features.articles -%}
+    {%- if article.metafields.superchargify.amp.amphtml -%}
+      {%- assign sc_item = article -%}
+      {%- assign sc_item_disable = sc_status.disable_amp_blog_posts -%}
+    {%- endif -%}
+  {%- endif -%}
+  {%- unless sc_item == blank or sc_item.metafields.seo.hidden == 1 -%}
+    {%- if sc_item.metafields.superchargify.force_amp == 'true' -%}
+      {%- assign sc_item_disable = false -%}
+    {%- elsif sc_item.metafields.superchargify.force_amp == 'false' -%}
+      {%- assign sc_item_disable = true -%}
+    {%- endif -%}
+    {%- unless sc_item_disable -%}
+      <link rel="amphtml" href="{{shop.url}}/a/sc/amp{{sc_item.url | default: sc_item_url}}" data-superchargify>
+    {%- endunless -%}
+  {%- endunless -%}
+{%- endunless -%}
+{%- endif -%}
