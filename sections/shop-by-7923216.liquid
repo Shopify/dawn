@@ -1,0 +1,335 @@
+{{ 'section-shopby-7923216.css' | asset_url | stylesheet_tag }}
+
+<div class="custom-section custom-section--shopby" style="background-color: {{section.settings.bg_color}}">
+
+    <div class="custom-section__bg-container"
+        {% unless section.settings.bg_image == blank %}style="background-image: url('{{section.settings.bg_image | image_url}}');" {% endunless %}>
+        
+        <div class="{% if section.settings.page_width %}page-width{% endif %}">
+
+            
+
+            <div class="grid grid--1-col grid--2-col-tablet">
+
+                <div class="grid__item">
+                    <div class="custom-section--shopby__image">
+                    {% for block in section.blocks %}
+                        {% if block.settings.image == blank %}
+                            <div class="tabcontent tabcontent-{{ section.id }} tabcontent-{{ forloop.index0 }}-{{ section.id }}">
+                                {% render 'no-image-7923216'%}
+                            </div>
+                        {% else %}
+                            <img
+                                src="{{ block.settings.image | img_url: 'master' }}"
+                                loading="lazy"
+                                alt="{{ block.settings.image.alt | escape }}"
+                                width="{{ block.settings.image.width }}"
+                                height="{{ block.settings.image.height }}"
+                                class="tabcontent tabcontent-{{ section.id }} tabcontent-{{ forloop.index0 }}-{{ section.id }}"
+                            >
+                        {% endif %}
+                    {% endfor %}
+                    </div>
+                </div>
+
+                <div class="grid__item">
+                    {% if section.settings.title != blank or section.settings.subtitle != blank%}
+                    <div class="custom-section__header center">
+                        {% unless section.settings.title == blank %}
+                        <h2 class="custom-section__header--title {% if section.settings.title_uppercase%}uppercase{% endif %}" >{{ section.settings.title | escape }}</h2>
+                        {% endunless %}
+                    </div>
+                    {% endif %}
+
+                    <div class="custom-section--shopby__tab-buttons">
+                        <div class="custom-section--shopby__tab-buttons-wrapper">
+
+                            {% for block in section.blocks %}
+                                {% unless block.settings.category_name == blank %}
+                                    <div class="tab-button {% if forloop.first %}active{%endif%} tab-button-{{ section.id }}" 
+                                        data-tabbuttonclass='tab-button-{{ section.id }}'
+                                        data-tabfor='tabcontent-{{ forloop.index0 }}-{{ section.id }}'
+                                        data-tabcontentclass='tabcontent-{{ section.id }}'>
+                                            {{ block.settings.category_name | escape }}
+                                    </div>
+                                {% endunless %}
+                            {% endfor %}
+
+                        </div>
+                    </div>
+
+                    <div>
+                        
+                        {% for block in section.blocks %}
+
+                            {% assign product_category = block.settings.category_name | escape %}
+                            {% comment %} Resets Array {% endcomment %}
+                            {% assign options1 = "" %}
+
+                            {% for product in collections["all"].products %}
+
+                                {% comment %} Get All The Categories i.e: Color Size {% endcomment %}
+                                {% for option in product.options %}
+                                    {% assign options = option | append: ',' | append: options %}
+                                {% endfor %}
+
+                                {% assign product_categories = options | split: ',' | uniq %}
+
+                                {% comment %} Get Product Vendor {% endcomment %}
+                                {% assign vendors = product.vendor | append: ',' | append: vendors %}
+
+                                {% assign product_vendors = vendors | split: ',' | uniq %}
+
+                                {% comment %} Get All The Options Inside Category which is set to Block Settings i.e: Red Blue {% endcomment %}
+                                {% if product_categories contains product_category %}
+                                    {% for option1 in product.options_by_name[product_category].values %}
+                                        {% assign options1 = option1 | append: ',' | append: options1 %}
+                                    {% endfor %}
+                                {% endif %}
+
+                            {% endfor %}
+
+                            
+                            {% unless product_category == blank %}
+                            {% if product_categories contains product_category and product_category != 'Brand' %}
+
+                                {% assign product_options1 = options1 | split: ',' | uniq %}
+
+                                <div class="tabcontent fade-in tabcontent--product-option tabcontent-{{ section.id }} tabcontent-{{ forloop.index0 }}-{{ section.id }}">
+                                    
+                                    <ul class="grid">
+                                        {% assign size = product_options1 | size %}
+                                        {% for i in (0..size) limit: 8 %}
+                                            {% assign target_category = product_category | handleize %}
+                                            {% assign target_option = product_options1[i] | replace: ' ', '+' %}
+                                            {% assign target_url = '/collections/all?filter.v.option.' | append: target_category | append: '='| append: target_option | append: '&sort_by=' | append: 'title-ascending' %}
+                                            <li class="grid__item {% if product_category == 'Color' %}grid__item--color{% endif %}">
+                                                <a href="{{ target_url }}" class="tabcontent__link {% if product_category == 'Color' %}tabcontent__link-color{% endif %}">
+                                                    {% if product_category == 'Color' %}<div class="tabcontent__link--colorswatch" style="background-color: {{ product_options1[i] | handleize }};"></div>{% endif %}
+                                                    <p class="tabcontent__link--label">{{ product_options1[i] | strip | escape }}</p>
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+
+                                    {% if size > 8 %}
+                                        <div class="custom-section__button center">
+                                            {% render 'button-7923216',
+                                                btn_label: block.settings.btn_label,
+                                                btn_link:  block.settings.btn_link,
+                                                btn_size: block.settings.btn_size,
+                                                hover_effect: block.settings.hover_effect,
+                                                shadow_effect: block.settings.shadow_effect,
+                                                auto_width: block.settings.auto_width
+                                            %}
+                                        </div>
+                                    {% endif %}
+
+                                </div>
+                            {% elsif product_category == 'Brand'%}
+                            
+                                <div class="tabcontent fade-in tabcontent--product-option tabcontent-{{ section.id }} tabcontent-{{ forloop.index0 }}-{{ section.id }}">
+                                    <ul class="grid">
+                                        {% for vendor in product_vendors limit: 8 %}
+                                                {% assign target_option = vendor | replace: ' ', '+' %}
+                                                {% assign target_image = vendor | replace: ' ', '-' | append: '-Logo.png' | asset_url %}
+                                                {% assign target_url = '/collections/all?filter.p.vendor' | append: '=' | append: target_option | append: '&sort_by=' | append: 'title-ascending' %}
+                                                <li class="grid__item tabcontent__item--brand center">
+                                                    <a href="{{ target_url }}" class="tabcontent__link">
+                                                        <img src='{{target_image}}' class="tabcontent__link--image">
+                                                        <p class="tabcontent__link--label">{{ vendor | strip | escape }}</p>
+                                                    </a>
+                                                </li>
+                                        {% endfor %}
+                                    </ul>
+
+                                    {% if product_vendors.size > 8 %}
+                                        <div class="custom-section__button center">
+                                            {% render 'button-7923216',
+                                                btn_label: block.settings.btn_label,
+                                                btn_link:  block.settings.btn_link,
+                                                btn_size: block.settings.btn_size,
+                                                hover_effect: block.settings.hover_effect,
+                                                shadow_effect: block.settings.shadow_effect,
+                                                auto_width: block.settings.auto_width
+                                            %}
+                                        </div>
+                                    {% endif %}
+
+                                </div>
+                            {% else %}
+                                <div class="tabcontent tabcontent--product-option tabcontent-{{ section.id }} tabcontent-{{ forloop.index0 }}-{{ section.id }}">
+                                    <p class="center">⚠ {{product_category}} didn't find!</p>
+                                </div>
+                            {% endif %}
+                            {% endunless %}
+
+                        {% endfor %}
+
+                    </div>
+                
+                </div>
+                
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+
+{% schema %}
+    {
+        "name": "🔰 Shop By",
+        "tag": "section",
+        "max_blocks": 3,
+        "settings": [
+            {
+                "type": "text",
+                "id": "title",
+                "label": "Title",
+                "default": "Shop By"
+            },
+            {
+                "type": "checkbox",
+                "id": "title_uppercase",
+                "label": "Uppercase",
+                "default": true
+            },
+            {
+                "type": "color",
+                "id": "bg_color",
+                "label": "Background Color",
+                "default":"#334FB4"
+            },
+            {
+                "type": "image_picker",
+                "id": "bg_image",
+                "label": "Background Image"
+            },
+            {
+                "type": "checkbox",
+                "id": "page_width",
+                "label": "Enable Max Page Width",
+                "default": true
+            }
+        ],
+        "blocks": [
+            {
+                "type": "category",
+                "name": "Category",
+                "settings": [
+                    {
+                        "type": "text",
+                        "id": "category_name",
+                        "label": "Name",
+                        "info": "* Must be added as filter! [Check here](/admin/menus)",
+                        "default": "Color"
+                    },
+                    {
+                        "type": "image_picker",
+                        "id": "image",
+                        "label": "Featured Image"
+                    },
+                    {
+                        "type": "header",
+                        "content": "Button Settings",
+                        "info": "Shows only if the selected category has more than 8 options."
+                    },
+                    {
+                        "type": "checkbox",
+                        "id": "show_btn",
+                        "label": "Show Button",
+                        "default": true
+                    },
+                    {
+                        "type":"text",
+                        "id":"btn_label",
+                        "label":"Label",
+                        "default":"View All"
+                    },
+                    {
+                        "type": "url",
+                        "id": "btn_link",
+                        "label": "URL",
+                        "default":"/collections/all"
+                    },
+                    {
+                        "type": "select",
+                        "id": "btn_size",
+                        "label": "Button Size",
+                        "options": [
+                            {
+                            "value": "default",
+                            "label": "Default"
+                            },
+                            {
+                            "value": "medium",
+                            "label": "Medium"
+                            },
+                            {
+                            "value": "large",
+                            "label": "Large"
+                            }
+                        ],
+                        "default": "default"
+                    },
+                    {
+                        "type": "select",
+                        "id": "hover_effect",
+                        "label": "Hover Effect",
+                        "options": [
+                            {
+                            "value": "lighten",
+                            "label": "Lighten Effect"
+                            },
+                            {
+                            "value": "color-switch",
+                            "label": "Color Switch Effect"
+                            },
+                            {
+                            "value": "slide",
+                            "label": "Slide Effect"
+                            },
+                            {
+                            "value": "shine",
+                            "label": "Shine Effect"
+                            }
+                        ],
+                        "default": "shine"
+                    },
+                    {
+                        "type": "checkbox",
+                        "id": "shadow_effect",
+                        "label": "Enable Shadow Effect",
+                        "default": true
+                    },
+                    {
+                        "type": "checkbox",
+                        "id": "auto_width",
+                        "label": "Enable Auto Width",
+                        "default": false
+                    }
+                ]
+            }
+        ],
+        "presets":[
+            {
+                "name": "🔰 Shop By",
+                "category": "Custom Section",
+                "blocks":[
+                    {
+                        "type":"category"
+                    },
+                    {
+                        "type":"category"
+                    },
+                    {
+                        "type":"category"
+                    }
+                ]
+            } 
+        ]
+    }
+{% endschema %}
