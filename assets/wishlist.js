@@ -35,7 +35,7 @@ const fetchProductCardHTML = (handle) => {
     const text = res;
     const parser = new DOMParser();
     const htmlDocument = parser.parseFromString(text, 'text/html');
-    const productCard = htmlDocument.documentElement.querySelector(selectors.productCard);
+    const productCard = htmlDocument.documentElement.querySelector(selectors.productCard+handle);
     return productCard.outerHTML;
   })
   .catch((err) => console.error(`[Shopify Wishlist] Failed to load content for handle: ${handle}`, err));
