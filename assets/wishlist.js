@@ -5,8 +5,7 @@ const GRID_LOADED_CLASS = 'loaded';
 
 const selectors = {
   button: '[button-wishlist]',
-  grid: '[grid-wishlist]',
-  productCard: '.grid__item',
+  grid: '[grid-wishlist]'
 };
 
 document.addEventListener('DOMContentLoaded', () => {
