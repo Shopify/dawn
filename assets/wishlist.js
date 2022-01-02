@@ -64,6 +64,7 @@ const setupButtons = (buttons) => {
     button.addEventListener('click', () => {
       updateWishlist(productHandle);
       button.classList.toggle(BUTTON_ACTIVE_CLASS);
+      alert(handle);
     });
   });
 };
