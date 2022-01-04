@@ -6,24 +6,20 @@
   .hidden-element {
     display: none !important;
   }
-
   .product-form__input {
     max-width: unset;
   }
-
-  .product-form__input > #tabheadings > label {
+  .product-form__input > #tabheadings > label, .product-form__input > #tabheadings-nosub > label {
     background-color: rgba(0,0,0,0);
     border-radius: unset;
     padding: 1rem;
     border: none !important;
   }
-
   #once, #subs {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
   }
-
   input[name="subscription"] {
     appearance: auto;
     -webkit-appearance: auto;
@@ -32,8 +28,7 @@
     height: unset !important;
     width: unset !important;
   }
-
-  input[name="onetime"] {
+  input[name="onetime"], input[name="onetime-nosub"] {
     appearance: auto;
     -webkit-appearance: auto;
     -moz-appearance: auto;
@@ -41,30 +36,25 @@
     height: unset !important;
     width: unset !important;
   }
-
-  #oncelabel {
+  #oncelabel, #oncelabel-nosub {
     color: rgba(17,17,17,0.5);
     margin-bottom: 0;
   }
-
   #subslabel {
     color: rgba(0,0,0,1);
     margin-bottom: 0;
   }
-
-  .product-form__input > #tabheadings > input:checked + label {
+  .product-form__input > #tabheadings > input:checked + label, .product-form__input > #tabheadings-nosub > input:checked + label {
     opacity: 1;
     background-color: #fbf9f7;
   }
   label svg {
     height: 17px;
   }
-
-  #quantity-subscription-body {
+  #quantity-subscription-body, #quantity-subscription-body-nosub {
     background-color: #fbf9f7;
     width: 100%;
   }
-
   quantity-input {
     background-color: #ffffff;
   }
@@ -83,20 +73,6 @@
     color: var(--color-foreground);
     background-color: var(--color-background);
   }
-  {% comment %} .product-form__input #subscription input[type="radio"] + label {
-    border: 0.1rem solid rgba(var(--color-foreground),0.55);
-    background-color: #888888;
-    border-radius: 0.5rem;
-  }
-  .product-form__input #subscription input[type="radio"] + label p {
-    color: rgb(var(--color-background));
-  }
-  .product-form__input #subscription input[type="radio"]:checked + label {
-    background-color: rgb(var(--color-background));
-  }
-  .product-form__input #subscription input[type="radio"]:checked + label p {
-    color: rgb(var(--color-foreground));
-  } {% endcomment %}
   #subscription-btn-wrapper button {
     color: #000000;
     background-color: #ffcc00;
@@ -125,7 +101,7 @@
     background-color: #ffffff !important;
     color: #111111 !important;
   }
-  #quantity-wrapper label {
+  #quantity-wrapper label, #quantity-wrapper-nosub label {
     color: #111111 !important;
     text-decoration: none !important;
   }
@@ -189,7 +165,7 @@
           <div class="flex row ai-c px-4 py-5{% if forloop.index0 == 0 %} active-variant{% endif %}" style="{% if forloop.index0 != 0 %}border-top: 2px solid white;{% endif %}" id="once-{{ forloop.index0 }}-wrapper">
             <input type="radio" name="onetime" id="once-{{ forloop.index0 }}" disabled {% if forloop.index0 == 0 %}checked{% endif %} class="mr-5">
             <label class="w-100p flexi row jc-fs ai-c mx-0i my-0i px-0i py-0i">
-              <img src="{{ product.featured_image | img_url: '100x' }}" alt="{{ product.featured_image.alt | escape }}" width="50" height="50" loading="lazy" class="mr-4">
+              <img src="{{ product.featured_image | image_url: '100x' }}" alt="{{ product.featured_image.alt | escape }}" width="50" height="50" loading="lazy" class="mr-4">
               <div class="flex row jc-spb ai-c w-100p">
                 <span class="flex column jc-fs ai-fs fs-0">
                   <span class="fw-500">
@@ -306,30 +282,93 @@
     </div>
   </div>
 {% else %}
-  <div class="product-form__input product-form__quantity" {{ block.shopify_attributes }}>
-    <label class="form__label" for="Quantity-{{ section.id }}">
-      {{ 'products.product.quantity.label' | t }}
-    </label>
-
-    <quantity-input class="quantity">
+<div class="product-form__input product-form__subscription w-100p" {{ block.shopify_attributes }}>
+  <div class="flex row jc-fs ai-c" id="tabheadings-nosub">
+    <input type="radio" value="once" name="mode" id="once-nosub" checked>
+    <label for="once-nosub" class="checked" id="oncelabel-nosub">Einzelkauf</label>
+  </div>
+  <div id="quantity-subscription-body-nosub">
+    <div id="quantity-wrapper-nosub" class="flex column">
+      {%- for price in curr_variant.metafields.global.prices.value -%}
+        {% liquid 
+          assign currs = price.cost
+          assign references = curr_variant.metafields.global.prices.value[0]
+          assign refs = references.cost
+          assign diffs = currs | minus: refs | abs
+          assign savings = 100 | times: diffs | divided_by: refs | round
+        %}
+        <div class="flex row ai-c px-4 py-5{% if forloop.index0 == 0 %} active-variant{% endif %}" style="{% if forloop.index0 != 0 %}border-top: 2px solid white;{% endif %}" id="once-{{ forloop.index0 }}-wrapper-nosub">
+          <input type="radio" name="onetime-nosub" id="once-{{ forloop.index0 }}-nosub" disabled {% if forloop.index0 == 0 %}checked{% endif %} class="mr-5">
+          <label class="w-100p flexi row jc-fs ai-c mx-0i my-0i px-0i py-0i">
+            <img src="{{ product.featured_image | image_url: '100x' }}" alt="{{ product.featured_image.alt | escape }}" width="50" height="50" loading="lazy" class="mr-4">
+            <div class="flex row jc-spb ai-c w-100p">
+              <span class="flex column jc-fs ai-fs fs-0">
+                <span class="fw-500">
+                  {{ price.title }}
+                </span>
+                <span class="fw-300">
+                  {{ price.subtitle }}
+                </span>
+              </span>
+              <span class="flex column jc-fe ai-fe">
+                {% if savings > 0 %}
+                  <span style="background-color: #ffcc00; padding: 6px 13px; color: black; font-weight: 500; border-radius: 40px;" class="mb-3">{{ savings }}% gespart</span>
+                {% endif %}
+                <span class="fs-2 fw-700 ta-r">{% if price.perUnit %}<span class="fw-300 fs-0">je </span>{% endif %}{{ price.cost | money_without_currency }} €</span>
+              </span>
+            </div>
+          </label>
+        </div>
+      {%- endfor-%}
+    </div>
+    {% if curr_product.metafields.global.numberBuyers.value %}
+    <div class="flex row jc-c ai-c w-100p px-4 py-5" style="border-top: 2px solid white;">
+      <img src="https://cdn.shopify.com/s/files/1/0579/2697/5668/files/kunden-kauften.png?v=1639562854" alt="kunden-kauften" width="46" height="20" loading="lazy">
+      <p class="ff-body fs-0 lh-100 fw-300 ml-3">
+        Mehr als <span class="fw-500">{{ curr_product.metafields.global.numberBuyers.value }}x</span> in den letzten <span class="fw-500">4 Stunden</span> gekauft
+      </p>
+    </div>
+    {% endif %}
+  </div>
+  <div class="w-100p py-7 flex row ai-c" style="background-color: #ffffff;" id="quantity-input-wrapper">
+    <quantity-input class="quantity mr-4" id="quantity-input-nosub">
       <button class="quantity__button no-js-hidden" name="minus" type="button">
         <span class="visually-hidden">{{ 'products.product.quantity.decrease' | t: product: product.title | escape }}</span>
         {% render 'icon-minus' %}
       </button>
       <input class="quantity__input"
-          type="number"
-          name="quantity"
-          id="Quantity-{{ section.id }}"
-          min="1"
-          value="1"
-          form="product-form-{{ section.id }}"
-        >
+        type="number"
+        name="quantity"
+        id="Quantity-{{ section.id }}"
+        min="1"
+        value="1"
+        form="product-form-{{ section.id }}"
+      >
       <button class="quantity__button no-js-hidden" name="plus" type="button">
         <span class="visually-hidden">{{ 'products.product.quantity.increase' | t: product: product.title | escape }}</span>
         {% render 'icon-plus' %}
       </button>
     </quantity-input>
+    <div class="flex column ai-fs jc-fs">
+      <p class="my-0 fs-2 lh-100">
+        <span id="total-nosub" class="fw-700 ls-m080">{{ curr_variant.price | money_without_currency }} €</span>
+        <span id="totalcompare-nosub" class="fw-400 td-lt"></span>
+        <span class="fs-12px fw-300">inkl. MwSt.</span>
+      </p>
+      <p class="my-0 fs-12px lh-100 fw-300">
+        <span id="unitprice-nosub">
+          {% liquid
+            assign reference = curr_variant.metafields.global.prices.value[0].reference
+            assign unit = curr_variant.metafields.global.prices.value[0].unit
+            assign content = curr_variant.metafields.global.prices.value[0].content 
+            assign cost = curr_variant.metafields.global.prices.value[0].cost 
+          %}
+          {{ reference | times: cost | divided_by: content | money_without_currency }} €/{{ reference }} {{ unit }}
+        </span>
+      </p>
+    </div>
   </div>
+</div>
   {% endif %}
 </div>
 <div {{ block.shopify_attributes }} id="subscription-btn-wrapper" class="hidden-element">
@@ -389,7 +428,7 @@
       document.getElementById("subscription-checkmark-wrapper").classList.remove("hidden-element")
     }
   }
-  document.querySelector("quantity-input > input[type=number]").addEventListener("change", (e) => {
+  document.querySelectorAll("#quantity-input > input[type=number]").forEach(element => element.addEventListener("change", (e) => {
     const quantity = e.target.value
     const prices = {{ curr_variant.metafields.global.prices }}
     let unitPrice
@@ -430,11 +469,54 @@
       unitPrice = prices[2].reference * (3 * prices[2].cost) / prices[2].content
       document.getElementById("unitprice").innerHTML = `${(unitPrice / 100).toFixed(2).replace(".",",")} €/${prices[2].reference} ${prices[2].unit}`
     }
+  }))
+  document.querySelector("#quantity-input-nosub > input[type=number]").addEventListener("change", (e) => {
+    console.log("change")
+    const quantity = e.target.value
+    const prices = {{ curr_variant.metafields.global.prices }}
+    let unitPrice
+    if(quantity == 1) {
+      document.getElementById("once-0-nosub").checked = true
+      document.getElementById("once-0-wrapper-nosub").classList.add("active-variant")
+      prices.forEach((price, index) => {
+        if(index != 0) {
+          document.getElementById(`once-${index}-wrapper-nosub`).classList.remove("active-variant")
+        }
+      })
+      document.getElementById("total-nosub").innerHTML = `${(prices[0].cost / 100).toFixed(2).replace(".",",")} €`
+      document.getElementById("totalcompare-nosub").innerHTML = ""
+      unitPrice = prices[0].reference * prices[0].cost / prices[0].content
+      document.getElementById("unitprice-nosub").innerHTML = `${(unitPrice / 100).toFixed(2).replace(".",",")} €/${prices[0].reference} ${prices[0].unit}`
+    } else if (quantity == 2) {
+      document.getElementById("once-1-nosub").checked = true
+      document.getElementById("once-1-wrapper-nosub").classList.add("active-variant")
+      prices.forEach((price, index) => {
+        if(index != 1) {
+          document.getElementById(`once-${index}-wrapper-nosub`).classList.remove("active-variant")
+        }
+      })
+      document.getElementById("total-nosub").innerHTML = `${(2 * prices[1].cost / 100).toFixed(2).replace(".",",")} €`
+      document.getElementById("totalcompare-nosub").innerHTML = `${(2 * prices[0].cost / 100).toFixed(2).replace(".",",")} €`
+      unitPrice = prices[1].reference * (2 * prices[1].cost) / prices[1].content
+      document.getElementById("unitprice-nosub").innerHTML = `${(unitPrice / 100).toFixed(2).replace(".",",")} €/${prices[1].reference} ${prices[1].unit}`
+    } else {
+      document.getElementById("once-2-nosub").checked = true
+      document.getElementById("once-2-wrapper-nosub").classList.add("active-variant")
+      prices.forEach((price, index) => {
+        if(index != 2) {
+          document.getElementById(`once-${index}-wrapper-nosub`).classList.remove("active-variant")
+        }
+      })
+      document.getElementById("total-nosub").innerHTML = `${(Number(quantity) * prices[2].cost / 100).toFixed(2).replace(".",",")} €`
+      document.getElementById("totalcompare-nosub").innerHTML = `${(Number(quantity) * prices[0].cost / 100).toFixed(2).replace(".",",")} €`
+      unitPrice = prices[2].reference * (3 * prices[2].cost) / prices[2].content
+      document.getElementById("unitprice-nosub").innerHTML = `${(unitPrice / 100).toFixed(2).replace(".",",")} €/${prices[2].reference} ${prices[2].unit}`
+    }
   })
   document.querySelectorAll("#subscription input[type=radio]").forEach((element) => {
     element.addEventListener("change", (e) => {
       if(e.target.checked) {
-        const subscriptions = {{ curr_variant.metafields.global.subscriptions }}
+        const subscriptions = {{ curr_variant.metafields.global.subscriptions | json }} ? {{ curr_variant.metafields.global.subscriptions | json }} : []
         const prices = {{ curr_variant.metafields.global.prices }}
         const number = Number(e.target.id.replace("sub-",""))
         document.getElementById(`sub-${number}-wrapper`).classList.add("active-variant")
@@ -457,12 +539,12 @@
       }
     })
   })
-  document.getElementById("info-container").addEventListener("click", (e) => {
+  document.querySelectorAll("#info-container").forEach(element => element.addEventListener("click", (e) => {
     document.getElementById("sparabo-info").classList.remove("hidden-element")
-  })
-  document.getElementById("sparabo-close").addEventListener("click", () => {
+  }))
+  document.querySelectorAll("sparabo-close").forEach(element => element.addEventListener("click", () => {
     document.getElementById("sparabo-info").classList.add("hidden-element")
-  })
+  }))
   function changeLink(e) {
     const subscriptions = {{ curr_variant.metafields.global.subscriptions.value | json }}
     const checkedValue = Number(e.target.value)
