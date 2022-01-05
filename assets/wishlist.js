@@ -56,15 +56,16 @@ const setupGrid = async (grid) => {
   document.dispatchEvent(event);
 };
 
-const setupButtons = (buttons) => {
-  buttons.forEach((button) => {
+const wishlistButtons = document.querySelectorAll('.button-wishlist');
+const setupButtons = (wishlistButtons) => {
+  wishlistButtons.forEach((button) => {
     const productHandle = button.dataset.productHandle || false;
     if (!productHandle) return console.error('[Shopify Wishlist] Missing `data-product-handle` attribute. Failed to update the wishlist.');
     if (wishlistContains(productHandle)) button.classList.add(BUTTON_ACTIVE_CLASS);
     button.addEventListener('click', () => {
       updateWishlist(productHandle);
       button.classList.toggle(BUTTON_ACTIVE_CLASS);
-      alert(handle);
+      // alert(handle);
     });
   });
 };
@@ -119,3 +120,17 @@ const wishlistContains = (handle) => {
 const resetWishlist = () => {
   return setWishlist([]);
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+  const wishlistEmpty = document.querySelector('.wishlist__empty');
+  if(getWishlist().length <= 0){
+    wishlistEmpty.style.display='block';
+  }
+});
+
+document.addEventListener('shopify-wishlist:updated', () => {
+  const wishlistEmpty = document.querySelector('.wishlist__empty');
+  if(getWishlist().length <= 0){
+    wishlistEmpty.style.display='block';
+  }
+});

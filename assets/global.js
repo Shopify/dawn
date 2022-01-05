@@ -899,6 +899,7 @@ class ProductRecommendations extends HTMLElement {
           if (recommendations && recommendations.innerHTML.trim().length) {
             this.innerHTML = recommendations.innerHTML;
 
+            // Create an event when recommendations was loaded
             const event = new CustomEvent('product-recommendations:loaded', {
               detail: { recommendations: recommendations }
             });
@@ -917,6 +918,7 @@ class ProductRecommendations extends HTMLElement {
 
 customElements.define('product-recommendations', ProductRecommendations);
 
+// Initialize wishlist button when product recommendations loaded
 document.addEventListener('product-recommendations:loaded', () => {
   initButtons();
 });
