@@ -17,9 +17,39 @@
   <link id="ModelViewerOverride" rel="stylesheet" href="{{ 'component-model-viewer-ui.css' | asset_url }}" media="print" onload="this.media='all'">
 {%- endif -%}
 
+<style>
+  .swiper {
+    width: 500px;
+    height: 500px;
+  }
+</style>
+
 <section class="SectionGrid">
   <div class="SectionGrid-Wide ngrid twocol-32">
     <div class="col-1">
+      <div class="swiper">
+        <div class="swiper-wrapper">
+          {%- assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src' -%}
+          {%- if product.selected_or_first_available_variant.featured_media != null -%}
+            <div class="swiper-slide">
+              <img src="{{ product.selected_or_first_available_variant.featured_media | img_url: '800x' }}" alt="{{ product.selected_or_first_available_variant.featured_media.alt }}" width="500" height="500" loading="lazy">
+            </div>
+          {%- endif -%}
+          {% for media in product.media %}
+            <div class="swiper-slide">
+              <img src="{{ media.preview_image | img_url: '800x' }}" alt="{{ media.alt }}" width="500" height="500" loading="lazy">
+            </div>
+          {% endfor %}
+        </div>
+        {% comment %} <div class="swiper-pagination"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-scrollbar"></div> {% endcomment %}
+      </div>
+      <script>
+        const swiper = new Swiper('.swiper', {});
+      </script>
+      {% comment %}
       <slider-component class="slider-mobile-gutter">
         <a class="skip-to-content-link button visually-hidden" href="#ProductInfo-{{ section.id }}">
           {{ "accessibility.skip_to_product_info" | t }}
@@ -51,6 +81,7 @@
           <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'accessibility.next_slide' | t }}">{% render 'icon-caret' %}</button>
         </div>
       </slider-component>
+      {% endcomment %}
       {%- if first_3d_model -%}
         <button
           class="button button--full-width product__xr-button"
@@ -697,7 +728,7 @@
     {%- if product.selected_or_first_available_variant.featured_media -%}
       {%- assign media_size = product.selected_or_first_available_variant.featured_media.preview_image.width | append: 'x' -%}
       "image": [
-        {{ product.selected_or_first_available_variant.featured_media | image_url: media_size | prepend: "https:" | json }}
+        {{ product.selected_or_first_available_variant.featured_media | img_url: media_size | prepend: "https:" | json }}
       ],
     {%- endif -%}
     "description": {{ product.description | strip_html | json }},
