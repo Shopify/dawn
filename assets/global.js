@@ -898,6 +898,12 @@ class ProductRecommendations extends HTMLElement {
           const recommendations = html.querySelector('product-recommendations');
           if (recommendations && recommendations.innerHTML.trim().length) {
             this.innerHTML = recommendations.innerHTML;
+
+            const event = new CustomEvent('product-recommendations:loaded', {
+              detail: { recommendations: recommendations }
+            });
+            document.dispatchEvent(event);
+
           }
         })
         .catch(e => {
@@ -910,3 +916,7 @@ class ProductRecommendations extends HTMLElement {
 }
 
 customElements.define('product-recommendations', ProductRecommendations);
+
+document.addEventListener('product-recommendations:loaded', () => {
+  initButtons();
+});
