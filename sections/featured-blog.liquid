@@ -8,6 +8,21 @@
 <noscript>{{ 'component-article-card.css' | asset_url | stylesheet_tag }}</noscript>
 
 {{ 'section-featured-blog.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: calc({{ section.settings.padding_top }}px * 0.75);
+    padding-bottom: calc({{ section.settings.padding_bottom }}px  * 0.75);
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
 {%- liquid
   assign posts_displayed = section.settings.blog.articles_count
   if section.settings.post_limit <= section.settings.blog.articles_count
@@ -16,8 +31,8 @@
   endif
 -%}
 <div class="blog{% if section.settings.soft_background %} background-secondary{% endif %}{% if section.settings.heading == blank %} no-heading{% endif %}">
-  <div class="page-width-desktop{% if posts_displayed < 3 %} page-width-tablet{% endif %}">
-    <div class="title-wrapper-with-link{% if section.settings.heading == blank %} title-wrapper-with-link--no-heading{% endif %} {% if posts_displayed > 2 %}title-wrapper--self-padded-tablet-down{% else %}title-wrapper--self-padded-mobile{% endif %}">
+  <div class="page-width-desktop{% if posts_displayed < 3 %} page-width-tablet{% endif %} section-{{ section.id }}-padding">
+    <div class="title-wrapper-with-link{% if section.settings.heading == blank %} title-wrapper-with-link--no-heading{% endif %} {% if posts_displayed > 2 %}title-wrapper--self-padded-tablet-down{% else %}title-wrapper--self-padded-mobile{% endif %} title-wrapper--no-top-margin">
       <h2 class="blog__title">{{ section.settings.heading | escape }}</h2>
 
       {%- if section.settings.blog != blank and section.settings.show_view_all and section.settings.post_limit < section.settings.blog.articles_count -%}
@@ -36,7 +51,7 @@
         >
           {%- for article in section.settings.blog.articles limit: section.settings.post_limit -%}
             <li id="Slide-{{ section.id }}-{{ forloop.index }}" class="blog__post grid__item article slider__slide slider__slide--full-width">
-              {% render 'article-card', blog: section.settings.blog, article: article, show_image: section.settings.show_image, show_date: section.settings.show_date, show_author: section.settings.show_author %}
+              {% render 'article-card', blog: section.settings.blog, article: article, media_aspect_ratio: 1.66, show_image: section.settings.show_image, show_date: section.settings.show_date, show_author: section.settings.show_author, show_excerpt: true %}
             </li>
           {%- endfor -%}
         </ul>
@@ -83,7 +98,7 @@
 {
   "name": "t:sections.featured-blog.name",
   "tag": "section",
-  "class": "spaced-section spaced-section--full-width",
+  "class": "section",
   "settings": [
     {
       "type": "text",
@@ -135,6 +150,30 @@
       "id": "show_view_all",
       "default": true,
       "label": "t:sections.featured-blog.settings.show_view_all.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
     }
   ],
   "presets": [
