@@ -8,5 +8,248 @@
 {% stylesheet %}
 {% endstylesheet %}
 
+{% comment %}
+  Breadcrumbs
+  https://developers.google.com/search/docs/data-types/breadcrumbs
+{% endcomment %}
+
+{%- if current_tags -%}
+  {%- assign tag_names = current_tags | join: ', ' %}
+  {% comment %}Converting an array to a handle converts it to a string{% endcomment %}
+  {%- capture tag_handles -%}
+    {%- for tag in current_tags -%}
+      {{- tag | handle | append: '|' -}}
+    {%- endfor -%}
+  {%- endcapture -%}
+{%- endif -%}
+
+{% if collection.url == blank %}
+  {% assign collection_url = '/collections/all' %}
+{% else %}
+  {% assign collection_url = collection.url %}
+{% endif %}
+
+{% if template.name == 'product' 
+    or template.name == 'list-collections' 
+    or template.name == 'collection' 
+    or template.name == 'blog' 
+    or template.name == 'article' 
+    or template.name == 'search' 
+    or template.name == 'cart' 
+    or template.name == 'page'
+%}
+
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+      {% case template.name %}
+        {% when 'product' %}
+          {% if product.collections.size >= 1 %}
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "item": {
+                "@id": "{{ shop.url }}/collections",
+                "name": {{ 'structured_data.breadcrumbs.collections' | t | json }}
+              }
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "item": {
+                "@id": "{{ shop.url }}/collections/{{ product.collections.first.handle }}",
+                "name": {{ product.collections.first.title | json }}
+              }
+            },
+          {% else %}
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "item": {
+                "@id": "{{ shop.url }}/products",
+                "name": {{ 'structured_data.breadcrumbs.products' | t | json }}
+              }
+            },
+          {% endif %}
+          {
+            "@type": "ListItem",
+            "position": {% if product.collections.size >= 1 %}3{% else %}2{% endif %},
+            "item": {
+              "@id": "{{ shop.url }}{{ product.url | within: collection }}",
+              "name": {{ product.title | json }}
+            }
+          }
+        {% when 'list-collections' %}
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "item": {
+              "@id": "{{ shop.url }}/collections",
+              "name": {{ 'structured_data.breadcrumbs.collections' | t | json }}
+            }
+          }
+          {% if current_page != 1 %}
+            ,
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "item": {
+                "@id": "{{ shop.url }}/collections",
+                "name": {{ 'structured_data.breadcrumbs.page' | t: page: current_page | json }}
+              }
+            }
+          {% endif %}
+        {% when 'collection' %}
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "item": {
+              "@id": "{{ shop.url }}/collections",
+              "name": {{ 'structured_data.breadcrumbs.collections' | t | json }}
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "item": {
+              "@id": "{{ shop.url }}{{ collection_url }}",
+              "name": {{ collection.title | json }}
+            }
+          }
+          {% if current_tags %}
+            ,
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "item": {
+                "@id": "{{ shop.url }}{{ collection_url }}/{{- tag_handles | split: '|' | join: '+' -}}",
+                "name": {{ 'structured_data.breadcrumbs.tags_html' | t: tags: tag_names | json }}
+              }
+            }
+          {% endif %}
+          {% if current_page != 1 %}
+            {% if current_tags %}
+              {% assign position = 4 %}
+            {% else %}
+              {% assign position = 3 %}
+            {% endif %}
+            ,
+            {
+              "@type": "ListItem",
+              "position": {{ position }},
+              "item": {
+                "@id": "{{ shop.url }}/collections?page={{ current_page }}",
+                "name": {{ 'structured_data.breadcrumbs.page' | t: page: current_page | json }}
+              }
+            }
+          {% endif %}
+        {% when 'blog' or 'article' %}
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "item": {
+              "@id": "{{ shop.url }}{{ blog.url }}",
+              "name": {{ blog.title | json }}
+            }
+          }
+          {% if template.name == 'article' %}
+            ,
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "item": {
+                "@id": "{{ shop.url }}{{ article.url }}",
+                "name": {{ article.title | json }}
+              }
+            }
+          {% elsif current_tags %}
+            ,
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "item": {
+                "@id": "{{ shop.url }}{{ blog.url }}/tagged/{{- tag_handles | split: '|' | join: '+' -}}",
+                "name": {{ 'structured_data.breadcrumbs.tags_html' | t: tags: tag_names | json }}
+              }
+            }
+          {% endif %}
+          {% if current_page != 1 %}
+            {% if current_tags %}
+              {% assign position = 3 %}
+              {%- capture url -%}
+                {{ shop.url }}{{ blog.url }}/tagged/{{ tag_handles | split: '|' | join: '+' }}?page={{ current_page }}
+              {%- endcapture -%}
+            {% else %}
+              {% assign position = 2 %}
+                {%- capture url -%}
+                {{ shop.url }}{{ blog.url }}?page={{ current_page }}
+              {%- endcapture -%}
+            {% endif %}
+            ,
+            {
+              "@type": "ListItem",
+              "position": {{ position }},
+              "item": {
+                "@id": "{{ url }}",
+                "name": {{ 'structured_data.breadcrumbs.page' | t: page: current_page | json }}
+              }
+            }
+          {% endif %}
+        {% when 'search' %}
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "item": {
+              "@id": "{{ shop.url }}/search",
+              "name": {{ 'structured_data.breadcrumbs.search' | t | json }}
+            }
+          }
+          {% if search.performed %}
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "item": {
+                "@id": "{{ shop.url }}/search?q={{ search.terms }}",
+                "name": {{ search.terms | json }}
+              }
+            }
+            {% if current_page != 1 %}
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "item": {
+                  "@id": "{{ shop.url }}/search?page={{ current_page }}&q={{ search.terms }}",
+                  "name": {{ 'structured_data.breadcrumbs.page' | t: page: current_page | json }}
+                }
+              }
+            {% endif %}
+          {% endif %}
+        {% when 'cart' %}
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "item": {
+              "@id": "{{ shop.url }}/cart",
+              "name": {{ 'structured_data.breadcrumbs.cart' | t | json }}
+            }
+          }
+        {% when 'page' %}
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "item": {
+              "@id": "{{ page.url }}",
+              "name": {{ page.title | json }}
+            }
+          }
+        {% else %}
+        {% endcase %}
+      ]
+    }
+  </script>
+{% endif %}
+
 {% javascript %}
 {% endjavascript %}
