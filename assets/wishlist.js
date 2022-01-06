@@ -121,16 +121,19 @@ const resetWishlist = () => {
   return setWishlist([]);
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  const wishlistEmpty = document.querySelector('.wishlist__empty');
-  if(getWishlist().length <= 0){
-    wishlistEmpty.style.display='block';
-  }
-});
+const wishlistEmpty = document.querySelector('.wishlist__empty');
+if(wishlistEmpty){
 
-document.addEventListener('shopify-wishlist:updated', () => {
-  const wishlistEmpty = document.querySelector('.wishlist__empty');
-  if(getWishlist().length <= 0){
-    wishlistEmpty.style.display='block';
-  }
-});
+  document.addEventListener('DOMContentLoaded', () => {
+    if(getWishlist().length <= 0){
+      wishlistEmpty.style.display='block';
+    }
+  });
+
+  document.addEventListener('shopify-wishlist:updated', () => {
+    if(getWishlist().length <= 0){
+      wishlistEmpty.style.display='block';
+    }
+  });
+
+}
