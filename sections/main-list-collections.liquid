@@ -3,7 +3,6 @@
 
 <div class="page-width">
   <h1 class="title title--primary">{{ section.settings.title | escape }}</h1>
-
   {%- liquid
     case section.settings.sort
       when 'products_high' or 'products_low'
@@ -16,57 +15,10 @@
       assign collections = collections | reverse
     endif
   -%}
-
   <ul class="collection-list grid grid--1-col grid--3-col-tablet" role="list">
     {%- for collection in collections -%}
       <li class="collection-list__item grid__item">
-        <a{% if collection.all_products_count > 0 %} href="{{ collection.url }}"{% endif %}
-          class="card animate-arrow{% if collection.featured_image != blank %} card--media{% else %}{% if section.settings.image_ratio != 'adapt' %} card--stretch{% endif %}{% endif %}{% unless section.settings.image_padding %} card--light-border{% endunless %}"
-        >
-          <div class="card--stretch card-colored color-{{ section.settings.color_scheme }}">
-            {%- if collection.featured_image != blank -%}
-              <div{% if section.settings.image_padding %} class="card__media-spacer"{% endif %}>
-                {% if section.settings.image_padding %}<div class="overlay-card"></div>{% endif %}
-                <div class="media media--{{ section.settings.image_ratio }} media--hover-effect overflow-hidden"
-                  {% if section.settings.image_ratio == 'adapt' %}style="padding-bottom: {{ 1 | divided_by: collection.featured_image.aspect_ratio | times: 100 }}%;"{% endif %}>
-
-                  <img
-                    srcset="{%- if collection.featured_image.width >= 165 -%}{{ collection.featured_image | img_url: '165x' }} 165w,{%- endif -%}
-                      {%- if collection.featured_image.width >= 360 -%}{{ collection.featured_image | img_url: '360x' }} 360w,{%- endif -%}
-                      {%- if collection.featured_image.width >= 535 -%}{{ collection.featured_image | img_url: '535x' }} 535w,{%- endif -%}
-                      {%- if collection.featured_image.width >= 750 -%}{{ collection.featured_image | img_url: '750x' }} 750w,{%- endif -%}
-                      {%- if collection.featured_image.width >= 1000 -%}{{ collection.featured_image | img_url: '1000x' }} 1000w,{%- endif -%}
-                      {%- if collection.featured_image.width >= 1500 -%}{{ collection.featured_image | img_url: '1500x' }} 1500w,{%- endif -%}
-                      {{ collection.featured_image | img_url: 'master' }} {{ collection.featured_image.width }}w"
-                    src="{{ collection.featured_image | img_url: '1500x' }}"
-                    sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 3 }}px, (min-width: 750px) calc((100vw - 130px) / 3), calc(100vw - 30px)"
-                    alt="{{ collection.title | escape }}"
-                    height="{{ collection.featured_image.height }}"
-                    width="{{ collection.featured_image.width }}"
-                    loading="lazy"
-                  >
-                </div>
-              </div>
-              <div class="card__text card__text-spacing card__text-hover">
-                {% unless section.settings.image_padding %}<div class="overlay-card"></div>{% endunless %}
-                <h2 class="h3">{{- collection.title -}}<span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span></h2>
-              </div>
-            {%- else -%}
-              <div class="overlay-card"></div>
-              <div class="card__text-spacing card__text-hover">
-                <h2 class="h1">
-                  {{- collection.title -}}{%- if collection.description == blank -%}<span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span>{% endif %}
-                </h2>
-
-                {%- if collection.description != blank -%}
-                  <p>
-                    {{- collection.description | strip_html | truncatewords: 12 -}}<span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span>
-                  </p>
-                {%- endif -%}
-              </div>
-            {%- endif -%}
-          </div>
-        </a>
+        {% render 'card-collection', card_collection: collection, media_aspect_ratio: section.settings.image_ratio, columns: 3 %}
       </li>
     {%- endfor -%}
   </ul>
@@ -75,7 +27,7 @@
 {% schema %}
 {
   "name": "t:sections.main-list-collections.name",
-  "class": "spaced-section",
+  "class": "section",
   "settings": [
     {
       "type": "text",
@@ -135,40 +87,6 @@
       "default": "adapt",
       "label": "t:sections.main-list-collections.settings.image_ratio.label",
       "info": "t:sections.main-list-collections.settings.image_ratio.info"
-    },
-    {
-      "type": "select",
-      "id": "color_scheme",
-      "options": [
-        {
-          "value": "accent-1",
-          "label": "t:sections.main-list-collections.settings.color_scheme.options__1.label"
-        },
-        {
-          "value": "accent-2",
-          "label": "t:sections.main-list-collections.settings.color_scheme.options__2.label"
-        },
-        {
-          "value": "background-1",
-          "label": "t:sections.main-list-collections.settings.color_scheme.options__3.label"
-        },
-        {
-          "value": "background-2",
-          "label": "t:sections.main-list-collections.settings.color_scheme.options__4.label"
-        },
-        {
-          "value": "inverse",
-          "label": "t:sections.main-list-collections.settings.color_scheme.options__5.label"
-        }
-      ],
-      "default": "background-1",
-      "label": "t:sections.main-list-collections.settings.color_scheme.label"
-    },
-    {
-      "type": "checkbox",
-      "id": "image_padding",
-      "default": false,
-      "label": "t:sections.main-list-collections.settings.image_padding.label"
     }
   ]
 }
