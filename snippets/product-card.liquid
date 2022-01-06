@@ -131,3 +131,44 @@
     </div>
   </div>
 </div>
+
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org/",
+    "@type": "Product",
+    "name": {{ product_card_product.title | json }},
+    "url": {{ shop.url | append: product_card_product.url | json }},
+    {% if seo_media -%}
+      {%- assign media_size = seo_media.preview_image.width | append: 'x' -%}
+      "image": [
+        {{ seo_media | img_url: media_size | prepend: "https:" | json }}
+      ],
+    {%- endif %}
+    "description": {{ product_card_product.description | strip_html | json }},
+    {% if product_card_product.selected_or_first_available_variant.sku != blank -%}
+      "sku": {{ product_card_product.selected_or_first_available_variant.sku | json }},
+    {%- endif %}
+    {% if product_card_product.variants.first.barcode != blank -%}
+      "gtin12": {{ product_card_product.variants.first.barcode }}0000,
+    {%- endif %}
+    "brand": {
+      "@type": "Brand",
+      "name": {{ product_card_product.vendor | json }}
+    },
+    "offers": [
+      {%- for variant in product_card_product.variants -%}
+        {
+          "@type" : "Offer",
+          {%- if variant.sku != blank -%}
+            "sku": {{ variant.sku | json }},
+          {%- endif -%}
+          "availability" : "http://schema.org/{% if variant.available %}InStock{% else %}OutOfStock{% endif %}",
+          "price" : {{ variant.price | divided_by: 100.00 | json }},
+          "priceCurrency" : {{ cart.currency.iso_code | json }},
+          "priceValidUntil": "{{ 'now' | date: '%s' | plus: 31536000 | date: '%Y-%m-%d' | uri_encode | replace:'+','%20' }}",
+          "url" : {{ shop.url | append: variant.url | json }}
+        }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    ]
+  }
+</script>
