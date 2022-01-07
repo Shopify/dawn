@@ -3,73 +3,79 @@
 <div class="custom-section custom-section--page-banner" style="background-color: {{section.settings.bg_color}}">
 
     <div class="custom-section__bg-container"
-        {% unless section.settings.bg_image == blank %}style="background-image: url('{{section.settings.bg_image | image_url}}');" {% endunless %}>
+        {% if section.settings.bg_image != blank or section.settings.bg_color != blank %}
+        style="{% unless section.settings.bg_image == blank %}background-image: url('{{section.settings.bg_image | image_url}}');{% endunless %}
+            {% unless section.settings.bg_color == blank %}background-color: {{ section.settings.bg_color }};{% endunless %}
+            {% if section.settings.bg_blendmode %}background-blend-mode: screen;{% endif %}"
+        {% endif %}>
         
         <div class="page-width">
+        
+            <div class="custom-section--page-banner__content-wrapper">
+                {% if section.settings.title != blank or section.settings.subtitle != blank%}
+                <div class="custom-section__header center">
+                    {% unless section.settings.title == blank %}
+                    <h1 class="custom-section__header--title {% if section.settings.title_uppercase%}uppercase{% endif %}">{{ section.settings.title | escape }}</h1>
+                    {% else %}
+                    <h1 class="custom-section__header--title {% if section.settings.title_uppercase%}uppercase{% endif %}">{{ page.title | escape }}</h1>
+                    {% endunless %}
 
-            {% if section.settings.title != blank or section.settings.subtitle != blank%}
-            <div class="custom-section__header center">
-                {% unless section.settings.title == blank %}
-                <h2 class="custom-section__header--title {% if section.settings.title_uppercase%}uppercase{% endif %}">{{ section.settings.title | escape }}</h2>
-                {% else %}
-                <h2 class="custom-section__header--title {% if section.settings.title_uppercase%}uppercase{% endif %}">{{ page.title | escape }}</h2>
-                {% endunless %}
+                    {% if section.settings.subtitle != blank and section.settings.show_subtitle == true %}
+                    <p class="custom-section__header--subtitle">{{ section.settings.subtitle | escape }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
 
-                {% unless section.settings.subtitle == blank %}
-                <p class="custom-section__header--subtitle">{{ section.settings.subtitle | escape }}</p>
-                {% endunless%}
-            </div>
-            {% endif %}
+                {% if section.settings.show_search %}            
+                <div class="template-search__search">
+                    <predictive-search data-loading-text="{{ 'accessibility.loading' | t }}">
+                        <form action="{{ routes.search_url }}" method="get" role="search" class="search">
+                        <div class="field">
+                            <input
+                            class="search__input field__input"
+                            id="Search-In-Template"
+                            type="search"
+                            name="q"
+                            value="{{ search.terms | escape }}"
+                            placeholder="Describe your issue"
+                            {%- if settings.predictive_search_enabled -%}
+                                role="combobox"
+                                aria-expanded="false"
+                                aria-owns="predictive-search-results-list"
+                                aria-controls="predictive-search-results-list"
+                                aria-haspopup="listbox"
+                                aria-autocomplete="list" 
+                                autocorrect="off"
+                                autocomplete="off"
+                                autocapitalize="off"
+                                spellcheck="false"
+                            {%- endif -%}
+                            >
+                            <label class="field__label" for="Search-In-Template">Describe your issue</label>
+                            <input name="options[prefix]" type="hidden" value="last">
 
-            {% if section.settings.show_search %}            
-            <div class="template-search__search">
-                <predictive-search data-loading-text="{{ 'accessibility.loading' | t }}">
-                    <form action="{{ routes.search_url }}" method="get" role="search" class="search">
-                    <div class="field">
-                        <input
-                        class="search__input field__input"
-                        id="Search-In-Template"
-                        type="search"
-                        name="q"
-                        value="{{ search.terms | escape }}"
-                        placeholder="Describe your issue"
-                        {%- if settings.predictive_search_enabled -%}
-                            role="combobox"
-                            aria-expanded="false"
-                            aria-owns="predictive-search-results-list"
-                            aria-controls="predictive-search-results-list"
-                            aria-haspopup="listbox"
-                            aria-autocomplete="list" 
-                            autocorrect="off"
-                            autocomplete="off"
-                            autocapitalize="off"
-                            spellcheck="false"
-                        {%- endif -%}
-                        >
-                        <label class="field__label" for="Search-In-Template">Describe your issue</label>
-                        <input name="options[prefix]" type="hidden" value="last">
-
-                        <div class="predictive-search predictive-search--search-template" tabindex="-1" data-predictive-search>
-                            <div class="predictive-search__loading-state">
-                            <svg aria-hidden="true" focusable="false" role="presentation" class="spinner" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
-                                <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
-                            </svg>
+                            <div class="predictive-search predictive-search--search-template" tabindex="-1" data-predictive-search>
+                                <div class="predictive-search__loading-state">
+                                <svg aria-hidden="true" focusable="false" role="presentation" class="spinner" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+                                    <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+                                </svg>
+                                </div>
                             </div>
+                
+                            <span class="predictive-search-status visually-hidden" role="status" aria-hidden="true"></span> 
+                                
+                            <button type="submit" class="search__button field__button">
+                                <svg class="icon icon-search">
+                                    <use xlink:href="#icon-search">
+                                </svg>
+                            </button>
                         </div>
-            
-                        <span class="predictive-search-status visually-hidden" role="status" aria-hidden="true"></span> 
-                            
-                        <button type="submit" class="search__button field__button">
-                            <svg class="icon icon-search">
-                                <use xlink:href="#icon-search">
-                            </svg>
-                        </button>
-                    </div>
-                    </form>
-                </predictive-search>
+                        </form>
+                    </predictive-search>
 
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
 
     </div>
@@ -98,6 +104,12 @@
                 "default": "Amet massa vitae tortor condimentum."
             },
             {
+                "type": "checkbox",
+                "id": "show_subtitle",
+                "label": "Show Subtitle",
+                "default": true
+            },
+            {
                 "type": "color",
                 "id": "bg_color",
                 "label": "Background Color"
@@ -106,6 +118,12 @@
                 "type": "image_picker",
                 "id": "bg_image",
                 "label": "Background Image"
+            },
+            {
+                "type": "checkbox",
+                "id": "bg_blendmode",
+                "label": "Enable Blending",
+                "default": false
             },
             {
                 "type": "checkbox",
