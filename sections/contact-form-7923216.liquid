@@ -1,0 +1,281 @@
+{{ 'section-contact-form.css' | asset_url | stylesheet_tag }}
+{{ 'section-contact-form-7923216.css' | asset_url | stylesheet_tag }}
+
+
+<div class="custom-section custom-section--contactform" style="background-color: {{section.settings.bg_color}}">
+
+  <div class="custom-section__bg-container"
+    {% unless section.settings.bg_image == blank %}style="background-image: url('{{section.settings.bg_image | image_url}}');" {% endunless %}>
+    
+    <div class="{% if section.settings.page_width %}page-width{% endif %}">
+
+      <div class="grid grid--gapless grid--1-col{% if section.settings.show_map and section.settings.map_src != blank %} grid--2-col-desktop{% endif %}">
+        {%- if section.settings.show_map and section.settings.map_src != blank -%}
+        <div class="grid__item map">
+          <div class="custom-section--contactform__map-container">
+            <iframe src="{{ section.settings.map_src | escape }}"
+              class="custom-section--contactform__map"
+              allowfullscreen=""
+              loading="lazy"></iframe>
+          </div>
+        </div>
+        {%- endif -%}
+        <div class="grid__item{%unless section.settings.show_map and section.settings.map_src != blank%} no-map{% endunless %}">
+          <div class="contact">
+            {% if section.settings.title != blank or section.settings.subtitle != blank%}
+            <div class="custom-section__header">
+                {% unless section.settings.title == blank %}
+                <h2 class="custom-section__header--title {% if section.settings.title_uppercase%}uppercase{% endif %}">{{ section.settings.title | escape }}</h2>
+                {% endunless %}
+                {% unless section.settings.subtitle == blank %}
+                <p class="custom-section__header--subtitle">{{ section.settings.subtitle | escape }}</p>
+                {% endunless%}
+            </div>
+            {% endif %}
+
+            {%- form 'contact', id: 'ContactForm' -%}
+              {%- if form.posted_successfully? -%}
+                <div class="form-status form-status-list form__message" tabindex="-1" autofocus>{% render 'icon-success' %} {{ 'templates.contact.form.post_success' | t }}</div>
+              {%- elsif form.errors -%}
+                <div class="form__message">
+                  <h2 class="form-status caption-large text-body" role="alert" tabindex="-1" autofocus>{% render 'icon-error' %} {{ 'templates.contact.form.error_heading' | t }}</h2>
+                </div>
+                <ul class="form-status-list caption-large" role="list">
+                  <li>
+                    <a href="#ContactForm-email" class="link">
+                      {{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}
+                    </a>
+                  </li>
+                </ul>
+              {%- endif -%}
+              <div class="contact__fields">
+                <div class="field">
+                  <input class="field__input" autocomplete="name" type="text" id="ContactForm-name" name="contact[{{ 'templates.contact.form.name' | t }}]" value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}" placeholder="{{ 'templates.contact.form.name' | t }}">
+                  <label class="field__label" for="ContactForm-name">{{ 'templates.contact.form.name' | t }}</label>
+                </div>
+                <div class="field field--with-error">
+                  <input
+                    autocomplete="email"
+                    type="email"
+                    id="ContactForm-email"
+                    class="field__input"
+                    name="contact[email]"
+                    spellcheck="false"
+                    autocapitalize="off"
+                    value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+                    aria-required="true"
+                    {% if form.errors contains 'email' %}
+                      aria-invalid="true"
+                      aria-describedby="ContactForm-email-error"
+                    {% endif %}
+                    placeholder="{{ 'templates.contact.form.email' | t }}"
+                  >
+                  <label class="field__label" for="ContactForm-email">{{ 'templates.contact.form.email' | t }} <span aria-hidden="true">*</span></label>
+                  {%- if form.errors contains 'email' -%}
+                    <small class="contact__field-error" id="ContactForm-email-error">
+                      <span class="visually-hidden">{{ 'accessibility.error' | t }}</span>
+                      <span class="form__message">{% render 'icon-error' %}{{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}</span>
+                    </small>
+                  {%- endif -%}
+                </div>
+              </div>
+              <div class="field">
+                <input type="tel" id="ContactForm-phone" class="field__input" autocomplete="tel" name="contact[{{ 'templates.contact.form.phone' | t }}]" pattern="[0-9\-]*" value="{% if form.phone %}{{ form.phone }}{% elsif customer %}{{ customer.phone }}{% endif %}" placeholder="{{ 'templates.contact.form.phone' | t }}">
+                <label class="field__label" for="ContactForm-phone">{{ 'templates.contact.form.phone' | t }}</label>
+              </div>
+              <div class="field">
+                <textarea
+                  rows="10"
+                  id="ContactForm-body"
+                  class="text-area field__input"
+                  name="contact[{{ 'templates.contact.form.comment' | t }}]"
+                  placeholder="{{ 'templates.contact.form.comment' | t }}"
+                >
+                  {{- form.body -}}
+                </textarea>
+                <label class="form__label field__label" for="ContactForm-body">{{ 'templates.contact.form.comment' | t }}</label>
+              </div>
+              <div class="contact__button">
+
+                {%-liquid
+                  assign btn_label = section.settings.btn_label
+                  assign btn_link = section.settings.btn_link
+                  assign btn_size = section.settings.btn_size
+                  assign hover_effect = section.settings.hover_effect
+                  assign shadow_effect = section.settings.shadow_effect
+                  assign auto_width = section.settings.auto_width
+                -%}
+
+                {% case btn_size %}
+                    {% when "default" %}
+                        {%- assign btn_size_class = "custom-btn--default" -%}
+                    {% when "medium" %}
+                        {%- assign btn_size_class = "custom-btn--medium" -%}
+                    {% when "large" %}
+                        {%- assign btn_size_class = "custom-btn--large" -%}
+                {% endcase %}
+
+                {% case hover_effect %}
+                    {% when "lighten" %}
+                        {%- assign btn_he_class = "custom-btn-he--lighten" -%}
+                    {% when "color-switch" %}
+                        {%- assign btn_he_class = "custom-btn-he--color-switch" -%}
+                    {% when "slide" %}
+                        {%- assign btn_he_class = "custom-btn-he--slide" -%}
+                    {% when "shine" %}
+                        {%- assign btn_he_class = "custom-btn-he--shine" -%}
+                {% endcase %}
+
+                <button type="submit" class="button custom-btn {{btn_size_class}} {{btn_he_class}} {% if shadow_effect %}custom-btn-bs{% endif %} {% if auto_width %}custom-btn-auto-width{% endif %}">
+                  {{ btn_label | escape }}
+                  {% if hover_effect == 'shine'%}
+                  <span></span>
+                  {% endif %}
+                </button>
+              </div>
+            {%- endform -%}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+{% schema %}
+    {
+        "name": "🔰 Contact Form",
+        "tag": "section",
+        "settings": [
+            {
+                "type": "text",
+                "id": "title",
+                "label": "Title",
+                "default": "We've love to here from you!"
+            },
+            {
+                "type": "checkbox",
+                "id": "title_uppercase",
+                "label": "Uppercase",
+                "default": false
+            },
+            {
+                "type": "text",
+                "id": "subtitle",
+                "label": "Subtitle"
+            },
+            {
+                "type": "color",
+                "id": "bg_color",
+                "label": "Background Color"
+            },
+            {
+                "type": "image_picker",
+                "id": "bg_image",
+                "label": "Background Image"
+            },
+            {
+                "type": "checkbox",
+                "id": "page_width",
+                "label": "Enable Max Page Width",
+                "default": true
+            },
+            {
+              "type": "header",
+              "content": "Map Settings"
+            },
+            {
+              "type": "text",
+              "id": "map_src",
+              "label": "Source",
+              "info": "From Google Map",
+              "default":"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12134.998745042527!2d172.67030235574802!3d-40.50291792968439!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6d3ce45c6ddbd56f%3A0x4c8645203c054b39!2sWharariki%20Beach!5e0!3m2!1sen!2sph!4v1641803561581!5m2!1sen!2sph"
+            },
+            {
+              "type": "checkbox",
+              "id": "show_map",
+              "label": "Show Map",
+              "default": true
+            },
+            {
+                "type": "header",
+                "content": "Button Settings"
+            },
+            {
+                "type": "checkbox",
+                "id": "show_btn",
+                "label": "Show Button",
+                "default": true
+            },
+            {
+                "type":"text",
+                "id":"btn_label",
+                "label":"Label",
+                "default":"Send"
+            },
+            {
+                "type": "select",
+                "id": "btn_size",
+                "label": "Button Size",
+                "options": [
+                    {
+                    "value": "default",
+                    "label": "Default"
+                    },
+                    {
+                    "value": "medium",
+                    "label": "Medium"
+                    },
+                    {
+                    "value": "large",
+                    "label": "Large"
+                    }
+                ],
+                "default": "default"
+            },
+            {
+                "type": "select",
+                "id": "hover_effect",
+                "label": "Hover Effect",
+                "options": [
+                    {
+                    "value": "lighten",
+                    "label": "Lighten Effect"
+                    },
+                    {
+                    "value": "color-switch",
+                    "label": "Color Switch Effect"
+                    },
+                    {
+                    "value": "slide",
+                    "label": "Slide Effect"
+                    },
+                    {
+                    "value": "shine",
+                    "label": "Shine Effect"
+                    }
+                ],
+                "default": "shine"
+            },
+            {
+                "type": "checkbox",
+                "id": "shadow_effect",
+                "label": "Enable Shadow Effect",
+                "default": true
+            },
+            {
+                "type": "checkbox",
+                "id": "auto_width",
+                "label": "Enable Auto Width",
+                "default": false
+            }
+        ],
+        "presets":[
+            {
+                "name": "🔰 Contact Form",
+                "category": "Custom Section"
+            } 
+        ]
+    }
+{% endschema %}
