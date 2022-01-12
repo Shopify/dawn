@@ -408,6 +408,7 @@ class HeaderDrawer extends MenuDrawer {
     this.header = this.header || document.getElementById('shopify-section-header');
     this.borderOffset = this.borderOffset || this.closest('.header-wrapper').classList.contains('header-wrapper--border-bottom') ? 1 : 0;
     document.documentElement.style.setProperty('--header-bottom-position', `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`);
+    document.querySelector('#shopify-section-header').classList.add('menu-open');
 
     setTimeout(() => {
       this.mainDetailsToggle.classList.add('menu-opening');
@@ -416,6 +417,20 @@ class HeaderDrawer extends MenuDrawer {
     summaryElement.setAttribute('aria-expanded', true);
     trapFocus(this.mainDetailsToggle, summaryElement);
     document.body.classList.add(`overflow-hidden-${this.dataset.breakpoint}`);
+  }
+
+  closeMenuDrawer(event, elementToFocus = false) {
+    if (event !== undefined) {
+      this.mainDetailsToggle.classList.remove('menu-opening');
+      this.mainDetailsToggle.querySelectorAll('details').forEach(details =>  {
+        details.removeAttribute('open');
+        details.classList.remove('menu-opening');
+      });
+      document.body.classList.remove(`overflow-hidden-${this.dataset.breakpoint}`);
+      removeTrapFocus(elementToFocus);
+      this.closeAnimation(this.mainDetailsToggle);
+      document.querySelector('#shopify-section-header').classList.remove('menu-open');
+    }
   }
 }
 
