@@ -1,17 +1,98 @@
 {{ 'section-intelligent-search-7923216.css' | asset_url | stylesheet_tag }}
+{% if section.settings.use_custom_color_scheme %}
+    {%- capture section_custom_style -%}
+    <style>
+        .custom-section--intelligent-search-{{ section.id }} {
+            --color-foreground: {{ section.settings.fg_color.red }},{{ section.settings.fg_color.green }},{{ section.settings.fg_color.blue }};
+            color: rgba({{ section.settings.fg_color.red }},{{ section.settings.fg_color.green }},{{ section.settings.fg_color.blue }},75%);
+            
+            --color-btn-bg: {{ section.settings.fg_color.red }},{{ section.settings.fg_color.green }},{{ section.settings.fg_color.blue }};
+            --color-btn-lbl: {{ section.settings.bg_color.red }},{{ section.settings.bg_color.green }},{{ section.settings.bg_color.blue }};
+            
+            background-color: {{ section.settings.bg_color }};
+        }
+        .custom-section--intelligent-search-{{ section.id }} .custom-section__bg-container{
+            background-color: {{ section.settings.bg_color }};
+            background-blend-mode: {{section.settings.bg_blend_mode}};
+        }
+    </style>
+    {%- endcapture -%}
+{% else %} 
+    {% case section.settings.color_scheme %}
+    {% when 'background-1' %}
+        {% capture section_custom_style %}
+        <style>
+            .custom-section--intelligent-search-{{ section.id }} .custom-section__bg-container{
+                background-color: rgb({{ settings.colors_background_1.red }}, {{ settings.colors_background_1.green }}, {{ settings.colors_background_1.blue }});
+                background-blend-mode: {{section.settings.bg_blend_mode}};
+            }
+        </style>
+        {% endcapture %}
+    {% when 'background-2' %}
+        {% capture section_custom_style %}
+        <style>
+            .custom-section--intelligent-search-{{ section.id }} .custom-section__bg-container{
+                background-color: rgb({{ settings.colors_background_2.red }}, {{ settings.colors_background_2.green }}, {{ settings.colors_background_2.blue }});
+                background-blend-mode: {{section.settings.bg_blend_mode}};
+            }
+        </style>
+        {% endcapture %}
+    {% when 'accent-1' %}
+        {% capture section_custom_style %}
+        <style>
+            .custom-section--intelligent-search-{{ section.id }}.color-{{section.settings.color_scheme}} {
+                --color-btn-bg: {{ settings.colors_solid_button_labels.red }}, {{ settings.colors_solid_button_labels.green }}, {{ settings.colors_solid_button_labels.blue }};
+                --color-btn-lbl: {{ settings.colors_accent_1.red }}, {{ settings.colors_accent_1.green }}, {{ settings.colors_accent_1.blue }};
+            }
+            .custom-section--intelligent-search-{{ section.id }} .custom-section__bg-container{
+                background-color: rgb({{ settings.colors_accent_1.red }}, {{ settings.colors_accent_1.green }}, {{ settings.colors_accent_1.blue }});
+                background-blend-mode: {{section.settings.bg_blend_mode}};
+            }
+        </style>
+        {% endcapture %}
+    {% when 'accent-2' %}
+        {% capture section_custom_style %}
+        <style>
+            .custom-section--intelligent-search-{{ section.id }}.color-{{section.settings.color_scheme}} {
+                --color-btn-lbl: {{ settings.colors_solid_button_labels.red }}, {{ settings.colors_solid_button_labels.green }}, {{ settings.colors_solid_button_labels.blue }};
+                --color-btn-bg: {{ settings.colors_accent_2.red }}, {{ settings.colors_accent_2.green }}, {{ settings.colors_accent_2.blue }};
+            }
+            .custom-section--intelligent-search-{{ section.id }} .custom-section__bg-container{
+                background-color: rgb({{ settings.colors_accent_2.red }}, {{ settings.colors_accent_2.green }}, {{ settings.colors_accent_2.blue }});
+                background-blend-mode: {{section.settings.bg_blend_mode}};
+            }
+        </style>
+        {% endcapture %}
+    {% when 'inverse' %}
+    {% capture section_custom_style %}
+    <style>
+        .custom-section--intelligent-search-{{ section.id }}.color-{{section.settings.color_scheme}} {
+            --color-btn-bg: {{ settings.colors_solid_button_labels.red }}, {{ settings.colors_solid_button_labels.green }}, {{ settings.colors_solid_button_labels.blue }};
+            --color-btn-lbl: {{ settings.colors_accent_1.red }}, {{ settings.colors_accent_1.green }}, {{ settings.colors_accent_1.blue }};
+        }
+        .custom-section--intelligent-search-{{ section.id }} .custom-section__bg-container{
+            background-color: rgb({{ settings.colors_accent_1.red }}, {{ settings.colors_accent_1.green }}, {{ settings.colors_accent_1.blue }});
+            background-blend-mode: {{section.settings.bg_blend_mode}};
+        }
+    </style>
+    {% endcapture %}
+    {% endcase %}
+{% endif %}
 
-<div class="custom-section custom-section--intelligent-search" style="background-color: {{section.settings.bg_color}}">
+{{ section_custom_style | strip }}
+
+<div class="custom-section custom-section--intelligent-search {% unless section.settings.use_custom_color_scheme %}custom-section--intelligent-search-{{ section.id }} color-{{ section.settings.color_scheme }} gradient{% else %}custom-section--intelligent-search-{{ section.id }}{% endunless %}">
 
     <div class="custom-section__bg-container"
         {% unless section.settings.bg_image == blank %}style="background-image: url('{{section.settings.bg_image | image_url}}');" {% endunless %}>
         
-        <div class="{% if section.settings.page_width %}page-width{% endif %}">
+        <div class="page-width">
 
             {% if section.settings.title != blank or section.settings.subtitle != blank%}
             <div class="custom-section__header center">
                 {% unless section.settings.title == blank %}
                 {% if section.settings.title_top_line %}<div class="custom-section__header--top-line"></div>{% endif %}
-                <h2 class="custom-section__header--title">{{ section.settings.title | escape }}</h2>
+                <h2 class="custom-section__header--title {% if section.settings.title_uppercase%}uppercase{% endif %}">{{ section.settings.title | escape }}</h2>
                 {% endunless %}
                 {% unless section.settings.subtitle == blank %}
                 <p class="custom-section__header--subtitle">{{ section.settings.subtitle | escape }}</p>
@@ -98,10 +179,115 @@
         "tag": "section",
         "settings": [
             {
+                "type": "select",
+                "id": "color_scheme",
+                "options": [
+                    {
+                    "value": "accent-1",
+                    "label": "Accent 1"
+                    },
+                    {
+                    "value": "accent-2",
+                    "label": "Accent 2"
+                    },
+                    {
+                    "value": "background-1",
+                    "label": "Background 1"
+                    },
+                    {
+                    "value": "background-2",
+                    "label": "Background 2"
+                    },
+                    {
+                    "value": "inverse",
+                    "label": "Inverse"
+                    }
+                ],
+                "default": "background-1",
+                "label": "Color Scheme"
+            },
+            {
+                "type": "checkbox",
+                "id": "use_custom_color_scheme",
+                "label": "Use Custom Color Scheme",
+                "default": false
+            },
+            {
+                "type": "color",
+                "id": "fg_color",
+                "label": "Foreground Color",
+                "default": "#121212"
+            },
+            {
+                "type": "color",
+                "id": "bg_color",
+                "label": "Background Color",
+                "default": "#ffffff"
+            },
+            {
+                "type": "image_picker",
+                "id": "bg_image",
+                "label": "Background Image"
+            },
+            {
+                "type": "select",
+                "id": "bg_blend_mode",
+                "label": "Blend Mode",
+                "options": [
+                    {
+                    "value": "normal",
+                    "label": "Normal"
+                    },
+                    {
+                    "value": "multiply",
+                    "label": "Multiply"
+                    },
+                    {
+                    "value": "screen",
+                    "label": "Screen"
+                    },
+                    {
+                    "value": "overlay",
+                    "label": "Overlay"
+                    },
+                    {
+                    "value": "darken",
+                    "label": "Darken"
+                    },
+                    {
+                    "value": "lighten",
+                    "label": "Lighten"
+                    },
+                    {
+                    "value": "color-dodge",
+                    "label": "Color Dodge"
+                    },
+                    {
+                    "value": "saturation",
+                    "label": "Saturation"
+                    },
+                    {
+                    "value": "color",
+                    "label": "Color"
+                    },
+                    {
+                    "value": "luminosity",
+                    "label": "Luminosity"
+                    }
+                ],
+                "default": "normal"
+            },
+            {
                 "type": "text",
                 "id": "title",
                 "label": "Title",
                 "default": "What are you looking for?"
+            },
+            {
+                "type": "checkbox",
+                "id": "title_uppercase",
+                "label": "Uppercase",
+                "default": false
             },
             {
                 "type": "checkbox",
@@ -114,22 +300,6 @@
                 "id": "subtitle",
                 "label": "Subtitle",
                 "default": "Amet massa vitae tortor condimentum."
-            },
-            {
-                "type": "color",
-                "id": "bg_color",
-                "label": "Background Color"
-            },
-            {
-                "type": "image_picker",
-                "id": "bg_image",
-                "label": "Background Image"
-            },
-            {
-                "type": "checkbox",
-                "id": "page_width",
-                "label": "Enable Max Page Width",
-                "default": true
             },
             {
                 "type": "header",
