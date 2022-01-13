@@ -420,17 +420,8 @@ class HeaderDrawer extends MenuDrawer {
   }
 
   closeMenuDrawer(event, elementToFocus = false) {
-    if (event !== undefined) {
-      this.mainDetailsToggle.classList.remove('menu-opening');
-      this.mainDetailsToggle.querySelectorAll('details').forEach(details =>  {
-        details.removeAttribute('open');
-        details.classList.remove('menu-opening');
-      });
-      document.body.classList.remove(`overflow-hidden-${this.dataset.breakpoint}`);
-      removeTrapFocus(elementToFocus);
-      this.closeAnimation(this.mainDetailsToggle);
-      document.querySelector('#shopify-section-header').classList.remove('menu-open');
-    }
+    super.closeMenuDrawer(event, elementToFocus);
+    document.querySelector('#shopify-section-header').classList.remove('menu-open');
   }
 }
 
