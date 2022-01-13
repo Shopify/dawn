@@ -441,6 +441,9 @@ class ModalDialog extends HTMLElement {
       });
     }
 
+  }
+
+  connectedCallback() {
     document.body.appendChild(this);
   }
 
