@@ -503,6 +503,11 @@ class VariantSelects extends HTMLElement {
     debugger;
     this.updateOptions();
     this.updateMasterId();
+
+    $('.monogram-temp-data').attr('varID',this.currentVariant.id);
+    $('.monogram-temp-data').attr('sku',this.currentVariant.sku);
+
+
     this.toggleAddButton(true, '', false);
     this.updatePickupAvailability();
 
