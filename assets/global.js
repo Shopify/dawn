@@ -408,7 +408,7 @@ class HeaderDrawer extends MenuDrawer {
     this.header = this.header || document.getElementById('shopify-section-header');
     this.borderOffset = this.borderOffset || this.closest('.header-wrapper').classList.contains('header-wrapper--border-bottom') ? 1 : 0;
     document.documentElement.style.setProperty('--header-bottom-position', `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`);
-    document.querySelector('#shopify-section-header').classList.add('menu-open');
+    this.header.classList.add('menu-open');
 
     setTimeout(() => {
       this.mainDetailsToggle.classList.add('menu-opening');
@@ -421,7 +421,7 @@ class HeaderDrawer extends MenuDrawer {
 
   closeMenuDrawer(event, elementToFocus = false) {
     super.closeMenuDrawer(event, elementToFocus);
-    document.querySelector('#shopify-section-header').classList.remove('menu-open');
+    this.header.classList.remove('menu-open');
   }
 }
 
