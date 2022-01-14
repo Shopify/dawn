@@ -419,7 +419,7 @@ class HeaderDrawer extends MenuDrawer {
     document.body.classList.add(`overflow-hidden-${this.dataset.breakpoint}`);
   }
 
-  closeMenuDrawer(event, elementToFocus = false) {
+  closeMenuDrawer(event, elementToFocus) {
     super.closeMenuDrawer(event, elementToFocus);
     this.header.classList.remove('menu-open');
   }
