@@ -727,6 +727,16 @@ class VariantRadios extends VariantSelects {
     });
     if (this.getVariantData()[0].option2== null) {
       debugger;
+      const possibleVariants = this.getVariantData()
+      for (let index = 0; index < possibleVariants.length; index++) {
+        var variant = possibleVariants[index]
+        var input = document.querySelector(`[value="${variant.option1}"]`)
+        if (!variant.available) {
+          input.classList.add('unavailable')
+        } else {
+          input.classList.remove('unavailable')
+        }
+      }
     } else {
       const possibleVariants = this.getVariantData().filter(variant => variant.option1 === this.options[0])
       for (let index = 0; index < possibleVariants.length; index++) {
