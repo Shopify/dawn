@@ -684,14 +684,16 @@ class VariantSelects extends HTMLElement {
     if (!addButton) return;
 
     if (disable) {
+      $(bisButton).show();
       addButton.setAttribute('disabled', true);
       if (text) addButton.textContent = text;
-      bisButton.show();
+      
     } else {
+      $(bisButton).bisButton.hide();
       addButton.removeAttribute('disabled');
       //above is where paypal disapears.  must be bound to above?
       addButton.textContent = window.variantStrings.addToCart;
-      bisButton.hide();
+      
     }
 
     if (!modifyClass) return;
