@@ -718,7 +718,7 @@ class VariantRadios extends VariantSelects {
   }
   // Overwrite updateOptions method to check for unavailable variants
   updateOptions() {
-    debugger;
+
     const fieldsets = Array.from(this.querySelectorAll('fieldset'));
     //it takes option1 that is selected (this.options[0]), gets all the variants that have the selected option1
     //as possiblevariants.  Then loops them and sets them to strike off or active.
@@ -728,7 +728,6 @@ class VariantRadios extends VariantSelects {
       return Array.from(fieldset.querySelectorAll('input')).find((radio) => radio.checked).value;
     });
     if (this.getVariantData()[0].option2== null) {
-      debugger;
       const possibleVariants = this.getVariantData()
       for (let index = 0; index < possibleVariants.length; index++) {
         var variant = possibleVariants[index]
