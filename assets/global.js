@@ -533,7 +533,6 @@ class ProductGallery extends HTMLElement {
   }
 
   onNavItemClick(event) {
-    debugger;
     const mediaId = event.target.closest('li').dataset.mediaId
     this.images.forEach(item => item.classList.remove('product-gallery__image--active'))
     this.setCurrentImage(Array.from(this.images).find(item => item.dataset.mediaId === mediaId))
