@@ -511,6 +511,7 @@ class ProductGallery extends HTMLElement {
   }
 
   init() {
+    debugger;
     // Set up our DOM element variables
     this.imagesContainer = this.querySelector('.product-gallery__images');
     this.navItems = this.querySelectorAll('.product-gallery__nav-item');
