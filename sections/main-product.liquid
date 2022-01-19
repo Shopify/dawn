@@ -20,6 +20,94 @@
 <section class="page-width">
   <div class="product grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
     <div class="grid__item product__media-wrapper">
+
+      <product-gallery class="product-gallery">
+        {%- if product.media.size > 1 -%}
+        <ul class="product-gallery__nav">
+          {%- for media in product.media -%}
+            <li class="product-gallery__nav-item {% if media.id == product.selected_or_first_available_variant.featured_media.id %}product-gallery__nav-item--active{% endif %}" data-media-id="{{ media.id }}">
+              {% render 'product-thumbnail', media: media %}
+            </li>
+          {%- endfor -%}
+        </ul>
+        {%- endif -%}
+        <div class="product-gallery__images">
+          {%- for media in product.media -%}
+            <div class="product-gallery__image {% if media.id == product.selected_or_first_available_variant.featured_media.id or product.media.size == 1 %}product-gallery__image--active{% endif %}" data-media-id="{{ media.id }}">
+              {% render 'product-thumbnail', media: media %}
+            </div>
+          {%- endfor -%}
+          <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'accessibility.previous_slide' | t }}">{% render 'icon-caret' %}</button>
+          <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'accessibility.next_slide' | t }}">{% render 'icon-caret' %}</button>
+        </div>
+      </product-gallery>
+      <style>
+        .product-gallery {
+  display: flex;
+}
+// Slider buttons are positioned absolutely over the active image
+.product-gallery .slider-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.product-gallery .slider-button:not([disabled]):hover {
+  border-color: rgba(var(--color-foreground), 0.3);
+}
+.product-gallery .slider-button:disabled {
+  display: none;
+}
+.product-gallery .slider-button--prev {
+  left: 0;
+  border-left-width: 0;
+}
+.product-gallery .slider-button--next {
+  right: 0;
+  border-right-width: 0;
+}
+// Thumbnail navigation will not exceed the height of the active image and will scroll overflowing elements
+.product-gallery__nav {
+  width: 140px;
+  list-style: none;
+  margin: 0 .5rem 0 0;
+  padding: 0;
+  height: 100%;
+  overflow-y: auto;
+  display: none;
+}
+.product-gallery__nav::-webkit-scrollbar { 
+  display: none; 
+}
+.product-gallery__nav-item {
+  display: block;
+  cursor: pointer;
+}
+.product-gallery__nav-item + .product-gallery__nav-item {
+  margin-top: .5rem;
+}
+.product-gallery__nav-item img {
+  width: 100%;
+  display: block;
+}
+.product-gallery__images {
+  flex-grow: 1;
+  height: fit-content;
+  position: relative;
+}
+// Hide images unless they are the active image
+.product-gallery__image {
+  display: none;
+}
+.product-gallery__image--active {
+  display: block;
+}
+@media screen and (min-width: 750px) {
+  .product-gallery__nav {
+    display: block;
+  }
+}
+</style>
+      {% comment %}
       <slider-component class="slider-mobile-gutter">
         <a class="skip-to-content-link button visually-hidden" href="#ProductInfo-{{ section.id }}">
           {{ "accessibility.skip_to_product_info" | t }}
@@ -50,6 +138,7 @@
           <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'accessibility.next_slide' | t }}">{% render 'icon-caret' %}</button>
         </div>
       </slider-component>
+      {% endcomment %}
       {%- if first_3d_model -%}
         <button
           class="button button--full-width product__xr-button"
@@ -499,6 +588,8 @@
   });
 
 </script>
+
+
 {% javascript %}
   class ProductModal extends ModalDialog {
     constructor() {
