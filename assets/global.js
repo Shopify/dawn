@@ -511,7 +511,7 @@ class ProductGallery extends HTMLElement {
   }
 
   init() {
-    debugger;
+    
     // Set up our DOM element variables
     this.imagesContainer = this.querySelector('.product-gallery__images');
     this.navItems = this.querySelectorAll('.product-gallery__nav-item');
@@ -557,7 +557,7 @@ class ProductGallery extends HTMLElement {
   }
 
   onButtonClick(event) {
-    debugger;
+
     event.preventDefault();
     let index = this.findCurrentIndex()
     if (event.currentTarget.name === 'next') {
@@ -580,7 +580,6 @@ class VariantSelects extends HTMLElement {
   }
 
   onVariantChange() {
-    debugger;
     //CCEDIT.  adding monogram info
     this.updateOptions();
     this.updateMasterId();
@@ -648,7 +647,7 @@ class VariantSelects extends HTMLElement {
   }
 
   updatePickupAvailability() {
-    debugger;
+
     const pickUpAvailability = document.querySelector('pickup-availability');
     if (!pickUpAvailability) return;
 
