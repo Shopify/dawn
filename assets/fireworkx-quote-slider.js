@@ -84,8 +84,6 @@ const makeEnquiry = {
 			formData.append("URL", window.location.href);
 			formData.append("Message", message);
 			formData.append("StocklistApiId", "d03b9d61-76d7-4b37-b4c3-c21bbebfb0a4");
-			formData.delete("Province");
-			formData.delete( "City");
 			formData.delete("Additional Information");
 			formData.delete("Callback");
 			formData.delete("Possession");
@@ -93,6 +91,7 @@ const makeEnquiry = {
 			
 		this.submitButton.disabled = true;
 		const formDataJson = JSON.stringify(Object.fromEntries(formData));
+		
 		fetch(this.api, {
 			method: "POST",
 			body: formDataJson,
