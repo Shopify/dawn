@@ -558,6 +558,7 @@ class ProductGallery extends HTMLElement {
   }
 
   onButtonClick(event) {
+    debugger;
     event.preventDefault();
     let index = this.findCurrentIndex()
     if (event.currentTarget.name === 'next') {
