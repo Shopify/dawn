@@ -528,7 +528,7 @@ class VariantSelects extends HTMLElement {
       window.postMessage({
         type: 'variant_changed',
         variant: this.currentVariant
-      }, '*')
+      }, '*');
   }
 
   updateOptions() {
