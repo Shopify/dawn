@@ -717,6 +717,7 @@ class VariantRadios extends VariantSelects {
   }
   // Overwrite updateOptions method to check for unavailable variants
   updateOptions() {
+    debugger;
     const fieldsets = Array.from(this.querySelectorAll('fieldset'));
     this.options = fieldsets.map((fieldset) => {
       return Array.from(fieldset.querySelectorAll('input')).find((radio) => radio.checked).value;
