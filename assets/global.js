@@ -712,14 +712,34 @@ customElements.define('variant-selects', VariantSelects);
 class VariantRadios extends VariantSelects {
   constructor() {
     super();
+    // Trigger change when loaded
+    this.onVariantChange()
   }
-
+  // Overwrite updateOptions method to check for unavailable variants
+  updateOptions() {
+    const fieldsets = Array.from(this.querySelectorAll('fieldset'));
+    this.options = fieldsets.map((fieldset) => {
+      return Array.from(fieldset.querySelectorAll('input')).find((radio) => radio.checked).value;
+    });
+    const possibleVariants = this.getVariantData().filter(variant => variant.option1 === this.options[0])
+    for (let index = 0; index < possibleVariants.length; index++) {
+      const variant = possibleVariants[index]
+      const input = document.querySelector(`[value="${variant.option2}"]`)
+      if (!variant.available) {
+        input.classList.add('unavailable')
+      } else {
+        input.classList.remove('unavailable')
+      }
+    }
+  }
+  /* below code makes out of stock not clickable.
   updateOptions() {
     const fieldsets = Array.from(this.querySelectorAll('fieldset'));
     this.options = fieldsets.map((fieldset) => {
       return Array.from(fieldset.querySelectorAll('input')).find((radio) => radio.checked).value;
     });
   }
+  */
 }
 
 customElements.define('variant-radios', VariantRadios);
