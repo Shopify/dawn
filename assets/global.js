@@ -570,6 +570,7 @@ class VariantSelects extends HTMLElement {
   }
 
   updatePickupAvailability() {
+    debugger;
     const pickUpAvailability = document.querySelector('pickup-availability');
     if (!pickUpAvailability) return;
 
