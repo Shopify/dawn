@@ -85,6 +85,7 @@ class QuantityInput extends HTMLElement {
   }
 
   onButtonClick(event) {
+    debugger;
     event.preventDefault();
     const previousValue = this.input.value;
 
@@ -677,7 +678,6 @@ class VariantSelects extends HTMLElement {
   }
 
   toggleAddButton(disable = true, text, modifyClass = true) {
-    debugger;
     const addButton = document.getElementById(`product-form-${this.dataset.section}`)?.querySelector('[name="add"]');
     const bisButton = document.getElementById(`product-form-${this.dataset.section}`)?.querySelector('[name="bis"]');
 
@@ -700,7 +700,6 @@ class VariantSelects extends HTMLElement {
   }
 
   setUnavailable() {
-    debugger;
     const addButton = document.getElementById(`product-form-${this.dataset.section}`)?.querySelector('[name="add"]');
     if (!addButton) return;
     addButton.textContent = window.variantStrings.unavailable;
