@@ -501,6 +501,7 @@ class VariantSelects extends HTMLElement {
 
   onVariantChange() {
     debugger;
+    //CCEDIT.  adding monogram info
     this.updateOptions();
     this.updateMasterId();
 
@@ -527,6 +528,7 @@ class VariantSelects extends HTMLElement {
   }
 
   updateMasterId() {
+    debugger;
     this.currentVariant = this.getVariantData().find((variant) => {
       return !variant.options.map((option, index) => {
         return this.options[index] === option;
