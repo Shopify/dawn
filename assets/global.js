@@ -497,6 +497,8 @@ class VariantSelects extends HTMLElement {
   constructor() {
     super();
     this.addEventListener('change', this.onVariantChange);
+    this.onVariantChange()
+    // CCEDIT trigger variantchange on load
   }
 
   onVariantChange() {
@@ -613,7 +615,7 @@ class VariantSelects extends HTMLElement {
   }
 
   getVariantData() {
-    debugger;
+
     this.variantData = this.variantData || JSON.parse(this.querySelector('[type="application/json"]').textContent);
     return this.variantData;
   }
