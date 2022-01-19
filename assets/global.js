@@ -523,6 +523,12 @@ class VariantSelects extends HTMLElement {
       this.updateVariantInput();
       this.renderProductInfo();
     }
+
+     // CCEDIT When variant is changed post a message with the variant's data
+      window.postMessage({
+        type: 'variant_changed',
+        variant: this.currentVariant
+      }, '*')
   }
 
   updateOptions() {
