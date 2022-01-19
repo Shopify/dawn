@@ -89,7 +89,7 @@ class QuantityInput extends HTMLElement {
     event.preventDefault();
     const previousValue = this.input.value;
 
-    event.target.name === 'plus' ? this.input.stepUp() : this.input.stepDown();
+    event.target.name === 'plus' ? this.input.stepUp(parseInt($(event.target).attr('step'))) : this.input.stepDown(parseInt($(event.target).attr('step')));
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
   }
 }
