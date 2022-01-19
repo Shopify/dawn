@@ -575,7 +575,8 @@ class VariantSelects extends HTMLElement {
     if (!pickUpAvailability) return;
 
     if (this.currentVariant?.available) {
-      pickUpAvailability.fetchAvailability(this.currentVariant.id);
+      //CCEDIT throwing error
+      //pickUpAvailability.fetchAvailability(this.currentVariant.id);
     } else {
       pickUpAvailability.removeAttribute('available');
       pickUpAvailability.innerHTML = '';
