@@ -718,24 +718,30 @@ class VariantRadios extends VariantSelects {
   updateOptions() {
     debugger;
     const fieldsets = Array.from(this.querySelectorAll('fieldset'));
+    //it takes option1 that is selected (this.options[0]), gets all the variants that have the selected option1
+    //as possiblevariants.  Then loops them and sets them to strike off or active.
+    //need to do the following:  If only 1 option, then just loop through all variants.
+    // if two options, then do the original plan (loop through variants that select option1)
     this.options = fieldsets.map((fieldset) => {
       return Array.from(fieldset.querySelectorAll('input')).find((radio) => radio.checked).value;
     });
-    const possibleVariants = this.getVariantData().filter(variant => variant.option1 === this.options[0])
-    for (let index = 0; index < possibleVariants.length; index++) {
-      var variant = possibleVariants[index]
-      if (variant.option2 == null) {
-        var input = document.querySelector(`[value="${variant.option1}"]`)
-      } else {
+    if (variant.option2 == null) {
+      debugger;
+    } else {
+      const possibleVariants = this.getVariantData().filter(variant => variant.option1 === this.options[0])
+      for (let index = 0; index < possibleVariants.length; index++) {
+        var variant = possibleVariants[index]
         var input = document.querySelector(`[value="${variant.option2}"]`)
+        if (!variant.available) {
+          input.classList.add('unavailable')
+        } else {
+          input.classList.remove('unavailable')
+        }
       }
-      
-      if (!variant.available) {
-        input.classList.add('unavailable')
-      } else {
-        input.classList.remove('unavailable')
-      }
+
     }
+
+    
   }
   /* below code makes out of stock not clickable.
   updateOptions() {
