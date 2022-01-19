@@ -725,7 +725,7 @@ class VariantRadios extends VariantSelects {
     this.options = fieldsets.map((fieldset) => {
       return Array.from(fieldset.querySelectorAll('input')).find((radio) => radio.checked).value;
     });
-    if (variant.option2 == null) {
+    if (this.getVariantData()[0].option2== null) {
       debugger;
     } else {
       const possibleVariants = this.getVariantData().filter(variant => variant.option1 === this.options[0])
