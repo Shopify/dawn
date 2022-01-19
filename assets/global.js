@@ -679,16 +679,19 @@ class VariantSelects extends HTMLElement {
   toggleAddButton(disable = true, text, modifyClass = true) {
     debugger;
     const addButton = document.getElementById(`product-form-${this.dataset.section}`)?.querySelector('[name="add"]');
+    const bisButton = document.getElementById(`product-form-${this.dataset.section}`)?.querySelector('[name="bis"]');
 
     if (!addButton) return;
 
     if (disable) {
       addButton.setAttribute('disabled', true);
       if (text) addButton.textContent = text;
+      bisButton.show();
     } else {
       addButton.removeAttribute('disabled');
       //above is where paypal disapears.  must be bound to above?
       addButton.textContent = window.variantStrings.addToCart;
+      bisButton.hide();
     }
 
     if (!modifyClass) return;
