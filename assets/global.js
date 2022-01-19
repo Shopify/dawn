@@ -725,7 +725,12 @@ class VariantRadios extends VariantSelects {
     const possibleVariants = this.getVariantData().filter(variant => variant.option1 === this.options[0])
     for (let index = 0; index < possibleVariants.length; index++) {
       const variant = possibleVariants[index]
-      const input = document.querySelector(`[value="${variant.option2}"]`)
+      if (variant.option2 == null) {
+        const input = document.querySelector(`[value="${variant.option1}"]`)
+      } else {
+        const input = document.querySelector(`[value="${variant.option2}"]`)
+      }
+      
       if (!variant.available) {
         input.classList.add('unavailable')
       } else {
