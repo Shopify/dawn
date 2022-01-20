@@ -367,7 +367,7 @@ class MenuDrawer extends HTMLElement {
   closeSubmenu(detailsElement) {
     detailsElement.classList.remove('menu-opening');
     detailsElement.querySelector('summary').setAttribute('aria-expanded', false);
-    removeTrapFocus();
+    removeTrapFocus(detailsElement.querySelector('summary'));
     this.closeAnimation(detailsElement);
   }
 
