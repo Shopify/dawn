@@ -17,8 +17,8 @@ Dawn 3.0.0 introduces a new suite of theme style settings to let you customize t
 
 - We added support for app blocks to the featured product section.
 
-### Removed
-- Important: Dawn no longer includes the Craft preset. If you’re interested in achieving the Craft look, you can now  install the new [Craft theme](https://themes.shopify.com/themes/craft). 
-
 ### Changed
 - The page width layout setting where you set the maximum width of your online store pages has changed to offer a range from 1000px to 1600px. 
+
+### Removed
+- Important: Dawn no longer includes the Craft preset. If you’re interested in achieving the Craft look, you can now  install the new [Craft theme](https://themes.shopify.com/themes/craft). 
