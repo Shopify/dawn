@@ -1,0 +1,176 @@
+{% if subscriptionProduct.selling_plan_groups[0] %}
+<style>
+  .rc-container-wrapper {
+    display: none;
+  }
+  {% render 've-css-offer-popup-subscribeandsave' %}
+</style>
+
+<div>
+  <button class="modal-sub-trigger">OPEN MODAL</button>
+	<div class="flex align-center align-vert modal-sub modal-sub--align">
+		<div class="modal-sub__container">
+			<div class="modal-sub-div-header wrapper">
+				<div class="sub-wrapper">
+					Subscribe & Save!
+				</div>
+			</div>
+			<p class="ss-header"></p>
+			<hr class="hr-main max-half">
+			<p class="ss-subheader color-main"><p>
+			<div class="ss-description">
+				<div class="ss-product-image--wrap"><img class="ss-product-image"></div>
+				<div class="ss-description-text--wrap">
+					<p>
+            <span class="ss-description-body">
+              <span class="color-pink percent-off">20% OFF</span> monthly<br>and
+              <span class="color-pink">FREE Shipping!</span>
+            ﻿</span>
+						<span class="ss-description-footnote">Cancel anytime, International rates apply.</span>
+					</p>
+					<p>
+						<span class="ss-subscription-price slashed"><s></s></span>
+						<span class="ss-subscription-price sub"></span>
+					</p>
+				</div>
+			</div>
+			<p>
+				<button class="js_add-btn btn-block js_adding-animation btn-sub ve-aqua-btn" data-sub="true" style="height: 70px">Yes, Apply Savings!</button>
+			<p>
+			<p class="ss-continue"><a class="ss-continueshopping modal-sub__close">No, thanks!  <a class="color-main modal-sub__close continue-shopping">Continue Shopping</a></a></p>
+		</div>
+	</div>
+</div>
+
+<script>
+  var minSubPrice = 20;
+  var rechargeProduct = {
+    selling_plan_id: "{{ subscriptionProduct.selling_plan_groups[0].selling_plans[0].id }}",
+    variant_id: null,
+    percent_savings: "{{ subscriptionProduct.selling_plan_groups[0].selling_plans[0].price_adjustments[0].value }}",
+    shipping_interval: "{{ subscriptionProduct.selling_plan_groups[0].selling_plans[0].options[0].value | replace: " Day(s)", "" }}",
+    shipping_unit_type: "Days"
+  };
+
+  function ve_triggerSubscriptionPopup(productId, productTitle, variantId, variantTitle, variantPrice, variantImage) {
+    //console.log(productId, productTitle, variantId, variantTitle, variantPrice);
+    var qty = document.querySelectorAll('.quantity__input')[0].value * 1;
+    var percentSavings = rechargeProduct.percent_savings * 1;
+    var subscriptionPrice = (variantPrice * (100 - percentSavings) / 10000) * 1.00;
+    var activeMinSubPrice = minSubPrice;
+    //console.log(qty, percentSavings, subscriptionPrice, activeMinSubPrice);
+
+    if (activeMinSubPrice !== null) {
+      if (qty == 1
+        && subscriptionPrice >= activeMinSubPrice
+      ) {
+        ve_popupSubscribeAndSave(productId, productTitle, variantId, variantTitle, variantPrice, variantImage);
+      }
+    }
+  }
+
+  {% render 've-js-offer-popup-subscribeandsave' %}
+
+  function ve_popupSubscribeAndSave(productId, productTitle, variantId, variantTitle, variantPrice, variantImage) {
+    var percentSavings = rechargeProduct.percent_savings * 1;
+    var subscriptionPrice = (variantPrice * (100 - percentSavings) / 10000) * 1.00;
+    var activeMinSubPrice = minSubPrice;
+    if (activeMinSubPrice === null
+      || subscriptionPrice < activeMinSubPrice
+    ) {
+      return;
+    }
+
+    rechargeProduct.variant_id = variantId;
+    var containerPrefix = '.modal-sub__container ';
+
+    document.querySelectorAll(containerPrefix + '.ss-header')[0].innerHTML = productTitle;
+    document.querySelectorAll(containerPrefix + '.ss-subheader')[0].innerHTML = 'Want To Save Even More?';
+    document.querySelectorAll(containerPrefix + '.ss-description-body .percent-off')[0].innerHTML = percentSavings + '% OFF';
+    document.querySelectorAll(containerPrefix + '.ss-description .ss-product-image')[0].src = variantImage.replace('.jpg', '_200x200.jpg');
+    document.querySelectorAll(containerPrefix + '.ss-subscription-price.slashed s')[0].innerHTML = '$' + variantPrice / 100;//.toFixed(2));
+
+    document.querySelectorAll(containerPrefix + '.ss-subscription-price.sub')[0].innerHTML = '$' + subscriptionPrice.toFixed(2);
+
+    //subscription
+    document.querySelectorAll('.btn-sub')[0].addEventListener('click', function(event) {
+      var variantId = rechargeProduct.variant_id;
+      var data = {
+        id: variantId + '',
+        quantity: 0
+      }
+
+      fetch(`/cart/change.js`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify(data)
+      })
+        .then((response) => response.json())
+        .then((parsedState) => {
+          var variantId = rechargeProduct.variant_id;
+          var sellingPlanId = rechargeProduct.selling_plan_id;
+          var data = {
+            id: variantId + '',
+            quantity: 1,
+            selling_plan: sellingPlanId
+          }
+
+          fetch(`/cart/add.js`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify(data)
+          })
+            .then((response) => response.json())
+            .then((parsedState) => {
+              var variantId = rechargeProduct.variant_id;
+              console.log('parsedState', parsedState);
+
+              //ve_sendGATrackerEvent('PoppedUpSubscribeAndSave', 'added_' + variantId + '_');
+              //closeModal_sub();
+              window.location = '/cart';
+            })
+            .catch((e) => {
+              console.error(e);
+            })
+            .finally(() => {
+
+            });
+        })
+        .catch((e) => {
+          console.error(e);
+        })
+        .finally(() => {
+
+        });
+    });
+
+    document.querySelectorAll('.modal-sub-trigger')[0].click();
+    //ve_sendGATrackerEvent('PoppedUpSubscribeAndSave', 'viewed_' + variantId + '_');
+  }
+
+  /*
+  postCartData(qty, variantId, {
+    selling_plan: $('#recharge_product_selling_plan').attr('data-id')
+  }).then(function (response) {
+    closeModal_sub();
+
+    $('.ve-purchase-option').removeClass('ve-rc-active');
+    $('.rc_block__type__onetime').addClass('ve-rc-active');
+    //$('.ve-cart-sidebar').addClass("active");
+
+    localStorage.setItem('ve-cart-items-updated', "true");
+    buildSidebarCart();
+
+    $('.ve-cart-sidebar').addClass("active");
+
+    ve_sendGATrackerEvent('PoppedUpSubscribeAndSave', 'added_' + variantId + '_');
+  });
+  */
+</script>
+{% endif %}

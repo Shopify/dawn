@@ -39,6 +39,19 @@ if (!customElements.get('product-form')) {
           }
 
           this.cartNotification.renderContents(response);
+          console.log('response', response);
+          try {
+            ve_triggerSubscriptionPopup(
+              response.product_id,
+              response.product_title,
+              response.variant_id,
+              response.variant_title,
+              response.original_price,
+              response.image
+            );
+          } catch(ob) {
+            console.log(ob);
+          }
         })
         .catch((e) => {
           console.error(e);
