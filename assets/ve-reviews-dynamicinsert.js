@@ -29,7 +29,7 @@ function dynamicinsert_init() {
       var review_avg = response.bottomline.average_score;
       var reviews_per_page = response.pagination.per_page;
 
-      var reviewsPagination = new Pagination('.js_reviews-pagination', {
+      var reviewsPagination = new ve_Pagination('.js_reviews-pagination', {
         total_items: total_reviews,
         items_per_page: reviews_per_page,
         open_page: function (page) {
@@ -134,7 +134,7 @@ function dynamicinsert_buildReviewsHtml(productId, response) {
           image.id +
           '" data-original-src="' +
           image.original_url +
-          '" onclick="openReviewImage(this)">';
+          '" onclick="dynamicinsert_openReviewImage(this)">';
       });
     }
 
@@ -156,13 +156,13 @@ function dynamicinsert_buildReviewsHtml(productId, response) {
       post_html +=
         '<div class="ve-readmore" data-post-id="' +
         item.id +
-        '" onclick="reviewShowMore(this, true)"> Read More <i class="la la-angle-down"></i></div>';
+        '" onclick="dynamicinsert_reviewShowMore(this, true)"> Read More <i class="la la-angle-down"></i></div>';
       post_html += ' </div>';
       post_html += '<div class="ve-full-post" data-post-id="' + item.id + '" style="display:none;">' + post + '';
       post_html +=
         '<div class="ve-readless" data-post-id="' +
         item.id +
-        '" onclick="reviewShowMore(this, false)"> Read Less <i class="la la-angle-up"></i></div>';
+        '" onclick="dynamicinsert_reviewShowMore(this, false)"> Read Less <i class="la la-angle-up"></i></div>';
       post_html += '</div>';
       post_html += '</div>';
     }
@@ -235,13 +235,13 @@ function dynamicinsert_buildReviewsHtml(productId, response) {
       fb_link +
       '" target="popup" onclick="window.open(\'' +
       fb_link +
-      "','name','width=600,height=500'); sendGATrackerEvent('ClickedAnchor', 'yotporeviewsharefb'); sendGATrackerEvent('ClickedReview', '" + item.id + "', 'shared_facebook'); sendFBTrackerEvent('YotPoReviewShareFacebook', { review_id: " + item.id + " });\">Share <i class=\"la la-facebook-square\"></i>";
+      "','name','width=600,height=500'); ve_sendGATrackerEvent('ClickedAnchor', 'yotporeviewsharefb'); ve_sendGATrackerEvent('ClickedReview', '" + item.id + "', 'shared_facebook'); ve_sendFBTrackerEvent('YotPoReviewShareFacebook', { review_id: " + item.id + " });\">Share <i class=\"la la-facebook-square\"></i>";
     html += '</a>';
     html += '</div>';
     html += '</div>';
     html += '<div class="ve-review-img-modal" data-review-id="' + item.id + '" style="display: none;">';
     html +=
-      '<div class="ve-review-modal-close--wrap" onclick="closeReviewImage(this)" data-review-id="' +
+      '<div class="ve-review-modal-close--wrap" onclick="dynamicinsert_closeReviewImage(this)" data-review-id="' +
       item.id +
       '"><i class="la la-times ve-review-modal-close"></i></div>';
     html += '<div class="ve-review-orignal-img--wrap" data-review-id="' + item.id + '"></div>';
@@ -301,9 +301,9 @@ function dynamicinsert_buildReviewsHtml(productId, response) {
               '"]'
             ).addClass('voted-not-clicked');
 
-            sendGATrackerEvent('ClickedAnchor', 'yotporeviewvote_' + vote_type);
-            sendGATrackerEvent('ClickedReview', id, 'voted_' + vote_type);
-            sendFBTrackerEvent('YotPoReviewVoted' + vote_type.charAt(0).toUpperCase() + vote_type.slice(1), {
+            ve_sendGATrackerEvent('ClickedAnchor', 'yotporeviewvote_' + vote_type);
+            ve_sendGATrackerEvent('ClickedReview', id, 'voted_' + vote_type);
+            ve_sendFBTrackerEvent('YotPoReviewVoted' + vote_type.charAt(0).toUpperCase() + vote_type.slice(1), {
               review_id: id
             });
           }
@@ -342,7 +342,7 @@ function dynamicinsert_truncateText(text, max_word, cut_word) {
 //===========================
 //Pagination class
 //===========================
-function Pagination(target, data) {
+function ve_Pagination(target, data) {
   var that = this;
   this.target = target;
   this.totalPages = Math.ceil(data.total_items / data.items_per_page);
@@ -422,4 +422,58 @@ function Pagination(target, data) {
   } else {
     this.buildPagination(1);
   }
+}
+
+function dynamicinsert_reviewShowMore(el, state) {
+  var review_id = el.getAttribute('data-post-id');
+
+  if (state == true) {
+    //hide truncated posts
+    document.querySelectorAll('.ve-truncated-post[data-post-id="' + review_id + '"]')[0].style.display = 'none';
+    document.querySelectorAll('.ve-readmore[data-post-id="' + review_id + '"]')[0].style.display = 'none';
+
+    //show full post - and read less button
+    document.querySelectorAll('.ve-readless[data-post-id="' + review_id + '"]')[0].style.display = '';
+    document.querySelectorAll('.ve-full-post[data-post-id="' + review_id + '"]')[0].style.display = '';
+  } else if (state == false) {
+    //hide full post - and read less button
+    document.querySelectorAll('.ve-readless[data-post-id="' + review_id + '"]')[0].style.display = 'none';
+    document.querySelectorAll('.ve-full-post[data-post-id="' + review_id + '"]')[0].style.display = 'none';
+
+    //hide truncated posts
+    document.querySelectorAll('.ve-truncated-post[data-post-id="' + review_id + '"]')[0].style.display = '';
+    document.querySelectorAll('.ve-readmore[data-post-id="' + review_id + '"]')[0].style.display = '';
+  }
+
+  ve_sendGATrackerEvent('ClickedAnchor', 'yotporeviewshow_' + (state ? 'more' : 'less'));
+  ve_sendGATrackerEvent('ClickedReview', review_id, 'show_' + (state ? 'more' : 'less'));
+  ve_sendFBTrackerEvent('YotPoReviewShow' + (state ? 'More' : 'Less'), {
+    review_id: review_id
+  });
+}
+
+function dynamicinsert_openReviewImage(el) {
+  var review_id = el.getAttribute('data-review-id');
+  var img_src = el.getAttribute('data-original-src');
+  var review_html = '<img src="' + img_src + '" class="review-og-img" data-review-id="' + review_id + '"/>';
+
+  document.querySelectorAll('.ve-review-orignal-img--wrap[data-review-id="' + review_id + '"]')[0].innerHTML += review_html;
+
+  document.querySelectorAll('.ve-review-modal-overlay')[0].style.display = 'block';
+  document.querySelectorAll('.ve-review-img-modal[data-review-id="' + review_id + '"]')[0].style.display = 'block';
+
+  ve_sendGATrackerEvent('ClickedAnchor', 'yotporeviewimage');
+  ve_sendGATrackerEvent('ClickedReview', review_id, 'image_' + img_src);
+  ve_sendFBTrackerEvent('YotPoReviewFullImage', {
+    review_id: review_id,
+    image_src: img_src
+  });
+}
+
+function dynamicinsert_closeReviewImage(el) {
+  var review_id = el.getAttribute('data-review-id');
+
+  document.querySelectorAll('.ve-review-img-modal[data-review-id="' + review_id + '"]')[0].style.display = 'none';
+  document.querySelectorAll('.ve-review-modal-overlay')[0].style.display = 'none';
+  document.querySelectorAll('.review-og-img[data-review-id="' + review_id + '"]')[0].remove();
 }
