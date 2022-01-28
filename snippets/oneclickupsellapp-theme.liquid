@@ -1,5 +1,5 @@
 {% comment %}
-  Updated: 2022/01/27
+  Updated: 2022/01/12
 {% endcomment %}
 
 {% unless oneclickupsellapp %}
@@ -707,12 +707,6 @@ PopupDispatcher.prototype = {
 
                 this.kind = response.data.kind;
                 precheckoutConfig.config = response.data;
-
-                if(precheckoutConfig.product) {
-                    precheckoutConfig.product.quantity = this._quantityOfProduct;
-                    precheckoutConfig.product.soreFrontPrice = this._priceOfProduct(precheckoutConfig.product.variants);
-                }
-
                 self.utils.beforePrecheckoutPopup();
                 utils.store.set('isTargetBuyNow', self.helpers.isBuyNow(event));
                 OCUIncart._is_product_action = this.isProductAction;
@@ -948,19 +942,6 @@ PopupDispatcher.prototype = {
         this.buttonLoading.endLoadingButton();
     },
 
-    _priceOfProduct: function(variants) {
-        const variantOfProduct = this._productPageVariant.variant_id;
-        let price = 0;
-
-        variants.forEach(function (variant) {
-            if (variant.id === Number(variantOfProduct)) {
-                price = variant.price;
-            }
-        });
-
-        return price;
-    },
-
     get _productPageVariant() {
         if (!this.isProductAction) return {};
 
@@ -1002,11 +983,6 @@ PopupDispatcher.prototype = {
         if (!this.target) return 'cart';
         const form = this.target && this.target.tagName.toLowerCase() === 'form' ? this.target : this.target.closest('form');
         return this._isAddAction(form) ? 'product' : 'cart';
-    },
-
-    get _quantityOfProduct() {
-        const quantityInput = document.querySelector('[name="quantity"]');
-        return quantityInput ? quantityInput.value : "1";
     }
 }
 
@@ -2829,9 +2805,11 @@ function Cart() {
     };
 
     this.get = function(query) {
+        const validateQuery = typeof query === 'string' ? query : '';
+
         var options = {
             method: 'get',
-            url: '/cart.js' + query
+            url: '/cart.js' + validateQuery
         };
 
         return ajax.request(options);
