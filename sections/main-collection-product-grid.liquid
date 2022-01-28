@@ -25,12 +25,12 @@
   {%- if section.settings.enable_filtering or section.settings.enable_sorting -%}
     {{ 'component-facets.css' | asset_url | stylesheet_tag }}
     <script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
-  
+
     <div class="page-width" id="main-collection-filters" data-id="{{ section.id }}">
       {% render 'facets', results: collection, enable_filtering: section.settings.enable_filtering, enable_sorting: section.settings.enable_sorting, collapse_on_larger_devices: section.settings.collapse_on_larger_devices %}
     </div>
   {%- endif -%}
-  
+
   <div id="ProductGridContainer">
     {%- paginate collection.products by section.settings.products_per_page -%}
       {%- if collection.products.size == 0 -%}
@@ -44,38 +44,50 @@
           </div>
         </div>
       {%- else -%}
-        <div class="collection page-width">
-          <div class="loading-overlay gradient"></div>
-  
-          <ul id="product-grid" data-id="{{ section.id }}" class="
-            grid grid--2-col product-grid
-            {% if collection.products_count < 4 %} grid--{{ collection.products_count }}-col-tablet{% else %}
-              {% if collection.products_count == 4 %} grid--4-col-desktop{% else %} grid--3-col-tablet grid--one-third-max grid--4-col-desktop grid--quarter-max{% endif %}
-            {% endif %}">
-            {%- for product in collection.products -%}
-              {% assign lazy_load = false %}
-              {%- if forloop.index > 2 -%}
-                {%- assign lazy_load = true -%}
-              {%- endif -%}
+        <div id="AjaxinateContainer">
+          <div class="collection page-width">
+            <div class="loading-overlay gradient"></div>
 
-              <li class="grid__item">
-                {% render 'card-product',
-                  card_product: product,
-                  media_aspect_ratio: section.settings.image_ratio,
-                  show_secondary_image: section.settings.show_secondary_image,
-                  show_vendor: section.settings.show_vendor,
-                  show_rating: section.settings.show_rating,
-                  lazy_load: lazy_load
-                %}
-              </li>
-            {%- endfor -%}
-          </ul>
-  
+            <ul id="product-grid" data-id="{{ section.id }}" class="
+              grid grid--2-col product-grid
+              {% if collection.products_count < 4 %} grid--{{ collection.products_count }}-col-tablet{% else %}
+                {% if collection.products_count == 4 %} grid--4-col-desktop{% else %} grid--3-col-tablet grid--one-third-max grid--4-col-desktop grid--quarter-max{% endif %}
+              {% endif %}">
+              {%- for product in collection.products -%}
+                {% if product.tags contains 'ISP_IGNORE_PRODUCT_TAG' %}
+                {% else %}
+                  {% assign lazy_load = false %}
+                  {%- if forloop.index > 2 -%}
+                    {%- assign lazy_load = true -%}
+                  {%- endif -%}
+
+                  <li class="grid__item">
+                    {% render 'card-product',
+                      card_product: product,
+                      media_aspect_ratio: section.settings.image_ratio,
+                      show_secondary_image: section.settings.show_secondary_image,
+                      show_vendor: section.settings.show_vendor,
+                      show_rating: section.settings.show_rating,
+                      lazy_load: lazy_load
+                    %}
+                  </li>
+                {% endif %}
+              {%- endfor -%}
+            </ul>
+          </div>
+          {% comment %}
           {%- if paginate.pages > 1 -%}
             {% render 'pagination', paginate: paginate, anchor: '' %}
           {%- endif -%}
+          {% endcomment %}
+        </div>
+        <div id="AjaxinatePagination">
+          {% if paginate.next %}
+            <a href="{{ paginate.next.url }}">Loading More</a>
+          {% endif %}
         </div>
       {%- endif -%}
+      </div>
     {%- endpaginate -%}
   </div>
 </div>
