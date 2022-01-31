@@ -6,7 +6,7 @@ Fixes #0.
 
 **Other considerations**
 
-**Testing**
+**Testing steps/scenarios**
 - [ ] Mobile
 - [ ] Tablet
 - [ ] Desktop
