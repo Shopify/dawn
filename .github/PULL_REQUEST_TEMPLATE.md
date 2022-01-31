@@ -6,6 +6,12 @@ Fixes #0.
 
 **Other considerations**
 
+**Testing**
+- [ ] Mobile
+- [ ] Tablet
+- [ ] Desktop
+- [ ] _List all the testing tasks that applies to your fix and help peers to review your work._
+
 **Demo links**
 
 - [Store](url)
