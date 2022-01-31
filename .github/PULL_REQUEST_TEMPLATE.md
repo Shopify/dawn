@@ -6,7 +6,11 @@ Fixes #0.
 
 **Other considerations**
 
+**Testing steps/scenarios**
+- [ ] _List all the testing tasks that applies to your fix and help peers to review your work._
+
 **Demo links**
+_Please include a link to a demo store that includes preconfigured sections and settings to allow reviewers to easily test the features you are working on._
 
 - [Store](url)
 - [Editor](url)
