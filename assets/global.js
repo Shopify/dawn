@@ -531,12 +531,35 @@ class SliderComponent extends HTMLElement {
     this.nextButton.addEventListener('click', this.onButtonClick.bind(this));
   }
 
+  getWaypoints() {
+    const waypoints = [];
+    for (let i = 0; i < this.totalPages; i++) {
+      if (i < this.totalPages - 1) {
+        waypoints.push(this.sliderItemsToShow[i].offsetLeft);
+      } else {
+        waypoints.push(this.slider.scrollWidth - this.slider.clientWidth);
+      }
+    };
+    return waypoints;
+  }
+
+  setNearestPage(x) {
+    const buffer = this.sliderLastItem.clientWidth / 2;
+    for (let i = 0; i < this.waypoints.length; i++) {
+      if (x < this.waypoints[i] + buffer && x > this.waypoints[i] - buffer) {
+        this.currentPage = i + 1;
+        break;
+      }
+    }
+  }
+
   initPages() {
     this.sliderItemsToShow = Array.from(this.sliderItems).filter(element => element.clientWidth > 0);
     this.sliderLastItem = this.sliderItemsToShow[this.sliderItemsToShow.length - 1];
     if (this.sliderItemsToShow.length === 0) return;
     this.slidesPerPage = Math.floor(this.slider.clientWidth / this.sliderItemsToShow[0].clientWidth);
     this.totalPages = this.sliderItemsToShow.length - this.slidesPerPage + 1;
+    this.waypoints = this.getWaypoints();
     this.update();
   }
 
@@ -547,7 +570,7 @@ class SliderComponent extends HTMLElement {
 
   update() {
     const previousPage = this.currentPage;
-    this.currentPage = Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
+    this.setNearestPage(this.slider.scrollLeft);
 
     if (this.currentPageElement && this.pageTotalElement) {
       this.currentPageElement.textContent = this.currentPage;
