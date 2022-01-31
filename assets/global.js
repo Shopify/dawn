@@ -891,10 +891,3 @@ class VariantRadios extends VariantSelects {
 }
 
 customElements.define('variant-radios', VariantRadios);
-
-function resetAnimation (el) {
-  if (!el) return;
-  el.style.animation = 'none';
-  el.offsetHeight;
-  el.style.animation = null;
-}

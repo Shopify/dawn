@@ -15,8 +15,12 @@ class DetailsDisclosure extends HTMLElement {
   }
 
   onToggle() {
-    if (!this.mainDetailsToggle.hasAttribute('open')) {
-      resetAnimation(this.content);
+    if (!this.animations) this.animations = this.content.getAnimations();
+
+    if (this.mainDetailsToggle.hasAttribute('open')) {
+      this.animations.forEach(animation => animation.play());
+    } else {
+      this.animations.forEach(animation => animation.cancel());
     }
   }
 
