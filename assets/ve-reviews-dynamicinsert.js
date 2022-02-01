@@ -1,3 +1,4 @@
+var debug = false;
 setTimeout(function() { dynamicinsert_init(); }, 1);
 
 function dynamicinsert_init() {
@@ -56,8 +57,215 @@ function dynamicinsert_init() {
       });
 
       dynamicinsert_openPageInitReviews(product.id, data);
+      dynamicinsert_initWriteReview();
     });
   });
+}
+
+function dynamicinsert_initWriteReview() {
+  var typingTimer = null;
+  document.querySelectorAll('.ve-review-post-input')[0].addEventListener('keyup', function () {
+    clearTimeout(typingTimer);
+
+    typingTimer = setTimeout(function () {
+      document.querySelectorAll('.ve-input--wrap.ve-ptr-name')[0].classList.remove('ve-hide');
+
+      setTimeout(function () {
+        document.querySelectorAll('.ve-input--wrap.ve-ptr-name')[0].setAttribute('data-hidden', 'false');
+        typingTimer = null;
+      }, 15);
+    }, 500);
+  });
+
+  document.querySelectorAll('.ve-review-name-input')[0].addEventListener('keyup', function () {
+    clearTimeout(typingTimer);
+
+    typingTimer = setTimeout(function () {
+      document.querySelectorAll('.ve-input--wrap.ve-ptr-email')[0].classList.remove('ve-hide');
+
+      setTimeout(function () {
+        document.querySelectorAll('.ve-input--wrap.ve-ptr-email')[0].setAttribute('data-hidden', 'false');
+        typingTimer = null;
+      }, 15);
+    }, 500);
+  });
+
+  document.querySelectorAll('.ve-review-email-input')[0].addEventListener('keyup', function () {
+    clearTimeout(typingTimer);
+    // Make a new timeout set to go off in 800ms
+    typingTimer = setTimeout(function () {
+      document.querySelectorAll('.ve-review-post-btn')[0].setAttribute('data-disabled', 'false');
+    }, 500);
+  });
+
+  //========================================================
+  // POST REVIEW: Post Review When Post Button is Clicked
+  //========================================================
+  document.querySelectorAll('.ve-review-post-btn')[0].addEventListener('click', function () {
+    var productId = document.querySelectorAll('.ve-product-top-reviews')[0].getAttribute('data-product-id');
+    var productSku = this.getAttribute('data-sku');
+    var productTitle = this.getAttribute('data-product-title');
+    var productUrl = this.getAttribute('data-product-url');
+    var productImageUrl = this.getAttribute('data-product-image-url');
+    var chosen_score = document.querySelectorAll('.ve-score--wrap')[0].getAttribute('data-chosen-score');
+    var scoreInt = parseInt(chosen_score);
+    if (isNaN(scoreInt)) {
+      alert('Please choose a star rating.');
+      return;
+    }
+
+    var title = document.querySelectorAll('.ve-review-title-input')[0].value;
+    var post = document.querySelectorAll('.ve-review-post-input')[0].value;
+    var name = document.querySelectorAll('.ve-review-name-input')[0].value;
+    var email = document.querySelectorAll('.ve-review-email-input')[0].value;
+
+    if (!name || !email) {
+      return;
+    }
+    document.querySelectorAll('.ve-review-post-btn>.js_submit-btn-text')[0].style.display = 'none';
+    document.querySelectorAll('.ve-review-post-btn>img')[0].style.display = 'block';
+
+    var dataJson = {
+      'appkey': '2vqKzRkii9WWAT4aPAE0cg69tC8Yr9ilcB4NMPPN',
+      'domain': 'http://www.vitalityextracts.com',
+      'sku': productSku,
+      'productTitle': productTitle,
+      'productUrl': productUrl,
+      'productImageUrl': productImageUrl,
+      'product_title': productTitle,
+      'product_url': productUrl,
+      'product_image_url': productImageUrl,
+      'display_name': name,
+      'email': email,
+      'review_content': post,
+      'review_title': title,
+      'review_score': scoreInt,
+    };
+
+    var url = 'https://api.yotpo.com/v1/widget/reviews';
+    return fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify(dataJson)
+    })
+      .then(data => data.json())
+      .then(function() {
+        document.querySelectorAll('.ve-write-review--wrap')[0].style.display = 'none';
+        document.querySelectorAll('.ve-review-post-btn>.js_submit-btn-text')[0].style.display = 'block';
+        document.querySelectorAll('.ve-review-post-btn>img')[0].style.display = 'none';
+        var submittedHtml =
+          '<div style="font-size:22px; margin: 30px auto; color:#40a2af;">Thank you. You\'re review has been submitted and will appear once approved.</div>';
+        document.querySelectorAll('.ve-review-message')[0].innerHTML += submittedHtml;
+        var reviewedProducts;
+        if (localStorage.getItem('ve-reviewed-products')) {
+          reviewedProducts = JSON.parse(localStorage.getItem('ve-reviewed-products'));
+          reviewedProducts.push(productId);
+          localStorage.setItem('ve-reviewed-products', JSON.stringify(reviewedProducts));
+        } else {
+          reviewedProducts = [];
+          reviewedProducts.push(productId);
+          localStorage.setItem('ve-reviewed-products', JSON.stringify(reviewedProducts));
+        }
+
+        ve_sendGATrackerEvent('ClickedAnchor', 'yotporeviewcreate');
+        ve_sendFBTrackerEvent('YotPoReviewCreate', dataJson);
+    });
+      /*error: function (err) {
+        document.querySelectorAll('.ve-write-review--wrap').hide();
+        var submittedHtml =
+          '<div style="font-size:22px; margin: 30px auto; color:#e9b3bc;">An error occured. Please try again later.</div>';
+
+        document.querySelectorAll('.ve-review-message').append(submittedHtml);
+      },
+    });*/
+  }); //End Post review section
+
+  /*document.querySelectorAll('.js_ask-question-toggle').on('click', function () {
+    var state = document.querySelectorAll('.js_ask-question-wrap').attr('data-show');
+    dynamicinsert_toggleDataShow('.js_ask-question-wrap', state);
+  });*/
+  //========================================================
+  // Write a Reviews / Custom Write Review
+  //========================================================
+
+  var toggles = document.querySelectorAll('.js_write-review-toggle');
+  for(var i=0; i<toggles.length; i++) {
+    toggles[i].addEventListener('click', function () {
+      var state = document.querySelectorAll('.js_write-review-wrap')[0].getAttribute('data-show');
+      dynamicinsert_toggleDataShow('.js_write-review-wrap', state);
+    });
+  }
+
+  //On Hover of Score Stars Show full and empty stars
+  var stars = document.querySelectorAll('.ve-score-star');
+  for(var i=0; i<stars.length; i++) {
+    stars[i].addEventListener('mouseover',
+      function () {
+        var score = this.getAttribute('data-score');
+
+        for (i = 1; i <= score; i++) {
+          try {
+            document.querySelectorAll('.ve-score-star[data-score="' + i + '"] i.la[data-hover="true"]')[0].classList.remove('la-star-o');
+            document.querySelectorAll('.ve-score-star[data-score="' + i + '"] i.la[data-hover="true"]')[0].classList.add('la-star');
+          } catch(ob){}
+        }
+      }
+    );
+    stars[i].addEventListener('mouseout',
+      function () {
+        var score = this.getAttribute('data-score');
+
+        for (i = 1; i <= score; i++) {
+          try {
+            document.querySelectorAll('.ve-score-star[data-score="' + i + '"] i.la[data-hover="true"]')[0].classList.remove('la-star');
+            document.querySelectorAll('.ve-score-star[data-score="' + i + '"] i.la[data-hover="true"]')[0].classList.add('la-star-o');
+          } catch(ob){}
+        }
+      }
+    );
+  }
+  //END - On star hover effect
+
+  //on click - fill stars and append chose score
+  for(var i=0; i<stars.length; i++) {
+    stars[i].addEventListener('click', function () {
+      if (debug) {
+        console.log('click star: ', this);
+      }
+
+      var score = this.getAttribute('data-score');
+      document.querySelectorAll('.ve-score--wrap')[0].setAttribute('data-chosen-score', score); //set chose score to the chosen score
+
+      //remove the full star effect form any stars that where clicked earlier - also set hover to false for the hover event
+      var priorStars = document.querySelectorAll('.ve-score-star i.la-star');
+      for(var j=0; j<priorStars.length; j++) {
+        try {
+          priorStars[j].setAttribute('data-hover', 'false');
+          priorStars[j].classList.add('la-star');
+          priorStars[j].classList.remove('la-star-o');
+        } catch(ob){}
+      }
+
+      //fill star up until point they clicked
+      for (var j = 1; j <= score; j++) {
+        try {
+          document.querySelectorAll('.ve-score-star[data-score="' + j + '"] i.la')[0].classList.remove('la-star-o');
+          document.querySelectorAll('.ve-score-star[data-score="' + j + '"] i.la')[0].classList.add('la-star');
+        } catch(ob){}
+      }
+
+      //set any stars that are - empty stars to hover true - thsu allowing the hover effect on them
+      var priorStars = document.querySelectorAll('.ve-score-star i.la-star-o');
+      for(var j=0; j<priorStars.length; j++) {
+        try {
+          priorStars[j].setAttribute('data-hover', 'true');
+        } catch(ob){}
+      }
+    });
+  }
 }
 
 function dynamicinsert_getReviews(productId, sortOrder, sortDirection, minStars, page) {
@@ -73,6 +281,30 @@ function dynamicinsert_openPageInitReviews(productId, res){
 }
 
 function dynamicinsert_buildReviewsHtml(productId, response) {
+  console.log('load reviews', productId, response);
+  var total_reviews = response.bottomline.total_review;
+  var review_avg = response.bottomline.average_score;
+  var reviews_per_page = response.pagination.per_page;
+  try {
+    document.querySelectorAll('.total-reviews-text')[0].innerHTML = total_reviews + ' Reviews'; //for funnel offer page on store
+  } catch(ob){}
+
+  review_avg = review_avg.toFixed(2);
+  review_avg = Math.round(review_avg * 10) / 10;
+  review_avg = review_avg.toFixed(1);
+
+  var review_avg_percent = Math.round((review_avg / 5) * 100);
+
+  //for offset of spaces inbetween stars
+  if (review_avg_percent >= 65 && review_avg_percent <= 98) {
+    review_avg_percent += 2;
+  }
+
+  var rate_data = {
+    review_avg_percent: review_avg_percent,
+    total_reviews: total_reviews,
+  };
+
   var other_upvotes = localStorage.getItem('ve-review-votes');
   if (other_upvotes) {
     var votes_array = JSON.parse(other_upvotes);
@@ -80,6 +312,10 @@ function dynamicinsert_buildReviewsHtml(productId, response) {
 
   document.querySelectorAll('.ve-ptr-reviews-section')[0].innerHTML = '';
 
+  document.querySelectorAll('.ve-ptr-avg-rating')[0].innerHTML = review_avg;
+  document.querySelectorAll('.js_ptr-total-review-text .js_text')[0].innerHTML = response.bottomline.total_review + ' customer reviews';//document.querySelectorAll('.js_ptr-total-review-text .js_text')[0].innerHTML;
+
+  var fullHtml = '';
   response.reviews.forEach(function (item, index) {
     var voted_class = "";
     if (other_upvotes) {
@@ -253,64 +489,65 @@ function dynamicinsert_buildReviewsHtml(productId, response) {
       document.querySelectorAll('.ve-loading')[0].style.display = 'none'; //remove loading spinner
     }
 
-    document.querySelectorAll('.ve-ptr-reviews-section')[0].innerHTML += html;
-
-    /*
-    $('.ve-review-vote-updown i')
-      .unbind()
-      .click(function () {
-        var id = $(this).attr('data-review-id');
-        $('span.ve-helpful-vote-up-num[data-review-id="' + id + '"]').hide();
-        $('.ve-review-vote-loader[data-review-id="' + id + '"]').show();
-
-        var vote_type = $(this).attr('data-vote-type');
-        var current_vote_num = $(this).attr('data-current-votes');
-        current_vote_num = parseInt(current_vote_num);
-
-        //console.log('vote_type', vote_type);
-        $('.ve-review-vote-updown i[data-review-id="' + id + '"]').unbind();
-
-        if (other_upvotes && votes_array.includes(id)) {
-          return; //user has upvoted review before so return from function
-        }
-
-        voteReview(id, vote_type).then(function (data) {
-          if (data.success) {
-            $('.ve-review-vote-loader[data-review-id="' + id + '"]').hide();
-            $('.ve-helpful-vote-up-num[data-review-id="' + id + '"]').show();
-
-            if (other_upvotes) {
-              if (votes_array.length >= 50) {
-                votes_array.pop();
-              }
-
-              votes_array.push(id);
-              localStorage.setItem('ve-review-votes', JSON.stringify(votes_array));
-            } else {
-              localStorage.setItem('ve-review-votes', '["' + id + '"]');
-            }
-            $('.ve-helpful-vote-up-num[data-review-id="' + id + '"]').text(current_vote_num + 1);
-            $('.ve-review-vote-updown i[data-review-id="' + id + '"][data-vote-type="' + vote_type + '"]').addClass(
-              'voted-clicked'
-            );
-            $(
-              '.ve-review-vote-updown i[data-review-id="' +
-              id +
-              '"][data-vote-type="' +
-              (vote_type == 'up' ? 'down' : 'up') +
-              '"]'
-            ).addClass('voted-not-clicked');
-
-            ve_sendGATrackerEvent('ClickedAnchor', 'yotporeviewvote_' + vote_type);
-            ve_sendGATrackerEvent('ClickedReview', id, 'voted_' + vote_type);
-            ve_sendFBTrackerEvent('YotPoReviewVoted' + vote_type.charAt(0).toUpperCase() + vote_type.slice(1), {
-              review_id: id
-            });
-          }
-        });
-      });
-      */
+    fullHtml += html;
   });
+
+  document.querySelectorAll('.ve-ptr-reviews-section')[0].innerHTML = fullHtml;
+
+  var elements = document.querySelectorAll('.ve-review-vote-updown i');
+  for(var i=0; i<elements.length; i++) {
+    elements[i].addEventListener('click', function (event) {
+      var id =this.getAttribute('data-review-id');
+      document.querySelectorAll('span.ve-helpful-vote-up-num[data-review-id="' + id + '"]')[0].style.display = 'none';
+      document.querySelectorAll('.ve-review-vote-loader[data-review-id="' + id + '"]')[0].style.display = 'inline';
+
+      var vote_type =this.getAttribute('data-vote-type');
+      var current_vote_num =this.getAttribute('data-current-votes');
+      current_vote_num = parseInt(current_vote_num);
+
+      //console.log('vote_type', vote_type);
+      document.querySelectorAll('.ve-review-vote-updown i[data-review-id="' + id + '"]')[0].style.pointerEvents = 'none';
+
+      if (other_upvotes && votes_array.includes(id)) {
+        return; //user has upvoted review before so return from function
+      }
+
+      dynamicinsert_voteReview(id, vote_type).then(function (data) {
+        if (data.response && data.response.vote && data.response.vote.id) {
+          document.querySelectorAll('.ve-review-vote-loader[data-review-id="' + id + '"]')[0].style.display = 'none';
+          document.querySelectorAll('.ve-helpful-vote-up-num[data-review-id="' + id + '"]')[0].style.display = 'inline';
+
+          if (other_upvotes) {
+            if (votes_array.length >= 50) {
+              votes_array.pop();
+            }
+
+            votes_array.push(id);
+            localStorage.setItem('ve-review-votes', JSON.stringify(votes_array));
+          } else {
+            localStorage.setItem('ve-review-votes', '["' + id + '"]');
+          }
+          document.querySelectorAll('.ve-helpful-vote-up-num[data-review-id="' + id + '"]')[0].innerHTML = current_vote_num + 1;
+          document.querySelectorAll('.ve-review-vote-updown i[data-review-id="' + id + '"][data-vote-type="' + vote_type + '"]')[0].classList.add(
+            'voted-clicked'
+          );
+          document.querySelectorAll(
+            '.ve-review-vote-updown i[data-review-id="' +
+            id +
+            '"][data-vote-type="' +
+            (vote_type == 'up' ? 'down' : 'up') +
+            '"]'
+          )[0].classList.add('voted-not-clicked');
+
+          ve_sendGATrackerEvent('ClickedAnchor', 'yotporeviewvote_' + vote_type);
+          ve_sendGATrackerEvent('ClickedReview', id, 'voted_' + vote_type);
+          ve_sendFBTrackerEvent('YotPoReviewVoted' + vote_type.charAt(0).toUpperCase() + vote_type.slice(1), {
+            review_id: id
+          });
+        }
+      });
+    });
+  }
 }
 
 function dynamicinsert_scrollToTarget(target, speed, extraOffset) {
@@ -476,4 +713,27 @@ function dynamicinsert_closeReviewImage(el) {
   document.querySelectorAll('.ve-review-img-modal[data-review-id="' + review_id + '"]')[0].style.display = 'none';
   document.querySelectorAll('.ve-review-modal-overlay')[0].style.display = 'none';
   document.querySelectorAll('.review-og-img[data-review-id="' + review_id + '"]')[0].remove();
+}
+
+function dynamicinsert_voteReview(id, vote_type) {
+  var url = 'https://api.yotpo.com/reviews/' + id + '/vote/' + vote_type;
+
+  return fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'same-origin'
+  })
+    .then(data => data.json());
+}
+
+
+function dynamicinsert_toggleDataShow(el, state) {
+  //console.log('el', el, 'state', state);
+  if (state === 'false') {
+    document.querySelectorAll(el)[0].setAttribute('data-show', 'true');
+  } else {
+    document.querySelectorAll(el)[0].setAttribute('data-show', 'false');
+  }
 }
