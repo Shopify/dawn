@@ -777,6 +777,7 @@ class VariantSelects extends HTMLElement {
     if (!this.currentVariant.featured_media) return;
 
     const mediaGallery = document.getElementById(`MediaGallery-${this.dataset.section}`);
+    if (!mediaGallery.setActiveMedia) return;
     mediaGallery.setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media.id}`, true);
 
     const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
@@ -791,7 +792,7 @@ class VariantSelects extends HTMLElement {
 
   updateShareUrl() {
     const shareButton = document.getElementById(`Share-${this.dataset.section}`);
-    if (!shareButton) return;
+    if (!shareButton || !shareButton.updateUrl) return;
     shareButton.updateUrl(`${window.shopUrl}${this.dataset.url}?variant=${this.currentVariant.id}`);
   }
 
@@ -806,7 +807,7 @@ class VariantSelects extends HTMLElement {
 
   updatePickupAvailability() {
     const pickUpAvailability = document.querySelector('pickup-availability');
-    if (!pickUpAvailability) return;
+    if (!pickUpAvailability || !pickUpAvailability.fetchAvailability) return;
 
     if (this.currentVariant && this.currentVariant.available) {
       pickUpAvailability.fetchAvailability(this.currentVariant.id);

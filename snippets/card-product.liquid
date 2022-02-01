@@ -15,6 +15,7 @@
 {% endcomment %}
 
 {{ 'component-rating.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-product.css' | asset_url | stylesheet_tag }}
 
 {%- if card_product and card_product != empty -%}
   {%- liquid
@@ -134,6 +135,58 @@
             {%- endif -%}
 
             {% render 'price', product: card_product, price_class: '' %}
+            {%- if show_quick_buy -%}
+              <div class="quick-buy">
+                {%- if card_product.has_only_default_variant -%}
+                  <product-form class="product-form">
+                    {%- form 'product', card_product, id: 'test123', class: 'form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+                      <input type="hidden" name="id" value="{{ card_product.selected_or_first_available_variant.id }}" disabled>
+                      <div class="product-form__buttons">
+                        <button
+                          type="submit"
+                          name="add"
+                          class="product-form__submit button button--full-width button--secondary"
+                        {% if card_product.selected_or_first_available_variant.available == false %}disabled{% endif %}
+                        >
+                            <span>
+                              {%- if card_product.selected_or_first_available_variant.available -%}
+                                {{ 'products.product.add_to_cart' | t }}
+                              {%- else -%}
+                                {{ 'products.product.sold_out' | t }}
+                              {%- endif -%}
+                            </span>
+                            <div class="loading-overlay__spinner hidden">
+                              <svg aria-hidden="true" focusable="false" role="presentation" class="spinner" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+                                <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+                              </svg>
+                            </div>
+                        </button>
+                      </div>
+                    {%- endform -%}
+                  </product-form>
+                {%- else -%}
+                  <modal-opener data-modal="#QuickBuy-{{ card_product.id }}">
+                    <button
+                      type="submit"
+                      name="add"
+                      class="product-form__submit button button--full-width button--secondary"
+                      aria-haspopup="dialog"
+                      data-product-url="{{ card_product.url }}"
+                    >
+                      Choose options
+                    </button>
+                  </modal-opener>
+                  <quickbuy-modal id="QuickBuy-{{ card_product.id }}" class="product-popup-modal">
+                    <div role="dialog" aria-label="{{ block.settings.text }}" aria-modal="true" class="product-popup-modal__content" tabindex="-1">
+                      <button id="ModalClose-{{ card_product.id }}" type="button" class="product-popup-modal__toggle" aria-label="{{ 'accessibility.close' | t }}">{% render 'icon-close' %}</button>
+                      <div id="QuickBuyInfo-{{ card_product.id }}" class="product-popup-modal__content-info">
+                        Loading {{ card_product.title }}...
+                      </div>
+                    </div>          
+                  </quickbuy-modal>
+                {%- endif -%}
+              </div>
+            {%- endif -%}
           </div>
         </div>
         <div class="card__badge {{ settings.badge_position }}">
