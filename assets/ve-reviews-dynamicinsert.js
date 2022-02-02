@@ -4,7 +4,185 @@ setTimeout(function() { dynamicinsert_init(); }, 1);
 function dynamicinsert_init() {
   fetch('/products/' + DYNAMICINSERT_PRODUCT_HANDLE + '.json').then(data => data.json()).then(response => {
     var product = response.product;
-    document.getElementById('load_reviews_dynamically_here').appendChild(document.getElementById('div_reviews_wrapper'));
+    document.getElementById('div_reviews_wrapper').innerHTML = `
+    <div class="ve-container" id="ve-main-reviews-top" data-reviews-active="true">
+      <div
+        class="ve-product-top-reviews"
+        data-product-id=""
+        data-url=""
+        id="main-product-reviews-"
+      >
+        <div class="ve-ptr-header--wrap">
+          <div class="ve-ptr-flex-row">
+            <div class="ve-text-center ve-ptr-flex">
+              <div class="width-100">
+                <div class="ve-ptr-total-text review js_ptr-total-review-text">
+                  <div class="heading-2 heading-half-bg ve-ul-purple-bg js_text">&nbsp;customer reviews</div>
+                </div>
+                <div class="ve-ptr-total-text question js_ptr-total-questions-text">
+                  <div class="heading-2 heading-half-bg ve-ul-purple-bg js_text">&nbsp;customer questions</div>
+                </div>
+                <img
+                  src="https://ve-shopify-store.s3-us-west-1.amazonaws.com/assets/images/jpg/review-social-8-img.jpg"
+                  class="ve-ptr-social-img"
+                />
+                <div class="ve-ptr-avg-rating">
+                  <div class="ve-ratings">
+                    <div class="ve-empty-stars"></div>
+                    <div class="ve-full-stars"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="ve-ptr-flex-row" style="margin-top: 15px;">
+            <div class="ve-ptr-flex">
+              <!--
+              <label class="switch js_reviews-questions-toggle-label" style="margin-right: auto;">
+                <input class="js_reviews-questions-toggle" type="checkbox" checked />
+                <span class="ve-toggle-slider round">
+                  <i class="las la-question-circle"></i>
+                  <i class="lar la-star"></i>
+                </span>
+              </label>
+              -->
+            </div>
+            <div class="ve-ptr-flex">
+              <button class="ve-ptr-write-review-btn js_write-review-toggle" data-product-id="">
+                <i class="la la-edit"></i> review
+              </button>
+              <button class="ve-ptr-ask-a-question-btn js_ask-question-toggle" data-product-id="">
+                <i class="la la-edit"></i> question
+              </button>
+            </div>
+          </div>
+          <div class="ve-review-message"></div>
+          <div class="ve-pts-header-hr"></div>
+        </div>
+        <div class="ve-write-review--wrap js_write-review-wrap" data-show="false">
+          <div class="ve-flex-row ve-write-review-heading">
+            <h4 class="wt-300">Write A Review</h4>
+            <i class="js_write-review-toggle la la-times" role="button"></i>
+          </div>
+          <div class="ve-score--wrap" data-chosen-score="null">
+            <div class="ve-score-star" data-score="1">
+              <i class="la la-star-o" data-hover="true"></i>
+            </div>
+            <div class="ve-score-star" data-score="2">
+              <i class="la la-star-o" data-hover="true"></i>
+            </div>
+            <div class="ve-score-star" data-score="3">
+              <i class="la la-star-o" data-hover="true"></i>
+            </div>
+            <div class="ve-score-star" data-score="4">
+              <i class="la la-star-o" data-hover="true"></i>
+            </div>
+            <div class="ve-score-star" data-score="5">
+              <i class="la la-star-o" data-hover="true"></i>
+            </div>
+          </div>
+          <div class="ve-input--wrap">
+            <input
+              type="text"
+              class="ve-write-review-input ve-review-title-input"
+              placeHolder="Title ex. I love ..."
+              isp_ignore
+            />
+          </div>
+          <div class="ve-input--wrap">
+            <textarea
+              type="text"
+              class="ve-write-review-input ve-review-post-input"
+              placeholder="Write your experience with the  here..."
+              isp_ignore
+            ></textarea>
+          </div>
+          <div class="ve-write-review-bottom--wrap">
+            <div class="ve-input--wrap ve-hide inline ve-ptr-name" data-hidden="true">
+              <input type="text" class="ve-write-review-input ve-review-name-input" placeholder="Full Name" isp_ignore />
+            </div>
+            <div class="ve-input--wrap ve-hide inline ve-ptr-email" data-hidden="true">
+              <input
+                type="email"
+                class="ve-write-review-input ve-review-email-input"
+                placeholder="janesmith@example.com"
+                isp_ignore
+              />
+            </div>
+            <div class="ve-review-post-btn--wrap margin-tb-10">
+              <button
+                class="ve-aqua-btn ve-review-post-btn"
+                data-disabled="true"
+                data-product-url=""
+                data-sku=""
+                data-product-title=""
+                data-product-image-url=""
+              >
+                <img
+                  style="width: 20px; display: none;"
+                  src="https://ve-shopify-store.s3-us-west-1.amazonaws.com/assets/images/svg/loaders/loader-oval-white-20.svg"
+                /><span class="js_submit-btn-text">post review</span>
+              </button>
+            </div>
+          </div>
+          <div class="ve-pts-header-hr"></div>
+        </div>
+        <div class="js_ask-question-wrap ve-ask-question-wrap" data-show="false">
+          <div class="ve-flex-row">
+            <h4 class="wt-300">Ask Question</h4>
+            <i class="js_ask-question-toggle la la-times" role="button"></i>
+          </div>
+          <form
+            class="js_ask-question-form"
+            data-product-id=""
+            data-product-url=""
+            data-product-title=""
+            data-product-image-url=""
+          >
+            <input name="email" type="email" placeholder="example@email.com" required />
+            <div class="ve-ptr-flex">
+              <input type="text" placeholder="First Name" name="fname" isp_ignore style="margin-right: 15px;" required />
+              <input name="lname" type="text" placeholder="Last Name" isp_ignore required />
+            </div>
+            <textarea name="question" placeholder="Ask question..." required></textarea>
+            <div class="ve-text-center width-100 margin-tb-10">
+              <button class="ve-aqua-btn" type="submit">
+                <img
+                  style="width: 20px; display: none;"
+                  src="https://ve-shopify-store.s3-us-west-1.amazonaws.com/assets/images/svg/loaders/loader-oval-white-20.svg"
+                /><span class="js_submit-btn-text">submit question</span>
+              </button>
+            </div>
+          </form>
+          <div
+            class="ve-text-center js_ask-question-form-success-message ve-aqua"
+            style="padding: 20px 0; font-size: 1.2em; display: none;"
+          >
+            Your question was posted successfuly. Please check your email for confirmation.
+          </div>
+          <div class="ve-pts-header-hr"></div>
+        </div>
+        <div class="ve-loading" style="text-align: center; margin: 15% auto;">
+          <img
+            src="https://ve-shopify-store.s3-us-west-1.amazonaws.com/assets/images/svg/loaders/loader-oval.svg"
+            style="width: 85px;"
+          />
+        </div>
+        <div class="js_main-reviews">
+          <div class="ve-ptr-reviews-section ve-flex-row js_reviews" id="reviews-section-top"></div>
+          <div class="js_reviews-pagination"></div>
+        </div>
+        <div class="ve-reviews-questions">
+          <div class="js_reviews-no-questions-text ve-text-center ve-reviews-questions-none">
+            Have a question about ? Be the first to ask.
+          </div>
+          <div class="ve-flex-row js_review-questions"></div>
+          <div class="js_review-questions-pagination" role="navigation"></div>
+        </div>
+      </div>
+    </div>
+    `;
+    //document.getElementById('load_reviews_dynamically_here').appendChild(document.getElementById('div_reviews_wrapper'));
     document.querySelectorAll('.ve-product-top-reviews')[0].setAttribute('data-product-id', product.id);
     document.querySelectorAll('.ve-product-top-reviews')[0].setAttribute('data-url', 'https://www.vitalityextracts.com/products/' + product.handle);
     document.querySelectorAll('.ve-product-top-reviews')[0].setAttribute('id', 'main-product-reviews-' + product.id);
