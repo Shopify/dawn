@@ -43,7 +43,12 @@
 </div>
 
 <script>
-  var minSubPrice = 20;
+  var MIN_SUB_PRICES = {
+    '30ml': '{{ settings.min_price_sub_30ml }}'*1,
+    '10ml': '{{ settings.min_price_sub_10ml }}'*1,
+    'rollon': '{{ settings.min_price_sub_rollon }}'*1
+  }
+
   var rechargeProduct = {
     selling_plan_id: "{{ subscriptionProduct.selling_plan_groups[0].selling_plans[0].id }}",
     variant_id: null,
@@ -57,8 +62,7 @@
     var qty = document.querySelectorAll('.quantity__input')[0].value * 1;
     var percentSavings = rechargeProduct.percent_savings * 1;
     var subscriptionPrice = (variantPrice * (100 - percentSavings) / 10000) * 1.00;
-    var activeMinSubPrice = minSubPrice;
-    //console.log(qty, percentSavings, subscriptionPrice, activeMinSubPrice);
+    var activeMinSubPrice = ve_getActiveMinSubPrice(variantTitle);
 
     if (activeMinSubPrice !== null) {
       if (qty == 1
@@ -69,12 +73,30 @@
     }
   }
 
+  function ve_getActiveMinSubPrice(variantTitle) {
+    var variantCategory = '';
+    var titleStripped = variantTitle.toLowerCase().replace(/[^a-z]/g, '');
+    //console.log('titleStripped', titleStripped);
+    if (titleStripped.indexOf('rollon') !== -1) {
+      variantCategory = 'rollon';
+    } else if (titleStripped.indexOf('10ml') !== -1) {
+      variantCategory = '10ml';
+    } else if (titleStripped.indexOf('30ml') !== -1) {
+      variantCategory = '30ml';
+    } else {
+      return null;
+    }
+    var activeMinSubPrice = MIN_SUB_PRICES[variantCategory];
+    //console.log('titleStripped', titleStripped, 'activeMinSubPrice', activeMinSubPrice);
+    return activeMinSubPrice;
+  }
+
   {% render 've-js-offer-popup-subscribeandsave' %}
 
   function ve_popupSubscribeAndSave(productId, productTitle, variantId, variantTitle, variantPrice, variantImage) {
     var percentSavings = rechargeProduct.percent_savings * 1;
     var subscriptionPrice = (variantPrice * (100 - percentSavings) / 10000) * 1.00;
-    var activeMinSubPrice = minSubPrice;
+    var activeMinSubPrice = ve_getActiveMinSubPrice(variantTitle);
     if (activeMinSubPrice === null
       || subscriptionPrice < activeMinSubPrice
     ) {
