@@ -14,34 +14,120 @@
   }
 {%- endstyle -%}
 
-<section class="container text-center">
-    <h2>{{ page.title }}</h2>
-    <p>Please fill out the form below to send a message to Customer Support or give us a call at <a href="tel:{{ settings.phone_support }}" style="text-decoration:underline;">{{ settings.phone_support }}</a> {{ settings.hours_support }}</p>
-    <form class="grid full margin-t-lg" id="contact-us-form">
-        <div class="grid _half _mob-full">
-            <input type="text" placeholder=" *First Name" aria-label="first name" id="contact-us-fname" required />
-            <input type="text" placeholder=" *Last Name" aria-label="last name" id="contact-us-lname" required />
-            <input type="email" placeholder=" *Email" aria-label="email address" id="contact-us-email" required />
-            <input type="tel" placeholder=" *Phone Number" aria-label="telephone number" id="contact-us-tel" required />
-            <select id="contact-us-reason" aria-label="Reason for contact" required>
-                <option value="" disabled selected> *Choose Reason</option>
-                <option value="Account|||low|||problem">Account</option>
-                <option value="Cancel/Change Order|||urgent|||question">Cancel/Change Order</option>
-                <option value="Customer feedback|||low|||question">Customer feedback</option>
-                <option value="Discounts/Gift-cards|||normal|||question">Discounts/Gift-cards</option>
-                <option value="Existing Order|||normal|||question">Existing Order</option>
-                <option value="Order Tracking|||normal|||task">Order Tracking</option>
-                <option value="Ordering/Payment|||high|||question">Ordering/Payment</option>
-                <option value="Returns/Refunds|||normal|||incident">Returns/Refunds</option>
-                <option value="Product Question|||normal|||question">Product Question</option>
-            </select>
-            <input type="text" placeholder="Order Number" aria-label="order number" id="contact-us-order-num">
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <div class="contact page-width page-width--narrow section-{{ section.id }}-padding">
+    <h2 class="title title-wrapper--no-top-margin">{{ section.settings.heading | escape }}</h2>
+      <div class="contact__fields">
+        <div class="field">
+          <input class="field__input" autocomplete="name" type="text" id="contactFormFirstName" placeholder="{{ 'templates.contact.form.first_name' | t }}">
+          <label class="field__label" for="contactFormFirstName">{{ 'templates.contact.form.first_name' | t }}<span aria-hidden="true">*</span></label>
         </div>
-        <input type="text" placeholder="*Subject" aria-label="subject" id="contact-us-subject" required />
-       <textarea rows="10" placeholder="*Message" maxlength="500" id="contact-us-message"  required></textarea>
-       <button class="btn btn-primary" type="submit">Submit</button>
-    </form>
-</section>
+        <div class="field">
+          <input class="field__input" autocomplete="name" type="text" id="contactFormLastName" placeholder="{{ 'templates.contact.form.last_name' | t }}">
+          <label class="field__label" for="contactFormLastName">{{ 'templates.contact.form.last_name' | t }}<span aria-hidden="true">*</span></label>
+        </div>
+      </div>
+      <div class="contact__fields">
+        <div class="field field--with-error">
+          <input
+            autocomplete="email"
+            type="email"
+            id="contactFormEmailAddress"
+            class="field__input"
+            name="contact[email]"
+            spellcheck="false"
+            autocapitalize="off"
+            value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+            aria-required="true"
+            {% if form.errors contains 'email' %}
+              aria-invalid="true"
+              aria-describedby="ContactForm-email-error"
+            {% endif %}
+            placeholder="{{ 'templates.contact.form.email' | t }}"
+          >
+          <label class="field__label" for="contactFormEmailAddress">{{ 'templates.contact.form.email' | t }}<span aria-hidden="true">*</span></label>
+          {% comment %}
+          {%- if form.errors contains 'email' -%}
+            <small class="contact__field-error" id="contact-us-email">
+              <span class="visually-hidden">{{ 'accessibility.error' | t }}</span>
+              <span class="form__message">{% render 'icon-error' %}{{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}</span>
+            </small>
+          {%- endif -%}
+          {% endcomment %}
+        </div>
+        <div class="field">
+          <input type="tel" id="contactFormPhoneNumber" class="field__input" autocomplete="tel" pattern="[0-9\-]*" placeholder="{{ 'templates.contact.form.phone' | t }}">
+          <label class="field__label" for="contactFormPhoneNumber">{{ 'templates.contact.form.phone' | t }}<span aria-hidden="true">*</span></label>
+        </div>
+      </div>
+      <div class="contact__fields">
+        <div class="field">
+          <select class="select__select" style="font-size: 1em" id="contactFormReason">
+            <option value="" disabled selected>Choose Reason*</option>
+            <option value="Account|||low|||problem">Account</option>
+            <option value="Cancel/Change Order|||urgent|||question">Cancel/Change Order</option>
+            <option value="Customer feedback|||low|||question">Customer feedback</option>
+            <option value="Discounts/Gift-cards|||normal|||question">Discounts/Gift-cards</option>
+            <option value="Existing Order|||normal|||question">Existing Order</option>
+            <option value="Order Tracking|||normal|||task">Order Tracking</option>
+            <option value="Ordering/Payment|||high|||question">Ordering/Payment</option>
+            <option value="Returns/Refunds|||normal|||incident">Returns/Refunds</option>
+            <option value="Product Question|||normal|||question">Product Question</option>
+          </select>
+          <!--label class="field__label" for="contactFormReason">{{ 'templates.contact.form.reason' | t }}<span aria-hidden="true">*</span></label-->
+        </div>
+        <div class="field">
+          <input class="field__input" autocomplete="name" type="text" id="contactFormOrderNumber" placeholder="{{ 'templates.contact.form.order_number' | t }}">
+          <label class="field__label" for="contactFormOrderNumber">{{ 'templates.contact.form.order_number' | t }}</label>
+        </div>
+      </div>
+      <div class="field">
+        <input class="field__input" autocomplete="name" type="text" id="contactFormSubject" placeholder="{{ 'templates.contact.form.subject' | t }}">
+        <label class="field__label" for="contactFormSubject">{{ 'templates.contact.form.subject' | t }}<span aria-hidden="true">*</span></label>
+      </div>
+      <div class="field">
+        <textarea
+          rows="10"
+          id="contactFormMessage"
+          class="text-area field__input"
+          name="contact[{{ 'templates.contact.form.message' | t }}]"
+          placeholder="{{ 'templates.contact.form.message' | t }}"
+        >
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="contactFormMessage">{{ 'templates.contact.form.message' | t }}<span aria-hidden="true">*</span></label>
+      </div>
+      <div class="contact__fields">
+        <div class="field">
+          <input class="field__input" autocomplete="name" type="text" id="question" readonly>
+          <label class="field__label" for="question">{{ 'templates.contact.form.question' | t }}</label>
+        </div>
+        <div class="field">
+          <input class="field__input" autocomplete="name" type="text" id="answer">
+          <label class="field__label" for="answer">{{ 'templates.contact.form.answer' | t }}</label>
+        </div>
+      </div>
+      <div class="field">
+        <div id="div_supportfiles" class="ve-file-upload--wrap">
+          Initializing...
+        </div>
+
+        <div id="uploadProgressIndicatorWrapper" style="display:none;">
+          {% comment %} <label for="uploadProgressIndicator">Upload Progress: <span id="uploadProgressIndicatorDisplay"></span></label> {% endcomment %}
+          <label for="uploadProgressIndicator"><span id="uploadProgressIndicatorDisplay"></span></label>
+          <progress value="0" max="1" class="ve-contact-progressbar" id="uploadProgressIndicator"></progress>
+          <br /><br />
+        </div>
+      </div>
+      <div class="contact__button">
+        <button class="button" id="contactFormSubmit">
+          {{ 'templates.contact.form.send' | t }}
+        </button>
+      </div>
+  </div>
+</div>
+
+<script src="{{ 'contact-us-google-form.js' | asset_url }}" defer="defer"></script>
 
 {% schema %}
 {
