@@ -56,6 +56,28 @@
               {%- for product in collection.products -%}
                 {% if product.tags contains 'ISP_IGNORE_PRODUCT_TAG' %}
                 {% else %}
+                  {% assign collectionVariant = product.variants[0] %}
+                  {% if collection.metafields.global.variant_title_contains %}
+                    {% assign needle = collection.metafields.global.variant_title_contains %}
+                    {% for variant in product.variants %}
+                      {% if variant.title contains needle %}
+                        {% assign isMatch = true %}
+                        {% if needle == '30ml' or needle == '10ml' or needle == 'Roll-on' %}
+                          {% if variant.title contains 'Spray' or variant.title contains 'Pack' or variant.title contains 'pack' or variant.title contains 'pk' or variant.title contains 'Bundle' or variant.title contains 'bundle' %}
+                            {% assign isMatch = false %}
+                          {% endif %}
+                        {% endif %}
+                        {% if needle == '10ml' %}
+                          {% if variant.title contains 'Roll-On' or variant.title contains 'roll-on' or variant.title contains 'Roll-on' or variant.title contains 'roll-On' %}
+                            {% assign isMatch = false %}
+                          {% endif %}
+                        {% endif %}
+                        {% if isMatch %}
+                          {% assign collectionVariant = product.variants[forloop.index0] %}
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endif }
                   {% assign lazy_load = false %}
                   {%- if forloop.index > 2 -%}
                     {%- assign lazy_load = true -%}
@@ -64,6 +86,7 @@
                   <li class="grid__item">
                     {% render 'card-product',
                       card_product: product,
+                      card_variant: collectionVariant,
                       media_aspect_ratio: section.settings.image_ratio,
                       show_secondary_image: section.settings.show_secondary_image,
                       show_vendor: section.settings.show_vendor,
@@ -81,7 +104,7 @@
           {%- endif -%}
           {% endcomment %}
         </div>
-        <div id="AjaxinatePagination">
+        <div id="AjaxinatePagination" style="display: none">
           {% if paginate.next %}
             <a href="{{ paginate.next.url }}"></a>
           {% endif %}

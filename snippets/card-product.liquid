@@ -17,12 +17,31 @@
 {{ 'component-rating.css' | asset_url | stylesheet_tag }}
 
 {%- if card_product and card_product != empty -%}
+  {%- assign cardMediaAspectRatio = card_product.featured_image.aspect_ratio %}
+  {%- assign cardMediaWidth = card_product.featured_image.width %}
+  {%- assign cardMediaHeight = card_product.featured_image.height %}
+  {%- assign cardMediaSrc = card_product.featured_image.src %}
+  {%- assign cardMediaAlt = card_product.featured_image.alt %}
+  {%- assign cardMediaUrl = card_product.featured_image.alt %}
+  {%- assign cardUrl = card_product.url -%}
+  {%- if card_variant and card_variant != empty -%}
+    {%- assign cardMediaAspectRatio = card_variant.featured_image.aspect_ratio %}
+    {%- assign cardMediaWidth = card_variant.featured_image.width %}
+    {%- assign cardMediaHeight = card_variant.featured_image.height %}
+    {%- assign cardMediaSrc = card_variant.featured_image.src %}
+    {%- assign cardMediaAlt = card_variant.featured_image.alt %}
+    {%- assign cardUrl = card_product.url | append: '?variant=' | append: card_variant.id -%}
+    {% comment %}
+    {{ card_product.featured_media.aspect_ratio }} {{ card_product.featured_media.width }} {{ card_product.featured_media.height }} {{ card_product.featured_media.src }}
+    {{ cardMediaAspectRatio }} {{ cardMediaWidth }} {{ cardMediaHeight }} {{ cardMediaSrc }}
+    {% endcomment %}
+  {%- endif %}
   {%- liquid
     assign ratio = 1
-    if card_product.featured_media and media_aspect_ratio == 'portrait'
+    if cardMediaSrc and media_aspect_ratio == 'portrait'
       assign ratio = 0.8
-    elsif card_product.featured_media and media_aspect_ratio == 'adapt'
-      assign ratio = card_product.featured_media.aspect_ratio
+    elsif cardMediaSrc and media_aspect_ratio == 'adapt'
+      assign ratio = cardMediaAspectRatio
     endif
     if ratio == 0 or ratio == nil
       assign ratio = 1
@@ -31,31 +50,31 @@
   <div class="card-wrapper underline-links-hover">
     <div class="card
       card--{{ settings.card_style }}
-      {% if card_product.featured_media %} card--media{% else %} card--text{% endif %}
+      {% if cardMediaSrc %} card--media{% else %} card--text{% endif %}
       {% if settings.card_style == 'card' %} color-{{ settings.card_color_scheme }}{% endif %}
       {% if extend_height %} card--extend-height{% endif %}
-      {% if card_product.featured_media == nil and settings.card_style == 'card' %} ratio{% endif %}"
+      {% if cardMediaSrc == nil and settings.card_style == 'card' %} ratio{% endif %}"
       style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%;"
     >
-      <div class="card__inner {% if settings.card_style == 'standard' %}color-{{ settings.card_color_scheme }}{% endif %}{% if card_product.featured_media or settings.card_style == 'standard' %} ratio{% endif %}" style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%;">
-        {%- if card_product.featured_media -%}
+      <div class="card__inner {% if settings.card_style == 'standard' %}color-{{ settings.card_color_scheme }}{% endif %}{% if cardMediaSrc or settings.card_style == 'standard' %} ratio{% endif %}" style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%;">
+        {%- if cardMediaSrc -%}
           <div class="card__media">
             <div class="media media--transparent media--hover-effect">
               <img
-                srcset="{%- if card_product.featured_media.width >= 165 -%}{{ card_product.featured_media | img_url: '165x' }} 165w,{%- endif -%}
-                  {%- if card_product.featured_media.width >= 360 -%}{{ card_product.featured_media | img_url: '360x' }} 360w,{%- endif -%}
-                  {%- if card_product.featured_media.width >= 533 -%}{{ card_product.featured_media | img_url: '533x' }} 533w,{%- endif -%}
-                  {%- if card_product.featured_media.width >= 720 -%}{{ card_product.featured_media | img_url: '720x' }} 720w,{%- endif -%}
-                  {%- if card_product.featured_media.width >= 940 -%}{{ card_product.featured_media | img_url: '940x' }} 940w,{%- endif -%}
-                  {%- if card_product.featured_media.width >= 1066 -%}{{ card_product.featured_media | img_url: '1066x' }} 1066w,{%- endif -%}
-                  {{ card_product.featured_media | img_url: 'master' }} {{ card_product.featured_media.width }}w"
-                src="{{ card_product.featured_media | img_url: '533x' }}"
+                srcset="{%- if cardMediaWidth >= 165 -%}{{ cardMediaSrc | img_url: '165x' }} 165w,{%- endif -%}
+                  {%- if cardMediaWidth >= 360 -%}{{ cardMediaSrc | img_url: '360x' }} 360w,{%- endif -%}
+                  {%- if cardMediaWidth >= 533 -%}{{ cardMediaSrc | img_url: '533x' }} 533w,{%- endif -%}
+                  {%- if cardMediaWidth >= 720 -%}{{ cardMediaSrc | img_url: '720x' }} 720w,{%- endif -%}
+                  {%- if cardMediaWidth >= 940 -%}{{ cardMediaSrc | img_url: '940x' }} 940w,{%- endif -%}
+                  {%- if cardMediaWidth >= 1066 -%}{{ cardMediaSrc | img_url: '1066x' }} 1066w,{%- endif -%}
+                  {{ cardMediaSrc | img_url: 'master' }} {{ cardMediaWidth }}w"
+                src="{{ cardMediaSrc | img_url: '533x' }}"
                 sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 130 | divided_by: 4 }}px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)"
-                alt="{{ card_product.featured_media.alt | escape }}"
+                alt="{{ cardMediaAlt | escape }}"
                 class="motion-reduce"
                 {% unless lazy_load == false %}loading="lazy"{% endunless %}
-                width="{{ card_product.featured_media.width }}"
-                height="{{ card_product.featured_media.height }}"
+                width="{{ cardMediaWidth }}"
+                height="{{ cardMediaHeight }}"
               >
 
               {%- if card_product.media[1] != nil and show_secondary_image -%}
@@ -82,7 +101,7 @@
         <div class="card__content">
           <div class="card__information">
             <h3 class="card__heading">
-              <a href="{{ card_product.url | default: '#' }}" class="full-unstyled-link">
+              <a href="{{ cardUrl | default: '#' }}" class="full-unstyled-link">
                 {{ card_product.title | escape }}
               </a>
             </h3>
@@ -99,7 +118,7 @@
       <div class="card__content">
         <div class="card__information">
           <h3 class="card__heading{% if card_product.featured_media or settings.card_style == 'standard' %} h5{% endif %} card__heading_title">
-            <a href="{{ card_product.url | default: '#' }}" class="full-unstyled-link">
+            <a href="{{ cardUrl | default: '#' }}" class="full-unstyled-link">
               {{ card_product.title | escape }}
             </a>
           </h3>
@@ -136,7 +155,7 @@
               </p>
             {%- endif -%}
 
-            {% render 'price', product: card_product, price_class: '' %}
+            {% render 'price', product: card_product, priceVariant: card_variant, price_class: '' %}
           </div>
         </div>
         <div class="card__badge {{ settings.badge_position }}">
