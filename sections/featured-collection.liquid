@@ -44,21 +44,26 @@
     assign products_to_display = section.settings.products_to_show
     assign more_in_collection = true
   endif
+
+  assign slider_is_enabled = false
+  if section.settings.enable_mobile_slider or section.settings.enable_desktop_slider
+    assign slider_is_enabled = true
+  endif
 -%}
 
 <div class="color-{{ section.settings.color_scheme }} isolate gradient">
   <div class="collection page-width section-{{ section.id }}-padding">
     {% unless section.settings.title == blank %}
-      <div class="collection__title title-wrapper--no-top-margin {{ section.settings.heading_alignment }}{% if section.settings.title == blank %} title-wrapper-with-link--no-heading{% endif %}{% if section.settings.collection.all_products_count > 2 and section.settings.carousel_type != 'none' and section.settings.products_to_show > 2 %} title-wrapper--self-padded-tablet-down{% endif %}">
+      <div class="collection__title title-wrapper--no-top-margin {{ section.settings.heading_alignment }}{% if section.settings.title == blank %} title-wrapper-with-link--no-heading{% endif %}{% if section.settings.collection.all_products_count > 2 and slider_is_enabled and section.settings.products_to_show > 2 %} title-wrapper--self-padded-tablet-down{% endif %}">
         <h2 class="title {{ section.settings.title_size }}{% if section.settings.title == blank %} title--no-heading{% endif %}">{{ section.settings.title | escape }}</h2>
           <div class="{{ section.settings.description_style }}">{%- if section.settings.show_description -%}{{ section.settings.collection.description }}{%- else -%}{{ section.settings.description }}{% endif %}</div>
       </div>
     {% endunless %}
 
     <slider-component class="slider-mobile-gutter">
-      <ul id="Slider-{{ section.id }}" class="grid grid--2-col product-grid contains-card{% if settings.card_style == 'standard' %} contains-card--standard{% endif %}{% if products_to_display == 4 or section.settings.collection == blank %} grid--2-col-tablet grid--4-col-desktop{% else %} grid--3-col-tablet{% endif %}{% if products_to_display > 5 %} grid--one-third-max grid--4-col-desktop grid--quarter-max{% endif %}{% if section.settings.collection.all_products_count > 2 and section.settings.carousel_type != 'none' and section.settings.products_to_show > 2 %} slider slider--{{ section.settings.carousel_type }}{% endif %}" role="list">
+      <ul id="Slider-{{ section.id }}" class="grid grid--2-col product-grid contains-card{% if settings.card_style == 'standard' %} contains-card--standard{% endif %}{% if products_to_display == 4 or section.settings.collection == blank %} grid--2-col-tablet grid--4-col-desktop{% else %} grid--3-col-tablet{% endif %}{% if products_to_display > 5 %} grid--one-third-max grid--4-col-desktop grid--quarter-max{% endif %}{% if section.settings.collection.all_products_count > 2 and slider_is_enabled and section.settings.products_to_show > 2 %} slider {% if section.settings.enable_desktop_slider %}slider--everywhere{% else %}slider--tablet{% endif %}{% endif %}" role="list">
         {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
-          <li id="Slide-{{ section.id }}-{{ forloop.index }}" class="grid__item{% if section.settings.collection.all_products_count > 2 and section.settings.carousel_type != 'none' and section.settings.products_to_show > 2 %} slider__slide{% endif %}">
+          <li id="Slide-{{ section.id }}-{{ forloop.index }}" class="grid__item{% if section.settings.collection.all_products_count > 2 and slider_is_enabled and section.settings.products_to_show > 2 %} slider__slide{% endif %}">
             {% render 'card-product',
               card_product: product,
               media_aspect_ratio: section.settings.image_ratio,
@@ -75,7 +80,7 @@
           {%- endfor -%}
         {%- endfor -%}
       </ul>
-      {%- if section.settings.collection.all_products_count > 2 and section.settings.carousel_type != 'none' and section.settings.products_to_show > 2 -%}
+      {%- if section.settings.collection.all_products_count > 2 and slider_is_enabled and section.settings.products_to_show > 2 -%}
         <div class="slider-buttons no-js-hidden{% if section.settings.collection.all_products_count < 4 %} medium-hide{% endif %}{% if section.settings.collection.all_products_count < 3 %} small-hide{% endif %}">
           <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'general.slider.previous_slide' | t }}" data-step="1">{% render 'icon-caret' %}</button>
           <div class="slider-counter caption">
@@ -248,24 +253,26 @@
       "default": "link"
     },
     {
+      "type": "checkbox",
+      "id": "enable_desktop_slider",
+      "label": "t:sections.featured-collection.settings.enable_desktop_slider.label",
+      "default": false
+    },
+    {
       "type": "select",
-      "id": "carousel_type",
-      "label": "t:sections.featured-collection.settings.carousel_type.label",
+      "id": "carousel_style",
+      "label": "t:sections.featured-collection.settings.carousel_style.label",
       "options": [
         {
-          "value": "none",
-          "label": "t:sections.featured-collection.settings.carousel_type.options__1.label"
+          "value": "full_cards",
+          "label": "t:sections.featured-collection.settings.carousel_style.options__1.label"
         },
         {
-          "value": "tablet",
-          "label": "t:sections.featured-collection.settings.carousel_type.options__2.label"
-        },
-        {
-          "value": "everywhere",
-          "label": "t:sections.featured-collection.settings.carousel_type.options__3.label"
+          "value": "cards_with_peek",
+          "label": "t:sections.featured-collection.settings.carousel_style.options__2.label"
         }
       ],
-      "default": "none"
+      "default": "full_cards"
     },
     {
       "type": "select",
@@ -338,6 +345,16 @@
       "default": false,
       "label": "t:sections.featured-collection.settings.show_rating.label",
       "info": "t:sections.featured-collection.settings.show_rating.info"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.featured-collection.settings.mobile_header.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_mobile_slider",
+      "label": "t:sections.featured-collection.settings.enable_mobile_slider.label",
+      "default": false
     },
     {
       "type": "header",
