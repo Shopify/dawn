@@ -708,13 +708,13 @@ function dynamicinsert_buildReviewsHtml(productId, response) {
           document.querySelectorAll('.ve-review-vote-updown i[data-review-id="' + id + '"][data-vote-type="' + vote_type + '"]')[0].classList.add(
             'voted-clicked'
           );
-          document.querySelectorAll(
+          /*document.querySelectorAll(
             '.ve-review-vote-updown i[data-review-id="' +
             id +
             '"][data-vote-type="' +
             (vote_type == 'up' ? 'down' : 'up') +
             '"]'
-          )[0].classList.add('voted-not-clicked');
+          )[0].classList.add('voted-not-clicked');*/
 
           ve_sendGATrackerEvent('ClickedAnchor', 'yotporeviewvote_' + vote_type);
           ve_sendGATrackerEvent('ClickedReview', id, 'voted_' + vote_type);
@@ -893,7 +893,7 @@ function dynamicinsert_closeReviewImage(el) {
 }
 
 function dynamicinsert_voteReview(id, vote_type) {
-  var url = 'https://api.yotpo.com/reviews/' + id + '/vote/' + vote_type;
+  var url = window.brandVariables.urls.yotpo_reviews_baseurl + id + '/vote/' + vote_type;
 
   return fetch(url, {
     method: 'POST',
