@@ -41,6 +41,20 @@
     {%- endif -%}
   </div>
 
+  <div class="cart__progress" style="display: none">
+    <div class="cart-progress-freeshipping">
+      <div class="cart-progress-label">
+      </div>
+      <div class="cart-progress-bar">
+        <div class="low-num"></div>
+        <div class="progress-bar-wrapper">
+          <div class="progress-bar"></div>
+        </div>
+        <div class="high-num"></div>
+      </div>
+    </div>
+  </div>
+
   <form action="{{ routes.cart_url }}" class="cart__contents critical-hidden" method="post" id="cart">
     <div class="cart__items" id="main-cart-items" data-id="{{ section.id }}">
       <div class="js-contents">
@@ -79,7 +93,7 @@
                       <p class="caption-with-letter-spacing light">{{ item.product.vendor }}</p>
                     {%- endif -%}
 
-                    <a href="{{ item.url }}" class="cart-item__name h4 break">{{ item.product.title | escape }}</a>
+                    <a href="{{ item.url }}?variant={{ item.variant.id }}" class="cart-item__name h4 break">{{ item.product.title | escape }}{%- if item.product.has_only_default_variant == false -%}{%- for option in item.options_with_values -%}&nbsp;-&nbsp;{{ option.value }}{%- endfor -%}{%- endif -%}</a>
 
                     {%- if item.original_price != item.final_price -%}
                       <div class="cart-item__discounted-prices">
@@ -102,8 +116,10 @@
                       </div>
                     {%- endif -%}
 
+
                     {%- if item.product.has_only_default_variant == false or item.properties.size != 0 or item.selling_plan_allocation != nil -%}
                       <dl>
+                        {% comment %}
                         {%- if item.product.has_only_default_variant == false -%}
                           {%- for option in item.options_with_values -%}
                             <div class="product-option">
@@ -112,7 +128,9 @@
                             </div>
                           {%- endfor -%}
                         {%- endif -%}
+                        {% endcomment %}
 
+                        {% comment %}
                         {%- for property in item.properties -%}
                           {%- assign property_first_char = property.first | slice: 0 -%}
                           {%- if property.last != blank and property_first_char != '_' -%}
@@ -130,6 +148,7 @@
                             </div>
                           {%- endif -%}
                         {%- endfor -%}
+                        {% endcomment %}
                       </dl>
 
                       <p class="product-option">{{ item.selling_plan_allocation.selling_plan.name }}</p>

@@ -35,19 +35,42 @@
     {% unless section.settings.title == blank %}
       <div class="title-wrapper-with-link{% if section.settings.title == blank %} title-wrapper-with-link--no-heading{% endif %}{% if section.settings.collection.all_products_count > 2 and section.settings.swipe_on_mobile and section.settings.products_to_show > 2 %} title-wrapper--self-padded-tablet-down{% endif %} title-wrapper--no-top-margin">
         <h2 class="title{% if section.settings.title == blank %} title--no-heading{% endif %}">{{ section.settings.title | escape }}</h2>
-  
+
         {%- if section.settings.show_view_all and section.settings.swipe_on_mobile and more_in_collection -%}
           <a href="{{ section.settings.collection.url }}" class="link underlined-link large-up-hide">{{ 'sections.featured_collection.view_all' | t }}</a>
         {%- endif -%}
       </div>
     {% endunless %}
-  
+
     <slider-component class="slider-mobile-gutter">
       <ul id="Slider-{{ section.id }}" class="grid grid--2-col product-grid{% if products_to_display == 4 or section.settings.collection == blank %} grid--2-col-tablet grid--4-col-desktop{% else %} grid--3-col-tablet{% endif %}{% if products_to_display > 5 %} grid--one-third-max grid--4-col-desktop grid--quarter-max{% endif %}{% if section.settings.collection.all_products_count > 2 and section.settings.swipe_on_mobile and section.settings.products_to_show > 2 %} slider slider--tablet grid--peek{% endif %}" role="list">
         {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
+          {% assign collectionVariant = empty %}
+          {% if section.settings.collection.metafields.global.variant_title_contains %}
+            {% assign needle = section.settings.collection.metafields.global.variant_title_contains %}
+            {% for variant in product.variants %}
+              {% if variant.title contains needle %}
+                {% assign isMatch = true %}
+                {% if needle == '30ml' or needle == '10ml' or needle == 'Roll-on' %}
+                  {% if variant.title contains 'Spray' or variant.title contains 'Pack' or variant.title contains 'pack' or variant.title contains 'pk' or variant.title contains 'Bundle' or variant.title contains 'bundle' %}
+                    {% assign isMatch = false %}
+                  {% endif %}
+                {% endif %}
+                {% if needle == '10ml' %}
+                  {% if variant.title contains 'Roll-On' or variant.title contains 'roll-on' or variant.title contains 'Roll-on' or variant.title contains 'roll-On' %}
+                    {% assign isMatch = false %}
+                  {% endif %}
+                {% endif %}
+                {% if isMatch %}
+                  {% assign collectionVariant = product.variants[forloop.index0] %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
           <li id="Slide-{{ section.id }}-{{ forloop.index }}" class="grid__item{% if section.settings.collection.all_products_count > 2 and section.settings.swipe_on_mobile and section.settings.products_to_show > 2 %} slider__slide{% endif %}">
             {% render 'card-product',
               card_product: product,
+              card_variant: collectionVariant,
               media_aspect_ratio: section.settings.image_ratio,
               show_secondary_image: section.settings.show_secondary_image,
               show_vendor: section.settings.show_vendor,
@@ -75,7 +98,7 @@
         </div>
       {%- endif -%}
     </slider-component>
-  
+
     {%- if section.settings.show_view_all and more_in_collection -%}
       <div class="center collection__view-all{% if section.settings.swipe_on_mobile %} small-hide medium-hide{% endif %}">
         <a href="{{ section.settings.collection.url }}"

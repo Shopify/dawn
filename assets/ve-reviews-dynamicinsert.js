@@ -304,7 +304,7 @@ function dynamicinsert_initWriteReview() {
     document.querySelectorAll('.ve-review-post-btn>img')[0].style.display = 'block';
 
     var dataJson = {
-      'appkey': '2vqKzRkii9WWAT4aPAE0cg69tC8Yr9ilcB4NMPPN',
+      'appkey': window.brandVariables.keys.yotpo_app_key,
       'domain': 'http://www.vitalityextracts.com',
       'sku': productSku,
       'productTitle': productTitle,
@@ -320,8 +320,7 @@ function dynamicinsert_initWriteReview() {
       'review_score': scoreInt,
     };
 
-    var url = 'https://api.yotpo.com/v1/widget/reviews';
-    return fetch(url, {
+    return fetch(window.brandVariables.urls.yotpo_restapi_baseurl + 'reviews', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -447,7 +446,7 @@ function dynamicinsert_initWriteReview() {
 }
 
 function dynamicinsert_getReviews(productId, sortOrder, sortDirection, minStars, page) {
-  return fetch(APISERVER_RESTAPI_BASEURL + 'products/reviews/' + productId + '/' + sortOrder + '/' + sortDirection + '/' + minStars + '/' + page)
+  return fetch(window.brandVariables.urls.apiserver_restapi_baseurl + 'products/reviews/' + productId + '/' + sortOrder + '/' + sortDirection + '/' + minStars + '/' + page)
     .then(data => data.json());
 }
 

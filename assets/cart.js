@@ -24,6 +24,8 @@ class CartItems extends HTMLElement {
     }, 300);
 
     this.addEventListener('change', this.debouncedOnChange.bind(this));
+
+    ve_refreshProgressBar();
   }
 
   onChange(event) {
@@ -88,6 +90,8 @@ class CartItems extends HTMLElement {
         const lineItem =  document.getElementById(`CartItem-${line}`);
         if (lineItem && lineItem.querySelector(`[name="${name}"]`)) lineItem.querySelector(`[name="${name}"]`).focus();
         this.disableLoading();
+
+        ve_refreshProgressBar();
       }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         document.getElementById('cart-errors').textContent = window.cartStrings.error;
@@ -135,3 +139,33 @@ class CartItems extends HTMLElement {
 }
 
 customElements.define('cart-items', CartItems);
+
+function ve_refreshProgressBar() {
+  var els = document.querySelectorAll('.cart__progress');
+  var subtotal = document.querySelector('.totals__subtotal-value span.money').innerHTML.replace(/[^0-9.]/g, '') * 1.00;
+  var qualifyTotal = window.brandVariables.settings.min_price_free_shipping;
+  if (subtotal === 0) {
+    for(var i=0; i<els.length; i++) {
+      var el = els[i];
+    }
+    el.style.display = 'none';
+    return;
+  }
+
+  var percentage = subtotal / qualifyTotal;
+  var moneyToQualify = qualifyTotal - subtotal;
+
+  for(var i=0; i<els.length; i++) {
+    var el = els[i];
+    el.querySelector('.cart-progress-freeshipping .cart-progress-label').innerHTML = (
+      moneyToQualify > 0
+        ? window.brandVariables.strings.free_shipping_header_notqualified.replace('|money_to_qualify|', moneyToQualify.toFixed(2))
+        : window.brandVariables.strings.free_shipping_header_qualified
+      ) + ' ' + window.brandVariables.strings.free_shipping_subheader;
+    el.querySelector('.cart-progress-bar .low-num').innerHTML = '$' + (moneyToQualify > 0 ? Math.round(subtotal) : qualifyTotal);
+    el.querySelector('.cart-progress-bar .high-num').innerHTML = '$' + qualifyTotal;
+    el.querySelector('.cart-progress-bar .progress-bar-wrapper').style.backgroundSize = (percentage * 100) + '% 100%';
+
+    el.style.display = 'block';
+  }
+}
