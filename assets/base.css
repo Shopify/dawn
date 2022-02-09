@@ -777,30 +777,65 @@ summary::-webkit-details-marker {
   Focus ring - default (with offset)
 */
 
+:root {
+  --focus-box-shadow: 0 0 0 0.3rem rgb(var(--color-background)),
+    0 0 0 0.5rem rgba(var(--color-foreground), 0.5),
+    0 0 0.5rem 0.4rem rgba(var(--color-foreground), 0.3);
+}
+
 *:focus {
   outline: 0;
   box-shadow: none;
 }
 
 *:focus-visible {
-  outline: 0.2rem solid rgba(var(--color-foreground), 0.5);
-  outline-offset: 0.3rem;
-  box-shadow: 0 0 0 0.3rem rgb(var(--color-background)),
-    0 0 0.5rem 0.4rem rgba(var(--color-foreground), 0.3);
+  outline: 0;
+  box-shadow: var(--focus-box-shadow);
 }
 
 /* Fallback - for browsers that don't support :focus-visible, a fallback is set for :focus */
 .focused,
 .no-js *:focus {
-  outline: 0.2rem solid rgba(var(--color-foreground), 0.5);
-  outline-offset: 0.3rem;
-  box-shadow: 0 0 0 0.3rem rgb(var(--color-background)),
-    0 0 0.5rem 0.4rem rgba(var(--color-foreground), 0.3);
+  box-shadow: var(--focus-box-shadow);
 }
 
 /* Negate the fallback side-effect for browsers that support :focus-visible */
 .no-js *:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+
+/*
+  Focus ring - on pseudo element
+*/
+
+.focus-pseudo::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+}
+
+.focus-pseudo:focus {
+  box-shadow: none;
   outline: 0;
+}
+
+.focus-pseudo:after {
+  border-radius: var(--border-radius);
+}
+
+.focus-pseudo:focus:after {
+  box-shadow: var(--focus-box-shadow);
+}
+
+.focus-pseudo:focus-visible:after {
+  box-shadow: var(--focus-box-shadow);
+}
+
+.focus-pseudo:focus:not(:focus-visible):after {
   box-shadow: none;
 }
 
@@ -1271,7 +1306,6 @@ button.shopify-payment-button__button--unbranded {
   font-size: 1.5rem;
   text-decoration: none;
   color: rgb(var(--color-button-text));
-  transition: box-shadow var(--duration-short) ease;
   -webkit-appearance: none;
   appearance: none;
   background-color: rgba(var(--color-button), var(--alpha-button-background));
@@ -1316,25 +1350,6 @@ button.shopify-payment-button__button--unbranded {
 
 .button--secondary:after {
   --border-opacity: var(--buttons-border-opacity);
-}
-
-.button:focus-visible,
-.button:focus,
-.button.focused,
-.shopify-payment-button__button--unbranded:focus-visible,
-.shopify-payment-button [role="button"]:focus-visible,
-.shopify-payment-button__button--unbranded:focus,
-.shopify-payment-button [role="button"]:focus {
-  outline: 0;
-  box-shadow: 0 0 0 0.3rem rgb(var(--color-background)),
-    0 0 0 0.5rem rgba(var(--color-foreground), 0.5),
-    0 0 0.5rem 0.4rem rgba(var(--color-foreground), 0.3);
-}
-
-.button:focus:not(:focus-visible):not(.focused),
-.shopify-payment-button__button--unbranded:focus:not(:focus-visible):not(.focused),
-.shopify-payment-button [role="button"]:focus:not(:focus-visible):not(.focused) {
-  box-shadow: inherit;
 }
 
 .button::selection,
@@ -1780,14 +1795,19 @@ details[open] > .share-button__fallback {
   color: currentColor;
   cursor: pointer;
   display: flex;
-  height: 4.4rem;
+  min-height: 4.4rem;
   justify-content: center;
-  overflow: hidden;
   padding: 0;
   position: absolute;
   right: 0;
   top: 0;
+  bottom: 0;
   width: 4.4rem;
+}
+
+.field__input ~ .field__button:after {
+  border-top-right-radius: var(--inputs-radius-outset);
+  border-bottom-right-radius: var(--inputs-radius-outset);
 }
 
 .field__button > svg {
@@ -1878,6 +1898,21 @@ input[type='checkbox'] {
   text-transform: capitalize;
 }
 
+/* Search input */
+.search__input.field__input {
+  padding-right: 5rem;
+}
+
+.search__button .icon {
+  height: 1.8rem;
+  width: 1.8rem;
+}
+
+/* Remove extra spacing for search inputs in Safari */
+input::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
 /* component-quantity */
 .quantity {
   color: rgba(var(--color-foreground));
@@ -1937,14 +1972,25 @@ input[type='checkbox'] {
   justify-content: center;
   color: rgb(var(--color-foreground));
   padding: 0;
+  position: relative;
 }
 
 .quantity__button:first-child {
-  margin-left: calc(var(--inputs-border-width));
+  padding-left: calc(var(--inputs-border-width));
 }
 
 .quantity__button:last-child {
-  margin-right: calc(var(--inputs-border-width));
+  padding-right: calc(var(--inputs-border-width));
+}
+
+.quantity__button:first-child:after {
+  border-top-left-radius: var(--inputs-radius-outset);
+  border-bottom-left-radius: var(--inputs-radius-outset);
+}
+
+.quantity__button:last-child:after {
+  border-top-right-radius: var(--inputs-radius-outset);
+  border-bottom-right-radius: var(--inputs-radius-outset);
 }
 
 .quantity__button svg {
@@ -1952,19 +1998,14 @@ input[type='checkbox'] {
   pointer-events: none;
 }
 
-.quantity__button:focus-visible,
 .quantity__input:focus-visible {
-  background-color: rgb(var(--color-background));
   z-index: 2;
 }
 
-.quantity__button:focus,
 .quantity__input:focus {
-  background-color: rgb(var(--color-background));
   z-index: 2;
 }
 
-.quantity__button:not(:focus-visible):not(.focused),
 .quantity__input:not(:focus-visible):not(.focused) {
   box-shadow: inherit;
   background-color: inherit;
