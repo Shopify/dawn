@@ -466,6 +466,7 @@ class ModalDialog extends HTMLElement {
 
   hide() {
     document.body.classList.remove('overflow-hidden');
+    document.body.dispatchEvent(new CustomEvent('modalClosed'));
     this.removeAttribute('open');
     removeTrapFocus(this.openedBy);
     window.pauseAllMedia();

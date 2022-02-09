@@ -6,6 +6,7 @@ if (!customElements.get('quickbuy-modal')) {
 
     hide() {
       super.hide();
+      this.modalContent.innerHTML = '';
     }
 
     show(opener) {
@@ -14,13 +15,13 @@ if (!customElements.get('quickbuy-modal')) {
     }
 
     loadProductPage() {
-      const info = this.querySelector('[id^="QuickBuyInfo-"]');
+      this.modalContent = this.querySelector('[id^="QuickBuyInfo-"]');
       fetch(this.openedBy.getAttribute('data-product-url'))
         .then((response) => response.text())
         .then((responseText) => {
           const responseHTML = new DOMParser().parseFromString(responseText, 'text/html');
           const productInfo = responseHTML.querySelector('section[id$="__main"]');
-          info.innerHTML = productInfo.innerHTML;
+          this.modalContent.innerHTML = productInfo.innerHTML;
         });
 
     }

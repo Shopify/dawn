@@ -38,7 +38,13 @@ if (!customElements.get('product-form')) {
             return;
           }
 
-          this.cartNotification.renderContents(response);
+          if (!document.body.classList.contains('overflow-hidden')) {
+            this.cartNotification.renderContents(response);
+          } else {
+            document.body.addEventListener('modalClosed', () => {
+              setTimeout(() => { this.cartNotification.renderContents(response) });
+            }, { once: true });
+          }
         })
         .catch((e) => {
           console.error(e);
@@ -46,8 +52,27 @@ if (!customElements.get('product-form')) {
         .finally(() => {
           submitButton.classList.remove('loading');
           submitButton.removeAttribute('aria-disabled');
+          this.displaySuccessMessage(submitButton);
           this.querySelector('.loading-overlay__spinner').classList.add('hidden');
         });
+    }
+
+    displaySuccessMessage(submitButton) {
+      submitButton.classList.remove('button--secondary');
+      submitButton.classList.add('button--primary');
+          
+      const originalMessage = submitButton.querySelector('span');
+      originalMessage.classList.add('hidden');
+
+      const addedToCart = submitButton.querySelector('.added-to-cart');
+      addedToCart.classList.remove('hidden');
+
+      setTimeout(() => {
+        originalMessage.classList.remove('hidden');
+        addedToCart.classList.add('hidden');
+        submitButton.classList.remove('button--primary');
+        submitButton.classList.add('button--secondary');
+      }, 3500);
     }
 
     handleErrorMessage(errorMessage = false) {
