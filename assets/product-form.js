@@ -12,7 +12,7 @@ if (!customElements.get('product-form')) {
     onSubmitHandler(evt) {
       evt.preventDefault();
       const submitButton = this.querySelector('[type="submit"]');
-      if (submitButton.classList.contains('loading')) return;
+      if (submitButton.classList.contains('loading') || submitButton.classList.contains('success-message') || submitButton.getAttribute('aria-disabled') === 'true') return;
 
       this.handleErrorMessage();
       this.cartNotification.setActiveElement(document.activeElement);
@@ -35,8 +35,14 @@ if (!customElements.get('product-form')) {
         .then((response) => {
           if (response.status) {
             this.handleErrorMessage(response.description);
+            submitButton.setAttribute('aria-disabled', true);
+            submitButton.querySelector('span').textContent = window.variantStrings.soldOut;
+            this.error = true;
             return;
           }
+
+          this.error = false;
+          this.displaySuccessMessage(submitButton);
 
           if (!document.body.classList.contains('overflow-hidden')) {
             this.cartNotification.renderContents(response);
@@ -51,15 +57,15 @@ if (!customElements.get('product-form')) {
         })
         .finally(() => {
           submitButton.classList.remove('loading');
-          submitButton.removeAttribute('aria-disabled');
-          this.displaySuccessMessage(submitButton);
+          if (!this.error) submitButton.removeAttribute('aria-disabled');
           this.querySelector('.loading-overlay__spinner').classList.add('hidden');
         });
     }
 
     displaySuccessMessage(submitButton) {
-      submitButton.classList.remove('button--secondary');
-      submitButton.classList.add('button--primary');
+      submitButton.classList.toggle('button--secondary');
+      submitButton.classList.toggle('button--primary');
+      submitButton.classList.add('success-message');
           
       const originalMessage = submitButton.querySelector('span');
       originalMessage.classList.add('hidden');
@@ -70,9 +76,10 @@ if (!customElements.get('product-form')) {
       setTimeout(() => {
         originalMessage.classList.remove('hidden');
         addedToCart.classList.add('hidden');
-        submitButton.classList.remove('button--primary');
-        submitButton.classList.add('button--secondary');
-      }, 3500);
+        submitButton.classList.toggle('button--primary');
+        submitButton.classList.toggle('button--secondary');
+        submitButton.classList.remove('success-message');
+      }, 3000);
     }
 
     handleErrorMessage(errorMessage = false) {
@@ -84,7 +91,7 @@ if (!customElements.get('product-form')) {
 
       if (errorMessage) {
         this.errorMessage.textContent = errorMessage;
-      }
+      }      
     }
   });
 }

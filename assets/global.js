@@ -857,6 +857,7 @@ class VariantSelects extends HTMLElement {
       if (text) addButtonText.textContent = text;
     } else {
       addButton.removeAttribute('disabled');
+      addButton.removeAttribute('aria-disabled');
       addButtonText.textContent = window.variantStrings.addToCart;
     }
 
