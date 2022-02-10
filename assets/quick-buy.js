@@ -2,6 +2,7 @@ if (!customElements.get('quickbuy-modal')) {
   customElements.define('quickbuy-modal', class QuickBuyModal extends ModalDialog {
     constructor() {
       super();
+      this.modalContent = this.querySelector('[id^="QuickBuyInfo-"]');
     }
 
     hide() {
@@ -10,20 +11,23 @@ if (!customElements.get('quickbuy-modal')) {
     }
 
     show(opener) {
-      super.show(opener);
-      this.loadProductPage();
-    }
+      opener.setAttribute('aria-disabled', true);
+      opener.classList.add('loading');
+      opener.querySelector('.loading-overlay__spinner').classList.remove('hidden');
 
-    loadProductPage() {
-      this.modalContent = this.querySelector('[id^="QuickBuyInfo-"]');
-      fetch(this.openedBy.getAttribute('data-product-url'))
+      fetch(opener.getAttribute('data-product-url'))
         .then((response) => response.text())
         .then((responseText) => {
           const responseHTML = new DOMParser().parseFromString(responseText, 'text/html');
           const productInfo = responseHTML.querySelector('section[id$="__main"]');
           this.modalContent.innerHTML = productInfo.innerHTML;
+          super.show(opener);
+        })
+        .finally(() => {
+          opener.removeAttribute('aria-disabled');
+          opener.classList.remove('loading');
+          opener.querySelector('.loading-overlay__spinner').classList.add('hidden');
         });
-
     }
   });
 }
