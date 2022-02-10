@@ -21,6 +21,7 @@ if (!customElements.get('quickbuy-modal')) {
           const responseHTML = new DOMParser().parseFromString(responseText, 'text/html');
           const productInfo = responseHTML.querySelector('section[id$="__main"]');
           this.modalContent.innerHTML = productInfo.innerHTML;
+          this.preventVariantSwitching();
           super.show(opener);
         })
         .finally(() => {
@@ -28,6 +29,10 @@ if (!customElements.get('quickbuy-modal')) {
           opener.classList.remove('loading');
           opener.querySelector('.loading-overlay__spinner').classList.add('hidden');
         });
+    }
+
+    preventVariantSwitching() {
+      this.modalContent.querySelector('variant-radios,variant-selects').setAttribute('data-update-url', 'false');
     }
   });
 }
