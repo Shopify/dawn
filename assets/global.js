@@ -563,7 +563,7 @@ class SliderComponent extends HTMLElement {
 
     if (this.enableSliderLooping) return;
 
-    if (this.isSlideVisible(this.sliderItemsToShow[0])) {
+    if (this.isSlideVisible(this.sliderItemsToShow[0]) && this.slider.scrollLeft === 0) {
       this.prevButton.setAttribute('disabled', 'disabled');
     } else {
       this.prevButton.removeAttribute('disabled');
