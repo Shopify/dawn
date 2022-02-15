@@ -11,7 +11,11 @@ if (!customElements.get('pickup-availability')) {
     }
 
     fetchAvailability(variantId) {
-      const variantSectionUrl = `${this.dataset.baseUrl}variants/${variantId}/?section_id=pickup-availability`;
+      let rootUrl = this.dataset.rootUrl;
+      if (!rootUrl.endsWith("/")) {
+        rootUrl = rootUrl + "/";
+      }
+      const variantSectionUrl = `${rootUrl}variants/${variantId}/?section_id=pickup-availability`;
 
       fetch(variantSectionUrl)
         .then(response => response.text())
@@ -53,7 +57,8 @@ if (!customElements.get('pickup-availability')) {
 
       document.body.appendChild(sectionInnerHTML.querySelector('pickup-availability-drawer'));
 
-      this.querySelector('button').addEventListener('click', (evt) => {
+      const button = this.querySelector('button');
+      if (button) button.addEventListener('click', (evt) => {
         document.querySelector('pickup-availability-drawer').show(evt.target);
       });
     }
