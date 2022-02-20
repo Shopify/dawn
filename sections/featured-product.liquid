@@ -42,7 +42,7 @@
             {%- if product.selected_or_first_available_variant.featured_media != null -%}
               {%- assign media = product.selected_or_first_available_variant.featured_media -%}
               <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                {% render 'product-thumbnail', media: media, position: 'featured', loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: 0.5 %}
+                {% render 'product-thumbnail', media: media, position: 'featured', loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: 0.5, media_zoom: section.settings.media_zoom %}
               </div>
             {%- endif -%}
             {%- liquid
@@ -54,7 +54,7 @@
             {%- for media in product.media -%}
               {%- if media_to_render contains media.id and media.id != product.selected_or_first_available_variant.featured_media.id -%}
                 <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                  {% render 'product-thumbnail', media: media, position: forloop.index, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: 0.5 %}
+                  {% render 'product-thumbnail', media: media, position: forloop.index, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: 0.5, media_zoom: section.settings.media_zoom %}
                 </div>
               {%- endif -%}
             {%- endfor -%}
@@ -344,34 +344,36 @@
         </div>
       </div>
     </div>
-    <product-modal id="ProductModal-{{ section.id }}" class="product-media-modal media-modal">
-      <div class="product-media-modal__dialog" role="dialog" aria-label="{{ 'products.modal.label' | t }}" aria-modal="true" tabindex="-1">
-        <button id="ModalClose-{{ section.id }}" type="button" class="product-media-modal__toggle" aria-label="{{ 'accessibility.close' | t }}">{% render 'icon-close' %}</button>
+    {%- if section.settings.media_zoom -%}
+      <product-modal id="ProductModal-{{ section.id }}" class="product-media-modal media-modal">
+        <div class="product-media-modal__dialog" role="dialog" aria-label="{{ 'products.modal.label' | t }}" aria-modal="true" tabindex="-1">
+          <button id="ModalClose-{{ section.id }}" type="button" class="product-media-modal__toggle" aria-label="{{ 'accessibility.close' | t }}">{% render 'icon-close' %}</button>
 
-        <div class="product-media-modal__content" role="document" aria-label="{{ 'products.modal.label' | t }}" tabindex="0">
-          {%- liquid
-            if product.selected_or_first_available_variant.featured_media != null
-              assign media = product.selected_or_first_available_variant.featured_media
-              render 'product-media', media: media, loop: section.settings.enable_video_looping, variant_image: section.settings.hide_variants
-            endif
-          -%}
-
-          {%- for media in product.media -%}
+          <div class="product-media-modal__content" role="document" aria-label="{{ 'products.modal.label' | t }}" tabindex="0">
             {%- liquid
-              if section.settings.hide_variants and media_to_render contains media.id
-                assign variant_image = true
-              else
-                assign variant_image = false
+              if product.selected_or_first_available_variant.featured_media != null
+                assign media = product.selected_or_first_available_variant.featured_media
+                render 'product-media', media: media, loop: section.settings.enable_video_looping, variant_image: section.settings.hide_variants
               endif
-
-              unless media.id == product.selected_or_first_available_variant.featured_media.id
-                render 'product-media', media: media, loop: section.settings.enable_video_looping, variant_image: variant_image
-              endunless
             -%}
-          {%- endfor -%}
+
+            {%- for media in product.media -%}
+              {%- liquid
+                if section.settings.hide_variants and media_to_render contains media.id
+                  assign variant_image = true
+                else
+                  assign variant_image = false
+                endif
+
+                unless media.id == product.selected_or_first_available_variant.featured_media.id
+                  render 'product-media', media: media, loop: section.settings.enable_video_looping, variant_image: variant_image
+                endunless
+              -%}
+            {%- endfor -%}
+          </div>
         </div>
-      </div>
-    </product-modal>
+      </product-modal>
+    {%- endif -%}
   </div>
 </section>
 
@@ -678,6 +680,22 @@
       "id": "hide_variants",
       "default": false,
       "label": "t:sections.main-product.settings.hide_variants.label"
+    },
+    {
+      "type": "select",
+      "id": "media_zoom",
+      "options": [
+        {
+          "value": "enable",
+          "label": "t:sections.main-product.settings.media_zoom.options__1.label"
+        },
+        {
+          "value": "disable",
+          "label": "t:sections.main-product.settings.media_zoom.options__2.label"
+        }
+      ],
+      "default": "enable",
+      "label": "t:sections.main-product.settings.media_zoom.label"
     },
     {
       "type": "checkbox",
