@@ -20,7 +20,13 @@ if (!customElements.get('quickbuy-modal')) {
         .then((responseText) => {
           const responseHTML = new DOMParser().parseFromString(responseText, 'text/html');
           const productInfo = responseHTML.querySelector('section[id$="__main"]');
-          this.modalContent.innerHTML = productInfo.innerHTML;
+
+          this.setInnerHTML(this.modalContent, productInfo.innerHTML);
+          
+          if (window.Shopify && Shopify.PaymentButton) {
+            Shopify.PaymentButton.init();
+          }
+          
           this.preventVariantSwitching();
           super.show(opener);
         })
@@ -29,6 +35,16 @@ if (!customElements.get('quickbuy-modal')) {
           opener.classList.remove('loading');
           opener.querySelector('.loading-overlay__spinner').classList.add('hidden');
         });
+    }
+
+    setInnerHTML(element, html) {
+      element.innerHTML = html;
+      element.querySelectorAll("script").forEach( oldScript => {
+        const newScript = document.createElement("script");
+        Array.from(oldScript.attributes).forEach(attribute => newScript.setAttribute(attribute.name, attribute.value));
+        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+        oldScript.parentNode.replaceChild(newScript, oldScript);
+      });
     }
 
     preventVariantSwitching() {

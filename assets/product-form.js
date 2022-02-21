@@ -35,8 +35,13 @@ if (!customElements.get('product-form')) {
         .then((response) => {
           if (response.status) {
             this.handleErrorMessage(response.description);
+
+            const soldOutMessage = submitButton.querySelector('.sold-out-message');
+            console.log(soldOutMessage);
+            if (!soldOutMessage) return;
             submitButton.setAttribute('aria-disabled', true);
-            submitButton.querySelector('span').textContent = window.variantStrings.soldOut;
+            submitButton.querySelector('span').classList.add('hidden');
+            soldOutMessage.classList.remove('hidden');
             this.error = true;
             return;
           }
