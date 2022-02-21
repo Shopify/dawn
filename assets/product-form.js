@@ -37,7 +37,6 @@ if (!customElements.get('product-form')) {
             this.handleErrorMessage(response.description);
 
             const soldOutMessage = submitButton.querySelector('.sold-out-message');
-            console.log(soldOutMessage);
             if (!soldOutMessage) return;
             submitButton.setAttribute('aria-disabled', true);
             submitButton.querySelector('span').classList.add('hidden');
@@ -80,9 +79,11 @@ if (!customElements.get('product-form')) {
 
       setTimeout(() => {
         originalMessage.classList.remove('hidden');
-        addedToCart.classList.add('hidden');
-        submitButton.classList.toggle('button--primary');
-        submitButton.classList.toggle('button--secondary');
+        if (!addedToCart.classList.contains('hidden')) {
+          addedToCart.classList.add('hidden');
+          submitButton.classList.toggle('button--primary');
+          submitButton.classList.toggle('button--secondary');
+        }
         submitButton.classList.remove('success-message');
       }, 3000);
     }

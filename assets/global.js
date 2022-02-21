@@ -847,10 +847,20 @@ class VariantSelects extends HTMLElement {
   toggleAddButton(disable = true, text, modifyClass = true) {
     const productForm = document.getElementById(`product-form-${this.dataset.section}`);
     if (!productForm) return;
+    
     const addButton = productForm.querySelector('[name="add"]');
     const addButtonText = productForm.querySelector('[name="add"] > span');
 
     if (!addButton) return;
+
+    addButtonText.classList.remove('hidden');
+    const addedMessage = addButton.querySelector('.added-to-cart');
+    if (!addedMessage.classList.contains('hidden')) {
+      addedMessage.classList.add('hidden');
+      addButton.classList.toggle('button--primary');
+      addButton.classList.toggle('button--secondary');
+    }
+    addButton.classList.remove('success-message');
 
     if (disable) {
       addButton.setAttribute('disabled', 'disabled');
