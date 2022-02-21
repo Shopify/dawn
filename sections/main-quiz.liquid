@@ -1,0 +1,102 @@
+<link rel="stylesheet" href="{{ 'section-main-page.css' | asset_url }}" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="{{ 'component-rte.css' | asset_url }}" media="print" onload="this.media='all'">
+<script src="https://unpkg.com/vue@3"></script>
+{{ 'quiz-questions.js' | asset_url |striptags }}
+<noscript>{{ 'section-main-page.css' | asset_url | stylesheet_tag }}</noscript>
+<noscript>{{ 'component-rte.css' | asset_url | stylesheet_tag }}</noscript>
+
+<div class="page-width page-width--narrow">
+  <section id="quiz" class="hero is-warning is-fullheight">
+    <!--container-->
+    <div class="container">
+
+      <!--columns-->
+      <div class="grid-item item1">
+        <transition enter-active-class="animated jackInTheBox" leave-active-class="animated zoomOut" mode="out-in">
+          <div>
+            <!--qusetionContainer-->
+            <div class="questionContainer" v-bind:key="questionIndex">
+
+              <!-- questionTitle -->
+              <div class="titleContainer">
+                <h2 class="title is-5">${  questionIndex+1 }. ${ quiz.questions[questionIndex].question.heading }</h2>
+              </div>
+
+              <!-- quizOptions -->
+              <div class="optionContainer">
+                <div class="option" v-for="(response, index) in quiz.questions[questionIndex].question.items" @click="selectOption(quiz.questions[questionIndex]._id, response.value)" :class="{ 'is-selected': userResponses[questionIndex] == index}" :key="index">
+                  ${ response.text }
+                </div>
+              </div>
+
+
+
+            </div>
+            <!--/questionContainer-->
+
+            <!--quizCompletedResult-->
+            <div v-if="questionIndex >= quiz.questions.length && quizStarted" v-bind:key="questionIndex" class="quizCompleted has-text-centered">
+
+              <!-- quizCompletedIcon: Achievement Icon -->
+              <span class="icon is-large has-text-success">
+                <i class="fa fa-check-circle-o fa-3x"></i>
+              </span>
+
+              <!--resultTitleBlock-->
+              <h2 class="title">
+                You did an amazing job!
+              </h2>
+              <p class="subtitle">
+                Total score: ${  score() } / ${  quiz.questions.length }
+              </p>
+              <!--/resultTitleBlock-->
+
+            </div>
+            <!--/quizCompetedResult-->
+          </div>
+
+        </transition>
+      </div>
+      <div class="grid-item item2">
+        <h1>SIDEBAR</h1>
+        <!--quizFooter: navigation and progress-->
+        <div class="questionFooter">
+
+          <!--pagination-->
+          <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+
+            <!-- prevButton -->
+            <a class="pagination-previous button is-info is-rounded is-outlined" v-on:click="prev();" :disabled="questionIndex < 1">
+              Previous Question
+            </a>
+
+            <!-- prevButton -->
+            <a class="pagination-next button is-info is-rounded" v-on:click="next();" :disabled="questionIndex>=quiz.questions.length">
+              ${ (userResponses[questionIndex]==null)?'Skip':'Next' } Question
+            </a>
+
+          </nav>
+          <!--/pagination-->
+
+          <!--progress-->
+          <div class="progressContainer">
+            <progress class="progress is-success is-small" :value="(questionIndex/quiz.questions.length)*100" max="100">${(questionIndex/quiz.questions.length)*100}%</progress>
+          </div>
+          <!--/progress-->
+
+        </div>
+        <!--/quizFooter--></div>
+      <!--/columns-->
+
+    </div>
+    <!--/container-->
+  </section>
+</div>
+
+{%  schema %}
+{
+  "name": "t:sections.main-page.name",
+  "tag": "section",
+  "class": "spaced-section"
+}
+{% endschema %}
