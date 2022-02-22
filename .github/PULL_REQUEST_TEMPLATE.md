@@ -1,3 +1,5 @@
+**TLDR;** Please include a short description (1-2 sentences) about the changes you are introducing. This content will be used in our release notes for Dawn on [themes.shopify.com](https://themes.shopify.com/themes/dawn/styles/default#ReleaseNotes).
+
 **Why are these changes introduced?**
 
 Fixes #0.
