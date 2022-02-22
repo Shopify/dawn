@@ -23,3 +23,4 @@ _Please include a link to a demo store that includes preconfigured sections and 
 - [ ] Tested on [mobile](https://shopify.dev/themes/store/requirements#mobile-browser-requirements)
 - [ ] Tested on [multiple browsers](https://shopify.dev/themes/store/requirements#desktop-browser-requirements)
 - [ ] Tested for [accessibility](https://shopify.dev/themes/best-practices/accessibility)
+- [ ] Add a short PR description at the top of your PR for the [release notes](https://themes.shopify.com/themes/dawn/styles/default#ReleaseNotes)
