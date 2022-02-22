@@ -19,7 +19,7 @@ if (!customElements.get('quickbuy-modal')) {
         .then((response) => response.text())
         .then((responseText) => {
           const responseHTML = new DOMParser().parseFromString(responseText, 'text/html');
-          const productInfo = responseHTML.querySelector('section[id$="__main"]');
+          const productInfo = responseHTML.querySelector('section[id^="MainProduct-"]');
 
           this.setInnerHTML(this.modalContent, productInfo.innerHTML);
           
