@@ -1,33 +1,74 @@
 <link rel="stylesheet" href="{{ 'section-main-page.css' | asset_url }}" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="{{ 'component-rte.css' | asset_url }}" media="print" onload="this.media='all'">
-<script src="https://unpkg.com/vue@3"></script>
-{{ 'quiz-questions.js' | asset_url |striptags }}
+<link rel="stylesheet" href="{{ 'quiz.css' | asset_url }}" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" media="print" onload="this.media='all'">
+<script src="https://unpkg.com/vue@3.2.31/dist/vue.global.js"></script>
+<script src="https://unpkg.com/vue-router@4"></script>
+
+<noscript>{{ 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css' | stylesheet_tag }}</noscript>
 <noscript>{{ 'section-main-page.css' | asset_url | stylesheet_tag }}</noscript>
 <noscript>{{ 'component-rte.css' | asset_url | stylesheet_tag }}</noscript>
+<noscript>{{ 'quiz.css' | asset_url | stylesheet_tag }}</noscript>
 
-<div class="page-width page-width--narrow">
-  <section id="quiz" class="hero is-warning is-fullheight">
+<div class="">
+  <div id="quiz" class="hero is-warning is-fullheight">
     <!--container-->
-    <div class="container">
+    <div class="quiz-grid container">
 
       <!--columns-->
-      <div class="grid-item item1">
-        <transition enter-active-class="animated jackInTheBox" leave-active-class="animated zoomOut" mode="out-in">
+      <div class="quiz-question-container">
           <div>
             <!--qusetionContainer-->
+
             <div class="questionContainer" v-bind:key="questionIndex">
+              <Transition
+                name="custom-classes"
+                enter-active-class="animate__animated animate__tada"
+                leave-active-class="animate__animated animate__bounceOutRight"
+              >
+                <div v-bind:key="quiz.questions[questionIndex].question.name">
+                  <!-- questionTitle -->
+                  <div class="titleContainer">
+                    <h2 class="">${ quiz.questions[questionIndex].question.heading }</h2>
+                  </div>
+                  <!-- quizOptions -->
+                  <div class="optionContainer">
+                    <template v-for="(response, index) in quiz.questions[questionIndex].question.items">
+                      <template v-if="quiz.questions[questionIndex].question.type === 'SelectMultiple'">
+                        <div class="option">
+                            <input type="checkbox" :id="index" name="check" :value="response.text" />
+                            <label :for="index" @click="selectOption(quiz.questions[questionIndex]._id, response.value)">
+                              <span><!-- This span is needed to create the "checkbox" element --></span>${response.text}
+                            </label>
+                        </div>
+                      </template>
+                      <template v-if="quiz.questions[questionIndex].question.type === 'SelectOne'">
+                        <div class="option">
+                          <input type="radio" :id="index" name="check" :value="response.text" />
+                          <label :for="index" @click="selectOption(quiz.questions[questionIndex]._id, response.value)">
+                            <span><!-- This span is needed to create the "checkbox" element --></span>${response.text}
+                          </label>
+                        </div>
+                      </template>
+                    </template>
+                    <template v-if="quiz.questions[questionIndex].question.type === 'TextAutocomplete' || quiz.questions[questionIndex].question.type === 'Text'">
+                      <div class="option">
+                        <input class="field__input" autocomplete="name" type="text" id="ContactForm-name" name="contact[Name]" value="" placeholder="">
+                        <button class="pagination-next button" v-on:click="next();" :disabled="questionIndex>=quiz.questions.length">
+                          Next
+                        </button>
+                      </div>
 
-              <!-- questionTitle -->
-              <div class="titleContainer">
-                <h2 class="title is-5">${  questionIndex+1 }. ${ quiz.questions[questionIndex].question.heading }</h2>
-              </div>
-
-              <!-- quizOptions -->
-              <div class="optionContainer">
-                <div class="option" v-for="(response, index) in quiz.questions[questionIndex].question.items" @click="selectOption(quiz.questions[questionIndex]._id, response.value)" :class="{ 'is-selected': userResponses[questionIndex] == index}" :key="index">
-                  ${ response.text }
+                    </template>
+                  </div>
+                  <!-- continueButton -->
+                  <template v-if="showContinue">
+                    <button class="pagination-next button" v-on:click="next();" :disabled="questionIndex>=quiz.questions.length">
+                      Next
+                    </button>
+                  </template>
                 </div>
-              </div>
+              </Transition>
 
 
 
@@ -54,10 +95,8 @@
             </div>
             <!--/quizCompetedResult-->
           </div>
-
-        </transition>
       </div>
-      <div class="grid-item item2">
+      <div class="sidebar">
         <h1>SIDEBAR</h1>
         <!--quizFooter: navigation and progress-->
         <div class="questionFooter">
@@ -70,10 +109,6 @@
               Previous Question
             </a>
 
-            <!-- prevButton -->
-            <a class="pagination-next button is-info is-rounded" v-on:click="next();" :disabled="questionIndex>=quiz.questions.length">
-              ${ (userResponses[questionIndex]==null)?'Skip':'Next' } Question
-            </a>
 
           </nav>
           <!--/pagination-->
@@ -90,9 +125,9 @@
 
     </div>
     <!--/container-->
-  </section>
+  </div>
 </div>
-
+<script src="{{ 'quiz-questions.js' | asset_url |striptags }}"></script>
 {%  schema %}
 {
   "name": "t:sections.main-page.name",

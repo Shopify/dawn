@@ -1634,12 +1634,20 @@ let userResponseSkelaton = {}
 questionnaire.questions.forEach(function(item) {
     userResponseSkelaton[item._id] = null
 });
-// let userResponseSkelaton = Array(questionnaire.questions.length).fill(null);
-Vue.createApp({
-    delimiters: ['${', '}']
+const routes = [
+
+]
+const router = VueRouter.createRouter({
+    mode:'history',
+    // 4. Provide the history implementation to use. We are using the hash history for simplicity here.
+    history: VueRouter.createWebHashHistory(),
+    routes, // short for `routes: routes`
+})
+const app = Vue.createApp({
     data() {
         return {
             count: 1,
+            showContinue: false,
             quiz: questionnaire,
             questionIndex: 0,
             userResponses: userResponseSkelaton,
@@ -1647,23 +1655,55 @@ Vue.createApp({
         }
     },
     filters: {
-        charIndex: function(i) {
-            return String.fromCharCode(97 + i);
+
+    },
+    computed: {
+        filteredQuestions: function () {
+            return this.quiz.questions.filter(function(el) {
+                if(!el['filter']){
+                    return el;
+                }
+                
+                return el;
+            });
         }
     },
     methods: {
+        questionType: function(){
+            return this.quiz.questions[this.questionIndex].question.type
+        },
         selectOption: function(questionID, answer) {
             console.log('Question: '+ questionID+ ' Answer: '+ answer)
-            this.userResponses[questionID] = answer
-            this.next()
+            if(this.questionType() === 'SelectMultiple'){
+                if (!Array.isArray(this.userResponses[questionID])){
+                    console.log('making array')
+                    this.userResponses[questionID] = []
+                }
+                this.showContinue = true
+                this.userResponses[questionID].push(answer)
+            }
+
+            if(this.questionType() === 'SelectOne'){
+                this.userResponses[questionID] = answer
+                this.next()
+            }
+
         },
         next: function() {
-            if (this.questionIndex < this.quiz.questions.length)
+            if (this.questionIndex < this.quiz.questions.length){
+                if(this.quiz.questions[this.questionIndex+1].filter){
+                    console.log(this.quiz.questions[this.questionIndex+1].filter)
+                }
+                router.push({ path: this.quiz.questions[this.questionIndex+1].question.name })
+                this.showContinue = false
                 this.questionIndex++
+            }
         },
-
         prev: function() {
             if (this.quiz.questions.length > 0) this.questionIndex--
         },
     }
-}).mount('#quiz')
+})
+app.config.compilerOptions.delimiters = ['${', '}']
+app.use(router)
+app.mount('#quiz')
