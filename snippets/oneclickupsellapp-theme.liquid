@@ -1,5 +1,5 @@
 {% comment %}
-  Updated: 2022/02/15
+  Updated: 2022/02/22
 {% endcomment %}
 
 {% unless oneclickupsellapp %}
@@ -593,18 +593,29 @@ PrecheckoutIntegrations.prototype = {
 
 if (!window.OCUApi) window.OCUApi = {};
 const FALSE_REDIRECT = { redirect_url: null };
+
 window.OCUApi = Object.assign(OCUApi, {
     showUpsell: function(params) {
         const dispatcher = this.context.popupDispatcher;
         dispatcher.context = this.context;
         dispatcher.target = params.form;
 
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             const callback = function(res) {
-                resolve(res.detail.response || FALSE_REDIRECT);
+                const response = r => ({ skip_cart: lqd.skip_cart, ...r });
+                resolve(response(res.detail.response || FALSE_REDIRECT));
             };
 
-            if (!lqd.is_precheckout) resolve(FALSE_REDIRECT);
+            const { blockId, products } = params;
+
+            this.context.integrations.zipifyPages.setProducts(products);
+            this.context.integrations.zipifyPages.setBlockId(blockId);
+
+            if (this.context.integrations.zipifyPages.isBlockOutsideProductPage()) {
+                return this.context.integrations.zipifyPages.handleZPOutsidePage(this.context, callback);
+            }
+
+            if (!dispatcher.isProductAction) resolve(FALSE_REDIRECT);
 
             dispatcher.listenCustomEvent(callback);
             dispatcher._show(null, true);
@@ -624,7 +635,7 @@ PopupDispatcher.prototype = {
         this.context = context;
         this.target = target;
         this.event = event;
-
+        this.appropriateResponse = null;
         this.listenCustomEvent();
         this.bt = OCUIncart.integrations().bt;
 
@@ -697,10 +708,13 @@ PopupDispatcher.prototype = {
             utils: utils,
             Updater: Updater,
             is_recharge_enabled: isRechargeEnabled,
-            product: lqd.product
+            product: lqd.product,
+            integrations: {
+                zipifyPages: self.integrations.zipifyPages
+            }
         };
 
-        return this.getIncartConfig()
+        return this[this.appropriateResponse ? '_emptyResolve' : 'getIncartConfig'](this.appropriateResponse)
             .then(function(response) {
                 window.OCUIncart.preLoad && window.OCUIncart.preLoad.showLoader();
                 self.helpers.beforeCreate();
@@ -708,7 +722,7 @@ PopupDispatcher.prototype = {
 
                 this.kind = response.data.kind;
                 precheckoutConfig.config = response.data;
-                const isProductPreloaded = lqd.skip_cart || utils.store.get('isTargetBuyNow');
+                const isProductPreloaded = lqd.skip_cart || utils.store.get('isTargetBuyNow') || this.apiMode;
 
                 if (precheckoutConfig.product && !isProductPreloaded) {
                     precheckoutConfig.product.quantity = this._quantityOfProduct;
@@ -756,7 +770,7 @@ PopupDispatcher.prototype = {
             else console.error(event);
         }
 
-        const originalBehaviourState = this.isProductAction
+        const originalBehaviorState = this.isProductAction
             && !utils.store.get('isTargetBuyNow')
             && (ocuEvent && event.detail.type !== 'Upgrade')
             && !lqd.skip_cart;
@@ -766,7 +780,7 @@ PopupDispatcher.prototype = {
 
         if (this.bt && this.bt.present) this.bt.endLoadingBtn();
 
-        if (originalBehaviourState) {
+        if (originalBehaviorState) {
             this._upsellAppInstance().hide();
             this.nativeClick();
             return;
@@ -800,6 +814,7 @@ PopupDispatcher.prototype = {
                     .then(function(response) {
                         if (response === 'skip') return;
                         if (lqd.skip_cart || this.context.helpers.isBuyNow(this.event)) return this.addAndCheck();
+                        this.appropriateResponse = response;
                         this.check(this.event, this.target, null);
                     }.bind(this))
                     .catch(this.nativeClick.bind(this));
@@ -885,7 +900,7 @@ PopupDispatcher.prototype = {
     },
 
     _isAddAction: function(el) {
-        return el && (/cart\/add/.test(el.action)); //  || el.dataset.hasOwnProperty('zpAddToCartForm') - Pages selector
+        return el && ((/cart\/add/.test(el.action)) || el.dataset.hasOwnProperty('zpAddToCartForm'));
     },
 
     _variantWasTrigger: function(id) {
@@ -1013,58 +1028,23 @@ PopupDispatcher.prototype = {
     }
 }
 
-function CartDispatcher() {
-    this.cartToken = lqd.cart.token || utils.cookie.get('cart');
-    this.selectors = {
-        price: 'data-ocu-price-block',
-        productTotal: 'data-ocu-total-block',
-        cartSubtotal: 'data-ocu-subtotal'
+class CartDispatcher {
+    constructor() {
+        this.cartToken = (lqd && lqd.cart.token) || utils.cookie.get('cart');
+        this.selectors = {
+            productPrice: null,
+            totalProductsPrice: null,
+            cartSubtotal: null,
+            cartDiscount: null
+        };
+        this.helpers = new Helpers();
+        this.cart = new Cart();
+        this.renderDiscounts = this.renderDiscounts.bind(this);
+        this.renderOCUDiscounts = this.renderOCUDiscounts.bind(this);
     }
 
-    const open = window.XMLHttpRequest.prototype.open;
-
-    this.openReplacement = function() {
-        this.addEventListener('load', function () {
-            if (CartDispatcher.prototype.shouldRequest(this._url)) {
-                CartDispatcher.prototype.cart.get('?ocu')
-                    .then(function(res) {
-                        CartDispatcher.prototype.renderDiscounts(res.data.token, res.data.items);
-                    });
-            }
-        });
-
-        return open.apply(this, arguments);
-    }
-
-    this.fetchReplacement = function(ns, fetch) {
-        if (typeof fetch !== 'function') return;
-
-        ns.fetch = function() {
-            const response = fetch.apply(this, arguments);
-
-            response.then(function(res) {
-                if (CartDispatcher.prototype.shouldRequest(res.url)) {
-                    CartDispatcher.prototype.cart.get('?ocu')
-                        .then(function(res) {
-                            CartDispatcher.prototype.renderDiscounts(res.data.token, res.data.items);
-                        });
-                }
-            });
-
-            return response;
-        }
-    }
-
-    this.fetchReplacement(window, window.fetch);
-
-    window.XMLHttpRequest.prototype.open = this.openReplacement;
-}
-
-CartDispatcher.prototype = {
-    helpers: new Helpers(),
-    cart: new Cart(),
-
-    renderDiscounts: function(token, items) {
+    renderDiscounts(token, items, selectors) {
+        if (selectors) this.fillSelectors(selectors);
         if (this.shouldGetDiscounts(items) || !this.areAttributesPresent(items)) return;
 
         this.getDiscounts(token, items)
@@ -1079,13 +1059,14 @@ CartDispatcher.prototype = {
                 }.bind(this));
 
                 this.fillCartSubtotal(res.data.discounts.subtotal);
+                this.fillCartDiscount(res.data.discounts.progressiveDiscount)
             }.bind(this))
             .catch(function(error) {
                 console.log(error)
             })
-    },
+    }
 
-    getDiscounts: function(token, items) {
+    getDiscounts(token, items) {
         const url = '/pre_purchase/v1/cart_discounts';
         const endpoint = window.OCUIncart && OCUIncart.appEndpoint;
         const headers = {
@@ -1099,51 +1080,52 @@ CartDispatcher.prototype = {
         if (!payload.cart_token) return Promise.reject(new Error('Cart Token is Missing'));
 
         return axios.post(endpoint + url, payload, { headers: headers });
-    },
+    }
 
-    doesUrlMatch: function(requestURL) {
+    doesUrlMatch(requestURL) {
         const cartUrls = ['add', 'update', 'change', 'clear'];
 
         return cartUrls.some(url => requestURL && requestURL.includes(`/cart/${url}`));
-    },
+    }
 
-  	shouldCartRequest: function(requestURL) {
+  	shouldCartRequest(requestURL) {
         if (!requestURL) return false;
 
         const isNotICURequest = !/\/cart.(js|json)\?icu/.test(requestURL) // handle case with looping cart requests when In Cart Upsell & Cross Sell and OCU apps enabled
 
         return requestURL.includes('/cart.js') && !requestURL.includes('/cart.js?ocu') && isNotICURequest;
-  	},
+  	}
 
-  	shouldRequest: function(requestURL) {
+  	shouldRequest(requestURL) {
         if (!requestURL) return false;
 
       	return this.doesUrlMatch(requestURL) || this.shouldCartRequest(requestURL);
-  	},
+  	}
 
-  	shouldGetDiscounts: function(items) {
+  	shouldGetDiscounts(items) {
         const cartItems = this.helpers.getCartItems(items || lqd.cart.items).line_items;
 
         return cartItems.every(function(cartItem) {
             if (!cartItem.properties) return;
             return cartItem.properties._ocu_offer_id === undefined;
         }.bind(this));
-    },
+    }
 
-    areAttributesPresent: function(items) {
+    areAttributesPresent(items) {
         const cartItems = this.helpers.getCartItems(items || lqd.cart.items).line_items;
 
         return cartItems.some(item => {
-            const wasEl = document.querySelector(`[data-ocu-price-block="${item.variant_id}"]`);
-            const totalEl = document.querySelector(`[data-ocu-total-block="${item.variant_id}"]`);
-            const subtotalEl = document.querySelector('[data-ocu-subtotal]');
+            const wasEl = document.querySelector(`${this.selectors.productPrice || '[data-ocu-price-block'}="${item.variant_id}"]`);
+            const totalEl = document.querySelector(`${this.selectors.totalProductsPrice || '[data-ocu-total-block'}="${item.variant_id}"]`);
+            const subtotalEl = document.querySelector(this.selectors.cartSubtotal || '[data-ocu-subtotal]');
+            const cartDiscountEl = document.querySelector(this.selectors.cartDiscount || '[data-ocu-cart-discount]');
 
-            return !!wasEl || !!totalEl || !!subtotalEl;
+            return !!wasEl || !!totalEl || !!subtotalEl || !!cartDiscountEl;
         })
-    },
+    }
 
-    fillDiscountedPrice: function(lineItem) {
-        const wasPriceEls = document.querySelectorAll(`[data-ocu-price-block="${lineItem.variantId}"]`);
+    fillDiscountedPrice(lineItem) {
+        const wasPriceEls = document.querySelectorAll(`${this.selectors.productPrice || '[data-ocu-price-block'}="${lineItem.variantId}"]`);
 
       	wasPriceEls.forEach(wasPriceEl => {
             if (!wasPriceEl) return;
@@ -1153,33 +1135,101 @@ CartDispatcher.prototype = {
 
         	wasPriceEl.innerHTML = `<del style="padding-right:16px">${formattedOriginalPrice}</del><span>${formattedDiscountedPrice}</span>`;
       	});
-    },
+    }
 
-    fillItemTotal: function(lineItem) {
-        const totalEls = document.querySelectorAll(`[data-ocu-total-block="${lineItem.variantId}"]`);
+    fillItemTotal(lineItem) {
+        const totalEls = document.querySelectorAll(`${this.selectors.totalProductsPrice || '[data-ocu-total-block'}="${lineItem.variantId}"]`);
 
         totalEls.forEach(totalEl => {
             if (!totalEl) return;
 
             totalEl.innerHTML = this.getCurrency(lineItem.discountedPrice * lineItem.quantity, OCUIncart.money_format);
         });
-    },
+    }
 
-    fillCartSubtotal: function(subtotal) {
-        const subtotalEls = document.querySelectorAll('[data-ocu-subtotal]');
+    fillCartSubtotal(subtotal) {
+        const subtotalEls = document.querySelectorAll(this.selectors.cartSubtotal || '[data-ocu-subtotal]');
 
         subtotalEls.forEach(subtotalEl => {
             if (!subtotalEl) return;
 
             subtotalEl.innerHTML = this.getCurrency(subtotal, OCUIncart.money_format);
         });
-    },
+    }
 
-    getCurrency: function(price, format) {
+    fillCartDiscount(discount) {
+        if (discount === 0) return;
+        const cartDiscountEls = document.querySelectorAll(this.selectors.cartDiscount || '[data-ocu-cart-discount]');
+
+        cartDiscountEls.forEach(cartDiscountEl => {
+            if (!cartDiscountEl) return;
+
+            cartDiscountEl.innerHTML = `-${this.getCurrency(discount, OCUIncart.money_format)}`;
+        });
+    }
+
+    getCurrency(price, format) {
         const currencyCode = (window.Shopify && Shopify.currency && +Shopify.currency.active) || 'USD';
         return Shopify.formatMoney && Shopify.formatMoney(price, format) || window.OCUApi.currency(price/100, format, currencyCode);
     }
-};
+
+    fillSelectors(selectors) {
+        this.selectors.productPrice = selectors.productPrice;
+        this.selectors.totalProductsPrice = selectors.totalProductsPrice;
+        this.selectors.cartSubtotal = selectors.cartSubtotal;
+        this.selectors.cartDiscount = selectors.cartDiscount;
+    }
+
+    renderOCUDiscounts(selectors) {
+        cart.get('?ocu')
+            .then((res) => {
+                this.renderDiscounts(res.data.token, res.data.items, selectors);
+            })
+    }
+}
+
+const cart = new Cart();
+const cartDispatcher = new CartDispatcher();
+const open = window.XMLHttpRequest.prototype.open;
+
+const openReplacement = function() {
+    this.addEventListener('load', function () {
+        if (cartDispatcher.shouldRequest(this._url)) {
+            cart.get('?ocu')
+                .then(function(res) {
+                    cartDispatcher.renderDiscounts(res.data.token, res.data.items);
+                });
+        }
+    });
+
+    return open.apply(this, arguments);
+}
+
+const fetchReplacement = function(ns, fetch) {
+    if (typeof fetch !== 'function') return;
+
+    ns.fetch = function() {
+        const response = fetch.apply(this, arguments);
+
+        response.then(function(res) {
+            if (cartDispatcher.shouldRequest(res.url)) {
+                cart.get('?ocu')
+                    .then(function(res) {
+                        cartDispatcher.renderDiscounts(res.data.token, res.data.items);
+                    });
+            }
+        });
+
+        return response;
+    }
+}
+
+fetchReplacement(window, window.fetch);
+
+window.XMLHttpRequest.prototype.open = openReplacement;
+
+if (!window.OCUApi) window.OCUApi = {};
+window.OCUApi.renderOCUDiscounts = cartDispatcher.renderOCUDiscounts;
 
 class Currency {
     constructor() {
@@ -1806,6 +1856,83 @@ Application.prototype = {
     }
 };
 
+function ZipifyPages() {
+    const KEY = 'ocu_integration_data';
+
+    this.setProducts = products => {
+        this.products = products;
+    }
+
+    this.setBlockId = id => {
+        this.block_id = id;
+    }
+
+    this.getProduct = () => this.product;
+
+    this.appendZipifyPagesProduct = items => {
+        if (!this.products) return items;
+
+        const hash = this.products.find(product => product.discountHash)?.discountHash;
+
+        return items.map(item => {
+            const matchedItem = this.products.find(product => product.productData.key === item.key);
+
+            if (!matchedItem) return item;
+            if (!matchedItem?.discountData.includes('dynamic')) return item;
+
+            const zpPayload = {
+                pages: true,
+                discount_hash: hash,
+                block_id: this.block_id
+            };
+
+            item.properties = {
+                ...item.properties,
+                ...zpPayload
+            };
+            return item;
+        });
+    }
+
+    this.init = () => {
+        try {
+            this.sessionData = JSON.parse(sessionStorage.getItem(KEY));
+
+            if (this.sessionData && this.sessionData.token !== lqd.cart.token) {
+                this.sessionData = null;
+                sessionStorage.removeItem(KEY);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+    this.handleZPOutsidePage = (ctx, callback) => {
+        try {
+            const payload = JSON.stringify({ products: this.products, block_id: this.block_id, token: lqd.cart.token });
+            sessionStorage.setItem(KEY, payload);
+            callback({ detail: {} });
+        } catch(e) {
+            console.error(e);
+            this._verifyFallback(ctx, callback);
+        }
+    };
+
+    this._verifyFallback = (ctx, callback) => {
+        ctx.cart.get()
+            .then(response => {
+                OCUIncart.cart_items = response.data.items;
+                ctx.verify()
+                    .then(() => {
+                        callback({ detail: {} });
+                    });
+            });
+    }
+
+    this.isBlockOutsideProductPage = () => !lqd.isPopupTriggerPage && this.products.some(product => product.discountHash);
+
+    this.init();
+}
+
 function amazonPay(e) {
     const self = this;
     const amazonForm = e.target.closest('form[action^="https://payments.amazon"]');
@@ -2132,9 +2259,10 @@ function smar7() {
 };
 
 function Integrations() {
-    var self = this;
-    var bold = new Bold();
-    var recharge = new Recharge();
+    const self = this;
+    const bold = new Bold();
+    const recharge = new Recharge();
+    const zipifyPages = new ZipifyPages();
 
     this.list = {
         bold: {
@@ -2274,6 +2402,7 @@ function Integrations() {
     this.buyNowBtns = BuyNowBtns;
     this.recharge = recharge;
     this.amazonPay = amazonPay;
+    this.zipifyPages = zipifyPages;
     // this.amazonPay = function() { AmazonPay(self) };
 
     this.start();
@@ -2606,8 +2735,9 @@ const UpdaterPrecheckout = {
         delete changeData.__line;
 
         return this.updateCart(data, 'upgrade')
-            .then(this.changeCart.bind(this, changeData))
-            .then(this.addToCart.bind(this, addData));
+            .then(() => OCUIncart._is_product_action
+            ? this.addToCart(addData)
+            : this.changeCart(changeData).then(this.addToCart.bind(this, addData)));
     },
     _getUpgradeOfferData: function(cartItem, cartItemLine) {
         const udpateData = Object.assign({}, this.payload);
@@ -3059,6 +3189,9 @@ function SkipCart() {
     };
 
     this.handle = function(e) {
+        const zpIntegration = self.handleZPEvent(e);
+        if (zpIntegration) return;
+
         self.popupDispatcher.target = e.target;
         if (self.popupDispatcher.isProductAction && !self.popupDispatcher.secondAttempt) return;
         let button = e.target.dataset.skipCart ? e.target : null;
@@ -3094,6 +3227,19 @@ function SkipCart() {
         document.addEventListener('click', self.handle, true);
     };
 
+    this.handleZPEvent = e => {
+        const getZPType = el => el.dataset.zpAddToCart !== undefined;
+        const target = e.target;
+        const button = getZPType(target) ? target : target.closest('[data-zp-add-to-cart]');
+
+        if ((button && e.isTrusted) && getZPType(button)) {
+            button.type = 'submit';
+            button.click();
+            return true;
+        }
+        return false;
+  }
+
     this.init();
 }
 
@@ -3124,6 +3270,7 @@ function PublicMethod() {
 
     this.init = function() {
         window.oneClickUpsellGetCheckoutUrl = proto.checkout = self.create;
+        proto.verify = self._verify.bind(this);
     };
 
     this.create = function(config) {
@@ -3203,7 +3350,9 @@ function PublicMethod() {
 
     this._verifyPayload = function() {
         const cartToken = utils.cookie.get('cart');
-        const payload = { checkout: self.helpers.getCartItems(OCUIncart.cart_items) };
+        let items = self.helpers.getCartItems(OCUIncart.cart_items);
+        items = self.integrations.zipifyPages.appendZipifyPagesProduct(items.line_items);
+        const payload = { checkout: { line_items: items } };
         const threshold = +utils.cookie.get('ocu_progress_bar');
         const header = OCUIncart.header_type || utils.cookie.get('ocu_header');
 
@@ -3453,6 +3602,7 @@ function Helpers() {
 
     this.getCartItems = function(items) {
         const itemProperties = [
+            'key',
             'properties',
             'quantity',
             'variant_id',
@@ -3705,7 +3855,8 @@ function Store() {
             productLocation: {
                 variant_id: null,
                 product_id: null,
-            }
+            },
+            pagesIntegrationData: {}
         },
         event: function(e) {
             return new Event('store:' + e);
