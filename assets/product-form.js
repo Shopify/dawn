@@ -7,18 +7,18 @@ if (!customElements.get('product-form')) {
       this.form.querySelector('[name=id]').disabled = false;
       this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
       this.cartNotification = document.querySelector('cart-notification');
+      this.submitButton = this.querySelector('[type="submit"]');
     }
 
     onSubmitHandler(evt) {
       evt.preventDefault();
-      const submitButton = this.querySelector('[type="submit"]');
-      if (submitButton.classList.contains('loading') || submitButton.classList.contains('success-message') || submitButton.getAttribute('aria-disabled') === 'true') return;
+      if (this.submitButton.classList.contains('loading') || this.submitButton.classList.contains('success-message') || this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
       this.handleErrorMessage();
       this.cartNotification.setActiveElement(document.activeElement);
 
-      submitButton.setAttribute('aria-disabled', true);
-      submitButton.classList.add('loading');
+      this.submitButton.setAttribute('aria-disabled', true);
+      this.submitButton.classList.add('loading');
       this.querySelector('.loading-overlay__spinner').classList.remove('hidden');
 
       const config = fetchConfig('javascript');
@@ -36,17 +36,17 @@ if (!customElements.get('product-form')) {
           if (response.status) {
             this.handleErrorMessage(response.description);
 
-            const soldOutMessage = submitButton.querySelector('.sold-out-message');
+            const soldOutMessage = this.submitButton.querySelector('.sold-out-message');
             if (!soldOutMessage) return;
-            submitButton.setAttribute('aria-disabled', true);
-            submitButton.querySelector('span').classList.add('hidden');
+            this.submitButton.setAttribute('aria-disabled', true);
+            this.submitButton.querySelector('span').classList.add('hidden');
             soldOutMessage.classList.remove('hidden');
             this.error = true;
             return;
           }
 
           this.error = false;
-          this.displaySuccessMessage(submitButton);
+          this.displaySuccessMessage();
 
           if (!document.body.classList.contains('overflow-hidden')) {
             this.cartNotification.renderContents(response);
@@ -60,32 +60,38 @@ if (!customElements.get('product-form')) {
           console.error(e);
         })
         .finally(() => {
-          submitButton.classList.remove('loading');
-          if (!this.error) submitButton.removeAttribute('aria-disabled');
+          this.submitButton.classList.remove('loading');
+          if (!this.error) this.submitButton.removeAttribute('aria-disabled');
           this.querySelector('.loading-overlay__spinner').classList.add('hidden');
         });
     }
 
-    displaySuccessMessage(submitButton) {
-      submitButton.classList.toggle('button--secondary');
-      submitButton.classList.toggle('button--primary');
-      submitButton.classList.add('success-message');
-          
-      const originalMessage = submitButton.querySelector('span');
-      originalMessage.classList.add('hidden');
+    displaySuccessMessage() {
+      const addedToCart = this.submitButton.querySelector('.added-to-cart');
+      if (!addedToCart) return;
 
-      const addedToCart = submitButton.querySelector('.added-to-cart');
+      const submitButtonLabel = this.submitButton.querySelector('span');
       addedToCart.classList.remove('hidden');
+      submitButtonLabel.classList.add('hidden');
+      this.submitButton.classList.toggle('button--secondary');
+      this.submitButton.classList.toggle('button--primary');
+      this.submitButton.classList.add('success-message');
 
-      setTimeout(() => {
-        originalMessage.classList.remove('hidden');
-        if (!addedToCart.classList.contains('hidden')) {
-          addedToCart.classList.add('hidden');
-          submitButton.classList.toggle('button--primary');
-          submitButton.classList.toggle('button--secondary');
-        }
-        submitButton.classList.remove('success-message');
-      }, 3000);
+      this.successTimer = setTimeout(this.resetSubmitButton.bind(this), 3000);
+    }
+
+    resetSubmitButton() {
+      const addedToCart = this.submitButton.querySelector('.added-to-cart');
+      const submitButtonLabel = this.submitButton.querySelector('span');
+
+      submitButtonLabel.classList.remove('hidden');
+      if (!addedToCart.classList.contains('hidden')) {
+        addedToCart.classList.add('hidden');
+        this.submitButton.classList.toggle('button--primary');
+        this.submitButton.classList.toggle('button--secondary');
+      }
+      this.submitButton.classList.remove('success-message');
+      clearTimeout(this.successTimer);
     }
 
     handleErrorMessage(errorMessage = false) {

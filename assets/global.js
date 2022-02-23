@@ -845,22 +845,15 @@ class VariantSelects extends HTMLElement {
   }
 
   toggleAddButton(disable = true, text, modifyClass = true) {
-    const productForm = document.getElementById(`product-form-${this.dataset.section}`);
-    if (!productForm) return;
+    const productFormElement = document.getElementById(`product-form-${this.dataset.section}`);
+    if (!productFormElement) return;
     
-    const addButton = productForm.querySelector('[name="add"]');
-    const addButtonText = productForm.querySelector('[name="add"] > span');
+    const productForm = productFormElement.closest('product-form');
+    productForm.resetSubmitButton();
 
+    const addButton = productFormElement.querySelector('[name="add"]');
     if (!addButton) return;
-
-    addButtonText.classList.remove('hidden');
-    const addedMessage = addButton.querySelector('.added-to-cart');
-    if (!addedMessage.classList.contains('hidden')) {
-      addedMessage.classList.add('hidden');
-      addButton.classList.toggle('button--primary');
-      addButton.classList.toggle('button--secondary');
-    }
-    addButton.classList.remove('success-message');
+    const addButtonText = productFormElement.querySelector('[name="add"] > span');
 
     if (disable) {
       addButton.setAttribute('disabled', 'disabled');
