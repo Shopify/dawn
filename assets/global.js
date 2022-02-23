@@ -73,7 +73,7 @@ function trapFocus(container, elementToFocus = container) {
 // Here run the querySelector to figure out if the browser supports :focus-visible or not and run code based on it.
 try {
   document.querySelector(":focus-visible");
-} catch {
+} catch(e) {
   focusVisiblePolyfill();
 }
 
