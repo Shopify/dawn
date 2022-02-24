@@ -61,7 +61,7 @@ if (!customElements.get('product-form')) {
         })
         .finally(() => {
           this.submitButton.classList.remove('loading');
-          if (!this.error) this.submitButton.removeAttribute('aria-disabled');
+          if (!this.error && !this.addedToCartLabel) this.submitButton.removeAttribute('aria-disabled');
           this.querySelector('.loading-overlay__spinner').classList.add('hidden');
         });
     }
@@ -76,6 +76,7 @@ if (!customElements.get('product-form')) {
       this.submitButton.classList.toggle('button--secondary');
       this.submitButton.classList.toggle('button--primary');
       this.submitButton.classList.add('success-message');
+      this.submitButton.setAttribute('aria-disabled', true);
 
       this.successTimer = setTimeout(this.resetSubmitButton.bind(this), 3000);
     }
@@ -90,6 +91,7 @@ if (!customElements.get('product-form')) {
         this.submitButton.classList.toggle('button--secondary');
       }
       this.submitButton.classList.remove('success-message');
+      this.submitButton.removeAttribute('aria-disabled');
       clearTimeout(this.successTimer);
     }
 
