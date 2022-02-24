@@ -778,7 +778,6 @@ class VariantSelects extends HTMLElement {
     if (!this.currentVariant.featured_media) return;
 
     const mediaGallery = document.getElementById(`MediaGallery-${this.dataset.section}`);
-    if (!mediaGallery.setActiveMedia) return;
     mediaGallery.setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media.id}`, true);
 
     const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
@@ -808,7 +807,7 @@ class VariantSelects extends HTMLElement {
 
   updatePickupAvailability() {
     const pickUpAvailability = document.querySelector('pickup-availability');
-    if (!pickUpAvailability || !pickUpAvailability.fetchAvailability) return;
+    if (!pickUpAvailability) return;
 
     if (this.currentVariant && this.currentVariant.available) {
       pickUpAvailability.fetchAvailability(this.currentVariant.id);
@@ -845,15 +844,14 @@ class VariantSelects extends HTMLElement {
   }
 
   toggleAddButton(disable = true, text, modifyClass = true) {
-    const productFormElement = document.getElementById(`product-form-${this.dataset.section}`);
-    if (!productFormElement) return;
-    
-    const productForm = productFormElement.closest('product-form');
-    productForm.resetSubmitButton();
-
-    const addButton = productFormElement.querySelector('[name="add"]');
+    const productForm = document.getElementById(`product-form-${this.dataset.section}`);
+    if (!productForm) return;
+    const addButton = productForm.querySelector('[name="add"]');
+    const addButtonText = productForm.querySelector('[name="add"] > span');
     if (!addButton) return;
-    const addButtonText = productFormElement.querySelector('[name="add"] > span');
+
+    const productFormElement = productFormElement.closest('product-form');
+    productFormElement.resetSubmitButton();
 
     if (disable) {
       addButton.setAttribute('disabled', 'disabled');

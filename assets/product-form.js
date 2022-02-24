@@ -12,7 +12,7 @@ if (!customElements.get('product-form')) {
 
     onSubmitHandler(evt) {
       evt.preventDefault();
-      if (this.submitButton.classList.contains('loading') || this.submitButton.classList.contains('success-message') || this.submitButton.getAttribute('aria-disabled') === 'true') return;
+      if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
       this.handleErrorMessage();
       this.cartNotification.setActiveElement(document.activeElement);
@@ -67,12 +67,12 @@ if (!customElements.get('product-form')) {
     }
 
     displaySuccessMessage() {
-      const addedToCart = this.submitButton.querySelector('.added-to-cart');
-      if (!addedToCart) return;
+      this.addedToCartLabel = this.submitButton.querySelector('.added-to-cart');
+      this.submitButtonLabel = this.submitButton.querySelector('span');
+      if (!this.addedToCartLabel || !this.submitButtonLabel) return;
 
-      const submitButtonLabel = this.submitButton.querySelector('span');
-      addedToCart.classList.remove('hidden');
-      submitButtonLabel.classList.add('hidden');
+      this.addedToCartLabel.classList.remove('hidden');
+      this.submitButtonLabel.classList.add('hidden');
       this.submitButton.classList.toggle('button--secondary');
       this.submitButton.classList.toggle('button--primary');
       this.submitButton.classList.add('success-message');
@@ -81,12 +81,11 @@ if (!customElements.get('product-form')) {
     }
 
     resetSubmitButton() {
-      const addedToCart = this.submitButton.querySelector('.added-to-cart');
-      const submitButtonLabel = this.submitButton.querySelector('span');
+      if (!this.addedToCartLabel || !this.submitButtonLabel) return;
 
-      submitButtonLabel.classList.remove('hidden');
-      if (!addedToCart.classList.contains('hidden')) {
-        addedToCart.classList.add('hidden');
+      this.submitButtonLabel.classList.remove('hidden');
+      if (!this.addedToCartLabel.classList.contains('hidden')) {
+        this.addedToCartLabel.classList.add('hidden');
         this.submitButton.classList.toggle('button--primary');
         this.submitButton.classList.toggle('button--secondary');
       }
@@ -103,7 +102,7 @@ if (!customElements.get('product-form')) {
 
       if (errorMessage) {
         this.errorMessage.textContent = errorMessage;
-      }      
+      }
     }
   });
 }
