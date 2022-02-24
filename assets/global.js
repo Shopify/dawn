@@ -850,7 +850,7 @@ class VariantSelects extends HTMLElement {
     const addButtonText = productForm.querySelector('[name="add"] > span');
     if (!addButton) return;
 
-    const productFormElement = productFormElement.closest('product-form');
+    const productFormElement = productForm.closest('product-form');
     productFormElement.resetSubmitButton();
 
     if (disable) {

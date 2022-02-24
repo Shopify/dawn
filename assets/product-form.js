@@ -78,7 +78,7 @@ if (!customElements.get('product-form')) {
       this.submitButton.classList.add('success-message');
       this.submitButton.setAttribute('aria-disabled', true);
 
-      this.successTimer = setTimeout(this.resetSubmitButton.bind(this), 3000);
+      this.successTimer = setTimeout(this.resetSubmitButton.bind(this), 2000);
     }
 
     resetSubmitButton() {
