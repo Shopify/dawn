@@ -5,6 +5,20 @@
 {{ 'component-rte.css' | asset_url | stylesheet_tag }}
 {{ 'component-loading-overlay.css' | asset_url | stylesheet_tag }}
 
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
 <link rel="stylesheet" href="{{ 'component-deferred-media.css' | asset_url }}" media="print" onload="this.media='all'">
 
 {%- assign product = section.settings.product -%}
@@ -16,9 +30,9 @@
   <link id="ModelViewerOverride" rel="stylesheet" href="{{ 'component-model-viewer-ui.css' | asset_url }}" media="print" onload="this.media='all'">
 {%- endif -%}
 
-<section class="{% if section.settings.secondary_background %}background-secondary{% else %}spaced-section{% endif %}">
-  <div class="page-width">
-    <div class="featured-product product grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
+<section class="color-{{ section.settings.color_scheme }} {% if section.settings.secondary_background %}background-secondary{% else %}gradient{% endif %}">
+  <div class="page-width section-{{ section.id }}-padding{% if section.settings.secondary_background %} isolate{% endif %}">
+    <div class="featured-product product grid grid--1-col gradient color-{{ section.settings.color_scheme }}{% if section.settings.secondary_background == false %} isolate{% endif %} {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
       <div class="grid__item product__media-wrapper">
         <media-gallery id="MediaGallery-{{ section.id }}" role="region" aria-label="{{ 'products.product.media.gallery_viewer' | t }}" data-desktop-layout="stacked">
           <a class="skip-to-content-link button visually-hidden" href="#ProductInfo-{{ section.id }}">
@@ -67,12 +81,14 @@
 
           {%- for block in section.blocks -%}
             {%- case block.type -%}
+            {%- when '@app' -%}
+              {% render block %}
             {%- when 'text' -%}
               <p class="product__text{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}" {{ block.shopify_attributes }}>
                 {{- block.settings.text -}}
               </p>
             {%- when 'title' -%}
-              <h2 class="h1 product__title" {{ block.shopify_attributes }}>
+              <h2 class="product__title {{ block.settings.heading_size }}" {{ block.shopify_attributes }}>
                 {%- if product.title != blank -%}
                   {{ product.title | escape }}
                 {%- else -%}
@@ -102,7 +118,7 @@
                 </div>
               {%- endif -%}
             {%- when 'quantity_selector' -%}
-              <div class="product-form__input product-form__quantity" {{ block.shopify_attributes }}>
+              <div class="product-form__input product-form__quantity{% if settings.inputs_shadow_vertical_offset != 0 and settings.inputs_shadow_vertical_offset < 0 %} product-form__quantity-top{% endif %}" {{ block.shopify_attributes }}>
                 <label class="form__label" for="Quantity-{{ section.id }}">
                   {{ 'products.product.quantity.label' | t }}
                 </label>
@@ -144,7 +160,7 @@
                       <input type="text"
                             class="field__input"
                             id="url"
-                            value="{{ product.selected_variant.url | default: product.url | prepend: shop.url }}"
+                            value="{{ product.selected_variant.url | default: product.url | prepend: request.origin }}"
                             placeholder="{{ 'general.share.share_url' | t }}"
                             onclick="this.select();"
                             readonly
@@ -321,14 +337,13 @@
               {%- endif -%}
             {%- endcase -%}
           {%- endfor -%}
-        <a href="{{ product.url }}" class="link product__view-details animate-arrow">
+        <a{% if product == blank %} role="link" aria-disabled="true"{% else %} href="{{ product.url }}"{% endif %} class="link product__view-details animate-arrow">
           {{ 'products.product.view_full_details' | t }}
           {% render 'icon-arrow' %}
         </a>
         </div>
       </div>
     </div>
-
     <product-modal id="ProductModal-{{ section.id }}" class="product-media-modal media-modal">
       <div class="product-media-modal__dialog" role="dialog" aria-label="{{ 'products.modal.label' | t }}" aria-modal="true" tabindex="-1">
         <button id="ModalClose-{{ section.id }}" type="button" class="product-media-modal__toggle" aria-label="{{ 'accessibility.close' | t }}">{% render 'icon-close' %}</button>
@@ -417,7 +432,7 @@
     "@context": "http://schema.org/",
     "@type": "Product",
     "name": {{ product.title | json }},
-    "url": {{ shop.url | append: product.url | json }},
+    "url": {{ request.origin | append: product.url | json }},
     {% if seo_media -%}
       {%- assign media_size = seo_media.preview_image.width | append: 'x' -%}
       "image": [
@@ -442,7 +457,7 @@
           "availability" : "http://schema.org/{% if variant.available %}InStock{% else %}OutOfStock{% endif %}",
           "price" : {{ variant.price | divided_by: 100.00 | json }},
           "priceCurrency" : {{ cart.currency.iso_code | json }},
-          "url" : {{ shop.url | append: variant.url | json }}
+          "url" : {{ request.origin | append: variant.url | json }}
         }{% unless forloop.last %},{% endunless %}
       {%- endfor -%}
     ]
@@ -480,8 +495,11 @@
 {
   "name": "t:sections.featured-product.name",
   "tag": "section",
-  "class": "featured-product-section spaced-section spaced-section--full-width",
+  "class": "section section-featured-product",
   "blocks": [
+    {
+      "type": "@app"
+    },
     {
       "type": "text",
       "name": "t:sections.featured-product.blocks.text.name",
@@ -517,7 +535,29 @@
     {
       "type": "title",
       "name": "t:sections.featured-product.blocks.title.name",
-      "limit": 1
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "heading_size",
+          "options": [
+            {
+              "value": "h2",
+              "label": "t:sections.all.heading_size.options__1.label"
+            },
+            {
+              "value": "h1",
+              "label": "t:sections.all.heading_size.options__2.label"
+            },
+            {
+              "value": "h0",
+              "label": "t:sections.all.heading_size.options__3.label"
+            }
+          ],
+          "default": "h1",
+          "label": "t:sections.all.heading_size.label"
+        }
+      ]
     },
     {
       "type": "price",
@@ -617,6 +657,34 @@
       "label": "t:sections.featured-product.settings.product.label"
     },
     {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.all.colors.accent_1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.all.colors.accent_2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.all.colors.background_1.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.all.colors.background_2.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.all.colors.inverse.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.all.colors.label"
+    },
+    {
       "type": "checkbox",
       "id": "secondary_background",
       "default": false,
@@ -638,6 +706,30 @@
       "id": "enable_video_looping",
       "default": false,
       "label": "t:sections.featured-product.settings.enable_video_looping.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
     }
   ],
   "presets": [

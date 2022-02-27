@@ -73,7 +73,7 @@ function trapFocus(container, elementToFocus = container) {
 // Here run the querySelector to figure out if the browser supports :focus-visible or not and run code based on it.
 try {
   document.querySelector(":focus-visible");
-} catch {
+} catch(e) {
   focusVisiblePolyfill();
 }
 
@@ -343,16 +343,16 @@ class MenuDrawer extends HTMLElement {
   }
 
   closeMenuDrawer(event, elementToFocus = false) {
-    if (event !== undefined) {
-      this.mainDetailsToggle.classList.remove('menu-opening');
-      this.mainDetailsToggle.querySelectorAll('details').forEach(details =>  {
-        details.removeAttribute('open');
-        details.classList.remove('menu-opening');
-      });
-      document.body.classList.remove(`overflow-hidden-${this.dataset.breakpoint}`);
-      removeTrapFocus(elementToFocus);
-      this.closeAnimation(this.mainDetailsToggle);
-    }
+    if (event === undefined) return;
+
+    this.mainDetailsToggle.classList.remove('menu-opening');
+    this.mainDetailsToggle.querySelectorAll('details').forEach(details =>  {
+      details.removeAttribute('open');
+      details.classList.remove('menu-opening');
+    });
+    document.body.classList.remove(`overflow-hidden-${this.dataset.breakpoint}`);
+    removeTrapFocus(elementToFocus);
+    this.closeAnimation(this.mainDetailsToggle);
   }
 
   onFocusOut(event) {
@@ -369,7 +369,7 @@ class MenuDrawer extends HTMLElement {
   closeSubmenu(detailsElement) {
     detailsElement.classList.remove('menu-opening');
     detailsElement.querySelector('summary').setAttribute('aria-expanded', false);
-    removeTrapFocus();
+    removeTrapFocus(detailsElement.querySelector('summary'));
     this.closeAnimation(detailsElement);
   }
 
@@ -408,6 +408,7 @@ class HeaderDrawer extends MenuDrawer {
     this.header = this.header || document.getElementById('shopify-section-header');
     this.borderOffset = this.borderOffset || this.closest('.header-wrapper').classList.contains('header-wrapper--border-bottom') ? 1 : 0;
     document.documentElement.style.setProperty('--header-bottom-position', `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`);
+    this.header.classList.add('menu-open');
 
     setTimeout(() => {
       this.mainDetailsToggle.classList.add('menu-opening');
@@ -416,6 +417,11 @@ class HeaderDrawer extends MenuDrawer {
     summaryElement.setAttribute('aria-expanded', true);
     trapFocus(this.mainDetailsToggle, summaryElement);
     document.body.classList.add(`overflow-hidden-${this.dataset.breakpoint}`);
+  }
+
+  closeMenuDrawer(event, elementToFocus) {
+    super.closeMenuDrawer(event, elementToFocus);
+    this.header.classList.remove('menu-open');
   }
 }
 
@@ -440,6 +446,12 @@ class ModalDialog extends HTMLElement {
         if (event.target.nodeName === 'MODAL-DIALOG') this.hide();
       });
     }
+  }
+
+  connectedCallback() {
+    if (this.moved) return;
+    this.moved = true;
+    document.body.appendChild(this);
   }
 
   show(opener) {
@@ -523,9 +535,9 @@ class SliderComponent extends HTMLElement {
 
   initPages() {
     this.sliderItemsToShow = Array.from(this.sliderItems).filter(element => element.clientWidth > 0);
-    this.sliderLastItem = this.sliderItemsToShow[this.sliderItemsToShow.length - 1];
-    if (this.sliderItemsToShow.length === 0) return;
-    this.slidesPerPage = Math.floor(this.slider.clientWidth / this.sliderItemsToShow[0].clientWidth);
+    if (this.sliderItemsToShow.length < 2) return;
+    this.sliderItemOffset = this.sliderItemsToShow[1].offsetLeft - this.sliderItemsToShow[0].offsetLeft;
+    this.slidesPerPage = Math.floor(this.slider.clientWidth / this.sliderItemOffset);
     this.totalPages = this.sliderItemsToShow.length - this.slidesPerPage + 1;
     this.update();
   }
@@ -537,7 +549,7 @@ class SliderComponent extends HTMLElement {
 
   update() {
     const previousPage = this.currentPage;
-    this.currentPage = Math.round(this.slider.scrollLeft / this.sliderLastItem.clientWidth) + 1;
+    this.currentPage = Math.round(this.slider.scrollLeft / this.sliderItemOffset) + 1;
 
     if (this.currentPageElement && this.pageTotalElement) {
       this.currentPageElement.textContent = this.currentPage;
@@ -559,7 +571,7 @@ class SliderComponent extends HTMLElement {
       this.prevButton.removeAttribute('disabled');
     }
 
-    if (this.isSlideVisible(this.sliderLastItem)) {
+    if (this.isSlideVisible(this.sliderItemsToShow[this.sliderItemsToShow.length - 1])) {
       this.nextButton.setAttribute('disabled', 'disabled');
     } else {
       this.nextButton.removeAttribute('disabled');
@@ -574,7 +586,7 @@ class SliderComponent extends HTMLElement {
   onButtonClick(event) {
     event.preventDefault();
     const step = event.currentTarget.dataset.step || 1;
-    this.slideScrollPosition = event.currentTarget.name === 'next' ? this.slider.scrollLeft + (step * this.sliderLastItem.clientWidth) : this.slider.scrollLeft - (step * this.sliderLastItem.clientWidth);
+    this.slideScrollPosition = event.currentTarget.name === 'next' ? this.slider.scrollLeft + (step * this.sliderItemOffset) : this.slider.scrollLeft - (step * this.sliderItemOffset);
     this.slider.scrollTo({
       left: this.slideScrollPosition
     });

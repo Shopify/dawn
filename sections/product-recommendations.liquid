@@ -1,33 +1,45 @@
 <link rel="stylesheet" href="{{ 'component-card.css' | asset_url }}" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="{{ 'component-price.css' | asset_url }}" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="{{ 'component-product-grid.css' | asset_url }}" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="{{ 'section-product-recommendations.css' | asset_url }}" media="print" onload="this.media='all'">
 
 <noscript>{{ 'component-card.css' | asset_url | stylesheet_tag }}</noscript>
 <noscript>{{ 'component-price.css' | asset_url | stylesheet_tag }}</noscript>
-<noscript>{{ 'component-product-grid.css' | asset_url | stylesheet_tag }}</noscript>
 <noscript>{{ 'section-product-recommendations.css' | asset_url | stylesheet_tag }}</noscript>
 
-<product-recommendations class="product-recommendations page-width" data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit=4">
-  {% if recommendations.performed and recommendations.products_count > 0 %}
-    <h2 class="product-recommendations__heading">{{ section.settings.heading | escape }}</h2>
-    <ul class="grid grid--2-col product-grid{% if recommendations.products_count > 3 %} grid--4-col-desktop grid--quarter-max{% else %} grid--{{ recommendations.products_count }}-col-tablet{% endif %}" role="list">
-      {% for recommendation in recommendations.products %}
-        <li class="grid__item">
-          {% render 'product-card',
-            product_card_product: recommendation,
-            media_size: section.settings.image_ratio,
-            show_secondary_image: section.settings.show_secondary_image,
-            add_image_padding: section.settings.add_image_padding,
-            show_vendor: section.settings.show_vendor,
-            show_image_outline: section.settings.show_image_outline,
-            show_rating: section.settings.show_rating
-          %}
-        </li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-</product-recommendations>
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <product-recommendations class="product-recommendations page-width section-{{ section.id }}-padding isolate" data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit=4">
+    {% if recommendations.performed and recommendations.products_count > 0 %}
+      <h2 class="product-recommendations__heading {{ section.settings.heading_size }}">{{ section.settings.heading | escape }}</h2>
+      <ul class="grid product-grid{% if section.settings.columns_desktop == 1 %} grid--full-width{% else %} grid--{{ section.settings.columns_desktop }}-col-desktop{% endif %} grid--{{ section.settings.columns_mobile }}-col-tablet-down" role="list">
+        {% for recommendation in recommendations.products %}
+          <li class="grid__item">
+            {% render 'card-product',
+              card_product: recommendation,
+              media_aspect_ratio: section.settings.image_ratio,
+              show_secondary_image: section.settings.show_secondary_image,
+              show_vendor: section.settings.show_vendor,
+              show_rating: section.settings.show_rating
+            %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </product-recommendations>
+</div>
 
 {% javascript %}
   class ProductRecommendations extends HTMLElement {
@@ -44,8 +56,13 @@
             const html = document.createElement('div');
             html.innerHTML = text;
             const recommendations = html.querySelector('product-recommendations');
+
             if (recommendations && recommendations.innerHTML.trim().length) {
               this.innerHTML = recommendations.innerHTML;
+            }
+
+            if (html.querySelector('.grid__item')) {
+              this.classList.add('product-recommendations--loaded');
             }
           })
           .catch(e => {
@@ -64,7 +81,7 @@
 {
   "name": "t:sections.product-recommendations.name",
   "tag": "section",
-  "class": "spaced-section",
+  "class": "section",
   "settings": [
     {
       "type": "paragraph",
@@ -75,6 +92,64 @@
       "id": "heading",
       "default": "You may also like",
       "label": "t:sections.product-recommendations.settings.heading.label"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_size.options__2.label"
+        },
+        {
+          "value": "h0",
+          "label": "t:sections.all.heading_size.options__3.label"
+        }
+      ],
+      "default": "h1",
+      "label": "t:sections.all.heading_size.label"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 4,
+      "label": "t:sections.product-recommendations.settings.columns_desktop.label"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.all.colors.accent_1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.all.colors.accent_2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.all.colors.background_1.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.all.colors.background_2.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.all.colors.inverse.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.all.colors.label",
+      "info": "t:sections.all.colors.has_cards_info"
     },
     {
       "type": "header",
@@ -108,18 +183,6 @@
     },
     {
       "type": "checkbox",
-      "id": "add_image_padding",
-      "default": false,
-      "label": "t:sections.product-recommendations.settings.add_image_padding.label"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_image_outline",
-      "default": true,
-      "label": "t:sections.product-recommendations.settings.show_image_outline.label"
-    },
-    {
-      "type": "checkbox",
       "id": "show_vendor",
       "default": false,
       "label": "t:sections.product-recommendations.settings.show_vendor.label"
@@ -130,6 +193,50 @@
       "default": false,
       "label": "t:sections.product-recommendations.settings.show_rating.label",
       "info": "t:sections.product-recommendations.settings.show_rating.info"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.product-recommendations.settings.header_mobile.content"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "default": "2",
+      "label": "t:sections.product-recommendations.settings.columns_mobile.label",
+      "options": [
+        {
+          "value": "1",
+          "label": "t:sections.product-recommendations.settings.columns_mobile.options__1.label"
+        },
+        {
+          "value": "2",
+          "label": "t:sections.product-recommendations.settings.columns_mobile.options__2.label"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
     }
   ]
 }

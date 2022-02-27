@@ -2,69 +2,88 @@
 {{ 'component-loading-overlay.css' | asset_url | stylesheet_tag }}
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
-{{ 'component-product-grid.css' | asset_url | stylesheet_tag }}
 
 <link rel="preload" href="{{ 'component-rte.css' | asset_url }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
 
 <noscript>{{ 'component-rte.css' | asset_url | stylesheet_tag }}</noscript>
 
-{%- if section.settings.enable_filtering or section.settings.enable_sorting -%}
-  {{ 'component-facets.css' | asset_url | stylesheet_tag }}
-  <script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
 
-  <div class="page-width" id="main-collection-filters" data-id="{{ section.id }}">
-    {% render 'facets', results: collection, enable_filtering: section.settings.enable_filtering, enable_sorting: section.settings.enable_sorting, collapse_on_larger_devices: section.settings.collapse_on_larger_devices %}
-  </div>
-{%- endif -%}
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
 
-<div id="ProductGridContainer">
-  {%- paginate collection.products by section.settings.products_per_page -%}
-    {%- if collection.products.size == 0 -%}
-      <div class="collection collection--empty page-width" id="product-grid" data-id="{{ section.id }}">
-        <div class="loading-overlay gradient"></div>
-        <div class="title-wrapper center">
-          <h2 class="title title--primary">
-            {{ 'sections.collection_template.empty' | t }}<br>
-            {{ 'sections.collection_template.use_fewer_filters_html' | t: link: collection.url, class: "underlined-link link" }}
-          </h2>
+<div class="section-{{ section.id }}-padding">
+  {%- if section.settings.enable_filtering or section.settings.enable_sorting -%}
+    {{ 'component-facets.css' | asset_url | stylesheet_tag }}
+    <script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
+  
+    <div class="page-width" id="main-collection-filters" data-id="{{ section.id }}">
+      {% render 'facets', results: collection, enable_filtering: section.settings.enable_filtering, enable_sorting: section.settings.enable_sorting, collapse_on_larger_devices: section.settings.collapse_on_larger_devices %}
+    </div>
+  {%- endif -%}
+  
+  <div id="ProductGridContainer">
+    {%- paginate collection.products by section.settings.products_per_page -%}
+      {%- if collection.products.size == 0 -%}
+        <div class="collection collection--empty page-width" id="product-grid" data-id="{{ section.id }}">
+          <div class="loading-overlay gradient"></div>
+          <div class="title-wrapper center">
+            <h2 class="title title--primary">
+              {{ 'sections.collection_template.empty' | t }}<br>
+              {{ 'sections.collection_template.use_fewer_filters_html' | t: link: collection.url, class: "underlined-link link" }}
+            </h2>
+          </div>
         </div>
-      </div>
-    {%- else -%}
-      <div class="collection page-width">
-        <div class="loading-overlay gradient"></div>
+      {%- else -%}
+        <div class="collection page-width">
+          <div class="loading-overlay gradient"></div>
+  
+          <ul id="product-grid" data-id="{{ section.id }}" class="
+            grid product-grid grid--{{ section.settings.columns_mobile }}-col-tablet-down
+            {% if section.settings.columns_desktop == 1 %} grid--full-width{% else %}
+              grid--{{ section.settings.columns_desktop }}-col-desktop
+            {% endif %}">
+            {%- for product in collection.products -%}
+              {% assign lazy_load = false %}
+              {%- if forloop.index > 2 -%}
+                {%- assign lazy_load = true -%}
+              {%- endif -%}
 
-        <ul id="product-grid" data-id="{{ section.id }}" class="
-          grid grid--2-col negative-margin product-grid
-          {% if collection.products_count < 4 %} grid--{{ collection.products_count }}-col-tablet{% else %}
-            {% if collection.products_count == 4 %} grid--4-col-desktop{% else %} grid--3-col-tablet grid--one-third-max grid--4-col-desktop grid--quarter-max{% endif %}
-          {% endif %}">
-          {%- for product in collection.products -%}
-            <li class="grid__item">
-              {% render 'product-card',
-                product_card_product: product,
-                media_size: section.settings.image_ratio,
-                show_secondary_image: section.settings.show_secondary_image,
-                add_image_padding: section.settings.add_image_padding,
-                show_vendor: section.settings.show_vendor,
-                show_image_outline: section.settings.show_image_outline,
-                show_rating: section.settings.show_rating
-              %}
-            </li>
-          {%- endfor -%}
-        </ul>
-
-        {%- if paginate.pages > 1 -%}
-          {% render 'pagination', paginate: paginate, anchor: '' %}
-        {%- endif -%}
-      </div>
-    {%- endif -%}
-  {%- endpaginate -%}
+              <li class="grid__item">
+                {% render 'card-product',
+                  card_product: product,
+                  media_aspect_ratio: section.settings.image_ratio,
+                  show_secondary_image: section.settings.show_secondary_image,
+                  show_vendor: section.settings.show_vendor,
+                  show_rating: section.settings.show_rating,
+                  lazy_load: lazy_load
+                %}
+              </li>
+            {%- endfor -%}
+          </ul>
+  
+          {%- if paginate.pages > 1 -%}
+            {% render 'pagination', paginate: paginate, anchor: '' %}
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    {%- endpaginate -%}
+  </div>
 </div>
 
 {% schema %}
 {
   "name": "t:sections.main-collection-product-grid.name",
-  "class": "spaced-section collection-grid-section",
+  "class": "section",
   "settings": [
     {
       "type": "range",
@@ -74,6 +93,15 @@
       "step": 4,
       "default": 16,
       "label": "t:sections.main-collection-product-grid.settings.products_per_page.label"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 4,
+      "label": "t:sections.main-collection-product-grid.settings.columns_desktop.label"
     },
     {
       "type": "header",
@@ -104,18 +132,6 @@
       "id": "show_secondary_image",
       "default": false,
       "label": "t:sections.main-collection-product-grid.settings.show_secondary_image.label"
-    },
-    {
-      "type": "checkbox",
-      "id": "add_image_padding",
-      "default": false,
-      "label": "t:sections.main-collection-product-grid.settings.add_image_padding.label"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_image_outline",
-      "default": true,
-      "label": "t:sections.main-collection-product-grid.settings.show_image_outline.label"
     },
     {
       "type": "checkbox",
@@ -152,6 +168,50 @@
       "id": "collapse_on_larger_devices",
       "default": false,
       "label": "t:sections.main-collection-product-grid.settings.collapse_on_larger_devices.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.main-collection-product-grid.settings.header_mobile.content"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "default": "2",
+      "label": "t:sections.main-collection-product-grid.settings.columns_mobile.label",
+      "options": [
+        {
+          "value": "1",
+          "label": "t:sections.main-collection-product-grid.settings.columns_mobile.options__1.label"
+        },
+        {
+          "value": "2",
+          "label": "t:sections.main-collection-product-grid.settings.columns_mobile.options__2.label"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
     }
   ]
 }

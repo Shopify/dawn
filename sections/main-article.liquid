@@ -15,15 +15,15 @@
               {% if block.settings.image_height == 'adapt' and article.image %} style="padding-bottom: {{ 1 | divided_by: article.image.aspect_ratio | times: 100 }}%;"{% endif %}
             >
               <img
-                srcset="{% if article.image.width >= 350 %}{{ article.image | img_url: '350x' }} 350w,{% endif %}
-                  {% if article.image.width >= 750 %}{{ article.image | img_url: '750x' }} 750w,{% endif %}
-                  {% if article.image.width >= 1100 %}{{ article.image | img_url: '1100x' }} 1100w,{% endif %}
-                  {% if article.image.width >= 1500 %}{{ article.image | img_url: '1500x' }} 1500w,{% endif %}
-                  {% if article.image.width >= 2200 %}{{ article.image | img_url: '2200x' }} 2200w,{% endif %}
-                  {% if article.image.width >= 3000 %}{{ article.image | img_url: '3000x' }} 3000w,{% endif %}
-                  {{ article.image | img_url: 'master' }} {{ article.image.width }}w"
+                srcset="{% if article.image.width >= 350 %}{{ article.image | image_url: width: 350 }} 350w,{% endif %}
+                  {% if article.image.width >= 750 %}{{ article.image | image_url: width: 750 }} 750w,{% endif %}
+                  {% if article.image.width >= 1100 %}{{ article.image | image_url: width: 1100 }} 1100w,{% endif %}
+                  {% if article.image.width >= 1500 %}{{ article.image | image_url: width: 1500 }} 1500w,{% endif %}
+                  {% if article.image.width >= 2200 %}{{ article.image | image_url: width: 2200 }} 2200w,{% endif %}
+                  {% if article.image.width >= 3000 %}{{ article.image | image_url: width: 3000 }} 3000w,{% endif %}
+                  {{ article.image | image_url }} {{ article.image.width }}w"
                 sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 }}px, (min-width: 750px) calc(100vw - 10rem), 100vw"
-                src="{{ article.image | img_url: '1100x' }}"
+                src="{{ article.image | image_url: width: 1100 }}"
                 loading="lazy"
                 width="{{ article.image.width }}"
                 height="{{ article.image.height }}"
@@ -69,7 +69,7 @@
                     <input type="text"
                           class="field__input"
                           id="url"
-                          value="{{ shop.url | append: article.url }}"
+                          value="{{ request.origin | append: article.url }}"
                           placeholder="{{ 'general.share.share_url' | t }}"
                           onclick="this.select();"
                           readonly
@@ -92,8 +92,8 @@
     {%- endcase -%}
   {%- endfor -%}
 
-  <div class="element-margin center">
-    <a href="{{ blog.url }}" class="article-template__link link animate-arrow{% if blog.comments_enabled? == false %} spaced-section{% endif %}">
+  <div class="article-template__back element-margin-top center">
+    <a href="{{ blog.url }}" class="article-template__link link animate-arrow">
       <span class="icon-wrap">{% render 'icon-arrow' %}</span>
       {{ 'blogs.article.back_to_blog' | t: title: blog.title }}
     </a>
@@ -175,6 +175,7 @@
                   autocomplete="name"
                   value="{{ form.author }}"
                   aria-required="true"
+                  required
                   {% if form.errors contains 'author' %}
                     aria-invalid="true"
                     aria-describedby="CommentForm-author-error"
@@ -199,6 +200,7 @@
                   autocorrect="off"
                   autocapitalize="off"
                   aria-required="true"
+                  required
                   {% if form.errors contains 'email' %}
                     aria-invalid="true"
                     aria-describedby="CommentForm-email-error"
@@ -220,6 +222,7 @@
                 id="CommentForm-body"
                 class="text-area field__input"
                 aria-required="true"
+                required
                 {% if form.errors contains 'body' %}
                   aria-invalid="true"
                   aria-describedby="CommentForm-body-error"
@@ -251,7 +254,7 @@
     "articleBody": {{ article.content | strip_html | json }},
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": {{ shop.url | append: page.url | json }}
+      "@id": {{ request.origin | append: page.url | json }}
     },
     "headline": {{ article.title | json }},
     {% if article.excerpt != blank %}
@@ -290,6 +293,7 @@
 {
   "name": "t:sections.main-article.name",
   "tag": "section",
+  "class": "section",
   "blocks": [
     {
       "type": "@app"
