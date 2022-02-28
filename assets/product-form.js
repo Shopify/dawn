@@ -46,7 +46,8 @@ if (!customElements.get('product-form')) {
           }
 
           this.error = false;
-          this.displaySuccessMessage();
+          const quickBuyModal = this.closest('quickbuy-modal');
+          if (quickBuyModal) quickBuyModal.hide();    
 
           if (!document.body.classList.contains('overflow-hidden')) {
             this.cartNotification.renderContents(response);
@@ -61,42 +62,9 @@ if (!customElements.get('product-form')) {
         })
         .finally(() => {
           this.submitButton.classList.remove('loading');
-          if (!this.error && !this.addedToCartLabel) this.submitButton.removeAttribute('aria-disabled');
+          if (!this.error) this.submitButton.removeAttribute('aria-disabled');
           this.querySelector('.loading-overlay__spinner').classList.add('hidden');
         });
-    }
-
-    displaySuccessMessage() {
-      const quickBuyModal = this.closest('quickbuy-modal');
-      if (quickBuyModal) return quickBuyModal.hide();
-      
-
-      this.addedToCartLabel = this.submitButton.querySelector('.added-to-cart');
-      this.submitButtonLabel = this.submitButton.querySelector('span');
-      if (!this.addedToCartLabel || !this.submitButtonLabel) return;
-
-      this.addedToCartLabel.classList.remove('hidden');
-      this.submitButtonLabel.classList.add('hidden');
-      this.submitButton.classList.toggle('button--secondary');
-      this.submitButton.classList.toggle('button--primary');
-      this.submitButton.classList.add('success-message');
-      this.submitButton.setAttribute('aria-disabled', true);
-
-      this.successTimer = setTimeout(this.resetSubmitButton.bind(this), 2000);
-    }
-
-    resetSubmitButton() {
-      if (!this.addedToCartLabel || !this.submitButtonLabel) return;
-
-      this.submitButtonLabel.classList.remove('hidden');
-      if (!this.addedToCartLabel.classList.contains('hidden')) {
-        this.addedToCartLabel.classList.add('hidden');
-        this.submitButton.classList.toggle('button--primary');
-        this.submitButton.classList.toggle('button--secondary');
-      }
-      this.submitButton.classList.remove('success-message');
-      this.submitButton.removeAttribute('aria-disabled');
-      clearTimeout(this.successTimer);
     }
 
     handleErrorMessage(errorMessage = false) {
