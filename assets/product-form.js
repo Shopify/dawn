@@ -47,7 +47,7 @@ if (!customElements.get('product-form')) {
 
           this.error = false;
           const quickBuyModal = this.closest('quickbuy-modal');
-          if (quickBuyModal) quickBuyModal.hide();    
+          if (quickBuyModal) quickBuyModal.hide(true);
 
           if (!document.body.classList.contains('overflow-hidden')) {
             this.cartNotification.renderContents(response);

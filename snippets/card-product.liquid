@@ -9,6 +9,8 @@
     - show_rating: {Boolean} Show the product rating. Default: false
     - extend_height: {Boolean} Card height extends to available container space. Default: true (optional)
     - lazy_load: {Boolean} Image should be lazy loaded. Default: true (optional)
+    - show_quick_buy: {Boolean} Show the quick add button.
+    - section_id: {String} The ID of the section that contains this card.
 
     Usage:
     {% render 'card-product', show_vendor: section.settings.show_vendor %}
@@ -136,15 +138,17 @@
             {% render 'price', product: card_product, price_class: '' %}
             {%- if show_quick_buy -%}
               <div class="quick-buy">
+                {%- assign product_form_id = 'quick-add-' | append: section_id | append: card_product.id -%}
                 {%- if card_product.has_only_default_variant -%}
                   <product-form>
-                    {%- form 'product', card_product, id: 'test123', class: 'form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+                    {%- form 'product', card_product, id: product_form_id, class: 'form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
                       <input type="hidden" name="id" value="{{ card_product.selected_or_first_available_variant.id }}" disabled>
                       <button
                         type="submit"
                         name="add"
                         class="quick-buy__submit button button--full-width button--secondary"
                         aria-haspopup="dialog"
+                        {% if card_product.selected_or_first_available_variant.available %}aria-label="{{ 'products.product.add_product_to_cart' | t: product_name: card_product.title | escape }}"{% endif %}
                         aria-live="polite"
                         data-sold-out-message="true"
                       {% if card_product.selected_or_first_available_variant.available == false %}disabled{% endif %}
@@ -174,6 +178,7 @@
                       name="add"
                       class="button button--full-width button--secondary"
                       aria-haspopup="dialog"
+                      aria-label="{{ 'products.product.choose_product_options' | t: product_name: card_product.title | escape }}"
                       data-product-url="{{ card_product.url }}"
                     >
                       {{ 'products.product.choose_options' | t }}
@@ -185,7 +190,7 @@
                     </button>
                   </modal-opener>
                   <quickbuy-modal id="QuickBuy-{{ card_product.id }}" class="quick-buy-modal">
-                    <div role="dialog" aria-label="{{ block.settings.text }}" aria-modal="true" class="quick-buy-modal__content" tabindex="-1">
+                    <div role="dialog" aria-label="{{ 'products.product.choose_product_options' | t: product_name: card_product.title | escape }}" aria-modal="true" class="quick-buy-modal__content" tabindex="-1">
                       <button id="ModalClose-{{ card_product.id }}" type="button" class="quick-buy-modal__toggle" aria-label="{{ 'accessibility.close' | t }}">{% render 'icon-close' %}</button>
                       <div id="QuickBuyInfo-{{ card_product.id }}" class="quick-buy-modal__content-info">
                       </div>

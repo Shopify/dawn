@@ -5,11 +5,12 @@ if (!customElements.get('quickbuy-modal')) {
       this.modalContent = this.querySelector('[id^="QuickBuyInfo-"]');
     }
 
-    hide() {
+    hide(preventFocus = false) {
       const cartNotification = document.querySelector('cart-notification');
       if (cartNotification) cartNotification.setActiveElement(this.openedBy);
       this.modalContent.innerHTML = '';
-
+      
+      if (preventFocus) this.openedBy = null;
       super.hide();
     }
 
