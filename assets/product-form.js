@@ -67,6 +67,10 @@ if (!customElements.get('product-form')) {
     }
 
     displaySuccessMessage() {
+      const quickBuyModal = this.closest('quickbuy-modal');
+      if (quickBuyModal) return quickBuyModal.hide();
+      
+
       this.addedToCartLabel = this.submitButton.querySelector('.added-to-cart');
       this.submitButtonLabel = this.submitButton.querySelector('span');
       if (!this.addedToCartLabel || !this.submitButtonLabel) return;
