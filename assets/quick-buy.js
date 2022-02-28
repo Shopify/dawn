@@ -31,6 +31,7 @@ if (!customElements.get('quickbuy-modal')) {
             Shopify.PaymentButton.init();
           }
           
+          this.removeGalleryListSemantic();
           this.preventVariantSwitching();
           super.show(opener);
         })
@@ -53,6 +54,14 @@ if (!customElements.get('quickbuy-modal')) {
 
     preventVariantSwitching() {
       this.modalContent.querySelector('variant-radios,variant-selects').setAttribute('data-update-url', 'false');
+    }
+
+    removeGalleryListSemantic() {
+      const galleryList = this.modalContent.querySelector('[id^="Slider-Gallery"]');
+      if (!galleryList) return;
+
+      galleryList.setAttribute('role', 'presentation');
+      galleryList.querySelectorAll('[id^="Slide-"]').forEach(li => li.setAttribute('role', 'presentation'));
     }
   });
 }
