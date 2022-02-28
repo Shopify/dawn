@@ -6,8 +6,11 @@ if (!customElements.get('quickbuy-modal')) {
     }
 
     hide() {
-      super.hide();
+      const cartNotification = document.querySelector('cart-notification');
+      if (cartNotification) cartNotification.setActiveElement(this.openedBy);
       this.modalContent.innerHTML = '';
+
+      super.hide();
     }
 
     show(opener) {
