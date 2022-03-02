@@ -20,24 +20,53 @@
   }
 {%- endstyle -%}
 
+{%- liquid
+  assign columns_mobile_int = section.settings.columns_mobile | plus: 0
+  assign products_to_display = 4
+
+  assign show_slider_on_mobile = false
+  if section.settings.enable_mobile_slider and products_to_display > columns_mobile_int
+    assign show_slider_on_mobile = true
+  endif
+
+  assign show_slider_on_desktop = false
+  if section.settings.enable_desktop_slider and products_to_display > section.settings.columns_desktop
+    assign show_slider_on_desktop = true
+  endif
+%}
+
 <div class="color-{{ section.settings.color_scheme }} gradient">
   <product-recommendations class="product-recommendations page-width section-{{ section.id }}-padding isolate" data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit=4">
     {% if recommendations.performed and recommendations.products_count > 0 %}
       <h2 class="product-recommendations__heading {{ section.settings.heading_size }}">{{ section.settings.heading | escape }}</h2>
-      <slider-component></slider-component>
-      <ul class="grid product-grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down" role="list">
-        {% for recommendation in recommendations.products %}
-          <li class="grid__item">
-            {% render 'card-product',
-              card_product: recommendation,
-              media_aspect_ratio: section.settings.image_ratio,
-              show_secondary_image: section.settings.show_secondary_image,
-              show_vendor: section.settings.show_vendor,
-              show_rating: section.settings.show_rating
-            %}
-          </li>
-        {% endfor %}
-      </ul>
+      <slider-component class="slider-mobile-gutter{% if show_slider_on_mobile == false %} page-width-mobile page-width-tablet{% endif %}{% if show_slider_on_desktop == false and section.settings.full_width == false %} page-width-desktop{% endif %}{% if show_slider_on_desktop %} collection__slider-desktop{% endif %}">
+        <ul id="Slider-{{ section.id }}" class="grid product-grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down{% if show_slider_on_mobile or show_slider_on_desktop %} slider{% if show_slider_on_desktop %} slider--desktop{% endif %}{% if show_slider_on_mobile %} slider--tablet grid--peek{% endif %}{% endif %}" role="list" aria-label="{{ 'sections.featured_collection.slider' | t }}">
+          {% for recommendation in recommendations.products %}
+            <li class="grid__item{% if show_slider_on_mobile or show_slider_on_desktop %} slider__slide{% endif %}">
+              {% render 'card-product',
+                card_product: recommendation,
+                media_aspect_ratio: section.settings.image_ratio,
+                show_secondary_image: section.settings.show_secondary_image,
+                show_vendor: section.settings.show_vendor,
+                show_rating: section.settings.show_rating
+              %}
+            </li>
+          {% endfor %}
+        </ul>
+
+        {%- if show_slider_on_mobile or show_slider_on_desktop -%}
+          <div class="slider-buttons no-js-hidden{% if products_to_display < 4 %} medium-hide{% endif %}{% if section.settings.collection.all_products_count < section.settings.columns_mobile %} small-hide{% endif %}">
+            <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'general.slider.previous_slide' | t }}" aria-controls="Slider-{{ section.id }}">{% render 'icon-caret' %}</button>
+            <div class="slider-counter caption">
+              <span class="slider-counter--current">1</span>
+              <span aria-hidden="true"> / </span>
+              <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+              <span class="slider-counter--total">{{ products_to_display }}</span>
+            </div>
+            <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'general.slider.next_slide' | t }}" aria-controls="Slider-{{ section.id }}">{% render 'icon-caret' %}</button>
+          </div>
+        {%- endif -%}
+      </slider-component>
     {% endif %}
   </product-recommendations>
 </div>
@@ -122,6 +151,18 @@
       "step": 1,
       "default": 4,
       "label": "t:sections.product-recommendations.settings.columns_desktop.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_desktop_slider",
+      "label": "t:sections.featured-collection.settings.enable_desktop_slider.label",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "t:sections.featured-collection.settings.full_width.label",
+      "default": false
     },
     {
       "type": "select",
@@ -214,6 +255,12 @@
           "label": "t:sections.product-recommendations.settings.columns_mobile.options__2.label"
         }
       ]
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_mobile_slider",
+      "label": "t:sections.featured-collection.settings.enable_mobile_slider.label",
+      "default": false
     },
     {
       "type": "header",
