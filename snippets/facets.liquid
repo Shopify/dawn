@@ -15,6 +15,12 @@
 {%- liquid
   assign sort_by = results.sort_by | default: results.default_sort_by
   assign total_active_values = 0
+  assign should_show_desktop_menu = false
+  if collapse_on_larger_devices == false and filter_type == 'horizontal'
+    assign should_show_desktop_menu = true
+  elsif filter_type == 'vertical'
+    assign should_show_desktop_menu = true
+  endif
   if results.url
     assign results_url = results.url
   else
@@ -24,7 +30,7 @@
 -%}
 
 <div class="facets-container">
-  {%- unless collapse_on_larger_devices -%}
+  {%- if should_show_desktop_menu -%}
     <facet-filters-form class="facets small-hide">
       <form id="FacetFiltersForm" class="facets__form">
         {%- if enable_sorting and filter_type == 'vertical' -%}
@@ -270,9 +276,9 @@
         </div>
       </form>
     </facet-filters-form>
-  {%- endunless -%}
+  {%- endif -%}
 
-  <menu-drawer class="mobile-facets__wrapper {% unless collapse_on_larger_devices %} medium-hide large-up-hide{% endunless %}" data-breakpoint="mobile">
+  <menu-drawer class="mobile-facets__wrapper {% if collapse_on_larger_devices == false or filter_type == 'vertical' %} medium-hide large-up-hide{% endif %}" data-breakpoint="mobile">
     <details class="mobile-facets__disclosure disclosure-has-popup">
       <summary class="mobile-facets__open-wrapper focus-offset">
         <span class="mobile-facets__open">
@@ -510,7 +516,7 @@
       </a>
     </facet-remove>
   </div>
-  <div class="product-count light{% unless collapse_on_larger_devices %} medium-hide large-up-hide{% endunless %}" role="status">
+  {% comment %} <div class="product-count light{% unless collapse_on_larger_devices %} medium-hide large-up-hide{% endunless %}" role="status">
     <h2 class="product-count__text text-body">
       <span id="ProductCount">
         {%- if results.results_count -%}
@@ -527,5 +533,6 @@
         <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
       </svg>
     </div>
-  </div>
+  </div> {% endcomment %}
 </div>
+

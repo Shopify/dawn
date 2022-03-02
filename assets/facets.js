@@ -223,3 +223,20 @@ class FacetRemove extends HTMLElement {
 }
 
 customElements.define('facet-remove', FacetRemove);
+
+
+class VerticalCollapse extends HTMLElement {
+  constructor() {
+    super();
+    console.log('hellooooo')
+    this.querySelector('.vertical-filter-collapse').addEventListener('click', () => {
+      if (this.querySelector('.vertical-filter-collapse').hasAttribute('open')) {
+        this.querySelector('.facets').classList.remove('hidden');
+      } else {
+        this.querySelector('.facets').classList.add('hidden');
+      }
+    });
+  }
+}
+
+customElements.define('vertical-collapse', VerticalCollapse);

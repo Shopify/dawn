@@ -30,13 +30,31 @@
   {%- if section.settings.enable_filtering or section.settings.enable_sorting -%}
     {{ 'component-facets.css' | asset_url | stylesheet_tag }}
     <script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
-  
-    <div class="page-width{% if section.settings.filter_type == 'vertical'%} facets-vertical-container{% endif %}" id="main-collection-filters" data-id="{{ section.id }}">
-      {% render 'facets', results: collection, enable_filtering: section.settings.enable_filtering, enable_sorting: section.settings.enable_sorting, collapse_on_larger_devices: section.settings.collapse_on_larger_devices, filter_type: section.settings.filter_type %}
-    </div>
+    <vertical-collapse>
+      {%- if section.settings.filter_type == 'vertical' and section.settings.collapse_on_larger_devices -%}
+        <details class="vertical-filter-collapse">
+          <summary>
+            <span class="mobile-facets__open">
+              {% render 'icon-filter' %}
+              <span class="mobile-facets__open-label button-label">
+                {%- if section.settings.enable_filtering and section.settings.enable_sorting -%}
+                  {{ 'products.facets.filter_and_sort' | t }}
+                {%- elsif section.settings.enable_filtering -%}
+                  {{ 'products.facets.filter_button' | t }}
+                {%- elsif section.settings.enable_sorting -%}
+                  {{ 'products.facets.sort_button' | t }}
+                {%- endif -%}
+              </span>
+          </summary>
+        </details>
+      {%- endif -%}
+      <div class="page-width{% if section.settings.filter_type == 'vertical'%} facets-vertical-container{% endif %}" id="main-collection-filters" data-id="{{ section.id }}">
+        {% render 'facets', results: collection, enable_filtering: section.settings.enable_filtering, enable_sorting: section.settings.enable_sorting, collapse_on_larger_devices: section.settings.collapse_on_larger_devices, filter_type: section.settings.filter_type %}
+      </div>
+    </vertical-collapse>
   {%- endif -%}
 
-  <div id="ProductGridContainer">
+  <div class="product-grid-container{% if section.settings.filter_type == 'vertical' and section.settings.collapse_on_larger_devices %} product-grid-container-vertical{% endif %}" id="ProductGridContainer">
     {%- paginate collection.products by section.settings.products_per_page -%}
       {%- if collection.products.size == 0 -%}
         <div class="collection collection--empty page-width" id="product-grid" data-id="{{ section.id }}">
