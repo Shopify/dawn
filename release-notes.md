@@ -2,7 +2,7 @@ Dawn 4.0.0 introduces the ability to control how many columns appear in many of 
 
 ### Added
 - Important:You can now define the size of your heading text in all sections, giving you more options to express your brand’s look and feel. This update may cause your theme's headings to appear bigger. To revert this, change your heading size settings to “Small”.
-- Important:You can now control the number of desktop and mobile grid columns in many sections and templates, giving you more flexibility to customize the look of your store. This update may cause a layout change in some areas of your theme because columns will no longer automatically adjust to fill the available screen width. This can be modified by adjusting the number of columns setting in the affected areas. Find this new setting in: blog posts (desktop only), collection template, collection list, featured collection, multicolumn, product recommendations, and search results template. 
+- Important: You can now control the number of desktop and mobile grid columns in many sections and templates, giving you more flexibility to customize the look of your store. This update may cause a layout change in some areas of your theme because columns will no longer automatically adjust to fill the available screen width. This can be modified by adjusting the number of columns setting in the affected areas. Find this new setting in: blog posts (desktop only), collection template, collection list, featured collection, multicolumn, product recommendations, and search results template. 
 - Duty charges will now be displayed on customer account order pages if applicable. 
 
 ### Changed
