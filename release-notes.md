@@ -8,7 +8,7 @@ Dawn 4.0.0 introduces the ability to control how many columns appear in many of 
 ### Changed
 - Commenting on blog posts requires all fields to be filled in for a blog comment to be submitted. 
 
-### Fixes and other improvements
+### Fixes and improvements
 - Sometimes, incorrect product information was appearing in the cart notification. This is now fixed. 
 - We fixed an issue that affected filtering on collection pages. 
 - We fixed an accessibility issue where some links caused unnecessary page refreshes when clicked. 
