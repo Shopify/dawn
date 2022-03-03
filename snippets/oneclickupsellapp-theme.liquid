@@ -1,5 +1,5 @@
 {% comment %}
-  Updated: 2022/02/22
+  Updated: 2022/03/03
 {% endcomment %}
 
 {% unless oneclickupsellapp %}
@@ -588,6 +588,20 @@ PrecheckoutIntegrations.prototype = {
                 this.bundlerForm.submit();
             }
         }
+    },
+
+    get minMaxify() {
+        return {
+            get present() {
+                return !!window.minMaxify;
+            },
+            get isFunction() {
+                return minMaxify.checkLimits instanceof Function;
+            },
+            get invalid() {
+                return this.present && this.isFunction && !minMaxify.checkLimits();
+            }
+        };
     }
 };
 
@@ -708,6 +722,7 @@ PopupDispatcher.prototype = {
             utils: utils,
             Updater: Updater,
             is_recharge_enabled: isRechargeEnabled,
+            is_skip_cart: lqd.skip_cart,
             product: lqd.product,
             integrations: {
                 zipifyPages: self.integrations.zipifyPages
@@ -1115,8 +1130,8 @@ class CartDispatcher {
         const cartItems = this.helpers.getCartItems(items || lqd.cart.items).line_items;
 
         return cartItems.some(item => {
-            const wasEl = document.querySelector(`${this.selectors.productPrice || '[data-ocu-price-block'}="${item.variant_id}"]`);
-            const totalEl = document.querySelector(`${this.selectors.totalProductsPrice || '[data-ocu-total-block'}="${item.variant_id}"]`);
+            const wasEl = document.querySelector(`${this.selectors.productPrice || '[data-ocu-price-block'}="${item.key}"]`);
+            const totalEl = document.querySelector(`${this.selectors.totalProductsPrice || '[data-ocu-total-block'}="${item.key}"]`);
             const subtotalEl = document.querySelector(this.selectors.cartSubtotal || '[data-ocu-subtotal]');
             const cartDiscountEl = document.querySelector(this.selectors.cartDiscount || '[data-ocu-cart-discount]');
 
@@ -1125,7 +1140,7 @@ class CartDispatcher {
     }
 
     fillDiscountedPrice(lineItem) {
-        const wasPriceEls = document.querySelectorAll(`${this.selectors.productPrice || '[data-ocu-price-block'}="${lineItem.variantId}"]`);
+        const wasPriceEls = document.querySelectorAll(`${this.selectors.productPrice || '[data-ocu-price-block'}="${lineItem.key}"]`);
 
       	wasPriceEls.forEach(wasPriceEl => {
             if (!wasPriceEl) return;
@@ -1138,7 +1153,7 @@ class CartDispatcher {
     }
 
     fillItemTotal(lineItem) {
-        const totalEls = document.querySelectorAll(`${this.selectors.totalProductsPrice || '[data-ocu-total-block'}="${lineItem.variantId}"]`);
+        const totalEls = document.querySelectorAll(`${this.selectors.totalProductsPrice || '[data-ocu-total-block'}="${lineItem.key}"]`);
 
         totalEls.forEach(totalEl => {
             if (!totalEl) return;
@@ -1174,10 +1189,10 @@ class CartDispatcher {
     }
 
     fillSelectors(selectors) {
-        this.selectors.productPrice = selectors.productPrice;
-        this.selectors.totalProductsPrice = selectors.totalProductsPrice;
-        this.selectors.cartSubtotal = selectors.cartSubtotal;
-        this.selectors.cartDiscount = selectors.cartDiscount;
+        this.selectors.productPrice = `[${selectors.productPrice}`;
+        this.selectors.totalProductsPrice = `[${selectors.totalProductsPrice}`;
+        this.selectors.cartSubtotal = `[${selectors.cartSubtotal}]`;
+        this.selectors.cartDiscount = `[${selectors.cartDiscount}]`;
     }
 
     renderOCUDiscounts(selectors) {
@@ -1738,6 +1753,8 @@ Application.prototype = {
         if (this.helpers.isBuyNow(e) && !lqd.isPopupTriggerPage) return new BuyNow(e);
 
         if (this.helpers.isCartPopupRedirectsToCart(e)) return;
+
+        if (OCUIncart.integrations().minMaxify.invalid) return;
 
         // if (this.helpers.checkDirectCheckoutButtons(e.target)) {
         //     e.target.dataset.ocuCheckout = true;
@@ -3192,7 +3209,7 @@ function SkipCart() {
         const zpIntegration = self.handleZPEvent(e);
         if (zpIntegration) return;
 
-        self.popupDispatcher.target = e.target;
+        if (!self.popupDispatcher.target) self.popupDispatcher.target = e.target;
         if (self.popupDispatcher.isProductAction && !self.popupDispatcher.secondAttempt) return;
         let button = e.target.dataset.skipCart ? e.target : null;
         if (!button) button = e.target.closest('[data-skip-cart]');
@@ -3613,7 +3630,8 @@ function Helpers() {
             'line_price',
             'original_line_price',
             'final_price',
-            'final_line_price'
+            'final_line_price',
+            'key'
         ];
 
         const prepareItem = function(item) {
@@ -3694,6 +3712,9 @@ function Helpers() {
             const cartDrawerSalesRocketControl = document.querySelector(utils.store.get('cartDrawerSalesRocketControl').selector);
             if (cartDrawerSalesRocketControl) cartDrawerSalesRocketControl.click();
         }
+
+        const cartDrawerTimberControl = document.querySelector(utils.store.get('cartDrawerTimberControl').selector);
+        if (cartDrawerTimberControl) cartDrawerTimberControl.click();
 
         const cartDrawerControl = document.querySelector(utils.store.get('cartDrawerControl').selector);
         if (cartDrawerControl) cartDrawerControl.click();
@@ -3848,6 +3869,9 @@ function Store() {
             },
             cartDrawerSalesRocketControl: {
                 selector: '#cartSlider-shopper .ws-cs-close',
+            },
+            cartDrawerTimberControl: {
+                selector: '#CartDrawer .js-drawer-close button',
             },
             chatButton: {
                 selector: '#shopify-chat'
