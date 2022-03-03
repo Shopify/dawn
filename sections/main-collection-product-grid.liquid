@@ -26,82 +26,85 @@
   }
 {%- endstyle -%}
 
-<div class="section-{{ section.id }}-padding{% if section.settings.filter_type == 'vertical' %} facets-vertical{% endif %}">
-  {%- if section.settings.enable_filtering or section.settings.enable_sorting -%}
-    {{ 'component-facets.css' | asset_url | stylesheet_tag }}
-    <script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
-    <vertical-collapse>
-      {%- if section.settings.filter_type == 'vertical' and section.settings.collapse_on_larger_devices -%}
-        <details class="vertical-filter-collapse">
-          <summary>
-            <span class="mobile-facets__open">
-              {% render 'icon-filter' %}
-              <span class="mobile-facets__open-label button-label">
-                {%- if section.settings.enable_filtering and section.settings.enable_sorting -%}
-                  {{ 'products.facets.filter_and_sort' | t }}
-                {%- elsif section.settings.enable_filtering -%}
-                  {{ 'products.facets.filter_button' | t }}
-                {%- elsif section.settings.enable_sorting -%}
-                  {{ 'products.facets.sort_button' | t }}
-                {%- endif -%}
-              </span>
-          </summary>
-        </details>
-      {%- endif -%}
-      <div class="page-width{% if section.settings.filter_type == 'vertical'%} facets-vertical-container{% endif %}" id="main-collection-filters" data-id="{{ section.id }}">
-        {% render 'facets', results: collection, enable_filtering: section.settings.enable_filtering, enable_sorting: section.settings.enable_sorting, collapse_on_larger_devices: section.settings.collapse_on_larger_devices, filter_type: section.settings.filter_type %}
-      </div>
-    </vertical-collapse>
+<vertical-collapse class="vertical-collapse open{% if section.settings.filter_type == 'vertical'%} page-width facets-vertical-container{% endif %}">
+  {%- if section.settings.filter_type == 'vertical' and section.settings.collapse_on_larger_devices -%}
+    <details class="vertical-filter-collapse small-hide">
+      <summary>
+        <span class="mobile-facets__open">
+          {% render 'icon-filter' %}
+          <span class="mobile-facets__open-label button-label">
+            {%- if section.settings.enable_filtering and section.settings.enable_sorting -%}
+              {{ 'products.facets.filter_and_sort' | t }}
+            {%- elsif section.settings.enable_filtering -%}
+              {{ 'products.facets.filter_button' | t }}
+            {%- elsif section.settings.enable_sorting -%}
+              {{ 'products.facets.sort_button' | t }}
+            {%- endif -%}
+          </span>
+      </summary>
+    </details>
   {%- endif -%}
 
-  <div class="product-grid-container{% if section.settings.filter_type == 'vertical' and section.settings.collapse_on_larger_devices %} product-grid-container-vertical{% endif %}" id="ProductGridContainer">
-    {%- paginate collection.products by section.settings.products_per_page -%}
-      {%- if collection.products.size == 0 -%}
-        <div class="collection collection--empty page-width" id="product-grid" data-id="{{ section.id }}">
-          <div class="loading-overlay gradient"></div>
-          <div class="title-wrapper center">
-            <h2 class="title title--primary">
-              {{ 'sections.collection_template.empty' | t }}<br>
-              {{ 'sections.collection_template.use_fewer_filters_html' | t: link: collection.url, class: "underlined-link link" }}
-            </h2>
-          </div>
+  <div class="section-{{ section.id }}-padding{% if section.settings.filter_type == 'vertical' %} facets-vertical{% endif %}">
+    {%- if section.settings.enable_filtering or section.settings.enable_sorting -%}
+      {{ 'component-facets.css' | asset_url | stylesheet_tag }}
+      <script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
+        <div class="page-width" id="main-collection-filters" data-id="{{ section.id }}">
+          {% render 'facets', results: collection, enable_filtering: section.settings.enable_filtering, enable_sorting: section.settings.enable_sorting, collapse_on_larger_devices: section.settings.collapse_on_larger_devices, filter_type: section.settings.filter_type %}
         </div>
-      {%- else -%}
-        <div class="collection page-width">
-          <div class="loading-overlay gradient"></div>
-  
-          <ul id="product-grid" data-id="{{ section.id }}" class="
-            grid product-grid grid--{{ section.settings.columns_mobile }}-col-tablet-down
-            grid--{{ section.settings.columns_desktop }}-col-desktop">
-            {%- for product in collection.products -%}
-              {% assign lazy_load = false %}
-              {%- if forloop.index > 2 -%}
-                {%- assign lazy_load = true -%}
-              {%- endif -%}
+    {%- endif -%}
 
-              <li class="grid__item">
-                {% render 'card-product',
-                  card_product: product,
-                  media_aspect_ratio: section.settings.image_ratio,
-                  show_secondary_image: section.settings.show_secondary_image,
-                  show_vendor: section.settings.show_vendor,
-                  show_rating: section.settings.show_rating,
-                  lazy_load: lazy_load,
-                  show_quick_add: section.settings.enable_quick_add,
-                  section_id: section.id
-                %}
-              </li>
-            {%- endfor -%}
-          </ul>
-  
-          {%- if paginate.pages > 1 -%}
-            {% render 'pagination', paginate: paginate, anchor: '' %}
-          {%- endif -%}
-        </div>
-      {%- endif -%}
-    {%- endpaginate -%}
+    <div class="product-grid-container{% if section.settings.filter_type == 'vertical' and section.settings.collapse_on_larger_devices %} product-grid-container-vertical{% endif %}" id="ProductGridContainer">
+      {%- paginate collection.products by section.settings.products_per_page -%}
+        {%- if collection.products.size == 0 -%}
+          <div class="collection collection--empty page-width" id="product-grid" data-id="{{ section.id }}">
+            <div class="loading-overlay gradient"></div>
+            <div class="title-wrapper center">
+              <h2 class="title title--primary">
+                {{ 'sections.collection_template.empty' | t }}<br>
+                {{ 'sections.collection_template.use_fewer_filters_html' | t: link: collection.url, class: "underlined-link link" }}
+              </h2>
+            </div>
+          </div>
+        {%- else -%}
+          <div class="collection page-width">
+            <div class="loading-overlay gradient"></div>
+    
+            <ul id="product-grid" data-id="{{ section.id }}" class="
+              grid product-grid grid--{{ section.settings.columns_mobile }}-col-tablet-down
+              grid--{{ section.settings.columns_desktop }}-col-desktop">
+              {%- for product in collection.products -%}
+                {% assign lazy_load = false %}
+                {%- if forloop.index > 2 -%}
+                  {%- assign lazy_load = true -%}
+                {%- endif -%}
+
+                <li class="grid__item">
+                  {% render 'card-product',
+                    card_product: product,
+                    media_aspect_ratio: section.settings.image_ratio,
+                    show_secondary_image: section.settings.show_secondary_image,
+                    show_vendor: section.settings.show_vendor,
+                    show_rating: section.settings.show_rating,
+                    lazy_load: lazy_load,
+                    show_quick_add: section.settings.enable_quick_add,
+                    section_id: section.id
+                  %}
+                </li>
+              {%- endfor -%}
+            </ul>
+    
+            {%- if paginate.pages > 1 -%}
+              {% render 'pagination', paginate: paginate, anchor: '' %}
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      {%- endpaginate -%}
+    </div>
+>>>>>>> a201986 (FIx collapse)
   </div>
-</div>
+</vertical-collapse>
+
 
 {% schema %}
 {

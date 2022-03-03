@@ -228,12 +228,13 @@ customElements.define('facet-remove', FacetRemove);
 class VerticalCollapse extends HTMLElement {
   constructor() {
     super();
-    console.log('hellooooo')
     this.querySelector('.vertical-filter-collapse').addEventListener('click', () => {
       if (this.querySelector('.vertical-filter-collapse').hasAttribute('open')) {
         this.querySelector('.facets').classList.remove('hidden');
+        this.classList.add('open');
       } else {
         this.querySelector('.facets').classList.add('hidden');
+        this.classList.remove('open');
       }
     });
   }
