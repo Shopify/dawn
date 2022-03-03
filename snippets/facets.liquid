@@ -5,22 +5,15 @@
     - results: {Object} Collection or Search object
     - enable_filtering: {Boolean} Show filtering when true
     - enable_sorting: {Boolean} Show sorting when true
-    - collapse_on_larger_devices: {Boolean} Collapse filtering/sorting into menu on larger devices when true
     - filter_type: {String} Type of filter
 
     Usage:
-    {% render 'facets', results: collection, enable_filtering: true, enable_sorting: true, collapse_on_larger_devices: false, filter_type: 'vertical' %}
+    {% render 'facets', results: collection, enable_filtering: true, enable_sorting: true, filter_type: 'vertical' %}
 {% endcomment %}
 
 {%- liquid
   assign sort_by = results.sort_by | default: results.default_sort_by
   assign total_active_values = 0
-  assign should_show_desktop_menu = false
-  if collapse_on_larger_devices == false and filter_type == 'horizontal'
-    assign should_show_desktop_menu = true
-  elsif filter_type == 'vertical'
-    assign should_show_desktop_menu = true
-  endif
   if results.url
     assign results_url = results.url
   else
@@ -30,7 +23,7 @@
 -%}
 
 <div class="facets-container">
-  {%- if should_show_desktop_menu -%}
+  {%- if filter_type == 'vertical' or filter_type == 'horizontal' -%}
     <facet-filters-form class="facets small-hide">
       <form id="FacetFiltersForm" class="facets__form">
         {%- if enable_sorting and filter_type == 'vertical' -%}
@@ -278,7 +271,7 @@
     </facet-filters-form>
   {%- endif -%}
 
-  <menu-drawer class="mobile-facets__wrapper {% if collapse_on_larger_devices == false or filter_type == 'vertical' %} medium-hide large-up-hide{% endif %}" data-breakpoint="mobile">
+  <menu-drawer class="mobile-facets__wrapper {% if filter_type == 'horizontal' or filter_type == 'vertical' %} medium-hide large-up-hide{% endif %}" data-breakpoint="mobile">
     <details class="mobile-facets__disclosure disclosure-has-popup">
       <summary class="mobile-facets__open-wrapper focus-offset">
         <span class="mobile-facets__open">
@@ -482,7 +475,7 @@
     </details>
   </menu-drawer>
 
-  <div class="active-facets active-facets-mobile {% if collapse_on_larger_devices == false or filter_type == 'vertical' %} medium-hide large-up-hide{% endif %}">
+  <div class="active-facets active-facets-mobile {% if filter_type == 'horizontal' or filter_type == 'vertical' %} medium-hide large-up-hide{% endif %}">
     {%- for filter in results.filters -%}
       {%- for value in filter.active_values -%}
         <facet-remove>
@@ -516,23 +509,5 @@
       </a>
     </facet-remove>
   </div>
-  {% comment %} <div class="product-count light{% unless collapse_on_larger_devices %} medium-hide large-up-hide{% endunless %}" role="status">
-    <h2 class="product-count__text text-body">
-      <span id="ProductCount">
-        {%- if results.results_count -%}
-          {{ 'templates.search.results_with_count' | t: terms: results.terms, count: results.results_count }}
-        {%- elsif results.products_count == results.all_products_count -%}
-          {{ 'products.facets.product_count_simple' | t: count: results.products_count }}
-        {%- else -%}
-          {{ 'products.facets.product_count' | t: product_count: results.products_count, count: results.all_products_count }}
-        {%- endif -%}
-      </span>
-    </h2>
-    <div class="loading-overlay__spinner">
-      <svg aria-hidden="true" focusable="false" role="presentation" class="spinner" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
-        <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
-      </svg>
-    </div>
-  </div> {% endcomment %}
 </div>
 
