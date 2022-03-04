@@ -1,0 +1,56 @@
+@function quoteIf($property, $condition) {
+  @if ($condition == true) {
+    @return '#{$property}';
+  } @else {
+    @return $property;
+  }
+}
+
+// Variable needs to be initialized first
+$quoteAnimationNames: false;
+
+@mixin make-transitions($base, $names) {
+
+  // We'll make a single rule for all transitions that
+  // sets the animation duration. This is basically the
+  // stock 'animate' class from Animate.css.
+  // $classesJoin: replace('${names}', ', ', '-enter-active, .${base}', g);
+
+  //.${base}-enter-active, .${base}-leave-active,
+  //.${base}${classesJoin}-leave-active {
+  //    animation-duration: $animationDuration;
+  //    animation-fill-mode: both;
+  //}
+
+  .#{$base}-enter-active, .#{$base}In,
+  .#{$base}-leave-active, .#{$base}Out {
+    animation-duration: $animationDuration;
+    animation-fill-mode: both;
+  }
+
+  // Entrance/Exit for the base class
+  .#{$base}-enter-active, .#{$base}In {
+    animation-name: quoteIf(#{$base}In, $quoteAnimationNames);
+  }
+
+  .#{$base}-leave-active, .#{$base}Out {
+    animation-name: quoteIf(#{$base}Out, $quoteAnimationNames);
+  }
+
+  // Loop through the different animations, and set
+  // the enter/leave animation names for each class.
+  @each $name in $names {
+    .#{$base}#{$name}-enter-active, .#{$base}In#{$name},
+    .#{$base}#{$name}-leave-active, .#{$base}Out#{$name} {
+      animation-duration: $animationDuration;
+      animation-fill-mode: both;
+    }
+
+    .#{$base}#{$name}-enter-active, .#{$base}In#{$name} {
+      animation-name: quoteIf(#{$base}In#{$name}, $quoteAnimationNames);
+    }
+    .#{$base}#{$name}-leave-active, .#{$base}Out#{$name} {
+      animation-name: quoteIf(#{$base}Out#{$name}, $quoteAnimationNames);
+    }
+  }
+}

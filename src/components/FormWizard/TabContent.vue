@@ -1,5 +1,8 @@
 <template>
-  <div v-if="isActive">
+  <div>
+
+  </div>
+  <div v-if="selected">
     <slot></slot>
   </div>
 </template>
@@ -22,7 +25,12 @@ export default {
     };
   },
   created() {
-    this.isActive = this.selected;
+    // this.isActive = this.selected;
   },
+  methods:{
+    triggerTab(value){
+      this.isActive = value;
+    }
+  }
 };
 </script>

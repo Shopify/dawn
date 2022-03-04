@@ -6,91 +6,91 @@
     </div>
     <div class="wrap-form" v-if="isReady">
       <form-wizard
-          ref="formwizard"
-          @onComplete="onComplete"
-          @onNextStep="nextStep"
-          @afterChangeTab="afterChangeTab"
-          :name="userName"
-          :data="listAnwser"
-          :isShowNext="isShowNext"
-          :ingredients="ingredients"
+        ref="formwizard"
+        @onComplete="onComplete"
+        @onNextStep="nextStep"
+        @afterChangeTab="afterChangeTab"
+        :name="userName"
+        :data="listAnwser"
+        :isShowNext="isShowNext"
+        :ingredients="ingredients"
       >
-        <tab-content
-            v-for="(item, index) in quiz"
-            :selected="index === 0 ? true : false"
-            :key="index"
-        >
-          <div>
-            <div style="width: 30px" v-html="item.svg"></div>
-            <h2>
-              {{ item.title }}
-              <small>
-                {{ item.subtitle }}
-              </small>
-            </h2>
+        <template v-for="(item, index) in quiz" :key="index + 'tab'">
+          <tab-content :selected="index === questionIndex ? true : false">
+            <div>
+              <div style="width: 30px" v-html="item.svg"></div>
+              <h2>
+                {{ item.title }}
+                <small>
+                  {{ item.subtitle }}
+                </small>
+              </h2>
 
-            <div
-                v-if="
-                item.type === 'MultipleChoice' || item.type === 'SingleChoice'
-              "
-                style="display: flex; flex-wrap: wrap"
-            >
               <div
+                v-if="
+                  item.type === 'MultipleChoice' || item.type === 'SingleChoice'
+                "
+                style="display: flex; flex-wrap: wrap"
+              >
+                <div
                   class="inputGroup"
                   v-for="(answer, answer_index) in item.options"
                   :key="answer_index"
-              >
-                <input
+                >
+                  <input
                     v-on:input="onChangeCheckbox(item, $event, item.type)"
                     :id="item.slug + '-' + answer_index"
                     :value="answer.id"
                     :checked="
-                    currentAnwser
-                      ? currentAnwser.indexOf(answer.value) > -1
-                      : false
-                  "
+                      currentAnwser
+                        ? currentAnwser.indexOf(answer.value) > -1
+                        : false
+                    "
                     type="checkbox"
-                />
-                <label :for="item.slug + '-' + answer_index">{{
+                  />
+                  <label :for="item.slug + '-' + answer_index">{{
                     answer.title
                   }}</label>
+                </div>
               </div>
-            </div>
 
-            <div class="wrap-form-control" v-if="item.type === 'Text'">
-              <div>
-                <input
+              <div class="wrap-form-control" v-if="item.type === 'Text'">
+                <div>
+                  <input
                     type="text"
                     :name="item.slug"
                     @keyup="onFormChange(item, $event)"
-                />
+                  />
 
-                <div class="error" v-if="isShowFieldRequire">
-                  This field is required.
+                  <div class="error" v-if="isShowFieldRequire">
+                    This field is required.
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="wrap-form-control"
+                v-if="
+                  item.type === 'TextAutoComplete' &&
+                  listAutoComplete.length > 0
+                "
+              >
+                <div>
+                  <Multiselect
+                    v-model="multiValue"
+                    mode="tags"
+                    :groups="false"
+                    :options="currentAnwser"
+                    :search="true"
+                    :close-on-select="false"
+                    label="name"
+                    track-by="name"
+                  />
                 </div>
               </div>
             </div>
-
-            <div
-                class="wrap-form-control"
-                v-if="
-                item.type === 'TextAutoComplete' && listAutoComplete.length > 0
-              "
-            >
-              <div>
-                <multiselect
-                    v-model="multiValue"
-                    :options="listAutoComplete"
-                    :multiple="true"
-                    :close-on-select="false"
-                    label="title"
-                    track-by="id"
-                    @select="onAddItemAutoComplete(item, $event)"
-                />
-              </div>
-            </div>
-          </div>
-        </tab-content>
+          </tab-content>
+        </template>
       </form-wizard>
     </div>
   </section>
@@ -101,10 +101,13 @@ import FormWizard from "./FormWizard/FormWizard";
 import TabContent from "./FormWizard/TabContent.vue";
 import ValidationHelper from "./FormWizard/ValidationHelper.vue";
 import { store } from "../store/form_store.js";
-import Multiselect from "vue-multiselect";
+import { FilterOperator, FilterType } from "../js/constant.js";
+// import Multiselect from "vue-multiselect";
+import Multiselect from "@vueform/multiselect";
 
+import "@vueform/multiselect/themes/default.css";
 const checked = (value) => value === true;
-const Token = 'l6HSoxCBye2GgqyaBMr3sihhZogL0XjPS44wLfiy'
+const Token = "l6HSoxCBye2GgqyaBMr3sihhZogL0XjPS44wLfiy";
 
 export default {
   name: "Quiz",
@@ -143,39 +146,39 @@ export default {
   computed: {},
   async mounted() {
     const response = await fetch(
-        "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + Token,
-          },
-        }
+      "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + Token,
+        },
+      }
     );
     response.json().then(async (rs) => {
       this.quiz = rs.data.questions.filter(
-          (e) => e.title.toLowerCase().indexOf("please list them") === -1
+        (e) => e.title.toLowerCase().indexOf("please list them") === -1
       );
       this.isReady = true;
       this.localQuiz = localStorage.getItem("quiz");
       if (!this.localQuiz) {
         this.loading = true;
         await fetch(
-            "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + Token,
-              },
-            }
+          "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + Token,
+            },
+          }
         )
-            .then((rs) => rs.json())
-            .then((result) => {
-              this.localQuiz = result.data;
-              localStorage.setItem("quiz", JSON.stringify(this.localQuiz));
-              this.loading = false;
-            });
+          .then((rs) => rs.json())
+          .then((result) => {
+            this.localQuiz = result.data;
+            localStorage.setItem("quiz", JSON.stringify(this.localQuiz));
+            this.loading = false;
+          });
       } else {
         this.localQuiz = JSON.parse(this.localQuiz);
         this.listAnwser = [];
@@ -211,10 +214,7 @@ export default {
   },
   methods: {
     onAddItemAutoComplete(item, event) {
-      if (!this.currentAnwser) {
-        this.currentAnwser = [];
-      }
-      this.currentAnwser.push(event.id);
+      this.currentAnwser = this.multiValue;
     },
     async onChangeCheckbox(item, $event, type) {
       if (!this.currentAnwser) {
@@ -222,7 +222,7 @@ export default {
       }
       if (this.currentAnwser.indexOf($event.target.value) > -1) {
         this.currentAnwser = this.currentAnwser.filter(
-            (e) => e !== parseInt($event.target.value)
+          (e) => e !== parseInt($event.target.value)
         );
       } else {
         this.currentAnwser.push(parseInt($event.target.value));
@@ -241,8 +241,8 @@ export default {
     },
     async nextStep() {
       if (
-          !this.isValidNext ||
-          (this.isRequire && (this.currentAnwser === "" || !this.currentAnwser))
+        !this.isValidNext ||
+        (this.isRequire && (this.currentAnwser === "" || !this.currentAnwser))
       ) {
         this.isShowFieldRequire = true;
         return;
@@ -257,86 +257,87 @@ export default {
         answers: [],
       };
       if (
-          this.quiz[this.questionIndex].category === "name" ||
-          this.quiz[this.questionIndex].category === "zip" ||
-          this.quiz[this.questionIndex].category === "email"
+        this.quiz[this.questionIndex].category === "name" ||
+        this.quiz[this.questionIndex].category === "zip" ||
+        this.quiz[this.questionIndex].category === "email"
       ) {
         payload[this.quiz[this.questionIndex].category] = this.currentAnwser;
       }
 
       this.listAnwser
-          .filter((n) => n)
-          .forEach((item) => {
-            if (item.type !== "Text") {
-              payload.answers = [...payload.answers, ...item.anwser];
-            }
-          });
+        .filter((n) => n)
+        .forEach((item) => {
+          if (item.type !== "Text") {
+            payload.answers = [...payload.answers, ...item.anwser];
+          }
+        });
       this.isValidNext = false;
       this.questionIndex++;
       this.$refs.formwizard.triggerNext(this.questionIndex);
       await fetch(
-          "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/" +
+        "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/" +
           this.localQuiz.id,
-          {
-            method: "PATCH",
-            body: JSON.stringify(payload),
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer " + Token,
-            },
-          }
+        {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + Token,
+          },
+        }
       )
-          .then((rs) => rs.json())
-          .then((result) => {
-            this.localQuiz = result.data;
-            this.ingredients = [];
-            this.localQuiz.lead_choices.forEach((choices) => {
-              choices.ingredients.forEach((ing) => {
-                this.ingredients.push(ing);
-              });
+        .then((rs) => rs.json())
+        .then((result) => {
+          this.localQuiz = result.data;
+          this.ingredients = [];
+          this.localQuiz.lead_choices.forEach((choices) => {
+            choices.ingredients.forEach((ing) => {
+              this.ingredients.push(ing);
             });
-            localStorage.setItem("quiz", JSON.stringify(this.localQuiz));
           });
+          localStorage.setItem("quiz", JSON.stringify(this.localQuiz));
+        });
     },
 
     checkValidStep() {
       let isPassFilter = true;
       if (
-          this.quiz[this.questionIndex].filters &&
-          this.quiz[this.questionIndex].filters.length > 0
+        this.quiz[this.questionIndex].filters &&
+        this.quiz[this.questionIndex].filters.length > 0
       ) {
         this.quiz[this.questionIndex].filters.forEach((filter) => {
           if (!isPassFilter) {
             return;
           }
+
           const q = this.listAnwser
-              .filter((n) => n)
-              .find((e) => e.id === filter.question);
+            .filter((n) => n)
+            .find((e) => e.id === filter.question);
           let answerQ = null;
           if (q) {
             answerQ = this.listAnwser
-                .filter((n) => n)
-                .find((e) => e.id === filter.question).anwser;
+              .filter((n) => n)
+              .find((e) => e.id === filter.question).anwser;
           }
           if (!answerQ) {
             answerQ = [];
           }
           if (filter.type === FilterType.IncludeOnlyIf) {
             if (
-                this.listAnwser
-                    .filter((n) => n)
-                    .find((e) => e.id === filter.question) !== "Text"
+              this.listAnwser
+                .filter((n) => n)
+                .find((e) => e.id === filter.question) !== "Text"
             ) {
               isPassFilter = FilterOperator[filter.operator](
-                  answerQ,
-                  -1,
-                  true,
-                  filter.value
+                answerQ,
+                -1,
+                true,
+                filter.value
               );
             } else {
               isPassFilter = FilterOperator[filter.operator](
-                  answerQ,
-                  filter.value
+                answerQ,
+                filter.value
               );
             }
           }
@@ -357,13 +358,14 @@ export default {
       if (!isPassFilter) {
         this.questionIndex += 1;
         this.$refs.formwizard.triggerNext(this.questionIndex);
+        this.$forceUpdate();
         return;
       }
 
       if (
-          this.quiz[this.questionIndex].category === "name" ||
-          this.quiz[this.questionIndex].category === "lifestyle" ||
-          this.quiz[this.questionIndex].category === "user"
+        this.quiz[this.questionIndex].category === "name" ||
+        this.quiz[this.questionIndex].category === "lifestyle" ||
+        this.quiz[this.questionIndex].category === "user"
       ) {
         this.isRequire = true;
       } else {
@@ -375,26 +377,35 @@ export default {
       } else {
         this.isShowNext = true;
       }
-
+      this.$forceUpdate();
       if (this.quiz[this.questionIndex].type === "TextAutoComplete") {
         const response = await fetch(
-            "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/question/" +
+          "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/question/" +
             this.quiz[this.questionIndex].id,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + Token,
-              },
-            }
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + Token,
+            },
+          }
         );
         response.json().then((rs) => {
-          this.listAutoComplete = rs.data;
+          this.listAutoComplete = [];
+          rs.data.forEach((e) => {
+            this.listAutoComplete.push({
+              value: e.id,
+              name: e.title,
+              order: e.order,
+            });
+          });
+
+          this.$forceUpdate();
         });
       }
     },
     onComplete() {
-      this.router.push("result")
+      this.router.push("result");
     },
   },
 };

@@ -211,7 +211,7 @@ export default {
     };
   },
   mounted() {
-    this.tabs = this.$slots.default().filter(child => child.type.name === 'tab-content')
+    this.tabs = this.$slots.default()[0].children.filter(tab => tab.type.name === 'tab-content')
     console.log(this.$slots.default())
     this.totalTabs = this.tabs.length;
     this.currentTab = this.tabs.findIndex((tab) => tab.isActive === true);
