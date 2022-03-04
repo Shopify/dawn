@@ -119,7 +119,7 @@
 
       <h3>Personalizing {{ name ? "for " + name : "" }}...</h3>
       <div class="step-progress">
-        <div class="bar progressbar" :style="{ width: progress + '%' }"></div>
+        <div class="bar progressbar" :style="{ width: progressW + '%', display: 'block' }"></div>
       </div>
 
       <div v-if="listIngredients && listIngredients.length > 0">

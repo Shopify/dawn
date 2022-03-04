@@ -18167,7 +18167,7 @@ var Token = "l6HSoxCBye2GgqyaBMr3sihhZogL0XjPS44wLfiy";
       }))();
     },
     onComplete: function onComplete() {
-      this.router.push("result");
+      this.$router.push("/result");
     }
   }
 });
@@ -18225,7 +18225,8 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   ), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_4, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
     "class": "bar progressbar",
     style: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeStyle)({
-      width: $data.progress + '%'
+      width: $options.progressW + '%',
+      display: 'block'
     })
   }, null, 4
   /* STYLE */
@@ -18570,6 +18571,7 @@ var createVueApp = function createVueApp() {
     routes: routes // short for `routes: routes`
 
   });
+  app.use(router);
   return app;
 };
 /**

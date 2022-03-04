@@ -79,6 +79,7 @@ const createVueApp = () => {
         history: VueRouter.createWebHashHistory(),
         routes, // short for `routes: routes`
     })
+    app.use(router);
     return app
 }
 

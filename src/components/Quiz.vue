@@ -406,7 +406,7 @@ export default {
       }
     },
     onComplete() {
-      this.router.push("result");
+      this.$router.push("/result");
     },
   },
 };
