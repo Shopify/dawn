@@ -18363,7 +18363,10 @@ var _hoisted_8 = {
 };
 var _hoisted_9 = {
   key: 2,
-  "class": "wrap-form-control"
+  style: {
+    "padding": "15px",
+    "background": "#fff"
+  }
 };
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_Multiselect = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Multiselect");
@@ -18436,12 +18439,15 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
                 return $data.multiValue = $event;
               }),
               mode: "tags",
+              searchable: true,
               groups: false,
               options: $data.listAutoComplete,
-              search: true,
               "close-on-select": false,
               label: "name",
-              "track-by": "name"
+              "track-by": "name",
+              onChange: _cache[1] || (_cache[1] = function ($event) {
+                return $options.onAddItemAutoComplete();
+              })
             }, null, 8
             /* PROPS */
             , ["modelValue", "options"])])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])];

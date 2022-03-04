@@ -67,7 +67,8 @@
               </div>
 
               <div
-                class="wrap-form-control"
+                style="padding: 15px;
+    background: #fff;"
                 v-if="
                   item.type === 'TextAutoComplete' &&
                   listAutoComplete.length > 0
@@ -77,12 +78,13 @@
                   <Multiselect
                     v-model="multiValue"
                     mode="tags"
+                    :searchable="true"
                     :groups="false"
                     :options="listAutoComplete"
-                    :search="true"
                     :close-on-select="false"
                     label="name"
                     track-by="name"
+                    @change="onAddItemAutoComplete()"
                   />
                 </div>
               </div>
