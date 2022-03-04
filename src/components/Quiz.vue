@@ -1,9 +1,6 @@
 
 <template>
   <section>
-    <div class="logo-section">
-      <h1>EVYANA</h1>
-    </div>
     <div class="wrap-form" v-if="isReady">
       <form-wizard
         ref="formwizard"
