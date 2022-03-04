@@ -78,7 +78,7 @@
                     v-model="multiValue"
                     mode="tags"
                     :groups="false"
-                    :options="currentAnwser"
+                    :options="listAutoComplete"
                     :search="true"
                     :close-on-select="false"
                     label="name"
@@ -141,7 +141,8 @@ export default {
       ingredients: [],
     };
   },
-  computed: {},
+  computed: {
+  },
   async mounted() {
     const response = await fetch(
       "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1",
