@@ -17824,16 +17824,17 @@ var Token = "l6HSoxCBye2GgqyaBMr3sihhZogL0XjPS44wLfiy";
                           _this.quiz = rs.data.questions.filter(function (e) {
                             return e.title.toLowerCase().indexOf("please list them") === -1;
                           });
+                          console.log(_this.quiz);
                           _this.isReady = true;
                           _this.localQuiz = localStorage.getItem("quiz");
 
                           if (_this.localQuiz) {
-                            _context.next = 9;
+                            _context.next = 10;
                             break;
                           }
 
                           _this.loading = true;
-                          _context.next = 7;
+                          _context.next = 8;
                           return fetch("https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead", {
                             method: "POST",
                             headers: {
@@ -17848,11 +17849,11 @@ var Token = "l6HSoxCBye2GgqyaBMr3sihhZogL0XjPS44wLfiy";
                             _this.loading = false;
                           });
 
-                        case 7:
-                          _context.next = 17;
+                        case 8:
+                          _context.next = 18;
                           break;
 
-                        case 9:
+                        case 10:
                           _this.localQuiz = JSON.parse(_this.localQuiz);
                           _this.listAnwser = [];
                           i = 0;
@@ -17895,7 +17896,7 @@ var Token = "l6HSoxCBye2GgqyaBMr3sihhZogL0XjPS44wLfiy";
 
                           _this.loading = false;
 
-                        case 17:
+                        case 18:
                         case "end":
                           return _context.stop();
                       }
@@ -18167,7 +18168,49 @@ var Token = "l6HSoxCBye2GgqyaBMr3sihhZogL0XjPS44wLfiy";
       }))();
     },
     onComplete: function onComplete() {
-      this.$router.push("/result");
+      var _this6 = this;
+
+      return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee6() {
+        var payload;
+        return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee6$(_context6) {
+          while (1) {
+            switch (_context6.prev = _context6.next) {
+              case 0:
+                payload = {
+                  email: _this6.currentAnwser
+                };
+                _context6.next = 3;
+                return fetch("https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/" + _this6.localQuiz.id, {
+                  method: "PATCH",
+                  body: JSON.stringify(payload),
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + Token
+                  }
+                }).then(function (rs) {
+                  return rs.json();
+                }).then(function (result) {
+                  _this6.localQuiz = result.data;
+                  _this6.ingredients = [];
+
+                  _this6.localQuiz.lead_choices.forEach(function (choices) {
+                    choices.ingredients.forEach(function (ing) {
+                      _this6.ingredients.push(ing);
+                    });
+                  });
+
+                  localStorage.setItem("quiz", JSON.stringify(_this6.localQuiz));
+
+                  _this6.$router.push("/result");
+                });
+
+              case 3:
+              case "end":
+                return _context6.stop();
+            }
+          }
+        }, _callee6);
+      }))();
     }
   }
 });

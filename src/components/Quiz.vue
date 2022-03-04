@@ -67,8 +67,7 @@
               </div>
 
               <div
-                style="padding: 15px;
-    background: #fff;"
+                style="padding: 15px; background: #fff"
                 v-if="
                   item.type === 'TextAutoComplete' &&
                   listAutoComplete.length > 0
@@ -143,8 +142,7 @@ export default {
       ingredients: [],
     };
   },
-  computed: {
-  },
+  computed: {},
   async mounted() {
     const response = await fetch(
       "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1",
@@ -160,6 +158,7 @@ export default {
       this.quiz = rs.data.questions.filter(
         (e) => e.title.toLowerCase().indexOf("please list them") === -1
       );
+      console.log(this.quiz);
       this.isReady = true;
       this.localQuiz = localStorage.getItem("quiz");
       if (!this.localQuiz) {
@@ -405,8 +404,34 @@ export default {
         });
       }
     },
-    onComplete() {
-      this.$router.push("/result");
+    async onComplete() {
+      let payload = {
+        email: this.currentAnwser,
+      };
+      await fetch(
+        "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/" +
+          this.localQuiz.id,
+        {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + Token,
+          },
+        }
+      )
+        .then((rs) => rs.json())
+        .then((result) => {
+          this.localQuiz = result.data;
+          this.ingredients = [];
+          this.localQuiz.lead_choices.forEach((choices) => {
+            choices.ingredients.forEach((ing) => {
+              this.ingredients.push(ing);
+            });
+          });
+          localStorage.setItem("quiz", JSON.stringify(this.localQuiz));
+          this.$router.push("/result");
+        });
     },
   },
 };
