@@ -536,7 +536,8 @@ class SliderComponent extends HTMLElement {
   initPages() {
     this.sliderItemsToShow = Array.from(this.sliderItems).filter(element => element.clientWidth > 0);
     if (this.sliderItemsToShow.length < 2) return;
-    this.sliderItemOffset = this.sliderItemsToShow[1].offsetLeft - this.sliderItemsToShow[0].offsetLeft;
+    // grab the data-step value here and then use it below to multiply the result by the number of steps.
+    this.sliderItemOffset = (this.sliderItemsToShow[1].offsetLeft - this.sliderItemsToShow[0].offsetLeft) * 4;
     this.slidesPerPage = Math.floor((this.slider.clientWidth - this.sliderItemsToShow[0].offsetLeft) / this.sliderItemOffset);
     this.totalPages = this.sliderItemsToShow.length - this.slidesPerPage + 1;
     this.update();
@@ -555,6 +556,23 @@ class SliderComponent extends HTMLElement {
       this.currentPageElement.textContent = this.currentPage;
       this.pageTotalElement.textContent = this.totalPages;
     }
+
+    // Here I need to make an array of dots and set the active class using the index of the array and this.currentPage
+    this.dotsWrapMobile = Array.from(this.querySelectorAll('.slideshow__control-wrapper .large-up-hide'));
+    this.dotsWrapDesktop = Array.from(this.querySelectorAll('.slideshow__control-wrapper .small-hide'));
+
+    this.dotsWrapDesktop.forEach( (dot, index) => {
+      if (index === this.currentPage - 1) {
+        dot.classList.add("slider-counter__link--active");
+      } else {
+        dot.classList.remove("slider-counter__link--active");
+      }
+    })
+
+    console.log(this.dotsWrapDesktop[this.currentPage])
+
+
+
 
     if (this.currentPage != previousPage) {
       this.dispatchEvent(new CustomEvent('slideChanged', { detail: {
