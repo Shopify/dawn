@@ -13,6 +13,7 @@
         :name="userName"
         :data="listAnwser"
         :isShowNext="isShowNext"
+        :curerentIndex="questionIndex"
         :ingredients="ingredients"
       >
         <template v-for="(item, index) in quiz" :key="index + 'tab'">
