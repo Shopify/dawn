@@ -18324,37 +18324,30 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
 
-
-var _hoisted_1 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
-  "class": "logo-section"
-}, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", null, "EVYANA")], -1
-/* HOISTED */
-);
-
-var _hoisted_2 = {
+var _hoisted_1 = {
   key: 0,
   "class": "wrap-form"
 };
-var _hoisted_3 = ["innerHTML"];
-var _hoisted_4 = {
+var _hoisted_2 = ["innerHTML"];
+var _hoisted_3 = {
   key: 0,
   style: {
     "display": "flex",
     "flex-wrap": "wrap"
   }
 };
-var _hoisted_5 = ["onInput", "id", "value", "checked"];
-var _hoisted_6 = ["for"];
-var _hoisted_7 = {
+var _hoisted_4 = ["onInput", "id", "value", "checked"];
+var _hoisted_5 = ["for"];
+var _hoisted_6 = {
   key: 1,
   "class": "wrap-form-control"
 };
-var _hoisted_8 = ["name", "onKeyup"];
-var _hoisted_9 = {
+var _hoisted_7 = ["name", "onKeyup"];
+var _hoisted_8 = {
   key: 0,
   "class": "error"
 };
-var _hoisted_10 = {
+var _hoisted_9 = {
   key: 2,
   "class": "wrap-form-control"
 };
@@ -18365,7 +18358,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
   var _component_form_wizard = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("form-wizard");
 
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("section", null, [_hoisted_1, $data.isReady ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_form_wizard, {
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("section", null, [$data.isReady ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_form_wizard, {
     ref: "formwizard",
     onOnComplete: $options.onComplete,
     onOnNextStep: $options.nextStep,
@@ -18389,11 +18382,11 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
               innerHTML: item.svg
             }, null, 8
             /* PROPS */
-            , _hoisted_3), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h2", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(item.title) + " ", 1
+            , _hoisted_2), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h2", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(item.title) + " ", 1
             /* TEXT */
             ), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("small", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(item.subtitle), 1
             /* TEXT */
-            )]), item.type === 'MultipleChoice' || item.type === 'SingleChoice' ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_4, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(item.options, function (answer, answer_index) {
+            )]), item.type === 'MultipleChoice' || item.type === 'SingleChoice' ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_3, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(item.options, function (answer, answer_index) {
               return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
                 "class": "inputGroup",
                 key: answer_index
@@ -18407,14 +18400,14 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
                 type: "checkbox"
               }, null, 40
               /* PROPS, HYDRATE_EVENTS */
-              , _hoisted_5), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+              , _hoisted_4), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
                 "for": item.slug + '-' + answer_index
               }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(answer.title), 9
               /* TEXT, PROPS */
-              , _hoisted_6)]);
+              , _hoisted_5)]);
             }), 128
             /* KEYED_FRAGMENT */
-            ))])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), item.type === 'Text' ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_7, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+            ))])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), item.type === 'Text' ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_6, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
               type: "text",
               name: item.slug,
               onKeyup: function onKeyup($event) {
@@ -18422,7 +18415,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
               }
             }, null, 40
             /* PROPS, HYDRATE_EVENTS */
-            , _hoisted_8), $data.isShowFieldRequire ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_9, " This field is required. ")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), item.type === 'TextAutoComplete' && $data.listAutoComplete.length > 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_10, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Multiselect, {
+            , _hoisted_7), $data.isShowFieldRequire ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_8, " This field is required. ")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), item.type === 'TextAutoComplete' && $data.listAutoComplete.length > 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_9, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Multiselect, {
               modelValue: $data.multiValue,
               "onUpdate:modelValue": _cache[0] || (_cache[0] = function ($event) {
                 return $data.multiValue = $event;
