@@ -17489,9 +17489,21 @@ __webpack_require__.r(__webpack_exports__);
       isValidationSupport: false
     };
   },
+  computed: {
+    listIngredients: function listIngredients() {
+      return this.ingredients.filter(function (value, index, self) {
+        return index === self.findIndex(function (t) {
+          return t.id === value.id;
+        });
+      });
+    },
+    progressW: function progressW() {
+      return this.progress;
+    }
+  },
   mounted: function mounted() {
     this.tabs = this.$slots["default"]()[0].children.filter(function (tab) {
-      return tab.type.name === 'tab-content';
+      return tab.type.name === "tab-content";
     });
     console.log(this.$slots["default"]());
     this.totalTabs = this.tabs.length;
@@ -17580,6 +17592,7 @@ __webpack_require__.r(__webpack_exports__);
       this.currentTab = index;
       this.tabs[index].isActive = true;
       this.progress = (this.currentTab + 1) / this.totalTabs * 100;
+      this.$forceUpdate();
       this.$emit("afterChangeTab");
     },
     _validateCurrentTab: function _validateCurrentTab() {
@@ -18216,12 +18229,12 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     })
   }, null, 4
   /* STYLE */
-  )]), _ctx.listIngredients && _ctx.listIngredients.length > 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_5, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_6, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.TransitionGroup, {
+  )]), $options.listIngredients && $options.listIngredients.length > 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_5, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_6, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(vue__WEBPACK_IMPORTED_MODULE_0__.TransitionGroup, {
     name: "fadeRight",
     tag: "ul"
   }, {
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-      return [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(_ctx.listIngredients, function (item, key) {
+      return [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($options.listIngredients, function (item, key) {
         return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("li", {
           key: key + '1',
           style: {
@@ -18366,6 +18379,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     name: $data.userName,
     data: $data.listAnwser,
     isShowNext: $data.isShowNext,
+    curerentIndex: $data.questionIndex,
     ingredients: $data.ingredients
   }, {
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
@@ -18446,7 +18460,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
   }, 8
   /* PROPS */
-  , ["onOnComplete", "onOnNextStep", "onAfterChangeTab", "name", "data", "isShowNext", "ingredients"])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]);
+  , ["onOnComplete", "onOnNextStep", "onAfterChangeTab", "name", "data", "isShowNext", "curerentIndex", "ingredients"])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]);
 }
 
 /***/ }),
