@@ -14,6 +14,7 @@ export { FormWizard, TabContent, ValidationHelper, Quiz, VueRouter };
 
 import '../css/app.css'
 
+
 /**
  * vuex
  * auto-import all modules and prepare shared store

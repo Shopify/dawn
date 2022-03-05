@@ -1,10 +1,7 @@
 <template>
-  <div>
-
-  </div>
-  <div v-if="selected">
+  <template v-if="selected">
     <slot></slot>
-  </div>
+  </template>
 </template>
 
 <script>

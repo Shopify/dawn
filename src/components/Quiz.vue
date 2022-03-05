@@ -1,7 +1,5 @@
-
 <template>
-  <section>
-    <div class="wrap-form" v-if="isReady">
+    <template v-if="isReady">
       <form-wizard
         ref="formwizard"
         @onComplete="onComplete"
@@ -15,90 +13,74 @@
       >
         <template v-for="(item, index) in quiz" :key="index + 'tab'">
           <tab-content :selected="index === questionIndex ? true : false">
-            <div>
-              <div style="width: 30px" v-html="item.svg"></div>
-              <h2>
-                {{ item.title }}
-                <small>
-                  {{ item.subtitle }}
-                </small>
-              </h2>
-
-              <div
-                v-if="
-                  item.type === 'MultipleChoice' || item.type === 'SingleChoice'
-                "
-                style="display: flex; flex-wrap: wrap"
-              >
-                <div
-                  class="inputGroup"
-                  v-for="(answer, answer_index) in item.options"
-                  :key="answer_index"
-                >
-                  <input
-                    v-on:input="onChangeCheckbox(item, $event, item.type)"
-                    :id="item.slug + '-' + answer_index"
-                    :value="answer.id"
-                    :checked="
-                      currentAnwser
-                        ? currentAnwser.indexOf(answer.value) > -1
-                        : false
-                    "
-                    type="checkbox"
-                  />
-                  <label :for="item.slug + '-' + answer_index">{{
-                    answer.title
-                  }}</label>
-                </div>
+              <div class="question-header">
+<!--                <div style="width: 30px" ></div>-->
+                  <div v-if="item.svg" class="icon" v-html="item.svg"></div>
+                  <h2>
+                    {{ item.title }}
+                    <small>
+                      {{ item.subtitle }}
+                    </small>
+                  </h2>
               </div>
-
-              <div class="wrap-form-control" v-if="item.type === 'Text'">
-                <div>
-                  <input
-                    type="text"
-                    :name="item.slug"
-                    @keyup="onFormChange(item, $event)"
-                  />
-
-                  <div class="error" v-if="isShowFieldRequire">
-                    This field is required.
+              <div class="question-options">
+                <template v-if="item.type === 'MultipleChoice' || item.type === 'SingleChoice'">
+                  <ul class="ks-cboxtags">
+                    <li v-for="(answer, answer_index) in item.options"
+                        :key="answer_index">
+                      <input
+                      v-on:input="onChangeCheckbox(item, $event, item.type)"
+                      :id="item.slug + '-' + answer_index"
+                      :value="answer.id"
+                      :checked="
+                        currentAnwser
+                          ? currentAnwser.indexOf(answer.value) > -1
+                          : false
+                      "
+                      type="checkbox"
+                    />
+                      <label :for="item.slug + '-' + answer_index">{{
+                      answer.title
+                    }}</label>
+                    </li>
+                  </ul>
+                </template>
+                <template v-if="item.type === 'Text'">
+                  <div class="field">
+                    <input
+                      class="field__input"
+                      type="text"
+                      :name="item.slug"
+                      @keyup="onFormChange(item, $event)"
+                    />
+                    <div class="error" v-if="isShowFieldRequire">
+                      This field is required.
+                    </div>
                   </div>
-                </div>
+                </template>
+                <template v-if="item.type === 'TextAutoComplete' &&listAutoComplete.length > 0">
+                    <Multiselect
+                      v-model="multiValue"
+                      mode="tags"
+                      :searchable="true"
+                      :groups="false"
+                      :options="listAutoComplete"
+                      :close-on-select="false"
+                      label="name"
+                      track-by="name"
+                      @change="onAddItemAutoComplete()"
+                    />
+                </template>
               </div>
-
-              <div
-                style="padding: 15px; background: #fff"
-                v-if="
-                  item.type === 'TextAutoComplete' &&
-                  listAutoComplete.length > 0
-                "
-              >
-                <div>
-                  <Multiselect
-                    v-model="multiValue"
-                    mode="tags"
-                    :searchable="true"
-                    :groups="false"
-                    :options="listAutoComplete"
-                    :close-on-select="false"
-                    label="name"
-                    track-by="name"
-                    @change="onAddItemAutoComplete()"
-                  />
-                </div>
-              </div>
-            </div>
           </tab-content>
         </template>
       </form-wizard>
-    </div>
-  </section>
+    </template>
 </template>
 
 <script>
 import FormWizard from "./FormWizard/FormWizard";
 import TabContent from "./FormWizard/TabContent.vue";
-import ValidationHelper from "./FormWizard/ValidationHelper.vue";
 import { store } from "../store/form_store.js";
 import { FilterOperator, FilterType } from "../js/constant.js";
 // import Multiselect from "vue-multiselect";
