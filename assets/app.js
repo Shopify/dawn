@@ -17988,7 +17988,7 @@ var Token = "l6HSoxCBye2GgqyaBMr3sihhZogL0XjPS44wLfiy";
                   answers: []
                 };
 
-                if (_this3.quiz[_this3.questionIndex].category === "name" || _this3.quiz[_this3.questionIndex].category === "zip" || _this3.quiz[_this3.questionIndex].category === "email") {
+                if (_this3.quiz[_this3.questionIndex].category === "name" || _this3.quiz[_this3.questionIndex].category === "zip" || _this3.quiz[_this3.questionIndex].category === "email" || _this3.quiz[_this3.questionIndex].category === "skintone" || _this3.quiz[_this3.questionIndex].category === "skintype" || _this3.quiz[_this3.questionIndex].category === "age") {
                   payload[_this3.quiz[_this3.questionIndex].category] = _this3.currentAnwser;
                 }
 

@@ -264,10 +264,16 @@ export default {
       let payload = {
         answers: [],
       };
+
+
+
       if (
         this.quiz[this.questionIndex].category === "name" ||
         this.quiz[this.questionIndex].category === "zip" ||
-        this.quiz[this.questionIndex].category === "email"
+        this.quiz[this.questionIndex].category === "email" ||
+        this.quiz[this.questionIndex].category === "skintone" ||
+        this.quiz[this.questionIndex].category === "skintype" ||
+        this.quiz[this.questionIndex].category === "age"
       ) {
         payload[this.quiz[this.questionIndex].category] = this.currentAnwser;
       }
