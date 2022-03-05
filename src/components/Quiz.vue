@@ -95,24 +95,7 @@
       ></path>
     </svg>
 
-    <div class="loading-dot">
-      <div class="dot dot-1"></div>
-      <div class="dot dot-2"></div>
-      <div class="dot dot-3"></div>
-    </div>
-
-    <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
-      <defs>
-        <filter id="goo">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
-          <feColorMatrix
-            in="blur"
-            mode="matrix"
-            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 21 -7"
-          />
-        </filter>
-      </defs>
-    </svg>
+    <div id="loading"></div>
 
     <p class="text-loading">
       3 minutes to your best skincare, let's go!
@@ -183,6 +166,7 @@ export default {
         (e) => e.title.toLowerCase().indexOf("please list them") === -1
       );
       console.log(this.quiz);
+      //TODO Renable
       this.isReady = true;
       this.localQuiz = localStorage.getItem("quiz");
       if (!this.localQuiz) {
