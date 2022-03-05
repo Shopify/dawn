@@ -1,81 +1,123 @@
 <template>
-    <template v-if="isReady">
-      <form-wizard
-        ref="formwizard"
-        @onComplete="onComplete"
-        @onNextStep="nextStep"
-        @afterChangeTab="afterChangeTab"
-        :name="userName"
-        :data="listAnwser"
-        :isShowNext="isShowNext"
-        :curerentIndex="questionIndex"
-        :ingredients="ingredients"
-      >
-        <template v-for="(item, index) in quiz" :key="index + 'tab'">
-          <tab-content :selected="index === questionIndex ? true : false">
-              <div class="question-header">
-<!--                <div style="width: 30px" ></div>-->
-                  <div v-if="item.svg" class="icon" v-html="item.svg"></div>
-                  <h2>
-                    {{ item.title }}
-                    <small>
-                      {{ item.subtitle }}
-                    </small>
-                  </h2>
+  <template v-if="isReady">
+    <form-wizard
+      ref="formwizard"
+      @onComplete="onComplete"
+      @onNextStep="nextStep"
+      @afterChangeTab="afterChangeTab"
+      :name="userName"
+      :data="listAnwser"
+      :isShowNext="isShowNext"
+      :curerentIndex="questionIndex"
+      :ingredients="ingredients"
+    >
+      <template v-for="(item, index) in quiz" :key="index + 'tab'">
+        <tab-content :selected="index === questionIndex ? true : false">
+          <div class="question-header">
+            <!--                <div style="width: 30px" ></div>-->
+            <div v-if="item.svg" class="icon" v-html="item.svg"></div>
+            <h2>
+              {{ item.title }}
+              <small>
+                {{ item.subtitle }}
+              </small>
+            </h2>
+          </div>
+          <div class="question-options">
+            <template
+              v-if="
+                item.type === 'MultipleChoice' || item.type === 'SingleChoice'
+              "
+            >
+              <ul class="ks-cboxtags">
+                <li
+                  v-for="(answer, answer_index) in item.options"
+                  :key="answer_index"
+                >
+                  <input
+                    v-on:input="onChangeCheckbox(item, $event, item.type)"
+                    :id="item.slug + '-' + answer_index"
+                    :value="answer.id"
+                    :checked="
+                      currentAnwser
+                        ? currentAnwser.indexOf(answer.value) > -1
+                        : false
+                    "
+                    type="checkbox"
+                  />
+                  <label :for="item.slug + '-' + answer_index">{{
+                    answer.title
+                  }}</label>
+                </li>
+              </ul>
+            </template>
+            <template v-if="item.type === 'Text'">
+              <div class="field">
+                <input
+                  class="field__input"
+                  type="text"
+                  :name="item.slug"
+                  @keyup="onFormChange(item, $event)"
+                />
+                <div class="error" v-if="isShowFieldRequire">
+                  This field is required.
+                </div>
               </div>
-              <div class="question-options">
-                <template v-if="item.type === 'MultipleChoice' || item.type === 'SingleChoice'">
-                  <ul class="ks-cboxtags">
-                    <li v-for="(answer, answer_index) in item.options"
-                        :key="answer_index">
-                      <input
-                      v-on:input="onChangeCheckbox(item, $event, item.type)"
-                      :id="item.slug + '-' + answer_index"
-                      :value="answer.id"
-                      :checked="
-                        currentAnwser
-                          ? currentAnwser.indexOf(answer.value) > -1
-                          : false
-                      "
-                      type="checkbox"
-                    />
-                      <label :for="item.slug + '-' + answer_index">{{
-                      answer.title
-                    }}</label>
-                    </li>
-                  </ul>
-                </template>
-                <template v-if="item.type === 'Text'">
-                  <div class="field">
-                    <input
-                      class="field__input"
-                      type="text"
-                      :name="item.slug"
-                      @keyup="onFormChange(item, $event)"
-                    />
-                    <div class="error" v-if="isShowFieldRequire">
-                      This field is required.
-                    </div>
-                  </div>
-                </template>
-                <template v-if="item.type === 'TextAutoComplete' &&listAutoComplete.length > 0">
-                    <Multiselect
-                      v-model="multiValue"
-                      mode="tags"
-                      :searchable="true"
-                      :groups="false"
-                      :options="listAutoComplete"
-                      :close-on-select="false"
-                      label="name"
-                      track-by="name"
-                      @change="onAddItemAutoComplete()"
-                    />
-                </template>
-              </div>
-          </tab-content>
-        </template>
-      </form-wizard>
-    </template>
+            </template>
+            <template
+              v-if="
+                item.type === 'TextAutoComplete' && listAutoComplete.length > 0
+              "
+            >
+              <Multiselect
+                v-model="multiValue"
+                mode="tags"
+                :searchable="true"
+                :groups="false"
+                :options="listAutoComplete"
+                :close-on-select="false"
+                label="name"
+                track-by="name"
+                @change="onAddItemAutoComplete()"
+              />
+            </template>
+          </div>
+        </tab-content>
+      </template>
+    </form-wizard>
+  </template>
+
+  <div class="loading-evyana" v-if="!isReady">
+    <svg xmlns="http://www.w3.org/2000/svg" width="200" viewBox="0 0 214 25">
+      <path
+        class="cls-1"
+        d="M0 25V0h13.6v2.3H2.5v9h10.7v2.2H2.5v9.2h11V25zM45.1 25h-2.4L32.5 0h2.8L44 21.9 52.7 0h2.7zM83.6 16.6V25h-2.4v-8.4L72.6 0h2.7l7 14 7.3-14h2.7zM120.2 0h-2.8l-10.6 25h2.6l3-6.8L118.8 3l5.7 13.7 3.6 8.4h2.7zM203.3 0h-2.7l-10.7 25h2.6l3-6.8L202 3l5.7 13.7 3.6 8.4h2.7zM167.8 25L153 3v22h-2.4V0h3.3l14 20.7V0h2.4v25z"
+      ></path>
+    </svg>
+
+    <div class="loading-dot">
+      <div class="dot dot-1"></div>
+      <div class="dot dot-2"></div>
+      <div class="dot dot-3"></div>
+    </div>
+
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+      <defs>
+        <filter id="goo">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+          <feColorMatrix
+            in="blur"
+            mode="matrix"
+            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 21 -7"
+          />
+        </filter>
+      </defs>
+    </svg>
+
+    <p class="text-loading">
+      3 minutes to your best skincare, let's go!
+    </p>
+  </div>
 </template>
 
 <script>
