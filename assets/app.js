@@ -18750,6 +18750,30 @@ ___CSS_LOADER_EXPORT___.push([module.id, ".multiselect{position:relative;margin:
 
 /***/ }),
 
+/***/ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./src/components/Quiz.vue?vue&type=style&index=0&id=d07ec7f6&lang=css":
+/*!**************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./src/components/Quiz.vue?vue&type=style&index=0&id=d07ec7f6&lang=css ***!
+  \**************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
+// Imports
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, "\n.loading-evyana {\n    position: fixed;\n    top: 0;\n    left: 0;\n    z-index: 9999;\n    width: 100vw;\n    height: 100vh;\n    background-color: #f8f4d5;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    flex-direction: column;\n}\n.loading-evyana svg.logo-loading {\n    margin-bottom: 150px;\n}\n.loading-evyana p.text-loading {\n    margin-top: 150px;\n}\n.loading-dot {\n  width: 200px;\n  height: 200px;\n  position: absolute;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  margin: auto;\n  filter: url('#goo');\n  -webkit-animation: rotate-move 2s ease-in-out infinite;\n          animation: rotate-move 2s ease-in-out infinite;\n}\n.dot { \n  width: 70px;\n  height: 70px;\n  border-radius: 50%;\n  background-color: #000;\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  margin: auto;\n  display: block!important;\n}\n.dot-3 {\n  background-color: #f74d75;\n  -webkit-animation: dot-3-move 2s ease infinite, index 6s ease infinite;\n          animation: dot-3-move 2s ease infinite, index 6s ease infinite;\n}\n.dot-2 {\n  background-color: #10beae;\n  -webkit-animation: dot-2-move 2s ease infinite, index 6s -4s ease infinite;\n          animation: dot-2-move 2s ease infinite, index 6s -4s ease infinite;\n}\n.dot-1 {\n  background-color: #ffe386;\n  -webkit-animation: dot-1-move 2s ease infinite, index 6s -2s ease infinite;\n          animation: dot-1-move 2s ease infinite, index 6s -2s ease infinite;\n}\n.multiselect {\n    border-radius: 0.4rem;\n    box-shadow: 0 0 0 0.1rem rgba(var(--color-button), 0.45);\n    font-size:1rem;\n    padding: 0;\n    background:#FFF;\n    border: none;\n    padding-right: 1rem;\n}\n.multiselect .multiselect-tags{\n    padding: 0 1.5rem;\n    min-height: 49.5px;\n}\n.multiselect .multiselect-tags .multiselect-tag {\n    min-height: 30px;\n    font-size: 10px;\n    background: #fe8da1;\n    padding: 1rem;\n}\n.multiselect-tags .multiselect-caret{\n    width: 2rem;\n    height: 2rem;\n}\n@-webkit-keyframes dot-3-move {\n20% {transform: scale(1)}\n45% {transform: translateY(-18px) scale(.45)}\n60% {transform: translateY(-90px) scale(.45)}\n80% {transform: translateY(-90px) scale(.45)}\n100% {transform: translateY(0px) scale(1)}\n}\n@keyframes dot-3-move {\n20% {transform: scale(1)}\n45% {transform: translateY(-18px) scale(.45)}\n60% {transform: translateY(-90px) scale(.45)}\n80% {transform: translateY(-90px) scale(.45)}\n100% {transform: translateY(0px) scale(1)}\n}\n@-webkit-keyframes dot-2-move {\n20% {transform: scale(1)}\n45% {transform: translate(-16px, 12px) scale(.45)}\n60% {transform: translate(-80px, 60px) scale(.45)}\n80% {transform: translate(-80px, 60px) scale(.45)}\n100% {transform: translateY(0px) scale(1)}\n}\n@keyframes dot-2-move {\n20% {transform: scale(1)}\n45% {transform: translate(-16px, 12px) scale(.45)}\n60% {transform: translate(-80px, 60px) scale(.45)}\n80% {transform: translate(-80px, 60px) scale(.45)}\n100% {transform: translateY(0px) scale(1)}\n}\n@-webkit-keyframes dot-1-move {\n20% {transform: scale(1)}\n45% {transform: translate(16px, 12px) scale(.45)}\n60% {transform: translate(80px, 60px) scale(.45)}\n80% {transform: translate(80px, 60px) scale(.45)}\n100% {transform: translateY(0px) scale(1)}\n}\n@keyframes dot-1-move {\n20% {transform: scale(1)}\n45% {transform: translate(16px, 12px) scale(.45)}\n60% {transform: translate(80px, 60px) scale(.45)}\n80% {transform: translate(80px, 60px) scale(.45)}\n100% {transform: translateY(0px) scale(1)}\n}\n@-webkit-keyframes rotate-move {\n55% {transform: translate(-50%, -50%) rotate(0deg)}\n80% {transform: translate(-50%, -50%) rotate(360deg)}\n100% {transform: translate(-50%, -50%) rotate(360deg)}\n}\n@keyframes rotate-move {\n55% {transform: translate(-50%, -50%) rotate(0deg)}\n80% {transform: translate(-50%, -50%) rotate(360deg)}\n100% {transform: translate(-50%, -50%) rotate(360deg)}\n}\n@-webkit-keyframes index {\n0%, 100% {z-index: 3}\n33.3% {z-index: 2}\n66.6% {z-index: 1}\n}\n@keyframes index {\n0%, 100% {z-index: 3}\n33.3% {z-index: 2}\n66.6% {z-index: 1}\n}\n", ""]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ }),
+
 /***/ "./node_modules/css-loader/dist/runtime/api.js":
 /*!*****************************************************!*\
   !*** ./node_modules/css-loader/dist/runtime/api.js ***!
@@ -19633,6 +19657,36 @@ var update = _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMP
 
 /***/ }),
 
+/***/ "./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./src/components/Quiz.vue?vue&type=style&index=0&id=d07ec7f6&lang=css":
+/*!******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./src/components/Quiz.vue?vue&type=style&index=0&id=d07ec7f6&lang=css ***!
+  \******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! !../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Quiz_vue_vue_type_style_index_0_id_d07ec7f6_lang_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !!../../node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../node_modules/vue-loader/dist/stylePostLoader.js!../../node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./Quiz.vue?vue&type=style&index=0&id=d07ec7f6&lang=css */ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./src/components/Quiz.vue?vue&type=style&index=0&id=d07ec7f6&lang=css");
+
+            
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default()(_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Quiz_vue_vue_type_style_index_0_id_d07ec7f6_lang_css__WEBPACK_IMPORTED_MODULE_1__["default"], options);
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Quiz_vue_vue_type_style_index_0_id_d07ec7f6_lang_css__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
+
+/***/ }),
+
 /***/ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
 /*!****************************************************************************!*\
   !*** ./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
@@ -20031,13 +20085,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _Quiz_vue_vue_type_template_id_d07ec7f6__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Quiz.vue?vue&type=template&id=d07ec7f6 */ "./src/components/Quiz.vue?vue&type=template&id=d07ec7f6");
 /* harmony import */ var _Quiz_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Quiz.vue?vue&type=script&lang=js */ "./src/components/Quiz.vue?vue&type=script&lang=js");
-/* harmony import */ var _Users_hoanghan_Downloads_dawn_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _Quiz_vue_vue_type_style_index_0_id_d07ec7f6_lang_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Quiz.vue?vue&type=style&index=0&id=d07ec7f6&lang=css */ "./src/components/Quiz.vue?vue&type=style&index=0&id=d07ec7f6&lang=css");
+/* harmony import */ var _Users_hoanghan_Downloads_dawn_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
 
 ;
-const __exports__ = /*#__PURE__*/(0,_Users_hoanghan_Downloads_dawn_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_Quiz_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Quiz_vue_vue_type_template_id_d07ec7f6__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"src/components/Quiz.vue"]])
+
+
+const __exports__ = /*#__PURE__*/(0,_Users_hoanghan_Downloads_dawn_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Quiz_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Quiz_vue_vue_type_template_id_d07ec7f6__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"src/components/Quiz.vue"]])
 /* hot reload */
 if (false) {}
 
@@ -20170,6 +20227,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "render": () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Quiz_vue_vue_type_template_id_d07ec7f6__WEBPACK_IMPORTED_MODULE_0__.render)
 /* harmony export */ });
 /* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_dist_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Quiz_vue_vue_type_template_id_d07ec7f6__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./Quiz.vue?vue&type=template&id=d07ec7f6 */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./src/components/Quiz.vue?vue&type=template&id=d07ec7f6");
+
+
+/***/ }),
+
+/***/ "./src/components/Quiz.vue?vue&type=style&index=0&id=d07ec7f6&lang=css":
+/*!*****************************************************************************!*\
+  !*** ./src/components/Quiz.vue?vue&type=style&index=0&id=d07ec7f6&lang=css ***!
+  \*****************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_style_loader_dist_cjs_js_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_dist_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_dist_index_js_ruleSet_0_use_0_Quiz_vue_vue_type_style_index_0_id_d07ec7f6_lang_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../node_modules/style-loader/dist/cjs.js!../../node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../node_modules/vue-loader/dist/stylePostLoader.js!../../node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!../../node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./Quiz.vue?vue&type=style&index=0&id=d07ec7f6&lang=css */ "./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/dist/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./src/components/Quiz.vue?vue&type=style&index=0&id=d07ec7f6&lang=css");
 
 
 /***/ }),
