@@ -29,8 +29,6 @@ function trapFocus(container, elementToFocus = container) {
   var first = elements[0];
   var last = elements[elements.length - 1];
 
-  console.log('container', elements);
-
   removeTrapFocus();
 
   trapFocusHandlers.focusin = (event) => {

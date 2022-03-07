@@ -2,12 +2,9 @@ class CartDrawer extends HTMLElement {
   constructor() {
     super();
 
-    this.onBodyClick = this.handleBodyClick.bind(this);
+    this.onOverlayClick = this.handleOverlayClick.bind(this);
     this.addEventListener('keyup', (evt) => evt.code === 'Escape' && this.close());
-
-    this.querySelectorAll('.drawer__close').forEach((closeButton) =>
-      closeButton.addEventListener('click', this.close.bind(this))
-    );
+    this.querySelector('#cart-drawer-overlay').addEventListener('click', this.close.bind(this));
   }
 
   open() {
@@ -16,31 +13,23 @@ class CartDrawer extends HTMLElement {
     this.addEventListener('transitionend', () => {
       this.focus();
       const cartDrawer = document.getElementById('cart-drawer');
-      const focusElement = cartDrawer.querySelector('.cart-item__link');
+      const focusElement = cartDrawer.querySelector('.cart-item__link') || cartDrawer.querySelector('.drawer__close');
       trapFocus(cartDrawer, focusElement);
     }, { once: true });
   }
 
   close() {
     this.classList.remove('active');
-
-    document.body.removeEventListener('click', this.onBodyClick);
-
     removeTrapFocus(this.activeElement);
   }
 
   renderContents(parsedState) {
       this.productId = parsedState.id;
       this.getSectionsToRender().forEach((section => {
-        console.log(section);
-
-        document.getElementById(section.id).innerHTML =
-          this.getSectionInnerHTML(parsedState.sections[section.id], section.selector);
+        console.log(this.getSectionDOM(parsedState.sections[section.id], section.selector));
+        document.getElementById(section.id).querySelector('#cart-drawer').innerHTML =
+          this.getSectionDOM(parsedState.sections[section.id], section.selector).querySelector('#cart-drawer').innerHTML;
       }));
-
-      this.querySelectorAll('.drawer__close').forEach((closeButton) =>
-        closeButton.addEventListener('click', this.close.bind(this))
-      );
 
       this.open();
   }
@@ -54,19 +43,20 @@ class CartDrawer extends HTMLElement {
     ];
   }
 
-  getSectionInnerHTML(html, selector = '.shopify-section') {
+  getSectionDOM(html, selector = '.shopify-section') {
     return new DOMParser()
       .parseFromString(html, 'text/html')
-      .querySelector(selector).innerHTML;
+      .querySelector(selector);
   }
 
-  handleBodyClick(evt) {
+  handleOverlayClick(evt) {
     const target = evt.target;
-    if (target !== this && !target.closest('cart-notification')) {
-      const disclosure = target.closest('details-disclosure');
-      this.activeElement = disclosure ? disclosure.querySelector('summary') : null;
-      this.close();
-    }
+    console.log(target);
+    // if (target !== this && !target.closest('cart-notification')) {
+    //   const disclosure = target.closest('details-disclosure');
+    //   this.activeElement = disclosure ? disclosure.querySelector('summary') : null;
+    //   this.close();
+    // }
   }
 
   setActiveElement(element) {
