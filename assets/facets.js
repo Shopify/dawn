@@ -154,27 +154,34 @@ class FacetFiltersForm extends HTMLElement {
     ]
   }
 
+  createSearchParams(form) {
+    const formData = new FormData(form);
+    return new URLSearchParams(formData).toString();
+  }
+
+  onSubmitForm(searchParams, event) {
+    FacetFiltersForm.renderPage(searchParams, event);
+  }
+
   onSubmitHandler(event) {
     event.preventDefault();
     const sortFilterForms = document.querySelectorAll('facet-filters-form form');
     if (event.srcElement.className == 'mobile-facets__checkbox') {
-      const formData = new FormData(event.target.closest('form'));
-      const searchParams = new URLSearchParams(formData).toString();
-      FacetFiltersForm.renderPage(searchParams, event);
+      console.log(event.srcElement, '----')
+      const searchParams = this.createSearchParams(event.target.closest('form'))
+      this.onSubmitForm(searchParams, event)
     } else {
       const forms = [];
       sortFilterForms.forEach((form) => {
         if (form.id == 'FacetSortForm') {
-          const formData = new FormData(form);
-          const searchParams = new URLSearchParams(formData).toString();
+          const searchParams = this.createSearchParams(form)
           forms.push(searchParams)
         } else if (form.id == 'FacetFiltersForm') {
-          const formData = new FormData(form);
-          const searchParams = new URLSearchParams(formData).toString();
+          const searchParams = this.createSearchParams(form)
           forms.push(searchParams)
         }
       })
-      FacetFiltersForm.renderPage(forms.join('&'), event);
+      this.onSubmitForm(forms.join('&'), event)
     }
   }
 
