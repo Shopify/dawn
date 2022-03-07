@@ -1,5 +1,6 @@
 <template>
-  <template v-if="isReady">
+  <div class="wrap-form">
+    <template v-if="isReady">
     <form-wizard
       ref="formwizard"
       @onComplete="onComplete"
@@ -90,8 +91,7 @@
       </template>
     </form-wizard>
   </template>
-
-  <div class="loading-evyana" v-if="!isReady">
+    <div class="loading-evyana" v-if="!isReady">
     <svg xmlns="http://www.w3.org/2000/svg" width="200" viewBox="0 0 214 25">
       <path
         class="cls-1"
@@ -102,6 +102,7 @@
     <div id="loading"></div>
 
     <p class="text-loading">3 minutes to your best skincare, let's go!</p>
+  </div>
   </div>
 </template>
 

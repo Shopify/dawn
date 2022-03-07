@@ -1,8 +1,22 @@
 <template>
   <template v-if="isReady">
-    <div class="result-container">
+    <div class="result-container page-width">
       <div class="result-card">
-      <div class="">
+        <div class="image-container">
+          <figure class="image-with-tag">
+            <img src="https://dl7bo1dy930sf.cloudfront.net/img/results/redness-before2.jpg" alt="Before"/>
+            <figcaption class="image-tag">Before</figcaption>
+          </figure>
+          <figure class="image-with-tag">
+            <img src="https://dl7bo1dy930sf.cloudfront.net/img/results/redness-after2.jpg" alt="After"/>
+            <figcaption class="image-tag">After</figcaption>
+          </figure>
+          <div class="image-about">
+            <h1>77%</h1>
+            <blockquote>The routine provides a bright, radiant complexion.*</blockquote>
+          </div>
+        </div>
+        <div class="">
         <h2>Your system targets</h2>
         <h1>Rosacea</h1>
         <p>In an independent clinical study, 77% of people reported a brighter and more uniform complexion with PROVEN's
@@ -35,16 +49,6 @@
             </div>
           </div>
         </div>
-      </div>
-      <div class="">
-        <figure class="image-with-tag">
-          <img src="https://dl7bo1dy930sf.cloudfront.net/img/results/redness-before2.jpg" alt="Before"/>
-          <figcaption class="image-tag">Before</figcaption>
-        </figure>
-        <figure class="image-with-tag">
-          <img src="https://dl7bo1dy930sf.cloudfront.net/img/results/redness-after2.jpg" alt="After"/>
-          <figcaption class="image-tag">After</figcaption>
-        </figure>
       </div>
     </div>
     </div>>
