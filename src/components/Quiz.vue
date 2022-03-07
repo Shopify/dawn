@@ -113,7 +113,7 @@ import Multiselect from "@vueform/multiselect";
 
 import "@vueform/multiselect/themes/default.css";
 const checked = (value) => value === true;
-const Token = "l6HSoxCBye2GgqyaBMr3sihhZogL0XjPS44wLfiy";
+const Token = "0DaJUC7nMCkGSuRoFHl4Xr6TWBCEJzCZav8AMLV7";
 
 export default {
   name: "Quiz",

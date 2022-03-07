@@ -4,7 +4,7 @@ import FormWizard from "../components/FormWizard/FormWizard.vue"
 import TabContent from "../components/FormWizard/TabContent.vue"
 import ValidationHelper from "../components/FormWizard/ValidationHelper.vue"
 import Quiz from "../components/Quiz.vue"
-
+import Results from "../components/Results"
 
 export { FormWizard, TabContent, ValidationHelper, Quiz, VueRouter };
 
@@ -68,8 +68,10 @@ const createVueApp = () => {
      * vue plugins
      * extend with additional features
      */
-    const routes = [
 
+    const routes = [
+        { path: '/result', component: Results },
+        { path: '/', component: Quiz },
     ]
 
     // 3. Create the router instance and pass the `routes` option
