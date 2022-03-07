@@ -62,6 +62,10 @@
                 <div class="error" v-if="isShowFieldRequire">
                   This field is required.
                 </div>
+
+                <div class="error" v-if="!isValidAnwserQuestion">
+                  {{ item.category }} is not valid.
+                </div>
               </div>
             </template>
             <template
@@ -97,9 +101,7 @@
 
     <div id="loading"></div>
 
-    <p class="text-loading">
-      3 minutes to your best skincare, let's go!
-    </p>
+    <p class="text-loading">3 minutes to your best skincare, let's go!</p>
   </div>
 </template>
 
@@ -147,6 +149,7 @@ export default {
       listAutoComplete: [],
       multiValue: [],
       ingredients: [],
+      isValidAnwserQuestion: true,
     };
   },
   computed: {},
@@ -165,7 +168,7 @@ export default {
       this.quiz = rs.data.questions.filter(
         (e) => e.title.toLowerCase().indexOf("please list them") === -1
       );
-      console.log(this.quiz);
+      console.log(this.quiz, "deo");
       //TODO Renable
       this.isReady = true;
       this.localQuiz = localStorage.getItem("quiz");
@@ -245,6 +248,19 @@ export default {
         this.userName = $event.target.value;
       }
       this.currentAnwser = $event.target.value;
+
+      this.isValidAnwserQuestion = true;
+      if (item.category === "zip") {
+        this.isValidAnwserQuestion = /(^\d{5}$)|(^\d{5}-\d{4}$)/.test(
+          this.currentAnwser
+        );
+      }
+      if (item.category === "email") {
+        this.isValidAnwserQuestion = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i.test(
+          this.currentAnwser
+        );
+      }
+
       this.$forceUpdate();
     },
     async nextStep() {
@@ -253,6 +269,9 @@ export default {
         (this.isRequire && (this.currentAnwser === "" || !this.currentAnwser))
       ) {
         this.isShowFieldRequire = true;
+        return;
+      }
+      if(!this.isValidAnwserQuestion){
         return;
       }
       this.isShowFieldRequire = false;
@@ -264,8 +283,6 @@ export default {
       let payload = {
         answers: [],
       };
-
-
 
       if (
         this.quiz[this.questionIndex].category === "name" ||
@@ -452,28 +469,26 @@ export default {
 </script>
 
 <style >
-
-
 .loading-evyana {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 9999;
-    width: 100vw;
-    height: 100vh;
-    background-color: #f8f4d5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  width: 100vw;
+  height: 100vh;
+  background-color: #f8f4d5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 }
 
 .loading-evyana svg.logo-loading {
-    margin-bottom: 150px;
+  margin-bottom: 150px;
 }
 
 .loading-evyana p.text-loading {
-    margin-top: 150px;
+  margin-top: 150px;
 }
 
 .loading-dot {
@@ -484,11 +499,11 @@ export default {
   left: 50%;
   transform: translate(-50%, -50%);
   margin: auto;
-  filter: url('#goo');
+  filter: url("#goo");
   animation: rotate-move 2s ease-in-out infinite;
 }
 
-.dot { 
+.dot {
   width: 70px;
   height: 70px;
   border-radius: 50%;
@@ -499,7 +514,7 @@ export default {
   left: 0;
   right: 0;
   margin: auto;
-  display: block!important;
+  display: block !important;
 }
 
 .dot-3 {
@@ -518,65 +533,108 @@ export default {
 }
 
 .multiselect {
-    border-radius: 0.4rem;
-    box-shadow: 0 0 0 0.1rem rgba(var(--color-button), 0.45);
-    font-size:1rem;
-    padding: 0;
-    background:#FFF;
-    border: none;
-    padding-right: 1rem;
+  border-radius: 0.4rem;
+  box-shadow: 0 0 0 0.1rem rgba(var(--color-button), 0.45);
+  font-size: 1rem;
+  padding: 0;
+  background: #fff;
+  border: none;
+  padding-right: 1rem;
 }
 
-.multiselect .multiselect-tags{
-    padding: 0 1.5rem;
-    min-height: 49.5px;
+.multiselect .multiselect-tags {
+  padding: 0 1.5rem;
+  min-height: 49.5px;
 }
 
 .multiselect .multiselect-tags .multiselect-tag {
-    min-height: 30px;
-    font-size: 10px;
-    background: #fe8da1;
-    padding: 1rem;
+  min-height: 30px;
+  font-size: 10px;
+  background: #fe8da1;
+  padding: 1rem;
 }
 
-.multiselect-tags .multiselect-caret{
-    width: 2rem;
-    height: 2rem;
+.multiselect-tags .multiselect-caret {
+  width: 2rem;
+  height: 2rem;
 }
 
 @keyframes dot-3-move {
-  20% {transform: scale(1)}
-  45% {transform: translateY(-18px) scale(.45)}
-  60% {transform: translateY(-90px) scale(.45)}
-  80% {transform: translateY(-90px) scale(.45)}
-  100% {transform: translateY(0px) scale(1)}
+  20% {
+    transform: scale(1);
+  }
+  45% {
+    transform: translateY(-18px) scale(0.45);
+  }
+  60% {
+    transform: translateY(-90px) scale(0.45);
+  }
+  80% {
+    transform: translateY(-90px) scale(0.45);
+  }
+  100% {
+    transform: translateY(0px) scale(1);
+  }
 }
 
 @keyframes dot-2-move {
-  20% {transform: scale(1)}
-  45% {transform: translate(-16px, 12px) scale(.45)}
-  60% {transform: translate(-80px, 60px) scale(.45)}
-  80% {transform: translate(-80px, 60px) scale(.45)}
-  100% {transform: translateY(0px) scale(1)}
+  20% {
+    transform: scale(1);
+  }
+  45% {
+    transform: translate(-16px, 12px) scale(0.45);
+  }
+  60% {
+    transform: translate(-80px, 60px) scale(0.45);
+  }
+  80% {
+    transform: translate(-80px, 60px) scale(0.45);
+  }
+  100% {
+    transform: translateY(0px) scale(1);
+  }
 }
 
 @keyframes dot-1-move {
-  20% {transform: scale(1)}
-  45% {transform: translate(16px, 12px) scale(.45)}
-  60% {transform: translate(80px, 60px) scale(.45)}
-  80% {transform: translate(80px, 60px) scale(.45)}
-  100% {transform: translateY(0px) scale(1)}
+  20% {
+    transform: scale(1);
+  }
+  45% {
+    transform: translate(16px, 12px) scale(0.45);
+  }
+  60% {
+    transform: translate(80px, 60px) scale(0.45);
+  }
+  80% {
+    transform: translate(80px, 60px) scale(0.45);
+  }
+  100% {
+    transform: translateY(0px) scale(1);
+  }
 }
 
 @keyframes rotate-move {
-  55% {transform: translate(-50%, -50%) rotate(0deg)}
-  80% {transform: translate(-50%, -50%) rotate(360deg)}
-  100% {transform: translate(-50%, -50%) rotate(360deg)}
+  55% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  80% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
 
 @keyframes index {
-  0%, 100% {z-index: 3}
-  33.3% {z-index: 2}
-  66.6% {z-index: 1}
+  0%,
+  100% {
+    z-index: 3;
+  }
+  33.3% {
+    z-index: 2;
+  }
+  66.6% {
+    z-index: 1;
+  }
 }
 </style>
