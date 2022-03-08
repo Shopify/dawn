@@ -31,3 +31,15 @@ class DetailsDisclosure extends HTMLElement {
 }
 
 customElements.define('details-disclosure', DetailsDisclosure);
+
+class HeaderMenu extends DetailsDisclosure {
+  constructor() {
+    super();
+    if (document.documentElement.style.getPropertyValue('--header-bottom-position-desktop') === '') {
+      const header = document.querySelector('header');
+      if (header) document.documentElement.style.setProperty('--header-bottom-position-desktop', `${Math.floor(header.getBoundingClientRect().bottom)}px`);
+    }
+  }
+}
+
+customElements.define('header-menu', HeaderMenu);
