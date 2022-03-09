@@ -3,15 +3,16 @@
     <div class="result-container page-width">
       <div class="grid welcome">
         <img
-            class="welcome__image"
-            src="https://www.provenskincare.com/cdn-cgi/image/f=auto,onerror=redirect/https://media.provenskincare.com/img/results/1120mega-3products-desktop.png"
-            alt="PROVEN system"
+          class="welcome__image"
+          src="https://www.provenskincare.com/cdn-cgi/image/f=auto,onerror=redirect/https://media.provenskincare.com/img/results/1120mega-3products-desktop.png"
+          alt="PROVEN system"
         />
         <div class="welcome__body">
           <h1 class="welcome__body__title">
-            {{ results.user.name }}, <br/>meet your <br/><span class="highlight"
-          >custom skincare</span
-          >
+            {{ results.user.name }}, <br />meet your <br /><span
+              class="highlight"
+              >custom skincare</span
+            >
           </h1>
           <p>
             PROVEN’s scientists have formulated your skincare system with clean
@@ -20,10 +21,7 @@
           </p>
           <span class="welcome__body__more">Learn More</span>
         </div>
-        <button
-            class="welcome__cta button"
-            aria-label="Get my system"
-        >
+        <button class="welcome__cta button" aria-label="Get my system">
           GET MY SYSTEM
         </button>
         <div class="welcome__ctainfo breakout">
@@ -34,117 +32,147 @@
           </div>
           <span class="highlight">SAVE $60 + FREE SHIPPING</span>
         </div>
-        <span class="muted center">4-product system auto-refilled. Cancel Anytime</span>
+        <span class="muted center"
+          >4-product system auto-refilled. Cancel Anytime</span
+        >
       </div>
       <template v-for="(concern, index) in results.skin" :key="index + 'skin'">
         <template v-if="concernDisplay(concern.title)">
           <div
-              :class="'result animation-element spaced-section '
-                 + (index === 0 ? ' in-view' : '')">
+            :class="
+              'result animation-element spaced-section ' +
+              (index === 0 ? ' in-view' : '')
+            "
+          >
             <div class="result__images">
               <svg
-                  class="result__images__container__pattern"
-                  fill="currentColor"
-                  viewBox="0 0 60 60"
-                  role="img"
-                  aria-labelledby="svg-workcation"
+                class="result__images__container__pattern"
+                fill="currentColor"
+                viewBox="0 0 60 60"
+                role="img"
+                aria-labelledby="svg-workcation"
               >
                 <defs>
                   <pattern
-                      id="ad119f34-7694-4c31-947f-5c9d249b21f3"
-                      x="0"
-                      y="0"
-                      width="10"
-                      height="10"
-                      patternUnits="userSpaceOnUse"
+                    id="ad119f34-7694-4c31-947f-5c9d249b21f3"
+                    x="0"
+                    y="0"
+                    width="10"
+                    height="10"
+                    patternUnits="userSpaceOnUse"
                   >
                     <rect
-                        x="0"
-                        y="0"
-                        width="7"
-                        height="7"
-                        class="text-gray-200"
-                        fill="currentColor"
+                      x="0"
+                      y="0"
+                      width="7"
+                      height="7"
+                      class="text-gray-200"
+                      fill="currentColor"
                     ></rect>
                   </pattern>
                 </defs>
                 <rect
-                    width="60"
-                    height="60"
-                    fill="url(#ad119f34-7694-4c31-947f-5c9d249b21f3)"
+                  width="60"
+                  height="60"
+                  fill="url(#ad119f34-7694-4c31-947f-5c9d249b21f3)"
                 ></rect>
               </svg>
               <div class="grid result__images__container">
                 <figure class="result__images__container__figure">
-                  <img class="result__images__container__figure__image" :src="copyBeforeImage(concern.title)" alt="Before"/>
-                  <figcaption class="result__images__container__figure__caption">Before</figcaption>
+                  <img
+                    class="result__images__container__figure__image"
+                    :src="copyBeforeImage(concern.title)"
+                    alt="Before"
+                  />
+                  <figcaption
+                    class="result__images__container__figure__caption"
+                  >
+                    Before
+                  </figcaption>
                 </figure>
                 <figure class="result__images__container__figure">
-                  <img class="result__images__container__figure__image" :src="copyAfterImage(concern.title)" alt="After"/>
-                  <figcaption class="result__images__container__figure__caption">After</figcaption>
+                  <img
+                    class="result__images__container__figure__image"
+                    :src="copyAfterImage(concern.title)"
+                    alt="After"
+                  />
+                  <figcaption
+                    class="result__images__container__figure__caption"
+                  >
+                    After
+                  </figcaption>
                 </figure>
               </div>
             </div>
             <div class="result__body">
               <h2 class="result__body__targets">Your system targets</h2>
-              <h1 class="result__body__title " v-text="concern.title"></h1>
-              <p class="result__body__about" v-text="copyDescription(concern.title)"></p>
+              <h1 class="result__body__title" v-text="concern.title"></h1>
+              <p
+                class="result__body__about"
+                v-text="copyDescription(concern.title)"
+              ></p>
             </div>
             <div class="result__ingredient">
               <template v-if="concern.ingredients.length !== 0">
                 <h4 class="">Ingredients</h4>
                 <div class="">
-                  <!--                  <carousel-->
-                  <!--                    :itemsToShow="6"-->
-                  <!--                    :itemsToScroll="3"-->
-                  <!--                    :snapAlign="'start'"-->
-                  <!--                  >-->
-                  <div
+                  <carousel
+                    :settings="settings" :breakpoints="breakpoints"
+                  >
+                    <slide
                       v-for="(ingredient, index) in concern.ingredients"
                       :key="'concern' + index + 'skin-ingredients'"
-                  >
-                    <div class="carousel__item">
-                      <img class="carousel__item__image"
+                    >
+                      <div class="carousel__item">
+                        <img
+                          class="carousel__item__image"
                           src="https://dl7bo1dy930sf.cloudfront.net/img/results/ingredient-images/Green-Tea-Extract.png"
-                      />
-                      <!-- <img :src="ingredient.image"/>-->
-                      <span class="carousel__item__title">{{ ingredient.ConsumerTitle }}</span>
-                    </div>
-                  </div>
-                  <!--                    <template #addons>-->
-                  <!--                      <navigation />-->
-                  <!--                      <pagination />-->
-                  <!--                    </template>-->
-                  <!--                  </carousel>-->
+                        />
+                        <!-- <img :src="ingredient.image"/>-->
+                        <span class="carousel__item__title">{{
+                          ingredient.ConsumerTitle
+                        }}</span>
+                      </div>
+                    </slide>
+                    <template #addons>
+                      <navigation />
+                      <pagination />
+                    </template>
+                  </carousel>
                 </div>
               </template>
             </div>
-              <div class="result__quote__container">
-                <svg
-                    class="result__quote__container__svg"
-                    stroke="currentColor"
-                    fill="none"
-                    viewBox="0 0 144 144"
-                    aria-hidden="true"
+            <div class="result__quote__container">
+              <svg
+                class="result__quote__container__svg"
+                stroke="currentColor"
+                fill="none"
+                viewBox="0 0 144 144"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-width="2"
+                  d="M41.485 15C17.753 31.753 1 59.208 1 89.455c0 24.664 14.891 39.09 32.109 39.09 16.287 0 28.386-13.03 28.386-28.387 0-15.356-10.703-26.524-24.663-26.524-2.792 0-6.515.465-7.446.93 2.327-15.821 17.218-34.435 32.11-43.742L41.485 15zm80.04 0c-23.268 16.753-40.02 44.208-40.02 74.455 0 24.664 14.891 39.09 32.109 39.09 15.822 0 28.386-13.03 28.386-28.387 0-15.356-11.168-26.524-25.129-26.524-2.792 0-6.049.465-6.98.93 2.327-15.821 16.753-34.435 31.644-43.742L121.525 15z"
+                />
+              </svg>
+              <blockquote class="result__quote_container__blockquote">
+                <h1
+                  class="result__quote_container__blockquote__title"
+                  v-if="copyClinicalPercent(concern.title)"
                 >
-                  <path
-                      stroke-width="2"
-                      d="M41.485 15C17.753 31.753 1 59.208 1 89.455c0 24.664 14.891 39.09 32.109 39.09 16.287 0 28.386-13.03 28.386-28.387 0-15.356-10.703-26.524-24.663-26.524-2.792 0-6.515.465-7.446.93 2.327-15.821 17.218-34.435 32.11-43.742L41.485 15zm80.04 0c-23.268 16.753-40.02 44.208-40.02 74.455 0 24.664 14.891 39.09 32.109 39.09 15.822 0 28.386-13.03 28.386-28.387 0-15.356-11.168-26.524-25.129-26.524-2.792 0-6.049.465-6.98.93 2.327-15.821 16.753-34.435 31.644-43.742L121.525 15z"
-                  />
-                </svg>
-                <blockquote class="result__quote_container__blockquote">
-                  <h1 class="result__quote_container__blockquote__title" v-if="copyClinicalPercent(concern.title)">
-                    {{ copyClinicalPercent(concern.title) }}%
-                  </h1>
-                  <p class="result__quote_container__blockquote__body">{{ copyClinicalText(concern.title) }}</p>
-                </blockquote>
-              </div>
+                  {{ copyClinicalPercent(concern.title) }}%
+                </h1>
+                <p class="result__quote_container__blockquote__body">
+                  {{ copyClinicalText(concern.title) }}
+                </p>
+              </blockquote>
+            </div>
           </div>
         </template>
       </template>
       <template
-          v-for="(product, index) in results.products"
-          :key="index + 'product'"
+        v-for="(product, index) in results.products"
+        :key="index + 'product'"
       >
         <product :product="product"></product>
       </template>
@@ -159,17 +187,17 @@
         <div class="subscribe__grid grid">
           <div class="subscribe__grid__item">
             <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
             >
               <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
               />
             </svg>
             <h4>Priority Support</h4>
@@ -180,17 +208,17 @@
           </div>
           <div class="subscribe__grid__item">
             <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
             >
               <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
               />
             </svg>
             <h4>Priority Support</h4>
@@ -201,17 +229,17 @@
           </div>
           <div class="subscribe__grid__item">
             <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
             >
               <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
               />
             </svg>
             <h4>Priority Support</h4>
@@ -222,17 +250,17 @@
           </div>
           <div class="subscribe__grid__item">
             <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
             >
               <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
               />
             </svg>
             <h4>Priority Support</h4>
@@ -255,7 +283,7 @@
   </template>
 
   <div class="loading-evyana" v-if="!isReady" style="background: #fff">
-    <img :src="'/assets/transition-desktop-cosmo2.gif'" alt=""/>
+    <img :src="'/assets/transition-desktop-cosmo2.gif'" alt="" />
     <!-- <svg xmlns="http://www.w3.org/2000/svg" width="200" viewBox="0 0 214 25">
       <path
           class="cls-1"
@@ -282,7 +310,7 @@ import concernCopy from "../mixins/concernCopy";
 import animation from "../mixins/animation";
 
 import "vue3-carousel/dist/carousel.css";
-import {Carousel, Slide, Pagination, Navigation} from "vue3-carousel";
+import { Carousel, Slide, Pagination, Navigation } from "vue3-carousel";
 
 export default {
   name: "Results",
@@ -296,16 +324,20 @@ export default {
   },
   data() {
     return {
+      settings: {
+        itemsToShow: 2,
+        snapAlign: 'center',
+      },
       breakpoints: {
-        0: {
-          itemsToShow: 1,
-          wrapAround: false,
-          snapAlign: "start",
-        },
-        1000: {
-          itemsToShow: 4.95,
-          wrapAround: false,
+        // 700px and up
+        700: {
+          itemsToShow: 3,
           snapAlign: "center",
+        },
+        // 1024 and up
+        1024: {
+          itemsToShow: 4,
+          snapAlign: "start",
         },
       },
       isReady: false,
@@ -315,14 +347,14 @@ export default {
   computed: {},
   async mounted() {
     const response = await fetch(
-        "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/93f99a44-cd35-4b7b-9211-92fe60755e84/results",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + Token,
-          },
-        }
+      "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/93f99a44-cd35-4b7b-9211-92fe60755e84/results",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + Token,
+        },
+      }
     );
     response.json().then(async (rs) => {
       this.results = rs.data;
@@ -335,10 +367,10 @@ export default {
   methods: {
     getLookupTitle(title) {
       const lookup = title
-          .replace(/\s/g, "")
-          .replace("\\", "")
-          .replace("/", "")
-          .toLowerCase();
+        .replace(/\s/g, "")
+        .replace("\\", "")
+        .replace("/", "")
+        .toLowerCase();
       console.log(lookup);
       if (!this.$data[lookup]) {
         return false;
