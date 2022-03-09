@@ -7,7 +7,7 @@ import Quiz from "../components/Quiz.vue"
 import Results from "../components/Results"
 
 export { FormWizard, TabContent, ValidationHelper, Quiz, VueRouter };
-
+import 'vue2-animate/dist/vue2-animate.min.css'
 /**
  * imports
  */

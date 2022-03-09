@@ -6,7 +6,7 @@
              src="https://www.provenskincare.com/cdn-cgi/image/f=auto,onerror=redirect/https://media.provenskincare.com/img/results/1120mega-3products-desktop.png"
              alt="PROVEN system">
         <div class="welcome__meet">
-            <h1>{{ results.user.name }}, <br>meet your <br><span>custom skincare</span></h1>
+          <h1>{{ results.user.name }}, <br>meet your <br><span>custom skincare</span></h1>
           <p>PROVEN’s
             scientists have formulated your skincare system with clean and scientific ingredients to cleanse, protect,
             and renew your particular skin.</p>
@@ -28,72 +28,112 @@
       <template v-for="(concern, index) in results.skin" :key="index + 'skin'">
         <template v-if="concernDisplay(concern.title)">
           <div :class="(index % 2 == 0) ? 'result-card-reverse' : 'result-card'">
-          <div class="image-container">
-            <svg class="pattern" fill="currentColor" viewBox="0 0 60 60" role="img" aria-labelledby="svg-workcation">
-              <defs>
-                <pattern id="ad119f34-7694-4c31-947f-5c9d249b21f3" x="0" y="0" width="10" height="10"
-                         patternUnits="userSpaceOnUse">
-                  <rect x="0" y="0" width="7" height="7" class="text-gray-200" fill="currentColor"></rect>
-                </pattern>
-              </defs>
-              <rect width="60" height="60" fill="url(#ad119f34-7694-4c31-947f-5c9d249b21f3)"></rect>
-            </svg>
-            <div class="img-src">
-              <figure class="image-with-tag">
-                <img :src="copyBeforeImage(concern.title)" alt="Before"/>
-                <figcaption class="image-tag">Before</figcaption>
-              </figure>
-              <figure class="image-with-tag">
-                <img :src="copyAfterImage(concern.title)" alt="After"/>
-                <figcaption class="image-tag">After</figcaption>
-              </figure>
-            </div>
-          </div>
-          <div class="targets">
-            <h2>Your system targets</h2>
-            <h1 v-text="concern.title"></h1>
-            <p v-text="copyDescription(concern.title)"></p>
-          </div>
-          <div class="result-ing">
-            <template v-if="concern.ingredients.length !== 0">
-              <h4 class="src-components-account-congratulationsAB-B-results-shared-ingredients-slider-___styles__title___232vw">
-                Ingredients</h4>
-              <div class="">
-                <carousel :breakpoints="breakpoints">
-                  <template v-for="(ingredient, index) in concern.ingredients"
-                            :key="'concern'+index + 'skin-ingredients'">
-                    <slide style="">
-                      <div class="carousel__item">
-                        <img
-                            src="https://dl7bo1dy930sf.cloudfront.net/img/results/ingredient-images/Green-Tea-Extract.png"/>
-                        <span>{{ ingredient.ConsumerTitle }}</span>
-                      </div>
-                    </slide>
-                  </template>
-                  <template #addons>
-                    <navigation/>
-                  </template>
-                </carousel>
-              </div>
-            </template>
-          </div>
-          <div class="image-about">
-            <div class="quote-container">
-              <svg
-                  class="quote-svg"
-                  stroke="currentColor" fill="none" viewBox="0 0 144 144" aria-hidden="true">
-                <path stroke-width="2"
-                      d="M41.485 15C17.753 31.753 1 59.208 1 89.455c0 24.664 14.891 39.09 32.109 39.09 16.287 0 28.386-13.03 28.386-28.387 0-15.356-10.703-26.524-24.663-26.524-2.792 0-6.515.465-7.446.93 2.327-15.821 17.218-34.435 32.11-43.742L41.485 15zm80.04 0c-23.268 16.753-40.02 44.208-40.02 74.455 0 24.664 14.891 39.09 32.109 39.09 15.822 0 28.386-13.03 28.386-28.387 0-15.356-11.168-26.524-25.129-26.524-2.792 0-6.049.465-6.98.93 2.327-15.821 16.753-34.435 31.644-43.742L121.525 15z"/>
+            <div class="image-container">
+              <svg class="pattern" fill="currentColor" viewBox="0 0 60 60" role="img" aria-labelledby="svg-workcation">
+                <defs>
+                  <pattern id="ad119f34-7694-4c31-947f-5c9d249b21f3" x="0" y="0" width="10" height="10"
+                           patternUnits="userSpaceOnUse">
+                    <rect x="0" y="0" width="7" height="7" class="text-gray-200" fill="currentColor"></rect>
+                  </pattern>
+                </defs>
+                <rect width="60" height="60" fill="url(#ad119f34-7694-4c31-947f-5c9d249b21f3)"></rect>
               </svg>
-              <blockquote class="border-none">
-                <h1 v-if="copyClinicalPercent(concern.title)">{{copyClinicalPercent(concern.title)}}%</h1>
-                <p>{{copyClinicalText(concern.title)}}</p>
-              </blockquote>
+              <div class="img-src">
+                <figure class="image-with-tag">
+                  <img :src="copyBeforeImage(concern.title)" alt="Before"/>
+                  <figcaption class="image-tag">Before</figcaption>
+                </figure>
+                <figure class="image-with-tag">
+                  <img :src="copyAfterImage(concern.title)" alt="After"/>
+                  <figcaption class="image-tag">After</figcaption>
+                </figure>
+              </div>
+            </div>
+            <div class="targets">
+              <h2>Your system targets</h2>
+              <h1 v-text="concern.title"></h1>
+              <p v-text="copyDescription(concern.title)"></p>
+            </div>
+            <div class="result-ing">
+              <template v-if="concern.ingredients.length !== 0">
+                <h4 class="">
+                  Ingredients</h4>
+                <div class="">
+                    <template v-for="(ingredient, index) in concern.ingredients"
+                              :key="'concern'+index + 'skin-ingredients'">
+                      <slide style="">
+                        <div class="carousel__item">
+                          <img src="https://dl7bo1dy930sf.cloudfront.net/img/results/ingredient-images/Green-Tea-Extract.png"/>
+<!--                          <img :src="ingredient.image"/>-->
+                          <span>{{ ingredient.ConsumerTitle }}</span>
+                        </div>
+                      </slide>
+                    </template>
+                </div>
+              </template>
+            </div>
+            <div class="image-about">
+              <div class="quote-container">
+                <svg
+                    class="quote-svg"
+                    stroke="currentColor" fill="none" viewBox="0 0 144 144" aria-hidden="true">
+                  <path stroke-width="2"
+                        d="M41.485 15C17.753 31.753 1 59.208 1 89.455c0 24.664 14.891 39.09 32.109 39.09 16.287 0 28.386-13.03 28.386-28.387 0-15.356-10.703-26.524-24.663-26.524-2.792 0-6.515.465-7.446.93 2.327-15.821 17.218-34.435 32.11-43.742L41.485 15zm80.04 0c-23.268 16.753-40.02 44.208-40.02 74.455 0 24.664 14.891 39.09 32.109 39.09 15.822 0 28.386-13.03 28.386-28.387 0-15.356-11.168-26.524-25.129-26.524-2.792 0-6.049.465-6.98.93 2.327-15.821 16.753-34.435 31.644-43.742L121.525 15z"/>
+                </svg>
+                <blockquote class="border-none">
+                  <h1 v-if="copyClinicalPercent(concern.title)">{{ copyClinicalPercent(concern.title) }}%</h1>
+                  <p>{{ copyClinicalText(concern.title) }}</p>
+                </blockquote>
+              </div>
             </div>
           </div>
-        </div>
         </template>
       </template>
+      <template v-for="(product,index) in results.products" :key="index + 'product'">
+        <product :product="product"></product>
+      </template>
+      <div class="">
+          <h1>Subscribe & Thrive</h1>
+          <p>Our subscribers get more than products – we go above and beyond to help you achieve your skincare goals. Get access to our team of estheticians and wellness experts, on demand on your PROVEN dashboard or via email.</p>
+        <div class="subscribe">
+          <div class="subscribe__item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+            </svg>
+            <h4>Priority Support</h4>
+            <p>PROVEN members get priority support for all their questions and concerns</p>
+          </div>
+          <div class="subscribe__item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+            </svg>
+            <h4>Priority Support</h4>
+            <p>PROVEN members get priority support for all their questions and concerns</p>
+          </div>
+          <div class="subscribe__item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+            </svg>
+            <h4>Priority Support</h4>
+            <p>PROVEN members get priority support for all their questions and concerns</p>
+          </div>
+          <div class="subscribe__item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+            </svg>
+            <h4>Priority Support</h4>
+            <p>PROVEN members get priority support for all their questions and concerns</p>
+          </div>
+        </div>
+      </div>
+      <div class="product--card__img__container section__container">
+      <ul class="highlight__container">
+        <li>Award-Winning Technology</li>
+        <li>Dermatologist Recommended</li>
+        <li>Clean & Non-Toxic</li>
+        <li>Made In USA</li>
+      </ul>
+      </div>
     </div>
   </template>
 
@@ -119,18 +159,16 @@
 
 
 import "@vueform/multiselect/themes/default.css";
+import Product from "./Quiz/Product"
 
 const Token = "0DaJUC7nMCkGSuRoFHl4Xr6TWBCEJzCZav8AMLV7";
-import 'vue3-carousel/dist/carousel.css';
-import {Carousel, Slide, Pagination, Navigation} from 'vue3-carousel';
 import concernCopy from "../mixins/concernCopy"
+
 export default {
   name: "Results",
   mixins: [concernCopy],
   components: {
-    Carousel,
-    Slide,
-    Navigation,
+    Product
   },
   data() {
     return {
@@ -171,37 +209,37 @@ export default {
     });
   },
   methods: {
-    getLookupTitle(title){
-      const lookup = title.replace(/\s/g,'').replace('\\', '').replace('/', '').toLowerCase()
+    getLookupTitle(title) {
+      const lookup = title.replace(/\s/g, '').replace('\\', '').replace('/', '').toLowerCase()
       console.log(lookup)
-      if(!this.$data[lookup]){
+      if (!this.$data[lookup]) {
         return false
       }
       return lookup
     },
-    concernDisplay(title){
+    concernDisplay(title) {
       const lookup = this.getLookupTitle(title)
-      return !lookup ? false: this.$data[lookup].display
+      return !lookup ? false : this.$data[lookup].display
     },
     copyClinicalPercent(title) {
       const lookup = this.getLookupTitle(title)
-      return !lookup ? '': this.$data[lookup].clinical_percent
+      return !lookup ? '' : this.$data[lookup].clinical_percent
     },
     copyClinicalText(title) {
       const lookup = this.getLookupTitle(title)
-      return !lookup ? '': this.$data[lookup].clinical_text
+      return !lookup ? '' : this.$data[lookup].clinical_text
     },
     copyDescription(title) {
       const lookup = this.getLookupTitle(title)
-      return !lookup ? '': this.$data[lookup].description
+      return !lookup ? '' : this.$data[lookup].description
     },
     copyBeforeImage(title) {
       const lookup = this.getLookupTitle(title)
-      return !lookup ? '': this.$data[lookup].img_before
+      return !lookup ? '' : this.$data[lookup].img_before
     },
     copyAfterImage(title) {
       const lookup = this.getLookupTitle(title)
-      return !lookup ? '': this.$data[lookup].img_after
+      return !lookup ? '' : this.$data[lookup].img_after
     }
 
   },
