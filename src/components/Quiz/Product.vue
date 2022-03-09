@@ -41,24 +41,30 @@
         <span class="product__body__tags__item">Humid Air</span>
       </div>
       <div class="product__body__ingredients">
-        <h3 class="product__body__ingredients__title">Your Active ingredients:</h3>
+        <h3 class="product__body__ingredients__title">
+          Your Active ingredients:
+        </h3>
         <div class="product__body__ingredients__carousel">
-<!--          <carousel :itemsToShow="12" :itemsToScroll="3" :snapAlign="'start'">-->
-              <div
-                  v-for="(ingredient, index) in product.ingredients"
-                  :key="'concern' + index + 'skin-ingredients'"
-                  class="carousel__item">
-                <img class="carousel__item__image"
-                  src="https://dl7bo1dy930sf.cloudfront.net/img/results/ingredient-images/Green-Tea-Extract.png"
-                  alt="{{ ingredient.ConsumerTitle }}"
-                />
-                <span class="carousel__item__item">{{ ingredient.ConsumerTitle }}</span>
-              </div>
-<!--            <template #addons>-->
-<!--              <navigation />-->
-<!--              <pagination />-->
-<!--            </template>-->
-<!--          </carousel>-->
+          <carousel :settings="settings" :breakpoints="breakpoints">
+            <slide
+              v-for="(ingredient, index) in product.ingredients"
+              :key="'concern' + index + 'skin-ingredients'"
+              class="carousel__item"
+            >
+              <img
+                class="carousel__item__image"
+                src="https://dl7bo1dy930sf.cloudfront.net/img/results/ingredient-images/Green-Tea-Extract.png"
+                alt="{{ ingredient.ConsumerTitle }}"
+              />
+              <span class="carousel__item__item">{{
+                ingredient.ConsumerTitle
+              }}</span>
+            </slide>
+            <template #addons>
+              <navigation />
+              <pagination />
+            </template>
+          </carousel>
         </div>
 
         <button
@@ -73,7 +79,8 @@
           tag="ul"
           class="product__body__ingredients__list"
         >
-          <li class="product__body__ingredients__list__item"
+          <li
+            class="product__body__ingredients__list__item"
             v-for="(ing, index) in product.full_ingredients"
             :key="index + 'producting'"
           >
@@ -98,16 +105,20 @@ export default {
   },
   data() {
     return {
-      productBreakpoints: {
-        0: {
-          itemsToShow: 1,
-          wrapAround: false,
-          snapAlign: "start",
-        },
-        1000: {
-          itemsToShow: 4.95,
-          wrapAround: false,
+      settings: {
+        itemsToShow: 2,
+        snapAlign: 'center',
+      },
+      breakpoints: {
+        // 700px and up
+        700: {
+          itemsToShow: 3,
           snapAlign: "center",
+        },
+        // 1024 and up
+        1024: {
+          itemsToShow: 4,
+          snapAlign: "start",
         },
       },
       showIngredients: false,
@@ -119,7 +130,7 @@ export default {
 </script>
 
 <style scoped>
- .mt-5{
-   margin-top: 2.5rem
- }
+.mt-5 {
+  margin-top: 2.5rem;
+}
 </style>
