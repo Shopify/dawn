@@ -22,8 +22,8 @@ export default {
                 'clinical_percent': 81,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",
                 'description':"In an independent clinical study, 81% of people reported a bright, radiant complexion with PROVEN's personalized regime.*",
-                'img_after':false,
-                'img_before':false,
+                'img_after':"/assets/skintight2.jpg",
+                'img_before':"/assets/skintight1.jpg",
             },
             redness: {
                 'display':true,
