@@ -1,6 +1,6 @@
 <template>
-  <div class="product grid">
-    <div class="product__image__container breakout">
+  <div class="product spaced-section">
+    <div class="product__image__container breakout breakout--mobile" :class="classcolor">
       <img
         :src="image"
         alt="Your Personalized Cleanser"
@@ -122,6 +122,9 @@ export default {
           .replace("/", "")
           .toLowerCase();
       return lookup;
+    },
+    classcolor(){
+      return this.$data[this.lookupTitle] ? this.$data[this.lookupTitle].class : '';
     },
     title() {
       return this.$data[this.lookupTitle] ? this.$data[this.lookupTitle].title : this.product.title;
