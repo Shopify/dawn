@@ -1,6 +1,6 @@
 <template v-if="concernDisplay(concern.title)">
     <div
-        class="result spaced-section slide">
+        class="result spaced-section slide animation-element">
       <img height="200" style="max-width: 100%" :src="currentInfo" alt="">
       <div v-if="beforeImage !== false && afterImage !== false" class="result__images">
         <svg
