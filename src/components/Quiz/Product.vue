@@ -2,33 +2,22 @@
   <div class="product grid">
     <div class="product__image__container breakout">
       <img
-        src="https://www.provenskincare.com/cdn-cgi/image/f=auto,onerror=redirect/https://media.provenskincare.com/img/home/cleanser-individual-bottle.png"
+        :src="image"
         alt="Your Personalized Cleanser"
         class="product__image__container__image"
       />
     </div>
     <div class="product__body">
-      <span class="product__body__subtitle"
-        >Cleanser, toner and exfoliator in one</span
+      <span class="product__body__subtitle" v-text="subtitle"></span
       >
       <h2 class="product__body__title" data-cy="proven-cleanser-title">
-        Your Personalized {{ product.title }}
+        {{title}}
       </h2>
       <button class="product__body__button">
-        <span class="product__body__button__title">GET CLEANSER</span>
-        <span class="product__body__button__price">$34.99 USD</span>
+        <span class="product__body__button__title">GET {{ type }}</span>
+        <span class="product__body__button__price">${{ price }} USD</span>
       </button>
-      <p class="product__body__description">
-        A 3-in-1 cleanser, toner, and exfoliator, your personalized step one
-        gently cleans pores, dirt and impurities. Mandelic acid accelerates cell
-        turnover by gently exfoliating dead skin cells and boosts collagen
-        production. Powerhouse Azelaic Acid clears the bumps and swelling caused
-        by rosacea. Sodium Hyaluronate and Primrose oil evenly hydrate and
-        smooth the skin for smoothness and reduced fine lines while also
-        protecting skin from hard water deposits. This multifunctional cleanser
-        helps maximize absorption of all the nutrients to come in your
-        personalized moisturizers.
-      </p>
+      <p class="product__body__description" v-text="description"></p>
       <div class="product__body__tags">
         <span class="product__body__tags__item">Eczema Level 1</span>
         <span class="product__body__tags__item">Sensitivity Level 7</span>
@@ -62,7 +51,6 @@
             </slide>
             <template #addons>
               <navigation />
-              <pagination />
             </template>
           </carousel>
         </div>
@@ -93,14 +81,16 @@
 </template>
 <script>
 import { Carousel, Slide, Pagination, Navigation } from "vue3-carousel";
-
+// import productCopy from "../../mixins/productCopy";
+import productCopy from "../../mixins/productCopy";
+import CarouselBreakpoints from "../../mixins/CarouselBreakpoints"
 export default {
   name: "Product",
   props: ["product"],
+  mixins:[productCopy, CarouselBreakpoints],
   components: {
     Carousel,
     Slide,
-    Pagination,
     Navigation,
   },
   data() {
@@ -124,7 +114,34 @@ export default {
       showIngredients: false,
     };
   },
-  computed: {},
+  computed: {
+    lookupTitle(){
+      const lookup = this.product.title
+          .replace(/\s/g, "")
+          .replace("\\", "")
+          .replace("/", "")
+          .toLowerCase();
+      return lookup;
+    },
+    title() {
+      return this.$data[this.lookupTitle] ? this.$data[this.lookupTitle].title : this.product.title;
+    },
+    subtitle() {
+      return this.$data[this.lookupTitle] ? this.$data[this.lookupTitle].subtitle : this.product.subtitle;
+    },
+    description() {
+      return this.$data[this.lookupTitle] ? this.$data[this.lookupTitle].description : this.product.description;
+    },
+    image() {
+      return this.$data[this.lookupTitle] ? this.$data[this.lookupTitle].image : this.product.image;
+    },
+    type() {
+      return this.$data[this.lookupTitle] ? this.$data[this.lookupTitle].type : 'product';
+    },
+    price() {
+      return this.$data[this.lookupTitle] ? this.$data[this.lookupTitle].price : '';
+    },
+  },
   methods: {},
 };
 </script>
