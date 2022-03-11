@@ -1,5 +1,5 @@
 <template>
-  <div class="product grid">
+  <div class="product">
     <div class="product__image__container breakout">
       <img
         :src="image"

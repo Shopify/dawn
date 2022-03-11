@@ -19093,7 +19093,7 @@ var _withScopeId = function _withScopeId(n) {
 };
 
 var _hoisted_1 = {
-  "class": "product grid"
+  "class": "product"
 };
 var _hoisted_2 = {
   "class": "product__image__container breakout"
