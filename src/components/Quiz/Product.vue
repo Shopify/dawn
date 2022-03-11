@@ -1,6 +1,6 @@
 <template>
-  <div class="product">
-    <div class="product__image__container breakout">
+  <div class="product spaced-section">
+    <div class="product__image__container breakout breakout--mobile" :class="classcolor">
       <img
         :src="image"
         alt="Your Personalized Cleanser"
@@ -33,8 +33,9 @@
         <h3 class="product__body__ingredients__title">
           Your Active ingredients:
         </h3>
-        <div class="product__body__ingredients__carousel">
-          <carousel :settings="settings" :breakpoints="breakpoints">
+        <div class="product__body__ingredients__carousel absoluted-wrap">
+          <div class="wrap-carousel-inside-grid">
+            <carousel :settings="settings" :breakpoints="breakpoints">
             <slide
               v-for="(ingredient, index) in product.ingredients"
               :key="'concern' + index + 'skin-ingredients'"
@@ -53,6 +54,7 @@
               <navigation />
             </template>
           </carousel>
+          </div>
         </div>
 
         <button
@@ -122,6 +124,9 @@ export default {
           .replace("/", "")
           .toLowerCase();
       return lookup;
+    },
+    classcolor(){
+      return this.$data[this.lookupTitle] ? this.$data[this.lookupTitle].class : '';
     },
     title() {
       return this.$data[this.lookupTitle] ? this.$data[this.lookupTitle].title : this.product.title;

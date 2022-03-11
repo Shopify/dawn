@@ -2,6 +2,7 @@ export default {
     data: function () {
         return {
             finelinesorwrinkles: {
+                'title':"Fine lines and wrinkles",
                 'display':true,
                 'clinical_percent': false,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",
@@ -10,6 +11,7 @@ export default {
                 'img_before':"/assets/finelines1.jpg",
             },
             acne: {
+                'title':"Acne",
                 'display':true,
                 'clinical_percent': 81,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",
@@ -18,6 +20,7 @@ export default {
                 'img_before':"/assets/acne1.jpg",
             },
             lossoffirmnessorelasticity: {
+                'title': 'Firmness and elasticity loss',
                 'display':true,
                 'clinical_percent': 81,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",
@@ -26,6 +29,7 @@ export default {
                 'img_before':"/assets/skintight1.jpg",
             },
             redness: {
+                'title': 'Redness',
                 'display':true,
                 'clinical_percent': 81,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",
@@ -34,6 +38,7 @@ export default {
                 'img_before':"/assets/redness1.jpg",
             },
             sensitivity: {
+                'title': 'Sensitivity',
                 'display':true,
                 'clinical_percent': 81,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",
@@ -50,6 +55,7 @@ export default {
                 'img_before':"/assets/hyperpigmentation1.jpg",
             },
             seborrhoeicdermatitis: {
+                'title':"Seborrhoeic Dermatitis",
                 'display':false,
                 'clinical_percent': 81,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",
@@ -58,6 +64,7 @@ export default {
                 'img_before':false,
             },
             facialpsoriasis: {
+                'title':"Facial Psoriasis",
                 'display':false,
                 'clinical_percent': 81,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",
@@ -66,6 +73,7 @@ export default {
                 'img_before':false,
             },
             eczemaatopicdermatitis: {
+                'title':"Eczema/Atopic Dermatitis",
                 'display':false,
                 'clinical_percent': 81,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",
@@ -74,6 +82,7 @@ export default {
                 'img_before':false,
             },
             rosacea: {
+                'title': 'Rosacea',
                 'display':true,
                 'clinical_percent': 81,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",

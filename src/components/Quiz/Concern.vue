@@ -1,8 +1,7 @@
-<template v-if="concernDisplay(concern.title)">
-    <div
+<template>
+    <div v-if="show"
         class="result spaced-section slide animation-element">
-      <img height="200" style="max-width: 100%" :src="currentInfo" alt="">
-      <div v-if="beforeImage !== false && afterImage !== false" class="result__images">
+      <div class="result__images">
         <svg
             class="result__images__container__pattern"
             fill="currentColor"
@@ -35,7 +34,7 @@
               fill="url(#ad119f34-7694-4c31-947f-5c9d249b21f3)"
           ></rect>
         </svg>
-        <div class="grid result__images__container">
+        <div class="result__images__container">
           <figure class="result__images__container__figure">
             <img
                 class="result__images__container__figure__image"
@@ -74,22 +73,15 @@
         <template v-if="concern.ingredients.length !== 0">
           <h4 class="">Ingredients</h4>
           <div class="">
-            <carousel
-                :settings="settings" :breakpoints="breakpoints"
-            >
-              <slide
-                  v-for="(ingredient, index) in concern.ingredients"
-                  :key="'concern' + index + 'skin-ingredients'"
-              >
+            <carousel :settings="settings" :breakpoints="breakpoints">
+              <slide v-for="(ingredient, index) in concern.ingredients"
+                  :key="'concern' + index + 'skin-ingredients'">
                 <div class="carousel__item">
-                  <img
-                      class="carousel__item__image"
+                  <img class="carousel__item__image"
                       src="https://dl7bo1dy930sf.cloudfront.net/img/results/ingredient-images/Green-Tea-Extract.png"
                   />
                   <!-- <img :src="ingredient.image"/>-->
-                  <span class="carousel__item__title">{{
-                      ingredient.ConsumerTitle
-                    }}</span>
+                  <span class="carousel__item__title" v-text="ingredient.ConsumerTitle"></span>
                 </div>
               </slide>
               <template #addons>
@@ -168,6 +160,9 @@ export default {
     percentBody() {
       return this.$data[this.lookupTitle] ? this.$data[this.lookupTitle].clinical_text : false;
     },
+    show(){
+      return this.$data[this.lookupTitle] ? this.$data[this.lookupTitle].display : false;
+    }
   },
   methods: {
     onChange(entry, unobserve) {
@@ -181,9 +176,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.mt-5 {
-  margin-top: 2.5rem;
-}
-</style>
