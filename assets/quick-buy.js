@@ -32,7 +32,7 @@ if (!customElements.get('quickbuy-modal')) {
           }
           
           this.removeGalleryListSemantic();
-          this.preventVariantSwitching();
+          this.preventVariantURLSwitching();
           super.show(opener);
         })
         .finally(() => {
@@ -52,7 +52,7 @@ if (!customElements.get('quickbuy-modal')) {
       });
     }
 
-    preventVariantSwitching() {
+    preventVariantURLSwitching() {
       this.modalContent.querySelector('variant-radios,variant-selects').setAttribute('data-update-url', 'false');
     }
 

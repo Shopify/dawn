@@ -47,14 +47,13 @@ if (!customElements.get('product-form')) {
 
           this.error = false;
           const quickBuyModal = this.closest('quickbuy-modal');
-          if (quickBuyModal) quickBuyModal.hide(true);
-
-          if (!document.body.classList.contains('overflow-hidden')) {
-            this.cartNotification.renderContents(response);
-          } else {
+          if (quickBuyModal) {
+            quickBuyModal.hide(true);
             document.body.addEventListener('modalClosed', () => {
               setTimeout(() => { this.cartNotification.renderContents(response) });
             }, { once: true });
+          } else {
+            this.cartNotification.renderContents(response);
           }
         })
         .catch((e) => {
