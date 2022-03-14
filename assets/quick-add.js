@@ -25,7 +25,7 @@ if (!customElements.get('quick-add-modal')) {
           const responseHTML = new DOMParser().parseFromString(responseText, 'text/html');
           const productInfo = responseHTML.querySelector('section[id^="MainProduct-"]');
 
-          this.setInnerHTML(this.modalContent, productInfo.innerHTML);
+          this.setInnerHTML(this.modalContent, this.removeDOMElements(productInfo).innerHTML);
           
           if (window.Shopify && Shopify.PaymentButton) {
             Shopify.PaymentButton.init();
@@ -54,6 +54,16 @@ if (!customElements.get('quick-add-modal')) {
 
     preventVariantURLSwitching() {
       this.modalContent.querySelector('variant-radios,variant-selects').setAttribute('data-update-url', 'false');
+    }
+    
+    removeDOMElements(productInfo) {
+      const pickupAvailability = productInfo.querySelector('pickup-availability');
+      if (pickupAvailability) pickupAvailability.remove();
+
+      const productModal = productInfo.querySelector('product-modal');
+      if (productModal) productModal.remove();
+
+      return productInfo;
     }
 
     removeGalleryListSemantic() {
