@@ -1,8 +1,8 @@
-if (!customElements.get('quickbuy-modal')) {
-  customElements.define('quickbuy-modal', class QuickBuyModal extends ModalDialog {
+if (!customElements.get('quick-add-modal')) {
+  customElements.define('quick-add-modal', class QuickAddModal extends ModalDialog {
     constructor() {
       super();
-      this.modalContent = this.querySelector('[id^="QuickBuyInfo-"]');
+      this.modalContent = this.querySelector('[id^="QuickAddInfo-"]');
     }
 
     hide(preventFocus = false) {
