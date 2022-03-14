@@ -7,8 +7,8 @@ export default {
                 'clinical_percent': false,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",
                 'description':"In an independent clinical study, 81% of people reported a bright, radiant complexion with PROVEN's personalized regime.*",
-                'img_after':"/assets/finelines2.jpg",
-                'img_before':"/assets/finelines1.jpg",
+                'img_after':"http://d201v9s59ezpea.cloudfront.net/finelines2.jpg",
+                'img_before':"http://d201v9s59ezpea.cloudfront.net/finelines1.jpg",
             },
             acne: {
                 'title':"Acne",
@@ -16,8 +16,8 @@ export default {
                 'clinical_percent': 81,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",
                 'description':"In an independent clinical study, 81% of people reported a bright, radiant complexion with PROVEN's personalized regime.*",
-                'img_after':"/assets/acne2.jpg",
-                'img_before':"/assets/acne1.jpg",
+                'img_after':"http://d201v9s59ezpea.cloudfront.net/acne2.jpg",
+                'img_before':"http://d201v9s59ezpea.cloudfront.net/acne1.jpg",
             },
             lossoffirmnessorelasticity: {
                 'title': 'Firmness and elasticity loss',
@@ -25,8 +25,8 @@ export default {
                 'clinical_percent': 81,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",
                 'description':"In an independent clinical study, 81% of people reported a bright, radiant complexion with PROVEN's personalized regime.*",
-                'img_after':"/assets/skintight2.jpg",
-                'img_before':"/assets/skintight1.jpg",
+                'img_after':"http://d201v9s59ezpea.cloudfront.net/skintight2.jpg",
+                'img_before':"http://d201v9s59ezpea.cloudfront.net/skintight1.jpg",
             },
             redness: {
                 'title': 'Redness',
@@ -34,8 +34,8 @@ export default {
                 'clinical_percent': 81,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",
                 'description':"In an independent clinical study, 81% of people reported a bright, radiant complexion with PROVEN's personalized regime.*",
-                'img_after':"/assets/redness2.jpg",
-                'img_before':"/assets/redness1.jpg",
+                'img_after':"http://d201v9s59ezpea.cloudfront.net/redness2.jpg",
+                'img_before':"http://d201v9s59ezpea.cloudfront.net/redness1.jpg",
             },
             sensitivity: {
                 'title': 'Sensitivity',
@@ -43,16 +43,16 @@ export default {
                 'clinical_percent': 81,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",
                 'description':"In an independent clinical study, 81% of people reported a bright, radiant complexion with PROVEN's personalized regime.*",
-                'img_after':"/assets/sensitivity2.jpg",
-                'img_before':"/assets/sensitivity1.jpg"
+                'img_after':"http://d201v9s59ezpea.cloudfront.net/sensitivity2.jpg",
+                'img_before':"http://d201v9s59ezpea.cloudfront.net/sensitivity1.jpg"
             },
             hyperpigmentation: {
                 'display':true,
                 'clinical_percent': 81,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",
                 'description':"In an independent clinical study, 81% of people reported a bright, radiant complexion with PROVEN's personalized regime.*",
-                'img_after':"/assets/hyperpigmentation2.jpg",
-                'img_before':"/assets/hyperpigmentation1.jpg",
+                'img_after':"http://d201v9s59ezpea.cloudfront.net/hyperpigmentation2.jpg",
+                'img_before':"http://d201v9s59ezpea.cloudfront.net/hyperpigmentation1.jpg",
             },
             seborrhoeicdermatitis: {
                 'title':"Seborrhoeic Dermatitis",
@@ -87,8 +87,8 @@ export default {
                 'clinical_percent': 81,
                 'clinical_text':"The routine provides a bright, radiant complexion.*",
                 'description':"In an independent clinical study, 81% of people reported a bright, radiant complexion with PROVEN's personalized regime.*",
-                'img_after':"/assets/rosacea2.jpg",
-                'img_before':"/assets/rosacea1.jpg",
+                'img_after':"http://d201v9s59ezpea.cloudfront.net/rosacea2.jpg",
+                'img_before':"http://d201v9s59ezpea.cloudfront.net/rosacea1.jpg",
             },
         }
     }

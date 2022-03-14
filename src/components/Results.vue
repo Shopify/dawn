@@ -173,7 +173,7 @@
   </template>
 
   <div class="loading-evyana" v-if="!isReady" style="background: #fff">
-    <img :src="'/assets/transition-desktop-cosmo2.gif'" alt=""/>
+    <img src="//d201v9s59ezpea.cloudfront.net/searching.gif" alt="loading"/>
     <!-- <svg xmlns="http://www.w3.org/2000/svg" width="200" viewBox="0 0 214 25">
       <path
           class="cls-1"
@@ -195,7 +195,7 @@
 import "@vueform/multiselect/themes/default.css";
 import Product from "./Quiz/Product";
 
-const Token = "0DaJUC7nMCkGSuRoFHl4Xr6TWBCEJzCZav8AMLV7";
+const Token = "8PdmqOGEOt2mvVh4WJTOfgoi4E081z1LR3DAiQ8p";
 import concernCopy from "../mixins/concernCopy";
 import animation from "../mixins/animation";
 import "vue3-carousel/dist/carousel.css";
@@ -222,7 +222,7 @@ export default {
   computed: {},
   async mounted() {
     const response = await fetch(
-        "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/93f99a44-cd35-4b7b-9211-92fe60755e84/results",
+        "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/33914910-946a-44ce-9a91-36591b254deb/results",
         {
           method: "GET",
           headers: {

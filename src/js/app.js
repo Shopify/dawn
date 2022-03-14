@@ -5,6 +5,7 @@ import TabContent from "../components/FormWizard/TabContent.vue"
 import ValidationHelper from "../components/FormWizard/ValidationHelper.vue"
 import Quiz from "../components/Quiz.vue"
 import Results from "../components/Results"
+import Account from "../components/Account"
 
 export { FormWizard, TabContent, ValidationHelper, Quiz, VueRouter };
 import 'vue2-animate/dist/vue2-animate.min.css'
@@ -71,6 +72,7 @@ const createVueApp = () => {
 
     const routes = [
         { path: '/result', component: Results },
+        { path: '/account', component: Account },
         { path: '/', component: Quiz },
     ]
 

@@ -91,7 +91,7 @@
       </template>
     </form-wizard>
   </template>
-    <div class="loading-evyana" v-if="!isReady">
+  <div class="loading-evyana" v-if="!isReady">
     <svg xmlns="http://www.w3.org/2000/svg" width="200" viewBox="0 0 214 25">
       <path
         class="cls-1"
@@ -116,7 +116,7 @@ import Multiselect from "@vueform/multiselect";
 
 import "@vueform/multiselect/themes/default.css";
 const checked = (value) => value === true;
-const Token = "0DaJUC7nMCkGSuRoFHl4Xr6TWBCEJzCZav8AMLV7";
+const Token = "8PdmqOGEOt2mvVh4WJTOfgoi4E081z1LR3DAiQ8p";
 
 export default {
   name: "Quiz",
@@ -462,7 +462,7 @@ export default {
             });
           });
           localStorage.setItem("quiz", JSON.stringify(this.localQuiz));
-          this.$router.push("/result");
+          this.$router.push("/account");
         });
     },
   },
