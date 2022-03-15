@@ -30,6 +30,8 @@ if (!customElements.get('quick-add-modal')) {
           if (window.Shopify && Shopify.PaymentButton) {
             Shopify.PaymentButton.init();
           }
+
+          if (window.ProductModel) window.ProductModel.loadShopifyXR();
           
           this.removeGalleryListSemantic();
           this.preventVariantURLSwitching();
