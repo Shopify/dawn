@@ -313,7 +313,7 @@ class MenuDrawer extends HTMLElement {
   onSummaryClick(event) {
     const summaryElement = event.currentTarget;
     const detailsElement = summaryElement.parentNode;
-    const parentMenuElement = detailsElement.closest('.menu-drawer__menu');
+    const parentMenuElement = detailsElement.closest('.menu-drawer__submenu') || detailsElement.closest('.menu-drawer__menu');
     const isOpen = detailsElement.hasAttribute('open');
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -369,7 +369,8 @@ class MenuDrawer extends HTMLElement {
   }
 
   closeSubmenu(detailsElement) {
-    detailsElement.closest('.menu-drawer__menu').classList.remove('submenu-open');
+    const parentMenuElement = detailsElement.closest('.menu-drawer__submenu') || detailsElement.closest('.menu-drawer__menu');
+    parentMenuElement.classList.remove('submenu-open');
     detailsElement.classList.remove('menu-opening');
     detailsElement.querySelector('summary').setAttribute('aria-expanded', false);
     removeTrapFocus(detailsElement.querySelector('summary'));
