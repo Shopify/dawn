@@ -167,7 +167,6 @@ class FacetFiltersForm extends HTMLElement {
     event.preventDefault();
     const sortFilterForms = document.querySelectorAll('facet-filters-form form');
     if (event.srcElement.className == 'mobile-facets__checkbox') {
-      console.log(event.srcElement, '----')
       const searchParams = this.createSearchParams(event.target.closest('form'))
       this.onSubmitForm(searchParams, event)
     } else {
