@@ -195,7 +195,7 @@
 import "@vueform/multiselect/themes/default.css";
 import Product from "./Quiz/Product";
 
-const Token = "8PdmqOGEOt2mvVh4WJTOfgoi4E081z1LR3DAiQ8p";
+const Token = "dvbVPawXOVDT2pbrCgrsIq7hZNTk8ixefEgMU0zB";
 import concernCopy from "../mixins/concernCopy";
 import animation from "../mixins/animation";
 import "vue3-carousel/dist/carousel.css";

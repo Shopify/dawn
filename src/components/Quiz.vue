@@ -1,108 +1,109 @@
 <template>
   <div class="wrap-form">
     <template v-if="isReady">
-    <form-wizard
-      ref="formwizard"
-      @onComplete="onComplete"
-      @onNextStep="nextStep"
-      @afterChangeTab="afterChangeTab"
-      :name="userName"
-      :data="listAnwser"
-      :isShowNext="isShowNext"
-      :curerentIndex="questionIndex"
-      :ingredients="ingredients"
-    >
-      <template v-for="(item, index) in quiz" :key="index + 'tab'">
-        <tab-content :selected="index === questionIndex ? true : false">
-          <div class="question-header">
-            <!--                <div style="width: 30px" ></div>-->
-            <div v-if="item.svg" class="icon" v-html="item.svg"></div>
-            <h2>
-              {{ item.title }}
-              <small>
-                {{ item.subtitle }}
-              </small>
-            </h2>
-          </div>
-          <div class="question-options">
-            <template
-              v-if="
-                item.type === 'MultipleChoice' || item.type === 'SingleChoice'
-              "
-            >
-              <ul class="ks-cboxtags">
-                <li
-                  v-for="(answer, answer_index) in item.options"
-                  :key="answer_index"
-                >
+      <form-wizard
+        ref="formwizard"
+        @onComplete="onComplete"
+        @onNextStep="nextStep"
+        @afterChangeTab="afterChangeTab"
+        :name="userName"
+        :data="listAnwser"
+        :isShowNext="isShowNext"
+        :curerentIndex="questionIndex"
+        :ingredients="ingredients"
+      >
+        <template v-for="(item, index) in quiz" :key="index + 'tab'">
+          <tab-content :selected="index === questionIndex ? true : false">
+            <div class="question-header">
+              <!--                <div style="width: 30px" ></div>-->
+              <div v-if="item.svg" class="icon" v-html="item.svg"></div>
+              <h2>
+                {{ item.title }}
+                <small>
+                  {{ item.subtitle }}
+                </small>
+              </h2>
+            </div>
+            <div class="question-options">
+              <template
+                v-if="
+                  item.type === 'MultipleChoice' || item.type === 'SingleChoice'
+                "
+              >
+                <ul class="ks-cboxtags">
+                  <li
+                    v-for="(answer, answer_index) in item.options"
+                    :key="answer_index"
+                  >
+                    <input
+                      v-on:input="onChangeCheckbox(item, $event, item.type)"
+                      :id="item.slug + '-' + answer_index"
+                      :value="answer.id"
+                      :checked="
+                        currentAnwser
+                          ? currentAnwser.indexOf(answer.value) > -1
+                          : false
+                      "
+                      type="checkbox"
+                    />
+                    <label :for="item.slug + '-' + answer_index">{{
+                      answer.title
+                    }}</label>
+                  </li>
+                </ul>
+              </template>
+              <template v-if="item.type === 'Text'">
+                <div class="field">
                   <input
-                    v-on:input="onChangeCheckbox(item, $event, item.type)"
-                    :id="item.slug + '-' + answer_index"
-                    :value="answer.id"
-                    :checked="
-                      currentAnwser
-                        ? currentAnwser.indexOf(answer.value) > -1
-                        : false
-                    "
-                    type="checkbox"
+                    class="field__input"
+                    type="text"
+                    :name="item.slug"
+                    @keyup="onFormChange(item, $event)"
                   />
-                  <label :for="item.slug + '-' + answer_index">{{
-                    answer.title
-                  }}</label>
-                </li>
-              </ul>
-            </template>
-            <template v-if="item.type === 'Text'">
-              <div class="field">
-                <input
-                  class="field__input"
-                  type="text"
-                  :name="item.slug"
-                  @keyup="onFormChange(item, $event)"
+                  <div class="error" v-if="isShowFieldRequire">
+                    This field is required.
+                  </div>
+
+                  <div class="error" v-if="!isValidAnwserQuestion">
+                    {{ item.category }} is not valid.
+                  </div>
+                </div>
+              </template>
+              <template
+                v-if="
+                  item.type === 'TextAutoComplete' &&
+                  listAutoComplete.length > 0
+                "
+              >
+                <Multiselect
+                  v-model="multiValue"
+                  mode="tags"
+                  :searchable="true"
+                  :groups="false"
+                  :options="listAutoComplete"
+                  :close-on-select="false"
+                  label="name"
+                  track-by="name"
+                  @change="onAddItemAutoComplete()"
                 />
-                <div class="error" v-if="isShowFieldRequire">
-                  This field is required.
-                </div>
+              </template>
+            </div>
+          </tab-content>
+        </template>
+      </form-wizard>
+    </template>
+    <div class="loading-evyana" v-if="!isReady">
+      <svg xmlns="http://www.w3.org/2000/svg" width="200" viewBox="0 0 214 25">
+        <path
+          class="cls-1"
+          d="M0 25V0h13.6v2.3H2.5v9h10.7v2.2H2.5v9.2h11V25zM45.1 25h-2.4L32.5 0h2.8L44 21.9 52.7 0h2.7zM83.6 16.6V25h-2.4v-8.4L72.6 0h2.7l7 14 7.3-14h2.7zM120.2 0h-2.8l-10.6 25h2.6l3-6.8L118.8 3l5.7 13.7 3.6 8.4h2.7zM203.3 0h-2.7l-10.7 25h2.6l3-6.8L202 3l5.7 13.7 3.6 8.4h2.7zM167.8 25L153 3v22h-2.4V0h3.3l14 20.7V0h2.4v25z"
+        ></path>
+      </svg>
 
-                <div class="error" v-if="!isValidAnwserQuestion">
-                  {{ item.category }} is not valid.
-                </div>
-              </div>
-            </template>
-            <template
-              v-if="
-                item.type === 'TextAutoComplete' && listAutoComplete.length > 0
-              "
-            >
-              <Multiselect
-                v-model="multiValue"
-                mode="tags"
-                :searchable="true"
-                :groups="false"
-                :options="listAutoComplete"
-                :close-on-select="false"
-                label="name"
-                track-by="name"
-                @change="onAddItemAutoComplete()"
-              />
-            </template>
-          </div>
-        </tab-content>
-      </template>
-    </form-wizard>
-  </template>
-  <div class="loading-evyana" v-if="!isReady">
-    <svg xmlns="http://www.w3.org/2000/svg" width="200" viewBox="0 0 214 25">
-      <path
-        class="cls-1"
-        d="M0 25V0h13.6v2.3H2.5v9h10.7v2.2H2.5v9.2h11V25zM45.1 25h-2.4L32.5 0h2.8L44 21.9 52.7 0h2.7zM83.6 16.6V25h-2.4v-8.4L72.6 0h2.7l7 14 7.3-14h2.7zM120.2 0h-2.8l-10.6 25h2.6l3-6.8L118.8 3l5.7 13.7 3.6 8.4h2.7zM203.3 0h-2.7l-10.7 25h2.6l3-6.8L202 3l5.7 13.7 3.6 8.4h2.7zM167.8 25L153 3v22h-2.4V0h3.3l14 20.7V0h2.4v25z"
-      ></path>
-    </svg>
+      <div id="loading"></div>
 
-    <div id="loading"></div>
-
-    <p class="text-loading">3 minutes to your best skincare, let's go!</p>
-  </div>
+      <p class="text-loading">3 minutes to your best skincare, let's go!</p>
+    </div>
   </div>
 </template>
 
@@ -116,7 +117,7 @@ import Multiselect from "@vueform/multiselect";
 
 import "@vueform/multiselect/themes/default.css";
 const checked = (value) => value === true;
-const Token = "8PdmqOGEOt2mvVh4WJTOfgoi4E081z1LR3DAiQ8p";
+const Token = "dvbVPawXOVDT2pbrCgrsIq7hZNTk8ixefEgMU0zB";
 
 export default {
   name: "Quiz",
@@ -169,7 +170,7 @@ export default {
       this.quiz = rs.data.questions.filter(
         (e) => e.title.toLowerCase().indexOf("please list them") === -1
       );
-      console.log(this.quiz, "deo");
+      console.log(this.quiz);
       //TODO Renable
       this.isReady = true;
       this.localQuiz = localStorage.getItem("quiz");
@@ -257,9 +258,10 @@ export default {
         );
       }
       if (item.category === "email") {
-        this.isValidAnwserQuestion = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i.test(
-          this.currentAnwser
-        );
+        this.isValidAnwserQuestion =
+          /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i.test(
+            this.currentAnwser
+          );
       }
 
       this.$forceUpdate();
@@ -272,7 +274,7 @@ export default {
         this.isShowFieldRequire = true;
         return;
       }
-      if(!this.isValidAnwserQuestion){
+      if (!this.isValidAnwserQuestion) {
         return;
       }
       this.isShowFieldRequire = false;
@@ -295,6 +297,8 @@ export default {
       ) {
         payload[this.quiz[this.questionIndex].category] = this.currentAnwser;
       }
+
+      debugger;
 
       this.listAnwser
         .filter((n) => n)
@@ -438,7 +442,7 @@ export default {
     },
     async onComplete() {
       let payload = {
-        email: this.currentAnwser,
+        zip: this.currentAnwser,
       };
       await fetch(
         "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/" +
