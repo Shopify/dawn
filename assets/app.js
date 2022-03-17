@@ -18801,8 +18801,21 @@ var Token = "dvbVPawXOVDT2pbrCgrsIq7hZNTk8ixefEgMU0zB";
         while (1) {
           switch (_context2.prev = _context2.next) {
             case 0:
-              _context2.next = 2;
-              return fetch("https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/33914910-946a-44ce-9a91-36591b254deb/results", {
+              _this.localQuiz = localStorage.getItem("quiz");
+
+              if (_this.localQuiz) {
+                _context2.next = 4;
+                break;
+              }
+
+              _this.$router.push("/quiz");
+
+              return _context2.abrupt("return");
+
+            case 4:
+              _this.localQuiz = JSON.parse(_this.localQuiz);
+              _context2.next = 7;
+              return fetch("https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/".concat(_this.localQuiz.id, "/results"), {
                 method: "GET",
                 headers: {
                   "Content-Type": "application/json",
@@ -18810,7 +18823,7 @@ var Token = "dvbVPawXOVDT2pbrCgrsIq7hZNTk8ixefEgMU0zB";
                 }
               });
 
-            case 2:
+            case 7:
               response = _context2.sent;
               response.json().then( /*#__PURE__*/function () {
                 var _ref = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee(rs) {
@@ -18837,7 +18850,7 @@ var Token = "dvbVPawXOVDT2pbrCgrsIq7hZNTk8ixefEgMU0zB";
                 };
               }());
 
-            case 4:
+            case 9:
             case "end":
               return _context2.stop();
           }

@@ -221,8 +221,14 @@ export default {
   },
   computed: {},
   async mounted() {
+    this.localQuiz = localStorage.getItem("quiz");
+    if(!this.localQuiz){
+      this.$router.push("/quiz");
+      return;
+    }
+    this.localQuiz = JSON.parse(this.localQuiz);
     const response = await fetch(
-        "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/33914910-946a-44ce-9a91-36591b254deb/results",
+        `https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/${this.localQuiz.id}/results`,
         {
           method: "GET",
           headers: {
