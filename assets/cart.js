@@ -97,12 +97,13 @@ class CartItems extends HTMLElement {
 
   updateLiveRegions(line, itemCount) {
     if (this.currentItemCount === itemCount) {
-      document.getElementById(`Line-item-error-${line}`)
-        .querySelector('.cart-item__error-text')
-        .innerHTML = window.cartStrings.quantityError.replace(
+      const lineItem =  document.getElementById(`CartItem-${line}`);
+      lineItem.querySelectorAll('.cart-item__error-text').forEach(element => {
+        element.innerHTML = window.cartStrings.quantityError.replace(
           '[quantity]',
           document.getElementById(`Quantity-${line}`).value
         );
+      });
     }
 
     this.currentItemCount = itemCount;
