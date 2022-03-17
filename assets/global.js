@@ -443,7 +443,7 @@ class ModalDialog extends HTMLElement {
       });
     } else {
       this.addEventListener('click', (event) => {
-        if (event.target.nodeName === 'MODAL-DIALOG') this.hide();
+        if (event.target === this) this.hide();
       });
     }
   }
