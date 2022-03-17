@@ -47,6 +47,14 @@
         <concern :concern="concern"/>
       </template>
 
+      <div class="spaced-section enviroment">
+        <h1 class="everything__title">Enviroment section goes here</h1>
+      </div>
+
+      <div class="spaced-section lifestyle">
+        <h1 class="everything__title">Lifestyle Section goes here</h1>
+      </div>
+
       <div class="spaced-section everything">
         <img class="everything__image" src="https://www.provenskincare.com/cdn-cgi/image/f=auto,onerror=redirect/https://media.provenskincare.com/img/results/inside-your-proven-img-mobile.png"/>
         <h1 class="everything__title">Everything You Need in One Simple System</h1>
@@ -195,7 +203,7 @@
 import "@vueform/multiselect/themes/default.css";
 import Product from "./Quiz/Product";
 
-const Token = "dvbVPawXOVDT2pbrCgrsIq7hZNTk8ixefEgMU0zB";
+const Token = "999999999911111111aaaaaa";
 import concernCopy from "../mixins/concernCopy";
 import animation from "../mixins/animation";
 import "vue3-carousel/dist/carousel.css";

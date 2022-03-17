@@ -117,7 +117,7 @@ import Multiselect from "@vueform/multiselect";
 
 import "@vueform/multiselect/themes/default.css";
 const checked = (value) => value === true;
-const Token = "dvbVPawXOVDT2pbrCgrsIq7hZNTk8ixefEgMU0zB";
+const Token = "999999999911111111aaaaaa";
 
 export default {
   name: "Quiz",
@@ -297,8 +297,6 @@ export default {
       ) {
         payload[this.quiz[this.questionIndex].category] = this.currentAnwser;
       }
-
-      debugger;
 
       this.listAnwser
         .filter((n) => n)

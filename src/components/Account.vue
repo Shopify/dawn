@@ -70,7 +70,7 @@ import { store } from "../store/form_store.js";
 
 import "@vueform/multiselect/themes/default.css";
 const checked = (value) => value === true;
-const Token = "dvbVPawXOVDT2pbrCgrsIq7hZNTk8ixefEgMU0zB";
+const Token = "999999999911111111aaaaaa";
 
 export default {
   name: "Quiz",
