@@ -32,7 +32,7 @@ if (!customElements.get('quick-add-modal')) {
           }
 
           if (window.ProductModel) window.ProductModel.loadShopifyXR();
-          
+
           this.removeGalleryListSemantic();
           this.preventVariantURLSwitching();
           super.show(opener);
@@ -46,11 +46,15 @@ if (!customElements.get('quick-add-modal')) {
 
     setInnerHTML(element, html) {
       element.innerHTML = html;
-      element.querySelectorAll("script").forEach( oldScript => {
-        const newScript = document.createElement("script");
-        Array.from(oldScript.attributes).forEach(attribute => newScript.setAttribute(attribute.name, attribute.value));
-        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-        oldScript.parentNode.replaceChild(newScript, oldScript);
+
+      // Reinjects the script tags to allow execution. By default, scripts are disabled when using element.innerHTML.
+      element.querySelectorAll('script').forEach(oldScriptTag => {
+        const newScriptTag = document.createElement('script');
+        Array.from(oldScriptTag.attributes).forEach(attribute => {
+          newScriptTag.setAttribute(attribute.name, attribute.value)
+        });
+        newScriptTag.appendChild(document.createTextNode(oldScriptTag.innerHTML));
+        oldScriptTag.parentNode.replaceChild(newScriptTag, oldScriptTag);
       });
     }
 
