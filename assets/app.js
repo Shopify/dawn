@@ -17520,7 +17520,7 @@ var checked = function checked(value) {
                 category: "email",
                 slug: "where-should-we-send-your-results",
                 subtitle: null,
-                additional: '<label>PROVEN never spams or shares your information.<br>By providing your email, you agree to receive exclusive news and promotions from PROVEN compliant with our<br><a href="/terms-and-conditions" target="_blank">Terms &amp; Conditions</a>&nbsp;and&nbsp;<a href="/privacy-policy" target="_blank">Privacy Policy.</a>&nbsp; You can withdraw your consent at any time.</label>',
+                additional: '<label class="muted">Evyana never spams or shares your information.<br>By providing your email, you agree to receive exclusive news and promotions from PROVEN compliant with our<br><a href="https://evyana.com/policies/terms-of-service" target="_blank">Terms &amp; Conditions</a>&nbsp;and&nbsp;<a href="https://evyana.com/policies/privacy-policy" target="_blank">Privacy Policy.</a>&nbsp; You can withdraw your consent at any time.</label>',
                 title: "Where should we send your results?",
                 type: "Text"
               }, {
@@ -17543,7 +17543,7 @@ var checked = function checked(value) {
 
               _this.loading = true;
               _context.next = 8;
-              return fetch("https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead", {
+              return fetch("".concat(_this.base_url, "/api/quiz/1/lead"), {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
@@ -17715,7 +17715,7 @@ var checked = function checked(value) {
                 payload[_this4.quiz[_this4.questionIndex].category] = _this4.currentAnwser;
                 _this4.isValidNext = false;
                 _context4.next = 11;
-                return fetch("https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/customer/", {
+                return fetch("".concat(_this4.base_url, "/api/customer/"), {
                   method: "POST",
                   body: JSON.stringify(payload),
                   headers: {
@@ -18103,7 +18103,7 @@ var checked = function checked(value) {
           switch (_context2.prev = _context2.next) {
             case 0:
               _context2.next = 2;
-              return fetch("https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1", {
+              return fetch("".concat(_this.base_url, "/api/quiz/1"), {
                 method: "GET",
                 headers: {
                   "Content-Type": "application/json",
@@ -18135,7 +18135,7 @@ var checked = function checked(value) {
 
                           _this.loading = true;
                           _context.next = 8;
-                          return fetch("https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead", {
+                          return fetch("".concat(_this.base_url, "/api/quiz/1/lead"), {
                             method: "POST",
                             headers: {
                               "Content-Type": "application/json",
@@ -18325,7 +18325,7 @@ var checked = function checked(value) {
                 _this3.$refs.formwizard.triggerNext(_this3.questionIndex);
 
                 _context4.next = 15;
-                return fetch("https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/" + _this3.localQuiz.id, {
+                return fetch("".concat(_this3.base_url, "/api/quiz/1/lead/").concat(_this3.localQuiz.id), {
                   method: "PATCH",
                   body: JSON.stringify(payload),
                   headers: {
@@ -18777,7 +18777,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             case 4:
               _this.localQuiz = JSON.parse(_this.localQuiz);
               _context2.next = 7;
-              return fetch("https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/".concat(_this.localQuiz.id, "/results"), {
+              return fetch("".concat(_this.base_url, "/api/quiz/1/lead/").concat(_this.localQuiz.id, "/results"), {
                 method: "GET",
                 headers: {
                   "Content-Type": "application/json",
@@ -19508,7 +19508,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       return [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($data.quiz, function (item, index) {
         return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_tab_content, {
           key: index + 'tab',
-          selected: index === $data.questionIndex ? true : false,
+          selected: index === $data.questionIndex,
           name: index + 'tab'
         }, {
           "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
@@ -20270,7 +20270,11 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   )])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_32, [_hoisted_33, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_34, [_hoisted_35, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.environment.airquality.range), 1
   /* TEXT */
   )])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_36, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_GoogleMap, {
-    "api-key": "'api_key'",
+    "api-key": "AIzaSyB3SwShKbf8tDq3y0NH8woTOUdL34cX2Oc",
+    clickableIcons: false,
+    disableDefaultUi: true,
+    disableDoubleClickZoom: true,
+    draggable: false,
     style: {
       "width": "100%",
       "height": "354px"
@@ -20430,6 +20434,7 @@ var modules = {};
 var createVueApp = function createVueApp() {
   var app = (0,vue__WEBPACK_IMPORTED_MODULE_0__.createApp)({});
   app.config.globalProperties.authToken = "999999999911111111aaaaaa";
+  app.config.globalProperties.base_url = "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com";
   /**
    * vue components
    * auto-import all vue components

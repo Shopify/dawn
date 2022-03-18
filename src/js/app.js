@@ -27,6 +27,7 @@ const modules = {};
 const createVueApp = () => {
   const app = createApp({});
   app.config.globalProperties.authToken = "999999999911111111aaaaaa";
+  app.config.globalProperties.base_url = "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com";
 
   /**
    * vue components

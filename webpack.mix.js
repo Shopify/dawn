@@ -4,6 +4,9 @@ let mix = require("laravel-mix");
 // mix.js('src/form.js', 'dist').setPublicPath('dist');
 mix.webpackConfig((webpack) => {
   return {
+    stats: {
+      children: true,
+    },
     module: {
       rules: [
         {

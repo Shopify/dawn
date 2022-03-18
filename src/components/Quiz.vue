@@ -13,7 +13,7 @@
         :ingredients="ingredients"
       >
         <template v-for="(item, index) in quiz" :key="index + 'tab'">
-          <tab-content :selected="index === questionIndex ? true : false" :name="index + 'tab'">
+          <tab-content :selected="index === questionIndex" :name="index + 'tab'">
             <div class="question-header">
               <!--                <div style="width: 30px" ></div>-->
               <div v-if="item.svg" class="icon" v-html="item.svg"></div>
@@ -156,7 +156,7 @@ export default {
   computed: {},
   async mounted() {
     const response = await fetch(
-      "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1",
+        `${this.base_url}/api/quiz/1`,
       {
         method: "GET",
         headers: {
@@ -176,7 +176,7 @@ export default {
       if (!this.localQuiz) {
         this.loading = true;
         await fetch(
-          "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead",
+            `${this.base_url}/api/quiz/1/lead`,
           {
             method: "POST",
             headers: {
@@ -308,8 +308,7 @@ export default {
       this.questionIndex++;
       this.$refs.formwizard.triggerNext(this.questionIndex);
       await fetch(
-        "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/" +
-          this.localQuiz.id,
+          `${this.base_url}/api/quiz/1/lead/${this.localQuiz.id}`,
         {
           method: "PATCH",
           body: JSON.stringify(payload),
