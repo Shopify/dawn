@@ -18554,7 +18554,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "Concern",
-  props: ["concern"],
+  props: ["concern", "index"],
   mixins: [_mixins_concernCopy__WEBPACK_IMPORTED_MODULE_1__["default"], _mixins_CarouselBreakpoints__WEBPACK_IMPORTED_MODULE_2__["default"]],
   components: {
     Carousel: vue3_carousel__WEBPACK_IMPORTED_MODULE_0__.Carousel,
@@ -18707,7 +18707,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Quiz_Product__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Quiz/Product */ "./src/components/Quiz/Product.vue");
 /* harmony import */ var _mixins_concernCopy__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../mixins/concernCopy */ "./src/mixins/concernCopy.js");
 /* harmony import */ var _mixins_animation__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../mixins/animation */ "./src/mixins/animation.js");
-/* harmony import */ var _mixins_animation__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_mixins_animation__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var vue3_carousel_dist_carousel_css__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! vue3-carousel/dist/carousel.css */ "./node_modules/vue3-carousel/dist/carousel.css");
 /* harmony import */ var vue3_carousel__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! vue3-carousel */ "./node_modules/vue3-carousel/dist/carousel.es.js");
 /* harmony import */ var _Quiz_Concern__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./Quiz/Concern */ "./src/components/Quiz/Concern.vue");
@@ -18730,7 +18729,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "Results",
-  mixins: [_mixins_concernCopy__WEBPACK_IMPORTED_MODULE_3__["default"], _mixins_CarouselBreakpoints__WEBPACK_IMPORTED_MODULE_9__["default"], (_mixins_animation__WEBPACK_IMPORTED_MODULE_4___default())],
+  mixins: [_mixins_concernCopy__WEBPACK_IMPORTED_MODULE_3__["default"], _mixins_CarouselBreakpoints__WEBPACK_IMPORTED_MODULE_9__["default"], _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"]],
   components: {
     Product: _Quiz_Product__WEBPACK_IMPORTED_MODULE_2__["default"],
     Carousel: vue3_carousel__WEBPACK_IMPORTED_MODULE_6__.Carousel,
@@ -18796,7 +18795,10 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                           _this.results = rs.data;
                           console.log(_this.results);
                           setTimeout(function () {
-                            _this.isReady = true;
+                            // this.isReady = true;
+                            _this.$nextTick(function () {
+                              _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].check_if_in_view();
+                            });
                           }, 1000);
 
                         case 3:
@@ -19607,14 +19609,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
 
 var _hoisted_1 = {
-  key: 0,
-  "class": "result spaced-section slide animation-element"
-};
-var _hoisted_2 = {
   "class": "result__images"
 };
 
-var _hoisted_3 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("svg", {
+var _hoisted_2 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("svg", {
   "class": "result__images__container__pattern",
   fill: "currentColor",
   viewBox: "0 0 60 60",
@@ -19642,73 +19640,73 @@ var _hoisted_3 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementV
 /* HOISTED */
 );
 
-var _hoisted_4 = {
+var _hoisted_3 = {
   "class": "result__images__container"
 };
-var _hoisted_5 = {
+var _hoisted_4 = {
   "class": "result__images__container__figure"
 };
-var _hoisted_6 = ["src"];
+var _hoisted_5 = ["src"];
 
-var _hoisted_7 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("figcaption", {
+var _hoisted_6 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("figcaption", {
   "class": "result__images__container__figure__caption"
 }, " Before ", -1
 /* HOISTED */
 );
 
-var _hoisted_8 = {
+var _hoisted_7 = {
   "class": "result__images__container__figure"
 };
-var _hoisted_9 = ["src"];
+var _hoisted_8 = ["src"];
 
-var _hoisted_10 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("figcaption", {
+var _hoisted_9 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("figcaption", {
   "class": "result__images__container__figure__caption"
 }, " After ", -1
 /* HOISTED */
 );
 
-var _hoisted_11 = {
+var _hoisted_10 = {
   "class": "result__body"
 };
 
-var _hoisted_12 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h2", {
+var _hoisted_11 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h2", {
   "class": "result__body__targets"
 }, "Your system targets", -1
 /* HOISTED */
 );
 
+var _hoisted_12 = ["textContent"];
 var _hoisted_13 = ["textContent"];
-var _hoisted_14 = ["textContent"];
-var _hoisted_15 = {
+var _hoisted_14 = {
   "class": "result__ingredient"
 };
 
-var _hoisted_16 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h4", {
+var _hoisted_15 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h4", {
   "class": ""
 }, "Ingredients", -1
 /* HOISTED */
 );
 
-var _hoisted_17 = {
+var _hoisted_16 = {
   "class": ""
 };
-var _hoisted_18 = {
+var _hoisted_17 = {
   "class": "carousel__item"
 };
 
-var _hoisted_19 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+var _hoisted_18 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
   "class": "carousel__item__image",
   src: "https://dl7bo1dy930sf.cloudfront.net/img/results/ingredient-images/Green-Tea-Extract.png"
 }, null, -1
 /* HOISTED */
 );
 
-var _hoisted_20 = ["textContent"];
-var _hoisted_21 = {
+var _hoisted_19 = ["textContent"];
+var _hoisted_20 = {
   "class": "result__quote__container"
 };
 
-var _hoisted_22 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("svg", {
+var _hoisted_21 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("svg", {
   "class": "result__quote__container__svg",
   stroke: "currentColor",
   fill: "none",
@@ -19721,11 +19719,11 @@ var _hoisted_22 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
 /* HOISTED */
 );
 
-var _hoisted_23 = {
+var _hoisted_22 = {
   "class": "result__quote_container__blockquote"
 };
+var _hoisted_23 = ["textContent"];
 var _hoisted_24 = ["textContent"];
-var _hoisted_25 = ["textContent"];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_slide = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("slide");
 
@@ -19733,31 +19731,36 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
   var _component_carousel = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("carousel");
 
-  return $options.show ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [_hoisted_3, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_4, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("figure", _hoisted_5, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+  return $options.show ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", {
+    key: 0,
+    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["result spaced-section slide animation-element", {
+      'in-view': $props.index === 0
+    }])
+  }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_1, [_hoisted_2, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("figure", _hoisted_4, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
     "class": "result__images__container__figure__image",
     src: $options.beforeImage,
     alt: "Before"
   }, null, 8
   /* PROPS */
-  , _hoisted_6), _hoisted_7]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("figure", _hoisted_8, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+  , _hoisted_5), _hoisted_6]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("figure", _hoisted_7, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
     "class": "result__images__container__figure__image",
     src: $options.afterImage,
     alt: "After"
   }, null, 8
   /* PROPS */
-  , _hoisted_9), _hoisted_10])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_11, [_hoisted_12, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
+  , _hoisted_8), _hoisted_9])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_10, [_hoisted_11, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", {
     "class": "result__body__title",
     textContent: (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.title)
   }, null, 8
   /* PROPS */
-  , _hoisted_13), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
+  , _hoisted_12), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
     "class": "result__body__about",
     textContent: (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.description)
   }, null, 8
   /* PROPS */
-  , _hoisted_14)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_15, [$props.concern.ingredients.length !== 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, {
+  , _hoisted_13)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_14, [$props.concern.ingredients.length !== 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, {
     key: 0
-  }, [_hoisted_16, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_17, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_carousel, {
+  }, [_hoisted_15, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_16, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_carousel, {
     settings: _ctx.settings,
     breakpoints: _ctx.breakpoints
   }, {
@@ -19770,12 +19773,12 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           key: 'concern' + index + 'skin-ingredients'
         }, {
           "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-            return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_18, [_hoisted_19, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <img :src=\"ingredient.image\"/>"), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+            return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_17, [_hoisted_18, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <img :src=\"ingredient.image\"/>"), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
               "class": "carousel__item__title",
               textContent: (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(ingredient.ConsumerTitle)
             }, null, 8
             /* PROPS */
-            , _hoisted_20)])];
+            , _hoisted_19)])];
           }),
           _: 2
           /* DYNAMIC */
@@ -19794,18 +19797,20 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   /* PROPS */
   , ["settings", "breakpoints"])])], 64
   /* STABLE_FRAGMENT */
-  )) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_21, [_hoisted_22, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("blockquote", _hoisted_23, [$options.percent ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("h1", {
+  )) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_20, [_hoisted_21, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("blockquote", _hoisted_22, [$options.percent ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("h1", {
     key: 0,
     "class": "result__quote_container__blockquote__title",
     textContent: (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.percent + '%')
   }, null, 8
   /* PROPS */
-  , _hoisted_24)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
+  , _hoisted_23)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
     "class": "result__quote_container__blockquote__body",
     textContent: (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.percentBody)
   }, null, 8
   /* PROPS */
-  , _hoisted_25)])])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true);
+  , _hoisted_24)])])], 2
+  /* CLASS */
+  )) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true);
 }
 
 /***/ }),
@@ -20057,13 +20062,10 @@ var _hoisted_11 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
 /* HOISTED */
 );
 
-var _hoisted_12 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createStaticVNode)("<button class=\"welcome__cta button\" aria-label=\"Get my system\"> GET MY SYSTEM </button><div class=\"welcome__ctainfo breakout breakout--mobile\"><div class=\"welcome__ctainfo__body\"><span>4-Product System</span><span class=\"welcome_ctainfo__title highlight\">$129.99</span><span class=\"strike\">$189.97 USD</span></div><span class=\"highlight\">SAVE $60 + FREE SHIPPING</span></div><span class=\"welcome_ctainfo__disclaimer muted center\">4-product system auto-refilled. Cancel Anytime</span>", 3);
+var _hoisted_12 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createStaticVNode)("<button class=\"welcome__cta button\" aria-label=\"Get my system\"> GET MY SYSTEM </button><div class=\"welcome__ctainfo breakout breakout--mobile\"><div class=\"welcome__ctainfo__body\"><span>4-Product System</span><span class=\"welcome_ctainfo__title highlight\">$129.99</span><span class=\"strike\">$189.97 USD</span></div><span class=\"highlight\">SAVE $60 + FREE SHIPPING</span></div><div class=\"welcome__ctainfo show-for-mobile\" id=\"price-button\"><div class=\"welcome__ctainfo__body\"><span class=\"welcome_ctainfo__title highlight\">GET MY SYSTEM | $129.99/SYSTEM</span></div></div><span class=\"welcome_ctainfo__disclaimer muted center\">4-product system auto-refilled. Cancel Anytime</span>", 4);
 
-var _hoisted_15 = {
-  "class": "spaced-section enviroment"
-};
 var _hoisted_16 = {
-  "class": "result spaced-section slide animation-element"
+  "class": "spaced-section enviroment"
 };
 
 var _hoisted_17 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
@@ -20228,6 +20230,9 @@ var _hoisted_51 = {
 };
 
 var _hoisted_52 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+  style: {
+    "height": "100%"
+  },
   src: "//d201v9s59ezpea.cloudfront.net/searching.gif",
   alt: "loading"
 }, null, -1
@@ -20255,13 +20260,18 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   ), _hoisted_6, _hoisted_7, _hoisted_8, _hoisted_9]), _hoisted_10, _hoisted_11]), _hoisted_12]), ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($data.results.skin, function (concern, index) {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_concern, {
       key: index + 'skin',
-      concern: concern
+      concern: concern,
+      index: index
     }, null, 8
     /* PROPS */
-    , ["concern"]);
+    , ["concern", "index"]);
   }), 128
   /* KEYED_FRAGMENT */
-  )), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_15, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_16, [_hoisted_17, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_18, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_19, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_20, [_hoisted_21, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_22, [_hoisted_23, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.environment.water.text), 1
+  )), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_16, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["result spaced-section slide animation-element", {
+      'in-view': $data.results.skin.length === 0
+    }])
+  }, [_hoisted_17, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_18, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_19, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_20, [_hoisted_21, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_22, [_hoisted_23, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.environment.water.text), 1
   /* TEXT */
   )])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_24, [_hoisted_25, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_26, [_hoisted_27, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.environment.uvindex.text), 1
   /* TEXT */
@@ -20275,6 +20285,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     disableDefaultUi: true,
     disableDoubleClickZoom: true,
     draggable: false,
+    minZoom: 13,
     style: {
       "width": "100%",
       "height": "354px"
@@ -20302,7 +20313,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
   }, 8
   /* PROPS */
-  , ["center"])])])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_37, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_38, [_hoisted_39, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_40, [_hoisted_41, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_42, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($options.listLifeStyle, function (lifestyle, index) {
+  , ["center"])])])], 2
+  /* CLASS */
+  )]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_37, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_38, [_hoisted_39, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_40, [_hoisted_41, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_42, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($options.listLifeStyle, function (lifestyle, index) {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("li", {
       "class": "item-life",
       key: index
@@ -20617,67 +20630,82 @@ __webpack_require__.r(__webpack_exports__);
 /*!*********************************!*\
   !*** ./src/mixins/animation.js ***!
   \*********************************/
-/***/ (() => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
 //check to see if any animation containers are currently in view
-function check_if_in_view() {
-  var animation_elements = document.querySelectorAll(".animation-element");
-  var web_window = window; //get current window information
+var animation = {
+  check_if_in_view: function check_if_in_view() {
+    var animation_elements = document.querySelectorAll(".animation-element");
+    var web_window = window; //get current window information
 
-  var window_height = web_window.outerHeight;
-  var window_top_position = web_window.pageYOffset;
-  var window_bottom_position = window_top_position + window_height; //iterate through elements to see if its in view
+    var window_height = web_window.outerHeight;
+    var window_top_position = web_window.pageYOffset;
+    var window_bottom_position = window_top_position + window_height;
+    var self = this; //iterate through elements to see if its in view
 
-  Array.from(animation_elements).map(function (el) {
-    //get the element sinformation
-    var rect = el.getBoundingClientRect(),
-        vWidth = window.innerWidth || document.documentElement.clientWidth,
-        vHeight = window.innerHeight || document.documentElement.clientHeight,
-        efp = function efp(x, y) {
-      return document.elementFromPoint(x, y);
-    }; // Return false if it's not in the viewport
-
-
-    if (rect.right < 0 || rect.bottom < 0 || rect.left > vWidth || rect.top > vHeight) return false; // Return true if any of its four corners are visible
-
-    var isInview = isElementInViewport(el) || isElementPartiallyInViewport(el);
-
-    if (isInview) {
-      el.classList.add("in-view");
-    } else {// element.classList.remove("in-view");
-    }
-  });
-}
-
-function isElementPartiallyInViewport(el) {
-  // Special bonus for those using jQuery
-  if (typeof jQuery !== 'undefined' && el instanceof jQuery) el = el[0];
-  var rect = el.getBoundingClientRect(); // DOMRect { x: 8, y: 8, width: 100, height: 100, top: 8, right: 108, bottom: 108, left: 8 }
-
-  var windowHeight = window.innerHeight || document.documentElement.clientHeight;
-  var windowWidth = window.innerWidth || document.documentElement.clientWidth; // http://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
-
-  var vertInView = rect.top <= windowHeight && rect.top + rect.height >= 0;
-  var horInView = rect.left <= windowWidth && rect.left + rect.width >= 0;
-  return vertInView && horInView;
-} // http://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport
+    Array.from(animation_elements).map(function (el) {
+      //get the element sinformation
+      var rect = el.getBoundingClientRect(),
+          vWidth = window.innerWidth || document.documentElement.clientWidth,
+          vHeight = window.innerHeight || document.documentElement.clientHeight,
+          efp = function efp(x, y) {
+        return document.elementFromPoint(x, y);
+      }; // Return false if it's not in the viewport
 
 
-function isElementInViewport(el) {
-  // Special bonus for those using jQuery
-  if (typeof jQuery !== 'undefined' && el instanceof jQuery) el = el[0];
-  var rect = el.getBoundingClientRect();
-  var windowHeight = window.innerHeight || document.documentElement.clientHeight;
-  var windowWidth = window.innerWidth || document.documentElement.clientWidth;
-  return rect.left >= 0 && rect.top >= 0 && rect.left + rect.width <= windowWidth && rect.top + rect.height <= windowHeight;
-} // setTimeout(() => {
-//   check_if_in_view()
-// }, 100);
+      if (rect.right < 0 || rect.bottom < 0 || rect.left > vWidth || rect.top > vHeight) return false; // Return true if any of its four corners are visible
 
+      var isInview = self.isElementInViewport(el) || self.isElementPartiallyInViewport(el);
 
+      if (isInview) {
+        el.classList.add("in-view");
+      } else {// element.classList.remove("in-view");
+      }
+    });
+  },
+  isElementPartiallyInViewport: function isElementPartiallyInViewport(el) {
+    // Special bonus for those using jQuery
+    if (typeof jQuery !== "undefined" && el instanceof jQuery) el = el[0];
+    var rect = el.getBoundingClientRect(); // DOMRect { x: 8, y: 8, width: 100, height: 100, top: 8, right: 108, bottom: 108, left: 8 }
+
+    var windowHeight = window.innerHeight || document.documentElement.clientHeight;
+    var windowWidth = window.innerWidth || document.documentElement.clientWidth; // http://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
+
+    var vertInView = rect.top <= windowHeight && rect.top + rect.height >= 0;
+    var horInView = rect.left <= windowWidth && rect.left + rect.width >= 0;
+    return vertInView && horInView;
+  },
+  // http://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport
+  isElementInViewport: function isElementInViewport(el) {
+    // Special bonus for those using jQuery
+    if (typeof jQuery !== "undefined" && el instanceof jQuery) el = el[0];
+    var rect = el.getBoundingClientRect();
+    var windowHeight = window.innerHeight || document.documentElement.clientHeight;
+    var windowWidth = window.innerWidth || document.documentElement.clientWidth;
+    return rect.left >= 0 && rect.top >= 0 && rect.left + rect.width <= windowWidth && rect.top + rect.height <= windowHeight;
+  }
+};
 window.addEventListener("scroll", function () {
-  check_if_in_view();
+  animation.check_if_in_view();
+  var scrollpos = window.scrollY;
+  var priceBtn = document.getElementById("price-button");
+
+  if (!priceBtn) {
+    return;
+  }
+
+  if (scrollpos > 600) {
+    document.getElementById("price-button").classList.add("show");
+  } else {
+    document.getElementById("price-button").classList.remove("show");
+  }
 });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (animation);
 
 /***/ }),
 

@@ -1,6 +1,6 @@
 <template>
     <div v-if="show"
-        class="result spaced-section slide animation-element">
+        class="result spaced-section slide animation-element" v-bind:class="{ 'in-view': index === 0 }">
       <div class="result__images">
         <svg
             class="result__images__container__pattern"
@@ -120,7 +120,7 @@ import concernCopy from "../../mixins/concernCopy";
 import CarouselBreakpoints from "../../mixins/CarouselBreakpoints"
 export default {
   name: "Concern",
-  props: ["concern"],
+  props: ["concern", "index"],
   mixins:[concernCopy,CarouselBreakpoints],
   components: {
     Carousel,

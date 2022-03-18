@@ -49,6 +49,14 @@
             </div>
             <span class="highlight">SAVE $60 + FREE SHIPPING</span>
           </div>
+
+
+          <div class="welcome__ctainfo show-for-mobile" id="price-button">
+            <div class="welcome__ctainfo__body">
+              <span class="welcome_ctainfo__title highlight">GET MY SYSTEM | $129.99/SYSTEM</span>
+            </div>
+           
+          </div>
           <span class="welcome_ctainfo__disclaimer muted center"
             >4-product system auto-refilled. Cancel Anytime</span
           >
@@ -57,11 +65,11 @@
           v-for="(concern, index) in results.skin"
           :key="index + 'skin'"
         >
-          <concern :concern="concern" />
+          <concern :concern="concern" :index="index"/>
         </template>
 
         <div class="spaced-section enviroment">
-          <div class="result spaced-section slide animation-element">
+          <div class="result spaced-section slide animation-element" v-bind:class="{ 'in-view': results.skin.length === 0 }">
             <div class="result__body">
               <h2 class="result__body__targets mt-5">
                 YOUR PERSONALIZED SYSTEM IS
@@ -137,7 +145,7 @@
                   :disableDefaultUi="true"
                   :disableDoubleClickZoom="true"
                   :draggable="false"
-
+                  :minZoom="13"
                   style="width: 100%; height: 354px"
                   :center="{
                     lat: results.environment.location.lat,
@@ -440,7 +448,7 @@
     </template>
 
     <div class="loading-evyana" v-if="!isReady" style="background: #fff">
-      <img src="//d201v9s59ezpea.cloudfront.net/searching.gif" alt="loading" />
+      <img style="height: 100%" src="//d201v9s59ezpea.cloudfront.net/searching.gif" alt="loading" />
     </div>
   </div>
 </template>
@@ -504,7 +512,10 @@ export default {
       this.results = rs.data;
       console.log(this.results);
       setTimeout(() => {
-        this.isReady = true;
+        // this.isReady = true;
+        this.$nextTick(() => {
+          animation.check_if_in_view();
+        })
       }, 1000);
     });
   },
