@@ -69,7 +69,7 @@
             v-text="description"
         ></p>
       </div>
-      <div class="result__ingredient">
+      <div class="result__ingredient" style="display: block; position: relative; width: 100%">
         <template v-if="concern.ingredients.length !== 0">
           <h4 class="">Ingredients</h4>
           <div class="">

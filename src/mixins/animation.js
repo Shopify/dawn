@@ -73,6 +73,48 @@ var animation = {
       rect.top + rect.height <= windowHeight
     );
   },
+
+  scrollSmoothTo(elementId) {
+    var element = document.getElementById(elementId);
+    element.scrollIntoView({
+      block: 'start',
+      behavior: 'smooth'
+    });
+  },
+
+  slideNavBar() {
+    const navItems = document.querySelectorAll(".nav-link");
+    const sections = document.querySelectorAll(".qr-section");
+
+    window.addEventListener(
+      "scroll",
+      function () {
+        // window.pageYOffset, pageYOffset only use for window
+
+        sections.forEach((section) => {
+          // 50 is height of nav
+          const top = section.offsetTop - 50;
+          const html = document.documentElement;
+          const height = section.offsetHeight;
+
+          navItems.forEach((navItem) => {
+            
+            const hrefNav = navItem.dataset.href.match(/#[a-zA-Z]+/)[0];
+            const idSection = "#" + section.id;
+            if (html.scrollTop >= top && top + height >= html.scrollTop) {
+              hrefNav === idSection
+                ? navItem.parentElement.classList.add("active")
+                : navItem.parentElement.classList.remove("active");
+            } else {
+              hrefNav === idSection &&
+                navItem.parentElement.classList.remove("active");
+            }
+          });
+        });
+      },
+      { passive: true }
+    );
+  },
 };
 
 window.addEventListener("scroll", function () {
@@ -87,6 +129,16 @@ window.addEventListener("scroll", function () {
     document.getElementById("price-button").classList.add("show");
   } else {
     document.getElementById("price-button").classList.remove("show");
+  }
+
+  var menuMb = document.getElementById("menu-mb");
+  if (!menuMb) {
+    return;
+  }
+  if (scrollpos > 100) {
+    document.getElementById("menu-mb").classList.add("show");
+  } else {
+    document.getElementById("menu-mb").classList.remove("show");
   }
 });
 
