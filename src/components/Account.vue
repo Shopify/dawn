@@ -7,7 +7,7 @@
         @onNextStep="nextStep"
         @afterChangeTab="afterChangeTab"
         :name="userName"
-        :data="listAnwser"
+        :data="[]"
         :isShowNext="isShowNext"
         :curerentIndex="questionIndex"
         :ingredients="ingredients"
@@ -43,6 +43,167 @@
               </div>
 
               <div class="mt-5" v-html="item.additional"></div>
+              <div class="mt-5" v-if="item.category === 'password'">
+                <div
+                  class="src-components-account-password-validation"
+                  style="display: block"
+                >
+                  <div class="src-components-account-password-validation">
+                    <ul>
+                      <li>We require passwords contain at least:</li>
+                      <li>
+                        <i
+                          class="
+                            src-components-account-password-validation-checks-___styles__error___1oLPE
+                          "
+                          ><svg
+                            v-if="!hasUpper"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <path
+                              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                            ></path>
+                          </svg>
+
+                          <svg
+                            v-if="hasUpper"
+                            xmlns="http://www.w3.org/2000/svg"
+                            xmlns:xlink="http://www.w3.org/1999/xlink"
+                            id="Layer_1"
+                            x="0px"
+                            y="0px"
+                            viewBox="0 0 32 32"
+                            style="enable-background: new 0 0 32 32"
+                            xml:space="preserve"
+                          >
+                            <circle style="fill: #32c671;" class="st0" cx="16" cy="15.9" r="15.8" />
+                            <polygon
+                              style="fill: #fff;"
+                              class="st1"
+                              points="23,9 13.2,18.8 9,14.5 6.4,17 10.7,21.3 13.2,23.8 15.8,21.3 25.6,11.5 "
+                            />
+                          </svg>
+                        </i>
+                        one uppercase letter
+                      </li>
+                      <li>
+                        <i
+                          class="
+                            src-components-account-password-validation-checks-___styles__error___1oLPE
+                          "
+                          ><svg
+                            v-if="!hasLower"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <path
+                              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                            ></path>
+                          </svg>
+                          <svg
+                            v-if="hasLower"
+                            xmlns="http://www.w3.org/2000/svg"
+                            xmlns:xlink="http://www.w3.org/1999/xlink"
+                            id="Layer_1"
+                            x="0px"
+                            y="0px"
+                            viewBox="0 0 32 32"
+                            style="enable-background: new 0 0 32 32"
+                            xml:space="preserve"
+                          >
+                            <circle style="fill: #32c671;" class="st0" cx="16" cy="15.9" r="15.8" />
+                            <polygon
+                            style="fill: #fff;"
+                              class="st1"
+                              points="23,9 13.2,18.8 9,14.5 6.4,17 10.7,21.3 13.2,23.8 15.8,21.3 25.6,11.5 "
+                            />
+                          </svg>
+                        </i>
+                        one lower case letter
+                      </li>
+                      <li>
+                        <i
+                          class="
+                            src-components-account-password-validation-checks-___styles__error___1oLPE
+                          "
+                          ><svg
+                            v-if="!aboveSixCharacters"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <path
+                              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                            ></path>
+                          </svg>
+                          <svg
+                            v-if="aboveSixCharacters"
+                            xmlns="http://www.w3.org/2000/svg"
+                            xmlns:xlink="http://www.w3.org/1999/xlink"
+                            id="Layer_1"
+                            x="0px"
+                            y="0px"
+                            viewBox="0 0 32 32"
+                            style="enable-background: new 0 0 32 32"
+                            xml:space="preserve"
+                          >
+                            <circle style="fill: #32c671;" class="st0" cx="16" cy="15.9" r="15.8" />
+                            <polygon
+                            style="fill: #fff;"
+                              class="st1"
+                              points="23,9 13.2,18.8 9,14.5 6.4,17 10.7,21.3 13.2,23.8 15.8,21.3 25.6,11.5 "
+                            />
+                          </svg>
+                        </i>
+                        6 characters in length
+                      </li>
+                      <li>
+                        <i
+                          class="
+                            src-components-account-password-validation-checks-___styles__error___1oLPE
+                          "
+                          ><svg
+                            v-if="!hasNumber"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <path
+                              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                            ></path>
+                          </svg>
+                          <svg
+                            v-if="hasNumber"
+                            xmlns="http://www.w3.org/2000/svg"
+                            xmlns:xlink="http://www.w3.org/1999/xlink"
+                            id="Layer_1"
+                            x="0px"
+                            y="0px"
+                            viewBox="0 0 32 32"
+                            style="enable-background: new 0 0 32 32"
+                            xml:space="preserve"
+                          >
+                            <circle style="fill: #32c671;" class="st0" cx="16" cy="15.9" r="15.8" />
+                            <polygon
+                            style="fill: #fff;"
+                              class="st1"
+                              points="23,9 13.2,18.8 9,14.5 6.4,17 10.7,21.3 13.2,23.8 15.8,21.3 25.6,11.5 "
+                            />
+                          </svg>
+                        </i>
+                        one number
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
           </tab-content>
         </template>
@@ -70,10 +231,9 @@ import { store } from "../store/form_store.js";
 
 import "@vueform/multiselect/themes/default.css";
 const checked = (value) => value === true;
-const Token = "999999999911111111aaaaaa";
 
 export default {
-  name: "Quiz",
+  name: "Account",
   components: {
     FormWizard,
     TabContent,
@@ -97,6 +257,10 @@ export default {
       ingredients: [],
       isValidAnwserQuestion: true,
       emailValue: "",
+      hasNumber: false,
+      hasUpper: false,
+      hasLower: false,
+      aboveSixCharacters: false,
     };
   },
   computed: {},
@@ -115,9 +279,7 @@ export default {
         category: "password",
         slug: "to-protect-your-privacy-please-create-a-password",
         subtitle: null,
-        additional: `<div class="src-components-account-password-validation" style="
-    display: block;
-"><div class="src-components-account-password-validation"><ul><li>We require passwords contain at least:</li><li><i class="src-components-account-password-validation-checks-___styles__error___1oLPE"><svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg></i> one uppercase letter</li><li><i class="src-components-account-password-validation-checks-___styles__error___1oLPE"><svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg></i> one lower case letter</li><li><i class="src-components-account-password-validation-checks-___styles__error___1oLPE"><svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg></i> 6 characters in length</li><li><i class="src-components-account-password-validation-checks-___styles__error___1oLPE"><svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg></i> one number</li></ul></div></div>`,
+        additional: ``,
         title: "To protect your privacy, please create a password.",
         type: "Text",
       },
@@ -135,7 +297,7 @@ export default {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer " + Token,
+            Authorization: "Bearer " + this.authToken,
           },
         }
       )
@@ -173,11 +335,16 @@ export default {
 
       if (item.category === "password") {
         // const checkSpecial = /[*@!#%&()^~{}$]+/.test(this.currentAnwser);
-        const hasNumber = /\d/.test(this.currentAnwser);
-        const hasUpper = /[A-Z]/.test(this.currentAnwser);
-        const hasLower = /[a-z]/.test(this.currentAnwser);
-        const aboveSixCharacters = /^.{6,}$/.test(this.currentAnwser);
-        if (!hasNumber || !hasUpper || !hasLower || !aboveSixCharacters) {
+        this.hasNumber = /\d/.test(this.currentAnwser);
+        this.hasUpper = /[A-Z]/.test(this.currentAnwser);
+        this.hasLower = /[a-z]/.test(this.currentAnwser);
+        this.aboveSixCharacters = /^.{6,}$/.test(this.currentAnwser);
+        if (
+          !this.hasNumber ||
+          !this.hasUpper ||
+          !this.hasLower ||
+          !this.aboveSixCharacters
+        ) {
           this.isValidAnwserQuestion = false;
         } else {
           this.isValidAnwserQuestion = true;
@@ -214,56 +381,6 @@ export default {
       this.$refs.formwizard.triggerNext(this.questionIndex);
     },
 
-    checkValidStep() {
-      let isPassFilter = true;
-      if (
-        this.quiz[this.questionIndex].filters &&
-        this.quiz[this.questionIndex].filters.length > 0
-      ) {
-        this.quiz[this.questionIndex].filters.forEach((filter) => {
-          if (!isPassFilter) {
-            return;
-          }
-
-          const q = this.listAnwser
-            .filter((n) => n)
-            .find((e) => e.id === filter.question);
-          let answerQ = null;
-          if (q) {
-            answerQ = this.listAnwser
-              .filter((n) => n)
-              .find((e) => e.id === filter.question).anwser;
-          }
-          if (!answerQ) {
-            answerQ = [];
-          }
-          if (filter.type === FilterType.IncludeOnlyIf) {
-            if (
-              this.listAnwser
-                .filter((n) => n)
-                .find((e) => e.id === filter.question) !== "Text"
-            ) {
-              isPassFilter = FilterOperator[filter.operator](
-                answerQ,
-                -1,
-                true,
-                filter.value
-              );
-            } else {
-              isPassFilter = FilterOperator[filter.operator](
-                answerQ,
-                filter.value
-              );
-            }
-          }
-          if (!isPassFilter) {
-            return;
-          }
-        });
-      }
-      return isPassFilter;
-    },
-
     async afterChangeTab() {
       this.isValidNext = true;
       this.currentAnwser = "";
@@ -297,7 +414,7 @@ export default {
           body: JSON.stringify(payload),
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer " + Token,
+            Authorization: "Bearer " + this.authToken,
           },
         }
       )

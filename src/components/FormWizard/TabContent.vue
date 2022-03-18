@@ -1,7 +1,9 @@
 <template>
-  <template v-if="selected">
-    <slot></slot>
-  </template>
+  <transition-group name="slide-fade">
+    <div v-if="selected" :key="name">
+      <slot></slot>
+    </div>
+  </transition-group>
 </template>
 
 <script>
@@ -14,6 +16,9 @@ export default {
     title: {
       type: String,
     },
+    name: {
+      type: String
+    }
   },
   data() {
     return {
@@ -24,10 +29,10 @@ export default {
   created() {
     // this.isActive = this.selected;
   },
-  methods:{
-    triggerTab(value){
+  methods: {
+    triggerTab(value) {
       this.isActive = value;
-    }
-  }
+    },
+  },
 };
 </script>

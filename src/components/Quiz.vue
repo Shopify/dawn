@@ -13,7 +13,7 @@
         :ingredients="ingredients"
       >
         <template v-for="(item, index) in quiz" :key="index + 'tab'">
-          <tab-content :selected="index === questionIndex ? true : false">
+          <tab-content :selected="index === questionIndex ? true : false" :name="index + 'tab'">
             <div class="question-header">
               <!--                <div style="width: 30px" ></div>-->
               <div v-if="item.svg" class="icon" v-html="item.svg"></div>
@@ -117,7 +117,6 @@ import Multiselect from "@vueform/multiselect";
 
 import "@vueform/multiselect/themes/default.css";
 const checked = (value) => value === true;
-const Token = "999999999911111111aaaaaa";
 
 export default {
   name: "Quiz",
@@ -162,7 +161,7 @@ export default {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer " + Token,
+          Authorization: "Bearer " + this.authToken,
         },
       }
     );
@@ -182,7 +181,7 @@ export default {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: "Bearer " + Token,
+              Authorization: "Bearer " + this.authToken,
             },
           }
         )
@@ -316,7 +315,7 @@ export default {
           body: JSON.stringify(payload),
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer " + Token,
+            Authorization: "Bearer " + this.authToken,
           },
         }
       )
@@ -420,7 +419,7 @@ export default {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
-              Authorization: "Bearer " + Token,
+              Authorization: "Bearer " + this.authToken,
             },
           }
         );
@@ -450,7 +449,7 @@ export default {
           body: JSON.stringify(payload),
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer " + Token,
+            Authorization: "Bearer " + this.authToken,
           },
         }
       )
