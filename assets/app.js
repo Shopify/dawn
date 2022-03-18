@@ -20270,7 +20270,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   )])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_32, [_hoisted_33, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_34, [_hoisted_35, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.environment.airquality.range), 1
   /* TEXT */
   )])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_36, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_GoogleMap, {
-    "api-key": "AIzaSyB3SwShKbf8tDq3y0NH8woTOUdL34cX2Oc",
+    "api-key": "'api_key'",
     style: {
       "width": "100%",
       "height": "354px"
