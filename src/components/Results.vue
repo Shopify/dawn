@@ -132,7 +132,7 @@
               </div>
               <div class="wrap-map">
                 <GoogleMap
-                  api-key="AIzaSyB3SwShKbf8tDq3y0NH8woTOUdL34cX2Oc"
+                  api-key="'api_key'"
                   style="width: 100%; height: 354px"
                   :center="{
                     lat: results.environment.location.lat,
