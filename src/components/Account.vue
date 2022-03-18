@@ -271,7 +271,7 @@ export default {
         slug: "where-should-we-send-your-results",
         subtitle: null,
         additional:
-          '<label>PROVEN never spams or shares your information.<br>By providing your email, you agree to receive exclusive news and promotions from PROVEN compliant with our<br><a href="/terms-and-conditions" target="_blank">Terms &amp; Conditions</a>&nbsp;and&nbsp;<a href="/privacy-policy" target="_blank">Privacy Policy.</a>&nbsp; You can withdraw your consent at any time.</label>',
+          '<label class="muted">Evyana never spams or shares your information.<br>By providing your email, you agree to receive exclusive news and promotions from PROVEN compliant with our<br><a href="https://evyana.com/policies/terms-of-service" target="_blank">Terms &amp; Conditions</a>&nbsp;and&nbsp;<a href="https://evyana.com/policies/privacy-policy" target="_blank">Privacy Policy.</a>&nbsp; You can withdraw your consent at any time.</label>',
         title: "Where should we send your results?",
         type: "Text",
       },
@@ -292,7 +292,7 @@ export default {
     if (!this.localQuiz) {
       this.loading = true;
       await fetch(
-        "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead",
+        `${this.base_url}/api/quiz/1/lead`,
         {
           method: "POST",
           headers: {
@@ -408,7 +408,7 @@ export default {
 
       this.isValidNext = false;
       await fetch(
-        "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/customer/",
+          `${this.base_url}/api/customer/`,
         {
           method: "POST",
           body: JSON.stringify(payload),

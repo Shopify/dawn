@@ -132,7 +132,12 @@
               </div>
               <div class="wrap-map">
                 <GoogleMap
-                  api-key="'api_key'"
+                  api-key="AIzaSyB3SwShKbf8tDq3y0NH8woTOUdL34cX2Oc"
+                  :clickableIcons="false"
+                  :disableDefaultUi="true"
+                  :disableDoubleClickZoom="true"
+                  :draggable="false"
+
                   style="width: 100%; height: 354px"
                   :center="{
                     lat: results.environment.location.lat,
@@ -486,7 +491,7 @@ export default {
     }
     this.localQuiz = JSON.parse(this.localQuiz);
     const response = await fetch(
-      `https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/${this.localQuiz.id}/results`,
+      `${this.base_url}/api/quiz/1/lead/${this.localQuiz.id}/results`,
       {
         method: "GET",
         headers: {
