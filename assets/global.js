@@ -352,6 +352,9 @@ class MenuDrawer extends HTMLElement {
       details.removeAttribute('open');
       details.classList.remove('menu-opening');
     });
+    this.mainDetailsToggle.querySelectorAll('.submenu-open').forEach(submenu =>  {
+      submenu.classList.remove('submenu-open');
+    });
     document.body.classList.remove(`overflow-hidden-${this.dataset.breakpoint}`);
     removeTrapFocus(elementToFocus);
     this.closeAnimation(this.mainDetailsToggle);
