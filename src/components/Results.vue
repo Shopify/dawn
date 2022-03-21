@@ -171,7 +171,10 @@
               clean and scientific ingredients to cleanse, protect, and renew
               your particular skin.
             </p>
-            <div class="welcome__body__more" @click="scrollSmoothToPosition('Concerns')">
+            <div
+              class="welcome__body__more"
+              @click="scrollSmoothToPosition('Concerns')"
+            >
               <span class="welcome__body__more_description">Learn More</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -352,9 +355,10 @@
                       :key="i"
                     >
                       <img
-                      class="carousel__item__image"
-                      src="https://dl7bo1dy930sf.cloudfront.net/img/results/ingredient-images/Green-Tea-Extract.png"
-                    /> {{ inte.title }}
+                        class="carousel__item__image"
+                        src="https://dl7bo1dy930sf.cloudfront.net/img/results/ingredient-images/Green-Tea-Extract.png"
+                      />
+                      {{ inte.title }}
                     </template>
                   </div>
                 </li>
@@ -633,7 +637,7 @@ import CarouselBreakpoints from "../mixins/CarouselBreakpoints";
 export default {
   name: "Results",
   mixins: [concernCopy, CarouselBreakpoints, animation],
-  props: ['email'],
+  props: ["email"],
   components: {
     Product,
     Carousel,
@@ -660,44 +664,71 @@ export default {
   async mounted() {
     this.localQuiz = localStorage.getItem("quiz");
     if (!this.localQuiz) {
-      if(this.email){
+      if (this.email) {
+        fetch(`${this.base_url}/api/customer/${email}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + this.authToken,
+          },
+        })
+          .then((response) => {
+            if (response.status === 404) {
+              window.location.href = "/account/login";
+              return;
+            }
+            response.json().then(async (rs) => {
+              if (rs.data.id) {
+                this.localQuiz = rs.data;
+                this.initData();
+              }
+            });
+          })
+          .catch((e) => {});
+
         //check for email here pull lead id if email is passed and query api for lead ID from customer
         //if there is no lead id for this redirect to quiz
         //if there is no email redirect to login and add checkout_url=/pages/your-quiz-results
+      } else {
+        // this.$router.push("/");
+        window.location.href = "/account/login";
+        return;
       }
-      this.$router.push("/quiz");
       return;
     }
     this.localQuiz = JSON.parse(this.localQuiz);
-    const response = await fetch(
-      `${this.base_url}/api/quiz/1/lead/${this.localQuiz.id}/results`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + this.authToken,
-        },
-      }
-    );
-    response.json().then(async (rs) => {
-      this.results = rs.data;
-      console.log(this.results);
-      setTimeout(() => {
-        this.isReady = true;
-        this.$nextTick(() => {
-          animation.check_if_in_view();
-          animation.slideNavBar();
-        });
-      }, 1000);
-    });
+    this.initData();
   },
   methods: {
+    async initData() {
+      const response = await fetch(
+        `${this.base_url}/api/quiz/1/lead/${this.localQuiz.id}/results`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + this.authToken,
+          },
+        }
+      );
+      response.json().then(async (rs) => {
+        this.results = rs.data;
+        console.log(this.results);
+        setTimeout(() => {
+          this.isReady = true;
+          this.$nextTick(() => {
+            animation.check_if_in_view();
+            animation.slideNavBar();
+          });
+        }, 1000);
+      });
+    },
     scrollSmoothTo(type) {
       animation.scrollSmoothTo(type);
     },
-    scrollSmoothToPosition(type){
+    scrollSmoothToPosition(type) {
       animation.scrollSmoothToPosition(type);
-    }
+    },
   },
 };
 </script>

@@ -18730,6 +18730,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "Results",
   mixins: [_mixins_concernCopy__WEBPACK_IMPORTED_MODULE_3__["default"], _mixins_CarouselBreakpoints__WEBPACK_IMPORTED_MODULE_9__["default"], _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"]],
+  props: ["email"],
   components: {
     Product: _Quiz_Product__WEBPACK_IMPORTED_MODULE_2__["default"],
     Carousel: vue3_carousel__WEBPACK_IMPORTED_MODULE_6__.Carousel,
@@ -18757,7 +18758,6 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     var _this = this;
 
     return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee2() {
-      var response;
       return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee2$(_context2) {
         while (1) {
           switch (_context2.prev = _context2.next) {
@@ -18765,58 +18765,72 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               _this.localQuiz = localStorage.getItem("quiz");
 
               if (_this.localQuiz) {
-                _context2.next = 4;
+                _context2.next = 9;
                 break;
               }
 
-              _this.$router.push("/quiz");
+              if (!_this.email) {
+                _context2.next = 6;
+                break;
+              }
 
-              return _context2.abrupt("return");
-
-            case 4:
-              _this.localQuiz = JSON.parse(_this.localQuiz);
-              _context2.next = 7;
-              return fetch("".concat(_this.base_url, "/api/quiz/1/lead/").concat(_this.localQuiz.id, "/results"), {
+              fetch("".concat(_this.base_url, "/api/customer/").concat(email), {
                 method: "GET",
                 headers: {
                   "Content-Type": "application/json",
                   Authorization: "Bearer " + _this.authToken
                 }
-              });
+              }).then(function (response) {
+                if (response.status === 404) {
+                  window.location.href = "/account/login";
+                  return;
+                }
 
-            case 7:
-              response = _context2.sent;
-              response.json().then( /*#__PURE__*/function () {
-                var _ref = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee(rs) {
-                  return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee$(_context) {
-                    while (1) {
-                      switch (_context.prev = _context.next) {
-                        case 0:
-                          _this.results = rs.data;
-                          console.log(_this.results);
-                          setTimeout(function () {
-                            _this.isReady = true;
+                response.json().then( /*#__PURE__*/function () {
+                  var _ref = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee(rs) {
+                    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee$(_context) {
+                      while (1) {
+                        switch (_context.prev = _context.next) {
+                          case 0:
+                            if (rs.data.id) {
+                              _this.localQuiz = rs.data;
 
-                            _this.$nextTick(function () {
-                              _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].check_if_in_view();
-                              _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].slideNavBar();
-                            });
-                          }, 1000);
+                              _this.initData();
+                            }
 
-                        case 3:
-                        case "end":
-                          return _context.stop();
+                          case 1:
+                          case "end":
+                            return _context.stop();
+                        }
                       }
-                    }
-                  }, _callee);
-                }));
+                    }, _callee);
+                  }));
 
-                return function (_x) {
-                  return _ref.apply(this, arguments);
-                };
-              }());
+                  return function (_x) {
+                    return _ref.apply(this, arguments);
+                  };
+                }());
+              })["catch"](function (e) {}); //check for email here pull lead id if email is passed and query api for lead ID from customer
+              //if there is no lead id for this redirect to quiz
+              //if there is no email redirect to login and add checkout_url=/pages/your-quiz-results
+
+              _context2.next = 8;
+              break;
+
+            case 6:
+              // this.$router.push("/");
+              window.location.href = "/account/login";
+              return _context2.abrupt("return");
+
+            case 8:
+              return _context2.abrupt("return");
 
             case 9:
+              _this.localQuiz = JSON.parse(_this.localQuiz);
+
+              _this.initData();
+
+            case 11:
             case "end":
               return _context2.stop();
           }
@@ -18825,6 +18839,64 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     }))();
   },
   methods: {
+    initData: function initData() {
+      var _this2 = this;
+
+      return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee4() {
+        var response;
+        return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                _context4.next = 2;
+                return fetch("".concat(_this2.base_url, "/api/quiz/1/lead/").concat(_this2.localQuiz.id, "/results"), {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + _this2.authToken
+                  }
+                });
+
+              case 2:
+                response = _context4.sent;
+                response.json().then( /*#__PURE__*/function () {
+                  var _ref2 = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee3(rs) {
+                    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee3$(_context3) {
+                      while (1) {
+                        switch (_context3.prev = _context3.next) {
+                          case 0:
+                            _this2.results = rs.data;
+                            console.log(_this2.results);
+                            setTimeout(function () {
+                              _this2.isReady = true;
+
+                              _this2.$nextTick(function () {
+                                _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].check_if_in_view();
+                                _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].slideNavBar();
+                              });
+                            }, 1000);
+
+                          case 3:
+                          case "end":
+                            return _context3.stop();
+                        }
+                      }
+                    }, _callee3);
+                  }));
+
+                  return function (_x2) {
+                    return _ref2.apply(this, arguments);
+                  };
+                }());
+
+              case 4:
+              case "end":
+                return _context4.stop();
+            }
+          }
+        }, _callee4);
+      }))();
+    },
     scrollSmoothTo: function scrollSmoothTo(type) {
       _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].scrollSmoothTo(type);
     },
