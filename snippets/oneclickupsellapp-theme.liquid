@@ -1,5 +1,5 @@
 {% comment %}
-  Updated: 2022/03/14
+  Updated: 2022/03/21
 {% endcomment %}
 
 {% unless oneclickupsellapp %}
@@ -656,6 +656,7 @@ PopupDispatcher.prototype = {
         this.target = target;
         this.event = event;
         this.appropriateResponse = null;
+        this.actualCart = null;
         this.listenCustomEvent();
         this.bt = OCUIncart.integrations().bt;
 
@@ -689,6 +690,7 @@ PopupDispatcher.prototype = {
 
                 try {
                     const app = self.helpers.isSubscriptionProductInCart(lqd.cart);
+                    if (app && this.isProductAction) return this.nativeClick();
                     if (app) return self.integrations[app].redirect(event, lqd.cart);
                 } catch (e) {
                     return this.checkout();
@@ -765,8 +767,9 @@ PopupDispatcher.prototype = {
             'Shop-Domain': lqd.permanent_domain
         };
         const self = this.context;
-        const isSameCart = self.helpers.isSameCart(lqd.cart);
-        const isSameCartToken = self.helpers.isSameCartToken(lqd.cart);
+        const cart = this.actualCart ? this.actualCart : lqd.cart;
+        const isSameCart = self.helpers.isSameCart(cart);
+        const isSameCartToken = self.helpers.isSameCartToken(cart);
 
         if (!isSameCart && !isSameCartToken) utils.cookie.remove('ocu_popup_ids')
         const isShownOfferIdPresent = utils.cookie.get('ocu_popup_ids');
@@ -811,7 +814,7 @@ PopupDispatcher.prototype = {
         return this.context.checkout({
             redirect: true,
             redirect_url: url && url.redirect_url
-         });
+        });
     },
 
     isProductLocationOption: function(target) {
@@ -830,6 +833,8 @@ PopupDispatcher.prototype = {
 
         target.disabled = true;
         this.verifyToken()
+            .then(this[this.secondAttempt ? 'getActualCart' : '_emptyResolve'].bind(this))
+            .then((response) => this.actualCart = response && response.data)
             .then(function() {
                 this.getIncartConfig({ product_id: lqd.product.id, variant_id: variantId })
                     .then(function(response) {
@@ -853,6 +858,10 @@ PopupDispatcher.prototype = {
                 this.check(this.event, this.target, response.data);
             }.bind(this))
             .catch(this.checkout);
+    },
+
+    getActualCart: function() {
+        return this.context.cart.get();
     },
 
     nativeClick: function() {
@@ -898,8 +907,8 @@ PopupDispatcher.prototype = {
         return OCUIncart[this.kind + 'Upsells'];
     },
 
-    _incartPayload(data) {
-        const payload = this.context.helpers.getCartItems(lqd.cart.items);
+    _incartPayload() {
+        const payload = this.context.helpers.getCartItems(this.actualCart ? this.actualCart.items : lqd.cart.items);
         const variant = this._productPageVariant;
         const shownPopupId = utils.cookie.get('ocu_shown_id');
 
