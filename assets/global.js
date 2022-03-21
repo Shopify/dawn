@@ -325,7 +325,6 @@ class MenuDrawer extends HTMLElement {
 
     if (detailsElement === this.mainDetailsToggle) {
       if(isOpen) event.preventDefault();
-      //might need to check if I need to edit the summaryElement here.
       const elementToFocusOn = this.drawerIsPopup ? summaryElement.nextElementSibling.firstElementChild : summaryElement;
       isOpen ? this.closeMenuDrawer(event, summaryElement) : this.openMenuDrawer(elementToFocusOn);
     } else {
@@ -342,7 +341,6 @@ class MenuDrawer extends HTMLElement {
       this.mainDetailsToggle.classList.add('menu-opening');
       trapFocus(this.mainDetailsToggle, summaryElement);
     });
-    // set this below only for the header drawer
     if (!this.drawerIsPopup) summaryElement.setAttribute('aria-expanded', true);
     document.body.classList.add(`overflow-hidden-${this.dataset.breakpoint}`);
   }
@@ -373,7 +371,6 @@ class MenuDrawer extends HTMLElement {
 
   closeSubmenu(detailsElement) {
     detailsElement.classList.remove('menu-opening');
-    // here same thing, this would need to be removed and only be there for the header.
     if (!this.drawerIsPopup) detailsElement.querySelector('summary').setAttribute('aria-expanded', false);
     removeTrapFocus(detailsElement.querySelector('summary'));
     this.closeAnimation(detailsElement);
