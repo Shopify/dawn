@@ -288,8 +288,8 @@ class MenuDrawer extends HTMLElement {
     super();
 
     this.mainDetailsToggle = this.querySelector('details');
-    this.drawerIsModal = !this.mainDetailsToggle.classList.contains('popup');
-    if (this.drawerIsModal) this.mainDetailsToggle.firstElementChild.setAttribute('aria-popup', true);
+    this.drawerIsPopup = !this.mainDetailsToggle.classList.contains('popup');
+    if (this.drawerIsPopup) this.mainDetailsToggle.firstElementChild.setAttribute('aria-popup', true);
 
     if (navigator.platform === 'iPhone') document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
 
@@ -326,7 +326,8 @@ class MenuDrawer extends HTMLElement {
     if (detailsElement === this.mainDetailsToggle) {
       if(isOpen) event.preventDefault();
       //might need to check if I need to edit the summaryElement here.
-      isOpen ? this.closeMenuDrawer(event, summaryElement) : this.openMenuDrawer(summaryElement);
+      const elementToFocusOn = this.drawerIsPopup ? summaryElement.nextElementSibling.firstElementChild : summaryElement;
+      isOpen ? this.closeMenuDrawer(event, summaryElement) : this.openMenuDrawer(elementToFocusOn);
     } else {
       setTimeout(() => {
         detailsElement.classList.add('menu-opening');
@@ -339,10 +340,10 @@ class MenuDrawer extends HTMLElement {
   openMenuDrawer(summaryElement) {
     setTimeout(() => {
       this.mainDetailsToggle.classList.add('menu-opening');
+      trapFocus(this.mainDetailsToggle, summaryElement);
     });
     // set this below only for the header drawer
-    if (!this.drawerIsModal) summaryElement.setAttribute('aria-expanded', true);
-    trapFocus(this.mainDetailsToggle, summaryElement);
+    if (!this.drawerIsPopup) summaryElement.setAttribute('aria-expanded', true);
     document.body.classList.add(`overflow-hidden-${this.dataset.breakpoint}`);
   }
 
@@ -373,7 +374,7 @@ class MenuDrawer extends HTMLElement {
   closeSubmenu(detailsElement) {
     detailsElement.classList.remove('menu-opening');
     // here same thing, this would need to be removed and only be there for the header.
-    if (!this.drawerIsModal) detailsElement.querySelector('summary').setAttribute('aria-expanded', false);
+    if (!this.drawerIsPopup) detailsElement.querySelector('summary').setAttribute('aria-expanded', false);
     removeTrapFocus(detailsElement.querySelector('summary'));
     this.closeAnimation(detailsElement);
   }
