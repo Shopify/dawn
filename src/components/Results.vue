@@ -633,6 +633,7 @@ import CarouselBreakpoints from "../mixins/CarouselBreakpoints";
 export default {
   name: "Results",
   mixins: [concernCopy, CarouselBreakpoints, animation],
+  props: ['email'],
   components: {
     Product,
     Carousel,
@@ -659,6 +660,11 @@ export default {
   async mounted() {
     this.localQuiz = localStorage.getItem("quiz");
     if (!this.localQuiz) {
+      if(this.email){
+        //check for email here pull lead id if email is passed and query api for lead ID from customer
+        //if there is no lead id for this redirect to quiz
+        //if there is no email redirect to login and add checkout_url=/pages/your-quiz-results
+      }
       this.$router.push("/quiz");
       return;
     }
