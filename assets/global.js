@@ -8,11 +8,7 @@ function getFocusableElements(container) {
 
 document.querySelectorAll('[id^="Details-"] summary').forEach((summary) => {
   summary.setAttribute('role', 'button');
-  if (summary.parentNode.hasAttribute('open')) {
-    summary.setAttribute('aria-expanded', 'true');
-  } else {
-    summary.setAttribute('aria-expanded', 'false');
-  }
+  summary.setAttribute('aria-expanded', summary.parentNode.hasAttribute('open'));
 
   if(summary.nextElementSibling.getAttribute('id')) {
     summary.setAttribute('aria-controls', summary.nextElementSibling.id);
