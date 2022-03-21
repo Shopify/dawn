@@ -171,7 +171,7 @@
               clean and scientific ingredients to cleanse, protect, and renew
               your particular skin.
             </p>
-            <div class="welcome__body__more">
+            <div class="welcome__body__more" @click="scrollSmoothToPosition('Concerns')">
               <span class="welcome__body__more_description">Learn More</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -351,7 +351,10 @@
                       v-for="(inte, i) in lifestyle.ingredients"
                       :key="i"
                     >
-                      {{ inte.title }}
+                      <img
+                      class="carousel__item__image"
+                      src="https://dl7bo1dy930sf.cloudfront.net/img/results/ingredient-images/Green-Tea-Extract.png"
+                    /> {{ inte.title }}
                     </template>
                   </div>
                 </li>
@@ -686,6 +689,9 @@ export default {
     scrollSmoothTo(type) {
       animation.scrollSmoothTo(type);
     },
+    scrollSmoothToPosition(type){
+      animation.scrollSmoothToPosition(type);
+    }
   },
 };
 </script>

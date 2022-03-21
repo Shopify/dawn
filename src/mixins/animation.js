@@ -75,10 +75,20 @@ var animation = {
   },
 
   scrollSmoothTo(elementId) {
+    debugger;
     var element = document.getElementById(elementId);
     element.scrollIntoView({
-      block: 'start',
-      behavior: 'smooth'
+      block: "start",
+      behavior: "smooth",
+    });
+    window.scrollBy(0, offset);
+  },
+
+  scrollSmoothToPosition(elementId) {
+    var element = document.getElementById(elementId);
+    window.scrollTo({
+      top: element.offsetTop + 550, //add your necessary value
+      behavior: "smooth", //Smooth transition to roll
     });
   },
 
@@ -98,7 +108,6 @@ var animation = {
           const height = section.offsetHeight;
 
           navItems.forEach((navItem) => {
-            
             const hrefNav = navItem.dataset.href.match(/#[a-zA-Z]+/)[0];
             const idSection = "#" + section.id;
             if (html.scrollTop >= top && top + height >= html.scrollTop) {
