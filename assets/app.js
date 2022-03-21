@@ -18730,6 +18730,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "Results",
   mixins: [_mixins_concernCopy__WEBPACK_IMPORTED_MODULE_3__["default"], _mixins_CarouselBreakpoints__WEBPACK_IMPORTED_MODULE_9__["default"], _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"]],
+  props: ["email"],
   components: {
     Product: _Quiz_Product__WEBPACK_IMPORTED_MODULE_2__["default"],
     Carousel: vue3_carousel__WEBPACK_IMPORTED_MODULE_6__.Carousel,
@@ -18757,7 +18758,6 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     var _this = this;
 
     return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee2() {
-      var response;
       return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee2$(_context2) {
         while (1) {
           switch (_context2.prev = _context2.next) {
@@ -18765,58 +18765,72 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               _this.localQuiz = localStorage.getItem("quiz");
 
               if (_this.localQuiz) {
-                _context2.next = 4;
+                _context2.next = 9;
                 break;
               }
 
-              _this.$router.push("/quiz");
+              if (!_this.email) {
+                _context2.next = 6;
+                break;
+              }
 
-              return _context2.abrupt("return");
-
-            case 4:
-              _this.localQuiz = JSON.parse(_this.localQuiz);
-              _context2.next = 7;
-              return fetch("".concat(_this.base_url, "/api/quiz/1/lead/").concat(_this.localQuiz.id, "/results"), {
+              fetch("".concat(_this.base_url, "/api/customer/").concat(email), {
                 method: "GET",
                 headers: {
                   "Content-Type": "application/json",
                   Authorization: "Bearer " + _this.authToken
                 }
-              });
+              }).then(function (response) {
+                if (response.status === 404) {
+                  window.location.href = "/account/login";
+                  return;
+                }
 
-            case 7:
-              response = _context2.sent;
-              response.json().then( /*#__PURE__*/function () {
-                var _ref = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee(rs) {
-                  return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee$(_context) {
-                    while (1) {
-                      switch (_context.prev = _context.next) {
-                        case 0:
-                          _this.results = rs.data;
-                          console.log(_this.results);
-                          setTimeout(function () {
-                            _this.isReady = true;
+                response.json().then( /*#__PURE__*/function () {
+                  var _ref = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee(rs) {
+                    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee$(_context) {
+                      while (1) {
+                        switch (_context.prev = _context.next) {
+                          case 0:
+                            if (rs.data.id) {
+                              _this.localQuiz = rs.data;
 
-                            _this.$nextTick(function () {
-                              _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].check_if_in_view();
-                              _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].slideNavBar();
-                            });
-                          }, 1000);
+                              _this.initData();
+                            }
 
-                        case 3:
-                        case "end":
-                          return _context.stop();
+                          case 1:
+                          case "end":
+                            return _context.stop();
+                        }
                       }
-                    }
-                  }, _callee);
-                }));
+                    }, _callee);
+                  }));
 
-                return function (_x) {
-                  return _ref.apply(this, arguments);
-                };
-              }());
+                  return function (_x) {
+                    return _ref.apply(this, arguments);
+                  };
+                }());
+              })["catch"](function (e) {}); //check for email here pull lead id if email is passed and query api for lead ID from customer
+              //if there is no lead id for this redirect to quiz
+              //if there is no email redirect to login and add checkout_url=/pages/your-quiz-results
+
+              _context2.next = 8;
+              break;
+
+            case 6:
+              // this.$router.push("/");
+              window.location.href = "/account/login";
+              return _context2.abrupt("return");
+
+            case 8:
+              return _context2.abrupt("return");
 
             case 9:
+              _this.localQuiz = JSON.parse(_this.localQuiz);
+
+              _this.initData();
+
+            case 11:
             case "end":
               return _context2.stop();
           }
@@ -18825,8 +18839,69 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     }))();
   },
   methods: {
+    initData: function initData() {
+      var _this2 = this;
+
+      return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee4() {
+        var response;
+        return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                _context4.next = 2;
+                return fetch("".concat(_this2.base_url, "/api/quiz/1/lead/").concat(_this2.localQuiz.id, "/results"), {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + _this2.authToken
+                  }
+                });
+
+              case 2:
+                response = _context4.sent;
+                response.json().then( /*#__PURE__*/function () {
+                  var _ref2 = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee3(rs) {
+                    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee3$(_context3) {
+                      while (1) {
+                        switch (_context3.prev = _context3.next) {
+                          case 0:
+                            _this2.results = rs.data;
+                            console.log(_this2.results);
+                            setTimeout(function () {
+                              _this2.isReady = true;
+
+                              _this2.$nextTick(function () {
+                                _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].check_if_in_view();
+                                _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].slideNavBar();
+                              });
+                            }, 1000);
+
+                          case 3:
+                          case "end":
+                            return _context3.stop();
+                        }
+                      }
+                    }, _callee3);
+                  }));
+
+                  return function (_x2) {
+                    return _ref2.apply(this, arguments);
+                  };
+                }());
+
+              case 4:
+              case "end":
+                return _context4.stop();
+            }
+          }
+        }, _callee4);
+      }))();
+    },
     scrollSmoothTo: function scrollSmoothTo(type) {
       _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].scrollSmoothTo(type);
+    },
+    scrollSmoothToPosition: function scrollSmoothToPosition(type) {
+      _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].scrollSmoothToPosition(type);
     }
   }
 });
@@ -20095,11 +20170,13 @@ var _hoisted_28 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
 /* HOISTED */
 );
 
-var _hoisted_29 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
-  "class": "welcome__body__more"
-}, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+var _hoisted_29 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
   "class": "welcome__body__more_description"
-}, "Learn More"), /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("svg", {
+}, "Learn More", -1
+/* HOISTED */
+);
+
+var _hoisted_30 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("svg", {
   xmlns: "http://www.w3.org/2000/svg",
   "class": "welcome__body__more__image",
   fill: "none",
@@ -20110,18 +20187,20 @@ var _hoisted_29 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
   "stroke-linecap": "round",
   "stroke-linejoin": "round",
   d: "M19 9l-7 7-7-7"
-})])], -1
+})], -1
 /* HOISTED */
 );
 
-var _hoisted_30 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createStaticVNode)("<button class=\"welcome__cta button\" aria-label=\"Get my system\"> GET MY SYSTEM </button><div class=\"welcome__ctainfo breakout breakout--mobile\"><div class=\"welcome__ctainfo__body\"><span>4-Product System</span><span class=\"welcome_ctainfo__title highlight\">$129.99</span><span class=\"strike\">$189.97 USD</span></div><span class=\"highlight\">SAVE $60 + FREE SHIPPING</span></div><div class=\"welcome__ctainfo show-for-mobile\" id=\"price-button\"><div class=\"welcome__ctainfo__body\"><span class=\"welcome_ctainfo__title highlight\">GET MY SYSTEM | $129.99/SYSTEM</span></div></div><span class=\"welcome_ctainfo__disclaimer muted center\">4-product system auto-refilled. Cancel Anytime</span>", 4);
+var _hoisted_31 = [_hoisted_29, _hoisted_30];
 
-var _hoisted_34 = {
+var _hoisted_32 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createStaticVNode)("<button class=\"welcome__cta button\" aria-label=\"Get my system\"> GET MY SYSTEM </button><div class=\"welcome__ctainfo breakout breakout--mobile\"><div class=\"welcome__ctainfo__body\"><span>4-Product System</span><span class=\"welcome_ctainfo__title highlight\">$129.99</span><span class=\"strike\">$189.97 USD</span></div><span class=\"highlight\">SAVE $60 + FREE SHIPPING</span></div><div class=\"welcome__ctainfo show-for-mobile\" id=\"price-button\"><div class=\"welcome__ctainfo__body\"><span class=\"welcome_ctainfo__title highlight\">GET MY SYSTEM | $129.99/SYSTEM</span></div></div><span class=\"welcome_ctainfo__disclaimer muted center\">4-product system auto-refilled. Cancel Anytime</span>", 4);
+
+var _hoisted_36 = {
   "class": "qr-section spaced-section enviroment",
   id: "Environment"
 };
 
-var _hoisted_35 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+var _hoisted_37 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
   "class": "result__body"
 }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h2", {
   "class": "result__body__targets mt-5"
@@ -20133,92 +20212,92 @@ var _hoisted_35 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
 /* HOISTED */
 );
 
-var _hoisted_36 = {
+var _hoisted_38 = {
   "class": "right-sec two-panel mt-5"
 };
-var _hoisted_37 = {
+var _hoisted_39 = {
   "class": "wrap-enviroment-list"
 };
-var _hoisted_38 = {
+var _hoisted_40 = {
   "class": "enviroment-item"
 };
 
-var _hoisted_39 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+var _hoisted_41 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
   src: "https://dl7bo1dy930sf.cloudfront.net/img/results/harndess-icon2.svg",
   alt: ""
 }, null, -1
 /* HOISTED */
 );
 
-var _hoisted_40 = {
+var _hoisted_42 = {
   "class": "wrap-content"
 };
 
-var _hoisted_41 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" WATER HARDNESS ");
+var _hoisted_43 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" WATER HARDNESS ");
 
-var _hoisted_42 = {
+var _hoisted_44 = {
   "class": "enviroment-item"
 };
 
-var _hoisted_43 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+var _hoisted_45 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
   src: "https://dl7bo1dy930sf.cloudfront.net/img/results/uv-index-icon2.svg",
   alt: ""
 }, null, -1
 /* HOISTED */
 );
 
-var _hoisted_44 = {
+var _hoisted_46 = {
   "class": "wrap-content"
 };
 
-var _hoisted_45 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" UV INDEX ");
+var _hoisted_47 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" UV INDEX ");
 
-var _hoisted_46 = {
+var _hoisted_48 = {
   "class": "enviroment-item"
 };
 
-var _hoisted_47 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+var _hoisted_49 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
   src: "https://dl7bo1dy930sf.cloudfront.net/img/results/humidity-icon2.svg",
   alt: ""
 }, null, -1
 /* HOISTED */
 );
 
-var _hoisted_48 = {
+var _hoisted_50 = {
   "class": "wrap-content"
 };
 
-var _hoisted_49 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" HUMIDITY ");
+var _hoisted_51 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" HUMIDITY ");
 
-var _hoisted_50 = {
+var _hoisted_52 = {
   "class": "enviroment-item"
 };
 
-var _hoisted_51 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+var _hoisted_53 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
   src: "https://dl7bo1dy930sf.cloudfront.net/img/results/air-index-icon2.svg",
   alt: ""
 }, null, -1
 /* HOISTED */
 );
 
-var _hoisted_52 = {
+var _hoisted_54 = {
   "class": "wrap-content"
 };
 
-var _hoisted_53 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" AIR QUALITY ");
+var _hoisted_55 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" AIR QUALITY ");
 
-var _hoisted_54 = {
+var _hoisted_56 = {
   "class": "wrap-map"
 };
-var _hoisted_55 = {
+var _hoisted_57 = {
   "class": "qr-section spaced-section lifestyle mt-5",
   id: "Lifestyle"
 };
-var _hoisted_56 = {
+var _hoisted_58 = {
   "class": "result spaced-section slide animation-element"
 };
 
-var _hoisted_57 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+var _hoisted_59 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
   "class": "result__body"
 }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h2", {
   "class": "result__body__targets mt-5"
@@ -20230,37 +20309,45 @@ var _hoisted_57 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
 /* HOISTED */
 );
 
-var _hoisted_58 = {
+var _hoisted_60 = {
   "class": "right-sec carousel-custom"
 };
 
-var _hoisted_59 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "INGREDIENTS FOR YOUR LIFESTYLE", -1
+var _hoisted_61 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "INGREDIENTS FOR YOUR LIFESTYLE", -1
 /* HOISTED */
 );
 
-var _hoisted_60 = {
+var _hoisted_62 = {
   "class": "list-item-life hidden-small"
 };
-var _hoisted_61 = {
+var _hoisted_63 = {
   "class": "inte-content"
 };
-var _hoisted_62 = {
-  "class": "carousel__item"
-};
 
-var _hoisted_63 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+var _hoisted_64 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
   "class": "carousel__item__image",
   src: "https://dl7bo1dy930sf.cloudfront.net/img/results/ingredient-images/Green-Tea-Extract.png"
 }, null, -1
 /* HOISTED */
 );
 
-var _hoisted_64 = {
+var _hoisted_65 = {
+  "class": "carousel__item"
+};
+
+var _hoisted_66 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+  "class": "carousel__item__image",
+  src: "https://dl7bo1dy930sf.cloudfront.net/img/results/ingredient-images/Green-Tea-Extract.png"
+}, null, -1
+/* HOISTED */
+);
+
+var _hoisted_67 = {
   "class": "title-des"
 };
-var _hoisted_65 = ["textContent"];
+var _hoisted_68 = ["textContent"];
 
-var _hoisted_66 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+var _hoisted_69 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
   "class": "qr-section spaced-section everything",
   id: "Evolving"
 }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
@@ -20274,9 +20361,9 @@ var _hoisted_66 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
 /* HOISTED */
 );
 
-var _hoisted_67 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createStaticVNode)("<div class=\"subscribe spaced-section animation-element\"><h1>Subscribe &amp; Thrive</h1><p> Our subscribers get more than products – we go above and beyond to help you achieve your skincare goals. Get access to our team of estheticians and wellness experts, on demand on your PROVEN dashboard or via email. </p><div class=\"subscribe__grid\"><div class=\"subscribe__grid__item\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z\"></path></svg><h4>Priority Support</h4><p> PROVEN members get priority support for all their questions and concerns </p></div><div class=\"subscribe__grid__item\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z\"></path></svg><h4>Priority Support</h4><p> PROVEN members get priority support for all their questions and concerns </p></div><div class=\"subscribe__grid__item\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z\"></path></svg><h4>Priority Support</h4><p> PROVEN members get priority support for all their questions and concerns </p></div><div class=\"subscribe__grid__item\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z\"></path></svg><h4>Priority Support</h4><p> PROVEN members get priority support for all their questions and concerns </p></div></div></div><div class=\"breakout highlight__container spaced-section\"><ul class=\"highlight__list\"><li class=\"highlight__list__item\"><svg class=\"highlight__svg\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 32 32\" fill=\"currentColor\"><defs></defs><title>badge</title><polygon points=\"23 2 24.593 5 28 5.414 25.5 7.667 26 11 23 9.125 20 11 20.5 7.667 18 5.414 21.5 5 23 2\"></polygon><path d=\"M22.7168,13.249l-1.9375-.498A6.9942,6.9942,0,1,1,15.7505,4.22l.499-1.9365A8.99,8.99,0,0,0,8,17.689V30l6-4,6,4V17.7078A8.9627,8.9627,0,0,0,22.7168,13.249ZM18,26.2627l-4-2.6665-4,2.6665V19.05a8.9238,8.9238,0,0,0,8,.0062Z\"></path><rect id=\"_Transparent_Rectangle_\" data-name=\"&lt;Transparent Rectangle&gt;\" class=\"cls-1\" width=\"32\" height=\"32\" style=\"fill:none;\"></rect></svg><span class=\"highlight__body\">Award-Winning Technology</span></li><li class=\"highlight__list__item\"><svg class=\"highlight__svg\" xmlns=\"http://www.w3.org/2000/svg\" enable-background=\"new 0 0 24 24\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><g><rect fill=\"none\" height=\"24\" width=\"24\"></rect></g><g><path d=\"M13,11.33L18,18H6l5-6.67V6h2 M15.96,4H8.04C7.62,4,7.39,4.48,7.65,4.81L9,6.5v4.17L3.2,18.4C2.71,19.06,3.18,20,4,20h16 c0.82,0,1.29-0.94,0.8-1.6L15,10.67V6.5l1.35-1.69C16.61,4.48,16.38,4,15.96,4L15.96,4z\"></path></g></svg><span class=\"highlight__body\">Dermatologist Recommended</span></li><li class=\"highlight__list__item\"><svg class=\"highlight__svg\" viewBox=\"0 0 20 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M12.5883 2.36575L12.5166 2.44429C12.4102 2.5604 12.3177 2.65963 12.2363 2.7445C12.1783 2.6674 12.131 2.60442 12.1069 2.57222C12.0962 2.55804 12.0901 2.54982 12.0895 2.54901C11.781 2.14919 11.521 1.85543 11.2421 1.61995C10.8599 1.29718 10.4625 1.10176 10 1.10176C9.75073 1.10176 9.51343 1.16296 9.29033 1.27123C8.80211 1.50815 8.44017 1.90299 7.95721 2.57792C7.93063 2.61506 7.88552 2.67912 7.83669 2.74871C7.74548 2.6579 7.64046 2.55003 7.51765 2.42149L7.44953 2.35008C6.89581 1.76866 6.74857 1.6202 6.50141 1.4188C6.26666 1.22751 6.05621 1.09922 5.79569 1.03537C5.22149 0.894639 4.64828 1.18504 4.43938 1.76057C4.1503 2.55696 4 3.41174 4 4.28812C4 8.2285 6.21172 11 10 11C13.7883 11 16 8.2285 16 4.28812C16 3.41174 15.8497 2.55696 15.5606 1.76057C15.3529 1.18826 14.7801 0.89035 14.2009 1.03736C13.938 1.10408 13.7302 1.23584 13.4994 1.43184C13.2609 1.63445 13.1249 1.77767 12.5883 2.36575ZM10 9.00002C7.42805 9.00002 6 7.21053 6 4.28812C6 4.10858 6.00853 3.93059 6.02539 3.75471L6.07157 3.80311C6.48039 4.23101 6.73147 4.4747 6.99228 4.67463C7.63975 5.17099 8.29621 5.36404 8.89641 4.67838C9.00414 4.55531 9.10967 4.4156 9.25158 4.21495C9.26057 4.20223 9.28945 4.16095 9.32704 4.10719C9.41015 3.98837 9.53586 3.80861 9.58368 3.74178C9.75942 3.4962 9.90624 3.31505 10.0126 3.20218C10.1467 3.32743 10.3081 3.51428 10.5059 3.77068C10.4612 3.71264 11.0562 4.50836 11.2051 4.67838C11.8078 5.36697 12.4722 5.16831 13.1048 4.66706C13.3559 4.46807 13.5972 4.22516 13.9795 3.80818C13.9931 3.96663 14 4.12675 14 4.28812C14 7.21053 12.572 9.00002 10 9.00002Z\" fill=\"currentColor\"></path><path d=\"M9 11C9 10.4477 9.44772 10 10 10C10.5523 10 11 10.4477 11 11V17.5C11 18.0523 10.5523 18.5 10 18.5C9.44772 18.5 9 18.0523 9 17.5V11Z\" fill=\"currentColor\"></path><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M11.7672 13.015C9.58159 14.8489 8.14539 17.1796 9.32942 18.5906C10.4954 19.9802 13.7081 19.2188 15.6239 17.6112C17.4921 16.0436 18.344 13.7765 17.18 12.3893C16.016 11.0021 13.6354 11.4474 11.7672 13.015ZM10.9199 17.3432C10.9062 17.3379 10.8943 17.3318 10.8841 17.325L10.9024 17.3544C10.9103 17.3611 10.915 17.3586 10.9199 17.3432ZM14.3383 16.0792C13.2305 17.0087 11.3237 17.5007 10.9199 17.3432C10.9221 17.3361 10.9244 17.3262 10.927 17.3132C10.9648 17.1241 11.0828 16.8557 11.2748 16.5442C11.6794 15.8876 12.3519 15.1352 13.0528 14.5471C14.1872 13.5951 15.3919 13.3698 15.6479 13.6749C15.9039 13.98 15.4728 15.1272 14.3383 16.0792Z\" fill=\"currentColor\"></path><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M7.93234 13.015C10.1179 14.8489 11.5541 17.1796 10.3701 18.5906C9.20411 19.9802 5.99142 19.2188 4.07561 17.6112C2.20741 16.0436 1.35552 13.7765 2.51954 12.3893C3.68355 11.0021 6.06414 11.4474 7.93234 13.015ZM8.77963 17.3432C8.79329 17.3379 8.80524 17.3318 8.81537 17.325L8.79712 17.3544C8.78924 17.3611 8.78449 17.3586 8.77963 17.3432ZM5.36119 16.0792C6.46901 17.0087 8.37582 17.5007 8.77963 17.3432C8.77738 17.3361 8.77511 17.3262 8.7725 17.3132C8.73467 17.1241 8.61671 16.8557 8.42471 16.5442C8.02015 15.8876 7.34762 15.1352 6.64676 14.5471C5.5123 13.5951 4.30762 13.3698 4.05162 13.6749C3.79563 13.98 4.22673 15.1272 5.36119 16.0792Z\" fill=\"currentColor\"></path></svg><span class=\"highlight__body\">Clean &amp; Non-Toxic</span></li><li class=\"highlight__list__item\"><svg class=\"highlight__svg\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 32 32\" fill=\"currentColor\"><path d=\"M 3 7 L 3 17 L 15 17 L 17 17 L 29 17 L 29 15 L 17 15 L 17 13 L 29 13 L 29 11 L 17 11 L 17 9 L 29 9 L 29 7 L 17 7 L 15 7 L 3 7 z M 5 8 C 5.552 8 6 8.448 6 9 C 6 9.552 5.552 10 5 10 C 4.448 10 4 9.552 4 9 C 4 8.448 4.448 8 5 8 z M 9 8 C 9.552 8 10 8.448 10 9 C 10 9.552 9.552 10 9 10 C 8.448 10 8 9.552 8 9 C 8 8.448 8.448 8 9 8 z M 13 8 C 13.552 8 14 8.448 14 9 C 14 9.552 13.552 10 13 10 C 12.448 10 12 9.552 12 9 C 12 8.448 12.448 8 13 8 z M 7 11 C 7.552 11 8 11.448 8 12 C 8 12.552 7.552 13 7 13 C 6.448 13 6 12.552 6 12 C 6 11.448 6.448 11 7 11 z M 11 11 C 11.552 11 12 11.448 12 12 C 12 12.552 11.552 13 11 13 C 10.448 13 10 12.552 10 12 C 10 11.448 10.448 11 11 11 z M 15 11 C 15.552 11 16 11.448 16 12 C 16 12.552 15.552 13 15 13 C 14.448 13 14 12.552 14 12 C 14 11.448 14.448 11 15 11 z M 5 14 C 5.552 14 6 14.448 6 15 C 6 15.552 5.552 16 5 16 C 4.448 16 4 15.552 4 15 C 4 14.448 4.448 14 5 14 z M 9 14 C 9.552 14 10 14.448 10 15 C 10 15.552 9.552 16 9 16 C 8.448 16 8 15.552 8 15 C 8 14.448 8.448 14 9 14 z M 13 14 C 13.552 14 14 14.448 14 15 C 14 15.552 13.552 16 13 16 C 12.448 16 12 15.552 12 15 C 12 14.448 12.448 14 13 14 z M 3 19 L 3 21 L 29 21 L 29 19 L 3 19 z M 3 23 L 3 25 L 29 25 L 29 23 L 3 23 z\"></path></svg><span class=\"highlight__body\">Made In USA</span></li></ul></div>", 2);
+var _hoisted_70 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createStaticVNode)("<div class=\"subscribe spaced-section animation-element\"><h1>Subscribe &amp; Thrive</h1><p> Our subscribers get more than products – we go above and beyond to help you achieve your skincare goals. Get access to our team of estheticians and wellness experts, on demand on your PROVEN dashboard or via email. </p><div class=\"subscribe__grid\"><div class=\"subscribe__grid__item\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z\"></path></svg><h4>Priority Support</h4><p> PROVEN members get priority support for all their questions and concerns </p></div><div class=\"subscribe__grid__item\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z\"></path></svg><h4>Priority Support</h4><p> PROVEN members get priority support for all their questions and concerns </p></div><div class=\"subscribe__grid__item\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z\"></path></svg><h4>Priority Support</h4><p> PROVEN members get priority support for all their questions and concerns </p></div><div class=\"subscribe__grid__item\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z\"></path></svg><h4>Priority Support</h4><p> PROVEN members get priority support for all their questions and concerns </p></div></div></div><div class=\"breakout highlight__container spaced-section\"><ul class=\"highlight__list\"><li class=\"highlight__list__item\"><svg class=\"highlight__svg\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 32 32\" fill=\"currentColor\"><defs></defs><title>badge</title><polygon points=\"23 2 24.593 5 28 5.414 25.5 7.667 26 11 23 9.125 20 11 20.5 7.667 18 5.414 21.5 5 23 2\"></polygon><path d=\"M22.7168,13.249l-1.9375-.498A6.9942,6.9942,0,1,1,15.7505,4.22l.499-1.9365A8.99,8.99,0,0,0,8,17.689V30l6-4,6,4V17.7078A8.9627,8.9627,0,0,0,22.7168,13.249ZM18,26.2627l-4-2.6665-4,2.6665V19.05a8.9238,8.9238,0,0,0,8,.0062Z\"></path><rect id=\"_Transparent_Rectangle_\" data-name=\"&lt;Transparent Rectangle&gt;\" class=\"cls-1\" width=\"32\" height=\"32\" style=\"fill:none;\"></rect></svg><span class=\"highlight__body\">Award-Winning Technology</span></li><li class=\"highlight__list__item\"><svg class=\"highlight__svg\" xmlns=\"http://www.w3.org/2000/svg\" enable-background=\"new 0 0 24 24\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><g><rect fill=\"none\" height=\"24\" width=\"24\"></rect></g><g><path d=\"M13,11.33L18,18H6l5-6.67V6h2 M15.96,4H8.04C7.62,4,7.39,4.48,7.65,4.81L9,6.5v4.17L3.2,18.4C2.71,19.06,3.18,20,4,20h16 c0.82,0,1.29-0.94,0.8-1.6L15,10.67V6.5l1.35-1.69C16.61,4.48,16.38,4,15.96,4L15.96,4z\"></path></g></svg><span class=\"highlight__body\">Dermatologist Recommended</span></li><li class=\"highlight__list__item\"><svg class=\"highlight__svg\" viewBox=\"0 0 20 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M12.5883 2.36575L12.5166 2.44429C12.4102 2.5604 12.3177 2.65963 12.2363 2.7445C12.1783 2.6674 12.131 2.60442 12.1069 2.57222C12.0962 2.55804 12.0901 2.54982 12.0895 2.54901C11.781 2.14919 11.521 1.85543 11.2421 1.61995C10.8599 1.29718 10.4625 1.10176 10 1.10176C9.75073 1.10176 9.51343 1.16296 9.29033 1.27123C8.80211 1.50815 8.44017 1.90299 7.95721 2.57792C7.93063 2.61506 7.88552 2.67912 7.83669 2.74871C7.74548 2.6579 7.64046 2.55003 7.51765 2.42149L7.44953 2.35008C6.89581 1.76866 6.74857 1.6202 6.50141 1.4188C6.26666 1.22751 6.05621 1.09922 5.79569 1.03537C5.22149 0.894639 4.64828 1.18504 4.43938 1.76057C4.1503 2.55696 4 3.41174 4 4.28812C4 8.2285 6.21172 11 10 11C13.7883 11 16 8.2285 16 4.28812C16 3.41174 15.8497 2.55696 15.5606 1.76057C15.3529 1.18826 14.7801 0.89035 14.2009 1.03736C13.938 1.10408 13.7302 1.23584 13.4994 1.43184C13.2609 1.63445 13.1249 1.77767 12.5883 2.36575ZM10 9.00002C7.42805 9.00002 6 7.21053 6 4.28812C6 4.10858 6.00853 3.93059 6.02539 3.75471L6.07157 3.80311C6.48039 4.23101 6.73147 4.4747 6.99228 4.67463C7.63975 5.17099 8.29621 5.36404 8.89641 4.67838C9.00414 4.55531 9.10967 4.4156 9.25158 4.21495C9.26057 4.20223 9.28945 4.16095 9.32704 4.10719C9.41015 3.98837 9.53586 3.80861 9.58368 3.74178C9.75942 3.4962 9.90624 3.31505 10.0126 3.20218C10.1467 3.32743 10.3081 3.51428 10.5059 3.77068C10.4612 3.71264 11.0562 4.50836 11.2051 4.67838C11.8078 5.36697 12.4722 5.16831 13.1048 4.66706C13.3559 4.46807 13.5972 4.22516 13.9795 3.80818C13.9931 3.96663 14 4.12675 14 4.28812C14 7.21053 12.572 9.00002 10 9.00002Z\" fill=\"currentColor\"></path><path d=\"M9 11C9 10.4477 9.44772 10 10 10C10.5523 10 11 10.4477 11 11V17.5C11 18.0523 10.5523 18.5 10 18.5C9.44772 18.5 9 18.0523 9 17.5V11Z\" fill=\"currentColor\"></path><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M11.7672 13.015C9.58159 14.8489 8.14539 17.1796 9.32942 18.5906C10.4954 19.9802 13.7081 19.2188 15.6239 17.6112C17.4921 16.0436 18.344 13.7765 17.18 12.3893C16.016 11.0021 13.6354 11.4474 11.7672 13.015ZM10.9199 17.3432C10.9062 17.3379 10.8943 17.3318 10.8841 17.325L10.9024 17.3544C10.9103 17.3611 10.915 17.3586 10.9199 17.3432ZM14.3383 16.0792C13.2305 17.0087 11.3237 17.5007 10.9199 17.3432C10.9221 17.3361 10.9244 17.3262 10.927 17.3132C10.9648 17.1241 11.0828 16.8557 11.2748 16.5442C11.6794 15.8876 12.3519 15.1352 13.0528 14.5471C14.1872 13.5951 15.3919 13.3698 15.6479 13.6749C15.9039 13.98 15.4728 15.1272 14.3383 16.0792Z\" fill=\"currentColor\"></path><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M7.93234 13.015C10.1179 14.8489 11.5541 17.1796 10.3701 18.5906C9.20411 19.9802 5.99142 19.2188 4.07561 17.6112C2.20741 16.0436 1.35552 13.7765 2.51954 12.3893C3.68355 11.0021 6.06414 11.4474 7.93234 13.015ZM8.77963 17.3432C8.79329 17.3379 8.80524 17.3318 8.81537 17.325L8.79712 17.3544C8.78924 17.3611 8.78449 17.3586 8.77963 17.3432ZM5.36119 16.0792C6.46901 17.0087 8.37582 17.5007 8.77963 17.3432C8.77738 17.3361 8.77511 17.3262 8.7725 17.3132C8.73467 17.1241 8.61671 16.8557 8.42471 16.5442C8.02015 15.8876 7.34762 15.1352 6.64676 14.5471C5.5123 13.5951 4.30762 13.3698 4.05162 13.6749C3.79563 13.98 4.22673 15.1272 5.36119 16.0792Z\" fill=\"currentColor\"></path></svg><span class=\"highlight__body\">Clean &amp; Non-Toxic</span></li><li class=\"highlight__list__item\"><svg class=\"highlight__svg\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 32 32\" fill=\"currentColor\"><path d=\"M 3 7 L 3 17 L 15 17 L 17 17 L 29 17 L 29 15 L 17 15 L 17 13 L 29 13 L 29 11 L 17 11 L 17 9 L 29 9 L 29 7 L 17 7 L 15 7 L 3 7 z M 5 8 C 5.552 8 6 8.448 6 9 C 6 9.552 5.552 10 5 10 C 4.448 10 4 9.552 4 9 C 4 8.448 4.448 8 5 8 z M 9 8 C 9.552 8 10 8.448 10 9 C 10 9.552 9.552 10 9 10 C 8.448 10 8 9.552 8 9 C 8 8.448 8.448 8 9 8 z M 13 8 C 13.552 8 14 8.448 14 9 C 14 9.552 13.552 10 13 10 C 12.448 10 12 9.552 12 9 C 12 8.448 12.448 8 13 8 z M 7 11 C 7.552 11 8 11.448 8 12 C 8 12.552 7.552 13 7 13 C 6.448 13 6 12.552 6 12 C 6 11.448 6.448 11 7 11 z M 11 11 C 11.552 11 12 11.448 12 12 C 12 12.552 11.552 13 11 13 C 10.448 13 10 12.552 10 12 C 10 11.448 10.448 11 11 11 z M 15 11 C 15.552 11 16 11.448 16 12 C 16 12.552 15.552 13 15 13 C 14.448 13 14 12.552 14 12 C 14 11.448 14.448 11 15 11 z M 5 14 C 5.552 14 6 14.448 6 15 C 6 15.552 5.552 16 5 16 C 4.448 16 4 15.552 4 15 C 4 14.448 4.448 14 5 14 z M 9 14 C 9.552 14 10 14.448 10 15 C 10 15.552 9.552 16 9 16 C 8.448 16 8 15.552 8 15 C 8 14.448 8.448 14 9 14 z M 13 14 C 13.552 14 14 14.448 14 15 C 14 15.552 13.552 16 13 16 C 12.448 16 12 15.552 12 15 C 12 14.448 12.448 14 13 14 z M 3 19 L 3 21 L 29 21 L 29 19 L 3 19 z M 3 23 L 3 25 L 29 25 L 29 23 L 3 23 z\"></path></svg><span class=\"highlight__body\">Made In USA</span></li></ul></div>", 2);
 
-var _hoisted_69 = {
+var _hoisted_72 = {
   key: 1,
   "class": "loading-evyana",
   style: {
@@ -20284,7 +20371,7 @@ var _hoisted_69 = {
   }
 };
 
-var _hoisted_70 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+var _hoisted_73 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
   style: {
     "height": "100%"
   },
@@ -20294,7 +20381,7 @@ var _hoisted_70 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
 /* HOISTED */
 );
 
-var _hoisted_71 = [_hoisted_70];
+var _hoisted_74 = [_hoisted_73];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_concern = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("concern");
 
@@ -20342,7 +20429,12 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     "data-href": "#Evolving"
   }, _hoisted_17)]), _hoisted_18]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_19, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_20, [_hoisted_21, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_22, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", _hoisted_23, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.user.name) + ", ", 1
   /* TEXT */
-  ), _hoisted_24, _hoisted_25, _hoisted_26, _hoisted_27]), _hoisted_28, _hoisted_29]), _hoisted_30]), ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($data.results.skin, function (concern, index) {
+  ), _hoisted_24, _hoisted_25, _hoisted_26, _hoisted_27]), _hoisted_28, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+    "class": "welcome__body__more",
+    onClick: _cache[4] || (_cache[4] = function ($event) {
+      return $options.scrollSmoothToPosition('Concerns');
+    })
+  }, _hoisted_31)]), _hoisted_32]), ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($data.results.skin, function (concern, index) {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_concern, {
       key: index + 'skin',
       concern: concern,
@@ -20352,19 +20444,19 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     , ["concern", "index"]);
   }), 128
   /* KEYED_FRAGMENT */
-  )), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_34, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+  )), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_36, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
     "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["result spaced-section slide animation-element", {
       'in-view': $data.results.skin.length === 0
     }])
-  }, [_hoisted_35, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_36, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_37, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_38, [_hoisted_39, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_40, [_hoisted_41, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.environment.water.text), 1
+  }, [_hoisted_37, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_38, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_39, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_40, [_hoisted_41, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_42, [_hoisted_43, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.environment.water.text), 1
   /* TEXT */
-  )])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_42, [_hoisted_43, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_44, [_hoisted_45, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.environment.uvindex.text), 1
+  )])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_44, [_hoisted_45, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_46, [_hoisted_47, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.environment.uvindex.text), 1
   /* TEXT */
-  )])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_46, [_hoisted_47, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_48, [_hoisted_49, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, " OVER " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(Math.floor($data.results.environment.humidity.relative_humidity)), 1
+  )])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_48, [_hoisted_49, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_50, [_hoisted_51, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, " OVER " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(Math.floor($data.results.environment.humidity.relative_humidity)), 1
   /* TEXT */
-  )])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_50, [_hoisted_51, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_52, [_hoisted_53, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.environment.airquality.range), 1
+  )])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_52, [_hoisted_53, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_54, [_hoisted_55, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.environment.airquality.range), 1
   /* TEXT */
-  )])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_54, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_GoogleMap, {
+  )])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_56, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_GoogleMap, {
     "api-key": "AIzaSyB3SwShKbf8tDq3y0NH8woTOUdL34cX2Oc",
     clickableIcons: false,
     disableDefaultUi: true,
@@ -20400,16 +20492,16 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   /* PROPS */
   , ["center"])])])], 2
   /* CLASS */
-  )]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_55, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_56, [_hoisted_57, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_58, [_hoisted_59, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_60, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($options.listLifeStyle, function (lifestyle, index) {
+  )]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_57, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_58, [_hoisted_59, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_60, [_hoisted_61, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_62, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($options.listLifeStyle, function (lifestyle, index) {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("li", {
       "class": "item-life",
       key: index
     }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(lifestyle.description), 1
     /* TEXT */
-    ), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_61, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(lifestyle.ingredients, function (inte, i) {
+    ), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_63, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(lifestyle.ingredients, function (inte, i) {
       return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, {
         key: i
-      }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(inte.title), 1
+      }, [_hoisted_64, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(inte.title), 1
       /* TEXT */
       )], 64
       /* STABLE_FRAGMENT */
@@ -20433,12 +20525,12 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           key: 'life-style' + index + 'skin-ingredients'
         }, {
           "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-            return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_62, [_hoisted_63, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_64, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("b", {
+            return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_65, [_hoisted_66, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_67, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("b", {
               "class": "carousel__item__title",
               textContent: (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(lifestyle.description)
             }, null, 8
             /* PROPS */
-            , _hoisted_65)]), ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(lifestyle.ingredients, function (inte, i) {
+            , _hoisted_68)]), ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)(lifestyle.ingredients, function (inte, i) {
               return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, {
                 key: i
               }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(inte.title), 1
@@ -20465,7 +20557,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
   }, 8
   /* PROPS */
-  , ["settings", "breakpoints"])])])]), _hoisted_66, ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($data.results.products, function (product, index) {
+  , ["settings", "breakpoints"])])])]), _hoisted_69, ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($data.results.products, function (product, index) {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_product, {
       key: index + 'product',
       product: product
@@ -20474,9 +20566,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     , ["product"]);
   }), 128
   /* KEYED_FRAGMENT */
-  )), _hoisted_67])], 64
+  )), _hoisted_70])], 64
   /* STABLE_FRAGMENT */
-  )) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), !$data.isReady ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_69, _hoisted_71)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]);
+  )) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), !$data.isReady ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_72, _hoisted_74)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]);
 }
 
 /***/ }),
@@ -20777,10 +20869,21 @@ var animation = {
     return rect.left >= 0 && rect.top >= 0 && rect.left + rect.width <= windowWidth && rect.top + rect.height <= windowHeight;
   },
   scrollSmoothTo: function scrollSmoothTo(elementId) {
+    debugger;
     var element = document.getElementById(elementId);
     element.scrollIntoView({
-      block: 'start',
-      behavior: 'smooth'
+      block: "start",
+      behavior: "smooth"
+    });
+    window.scrollBy(0, offset);
+  },
+  scrollSmoothToPosition: function scrollSmoothToPosition(elementId) {
+    var element = document.getElementById(elementId);
+    window.scrollTo({
+      top: element.offsetTop + 550,
+      //add your necessary value
+      behavior: "smooth" //Smooth transition to roll
+
     });
   },
   slideNavBar: function slideNavBar() {
