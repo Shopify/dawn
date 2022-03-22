@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="question-container">
     <div class="step-body">
       <slot></slot>
       <template v-if="!submitSuccess">
@@ -65,15 +65,15 @@
               <!--                      <img :src="item.image" alt="" />-->
               <img
                 class="image"
-                src="https://dl7bo1dy930sf.cloudfront.net/img/results/ingredient-images/vitamin-c-stabalized-active-min.png"
+                :src="item.image"
               />
               <span>{{ item.ConsumerTitle }}</span>
             </li>
           </transition-group>
         </div>
         <img
-          class="product-image"
-          src="https://cdn.shopify.com/s/files/1/0016/6913/6419/products/Routine1.jpg?v=1628376181"
+          class="product-image product-image--large"
+          src="//d201v9s59ezpea.cloudfront.net/4step.png"
         />
       </div>
     </div>

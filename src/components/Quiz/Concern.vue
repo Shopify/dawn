@@ -74,16 +74,18 @@
           <h4 class="">Ingredients</h4>
           <div class="">
             <carousel :settings="settings" :breakpoints="breakpoints">
-              <slide v-for="(ingredient, index) in concern.ingredients"
-                  :key="'concern' + index + 'skin-ingredients'">
+              <template v-for="(ingredient, index) in concern.ingredients"
+                        :key="'concern' + index + 'skin-ingredients'">
+              <slide v-if="ingredient.image">
                 <div class="carousel__item">
                   <img class="carousel__item__image"
-                      src="https://dl7bo1dy930sf.cloudfront.net/img/results/ingredient-images/Green-Tea-Extract.png"
+                      :src="ingredient.image"
                   />
                   <!-- <img :src="ingredient.image"/>-->
                   <span class="carousel__item__title" v-text="ingredient.ConsumerTitle"></span>
                 </div>
               </slide>
+              </template>
               <template #addons>
                 <navigation />
               </template>

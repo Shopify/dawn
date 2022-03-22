@@ -462,7 +462,7 @@ export default {
             });
           });
           localStorage.setItem("quiz", JSON.stringify(this.localQuiz));
-          this.$router.push("/account");
+          window.location.href = "/pages/your-quiz-results";
         });
     },
   },
