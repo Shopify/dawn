@@ -10,7 +10,7 @@
     <div class="product__body">
       <span class="product__body__subtitle" v-text="subtitle"></span
       >
-      <h2 class="product__body__title" data-cy="proven-cleanser-title">
+      <h2 class="product__body__title" data-cy="evyana-cleanser-title">
         {{title}}
       </h2>
       <button class="product__body__button">
@@ -19,15 +19,15 @@
       </button>
       <p class="product__body__description" v-text="description"></p>
       <div class="product__body__tags">
-        <span class="product__body__tags__item">Eczema Level 1</span>
-        <span class="product__body__tags__item">Sensitivity Level 7</span>
-        <span class="product__body__tags__item">Dryness Level 6</span>
-        <span class="product__body__tags__item">Hyperpigmentation Level 6</span>
-        <span class="product__body__tags__item">Mild Dehydration</span>
-        <span class="product__body__tags__item">Acne Level 5</span>
-        <span class="product__body__tags__item">Wrinkles Level 5</span>
-        <span class="product__body__tags__item">Firmness Level 5</span>
-        <span class="product__body__tags__item">Humid Air</span>
+<!--        <span class="product__body__tags__item">Eczema Level 1</span>-->
+<!--        <span class="product__body__tags__item">Sensitivity Level 7</span>-->
+<!--        <span class="product__body__tags__item">Dryness Level 6</span>-->
+<!--        <span class="product__body__tags__item">Hyperpigmentation Level 6</span>-->
+<!--        <span class="product__body__tags__item">Mild Dehydration</span>-->
+<!--        <span class="product__body__tags__item">Acne Level 5</span>-->
+<!--        <span class="product__body__tags__item">Wrinkles Level 5</span>-->
+<!--        <span class="product__body__tags__item">Firmness Level 5</span>-->
+<!--        <span class="product__body__tags__item">Humid Air</span>-->
       </div>
       <div class="product__body__ingredients">
         <h3 class="product__body__ingredients__title">
@@ -36,20 +36,21 @@
         <div class="product__body__ingredients__carousel absoluted-wrap">
           <div class="wrap-carousel-inside-grid">
             <carousel :settings="settings" :breakpoints="breakpoints">
-            <slide
-              v-for="(ingredient, index) in product.ingredients"
-              :key="'concern' + index + 'skin-ingredients'"
+            <template v-for="(ingredient, index) in product.ingredients" :key="'concern' + index + 'skin-ingredients'">
+              <slide v-if="ingredient.image"
               class="carousel__item"
             >
               <img
                 class="carousel__item__image"
-                src="https://dl7bo1dy930sf.cloudfront.net/img/results/ingredient-images/Green-Tea-Extract.png"
-                alt="{{ ingredient.ConsumerTitle }}"
+                :src="ingredient.image"
+                :alt="ingredient.ConsumerTitle"
               />
               <span class="carousel__item__item">{{
                 ingredient.ConsumerTitle
               }}</span>
+
             </slide>
+            </template>
             <template #addons>
               <navigation />
             </template>
