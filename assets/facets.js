@@ -234,11 +234,16 @@ customElements.define('price-range', PriceRange);
 class FacetRemove extends HTMLElement {
   constructor() {
     super();
-    this.querySelector('a').addEventListener('click', (event) => {
-      event.preventDefault();
-      const form = this.closest('facet-filters-form') || document.querySelector('facet-filters-form');
-      form.onActiveFilterClick(event);
+    this.querySelector('a').addEventListener('click', this.closeFilter.bind(this));
+    this.querySelector('a').addEventListener('keydown', (event) => { 
+      if (event.code == 'Space') this.closeFilter(event);
     });
+  }
+
+  closeFilter(event) {
+    event.preventDefault();
+    const form = this.closest('facet-filters-form') || document.querySelector('facet-filters-form');
+    form.onActiveFilterClick(event);
   }
 }
 
