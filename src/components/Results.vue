@@ -665,26 +665,26 @@ export default {
     this.localQuiz = localStorage.getItem("quiz");
     if (!this.localQuiz) {
       if (this.email) {
-        fetch(`${this.base_url}/api/customer/${email}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + this.authToken,
-          },
-        })
-          .then((response) => {
-            if (response.status === 404) {
-              window.location.href = "/account/login";
-              return;
-            }
-            response.json().then(async (rs) => {
-              if (rs.data.id) {
-                this.localQuiz = rs.data;
-                this.initData();
-              }
-            });
-          })
-          .catch((e) => {});
+        // fetch(`${this.base_url}/api/customer/${email}`, {
+        //   method: "GET",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //     Authorization: "Bearer " + this.authToken,
+        //   },
+        // })
+        //   .then((response) => {
+        //     if (response.status === 404) {
+        //       window.location.href = "/account/login";
+        //       return;
+        //     }
+        //     response.json().then(async (rs) => {
+        //       if (rs.data.id) {
+        //         this.localQuiz = rs.data;
+        //         this.initData();
+        //       }
+        //     });
+        //   })
+        //   .catch((e) => {});
 
         //check for email here pull lead id if email is passed and query api for lead ID from customer
         //if there is no lead id for this redirect to quiz
