@@ -18779,13 +18779,13 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 break;
               }
 
-              if (!_this.email) {
+              if (!email) {
                 _context2.next = 10;
                 break;
               }
 
               console.log("here");
-              fetch("".concat(_this.base_url, "/api/customer/lowe.estell@zemlak.com"), {
+              fetch("".concat(_this.base_url, "/api/customer/").concat(email), {
                 method: "GET",
                 headers: {
                   "Content-Type": "application/json",

@@ -689,9 +689,9 @@ export default {
     }
     this.localQuiz = localStorage.getItem("quiz");
     if (!this.localQuiz) {
-      if (this.email) {
+      if (email) {
         console.log("here");
-        fetch(`${this.base_url}/api/customer/lowe.estell@zemlak.com`, {
+        fetch(`${this.base_url}/api/customer/${email}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
