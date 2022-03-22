@@ -8,6 +8,12 @@ class FacetFiltersForm extends HTMLElement {
     }, 500);
 
     this.querySelector('form').addEventListener('input', this.debouncedOnSubmit.bind(this));
+    this.querySelector('form').addEventListener('keydown', (event) => { 
+      if (event.target.tagName == 'LI' && event.code == 'Space') {
+        event.preventDefault();
+        event.target.querySelector('input').click();
+      }
+    });
 
     const facetWrapper = this.querySelector('#FacetsWrapperDesktop');
     if (facetWrapper) facetWrapper.addEventListener('keyup', onKeyUpEscape);
