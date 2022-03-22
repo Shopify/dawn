@@ -7,19 +7,6 @@
 <noscript>{{ 'component-slider.css' | asset_url | stylesheet_tag }}</noscript>
 <noscript>{{ 'template-collection.css' | asset_url | stylesheet_tag }}</noscript>
 
-{%- style -%}
-  .section-{{ section.id }}-padding {
-    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
-    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
-  }
-
-  @media screen and (min-width: 750px) {
-    .section-{{ section.id }}-padding {
-      padding-top: {{ section.settings.padding_top }}px;
-      padding-bottom: {{ section.settings.padding_bottom }}px;
-    }
-  }
-{%- endstyle -%}
 
 {%- liquid
   assign products_to_display = section.settings.collection.all_products_count
@@ -35,13 +22,48 @@
     assign show_mobile_slider = true
   endif
 
+  assign show_button = false
+  if section.settings.show_view_all and more_in_collection
+    assign show_button = true
+  endif
+
   assign show_desktop_slider = false
   if section.settings.enable_desktop_slider and products_to_display > section.settings.columns_desktop
     assign show_desktop_slider = true
   endif
+
+  assign collapsibleTop = false
+  if section.settings.padding_top == 0 and section.settings.title == blank
+    assign collapsibleTop = true
+  endif
+
+  assign collapsibleBottom = false
+  if section.settings.padding_bottom == 0 and show_button == false
+    assign collapsibleBottom = true
+  endif
 -%}
 
-<div class="color-{{ section.settings.color_scheme }} isolate gradient">
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+  {% if collapsibleBottom and settings.spacing_sections == 0 -%}
+    #shopify-section-{{ section.id }} + .section {
+      --prev-section-offset: {{ settings.card_border_thickness }}px;
+    }
+  {%- endif -%}
+{%- endstyle -%}
+
+<div class="color-{{ section.settings.color_scheme }} isolate gradient{% if collapsibleTop %} section-collapsed{% endif %}">
   <div class="collection section-{{ section.id }}-padding{% if section.settings.full_width %} collection--full-width{% endif %}">
       <div class="collection__title title-wrapper title-wrapper--no-top-margin page-width{% if show_mobile_slider %} title-wrapper--self-padded-tablet-down{% endif %}{% if show_desktop_slider %} collection__title--desktop-slider{% endif %}">
         {%- if section.settings.title != blank -%}
@@ -86,7 +108,7 @@
       {%- endif -%}
     </slider-component>
 
-    {%- if section.settings.show_view_all and more_in_collection -%}
+    {%- if show_button -%}
       <div class="center collection__view-all">
         <a href="{{ section.settings.collection.url }}"
           class="{% if section.settings.view_all_style == 'link' %}link underlined-link{% elsif section.settings.view_all_style == 'solid' %}button{% else %}button button--secondary{% endif %}"

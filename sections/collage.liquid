@@ -3,6 +3,18 @@
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
 {{ 'component-modal-video.css' | asset_url | stylesheet_tag }}
 
+{%- liquid
+  assign collapsibleTop = false
+  if section.settings.padding_top == 0 and section.settings.title == blank
+    assign collapsibleTop = true
+  endif
+
+  assign collapsibleBottom = false
+  if section.settings.padding_bottom == 0
+    assign collapsibleBottom = true
+  endif
+-%}
+
 {%- style -%}
   .section-{{ section.id }}-padding {
     padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
@@ -15,14 +27,20 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  {% if collapsibleBottom and settings.spacing_sections == 0 -%}
+    #shopify-section-{{ section.id }} + .section {
+      --prev-section-offset: {{ settings.card_border_thickness }}px;
+    }
+  {%- endif -%}
 {%- endstyle -%}
 
 <link rel="stylesheet" href="{{ 'component-deferred-media.css' | asset_url }}" media="print" onload="this.media='all'">
 
-<div class="color-{{ section.settings.color_scheme }} gradient isolate">
+<div class="collage-section color-{{ section.settings.color_scheme }} gradient isolate{% if collapsibleTop %} section-collapsed{% endif %}">
   <div class="page-width{% if section.settings.heading == blank %} no-heading{% endif %} section-{{ section.id }}-padding">
     <h2 class="collage-wrapper-title {{ section.settings.heading_size }}">{{ section.settings.heading | escape }}</h2>
-    <div class="collage{% if section.settings.mobile_layout == 'collage' %} collage--mobile{% endif %}">
+    <div class="collage contains-card{% if section.settings.mobile_layout == 'collage' %} collage--mobile{% endif %}">
       {%- for block in section.blocks -%}
         <div class="collage__item collage__item--{{ block.type }} collage__item--{{ section.settings.desktop_layout }}" {{ block.shopify_attributes }}>
           {%- case block.type -%}

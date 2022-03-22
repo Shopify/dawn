@@ -9,6 +9,29 @@
 
 {{ 'section-featured-blog.css' | asset_url | stylesheet_tag }}
 
+{%- liquid
+  assign posts_displayed = section.settings.blog.articles_count
+  if section.settings.post_limit <= section.settings.blog.articles_count
+    assign posts_exceed_limit = true
+    assign posts_displayed = section.settings.post_limit
+  endif
+  
+  assign show_button = false
+  if section.settings.show_view_all and section.settings.post_limit < section.settings.blog.articles_count
+    assign show_button = true
+  endif
+
+  assign collapsibleTop = false
+  if section.settings.padding_top == 0 and section.settings.title == blank
+    assign collapsibleTop = true
+  endif
+
+  assign collapsibleBottom = false
+  if section.settings.padding_bottom == 0 and show_button == false
+    assign collapsibleBottom = true
+  endif
+-%}
+
 {%- style -%}
   .section-{{ section.id }}-padding {
     padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
@@ -21,22 +44,20 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
-{%- endstyle -%}
 
-{%- liquid
-  assign posts_displayed = section.settings.blog.articles_count
-  if section.settings.post_limit <= section.settings.blog.articles_count
-    assign posts_exceed_limit = true
-    assign posts_displayed = section.settings.post_limit
-  endif
--%}
-<div class="blog color-{{ section.settings.color_scheme }} gradient{% if section.settings.heading == blank %} no-heading{% endif %}">
+  {% if collapsibleBottom and settings.spacing_sections == 0 -%}
+    #shopify-section-{{ section.id }} + .section {
+      --prev-section-offset: {{ settings.card_border_thickness }}px;
+    }
+  {%- endif -%}
+{%- endstyle -%}
+<div class="blog color-{{ section.settings.color_scheme }} gradient{% if section.settings.heading == blank %} no-heading{% endif %}{% if collapsibleTop %} section-collapsed{% endif %}">
   <div class="page-width-desktop isolate{% if posts_displayed < 3 %} page-width-tablet{% endif %} section-{{ section.id }}-padding">
     {%- unless section.settings.heading == blank -%}
       <div class="title-wrapper-with-link{% if posts_displayed > 2 %} title-wrapper--self-padded-tablet-down{% else %} title-wrapper--self-padded-mobile{% endif %} title-wrapper--no-top-margin">
         <h2 class="blog__title {{ section.settings.heading_size }}">{{ section.settings.heading | escape }}</h2>
 
-        {%- if section.settings.blog != blank and section.settings.show_view_all and section.settings.post_limit < section.settings.blog.articles_count -%}
+        {%- if section.settings.blog != blank and show_button -%}
           <a href="{{ section.settings.blog.url }}"
             class="link underlined-link large-up-hide"
           >
@@ -71,7 +92,7 @@
         {%- endif -%}
       </slider-component>
 
-      {%- if section.settings.show_view_all and section.settings.post_limit < section.settings.blog.articles_count -%}
+      {%- if show_button -%}
         <div class="blog__view-all center small-hide medium-hide">
           <a href="{{ section.settings.blog.url }}" class="blog__button button">
             {{ 'sections.featured_blog.view_all' | t }}

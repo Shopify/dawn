@@ -1,6 +1,18 @@
 {{ 'video-section.css' | asset_url | stylesheet_tag }}
 {{ 'component-deferred-media.css' | asset_url | stylesheet_tag }}
 
+{%- liquid
+  assign collapsibleTop = false
+  if section.settings.padding_top == 0 and section.settings.title == blank
+    assign collapsibleTop = true
+  endif
+
+  assign collapsibleBottom = false
+  if section.settings.padding_bottom == 0
+    assign collapsibleBottom = true
+  endif
+-%}
+
 {%- style -%}
   .section-{{ section.id }}-padding {
     padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
@@ -13,9 +25,15 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  {% if collapsibleBottom and settings.spacing_sections == 0 -%}
+    #shopify-section-{{ section.id }} + .section {
+      --prev-section-offset: {{ settings.media_border_thickness }}px;
+    }
+  {%- endif -%}
 {%- endstyle -%}
 
-<div class="color-{{ section.settings.color_scheme }} gradient">
+<div class="color-{{ section.settings.color_scheme }} gradient{% if collapsibleTop %} section-collapsed{% endif %}">
   <div class="video-section isolate{% unless section.settings.full_width %} page-width{% endunless %} section-{{ section.id }}-padding">
     <div{% if section.settings.full_width %} class="page-width"{% endif %}>
       {%- unless section.settings.heading == blank -%}
