@@ -3,7 +3,7 @@ export default {
         return {
             settings: {
                 itemsToShow: 2,
-                snapAlign: 'center',
+                snapAlign: 'start',
             },
             breakpoints: {
                 // 700px and up

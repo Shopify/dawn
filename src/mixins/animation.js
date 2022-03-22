@@ -75,13 +75,11 @@ var animation = {
   },
 
   scrollSmoothTo(elementId) {
-    debugger;
     var element = document.getElementById(elementId);
     element.scrollIntoView({
       block: "start",
       behavior: "smooth",
     });
-    window.scrollBy(0, offset);
   },
 
   scrollSmoothToPosition(elementId) {
