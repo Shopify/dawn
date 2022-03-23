@@ -19,12 +19,17 @@ class FacetFiltersForm extends HTMLElement {
     const showMore = this.querySelector('.button-show-more');
     if (showMore) {
       showMore.addEventListener('click', (event) => {
-        console.log('fd', event.target.className)
-        if (event.target.className === 'label-show-more') {
-          this.querySelectorAll(".facets__item-show-more")[0].focus();
-        }
+        event.preventDefault();
         showMore.closest('.facets__display').querySelector('.facets-wrap').classList.toggle('facets-wrap-show-more', !showMore.closest('.facets__display').querySelector('.facets-wrap').classList.contains('facets-wrap-show-more')); 
         showMore.closest('.facets__display').querySelectorAll('.facets__item.facets__item-show-more').forEach(item => item.classList.toggle('hidden', !item.classList.contains('hidden')))
+      })
+      showMore.addEventListener('keydown', (event) => {
+        if (event.target.className === 'button-show-more link underlined-link' && event.code === 'Space') {
+          event.preventDefault();
+          showMore.closest('.facets__display').querySelector('.facets-wrap').classList.toggle('facets-wrap-show-more', !showMore.closest('.facets__display').querySelector('.facets-wrap').classList.contains('facets-wrap-show-more')); 
+          showMore.closest('.facets__display').querySelectorAll('.facets__item.facets__item-show-more').forEach(item => item.classList.toggle('hidden', !item.classList.contains('hidden')))
+          this.querySelectorAll(".facets__item-show-more")[0].focus();
+        }
       })
     }
 
