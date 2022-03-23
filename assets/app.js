@@ -17484,7 +17484,7 @@ var checked = function checked(value) {
   },
   data: function data() {
     return {
-      loadingProcess: true,
+      loadingProcess: false,
       quiz: [],
       questionIndex: 0,
       isReady: false,
@@ -17714,8 +17714,9 @@ var checked = function checked(value) {
                   email: _this4.emailValue
                 };
                 payload[_this4.quiz[_this4.questionIndex].category] = _this4.currentAnwser;
+                _this4.loadingProcess = true;
                 _this4.isValidNext = false;
-                _context4.next = 11;
+                _context4.next = 12;
                 return fetch("".concat(_this4.base_url, "/api/customer/"), {
                   method: "POST",
                   body: JSON.stringify(payload),
@@ -17726,11 +17727,14 @@ var checked = function checked(value) {
                 }).then(function (rs) {
                   return rs.json();
                 }).then(function (result) {
-                  // localStorage.clear();
+                  _this4.loadingProcess = false;
+
                   _this4.$router.push("/result");
+                })["catch"](function (e) {
+                  _this4.loadingProcess = false;
                 });
 
-              case 11:
+              case 12:
               case "end":
                 return _context4.stop();
             }
@@ -18876,7 +18880,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             switch (_context4.prev = _context4.next) {
               case 0:
                 _context4.next = 2;
-                return fetch("".concat(_this2.base_url, "/api/quiz/1/lead/0f7f0a33-2eb0-4c8b-9308-068d5c8a37fe/results"), {
+                return fetch("".concat(_this2.base_url, "/api/quiz/1/lead/").concat(_this2.localQuiz.id, "/results"), {
                   method: "GET",
                   headers: {
                     "Content-Type": "application/json",
@@ -19386,44 +19390,39 @@ var _hoisted_3 = {
   key: 0,
   "class": "lg-button"
 };
-var _hoisted_4 = {
+var _hoisted_4 = ["disabled"];
+var _hoisted_5 = {
+  key: 0,
+  id: "loading",
+  style: {
+    "width": "15px",
+    "height": "15px",
+    "margin-right": "10px"
+  }
+};
+
+var _hoisted_6 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" Submit ");
+
+var _hoisted_7 = {
   "class": "step-footer"
 };
-var _hoisted_5 = {
+var _hoisted_8 = {
   key: 0,
   "class": "lg-hidden"
 };
-var _hoisted_6 = ["disabled"];
-var _hoisted_7 = {
-  key: 0,
-  xmlns: "http://www.w3.org/2000/svg",
-  width: "200",
-  viewBox: "0 0 214 25"
-};
-
-var _hoisted_8 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("path", {
-  "class": "cls-1",
-  d: "M0 25V0h13.6v2.3H2.5v9h10.7v2.2H2.5v9.2h11V25zM45.1 25h-2.4L32.5 0h2.8L44 21.9 52.7 0h2.7zM83.6 16.6V25h-2.4v-8.4L72.6 0h2.7l7 14 7.3-14h2.7zM120.2 0h-2.8l-10.6 25h2.6l3-6.8L118.8 3l5.7 13.7 3.6 8.4h2.7zM203.3 0h-2.7l-10.7 25h2.6l3-6.8L202 3l5.7 13.7 3.6 8.4h2.7zM167.8 25L153 3v22h-2.4V0h3.3l14 20.7V0h2.4v25z"
-}, null, -1
-/* HOISTED */
-);
-
-var _hoisted_9 = [_hoisted_8];
-
-var _hoisted_10 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" Submit ");
-
-var _hoisted_11 = {
+var _hoisted_9 = ["disabled"];
+var _hoisted_10 = {
   "class": "mobile-footer"
 };
-var _hoisted_12 = {
+var _hoisted_11 = {
   "class": "mobile-info"
 };
-var _hoisted_13 = {
+var _hoisted_12 = {
   "class": "step-progress"
 };
-var _hoisted_14 = ["src"];
+var _hoisted_13 = ["src"];
 
-var _hoisted_15 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+var _hoisted_14 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
   "class": "product-image product-image--large",
   src: "//d201v9s59ezpea.cloudfront.net/4step.png"
 }, null, -1
@@ -19442,8 +19441,11 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     onClick: _cache[1] || (_cache[1] = function () {
       return $options.onSubmit && $options.onSubmit.apply($options, arguments);
     }),
+    disabled: $props.loading,
     "class": "button step-button step-button-submit"
-  }, " Submit ")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_4, [!$data.submitSuccess ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_5, [$data.currentTab < $data.totalTabs - 1 && $props.isShowNext ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
+  }, [$props.loading ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_5)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), _hoisted_6], 8
+  /* PROPS */
+  , _hoisted_4)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_7, [!$data.submitSuccess ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_8, [$data.currentTab < $data.totalTabs - 1 && $props.isShowNext ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
     key: 0,
     onClick: _cache[2] || (_cache[2] = function () {
       return $options.nextTab && $options.nextTab.apply($options, arguments);
@@ -19456,11 +19458,11 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     disabled: $props.loading,
     "class": "button step-button step-button-submit"
-  }, [$props.loading ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("svg", _hoisted_7, _hoisted_9)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), _hoisted_10], 8
+  }, " Submit ", 8
   /* PROPS */
-  , _hoisted_6)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_11, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_12, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h3", null, "Personalizing " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.name ? "for " + $props.name : "") + "...", 1
+  , _hoisted_9)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_10, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_11, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h3", null, "Personalizing " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.name ? "for " + $props.name : "") + "...", 1
   /* TEXT */
-  ), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_13, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+  ), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_12, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
     "class": "bar progressbar",
     style: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeStyle)({
       width: $options.progressW + '%'
@@ -19485,7 +19487,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           src: item.image
         }, null, 8
         /* PROPS */
-        , _hoisted_14), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(item.ConsumerTitle), 1
+        , _hoisted_13), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(item.ConsumerTitle), 1
         /* TEXT */
         )]);
       }), 128
@@ -19495,7 +19497,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     _: 1
     /* STABLE */
 
-  })) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), _hoisted_15])])]);
+  })) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), _hoisted_14])])]);
 }
 
 /***/ }),

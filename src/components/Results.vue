@@ -737,7 +737,7 @@ export default {
   methods: {
     async initData() {
       const response = await fetch(
-        `${this.base_url}/api/quiz/1/lead/0f7f0a33-2eb0-4c8b-9308-068d5c8a37fe/results`,
+        `${this.base_url}/api/quiz/1/lead/${this.localQuiz.id}/results`,
         {
           method: "GET",
           headers: {

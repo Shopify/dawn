@@ -241,7 +241,7 @@ export default {
   },
   data() {
     return {
-      loadingProcess: true,
+      loadingProcess: false,
       quiz: [],
       questionIndex: 0,
       isReady: false,
@@ -407,7 +407,7 @@ export default {
       };
 
       payload[this.quiz[this.questionIndex].category] = this.currentAnwser;
-
+      this.loadingProcess = true;
       this.isValidNext = false;
       await fetch(
           `${this.base_url}/api/customer/`,
@@ -422,8 +422,10 @@ export default {
       )
         .then((rs) => rs.json())
         .then((result) => {
-          // localStorage.clear();
+           this.loadingProcess = false;
           this.$router.push("/result");
+        }).catch(e => {
+          this.loadingProcess = false;
         });
     },
   },
