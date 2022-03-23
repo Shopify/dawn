@@ -29,7 +29,7 @@ class FacetFiltersForm extends HTMLElement {
           showMore.closest('.facets__display').querySelectorAll('.facets__item.facets__item-show-more').forEach(item => item.classList.toggle('hidden', !item.classList.contains('hidden')))
           const nextElementToFocus = this.querySelectorAll(".facets__item-show-more")[0]
           if (!nextElementToFocus.classList.contains('.hidden')) {
-            setTimeout(nextElementToFocus.focus(), 5000);
+            nextElementToFocus.querySelector('input').focus()
           }
         }
       })
