@@ -7,8 +7,9 @@ class FacetFiltersForm extends HTMLElement {
       this.onSubmitHandler(event);
     }, 500);
 
-    this.querySelector('form').addEventListener('input', this.debouncedOnSubmit.bind(this));
-    this.querySelector('form').addEventListener('keydown', (event) => { 
+    const facetForm = this.querySelector('form');
+    facetForm.addEventListener('input', this.debouncedOnSubmit.bind(this));
+    facetForm.addEventListener('keydown', (event) => { 
       if (event.target.tagName === 'LI' && event.code === 'Space') {
         event.preventDefault();
         event.target.querySelector('input').click();
