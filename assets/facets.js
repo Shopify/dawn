@@ -9,7 +9,7 @@ class FacetFiltersForm extends HTMLElement {
 
     const facetForm = this.querySelector('form');
     facetForm.addEventListener('input', this.debouncedOnSubmit.bind(this));
-    facetForm.addEventListener('keydown', (event) => { 
+    facetForm.addEventListener('keydown', (event) => {
       if (event.target.tagName === 'LI' && event.code === 'Space') {
         event.preventDefault();
         event.target.querySelector('input').click();
@@ -19,13 +19,13 @@ class FacetFiltersForm extends HTMLElement {
     const showMore = this.querySelector('.button-show-more');
     if (showMore) {
       showMore.addEventListener('click', (event) => {
-        showMore.closest('.facets__display').querySelector('.facets-wrap').classList.toggle('facets-wrap-show-more', !showMore.closest('.facets__display').querySelector('.facets-wrap').classList.contains('facets-wrap-show-more')); 
+        showMore.closest('.facets__display').querySelector('.facets-wrap').classList.toggle('facets-wrap-show-more', !showMore.closest('.facets__display').querySelector('.facets-wrap').classList.contains('facets-wrap-show-more'));
         showMore.closest('.facets__display').querySelectorAll('.facets__item.facets__item-show-more').forEach(item => item.classList.toggle('hidden', !item.classList.contains('hidden')))
       })
       showMore.addEventListener('keydown', (event) => {
         if (event.target.className === 'button-show-more link underlined-link' && event.code === 'Space') {
           event.preventDefault();
-          showMore.closest('.facets__display').querySelector('.facets-wrap').classList.toggle('facets-wrap-show-more', !showMore.closest('.facets__display').querySelector('.facets-wrap').classList.contains('facets-wrap-show-more')); 
+          showMore.closest('.facets__display').querySelector('.facets-wrap').classList.toggle('facets-wrap-show-more', !showMore.closest('.facets__display').querySelector('.facets-wrap').classList.contains('facets-wrap-show-more'));
           showMore.closest('.facets__display').querySelectorAll('.facets__item.facets__item-show-more').forEach(item => item.classList.toggle('hidden', !item.classList.contains('hidden')))
           const nextElementToFocus = this.querySelectorAll(".facets__item-show-more")[0]
           if (!nextElementToFocus.classList.contains('.hidden')) {
