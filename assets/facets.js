@@ -16,20 +16,25 @@ class FacetFiltersForm extends HTMLElement {
       }
     });
 
-    const showMore = this.querySelector('.button-show-more');
-    if (showMore) {
-      showMore.addEventListener('click', () => {
-        this.expandShowMore(showMore);
-      })
-      showMore.addEventListener('keydown', (event) => {
-        if (event.target.className === 'button-show-more link underlined-link' && (event.code === 'Space' || event.code === 'Enter' )) {
+    const showMoreButtons = this.querySelectorAll('[id^="Show-More-"]');
+    if (showMoreButtons) {
+      showMoreButtons.forEach((element) => {
+        element.addEventListener('click', (event) => {
           event.preventDefault();
-          this.expandShowMore(showMore);
-          const nextElementToFocus = this.querySelectorAll(".facets__item-show-more")[0]
-          if (!nextElementToFocus.classList.contains('.hidden')) {
-            nextElementToFocus.querySelector('input').focus()
+          this.expandShowMore(event.target.parentNode);
+        })
+      })
+      showMoreButtons.forEach((element) => {
+        element.addEventListener('keydown', (event) => {
+          if (event.target.className === 'button-show-more link underlined-link' && (event.code === 'Space' || event.code === 'Enter' )) {
+            event.preventDefault();
+            this.expandShowMore(element);
+            const nextElementToFocus = element.parentNode.querySelectorAll(".facets__item-show-more")[0]
+            if (!nextElementToFocus.classList.contains('.hidden')) {
+              nextElementToFocus.querySelector('input').focus()
+            }
           }
-        }
+        })
       })
     }
 
