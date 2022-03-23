@@ -53,6 +53,7 @@ export default {
                 'description':"In an independent clinical study, 81% of people reported a brighter and more uniform complexion with their Evyana's system.",
                 'img_after':"http://d201v9s59ezpea.cloudfront.net/hyperpigmentation2.jpg",
                 'img_before':"http://d201v9s59ezpea.cloudfront.net/hyperpigmentation1.jpg",
+                'title': 'Hyperpigmentation'
             },
             seborrhoeicdermatitis: {
                 'title':"Seborrhoeic Dermatitis",

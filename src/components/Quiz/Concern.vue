@@ -70,7 +70,7 @@
         ></p>
       </div>
       <div class="result__ingredient" style="display: block; position: relative; width: 100%">
-        <template v-if="concern.ingredients.length !== 0">
+        <template v-if="concern.ingredients.length !== 0 && hasIngredients">
           <h4 class="">Ingredients</h4>
           <div class="">
             <carousel :settings="settings" :breakpoints="breakpoints">
@@ -164,6 +164,9 @@ export default {
     },
     show(){
       return this.$data[this.lookupTitle] ? this.$data[this.lookupTitle].display : false;
+    },
+    hasIngredients(){
+      return this.concern.ingredients.some(e => e.image)
     }
   },
   methods: {

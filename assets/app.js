@@ -18602,6 +18602,11 @@ __webpack_require__.r(__webpack_exports__);
     },
     show: function show() {
       return this.$data[this.lookupTitle] ? this.$data[this.lookupTitle].display : false;
+    },
+    hasIngredients: function hasIngredients() {
+      return this.concern.ingredients.some(function (e) {
+        return e.image;
+      });
     }
   },
   methods: {
@@ -18770,6 +18775,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       var arr = [];
       inte.forEach(function (e) {
         e.ingredients.forEach(function (idata) {
+          idata.lifeStyleTitle = e.description;
           arr.push(idata);
         });
       });
@@ -19904,7 +19910,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     textContent: (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($options.description)
   }, null, 8
   /* PROPS */
-  , _hoisted_13)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_14, [$props.concern.ingredients.length !== 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, {
+  , _hoisted_13)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_14, [$props.concern.ingredients.length !== 0 && $options.hasIngredients ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, {
     key: 0
   }, [_hoisted_15, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_16, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_carousel, {
     settings: _ctx.settings,
@@ -20492,11 +20498,13 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   }, _hoisted_28)]), _hoisted_29]), ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($data.results.skin, function (concern, index) {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_concern, {
       key: index + 'skin',
+      "class": "qr-section",
+      id: 'Concerns-' + index,
       concern: concern,
       index: index
     }, null, 8
     /* PROPS */
-    , ["concern", "index"]);
+    , ["id", "concern", "index"]);
   }), 128
   /* KEYED_FRAGMENT */
   )), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_33, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
@@ -20554,7 +20562,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("li", {
         "class": "item-life",
         key: i
-      }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(inte.ConsumerTitle), 1
+      }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(lifestyle.description), 1
       /* TEXT */
       ), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_60, [inte.image ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, {
         key: 0
@@ -20563,7 +20571,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         src: inte.image
       }, null, 8
       /* PROPS */
-      , _hoisted_61), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(inte.title), 1
+      , _hoisted_61), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(inte.ConsumerTitle), 1
       /* TEXT */
       )], 64
       /* STABLE_FRAGMENT */
@@ -20596,10 +20604,10 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
             /* PROPS */
             , _hoisted_64)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_65, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("b", {
               "class": "carousel__item__title",
-              textContent: (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(inte.ConsumerTitle)
+              textContent: (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(inte.lifeStyleTitle)
             }, null, 8
             /* PROPS */
-            , _hoisted_66), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(inte.title), 1
+            , _hoisted_66), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(inte.ConsumerTitle), 1
             /* TEXT */
             )])])];
           }),
@@ -20960,9 +20968,9 @@ var animation = {
           var idSection = "#" + section.id;
 
           if (html.scrollTop >= top && top + height >= html.scrollTop) {
-            hrefNav === idSection ? navItem.parentElement.classList.add("active") : navItem.parentElement.classList.remove("active");
-          } else {
-            hrefNav === idSection && navItem.parentElement.classList.remove("active");
+            idSection.indexOf(hrefNav) > -1 ? navItem.parentElement.classList.add("active") : navItem.parentElement.classList.remove("active");
+          } else {// idSection.indexOf(hrefNav) > -1 &&
+            //   navItem.parentElement.classList.remove("active");
           }
         });
       });
@@ -21067,7 +21075,8 @@ __webpack_require__.r(__webpack_exports__);
         'clinical_text': "The routine provides a bright, radiant complexion",
         'description': "In an independent clinical study, 81% of people reported a brighter and more uniform complexion with their Evyana's system.",
         'img_after': "http://d201v9s59ezpea.cloudfront.net/hyperpigmentation2.jpg",
-        'img_before': "http://d201v9s59ezpea.cloudfront.net/hyperpigmentation1.jpg"
+        'img_before': "http://d201v9s59ezpea.cloudfront.net/hyperpigmentation1.jpg",
+        'title': 'Hyperpigmentation'
       },
       seborrhoeicdermatitis: {
         'title': "Seborrhoeic Dermatitis",

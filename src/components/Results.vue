@@ -219,7 +219,12 @@
           v-for="(concern, index) in results.skin"
           :key="index + 'skin'"
         >
-          <concern :concern="concern" :index="index" />
+          <concern
+            class="qr-section"
+            :id="'Concerns-' + index"
+            :concern="concern"
+            :index="index"
+          />
         </template>
 
         <div class="qr-section spaced-section enviroment" id="Environment">
@@ -351,7 +356,7 @@
                       :key="i"
                     >
                       <p>
-                        {{ inte.ConsumerTitle }}
+                        {{ lifestyle.description }}
                       </p>
                       <div class="inte-content">
                         <template v-if="inte.image">
@@ -359,7 +364,7 @@
                             class="carousel__item__image"
                             :src="inte.image"
                           />
-                          {{ inte.title }}
+                          {{ inte.ConsumerTitle }}
                         </template>
                       </div>
                     </li>
@@ -380,9 +385,9 @@
                           <div class="title-des">
                             <b
                               class="carousel__item__title"
-                              v-text="inte.ConsumerTitle"
+                              v-text="inte.lifeStyleTitle"
                             ></b>
-                            {{ inte.title }}
+                            {{ inte.ConsumerTitle }}
                           </div>
                         </div>
                       </slide>
@@ -682,6 +687,7 @@ export default {
       let arr = [];
       inte.forEach((e) => {
         e.ingredients.forEach((idata) => {
+          idata.lifeStyleTitle = e.description;
           arr.push(idata);
         });
       });
@@ -695,7 +701,9 @@ export default {
     if (urlParams.get("email")) {
       email = urlParams.get("email");
     }
+
     this.localQuiz = localStorage.getItem("quiz");
+    
     if (!this.localQuiz) {
       if (email) {
         console.log("here");

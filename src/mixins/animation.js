@@ -109,12 +109,14 @@ var animation = {
             const hrefNav = navItem.dataset.href.match(/#[a-zA-Z]+/)[0];
             const idSection = "#" + section.id;
             if (html.scrollTop >= top && top + height >= html.scrollTop) {
-              hrefNav === idSection
+              
+               idSection.indexOf(hrefNav) > -1
                 ? navItem.parentElement.classList.add("active")
                 : navItem.parentElement.classList.remove("active");
             } else {
-              hrefNav === idSection &&
-                navItem.parentElement.classList.remove("active");
+              
+              // idSection.indexOf(hrefNav) > -1 &&
+              //   navItem.parentElement.classList.remove("active");
             }
           });
         });
