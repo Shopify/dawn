@@ -365,34 +365,27 @@
                     </li>
                   </template>
                 </ul>
+
                 <div class="d-none d-small" v-if="results && listLifeStyle">
                   <carousel :settings="settings" :breakpoints="breakpoints">
-                    <template
-                      v-for="(lifestyle, index) in listLifeStyle"
-                      :key="index"
-                    >
-                      <template
-                        v-for="(inte, i) in lifestyle.ingredients"
-                        :key="i"
-                      >
-                        <slide>
-                          <div class="carousel__item">
-                            <template v-if="inte.image">
-                              <img
-                                class="carousel__item__image"
-                                :src="inte.image"
-                              />
-                            </template>
-                            <div class="title-des">
-                              <b
-                                class="carousel__item__title"
-                                v-text="inte.ConsumerTitle"
-                              ></b>
-                              {{ inte.title }}
-                            </div>
+                    <template v-for="(inte, i) in listInteLifeStyle" :key="i">
+                      <slide>
+                        <div class="carousel__item">
+                          <template v-if="inte.image">
+                            <img
+                              class="carousel__item__image"
+                              :src="inte.image"
+                            />
+                          </template>
+                          <div class="title-des">
+                            <b
+                              class="carousel__item__title"
+                              v-text="inte.ConsumerTitle"
+                            ></b>
+                            {{ inte.title }}
                           </div>
-                        </slide>
-                      </template>
+                        </div>
+                      </slide>
                     </template>
                     <template #addons>
                       <navigation />
@@ -403,6 +396,7 @@
             </div>
           </div>
         </template>
+
         <div class="qr-section spaced-section everything" id="Evolving">
           <img
             class="everything__image"
@@ -679,6 +673,20 @@ export default {
         (e) => e.ingredients.length > 0 && e.description !== "Not Set"
       );
     },
+
+    listInteLifeStyle() {
+      const inte = this.results.lifestyle.filter(
+        (e) => e.ingredients.length > 0 && e.description !== "Not Set"
+      );
+
+      let arr = [];
+      inte.forEach((e) => {
+        e.ingredients.forEach((idata) => {
+          arr.push(idata);
+        });
+      });
+      return arr;
+    },
   },
   async mounted() {
     let email = this.email;
@@ -729,7 +737,7 @@ export default {
   methods: {
     async initData() {
       const response = await fetch(
-        `${this.base_url}/api/quiz/1/lead/${this.localQuiz.id}/results`,
+        `${this.base_url}/api/quiz/1/lead/0f7f0a33-2eb0-4c8b-9308-068d5c8a37fe/results`,
         {
           method: "GET",
           headers: {

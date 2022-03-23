@@ -35,8 +35,20 @@
           <button
             @click="onSubmit"
             v-if="currentTab === totalTabs - 1"
+            :disabled="loading"
             class="button step-button step-button-submit"
           >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="200"
+              viewBox="0 0 214 25"
+              v-if="loading"
+            >
+              <path
+                class="cls-1"
+                d="M0 25V0h13.6v2.3H2.5v9h10.7v2.2H2.5v9.2h11V25zM45.1 25h-2.4L32.5 0h2.8L44 21.9 52.7 0h2.7zM83.6 16.6V25h-2.4v-8.4L72.6 0h2.7l7 14 7.3-14h2.7zM120.2 0h-2.8l-10.6 25h2.6l3-6.8L118.8 3l5.7 13.7 3.6 8.4h2.7zM203.3 0h-2.7l-10.7 25h2.6l3-6.8L202 3l5.7 13.7 3.6 8.4h2.7zM167.8 25L153 3v22h-2.4V0h3.3l14 20.7V0h2.4v25z"
+              ></path>
+            </svg>
             Submit
           </button>
         </div>
@@ -63,10 +75,7 @@
               style="animation-duration: 0.3s"
             >
               <!--                      <img :src="item.image" alt="" />-->
-              <img
-                class="image"
-                :src="item.image"
-              />
+              <img class="image" :src="item.image" />
               <span>{{ item.ConsumerTitle }}</span>
             </li>
           </transition-group>
@@ -99,6 +108,9 @@ export default {
     },
     ingredients: {
       type: Array,
+    },
+    loading: {
+      type: Boolean,
     },
   },
   data() {

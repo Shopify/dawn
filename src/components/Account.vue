@@ -11,6 +11,7 @@
         :isShowNext="isShowNext"
         :curerentIndex="questionIndex"
         :ingredients="ingredients"
+        :loading="loadingProcess"
       >
         <template v-for="(item, index) in quiz" :key="index + 'tab'">
           <tab-content :selected="index === questionIndex ? true : false">
@@ -240,6 +241,7 @@ export default {
   },
   data() {
     return {
+      loadingProcess: true,
       quiz: [],
       questionIndex: 0,
       isReady: false,
