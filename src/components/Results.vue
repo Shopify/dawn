@@ -163,7 +163,7 @@
             <h1 class="welcome__body__title">
               {{ results.user.name }}, <br />meet your <br /><span
                 class="highlight"
-                >custom skincare</span
+                >perfect skincare</span
               >
             </h1>
             <p>
