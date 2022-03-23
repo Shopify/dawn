@@ -19,12 +19,12 @@ class FacetFiltersForm extends HTMLElement {
     const showMore = this.querySelector('.button-show-more');
     if (showMore) {
       showMore.addEventListener('click', () => {
-        this.expandShowMore();
+        this.expandShowMore(showMore);
       })
       showMore.addEventListener('keydown', (event) => {
         if (event.target.className === 'button-show-more link underlined-link' && (event.code === 'Space' || event.code === 'Enter' )) {
           event.preventDefault();
-          this.expandShowMore();
+          this.expandShowMore(showMore);
           const nextElementToFocus = this.querySelectorAll(".facets__item-show-more")[0]
           if (!nextElementToFocus.classList.contains('.hidden')) {
             nextElementToFocus.querySelector('input').focus()
@@ -37,7 +37,7 @@ class FacetFiltersForm extends HTMLElement {
     if (facetWrapper) facetWrapper.addEventListener('keyup', onKeyUpEscape);
   }
 
-  expandShowMore() {
+  expandShowMore(showMore) {
     showMore.closest('.facets__display').querySelector('.facets-wrap').classList.toggle('facets-wrap-show-more', !showMore.closest('.facets__display').querySelector('.facets-wrap').classList.contains('facets-wrap-show-more'));
     showMore.closest('.facets__display').querySelectorAll('.facets__item.facets__item-show-more').forEach(item => item.classList.toggle('hidden', !item.classList.contains('hidden')))
   }
