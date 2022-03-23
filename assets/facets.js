@@ -178,11 +178,7 @@ class FacetFiltersForm extends HTMLElement {
     } else {
       const forms = [];
       sortFilterForms.forEach((form) => {
-        if (form.id == 'FacetSortForm' || form.id == 'FacetFiltersForm') {
-          const searchParams = this.createSearchParams(form)
-          forms.push(searchParams)
-        }
-      })
+        if (form.id == 'FacetSortForm' || form.id == 'FacetFiltersForm') forms.push(this.createSearchParams(form))})
       this.onSubmitForm(forms.join('&'), event)
     }
   }
