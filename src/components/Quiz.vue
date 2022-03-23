@@ -30,7 +30,7 @@
                   item.type === 'MultipleChoice' || item.type === 'SingleChoice'
                 "
               >
-                <ul class="ks-cboxtags">
+                <ul :class="item.options.length > 4 ? 'ks-cboxtags--2col ks-cboxtags':'ks-cboxtags'">
                   <li
                     v-for="(answer, answer_index) in item.options"
                     :key="answer_index"
