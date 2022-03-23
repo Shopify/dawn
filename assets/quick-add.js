@@ -23,9 +23,10 @@ if (!customElements.get('quick-add-modal')) {
         .then((response) => response.text())
         .then((responseText) => {
           const responseHTML = new DOMParser().parseFromString(responseText, 'text/html');
-          const productInfo = responseHTML.querySelector('section[id^="MainProduct-"]');
-
-          this.setInnerHTML(this.modalContent, this.removeDOMElements(productInfo).innerHTML);
+          this.productElement = responseHTML.querySelector('section[id^="MainProduct-"]');
+          this.preventDuplicatedIDs();
+          this.removeDOMElements();
+          this.setInnerHTML(this.modalContent, this.productElement.innerHTML);
           
           if (window.Shopify && Shopify.PaymentButton) {
             Shopify.PaymentButton.init();
@@ -62,14 +63,20 @@ if (!customElements.get('quick-add-modal')) {
       this.modalContent.querySelector('variant-radios,variant-selects').setAttribute('data-update-url', 'false');
     }
     
-    removeDOMElements(productInfo) {
-      const pickupAvailability = productInfo.querySelector('pickup-availability');
+    removeDOMElements() {
+      const pickupAvailability = this.productElement.querySelector('pickup-availability');
       if (pickupAvailability) pickupAvailability.remove();
 
-      const productModal = productInfo.querySelector('product-modal');
+      const productModal = this.productElement.querySelector('product-modal');
       if (productModal) productModal.remove();
+    }
 
-      return productInfo;
+    preventDuplicatedIDs() {
+      const sectionId = this.productElement.dataset.section;
+      this.productElement.innerHTML = this.productElement.innerHTML.replaceAll(sectionId, `quickadd-${ sectionId }`);
+      this.productElement.querySelectorAll('variant-selects, variant-radios').forEach((variantSelect) => {
+        variantSelect.dataset.originalSection = sectionId;
+      });
     }
 
     removeGalleryListSemantic() {
