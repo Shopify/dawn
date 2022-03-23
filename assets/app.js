@@ -19412,17 +19412,29 @@ var _hoisted_8 = {
 };
 var _hoisted_9 = ["disabled"];
 var _hoisted_10 = {
+  key: 0,
+  id: "loading",
+  style: {
+    "width": "15px",
+    "height": "15px",
+    "margin-right": "10px"
+  }
+};
+
+var _hoisted_11 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" Submit ");
+
+var _hoisted_12 = {
   "class": "mobile-footer"
 };
-var _hoisted_11 = {
+var _hoisted_13 = {
   "class": "mobile-info"
 };
-var _hoisted_12 = {
+var _hoisted_14 = {
   "class": "step-progress"
 };
-var _hoisted_13 = ["src"];
+var _hoisted_15 = ["src"];
 
-var _hoisted_14 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+var _hoisted_16 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
   "class": "product-image product-image--large",
   src: "//d201v9s59ezpea.cloudfront.net/4step.png"
 }, null, -1
@@ -19458,11 +19470,11 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     disabled: $props.loading,
     "class": "button step-button step-button-submit"
-  }, " Submit ", 8
+  }, [$props.loading ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_10)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), _hoisted_11], 8
   /* PROPS */
-  , _hoisted_9)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_10, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_11, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h3", null, "Personalizing " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.name ? "for " + $props.name : "") + "...", 1
+  , _hoisted_9)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_12, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_13, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h3", null, "Personalizing " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.name ? "for " + $props.name : "") + "...", 1
   /* TEXT */
-  ), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_12, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+  ), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_14, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
     "class": "bar progressbar",
     style: (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeStyle)({
       width: $options.progressW + '%'
@@ -19487,7 +19499,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           src: item.image
         }, null, 8
         /* PROPS */
-        , _hoisted_13), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(item.ConsumerTitle), 1
+        , _hoisted_15), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(item.ConsumerTitle), 1
         /* TEXT */
         )]);
       }), 128
@@ -19497,7 +19509,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     _: 1
     /* STABLE */
 
-  })) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), _hoisted_14])])]);
+  })) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), _hoisted_16])])]);
 }
 
 /***/ }),

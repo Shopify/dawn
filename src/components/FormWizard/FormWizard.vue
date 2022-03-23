@@ -40,6 +40,7 @@
             :disabled="loading"
             class="button step-button step-button-submit"
           >
+          <div id="loading" style="width: 15px; height: 15px; margin-right: 10px;" v-if="loading"></div>
             Submit
           </button>
         </div>
