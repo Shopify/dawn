@@ -84,9 +84,9 @@ export default {
             rosacea: {
                 'title': 'Rosacea',
                 'display':true,
-                'clinical_percent': 81,
+                'clinical_percent': 77,
                 'clinical_text':"The routine provides a bright, radiant complexion",
-                'description':"In an independent clinical study, 81% of people reported a bright, radiant complexion with Evyana's regime",
+                'description':"In an independent clinical study, 77% of people reported a brighter and more uniform complexion with Evyana's regime.*",
                 'img_after':"http://d201v9s59ezpea.cloudfront.net/rosacea2.jpg",
                 'img_before':"http://d201v9s59ezpea.cloudfront.net/rosacea1.jpg",
             },
