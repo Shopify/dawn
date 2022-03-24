@@ -17,6 +17,7 @@ class FacetFiltersForm extends HTMLElement {
     });
 
     const showMoreButtons = this.querySelectorAll('[id^="Show-More-"]');
+    console.log(showMoreButtons, 'hehhehe')
     if (showMoreButtons) {
       showMoreButtons.forEach((element) => {
         element.addEventListener('click', (event) => {
