@@ -34,8 +34,10 @@ class FacetFiltersForm extends HTMLElement {
   }
 
   expandShowMore(showMore) {
-    showMore.closest('.facets__display').querySelector('.facets-wrap').classList.toggle('facets-wrap-show-more', !showMore.closest('.facets__display').querySelector('.facets-wrap').classList.contains('facets-wrap-show-more'));
-    showMore.closest('.facets__display').querySelectorAll('.facets__item.facets__item-show-more').forEach(item => item.classList.toggle('hidden', !item.classList.contains('hidden')))
+    const facetsDiplay = showMore.closest('.facets__display')
+    const facetsWrap = facetsDiplay.querySelector('.facets-wrap')
+    facetsWrap.classList.toggle('facets-wrap-show-more');
+    facetsDiplay.querySelectorAll('.facets__item.facets__item-show-more').forEach(item => item.classList.toggle('hidden'))
   }
 
   static setListeners() {
