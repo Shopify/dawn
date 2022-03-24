@@ -16,28 +16,21 @@ class FacetFiltersForm extends HTMLElement {
       }
     });
 
-    const showMoreButtons = this.querySelectorAll('[id^="Show-More-"]');
-    console.log(showMoreButtons, 'hehhehe')
-    if (showMoreButtons) {
-      showMoreButtons.forEach((element) => {
-        element.addEventListener('click', (event) => {
-          event.preventDefault();
-          this.expandShowMore(event.target.parentNode);
-        })
-      })
-      showMoreButtons.forEach((element) => {
-        element.addEventListener('keydown', (event) => {
-          if (event.target.className === 'button-show-more link underlined-link' && (event.code === 'Space' || event.code === 'Enter' )) {
-            event.preventDefault();
-            this.expandShowMore(element);
-            const nextElementToFocus = element.parentNode.querySelectorAll(".facets__item-show-more")[0]
-            if (!nextElementToFocus.classList.contains('.hidden')) {
-              nextElementToFocus.querySelector('input').focus()
-            }
-          }
-        })
-      })
-    }
+    facetForm.addEventListener('click',  (event) => {
+      if (event.target.nodeName === 'SPAN') {
+        this.expandShowMore(event.target.closest('[id^="Show-More-"]'));
+      }
+    });
+
+    facetForm.addEventListener('keydown',  (event) => {
+      if (event.target.className === 'button-show-more link underlined-link' && (event.code === 'Space' || event.code === 'Enter' )) {
+        this.expandShowMore(event.target.closest('[id^="Show-More-"]'));
+        const nextElementToFocus = event.target.parentNode.querySelectorAll(".facets__item-show-more")[0]
+        if (!nextElementToFocus.classList.contains('.hidden')) {
+          nextElementToFocus.querySelector('input').focus()
+        }
+      }
+    });
 
     const facetWrapper = this.querySelector('#FacetsWrapperDesktop');
     if (facetWrapper) facetWrapper.addEventListener('keyup', onKeyUpEscape);
