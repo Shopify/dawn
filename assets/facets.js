@@ -17,13 +17,13 @@ class FacetFiltersForm extends HTMLElement {
     });
 
     facetForm.addEventListener('click',  (event) => {
-      if (event.target.nodeName === 'SPAN') {
+      if (event.target.nodeName === 'SPAN' && event.target.closest('[id^="Show-More-"]')) {
         this.expandShowMore(event.target.closest('[id^="Show-More-"]'));
       }
     });
 
     facetForm.addEventListener('keydown',  (event) => {
-      if (event.target.className === 'button-show-more link underlined-link' && (event.code === 'Space' || event.code === 'Enter' )) {
+      if (event.target.className === 'button-show-more link underlined-link' && (event.code === 'Space' || event.code === 'Enter' ) && event.target.closest('[id^="Show-More-"]')) {
         this.expandShowMore(event.target.closest('[id^="Show-More-"]'));
         const nextElementToFocus = event.target.parentNode.querySelectorAll(".facets__item-show-more")[0]
         if (!nextElementToFocus.classList.contains('.hidden')) {
