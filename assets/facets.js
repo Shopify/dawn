@@ -165,8 +165,15 @@ class FacetFiltersForm extends HTMLElement {
     const targetElement = target.querySelector('.facets__selected');
     const sourceElement = source.querySelector('.facets__selected');
 
+    const targetElementAccessibility = target.querySelector('.facets__summary');
+    const sourceElementAccessibility = source.querySelector('.facets__summary');
+
     if (sourceElement && targetElement) {
       target.querySelector('.facets__selected').outerHTML = source.querySelector('.facets__selected').outerHTML;
+    }
+
+    if (targetElementAccessibility && sourceElementAccessibility) {
+      target.querySelector('.facets__summary').outerHTML = source.querySelector('.facets__summary').outerHTML;
     }
   }
 
