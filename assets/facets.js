@@ -10,7 +10,7 @@ class FacetFiltersForm extends HTMLElement {
     const facetForm = this.querySelector('form');
     facetForm.addEventListener('input', this.debouncedOnSubmit.bind(this));
     facetForm.addEventListener('keydown', (event) => {
-      if (event.target.tagName === 'LI' && (event.code === 'Space' || event.code === 'Enter' )) {
+      if (event.target.tagName === 'LI' && (event.code.topUpperCase() === 'SPACE' || event.code.toUpperCase()  === 'ENTER' )) {
         event.preventDefault();
         event.target.querySelector('input').click();
       }
@@ -23,7 +23,7 @@ class FacetFiltersForm extends HTMLElement {
     });
 
     facetForm.addEventListener('keydown',  (event) => {
-      if (event.target.className === 'button-show-more link underlined-link' && (event.code === 'Space' || event.code === 'Enter' ) && event.target.closest('[id^="Show-More-"]')) {
+      if (event.target.className === 'button-show-more link underlined-link' && (event.code.toUpperCase() === 'SPACE' || event.code.toUpperCase() === 'ENTER' ) && event.target.closest('[id^="Show-More-"]')) {
         this.expandShowMore(event.target.closest('[id^="Show-More-"]'));
         const nextElementToFocus = event.target.parentNode.querySelectorAll(".facets__item-show-more")[0]
         if (!nextElementToFocus.classList.contains('.hidden')) {
