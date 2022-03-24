@@ -267,7 +267,7 @@ class FacetRemove extends HTMLElement {
     super();
     this.querySelector('a').addEventListener('click', this.closeFilter);
     this.querySelector('a').addEventListener('keydown', (event) => {
-      if (event.code == 'Space') this.closeFilter(event);
+      if (event.code.toUpperCase() == 'SPACE') this.closeFilter(event);
     });
   }
 
