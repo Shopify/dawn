@@ -25,7 +25,7 @@ class FacetFiltersForm extends HTMLElement {
     facetForm.addEventListener('keydown',  (event) => {
       if (event.target.className === 'button-show-more link underlined-link' && (event.code.toUpperCase() === 'SPACE' || event.code.toUpperCase() === 'ENTER' ) && event.target.closest('[id^="Show-More-"]')) {
         this.expandShowMore(event.target.closest('[id^="Show-More-"]'));
-        const nextElementToFocus = event.target.parentNode.querySelectorAll(".facets__item-show-more")[0]
+        const nextElementToFocus = event.target.parentNode.querySelector(".facets__item-show-more")
         if (!nextElementToFocus.classList.contains('.hidden')) {
           nextElementToFocus.querySelector('input').focus()
         }
