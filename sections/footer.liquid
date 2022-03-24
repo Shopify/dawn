@@ -14,7 +14,29 @@
 <noscript>{{ 'component-rte.css' | asset_url | stylesheet_tag }}</noscript>
 <noscript>{{ 'disclosure.css' | asset_url | stylesheet_tag }}</noscript>
 
-<footer class="footer color-{{ section.settings.color_scheme }} gradient">
+{%- style -%}
+  .footer {
+    margin-top: {{ section.settings.margin_top | times: 0.75 | round: 0 }}px;
+  }
+
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .footer {
+      margin-top: {{ section.settings.margin_top }}px;
+    }
+
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<footer class="footer color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding">
   {%- if section.blocks.size > 0 or section.settings.newsletter_enable or section.settings.show_social -%}
     <div class="footer__content-top page-width">
       {%- if section.blocks.size > 0 -%}
@@ -54,10 +76,10 @@
                 {%- when 'image' -%}
                   <div class="footer-block__details-content footer-block-image {{ block.settings.alignment }}">
                     {%- if block.settings.image != blank -%}
-                      {%- assign image_size = block.settings.image_width | append: 'x' -%}
+                      {%- assign image_size_2x = block.settings.image_width | times: 2 | at_most: 5760 -%}
                       <img
-                        srcset= "{{ block.settings.image | img_url: image_size }}, {{ block.settings.image | img_url: image_size, scale: 2 }} 2x"
-                        src="{{ block.settings.image | img_url: '400x' }}"
+                        srcset= "{{ block.settings.image | image_url: width: block.settings.image_width }}, {{ block.settings.image | image_url: width: image_size_2x }} 2x"
+                        src="{{ block.settings.image | image_url: width: 400 }}"
                         alt="{{ block.settings.image.alt | escape }}"
                         loading="lazy"
                         width="{{ block.settings.image.width }}"
@@ -204,7 +226,7 @@
 
   <div class="footer__content-bottom">
     <div class="footer__content-bottom-wrapper page-width">
-      <div class="footer__column footer__localization">
+      <div class="footer__column footer__localization isolate">
         {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
           <noscript>
             {%- form 'localization', id: 'FooterCountryFormNoScript', class: 'localization-form' -%}
@@ -225,21 +247,23 @@
           <localization-form>
             {%- form 'localization', id: 'FooterCountryForm', class: 'localization-form' -%}
               <div class="no-js-hidden">
-                <h2 class="caption-large" id="FooterCountryLabel">{{ 'localization.country_label' | t }}</h2>
+                <h2 class="caption-large text-body" id="FooterCountryLabel">{{ 'localization.country_label' | t }}</h2>
                 <div class="disclosure">
                   <button type="button" class="disclosure__button localization-form__select localization-selector link link--text caption-large" aria-expanded="false" aria-controls="FooterCountryList" aria-describedby="FooterCountryLabel">
                     {{ localization.country.name }} ({{ localization.country.currency.iso_code }} {{ localization.country.currency.symbol }})
                     {% render 'icon-caret' %}
                   </button>
-                  <ul id="FooterCountryList" role="list" class="disclosure__list list-unstyled" hidden>
-                    {%- for country in localization.available_countries -%}
-                      <li class="disclosure__item" tabindex="-1">
-                        <a class="link link--text disclosure__link caption-large{% if country.iso_code == localization.country.iso_code %} disclosure__link--active{% endif %} focus-inset" href="#"{% if country.iso_code == localization.country.iso_code %} aria-current="true"{% endif %} data-value="{{ country.iso_code }}">
-                          {{ country.name }} <span class="localization-form__currency">({{ country.currency.iso_code }} {{ country.currency.symbol }})</span>
-                        </a>
-                      </li>
-                    {%- endfor -%}
-                  </ul>
+                  <div class="disclosure__list-wrapper" hidden>
+                    <ul id="FooterCountryList" role="list" class="disclosure__list list-unstyled">
+                      {%- for country in localization.available_countries -%}
+                        <li class="disclosure__item" tabindex="-1">
+                          <a class="link link--text disclosure__link caption-large{% if country.iso_code == localization.country.iso_code %} disclosure__link--active{% endif %} focus-inset" href="#"{% if country.iso_code == localization.country.iso_code %} aria-current="true"{% endif %} data-value="{{ country.iso_code }}">
+                            {{ country.name }} <span class="localization-form__currency">({{ country.currency.iso_code }} {{ country.currency.symbol }})</span>
+                          </a>
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  </div>
                 </div>
                 <input type="hidden" name="country_code" value="{{ localization.country.iso_code }}">
               </div>
@@ -268,21 +292,23 @@
           <localization-form>
             {%- form 'localization', id: 'FooterLanguageForm', class: 'localization-form' -%}
               <div class="no-js-hidden">
-                <h2 class="caption-large" id="FooterLanguageLabel">{{ 'localization.language_label' | t }}</h2>
+                <h2 class="caption-large text-body" id="FooterLanguageLabel">{{ 'localization.language_label' | t }}</h2>
                 <div class="disclosure">
                   <button type="button" class="disclosure__button localization-form__select localization-selector link link--text caption-large" aria-expanded="false" aria-controls="FooterLanguageList" aria-describedby="FooterLanguageLabel">
                     {{ localization.language.endonym_name | capitalize }}
                     {% render 'icon-caret' %}
                   </button>
-                  <ul id="FooterLanguageList" role="list" class="disclosure__list list-unstyled" hidden>
-                    {%- for language in localization.available_languages -%}
-                      <li class="disclosure__item" tabindex="-1">
-                        <a class="link link--text disclosure__link caption-large{% if language.iso_code == localization.language.iso_code %} disclosure__link--active{% endif %} focus-inset" href="#" hreflang="{{ language.iso_code }}" lang="{{ language.iso_code }}"{% if language.iso_code == localization.language.iso_code %} aria-current="true"{% endif %} data-value="{{ language.iso_code }}">
-                          {{ language.endonym_name | capitalize }}
-                        </a>
-                      </li>
-                    {%- endfor -%}
-                  </ul>
+                  <div class="disclosure__list-wrapper" hidden>
+                    <ul id="FooterLanguageList" role="list" class="disclosure__list list-unstyled">
+                      {%- for language in localization.available_languages -%}
+                        <li class="disclosure__item" tabindex="-1">
+                          <a class="link link--text disclosure__link caption-large{% if language.iso_code == localization.language.iso_code %} disclosure__link--active{% endif %} focus-inset" href="#" hreflang="{{ language.iso_code }}" lang="{{ language.iso_code }}"{% if language.iso_code == localization.language.iso_code %} aria-current="true"{% endif %} data-value="{{ language.iso_code }}">
+                            {{ language.endonym_name | capitalize }}
+                          </a>
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  </div>
                 </div>
                 <input type="hidden" name="locale_code" value="{{ localization.language.iso_code }}">
               </div>
@@ -319,7 +345,7 @@
       this.elements = {
         input: this.querySelector('input[name="locale_code"], input[name="country_code"]'),
         button: this.querySelector('button'),
-        panel: this.querySelector('ul'),
+        panel: this.querySelector('.disclosure__list-wrapper'),
       };
       this.elements.button.addEventListener('click', this.openSelector.bind(this));
       this.elements.button.addEventListener('focusout', this.closeSelector.bind(this));
@@ -401,7 +427,7 @@
         {
           "type": "richtext",
           "id": "subtext",
-          "default": "<p>Share store details, promotions, or brand content with your customers.</p>",
+          "default": "<p>Share contact information, store details, and brand content with your customers.</p>",
           "label": "t:sections.footer.blocks.text.settings.subtext.label"
         }
       ]
@@ -455,27 +481,27 @@
       "options": [
         {
           "value": "accent-1",
-          "label": "t:sections.footer.settings.color_scheme.options__1.label"
+          "label": "t:sections.all.colors.accent_1.label"
         },
         {
           "value": "accent-2",
-          "label": "t:sections.footer.settings.color_scheme.options__2.label"
+          "label": "t:sections.all.colors.accent_2.label"
         },
         {
           "value": "background-1",
-          "label": "t:sections.footer.settings.color_scheme.options__3.label"
+          "label": "t:sections.all.colors.background_1.label"
         },
         {
           "value": "background-2",
-          "label": "t:sections.footer.settings.color_scheme.options__4.label"
+          "label": "t:sections.all.colors.background_2.label"
         },
         {
           "value": "inverse",
-          "label": "t:sections.footer.settings.color_scheme.options__5.label"
+          "label": "t:sections.all.colors.inverse.label"
         }
       ],
       "default": "background-1",
-      "label": "t:sections.footer.settings.color_scheme.label"
+      "label": "t:sections.all.colors.label"
     },
     {
       "type": "header",
@@ -536,6 +562,44 @@
       "id": "payment_enable",
       "default": true,
       "label": "t:sections.footer.settings.payment_enable.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.spacing"
+    },
+    {
+      "type": "range",
+      "id": "margin_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.footer.settings.margin_top.label",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
     }
   ],
   "default": {
