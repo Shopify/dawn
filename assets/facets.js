@@ -14,18 +14,18 @@ class FacetFiltersForm extends HTMLElement {
         event.preventDefault();
         event.target.querySelector('input').click();
       }
-      if (event.target.nodeName === 'BUTTON' && (event.code.toUpperCase() === 'SPACE' || event.code.toUpperCase() === 'ENTER' ) && event.target.closest('[id^="Show-More-"]')) {
-        this.expandShowMore(event.target.closest('[id^="Show-More-"]'));
-        const nextElementToFocus = event.target.parentNode.querySelector(".facets__item-show-more")
-        if (!nextElementToFocus.classList.contains('.hidden')) {
-          nextElementToFocus.querySelector('input').focus()
-        }
-      }
     });
 
     facetForm.addEventListener('click',  (event) => {
       if (event.target.nodeName === 'SPAN' && event.target.closest('[id^="Show-More-"]')) {
         this.expandShowMore(event.target.closest('[id^="Show-More-"]'));
+      }
+      if (event.target.nodeName === 'BUTTON' && event.target.closest('[id^="Show-More-"]')) {
+        this.expandShowMore(event.target.closest('[id^="Show-More-"]'));
+        const nextElementToFocus = event.target.parentNode.querySelector(".facets__item-show-more")
+        if (!nextElementToFocus.classList.contains('.hidden')) {
+          nextElementToFocus.querySelector('input').focus()
+        }
       }
     });
 
