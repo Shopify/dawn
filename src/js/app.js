@@ -27,7 +27,8 @@ const modules = {};
 const createVueApp = () => {
   const app = createApp({});
   app.config.globalProperties.authToken = "999999999911111111aaaaaa";
-  app.config.globalProperties.base_url = "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com";
+  app.config.globalProperties.base_url = "https://billowing-sun-2ngfq5uojo3x.vapor-farm-d1.com";
+  app.config.globalProperties.debug = true;
 
   /**
    * vue components
@@ -96,9 +97,7 @@ const createVueApp = () => {
 const appElement = document.querySelector("#vueapp");
 if (appElement) {
   createVueApp().mount(appElement);
-  console.log("here");
 } else {
-  console.log("not here");
   const vueElements = document.querySelectorAll("[vue]");
   if (vueElements) vueElements.forEach((el) => createVueApp().mount(el));
 }

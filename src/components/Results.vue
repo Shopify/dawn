@@ -148,7 +148,11 @@
         <!--          >-->
         <!--        </li>-->
         <li class="nav-item last-button">
-          <button class="welcome__cta button">BUY</button>
+          <button @click="addToCart"
+                  :disabled="isAdding"
+                  class="welcome__cta button" aria-label="Get my system">
+            <div class="adding" style="width: 15px; height: 15px; margin-right: 10px;" v-if="isAdding"></div>
+            TRY FOR FREE</button>
         </li>
       </ul>
 
@@ -192,27 +196,34 @@
               </svg>
             </div>
           </div>
-          <button class="welcome__cta button" aria-label="Get my system">
+          <button @click="addToCart"
+                  :disabled="isAdding"
+                  class="welcome__cta button" aria-label="Get my system">
+                  <div class="adding" style="width: 15px; height: 15px; margin-right: 10px;" v-if="isAdding"></div>
             GET MY SYSTEM
           </button>
+
           <div class="welcome__ctainfo breakout breakout--mobile">
             <div class="welcome__ctainfo__body">
               <span>4-Product System</span>
-              <span class="welcome_ctainfo__title highlight">$129.99</span>
+              <span class="welcome_ctainfo__title highlight">FREE</span>
               <span class="strike">$189.97 USD</span>
             </div>
-            <span class="highlight">SAVE $60 + FREE SHIPPING</span>
+            <span class="highlight">Try Your System For Free Today</span>
           </div>
 
           <div class="welcome__ctainfo show-for-mobile" id="price-button">
-            <div class="welcome__ctainfo__body">
-              <span class="welcome_ctainfo__title highlight"
-                >GET MY SYSTEM | $129.99/SYSTEM</span
-              >
-            </div>
+            <button
+                @click="addToCart"
+                :disabled="isAdding"
+                class="product__body__button">
+              <div class="adding" style="width: 15px; height: 15px; margin-right: 10px;" v-if="isAdding"></div>
+              <span class="product__body__button__title">TRY MY SYSTEM FREE</span>
+              <span class="product__body__button__price">Offer Ends: </span>
+            </button>
           </div>
           <span class="welcome_ctainfo__disclaimer muted center"
-            >4-product system auto-refilled. Cancel Anytime</span
+            >Pay just shipping today. You can initiate a free return within 14 days. Otherwise, your card will be charged $97 after 14 days auto-refilled every 2 months. Cancel Anytime</span
           >
         </div>
         <template
@@ -670,6 +681,7 @@ export default {
   data() {
     return {
       isReady: false,
+      isAdding: false,
       results: [],
     };
   },
@@ -706,8 +718,9 @@ export default {
     this.localQuiz = localStorage.getItem("quiz");
 
     if (!this.localQuiz) {
+      console.log('here')
       if (email) {
-        console.log("here");
+        console.log('here2')
         fetch(`${this.base_url}/api/customer/${email}`, {
           method: "GET",
           headers: {
@@ -716,6 +729,7 @@ export default {
           },
         })
           .then((response) => {
+            console.log(response.status)
             if (response.status === 404) {
               window.location.href = "/pages/quiz";
               return;
@@ -744,6 +758,29 @@ export default {
     this.initData();
   },
   methods: {
+    async addToCart(){
+      this.isAdding = true;
+      await fetch(
+          '/cart/clear.js',
+          {
+            method: "POST"
+          }
+      );
+      const result = await fetch("/cart/add.json", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          id: 39956980826155,
+          quantity: 1,
+          selling_plan: 506331179
+        })
+      })
+      window.location.href = '/checkout';
+      this.isAdding = false;
+    },
     async initData() {
       const response = await fetch(
         `${this.base_url}/api/quiz/1/lead/${this.localQuiz.id}/results`,
@@ -757,18 +794,17 @@ export default {
       );
       response.json().then(async (rs) => {
         this.results = rs.data;
-        console.log(this.results);
       });
     },
     onImgLoad() {
-      debugger
+      const timeout = this.debug ? 1: 22130
       setTimeout(() => {
         this.isReady = true;
         this.$nextTick(() => {
           animation.check_if_in_view();
           animation.slideNavBar();
         });
-      }, 22130);
+      }, timeout);
     },
     scrollSmoothTo(type) {
       animation.scrollSmoothTo(type);

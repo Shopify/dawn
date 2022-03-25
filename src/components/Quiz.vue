@@ -1,7 +1,8 @@
 <template>
   <div class="wrap-form">
     <template v-if="isReady">
-      <form-wizard
+      <form action="#" autocomplete="on" onsubmit="return false;">
+        <form-wizard
         ref="formwizard"
         @onComplete="onComplete"
         @onNextStep="nextStep"
@@ -57,6 +58,7 @@
                   <input
                     class="field__input"
                     type="text"
+                    :autocomplete="getAutoComplete(item)"
                     :name="item.slug"
                     @keyup="onFormChange(item, $event)"
                   />
@@ -91,6 +93,7 @@
           </tab-content>
         </template>
       </form-wizard>
+      </form>
     </template>
     <div class="loading-evyana" v-if="!isReady">
       <svg xmlns="http://www.w3.org/2000/svg" width="200" viewBox="0 0 214 25">
@@ -169,7 +172,6 @@ export default {
       this.quiz = rs.data.questions.filter(
         (e) => e.title.toLowerCase().indexOf("please list them") === -1
       );
-      console.log(this.quiz);
       //TODO Renable
       this.isReady = true;
       this.localQuiz = localStorage.getItem("quiz");
@@ -243,6 +245,15 @@ export default {
         this.$refs.formwizard.nextTab();
       }
       this.$forceUpdate();
+    },
+    getAutoComplete(item){
+      if(item.category === 'name'){
+        return 'cc-given-name'
+      }
+      if (item.category === "zip") {
+        return 'postal-code'
+      }
+      return ''
     },
     onFormChange(item, $event) {
       if (item.category === "name") {

@@ -13,9 +13,13 @@
       <h2 class="product__body__title" data-cy="evyana-cleanser-title">
         {{title}}
       </h2>
-      <button class="product__body__button">
-        <span class="product__body__button__title">GET {{ type }}</span>
-        <span class="product__body__button__price">${{ price }} USD</span>
+      <button
+          @click="addToCart"
+          :disabled="isAdding"
+          class="product__body__button">
+        <div class="adding" style="width: 15px; height: 15px; margin-right: 10px;" v-if="isAdding"></div>
+        <span class="product__body__button__title">TRY MY SYSTEM FREE</span>
+        <span class="product__body__button__price">14 Days</span>
       </button>
       <p class="product__body__description" v-text="description"></p>
       <div class="product__body__tags">
@@ -98,6 +102,7 @@ export default {
   },
   data() {
     return {
+      isAdding: false,
       settings: {
         itemsToShow: 2,
         snapAlign: 'center',
@@ -148,7 +153,32 @@ export default {
       return this.$data[this.lookupTitle] ? this.$data[this.lookupTitle].price : '';
     },
   },
-  methods: {},
+  methods: {
+    async addToCart(){
+      this.isAdding = true;
+      await fetch(
+          '/cart/clear.js',
+          {
+            method: "POST"
+          }
+      );
+      const result = await fetch("/cart/add.json", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          id: 39956980826155,
+          quantity: 1,
+          selling_plan: 506331179
+        })
+      })
+      window.location.href = '/checkout';
+      this.isAdding = false;
+    },
+
+  },
 };
 </script>
 

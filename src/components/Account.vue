@@ -26,12 +26,16 @@
               </h2>
             </div>
             <div class="question-options">
+              <form action="#" autocomplete="on" onsubmit="return false;">
               <div class="field">
                 <input
                   class="field__input"
                   :type="item.category === 'email' ? 'text' : 'password'"
                   v-model="currentAnwser"
-                  :name="item.slug"
+                  :name="item.category === 'email' ? 'email' : 'password'"
+                  :autocomplete="item.category === 'email' ? 'email' : 'password'"
+                  autocapitalize="none"
+                  spellcheck="false"
                   @keyup="onFormChange(item, $event)"
                 />
                 <div class="error" v-if="isShowFieldRequire">
@@ -205,6 +209,7 @@
                   </div>
                 </div>
               </div>
+              </form>
             </div>
           </tab-content>
         </template>
@@ -273,7 +278,7 @@ export default {
         slug: "where-should-we-send-your-results",
         subtitle: null,
         additional:
-          '<label class="muted">Evyana never spams or shares your information.<br>By providing your email, you agree to receive exclusive news and promotions from PROVEN compliant with our<br><a href="https://evyana.com/policies/terms-of-service" target="_blank">Terms &amp; Conditions</a>&nbsp;and&nbsp;<a href="https://evyana.com/policies/privacy-policy" target="_blank">Privacy Policy.</a>&nbsp; You can withdraw your consent at any time.</label>',
+          '<label class="muted">Evyana never spams or shares your information.<br>By providing your email, you agree to receive exclusive news and promotions from Evyana compliant with our<br><a href="https://evyana.com/policies/terms-of-service" target="_blank">Terms &amp; Conditions</a>&nbsp;and&nbsp;<a href="https://evyana.com/policies/privacy-policy" target="_blank">Privacy Policy.</a>&nbsp; You can withdraw your consent at any time.</label>',
         title: "Where should we send your results?",
         type: "Text",
       },
@@ -290,7 +295,6 @@ export default {
     //TODO Renable
     this.isReady = true;
     this.localQuiz = localStorage.getItem("quiz");
-    console.log(this.localQuiz);
     if (!this.localQuiz) {
       this.loading = true;
       await fetch(
@@ -422,6 +426,8 @@ export default {
       )
         .then((rs) => rs.json())
         .then((result) => {
+          console.log('fb');
+          fbq('track', 'Lead');
            this.loadingProcess = false;
           this.$router.push("/result");
         }).catch(e => {

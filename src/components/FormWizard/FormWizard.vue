@@ -8,6 +8,7 @@
             @click="nextTab"
             v-if="currentTab < totalTabs - 1 && isShowNext"
             class="button step-button step-button-next"
+            type="button"
           >
             Next
           </button>
@@ -16,6 +17,7 @@
             :disabled="loading"
             v-if="currentTab === totalTabs - 1"
             class="button step-button step-button-submit"
+            type="button"
           >
             <div id="loading" style="width: 15px; height: 15px; margin-right: 10px;" v-if="loading"></div>
             Submit
@@ -61,15 +63,16 @@
             tag="ul"
             v-if="listIngredients && listIngredients.length > 0"
           >
-            <li
-              v-for="(item, key) in listIngredients"
-              :key="key + '1'"
-              style="animation-duration: 0.3s"
-            >
-              <!--                      <img :src="item.image" alt="" />-->
-              <img class="image" :src="item.image" />
-              <span>{{ item.ConsumerTitle }}</span>
-            </li>
+            <template v-for="(item, key) in listIngredients"
+                      :key="key + '1'">
+              <li v-if="item.image"
+                  style="animation-duration: 0.3s"
+              >
+                <img class="image" :src="item.image" />
+                <span>{{ item.ConsumerTitle }}</span>
+              </li>
+            </template>
+
           </transition-group>
         </div>
         <img
@@ -131,7 +134,6 @@ export default {
     this.tabs = this.$slots
       .default()[0]
       .children.filter((tab) => tab.type.name === "tab-content");
-    console.log(this.$slots.default());
     this.totalTabs = this.tabs.length;
     this.currentTab = this.tabs.findIndex((tab) => tab.isActive === true);
     //Select first tab if none is marked selected

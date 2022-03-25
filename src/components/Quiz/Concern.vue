@@ -172,7 +172,6 @@ export default {
   methods: {
     onChange(entry, unobserve) {
       // After loading Cancel monitoring, optimise performance
-      console.log(this.concern.title)
       if (entry.isIntersecting) {
         unobserve()
       }
