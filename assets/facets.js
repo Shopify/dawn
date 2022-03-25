@@ -246,7 +246,7 @@ class FacetRemove extends HTMLElement {
     super();
     const facetLink = this.querySelector('a');
     facetLink.addEventListener('click', this.closeFilter);
-    facetLink('keydown', (event) => {
+    facetLink.addEventListener('keydown', (event) => {
       if (event.code.toUpperCase() == 'SPACE') this.closeFilter(event);
     });
   }
