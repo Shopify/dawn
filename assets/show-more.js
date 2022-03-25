@@ -1,16 +1,12 @@
 class ShowMoreButton extends HTMLElement {
   constructor() {
     super();
-    this.addEventListener('click', (event) => {
-      if (event.target.nodeName === 'SPAN' && event.target.closest('[id^="Show-More-"]')) {
-        this.expandShowMore(event);
-      }
-      if (event.target.nodeName === 'BUTTON' && event.target.closest('[id^="Show-More-"]')) {
-        this.expandShowMore(event);
-        const nextElementToFocus = event.target.parentNode.parentNode.querySelector(".show-more-item")
-        if (!nextElementToFocus.classList.contains('.hidden')) {
-          nextElementToFocus.querySelector('input').focus()
-        }
+    const button = this.querySelector('button');
+    button.addEventListener('click', (event) => {
+      this.expandShowMore(event);
+      const nextElementToFocus = event.target.parentNode.parentNode.querySelector(".show-more-item")
+      if (!nextElementToFocus.classList.contains('.hidden')) {
+        nextElementToFocus.querySelector('input').focus()
       }
     });
   }
