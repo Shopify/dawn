@@ -16,28 +16,8 @@ class FacetFiltersForm extends HTMLElement {
       }
     });
 
-    facetForm.addEventListener('click',  (event) => {
-      if (event.target.nodeName === 'SPAN' && event.target.closest('[id^="Show-More-"]')) {
-        this.expandShowMore(event.target.closest('[id^="Show-More-"]'));
-      }
-      if (event.target.nodeName === 'BUTTON' && event.target.closest('[id^="Show-More-"]')) {
-        this.expandShowMore(event.target.closest('[id^="Show-More-"]'));
-        const nextElementToFocus = event.target.parentNode.querySelector(".facets__item-show-more")
-        if (!nextElementToFocus.classList.contains('.hidden')) {
-          nextElementToFocus.querySelector('input').focus()
-        }
-      }
-    });
-
     const facetWrapper = this.querySelector('#FacetsWrapperDesktop');
     if (facetWrapper) facetWrapper.addEventListener('keyup', onKeyUpEscape);
-  }
-
-  expandShowMore(showMore) {
-    const facetsDiplay = showMore.closest('.facets__display')
-    const facetsWrap = facetsDiplay.querySelector('.facets-wrap')
-    facetsWrap.classList.toggle('facets-wrap-show-more');
-    facetsDiplay.querySelectorAll('.facets__item.facets__item-show-more').forEach(item => item.classList.toggle('hidden'))
   }
 
   static setListeners() {
