@@ -186,7 +186,7 @@ class FacetFiltersForm extends HTMLElement {
     } else {
       const forms = [];
       sortFilterForms.forEach((form) => {
-        if (form.id == 'FacetSortForm' || form.id == 'FacetFiltersForm' || form.id == 'FacetSortDrawerForm') forms.push(this.createSearchParams(form))})
+        if (form.id == 'FacetSortForm' || form.id == 'FacetFiltersForm' || form.id == 'FacetSortDrawerForm' || form.id == 'FacetFiltersFormMobile' ) forms.push(this.createSearchParams(form))})
         this.onSubmitForm(forms.join('&'), event)
     }
   }
@@ -210,7 +210,6 @@ class PriceRange extends HTMLElement {
     super();
     this.querySelectorAll('input')
       .forEach(element => element.addEventListener('change', this.onRangeChange.bind(this)));
-
     this.setMinAndMaxValues();
   }
 
