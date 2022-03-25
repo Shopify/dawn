@@ -2,7 +2,6 @@ class ShowMoreButton extends HTMLElement {
   constructor() {
     super();
     this.addEventListener('click', (event) => {
-      console.log(event.target.nodeName, 'nodename')
       if (event.target.nodeName === 'SPAN' && event.target.closest('[id^="Show-More-"]')) {
         this.expandShowMore(event.target.closest('[id^="Show-More-"]'));
       }
