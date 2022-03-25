@@ -7,7 +7,7 @@ class ShowMoreButton extends HTMLElement {
       }
       if (event.target.nodeName === 'BUTTON' && event.target.closest('[id^="Show-More-"]')) {
         this.expandShowMore(event.target.closest('[id^="Show-More-"]'));
-        const nextElementToFocus = event.target.parentNode.parentNode.querySelector(".facets__item-show-more")
+        const nextElementToFocus = event.target.parentNode.parentNode.querySelector(".show-more-item")
         if (!nextElementToFocus.classList.contains('.hidden')) {
           nextElementToFocus.querySelector('input').focus()
         }
@@ -15,10 +15,10 @@ class ShowMoreButton extends HTMLElement {
     });
   }
   expandShowMore(showMore) {
-    const facetsDiplay = showMore.closest('.facets__display-vertical');
-    const facetsWrap = facetsDiplay.querySelector('.facets-wrap-vertical');
-    facetsWrap.classList.toggle('facets-wrap-show-more');
-    facetsDiplay.querySelectorAll('.facets__item.facets__item-show-more').forEach(item => item.classList.toggle('hidden'))
+    const parentDisplay = showMore.closest('.parent-display');
+    const parentWrap = parentDisplay.querySelector('.parent-wrap');
+    parentWrap.classList.toggle('show-more-wrap');
+    parentDisplay.querySelectorAll('.show-more-item').forEach(item => item.classList.toggle('hidden'))
   }
 }
 
