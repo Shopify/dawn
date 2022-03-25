@@ -15,7 +15,7 @@ class ShowMoreButton extends HTMLElement {
     });
   }
   expandShowMore(showMore) {
-    const facetsDiplay = showMore.closest('.facets__display-vertical')
+    const facetsDiplay = showMore.closest('.facets__display-vertical');
     const facetsWrap = facetsDiplay.querySelector('.facets-wrap-vertical')
     facetsWrap.classList.toggle('facets-wrap-show-more');
     facetsDiplay.querySelectorAll('.facets__item.facets__item-show-more').forEach(item => item.classList.toggle('hidden'))
