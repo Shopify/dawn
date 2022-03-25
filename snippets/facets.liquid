@@ -25,14 +25,14 @@
 <div class="facets-container{% if filter_type == 'drawer' %} facets-container-drawer{% endif %}">
   {%- if filter_type == 'vertical' or filter_type == 'horizontal' -%}
     <facet-filters-form class="facets small-hide">
-      <form id="FacetFiltersForm" class="facets__form">
+      <form id="FacetFiltersForm" class="{% if filter_type == 'horizontal' %}facets__form{% else %}facets__form--vertical{% endif %}">
         {%- if results.terms -%}
           <input type="hidden" name="q" value="{{ results.terms | escape }}">
           <input name="options[prefix]" type="hidden" value="last">
         {%- endif -%}
 
         {% if enable_filtering %}
-          <div id="FacetsWrapperDesktop" class="facets__wrapper">
+          <div id="FacetsWrapperDesktop"{% if filter_type == 'horizontal' %} class="facets__wrapper"{% endif %}>
             {%- if filter_type != 'vertical' and results.filters != empty -%}
               <h2 class="facets__heading caption-large text-body" id="verticalTitle" tabindex="-1">{{ 'products.facets.filter_by_label' | t }}</h2>
             {%- endif -%}
@@ -41,7 +41,7 @@
               <div class="active-facets active-facets-desktop">
                 <div class="active-facets-vertical-filter">
                   {%- unless results.filters == empty -%}
-                    <h2 class="facets__heading caption-large text-body" id="verticalTitle" tabindex="-1">{{ 'products.facets.filter_by_label' | t }}</h2>
+                    <h2 class="facets__heading facets__heading--vertical caption-large text-body" id="verticalTitle" tabindex="-1">{{ 'products.facets.filter_by_label' | t }}</h2>
                   {%- endunless -%}
                   <facet-remove class="active-facets__button-wrapper">
                     <a href="{{ results_url }}" class="active-facets__button-remove underlined-link" role="button">
@@ -83,14 +83,14 @@
               {%- assign total_active_values = total_active_values | plus: filter.active_values.size -%}
               {% case filter.type %}
               {% when 'boolean' or 'list' %}
-                <details id="Details-{{ forloop.index }}-{{ section.id }}" class="disclosure-has-popup facets__disclosure js-filter" data-index="{{ forloop.index }}"{% if filter_type == 'vertical' and forloop.index == 1 %} open{% endif %}>
+                <details id="Details-{{ forloop.index }}-{{ section.id }}" class="{% if filter_type == 'horizontal' %}disclosure-has-popup facets__disclosure{% else %} facets__disclosure--vertical{% endif %} js-filter" data-index="{{ forloop.index }}"{% if filter_type == 'vertical' and forloop.index == 1 %} open{% endif %}>
                   <summary class="facets__summary caption-large focus-offset" aria-label="{{ filter.label }} ({{ 'products.facets.filters_selected.one' | t: count: filter.active_values.size }})">
                     <div>
                       <span>{{ filter.label | escape }}{%- if filter_type == 'vertical' -%}<span class="facets__selected no-js-hidden{% if filter.active_values.size == 0 %} hidden{% endif %}"> ({{ filter.active_values.size }})</span>{% endif %}</span>
                       {% render 'icon-caret' %}
                     </div>
                   </summary>
-                  <div id="Facet-{{ forloop.index }}-{{ section.id }}" class="facets__display">
+                  <div id="Facet-{{ forloop.index }}-{{ section.id }}" class="{% if filter_type == 'horizontal' %}facets__display{% else %}facets__display--vertical{% endif %}">
                     {%- if filter_type != 'vertical' -%}
                       <div class="facets__header">
                         <span class="facets__selected no-js-hidden">{{ 'products.facets.filters_selected' | t: count: filter.active_values.size }}</span>
@@ -101,9 +101,9 @@
                         </facet-remove>
                       </div>
                     {%- endif -%}
-                    <fieldset class="facets-wrap{% if filter.values.size > 10 and filter_type == 'vertical' %} facets-wrap-show-more{% endif %}">
+                    <fieldset class="facets-wrap{% if filter_type == 'vertical' %} facets-wrap--vertical{% if filter.values.size > 10 %} facets-wrap-show-more{% endif %}{% endif %}">
                       <legend class="visually-hidden">{{ filter.label | escape }}</legend>
-                      <ul class="facets__list list-unstyled" role="list">
+                      <ul class="{% if filter_type != 'vertical' %} facets__list{% endif %} list-unstyled" role="list">
                         {%- for value in filter.values -%}
                           <li class="list-menu__item facets__item{% if forloop.index > 10 and filter_type == 'vertical' %} facets__item-show-more hidden{% endif %}">
                             <label for="Filter-{{ filter.label | escape }}-{{ forloop.index }}" class="facet-checkbox{% if value.count == 0 and value.active == false %} facet-checkbox--disabled{% endif %}">
@@ -158,15 +158,15 @@
                     assign uses_comma_decimals = true
                   endif
                 %}
-                <details id="Details-{{ forloop.index }}-{{ section.id }}" class="disclosure-has-popup facets__disclosure js-filter" data-index="{{ forloop.index }}"{% if filter_type == 'vertical' and  forloop.index == 1 %} open{% endif %}>
+                <details id="Details-{{ forloop.index }}-{{ section.id }}" class="{% if filter_type == 'horizontal' %}disclosure-has-popup facets__disclosure{% else %} facets__disclosure--vertical{% endif %} js-filter" data-index="{{ forloop.index }}"{% if filter_type == 'vertical' and  forloop.index == 1 %} open{% endif %}>
                   <summary class="facets__summary caption-large focus-offset">
                     <div>
                       <span>{{ filter.label | escape }}</span>
                       {% render 'icon-caret' %}
                     </div>
                   </summary>
-                  <div id="Facet-{{ forloop.index }}-{{ section.id }}" class="facets__display">
-                    <div class="facets__header">
+                  <div id="Facet-{{ forloop.index }}-{{ section.id }}" class="{% if filter_type == 'horizontal' %}facets__display{% else %}facets__display--vertical{% endif %}">
+                    <div class="{% if filter_type == 'horizontal' %}facets__header{% else %}facets__header-vertical{% endif %}">
                       {%- assign max_price_amount = filter.range_max | money | strip_html | escape -%}
                       <span class="facets__selected">{{ "products.facets.max_price" | t: price: max_price_amount }}</span>
                       {%- if filter_type != 'vertical' -%}
