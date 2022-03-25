@@ -244,8 +244,9 @@ customElements.define('price-range', PriceRange);
 class FacetRemove extends HTMLElement {
   constructor() {
     super();
-    this.querySelector('a').addEventListener('click', this.closeFilter);
-    this.querySelector('a').addEventListener('keydown', (event) => {
+    const facetLink = this.querySelector('a').addEventListener;
+    facetLink('click', this.closeFilter);
+    facetLink('keydown', (event) => {
       if (event.code.toUpperCase() == 'SPACE') this.closeFilter(event);
     });
   }
