@@ -18904,16 +18904,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                           case 0:
                             _this2.results = rs.data;
                             console.log(_this2.results);
-                            setTimeout(function () {
-                              _this2.isReady = true;
 
-                              _this2.$nextTick(function () {
-                                _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].check_if_in_view();
-                                _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].slideNavBar();
-                              });
-                            }, 1000);
-
-                          case 3:
+                          case 2:
                           case "end":
                             return _context3.stop();
                         }
@@ -18933,6 +18925,19 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           }
         }, _callee4);
       }))();
+    },
+    onImgLoad: function onImgLoad() {
+      var _this3 = this;
+
+      debugger;
+      setTimeout(function () {
+        _this3.isReady = true;
+
+        _this3.$nextTick(function () {
+          _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].check_if_in_view();
+          _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].slideNavBar();
+        });
+      }, 22130);
     },
     scrollSmoothTo: function scrollSmoothTo(type) {
       _mixins_animation__WEBPACK_IMPORTED_MODULE_4__["default"].scrollSmoothTo(type);
@@ -20438,18 +20443,6 @@ var _hoisted_70 = {
     "background": "#fff"
   }
 };
-
-var _hoisted_71 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
-  style: {
-    "height": "100%"
-  },
-  src: "//d201v9s59ezpea.cloudfront.net/searching.gif",
-  alt: "loading"
-}, null, -1
-/* HOISTED */
-);
-
-var _hoisted_72 = [_hoisted_71];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_concern = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("concern");
 
@@ -20637,7 +20630,18 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   /* KEYED_FRAGMENT */
   )), _hoisted_68])], 64
   /* STABLE_FRAGMENT */
-  )) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), !$data.isReady ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_70, _hoisted_72)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]);
+  )) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), !$data.isReady ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_70, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
+    onLoad: _cache[4] || (_cache[4] = function () {
+      return $options.onImgLoad && $options.onImgLoad.apply($options, arguments);
+    }),
+    style: {
+      "height": "100%"
+    },
+    src: "//d201v9s59ezpea.cloudfront.net/searching.gif",
+    alt: "loading"
+  }, null, 32
+  /* HYDRATE_EVENTS */
+  )])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]);
 }
 
 /***/ }),

@@ -632,6 +632,7 @@
 
     <div class="loading-evyana" v-if="!isReady" style="background: #fff">
       <img
+        @load="onImgLoad"
         style="height: 100%"
         src="//d201v9s59ezpea.cloudfront.net/searching.gif"
         alt="loading"
@@ -703,7 +704,7 @@ export default {
     }
 
     this.localQuiz = localStorage.getItem("quiz");
-    
+
     if (!this.localQuiz) {
       if (email) {
         console.log("here");
@@ -757,14 +758,17 @@ export default {
       response.json().then(async (rs) => {
         this.results = rs.data;
         console.log(this.results);
-        setTimeout(() => {
-          this.isReady = true;
-          this.$nextTick(() => {
-            animation.check_if_in_view();
-            animation.slideNavBar();
-          });
-        }, 1000);
       });
+    },
+    onImgLoad() {
+      debugger
+      setTimeout(() => {
+        this.isReady = true;
+        this.$nextTick(() => {
+          animation.check_if_in_view();
+          animation.slideNavBar();
+        });
+      }, 22130);
     },
     scrollSmoothTo(type) {
       animation.scrollSmoothTo(type);
