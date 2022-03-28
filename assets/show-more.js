@@ -13,7 +13,7 @@ class ShowMoreButton extends HTMLElement {
   expandShowMore(event) {
     const parentDisplay = event.target.closest('[id^="Show-More-"]').closest('.parent-display');
     const parentWrap = parentDisplay.querySelector('.parent-wrap');
-    parentWrap.classList.toggle('show-more-wrap');
+    this.querySelectorAll('.label-text').forEach(element => element.classList.toggle('hidden'));
     parentDisplay.querySelectorAll('.show-more-item').forEach(item => item.classList.toggle('hidden'))
   }
 }
