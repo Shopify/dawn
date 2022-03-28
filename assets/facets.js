@@ -186,14 +186,8 @@ class FacetFiltersForm extends HTMLElement {
     } else {
       const forms = [];
       sortFilterForms.forEach((form) => {
-        if (window.innerWidth >= 750) {
-          if (form.id == 'FacetSortForm' || form.id == 'FacetFiltersForm' || form.id == 'FacetSortDrawerForm') {
-            forms.push(this.createSearchParams(form))
-          }
-        } else {
-          if (form.id == 'FacetFiltersFormMobile') {
-            forms.push(this.createSearchParams(form))
-          }
+        if (event.target.closest('form').id === form.id && (form.id == 'FacetSortForm' || form.id == 'FacetFiltersForm' || form.id == 'FacetSortDrawerForm' || form.id == 'FacetFiltersFormMobile')) {
+          forms.push(this.createSearchParams(form))
         }
       })
       this.onSubmitForm(forms.join('&'), event)
