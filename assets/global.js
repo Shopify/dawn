@@ -432,7 +432,7 @@ class ModalDialog extends HTMLElement {
     super();
     this.querySelector('[id^="ModalClose-"]').addEventListener(
       'click',
-      this.hide.bind(this)
+      this.hide.bind(this, false)
     );
     this.addEventListener('keyup', (event) => {
       if (event.code.toUpperCase() === 'ESCAPE') this.hide();
@@ -443,7 +443,7 @@ class ModalDialog extends HTMLElement {
       });
     } else {
       this.addEventListener('click', (event) => {
-        if (event.target.nodeName === 'MODAL-DIALOG') this.hide();
+        if (event.target === this) this.hide();
       });
     }
   }
@@ -466,6 +466,7 @@ class ModalDialog extends HTMLElement {
 
   hide() {
     document.body.classList.remove('overflow-hidden');
+    document.body.dispatchEvent(new CustomEvent('modalClosed'));
     this.removeAttribute('open');
     removeTrapFocus(this.openedBy);
     window.pauseAllMedia();
@@ -780,6 +781,7 @@ class VariantSelects extends HTMLElement {
     mediaGallery.setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media.id}`, true);
 
     const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
+    if (!modalContent) return;
     const newMediaModal = modalContent.querySelector( `[data-media-id="${this.currentVariant.featured_media.id}"]`);
     modalContent.prepend(newMediaModal);
   }
@@ -791,12 +793,12 @@ class VariantSelects extends HTMLElement {
 
   updateShareUrl() {
     const shareButton = document.getElementById(`Share-${this.dataset.section}`);
-    if (!shareButton) return;
+    if (!shareButton || !shareButton.updateUrl) return;
     shareButton.updateUrl(`${window.shopUrl}${this.dataset.url}?variant=${this.currentVariant.id}`);
   }
 
   updateVariantInput() {
-    const productForms = document.querySelectorAll(`#product-form-${this.dataset.section}, #product-form-installment`);
+    const productForms = document.querySelectorAll(`#product-form-${this.dataset.section}, #product-form-installment-${this.dataset.section}`);
     productForms.forEach((productForm) => {
       const input = productForm.querySelector('input[name="id"]');
       input.value = this.currentVariant.id;
@@ -825,14 +827,12 @@ class VariantSelects extends HTMLElement {
   }
 
   renderProductInfo() {
-    fetch(`${this.dataset.url}?variant=${this.currentVariant.id}&section_id=${this.dataset.section}`)
+    fetch(`${this.dataset.url}?variant=${this.currentVariant.id}&section_id=${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`)
       .then((response) => response.text())
       .then((responseText) => {
-        const id = `price-${this.dataset.section}`;
         const html = new DOMParser().parseFromString(responseText, 'text/html')
-        const destination = document.getElementById(id);
-        const source = html.getElementById(id);
-
+        const destination = document.getElementById(`price-${this.dataset.section}`);
+        const source = html.getElementById(`price-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
         if (source && destination) destination.innerHTML = source.innerHTML;
 
         const price = document.getElementById(`price-${this.dataset.section}`);
@@ -847,7 +847,6 @@ class VariantSelects extends HTMLElement {
     if (!productForm) return;
     const addButton = productForm.querySelector('[name="add"]');
     const addButtonText = productForm.querySelector('[name="add"] > span');
-
     if (!addButton) return;
 
     if (disable) {
