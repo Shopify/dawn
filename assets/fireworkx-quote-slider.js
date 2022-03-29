@@ -115,6 +115,7 @@ const makeEnquiry = {
 					}
 				}
 				if (response.status == 200) {
+					window.dataLayer.push({'event_name': 'enquiry_submit'});
 					this.closeModal();
 					this.submitButton.disabled = false;
 					this.formIsValid = false;
@@ -156,7 +157,6 @@ const formContainer = document.querySelector('.fwx-modal-content');
 // Enquiry Submit button
 if (makeEnquiry.submitButton) {
 	makeEnquiry.submitButton.addEventListener("click", function () {
-		window.dataLayer.push({'event_name': 'enquiry_submit'});
 		this.disabled = true;
 		makeEnquiry.sendForm();
 		// Open success message by adding a class to it 
