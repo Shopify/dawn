@@ -3,17 +3,40 @@
 <cart-drawer class="drawer">
   <div class="cart-drawer" id="cart-drawer">
     <div class="cart-drawer__overlay" id="cart-drawer-overlay"></div>
-    <form action="{{ routes.cart_url }}" class="drawer__inner" method="post" id="cart-drawer-inner">
-      <div class="drawer__header">
-        <h1 class="drawer__heading h2">Your cart</h1>
-        <div>
-          <button class="drawer__close button button--tertiary" type="button" onclick="this.closest('cart-drawer').close()">{% render 'icon-close' %}</button>
-        </div>
-      </div>
-
+    <form action="{{ routes.cart_url }}" class="drawer__inner{% if cart == empty %} is-empty{% endif %}" method="post" id="cart-drawer-inner">
       {%- if cart == empty -%}
-        The cart is empty.
+        <div class="cart-drawer__warnings center">
+          <div class="cart-drawer__empty-content">
+            <h1 class="cart__empty-text">{{ 'sections.cart.empty' | t }}</h1>
+            <a href="{{ routes.all_products_collection_url }}" class="button">
+              {{ 'general.continue_shopping' | t }}
+            </a>
+
+            {%- if shop.customer_accounts_enabled and customer == nil -%}
+              <h2 class="cart__login-title">{{ 'sections.cart.login.title' | t }}</h2>
+              <p class="cart__login-paragraph">
+                {{ 'sections.cart.login.paragraph_html' | t: link: routes.account_login_url }}
+              </p>
+            {%- endif -%}
+          </div>
+        </div>
+        {%- if settings.cart_drawer_collection != empty -%}
+          <div class="cart-drawer__collection">
+            {% render 'card-collection',
+              card_collection: settings.cart_drawer_collection,
+              media_aspect_ratio: 'adapt',
+              columns: 1,
+              extend_height: true
+            %}
+          </div>
+        {%- endif -%}
       {%- else -%}
+        <div class="drawer__header">
+          <h1 class="drawer__heading h2">Your cart</h1>
+          <div>
+            <button class="drawer__close button button--tertiary" type="button" onclick="this.closest('cart-drawer').close()">{% render 'icon-close' %}</button>
+          </div>
+        </div>
         <cart-drawer-items class="drawer__contents">
           <table class="cart-items" id="drawer-main-cart-items">
             <thead>
@@ -135,7 +158,7 @@
                               {% render 'icon-plus' %}
                             </button>
                           </quantity-input>
-    
+
                           <cart-remove-button id="drawer-Remove-{{ item.index | plus: 1 }}" data-index="{{ item.index | plus: 1 }}">
                             <a href="{{ item.url_to_remove }}" class="button button--tertiary" aria-label="{{ 'sections.cart.remove_title' | t: title: item.title }}">
                               {% render 'icon-remove' %}

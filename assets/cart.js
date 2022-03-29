@@ -146,6 +146,8 @@ class CartItems extends HTMLElement {
   }
 }
 
+customElements.define('cart-items', CartItems);
+
 class CartDrawerItems extends CartItems {
 
   getSectionsToRender() {
@@ -159,5 +161,4 @@ class CartDrawerItems extends CartItems {
   }
 }
 
-customElements.define('cart-items', CartItems);
 customElements.define('cart-drawer-items', CartDrawerItems);
