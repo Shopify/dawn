@@ -1,13 +1,22 @@
 import { createApp } from "vue";
-import * as VueRouter from "vue-router";
+// import * as VueRouter from "vue-router";
 import FormWizard from "../components/FormWizard/FormWizard.vue";
 import TabContent from "../components/FormWizard/TabContent.vue";
 import ValidationHelper from "../components/FormWizard/ValidationHelper.vue";
 import Quiz from "../components/Quiz.vue";
 import Results from "../components/Results";
 import Account from "../components/Account";
+import { createRouter, createWebHashHistory, createWebHistory } from "vue-router";
 
-export { FormWizard, TabContent, ValidationHelper, Quiz, VueRouter };
+export {
+  FormWizard,
+  TabContent,
+  ValidationHelper,
+  Quiz,
+  createRouter,
+  createWebHashHistory,
+  createWebHistory
+};
 import "vue2-animate/dist/vue2-animate.min.css";
 /**
  * imports
@@ -28,8 +37,10 @@ const createVueApp = () => {
   const app = createApp({});
   // app.config.globalProperties.authToken = "999999999911111111aaaaaa";
   // app.config.globalProperties.base_url = "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com";
-  app.config.globalProperties.authToken = "9kC7tJXBOSBZH5sCYoqbEYozve68clBZyE6p1xKA";
-  app.config.globalProperties.base_url = "https://billowing-sun-2ngfq5uojo3x.vapor-farm-d1.com";
+  app.config.globalProperties.authToken =
+    "9kC7tJXBOSBZH5sCYoqbEYozve68clBZyE6p1xKA";
+  app.config.globalProperties.base_url =
+    "https://billowing-sun-2ngfq5uojo3x.vapor-farm-d1.com";
   app.config.globalProperties.debug = true;
 
   /**
@@ -74,34 +85,42 @@ const createVueApp = () => {
    * vue plugins
    * extend with additional features
    */
-
-  const routes = [
-    { path: "/result", component: Results },
-    { path: "/account", component: Account },
-    { path: "/", component: Quiz },
-  ];
-
-  // 3. Create the router instance and pass the `routes` option
-  // You can pass in additional options here, but let's
-  // keep it simple for now.
-  const router = VueRouter.createRouter({
-    // 4. Provide the history implementation to use. We are using the hash history for simplicity here.
-    history: VueRouter.createWebHashHistory(),
-    routes, // short for `routes: routes`
-  });
-  app.use(router);
+  // app.use(router);
   return app;
 };
+
+const routes = [
+  { path: "/result", component: Results },
+  { path: "/account", component: Account },
+  { path: "/", component: Quiz },
+];
+
+// 3. Create the router instance and pass the `routes` option
+// You can pass in additional options here, but let's
+// keep it simple for now.
+const router = createRouter({
+  // 4. Provide the history implementation to use. We are using the hash history for simplicity here.
+  history: createWebHashHistory(),
+  routes, // short for `routes: routes`
+});
+
+router.beforeEach((to, from, next)=>{
+  if ( to.path === '/' && window.location.pathname !== '/pages/quiz'){
+    window.location.href = '/pages/quiz'
+  } else {
+    next();
+  }
+})
 
 /**
  * create and mount vue instance(s)
  */
 const appElement = document.querySelector("#vueapp");
 if (appElement) {
-  createVueApp().mount(appElement);
+  createVueApp().use(router).mount(appElement);
 } else {
   const vueElements = document.querySelectorAll("[vue]");
-  if (vueElements) vueElements.forEach((el) => createVueApp().mount(el));
+  if (vueElements) vueElements.forEach((el) => createVueApp().use(router).mount(el));
 }
 
 /**

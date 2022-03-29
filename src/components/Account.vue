@@ -293,29 +293,30 @@ export default {
     ];
 
     //TODO Renable
-    this.isReady = true;
+    
     this.localQuiz = localStorage.getItem("quiz");
     if (!this.localQuiz) {
-      this.loading = true;
-      await fetch(
-        `${this.base_url}/api/quiz/1/lead`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + this.authToken,
-          },
-        }
-      )
-        .then((rs) => rs.json())
-        .then((result) => {
-          this.localQuiz = result.data;
-          if (this.localQuiz.name) {
-            this.userName = this.localQuiz.name;
-          }
-          localStorage.setItem("quiz", JSON.stringify(this.localQuiz));
-          this.loading = false;
-        });
+       window.location.href = "/pages/quiz";
+      // this.loading = true;
+      // await fetch(
+      //   `${this.base_url}/api/quiz/1/lead`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: "Bearer " + this.authToken,
+      //     },
+      //   }
+      // )
+      //   .then((rs) => rs.json())
+      //   .then((result) => {
+      //     this.localQuiz = result.data;
+      //     if (this.localQuiz.name) {
+      //       this.userName = this.localQuiz.name;
+      //     }
+      //     localStorage.setItem("quiz", JSON.stringify(this.localQuiz));
+      //     this.loading = false;
+      //   });
     } else {
       this.localQuiz = JSON.parse(this.localQuiz);
 
@@ -328,6 +329,7 @@ export default {
         });
       });
     }
+    this.isReady = true;
   },
   methods: {
     onFormChange(item, $event) {

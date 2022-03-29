@@ -708,16 +708,16 @@ export default {
     },
   },
   async mounted() {
+    debugger
     let email = this.email;
 
-    let urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("email")) {
-      email = urlParams.get("email");
+    if (this.$route.query.email) {
+      email = this.$route.query.email
     }
 
     this.localQuiz = localStorage.getItem("quiz");
 
-    if (!this.localQuiz) {
+    if (!this.localQuiz || email) {
       console.log('here')
       if (email) {
         console.log('here2')
