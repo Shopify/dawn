@@ -1,8 +1,0 @@
-[![Travis](https://img.shields.io/travis/com/ecrmnn/collect.js?style=flat-square)](https://app.travis-ci.com/github/ecrmnn/collect.js/builds)
-[![npm version](https://img.shields.io/npm/v/collect.js.svg?style=flat-square)](http://badge.fury.io/js/collect.js)
-[![npm downloads](https://img.shields.io/npm/dm/collect.js.svg?style=flat-square)](http://badge.fury.io/js/collect.js)
-[![npm license](https://img.shields.io/npm/l/collect.js.svg?style=flat-square)](http://badge.fury.io/js/collect.js)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
-[![dependencies](https://img.shields.io/badge/dependencies-none-brightgreen.svg?style=flat-square)](https://github.com/ecrmnn/collect.js/blob/master/package.json)
-[![eslint](https://img.shields.io/badge/code_style-airbnb-blue.svg?style=flat-square)](https://github.com/airbnb/javascript)
-[![cdnjs version](https://img.shields.io/cdnjs/v/collect.js.svg?style=flat-square)](https://cdnjs.com/libraries/collect.js)
