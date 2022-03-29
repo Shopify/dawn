@@ -186,7 +186,7 @@ class FacetFiltersForm extends HTMLElement {
           if (form.id === 'FacetSortForm' || form.id === 'FacetFiltersForm' || form.id === 'FacetSortDrawerForm') {
             forms.push(this.createSearchParams(form));
           }
-        } else if (form.id == 'FacetFiltersFormMobile') {
+        } else if (form.id === 'FacetFiltersFormMobile') {
           forms.push(this.createSearchParams(form));
         }
       });
