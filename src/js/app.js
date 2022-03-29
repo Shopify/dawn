@@ -26,7 +26,9 @@ const modules = {};
  */
 const createVueApp = () => {
   const app = createApp({});
-  app.config.globalProperties.authToken = "999999999911111111aaaaaa";
+  // app.config.globalProperties.authToken = "999999999911111111aaaaaa";
+  // app.config.globalProperties.base_url = "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com";
+  app.config.globalProperties.authToken = "9kC7tJXBOSBZH5sCYoqbEYozve68clBZyE6p1xKA";
   app.config.globalProperties.base_url = "https://billowing-sun-2ngfq5uojo3x.vapor-farm-d1.com";
   app.config.globalProperties.debug = true;
 

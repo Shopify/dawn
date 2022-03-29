@@ -423,8 +423,7 @@ export default {
       this.$forceUpdate();
       if (this.quiz[this.questionIndex].type === "TextAutoComplete") {
         const response = await fetch(
-          "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/question/" +
-            this.quiz[this.questionIndex].id,
+            `${this.base_url}/api/quiz/1/question/${this.quiz[this.questionIndex].id}`,
           {
             method: "GET",
             headers: {
@@ -452,8 +451,7 @@ export default {
         zip: this.currentAnwser,
       };
       await fetch(
-        "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/" +
-          this.localQuiz.id,
+          `${this.base_url}/api/quiz/1/lead/${this.localQuiz.id}`,
         {
           method: "PATCH",
           body: JSON.stringify(payload),

@@ -18472,7 +18472,7 @@ var checked = function checked(value) {
                 }
 
                 _context5.next = 15;
-                return fetch("https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/question/" + _this5.quiz[_this5.questionIndex].id, {
+                return fetch("".concat(_this5.base_url, "/api/quiz/1/question/").concat(_this5.quiz[_this5.questionIndex].id), {
                   method: "GET",
                   headers: {
                     "Content-Type": "application/json",
@@ -18516,7 +18516,7 @@ var checked = function checked(value) {
                   zip: _this6.currentAnwser
                 };
                 _context6.next = 3;
-                return fetch("https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com/api/quiz/1/lead/" + _this6.localQuiz.id, {
+                return fetch("".concat(_this6.base_url, "/api/quiz/1/lead/").concat(_this6.localQuiz.id), {
                   method: "PATCH",
                   body: JSON.stringify(payload),
                   headers: {
@@ -20926,8 +20926,10 @@ var modules = {};
  */
 
 var createVueApp = function createVueApp() {
-  var app = (0,vue__WEBPACK_IMPORTED_MODULE_0__.createApp)({});
-  app.config.globalProperties.authToken = "999999999911111111aaaaaa";
+  var app = (0,vue__WEBPACK_IMPORTED_MODULE_0__.createApp)({}); // app.config.globalProperties.authToken = "999999999911111111aaaaaa";
+  // app.config.globalProperties.base_url = "https://mellow-badlands-ejgkwjycd9xj.vapor-farm-c1.com";
+
+  app.config.globalProperties.authToken = "9kC7tJXBOSBZH5sCYoqbEYozve68clBZyE6p1xKA";
   app.config.globalProperties.base_url = "https://billowing-sun-2ngfq5uojo3x.vapor-farm-d1.com";
   app.config.globalProperties.debug = true;
   /**
