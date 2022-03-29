@@ -88,7 +88,7 @@
                 {{- block.settings.text -}}
               </p>
             {%- when 'title' -%}
-              <h2 class="h1 product__title" {{ block.shopify_attributes }}>
+              <h2 class="product__title {{ block.settings.heading_size }}" {{ block.shopify_attributes }}>
                 {%- if product.title != blank -%}
                   {{ product.title | escape }}
                 {%- else -%}
@@ -348,7 +348,7 @@
       <div class="product-media-modal__dialog" role="dialog" aria-label="{{ 'products.modal.label' | t }}" aria-modal="true" tabindex="-1">
         <button id="ModalClose-{{ section.id }}" type="button" class="product-media-modal__toggle" aria-label="{{ 'accessibility.close' | t }}">{% render 'icon-close' %}</button>
 
-        <div class="product-media-modal__content" role="document" aria-label="{{ 'products.modal.label' | t }}" tabindex="0">
+        <div class="product-media-modal__content color-background-1 gradient" role="document" aria-label="{{ 'products.modal.label' | t }}" tabindex="0">
           {%- liquid
             if product.selected_or_first_available_variant.featured_media != null
               assign media = product.selected_or_first_available_variant.featured_media
@@ -375,42 +375,6 @@
   </div>
 </section>
 
-{% javascript %}
-  if (!customElements.get('product-modal')) {
-    customElements.define('product-modal', class ProductModal extends ModalDialog {
-      constructor() {
-        super();
-      }
-
-      hide() {
-        super.hide();
-      }
-
-      show(opener) {
-        super.show(opener);
-        this.showActiveMedia();
-      }
-
-      showActiveMedia() {
-        this.querySelectorAll(`[data-media-id]:not([data-media-id="${this.openedBy.getAttribute("data-media-id")}"])`).forEach((element) => {
-            element.classList.remove('active');
-          }
-        )
-        const activeMedia = this.querySelector(`[data-media-id="${this.openedBy.getAttribute("data-media-id")}"]`);
-        const activeMediaTemplate = activeMedia.querySelector('template');
-        const activeMediaContent = activeMediaTemplate ? activeMediaTemplate.content : null;
-        activeMedia.classList.add('active');
-        activeMedia.scrollIntoView();
-
-        const container = this.querySelector('[role="document"]');
-        container.scrollLeft = (activeMedia.width - container.clientWidth) / 2;
-
-        if (activeMedia.nodeName == 'DEFERRED-MEDIA' && activeMediaContent && activeMediaContent.querySelector('.js-youtube'))
-          activeMedia.loadContent();
-      }
-    });
-  }
-{% endjavascript %}
 <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
 {%- if first_3d_model -%}
   <script type="application/json" id="ProductJSON-{{ product.id }}">
@@ -434,9 +398,8 @@
     "name": {{ product.title | json }},
     "url": {{ request.origin | append: product.url | json }},
     {% if seo_media -%}
-      {%- assign media_size = seo_media.preview_image.width | append: 'x' -%}
       "image": [
-        {{ seo_media | img_url: media_size | prepend: "https:" | json }}
+        {{ seo_media | image_url: width: seo_media.preview_image.width | prepend: "https:" | json }}
       ],
     {%- endif %}
     "description": {{ product.description | strip_html | json }},
@@ -488,6 +451,7 @@
 </script>
 
 {% if product.media.size > 0 %}
+  <script src="{{ 'product-modal.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'media-gallery.js' | asset_url }}" defer="defer"></script>
 {% endif %}
 
@@ -535,7 +499,29 @@
     {
       "type": "title",
       "name": "t:sections.featured-product.blocks.title.name",
-      "limit": 1
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "heading_size",
+          "options": [
+            {
+              "value": "h2",
+              "label": "t:sections.all.heading_size.options__1.label"
+            },
+            {
+              "value": "h1",
+              "label": "t:sections.all.heading_size.options__2.label"
+            },
+            {
+              "value": "h0",
+              "label": "t:sections.all.heading_size.options__3.label"
+            }
+          ],
+          "default": "h1",
+          "label": "t:sections.all.heading_size.label"
+        }
+      ]
     },
     {
       "type": "price",

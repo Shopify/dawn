@@ -66,7 +66,7 @@ class CartNotification extends HTMLElement {
   handleBodyClick(evt) {
     const target = evt.target;
     if (target !== this.notification && !target.closest('cart-notification')) {
-      const disclosure = target.closest('details-disclosure');
+      const disclosure = target.closest('details-disclosure, header-menu');
       this.activeElement = disclosure ? disclosure.querySelector('summary') : null;
       this.close();
     }
