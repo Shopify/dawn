@@ -18867,11 +18867,19 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
   },
   computed: {
     listLifeStyle: function listLifeStyle() {
+      if (!this.results || !this.results.lifestyle) {
+        return [];
+      }
+
       return this.results.lifestyle.filter(function (e) {
         return e.ingredients.length > 0 && e.description !== "Not Set";
       });
     },
     listInteLifeStyle: function listInteLifeStyle() {
+      if (!this.results || !this.results.lifestyle) {
+        return [];
+      }
+
       var inte = this.results.lifestyle.filter(function (e) {
         return e.ingredients.length > 0 && e.description !== "Not Set";
       });
@@ -18894,7 +18902,6 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         while (1) {
           switch (_context2.prev = _context2.next) {
             case 0:
-              debugger;
               email = _this.email;
 
               if (_this.$route.query.email) {
@@ -18904,18 +18911,18 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               _this.localQuiz = localStorage.getItem("quiz");
 
               if (!(!_this.localQuiz || email)) {
-                _context2.next = 14;
+                _context2.next = 13;
                 break;
               }
 
-              console.log('here');
+              console.log("here");
 
               if (!email) {
-                _context2.next = 11;
+                _context2.next = 10;
                 break;
               }
 
-              console.log('here2');
+              console.log("here2");
               fetch("".concat(_this.base_url, "/api/customer/").concat(email), {
                 method: "GET",
                 headers: {
@@ -18958,23 +18965,23 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               //if there is no lead id for this redirect to quiz
               //if there is no email redirect to login and add checkout_url=/pages/your-quiz-results
 
-              _context2.next = 13;
+              _context2.next = 12;
               break;
 
-            case 11:
+            case 10:
               // this.$router.push("/");
               window.location.href = "/account/login?checkout_url=/pages/your-quiz-results";
               return _context2.abrupt("return");
 
-            case 13:
+            case 12:
               return _context2.abrupt("return");
 
-            case 14:
+            case 13:
               _this.localQuiz = JSON.parse(_this.localQuiz);
 
               _this.initData();
 
-            case 16:
+            case 15:
             case "end":
               return _context2.stop();
           }
@@ -18994,7 +19001,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               case 0:
                 _this2.isAdding = true;
                 _context3.next = 3;
-                return fetch('/cart/clear.js', {
+                return fetch("/cart/clear.js", {
                   method: "POST"
                 });
 
@@ -19004,7 +19011,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
-                    "Accept": "application/json"
+                    Accept: "application/json"
                   },
                   body: JSON.stringify({
                     id: 39956980826155,
@@ -19015,7 +19022,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
               case 5:
                 result = _context3.sent;
-                window.location.href = '/checkout';
+                window.location.href = "/checkout";
                 _this2.isAdding = false;
 
               case 8:
@@ -20406,7 +20413,7 @@ var _hoisted_17 = {
   }
 };
 
-var _hoisted_18 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" TRY FOR FREE");
+var _hoisted_18 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" TRY FOR FREE ");
 
 var _hoisted_19 = {
   "class": "result-container page-width"
@@ -20428,6 +20435,7 @@ var _hoisted_22 = {
   "class": "welcome__body"
 };
 var _hoisted_23 = {
+  key: 0,
   "class": "welcome__body__title"
 };
 
@@ -20539,6 +20547,7 @@ var _hoisted_43 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
 );
 
 var _hoisted_44 = {
+  key: 0,
   "class": "right-sec two-panel mt-5"
 };
 var _hoisted_45 = {
@@ -20734,9 +20743,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     "aria-label": "Get my system"
   }, [$data.isAdding ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_17)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), _hoisted_18], 8
   /* PROPS */
-  , _hoisted_16)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_19, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_20, [_hoisted_21, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_22, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", _hoisted_23, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.user.name) + ", ", 1
+  , _hoisted_16)])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_19, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_20, [_hoisted_21, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_22, [$data.results ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("h1", _hoisted_23, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.user ? $data.results.user.name : "") + ", ", 1
   /* TEXT */
-  ), _hoisted_24, _hoisted_25, _hoisted_26, _hoisted_27]), _hoisted_28, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+  ), _hoisted_24, _hoisted_25, _hoisted_26, _hoisted_27])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), _hoisted_28, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
     "class": "welcome__body__more",
     onClick: _cache[4] || (_cache[4] = function ($event) {
       return $options.scrollSmoothToPosition('Concerns');
@@ -20772,9 +20781,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   /* KEYED_FRAGMENT */
   )), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_42, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
     "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["result spaced-section slide animation-element", {
-      'in-view': $data.results.skin.length === 0
+      'in-view': $data.results.skin ? $data.results.skin.length === 0 : false
     }])
-  }, [_hoisted_43, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_44, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_45, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_46, [_hoisted_47, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_48, [_hoisted_49, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.environment.water.text), 1
+  }, [_hoisted_43, $data.results.environment ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_44, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_45, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_46, [_hoisted_47, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_48, [_hoisted_49, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.environment.water.text), 1
   /* TEXT */
   )])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_50, [_hoisted_51, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_52, [_hoisted_53, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.results.environment.uvindex.text), 1
   /* TEXT */
@@ -20816,7 +20825,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
   }, 8
   /* PROPS */
-  , ["center"])])])], 2
+  , ["center"])])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)], 2
   /* CLASS */
   )]),  true ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_63, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_64, [_hoisted_65, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_66, [_hoisted_67, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_68, [((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.renderList)($options.listLifeStyle, function (lifestyle, index) {
     return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, {

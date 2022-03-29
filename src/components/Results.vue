@@ -148,11 +148,19 @@
         <!--          >-->
         <!--        </li>-->
         <li class="nav-item last-button">
-          <button @click="addToCart"
-                  :disabled="isAdding"
-                  class="welcome__cta button" aria-label="Get my system">
-            <div class="adding" style="width: 15px; height: 15px; margin-right: 10px;" v-if="isAdding"></div>
-            TRY FOR FREE</button>
+          <button
+            @click="addToCart"
+            :disabled="isAdding"
+            class="welcome__cta button"
+            aria-label="Get my system"
+          >
+            <div
+              class="adding"
+              style="width: 15px; height: 15px; margin-right: 10px"
+              v-if="isAdding"
+            ></div>
+            TRY FOR FREE
+          </button>
         </li>
       </ul>
 
@@ -164,11 +172,9 @@
             alt="Evyana system"
           />
           <div class="welcome__body">
-            <h1 class="welcome__body__title">
-              {{ results.user.name }}, <br />meet your <br /><span
-                class="highlight"
-                >perfect skincare</span
-              >
+            <h1 class="welcome__body__title" v-if="results">
+              {{ results.user ? results.user.name : "" }}, <br />meet your
+              <br /><span class="highlight">perfect skincare</span>
             </h1>
             <p>
               Evyana’s scientists have formulated your skincare system with
@@ -196,10 +202,17 @@
               </svg>
             </div>
           </div>
-          <button @click="addToCart"
-                  :disabled="isAdding"
-                  class="welcome__cta button" aria-label="Get my system">
-                  <div class="adding" style="width: 15px; height: 15px; margin-right: 10px;" v-if="isAdding"></div>
+          <button
+            @click="addToCart"
+            :disabled="isAdding"
+            class="welcome__cta button"
+            aria-label="Get my system"
+          >
+            <div
+              class="adding"
+              style="width: 15px; height: 15px; margin-right: 10px"
+              v-if="isAdding"
+            ></div>
             GET MY SYSTEM
           </button>
 
@@ -214,16 +227,25 @@
 
           <div class="welcome__ctainfo show-for-mobile" id="price-button">
             <button
-                @click="addToCart"
-                :disabled="isAdding"
-                class="product__body__button">
-              <div class="adding" style="width: 15px; height: 15px; margin-right: 10px;" v-if="isAdding"></div>
-              <span class="product__body__button__title">TRY MY SYSTEM FREE</span>
+              @click="addToCart"
+              :disabled="isAdding"
+              class="product__body__button"
+            >
+              <div
+                class="adding"
+                style="width: 15px; height: 15px; margin-right: 10px"
+                v-if="isAdding"
+              ></div>
+              <span class="product__body__button__title"
+                >TRY MY SYSTEM FREE</span
+              >
               <span class="product__body__button__price">Offer Ends: </span>
             </button>
           </div>
           <span class="welcome_ctainfo__disclaimer muted center"
-            >Pay just shipping today. You can initiate a free return within 14 days. Otherwise, your card will be charged $97 after 14 days auto-refilled every 2 months. Cancel Anytime</span
+            >Pay just shipping today. You can initiate a free return within 14
+            days. Otherwise, your card will be charged $97 after 14 days
+            auto-refilled every 2 months. Cancel Anytime</span
           >
         </div>
         <template
@@ -241,7 +263,9 @@
         <div class="qr-section spaced-section enviroment" id="Environment">
           <div
             class="result spaced-section slide animation-element"
-            v-bind:class="{ 'in-view': results.skin.length === 0 }"
+            v-bind:class="{
+              'in-view': results.skin ? results.skin.length === 0 : false,
+            }"
           >
             <div class="result__body">
               <h2 class="result__body__targets mt-5">
@@ -255,7 +279,7 @@
                 formulated these learnings into your personalized system.
               </p>
             </div>
-            <div class="right-sec two-panel mt-5">
+            <div class="right-sec two-panel mt-5" v-if="results.environment">
               <div class="wrap-enviroment-list">
                 <div class="enviroment-item">
                   <img
@@ -687,12 +711,18 @@ export default {
   },
   computed: {
     listLifeStyle() {
+      if(!this.results || !this.results.lifestyle){
+        return []
+      }
       return this.results.lifestyle.filter(
         (e) => e.ingredients.length > 0 && e.description !== "Not Set"
       );
     },
 
     listInteLifeStyle() {
+      if(!this.results || !this.results.lifestyle){
+        return []
+      }
       const inte = this.results.lifestyle.filter(
         (e) => e.ingredients.length > 0 && e.description !== "Not Set"
       );
@@ -708,19 +738,18 @@ export default {
     },
   },
   async mounted() {
-    debugger
     let email = this.email;
 
     if (this.$route.query.email) {
-      email = this.$route.query.email
+      email = this.$route.query.email;
     }
 
     this.localQuiz = localStorage.getItem("quiz");
 
     if (!this.localQuiz || email) {
-      console.log('here')
+      console.log("here");
       if (email) {
-        console.log('here2')
+        console.log("here2");
         fetch(`${this.base_url}/api/customer/${email}`, {
           method: "GET",
           headers: {
@@ -729,7 +758,7 @@ export default {
           },
         })
           .then((response) => {
-            console.log(response.status)
+            console.log(response.status);
             if (response.status === 404) {
               window.location.href = "/pages/quiz";
               return;
@@ -758,27 +787,24 @@ export default {
     this.initData();
   },
   methods: {
-    async addToCart(){
+    async addToCart() {
       this.isAdding = true;
-      await fetch(
-          '/cart/clear.js',
-          {
-            method: "POST"
-          }
-      );
+      await fetch("/cart/clear.js", {
+        method: "POST",
+      });
       const result = await fetch("/cart/add.json", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json"
+          Accept: "application/json",
         },
         body: JSON.stringify({
           id: 39956980826155,
           quantity: 1,
-          selling_plan: 506331179
-        })
-      })
-      window.location.href = '/checkout';
+          selling_plan: 506331179,
+        }),
+      });
+      window.location.href = "/checkout";
       this.isAdding = false;
     },
     async initData() {
@@ -797,7 +823,7 @@ export default {
       });
     },
     onImgLoad() {
-      const timeout = this.debug ? 1: 22130
+      const timeout = this.debug ? 1 : 22130;
       setTimeout(() => {
         this.isReady = true;
         this.$nextTick(() => {
