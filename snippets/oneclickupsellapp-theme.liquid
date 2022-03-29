@@ -1,5 +1,5 @@
 {% comment %}
-  Updated: 2022/02/22
+  Updated: 2022/03/21
 {% endcomment %}
 
 {% unless oneclickupsellapp %}
@@ -588,6 +588,20 @@ PrecheckoutIntegrations.prototype = {
                 this.bundlerForm.submit();
             }
         }
+    },
+
+    get minMaxify() {
+        return {
+            get present() {
+                return !!window.minMaxify;
+            },
+            get isFunction() {
+                return minMaxify.checkLimits instanceof Function;
+            },
+            get invalid() {
+                return this.present && this.isFunction && !minMaxify.checkLimits();
+            }
+        };
     }
 };
 
@@ -624,6 +638,12 @@ window.OCUApi = Object.assign(OCUApi, {
 
     initialize: function(params) {
         this.context = params.context;
+    },
+
+    onAccept: function() {
+    },
+
+    onDecline: function() {
     }
 });
 
@@ -636,6 +656,7 @@ PopupDispatcher.prototype = {
         this.target = target;
         this.event = event;
         this.appropriateResponse = null;
+        this.actualCart = null;
         this.listenCustomEvent();
         this.bt = OCUIncart.integrations().bt;
 
@@ -669,6 +690,7 @@ PopupDispatcher.prototype = {
 
                 try {
                     const app = self.helpers.isSubscriptionProductInCart(lqd.cart);
+                    if (app && this.isProductAction) return this.nativeClick();
                     if (app) return self.integrations[app].redirect(event, lqd.cart);
                 } catch (e) {
                     return this.checkout();
@@ -708,6 +730,7 @@ PopupDispatcher.prototype = {
             utils: utils,
             Updater: Updater,
             is_recharge_enabled: isRechargeEnabled,
+            is_skip_cart: lqd.skip_cart,
             product: lqd.product,
             integrations: {
                 zipifyPages: self.integrations.zipifyPages
@@ -744,8 +767,9 @@ PopupDispatcher.prototype = {
             'Shop-Domain': lqd.permanent_domain
         };
         const self = this.context;
-        const isSameCart = self.helpers.isSameCart(lqd.cart);
-        const isSameCartToken = self.helpers.isSameCartToken(lqd.cart);
+        const cart = this.actualCart ? this.actualCart : lqd.cart;
+        const isSameCart = self.helpers.isSameCart(cart);
+        const isSameCartToken = self.helpers.isSameCartToken(cart);
 
         if (!isSameCart && !isSameCartToken) utils.cookie.remove('ocu_popup_ids')
         const isShownOfferIdPresent = utils.cookie.get('ocu_popup_ids');
@@ -790,7 +814,7 @@ PopupDispatcher.prototype = {
         return this.context.checkout({
             redirect: true,
             redirect_url: url && url.redirect_url
-         });
+        });
     },
 
     isProductLocationOption: function(target) {
@@ -809,6 +833,8 @@ PopupDispatcher.prototype = {
 
         target.disabled = true;
         this.verifyToken()
+            .then(this[this.secondAttempt ? 'getActualCart' : '_emptyResolve'].bind(this))
+            .then((response) => this.actualCart = response && response.data)
             .then(function() {
                 this.getIncartConfig({ product_id: lqd.product.id, variant_id: variantId })
                     .then(function(response) {
@@ -832,6 +858,10 @@ PopupDispatcher.prototype = {
                 this.check(this.event, this.target, response.data);
             }.bind(this))
             .catch(this.checkout);
+    },
+
+    getActualCart: function() {
+        return this.context.cart.get();
     },
 
     nativeClick: function() {
@@ -877,8 +907,8 @@ PopupDispatcher.prototype = {
         return OCUIncart[this.kind + 'Upsells'];
     },
 
-    _incartPayload(data) {
-        const payload = this.context.helpers.getCartItems(lqd.cart.items);
+    _incartPayload() {
+        const payload = this.context.helpers.getCartItems(this.actualCart ? this.actualCart.items : lqd.cart.items);
         const variant = this._productPageVariant;
         const shownPopupId = utils.cookie.get('ocu_shown_id');
 
@@ -1115,8 +1145,8 @@ class CartDispatcher {
         const cartItems = this.helpers.getCartItems(items || lqd.cart.items).line_items;
 
         return cartItems.some(item => {
-            const wasEl = document.querySelector(`${this.selectors.productPrice || '[data-ocu-price-block'}="${item.variant_id}"]`);
-            const totalEl = document.querySelector(`${this.selectors.totalProductsPrice || '[data-ocu-total-block'}="${item.variant_id}"]`);
+            const wasEl = document.querySelector(`${this.selectors.productPrice || '[data-ocu-price-block'}="${item.key}"]`);
+            const totalEl = document.querySelector(`${this.selectors.totalProductsPrice || '[data-ocu-total-block'}="${item.key}"]`);
             const subtotalEl = document.querySelector(this.selectors.cartSubtotal || '[data-ocu-subtotal]');
             const cartDiscountEl = document.querySelector(this.selectors.cartDiscount || '[data-ocu-cart-discount]');
 
@@ -1125,7 +1155,7 @@ class CartDispatcher {
     }
 
     fillDiscountedPrice(lineItem) {
-        const wasPriceEls = document.querySelectorAll(`${this.selectors.productPrice || '[data-ocu-price-block'}="${lineItem.variantId}"]`);
+        const wasPriceEls = document.querySelectorAll(`${this.selectors.productPrice || '[data-ocu-price-block'}="${lineItem.key}"]`);
 
       	wasPriceEls.forEach(wasPriceEl => {
             if (!wasPriceEl) return;
@@ -1138,7 +1168,7 @@ class CartDispatcher {
     }
 
     fillItemTotal(lineItem) {
-        const totalEls = document.querySelectorAll(`${this.selectors.totalProductsPrice || '[data-ocu-total-block'}="${lineItem.variantId}"]`);
+        const totalEls = document.querySelectorAll(`${this.selectors.totalProductsPrice || '[data-ocu-total-block'}="${lineItem.key}"]`);
 
         totalEls.forEach(totalEl => {
             if (!totalEl) return;
@@ -1174,10 +1204,10 @@ class CartDispatcher {
     }
 
     fillSelectors(selectors) {
-        this.selectors.productPrice = selectors.productPrice;
-        this.selectors.totalProductsPrice = selectors.totalProductsPrice;
-        this.selectors.cartSubtotal = selectors.cartSubtotal;
-        this.selectors.cartDiscount = selectors.cartDiscount;
+        this.selectors.productPrice = `[${selectors.productPrice}`;
+        this.selectors.totalProductsPrice = `[${selectors.totalProductsPrice}`;
+        this.selectors.cartSubtotal = `[${selectors.cartSubtotal}]`;
+        this.selectors.cartDiscount = `[${selectors.cartDiscount}]`;
     }
 
     renderOCUDiscounts(selectors) {
@@ -1738,6 +1768,8 @@ Application.prototype = {
         if (this.helpers.isBuyNow(e) && !lqd.isPopupTriggerPage) return new BuyNow(e);
 
         if (this.helpers.isCartPopupRedirectsToCart(e)) return;
+
+        if (OCUIncart.integrations().minMaxify.invalid) return;
 
         // if (this.helpers.checkDirectCheckoutButtons(e.target)) {
         //     e.target.dataset.ocuCheckout = true;
@@ -3192,7 +3224,7 @@ function SkipCart() {
         const zpIntegration = self.handleZPEvent(e);
         if (zpIntegration) return;
 
-        self.popupDispatcher.target = e.target;
+        if (!self.popupDispatcher.target) self.popupDispatcher.target = e.target;
         if (self.popupDispatcher.isProductAction && !self.popupDispatcher.secondAttempt) return;
         let button = e.target.dataset.skipCart ? e.target : null;
         if (!button) button = e.target.closest('[data-skip-cart]');
@@ -3613,7 +3645,8 @@ function Helpers() {
             'line_price',
             'original_line_price',
             'final_price',
-            'final_line_price'
+            'final_line_price',
+            'key'
         ];
 
         const prepareItem = function(item) {
@@ -3694,6 +3727,9 @@ function Helpers() {
             const cartDrawerSalesRocketControl = document.querySelector(utils.store.get('cartDrawerSalesRocketControl').selector);
             if (cartDrawerSalesRocketControl) cartDrawerSalesRocketControl.click();
         }
+
+        const cartDrawerTimberControl = document.querySelector(utils.store.get('cartDrawerTimberControl').selector);
+        if (cartDrawerTimberControl) cartDrawerTimberControl.click();
 
         const cartDrawerControl = document.querySelector(utils.store.get('cartDrawerControl').selector);
         if (cartDrawerControl) cartDrawerControl.click();
@@ -3848,6 +3884,9 @@ function Store() {
             },
             cartDrawerSalesRocketControl: {
                 selector: '#cartSlider-shopper .ws-cs-close',
+            },
+            cartDrawerTimberControl: {
+                selector: '#CartDrawer .js-drawer-close button',
             },
             chatButton: {
                 selector: '#shopify-chat'
