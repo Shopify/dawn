@@ -1,112 +1,135 @@
 <template>
-  <div class="wrap-form">
-    <template v-if="isReady">
-      <form action="#" autocomplete="on" onsubmit="return false;">
-        <form-wizard
-        ref="formwizard"
-        @onComplete="onComplete"
-        @onNextStep="nextStep"
-        @afterChangeTab="afterChangeTab"
-        :name="userName"
-        :data="listAnwser"
-        :isShowNext="isShowNext"
-        :curerentIndex="questionIndex"
-        :ingredients="ingredients"
-      >
-        <template v-for="(item, index) in quiz" :key="index + 'tab'">
-          <tab-content :selected="index === questionIndex" :name="index + 'tab'">
-            <div class="question-header">
-              <!--                <div style="width: 30px" ></div>-->
-              <div v-if="item.svg" class="icon" v-html="item.svg"></div>
-              <h2>
-                {{ item.title }}
-                <small>
-                  {{ item.subtitle }}
-                </small>
-              </h2>
-            </div>
-            <div class="question-options">
-              <template
-                v-if="
-                  item.type === 'MultipleChoice' || item.type === 'SingleChoice'
-                "
-              >
-                <ul :class="item.options.length > 4 ? 'ks-cboxtags--2col ks-cboxtags':'ks-cboxtags'">
-                  <li
-                    v-for="(answer, answer_index) in item.options"
-                    :key="answer_index"
-                  >
-                    <input
-                      v-on:input="onChangeCheckbox(item, $event, item.type)"
-                      :id="item.slug + '-' + answer_index"
-                      :value="answer.id"
-                      :checked="
-                        currentAnwser
-                          ? currentAnwser.indexOf(answer.value) > -1
-                          : false
+  <div>
+    <template v-if="!isShowResult">
+      <div class="wrap-form">
+        <template v-if="isReady">
+          <form action="#" autocomplete="on" onsubmit="return false;">
+            <form-wizard
+              ref="formwizard"
+              @onComplete="onComplete"
+              @onNextStep="nextStep"
+              @afterChangeTab="afterChangeTab"
+              :name="userName"
+              :data="listAnwser"
+              :isShowNext="isShowNext"
+              :curerentIndex="questionIndex"
+              :ingredients="ingredients"
+            >
+              <template v-for="(item, index) in quiz" :key="index + 'tab'">
+                <tab-content
+                  :selected="index === questionIndex"
+                  :name="index + 'tab'"
+                >
+                  <div class="question-header">
+                    <!--                <div style="width: 30px" ></div>-->
+                    <div v-if="item.svg" class="icon" v-html="item.svg"></div>
+                    <h2>
+                      {{ item.title }}
+                      <small>
+                        {{ item.subtitle }}
+                      </small>
+                    </h2>
+                  </div>
+                  <div class="question-options">
+                    <template
+                      v-if="
+                        item.type === 'MultipleChoice' ||
+                        item.type === 'SingleChoice'
                       "
-                      type="checkbox"
-                    />
-                    <label :for="item.slug + '-' + answer_index">{{
-                      answer.title
-                    }}</label>
-                  </li>
-                </ul>
-              </template>
-              <template v-if="item.type === 'Text'">
-                <div class="field">
-                  <input
-                    class="field__input"
-                    type="text"
-                    :autocomplete="getAutoComplete(item)"
-                    :name="item.slug"
-                    @keyup="onFormChange(item, $event)"
-                  />
-                  <div class="error" v-if="isShowFieldRequire">
-                    This field is required.
-                  </div>
+                    >
+                      <ul
+                        :class="
+                          item.options.length > 4
+                            ? 'ks-cboxtags--2col ks-cboxtags'
+                            : 'ks-cboxtags'
+                        "
+                      >
+                        <li
+                          v-for="(answer, answer_index) in item.options"
+                          :key="answer_index"
+                        >
+                          <input
+                            v-on:input="
+                              onChangeCheckbox(item, $event, item.type)
+                            "
+                            :id="item.slug + '-' + answer_index"
+                            :value="answer.id"
+                            :checked="
+                              currentAnwser
+                                ? currentAnwser.indexOf(answer.value) > -1
+                                : false
+                            "
+                            type="checkbox"
+                          />
+                          <label :for="item.slug + '-' + answer_index">{{
+                            answer.title
+                          }}</label>
+                        </li>
+                      </ul>
+                    </template>
+                    <template v-if="item.type === 'Text'">
+                      <div class="field">
+                        <input
+                          class="field__input"
+                          type="text"
+                          :autocomplete="getAutoComplete(item)"
+                          :name="item.slug"
+                          @keyup="onFormChange(item, $event)"
+                        />
+                        <div class="error" v-if="isShowFieldRequire">
+                          This field is required.
+                        </div>
 
-                  <div class="error" v-if="!isValidAnwserQuestion">
-                    {{ item.category }} is not valid.
+                        <div class="error" v-if="!isValidAnwserQuestion">
+                          {{ item.category }} is not valid.
+                        </div>
+                      </div>
+                    </template>
+                    <template
+                      v-if="
+                        item.type === 'TextAutoComplete' &&
+                        listAutoComplete.length > 0
+                      "
+                    >
+                      <Multiselect
+                        v-model="multiValue"
+                        mode="tags"
+                        :searchable="true"
+                        :groups="false"
+                        :options="listAutoComplete"
+                        :close-on-select="false"
+                        label="name"
+                        track-by="name"
+                        @change="onAddItemAutoComplete()"
+                      />
+                    </template>
                   </div>
-                </div>
+                </tab-content>
               </template>
-              <template
-                v-if="
-                  item.type === 'TextAutoComplete' &&
-                  listAutoComplete.length > 0
-                "
-              >
-                <Multiselect
-                  v-model="multiValue"
-                  mode="tags"
-                  :searchable="true"
-                  :groups="false"
-                  :options="listAutoComplete"
-                  :close-on-select="false"
-                  label="name"
-                  track-by="name"
-                  @change="onAddItemAutoComplete()"
-                />
-              </template>
-            </div>
-          </tab-content>
+            </form-wizard>
+          </form>
         </template>
-      </form-wizard>
-      </form>
+        <div class="loading-evyana" v-if="!isReady">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="200"
+            viewBox="0 0 214 25"
+          >
+            <path
+              class="cls-1"
+              d="M0 25V0h13.6v2.3H2.5v9h10.7v2.2H2.5v9.2h11V25zM45.1 25h-2.4L32.5 0h2.8L44 21.9 52.7 0h2.7zM83.6 16.6V25h-2.4v-8.4L72.6 0h2.7l7 14 7.3-14h2.7zM120.2 0h-2.8l-10.6 25h2.6l3-6.8L118.8 3l5.7 13.7 3.6 8.4h2.7zM203.3 0h-2.7l-10.7 25h2.6l3-6.8L202 3l5.7 13.7 3.6 8.4h2.7zM167.8 25L153 3v22h-2.4V0h3.3l14 20.7V0h2.4v25z"
+            ></path>
+          </svg>
+
+          <div id="loading"></div>
+
+          <p class="text-loading">3 minutes to your best skincare, let's go!</p>
+        </div>
+      </div>
     </template>
-    <div class="loading-evyana" v-if="!isReady">
-      <svg xmlns="http://www.w3.org/2000/svg" width="200" viewBox="0 0 214 25">
-        <path
-          class="cls-1"
-          d="M0 25V0h13.6v2.3H2.5v9h10.7v2.2H2.5v9.2h11V25zM45.1 25h-2.4L32.5 0h2.8L44 21.9 52.7 0h2.7zM83.6 16.6V25h-2.4v-8.4L72.6 0h2.7l7 14 7.3-14h2.7zM120.2 0h-2.8l-10.6 25h2.6l3-6.8L118.8 3l5.7 13.7 3.6 8.4h2.7zM203.3 0h-2.7l-10.7 25h2.6l3-6.8L202 3l5.7 13.7 3.6 8.4h2.7zM167.8 25L153 3v22h-2.4V0h3.3l14 20.7V0h2.4v25z"
-        ></path>
-      </svg>
-
-      <div id="loading"></div>
-
-      <p class="text-loading">3 minutes to your best skincare, let's go!</p>
-    </div>
+    <template v-if="isShowResult">
+      <Results></Results>
+    </template>
   </div>
 </template>
 
@@ -117,7 +140,7 @@ import { store } from "../store/form_store.js";
 import { FilterOperator, FilterType } from "../js/constant.js";
 // import Multiselect from "vue-multiselect";
 import Multiselect from "@vueform/multiselect";
-
+import Results from "./Results.vue";
 import "@vueform/multiselect/themes/default.css";
 const checked = (value) => value === true;
 
@@ -127,6 +150,7 @@ export default {
     FormWizard,
     TabContent,
     Multiselect,
+    Results,
   },
   data() {
     return {
@@ -154,20 +178,27 @@ export default {
       multiValue: [],
       ingredients: [],
       isValidAnwserQuestion: true,
+      isShowResult: false,
     };
   },
   computed: {},
+  beforeMount() {
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const emailParam = urlParams.get('email');
+
+    if (this.$route.query.email || emailParam) {
+      this.isShowResult = true;
+    }
+  },
   async mounted() {
-    const response = await fetch(
-        `${this.base_url}/api/quiz/1`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + this.authToken,
-        },
-      }
-    );
+    const response = await fetch(`${this.base_url}/api/quiz/1`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + this.authToken,
+      },
+    });
     response.json().then(async (rs) => {
       this.quiz = rs.data.questions.filter(
         (e) => e.title.toLowerCase().indexOf("please list them") === -1
@@ -177,16 +208,13 @@ export default {
       this.localQuiz = localStorage.getItem("quiz");
       if (!this.localQuiz) {
         this.loading = true;
-        await fetch(
-            `${this.base_url}/api/quiz/1/lead`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer " + this.authToken,
-            },
-          }
-        )
+        await fetch(`${this.base_url}/api/quiz/1/lead`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + this.authToken,
+          },
+        })
           .then((rs) => rs.json())
           .then((result) => {
             this.localQuiz = result.data;
@@ -246,14 +274,14 @@ export default {
       }
       this.$forceUpdate();
     },
-    getAutoComplete(item){
-      if(item.category === 'name'){
-        return 'cc-given-name'
+    getAutoComplete(item) {
+      if (item.category === "name") {
+        return "cc-given-name";
       }
       if (item.category === "zip") {
-        return 'postal-code'
+        return "postal-code";
       }
-      return ''
+      return "";
     },
     onFormChange(item, $event) {
       if (item.category === "name") {
@@ -318,17 +346,14 @@ export default {
       this.isValidNext = false;
       this.questionIndex++;
       this.$refs.formwizard.triggerNext(this.questionIndex);
-      await fetch(
-          `${this.base_url}/api/quiz/1/lead/${this.localQuiz.id}`,
-        {
-          method: "PATCH",
-          body: JSON.stringify(payload),
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + this.authToken,
-          },
-        }
-      )
+      await fetch(`${this.base_url}/api/quiz/1/lead/${this.localQuiz.id}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + this.authToken,
+        },
+      })
         .then((rs) => rs.json())
         .then((result) => {
           this.localQuiz = result.data;
@@ -423,7 +448,9 @@ export default {
       this.$forceUpdate();
       if (this.quiz[this.questionIndex].type === "TextAutoComplete") {
         const response = await fetch(
-            `${this.base_url}/api/quiz/1/question/${this.quiz[this.questionIndex].id}`,
+          `${this.base_url}/api/quiz/1/question/${
+            this.quiz[this.questionIndex].id
+          }`,
           {
             method: "GET",
             headers: {
@@ -450,17 +477,14 @@ export default {
       let payload = {
         zip: this.currentAnwser,
       };
-      await fetch(
-          `${this.base_url}/api/quiz/1/lead/${this.localQuiz.id}`,
-        {
-          method: "PATCH",
-          body: JSON.stringify(payload),
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + this.authToken,
-          },
-        }
-      )
+      await fetch(`${this.base_url}/api/quiz/1/lead/${this.localQuiz.id}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + this.authToken,
+        },
+      })
         .then((rs) => rs.json())
         .then((result) => {
           this.localQuiz = result.data;

@@ -18069,7 +18069,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _store_form_store_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../store/form_store.js */ "./src/store/form_store.js");
 /* harmony import */ var _js_constant_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../js/constant.js */ "./src/js/constant.js");
 /* harmony import */ var _vueform_multiselect__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @vueform/multiselect */ "./node_modules/@vueform/multiselect/dist/multiselect.js");
-/* harmony import */ var _vueform_multiselect_themes_default_css__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @vueform/multiselect/themes/default.css */ "./node_modules/@vueform/multiselect/themes/default.css");
+/* harmony import */ var _Results_vue__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./Results.vue */ "./src/components/Results.vue");
+/* harmony import */ var _vueform_multiselect_themes_default_css__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @vueform/multiselect/themes/default.css */ "./node_modules/@vueform/multiselect/themes/default.css");
 
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
@@ -18102,6 +18103,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
 
 
+
 var checked = function checked(value) {
   return value === true;
 };
@@ -18111,7 +18113,8 @@ var checked = function checked(value) {
   components: {
     FormWizard: _FormWizard_FormWizard__WEBPACK_IMPORTED_MODULE_1__["default"],
     TabContent: _FormWizard_TabContent_vue__WEBPACK_IMPORTED_MODULE_2__["default"],
-    Multiselect: _vueform_multiselect__WEBPACK_IMPORTED_MODULE_5__["default"]
+    Multiselect: _vueform_multiselect__WEBPACK_IMPORTED_MODULE_5__["default"],
+    Results: _Results_vue__WEBPACK_IMPORTED_MODULE_6__["default"]
   },
   data: function data() {
     return {
@@ -18138,10 +18141,19 @@ var checked = function checked(value) {
       listAutoComplete: [],
       multiValue: [],
       ingredients: [],
-      isValidAnwserQuestion: true
+      isValidAnwserQuestion: true,
+      isShowResult: false
     };
   },
   computed: {},
+  beforeMount: function beforeMount() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var emailParam = urlParams.get('email');
+
+    if (this.$route.query.email || emailParam) {
+      this.isShowResult = true;
+    }
+  },
   mounted: function mounted() {
     var _this = this;
 
@@ -18304,15 +18316,15 @@ var checked = function checked(value) {
       }))();
     },
     getAutoComplete: function getAutoComplete(item) {
-      if (item.category === 'name') {
-        return 'cc-given-name';
+      if (item.category === "name") {
+        return "cc-given-name";
       }
 
       if (item.category === "zip") {
-        return 'postal-code';
+        return "postal-code";
       }
 
-      return '';
+      return "";
     },
     onFormChange: function onFormChange(item, $event) {
       if (item.category === "name") {
@@ -18897,28 +18909,34 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     var _this = this;
 
     return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee2() {
-      var email;
+      var email, urlParams, emailParam;
       return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee2$(_context2) {
         while (1) {
           switch (_context2.prev = _context2.next) {
             case 0:
               email = _this.email;
+              urlParams = new URLSearchParams(window.location.search);
+              emailParam = urlParams.get("email");
 
               if (_this.$route.query.email) {
                 email = _this.$route.query.email;
               }
 
+              if (emailParam) {
+                email = emailParam;
+              }
+
               _this.localQuiz = localStorage.getItem("quiz");
 
               if (!(!_this.localQuiz || email)) {
-                _context2.next = 13;
+                _context2.next = 16;
                 break;
               }
 
               console.log("here");
 
               if (!email) {
-                _context2.next = 10;
+                _context2.next = 13;
                 break;
               }
 
@@ -18965,23 +18983,23 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               //if there is no lead id for this redirect to quiz
               //if there is no email redirect to login and add checkout_url=/pages/your-quiz-results
 
-              _context2.next = 12;
+              _context2.next = 15;
               break;
 
-            case 10:
+            case 13:
               // this.$router.push("/");
               window.location.href = "/account/login?checkout_url=/pages/your-quiz-results";
               return _context2.abrupt("return");
 
-            case 12:
+            case 15:
               return _context2.abrupt("return");
 
-            case 13:
+            case 16:
               _this.localQuiz = JSON.parse(_this.localQuiz);
 
               _this.initData();
 
-            case 15:
+            case 18:
             case "end":
               return _context2.stop();
           }
@@ -19759,6 +19777,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
 
 var _hoisted_1 = {
+  key: 0,
   "class": "wrap-form"
 };
 var _hoisted_2 = {
@@ -19825,7 +19844,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
   var _component_form_wizard = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("form-wizard");
 
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [$data.isReady ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("form", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_form_wizard, {
+  var _component_Results = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Results");
+
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", null, [!$data.isShowResult ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [$data.isReady ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("form", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_form_wizard, {
     ref: "formwizard",
     onOnComplete: $options.onComplete,
     onOnNextStep: $options.nextStep,
@@ -19926,7 +19947,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
   }, 8
   /* PROPS */
-  , ["onOnComplete", "onOnNextStep", "onAfterChangeTab", "name", "data", "isShowNext", "curerentIndex", "ingredients"])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), !$data.isReady ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_12, _hoisted_16)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]);
+  , ["onOnComplete", "onOnNextStep", "onAfterChangeTab", "name", "data", "isShowNext", "curerentIndex", "ingredients"])])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), !$data.isReady ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_12, _hoisted_16)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $data.isShowResult ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_Results, {
+    key: 1
+  })) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]);
 }
 
 /***/ }),
@@ -21050,7 +21073,7 @@ var router = (0,vue_router__WEBPACK_IMPORTED_MODULE_7__.createRouter)({
 
 });
 router.beforeEach(function (to, from, next) {
-  if (to.path === '/' && window.location.pathname !== '/pages/quiz') {
+  if (to.path === '/' && window.location.pathname !== '/pages/quiz' && window.location.search.indexOf('email=') === -1) {
     window.location.href = '/pages/quiz';
   } else {
     next();

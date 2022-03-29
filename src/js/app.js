@@ -105,7 +105,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next)=>{
-  if ( to.path === '/' && window.location.pathname !== '/pages/quiz'){
+  if ( to.path === '/' && window.location.pathname !== '/pages/quiz' && window.location.search.indexOf('email=') === -1){
     window.location.href = '/pages/quiz'
   } else {
     next();

@@ -711,8 +711,8 @@ export default {
   },
   computed: {
     listLifeStyle() {
-      if(!this.results || !this.results.lifestyle){
-        return []
+      if (!this.results || !this.results.lifestyle) {
+        return [];
       }
       return this.results.lifestyle.filter(
         (e) => e.ingredients.length > 0 && e.description !== "Not Set"
@@ -720,8 +720,8 @@ export default {
     },
 
     listInteLifeStyle() {
-      if(!this.results || !this.results.lifestyle){
-        return []
+      if (!this.results || !this.results.lifestyle) {
+        return [];
       }
       const inte = this.results.lifestyle.filter(
         (e) => e.ingredients.length > 0 && e.description !== "Not Set"
@@ -739,9 +739,14 @@ export default {
   },
   async mounted() {
     let email = this.email;
-
+    const urlParams = new URLSearchParams(window.location.search);
+    const emailParam = urlParams.get("email");
     if (this.$route.query.email) {
       email = this.$route.query.email;
+    }
+
+    if (emailParam) {
+      email = emailParam;
     }
 
     this.localQuiz = localStorage.getItem("quiz");
