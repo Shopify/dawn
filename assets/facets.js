@@ -179,11 +179,17 @@ class FacetFiltersForm extends HTMLElement {
       this.onSubmitForm(searchParams, event)
     } else {
       const forms = [];
+      const isMobile = event.target.closest('form').id === 'FacetFiltersMobile';
+
       sortFilterForms.forEach((form) => {
-        if (event.target.closest('form').id === form.id && (form.id == 'FacetSortForm' || form.id == 'FacetFiltersForm' || form.id == 'FacetSortDrawerForm' || form.id == 'FacetFiltersFormMobile')) {
-          forms.push(this.createSearchParams(form))
+        if (!isMobile) {
+          if (form.id === 'FacetSortForm' || form.id === 'FacetFiltersForm' || form.id === 'FacetSortDrawerForm') {
+            forms.push(this.createSearchParams(form));
+          }
+        } else if (form.id == 'FacetFiltersFormMobile') {
+          forms.push(this.createSearchParams(form));
         }
-      })
+      });
       this.onSubmitForm(forms.join('&'), event)
     }
   }
