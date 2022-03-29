@@ -39,6 +39,8 @@ class HeaderMenu extends DetailsDisclosure {
   }
 
   onToggle() {
+    document.body.classList.toggle('overflow-hidden', this.querySelectorAll('.mega-menu[open]').length);
+
     if (document.documentElement.style.getPropertyValue('--header-bottom-position-desktop') !== '') return;
     if (this.header) document.documentElement.style.setProperty('--header-bottom-position-desktop', `${Math.floor(this.header.getBoundingClientRect().bottom)}px`);
   }
