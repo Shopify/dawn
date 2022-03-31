@@ -43,7 +43,7 @@ class HeaderMenu extends DetailsDisclosure {
     this.header.preventHide = !!this.querySelectorAll('.mega-menu[open]').length;
 
     if (document.documentElement.style.getPropertyValue('--header-bottom-position-desktop') !== '') return;
-    document.documentElement.style.setProperty('--header-bottom-position-desktop', `${Math.floor(this.header.getBoundingClientRect().bottom)}px`);    
+    document.documentElement.style.setProperty('--header-bottom-position-desktop', `${Math.floor(this.header.getBoundingClientRect().bottom)}px`);
   }
 }
 
