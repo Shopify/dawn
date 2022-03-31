@@ -35,14 +35,15 @@ customElements.define('details-disclosure', DetailsDisclosure);
 class HeaderMenu extends DetailsDisclosure {
   constructor() {
     super();
-    this.header = document.querySelector('header');
+    this.header = document.querySelector('.header-wrapper');
   }
 
   onToggle() {
-    document.body.classList.toggle('overflow-hidden', this.querySelectorAll('.mega-menu[open]').length);
+    if (!this.header) return;
+    this.header.preventHide = !!this.querySelectorAll('.mega-menu[open]').length;
 
     if (document.documentElement.style.getPropertyValue('--header-bottom-position-desktop') !== '') return;
-    if (this.header) document.documentElement.style.setProperty('--header-bottom-position-desktop', `${Math.floor(this.header.getBoundingClientRect().bottom)}px`);
+    document.documentElement.style.setProperty('--header-bottom-position-desktop', `${Math.floor(this.header.getBoundingClientRect().bottom)}px`);    
   }
 }
 
