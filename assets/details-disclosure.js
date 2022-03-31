@@ -40,7 +40,7 @@ class HeaderMenu extends DetailsDisclosure {
 
   onToggle() {
     if (!this.header) return;
-    this.header.preventHide = !!this.querySelectorAll('.mega-menu[open]').length;
+    this.header.preventHide = this.mainDetailsToggle.open;
 
     if (document.documentElement.style.getPropertyValue('--header-bottom-position-desktop') !== '') return;
     document.documentElement.style.setProperty('--header-bottom-position-desktop', `${Math.floor(this.header.getBoundingClientRect().bottom)}px`);
