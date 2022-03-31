@@ -6,6 +6,7 @@ class CartRemoveButton extends HTMLElement {
       const cartItems = this.closest('cart-items') || this.closest('cart-drawer-items');
       cartItems.updateQuantity(this.dataset.index, 0);
     });
+    // throw a custom event from here ? So that I can pick it up in the cart drawer JS and add the `is-empty` class
   }
 }
 
@@ -92,6 +93,7 @@ class CartItems extends HTMLElement {
       }).catch((e) => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         const errors = document.getElementById('cart-errors') || document.getElementById('drawer-cart-errors');
+        console.log('window cartStrings errors', window.cartStrings.error)
         errors.textContent = window.cartStrings.error;
         this.disableLoading();
       });

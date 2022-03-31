@@ -25,14 +25,15 @@ class CartDrawer extends HTMLElement {
   }
 
   renderContents(parsedState) {
-      this.productId = parsedState.id;
-      this.getSectionsToRender().forEach((section => {
-        console.log(this.getSectionDOM(parsedState.sections[section.id], section.selector));
-        document.getElementById('cart-drawer-inner').innerHTML =
-          this.getSectionDOM(parsedState.sections[section.id], section.selector).querySelector('#cart-drawer-inner').innerHTML;
-      }));
+    console.log('this is running when atc is triggered', this.querySelector('.drawer__inner'))
+    this.querySelector('.drawer__inner').classList.contains('is-empty') && this.querySelector('.drawer__inner').classList.remove('is-empty');
+    this.productId = parsedState.id;
+    this.getSectionsToRender().forEach((section => {
+      document.getElementById('cart-drawer-inner').innerHTML =
+        this.getSectionDOM(parsedState.sections[section.id], section.selector).querySelector('#cart-drawer-inner').innerHTML;
+    }));
 
-      this.open();
+    this.open();
   }
 
   getSectionsToRender() {
