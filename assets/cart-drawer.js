@@ -41,6 +41,10 @@ class CartDrawer extends HTMLElement {
       {
         id: 'cart-drawer',
         selector: 'cart-drawer'
+      },
+      {
+        id: 'cart-drawer-live-region-text',
+        selector: 'cart-drawer'
       }
     ];
   }
