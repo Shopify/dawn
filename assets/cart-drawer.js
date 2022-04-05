@@ -34,9 +34,6 @@ class CartDrawer extends HTMLElement {
 
       elementToReplace.innerHTML =
         this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
-      // console.log(section);
-      // document.getElementById('cart-drawer-inner').innerHTML =
-      //   this.getSectionDOM(parsedState.sections[section.id], section.selector).querySelector('#cart-drawer-inner').innerHTML;
     }));
 
     this.open();
