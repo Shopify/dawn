@@ -29,22 +29,36 @@ class CartDrawer extends HTMLElement {
     this.querySelector('.drawer__inner').classList.contains('is-empty') && this.querySelector('.drawer__inner').classList.remove('is-empty');
     this.productId = parsedState.id;
     this.getSectionsToRender().forEach((section => {
-      document.getElementById('cart-drawer-inner').innerHTML =
-        this.getSectionDOM(parsedState.sections[section.id], section.selector).querySelector('#cart-drawer-inner').innerHTML;
+      const elementToReplace =
+            document.getElementById(section.id).querySelector(section.selector) || document.getElementById(section.id);
+
+      elementToReplace.innerHTML =
+        this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
+      // console.log(section);
+      // document.getElementById('cart-drawer-inner').innerHTML =
+      //   this.getSectionDOM(parsedState.sections[section.id], section.selector).querySelector('#cart-drawer-inner').innerHTML;
     }));
 
     this.open();
+  }
+
+  getSectionInnerHTML(html, selector = '.shopify-section') {
+    return new DOMParser()
+      .parseFromString(html, 'text/html')
+      .querySelector(selector).innerHTML;
   }
 
   getSectionsToRender() {
     return [
       {
         id: 'cart-drawer',
+        section: 'cart-drawer',
         selector: 'cart-drawer'
       },
       {
-        id: 'cart-drawer-live-region-text',
-        selector: 'cart-drawer'
+        id: 'cart-icon-bubble',
+        section: 'cart-icon-bubble',
+        selector: '.shopify-section'
       }
     ];
   }
