@@ -6,7 +6,6 @@ class CartRemoveButton extends HTMLElement {
       const cartItems = this.closest('cart-items') || this.closest('cart-drawer-items');
       cartItems.updateQuantity(this.dataset.index, 0);
     });
-    // throw a custom event from here ? So that I can pick it up in the cart drawer JS and add the `is-empty` class
   }
 }
 
