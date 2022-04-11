@@ -6,14 +6,15 @@ class CartDrawer extends HTMLElement {
     this.querySelector('#cart-drawer-overlay').addEventListener('click', this.close.bind(this));
   }
 
-  open() {
+  open(triggeredBy) {
+    if (triggeredBy) this.setActiveElement(triggeredBy);
     this.classList.add('animate', 'active');
     this.addEventListener('transitionend', () => {
       this.focus();
       const cartDrawer = document.getElementById('cart-drawer');
-      const focusElement = cartDrawer.querySelector('.cart-item__link') || cartDrawer.querySelector('.drawer__close');
+      const focusElement = cartDrawer.querySelector('cart-drawer-items') || cartDrawer.querySelector('.drawer__close');
       trapFocus(cartDrawer, focusElement);
-      this.querySelector('thead').style.top = `${ document.querySelector('.drawer__header').offsetHeight }px`;
+      if (this.querySelector('thead')) this.querySelector('thead').style.top = `${ document.querySelector('.drawer__header').offsetHeight }px`;
     }, { once: true });
     document.body.classList.add(`overflow-hidden`);
   }
@@ -28,8 +29,8 @@ class CartDrawer extends HTMLElement {
     this.querySelector('.drawer__inner').classList.contains('is-empty') && this.querySelector('.drawer__inner').classList.remove('is-empty');
     this.productId = parsedState.id;
     this.getSectionsToRender().forEach((section => {
-      const elementToReplace = document.getElementById(section.id).querySelector(section.selector) || document.getElementById(section.id);
-      elementToReplace.innerHTML = this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
+      document.getElementById(section.id).innerHTML =
+          this.getSectionInnerHTML(parsedState.sections[section.id], section.selector);
     }));
 
     setTimeout(() => {
@@ -48,13 +49,10 @@ class CartDrawer extends HTMLElement {
     return [
       {
         id: 'cart-drawer',
-        section: 'cart-drawer',
-        selector: 'cart-drawer'
+        selector: '#cart-drawer'
       },
       {
         id: 'cart-icon-bubble',
-        section: 'cart-icon-bubble',
-        selector: '.shopify-section'
       }
     ];
   }
