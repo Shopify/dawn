@@ -8,7 +8,6 @@ class CartDrawer extends HTMLElement {
 
   open() {
     this.classList.add('animate', 'active');
-
     this.addEventListener('transitionend', () => {
       this.focus();
       const cartDrawer = document.getElementById('cart-drawer');
@@ -26,15 +25,11 @@ class CartDrawer extends HTMLElement {
   }
 
   renderContents(parsedState) {
-    console.log('this is running when atc is triggered', this.querySelector('.drawer__inner'))
     this.querySelector('.drawer__inner').classList.contains('is-empty') && this.querySelector('.drawer__inner').classList.remove('is-empty');
     this.productId = parsedState.id;
     this.getSectionsToRender().forEach((section => {
-      const elementToReplace =
-            document.getElementById(section.id).querySelector(section.selector) || document.getElementById(section.id);
-
-      elementToReplace.innerHTML =
-        this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
+      const elementToReplace = document.getElementById(section.id).querySelector(section.selector) || document.getElementById(section.id);
+      elementToReplace.innerHTML = this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
     }));
 
     setTimeout(() => {

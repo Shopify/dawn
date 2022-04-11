@@ -150,7 +150,6 @@ class CartItems extends HTMLElement {
 customElements.define('cart-items', CartItems);
 
 class CartDrawerItems extends CartItems {
-
   getSectionsToRender() {
     return [
       {
