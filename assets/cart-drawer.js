@@ -14,7 +14,6 @@ class CartDrawer extends HTMLElement {
       const cartDrawer = document.getElementById('cart-drawer');
       const focusElement = cartDrawer.querySelector('cart-drawer-items') || cartDrawer.querySelector('.drawer__close');
       trapFocus(cartDrawer, focusElement);
-      if (this.querySelector('thead')) this.querySelector('thead').style.top = `${ document.querySelector('.drawer__header').offsetHeight }px`;
     }, { once: true });
     document.body.classList.add(`overflow-hidden`);
   }
