@@ -11,7 +11,7 @@ globoRelatedProductsConfig = {
     },
     page: 'thankyou',
     translation: {"add_to_cart":"Add to cart","added_to_cart":"Added to cart","add_selected_to_cart":"Add selected to cart","added_selected_to_cart":"Added selected to cart","sale":"Sale","total_price":"Total price:","this_item":"This item:","sold_out":"Sold out","add_to_cart_short":"ADD","added_to_cart_short":"ADDED"},
-    settings: {"hidewatermark":false,"redirect":true,"new_tab":false,"image_ratio":"400:500","hidden_tags":null,"exclude_tags":null,"hidden_collections":null,"carousel_autoplay":false,"carousel_disable_in_mobile":false,"carousel_items":"5","discount":{"enable":false,"condition":"any","type":"percentage","value":10},"sold_out":false,"carousel_loop":true,"carousel_rtl":false,"visible_tags":null},
+    settings: {"hidewatermark":false,"redirect":true,"new_tab":false,"image_ratio":"400:500","hidden_tags":null,"exclude_tags":null,"hidden_collections":null,"carousel_autoplay":true,"carousel_disable_in_mobile":false,"carousel_items":"5","discount":{"enable":false,"condition":"any","type":"percentage","value":10},"sold_out":false,"carousel_loop":true,"carousel_rtl":false,"visible_tags":null},
     manualRecommendations: {},
     boughtTogetherIds: {},
     trendingProducts: [],
