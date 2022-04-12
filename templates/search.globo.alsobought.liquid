@@ -1,0 +1,39 @@
+{%- layout none -%}
+{%- if search.terms == 'data' -%}
+{%- assign tags = '' -%}{"collections":[
+    {%- for collection in collections -%}{"id":"{{-collection.id-}}","handle":"{{-collection.handle-}}","title":{{collection.title | json}},"image":{%- if collection.image -%}{{- collection.image | img_url: '100x' | json -}}{%- else -%}null{%- endif -%}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}
+    ],"vendors":{{shop.vendors | json}},"types":{{shop.types | json}},"tags":{{ collections.all.all_tags | json }}}
+{%- elsif search.terms contains 'handles:' -%}
+[
+{%- assign params = canonical_url | url_decode | split: "?" | last | split: "&" -%}
+{%- assign handles = '' -%}
+{%- for str in params -%}
+{%- assign str_split = str | split: "=" -%}
+{%- if str_split.first == 'q' -%}{%- assign handles = str_split.last | remove_first: "handles:" -%}{%- endif -%}
+{%- endfor -%}
+{%- if handles != '' -%}
+{%- assign handles = handles | split: "|" -%}
+{%- for handle in handles limit:20 -%}
+{% assign product = all_products[handle] -%}{%- unless forloop.first -%},{%- endunless -%}{{-product | json-}}
+{%- endfor -%}
+{%- endif -%}
+]
+{%- else -%}
+{%- if search.results_count > 0 -%}{%- assign comma = '' -%}{%- paginate search.results by 10 -%}[{%- for product in search.results -%}
+    {%- if product.available -%}        {{comma}}{%- assign comma = ',' -%}
+        {
+            "id":{{- product.id -}},
+            "available": {{- product.available -}},
+            "title":{{- product.title |json -}},
+            "handle":{{- product.handle |json -}},
+            "images":{{- product.images | json -}},
+            "tags":{{- product.tags |json -}},
+            "collections": {{- product.collections | json -}},
+            "type":{{- product.type |json -}},
+            "variants":{{- product.variants |json -}},
+            "vendor":{{- product.vendor |json -}},
+            "price":{{- product.price |json -}},
+            "compare_at_price":{{- product.compare_at_price |json -}}
+        }
+    {%- endif -%}{%- endfor -%}]{%- endpaginate -%}{%- else -%}[]{%- endif -%}
+{%- endif -%}

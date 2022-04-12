@@ -1,0 +1,138 @@
+<script type="text/javascript">
+  {%- assign assetsUrl = 'product-1.png' | asset_img_url: '50x' -%}
+  {%- assign assetsUrl = assetsUrl | split: 'product-1_50x.png' -%}
+  window.moneyFormat = "{{ shop.money_format | replace:'"',"'" }}";
+  window.shopCurrency = "{{ shop.currency }}";
+  window.assetsUrl = '{{ assetsUrl[0] }}';
+</script>
+<script>
+  window.globoRelatedProductsConfig = {
+    apiUrl: "https://related-products.globosoftware.net/api",
+    alternateApiUrl: "https://related-products.globosoftware.net",
+    shop: "{{ shop.permanent_domain }}",
+    shopNumber: 34213,
+    domain: "{{ shop.domain }}",
+    customer: {%-if customer-%}{{customer.id}}{%-else-%}null{%-endif-%},
+    urls: {
+      search: {{ routes.search_url | json }},
+      collection: {{ routes.collections_url | json }},
+    },
+    page: '{{request.page_type}}',
+    translation: {"add_to_cart":"Add to cart","added_to_cart":"Added to cart","add_selected_to_cart":"Add selected to cart","added_selected_to_cart":"Added selected to cart","sale":"Sale","total_price":"Total price:","this_item":"This item:","sold_out":"Sold out","add_to_cart_short":"ADD","added_to_cart_short":"ADDED"},
+    settings: {"redirect":true,"new_tab":true,"image_ratio":"400:500","visible_tags":null,"hidden_tags":null,"hidden_collections":null,"exclude_tags":null,"carousel_autoplay":false,"carousel_disable_in_mobile":false,"carousel_loop":true,"carousel_rtl":false,"carousel_items":"5","sold_out":false,"discount":{"enable":false,"condition":"any","type":"percentage","value":10}},
+    manualRecommendations: {},
+    boughtTogetherIds: {},
+    trendingProducts: {% if shop.metafields.globo.trending %}{{shop.metafields.globo.trending | json}}{% else %}[]{% endif %},
+    productBoughtTogether: {"type":"product_bought_together","enable":true,"title":{"text":"Frequently Bought Together","color":"#012169","fontSize":"25","align":"left"},"subtitle":{"text":"","color":"#012169","fontSize":"18"},"limit":"10","maxWidth":"1500","conditions":[{"id":"bought_together","status":1},{"id":"manual","status":1},{"id":"vendor","type":"same","status":1},{"id":"type","type":"same","status":1},{"id":"collection","type":"same","status":1},{"id":"tags","type":"same","status":1},{"id":"global","status":1}],"template":{"id":"2","elements":["price","addToCartBtn","variantSelector","saleLabel"],"productTitle":{"fontSize":"15","color":"#012169"},"productPrice":{"fontSize":"14","color":"#012169"},"productOldPrice":{"fontSize":16,"color":"#012169"},"button":{"fontSize":"14","color":"#FFFFFF","backgroundColor":"#012169"},"saleLabel":{"color":"#FFFFFF","backgroundColor":"#0eac3b"},"this_item":true,"selected":true},"random":false,"discount":true},
+    productRelated: {"type":"product_related","enable":true,"title":{"text":"Related products","color":"#012169","fontSize":"24","align":"left"},"subtitle":{"text":"","color":"#012169","fontSize":"18"},"limit":"10","maxWidth":"1500","conditions":[{"id":"manual","status":0},{"id":"bought_together","status":0},{"id":"vendor","type":"same","status":1},{"id":"type","type":"same","status":1},{"id":"collection","type":"same","status":1},{"id":"tags","type":"same","status":1},{"id":"global","status":1}],"template":{"id":"1","elements":["price","saleLabel","variantSelector","addToCartBtn","customCarousel"],"productTitle":{"fontSize":"13","color":"#012169"},"productPrice":{"fontSize":"16","color":"#012169"},"productOldPrice":{"fontSize":"13","color":"#012169"},"button":{"fontSize":"13","color":"#FFFFFF","backgroundColor":"#012169"},"saleLabel":{"color":"#FFFFFF","backgroundColor":"#0eac3b"},"this_item":false,"selected":false,"customCarousel":{"large":"4","small":"4","tablet":"3","mobile":"2"}},"random":false,"discount":false},
+    cart: {"type":"cart","enable":true,"title":{"text":"What else do you need?","color":"#012169","fontSize":"20","align":"left"},"subtitle":{"text":"","color":"#012169","fontSize":"18"},"limit":"10","maxWidth":"1500","conditions":[{"id":"manual","status":1},{"id":"bought_together","status":1},{"id":"tags","type":"same","status":1},{"id":"global","status":1}],"template":{"id":"3","elements":["price","addToCartBtn","variantSelector","saleLabel"],"productTitle":{"fontSize":"14","color":"#012169"},"productPrice":{"fontSize":"14","color":"#012169"},"productOldPrice":{"fontSize":16,"color":"#012169"},"button":{"fontSize":"15","color":"#FFFFFF","backgroundColor":"#012169"},"saleLabel":{"color":"#FFFFFF","backgroundColor":"#0eac3b"},"this_item":true,"selected":true},"random":false,"discount":false},
+    basis_collection_handle: {% if collections.all.id %}'globo_basis_collection'{% else %}'all'{% endif %},
+    widgets: [],
+    offers: [],
+    view_name: 'globo.alsobought',
+    cart_properties_name: '_bundle',
+    upsell_properties_name: '_upsell_bundle',
+    discounted_ids: [],
+    discount_min_amount: 0,
+    offerdiscounted_ids: [],
+    offerdiscount_min_amount: 0,
+    {%- if request.page_type == 'cart' -%}
+    data: {
+      ids: {{cart.items | map: 'product_id' | uniq | json}},
+      vendors: {{cart.items | map: 'vendor' | uniq | json}},
+      types: [],
+      tags: [],
+      collections: []
+    },
+    {%- elsif request.page_type == 'product' and product -%}
+    data: {
+      ids: ["{{product.id}}"],
+      vendors: [{{ product.vendor | json }}],
+      types: [{{ product.type | json }}],
+      tags: {{ product.tags | json }},
+      collections: []
+    },
+    {%-else-%}
+    data: {},
+    {%- endif -%}
+    {%- if request.page_type == 'product' and product -%}
+      product: {
+        id: "{{ product.id }}",
+        title: {{ product.title | json }},
+        handle: {{ product.handle | json }},
+        price: {{ product.price }},
+        compare_at_price: {% if product.compare_at_price %}{{ product.compare_at_price }}{% else %}null{% endif %},
+        images: [{% if product.featured_image %}"{{ product.featured_image | img_url: 'master' }}"{% endif %}],
+         variants: {{ product.variants | json }},
+         available: {{ product.available }},
+        vendor: {{ product.vendor | json }},
+        product_type: {{ product.type | json }},
+        tags: {{ product.tags | json }},
+        published_at:"{{ product.published_at }}"
+              },
+    {%- endif -%}
+    upselldatas:{},
+    cartitems:[],
+    no_image_url: "https://cdn.shopify.com/s/images/admin/no-image-large.gif"
+  };
+</script>
+<script>
+  {%- if request.page_type == 'product' and product -%}
+    {%- if collection -%}
+      globoRelatedProductsConfig.data.collections.push({{collection.handle|json}});
+      globoRelatedProductsConfig.collection = {{collection.handle|json}};
+    {%- endif -%}
+    {%- if product.collections -%}
+    globoRelatedProductsConfig.data.collections = globoRelatedProductsConfig.data.collections.concat({{product.collections | map: 'handle' | json}});
+    {%- endif -%}
+    globoRelatedProductsConfig.boughtTogetherIds[{{product.id | json}}] = {%- if product.metafields.globo.boughtTogetherIds -%}{{product.metafields.globo.boughtTogetherIds | json}}{%- else -%}false{%- endif -%};
+  
+    globoRelatedProductsConfig.upselldatas[{{product.id | json}}] = {
+      title: {{ product.title | json }},
+      collections : {%- if product.collections -%}{{product.collections | map: 'handle' | json}}{%- else -%}[]{%- endif -%},
+      tags: {%- if product.collections -%}{{ product.tags | json }}{%- else -%}[]{%- endif -%},
+      product_type: {%- if product.collections -%}{{ product.type | json }}{%- else -%}''{%- endif -%}
+    };
+   {%- endif -%}
+
+  {%- if cart.items -%}
+    {%- for item in cart.items -%}
+
+      {%- if request.page_type == 'cart' -%}
+        {%- if item.product.type -%}
+        globoRelatedProductsConfig.data.types.push({{item.product.type | json}});
+        {%- endif -%}
+        {%- if item.product.tags -%}
+        globoRelatedProductsConfig.data.tags = globoRelatedProductsConfig.data.tags.concat({{item.product.tags | json}});
+        {%- endif -%}
+        {%- if item.product.collections -%}
+        globoRelatedProductsConfig.data.collections = globoRelatedProductsConfig.data.collections.concat({{item.product.collections | map: 'handle' | json}});
+        {%- endif -%}
+        globoRelatedProductsConfig.boughtTogetherIds[{{item.product_id | json}}] = {%- if item.product.metafields.globo.boughtTogetherIds -%}{{item.product.metafields.globo.boughtTogetherIds | json}}{%- else -%}false{%- endif -%};
+      
+        globoRelatedProductsConfig.upselldatas["{{ item.product_id | json}}"] = {
+          title: {{ item.product.title | json }},
+          collections : {%- if item.product.collections -%}{{item.product.collections | map: 'handle' | json}}{%- else -%}[]{%- endif -%},
+          tags: {%- if item.product.tags -%}{{item.product.tags | json}}{%- else -%}[]{%- endif -%},
+          product_type: {%- if item.product.type -%}{{item.product.type | json}}{%- else -%}''{%- endif -%}
+        };
+        globoRelatedProductsConfig.cartitems.push("{{ item.product_id }}");
+      
+      {%- endif -%}
+
+      {%- for property in item.properties -%}
+        {%- if property.first == '_bundle' or property.first == '_upsell_bundle' -%}
+          globoRelatedProductsConfig.discount_min_amount += {{item.final_line_price}};
+          globoRelatedProductsConfig.discounted_ids.push({{item.product_id | json}});
+          {%- break -%}
+        {%- endif -%}
+      {%- endfor -%}
+
+    {%- endfor -%}
+  {% endif%}
+</script>
+{%- if request.page_type == 'product' or request.page_type == 'cart' -%}
+<script defer src="{{ 'globo.alsobought.data.js' | asset_url }}" type="text/javascript"></script>
+{% endif %}
+<script defer src="{{ 'globo.alsobought.min.js' | asset_url }}" type="text/javascript"></script>
+<link rel="preload stylesheet" href="{{ 'globo.alsobought.css' | asset_url }}" as="style">
