@@ -12,7 +12,7 @@ class CartDrawer extends HTMLElement {
     this.addEventListener('transitionend', () => {
       this.focus();
       const cartDrawer = document.getElementById('cart-drawer');
-      const focusElement = cartDrawer.querySelector('cart-drawer-items') || cartDrawer.querySelector('.drawer__close');
+      const focusElement = cartDrawer.querySelector('.drawer__inner') || cartDrawer.querySelector('.drawer__close');
       trapFocus(cartDrawer, focusElement);
     }, { once: true });
     document.body.classList.add(`overflow-hidden`);
