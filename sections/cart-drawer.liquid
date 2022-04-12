@@ -6,14 +6,14 @@
     <div class="drawer__inner" role="dialog" aria-modal="true" aria-labelledby="cartTitle" tabindex="-1">
       <div class="cart-drawer__warnings center">
         <div class="cart-drawer__empty-content">
-          <h2 id="cartTitle" class="cart__empty-text">{{ 'sections.cart.empty' | t }}</h2>
+          <h2 id="cartTitleEmpty" class="cart__empty-text">{{ 'sections.cart.empty' | t }}</h2>
           <button class="drawer__close" type="button" onclick="this.closest('cart-drawer').close()" aria-label="{{ 'accessibility.close' | t }}">{% render 'icon-close' %}</button>
           <a href="{{ routes.all_products_collection_url }}" class="button">
             {{ 'general.continue_shopping' | t }}
           </a>
 
           {%- if shop.customer_accounts_enabled and customer == nil -%}
-            <h2 class="cart__login-title h3">{{ 'sections.cart.login.title' | t }}</h2>
+            <p class="cart__login-title h3">{{ 'sections.cart.login.title' | t }}</p>
             <p class="cart__login-paragraph">
               {{ 'sections.cart.login.paragraph_html' | t: link: routes.account_login_url }}
             </p>
@@ -30,7 +30,7 @@
       {%- endif -%}
       <div class="drawer__header">
         <h2 id="cartTitle" class="drawer__heading">{{ 'sections.cart.title' | t }}</h2>
-        <button class="drawer__close" type="button" onclick="this.closest('cart-drawer').close()">{% render 'icon-close' %}</button>
+        <button class="drawer__close" type="button" onclick="this.closest('cart-drawer').close()" aria-label="{{ 'accessibility.close' | t }}">{% render 'icon-close' %}</button>
       </div>
       <cart-drawer-items {% if cart == empty %}class=" is-empty"{% endif %}>
         <form action="{{ routes.cart_url }}" class="cart__contents cart-drawer__form" method="post" id="cart-drawer-inner">
@@ -232,20 +232,20 @@
               <p class="visually-hidden" id="shopping-cart-drawer-line-item-status" aria-live="polite" aria-hidden="true" role="status">{{ 'accessibility.loading' | t }}</p>
             {%- endif -%}
           </div>
-          <div id="drawer-cart-errors"></div>
+          <div id="drawer-cart-errors" role="alert"></div>
         </form>
       </cart-drawer-items>
       <div class="drawer__footer">
         {%- if settings.show_cart_note -%}
           <details id="Details-Cart-Drawer">
             <summary>
-              <div class="summary__title">
+              <span class="summary__title">
                 {{ 'sections.cart.note' | t }}
                 {% render 'icon-caret' %}
-              </div>
+              </span>
             </summary>
             <cart-note class="cart__note field">
-              <label class="visually-hidden" for="Cart-note">{{ 'sections.cart.note' | t }}</label>
+              <label class="visually-hidden" for="drawer-Cart-note">{{ 'sections.cart.note' | t }}</label>
               <textarea class="text-area text-area--resize-vertical field__input" name="note" id="drawer-Cart-note" placeholder="{{ 'sections.cart.note' | t }}">{{ cart.note }}</textarea>
             </cart-note>
           </details>
@@ -324,3 +324,24 @@
 
   customElements.define('cart-note', CartNote);
 {% endjavascript %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    function isIE() {
+      const ua = window.navigator.userAgent;
+      const msie = ua.indexOf('MSIE ');
+      const trident = ua.indexOf('Trident/');
+
+      return (msie > 0 || trident > 0);
+    }
+
+    if (!isIE()) return;
+    const cartSubmitInput = document.createElement('input');
+    cartSubmitInput.setAttribute('name', 'checkout');
+    cartSubmitInput.setAttribute('type', 'hidden');
+    document.querySelector('#cart').appendChild(cartSubmitInput);
+    document.querySelector('#checkout').addEventListener('click', function(event) {
+      document.querySelector('#cart').submit();
+    });
+  });
+</script>
