@@ -24,5 +24,6 @@ Dawn v5.0.0 introduces new ways to customize the look and feel of your store wit
 - Empty columns in the multicolumn section were adding unnecessary vertical space. This is now fixed. 
 - We’re now providing improved information on how to create meaningful alt text in the video section. 
 - We fixed an issue with making products full width on featured collections. 
+
 ### Removed
 - In the collection and search templates, the “Collapse on desktop” checkbox has been removed from the filtering and sorting settings. If you’d like to achieve the collapsed style, select “Drawer” from the “Desktop filter layout” dropdown. 
