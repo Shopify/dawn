@@ -88,7 +88,9 @@ class CartItems extends HTMLElement {
         }));
 
         this.updateLiveRegions(line, parsedState.item_count);
-        const lineItem =  document.getElementById(`CartItem-${line}`);
+        const lineItem =  document.getElementById(`CartItem-${line}`) || document.getElementById(`Drawer-cartItem-${line}`);
+        if (cartDrawerWrapper) trapFocus(cartDrawerWrapper, lineItem.querySelector(`[name="${name}"]`));
+        // Clean this up
         if (lineItem && lineItem.querySelector(`[name="${name}"]`)) lineItem.querySelector(`[name="${name}"]`).focus();
         this.disableLoading();
       }).catch((e) => {

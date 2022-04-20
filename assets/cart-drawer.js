@@ -13,9 +13,9 @@ class CartDrawer extends HTMLElement {
     this.classList.add('animate', 'active');
 
     this.addEventListener('transitionend', () => {
-      this.focus();
       const cartDrawer = document.getElementById('cart-drawer');
       const focusElement = cartDrawer.querySelector('.drawer__inner') || cartDrawer.querySelector('.drawer__close');
+      // here i could decide which container ill trap focus if the cart is empty or not.
       trapFocus(cartDrawer, focusElement);
     }, { once: true });
 
@@ -70,7 +70,7 @@ class CartDrawer extends HTMLElement {
         selector: '#cart-drawer'
       },
       {
-        id: 'cart-icon-bubble',
+        id: 'cart-icon-bubble'
       }
     ];
   }

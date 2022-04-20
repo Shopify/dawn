@@ -28,6 +28,7 @@ function trapFocus(container, elementToFocus = container) {
   var elements = getFocusableElements(container);
   var first = elements[0];
   var last = elements[elements.length - 1];
+  console.log('first focusable element', first, 'last focusable element', last)
 
   removeTrapFocus();
 
