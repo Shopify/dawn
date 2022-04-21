@@ -89,14 +89,16 @@ class CartItems extends HTMLElement {
 
         this.updateLiveRegions(line, parsedState.item_count);
         const lineItem =  document.getElementById(`CartItem-${line}`) || document.getElementById(`Drawer-cartItem-${line}`);
-        if (cartDrawerWrapper) trapFocus(cartDrawerWrapper, lineItem.querySelector(`[name="${name}"]`));
-        // Clean this up
-        if (lineItem && lineItem.querySelector(`[name="${name}"]`)) lineItem.querySelector(`[name="${name}"]`).focus();
+        if (lineItem && lineItem.querySelector(`[name="${name}"]`)) {
+          cartDrawerWrapper ? trapFocus(cartDrawerWrapper, lineItem.querySelector(`[name="${name}"]`)) : lineItem.querySelector(`[name="${name}"]`).focus();
+        } else if (parsedState.item_count === 0 && cartDrawerWrapper) {
+          trapFocus(cartDrawerWrapper.querySelector('.drawer__inner-empty'), cartDrawerWrapper.querySelector('.drawer__close'))
+        }
         this.disableLoading();
       }).catch((e) => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         const errors = document.getElementById('cart-errors') || document.getElementById('drawer-cart-errors');
-        console.log('window cartStrings errors', window.cartStrings.error)
+        console.log('window cartStrings errors', e,  window.cartStrings.error)
         errors.textContent = window.cartStrings.error;
         this.disableLoading();
       });

@@ -10,13 +10,13 @@ class CartDrawer extends HTMLElement {
     if (triggeredBy) this.setActiveElement(triggeredBy);
     const cartDrawerNote = this.querySelector('[id^="Details-"] summary');
     if (cartDrawerNote && !cartDrawerNote.hasAttribute('role')) this.setSummaryAccessibility(cartDrawerNote);
-    this.classList.add('animate', 'active');
+    // here the animation doesn't seem to always get triggered. To investigate
+    setTimeout(() => {this.classList.add('animate', 'active')});
 
     this.addEventListener('transitionend', () => {
-      const cartDrawer = document.getElementById('cart-drawer');
-      const focusElement = cartDrawer.querySelector('.drawer__inner') || cartDrawer.querySelector('.drawer__close');
-      // here i could decide which container ill trap focus if the cart is empty or not.
-      trapFocus(cartDrawer, focusElement);
+      const containerToTrapFocusOn = this.classList.contains('is-empty') ? this.querySelector('.drawer__inner-empty') : document.getElementById('cart-drawer');
+      const focusElement = this.querySelector('.drawer__inner') || this.querySelector('.drawer__close');
+      trapFocus(containerToTrapFocusOn, focusElement);
     }, { once: true });
 
     document.body.classList.add(`overflow-hidden`);
