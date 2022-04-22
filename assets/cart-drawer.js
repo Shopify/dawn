@@ -4,10 +4,10 @@ class CartDrawer extends HTMLElement {
 
     this.addEventListener('keyup', (evt) => evt.code === 'Escape' && this.close());
     this.querySelector('#cart-drawer-overlay').addEventListener('click', this.close.bind(this));
-    this.setHeaderCartIcon();
+    this.setHeaderCartIconAccessibility();
   }
 
-  setHeaderCartIcon() {
+  setHeaderCartIconAccessibility() {
     const cartLink = document.querySelector('#cart-icon-bubble');
     cartLink.setAttribute('role', 'button');
     cartLink.setAttribute('aria-haspopup', 'dialog');
@@ -15,11 +15,12 @@ class CartDrawer extends HTMLElement {
       event.preventDefault();
       this.open(cartLink)
     });
-    cartLink.addEventListener('keyup', (event) => {
-      event.preventDefault();
-      if (event.code.toUpperCase() === 'SPACE') this.open(cartLink);
+    cartLink.addEventListener('keydown', (event) => {
+      if (event.code.toUpperCase() === 'SPACE') {
+        event.preventDefault();
+        this.open(cartLink);
+      }
     });
-
   }
 
   open(triggeredBy) {
