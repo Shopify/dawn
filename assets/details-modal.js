@@ -3,6 +3,7 @@ class DetailsModal extends HTMLElement {
     super();
     this.detailsContainer = this.querySelector('details');
     this.summaryToggle = this.querySelector('summary');
+    this.summaryToggle.setAttribute('aria-describedby', 'a11y-modal-window-message');
 
     this.detailsContainer.addEventListener(
       'keyup',
