@@ -21,28 +21,6 @@ if (!customElements.get('product-form')) {
       this.submitButton.classList.add('loading');
       this.querySelector('.loading-overlay__spinner').classList.remove('hidden');
 
-      // if (this.dataset.addToCartBehavior == 'page') {
-      //   fetch('/cart.json')
-      //     .then(response => response.json())
-      //     .then(response => {
-      //       console.log(response)
-      //       if (response.status) {
-      //         this.handleErrorMessage(response.description);
-
-      //         const soldOutMessage = this.submitButton.querySelector('.sold-out-message');
-      //         if (!soldOutMessage) return;
-      //         this.submitButton.setAttribute('aria-disabled', true);
-      //         this.submitButton.querySelector('span').classList.add('hidden');
-      //         soldOutMessage.classList.remove('hidden');
-      //         this.error = true;
-      //         return;
-      //       } else {
-      //         window.location = '/cart'
-      //       }
-      //     })
-      //   return
-      // };
-
       const config = fetchConfig('javascript');
       config.headers['X-Requested-With'] = 'XMLHttpRequest';
       delete config.headers['Content-Type'];
