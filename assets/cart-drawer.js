@@ -11,7 +11,7 @@ class CartDrawer extends HTMLElement {
     const cartLink = document.querySelector('#cart-icon-bubble');
     cartLink.setAttribute('role', 'button');
     cartLink.setAttribute('aria-haspopup', 'dialog');
-    cartLink.addEventListener('click', (event)=> {
+    cartLink.addEventListener('click', (event) => {
       event.preventDefault();
       this.open(cartLink)
     });
@@ -36,13 +36,13 @@ class CartDrawer extends HTMLElement {
       trapFocus(containerToTrapFocusOn, focusElement);
     }, { once: true });
 
-    document.body.classList.add(`overflow-hidden`);
+    document.body.classList.add('overflow-hidden');
   }
 
   close() {
     this.classList.remove('active');
     removeTrapFocus(this.activeElement);
-    document.body.classList.remove(`overflow-hidden`);
+    document.body.classList.remove('overflow-hidden');
   }
 
   setSummaryAccessibility(cartDrawerNote) {
