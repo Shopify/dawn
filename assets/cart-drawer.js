@@ -3,7 +3,7 @@ class CartDrawer extends HTMLElement {
     super();
 
     this.addEventListener('keyup', (evt) => evt.code === 'Escape' && this.close());
-    this.querySelector('#cart-drawer-overlay').addEventListener('click', this.close.bind(this));
+    this.querySelector('#CartDrawer-Overlay').addEventListener('click', this.close.bind(this));
     this.setHeaderCartIconAccessibility();
   }
 
@@ -31,7 +31,7 @@ class CartDrawer extends HTMLElement {
     setTimeout(() => {this.classList.add('animate', 'active')});
 
     this.addEventListener('transitionend', () => {
-      const containerToTrapFocusOn = this.classList.contains('is-empty') ? this.querySelector('.drawer__inner-empty') : document.getElementById('cart-drawer');
+      const containerToTrapFocusOn = this.classList.contains('is-empty') ? this.querySelector('.drawer__inner-empty') : document.getElementById('CartDrawer');
       const focusElement = this.querySelector('.drawer__inner') || this.querySelector('.drawer__close');
       trapFocus(containerToTrapFocusOn, focusElement);
     }, { once: true });
@@ -64,12 +64,13 @@ class CartDrawer extends HTMLElement {
     this.querySelector('.drawer__inner').classList.contains('is-empty') && this.querySelector('.drawer__inner').classList.remove('is-empty');
     this.productId = parsedState.id;
     this.getSectionsToRender().forEach((section => {
-      document.getElementById(section.id).innerHTML =
+      const sectionElement = section.selector ? document.querySelector(section.selector) : document.getElementById(section.id);
+      sectionElement.innerHTML =
           this.getSectionInnerHTML(parsedState.sections[section.id], section.selector);
     }));
 
     setTimeout(() => {
-      this.querySelector('#cart-drawer-overlay').addEventListener('click', this.close.bind(this));
+      this.querySelector('#CartDrawer-Overlay').addEventListener('click', this.close.bind(this));
       this.open();
     });
   }
@@ -84,7 +85,7 @@ class CartDrawer extends HTMLElement {
     return [
       {
         id: 'cart-drawer',
-        selector: '#cart-drawer'
+        selector: '#CartDrawer'
       },
       {
         id: 'cart-icon-bubble'

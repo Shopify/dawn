@@ -15,7 +15,7 @@ class CartItems extends HTMLElement {
   constructor() {
     super();
 
-    this.lineItemStatusElement = document.getElementById('shopping-cart-line-item-status') || document.getElementById('shopping-cart-drawer-line-item-status');
+    this.lineItemStatusElement = document.getElementById('shopping-cart-line-item-status') || document.getElementById('CartDrawer-LineItemStatus');
 
     this.currentItemCount = Array.from(this.querySelectorAll('[name="updates[]"]'))
       .reduce((total, quantityInput) => total + parseInt(quantityInput.value), 0);
@@ -87,7 +87,7 @@ class CartItems extends HTMLElement {
         }));
 
         this.updateLiveRegions(line, parsedState.item_count);
-        const lineItem =  document.getElementById(`CartItem-${line}`) || document.getElementById(`Drawer-cartItem-${line}`);
+        const lineItem =  document.getElementById(`CartItem-${line}`) || document.getElementById(`CartDrawer-Item-${line}`);
         if (lineItem && lineItem.querySelector(`[name="${name}"]`)) {
           cartDrawerWrapper ? trapFocus(cartDrawerWrapper, lineItem.querySelector(`[name="${name}"]`)) : lineItem.querySelector(`[name="${name}"]`).focus();
         } else if (parsedState.item_count === 0 && cartDrawerWrapper) {
@@ -98,7 +98,7 @@ class CartItems extends HTMLElement {
         this.disableLoading();
       }).catch((e) => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
-        const errors = document.getElementById('cart-errors') || document.getElementById('drawer-cart-errors');
+        const errors = document.getElementById('cart-errors') || document.getElementById('CartDrawer-CartErrors');
         console.log('window cartStrings errors', e,  window.cartStrings.error)
         errors.textContent = window.cartStrings.error;
         this.disableLoading();
@@ -107,7 +107,7 @@ class CartItems extends HTMLElement {
 
   updateLiveRegions(line, itemCount) {
     if (this.currentItemCount === itemCount) {
-      const lineItemError = document.getElementById(`Line-item-error-${line}`) || document.getElementById(`Cart-drawer-line-item-error-${line}`);
+      const lineItemError = document.getElementById(`Line-item-error-${line}`) || document.getElementById(`CartDrawer-LineItemError-${line}`);
       const quantityElement = document.getElementById(`Quantity-${line}`) || document.getElementById(`Drawer-quantity-${line}`);
 
       lineItemError
@@ -121,7 +121,7 @@ class CartItems extends HTMLElement {
     this.currentItemCount = itemCount;
     this.lineItemStatusElement.setAttribute('aria-hidden', true);
 
-    const cartStatus = document.getElementById('cart-live-region-text') || document.getElementById('cart-drawer-live-region-text');
+    const cartStatus = document.getElementById('cart-live-region-text') || document.getElementById('CartDrawer-LiveRegionText');
     cartStatus.setAttribute('aria-hidden', false);
 
     setTimeout(() => {
@@ -136,11 +136,11 @@ class CartItems extends HTMLElement {
   }
 
   enableLoading(line) {
-    const mainCartItems = document.getElementById('main-cart-items') || document.getElementById('drawer-main-cart-items');
+    const mainCartItems = document.getElementById('main-cart-items') || document.getElementById('CartDrawer-CartItems');
     mainCartItems.classList.add('cart__items--disabled');
 
     const cartItemElements = this.querySelectorAll(`#CartItem-${line} .loading-overlay`);
-    const cartDrawerItemElements = this.querySelectorAll(`#Drawer-cartItem-${line} .loading-overlay`);
+    const cartDrawerItemElements = this.querySelectorAll(`#CartDrawer-Item-${line} .loading-overlay`);
 
     [...cartItemElements, ...cartDrawerItemElements].forEach((overlay) => overlay.classList.remove('hidden'));
 
@@ -149,7 +149,7 @@ class CartItems extends HTMLElement {
   }
 
   disableLoading() {
-    const mainCartItems = document.getElementById('main-cart-items') || document.getElementById('drawer-main-cart-items');
+    const mainCartItems = document.getElementById('main-cart-items') || document.getElementById('CartDrawer-CartItems');
     mainCartItems.classList.remove('cart__items--disabled');
   }
 }
@@ -160,7 +160,7 @@ class CartDrawerItems extends CartItems {
   getSectionsToRender() {
     return [
       {
-        id: 'cart-drawer',
+        id: 'CartDrawer',
         section: 'cart-drawer',
         selector: '.drawer__inner'
       },
