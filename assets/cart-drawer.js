@@ -105,3 +105,22 @@ class CartDrawer extends HTMLElement {
 }
 
 customElements.define('cart-drawer', CartDrawer);
+
+class CartDrawerItems extends CartItems {
+  getSectionsToRender() {
+    return [
+      {
+        id: 'CartDrawer',
+        section: 'cart-drawer',
+        selector: '.drawer__inner'
+      },
+      {
+        id: 'cart-icon-bubble',
+        section: 'cart-icon-bubble',
+        selector: '.shopify-section'
+      }
+    ];
+  }
+}
+
+customElements.define('cart-drawer-items', CartDrawerItems);
