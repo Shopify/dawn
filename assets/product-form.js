@@ -47,7 +47,7 @@ if (!customElements.get('product-form')) {
             this.error = true;
             return;
           } else if (this.dataset.addToCartBehavior == 'page') {
-            window.location = '/cart';
+            window.location = window.routes.cart_url;
             return;
           }
 
