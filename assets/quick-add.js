@@ -27,7 +27,8 @@ if (!customElements.get('quick-add-modal')) {
           this.preventDuplicatedIDs();
           this.removeDOMElements();
           this.setInnerHTML(this.modalContent, this.productElement.innerHTML);
-
+          this.modalContent.setAttribute("style",`height: ${this.modalContent.clientHeight}px`);
+          
           if (window.Shopify && Shopify.PaymentButton) {
             Shopify.PaymentButton.init();
           }
