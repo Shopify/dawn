@@ -498,7 +498,11 @@
             {%- endif -%}
 
           {%- when 'complementary_products' -%}
-            <div class="complementary-wrapper quick-add-hidden{% if block.settings.make_collapsible_row %} product__accordion accordion{% endif %}">
+            {%- if block.settings.enable_quick_add -%}
+              <link rel="stylesheet" href="{{ 'quick-add.css' | asset_url }}" media="print" onload="this.media='all'">
+              <script src="{{ 'quick-add.js' | asset_url }}" defer="defer"></script>
+            {%- endif -%}
+            <div class="complementary-wrapper quick-add-hidden{% if block.settings.make_collapsible_row %} product__accordion accordion{% endif %}" {{ block.shopify_attributes }}>
               {%- if block.settings.make_collapsible_row -%}
                 <details id="Details-{{ block.id }}-{{ section.id }}">
                   <summary>
@@ -512,17 +516,50 @@
                 </summary>
               {%- endif -%}
               <div class="complementary-card-container">
-                {%- for product in block.settings.product_list -%}
-                  {% render 'card-product',
-                    card_product: product,
-                    media_aspect_ratio: block.settings.image_ratio,
-                    show_secondary_image: false,
-                    lazy_load: lazy_load,
-                    show_quick_add: block.settings.enable_quick_add,
-                    section_id: section.id
-                    extra_class: 'card--horizontal'
-                  %}
-                {%- endfor -%}
+                {%- assign number_of_slides = block.settings.product_list.count | plus: 0.0 | divided_by: block.settings.products_per_page | ceil -%}
+                {%- if number_of_slides == 1 -%}
+                  {%- for product in block.settings.product_list -%}
+                    {% render 'card-product',
+                      card_product: product,
+                      media_aspect_ratio: block.settings.image_ratio,
+                      show_secondary_image: false,
+                      lazy_load: lazy_load,
+                      show_quick_add: block.settings.enable_quick_add,
+                      section_id: section.id
+                      extra_class: 'card--horizontal'
+                    %}
+                  {%- endfor -%}
+                {%- else -%}
+                  <slider-component class="slider-mobile-gutter">
+                    <ul id="Slider-{{ block.id }}" class="complementary-slider grid grid--1-col slider slider--everywhere">
+                      {%- for i in (1..number_of_slides) -%}
+                        <li id="Slide-{{ block.id }}-{{ forloop.index }}" class="complementary-slide grid__item slider__slide">
+                          {%- for product in block.settings.product_list limit: block.settings.products_per_page offset: continue -%}
+                            {% render 'card-product',
+                              card_product: product,
+                              media_aspect_ratio: block.settings.image_ratio,
+                              show_secondary_image: false,
+                              lazy_load: lazy_load,
+                              show_quick_add: block.settings.enable_quick_add,
+                              section_id: section.id
+                              extra_class: 'card--horizontal'
+                            %}
+                          {%- endfor -%}
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                    <div class="slider-buttons no-js-hidden">
+                      <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'general.slider.previous_slide' | t }}">{% render 'icon-caret' %}</button>
+                      <div class="slider-counter caption">
+                        <span class="slider-counter--current">1</span>
+                        <span aria-hidden="true"> / </span>
+                        <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+                        <span class="slider-counter--total">{{ number_of_slides }}</span>
+                      </div>
+                      <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'general.slider.next_slide' | t }}">{% render 'icon-caret' %}</button>
+                    </div>
+                  </slider-component>
+                {%- endif -%}
               </div>
               {%- if block.settings.make_collapsible_row -%}
                 </details>
