@@ -1,0 +1,1471 @@
+<script defer>
+  var listenChange = function(element) {
+    mediaReplace();
+  }
+  const config = { attributeFilter: ["src","srcset"] };
+  const obsever = new MutationObserver(listenChange);
+  function mediaReplace(){
+    obsever.disconnect();
+    var img_dome_tag = document.getElementsByTagName('img')
+    var img_source = document.getElementsByTagName('source')
+    var media_file = {{shop.metafields.etranslate.media_config | json}}
+    var img_dome = []
+    if(!media_file) {return ''}
+    if(img_source && img_source[0]){
+      for(var sour=0; sour<img_source.length; sour++){
+        img_dome.push(img_source[sour])
+      }
+    }
+    if(img_dome_tag && img_dome_tag[0]){
+      for(var sour=0; sour<img_dome_tag.length; sour++){
+        img_dome.push(img_dome_tag[sour])
+      }
+    }
+    var source_url = media_file.source_url
+    var replace_url = media_file.replace_url
+    if(source_url && source_url[0]){
+      for(var s=0; s<source_url.length; s++){
+        var v = getQueryVariable('v', source_url[s].url_content)
+        if(!v){return;}
+        var url_name = v.split(".")[0]
+        var url_name_length = url_name ? url_name.length:0
+        var url_suffix = v.split(".")[1]
+        var end_url = source_url[s].url_content.length > 25 ? source_url[s].url_content.length-25 : source_url[s].url_content.length
+        var replace_srcset_url = source_url[s].url_content.substring(25, end_url)
+        for(var i=0; i<img_dome.length; i++){
+          var srcset_url = img_dome[i].dataset.srcset
+          var srcset_url_situ = img_dome[i].dataset.src
+          var is_version = false
+          srcset_url = srcset_url ? srcset_url : img_dome[i].getAttribute('srcset')
+          srcset_url_situ = srcset_url_situ ? srcset_url_situ : img_dome[i].getAttribute('src')
+          srcset_url = srcset_url ? srcset_url : srcset_url
+          srcset_url_situ = srcset_url_situ ? srcset_url_situ : srcset_url_situ
+          var is_url = isMatchFirstName(url_name_length, srcset_url, url_name,source_url[s].url_content)
+          var is_url_situ = isMatchFirstName(url_name_length, srcset_url_situ, url_name,source_url[s].url_content)
+          var is_url_src = isMatchFirstName(url_name_length, img_dome[i].src, url_name,source_url[s].url_content)
+          if(v!=false && ((is_url && srcset_url.indexOf(url_suffix) >= 0) || (is_url_situ && srcset_url_situ.indexOf(url_suffix) >= 0) || is_url_src)){
+            findReplace(replace_url, source_url[s].id, img_dome[i], srcset_url)
+            obsever.observe(img_dome[i], config);
+            continue
+          }
+        }
+      }
+      
+    }
+  }
+
+  function isMatchFirstName(name_length, sourct_url, replace_url, allReplace_url) {
+      if (!sourct_url || !replace_url || !name_length) {
+          return false;
+      }
+      var url_array_arr = sourct_url ? sourct_url.split(",") : []
+      for (var i = 0; i < url_array_arr.length; i++) {
+          var item = url_array_arr[i].trim().split(' ')[0]
+          if (allReplace_url.includes(item)) {
+              return true
+          }
+      }
+      return false
+  }
+  
+  // replace url
+  function findReplace(h,c,d,e){var b="{{ localization.language.iso_code }}";for(var i=0;i<h.length;i++){if(h[i].parent_id==c&&h[i].lan_code.toLowerCase()==b.toLowerCase()){if(h[i].url_content){d.src=h[i].url_content;d.srcset=h[i].url_content;d.style.opacity=1;d.setAttribute("data-src",h[i].url_content);d.setAttribute("srcset",h[i].url_content);if(e){var f=h[i].url_content.substring(6);d.srcset=h[i].url_content}}}}};
+  function getMediaCurrentLocale(languages, defaultLocale) {
+    var path = window.location.pathname.split('/').filter(function (x) { return x; });
+    if (path && path.length > 0 && languages.find(function (x) { return x.iso_code.toLowerCase() === path[0].toLowerCase(); })) {
+      return path[0];
+    } else {
+      return defaultLocale;
+    }
+  }
+  
+  function getMediaLanguageList() {
+      return [
+        {%- for locale in shop.published_locales %}
+        {
+          name: '{{locale.name}}',
+          endonym_name: '{{locale.endonym_name}}',
+          iso_code: '{{locale.iso_code}}',
+          primary: {{locale.primary}},
+        }{% unless forloop.last %},{% endunless -%}
+        {%- endfor %}
+      ];
+  }
+  
+  const configImg = { attributes: true, childList: true };
+  const listenImg = function (element) {
+    element.forEach(function (item, index) {
+      mediaReplace();
+    })
+  }
+  const observerImg = new MutationObserver(listenImg);
+  window.onload = function () {
+    mediaReplace();
+    // observerImg.observe(document.body, configImg);
+  }
+  
+function getQueryVariable(variable,query){var url_search=query.split("?")[0];if(url_search){var vars=url_search.split("/");if(vars&&vars[0]){var http_name=vars[vars.length-1];var http_array=http_name.split("_");if(http_array&&http_array[0]){var file_size_name="";var suffix_name=http_array[http_array.length-1].split(".")[1];for(var b=0;b<http_array.length;b++){if(b<http_array.length-1){file_size_name=file_size_name+http_array[b]+"_"}else{file_size_name=file_size_name+http_array[b]+"."+suffix_name}}if(file_size_name){return file_size_name}}return http_name}}return false};
+
+  if (document.addEventListener) {//firefox 
+    document.addEventListener('DOMMouseScroll', scrollFunc); 
+  }
+  window.onmousewheel = document.onmousewheel = scrollFunc;
+  
+  document.addEventListener("touchstart", scrollFunc, false);
+  
+  var scroll_time = null;
+  function scrollFunc(){
+    if(scroll_time){
+      window.clearTimeout(scroll_time)
+      scroll_time = null;
+    }
+    scroll_time=setTimeout(mediaReplace, 1000);
+  }
+  
+function compareDate(d,b){var a=false;if(!d){return true}var c=d.split("-");if(c[0]>b.getFullYear()){a=true}else{if(c[0]==b.getFullYear()){if(c[1]>b.getMonth()){a=true}else{if(c[1]==b.getMonth()){if(c[2]>b.getDate()){a=true}}}}}return a};
+  
+  function replaceMenuData(){
+    var a_dome = document.getElementsByTagName('a')
+    var languageList = getMediaLanguageList();
+    var primaryLanguage = languageList.find(function (x) { return x.primary; });
+    var defaultLocale = primaryLanguage ? primaryLanguage.iso_code : 'en';
+    var currentLocale = getMediaCurrentLocale(languageList, defaultLocale);
+    var pathname = window.location.pathname
+    var url_lan_code = (pathname.match(/\/(\S*?)\//) || pathname.match(/\/(\S*)/))[1]
+    var lan_code = ''
+    for(var i=0; i<a_dome.length; i++){
+      if(a_dome[i].getAttribute('href')){
+        var dome_href_array = a_dome[i].getAttribute('href')
+        let regexLang = new RegExp(/#Etranslate/g);
+        if(dome_href_array.match(regexLang) !== null){
+          var new_pathname = '/'
+          var cutData = dome_href_array.split(/(.*#Etranslate-)/g);
+          lan_code = cutData[2];
+          if(lan_code){
+              if(lan_code == defaultLocale.toLowerCase()){
+                  new_pathname = pathname.replace('/' + url_lan_code, '')
+            } else {
+                var find_lan_code=false;
+                  languageList.map((v,k)=>{
+                      if(v.iso_code.toLowerCase()===url_lan_code.toLowerCase()){
+                          find_lan_code=true
+                      }
+                  })
+                  if(find_lan_code){
+                      new_pathname = pathname.replace(url_lan_code, lan_code)
+                  } else {
+                      new_pathname = '/' + lan_code + pathname
+                  }
+            }
+            var change_href = `${window.location.protocol}//${window.location.host}${new_pathname}${window.location.search}`
+            a_dome[i].setAttribute("href",change_href);
+            a_dome[i].setAttribute("data-lancode",lan_code);
+          }
+        }
+      }
+    }
+    setLocalStorage()
+  }
+  
+  function setLocalStorage(){var a_dome=document.getElementsByTagName("a");for(var i=0;i<a_dome.length;i++){var lan_code=a_dome[i].getAttribute("data-lancode");if(lan_code){a_dome[i].onclick=changeLocalStorage(lan_code);children=a_dome[i].childNodes;if(children){for(var c=0;c<children.length;c++){if(children[c].nodeName!="#text"){children[c].onclick=changeLocalStorage(lan_code)}}}}}};
+  
+  function changeLocalStorage(lan_code){
+    return function() {
+      localStorage.setItem('lan_code', lan_code);
+    }
+  }
+
+  documentReady(mediaReplace);
+  documentReady(replaceMenuData);
+  function documentReady(fu) {
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+          setTimeout(documentReady(fu), 500);
+      } else {
+          document.addEventListener('DOMContentLoaded', fu);
+      }
+  }
+</script>
+<style>.shopify-localization-form{position:unset;margin: unset;}.etranslate-LanguageList{position:absolute;z-index:999;cursor:pointer;font-size:14px;direction:ltr}.etranslate-language-float-link{border:1px solid #e0e2e4;background-color:white}.rectangle_flag:before{content:"\00a0"}.select-dropdown-flag-icon-link{font-size:20px;box-sizing:content-box;background-size:contain;background-position:50%;background-repeat:no-repeat;background-size:contain;background-position:50%;background-repeat:no-repeat;position:relative;display:inline-block;width:1.33333333em;line-height:1em}.select-dropdown-flag-icon-link:before{content:"\00a0"}#etranslate-language-float-selector ul{margin:0;-webkit-transition:max-height .3s,visibility .2s,opacity .2s;-moz-transition:max-height .3s,visibility .2s,opacity .2s;-ms-transition:max-height .3s,visibility .2s,opacity .2s;-o-transition:max-height .3s,visibility .2s,opacity .2s;transition:all .2s}.etranslate-flag-wrapper{display:flex;align-items:center;width:28px;height:28px;font-size:20px;margin-right:3px}.etranslate-language-list-button{border:1px solid rgba(224,224,224,1);padding:8px 10px 8px 10px;display:flex;align-items:center;justify-content:space-between;-webkit-transition:max-height .2s,visibility .2s,opacity .2s;-moz-transition:max-height .2s,visibility .2s,opacity .2s;-ms-transition:max-height .2s,visibility .2s,opacity .2s;-o-transition:max-height .2s,visibility .2s,opacity .2s;transition:all .2s}.etranslate-language-list-button-centent{display:flex;align-items:center}.etranslate-language-arrow{display:block!important;width:.5em;height:.5em;border-right:1.5px solid currentColor;border-top:1.5px solid currentColor;transform:rotate(45deg);transition:all .2s;position:relative;top:-1px}.etranslate-language-arrow-up{transform:rotate(-45deg)!important}.etranslate-language-arrow-down{transform:rotate(135deg)!important}.etranslate-language-list-button:hover{opacity:.8}.etranslate-language-list-dropdown{padding:0;overflow:auto;background:white;width:208px;user-select:none;position:absolute;z-index:516;flex-direction:row;justify-content:flex-start;align-items:center;margin:0;-webkit-transition:max-height .3s,visibility .2s,opacity .2s;-moz-transition:max-height .3s,visibility .2s,opacity .2s;-ms-transition:max-height .3s,visibility .2s,opacity .2s;-o-transition:max-height .3s,visibility .2s,opacity .2s;-webkit-overflow-scrolling:touch;overflow:-moz-scrollbars-none;display:block;border:1px solid rgba(224,224,224,1)}.etranslate-language-list-dropdown::-webkit-scrollbar{display:none}.etranslate-language-list-dropdown>li{margin:0!important;padding:8px 10px 8px 10px;cursor:pointer}.etranslate-lo-select-dropdown-item{display:flex;align-items:center;-webkit-transition:max-height .3s,visibility .2s,opacity .2s;-moz-transition:max-height .3s,visibility .2s,opacity .2s;-ms-transition:max-height .3s,visibility .2s,opacity .2s;-o-transition:max-height .3s,visibility .2s,opacity .2s;transition:all .2s}.etranslate-language-name{padding-top:1px}.etranslate-lo-select-dropdown-item:hover{opacity:.8}.lo-select-up{position:absolute;bottom:100%}.lo-select-selection-item-top{border-bottom:0}.lo-select-selection-item-bottom{border-top:0}.rectangle_flag:before{content:"\00a0"}.flag-icon{background-size:contain;background-position:50%;background-repeat:no-repeat;position:relative;display:inline-block;width:1.33333333em;line-height:1em;border-radius:4px}.circle_flag{border-radius:50%;box-sizing:content-box!important;width:1em}</style>
+<div id='etranslate-language-float-selector' class='etranslate-LanguageList' style='display:none'>
+    {% form 'localization' %}
+        <span class='language-button'>
+        <div class='etranslate-language-list-button' id='etranslate-language-button'>
+            <div class='etranslate-language-list-button-centent'>
+                <div class='etranslate-flag-wrapper'>
+                    <span class="rectangle_flag select-dropdown-flag-icon flag-icon" />
+                </div>
+
+                <div class="etranslate-language-name"
+                     data-name="{{ request.locale.endonym_name | split: '-' | first | strip }}">
+                    {{ request.locale.name | split: '-' | first | strip }}
+                </div>
+
+            </div>
+            <div class='etranslate-language-arrow'></div>
+        </div>
+    </span>
+        <ul id='etranslate-language-list-dropdown' class='etranslate-language-list-dropdown'
+            style='max-height:0px;opacity:0;'>
+            {%- for locale in shop.published_locales -%}
+                <li class='etranslate-lo-select-dropdown-item' data-code="{{ locale.iso_code }}"
+                    data-name="{{ locale.endonym_name }}">
+                    <div class="etranslate-flag-wrapper">
+                        <span class="rectangle_flag select-dropdown-flag-icon flag-icon" />
+                    </div>
+
+                    <div class="etranslate-language-name">
+                        {{ locale.name }}
+                    </div>
+                </li>
+            {%- endfor %}
+        </ul>
+        <input type="hidden" name="country_code" value="{{ localization.country.iso_code }}">
+        <input type="hidden" name="language_code" value="{{ localization.language.iso_code }}">
+    {% endform %}
+</div>
+<script>
+    var isOpen = false
+    var is_up = false
+    var item_height = 46
+    var arrow_padding_width = 40
+    var flag_min_width = {
+        rectangle_flag: 30,
+        square_flag: 30,
+        circle_flag: 30,
+        no_flag: 0,
+        without_flag: 0
+    }
+    var language_min_width = {
+        language_code: 45,
+        language_name: 70,
+        native_language_name: 70,
+        no_labels: 0
+    }
+    var currency_min_width = {
+        code: 30,
+        name: 80,
+        code_symbol: 55,
+    }
+    var langCodeToLangArray = {
+        "af": "Afrikaans",
+        "ak": "Akan",
+        "sq": "Albanian",
+        "am": "Amharic",
+        "ar": "Arabic",
+        "hy": "Armenian",
+        "as": "Assamese",
+        "az": "Azerbaijani",
+        "bm": "Bambara",
+        "bn": "Bangla",
+        "eu": "Basque",
+        "be": "Belarusian",
+        "bs": "Bosnian",
+        "br": "Breton",
+        "bg": "Bulgarian",
+        "my": "Burmese",
+        "ca": "Catalan",
+        "ce": "Chechen",
+        "zh-CN": "Chinese",
+        "zh-cn": "Chinese",
+        "zh-TW": "Chinese (TW)",
+        "zh-tw": "Chinese (TW)",
+        "cu": "Church Slavic",
+        "kw": "Cornish",
+        "hr": "Croatian",
+        "cs": "Czech",
+        "da": "Danish",
+        "nl": "Dutch",
+        "dz": "Dzongkha",
+        "en": "English",
+        "us": "English",
+        "eo": "Esperanto",
+        "et": "Estonian",
+        "ee": "Ewe",
+        "fo": "Faroese",
+        "fi": "Finnish",
+        "fr": "French",
+        "ff": "Fulah",
+        "gl": "Galician",
+        "lg": "Ganda",
+        "ka": "Georgian",
+        "de": "German",
+        "el": "Greek",
+        "gu": "Gujarati",
+        "ha": "Hausa",
+        "he": "Hebrew",
+        "hi": "Hindi",
+        "hu": "Hungarian",
+        "is": "Icelandic",
+        "ig": "Igbo",
+        "id": "Indonesian",
+        "ia": "Interlingua",
+        "ga": "Irish",
+        "it": "Italian",
+        "ja": "Japanese",
+        "jv": "Javanese",
+        "kl": "Kalaallisut",
+        "kn": "Kannada",
+        "ks": "Kashmiri",
+        "kk": "Kazakh",
+        "km": "Khmer",
+        "ki": "Kikuyu",
+        "rw": "Kinyarwanda",
+        "ko": "Korean",
+        "ku": "Kurdish",
+        "ky": "Kyrgyz",
+        "lo": "Lao",
+        "lv": "Latvian",
+        "ln": "Lingala",
+        "lt": "Lithuanian",
+        "lu": "Luba-Katanga",
+        "lb": "Luxembourgish",
+        "mk": "Macedonian",
+        "mg": "Malagasy",
+        "ms": "Malay",
+        "ml": "Malayalam",
+        "mt": "Maltese",
+        "gv": "Manx",
+        "mi": "Maori",
+        "mr": "Marathi",
+        "mn": "Mongolian",
+        "ne": "Nepali",
+        "nd": "North Ndebele",
+        "se": "Northern Sami",
+        "nb": "Norwegian (Bokmål)",
+        "nn": "Norwegian Nynorsk",
+        "or": "Odia",
+        "om": "Oromo",
+        "os": "Ossetic",
+        "ps": "Pashto",
+        "fa": "Persian",
+        "pl": "Polish",
+        "pt-BR": "Portuguese (Brazil)",
+        "pt-br": "Portuguese (Brazil)",
+        "pt-PT": "Portuguese (Portugal)",
+        "pt-pt": "Portuguese (Portugal)",
+        "pa": "Punjabi",
+        "qu": "Quechua",
+        "ro": "Romanian",
+        "rm": "Romansh",
+        "rn": "Rundi",
+        "ru": "Russian",
+        "sg": "Sango",
+        "gd": "Scottish Gaelic",
+        "sr": "Serbian",
+        "sn": "Shona",
+        "ii": "Sichuan Yi",
+        "sd": "Sindhi",
+        "si": "Sinhala",
+        "sk": "Slovak",
+        "sl": "Slovenian",
+        "so": "Somali",
+        "es": "Spanish",
+        "sw": "Swahili",
+        "sv": "Swedish",
+        "tg": "Tajik",
+        "ta": "Tamil",
+        "tt": "Tatar",
+        "te": "Telugu",
+        "th": "Thai",
+        "bo": "Tibetan",
+        "ti": "Tigrinya",
+        "to": "Tongan",
+        "tr": "Turkish",
+        "tk": "Turkmen",
+        "uk": "Ukrainian",
+        "ur": "Urdu",
+        "ug": "Uyghur",
+        "uz": "Uzbek",
+        "vi": "Vietnamese",
+        "vo": "Volapük",
+        "cy": "Welsh",
+        "fy": "Western Frisian",
+        "wo": "Wolof",
+        "xh": "Xhosa",
+        "yi": "Yiddish",
+        "yo": "Yoruba",
+        "zu": "Zulu",
+        "sa": "Arabic (Saudi Arabia)",
+        "ar-DZ": "Arabic (Algeria)",
+        "ar-dz": "Arabic (Algeria)",
+        "ar-EG": "Arabic (Egypt)",
+        "ar-eg": "Arabic (Egypt)",
+        "ar-IQ": "Arabic (Iraq)",
+        "ar-iq": "Arabic (Iraq)",
+        "ar-JO": "Arabic (Jordan)",
+        "ar-jo": "Arabic (Jordan)",
+        "ar-KW": "Arabic (Kuwait)",
+        "ar-kw": "Arabic (Kuwait)",
+        "ar-LB": "Arabic (Lebanon)",
+        "ar-lb": "Arabic (Lebanon)",
+        "ar-LY": "Arabic (Libya)",
+        "ar-ly": "Arabic (Libya)",
+        "ar-MA": "Arabic (Morocco)",
+        "ar-ma": "Arabic (Morocco)",
+        "ar-OM": "Arabic (Oman)",
+        "ar-om": "Arabic (Oman)",
+        "ar-QA": "Arabic (Qatar)",
+        "ar-qa": "Arabic (Qatar)",
+        "ar-SY": "Arabic (Syria)",
+        "ar-sy": "Arabic (Syria)",
+        "ar-TN": "Arabic (Tunisia)",
+        "ar-tn": "Arabic (Tunisia)",
+        "ar-YE": "Arabic (Yemen)",
+        "ar-ye": "Arabic (Yemen)",
+        "fr-CA": "French (Canada)",
+        "fr-ca": "French (Canada)",
+        "en-CA": "English (Canada)",
+        "en-ca": "English (Canada)",
+        "de-AT": "Austria",
+        "de-at": "Austria",
+        "de-CH": "Switzerland",
+        "de-ch": "Switzerland",
+        "de-LU": "Luxembourg",
+        "de-lu": "Luxembourg",
+        "es-MX": "Spanish (Mexico)",
+        "es-mx": "Spanish (Mexico)",
+        "es-CO": "Spanish (Columbia)",
+        "es-co": "Spanish (Columbia)",
+        "es-AR": "Spanish (Argentina)",
+        "es-ar": "Spanish (Argentina)",
+        "es-CL": "Chile",
+        "es-cl": "Chile",
+        "es-PE": "Peru",
+        "es-pe": "Peru",
+        "es-BO": "Bolivia",
+        "es-bo": "Bolivia",
+        "es-EC": "Ecuador",
+        "es-ec": "Ecuador",
+        "es-GT": "Guatemala",
+        "es-gt": "Guatemala",
+        "en-nz": "English (New Zealand)",
+        "en-NZ": "English (New Zealand)",
+    };
+    var langCodeToCountryArray = {
+        "af": "ZA",
+        "sq": "AL",
+        "am": "ET",
+        "ar": "AE",
+        "hy": "AM",
+        "az": "AZ",
+        "eu": "ES",
+        "be": "BY",
+        "bn": "BD",
+        "bs": "BA",
+        "bg": "BG",
+        "ca": "CA",
+        "ceb": "PH",
+        "ny": "MW",
+        "zh-CN": "CN",
+        "zh-cn": "CN",
+        "zh-TW": "TW",
+        "zh-tw": "TW",
+        "zh-HK": "HK",
+        "zh-hk": "HK",
+        "co": "FR",
+        "hr": "HR",
+        "cs": "CZ",
+        "da": "DK",
+        "nl": "NL",
+        "en": "GB",
+        "et": "EE",
+        "tl": "PH",
+        "fi": "FI",
+        "fr": "FR",
+        "fy": "NL",
+        "gl": "ES",
+        "ka": "GE",
+        "de": "DE",
+        "el": "GR",
+        "gu": "IN",
+        "ht": "HT",
+        "ha": "NE",
+        "haw": "US",
+        "us": "US",
+        "iw": "IL",
+        "hi": "IN",
+        "hmn": "CN",
+        "hu": "HU",
+        "is": "IS",
+        "ig": "NG",
+        "id": "ID",
+        "ga": "IE",
+        "it": "IT",
+        "ja": "JP",
+        "jw": "ID",
+        "kn": "IN",
+        "kk": "KZ",
+        "km": "KH",
+        "ko": "KR",
+        "ku": "IR",
+        "ky": "KG",
+        "lo": "LA",
+        "la": "IT",
+        "lv": "LV",
+        "lt": "LT",
+        "lb": "LU",
+        "mk": "MK",
+        "mg": "MG",
+        "ms": "MY",
+        "ml": "IN",
+        "mt": "MT",
+        "mi": "NZ",
+        "nz": "NZ",
+        "mr": "IN",
+        "mn": "MN",
+        "my": "MM",
+        "ne": "NP",
+        "no": "NO",
+        "ps": "AF",
+        "fa": "IR",
+        "pl": "PL",
+        "pt": "PT",
+        "pa": "IN",
+        "ro": "RO",
+        "ru": "RU",
+        "sm": "US",
+        "gd": "CA",
+        "sr": "RS",
+        "st": "LS",
+        "sn": "ZW",
+        "sd": "PK",
+        "si": "LK",
+        "sk": "SK",
+        "sl": "SI",
+        "so": "SO",
+        "es": "ES",
+        "su": "SD",
+        "sw": "TZ",
+        "sv": "SE",
+        "tg": "TJ",
+        "ta": "IN",
+        "te": "IN",
+        "th": "TH",
+        "tr": "TR",
+        "uk": "UA",
+        "ur": "PK",
+        "uz": "UZ",
+        "vi": "VN",
+        "cy": "GB",
+        "xh": "ZA",
+        "yi": "DE",
+        "yo": "NG",
+        "zu": "ZA",
+        "ak": "GH",
+        "as": "IN",
+        "bm": "ML",
+        "br": "fr",
+        "ce": "ru",
+        "cu": "BG",
+        "kw": "KW",
+        "dz": "BT",
+        "eo": "un",
+        "ee": "GH",
+        "fo": "DK",
+        "ff": "MR",
+        "lg": "UG",
+        "he": "IL",
+        "ia": "un",
+        "jv": "ID",
+        "kl": "GL",
+        "ks": "IN",
+        "ki": "KE",
+        "rw": "RW",
+        "ln": "CG",
+        "lu": "CD",
+        "gv": "GB",
+        "nd": "ZW",
+        "se": "NO",
+        "nb": "NO",
+        "nn": "NO",
+        "or": "IN",
+        "om": "ET",
+        "os": "RU",
+        "pt-BR": "BR",
+        "pt-br": "BR",
+        "pt-PT": "PT",
+        "pt-pt": "PT",
+        "qu": "PE",
+        "rm": "CH",
+        "rn": "BI",
+        "sg": "CF",
+        "ii": "CN",
+        "tt": "RU",
+        "bo": "CN",
+        "ti": "ER",
+        "to": "TO",
+        "tk": "TM",
+        "ug": "ZH",
+        "vo": "un",
+        "wo": "SN",
+        "sa": "SA",
+        "ar-SA": "sa",
+        "ar-sa": "sa",
+        "ar-DZ": "DZ",
+        "ar-dz": "DZ",
+        "ar-AE": "AE",
+        "ar-ae": "AE",
+        "ar-BH": "BH",
+        "ar-bh": "BH",
+        "ar-EG": "EG",
+        "ar-eg": "EG",
+        "ar-IQ": "IQ",
+        "ar-iq": "IQ",
+        "ar-JO": "JO",
+        "ar-jo": "JO",
+        "ar-LB": "LB",
+        "ar-lb": "LB",
+        "ar-LY": "LY",
+        "ar-ly": "LY",
+        "ar-OM": "OM",
+        "ar-om": "OM",
+        "ar-QA": "QA",
+        "ar-qa": "QA",
+        "ar-SD": "SD",
+        "ar-sd": "SD",
+        "ar-SY": "SY",
+        "ar-sy": "SY",
+        "ar-YE": "YE",
+        "ar-ye": "YE",
+        "fr-BE": "BE",
+        "fr-be": "BE",
+        "fr-LU": "LU",
+        "fr-lu": "LU",
+        "fr-MC": "MC",
+        "fr-mc": "MC",
+        "fr-CH": "CH",
+        "fr-ch": "CH",
+        "fr-CA": "FR-CA",
+        "fr-ca": "FR-CA",
+        "en-CA": "FR-CA",
+        "en-ca": "FR-CA",
+        "de-AT": "AT",
+        "de-at": "AT",
+        "de-CH": "CH",
+        "de-ch": "CH",
+        "de-LU": "LU",
+        "de-lu": "LU",
+        "es-MX": "MX",
+        "es-mx": "MX",
+        "es-CO": "CO",
+        "es-co": "CO",
+        "es-AR": "AR",
+        "es-ar": "AR",
+        "es-CL": "CL",
+        "es-cl": "CL",
+        "es-PE": "PE",
+        "es-pe": "PE",
+        "es-BO": "BO",
+        "es-bo": "BO",
+        "es-EC": "EC",
+        "es-ec": "EC",
+        "es-GT": "GT",
+        "es-gt": "GT",
+        "en-nz": "NZ",
+        "en-NZ": "NZ",
+    }
+    var countryNameToCountryCodeArray = {
+        "Afghanistan": "AF",
+        "Åland Islands": "AX",
+        "Albania": "AL",
+        "Algeria": "DZ",
+        "Andorra": "AD",
+        "Angola": "AO",
+        "Anguilla": "AI",
+        "Antigua & Barbuda": "AG",
+        "Argentina": "AR",
+        "Armenia": "AM",
+        "Aruba": "AW",
+        "Ascension Island": "AC",
+        "Australia": "AU",
+        "Austria": "AT",
+        "Azerbaijan": "AZ",
+        "Bahamas": "BS",
+        "Bahrain": "BH",
+        "Bangladesh": "BD",
+        "Barbados": "BB",
+        "Belarus": "BY",
+        "Belgium": "BE",
+        "Belize": "BZ",
+        "Benin": "BJ",
+        "Bermuda": "BM",
+        "Bhutan": "BT",
+        "Bolivia": "BO",
+        "Bosnia & Herzegovina": "BA",
+        "Bosnia and Herzegovina": "BA",
+        "Botswana": "BW",
+        "Brazil": "BR",
+        "British Indian Ocean Territory": "IO",
+        "British Virgin Islands": "VG",
+        "Brunei": "BN",
+        "Bulgaria": "BG",
+        "Burkina Faso": "BF",
+        "Burundi": "BI",
+        "Cambodia": "KH",
+        "Cameroon": "CM",
+        "Canada": "FR-CA",
+        "Cape Verde": "CV",
+        "Cabo Verde": "CV",
+        "Caribbean Netherlands": "BQ",
+        "Cayman Islands": "KY",
+        "Central African Republic": "CF",
+        "Chad": "TD",
+        "Chile": "CL",
+        "China": "CN",
+        "Christmas Island": "CX",
+        "Cocos (Keeling) Islands": "CC",
+        "Colombia": "CO",
+        "Comoros": "KM",
+        "Congo - Brazzaville": "CG",
+        "Congo - Kinshasa": "CD",
+        "Cook Islands": "CK",
+        "Costa Rica": "CR",
+        "Croatia": "HR",
+        "Curaçao": "CW",
+        "Cyprus": "CY",
+        "Czechia": "CZ",
+        "Côte d’Ivoire": "CI",
+        "Cuba": "CU",
+        "Denmark": "DK",
+        "Djibouti": "DJ",
+        "Dominica": "DM",
+        "Dominican Republic": "DO",
+        "Democratic Republic of the Congo": "CD",
+        "Ecuador": "EC",
+        "Egypt": "EG",
+        "El Salvador": "SV",
+        "Equatorial Guinea": "GQ",
+        "Eritrea": "ER",
+        "Estonia": "EE",
+        "Eswatini": "SZ",
+        "Ethiopia": "ET",
+        "European Union": "EU",
+        "Falkland Islands": "FK",
+        "Faroe Islands": "FO",
+        "Fiji": "FJ",
+        "Finland": "FI",
+        "France": "FR",
+        "French Guiana": "GF",
+        "French Polynesia": "PF",
+        "French Southern Territories": "TF",
+        "Gabon": "GA",
+        "Gambia": "GM",
+        "Georgia": "GE",
+        "Germany": "DE",
+        "Ghana": "GH",
+        "Gibraltar": "GI",
+        "Greece": "GR",
+        "Greenland": "GL",
+        "Grenada": "GD",
+        "Guadeloupe": "GP",
+        "Guatemala": "GT",
+        "Guernsey": "GG",
+        "Guinea": "GN",
+        "Guinea-Bissau": "GW",
+        "Guyana": "GY",
+        "Haiti": "HT",
+        "Honduras": "HN",
+        "Hong Kong SAR": "HK",
+        "Hong Kong": "HK",
+        "Hungary": "HU",
+        "Iceland": "IS",
+        "India": "IN",
+        "Indonesia": "ID",
+        "Iraq": "IQ",
+        "Ireland": "IE",
+        "Isle of Man": "IM",
+        "Israel": "IL",
+        "Italy": "IT",
+        "Iran": "IR",
+        "Jamaica": "JM",
+        "Japan": "JP",
+        "Jersey": "JE",
+        "Jordan": "JO",
+        "Kazakhstan": "KZ",
+        "Kenya": "KE",
+        "Kiribati": "KI",
+        "Kosovo": "XK",
+        "Kuwait": "KW",
+        "Kyrgyzstan": "KG",
+        "Laos": "LA",
+        "Latvia": "LV",
+        "Lebanon": "LB",
+        "Lesotho": "LS",
+        "Liberia": "LR",
+        "Libya": "LY",
+        "Liechtenstein": "LI",
+        "Lithuania": "LT",
+        "Luxembourg": "LU",
+        "Macao SAR": "MO",
+        "Macau": "MO",
+        "Madagascar": "MG",
+        "Malawi": "MW",
+        "Malaysia": "MY",
+        "Maldives": "MV",
+        "Mali": "ML",
+        "Malta": "MT",
+        "Martinique": "MQ",
+        "Mauritania": "MR",
+        "Mauritius": "MU",
+        "Mayotte": "YT",
+        "Mexico": "MX",
+        "Moldova": "MD",
+        "Monaco": "MC",
+        "Mongolia": "MN",
+        "Montenegro": "ME",
+        "Montserrat": "MS",
+        "Morocco": "MA",
+        "Mozambique": "MZ",
+        "Myanmar (Burma)": "MM",
+        "Myanmar": "MM",
+        "Namibia": "NA",
+        "Nauru": "NR",
+        "Nepal": "NP",
+        "Netherlands": "NL",
+        "New Caledonia": "NC",
+        "New Zealand": "NZ",
+        "Nicaragua": "NI",
+        "Niger": "NE",
+        "Nigeria": "NG",
+        "Niue": "NU",
+        "Norfolk Island": "NF",
+        "North Macedonia": "MK",
+        "North Korea": "KP",
+        "Norway": "NO",
+        "Oman": "OM",
+        "Pakistan": "PK",
+        "Palestinian Territories": "PS",
+        "Panama": "PA",
+        "Papua New Guinea": "PG",
+        "Paraguay": "PY",
+        "Peru": "PE",
+        "Philippines": "PH",
+        "Pitcairn Islands": "PN",
+        "Poland": "PL",
+        "Portugal": "PT",
+        "Qatar": "QA",
+        "Réunion": "RE",
+        "Romania": "RO",
+        "Russia": "RU",
+        "Rwanda": "RW",
+        "Samoa": "WS",
+        "San Marino": "SM",
+        "São Tomé & Príncipe": "ST",
+        "São Tomé and Príncipe": "ST",
+        "Saudi Arabia": "SA",
+        "Senegal": "SN",
+        "Serbia": "RS",
+        "Seychelles": "SC",
+        "Sierra Leone": "SL",
+        "Singapore": "SG",
+        "Sint Maarten": "SX",
+        "Slovakia": "SK",
+        "Slovenia": "SI",
+        "Solomon Islands": "SB",
+        "Somalia": "SO",
+        "South Africa": "ZA",
+        "South Georgia & South Sandwich Islands": "GS",
+        "South Korea": "KR",
+        "South Sudan": "SS",
+        "Spain": "ES",
+        "Sri Lanka": "LK",
+        "St. Barthélemy": "BL",
+        "St. Helena": "SH",
+        "Saint Helena": "SH",
+        "St. Kitts & Nevis": "KN",
+        "St. Lucia": "LC",
+        "St. Martin": "MF",
+        "St. Pierre & Miquelon": "PM",
+        "St. Vincent & Grenadines": "VC",
+        "Sudan": "SD",
+        "Suriname": "SR",
+        "Svalbard & Jan Mayen": "SJ",
+        "Sweden": "SE",
+        "Switzerland": "CH",
+        "Syria": "SY",
+        "Taiwan": "TW",
+        "Tajikistan": "TJ",
+        "Tanzania": "TZ",
+        "Thailand": "TH",
+        "Timor-Leste": "TL",
+        "Togo": "TG",
+        "Tokelau": "TK",
+        "Tonga": "TO",
+        "Trinidad & Tobago": "TT",
+        "Trinidad and Tobago": "TT",
+        "Tristan da Cunha": "TA",
+        "Tunisia": "TN",
+        "Turkey": "TR",
+        "Turkmenistan": "TM",
+        "Turks & Caicos Islands": "TC",
+        "Tuvalu": "TV",
+        "U.S. Outlying Islands": "UM",
+        "Uganda": "UG",
+        "Ukraine": "UA",
+        "United Arab Emirates": "AE",
+        "United Kingdom": "GB",
+        "United States": "US",
+        "Uruguay": "UY",
+        "Uzbekistan": "UZ",
+        "Vanuatu": "VU",
+        "Vatican City": "VA",
+        "Venezuela": "VE",
+        "Vietnam": "VN",
+        "Wallis & Futuna": "WF",
+        "Western Sahara": "EH",
+        "Yemen": "YE",
+        "Zambia": "ZM",
+        "Zimbabwe": "ZW"
+    }
+    function getLanguageList() {
+        return [
+            {%- for locale in shop.published_locales %}
+            {
+                name: '{{ locale.name }}',
+                endonym_name: '{{ locale.endonym_name }}',
+                iso_code: '{{ locale.iso_code }}',
+                primary: {{ locale.primary }},
+            }{% unless forloop.last %},{% endunless -%}
+            {%- endfor %}
+        ];
+    }
+function applyPriviewCssCode(a){var b=/^[.#]?\w+[^{]+\{[^}]*\}/;if(a&&b.test(a)){addCSS(a)}};
+function addCSS(c){var b=document.createElement("style"),a=document.head||document.getElementsByTagName("head")[0];b.type="text/css";if(b.styleSheet){var d=function(){try{b.styleSheet.cssText=c}catch(f){}};if(b.styleSheet.disabled){setTimeout(d,10)}else{d()}}else{var e=document.createTextNode(c);b.appendChild(e)}a.appendChild(b)};
+function transformationRgb(d,h){if(d==undefined&&h==undefined){return"rgba(255,255,255,1)"}var c;if(h===undefined){c=1}else{c=h/100}if(!d){return"rgba(255,255,255,"+c+")"}var g=/^#([0-9a-fA-f]{3}|[0-9a-fA-f]{6})$/;if(!d){return"rgba(255,255,255,"+c+")"}var e=d.toLowerCase();if(g.test(e)){if(e.length===4){var b="#";for(var f=1;f<4;f+=1){b+=e.slice(f,f+1).concat(e.slice(f,f+1))}e=b}var j=[];for(var f=1;f<7;f+=2){j.push(parseInt("0x"+e.slice(f,f+2)))}return"rgba("+j.join(",")+","+c+")"}else{return e}};
+function etrIsMobile(){return navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)}
+function findLanguageFlags(c,b){var a;if(c&&c[b]){a=langCodeToCountryArray[c[b]]?langCodeToCountryArray[c[b]]:langCodeToCountryArray[b]}else{a=langCodeToCountryArray[b]?langCodeToCountryArray[b]:langCodeToCountryArray[b.split("-")[0]]}return a};
+function findCurrencyFlags(b){var a;if(countryNameToCountryCodeArray[b]){a=countryNameToCountryCodeArray[b].toLowerCase()}else{a=null}return a};
+function createLanguageFloatSelector(t,B,H,K,x){var o;var w;var g;var c;var d;var p;var J;var r;var u;var C;var h;if(x){o=K.mobile_flags_type;w=K.mobile_labels_type;J=K.mobile_selector_width;r=K.mobile_vertical;u=K.mobile_position_tb;C=K.mobile_border_width;h=transformationRgb(K.mobile_background_color,K.mobile_background_opacity)}else{o=K.flags_type;w=K.labels_type;J=K.selector_width;r=K.vertical;u=K.position_tb;C=K.border_width;h=transformationRgb(K.background_color,K.background_opacity)}g=o!=="rectangle_flag"?"1x1":"4x3";var v="https://my.parcelpanel.com/assets/other/flags/"+g;c=o==="no_flag"||o==="without_flag"?true:false;d=w==="no_labels"?true:false;var y=H.getElementsByClassName("etranslate-language-list-button")[0];var l=H.getElementsByClassName("etranslate-language-list-dropdown")[0];var z=setLanguageFloatSelectorStyle(K,x);var n=K.language_flags;var I=findLanguageFlags(n,B);var f=setLanguageFloatPosition(y,l,t,r,u);H.setAttribute("style",z);var m=y.getElementsByClassName("select-dropdown-flag-icon")[0];m.style.backgroundImage="url("+v+"/"+I.toLowerCase()+".svg)";o==="circle_flag"?m.classList.add("circle_flag"):"";l.setAttribute("style","width:"+J+";background-color:"+h+";max-height:0px;opacity:0;");var L=setLanguageFloatSelectorWidth(t,K,x);y.style.width=L;y.style.borderWidth=C+"px";l.style.width=L;l.style.borderWidth=C+"px";var j=l.children;for(var E=0;E<j.length;E++){var a=j[E];var F=a.getElementsByClassName("select-dropdown-flag-icon")[0];var k=a.dataset.code;var A=j[E].dataset.name;var I=findLanguageFlags(n,k);F.style.backgroundImage="url("+v+"/"+I.toLowerCase()+".svg)";o==="circle_flag"?F.classList.add("circle_flag"):"";a.onclick=s(t.find(function(i){return i.iso_code.toLowerCase()===k.toLowerCase()}));var G=a.getElementsByClassName("etranslate-language-name")[0];if(w==="language_name"){G.innerHTML=langCodeToLangArray[k]?langCodeToLangArray[k]:G.textContent}else{if(w==="native_language_name"){A=A=="français"?"Français":A;G.innerHTML=A?A:langCodeToLangArray[k]}else{G.innerHTML=k?k.toLocaleUpperCase():k}}}if(c){var e=H.getElementsByClassName("etranslate-flag-wrapper");for(var E=0;E<e.length;E++){e[E].style.display="none"}}if(d){var e=H.getElementsByClassName("etranslate-language-name");for(var E=0;E<e.length;E++){e[E].style.display="none"}}else{var D=y.getElementsByClassName("etranslate-language-name")[0];if(w==="language_name"){D.innerHTML=langCodeToLangArray[B]?langCodeToLangArray[B]:D.textContent}else{if(w==="native_language_name"){var A=D.dataset.name;A=A=="français"?"Français":A;D.innerHTML=A?A:D.textContent}else{D.innerHTML=B?B.toLocaleUpperCase():B}}}if(o==="rectangle_flag"){var e=H.getElementsByClassName("etranslate-flag-wrapper");for(var E=0;E<e.length;E++){e[E].style.marginRight="8px"}}document.addEventListener("click",function(i){if(!i.target.closest(".etranslate-language-list-button")){q()}});var b=false;y.addEventListener("click",function(i){b=!b;if(b){M()}else{q()}});function M(){l.style.maxHeight=6.5*46+"px";l.style.opacity="1";var i=y.getElementsByClassName("etranslate-language-arrow")[0];if(f){i.classList.add("etranslate-language-arrow-up")}else{i.classList.add("etranslate-language-arrow-down")}b=true}function q(){l.style.maxHeight="0px";l.style.opacity="0";var i=y.getElementsByClassName("etranslate-language-arrow")[0];i.classList.remove("etranslate-language-arrow-down");i.classList.remove("etranslate-language-arrow-up");b=false}function s(i){return function(){localStorage.setItem("lan_code",i.iso_code.toLowerCase());const O=H.querySelector("form");const N=H.querySelector('input[name="language_code"]');if(window.location.search.indexOf("?preview_key")!=-1){const P=H.querySelector('input[name="return_to"]');P.value=window.location.pathname+window.location.search}N.value=i.iso_code;O.submit()}}return H};
+function setLanguageFloatSelectorWidth(g,b,e){var a;var d;var f;if(e){a=b.mobile_flags_type;d=b.mobile_labels_type;f=b.mobile_selector_width}else{a=b.flags_type;d=b.labels_type;f=b.selector_width}var c=g&&g[0]?g.length:0;var h=flag_min_width[a]+language_min_width[d]+arrow_padding_width+Number(f)+"px";return h};
+function setLanguageFloatSelectorStyle(f,c){var l;var j;var e;var a;var b;if(c){l=f.mobile_position_lr;j=f.mobile_position_tb;e=f.mobile_font_color;a=f.mobile_horizontal;b=f.mobile_vertical}else{l=f.position_lr;j=f.position_tb;e=f.font_color;a=f.horizontal;b=f.vertical}var g=j==="fixed_top"||j==="fixed_bottom"?"fixed":"absolute";var d=l==="right"?"right":"left";var k=j==="bottom"||j==="fixed_bottom"?"bottom":"top";var h;if((f.background_color==undefined&&f.background_opacity==undefined)||(f.mobile_background_color==undefined&&f.mobile_background_opacity==undefined)){h="rgba(255,255,255,1)"}else{if(c){h=transformationRgb(f.mobile_background_color,f.mobile_background_opacity)}else{h=transformationRgb(f.background_color,f.background_opacity)}}var i="top: auto;bottom: auto;left: auto;right: auto;"+l+":auto;"+j+":auto;"+d+":"+a+"px;"+k+":"+b+"px;background-color:"+h+";color:"+e+";position:"+g+";";return i};
+function setLanguageFloatPosition(j,l,b,c,k){var h=j.getBoundingClientRect();var e=l.getBoundingClientRect();const f=b[0]?b.length*item_height:0;const a=c+h["height"];const i=c-e["height"];const g=c-e["height"];var d=k.substring(k.lastIndexOf("_")+1,k.length);if(g<f&&d!=="top"){l.classList.add("lo-select-up");return true}else{if(g>=f&&d!=="top"){l.classList.remove("lo-select-up");return false}}};
+function setLanguageFloatSelector(){var e=getLanguageList();var d="{{ localization.language.iso_code }}";var a={{shop.metafields.etranslate.selector_config | json}};var c=document.getElementById("etranslate-language-float-selector");var b=etrIsMobile();if(Number(a.status)===1&&a.selector_type==="language"){if(b){if(a.mobile_choose_language_selector==="floating_selector"&&(a.mobile_style_of_the_selector===undefined||a.mobile_style_of_the_selector==="dropdown")){applyPriviewCssCode(a.mobile_css_code);createLanguageFloatSelector(e,d,c,a,b)}else{c.remove()}}else{if(a.choose_language_selector==="floating_selector"&&(a.style_of_the_selector===undefined||a.style_of_the_selector==="dropdown")){applyPriviewCssCode(a.css_code);createLanguageFloatSelector(e,d,c,a,b)}else{c.remove()}}}else{c.remove()}};
+documentReady(setLanguageFloatSelector);
+function documentReady(fu){if(document.readyState==="complete"||document.readyState==="interactive"){setTimeout(documentReady(setLanguageFloatSelector),1)}else{document.addEventListener("DOMContentLoaded",fu)}};
+</script>
+{% include 'etranslate-language-fix-selector' %}
+<style>.etranslate-LanguageList-link{position:absolute;z-index:999;font-size:14px;direction:ltr}.etranslate-language-float-link{border:1px solid #e0e2e4;background-color:white}.etranslate-language-list-link{list-style:none;overflow:auto;background:white;user-select:none;position:absolute;z-index:516;flex-direction:row;justify-content:flex-start;align-items:center;margin:0;transition:max-height .3s,visibility .2s,opacity .2s;white-space:nowrap;-webkit-overflow-scrolling:touch;overflow:-moz-scrollbars-none;display:block;border:1px solid rgba(224,224,224,1)}.select-dropdown-flag-icon-link{font-size:20px;box-sizing:content-box;background-size:contain;background-position:50%;background-repeat:no-repeat;background-size:contain;background-position:50%;background-repeat:no-repeat;position:relative;display:inline-block;width:1.33333333em;line-height:1em}.select-dropdown-flag-icon-link:before{content:"\00a0"}.etranslate-language-float-link ul{margin:0;display:flex;align-items:center;justify-content:space-around;padding-right:1rem;padding:5px 8px 5px 4px;-webkit-transition:max-height .3s,visibility .2s,opacity .2s;-moz-transition:max-height .3s,visibility .2s,opacity .2s;-ms-transition:max-height .3s,visibility .2s,opacity .2s;-o-transition:max-height .3s,visibility .2s,opacity .2s;transition:all .2s}.etranslate-link-content{display:flex;align-items:center;cursor:pointer;padding:5px 10px;white-space:normal}.etranslate-link-content:hover{opacity:.7}.etranslate-language-arrow{width:.5em;height:.5em;border-right:1.5px solid currentColor;border-top:1.5px solid currentColor;transform:rotate(45deg);position:relative;top:-1px}.etranslate-language-float-link-code{margin-left:5px}.etranslate-link-content{display:flex;align-items:center;cursor:pointer;padding:5px 10px}.rectangle_flag:before{content:"\00a0"}.flag-icon-link{background-size:contain;background-position:50%;background-repeat:no-repeat;position:relative;display:inline-block;width:1.33333333em;line-height:1em;border-radius:4px}.circle_flag{border-radius:50%;box-sizing:content-box;border:solid 1px #e6e3e3;width:1em}.etranslate-flag-wrapper-link{display:flex;align-items:center;height:28px;margin-right:3px}</style>
+<div id='etranslate-language-float-link-selector' class='etranslate-LanguageList-link etranslate-language-float-link'
+  style='display:none'>
+  {% form 'localization' %}
+  <ul id='etranslate-language-list-link' class='etranslate-language-list-link' style=''>
+    {%- for locale in shop.published_locales -%}
+    <li class='etranslate-language-list-link-li' data-code="{{ locale.iso_code }}"
+      data-name="{{ locale.endonym_name }}">
+      <div class='etranslate-link-content'>
+        <div class="etranslate-flag-wrapper">
+          <span class='flag-icon-link select-dropdown-flag-icon-link'></span>
+        </div>
+        <span class='etranslate-language-name-link'>
+
+        </span>
+      </div>
+    </li>
+    {%- endfor %}
+  </ul>
+  <input type="hidden" name="country_code" value="{{ localization.country.iso_code }}">
+  <input type="hidden" name="language_code" value="{{ localization.language.iso_code }}">
+  {% endform %}
+</div>
+<script>
+function setLanguageFloatLinkSelectorWidth(g,b,e){var a;var d;var f;if(e){a=b.mobile_flags_type;d=b.mobile_labels_type;f=b.mobile_selector_width}else{a=b.flags_type;d=b.labels_type;f=b.selector_width}var c=g&&g[0]?g.length:0;var h=(flag_min_width[a]+language_min_width[d]+20)*c+Number(f)+"px";return h};
+function setLanguageFloatLinkSelectorStyle(h,j,f){var p=h&&h[0]?h.length:0;var q;var n;var b;var m;var l;var a;var i;if(f){q=j.mobile_position_lr;n=j.mobile_position_tb;b=j.mobile_labels_type;m=j.mobile_flags_type;l=j.mobile_selector_width;i=j.mobile_font_color}else{q=j.position_lr;n=j.position_tb;b=j.labels_type;m=j.flags_type;l=j.selector_width;i=j.font_color}var k=n==="fixed_top"||n==="fixed_bottom"?"fixed":"absolute";var g=q==="right"?"right":"left";var o=n==="bottom"||n==="fixed_bottom"?"bottom":"top";var c=(flag_min_width[m]+language_min_width[b]+2)*p+Number(l);if(g==="right"){if(f){a=Number(j.mobile_horizontal)+c-1}else{a=Number(j.horizontal)+c-1}}else{if(f){a=Number(j.mobile_horizontal)-1}else{a=Number(j.horizontal)-1}}var e=Number(j.vertical)-1;if(o==="bottom"){e=e+45}var d="top: auto;bottom: auto;left: auto;right: auto;"+g+":"+a+"px;"+o+":"+e+"px;color:"+i+";position:"+k+";";return d};
+function createLanguageFloatLinkSelector(G,m,r,x,H){var z;var A;var l;var B;var e;var l;var o;var I;var q;var E;var g;var f;if(H){z=x.mobile_position_lr;A=x.mobile_position_tb;l=x.mobile_selector_width;B=x.mobile_horizontal;e=x.mobile_vertical;l=x.mobile_selector_width;o=x.mobile_font_color;I=x.mobile_labels_type;q=x.mobile_flags_type;g=x.mobile_border_width;f=transformationRgb(x.mobile_background_color,x.mobile_background_opacity)}else{z=x.position_lr;A=x.position_tb;l=x.selector_width;B=x.horizontal;e=x.vertical;l=x.selector_width;o=x.font_color;I=x.labels_type;q=x.flags_type;g=x.border_width;f=transformationRgb(x.background_color,x.background_opacity)}var E=x.language_flags;var j=A==="fixed_top"||A==="fixed_bottom"?"fixed":"absolute";var d=z==="right"?"right":"left";var u=A==="top"||A==="fixed_bottom"?"bottom":"top";var k=r.getElementsByClassName("etranslate-language-list-link")[0];var s=q!=="rectangle_flag"?"1x1":"4x3";var F=q==="no_flag"||q==="without_flag"?true:false;var c=I==="no_labels"?true:false;var n="https://my.parcelpanel.com/assets/other/flags/"+s;var D=k.children;for(var y=0;y<D.length;y++){var w=D[y].getElementsByClassName("select-dropdown-flag-icon-link")[0];var J=D[y].getElementsByClassName("etranslate-flag-wrapper")[0];var v=D[y].dataset.code;var C=D[y].dataset.name;var a=findLanguageFlags(E,v);if(F){J.style.display="none"}else{w.style.backgroundImage="url("+n+"/"+a.toLowerCase()+".svg)";q==="circle_flag"?w.classList.add("circle_flag"):""}D[y].onclick=b(G.find(function(i){return i.iso_code.toLowerCase()===v.toLowerCase()}));var t=D[y].getElementsByClassName("etranslate-language-name-link")[0];if(c){t.style.display="none"}else{if(I==="language_name"){t.innerHTML=langCodeToLangArray[v]?langCodeToLangArray[v]:t.text()}else{if(I==="native_language_name"){C=C=="français"?"Français":C;t.innerHTML=C?C:langCodeToLangArray[v]}else{t.innerHTML=v?v.toLocaleUpperCase():v}}}}var h=setLanguageFloatLinkSelectorWidth(G,x,H);k.setAttribute("style","width:"+h+";border-width:"+g+"px; background-color:"+f+";");var p=setLanguageFloatLinkSelectorStyle(G,x,H);var B=Number(B)+Number(k.offsetWidth);r.setAttribute("style",p);function b(i){return function(){localStorage.setItem("lan_code",i.iso_code.toLowerCase());const L=r.querySelector("form");const K=r.querySelector('input[name="language_code"]');if(window.location.search.indexOf("?preview_key")!=-1){const M=r.querySelector('input[name="return_to"]');M.value=window.location.pathname+window.location.search}K.value=i.iso_code;L.submit()}}return r};
+function setLanguageLinkSelector(){var e=getLanguageList();var d="{{ localization.language.iso_code }}";var a={{shop.metafields.etranslate.selector_config | json}} ;var c=document.getElementById("etranslate-language-float-link-selector");var b=etrIsMobile();if(Number(a.status)===1&&a.selector_type==="language"){if(b){if(a.mobile_style_of_the_selector==="links"&&a.mobile_choose_language_selector==="floating_selector"){applyPriviewCssCode(a.mobile_css_code);createLanguageFloatLinkSelector(e,d,c,a,b)}else{c.remove()}}else{if(a.style_of_the_selector==="links"&&a.choose_language_selector==="floating_selector"){applyPriviewCssCode(a.css_code);createLanguageFloatLinkSelector(e,d,c,a,b)}else{c.remove()}}}else{c.remove()}};
+documentReady(setLanguageLinkSelector);
+function documentReady(fu){if(document.readyState==="complete"||document.readyState==="interactive"){setTimeout(documentReady(setLanguageLinkSelector),1)}else{document.addEventListener("DOMContentLoaded",fu)}};
+</script><style>.etranslate-CurrencyList{display:inline-block;cursor:pointer;font-size:14px;direction:ltr}.etranslate-language-float-link{border:1px solid #e0e2e4;background-color:white}.rectangle_flag:before{content:"\00a0"}.select-dropdown-flag-icon-link{font-size:20px;box-sizing:content-box;background-size:contain;background-position:50%;background-repeat:no-repeat;background-size:contain;background-position:50%;background-repeat:no-repeat;position:relative;display:inline-block;width:1.33333333em;line-height:1em}.select-dropdown-flag-icon-link:before{content:"\00a0"}#etranslate-currency-selector ul{margin:0;-webkit-transition:max-height .3s,visibility .2s,opacity .2s;-moz-transition:max-height .3s,visibility .2s,opacity .2s;-ms-transition:max-height .3s,visibility .2s,opacity .2s;-o-transition:max-height .3s,visibility .2s,opacity .2s;transition:all .2s}.etranslate-flag-wrapper{display:flex;align-items:center;width:28px;height:28px;font-size:20px;margin-right:3px}.etranslate-currency-list-button{border:1px solid rgba(224,224,224,1);padding:8px 10px 8px 10px;display:flex;align-items:center;justify-content:space-between;-webkit-transition:max-height .2s,visibility .2s,opacity .2s;-moz-transition:max-height .2s,visibility .2s,opacity .2s;-ms-transition:max-height .2s,visibility .2s,opacity .2s;-o-transition:max-height .2s,visibility .2s,opacity .2s;transition:all .2s}.etranslate-currency-list-button-centent{display:flex;align-items:center}.etranslate-selector-arrow{display:block!important;width:.5em;height:.5em;border-right:1.5px solid currentColor;border-top:1.5px solid currentColor;transform:rotate(45deg);transition:all .2s;position:relative;top:-1px}.etranslate-selector-arrow-up{transform:rotate(-45deg)!important}.etranslate-selector-arrow-down{transform:rotate(135deg)!important}.etranslate-currency-list-button:hover{opacity:.8}.etranslate-currency-list-dropdown{padding:0;overflow:auto;background:white;width:208px;user-select:none;position:absolute;z-index:516;flex-direction:row;justify-content:flex-start;align-items:center;margin:0;-webkit-transition:max-height .3s,visibility .2s,opacity .2s;-moz-transition:max-height .3s,visibility .2s,opacity .2s;-ms-transition:max-height .3s,visibility .2s,opacity .2s;-o-transition:max-height .3s,visibility .2s,opacity .2s;-webkit-overflow-scrolling:touch;overflow:-moz-scrollbars-none;display:block;border:1px solid rgba(224,224,224,1)}.etranslate-currency-list-dropdown::-webkit-scrollbar{display:none}.etranslate-currency-list-dropdown>li{margin:0!important;padding:8px 10px 8px 10px;cursor:pointer}.etranslate-lo-select-dropdown-item{display:flex;align-items:center;-webkit-transition:max-height .3s,visibility .2s,opacity .2s;-moz-transition:max-height .3s,visibility .2s,opacity .2s;-ms-transition:max-height .3s,visibility .2s,opacity .2s;-o-transition:max-height .3s,visibility .2s,opacity .2s;transition:all .2s}.etranslate-currency-name{padding-top:1px}.etranslate-lo-select-dropdown-item:hover{opacity:.8}.lo-select-up{position:absolute;bottom:100%}.lo-select-selection-item-top{border-bottom:0}.lo-select-selection-item-bottom{border-top:0}.rectangle_flag:before{content:"\00a0"}.flag-icon{background-size:contain;background-position:50%;background-repeat:no-repeat;position:relative;display:inline-block;width:1.33333333em;line-height:1em;border-radius:4px}.circle_flag{border-radius:50%;box-sizing:content-box!important;width:1em}.etranslate-selector-dropdown-item{display:flex;align-items:center;padding:8px 10px 8px 10px;transition:all .2s}.etranslate-selector-dropdown-item:hover{opacity:.7}</style>
+<div id='etranslate-currency-selector' class='etranslate-CurrencyList' style='display:none'>
+    {% form 'localization' %}
+    <span class='selector-button'>
+        <div class='etranslate-currency-list-button'>
+            <div class='etranslate-currency-list-button-centent'>
+                <div class='etranslate-flag-wrapper'>
+                    <span class="rectangle_flag select-dropdown-flag-icon flag-icon" />
+                </div>
+                <div class="etranslate-currency-name">
+                    {{ shop.currency }}
+                </div>
+            </div>
+            <div class='etranslate-selector-arrow'></div>
+        </div>
+    </span>
+    <ul class='etranslate-currency-list-dropdown' style='max-height:0px;opacity:0;'>
+        {%- for currency in shop.metafields.etranslate.selector_config.user_currencies_data -%}
+        <li class='etranslate-selector-dropdown-item' data-country="{{ currency.country }}"
+            data-code="{{ currency.code }}" data-name="{{ currency.currency }}"
+            data-symbol="{{ currency.currency_symbol }}">
+            <div class="etranslate-flag-wrapper">
+                <span class="rectangle_flag select-dropdown-flag-icon flag-icon" />
+            </div>
+            <div class="etranslate-currency-name">{{ currency.code }}</div>
+        </li>
+        {%- endfor %}
+    </ul>
+    <input type="hidden" name="country_code" value="{{ localization.country.iso_code }}">
+    {% endform %}
+</div>
+<script>
+var monitor = true;
+function setCurrencySelectorWidth(f,c,d){var b;var a;var e;if(d){b=c.mobile_flags_type;a=c.mobile_currency_label_type;e=c.mobile_selector_width}else{b=c.flags_type;a=c.currency_label_type;e=c.selector_width}var g;if(f==="float"){g=flag_min_width[b]+currency_min_width[a]+arrow_padding_width+Number(e)+"px"}else{g=flag_min_width[b]+currency_min_width[a]+arrow_padding_width+"px"}return g};
+function setCurrencyFloatSelectorStyle(f,c){var l;var j;var e;var a;var b;if(c){l=f.mobile_position_lr;j=f.mobile_position_tb;e=f.mobile_font_color;a=f.mobile_horizontal;b=f.mobile_vertical}else{l=f.position_lr;j=f.position_tb;e=f.font_color;a=f.horizontal;b=f.vertical}var g=j==="fixed_top"||j==="fixed_bottom"?"fixed":"absolute";var d=l==="right"?"right":"left";var k=j==="bottom"||j==="fixed_bottom"?"bottom":"top";var h;if((f.background_color==undefined&&f.background_opacity==undefined)||(f.mobile_background_color==undefined&&f.mobile_background_opacity==undefined)){h="rgba(255,255,255,1)"}else{if(c){h=transformationRgb(f.mobile_background_color,f.mobile_background_opacity)}else{h=transformationRgb(f.background_color,f.background_opacity)}}var i="top: auto;bottom: auto;left: auto;right: auto;"+l+":auto;"+j+":auto;"+d+":"+a+"px;"+k+":"+b+"px;background-color:"+h+";color:"+e+";position:"+g+";";return i};
+function setCurrencyEmbeddedSelectorStyle(a,d){var e;if(d){e=a.mobile_font_color}else{e=a.font_color}var c;if((a.background_color==undefined&&a.background_opacity==undefined)||(a.mobile_background_color==undefined&&a.mobile_background_opacity==undefined)){c="rgba(255,255,255,1)"}else{if(d){c=transformationRgb(a.mobile_background_color,a.mobile_background_opacity)}else{c=transformationRgb(a.background_color,a.background_opacity)}}var b="background-color:"+c+";color:"+e+";";return b};
+function createCurrencyFloatSelector(y,f,N,r,H,D,e,M,A){var q;var j;var g;var b;var L;var t;var x;var E;var k;if(A){q=M.mobile_flags_type;j=M.mobile_currency_label_type;L=M.mobile_selector_width;t=M.mobile_vertical;x=M.mobile_position_tb;E=M.mobile_border_width;k=transformationRgb(M.mobile_background_color,M.mobile_background_opacity)}else{q=M.flags_type;j=M.currency_label_type;L=M.selector_width;t=M.vertical;x=M.position_tb;E=M.border_width;k=transformationRgb(M.background_color,M.background_opacity)}g=q!=="rectangle_flag"?"1x1":"4x3";var z="https://my.parcelpanel.com/assets/other/flags/"+g;b=q==="no_flag"||q==="without_flag"?true:false;no_labels=j==="no_labels"?true:false;var B=e.getElementsByClassName("etranslate-currency-list-button")[0];var m=e.getElementsByClassName("etranslate-currency-list-dropdown")[0];var C=setCurrencyFloatSelectorStyle(M,A);var J=findCurrencyFlags(H.country);var d=setCurrencySelectorPosition(B,m,M.user_currencies_data,t,x);e.setAttribute("style",C);var o=B.getElementsByClassName("select-dropdown-flag-icon")[0];o.style.backgroundImage="url("+z+"/"+J+".svg)";q==="circle_flag"?o.classList.add("circle_flag"):"";m.setAttribute("style","width:"+L+";background-color:"+k+";max-height:0px;opacity:0;");var O=setCurrencySelectorWidth("float",M,A);B.style.width=O;B.style.borderWidth=E+"px";m.style.width=O;m.style.borderWidth=E+"px";var K=B.getElementsByClassName("etranslate-currency-name")[0];if(j==="name"){K.innerHTML=H.currency}else{if(j==="code_symbol"){K.innerHTML=H.code+" ("+H.currency_symbol+")"}else{K.innerHTML=H.code}}var l=m.children;for(var G=0;G<l.length;G++){var F=l[G];var I=F.getElementsByClassName("select-dropdown-flag-icon")[0];var n=F.dataset.code;var v=F.dataset.country;var w=F.dataset.name;var p=F.dataset.symbol;var J=findCurrencyFlags(v);I.style.backgroundImage="url("+z+"/"+J+".svg)";q==="circle_flag"?I.classList.add("circle_flag"):"";F.onclick=u(M.user_currencies_data.find(function(i){return i.code.toLowerCase()===n.toLowerCase()}),H);var h=F.getElementsByClassName("etranslate-currency-name")[0];if(j==="name"){h.innerHTML=w}else{if(j==="code_symbol"){h.innerHTML=n+" ("+p+")"}else{h.innerHTML=n}}}if(b){var c=e.getElementsByClassName("etranslate-flag-wrapper");for(var G=0;G<c.length;G++){c[G].style.display="none"}}if(q==="rectangle_flag"){var c=e.getElementsByClassName("etranslate-flag-wrapper");for(var G=0;G<c.length;G++){c[G].style.marginRight="8px"}}var a=false;B.addEventListener("click",function(i){a=!a;if(a){P()}else{s()}});document.addEventListener("click",function(i){if(!i.target.closest(".etranslate-currency-list-button")){if(a){s()}}});function P(){m.style.maxHeight=5*46-8+"px";m.style.opacity="1";var i=B.getElementsByClassName("etranslate-selector-arrow")[0];if(d){i.classList.add("etranslate-selector-arrow-up")}else{i.classList.add("etranslate-selector-arrow-down")}a=true}function s(){m.style.maxHeight="0px";m.style.opacity="0";var i=B.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.remove("etranslate-selector-arrow-down");i.classList.remove("etranslate-selector-arrow-up");a=false}function u(i){return function(){localStorage.setItem("currentCurrency",i.code);if(j==="name"){K.innerHTML=i.currency}else{if(j==="code_symbol"){K.innerHTML=i.code+" ("+i.currency_symbol+")"}else{K.innerHTML=i.code}}var S=findCurrencyFlags(i.country);o.style.backgroundImage="url("+z+"/"+S+".svg)";s();var Q=e.querySelector("form");var R=e.querySelector('input[name="country_code"]');if("{{ localization.country.currency.iso_code }}"!==i.code){if(y.indexOf(i.code)!=-1){R.value=f[i.code];Q.submit()}else{if("{{ localization.country.currency.iso_code }}"!==r.code){R.value=f[r.code];Q.submit()}else{etranslateCurrency(H,i)}}}else{if(i.code===r.code){R.value=f[r.code];Q.submit()}}H=i}}e.style.zIndex="999";return e};
+function createCurrencyEmbeddedSelector(v,e,I,q,D,A,d,H,x){var p;var h;var f;var b;var j;if(x){p=H.mobile_flags_type;h=H.mobile_currency_label_type;j=transformationRgb(H.mobile_background_color,H.mobile_background_opacity)}else{p=H.flags_type;h=H.currency_label_type;j=transformationRgb(H.background_color,H.background_opacity)}f=p!=="rectangle_flag"?"1x1":"4x3";var w="https://my.parcelpanel.com/assets/other/flags/"+f;b=p==="no_flag"||p==="without_flag"?true:false;no_labels=h==="no_labels"?true:false;var y=d.getElementsByClassName("etranslate-currency-list-button")[0];var l=d.getElementsByClassName("etranslate-currency-list-dropdown")[0];var z=setCurrencyEmbeddedSelectorStyle(H,x);var F=findCurrencyFlags(D.country);d.setAttribute("style",z);var n=y.getElementsByClassName("select-dropdown-flag-icon")[0];n.style.backgroundImage="url("+w+"/"+F+".svg)";p==="circle_flag"?n.classList.add("circle_flag"):"";l.setAttribute("style","background-color:"+j+";max-height:0px;opacity:0;");var J=setCurrencySelectorWidth("embedded",H,x);y.style.width=J;y.style.border="none";l.style.width=J;var G=y.getElementsByClassName("etranslate-currency-name")[0];if(h==="name"){G.innerHTML=D.currency}else{if(h==="code_symbol"){G.innerHTML=D.code+" ("+D.currency_symbol+")"}else{G.innerHTML=D.code}}var k=l.children;for(var C=0;C<k.length;C++){var B=k[C];var E=B.getElementsByClassName("select-dropdown-flag-icon")[0];var m=B.dataset.code;var t=B.dataset.country;var u=B.dataset.name;var o=B.dataset.symbol;var F=findCurrencyFlags(t);E.style.backgroundImage="url("+w+"/"+F+".svg)";p==="circle_flag"?E.classList.add("circle_flag"):"";B.onclick=s(H.user_currencies_data.find(function(i){return i.code.toLowerCase()===m.toLowerCase()}),D);var g=B.getElementsByClassName("etranslate-currency-name")[0];if(h==="name"){g.innerHTML=u}else{if(h==="code_symbol"){g.innerHTML=m+" ("+o+")"}else{g.innerHTML=m}}}if(b){var c=d.getElementsByClassName("etranslate-flag-wrapper");for(var C=0;C<c.length;C++){c[C].style.display="none"}}if(p==="rectangle_flag"){var c=d.getElementsByClassName("etranslate-flag-wrapper");for(var C=0;C<c.length;C++){c[C].style.marginRight="8px"}}var a=false;y.addEventListener("click",function(i){a=!a;if(a){K()}else{r()}});document.addEventListener("click",function(i){if(!i.target.closest(".etranslate-currency-list-button")){r()}});function K(){l.style.maxHeight=5*46-8+"px";l.style.opacity="1";var i=y.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.add("etranslate-selector-arrow-down");a=true}function r(){l.style.maxHeight="0px";l.style.opacity="0";var i=y.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.remove("etranslate-selector-arrow-down");i.classList.remove("etranslate-selector-arrow-up");a=false}function s(i){return function(){localStorage.setItem("currentCurrency",i.code);if(h==="name"){G.innerHTML=i.currency}else{if(h==="code_symbol"){G.innerHTML=i.code+" ("+i.currency_symbol+")"}else{G.innerHTML=i.code}}var N=findCurrencyFlags(i.country);n.style.backgroundImage="url("+w+"/"+N+".svg)";r();var L=d.querySelector("form");var M=d.querySelector('input[name="country_code"]');if("{{ localization.country.currency.iso_code }}"!==i.code){if(v.indexOf(i.code)!=-1){M.value=e[i.code];L.submit()}else{if("{{ localization.country.currency.iso_code }}"!==q.code){M.value=e[q.code];L.submit()}else{etranslateCurrency(D,i)}}}else{if(i.code===q.code){M.value=e[q.code];L.submit()}}D=i}}return d};
+function setCurrencySelectorPosition(i,l,j,b,k){var g=i.getBoundingClientRect();var d=l.getBoundingClientRect();const e=j[0]?5*item_height:0;const a=b+g["height"];const h=b-d["height"];const f=b-d["height"];var c=k.substring(k.lastIndexOf("_")+1,k.length);if(f<e&&c!=="top"){l.classList.add("lo-select-up");return true}else{if(f>=e&&c!=="top"){l.classList.remove("lo-select-up");return false}}};
+function setCurrencySelector(){var k=[];var f=[];{% for country in localization.available_countries %}k["{{ country.currency.iso_code }}"]="{{ country.iso_code }}";f.push("{{ country.currency.iso_code }}");{% endfor %}var m="{{ localization.country.currency.iso_code }}";var i="https://{{ shop.domain }}";var g={{ shop.metafields.etranslate.selector_config | json }};var a=document.getElementById("etranslate-currency-selector");var j=localStorage.getItem("currentCurrency");if(j===null){j="{{ shop.currency }}"}else{if((j!==m&&f.indexOf(j)!=-1)||(m!=="{{ shop.currency }}"&&f.indexOf(j)==-1)){j=m;localStorage.setItem("currentCurrency",m)}}var e=[];var h=[];if(g.user_currencies_data){g.user_currencies_data.forEach(d=>{if(d.exchange_rate!==0){Currency.rates[d.code]=Currency.rates["{{ shop.currency }}"]/d.exchange_rate}if(d.code===j){e=d}if(d.code==="{{ shop.currency }}"){h=d}return ''})}if(e.length<=0){e=h}var c=etrIsMobile();if(Number(g.status)===1&&g.selector_type==="currency"){var l=a.querySelector("form");var b=a.querySelector('input[name="country_code"]');if(m!==e.code){if(f.indexOf(e.code)!=-1){b.value=k[e.code];l.submit()}else{if(m!==h.code){b.value=k[h.code];l.submit()}else{etranslateCurrency(h,e)}}}if(c){if(g.mobile_currency_selector_type==="floating_selector"){createCurrencyFloatSelector(f,k,i,h,e,j,a,g,c)}else{if(g.mobile_currency_selector_type==="embedded_selector"){createCurrencyEmbeddedSelector(f,k,i,h,e,j,a,g,c);Etranslate.setEmbeddedSelectorPosition(a,c)}}applyPriviewCssCode(g.mobile_css_code)}else{if(g.currency_selector_type==="floating_selector"){createCurrencyFloatSelector(f,k,i,h,e,j,a,g,c)}else{if(g.currency_selector_type==="embedded_selector"){createCurrencyEmbeddedSelector(f,k,i,h,e,j,a,g,c);Etranslate.setEmbeddedSelectorPosition(a,c)}}applyPriviewCssCode(g.css_code)}}else{a.remove()}};
+function etranslateCurrency(originCurrency, currentCurrency) {
+        if (originCurrency.code != currentCurrency.code) {
+            setCartNotification();
+            var amountDom = document.getElementsByClassName('etrans-money');
+            for (var i = 0; i < amountDom.length; i++) {
+                if(amountDom[i].dataset.currency === undefined && originCurrency.code != '{{ shop.currency }}'){
+                    metaFiles.user_currencies_data.forEach(data => {
+                        if (data.code === '{{ shop.currency }}') {
+                            originCurrency = data;
+                        }
+                    })
+                }
+                if (amountDom[i].dataset.currency !== currentCurrency.code) {
+                    if(parseFloat(originCurrency.round) === 8848){
+                        var price = parseFloat(amountDom[i].innerHTML.match(/\d+/g));
+                    }else{
+                        var price = parseFloat(amountDom[i].innerHTML.replace(",", "").match(/\d+(\.\d+)?/g));
+                    }
+                    price = Currency.convert(price, originCurrency.code, currentCurrency.code).toFixed(2);
+                    if (parseFloat(currentCurrency.round) !== 0 && parseFloat(currentCurrency.round) !== 1 && parseFloat(currentCurrency.round) !== 8848) {
+                        price = parseFloat(price.toString().replace(/(\.[0-9]+)/g, '')) + parseFloat(currentCurrency.round);
+                    } else if (parseFloat(currentCurrency.round) === 8848){
+                        price = parseInt(price);
+                    } else if (parseFloat(currentCurrency.round) === 1) {
+                        price = parseInt(price) + 1;
+                    }
+                    if (amountDom[i].innerHTML.indexOf(originCurrency.code) != -1 && amountDom[i].innerHTML.indexOf(originCurrency.currency_symbol) != -1) {
+                        amountDom[i].innerHTML = currentCurrency.currency_symbol + price + ' ' + currentCurrency.code;
+                        amountDom[i].dataset.currency = currentCurrency.code;
+                    } else if (amountDom[i].innerHTML.indexOf(originCurrency.code) == -1 && amountDom[i].innerHTML.indexOf(originCurrency.currency_symbol) != -1) {
+                        amountDom[i].innerHTML = currentCurrency.currency_symbol + price;
+                        amountDom[i].dataset.currency = currentCurrency.code;
+                    } else if (amountDom[i].innerHTML.indexOf(originCurrency.code) != -1 && amountDom[i].innerHTML.indexOf(originCurrency.currency_symbol) == -1) {
+                        amountDom[i].innerHTML = price + ' ' + currentCurrency.code;
+                        amountDom[i].dataset.currency = currentCurrency.code;
+                    }
+                }
+            }
+        }
+        if (monitor) {
+            const send = XMLHttpRequest.prototype.send;
+            XMLHttpRequest.prototype.send = function () {
+                this.addEventListener('load', function () {
+                    if (this._url.indexOf("cart") != -1 || this._url.indexOf("cart.js") != -1 || this._url.indexOf("?page=") != -1 || this._url.indexOf("search?") != -1 || this._url.indexOf("view=") != -1 || this._url.indexOf("type=") != -1 || this._url.indexOf("change.js") != -1 || this._url.indexOf("add.js") != -1 || this._url.indexOf("recently-viewed") != -1 || this._url.indexOf("recentlyviewed") != -1 || this._url.indexOf("/recommendation") != -1) {
+                        setTimeout(function () {
+                            metaFiles.user_currencies_data.forEach(data => {
+                                if (data.code === localStorage.getItem('currentCurrency')) {
+                                    currentCurrency = data;
+                                }
+                            });
+                            etranslateCurrency(originCurrency, currentCurrency);
+                        }, 300);
+                    }
+                })
+                return send.apply(this, arguments);
+            }
+            const fetch = window.fetch;
+            window.fetch = function () {
+                var e = arguments;
+                return fetch.apply(this, Array.prototype.slice.call(arguments)).then(function (t) {
+                    if (!t.ok)
+                        return t;
+                    try {
+                        if (t.url.indexOf("/variants/") != -1 || t.url.indexOf("?variant=") != -1 || t.url.indexOf("cart.js") != -1 || t.url.indexOf("?page=") != -1 || t.url.indexOf("search?") != -1 || t.url.indexOf("view=") != -1 || t.url.indexOf("type=") != -1 || t.url.indexOf("change.js") != -1 || t.url.indexOf("add.js") != -1 || t.url.indexOf("recently-viewed") != -1 || t.url.indexOf("recentlyviewed") != -1 || t.url.indexOf("change") != -1 || t.url.indexOf("/recommendation") != -1) {
+                            setTimeout(function () {
+                                metaFiles.user_currencies_data.forEach(data => {
+                                    if (data.code === localStorage.getItem('currentCurrency')) {
+                                        currentCurrency = data;
+                                    }
+                                });
+                                etranslateCurrency(originCurrency, currentCurrency);
+                            }, 300);
+                        }
+                    } catch (e) {
+                    }
+                    return t;
+                })
+            }
+            monitor = false;
+        }
+    }
+documentReady(setCurrencySelector);
+document.write('<script type="text/javascript" src="https://cdn.shopify.com/s/javascripts/currencies.js?v=' + Math.random() + '"><\/script>');
+function documentReady(fu){if(document.readyState==="complete"||document.readyState==="interactive"){setTimeout(documentReady(setCurrencySelector),1)}else{document.addEventListener("DOMContentLoaded",fu)}};
+</script><style>.etranslate-floating-selectorList{position:absolute;right:8px;top:24px}.etranslate-embedded-selectorList{display:inline-block;cursor:pointer;font-size:14px}.etranslate-selector-list-button{border:1px solid rgba(224,224,224,1);padding:8px 10px 8px 10px;display:flex;align-items:center;justify-content:space-between;transition:all .2s}.etranslate-selector-list-button-content{display:flex;align-items:center;width:100%}.etranslate-flag-wrapper{display:flex;align-items:center;width:28px;height:28px;font-size:20px;margin-right:3px}.rectangle_flag:before{content:"\00a0"}.select-dropdown-flag-icon-link{font-size:20px;box-sizing:content-box;background-size:contain;background-position:50%;background-repeat:no-repeat;background-size:contain;background-position:50%;background-repeat:no-repeat;position:relative;display:inline-block;width:1.33333333em;line-height:1em}.select-dropdown-flag-icon-link:before{content:"\00a0"}.flag-icon{background-size:contain;background-position:50%;background-repeat:no-repeat;position:relative;display:inline-block;width:1.33333333em;line-height:1em;border-radius:4px}.circle_flag{border-radius:50%;box-sizing:content-box!important;width:1em}.etranslate-language-name{font-size:14px;padding-top:1px}.etranslate-currency-name{font-size:14px;padding-top:1px}.split-line{padding:0 5px}.etranslate-selector-arrow{display:block!important;width:.5em;height:.5em;border-right:1.5px solid currentColor;border-top:1.5px solid currentColor;transform:rotate(45deg);transition:all .2s;position:relative;top:-1px}.etranslate-selector-arrow-up{transform:rotate(-45deg)}.etranslate-selector-arrow-down{transform:rotate(135deg)}#etranslate-language_currency-dropdown-selector .etranslate-selector-list-dropdown{overflow:auto;background:white;width:208px;user-select:none;position:absolute;flex-direction:row;justify-content:flex-start;align-items:center;margin:0;transition:max-height .3s,visibility .2s,opacity .2s;-webkit-overflow-scrolling:touch;overflow:-moz-scrollbars-none;display:table;border:1px solid rgba(224,224,224,1)}.etranslate-selector-list-dropdown>li{padding:8px 10px 8px 10px;cursor:pointer}#etranslate-language_currency-dropdown-selector .etranslate-selector-card{margin:8px 10px 8px 10px}.etranslate-language-selector{position:relative}.etranslate-currency-selector{position:relative}#etranslate-language_currency-dropdown-selector .etranslate-selector-button{border:1px solid rgba(224,224,224,1);padding:.5rem 1rem;display:flex;align-items:center;justify-content:space-between;transition:all .2s;margin-top:10px;line-height:30px}.etranslate-selector-dropdown{padding:0;overflow:auto;background:white;user-select:none;position:absolute;z-index:500;flex-direction:row;justify-content:flex-start;align-items:center;margin:0;transition:max-height .3s,visibility .2s,opacity .2s;-webkit-overflow-scrolling:touch;overflow:-moz-scrollbars-none;display:block;border:1px solid rgba(224,224,224,1)}.etranslate-selector-dropdown-item{display:flex;align-items:center;padding:8px 10px 8px 10px;transition:all .2s}.etranslate-selector-dropdown-item:hover{opacity:.7}.etranslate-change{margin-top:10px;font-size:16px}.etranslate-change-button{background-color:black;color:white;width:100%;border:0;padding:5px;cursor:pointer;line-height:25px}.lo-select-up{position:absolute;bottom:100%}</style>
+<div id="etranslate-language_currency-dropdown-selector" style="display: none">
+    {% form 'localization' %}
+    <span class='selector-button'>
+        <div class='etranslate-selector-list-button'>
+            <div class='etranslate-selector-list-button-content'>
+                <div class='etranslate-flag-wrapper'>
+                    <span class="rectangle_flag select-dropdown-flag-icon flag-icon" />
+                </div>
+                <div class="etranslate-currency-name">{{ shop.currency }}</div>
+                <div class='split-line'> / </div>
+                <div class="etranslate-language-name"
+                    data-name="{{ request.locale.endonym_name | split: '-' | first | strip }}">
+                    {{ request.locale.name | split: '-' | first | strip }}
+                </div>
+            </div>
+            <div class='etranslate-selector-arrow'></div>
+        </div>
+    </span>
+    <div class="etranslate-selector-list-dropdown" style='max-height:0px;opacity:0;'>
+        <div class='etranslate-selector-card'>
+            <div class='etranslate-language-selector'>
+                <div class="etranslate-selector-button etranslate-language-selector-button">
+                    <div class="etranslate-language-name"
+                        data-name="{{ request.locale.endonym_name | split: '-' | first | strip }}">
+                        {{ request.locale.name | split: '-' | first | strip }}
+                    </div>
+                    <div class='etranslate-selector-arrow'></div>
+                </div>
+                <ul class="etranslate-language-dropdown etranslate-selector-dropdown">
+                    {%- for locale in shop.published_locales -%}
+                    <li class='etranslate-selector-dropdown-item' data-code="{{ locale.iso_code }}"
+                        data-name="{{ locale.endonym_name }}">
+                        <div class="etranslate-language-name">{{ locale.name }}</div>
+                    </li>
+                    {%- endfor %}
+                </ul>
+            </div>
+            <div class='etranslate-currency-selector'>
+                <div class="etranslate-selector-button etranslate-currency-selector-button">
+                    <div class='etranslate-selector-list-button-content'>
+                        <div class='etranslate-flag-wrapper'>
+                            <span class="rectangle_flag select-dropdown-flag-icon flag-icon" />
+                        </div>
+                        <div class="etranslate-currency-name">{{ shop.currency }}</div>
+                    </div>
+                    <div class='etranslate-selector-arrow'></div>
+                </div>
+                <ul class="etranslate-currency-dropdown etranslate-selector-dropdown">
+                    {%- for currency in shop.metafields.etranslate.selector_config.user_currencies_data -%}
+                    <li class='etranslate-selector-dropdown-item' data-country="{{ currency.country }}"
+                        data-code="{{ currency.code }}" data-name="{{ currency.currency }}"
+                        data-symbol="{{ currency.currency_symbol }}">
+                        <div class="etranslate-flag-wrapper">
+                            <span class="rectangle_flag select-dropdown-flag-icon flag-icon" />
+                        </div>
+                        <div class="etranslate-currency-name">{{ currency.code }}</div>
+                    </li>
+                    {%- endfor %}
+                </ul>
+            </div>
+            <div class="etranslate-change">
+                <button class="etranslate-change-button" type="button">Change</button>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" name="country_code" value="{{ localization.country.iso_code }}">
+    <input type="hidden" name="language_code" value="{{ localization.language.iso_code }}">
+    {% endform %}
+</div>
+<script>
+var beforeCurrency
+function setLanguageCurrencyDropdownSelectorWidth(g,c,e){var b;var d;var f;var a;if(e){b=c.mobile_flags_type;d=c.mobile_labels_type;f=c.mobile_selector_width;a=c.mobile_currency_label_type}else{b=c.flags_type;d=c.labels_type;f=c.selector_width;a=c.currency_label_type}var h;if(g==="float"){h=flag_min_width[b]+language_min_width[d]+currency_min_width[a]+arrow_padding_width+Number(f)}else{h=flag_min_width[b]+language_min_width[d]+currency_min_width[a]+arrow_padding_width}return h};
+function setLanguageCurrencyDropdownSelectorStyle(f,c){var l;var j;var e;var a;var b;if(c){l=f.mobile_position_lr;j=f.mobile_position_tb;e=f.mobile_font_color;a=f.mobile_horizontal;b=f.mobile_vertical}else{l=f.position_lr;j=f.position_tb;e=f.font_color;a=f.horizontal;b=f.vertical}var g=j==="fixed_top"||j==="fixed_bottom"?"fixed":"absolute";var d=l==="right"?"right":"left";var k=j==="bottom"||j==="fixed_bottom"?"bottom":"top";var h;if((f.background_color==undefined&&f.background_opacity==undefined)||(f.mobile_background_color==undefined&&f.mobile_background_opacity==undefined)){h="rgba(255,255,255,1)"}else{if(c){h=transformationRgb(f.mobile_background_color,f.mobile_background_opacity)}else{h=transformationRgb(f.background_color,f.background_opacity)}}var i="top: auto;bottom: auto;left: auto;right: auto;"+l+":auto;"+j+":auto;"+d+":"+a+"px;"+k+":"+b+"px;background-color:"+h+";color:"+e+";position:"+g+";";return i};
+function setLanguageCurrencyDropdownEmbeddedSelectorStyle(a,d){var e;if(d){e=a.mobile_font_color}else{e=a.font_color}var c;if((a.background_color==undefined&&a.background_opacity==undefined)||(a.mobile_background_color==undefined&&a.mobile_background_opacity==undefined)){c="rgba(255,255,255,1)"}else{if(d){c=transformationRgb(a.mobile_background_color,a.mobile_background_opacity)}else{c=transformationRgb(a.background_color,a.background_opacity)}}var b="background-color:"+c+";color:"+e+";";return b};
+function createLanguageCurrencyFloatSelector(K,f,E,z,af,T,Y,t,al,Q){var y;var O;var g;var b;var aj;var B;var J;var Z;var p;var o;if(Q){y=al.mobile_flags_type;O=al.mobile_labels_type;aj=al.mobile_selector_width;B=al.mobile_vertical;J=al.mobile_position_tb;Z=al.mobile_border_width;p=transformationRgb(al.mobile_background_color,al.mobile_background_opacity);o=al.mobile_currency_label_type}else{y=al.flags_type;O=al.labels_type;aj=al.selector_width;B=al.vertical;J=al.position_tb;Z=al.border_width;p=transformationRgb(al.background_color,al.background_opacity);o=al.currency_label_type}g=y!=="rectangle_flag"?"1x1":"4x3";var L="https://my.parcelpanel.com/assets/other/flags/"+g;b=y==="no_flag"||y==="without_flag"?true:false;var R=t.getElementsByClassName("etranslate-selector-list-button")[0];var ak=t.getElementsByClassName("etranslate-language-selector-button")[0];var X=t.getElementsByClassName("etranslate-currency-selector-button")[0];var s=t.getElementsByClassName("etranslate-selector-list-dropdown")[0];var P=t.getElementsByClassName("etranslate-language-dropdown")[0];var V=t.getElementsByClassName("etranslate-currency-dropdown")[0];var M=t.getElementsByClassName("etranslate-change-button")[0];if(Etranslate.multiLanguage.indexOf(Y.toLowerCase())!=-1){var ab=Etranslate.selectorMultiLanguageText[Y.toLowerCase()];M.innerHTML=ab["change"]}var S=setLanguageCurrencyDropdownSelectorStyle(al,Q);var ah=findCurrencyFlags(af.country);var e=setLanguageCurrencyDropdownSelectorPosition(R,s,P,V,E,B,J);t.setAttribute("style",S);var v=R.getElementsByClassName("select-dropdown-flag-icon")[0];var ao=X.getElementsByClassName("select-dropdown-flag-icon")[0];v.style.backgroundImage="url("+L+"/"+ah+".svg)";y==="circle_flag"?v.classList.add("circle_flag"):"";ao.style.backgroundImage="url("+L+"/"+ah+".svg)";y==="circle_flag"?ao.classList.add("circle_flag"):"";s.setAttribute("style","width:"+aj+";background-color:"+p+";max-height:0px;opacity:0;display:none");P.setAttribute("style","width:"+aj+";background-color:"+p+";max-height:0px;opacity:0;display:none");V.setAttribute("style","width:"+aj+";background-color:"+p+";max-height:0px;opacity:0;display:none");var am=setLanguageCurrencyDropdownSelectorWidth("float",al,Q);var x=am-22;R.style.width=am+"px";R.style.borderWidth=Z+"px";s.style.width=am+"px";s.style.borderWidth=Z+"px";P.style.width=x+"px";V.style.width=x+"px";var ae=P.children;for(var ad=0;ad<ae.length;ad++){var ag=ae[ad];var r=ag.dataset.code;var W=ae[ad].dataset.name;ag.onclick=C(E.find(function(i){return i.iso_code.toLowerCase()===r.toLowerCase()}));var n=ag.getElementsByClassName("etranslate-language-name")[0];if(O==="language_name"){n.innerHTML=langCodeToLangArray[r]?langCodeToLangArray[r]:n.textContent}else{if(O==="native_language_name"){W=W=="français"?"Français":W;n.innerHTML=W?W:langCodeToLangArray[r]}else{n.innerHTML=r?r.toLocaleUpperCase():r}}}var D=V.children;for(var ad=0;ad<D.length;ad++){var ac=D[ad];var d=ac.getElementsByClassName("select-dropdown-flag-icon")[0];var u=ac.dataset.code;var G=ac.dataset.country;var H=ac.dataset.name;var w=ac.dataset.symbol;var ah=findCurrencyFlags(G);d.style.backgroundImage="url("+L+"/"+ah+".svg)";y==="circle_flag"?d.classList.add("circle_flag"):"";ac.onclick=F(al.user_currencies_data.find(function(i){return i.code.toLowerCase()===u.toLowerCase()}),af);var j=ac.getElementsByClassName("etranslate-currency-name")[0];if(o==="name"){j.innerHTML=H}else{if(o==="code_symbol"){j.innerHTML=u+" ("+w+")"}else{j.innerHTML=u}}}if(b){var c=t.getElementsByClassName("etranslate-flag-wrapper");for(var ad=0;ad<c.length;ad++){c[ad].style.display="none"}}var l=R.getElementsByClassName("etranslate-language-name")[0];var U=ak.getElementsByClassName("etranslate-language-name")[0];if(O==="language_name"){l.innerHTML=langCodeToLangArray[Y]?langCodeToLangArray[Y]:l.textContent;U.innerHTML=langCodeToLangArray[Y]?langCodeToLangArray[Y]:U.textContent}else{if(O==="native_language_name"){var W=l.dataset.name;W=W=="français"?"Français":W;l.innerHTML=W?W:l.textContent;U.innerHTML=W?W:U.textContent}else{l.innerHTML=Y?Y.toLocaleUpperCase():Y;U.innerHTML=Y?Y.toLocaleUpperCase():Y}}var ai=R.getElementsByClassName("etranslate-currency-name")[0];var aa=X.getElementsByClassName("etranslate-currency-name")[0];if(o==="name"){ai.innerHTML=af.currency;aa.innerHTML=af.currency}else{if(o==="code_symbol"){ai.innerHTML=af.code+" ("+af.currency_symbol+")";aa.innerHTML=af.code+" ("+af.currency_symbol+")"}else{ai.innerHTML=af.code;aa.innerHTML=af.code}}if(y==="rectangle_flag"){var c=t.getElementsByClassName("etranslate-flag-wrapper");for(var ad=0;ad<c.length;ad++){c[ad].style.marginRight="8px"}}document.addEventListener("click",function(i){if((!i.target.closest(".etranslate-selector-list-button"))&&(!i.target.closest(".etranslate-language-selector-button"))&&(!i.target.closest(".etranslate-currency-selector-button"))&&(!i.target.closest(".etranslate-selector-dropdown-item"))){A();N();I()}});var a=false;var k=false;var h=false;R.addEventListener("click",function(i){a=!a;
+    if(a){an()}else{A()}});ak.addEventListener("click",function(i){k=!k;if(k){q();I()}else{N()}});X.addEventListener("click",function(i){h=!h;if(h){m();N()}else{I()}});function an(){s.style.maxHeight=ae.length*46+"px";s.style.opacity="1";s.style.display="table";var i=R.getElementsByClassName("etranslate-selector-arrow")[0];if(e){i.classList.add("etranslate-selector-arrow-up")}else{i.classList.add("etranslate-selector-arrow-down")}a=true}function q(){P.style.maxHeight=6.5*42.19+"px";P.style.opacity="1";P.style.display="block";var i=ak.getElementsByClassName("etranslate-selector-arrow")[0];if(e){i.classList.add("etranslate-selector-arrow-up")}else{i.classList.add("etranslate-selector-arrow-down")}k=true}function m(){V.style.maxHeight=5*46-8+"px";V.style.opacity="1";V.style.display="block";var i=X.getElementsByClassName("etranslate-selector-arrow")[0];if(e){i.classList.add("etranslate-selector-arrow-up")}else{i.classList.add("etranslate-selector-arrow-down")}h=true}function A(){s.style.maxHeight="0px";s.style.opacity="0";s.style.display="none";var i=R.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.remove("etranslate-selector-arrow-down");i.classList.remove("etranslate-selector-arrow-up");a=false}function N(){P.style.maxHeight="0px";P.style.opacity="0";P.style.display="none";var i=ak.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.remove("etranslate-selector-arrow-down");i.classList.remove("etranslate-selector-arrow-up");k=false}function I(){V.style.maxHeight="0px";V.style.opacity="0";V.style.display="none";var i=X.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.remove("etranslate-selector-arrow-down");i.classList.remove("etranslate-selector-arrow-up");h=false}function C(i){return function(){Y=i.iso_code;if(O==="language_name"){U.innerHTML=langCodeToLangArray[Y]?langCodeToLangArray[Y]:i.name}else{if(O==="native_language_name"){var ap=i.endonym_name;ap=ap=="français"?"Français":ap;U.innerHTML=ap?ap:i.name}else{U.innerHTML=Y?Y.toLocaleUpperCase():Y}}N()}}function F(i){return function(){T=i.code;af=i;if(o==="name"){aa.innerHTML=i.currency}else{if(o==="code_symbol"){aa.innerHTML=i.code+" ("+i.currency_symbol+")"}else{aa.innerHTML=i.code}}var ap=findCurrencyFlags(i.country);ao.style.backgroundImage="url("+L+"/"+ap+".svg)";I()}}M.addEventListener("click",function(at){localStorage.setItem("lan_code",Y.toLowerCase());localStorage.setItem("currentCurrency",T);var aq=t.querySelector("form");var ap=t.querySelector('input[name="language_code"]');var ar=t.querySelector('input[name="country_code"]');var i=false;var av="{{ localization.language.iso_code }}";if(Y.toLowerCase()!==av.toLowerCase()){ap.value=Y;i=true}if("{{ localization.country.currency.iso_code }}"!==T){if(K.indexOf(T)!=-1){ar.value=f[T];i=true}else{if("{{ localization.country.currency.iso_code }}"!==z.code){ar.value=f[z.code];i=true}else{etranslateCurrency(beforeCurrency,af)}}}else{if(af.code===z.code){ar.value=f[z.code];i=true}}if(i){aq.submit()}else{if(o==="name"){ai.innerHTML=af.currency}else{if(o==="code_symbol"){ai.innerHTML=af.code+" ("+af.currency_symbol+")"}else{ai.innerHTML=af.code}}var au=findCurrencyFlags(af.country);v.style.backgroundImage="url("+L+"/"+au+".svg)";beforeCurrency=af;A()}});t.style.zIndex="999";return t};
+function createLanguageCurrencyEmbeddedSelector(H,e,C,y,ab,Q,V,s,ag,N){var x;var L;var f;var b;var o;var n;if(N){x=ag.mobile_flags_type;L=ag.mobile_labels_type;o=transformationRgb(ag.mobile_background_color,ag.mobile_background_opacity);n=ag.mobile_currency_label_type}else{x=ag.flags_type;L=ag.labels_type;o=transformationRgb(ag.background_color,ag.background_opacity);n=ag.currency_label_type}f=x!=="rectangle_flag"?"1x1":"4x3";var I="https://my.parcelpanel.com/assets/other/flags/"+f;b=x==="no_flag"||x==="without_flag"?true:false;var O=s.getElementsByClassName("etranslate-selector-list-button")[0];var af=s.getElementsByClassName("etranslate-language-selector-button")[0];var U=s.getElementsByClassName("etranslate-currency-selector-button")[0];var r=s.getElementsByClassName("etranslate-selector-list-dropdown")[0];var M=s.getElementsByClassName("etranslate-language-dropdown")[0];var S=s.getElementsByClassName("etranslate-currency-dropdown")[0];var J=s.getElementsByClassName("etranslate-change-button")[0];if(Etranslate.multiLanguage.indexOf(V.toLowerCase())!=-1){var X=Etranslate.selectorMultiLanguageText[V.toLowerCase()];J.innerHTML=X["change"]}var P=setLanguageCurrencyDropdownEmbeddedSelectorStyle(ag,N);var ad=findCurrencyFlags(ab.country);s.setAttribute("style",P);var u=O.getElementsByClassName("select-dropdown-flag-icon")[0];var aj=U.getElementsByClassName("select-dropdown-flag-icon")[0];u.style.backgroundImage="url("+I+"/"+ad+".svg)";x==="circle_flag"?u.classList.add("circle_flag"):"";aj.style.backgroundImage="url("+I+"/"+ad+".svg)";x==="circle_flag"?aj.classList.add("circle_flag"):"";r.setAttribute("style","background-color:"+o+";max-height:0px;opacity:0;display:none");M.setAttribute("style","background-color:"+o+";max-height:0px;opacity:0;display:none");S.setAttribute("style","background-color:"+o+";max-height:0px;opacity:0;display:none");var ah=setLanguageCurrencyDropdownSelectorWidth("embedded",ag,N);var w=ah-22;O.style.width=ah+"px";O.style.border="none";r.style.width=ah+"px";M.style.width=w+"px";S.style.width=w+"px";var aa=M.children;for(var Z=0;Z<aa.length;Z++){var ac=aa[Z];var q=ac.dataset.code;var T=aa[Z].dataset.name;ac.onclick=A(C.find(function(i){return i.iso_code.toLowerCase()===q.toLowerCase()}));var m=ac.getElementsByClassName("etranslate-language-name")[0];if(L==="language_name"){m.innerHTML=langCodeToLangArray[q]?langCodeToLangArray[q]:m.textContent}else{if(L==="native_language_name"){T=T=="français"?"Français":T;m.innerHTML=T?T:langCodeToLangArray[q]}else{m.innerHTML=q?q.toLocaleUpperCase():q}}}var B=S.children;for(var Z=0;Z<B.length;Z++){var Y=B[Z];var d=Y.getElementsByClassName("select-dropdown-flag-icon")[0];var t=Y.dataset.code;var E=Y.dataset.country;var F=Y.dataset.name;var v=Y.dataset.symbol;var ad=findCurrencyFlags(E);d.style.backgroundImage="url("+I+"/"+ad+".svg)";x==="circle_flag"?d.classList.add("circle_flag"):"";Y.onclick=D(ag.user_currencies_data.find(function(i){return i.code.toLowerCase()===t.toLowerCase()}),ab);var h=Y.getElementsByClassName("etranslate-currency-name")[0];if(n==="name"){h.innerHTML=F}else{if(n==="code_symbol"){h.innerHTML=t+" ("+v+")"}else{h.innerHTML=t}}}if(b){var c=s.getElementsByClassName("etranslate-flag-wrapper");for(var Z=0;Z<c.length;Z++){c[Z].style.display="none"}}var k=O.getElementsByClassName("etranslate-language-name")[0];var R=af.getElementsByClassName("etranslate-language-name")[0];if(L==="language_name"){k.innerHTML=langCodeToLangArray[V]?langCodeToLangArray[V]:k.textContent;R.innerHTML=langCodeToLangArray[V]?langCodeToLangArray[V]:R.textContent}else{if(L==="native_language_name"){var T=k.dataset.name;T=T=="français"?"Français":T;k.innerHTML=T?T:k.textContent;R.innerHTML=T?T:R.textContent}else{k.innerHTML=V?V.toLocaleUpperCase():V;R.innerHTML=V?V.toLocaleUpperCase():V}}var ae=O.getElementsByClassName("etranslate-currency-name")[0];var W=U.getElementsByClassName("etranslate-currency-name")[0];if(n==="name"){ae.innerHTML=ab.currency;W.innerHTML=ab.currency}else{if(n==="code_symbol"){ae.innerHTML=ab.code+" ("+ab.currency_symbol+")";W.innerHTML=ab.code+" ("+ab.currency_symbol+")"}else{ae.innerHTML=ab.code;W.innerHTML=ab.code}}if(x==="rectangle_flag"){var c=s.getElementsByClassName("etranslate-flag-wrapper");for(var Z=0;Z<c.length;Z++){c[Z].style.marginRight="8px"}}document.addEventListener("click",function(i){if((!i.target.closest(".etranslate-selector-list-button"))&&(!i.target.closest(".etranslate-language-selector-button"))&&(!i.target.closest(".etranslate-currency-selector-button"))&&(!i.target.closest(".etranslate-selector-dropdown-item"))){z();K();G()}});var a=false;var j=false;var g=false;O.addEventListener("click",function(i){a=!a;if(a){ai()}else{z()}});af.addEventListener("click",function(i){j=!j;if(j){p();G()}else{K()}});U.addEventListener("click",function(i){g=!g;if(g){l();K()}else{G()}});function ai(){r.style.maxHeight=aa.length*46+"px";r.style.opacity="1";r.style.display="table";var i=O.getElementsByClassName("etranslate-selector-arrow")[0];
+    i.classList.add("etranslate-selector-arrow-down");a=true}function p(){M.style.maxHeight=6.5*42.19+"px";M.style.opacity="1";M.style.display="block";var i=af.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.add("etranslate-selector-arrow-down");j=true}function l(){S.style.maxHeight=5*46-8+"px";S.style.opacity="1";S.style.display="block";var i=U.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.add("etranslate-selector-arrow-down");g=true}function z(){r.style.maxHeight="0px";r.style.opacity="0";r.style.display="none";var i=O.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.remove("etranslate-selector-arrow-down");i.classList.remove("etranslate-selector-arrow-up");a=false}function K(){M.style.maxHeight="0px";M.style.opacity="0";M.style.display="none";var i=af.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.remove("etranslate-selector-arrow-down");i.classList.remove("etranslate-selector-arrow-up");j=false}function G(){S.style.maxHeight="0px";S.style.opacity="0";S.style.display="none";var i=U.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.remove("etranslate-selector-arrow-down");i.classList.remove("etranslate-selector-arrow-up");g=false}function A(i){return function(){V=i.iso_code;if(L==="language_name"){R.innerHTML=langCodeToLangArray[V]?langCodeToLangArray[V]:i.name}else{if(L==="native_language_name"){var ak=i.endonym_name;ak=ak=="français"?"Français":ak;R.innerHTML=ak?ak:i.name}else{R.innerHTML=V?V.toLocaleUpperCase():V}}K()}}function D(i){return function(){Q=i.code;ab=i;if(n==="name"){W.innerHTML=i.currency}else{if(n==="code_symbol"){W.innerHTML=i.code+" ("+i.currency_symbol+")"}else{W.innerHTML=i.code}}var ak=findCurrencyFlags(i.country);aj.style.backgroundImage="url("+I+"/"+ak+".svg)";G()}}J.addEventListener("click",function(an){localStorage.setItem("lan_code",V.toLowerCase());localStorage.setItem("currentCurrency",Q);var al=s.querySelector("form");var ak=s.querySelector('input[name="language_code"]');var am=s.querySelector('input[name="country_code"]');var i=false;var ap="{{ localization.language.iso_code }}";if(V.toLowerCase()!==ap.toLowerCase()){ak.value=V;i=true}if("{{ localization.country.currency.iso_code }}"!==Q){if(H.indexOf(Q)!=-1){am.value=e[Q];i=true}else{if("{{ localization.country.currency.iso_code }}"!==y.code){am.value=e[y.code];i=true}else{etranslateCurrency(beforeCurrency,ab)}}}else{if(ab.code===y.code){am.value=e[y.code];i=true}}if(i){al.submit()}else{if(n==="name"){ae.innerHTML=ab.currency}else{if(n==="code_symbol"){ae.innerHTML=ab.code+" ("+ab.currency_symbol+")"}else{ae.innerHTML=ab.code}}var ao=findCurrencyFlags(ab.country);u.style.backgroundImage="url("+I+"/"+ao+".svg)";beforeCurrency=ab;z()}});return s};
+function setLanguageCurrencyDropdownSelectorPosition(k,m,n,b,c,d,l){var i=k.getBoundingClientRect();var f=m.getBoundingClientRect();const g=5*item_height+50;const a=d+i["height"];const j=d-f["height"];const h=d-f["height"];var e=l.substring(l.lastIndexOf("_")+1,l.length);if(h<g&&e!=="top"){m.classList.add("lo-select-up");n.classList.add("lo-select-up");b.classList.add("lo-select-up");return true}else{if(h>=g&&e!=="top"){m.classList.remove("lo-select-up");n.classList.remove("lo-select-up");b.classList.remove("lo-select-up");return false}}};
+function setLanguageCurrencyDropdownSelector(){var k=[];var g=[];{% for country in localization.available_countries %}k["{{ country.currency.iso_code }}"]="{{ country.iso_code }}";g.push("{{ country.currency.iso_code }}");{% endfor %}var n="{{ localization.country.currency.iso_code }}";var f=getLanguageList();var a="{{ localization.language.iso_code }}";var h={{ shop.metafields.etranslate.selector_config | json }};var l=document.getElementById("etranslate-language_currency-dropdown-selector");var j=localStorage.getItem("currentCurrency");if(j===null){j="{{ shop.currency }}"}else{if((j!==n&&g.indexOf(j)!=-1)||(n!=="{{ shop.currency }}"&&g.indexOf(j)==-1)){j=n;localStorage.setItem("currentCurrency",n)}}var e=[];var i=[];if(h.user_currencies_data){h.user_currencies_data.forEach(d=>{if(d.exchange_rate!==0){Currency.rates[d.code]=Currency.rates["{{ shop.currency }}"]/d.exchange_rate}if(d.code===j){e=d}if(d.code==="{{ shop.currency }}"){i=d}return""})}if(e.length<=0){e=i}beforeCurrency=e;var c=etrIsMobile();if(Number(h.status)===1&&h.selector_type==="language_currency"){if(c){if(h.mobile_language_currency_selector_style==="dropdown"){if(h.mobile_currency_selector_type==="floating_selector"){l.classList.add("etranslate-floating-selectorList");createLanguageCurrencyFloatSelector(g,k,f,i,e,j,a,l,h,c)}else{if(h.mobile_currency_selector_type==="embedded_selector"){l.classList.add("etranslate-embedded-selectorList");createLanguageCurrencyEmbeddedSelector(g,k,f,i,e,j,a,l,h,c);Etranslate.setEmbeddedSelectorPosition(l,c)}}applyPriviewCssCode(h.mobile_css_code);var m=l.querySelector("form");var b=l.querySelector('input[name="country_code"]');if(window.location.search.indexOf("?preview_key")!=-1){const returnToInput=l.querySelector('input[name="return_to"]');returnToInput.value=window.location.pathname+window.location.search};if(n!==e.code){if(g.indexOf(e.code)!=-1){b.value=k[e.code];m.submit()}else{if(n!==i.code){b.value=k[i.code];m.submit()}else{etranslateCurrency(i,e)}}}}else{l.remove()}}else{if(h.language_currency_selector_style==="dropdown"){if(h.currency_selector_type==="floating_selector"){l.classList.add("etranslate-floating-selectorList");createLanguageCurrencyFloatSelector(g,k,f,i,e,j,a,l,h,c)}else{if(h.currency_selector_type==="embedded_selector"){l.classList.add("etranslate-embedded-selectorList");createLanguageCurrencyEmbeddedSelector(g,k,f,i,e,j,a,l,h,c);Etranslate.setEmbeddedSelectorPosition(l,c)}}applyPriviewCssCode(h.css_code);var m=l.querySelector("form");var b=l.querySelector('input[name="country_code"]');if(window.location.search.indexOf("?preview_key")!=-1){const returnToInput=l.querySelector('input[name="return_to"]');returnToInput.value=window.location.pathname+window.location.search};if(n!==e.code){if(g.indexOf(e.code)!=-1){b.value=k[e.code];m.submit()}else{if(n!==i.code){b.value=k[i.code];m.submit()}else{etranslateCurrency(i,e)}}}}else{l.remove()}}}else{l.remove()}};
+documentReady(setLanguageCurrencyDropdownSelector);
+function documentReady(fu){if(document.readyState==="complete"||document.readyState==="interactive"){setTimeout(documentReady(setLanguageCurrencyDropdownSelector),1)}else{document.addEventListener("DOMContentLoaded",fu)}};
+</script><style>.etranslate-floating-selectorList{position:absolute;right:8px;top:24px}.etranslate-embedded-selectorList{display:inline-block;cursor:pointer;font-size:14px}.etranslate-selector-list-button{cursor:pointer;border:1px solid rgba(224,224,224,1);padding:8px 10px 8px 10px;display:flex;align-items:center;justify-content:space-between;transition:all .2s}.etranslate-selector-list-button-content{display:flex;align-items:center;width:100%}.etranslate-flag-wrapper{display:flex;align-items:center;width:28px;height:28px;font-size:20px;margin-right:3px}.rectangle_flag:before{content:"\00a0"}.select-dropdown-flag-icon-link{font-size:20px;box-sizing:content-box;background-size:contain;background-position:50%;background-repeat:no-repeat;background-size:contain;background-position:50%;background-repeat:no-repeat;position:relative;display:inline-block;width:1.33333333em;line-height:1em}.select-dropdown-flag-icon-link:before{content:"\00a0"}.flag-icon{background-size:contain;background-position:50%;background-repeat:no-repeat;position:relative;display:inline-block;width:1.33333333em;line-height:1em;border-radius:4px}.circle_flag{border-radius:50%;box-sizing:content-box!important;width:1em}.etranslate-language-name{font-size:14px;padding-top:1px}.etranslate-currency-name{font-size:14px;padding-top:1px}.split-line{padding:0 5px}.etranslate-selector-arrow{display:block!important;width:.5em;height:.5em;border-right:1.5px solid currentColor;border-top:1.5px solid currentColor;transform:rotate(45deg);transition:all .2s;position:relative;top:-1px}.etranslate-selector-arrow-up{transform:rotate(-45deg)}.etranslate-selector-arrow-down{transform:rotate(135deg)}#etranslate-language_currency-popup-selector .etranslate-selector-card{position:fixed;z-index:519;top:0;right:0;bottom:0;left:0;display:flex;flex-direction:column;justify-content:center}.etranslate-selector-content{max-width:450px;margin:0 auto;position:relative;border-radius:8px;right:0;bottom:0;left:0;display:flex;flex-direction:column;width:100%;max-height:calc(100vh - 60px);background:#fff;color:#000000;box-shadow:0 26px 80px rgba(0,0,0,0.2),0px 0 1px rgba(0,0,0,0.2);padding:20px}.etranslate-language-list-popup-backdrop{position:fixed;z-index:518;top:0;right:0;bottom:0;left:0;display:block!important;background-color:rgba(33,43,54,0.4);opacity:1;backface-visibility:hidden;will-change:opacity}.etranslate-language-selector-label{font-weight:600;font-size:16px;text-align:left}.etranslate-currency-selector-label{font-weight:600;margin-top:10px;font-size:16px;text-align:left}.etranslate-language-selector{width:100%;position:relative;cursor:pointer}.etranslate-currency-selector{width:100%;position:relative;cursor:pointer}#etranslate-language_currency-popup-selector .etranslate-selector-button{border:2px solid rgba(224,224,224,1);padding:0 11px;display:flex;align-items:center;justify-content:space-between;transition:all .2s;line-height:30px}.etranslate-selector-dropdown{padding:0;width:inherit!important;overflow:auto;background:white;user-select:none;position:absolute;z-index:500;flex-direction:row;justify-content:flex-start;align-items:center;margin:0;transition:max-height .3s,visibility .2s,opacity .2s;-webkit-overflow-scrolling:touch;overflow:-moz-scrollbars-none;display:block;border:1px solid rgba(224,224,224,1)}.etranslate-selector-dropdown-item{display:flex;align-items:center;padding:8px 12px 8px 12px;transition:all .2s}.etranslate-selector-dropdown-item:hover{opacity:.7}.etranslate-change{margin-top:20px}.etranslate-change-button{font-size:16px;background-color:black;color:white!important;width:100%;border:0;padding:5px;cursor:pointer;line-height:30px}.etranslate-selector-cancel{font-size:14px;text-align:center;text-decoration:underline;cursor:pointer}</style>
+<div id="etranslate-language_currency-popup-selector" style="display: none">
+    {% form 'localization' %}
+    <span class='selector-button'>
+        <div class='etranslate-selector-list-button'>
+            <div class='etranslate-selector-list-button-content'>
+                <div class='etranslate-flag-wrapper'>
+                    <span class="rectangle_flag select-dropdown-flag-icon flag-icon" />
+                </div>
+                <div class="etranslate-currency-name">{{ shop.currency }}</div>
+                <div class='split-line'> / </div>
+                <div class="etranslate-language-name"
+                    data-name="{{ request.locale.endonym_name | split: '-' | first | strip }}">
+                    {{ request.locale.name | split: '-' | first | strip }}
+                </div>
+            </div>
+            <div class='etranslate-selector-arrow'></div>
+        </div>
+    </span>
+    <div class="etranslate-language-list-popup" style='max-height:0px;opacity:0;'>
+
+    </div>
+    <div class="etranslate-selector-list-dropdown" style='max-height:0px;opacity:0;'>
+        <div class='etranslate-selector-card'>
+            <div class='etranslate-selector-content'>
+                <div class='etranslate-language-selector'>
+                    <div class='etranslate-language-selector-label'>Language</div>
+                    <div class="etranslate-selector-button etranslate-language-selector-button">
+                        <div class="etranslate-language-name"
+                            data-name="{{ request.locale.endonym_name | split: '-' | first | strip }}">
+                            {{ request.locale.name | split: '-' | first | strip }}
+                        </div>
+                        <div class='etranslate-selector-arrow'></div>
+                    </div>
+                    <ul class="etranslate-language-dropdown etranslate-selector-dropdown">
+                        {%- for locale in shop.published_locales -%}
+                        <li class='etranslate-selector-dropdown-item' data-code="{{ locale.iso_code }}"
+                            data-name="{{ locale.endonym_name }}">
+                            <div class="etranslate-language-name">{{ locale.name }}</div>
+                        </li>
+                        {%- endfor %}
+                    </ul>
+                </div>
+                <div class='etranslate-currency-selector'>
+                    <div class='etranslate-currency-selector-label'>Currency</div>
+                    <div class="etranslate-selector-button etranslate-currency-selector-button">
+                        <div class='etranslate-selector-list-button-content'>
+                            <div class='etranslate-flag-wrapper'>
+                                <span class="rectangle_flag select-dropdown-flag-icon flag-icon" />
+                            </div>
+                            <div class="etranslate-currency-name">{{ shop.currency }}</div>
+                        </div>
+                        <div class='etranslate-selector-arrow'></div>
+                    </div>
+                    <ul class="etranslate-currency-dropdown etranslate-selector-dropdown">
+                        {%- for currency in shop.metafields.etranslate.selector_config.user_currencies_data -%}
+                        <li class='etranslate-selector-dropdown-item' data-country="{{ currency.country }}"
+                            data-code="{{ currency.code }}" data-name="{{ currency.currency }}"
+                            data-symbol="{{ currency.currency_symbol }}">
+                            <div class="etranslate-flag-wrapper">
+                                <span class="rectangle_flag select-dropdown-flag-icon flag-icon" />
+                            </div>
+                            <div class="etranslate-currency-name">{{ currency.code }}</div>
+                        </li>
+                        {%- endfor %}
+                    </ul>
+                </div>
+                <div class="etranslate-change">
+                    <button class="etranslate-change-button" type="button">CHANGE</button>
+                    <div class='etranslate-selector-cancel'>Cancel</div>
+                </div>
+            </div>
+        </div>
+        <div class='etranslate-language-list-popup-backdrop'></div>
+    </div>
+    <input type="hidden" name="country_code" value="{{ localization.country.iso_code }}">
+    <input type="hidden" name="language_code" value="{{ localization.language.iso_code }}">
+    {% endform %}
+</div>
+<script>
+function setLanguageCurrencyPopupSelectorWidth(g,c,e){var b;var d;var f;var a;if(e){b=c.mobile_flags_type;d=c.mobile_labels_type;f=c.mobile_selector_width;a=c.mobile_currency_label_type}else{b=c.flags_type;d=c.labels_type;f=c.selector_width;a=c.currency_label_type}var h;if(g==="float"){h=flag_min_width[b]+language_min_width[d]+currency_min_width[a]+arrow_padding_width+Number(f)}else{h=flag_min_width[b]+language_min_width[d]+currency_min_width[a]+arrow_padding_width}return h};
+function setLanguageCurrencyPopupSelectorStyle(f,c){var l;var j;var e;var a;var b;if(c){l=f.mobile_position_lr;j=f.mobile_position_tb;e=f.mobile_font_color;a=f.mobile_horizontal;b=f.mobile_vertical}else{l=f.position_lr;j=f.position_tb;e=f.font_color;a=f.horizontal;b=f.vertical}var g=j==="fixed_top"||j==="fixed_bottom"?"fixed":"absolute";var d=l==="right"?"right":"left";var k=j==="bottom"||j==="fixed_bottom"?"bottom":"top";var h;if((f.background_color==undefined&&f.background_opacity==undefined)||(f.mobile_background_color==undefined&&f.mobile_background_opacity==undefined)){h="rgba(255,255,255,1)"}else{if(c){h=transformationRgb(f.mobile_background_color,f.mobile_background_opacity)}else{h=transformationRgb(f.background_color,f.background_opacity)}}var i="top: auto;bottom: auto;left: auto;right: auto;"+l+":auto;"+j+":auto;"+d+":"+a+"px;"+k+":"+b+"px;background-color:"+h+";color:"+e+";position:"+g+";";return i};
+function setLanguageCurrencyPopupEmbeddedSelectorStyle(a,d){var e;if(d){e=a.mobile_font_color}else{e=a.font_color}var c;if((a.background_color==undefined&&a.background_opacity==undefined)||(a.mobile_background_color==undefined&&a.mobile_background_opacity==undefined)){c="rgba(255,255,255,1)"}else{if(d){c=transformationRgb(a.mobile_background_color,a.mobile_background_opacity)}else{c=transformationRgb(a.background_color,a.background_opacity)}}var b="background-color:"+c+";color:"+e+";";return b};
+function createLanguageCurrencyFloatPopupSelector(L,f,E,y,ai,W,ab,a,ao,T){var x;var Q;var g;var c;var am;var B;var J;var ac;var p;var o;if(T){x=ao.mobile_flags_type;Q=ao.mobile_labels_type;am=ao.mobile_selector_width;B=ao.mobile_vertical;J=ao.mobile_position_tb;ac=ao.mobile_border_width;p=transformationRgb(ao.mobile_background_color,ao.mobile_background_opacity);o=ao.mobile_currency_label_type}else{x=ao.flags_type;Q=ao.labels_type;am=ao.selector_width;B=ao.vertical;J=ao.position_tb;ac=ao.border_width;p=transformationRgb(ao.background_color,ao.background_opacity);o=ao.currency_label_type}g=x!=="rectangle_flag"?"1x1":"4x3";var M="https://my.parcelpanel.com/assets/other/flags/"+g;c=x==="no_flag"||x==="without_flag"?true:false;var U=a.getElementsByClassName("etranslate-selector-list-button")[0];var an=a.getElementsByClassName("etranslate-language-selector-button")[0];var aa=a.getElementsByClassName("etranslate-currency-selector-button")[0];var s=a.getElementsByClassName("etranslate-selector-list-dropdown")[0];var S=a.getElementsByClassName("etranslate-language-dropdown")[0];var Y=a.getElementsByClassName("etranslate-currency-dropdown")[0];var O=a.getElementsByClassName("etranslate-change-button")[0];var A=a.getElementsByClassName("etranslate-selector-cancel")[0];var K=a.querySelector(".etranslate-currency-selector-label");var R=a.querySelector(".etranslate-language-selector-label");if(Etranslate.multiLanguage.indexOf(ab.toLowerCase())!=-1){var ae=Etranslate.selectorMultiLanguageText[ab.toLowerCase()];O.innerHTML=ae["change"];A.innerHTML=ae["cancel"];K.innerHTML=ae["currency"];R.innerHTML=ae["language"]}var N=a.querySelector(".etranslate-selector-content");if(T){N.setAttribute("style","max-width: 328px")}var V=setLanguageCurrencyPopupSelectorStyle(ao,T);var ak=findCurrencyFlags(ai.country);a.setAttribute("style",V);var u=U.getElementsByClassName("select-dropdown-flag-icon")[0];var ar=aa.getElementsByClassName("select-dropdown-flag-icon")[0];u.style.backgroundImage="url("+M+"/"+ak+".svg)";x==="circle_flag"?u.classList.add("circle_flag"):"";ar.style.backgroundImage="url("+M+"/"+ak+".svg)";x==="circle_flag"?ar.classList.add("circle_flag"):"";s.setAttribute("style","width:"+am+";background-color:"+p+";max-height:0px;opacity:0;display:none");S.setAttribute("style","width:"+am+";max-height:0px;opacity:0;display:none");Y.setAttribute("style","width:"+am+";max-height:0px;opacity:0;display:none");var ap=setLanguageCurrencyPopupSelectorWidth("float",ao,T);var w=ap-22;U.style.width=ap+"px";U.style.borderWidth=ac+"px";s.style.width=ap+"px";s.style.borderWidth=ac+"px";S.style.width=w+"px";Y.style.width=w+"px";var ah=S.children;for(var ag=0;ag<ah.length;ag++){var aj=ah[ag];var r=aj.dataset.code;var Z=ah[ag].dataset.name;aj.onclick=C(E.find(function(i){return i.iso_code.toLowerCase()===r.toLowerCase()}));var n=aj.getElementsByClassName("etranslate-language-name")[0];if(Q==="language_name"){n.innerHTML=langCodeToLangArray[r]?langCodeToLangArray[r]:n.textContent}else{if(Q==="native_language_name"){Z=Z=="français"?"Français":Z;n.innerHTML=Z?Z:langCodeToLangArray[r]}else{n.innerHTML=r?r.toLocaleUpperCase():r}}}var D=Y.children;for(var ag=0;ag<D.length;ag++){var af=D[ag];var e=af.getElementsByClassName("select-dropdown-flag-icon")[0];var t=af.dataset.code;var G=af.dataset.country;var H=af.dataset.name;var v=af.dataset.symbol;var ak=findCurrencyFlags(G);e.style.backgroundImage="url("+M+"/"+ak+".svg)";x==="circle_flag"?e.classList.add("circle_flag"):"";af.onclick=F(ao.user_currencies_data.find(function(i){return i.code.toLowerCase()===t.toLowerCase()}),ai);var j=af.getElementsByClassName("etranslate-currency-name")[0];if(o==="name"){j.innerHTML=H}else{if(o==="code_symbol"){j.innerHTML=t+" ("+v+")"}else{j.innerHTML=t}}}if(c){var d=a.getElementsByClassName("etranslate-flag-wrapper");for(var ag=0;ag<d.length;ag++){d[ag].style.display="none"}}var l=U.getElementsByClassName("etranslate-language-name")[0];var X=an.getElementsByClassName("etranslate-language-name")[0];if(Q==="language_name"){l.innerHTML=langCodeToLangArray[ab]?langCodeToLangArray[ab]:l.textContent;X.innerHTML=langCodeToLangArray[ab]?langCodeToLangArray[ab]:X.textContent}else{if(Q==="native_language_name"){var Z=l.dataset.name;Z=Z=="français"?"Français":Z;l.innerHTML=Z?Z:l.textContent;X.innerHTML=Z?Z:X.textContent}else{l.innerHTML=ab?ab.toLocaleUpperCase():ab;X.innerHTML=ab?ab.toLocaleUpperCase():ab}}var al=U.getElementsByClassName("etranslate-currency-name")[0];var ad=aa.getElementsByClassName("etranslate-currency-name")[0];if(o==="name"){al.innerHTML=ai.currency;ad.innerHTML=ai.currency}else{if(o==="code_symbol"){al.innerHTML=ai.code+" ("+ai.currency_symbol+")";ad.innerHTML=ai.code+" ("+ai.currency_symbol+")"}else{al.innerHTML=ai.code;ad.innerHTML=ai.code}}if(x==="rectangle_flag"){var d=a.getElementsByClassName("etranslate-flag-wrapper");for(var ag=0;ag<d.length;ag++){d[ag].style.marginRight="8px"}}var b=false;var k=false;var h=false;U.addEventListener("click",function(i){b=!b;
+if(b){aq()}else{z()}});an.addEventListener("click",function(i){k=!k;if(k){q();I()}else{P()}});aa.addEventListener("click",function(i){h=!h;if(h){m();P()}else{I()}});function aq(){s.style.maxHeight=ah.length*46+"px";s.style.opacity="1";s.style.display="table";var i=U.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.add("etranslate-selector-arrow-down");b=true}function q(){S.style.maxHeight=ah.length*46+"px";S.style.opacity="1";S.style.display="block";var i=an.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.add("etranslate-selector-arrow-down");k=true}function m(){Y.style.maxHeight=5*46-8+"px";Y.style.opacity="1";Y.style.display="block";var i=aa.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.add("etranslate-selector-arrow-down");h=true}function z(){s.style.maxHeight="0px";s.style.opacity="0";s.style.display="none";var i=U.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.remove("etranslate-selector-arrow-down");i.classList.remove("etranslate-selector-arrow-up");b=false}function P(){S.style.maxHeight="0px";S.style.opacity="0";S.style.display="none";var i=an.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.remove("etranslate-selector-arrow-down");i.classList.remove("etranslate-selector-arrow-up");k=false}function I(){Y.style.maxHeight="0px";Y.style.opacity="0";Y.style.display="none";var i=aa.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.remove("etranslate-selector-arrow-down");i.classList.remove("etranslate-selector-arrow-up");h=false}function C(i){return function(){ab=i.iso_code;if(Q==="language_name"){X.innerHTML=langCodeToLangArray[ab]?langCodeToLangArray[ab]:i.name}else{if(Q==="native_language_name"){var at=i.endonym_name;at=at=="français"?"Français":at;X.innerHTML=at?at:i.name}else{X.innerHTML=ab?ab.toLocaleUpperCase():ab}}P()}}function F(i){return function(){W=i.code;ai=i;if(o==="name"){ad.innerHTML=i.currency}else{if(o==="code_symbol"){ad.innerHTML=i.code+" ("+i.currency_symbol+")"}else{ad.innerHTML=i.code}}var at=findCurrencyFlags(i.country);ar.style.backgroundImage="url("+M+"/"+at+".svg)";I()}}A.addEventListener("click",function(i){z();P();I()});O.addEventListener("click",function(aw){localStorage.setItem("lan_code",ab.toLowerCase());localStorage.setItem("currentCurrency",W);const au=a.querySelector("form");const at=a.querySelector('input[name="language_code"]');const av=a.querySelector('input[name="country_code"]');var i=false;var ay="{{ localization.language.iso_code }}";if(ab.toLowerCase()!==ay.toLowerCase()){at.value=ab;i=true}if("{{ localization.country.currency.iso_code }}"!==W){if(L.indexOf(W)!=-1){av.value=f[W];i=true}else{if("{{ localization.country.currency.iso_code }}"!==y.code){av.value=f[y.code];i=true}else{etranslateCurrency(beforeCurrency,ai)}}}else{if(ai.code===y.code){av.value=f[y.code];i=true}}if(i){au.submit()}else{if(o==="name"){al.innerHTML=ai.currency}else{if(o==="code_symbol"){al.innerHTML=ai.code+" ("+ai.currency_symbol+")"}else{al.innerHTML=ai.code}}var ax=findCurrencyFlags(ai.country);u.style.backgroundImage="url("+M+"/"+ax+".svg)";beforeCurrency=ai;z()}});a.style.zIndex="999";return a};
+function createLanguageCurrencyEmbeddedPopupSelector(J,f,D,y,af,U,Z,a,ak,R){var x;var O;var g;var c;var p;var o;if(R){x=ak.mobile_flags_type;O=ak.mobile_labels_type;p=transformationRgb(ak.mobile_background_color,ak.mobile_background_opacity);o=ak.mobile_currency_label_type}else{x=ak.flags_type;O=ak.labels_type;p=transformationRgb(ak.background_color,ak.background_opacity);o=ak.currency_label_type}g=x!=="rectangle_flag"?"1x1":"4x3";var K="https://my.parcelpanel.com/assets/other/flags/"+g;c=x==="no_flag"||x==="without_flag"?true:false;var S=a.getElementsByClassName("etranslate-selector-list-button")[0];var aj=a.getElementsByClassName("etranslate-language-selector-button")[0];var Y=a.getElementsByClassName("etranslate-currency-selector-button")[0];var s=a.getElementsByClassName("etranslate-selector-list-dropdown")[0];var Q=a.getElementsByClassName("etranslate-language-dropdown")[0];var W=a.getElementsByClassName("etranslate-currency-dropdown")[0];var M=a.getElementsByClassName("etranslate-change-button")[0];var A=a.getElementsByClassName("etranslate-selector-cancel")[0];var I=a.querySelector(".etranslate-currency-selector-label");var P=a.querySelector(".etranslate-language-selector-label");if(Etranslate.multiLanguage.indexOf(Z.toLowerCase())!=-1){var ab=Etranslate.selectorMultiLanguageText[Z.toLowerCase()];M.innerHTML=ab["change"];A.innerHTML=ab["cancel"];I.innerHTML=ab["currency"];P.innerHTML=ab["language"]}var L=a.querySelector(".etranslate-selector-content");if(R){L.setAttribute("style","max-width: 328px")}var T=setLanguageCurrencyPopupEmbeddedSelectorStyle(ak,R);var ah=findCurrencyFlags(af.country);a.setAttribute("style",T);var u=S.getElementsByClassName("select-dropdown-flag-icon")[0];var an=Y.getElementsByClassName("select-dropdown-flag-icon")[0];u.style.backgroundImage="url("+K+"/"+ah+".svg)";x==="circle_flag"?u.classList.add("circle_flag"):"";an.style.backgroundImage="url("+K+"/"+ah+".svg)";x==="circle_flag"?an.classList.add("circle_flag"):"";s.setAttribute("style","background-color:"+p+";max-height:0px;opacity:0;display:none");Q.setAttribute("style","max-height:0px;opacity:0;display:none");W.setAttribute("style","max-height:0px;opacity:0;display:none");var al=setLanguageCurrencyPopupSelectorWidth("embedded",ak,R);var w=al-22;S.style.width=al+"px";S.style.border="none";s.style.width=al+"px";Q.style.width=w+"px";W.style.width=w+"px";var ae=Q.children;for(var ad=0;ad<ae.length;ad++){var ag=ae[ad];var r=ag.dataset.code;var X=ae[ad].dataset.name;ag.onclick=B(D.find(function(i){return i.iso_code.toLowerCase()===r.toLowerCase()}));var n=ag.getElementsByClassName("etranslate-language-name")[0];if(O==="language_name"){n.innerHTML=langCodeToLangArray[r]?langCodeToLangArray[r]:n.textContent}else{if(O==="native_language_name"){X=X=="français"?"Français":X;n.innerHTML=X?X:langCodeToLangArray[r]}else{n.innerHTML=r?r.toLocaleUpperCase():r}}}var C=W.children;for(var ad=0;ad<C.length;ad++){var ac=C[ad];var e=ac.getElementsByClassName("select-dropdown-flag-icon")[0];var t=ac.dataset.code;var F=ac.dataset.country;var G=ac.dataset.name;var v=ac.dataset.symbol;var ah=findCurrencyFlags(F);e.style.backgroundImage="url("+K+"/"+ah+".svg)";x==="circle_flag"?e.classList.add("circle_flag"):"";ac.onclick=E(ak.user_currencies_data.find(function(i){return i.code.toLowerCase()===t.toLowerCase()}),af);var j=ac.getElementsByClassName("etranslate-currency-name")[0];if(o==="name"){j.innerHTML=G}else{if(o==="code_symbol"){j.innerHTML=t+" ("+v+")"}else{j.innerHTML=t}}}if(c){var d=a.getElementsByClassName("etranslate-flag-wrapper");for(var ad=0;ad<d.length;ad++){d[ad].style.display="none"}}var l=S.getElementsByClassName("etranslate-language-name")[0];var V=aj.getElementsByClassName("etranslate-language-name")[0];if(O==="language_name"){l.innerHTML=langCodeToLangArray[Z]?langCodeToLangArray[Z]:l.textContent;V.innerHTML=langCodeToLangArray[Z]?langCodeToLangArray[Z]:V.textContent}else{if(O==="native_language_name"){var X=l.dataset.name;X=X=="français"?"Français":X;l.innerHTML=X?X:l.textContent;V.innerHTML=X?X:V.textContent}else{l.innerHTML=Z?Z.toLocaleUpperCase():Z;V.innerHTML=Z?Z.toLocaleUpperCase():Z}}var ai=S.getElementsByClassName("etranslate-currency-name")[0];var aa=Y.getElementsByClassName("etranslate-currency-name")[0];if(o==="name"){ai.innerHTML=af.currency;aa.innerHTML=af.currency}else{if(o==="code_symbol"){ai.innerHTML=af.code+" ("+af.currency_symbol+")";aa.innerHTML=af.code+" ("+af.currency_symbol+")"}else{ai.innerHTML=af.code;aa.innerHTML=af.code}}if(x==="rectangle_flag"){var d=a.getElementsByClassName("etranslate-flag-wrapper");for(var ad=0;ad<d.length;ad++){d[ad].style.marginRight="8px"}}var b=false;var k=false;var h=false;S.addEventListener("click",function(i){b=!b;if(b){am()}else{z()}});aj.addEventListener("click",function(i){k=!k;if(k){q();H()}else{N()}});Y.addEventListener("click",function(i){h=!h;if(h){m();N()}else{H()}});function am(){s.style.maxHeight=ae.length*46+"px";s.style.opacity="1";s.style.display="table";var i=S.getElementsByClassName("etranslate-selector-arrow")[0];
+i.classList.add("etranslate-selector-arrow-down");b=true}function q(){Q.style.maxHeight=ae.length*46+"px";Q.style.opacity="1";Q.style.display="block";var i=aj.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.add("etranslate-selector-arrow-down");k=true}function m(){W.style.maxHeight=5*46-8+"px";W.style.opacity="1";W.style.display="block";var i=Y.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.add("etranslate-selector-arrow-down");h=true}function z(){s.style.maxHeight="0px";s.style.opacity="0";s.style.display="none";var i=S.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.remove("etranslate-selector-arrow-down");i.classList.remove("etranslate-selector-arrow-up");b=false}function N(){Q.style.maxHeight="0px";Q.style.opacity="0";Q.style.display="none";var i=aj.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.remove("etranslate-selector-arrow-down");i.classList.remove("etranslate-selector-arrow-up");k=false}function H(){W.style.maxHeight="0px";W.style.opacity="0";W.style.display="none";var i=Y.getElementsByClassName("etranslate-selector-arrow")[0];i.classList.remove("etranslate-selector-arrow-down");i.classList.remove("etranslate-selector-arrow-up");h=false}function B(i){return function(){Z=i.iso_code;if(O==="language_name"){V.innerHTML=langCodeToLangArray[Z]?langCodeToLangArray[Z]:i.name}else{if(O==="native_language_name"){var ao=i.endonym_name;ao=ao=="français"?"Français":ao;V.innerHTML=ao?ao:i.name}else{V.innerHTML=Z?Z.toLocaleUpperCase():Z}}N()}}function E(i){return function(){U=i.code;af=i;if(o==="name"){aa.innerHTML=i.currency}else{if(o==="code_symbol"){aa.innerHTML=i.code+" ("+i.currency_symbol+")"}else{aa.innerHTML=i.code}}var ao=findCurrencyFlags(i.country);an.style.backgroundImage="url("+K+"/"+ao+".svg)";H()}}A.addEventListener("click",function(i){z();N();H()});M.addEventListener("click",function(ar){localStorage.setItem("lan_code",Z.toLowerCase());localStorage.setItem("currentCurrency",U);const ap=a.querySelector("form");const ao=a.querySelector('input[name="language_code"]');const aq=a.querySelector('input[name="country_code"]');var i=false;var au="{{ localization.language.iso_code }}";if(Z.toLowerCase()!==au.toLowerCase()){ao.value=Z;i=true}if("{{ localization.country.currency.iso_code }}"!==U){if(J.indexOf(U)!=-1){aq.value=f[U];i=true}else{if("{{ localization.country.currency.iso_code }}"!==y.code){aq.value=f[y.code];i=true}else{etranslateCurrency(beforeCurrency,af)}}}else{if(af.code===y.code){aq.value=f[y.code];i=true}}if(i){ap.submit()}else{if(o==="name"){ai.innerHTML=af.currency}else{if(o==="code_symbol"){ai.innerHTML=af.code+" ("+af.currency_symbol+")"}else{ai.innerHTML=af.code}}var at=findCurrencyFlags(af.country);u.style.backgroundImage="url("+K+"/"+at+".svg)";beforeCurrency=af;z()}});return a};
+function setLanguageCurrencyPopupSelector(){var l=[];var g=[];{% for country in localization.available_countries %}l["{{ country.currency.iso_code }}"]="{{ country.iso_code }}";g.push("{{ country.currency.iso_code }}");{% endfor %}var n="{{ localization.country.currency.iso_code }}";var f=getLanguageList();var a="{{ localization.language.iso_code }}";var i={{ shop.metafields.etranslate.selector_config | json }};var h=document.getElementById("etranslate-language_currency-popup-selector");var k=localStorage.getItem("currentCurrency");if(k===null){k="{{ shop.currency }}"}else{if((k!==n&&g.indexOf(k)!=-1)||(n!=="{{ shop.currency }}"&&g.indexOf(k)==-1)){k=n;localStorage.setItem("currentCurrency",n)}}var e=[];var j=[];if(i.user_currencies_data){i.user_currencies_data.forEach(d=>{if(d.exchange_rate!==0){Currency.rates[d.code]=Currency.rates["{{ shop.currency }}"]/d.exchange_rate}if(d.code===k){e=d}if(d.code==="{{ shop.currency }}"){j=d}return""})}if(e.length<=0){e=j}beforeCurrency=e;var c=etrIsMobile();if(Number(i.status)===1&&i.selector_type==="language_currency"){if(c){if(i.mobile_language_currency_selector_style==="pop_up"){if(i.mobile_currency_selector_type==="floating_selector"){h.classList.add("etranslate-floating-selectorList");createLanguageCurrencyFloatPopupSelector(g,l,f,j,e,k,a,h,i,c)}else{if(i.mobile_currency_selector_type==="embedded_selector"){h.classList.add("etranslate-embedded-selectorList");createLanguageCurrencyEmbeddedPopupSelector(g,l,f,j,e,k,a,h,i,c);Etranslate.setEmbeddedSelectorPosition(h,c)}}applyPriviewCssCode(i.mobile_css_code);var m=h.querySelector("form");var b=h.querySelector('input[name="country_code"]');if(window.location.search.indexOf("?preview_key")!=-1){const returnToInput=h.querySelector('input[name="return_to"]');returnToInput.value=window.location.pathname+window.location.search};if(n!==e.code){if(g.indexOf(e.code)!=-1){b.value=l[e.code];m.submit()}else{if(n!==j.code){b.value=l[j.code];m.submit()}else{etranslateCurrency(j,e)}}}}else{h.remove()}}else{if(i.language_currency_selector_style==="pop_up"){if(i.currency_selector_type==="floating_selector"){h.classList.add("etranslate-floating-selectorList");createLanguageCurrencyFloatPopupSelector(g,l,f,j,e,k,a,h,i,c)}else{if(i.currency_selector_type==="embedded_selector"){h.classList.add("etranslate-embedded-selectorList");createLanguageCurrencyEmbeddedPopupSelector(g,l,f,j,e,k,a,h,i,c);Etranslate.setEmbeddedSelectorPosition(h,c)}}applyPriviewCssCode(i.css_code);var m=h.querySelector("form");var b=h.querySelector('input[name="country_code"]');if(window.location.search.indexOf("?preview_key")!=-1){const returnToInput=h.querySelector('input[name="return_to"]');returnToInput.value=window.location.pathname+window.location.search};if(n!==e.code){if(g.indexOf(e.code)!=-1){b.value=l[e.code];m.submit()}else{if(n!==j.code){b.value=l[j.code];m.submit()}else{etranslateCurrency(j,e)}}}}else{h.remove()}}}else{h.remove()}};
+documentReady(setLanguageCurrencyPopupSelector);
+function documentReady(fu){if(document.readyState==="complete"||document.readyState==="interactive"){setTimeout(documentReady(setLanguageCurrencyPopupSelector),1)}else{document.addEventListener("DOMContentLoaded",fu)}};
+</script><style>
+    .etranslate-cart-notification {
+        display: block;
+        padding: 10px 15px;
+        text-align: center;
+        border-radius: 3px;
+        margin: 3px 10px 0 10px;
+    }
+</style>
+<div class="etranslate-cart-notification" style="display: none"></div>
+<script>
+function setCartNotification(){var n="{{ shop.currency }}";var b={{ shop.metafields.etranslate.cart_notify | json }};var l=document.getElementsByClassName("etranslate-cart-notification")[0];if(b!==null){if(b.is_show===1){b.message=b.message.replace("[checkout_currency]",n);l.innerText=b.message;var g=getLanguageList();var a="{{ localization.language.iso_code }}";for(var m in b.Tranlates){if(m.toLowerCase()==a.toLowerCase()&&b.Tranlates[m]!==""){l.innerText=b.Tranlates[m].replace("[checkout_currency]",n)}}l.style.backgroundColor=b.background_color;l.style.color=b.font_color;var k=document.getElementsByTagName("input");var c=document.getElementsByTagName("button");var d=window.location.pathname;for(var f=1;f<k.length;f++){if(k[f].name=="checkout"&&d.match(/cart/i)){l.style.display="block";var h=document.getElementsByTagName("main")[0];h.insertBefore(l,h.children[0])}}for(var e=1;e<c.length;e++){if(c[e].name=="checkout"&&d.match(/cart/i)){l.style.display="block";var h=document.getElementsByTagName("main")[0];h.insertBefore(l,h.children[0])}}}else{l.remove()}}else{l.innerText="All orders are processed in "+n+", using the latest exchange rates.";var k=document.getElementsByTagName("input");var c=document.getElementsByTagName("button");var d=window.location.pathname;l.style.backgroundColor="#eeeeee";l.style.color="#000000";for(var f=1;f<k.length;f++){if(k[f].name=="checkout"&&d.match(/cart/i)){l.style.display="block";var h=document.getElementsByTagName("main")[0];h.insertBefore(l,h.children[0])}}for(var e=1;e<c.length;e++){if(c[e].name=="checkout"&&d.match(/cart/i)){l.style.display="block";var h=document.getElementsByTagName("main")[0];h.insertBefore(l,h.children[0])}}}};
+</script>
+<div class="etranslate_redirect">
+    {% form 'localization' %}
+        <input type="hidden" name="country_code" value="{{ localization.country.iso_code }}">
+        <input type="hidden" name="language_code" value="{{ localization.language.iso_code }}">
+    {% endform %}
+</div>
+<script>
+    var metaFiles = {{ shop.metafields.etranslate.selector_config | json }}
+    var currentLocale = "{{ shop.locale }}"
+    var redirectDom = document.querySelector(".etranslate_redirect")
+
+    function getShopLanguageList() {
+        return [
+            {%- for locale in shop.published_locales %}
+            {
+                name: '{{ locale.name }}',
+                endonym_name: '{{ locale.endonym_name }}',
+                iso_code: '{{ locale.iso_code }}',
+                primary: '{{ locale.primary }}',
+            }{% unless forloop.last %},{% endunless -%}
+            {%- endfor %}
+        ];
+    }
+
+    function in_array(stringToSearch, arrayToSearch) {
+        for (s = 0; s < arrayToSearch.length; s++) {
+            thisEntry = arrayToSearch[s].toString();
+            if (thisEntry.toLowerCase() == stringToSearch.toLowerCase()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function text(url) {
+        return fetch(url).then(res => res.text());
+    }
+    var languageList = getShopLanguageList();
+    var shop_lang_code_array = new Array();
+    languageList.map(function (v) {
+            shop_lang_code_array.push(v.iso_code.toLowerCase());
+    });
+
+    function selectorRedirect() {
+        if (window.location.search.indexOf("?preview_key") != -1) {
+            const returnToInput = redirectDom.querySelector('input[name="return_to"]')
+            returnToInput.value = window.location.pathname + window.location.search;
+        }
+        // 挂件重定向
+        // if (localStorage.getItem('lan_code') !== null && Number(metaFiles.status) === 1) {
+        //     if (Number(metaFiles.status) === 1 && localStorage.getItem('lan_code') !== currentLocale.toLowerCase()) {
+        //         if (in_array(localStorage.getItem('lan_code'), shop_lang_code_array) && (window.location.search.indexOf("?unpulic_preview") == -1 && window.location.search.indexOf("?preview") == -1)) {
+        //             const languageChangeForm = redirectDom.querySelector('.shopify-localization-form')
+        //             const languageChangeInput = redirectDom.querySelector('input[name="language_code"]')
+        //             languageChangeInput.value = localStorage.getItem('lan_code')
+        //             languageChangeForm.submit();
+        //         } else {
+        //             localStorage.setItem('lan_code', currentLocale.toLowerCase());
+        //         }
+        //     }
+        // }
+    }
+
+    function cartLocale() {
+        // 购物车提交action语言参数
+        var pathname = window.location.pathname;
+        var url_code = (pathname.match(/\/(\S*?)\//) || pathname.match(/\/(\S*)/))[1]
+        var cart_from = document.getElementsByClassName("cart")[0]
+        if (cart_from && (in_array(url_code, shop_lang_code_array) || in_array(url_code.split("-")[0], shop_lang_code_array) || url_code == "zh" || url_code == "pt")) {
+            var cart_from_link = cart_from.getAttribute('action') ? cart_from.getAttribute('action') : null
+            if (cart_from_link) {
+                if (cart_from_link.indexOf('local') >= 0) {
+                    var cart_link_param = cart_from_link ? cart_from_link.split('?')[1] : ''
+                    var cart_link_lan_code = cart_link_param ? cart_link_param.split('=')[1] : ''
+                    if (cart_link_lan_code && cart_link_lan_code != url_code) {
+                        cart_from.setAttribute('action', cart_from_link.replace(cart_link_lan_code, url_code))
+                    }
+                } else if (cart_from_link.indexOf('/' + url_code + '/') < 0) {
+                    var cart_link_param = cart_from_link ? cart_from_link.split('?')[1] : ''
+                    var cart_link_lan_code = cart_link_param ? cart_link_param.split('=')[1] : ''
+                    cart_from.setAttribute('action', '/' + url_code + cart_from_link)
+                }
+            }
+            // var formDom = document.querySelectorAll('form')
+            // for (var num = 0; num < formDom.length; num++) {
+            //     const form_link = formDom[num].getAttribute('action')
+            //     if (form_link.indexOf('/checkout') >= 0 && form_link.indexOf('/' + currentLocale.toLowerCase() + '/') < 0) {
+            //         formDom[num].setAttribute('action', '/' + url_code + form_link)
+            //     }
+            // }
+        }
+    }
+
+    function redirectCustomer() {
+        //自动切换本地语言
+        var is_need_redirect = false;
+        var browser_locale = (navigator.language || navigator.browserLanguage).toLowerCase();
+        var selector_lan_code = localStorage.getItem('lan_code');
+        const browser_locale_cut = browser_locale.split("-");
+        var reg = RegExp(/oseid=/);
+        if (Number(metaFiles.status) === 1 && metaFiles.selector_type !== 'currency' && Number(metaFiles.auto_switch_location_language) === 1) {
+            if (!reg.exec(window.location) && selector_lan_code === null && browser_locale != currentLocale.toLowerCase() && (window.location.search.indexOf("?unpulic_preview") == -1 && window.location.search.indexOf("?preview") == -1)) {
+                var selectorChangeForm = redirectDom.querySelector('.shopify-localization-form')
+                var languageChangeInput = redirectDom.querySelector('input[name="language_code"]')
+                if (in_array(browser_locale, shop_lang_code_array)) {
+                    languageChangeInput.value = browser_locale
+                    is_need_redirect = true;
+                } else if (in_array(browser_locale_cut[0], shop_lang_code_array)) {
+                    if (browser_locale_cut[0] != currentLocale.toLowerCase()) {
+                        languageChangeInput.value = browser_locale_cut[0]
+                        is_need_redirect = true;
+                    }
+                }
+            }
+        }
+        //自动切换本地货币
+        if (Number(metaFiles.status) === 1 && metaFiles.selector_type !== 'language' && Number(metaFiles.auto_switch_location_currency) === 1) {
+            if (localStorage.getItem('currentCurrency') === null) {
+                var selectorChangeForm = redirectDom.querySelector('.shopify-localization-form')
+                var currencyChangeInput = redirectDom.querySelector('input[name="country_code"]')
+                var shopify_supported_currencies = []
+                var shopify_supported_currency_code = []
+                {% for country in localization.available_countries %}
+                shopify_supported_currencies["{{ country.currency.iso_code }}"] = "{{ country.iso_code }}"
+                shopify_supported_currency_code.push("{{ country.currency.iso_code }}")
+                {% endfor %}
+                var shopCurrency = "{{ localization.country.currency.iso_code }}"
+                text('https://www.cloudflare.com/cdn-cgi/trace?v=' + Math.random()).then(data => {
+                    let ipRegex = /[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/
+                    let ip = data.match(ipRegex)[0];
+                    return text("https://geolocation-db.com/json/" + ip).then(data => {
+                        var ipData = JSON.parse(data)
+                        var countryName = ipData.country_name
+                        if(Etranslate.EuropeanUnion.indexOf(countryName) !== -1){
+                            countryName = "European Union";
+                        }
+                        var customerCurrency;
+                        metaFiles.user_currencies_data.forEach(data => {
+                            if (countryName == data.country) {
+                                customerCurrency = data
+                            }
+                        })
+                        if (customerCurrency !== undefined) {
+                            if (customerCurrency.code !== shopCurrency) {
+                                localStorage.setItem('currentCurrency', customerCurrency.code);
+                                currencyChangeInput.value = shopify_supported_currencies[customerCurrency.code]
+                                selectorChangeForm.submit();
+                            } else {
+                                if (is_need_redirect) {
+                                    selectorChangeForm.submit();
+                                }
+                            }
+                        } else {
+                            if (is_need_redirect) {
+                                selectorChangeForm.submit();
+                            }
+                        }
+                    });
+                });
+            } else {
+                if (is_need_redirect) {
+                    selectorChangeForm.submit();
+                }
+            }
+        } else {
+            if (is_need_redirect) {
+                selectorChangeForm.submit();
+            }
+        }
+    }
+
+    documentReady(redirectCustomer);
+    documentReady(cartLocale);
+    documentReady(selectorRedirect);
+
+    function documentReady(fu) {
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            setTimeout(documentReady(fu), 300);
+        } else {
+            document.addEventListener('DOMContentLoaded', fu);
+        }
+    }
+</script><script>
+    document.addEventListener('DOMContentLoaded',function(){let defaultData=[];let reviewData=[];let defaultDom=[];let reviewDom=[];let elementContent=[];let elementTransDom=[];let appKey=0;const config={characterData:true,childList:true,subtree:true};let proReviewFormData=[];var listenProductReviewDom=function(element){defaultData=[];defaultDom=[];element.forEach(function(item,index){if(item.type=='childList'&&item.addedNodes.length!=0){elementContent=[];elementTransDom=[];getElementContent(item.addedNodes);for(var j=0;j<elementContent.length;j++){if(proReviewFormData.indexOf(elementContent[j])===-1){defaultData.push(elementContent[j]);defaultDom.push(elementTransDom[j])}}}});if(defaultData!=''){translateElement(defaultData,[],defaultDom,[],appKey)}};const observeProductReview=new MutationObserver(listenProductReviewDom);var listenJudgeMeDefaultDom=function(element){defaultData=[];defaultDom=[];element.forEach(function(item,index){if(item.type=='childList'&&item.addedNodes.length!=0){elementContent=[];elementTransDom=[];getElementContent(item.addedNodes);for(var i=0;i<elementContent.length;i++){defaultData.push(elementContent[i]);defaultDom.push(elementTransDom[i])}}});if(elementContent!=''){translateElement(defaultData,[],defaultDom,[],appKey)}};const observeJudgeMeDafault=new MutationObserver(listenJudgeMeDefaultDom);var listenJudgeMeReviewDom=function(element){reviewData=[];reviewDom=[];element.forEach(function(item,index){if(item.type=='childList'&&item.addedNodes.length!=0){for(var i=0;i<item.addedNodes.length;i++){if(item.addedNodes[i].nodeType===1){let title=item.addedNodes[i].querySelectorAll('.jdgm-rev__title');let body=item.addedNodes[i].querySelectorAll('.jdgm-rev__body');if(title.length>0||body.length>0){elementContent=[];elementTransDom=[];getElementContent(title);getElementContent(body);reviewData=elementContent;reviewDom=elementTransDom}}}}});if(elementContent!=''){translateElement([],reviewData,[],reviewDom,appKey)}};const observeJudgeMeReview=new MutationObserver(listenJudgeMeReviewDom);var productReviewsDom=document.getElementById('shopify-product-reviews');if(productReviewsDom!=undefined){appKey=5;getProReviewContent()}var judgemeDom=document.getElementById('judgeme_product_reviews');if(judgemeDom!=undefined){appKey=1;getJudgemeContent();var judgemeOldDom=document.querySelector('.jdgm-rev-widg__reviews');setInterval(()=>diffReviewsDom(),1000)}function diffReviewsDom(){var judgemeNowDom=document.querySelector('.jdgm-rev-widg__reviews');if(judgemeOldDom!==judgemeNowDom){getJudgemeContent();judgemeOldDom=document.querySelector('.jdgm-rev-widg__reviews')}}function getProReviewContent(){var product_review_header=document.querySelectorAll('.spr-header');var product_review_form=document.querySelectorAll('.new-review-form');var product_review_body=document.querySelectorAll('.spr-reviews');var product_review_title=document.querySelectorAll('.spr-review-header-title');var product_review_content=document.querySelectorAll('.spr-review-content-body');var product_review_new_form=document.querySelectorAll('.spr-form');if(product_review_header.length>0&&product_review_form.length>0&&product_review_body.length>0){elementContent=[];elementTransDom=[];getElementContent(product_review_header);getElementContent(product_review_form);defaultData=elementContent;defaultDom=elementTransDom;elementContent=[];elementTransDom=[];getElementContent(product_review_title);getElementContent(product_review_content);reviewData=elementContent;reviewDom=elementTransDom;translateElement(defaultData,reviewData,defaultDom,reviewDom,appKey);elementContent=[];getElementContent(product_review_new_form);proReviewFormData=elementContent;observeProductReview.observe(product_review_new_form[0],config)}else{setTimeout(()=>getProReviewContent(),1000)}}function getJudgemeContent(){var jdgm_header=document.querySelectorAll('.jdgm-rev-widg__header');var jdgm_form=document.querySelectorAll('.jdgm-form');var jdgm_review=document.querySelectorAll('.jdgm-rev-widg__reviews');var jdgm_title=document.querySelectorAll('.jdgm-rev__title');var jdgm_body=document.querySelectorAll('.jdgm-rev__body');if(jdgm_header.length>0&&jdgm_form.length>0&&jdgm_review.length>0){elementContent=[];elementTransDom=[];getElementContent(jdgm_header);defaultData=elementContent;defaultDom=elementTransDom;elementContent=[];elementTransDom=[];getElementContent(jdgm_title);getElementContent(jdgm_body);reviewData=elementContent;reviewDom=elementTransDom;translateElement(defaultData,reviewData,defaultDom,reviewDom,appKey);observeJudgeMeDafault.observe(jdgm_header[0],config);observeJudgeMeDafault.observe(jdgm_form[0],config);observeJudgeMeReview.observe(jdgm_review[0],config)}else{setTimeout(()=>getJudgemeContent(),1000)}}function getElementContent(elementDom){for(var index=0;index<elementDom.length;index++){if(elementDom[index].nodeType==1&&elementDom[index].nodeName!=="SCRIPT"){if((elementDom[index].nodeName==="INPUT"||elementDom[index].nodeName==="TEXTAREA")&&elementDom[index].getAttribute('placeholder')!=null){elementContent.push(elementDom[index].getAttribute('placeholder'));elementTransDom.push({"t":1,"d":elementDom[index]});break}if(elementDom[index].nodeName==="INPUT"&&elementDom[index].attributes.type.value=="submit"){elementContent.push(elementDom[index].attributes.value.value);elementTransDom.push({"t":8,"d":elementDom[index]});break}getElementContent(elementDom[index].childNodes)}let repeatRegexOne=new RegExp(/\([0-9]{1,}\)/g);let repeatRegexTwo=new RegExp(/[0-9]{1,3}%/g);if(elementDom[index].nodeType==3&&elementDom[index].textContent.trim()!=''&&elementDom[index].textContent.trim()!=="("&&elementDom[index].textContent.trim()!==")"&&elementDom[index].textContent.match(repeatRegexOne)===null&&elementDom[index].textContent.match(repeatRegexTwo)===null){elementContent.push(elementDom[index].textContent.trim());elementTransDom.push({"t":3,"d":elementDom[index]})}}}function translateElement(defaultData,reviewData,defaultDom,reviewDom,appKey){if(defaultData!=''||reviewData!=''){let xmlHttp=new XMLHttpRequest();let paramData={"domain":'{{shop.permanent_domain}}',"lan_code":'{{shop.locale}}',"app_key":appKey,"default_data":defaultData,"review_data":reviewData,"is_thirdApp":true};xmlHttp.open("post","/apps/pagefly");xmlHttp.setRequestHeader("Content-Type","application/json");xmlHttp.setRequestHeader("CrossOrigin","true");xmlHttp.onreadystatechange=function(){if(xmlHttp.status==200){var responseData=xmlHttp.response;if(responseData!=''){transData=JSON.parse(responseData).data;if(transData!=''){if(transData['default'].length>0&&defaultDom.length>0){for(var i=0;i<transData['default'].length;i++){if(transData['default'][i]!=''){if(defaultDom[i].t===1){defaultDom[i].d.setAttribute('placeholder',transData['default'][i])}else if(defaultDom[i].t===3){defaultDom[i].d.textContent=transData['default'][i]}else if(defaultDom[i].t===8){defaultDom[i].d.attributes.value.value=transData['default'][i]}}}}defaultData=[];defaultDom=[];if(transData['reviews'].length>0&&reviewDom.length>0){for(var i=0;i<transData['reviews'].length;i++){if(transData['reviews'][i]!=''){if(reviewDom[i].t===1){reviewDom[i].d.setAttribute('placeholder',transData['reviews'][i])}else if(reviewDom[i].t===3){reviewDom[i].d.textContent=transData['reviews'][i]}else if(reviewDom[i].t===8){reviewDom[i].d.attributes.value.value=transData['reviews'][i]}}}}reviewData=[];reviewDom=[]}}}};xmlHttp.send(JSON.stringify(paramData))}}})
+</script>
