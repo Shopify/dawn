@@ -1,0 +1,881 @@
+{%- assign fields                   = product.metafields.OpinionesExpertos.TituloContenido -%}
+
+{% for field in fields %}
+  {% if forloop.first %}
+    {%- liquid
+      assign section_title            = product.metafields.OpinionesExpertos.TituloSeccion
+      assign show_title               = product.metafields.OpinionesExpertos.MostrarTitulo
+      assign section_subtitle         = product.metafields.OpinionesExpertos.DescripcionSeccion
+
+      assign setting_title            = product.metafields.OpinionesExpertos.TituloContenido
+      assign setting_text             = product.metafields.OpinionesExpertos.DescripcionContenido
+      assign setting_subtitle         = product.metafields.OpinionesExpertos.SubtituloContenido
+      assign setting_image            = product.metafields.OpinionesExpertos.ImagenContenido
+
+      assign count                    = forloop.length | minus: 1
+      assign slideId                  = section_title | camelcase
+    -%}
+
+    {{ 'component-image-with-text.css' | asset_url | stylesheet_tag }}
+
+    {%- style -%}
+      .section-{{ section.id }}-padding {
+        padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+        padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      @media screen and (min-width: 750px) {
+        .section-{{ section.id }}-padding {
+          padding-top: {{ section.settings.padding_top }}px;
+          padding-bottom: {{ section.settings.padding_bottom }}px;
+        }
+      }
+      #slider-images-{{ slideId }} .image-with-text__media--{{ section.settings.height }} {
+        min-height: 24rem;
+      }
+    {%- endstyle -%}
+
+    <div class="image-with-text {% if section.settings.layout == 'grid' %} page-width{% endif %} color-{{ section.settings.color_scheme }} gradient{% if section_title == blank %} no-heading{% endif %}">
+      <div class="{% if section.settings.layout == 'full_bleed' %} no-gutters page-width{% endif %} section-{{ section.id }}-padding isolate">
+        
+        <div class="title-wrapper--self-padded-mobile title-wrapper--no-top-margin section-title text-center">
+          {%- if section_title and show_title -%}
+            <h2 class="title mx-auto {{ section.settings.heading_size }}">
+              {{ section_title | escape }}
+            </h2>
+          {%- endif -%}
+          {%- if section_subtitle -%}
+            <div class="subtitle--medium text-center">{{ section_subtitle | escape }}</div>
+          {%- endif -%}
+          {%- if count > 0 -%}
+            <div class="swiper-button-prev prev-{{ slideId }} rotate-180" style="top: 7%">{% render 'icon-arrow' %}</div>
+            <div class="swiper-button-next next-{{ slideId }}" style="top: 7%">{% render 'icon-arrow' %}</div>
+          {%- endif -%}
+        </div>
+        
+        <div class="image-with-text--{{ section.settings.content_overlap }} {% if settings.text_boxes_border_thickness > 0 and settings.text_boxes_border_opacity > 0 and settings.media_border_thickness > 0 and settings.media_border_opacity > 0 %} collapse-borders{% endif %}{% unless section.settings.content_color_scheme == 'background-1' and settings.media_border_thickness > 0 and settings.text_boxes_shadow_opacity == 0 and settings.text_boxes_border_thickness == 0 or settings.text_boxes_border_opacity == 0 %} collapse-corners{% endunless %}">
+          <div class="image-with-text__grid grid grid--gapless grid--1-col grid--{% if section.settings.desktop_image_width == 'medium' %}2-col-tablet{% else %}3-col-tablet{% endif %}{% if section.settings.content_layout == 'text_first' %} image-with-text__grid--reverse{% endif %} section-{{ section.id }}-padding">
+            <!-- Start Slider images -->
+            <div id="slider-images-{{ slideId }}" class="swiper image-with-text__media-itemx image-with-text__media-item--{{ section.settings.desktop_image_width }} image-with-text__media-item--{{ section.settings.desktop_content_position }} grid__item">
+              <div class="swiper-wrapper">
+                {%- liquid
+                  assign highest_ratio = 0
+                  for i in (0..count)
+                    assign content_image_aspect_ratio = 1
+                    if content_image_aspect_ratio > highest_ratio
+                      assign highest_ratio = content_image_aspect_ratio
+                    endif
+                  endfor
+                -%}
+                {%- for i in (0..count) -%}
+                  {%- liquid
+                    assign content_image = setting_image[i]
+                    assign content_title = setting_title[i]
+                    assign content_text  = setting_text[i]
+                  -%}              
+                  <div class="swiper-slide image-with-text__media image-with-text__media--{{ section.settings.height }} gradient color-{{ section.settings.content_color_scheme }} global-media-settings {% if content_image != blank %}media{% else %}image-with-text__media--placeholder placeholder{% endif %}"
+                    {% if section.settings.height == 'adapt' and content_image != blank %} style="height: 30.4rem;"{% endif %}
+                  >
+                    {%- if content_image != blank -%}
+                      <img
+                        srcset="{%- if section.settings.image.width >= 165 -%}{{ content_image | file_image_url: width: 165 }} 165w,{%- endif -%}
+                          {%- if section.settings.image.width >= 360 -%}{{ content_image | file_image_url: width: 360 }} 360w,{%- endif -%}
+                          {%- if section.settings.image.width >= 535 -%}{{ content_image | file_image_url: width: 535 }} 535w,{%- endif -%}
+                          {%- if section.settings.image.width >= 750 -%}{{ content_image | file_image_url: width: 750 }} 750w,{%- endif -%}
+                          {%- if section.settings.image.width >= 1070 -%}{{ content_image | file_image_url: width: 1070 }} 1070w,{%- endif -%}
+                          {%- if section.settings.image.width >= 1500 -%}{{ content_image | file_image_url: width: 1500 }} 1500w,{%- endif -%}
+                          {{ content_image | file_image_url }} {{ section.settings.image.width }}w"
+                        src="{{ content_image | file_image_url: width: 1500 }}"
+                        sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 2 }}px, (min-width: 750px) calc((100vw - 130px) / 2), calc((100vw - 50px) / 2)"
+                        alt="{{ content_title | escape }}"
+                        loading="lazy"
+                        width="{{ section.settings.image.width }}"
+                        height="{{ section.settings.image.height }}"
+                      >
+                    {%- else -%}
+                      {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+                    {%- endif -%}
+                  </div>            
+                {%- endfor -%}
+              </div>
+            </div>        
+            <!-- End Slider images -->
+            <!-- Start Slider texts -->
+            <div class="image-with-text__text-item grid__item">
+              <div id="slider-texts-{{ slideId }}" class="image-with-text__content image-with-text__content--{{ section.settings.height }} gradient color-{{ section.settings.content_color_scheme }} content-container no-gutters swiper">
+                <div class="swiper-wrapper">
+                  {%- for i in (0..count) -%}
+                    {%- liquid
+                      assign content_title      = setting_title[i]
+                      assign content_subtitle   = setting_subtitle[i]
+                      assign content_text       = setting_text[i]
+                    -%}
+                    <div class="swiper-slide image-with-text__content--{{ section.settings.desktop_content_position }} image-with-text__content--desktop-{{ section.settings.desktop_content_alignment }} image-with-text__content--mobile-{{ section.settings.mobile_content_alignment }}">
+                      {%- if content_title -%}
+                        <h2 class="image-with-text__heading {{ section.settings.content_heading_size }}" {{ block.shopify_attributes }}>
+                          {{ content_title | escape }}
+                        </h2>
+                      {%- endif -%}
+                      {%- if content_text -%}
+                        <div class="image-with-text__text rte {{ section.settings.text_style }}" {{ block.shopify_attributes }}>
+                          <blockquote class="blockquote">
+                            {{ content_text | escape }}
+                          </blockquote>
+                        </div>
+                      {%- endif -%}
+                      {%- if content_subtitle -%}
+                        <p class="image-with-text__text image-with-text__text--caption {{ section.settings.subtitle_style }} {{ section.settings.subtitle_style }}--{{ section.settings.text_size }} {{ section.settings.subtitle_style }}" {{ block.shopify_attributes }}>
+                          {{ content_subtitle }}
+                        </p>
+                      {%- endif -%}                  
+                    </div>
+                  {%- endfor -%}
+                </div>
+              </div>
+            </div>
+            <!-- End Slider texts -->
+          </div>
+          <!-- Start Slider controls -->        
+          {%- if count > 0 -%}
+            <div class="swiper-pagination pagination-{{ slideId }}"></div>
+          {%- endif -%}
+          <!-- End Slider controls -->
+        </div>
+      </div>
+    </div>
+    <!-- Initialize Swiper -->
+    {%- if count > 0 -%}
+      {%- assign customSpeed = section.settings.change_slides_speed | times: 1000 | ceil -%}
+      <script>
+        let swiperImages{{ slideId }} = new Swiper("#slider-images-{{ slideId }}", {
+          speed: {{ customSpeed }},
+          loop: true,
+          grabCursor: true,
+          pagination: {
+            el: ".pagination-{{ slideId }}",
+            clickable: true,
+          },
+          navigation: {
+            nextEl: ".next-{{ slideId }}",
+            prevEl: ".prev-{{ slideId }}",
+          },
+          {%- if section.settings.auto_rotate == true -%}
+            autoplay: {
+              delay: {{ customSpeed }},
+              /*disableOnInteraction: true,*/
+              /*waitForTransition: true,*/
+              /*pauseOnMouseEnter: true,*/
+            },
+          {%- endif -%}
+          {%- if section.settings.images_slider_effect == 'fade'-%}
+            effect: 'fade',
+            fadeEffect: {
+              crossFade: true,
+            },
+          {%- elsif section.settings.images_slider_effect == 'coverflow' -%}
+            effect: 'coverflow',
+            coverflowEffect: {
+              rotate: 50,
+              stretch: 0,
+              depth: 100,
+              modifier: 1,
+              slideShadows: true,
+            },
+          {%- elsif section.settings.images_slider_effect == 'flip' -%}
+            effect: "flip",
+          {%- elsif section.settings.images_slider_effect == 'cube' -%}
+            effect: "cube",
+            cubeEffect: {
+              shadow: true,
+              slideShadows: true,
+              shadowOffset: 20,
+              shadowScale: 0.94,
+            },
+          {%- elsif section.settings.images_slider_effect == 'cards' -%}
+            effect: "cards",
+          {%- elsif section.settings.images_slider_effect == 'creativeOne' -%}
+            effect: "creative",
+            creativeEffect: {
+              prev: {
+                shadow: true,
+                translate: [0, 0, -400],
+              },
+              next: {
+                translate: ["100%", 0, 0],
+              },
+            },
+          {%- elsif section.settings.images_slider_effect == 'creativeTwo' -%}
+            effect: "creative",
+            creativeEffect: {
+              prev: {
+                shadow: true,
+                translate: ["-120%", 0, -500],
+              },
+              next: {
+                shadow: true,
+                translate: ["120%", 0, -500],
+              },
+            },
+          {%- elsif section.settings.images_slider_effect == 'creativeThree' -%}
+            effect: "creative",
+            creativeEffect: {
+              prev: {
+                shadow: true,
+                translate: ["-20%", 0, -1],
+              },
+              next: {
+                translate: ["100%", 0, 0],
+              },
+            },
+          {%- elsif section.settings.images_slider_effect == 'creativeFour' -%}
+            effect: "creative",
+            creativeEffect: {
+              prev: {
+                shadow: true,
+                translate: [0, 0, -800],
+                rotate: [180, 0, 0],
+              },
+              next: {
+                shadow: true,
+                translate: [0, 0, -800],
+                rotate: [-180, 0, 0],
+              },
+            },
+          {%- elsif section.settings.images_slider_effect == 'creativeFive' -%}
+            effect: "creative",
+            creativeEffect: {
+              prev: {
+                shadow: true,
+                translate: ["-125%", 0, -800],
+                rotate: [0, 0, -90],
+              },
+              next: {
+                shadow: true,
+                translate: ["125%", 0, -800],
+                rotate: [0, 0, 90],
+              },
+            },
+          {%- elsif section.settings.images_slider_effect == 'creativeSix' -%}
+            effect: "creative",
+            creativeEffect: {
+              prev: {
+                shadow: true,
+                origin: "left center",
+                translate: ["-5%", 0, -200],
+                rotate: [0, 100, 0],
+              },
+              next: {
+                origin: "right center",
+                translate: ["5%", 0, -200],
+                rotate: [0, -100, 0],
+              },
+            },
+          {%- endif -%}
+        });
+
+        let swiperTexts{{ slideId }} = new Swiper("#slider-texts-{{ slideId }}", {
+          speed: {{ customSpeed }},
+          loop: true,
+          grabCursor: true,
+          {%- if section.settings.auto_rotate == true -%}
+            autoplay: {
+              delay: {{ customSpeed }},
+              /*disableOnInteraction: true,*/
+              /*waitForTransition: true,*/
+              /*pauseOnMouseEnter: true,*/
+            },
+          {%- endif -%}
+          {%- if section.settings.texts_slider_effect == 'fade'-%}
+            effect: 'fade',
+            fadeEffect: {
+              crossFade: true,
+            },
+          {%- elsif section.settings.texts_slider_effect == 'coverflow' -%}
+            effect: 'coverflow',
+            coverflowEffect: {
+              rotate: 50,
+              stretch: 0,
+              depth: 100,
+              modifier: 1,
+              slideShadows: true,
+            },
+          {%- elsif section.settings.texts_slider_effect == 'flip' -%}
+            effect: "flip",
+          {%- elsif section.settings.texts_slider_effect == 'cube' -%}
+            effect: "cube",
+            cubeEffect: {
+              shadow: true,
+              slideShadows: true,
+              shadowOffset: 20,
+              shadowScale: 0.94,
+            },
+          {%- elsif section.settings.texts_slider_effect == 'cards' -%}
+            effect: "cards",
+          {%- elsif section.settings.texts_slider_effect == 'creativeOne' -%}
+            effect: "creative",
+            creativeEffect: {
+              prev: {
+                shadow: true,
+                translate: [0, 0, -400],
+              },
+              next: {
+                translate: ["100%", 0, 0],
+              },
+            },
+          {%- elsif section.settings.texts_slider_effect == 'creativeTwo' -%}
+            effect: "creative",
+            creativeEffect: {
+              prev: {
+                shadow: true,
+                translate: ["-120%", 0, -500],
+              },
+              next: {
+                shadow: true,
+                translate: ["120%", 0, -500],
+              },
+            },
+          {%- elsif section.settings.texts_slider_effect == 'creativeThree' -%}
+            effect: "creative",
+            creativeEffect: {
+              prev: {
+                shadow: true,
+                translate: ["-20%", 0, -1],
+              },
+              next: {
+                translate: ["100%", 0, 0],
+              },
+            },
+          {%- elsif section.settings.texts_slider_effect == 'creativeFour' -%}
+            effect: "creative",
+            creativeEffect: {
+              prev: {
+                shadow: true,
+                translate: [0, 0, -800],
+                rotate: [180, 0, 0],
+              },
+              next: {
+                shadow: true,
+                translate: [0, 0, -800],
+                rotate: [-180, 0, 0],
+              },
+            },
+          {%- elsif section.settings.texts_slider_effect == 'creativeFive' -%}
+            effect: "creative",
+            creativeEffect: {
+              prev: {
+                shadow: true,
+                translate: ["-125%", 0, -800],
+                rotate: [0, 0, -90],
+              },
+              next: {
+                shadow: true,
+                translate: ["125%", 0, -800],
+                rotate: [0, 0, 90],
+              },
+            },
+          {%- elsif section.settings.texts_slider_effect == 'creativeSix' -%}
+            effect: "creative",
+            creativeEffect: {
+              prev: {
+                shadow: true,
+                origin: "left center",
+                translate: ["-5%", 0, -200],
+                rotate: [0, 100, 0],
+              },
+              next: {
+                origin: "right center",
+                translate: ["5%", 0, -200],
+                rotate: [0, -100, 0],
+              },
+            },
+          {%- endif -%}
+        });
+
+        swiperImages{{ slideId }}.controller.control = swiperTexts{{ slideId }};
+        swiperTexts{{ slideId }}.controller.control = swiperImages{{ slideId }}
+      </script>
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+{% schema %}
+{
+  "name": "Slider Opiniones Expertos",
+  "class": "section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "layout",
+      "options": [
+        {
+          "value": "full_bleed",
+          "label": "t:sections.slideshow.settings.layout.options__1.label"
+        },
+        {
+          "value": "grid",
+          "label": "t:sections.slideshow.settings.layout.options__2.label"
+        }
+      ],
+      "default": "full_bleed",
+      "label": "t:sections.slideshow.settings.layout.label"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.all.colors.accent_1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.all.colors.accent_2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.all.colors.background_1.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.all.colors.background_2.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.all.colors.inverse.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.all.colors.label"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_size.options__2.label"
+        },
+        {
+          "value": "h0",
+          "label": "t:sections.all.heading_size.options__3.label"
+        }
+      ],
+      "default": "h1",
+      "label": "t:sections.all.heading_size.label"
+    },
+    {
+      "type": "header",
+      "content": "Diseño del contenido"
+    },
+    {
+      "type": "select",
+      "id": "height",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "t:sections.image-with-text.settings.height.options__1.label"
+        },
+        {
+          "value": "small",
+          "label": "t:sections.image-with-text.settings.height.options__2.label"
+        },
+        {
+          "value": "large",
+          "label": "t:sections.image-with-text.settings.height.options__3.label"
+        }
+      ],
+      "default": "adapt",
+      "label": "t:sections.image-with-text.settings.height.label"
+    },
+    {
+      "type": "select",
+      "id": "desktop_image_width",
+      "options": [
+        {
+          "value": "small",
+          "label": "t:sections.image-with-text.settings.desktop_image_width.options__1.label"
+        },
+        {
+          "value": "medium",
+          "label": "t:sections.image-with-text.settings.desktop_image_width.options__2.label"
+        },
+        {
+          "value": "large",
+          "label": "t:sections.image-with-text.settings.desktop_image_width.options__3.label"
+        }
+      ],
+      "default": "medium",
+      "label": "t:sections.image-with-text.settings.desktop_image_width.label",
+      "info": "t:sections.image-with-text.settings.desktop_image_width.info"
+    },
+    {
+      "type": "select",
+      "id": "content_layout",
+      "options": [
+        {
+          "value": "image_first",
+          "label": "t:sections.image-with-text.settings.layout.options__1.label"
+        },
+        {
+          "value": "text_first",
+          "label": "t:sections.image-with-text.settings.layout.options__2.label"
+        }
+      ],
+      "default": "image_first",
+      "label": "t:sections.image-with-text.settings.layout.label",
+      "info": "t:sections.image-with-text.settings.layout.info"
+    },
+    {
+      "type": "select",
+      "id": "desktop_content_position",
+      "options": [
+        {
+          "value": "top",
+          "label": "t:sections.image-with-text.settings.desktop_content_position.options__1.label"
+        },
+        {
+          "value": "middle",
+          "label": "t:sections.image-with-text.settings.desktop_content_position.options__2.label"
+        },
+        {
+          "value": "bottom",
+          "label": "t:sections.image-with-text.settings.desktop_content_position.options__3.label"
+        }
+      ],
+      "default": "top",
+      "label": "t:sections.image-with-text.settings.desktop_content_position.label"
+    },
+    {
+      "type": "select",
+      "id": "desktop_content_alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.image-with-text.settings.desktop_content_alignment.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.image-with-text.settings.desktop_content_alignment.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.image-with-text.settings.desktop_content_alignment.options__3.label"
+        }
+      ],
+      "default": "left",
+      "label": "t:sections.image-with-text.settings.desktop_content_alignment.label"
+    },
+    {
+      "type": "select",
+      "id": "content_overlap",
+      "options": [
+        {
+          "value": "no-overlap",
+          "label": "t:sections.image-with-text.settings.content_layout.options__1.label"
+        },
+        {
+          "value": "overlap",
+          "label": "t:sections.image-with-text.settings.content_layout.options__2.label"
+        }
+      ],
+      "default": "no-overlap",
+      "label": "t:sections.image-with-text.settings.content_layout.label"
+    },
+    {
+      "type": "select",
+      "id": "content_color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.all.colors.accent_1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.all.colors.accent_2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.all.colors.background_1.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.all.colors.background_2.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.all.colors.inverse.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.all.colors.label"
+    },
+    {
+      "type": "header",
+      "content": "Diseño de la Opinión"
+    },
+    {
+      "type": "select",
+      "id": "content_heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_size.options__2.label"
+        },
+        {
+          "value": "h0",
+          "label": "t:sections.all.heading_size.options__3.label"
+        }
+      ],
+      "default": "h2",
+      "label": "Tamaño del Nombre"
+    },
+    {
+      "type": "select",
+      "id": "text_style",
+      "options": [
+        {
+          "value": "body",
+          "label": "t:sections.image-with-text.blocks.text.settings.text_style.options__1.label"
+        },
+        {
+          "value": "subtitle",
+          "label": "t:sections.image-with-text.blocks.text.settings.text_style.options__2.label"
+        }
+      ],
+      "default": "body",
+      "label": "t:sections.image-with-text.blocks.text.settings.text_style.label"
+    },
+    {
+      "type": "select",
+      "id": "subtitle_style",
+      "options": [
+        {
+          "value": "subtitle",
+          "label": "t:sections.image-with-text.blocks.caption.settings.text_style.options__1.label"
+        },
+        {
+          "value": "caption-with-letter-spacing",
+          "label": "t:sections.image-with-text.blocks.caption.settings.text_style.options__2.label"
+        }
+      ],
+      "default": "caption-with-letter-spacing",
+      "label": "Formato del texto Créditos"
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "options": [
+        {
+          "value": "small",
+          "label": "t:sections.image-with-text.blocks.caption.settings.caption_size.options__1.label"
+        },
+        {
+          "value": "medium",
+          "label": "t:sections.image-with-text.blocks.caption.settings.caption_size.options__2.label"
+        },
+        {
+          "value": "large",
+          "label": "t:sections.image-with-text.blocks.caption.settings.caption_size.options__3.label"
+        }
+      ],
+      "default": "medium",
+      "label": "Tamaño del texto Créditos"
+    },
+    {
+      "type": "header",
+      "content": "Mobile layout"
+    },
+    {
+      "type": "select",
+      "id": "mobile_content_alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.image-with-text.settings.mobile_content_alignment.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.image-with-text.settings.mobile_content_alignment.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.image-with-text.settings.mobile_content_alignment.options__3.label"
+        }
+      ],
+      "default": "left",
+      "label": "t:sections.image-with-text.settings.mobile_content_alignment.label"
+    },
+    {
+      "type": "header",
+      "content": "Configuración del Slider"
+    },
+    {
+      "type": "select",
+      "id": "images_slider_effect",
+      "options": [
+        {
+          "value": "none",
+          "label": "Ninguno"
+        },
+        {
+          "value": "fade",
+          "label": "Fade"
+        },
+        {
+          "value": "cube",
+          "label": "Cube"
+        },
+        {
+          "value": "coverflow",
+          "label": "Coverflow"
+        },
+        {
+          "value": "flip",
+          "label": "Flip"
+        },
+        {
+          "value": "cards",
+          "label": "Cards"
+        },
+        {
+          "value": "creativeOne",
+          "label": "Creative One"
+        },
+        {
+          "value": "creativeTwo",
+          "label": "Creative Two"
+        },
+        {
+          "value": "creativeThree",
+          "label": "Creative Three"
+        },
+        {
+          "value": "creativeFour",
+          "label": "Creative Four"
+        },
+        {
+          "value": "creativeFive",
+          "label": "Creative Five"
+        },
+        {
+          "value": "creativeSix",
+          "label": "Creative Six"
+        }
+      ],
+      "default": "none",
+      "label": "Efecto/animación de las imágenes"
+    },    
+    {
+      "type": "select",
+      "id": "texts_slider_effect",
+      "options": [
+        {
+          "value": "none",
+          "label": "Ninguno"
+        },
+        {
+          "value": "fade",
+          "label": "Fade"
+        },
+        {
+          "value": "cube",
+          "label": "Cube"
+        },
+        {
+          "value": "coverflow",
+          "label": "Coverflow"
+        },
+        {
+          "value": "flip",
+          "label": "Flip"
+        },
+        {
+          "value": "cards",
+          "label": "Cards"
+        },
+        {
+          "value": "creativeOne",
+          "label": "Creative One"
+        },
+        {
+          "value": "creativeTwo",
+          "label": "Creative Two"
+        },
+        {
+          "value": "creativeThree",
+          "label": "Creative Three"
+        },
+        {
+          "value": "creativeFour",
+          "label": "Creative Four"
+        },
+        {
+          "value": "creativeFive",
+          "label": "Creative Five"
+        },
+        {
+          "value": "creativeSix",
+          "label": "Creative Six"
+        }
+      ],
+      "default": "none",
+      "label": "Efecto/animación de las imágenes"
+    },
+    {
+      "type": "checkbox",
+      "id": "auto_rotate",
+      "label": "t:sections.slideshow.settings.auto_rotate.label",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "change_slides_speed",
+      "min": 1,
+      "max": 9,
+      "step": 0.5,
+      "unit": "s",
+      "label": "t:sections.slideshow.settings.change_slides_speed.label",
+      "default": 2.5
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    }
+  ],
+    "presets": [
+      {
+        "name": "Slider Opiniones Expertos"
+      }
+    ]
+}
+{% endschema %}
