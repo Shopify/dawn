@@ -39,14 +39,14 @@ function trapFocus(container, elementToFocus = container) {
     )
       return;
 
-    document.addEventListener('keydown', trapFocusHandlers.keydown);
+    document.addEventListener('keyup', trapFocusHandlers.keyup);
   };
 
   trapFocusHandlers.focusout = function() {
-    document.removeEventListener('keydown', trapFocusHandlers.keydown);
+    document.removeEventListener('keyup', trapFocusHandlers.keyup);
   };
 
-  trapFocusHandlers.keydown = function(event) {
+  trapFocusHandlers.keyup = function(event) {
     if (event.code.toUpperCase() !== 'TAB') return; // If not TAB key
     // On the last focusable element and tab forward, focus the first element.
     if (event.target === last && !event.shiftKey) {
@@ -82,7 +82,7 @@ function focusVisiblePolyfill() {
   let currentFocusedElement = null;
   let mouseClick = null;
 
-  window.addEventListener('keydown', (event) => {
+  window.addEventListener('keyup', (event) => {
     if(navKeys.includes(event.code.toUpperCase())) {
       mouseClick = false;
     }
@@ -119,7 +119,7 @@ function pauseAllMedia() {
 function removeTrapFocus(elementToFocus = null) {
   document.removeEventListener('focusin', trapFocusHandlers.focusin);
   document.removeEventListener('focusout', trapFocusHandlers.focusout);
-  document.removeEventListener('keydown', trapFocusHandlers.keydown);
+  document.removeEventListener('keyup', trapFocusHandlers.keyup);
 
   if (elementToFocus) elementToFocus.focus();
 }
