@@ -15,7 +15,7 @@ class CartDrawer extends HTMLElement {
       event.preventDefault();
       this.open(cartLink)
     });
-    cartLink.addEventListener('keydown', (event) => {
+    cartLink.addEventListener('keyup', (event) => {
       if (event.code.toUpperCase() === 'SPACE') {
         event.preventDefault();
         this.open(cartLink);
