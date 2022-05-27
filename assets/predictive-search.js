@@ -19,7 +19,6 @@ class PredictiveSearch extends HTMLElement {
     this.input.addEventListener('focus', this.onFocus.bind(this));
     this.addEventListener('focusout', this.onFocusOut.bind(this));
     this.addEventListener('keyup', this.onKeyup.bind(this));
-    this.addEventListener('keydown', this.onKeydown.bind(this));
   }
 
   getQuery() {
@@ -73,16 +72,6 @@ class PredictiveSearch extends HTMLElement {
       case 'Enter':
         this.selectOption();
         break;
-    }
-  }
-
-  onKeydown(event) {
-    // Prevent the cursor from moving in the input when using the up and down arrow keys
-    if (
-      event.code === 'ArrowUp' ||
-      event.code === 'ArrowDown'
-    ) {
-      event.preventDefault();
     }
   }
 
