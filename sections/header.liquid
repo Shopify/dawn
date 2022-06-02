@@ -30,12 +30,28 @@
 <noscript>{{ 'component-cart-notification.css' | asset_url | stylesheet_tag }}</noscript>
 <noscript>{{ 'component-cart-items.css' | asset_url | stylesheet_tag }}</noscript>
 
+{% if section.settings.enable_transparent_header_home and request.page_type == 'index' %}
+  {%- assign transparent_header = true -%}
+{%- endif -%}
+
 <style>
   header-drawer {
     justify-self: start;
     margin-left: -1.2rem;
   }
 
+  {% if transparent_header %}
+    .section-header:not(.scrolled-past-header) .header-wrapper:not(:hover):not(:focus-within) .header__icon,
+    .section-header:not(.scrolled-past-header) .header-wrapper:not(:hover):not(:focus-within) .header__menu-item,
+    .section-header:not(.scrolled-past-header) .header-wrapper:not(:hover):not(:focus-within) .header__active-menu-item,
+    .section-header:not(.scrolled-past-header) .header-wrapper:not(:hover):not(:focus-within) .header__heading-link .h2 {
+      color: {{ section.settings.transparent_text_color }};
+    }
+  {% endif %}
+
+  .header__heading-logo--transparent {
+    display: none;
+  }
 
   {%- if section.settings.sticky_header_type == 'reduce-logo-size' -%}
     .scrolled-past-header .header__heading-logo-wrapper {
@@ -164,7 +180,7 @@
       assign localization_forms = true
     endif
   -%}
-  <header class="header header--{{ section.settings.logo_position }} header--mobile-{{ section.settings.mobile_logo_position }} page-width{% if section.settings.menu_type_desktop == 'drawer' %} drawer-menu{% endif %}{% if section.settings.menu != blank %} header--has-menu{% endif %}{% if has_app_block %} header--has-app{% endif %}{% if social_links %} header--has-social{% endif %}{% if shop.customer_accounts_enabled %} header--has-account{% endif %}{% if localization_forms %} header--has-localizations{% endif %}">
+  <header class="header header--{{ section.settings.logo_position }} header--mobile-{{ section.settings.mobile_logo_position }} page-width{% if section.settings.menu_type_desktop == 'drawer' %} drawer-menu{% endif %}{% if section.settings.menu != blank %} header--has-menu{% endif %}{% if has_app_block %} header--has-app{% endif %}{% if social_links %} header--has-social{% endif %}{% if shop.customer_accounts_enabled %} header--has-account{% endif %}{% if localization_forms %} header--has-localizations{% endif %}{% if transparent_header %} header-wrapper--transparent{% endif %}">
     {%- liquid
       if section.settings.menu != blank
         render 'header-drawer'
@@ -195,6 +211,18 @@
                   sizes: sizes,
                   preload: true
                 }}
+                {%- if section.settings.transparent_logo != blank -%}
+                  {%- assign transparent_logo_height = section.settings.transparent_logo | divided_by: section.settings.transparent_logo.aspect_ratio -%}
+                  {{ section.settings.transparent_logo | image_url: width: 600 | image_tag:
+                    class: 'header__heading-logo motion-reduce header__heading-logo--transparent',
+                    widths: widths,
+                    height: transparent_logo_height,
+                    widths: widths,
+                    alt: logo_alt,
+                    sizes: sizes,
+                    preload: true
+                  }}
+                {%- endif -%}
               </div>
             {%- else -%}
               <span class="h2">{{ shop.name }}</span>
@@ -400,7 +428,7 @@
         observer.disconnect();
       });
 
-      observer.observe(this.header);
+      observer.observe(this);
     }
 
     onScroll() {
@@ -662,6 +690,29 @@
       ],
       "default": "center",
       "label": "t:sections.header.settings.mobile_logo_position.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.header.settings.transparent_overlay_header.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_transparent_header_home",
+      "default": false,
+      "label": "t:sections.header.settings.enable_transparent_header.label"
+    },
+    {
+      "type": "image_picker",
+      "id": "transparent_logo",
+      "label": "t:sections.header.settings.transparent_logo.label",
+      "info": "t:sections.header.settings.transparent_logo.info"
+    },
+    {
+      "type": "color",
+      "id": "transparent_text_color",
+      "default": "#FFFFFF",
+      "label": "t:sections.header.settings.transparent_text_color.label",
+      "info": "t:sections.header.settings.transparent_text_color.info"
     },
     {
       "type": "header",
