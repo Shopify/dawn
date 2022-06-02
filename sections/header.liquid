@@ -36,6 +36,14 @@
     max-width: {{ section.settings.logo_width }}px;
   }
 
+  .shopify-section-header-sticky.past-header .header--reduce-25 .header__heading-logo {
+    max-width: calc({{ section.settings.logo_width }}px * 0.75);
+  }
+
+  .shopify-section-header-sticky.past-header .header--reduce-50 .header__heading-logo {
+    max-width: calc({{ section.settings.logo_width }}px * 0.5);
+  }
+
   @media screen and (min-width: 990px) {
     header-drawer {
       display: none;
@@ -123,7 +131,7 @@
   </symbol>
 </svg>
 <{% if section.settings.sticky_header_type != 'none' %}sticky-header data-sticky-type="{{ section.settings.sticky_header_type }}"{% else %}div{% endif %} class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}">
-  <header class="header header--{{ section.settings.logo_position }} page-width{% if section.settings.menu != blank %} header--has-menu{% endif %}">
+  <header class="header header--{{ section.settings.logo_position }} header--{{ section.settings.reduce_logo_scroll }} page-width{% if section.settings.menu != blank %} header--has-menu{% endif %}">
     {%- if section.settings.menu != blank -%}
       <header-drawer data-breakpoint="tablet">
         <details id="Details-menu-drawer-container" class="menu-drawer-container">
@@ -616,8 +624,7 @@
       this.headerBounds = {};
 
       if (this.getAttribute('data-sticky-type') === 'always') {
-        this.reveal();
-        return;
+        this.header.classList.add('shopify-section-header-sticky');
       } 
 
       this.currentScrollTop = 0;
@@ -653,9 +660,11 @@
       if (this.predictiveSearch && this.predictiveSearch.isOpen) return;
 
       if (scrollTop > this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
+        this.header.classList.add('past-header');
         if (this.preventHide) return;
         requestAnimationFrame(this.hide.bind(this));
       } else if (scrollTop < this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
+        this.header.classList.add('past-header');   
         if (!this.preventReveal) {
           requestAnimationFrame(this.reveal.bind(this));
         } else {
@@ -668,6 +677,7 @@
           requestAnimationFrame(this.hide.bind(this));
         }
       } else if (scrollTop <= this.headerBounds.top) {
+        this.header.classList.remove('past-header');
         requestAnimationFrame(this.reset.bind(this));
       }
 
@@ -675,6 +685,7 @@
     }
 
     hide() {
+      if (this.getAttribute('data-sticky-type') === 'always') return;
       this.header.classList.add('shopify-section-header-hidden', 'shopify-section-header-sticky');
       this.closeMenuDisclosure();
       this.closeSearchModal();
@@ -686,6 +697,10 @@
     }
 
     reset() {
+      if (this.getAttribute('data-sticky-type') === 'always') {
+        this.header.classList.remove('animate');
+        return;
+      }
       this.header.classList.remove('shopify-section-header-hidden', 'shopify-section-header-sticky', 'animate');
     }
 
