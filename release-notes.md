@@ -1,4 +1,4 @@
-Dawn 6.0.0 introduces a new cart drawer feature, additional customization options on the rich text section, and various fixes and enhancements.  
+Dawn 6.0.0 introduces a new cart drawer feature, additional customization options on the rich text section, and various fixes and enhancements.
 
 ### Added
 - We introduced a new cart behavior setting offering the options to surface a cart drawer, a pop up notification, or link directly to the cart page upon adding an item to cart. 
