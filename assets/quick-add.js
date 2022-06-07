@@ -6,10 +6,10 @@ if (!customElements.get('quick-add-modal')) {
     }
 
     hide(preventFocus = false) {
-      const cartNotification = document.querySelector('cart-notification');
+      const cartNotification = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
       if (cartNotification) cartNotification.setActiveElement(this.openedBy);
       this.modalContent.innerHTML = '';
-      
+
       if (preventFocus) this.openedBy = null;
       super.hide();
     }
@@ -27,7 +27,7 @@ if (!customElements.get('quick-add-modal')) {
           this.preventDuplicatedIDs();
           this.removeDOMElements();
           this.setInnerHTML(this.modalContent, this.productElement.innerHTML);
-          
+
           if (window.Shopify && Shopify.PaymentButton) {
             Shopify.PaymentButton.init();
           }
@@ -62,7 +62,7 @@ if (!customElements.get('quick-add-modal')) {
     preventVariantURLSwitching() {
       this.modalContent.querySelector('variant-radios,variant-selects').setAttribute('data-update-url', 'false');
     }
-    
+
     removeDOMElements() {
       const pickupAvailability = this.productElement.querySelector('pickup-availability');
       if (pickupAvailability) pickupAvailability.remove();
