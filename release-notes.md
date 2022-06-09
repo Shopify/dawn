@@ -1,9 +1,12 @@
 Dawn 6.0.0 introduces a new cart drawer feature, additional customization options on the rich text section, and various fixes and enhancements.
 
 ### Added
-- We introduced a new cart behavior setting offering the options to surface a cart drawer, a pop up notification, or link directly to the cart page upon adding an item to cart. 
+- Important: We introduced new settings to the header section to control top and bottom section padding. This update may cause a visual change to your header. This can be modified by adjusting the bottom padding value.
+- We introduced a new theme setting that allows you to control what happens when an item is added to cart. Choose between a cart drawer, a pop-up notification, or linking directly to the cart page.
 - The rich text section is now more flexible. You can now customize the desktop content position, the content alignment, the size and formatting of headings, and the number of blocks added to the section.
-- Important: We introduced new settings to the header section to control top and bottom padding. This update may cause a visual change to your header. This can be modified by adjusting the bottom padding value.
+
+### Changed
+- Important: We moved “Show vendor” and “Enable cart note” checkboxes from the cart template to the theme settings under the heading “Cart”. This update may cause a visual change to your cart. This can be modified by adjusting the checkboxes in the theme settings.
 
 ### Fixes and improvements
 
