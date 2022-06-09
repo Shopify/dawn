@@ -10,9 +10,9 @@ Dawn 6.0.0 introduces a new cart drawer feature, additional customization option
 
 ### Fixes and improvements
 
-- On larger screen sizes, the quick add modal included unnecessary empty space. This is now fixed. 
+- On larger screen sizes, the quick add modal included unnecessary empty space. This is now fixed.
 - We fixed an issue where the product media gallery sometimes hid the subsequent media when larger values of horizontal grid space were used. 
 - The product media gallery included unnecessary empty space between the product media and the gallery controls. This is now fixed.
-- We fixed an issue where the collapsible content section and the collapsible content block were missing bottom padding within each collapsible tab. 
+- We fixed an issue where the collapsible row blocks in the collapsible content section were missing padding.
 - We fixed an issue where hiding the background of the content container on the slideshow section would not work if a gradient was set as the background color.
 - The recaptcha badge was not visible on the contact form. This is now fixed. 
