@@ -1,26 +1,18 @@
-Dawn 4.0.0 introduces the ability to control how many columns appear in many of your sections and templates, and allows you to define heading text size in all sections. This update also features fixes and improvements, including a fix ensuring the correct product details display in the cart notification. 
+Dawn 6.0.0 introduces a new cart drawer feature, additional customization options on the rich text section, and various fixes and enhancements.
 
 ### Added
-- Important: You can now define the size of your heading text in all sections, giving you more options to express your brand’s look and feel. This update may cause your theme's headings to appear bigger. To revert this, change your heading size settings to “Small”.
-- Important: You can now control the number of desktop and mobile grid columns in many sections and templates, giving you more flexibility to customize the look of your store. This update may cause a layout change in some areas of your theme because columns will no longer automatically adjust to fill the available screen width. This can be modified by adjusting the number of columns setting in the affected areas. Find this new setting in: blog posts (desktop only), collection template, collection list, featured collection, multicolumn, product recommendations, and search results template. 
-- Duty charges will now be displayed on customer account order pages if applicable. 
+- Important: We introduced new settings to the header section to control top and bottom section padding. This update may cause a visual change to your header. This can be modified by adjusting the bottom padding value.
+- We introduced a new theme setting that allows you to control what happens when an item is added to cart. Choose between a cart drawer, a pop-up notification, or linking directly to the cart page.
+- The rich text section is now more flexible. You can now customize the desktop content position, the content alignment, the size and formatting of headings, and the number of blocks added to the section.
 
 ### Changed
-- Commenting on blog posts requires all fields to be filled in for a blog comment to be submitted. 
+- Important: In the rich text section's header block, we changed text editing abilities to offer more flexibility. This will result in any existing heading text being lost. This can be modified by reviewing all rich text sections after you update to re-enter your text in the heading block.
+- Important: We moved “Show vendor” and “Enable cart note” checkboxes from the cart template to the theme settings under the heading “Cart”. This update may cause a visual change to your cart. This can be modified by adjusting the checkboxes in the theme settings.
 
 ### Fixes and improvements
-- Sometimes, incorrect product information was appearing in the cart notification. This is now fixed. 
-- We fixed an issue that affected filtering on collection pages. 
-- We fixed an accessibility issue where some links caused unnecessary page refreshes when clicked. 
-- We improved the performance of the product page. 
-- In some cases, pagination was inaccurate on sections like featured collection. This is now fixed. 
-- An issue in the slideshow section sometimes caused borders to appear unexpectedly. This is now fixed. 
-- We fixed an issue that sometimes caused product images in the cart to display incorrectly. 
-- We fixed an issue in the footer where several elements were misaligned. 
-- There was an issue with the scrollbar styling in the footer that’s now fixed. 
-- We updated the collapsed filter and sort icon so it looks consistent against any background color. 
-- We optimized the padding on desktop header menu dropdowns. 
-- We fixed an issue where shadows weren’t displaying as expected.
-- We fixed an issue with the desktop header menu dropdown animations. 
-- We updated the SEO metadata for collection pages. 
-- We fixed an issue with header menus not opening on older browsers.
+- On larger screen sizes, the quick add modal included unnecessary empty space. This is now fixed.
+- We fixed an issue where the product media gallery sometimes hid the subsequent media when larger values of horizontal grid space were used. 
+- The product media gallery included unnecessary empty space between the product media and the gallery controls. This is now fixed.
+- We fixed an issue where the collapsible row blocks in the collapsible content section were missing padding.
+- We fixed an issue where hiding the background of the content container on the slideshow section would not work if a gradient was set as the background color.
+- The recaptcha badge was not visible on the contact form. This is now fixed. 
