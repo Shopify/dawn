@@ -6,10 +6,10 @@ Dawn 6.0.0 introduces a new cart drawer feature, additional customization option
 - The rich text section is now more flexible. You can now customize the desktop content position, the content alignment, the size and formatting of headings, and the number of blocks added to the section.
 
 ### Changed
+- Important: In the rich text section's header block, we changed text editing abilities to offer more flexibility. This will result in any existing heading text being lost. This can be modified by reviewing all rich text sections after you update to re-enter your text in the heading block.
 - Important: We moved “Show vendor” and “Enable cart note” checkboxes from the cart template to the theme settings under the heading “Cart”. This update may cause a visual change to your cart. This can be modified by adjusting the checkboxes in the theme settings.
 
 ### Fixes and improvements
-
 - On larger screen sizes, the quick add modal included unnecessary empty space. This is now fixed.
 - We fixed an issue where the product media gallery sometimes hid the subsequent media when larger values of horizontal grid space were used. 
 - The product media gallery included unnecessary empty space between the product media and the gallery controls. This is now fixed.
