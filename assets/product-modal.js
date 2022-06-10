@@ -25,7 +25,7 @@ if (!customElements.get('product-modal')) {
       activeMedia.scrollIntoView();
 
       const container = this.querySelector('[role="document"]');
-      container.scrollLeft = (activeMedia.width - container.clientWidth) / 2;
+      container.scrollLeft = (activeMedia.width - container.clientWidth) / 1;
 
       if (activeMedia.nodeName == 'DEFERRED-MEDIA' && activeMediaContent && activeMediaContent.querySelector('.js-youtube'))
         activeMedia.loadContent();
