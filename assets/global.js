@@ -561,7 +561,7 @@ class SliderComponent extends HTMLElement {
 
     if (this.currentPageElement && this.pageTotalElement) {
       this.currentPageElement.textContent = this.currentPage;
-      this.pageTotalElement.textContent = this.totalPages;
+      this.pageTotalElement.textContent =  Array.from(this.sliderItems).filter(element => element.classList.contains('hidden') != true).length;//this.totalPages;
     }
 
     if (this.currentPage != previousPage) {
@@ -579,7 +579,7 @@ class SliderComponent extends HTMLElement {
       this.prevButton.removeAttribute('disabled');
     }
 
-    if (this.isSlideVisible(this.sliderItemsToShow[this.sliderItemsToShow.length - 1])) {
+    if (this.currentPage == Array.from(this.sliderItems).filter(element => element.classList.contains('hidden') != true).length) {//(this.isSlideVisible(this.sliderItemsToShow[this.sliderItemsToShow.length - 1])) {
       this.nextButton.setAttribute('disabled', 'disabled');
     } else {
       this.nextButton.removeAttribute('disabled');
@@ -791,6 +791,17 @@ class VariantSelects extends HTMLElement {
     if (!modalContent) return;
     const newMediaModal = modalContent.querySelector( `[data-media-id="${this.currentVariant.featured_media.id}"]`);
     modalContent.prepend(newMediaModal);
+     
+    if(this.dataset.section.indexOf("__main") > -1 ) {
+      var elements = document.querySelector(".product--thumbnail_slider").querySelectorAll(".thumb-alt-hide");
+      for (let i = 0; i < elements.length; i++) {
+        elements[i].classList.add("hidden");
+      }
+      var element = document.querySelector(".product--thumbnail_slider").querySelectorAll(".thumbnail-alt-"+this.currentVariant.featured_media.alt.replace('#',''));
+      for (let j = 0; j < element.length; j++) {
+        element[j].classList.remove("hidden");
+      }
+    }
   }
 
   updateURL() {
@@ -899,3 +910,13 @@ class VariantRadios extends VariantSelects {
 }
 
 customElements.define('variant-radios', VariantRadios);
+
+var elements = document.querySelectorAll('.multicolumn-card-clickable');
+elements.forEach((item)=>{
+  	var url = item.getAttribute('data-card-link');
+    item.addEventListener('click', function (e) {
+      window.location.href= url;
+    });
+ }, {
+  passive: true
+});
