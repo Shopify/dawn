@@ -57,14 +57,14 @@
             -%}
             {%- if product.selected_or_first_available_variant.featured_media != null -%}
               {%- assign featured_media = product.selected_or_first_available_variant.featured_media -%}
-              <li id="Slide-{{ section.id }}-{{ featured_media.id }}" class="product__media-item grid__item slider__slide is-active{% if featured_media.media_type != 'image' %} product__media-item--full{% endif %}{% if section.settings.hide_variants and variant_images contains featured_media.src %} product__media-item--variant{% endif %}" data-media-id="{{ section.id }}-{{ featured_media.id }}">
+              <li id="Slide-{{ section.id }}-{{ featured_media.id }}" class="{% if featured_media.alt != blank %}thumb-alt-hide{% endif %} thumbnail-alt-{{ featured_media.alt | escape | remove: "#" }} product__media-item  grid__item slider__slide is-active{% if featured_media.media_type != 'image' %} product__media-item--full{% endif %}{% if section.settings.hide_variants and variant_images contains featured_media.src %} product__media-item--variant{% endif %}" data-media-id="{{ section.id }}-{{ featured_media.id }}">
                 {%- assign media_position = 1 -%}
-                {% render 'product-thumbnail', media: featured_media, position: media_position, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: true, media_width: media_width, lazy_load: false %}
+                {% render 'product-thumbnail', media: featured_media, featured_media: featured_media.alt, position: media_position, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: true, media_width: media_width, lazy_load: false %}
               </li>
             {%- endif -%}
             {%- for media in product.media -%}
               {%- unless media.id == product.selected_or_first_available_variant.featured_media.id -%}
-                <li id="Slide-{{ section.id }}-{{ media.id }}" class="product__media-item grid__item slider__slide{% if product.selected_or_first_available_variant.featured_media == null and forloop.index == 1 %} is-active{% endif %}{% if media.media_type != 'image' %} product__media-item--full{% endif %}{% if section.settings.hide_variants and variant_images contains media.src %} product__media-item--variant{% endif %}" data-media-id="{{ section.id }}-{{ media.id }}">
+                <li id="Slide-{{ section.id }}-{{ media.id }}" class="{% if media.alt != blank %}thumb-alt-hide{% endif %} thumbnail-alt-{{ media.alt | escape | remove: "#" }} {% if featured_media.alt != media.alt %}hidden{% endif %} product__media-item grid__item slider__slide{% if product.selected_or_first_available_variant.featured_media == null and forloop.index == 1 %} is-active{% endif %}{% if media.media_type != 'image' %} product__media-item--full{% endif %}{% if section.settings.hide_variants and variant_images contains media.src %} product__media-item--variant{% endif %}" data-media-id="{{ section.id }}-{{ media.id }}">
                   {%- liquid
                     assign media_position = media_position | default: 0 | plus: 1
                     assign lazy_load = false
@@ -119,7 +119,7 @@
                   endcapture
                   assign media_index = media_index | plus: 1
                 -%}
-                <li id="Slide-Thumbnails-{{ section.id }}-0" class="thumbnail-list__item slider__slide{% if section.settings.hide_variants and variant_images contains featured_media.src %} thumbnail-list_item--variant{% endif %}" data-target="{{ section.id }}-{{ featured_media.id }}" data-media-position="{{ media_index }}">
+                <li id="Slide-Thumbnails-{{ section.id }}-0" class="{% if featured_media.alt != blank %}thumb-alt-hide{% endif %} thumbnail-alt-{{ featured_media.alt | escape | remove: "#" }} thumbnail-list__item slider__slide{% if section.settings.hide_variants and variant_images contains featured_media.src %} thumbnail-list_item--variant{% endif %}" data-target="{{ section.id }}-{{ featured_media.id }}" data-media-position="{{ media_index }}">
                   <button class="thumbnail global-media-settings global-media-settings--no-shadow {% if featured_media.preview_image.aspect_ratio > 1 %}thumbnail--wide{% else %}thumbnail--narrow{% endif %}"
                     aria-label="{%- if featured_media.media_type == 'image' -%}{{ 'products.product.media.load_image' | t: index: media_index }}{%- elsif featured_media.media_type == 'model' -%}{{ 'products.product.media.load_model' | t: index: media_index }}{%- elsif featured_media.media_type == 'video' or featured_media.media_type == 'external_video' -%}{{ 'products.product.media.load_video' | t: index: media_index }}{%- endif -%}"
                     aria-current="true"
@@ -158,7 +158,7 @@
                     endcapture
                     assign media_index = media_index | plus: 1
                   -%}
-                   <li id="Slide-Thumbnails-{{ section.id }}-{{ forloop.index }}" class="thumbnail-list__item slider__slide{% if section.settings.hide_variants and variant_images contains media.src %} thumbnail-list_item--variant{% endif %}" data-target="{{ section.id }}-{{ media.id }}"  data-media-position="{{ media_index }}">
+                   <li id="Slide-Thumbnails-{{ section.id }}-{{ forloop.index }}" class="{% if media.alt != blank %}thumb-alt-hide{% endif %} thumbnail-alt-{{ media.alt | escape | remove: "#" }}  {% if featured_media.alt != media.alt %}hidden{% endif %} thumbnail-list__item slider__slide{% if section.settings.hide_variants and variant_images contains media.src %} thumbnail-list_item--variant{% endif %}" data-target="{{ section.id }}-{{ media.id }}"  data-media-position="{{ media_index }}">
                     {%- if media.media_type == 'model' -%}
                       <span class="thumbnail__badge" aria-hidden="true">
                         {%- render 'icon-3d-model' -%}
@@ -339,17 +339,63 @@
                 <variant-radios class="no-js-hidden" data-section="{{ section.id }}" data-url="{{ product.url }}" {{ block.shopify_attributes }}>
                   {%- for option in product.options_with_values -%}
                       <fieldset class="js product-form__input">
-                        <legend class="form__label">{{ option.name }}</legend>
+                        <div class="selected-option"><legend class="form__label">{{ option.name }}</legend> - <span class="selected-val">{{ option.selected_value }}</span></div>
                         {%- for value in option.values -%}
                           <input type="radio" id="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
                                 name="{{ option.name }}"
                                 value="{{ value | escape }}"
                                 form="{{ product_form_id }}"
                                 {% if option.selected_value == value %}checked{% endif %}
-                          >
+                          >{% if value == settings.variant_name1 %}
+                        <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" class="v-swatch" style="background-image: url({{ settings.variant_img1 | img_url: '50x' }}); background-color: {{ variant_color1 }};">  
+                        </label>
+                        {% elsif value == settings.variant_name2 %}
+                        <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" class="v-swatch" style="background-image: url({{ settings.variant_img2 | img_url: '50x' }}); background-color: {{ variant_color2 }};">  
+                        </label>
+                        {% elsif value == settings.variant_name3 %}
+                        <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" class="v-swatch" style="background-image: url({{ settings.variant_img3 | img_url: '50x' }}); background-color: {{ variant_color3 }};">  
+                        </label>
+                        {% elsif value == settings.variant_name4 %}
+                        <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" class="v-swatch" style="background-image: url({{ settings.variant_img4 | img_url: '50x' }}); background-color: {{ variant_color4 }};">  
+                        </label>
+                        {% elsif value == settings.variant_name5 %}
+                        <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" class="v-swatch" style="background-image: url({{ settings.variant_img5 | img_url: '50x' }}); background-color: {{ variant_color5 }};">  
+                        </label>
+                        {% elsif value == settings.variant_name6 %}
+                        <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" class="v-swatch" style="background-image: url({{ settings.variant_img6 | img_url: '50x' }}); background-color: {{ variant_color6 }};">  
+                        </label>
+                        {% elsif value == settings.variant_name7 %}
+                        <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" class="v-swatch" style="background-image: url({{ settings.variant_img7 | img_url: '50x' }}); background-color: {{ variant_color7 }};">  
+                        </label>
+                        {% elsif value == settings.variant_name8 %}
+                        <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" class="v-swatch" style="background-image: url({{ settings.variant_img8 | img_url: '50x' }}); background-color: {{ variant_color8 }};">  
+                        </label>
+                        {% elsif value == settings.variant_name9 %}
+                        <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" class="v-swatch" style="background-image: url({{ settings.variant_img9 | img_url: '50x' }}); background-color: {{ variant_color9 }};">  
+                        </label>
+                        {% elsif value == settings.variant_name10 %}
+                        <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" class="v-swatch" style="background-image: url({{ settings.variant_img10 | img_url: '50x' }}); background-color: {{ variant_color10 }};">  
+                        </label>
+                        {% elsif value == settings.variant_name11 %}
+                        <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" class="v-swatch" style="background-image: url({{ settings.variant_img11 | img_url: '50x' }}); background-color: {{ variant_color11 }};">  
+                        </label>
+                        {% elsif value == settings.variant_name12 %}
+                        <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" class="v-swatch" style="background-image: url({{ settings.variant_img12 | img_url: '50x' }}); background-color: {{ variant_color12 }};">  
+                        </label>
+                        {% elsif value == settings.variant_name13 %}
+                        <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" class="v-swatch" style="background-image: url({{ settings.variant_img13 | img_url: '50x' }}); background-color: {{ variant_color13 }};">  
+                        </label>
+                        {% elsif value == settings.variant_name14 %}
+                        <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" class="v-swatch" style="background-image: url({{ settings.variant_img14 | img_url: '50x' }}); background-color: {{ variant_color14 }};">  
+                        </label>
+                        {% elsif value == settings.variant_name15 %}
+                        <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}" class="v-swatch" style="background-image: url({{ settings.variant_img15 | img_url: '50x' }}); background-color: {{ variant_color15 }};">  
+                        </label>
+                        {% else %}
                           <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}">
                             {{ value }}
                           </label>
+                        {% endif %}
                         {%- endfor -%}
                       </fieldset>
                   {%- endfor -%}
@@ -635,8 +681,18 @@
       ]
     }
   </script>
+    
+    
+    <script>
+      var radios = document.querySelectorAll('.product-form__input input[type=radio]');
+      function changeHandler(event) {
+        this.parentElement.querySelectorAll('.selected-val')[0].innerHTML = this.value;
+      }
+      Array.prototype.forEach.call(radios, function(radio) {
+        radio.addEventListener('change', changeHandler);
+      });
+    </script>
 </section>
-
 {% schema %}
 {
   "name": "t:sections.main-product.name",
