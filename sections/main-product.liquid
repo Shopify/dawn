@@ -497,11 +497,7 @@
               </p>
             {%- endif -%}
 
-          {%- when 'complementary_products' -%}
-            {%- if block.settings.enable_quick_add -%}
-              <link rel="stylesheet" href="{{ 'quick-add.css' | asset_url }}" media="print" onload="this.media='all'">
-              <script src="{{ 'quick-add.js' | asset_url }}" defer="defer"></script>
-            {%- endif -%}
+          {%- when 'styled_with' -%}
             <div class="complementary-wrapper quick-add-hidden{% if block.settings.make_collapsible_row %} product__accordion accordion{% endif %}" {{ block.shopify_attributes }}>
               {%- if block.settings.make_collapsible_row -%}
                 <details id="Details-{{ block.id }}-{{ section.id }}">
@@ -530,7 +526,7 @@
                     %}
                   {%- endfor -%}
                 {%- else -%}
-                  <slider-component class="slider-mobile-gutter">
+                  <slideshow-component class="slider-mobile-gutter">
                     <ul id="Slider-{{ block.id }}" class="complementary-slider grid grid--1-col slider slider--everywhere">
                       {%- for i in (1..number_of_slides) -%}
                         <li id="Slide-{{ block.id }}-{{ forloop.index }}" class="complementary-slide grid__item slider__slide">
@@ -550,11 +546,21 @@
                     </ul>
                     <div class="slider-buttons no-js-hidden">
                       <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'general.slider.previous_slide' | t }}">{% render 'icon-caret' %}</button>
-                      <div class="slider-counter caption">
-                        <span class="slider-counter--current">1</span>
-                        <span aria-hidden="true"> / </span>
-                        <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
-                        <span class="slider-counter--total">{{ number_of_slides }}</span>
+                      <div class="slider-counter slider-counter--{{ block.settings.pagination_style }}{% if block.settings.pagination_style == 'counter' or block.settings.pagination_style == 'numbers' %} caption{% endif %}">
+                        {%- if block.settings.pagination_style == 'counter' -%}
+                          <span class="slider-counter--current">1</span>
+                          <span aria-hidden="true"> / </span>
+                          <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+                          <span class="slider-counter--total">{{ number_of_slides }}</span>
+                        {%- else -%}
+                          <div class="slideshow__control-wrapper">
+                            {%- for i in (1..number_of_slides) -%}
+                              <button class="slider-counter__link slider-counter__link--{{ block.settings.pagination_style }} link" aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}" aria-controls="Slider-{{ block.id }}">
+                                {%- if block.settings.pagination_style == 'numbers' -%}{{ forloop.index }}{% else %}<span class="dot"></span>{%- endif -%}
+                              </button>
+                            {%- endfor -%}
+                          </div>
+                        {%- endif -%}
                       </div>
                       <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'general.slider.next_slide' | t }}">{% render 'icon-caret' %}</button>
                     </div>
@@ -563,6 +569,10 @@
               </div>
               {%- if block.settings.make_collapsible_row -%}
                 </details>
+              {%- endif -%}
+              {%- if block.settings.enable_quick_add -%}
+                <link rel="stylesheet" href="{{ 'quick-add.css' | asset_url }}" media="print" onload="this.media='all'">
+                <script src="{{ 'quick-add.js' | asset_url }}" defer="defer"></script>
               {%- endif -%}
             </div>
           {%- endcase -%}
@@ -1073,7 +1083,7 @@
       ]
     },
     {
-      "type": "complementary_products",
+      "type": "styled_with",
       "name": "t:sections.main-product.blocks.complementary_products.name",
       "limit": 1,
       "settings": [
