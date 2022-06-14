@@ -34,7 +34,10 @@
     <div class="banner__media media{% if section.settings.image == blank and section.settings.image_2 == blank %} placeholder{% endif %}{% if section.settings.image_2 != blank %} banner__media-half{% endif %}">
       {%-liquid
         assign image_height = section.settings.image.width | divided_by: section.settings.image.aspect_ratio
-        if section.settings.image_2 != blank
+        
+        if section.settings.image_3 != blank
+          assign image_class = "no-m"
+        elsif section.settings.image_2 != blank
           assign image_class = "banner__media-image-half"
         endif
         if section.settings.image_2 != blank and section.settings.stack_images_on_mobile
@@ -44,9 +47,16 @@
         else
           assign sizes = "100vw"
         endif
+        
+        if section.settings.lazyload
+        	assign lazyLoader = "lazy"
+        else
+        	assign lazyLoader = "eager"
+        endif
       -%}
+      
       {{ section.settings.image | image_url: width: 1500 | image_tag:
-        loading: 'lazy',
+        loading: lazyLoader,
         width: section.settings.image.width,
         height: image_height,
         class: image_class,
@@ -54,6 +64,28 @@
         widths: '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840',
         alt: section.settings.image.alt | escape
       }}
+      
+      
+       {% if section.settings.image_3 != blank %}
+      <img class="no-d no-t"
+        srcset="{%- if section.settings.image_3.width >= 375 -%}{{ section.settings.image_3 | img_url: '375x' }} 375w,{%- endif -%}
+          {%- if section.settings.image_3.width >= 550 -%}{{ section.settings.image_3 | img_url: '550x' }} 550w,{%- endif -%}
+          {%- if section.settings.image_3.width >= 750 -%}{{ section.settings.image_3 | img_url: '750x' }} 750w,{%- endif -%}
+          {%- if section.settings.image_3.width >= 1100 -%}{{ section.settings.image_3 | img_url: '1100x' }} 1100w,{%- endif -%}
+          {%- if section.settings.image_3.width >= 1500 -%}{{ section.settings.image_3 | img_url: '1500x' }} 1500w,{%- endif -%}
+          {%- if section.settings.image_3.width >= 1780 -%}{{ section.settings.image_3 | img_url: '1780x' }} 1780w,{%- endif -%}
+          {%- if section.settings.image_3.width >= 2000 -%}{{ section.settings.image_3 | img_url: '2000x' }} 2000w,{%- endif -%}
+          {%- if section.settings.image_3.width >= 3000 -%}{{ section.settings.image_3 | img_url: '3000x' }} 3000w,{%- endif -%}
+          {%- if section.settings.image_3.width >= 3840 -%}{{ section.settings.image_3 | img_url: '3840x' }} 3840w,{%- endif -%}
+          {{ section.settings.image_3 | img_url: 'master' }} {{ section.settings.image_3.width }}w"
+        sizes="100vw"
+        src="{{ section.settings.image_3 | img_url: '1500x' }}"
+        {% if section.settings.lazyload %}loading="lazy"{% endif %}
+        alt="{{ section.settings.image_3.alt | escape }}"
+        width="{{ section.settings.image_3.width }}"
+        height="{{ section.settings.image_3.width | divided_by: section.settings.image.aspect_ratio }}"
+      >
+      {% endif %}
     </div>
   {%- elsif section.settings.image_2 == blank -%}
     <div class="banner__media media{% if section.settings.image == blank and section.settings.image_2 == blank %} placeholder{% endif %}{% if section.settings.image_2 != blank %} banner__media-half{% endif %}">
@@ -74,9 +106,15 @@
         else
           assign sizes = "100vw"
         endif
+        
+        if section.settings.lazyload
+        	assign lazyLoader = "lazy"
+        else
+        	assign lazyLoader = "eager"
+        endif
       -%}
       {{ section.settings.image_2 | image_url: width: 1500 | image_tag:
-        loading: 'lazy',
+        loading: lazyLoader,
         width: section.settings.image_2.width,
         height: image_height_2,
         class: image_class_2,
@@ -129,6 +167,18 @@
       "type": "image_picker",
       "id": "image_2",
       "label": "t:sections.image-banner.settings.image_2.label"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_3",
+      "label": "Mobile Image"
+    },
+    {
+      "type": "checkbox",
+      "id": "lazyload",
+      "default": true,
+      "label": "Lazy Load",
+      "info": "Unselect this option if this section is above the fold."
     },
     {
       "type": "range",
