@@ -15,7 +15,7 @@ Dawn 6.0.2 introduces a new cart drawer feature, additional customization option
 - We fixed an issue where the product media gallery sometimes hid the subsequent media when larger values of horizontal grid space were used.
 - The product media gallery included unnecessary empty  space between the product media and the gallery controls. This is now fixed.
 - We fixed an issue where the collapsible row blocks in the collapsible content section were missing padding.
-- We fixed an issue where hiding the  background of the content container on the slideshow section would not work if a gradient was set as the background color.
+- We fixed an issue where hiding the background of the content container on the slideshow section would not work if a gradient was set as the background color.
 - The recaptcha badge was not visible on the contact form. This is now fixed.
 - We fixed an issue where adding a menu block to the footer required a heading to display.
 - The experience of navigating paginated pages when using a screen reader or keyboard is improved.
