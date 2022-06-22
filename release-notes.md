@@ -18,5 +18,5 @@ Dawn 6.0.2 introduces a new cart drawer feature, additional customization option
 - We fixed an issue where hiding the  background of the content container on the slideshow section would not work if a gradient was set as the background color.
 - The recaptcha badge was not visible on the contact form. This is now fixed.
 - We fixed an issue where adding a menu block to the footer required a heading to display.
-- The experience of navigating paginated pages  when using a screen reader or keyboard is improved.
+- The experience of navigating paginated pages when using a screen reader or keyboard is improved.
 - We added a warning to the password footer link opening in a new tab, improving its accessibility.
