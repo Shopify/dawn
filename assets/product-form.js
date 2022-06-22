@@ -46,9 +46,7 @@ if (!customElements.get('product-form')) {
             soldOutMessage.classList.remove('hidden');
             this.error = true;
             return;
-          } 
-          
-          if (!this.cart) {
+          } else if (!this.cart) {
             window.location = window.routes.cart_url;
             return;
           }
