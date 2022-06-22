@@ -1,4 +1,4 @@
-Dawn 6.0.0 introduces a new cart drawer feature, additional customization options on the rich text section, and various fixes and enhancements.
+Dawn 6.0.2 introduces a new cart drawer feature, additional customization options on the rich text section, and various fixes and enhancements.
 
 ### Added
 - Important: We introduced new settings to the header section to control top and bottom section padding. This update may cause a visual change to your header. This can be modified by adjusting the bottom padding value.
