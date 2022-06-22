@@ -69,13 +69,29 @@
                     {% if section.settings.image_ratio == 'adapt' %}
                       style="padding-bottom: {{ 1 | divided_by: highest_ratio | times: section.settings.image_size }}%;"
                     {% endif %}>
-
-
-                    <video  controls="none" loop muted playsinline preload="metadata" onclick="this.paused ? this.play() : this.pause();" poster="{{ block.settings.image | image_url: width: 550 }}">
+                    {% if block.settings.video == blank %}
+                    <img
+                      class="multicolumn-card__image"
+                      srcset="{%- if block.settings.image.width >= 275 -%}{{ block.settings.image | image_url: width: 275 }} 275w,{%- endif -%}
+                        {%- if block.settings.image.width >= 550 -%}{{ block.settings.image | image_url: width: 550 }} 550w,{%- endif -%}
+                        {%- if block.settings.image.width >= 710 -%}{{ block.settings.image | image_url: width: 710 }} 710w,{%- endif -%}
+                        {%- if block.settings.image.width >= 1420 -%}{{ block.settings.image | image_url: width: 1420 }} 1420w,{%- endif -%}
+                        {{ block.settings.image | image_url }} {{ block.settings.image.width }}w"
+                      src="{{ block.settings.image | image_url: width: 550 }}"
+                      sizes="(min-width: 990px) {% if section.blocks.size <= 2 %}710px{% else %}550px{% endif %},
+                        (min-width: 750px) {% if section.blocks.size == 1 %}710px{% else %}550px{% endif %},
+                        calc(100vw - 30px)"
+                      alt="{{ block.settings.image.alt }}"
+                      height="{{ block.settings.image.height }}"
+                      width="{{ block.settings.image.width }}"
+                      loading="lazy"
+                    >
+                    {% else %}
+                    <video loop muted playsinline preload="metadata" poster="{{ block.settings.image | image_url: width: 550 }}">
                       <source src="{{ block.settings.video }}" type="video/mp4">
                       Your browser does not support the video tag.
                     </video>
-
+                    {% endif %}
                   </div>
                 </div>
               {%- endif -%}
@@ -117,25 +133,6 @@
     </div>
   </div>
 </div>
-
-<!-- <script>
-    var videoPlayer = document.getElementById('videoPlayer');
-
-    // Auto play
-    videoPlayer.play()
-    videoPlayer.volume = 0;
-
-    // Play / pause.
-    videoPlayer.addEventListener('click', function () {
-        if (videoPlayer.paused == false) {
-            videoPlayer.pause();
-            videoPlayer.firstChild.nodeValue = 'Play';
-        } else {
-            videoPlayer.play();
-            videoPlayer.firstChild.nodeValue = 'Pause';
-        }
-    });
-</script> -->
 
 {% schema %}
 {
