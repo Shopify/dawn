@@ -7,7 +7,7 @@ Dawn 6.0.2 introduces a new cart drawer feature, additional customization option
 
 ### Changed
 
-- Important: We moved “Show vendor” and “Enable cart note” checkboxes from the cart template to the theme settings under the heading “Cart”.  This update may cause a visual change to your cart. This can be modified by adjusting the checkboxes in the theme settings.
+- Important: We moved “Show vendor” and “Enable cart note” checkboxes from the cart template to the theme settings under the heading “Cart”. This update may cause a visual change to your cart. This can be modified by adjusting the checkboxes in the theme settings.
 
 ### Fixes and improvements
 
