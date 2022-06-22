@@ -11,7 +11,7 @@ Dawn 6.0.2 introduces a new cart drawer feature, additional customization option
 
 ### Fixes and improvements
 
-- On larger screen sizes,  the quick add modal included unnecessary empty space. This is now fixed.
+- On larger screen sizes, the quick add modal included unnecessary empty space. This is now fixed.
 - We fixed an issue where the product media gallery sometimes hid the subsequent media when larger values of horizontal grid space were used.
 - The product media gallery included unnecessary empty space between the product media and the gallery controls. This is now fixed.
 - We fixed an issue where the collapsible row blocks in the collapsible content section were missing padding.
