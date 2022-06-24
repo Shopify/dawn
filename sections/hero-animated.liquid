@@ -1,0 +1,384 @@
+{%- liquid
+  assign hero_text = false
+  assign link_slide = false
+  if section.settings.title != blank or section.settings.subheading != blank or section.settings.link_text != blank
+    assign hero_text = true
+  endif
+  if section.settings.link_text == blank and section.settings.link != blank
+    assign link_slide = true
+  endif
+
+  assign natural_height_ratio = '60%'
+  assign natural_height_ratio_mobile = '100%'
+-%}
+
+{%- for block in section.blocks limit: 1 -%}
+  {%- if block.settings.image != blank -%}
+    {%- capture natural_height_ratio -%}{{ 100 | divided_by: block.settings.image.aspect_ratio }}%{% endcapture %}
+    {%- assign natural_height_ratio_mobile = natural_height_ratio -%}
+    {%- if page_image == blank -%}
+      <meta property="og:image" content="http:{{ block.settings.image | img_url: '1200x630' }}">
+      <meta property="og:image:secure_url" content="https:{{ block.settings.image | img_url: '1200x630' }}">
+    {%- endif -%}
+  {%- endif -%}
+  {%- if block.settings.image_mobile != blank -%}
+    {%- capture natural_height_ratio_mobile -%}{{ 100 | divided_by: block.settings.image_mobile.aspect_ratio }}%{% endcapture %}
+  {%- endif -%}
+{% endfor %}
+
+{%- assign slide_speed = 1 -%}
+{%- if section.settings.style == 'fading' -%}
+  {%- assign slide_speed = 3 -%}
+{%- endif -%}
+
+{%- style -%}
+  .hero-natural--{{ section.id }} {
+    height: 0;
+    padding-bottom: {{ natural_height_ratio | plus: section.settings.desktop_size }}%;
+  }
+
+  @media screen and (max-width: 768px) {
+    .hero-natural--{{ section.id }} {
+      padding-bottom: {{ natural_height_ratio_mobile | plus: section.settings.mobile_size }}%;
+    }
+  }
+
+  .hero-animated--{{ section.id }} .hero__title {
+    font-size: {{ section.settings.title_size | times: 0.6 }}px;
+  }
+
+  @media only screen and (min-width: 769px) {
+    .hero-animated--{{ section.id }} .hero__title {
+      font-size: {{ section.settings.title_size }}px;
+    }
+  }
+
+  .hero-animated--{{ section.id }}[data-style="fading"] .animated__slide--active {
+    animation-duration: {{ slide_speed }}s;
+  }
+
+  {%- assign accent_exists = false -%}
+  {%- assign button_alpha = section.settings.color_accent | color_extract: 'alpha' -%}
+  {% unless button_alpha == 0.0 %}
+    {%- assign accent_exists = true -%}
+    .hero-animated--{{ section.id }} .btn {
+      background: {{ section.settings.color_accent }} !important;
+      border: none;
+
+      {%- assign accent_brightness = section.settings.color_accent | color_extract: 'lightness' -%}
+
+      {%- if accent_brightness > 40 -%}
+        color: #000 !important;
+      {%- endif -%}
+    }
+  {% endunless %}
+{%- endstyle -%}
+
+<div
+  data-section-id="{{ section.id }}"
+  data-section-type="hero-animated"
+  data-interval="{{ slide_speed | times: 1000 }}"
+  data-count="{{ section.blocks.size }}">
+
+  <div
+    class="hero-wrapper hero-animated hero-animated--{{ section.id }}"
+    data-style="{{ section.settings.style }}">
+    <div class="hero-natural--{{ section.id }}">
+      <div class="hero"
+        data-natural="true">
+        {%- for block in section.blocks -%}
+          <div
+            {{ block.shopify_attributes }}
+            class="animated__slide animated__slide--{{ block.id }}"
+            data-id="{{ block.id }}">
+            <div class="hero__image-wrapper{% if hero_text %} hero__image-wrapper--overlay{% endif %}">
+              {%- style -%}
+                .hero__image--{{ block.id }} {
+                  object-position: {{ block.settings.focal_point }};
+                }
+              {%- endstyle -%}
+              {%- if block.settings.image != blank -%}
+                {%- assign img_url = block.settings.image | img_url: '1x1' | replace: '_1x1.', '_{width}x.' -%}
+
+                <img class="hero__image hero__image--{{ block.id }} lazyload{% if block.settings.image_mobile != blank %} small--hide{% endif %}"
+                  src=""
+                  data-src="{{ img_url }}"
+                  data-aspectratio="{{ block.settings.image.aspect_ratio }}"
+                  data-sizes="auto"
+                  data-parent-fit="cover"
+                  alt="{{ block.settings.image.alt | escape }}">
+                <noscript>
+                  <img class="hero__image hero__image--{{ block.id }}{% if block.settings.image_mobile != blank %} small--hide{% endif %}"
+                    src="{{ block.settings.image | img_url: '1400x' }}"
+                    alt="{{ block.settings.image.alt | escape }}">
+                </noscript>
+
+                {%- if block.settings.image_mobile != blank -%}
+                  {%- assign img_mobile_url = block.settings.image_mobile | img_url: '1x1' | replace: '_1x1.', '_{width}x.' -%}
+                  <img class="hero__image hero__image--{{ block.id }} lazyload medium-up--hide"
+                    src=""
+                    data-src="{{ img_mobile_url }}"
+                    data-aspectratio="{{ block.settings.image_mobile.aspect_ratio }}"
+                    data-sizes="auto"
+                    data-parent-fit="cover"
+                    alt="{{ block.settings.image_mobile.alt | escape }}">
+                  <noscript>
+                    <img class="hero__image hero__image--{{ block.id }} medium-up--hide"
+                      src="{{ block.settings.image_mobile | img_url: '1400x' }}"
+                      alt="{{ block.settings.image_mobile.alt | escape }}">
+                  </noscript>
+                {%- endif -%}
+              {%- else -%}
+                {% capture placeholder %}lifestyle-{% cycle '1','2' %}{% endcapture %}
+                {{ placeholder | placeholder_svg_tag: 'placeholder-svg' }}
+              {%- endif -%}
+            </div>
+          </div>
+        {%- endfor -%}
+
+        {%- if link_slide -%}
+          <a href="{{ section.settings.link }}" class="hero__slide-link">
+        {%- endif -%}
+
+        {%- if hero_text -%}
+          <div class="hero__text-wrap">
+            <div class="page-width">
+              <div class="hero__text-content {{ section.settings.text_align }}">
+                <div class="hero__text-shadow" data-aos>
+                  {%- if section.settings.title != blank -%}
+                    <div class="h1 hero__title appear-delay{% cycle '','-2','-4','-6','-8' %}">
+                      {{ section.settings.title | newline_to_br }}
+                    </div>
+                  {%- endif -%}
+
+                  {%- if section.settings.subheading != blank -%}
+                    <div class="hero__subtitle appear-delay{% cycle '','-2','-4','-6','-8' %}">
+                      {{ section.settings.subheading | escape }}
+                    </div>
+                  {%- endif -%}
+
+                  {%- if section.settings.link_text != blank -%}
+                    <div class="hero__link appear-delay{% cycle '','-2','-4','-6','-8' %}">
+                      <a href="{{ section.settings.link }}" class="btn{% unless accent_exists %} btn--inverse{% endunless %}">
+                        {{ section.settings.link_text }}
+                      </a>
+                    </div>
+                  {%- endif -%}
+                </div>
+              </div>
+            </div>
+          </div>
+        {%- endif -%}
+
+        {%- if link_slide -%}
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% schema %}
+  {
+    "name": "Animated image hero",
+    "class": "index-section--hero",
+    "max_blocks": 6,
+    "settings": [
+      {
+        "type": "select",
+        "id": "style",
+        "label": "Animation style",
+        "default": "gif",
+        "options": [
+          {
+            "label": "GIF",
+            "value": "gif"
+          },
+          {
+            "label": "Fading",
+            "value": "fading"
+          }
+        ]
+      },
+      {
+        "type": "textarea",
+        "id": "title",
+        "label": "Heading",
+        "default": "Make an\ninstant impression"
+      },
+      {
+        "type": "range",
+        "id": "title_size",
+        "label": "Heading text size",
+        "default": 80,
+        "min": 30,
+        "max": 100,
+        "unit": "px"
+      },
+      {
+        "type": "text",
+        "id": "subheading",
+        "label": "Text",
+        "default": "With fading or GIF-style animated images"
+      },
+      {
+        "type": "url",
+        "id": "link",
+        "label": "Link"
+      },
+      {
+        "type": "text",
+        "id": "link_text",
+        "label": "Link text",
+        "default": "Optional button"
+      },
+      {
+        "type": "color",
+        "id": "color_accent",
+        "label": "Buttons",
+        "default": "rgba(0,0,0,0)"
+      },
+      {
+        "type": "select",
+        "id": "text_align",
+        "label": "Text alignment",
+        "default": "vertical-center horizontal-center",
+        "options": [
+          {
+            "value": "vertical-top horizontal-left",
+            "label": "Top left"
+          },
+          {
+            "value": "vertical-top horizontal-center",
+            "label": "Top center"
+          },
+          {
+            "value": "vertical-top horizontal-right",
+            "label": "Top right"
+          },
+          {
+            "value": "vertical-center horizontal-left",
+            "label": "Center left"
+          },
+          {
+            "value": "vertical-center horizontal-center",
+            "label": "Center"
+          },
+          {
+            "value": "vertical-center horizontal-right",
+            "label": "Center right"
+          },
+          {
+            "value": "vertical-bottom horizontal-left",
+            "label": "Bottom left"
+          },
+          {
+            "value": "vertical-bottom horizontal-center",
+            "label": "Bottom center"
+          },
+          {
+            "value": "vertical-bottom horizontal-right",
+            "label": "Bottom right"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "desktop_size",
+        "label": "Desktop height adjustment",
+        "default": 0,
+        "min": -100,
+        "max": 100,
+        "step": 10,
+        "unit": "%"
+      },
+      {
+        "type": "range",
+        "id": "mobile_size",
+        "label": "Mobile height adjustment",
+        "default": 0,
+        "min": -100,
+        "max": 100,
+        "step": 10,
+        "unit": "%"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "image",
+        "name": "Image",
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image"
+          },
+          {
+            "type": "image_picker",
+            "id": "image_mobile",
+            "label": "Mobile image"
+          },
+          {
+            "type": "select",
+            "id": "focal_point",
+            "label": "Focal point",
+            "default": "center center",
+            "options": [
+              {
+                "value": "20% 10%",
+                "label": "Top left"
+              },
+              {
+                "value": "50% 10%",
+                "label": "Top center"
+              },
+              {
+                "value": "80% 10%",
+                "label": "Top right"
+              },
+              {
+                "value": "20% 50%",
+                "label": "Left"
+              },
+              {
+                "value": "center center",
+                "label": "Center"
+              },
+              {
+                "value": "80% 50%",
+                "label": "Right"
+              },
+              {
+                "value": "20% 90%",
+                "label": "Bottom left"
+              },
+              {
+                "value": "50% 90%",
+                "label": "Bottom center"
+              },
+              {
+                "value": "80% 90%",
+                "label": "Bottom right"
+              }
+            ],
+            "info": "Used to keep the subject of your photo in view."
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Animated image hero",
+        "blocks": [
+          {
+            "type": "image"
+          },
+          {
+            "type": "image"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}
