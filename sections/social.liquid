@@ -149,8 +149,73 @@
 {% endif %}
 
 <script>
+  
+  window.theme = window.theme || {};
+window.Shopify = window.Shopify || {};
 
-  FeaturedCollection.prototype = Object.assign({}, FeaturedCollection.prototype, {
+  theme.FeaturedCollection = (function() {
+    var selectors = {
+      scrollWrap: '[data-pagination-wrapper]',
+      productContainer: '[data-product-container]',
+      collectionProductContainer: '[data-collection-container]',
+      product: '[data-product-grid]',
+      arrows: '[data-arrow]'
+    };
+  
+    var classes = {
+      loading: 'collection-loading',
+      arrowLeft: 'overflow-scroller__arrow--left',
+      disableScrollLeft: 'overflow-scroller--disable-left',
+      disableScrollRight: 'overflow-scroller--disable-right'
+    };
+  
+    function FeaturedCollection(container) {
+      this.container = container;
+      this.sectionId = this.container.getAttribute('data-section-id');
+      this.scrollWrap = this.container.querySelector(selectors.scrollWrap);
+      this.scrollArrows = this.container.querySelectorAll(selectors.arrows);
+      this.namespace = '.featured-collection-' + this.sectionId;
+  
+      this.options = {
+        scrollable: this.container.dataset.scrollable,
+        paginate: this.container.dataset.paginate
+      };
+  
+      var paginateBy = this.container.dataset.paginateBy;
+      var productCount = this.container.dataset.collectionCount;
+  
+      this.settings = {
+        url: this.container.dataset.collectionUrl,
+        page: 1,
+        pageCount: this.options.paginate ? Math.ceil(productCount / paginateBy) : 0,
+        itemsToScroll: 3,
+        gridItemWidth: this.container.dataset.gridItemWidth
+      };
+  
+      this.state = {
+        isInit: false,
+        loading: false,
+        scrollerEnabled: false,
+        loadedAllProducts: false,
+        scrollable: this.options.scrollable,
+        scrollInterval: null,
+        scrollSpeed: 3 // smaller is faster
+      };
+  
+      this.sizing = {
+        scroller: 0,
+        itemWidth: 0
+      };
+  
+      theme.promiseStylesheet().then(function() {
+        theme.initWhenVisible({
+          element: this.container,
+          callback: this.init.bind(this)
+        });
+      }.bind(this));
+    }
+  
+    FeaturedCollection.prototype = Object.assign({}, FeaturedCollection.prototype, {
       init: function() {
         new theme.HoverProductGrid(this.container);
   
@@ -378,6 +443,9 @@
       }
   
     });
+  
+    return FeaturedCollection;
+  })();
 
 </script>
 
