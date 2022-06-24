@@ -1,0 +1,242 @@
+{%- liquid
+  assign enable_section = false
+
+  if template == 'index' and section.settings.enable_home
+    assign enable_section = true
+  endif
+
+  if template contains 'product' and section.settings.enable_product
+    assign enable_section = true
+  endif
+
+  if template contains 'collection' and section.settings.enable_collection
+    assign enable_section = true
+  endif
+-%}
+
+{%- if enable_section -%}
+  {%- assign grid_item_width = 'grid-product--medium' -%}
+
+  <div class="index-section social-section">
+    <div
+      id="SocialReviews-{{ section.id }}"
+      data-section-id="{{ section.id }}"
+      data-section-type="featured-collection"
+      data-scrollable="true"
+      data-product-sliders-mobile="false"
+      data-paginate="false">
+      {%- if section.settings.title != blank -%}
+        <div class="page-width">
+          <header class="section-header" data-aos>
+            <h2 class="section-header__title appear-delay">
+              {{ section.settings.title }}
+            </h2>
+            {%- if section.settings.description != blank -%}
+              <div class="rte section-header__description section-header__description--large appear-delay-1">
+                {{ section.settings.description }}
+              </div>
+            {%- endif -%}
+          </header>
+        </div>
+      {%- endif -%}
+
+      <div class="overflow-scroll-wrap">
+        <button
+          type="button"
+          class="btn btn--tertiary overflow-scroller__arrow overflow-scroller__arrow--left overflow-scroller--disable-left small--hide"
+          aria-hidden="true"
+          aria-label="{{ 'general.pagination.previous' | t }}"
+          data-arrow>
+          <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-chevron-left" viewBox="0 0 284.49 498.98"><path d="M249.49 0a35 35 0 0 1 24.75 59.75L84.49 249.49l189.75 189.74a35.002 35.002 0 1 1-49.5 49.5L10.25 274.24a35 35 0 0 1 0-49.5L224.74 10.25A34.89 34.89 0 0 1 249.49 0z"/></svg>
+        </button>
+        <button
+          type="button"
+          class="btn btn--tertiary overflow-scroller__arrow overflow-scroller__arrow--right small--hide"
+          aria-hidden="true"
+          aria-label="{{ 'general.pagination.next' | t }}"
+          data-arrow>
+          <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-chevron-right" viewBox="0 0 284.49 498.98"><path d="M35 498.98a35 35 0 0 1-24.75-59.75l189.74-189.74L10.25 59.75a35.002 35.002 0 0 1 49.5-49.5l214.49 214.49a35 35 0 0 1 0 49.5L59.75 488.73A34.89 34.89 0 0 1 35 498.98z"/></svg>
+        </button>
+
+        {%- assign count = 10 -%}
+        <div
+          class="overflow-scroller overflow-scroller--smaller"
+          data-pagination-wrapper>
+          <div
+            class="grid grid--uniform social-section__grid"
+            data-aos="overflow__animation">
+
+            {%- if section.blocks.size == 0 -%}
+              {%- for i in (1..8) -%}
+                <div class="grid__item {{ grid_item_width }}">
+                  {% capture current %}{% cycle 1, 2, 3, 4, 5, 6 %}{% endcapture %}
+
+                  <div class="social-section__wrapper">
+                    <div class="image-wrap">{{ 'product-' | append: current | placeholder_svg_tag: 'placeholder-svg' }}</div>
+                    <div class="social-section__meta">
+                      <div class="social-section__likes">
+                        {{ i }} likes
+                      </div>
+                      <div class="social-section__caption">
+                        <strong>@youraccount</strong>
+                        Showcase images from your social accounts
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {%- endfor -%}
+            {%- endif -%}
+
+            {% comment %}
+              When on product page, check if any social blocks match the current product
+            {% endcomment %}
+            {%- assign social_product_blocks = '' -%}
+            {%- assign social_blocks = '' -%}
+
+            {%- for block in section.blocks -%}
+              {%- assign prod = all_products[block.settings.product] -%}
+
+              {%- if
+                template contains 'product' and
+                block.settings.product != blank and
+                block.settings.product == product.handle -%}
+
+                {%- capture social_product_blocks -%}
+                  {{ social_product_blocks }}
+
+                  {%- render 'social-post',
+                    block: block,
+                    grid_item_width: grid_item_width,
+                    image: block.settings.image,
+                    link: block.settings.link,
+                    prod: prod,
+                    caption: block.settings.caption,
+                    account: block.settings.account,
+                    likes: block.settings.likes -%}
+                {%- endcapture -%}
+
+              {%- else -%}
+                {%- capture social_blocks -%}
+                  {{ social_blocks }}
+
+                  {%- render 'social-post',
+                    block: block,
+                    grid_item_width: grid_item_width,
+                    image: block.settings.image,
+                    link: block.settings.link,
+                    prod: prod,
+                    caption: block.settings.caption,
+                    account: block.settings.account,
+                    likes: block.settings.likes -%}
+                {%- endcapture -%}
+              {%- endif -%}
+
+            {%- endfor -%}
+
+            {%- if social_product_blocks != blank -%}
+              {{ social_product_blocks }}
+            {%- endif -%}
+            {%- if social_blocks != blank -%}
+              {{ social_blocks }}
+            {%- endif -%}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{% schema %}
+  {
+    "name": "Social proof",
+    "max_blocks": 20,
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "enable_home",
+        "label": "Enable on home page",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_product",
+        "label": "Enable on product pages",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_collection",
+        "label": "Enable on collection pages"
+      },
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "On social"
+      },
+      {
+        "type": "richtext",
+        "id": "description",
+        "label": "Description",
+        "default": "<p>Send us yours <a href=\"https://instagram.com/youraccount/\">@youraccount</a></p>"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "post",
+        "name": "Social post",
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image"
+          },
+          {
+            "type": "text",
+            "id": "link",
+            "label": "Link"
+          },
+          {
+            "type": "product",
+            "id": "product",
+            "label": "Product"
+          },
+
+          {
+            "type": "header",
+            "content": "Post details"
+          },
+          {
+            "type": "text",
+            "id": "account",
+            "label": "Account name"
+          },
+          {
+            "type": "text",
+            "id": "caption",
+            "label": "Caption"
+          },
+          {
+            "type": "text",
+            "id": "likes",
+            "label": "Number of likes"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}
+
+{% if template contains 'product' %}
+<!-- YOTPO REVIEWS WIDGET | location: sections > social.liquid -->
+<div class="yotpo yotpo-main-widget"
+	data-product-id="{{ product.id }}"
+	data-name="{{ product.title | escape }}"
+	data-url="{{ shop.url }}{{ product.url }}"
+	data-image-url="{{ product.featured_image | product_img_url: 'large' |replace: '?', '%3F' | replace: '&','%26'}}"
+	data-price="{{ variant.price | money_without_currency }}"
+	data-currency="{{ shop.currency }}"
+	data-description="{{ product.description | escape }}">
+</div>
+<!-- END | YOTPO REVIEWS WIDGET  -->
+{% endif %}
