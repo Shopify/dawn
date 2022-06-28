@@ -793,13 +793,15 @@ class VariantSelects extends HTMLElement {
     modalContent.prepend(newMediaModal);
      
     if(this.dataset.section.indexOf("__main") > -1 ) {
-      var elements = document.querySelector(".product--thumbnail_slider").querySelectorAll(".thumb-alt-hide");
-      for (let i = 0; i < elements.length; i++) {
-        elements[i].classList.add("hidden");
-      }
-      var element = document.querySelector(".product--thumbnail_slider").querySelectorAll(".thumbnail-alt-"+this.currentVariant.featured_media.alt.replace('#',''));
-      for (let j = 0; j < element.length; j++) {
-        element[j].classList.remove("hidden");
+      if(typeof document.querySelector(".product--thumbnail_slider") != null) {
+        var elements = document.querySelector(".product--thumbnail_slider").querySelectorAll(".thumb-alt-hide");
+        for (let i = 0; i < elements.length; i++) {
+          elements[i].classList.add("hidden");
+        }
+        var element = document.querySelector(".product--thumbnail_slider").querySelectorAll(".thumbnail-alt-"+this.currentVariant.featured_media.alt.replace('#',''));
+        for (let j = 0; j < element.length; j++) {
+          element[j].classList.remove("hidden");
+        }
       }
     }
   }
