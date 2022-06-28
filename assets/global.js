@@ -793,7 +793,7 @@ class VariantSelects extends HTMLElement {
     modalContent.prepend(newMediaModal);
      
     if(this.dataset.section.indexOf("__main") > -1 ) {
-      if(typeof document.querySelector(".product--thumbnail_slider") != null) {
+      if(document.querySelector(".product--thumbnail_slider") != null) {
         var elements = document.querySelector(".product--thumbnail_slider").querySelectorAll(".thumb-alt-hide");
         for (let i = 0; i < elements.length; i++) {
           elements[i].classList.add("hidden");
