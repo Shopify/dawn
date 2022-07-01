@@ -160,8 +160,19 @@
   <div class="page-width section-{{ section.id }}-padding{% if section.settings.secondary_background %} isolate{% endif %}">
     <div id="hero-img-desktop-{{ section.id }}"  class="hero-img-{{ section.id }} no-m">
     <div class="product-featured-hero-carousel" id="Slider-{{ section.id }}">
-    <img src="{{ section.settings.background_desktop | img_url: 'master'}}"/>
-    <img src="{{ section.settings.background_desktop | img_url: 'master'}}"/>
+      {% assign foundVariant = false %}
+      {%- for block in section.blocks -%}
+      {%- if block.type == "variant_images" -%}
+      {% if product.selected_or_first_available_variant.name == block.settings.variant_name %}
+      <img src="{{block.settings.variant_image | img_url:"master" }}"/>
+      {% assign foundVariant = true %}
+      {% endif %}
+      {%- endif -%}
+      {%- endfor -%}
+      
+      {% if foundVariant == false %}
+      <img src="{{ section.settings.background_desktop | img_url: 'master'}}"/>
+      {% endif %}
     </div>
     </div>
     <div class="featured-product product grid grid--1-col color-{{ section.settings.color_scheme }}{% if section.settings.secondary_background == false %} isolate{% endif %} {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
@@ -692,18 +703,26 @@ function changeBgImage(name, variant_meta){
       infinite: false,
       speed: 600,
       slidesToShow: 1,
-      slidesToScroll: 1,
-    responsive: [      
-      {
-        breakpoint: 600,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1
-        }
+      slidesToScroll: 1
+  });
+  });
+  
+  function setIntervalX(callback, delay, repetitions) {
+        var x = 0;
+        var intervalID = window.setInterval(function () {
+
+          callback();
+
+          if (++x === repetitions) {
+            window.clearInterval(intervalID);
+          }
+        }, delay);
       }
-    ]
-  });
-  });
+  
+        setIntervalX(function () {        
+          $('#Slider-{{ section.id }}').slick('resize');
+        }, 300, 4);
+          
 </script>
 
 {% schema %}
