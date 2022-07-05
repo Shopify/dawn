@@ -11,7 +11,6 @@
       block: block
     %}
 {% endcomment %}
-
 {%- liquid
   assign variants_available_arr = product.variants | map: 'available'
   assign variants_option1_arr = product.variants | map: 'option1'
@@ -45,30 +44,20 @@
     endfor
   -%}
 
-  {%- capture button_options_html -%}
-    {{ button_options_html }}
+  {%- if block.settings.picker_type == 'button' -%}
     <input type="radio" id="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
           name="{{ option.name }}"
           value="{{ value | escape }}"
           form="{{ product_form_id }}"
           {% if option.selected_value == value %}checked{% endif %}
-          {% if option_disabled %}class="disabled"{% endif %}
+          {% if option_disabled %}class="disabled" aria-label="{{ 'products.product.variant_sold_out_or_unavailable' | t }}"{% endif %}
     >
     <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}">
       {{ value }}
     </label>
-  {%- endcapture -%}
-
-  {%- capture dropdown_options_html -%}
-    {{ dropdown_options_html }}
-    <option value="{{ value | escape }}" {% if option.selected_value == value %}selected="selected"{% endif %}{% if option_disabled and 'disabled' == block.settings.select_soldout_type %} disabled{% endif %}>
-      {{ value }}{% if option_disabled and 'append' == block.settings.select_soldout_type %} [{{ 'products.product.unavailable' | t }}]{% endif %}
+  {%- elsif block.settings.picker_type == 'dropdown' -%}
+    <option value="{{ value | escape }}"{% if option.selected_value == value %} selected="selected"{% endif %}{% if option_disabled and block.settings.select_soldout_type == 'disabled' %} disabled aria-label="{{ 'products.product.variant_sold_out_or_unavailable' | t }}"{% endif %}>
+      {{ value }}{% if option_disabled %} [{{ 'products.product.unavailable' | t }}]{% endif %}
     </option>
-  {%- endcapture -%}
+  {%- endif -%}
 {%- endfor -%}
-
-{%- if block.settings.picker_type == 'button' -%}
-  {{ button_options_html }}
-{%- elsif block.settings.picker_type == 'dropdown' -%}
-  {{ dropdown_options_html }}
-{%- endif -%}
