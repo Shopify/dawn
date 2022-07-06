@@ -34,28 +34,88 @@
 {%- endif -%}
 
 
-{% if section.settings.style == "fading"%}
-<div id="animation-wrapper" class="animated-image-wrapper">
-	{%- for block in section.blocks -%}
-		<animation-hero class="image-inside">
-          	{%if block.settings.image != blank%}
-			<img class="animate-image" src="{{block.settings.image | img_url: 'master'}}"  alt="{{ block.settings.image.alt | escape }}">
-          	{%endif%}
-		</animation-hero>
-	{%- endfor -%}
-</div>
-{% else if section.settings.style == "gif" %}
-<div id="animation-wrapper" class="animated-image-wrapper">
-	{%- for block in section.blocks -%}
-		<animation-hero class="image-inside" style="animation-duration: 0s;">
-          	{%if block.settings.image != blank%}
-			<img class="animate-image" src="{{block.settings.image | img_url: 'master'}}"  alt="{{ block.settings.image.alt | escape }}">
-          	{%endif%}
-		</animation-hero>
-	{%- endfor -%}
-</div>
-{%endif%}
+<div id="animation-wrapper" class="animated-image-wrapper 
+{% if section.settings.hero-height == 'small' %}
+small
+{% elsif section.settings.hero-height == 'medium' %}
+medium
+{% else %}
+large
+{% endif %}">
 
+	{%- for block in section.blocks -%}
+		<animation-hero class="image-inside {% if section.settings.style != blank and section.settings.style == 'gif' %}gif{% endif %}" >
+          	{%if block.settings.image != blank%}
+              <img class="animate-image hero-desktop" src="{{block.settings.image | img_url: 'master'}}"  alt="{{ block.settings.image.alt | escape }}">
+              <img class="animate-image" src="{{block.settings.mobile-image | img_url: 'master'}}"  alt="{{ block.settings.image.alt | escape }}">          
+            {%elsif block.settings.image == blank%}
+              {{ 'image' | placeholder_svg_tag }}
+          	{%endif%}
+		</animation-hero>
+	{%- endfor -%}
+  {%- if hero_text -%}
+    <div class="hero__text-wrap">
+      <div class="page-width custom-alignment">
+        <div class="hero__text-content {{ section.settings.text_align }}
+        {% if section.settings.text-position == 'top' %}
+        text-top
+        {% elsif section.settings.text-position == 'bottom' %}
+        text-bottom
+        {% elsif section.settings.text-position == 'center-left' %}
+        text-left
+        {% elsif section.settings.text-position == 'center-right' %}
+        text-right
+        {% else %}
+        text-center
+        {% endif %}
+
+        {% if section.settings.text-align == 'left' %}
+        text-align-left
+        {% elsif section.settings.text-align == 'right' %}
+        text-align-right
+        {% else %}
+        text-align-center
+        {% endif %}
+        ">
+          <div class="hero__text-shadow" data-aos>
+            {%- if section.settings.title != blank -%}
+              <div class="h1 hero__title appear-delay{% cycle '','-2','-4','-6','-8' %}"
+              {% if section.settings.title_color_1 != blank %}
+              style="color: {{section.settings.title_color_1}};"
+              {% endif %}>
+                {{ section.settings.title | newline_to_br }}
+              </div>
+            {%- endif -%}
+
+            {%- if section.settings.subheading != blank -%}
+              <div class="hero__subtitle appear-delay{% cycle '','-2','-4','-6','-8' %}"
+              {% if section.settings.sub_title_color_1 != blank %}
+              style="color: {{section.settings.sub_title_color_1}};"
+              {% endif %}>
+                {{ section.settings.subheading | escape }}
+              </div>
+            {%- endif -%}
+
+            {%- if section.settings.link_text != blank -%}
+              <div class="hero__link appear-delay{% cycle '','-2','-4','-6','-8' %}">
+                <a href="{{ section.settings.link }}" 
+                class="button{% unless accent_exists %} button--inverse{% endunless %}
+                {% if section.settings.button_bgcolor_1 != blank %}
+                no-border
+                {% endif %}"
+                {% if section.settings.button_bgcolor_1 != blank %}
+                style="background-color: {{ section.settings.button_bgcolor_1 }};color: {{section.settings.button_txtcolor_1}};"
+                {% endif %}>
+                  {{ section.settings.link_text }}
+                </a>
+              </div>
+            {%- endif -%}
+          </div>
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
+</div>
 <script>
 	document.addEventListener("DOMContentLoaded", function () {
 		var fadeComplete = function (e) { stage.appendChild(arr[0]); };
@@ -77,6 +137,26 @@
     "settings": [
       {
         "type": "select",
+        "id": "hero-height",
+        "label": "Hero Height",
+        "default": "small",
+        "options": [
+          {
+            "label": "Small",
+            "value": "small"
+          },
+          {
+            "label": "Medium",
+            "value": "medium"
+          },
+          {
+            "label": "Large",
+            "value": "large"
+          }
+        ]
+      },
+      {
+        "type": "select",
         "id": "style",
         "label": "Animation style",
         "default": "fading",
@@ -92,10 +172,63 @@
         ]
       },
       {
+        "type": "select",
+        "id": "text-position",
+        "label": "Text Position",
+        "default": "center-center",
+        "options": [
+          {
+            "label": "Center",
+            "value": "center-center"
+          },
+          {
+            "label": "Center Left",
+            "value": "center-left"
+          },
+          {
+            "label": "Center Right",
+            "value": "center-right"
+          },
+          {
+            "label": "Top",
+            "value": "top"
+          },
+          {
+            "label": "Bottom",
+            "value": "bottom"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "text-align",
+        "label": "Text Alignment",
+        "default": "center",
+        "options": [
+          {
+            "label": "Right",
+            "value": "right"
+          },
+          {
+            "label": "Left",
+            "value": "left"
+          },
+          {
+            "label": "Center",
+            "value": "center"
+          }
+        ]
+      },
+      {
         "type": "textarea",
         "id": "title",
         "label": "Heading",
-        "default": "Make an\ninstant impression"
+        "default": "Make an instant impression"
+      },
+      {
+        "type": "color",
+        "id": "title_color_1",
+        "label": "Heading Text color"
       },
       {
         "type": "range",
@@ -113,6 +246,11 @@
         "default": "With fading or GIF-style animated images"
       },
       {
+        "type": "color",
+        "id": "sub_title_color_1",
+        "label": "Description text color"
+      },
+      {
         "type": "url",
         "id": "link",
         "label": "Link"
@@ -122,6 +260,16 @@
         "id": "link_text",
         "label": "Link text",
         "default": "Optional button"
+      },        
+      {
+        "type": "color",
+        "id": "button_bgcolor_1",
+        "label": "button background color"
+      },
+      {
+          "type": "color",
+          "id": "button_txtcolor_1",
+          "label": "button Text color"
       }
     ],
     "blocks": [
@@ -132,8 +280,12 @@
           {
             "type": "image_picker",
             "id": "image",
-            "label": "Image",
-			"info":"recommended Image size 1920x325"
+            "label": "Image"
+          },
+          {
+            "type": "image_picker",
+            "id": "mobile-image",
+            "label": "Image For Mobile"
           }
         ]
       }
