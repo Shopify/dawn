@@ -36,6 +36,11 @@
     max-width: {{ section.settings.logo_width }}px;
   }
 
+  .section-header:not(.scrolled-past-header) .header-wrapper--transparent:not(:hover):not(:focus-within) .header__icon,
+  .section-header:not(.scrolled-past-header) .header-wrapper--transparent:not(:hover):not(:focus-within) .header__menu-item {
+    color: {{ section.settings.transparent_text_color }};
+  }
+
   @media screen and (min-width: 990px) {
     header-drawer {
       display: none;
@@ -122,7 +127,7 @@
     <path d="M.865 15.978a.5.5 0 00.707.707l7.433-7.431 7.579 7.282a.501.501 0 00.846-.37.5.5 0 00-.153-.351L9.712 8.546l7.417-7.416a.5.5 0 10-.707-.708L8.991 7.853 1.413.573a.5.5 0 10-.693.72l7.563 7.268-7.418 7.417z" fill="currentColor">
   </symbol>
 </svg>
-<{% if section.settings.sticky_header_type != 'none' %}sticky-header data-sticky-type="{{ section.settings.sticky_header_type }}"{% else %}div{% endif %} class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}">
+<{% if section.settings.sticky_header_type != 'none' %}sticky-header data-sticky-type="{{ section.settings.sticky_header_type }}"{% else %}div{% endif %} class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}{% if section.settings.enable_transparent_header %} header-wrapper--transparent{% endif %}">
   <header class="header header--{{ section.settings.logo_position }} header--{{ section.settings.reduce_logo_scroll }} page-width{% if section.settings.menu != blank %} header--has-menu{% endif %}">
     {%- if section.settings.menu != blank -%}
       <header-drawer data-breakpoint="tablet">
@@ -383,6 +388,16 @@
               width: section.settings.logo_width,
               alt: logo_alt
             }}
+            {%- if section.settings.transparent_logo != blank -%}
+              {%- assign transparent_logo_height = section.settings.transparent_logo | divided_by: section.settings.transparent_logo.aspect_ratio -%}
+              {{ section.settings.transparent_logo | image_url: width: section.settings.width | image_tag:
+                class: 'header__heading-logo header__heading-logo--transparent',
+                widths: '50, 100, 150, 200, 250, 300, 400, 500',
+                height: transparent_logo_height,
+                width: section.settings.logo_width,
+                alt: logo_alt
+              }}
+            {%- endif -%}
           {%- else -%}
             <span class="h2">{{ shop.name }}</span>
           {%- endif -%}
@@ -643,7 +658,7 @@
         observer.disconnect();
       });
 
-      observer.observe(this.header);
+      observer.observe(this);
     }
 
     onScroll() {
@@ -886,6 +901,29 @@
       "id": "show_line_separator",
       "default": true,
       "label": "t:sections.header.settings.show_line_separator.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.header.settings.transparent_overlay_header.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_transparent_header",
+      "default": false,
+      "label": "t:sections.header.settings.enable_transparent_header.label"
+    },
+    {
+      "type": "image_picker",
+      "id": "transparent_logo",
+      "label": "t:sections.header.settings.transparent_logo.label",
+      "info": "t:sections.header.settings.transparent_logo.info"
+    },
+    {
+      "type": "color",
+      "id": "transparent_text_color",
+      "default": "#FFFFFF",
+      "label": "t:sections.header.settings.transparent_text_color.label",
+      "info": "t:sections.header.settings.transparent_text_color.info"
     },
     {
       "type": "header",
