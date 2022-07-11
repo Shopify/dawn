@@ -1,0 +1,74 @@
+{%- comment -%}
+	SEO Manager - product meta search v4.1
+	usage: /search?view=SEOManagerProductMeta&q=1000&page=1
+	Copyright (c) venntov
+	https://venntov.com / https://SEOManager.com
+	Josh Highland
+
+	NOTICE: All information contained herein is property of venntov.
+	The intellectual and technical concepts contained herein are proprietary
+	to venntov and are protected by trade secret and copyright law.
+	Reproduction of this code is strictly forbidden unless prior written
+	permission is obtained from venntov. If violated, legal action
+	will be taken. Just don't do it.
+{%- endcomment -%}
+
+{%- layout none -%}
+
+{%- assign collection = collections['all'] -%}
+
+{%- if collection.products_count == 0 -%}
+    {%- assign collection = collections['allproducts'] -%}
+{%- endif -%}
+
+{% assign searchTermsNumber = search.terms | plus: 0 %}
+
+{%- if searchTermsNumber > collection.products_count -%}
+    {%- assign searchTermsNumber = collection.products_count -%}
+{%- endif -%}
+
+{%- paginate  collection.products by searchTermsNumber -%}
+
+	{%- assign currentPage = paginate.current_page -%}
+
+	{%- capture results -%}
+		{%- for item in collection.products -%}
+			{%- assign product			= item -%}
+			{%- assign meta_title		= product.metafields.global.title_tag -%}
+			{%- assign meta_description = product.metafields.global.description_tag -%}
+			{%- assign seoDone			= product.metafields.SEOMetaManager.seoDone -%}
+
+			{%- if meta_title == null -%}
+				{%- assign meta_title = product.title -%}
+			{%- endif -%}
+
+			{%- if meta_description == null -%}
+				{%- capture meta_description -%}{{ product.description | strip_html | strip_newlines | truncate: 160 }} {% endcapture %}
+			{%- endif -%}
+
+			{%- if seoDone == null -%}
+				{%- assign seoDone = 0 -%}
+			{%- endif -%}
+
+			{
+				"productID"			: {{ product.id | JSON }},
+				"title"				: {{ product.title | json }},
+				"meta_title"		: {{ meta_title | json }},
+				"meta_description"	: {{ meta_description | json }},
+				"seo_done"			: {{ seoDone }},
+				"thumbnail"			: {{ product.featured_image.src | img_url : '100x100' | json }},
+				"handle"			: {{ product.handle | json }}
+			}
+			{%- unless forloop.last -%},{%- endunless -%}
+		{% endfor %}
+	{%- endcapture -%}
+{%- endpaginate -%}
+{
+	"info": {
+		"productCount": {{ collection.products_count }},
+		"domain": {{ shop.domain | json }},
+		"currentPage": {{ currentPage }},
+		"pageSize": {{ searchTermsNumber }}
+	},	
+	"productData"	: [{{ results }}]
+}
