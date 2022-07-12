@@ -82,20 +82,60 @@
         {%- else -%}
           {{ 'collection-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
         {%- endif -%}
+        {%- comment -%}
         <span class="deferred-media__poster-button motion-reduce">
           {%- render 'icon-play' -%}
         </span>
+        {% endcomment %}
       </button>
+      {%- if section.settings.video_link != blank -%}
+      <video autoplay playsinline  loop width="100%" height="100%" controls muted>
+        <source src="{{ section.settings.video_link }}" type="video/mp4">
+      </video>
+      {% else %}
+      <div id="player"></div>
+      
+      {% comment %}
       <template>
         {%- if section.settings.video_url.type == 'youtube' -%}
-          <iframe src="https://www.youtube.com/embed/{{ section.settings.video_url.id }}?enablejsapi=1" class="js-youtube" allow="autoplay; encrypted-media" allowfullscreen title="{{ section.settings.description | escape }}"></iframe>
+          <iframe src="https://www.youtube.com/embed/{{ section.settings.video_url.id }}?autoplay=1&mute=1" class="js-youtube" allow="autoplay; encrypted-media" allowfullscreen title="{{ section.settings.description | escape }}"></iframe>
+        
         {%- else -%}
           <iframe src="https://player.vimeo.com/video/{{ section.settings.video_url.id }}" class="js-vimeo" allow="autoplay; encrypted-media" allowfullscreen title="{{ section.settings.description | escape }}"></iframe>
         {%- endif -%}
       </template>
+      {% endcomment %}
+      
+      {% endif %}
     </deferred-media>
   </div>
 </div>
+
+
+<script>
+  // 2. This code loads the IFrame Player API code asynchronously.
+  var tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  var firstScriptTag = document.getElementsByTagName('script')[0];
+  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+  var player;
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player('player', {
+      width: '100%',
+      videoId: `{{ section.settings.video_url.id }}`,
+      playerVars: { 'autoplay': 1, 'playsinline': 1 },
+      events: {
+        'onReady': onPlayerReady
+      }
+    });
+  }
+  // 4. The API will call this function when the video player is ready.
+  function onPlayerReady(event) {
+    event.target.mute();
+    event.target.playVideo();
+  }
+</script>
+
 
 {% schema %}
 {
@@ -145,6 +185,11 @@
       "label": "t:sections.video.settings.video_url.label",
       "placeholder": "t:sections.video.settings.video_url.placeholder",
       "info": "t:sections.video.settings.video_url.info"
+    },
+	{
+      "type": "text",
+      "id": "video_link",
+      "label": "Custom Video Link"
     },
     {
       "type": "text",
