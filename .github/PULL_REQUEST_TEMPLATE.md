@@ -11,6 +11,12 @@ Fixes #0.
 
 **Other considerations**
 
+**Decision log**
+
+| # | Decision | Alternatives | Rationale | Downsides |
+|---|---|---|---|---|
+| 1 |   |   |   |   |
+
 **Testing steps/scenarios**
 - [ ] _List all the testing tasks that applies to your fix and help peers to review your work._
 
