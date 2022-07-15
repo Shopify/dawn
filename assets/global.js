@@ -544,8 +544,12 @@ class SliderComponent extends HTMLElement {
   initPages() {
     this.sliderItemsToShow = Array.from(this.sliderItems).filter(element => element.clientWidth > 0);
     if (this.sliderItemsToShow.length < 2) return;
+    this.sliderFirstElementMargin = parseFloat(window.getComputedStyle(this.sliderItemsToShow[0]).getPropertyValue('margin-inline-start'));
+    this.sliderGridGap = parseFloat(window.getComputedStyle(this.slider).getPropertyValue('column-gap'));
+    this.sliderItemWidthAndGap = this.sliderItemsToShow[0].getBoundingClientRect().width + this.sliderGridGap;
+    // this.sliderItemOffset outputs a positive number when ltr and negative when rtl. So it's useful and get the slider to scroll in the right direction.
     this.sliderItemOffset = this.sliderItemsToShow[1].offsetLeft - this.sliderItemsToShow[0].offsetLeft;
-    this.slidesPerPage = Math.floor((this.slider.clientWidth - this.sliderItemsToShow[0].offsetLeft) / this.sliderItemOffset);
+    this.slidesPerPage = Math.floor((this.slider.clientWidth - this.sliderFirstElementMargin) / this.sliderItemWidthAndGap);
     this.totalPages = this.sliderItemsToShow.length - this.slidesPerPage + 1;
     this.update();
   }
@@ -608,6 +612,7 @@ class SlideshowComponent extends SliderComponent {
     super();
     this.sliderControlWrapper = this.querySelector('.slider-buttons');
     this.enableSliderLooping = true;
+    this.documentDirection = document.querySelector('html[dir="rtl"') ? -1 : 1;
 
     if (!this.sliderControlWrapper) return;
 
@@ -644,7 +649,7 @@ class SlideshowComponent extends SliderComponent {
     if (!isFirstSlide && !isLastSlide) return;
 
     if (isFirstSlide && event.currentTarget.name === 'previous') {
-      this.slideScrollPosition = this.slider.scrollLeft + this.sliderFirstItemNode.clientWidth * this.sliderItemsToShow.length;
+      this.slideScrollPosition = this.slider.scrollLeft + this.sliderFirstItemNode.clientWidth * this.sliderItemsToShow.length * this.documentDirection;
     } else if (isLastSlide && event.currentTarget.name === 'next') {
       this.slideScrollPosition = 0;
     }
@@ -734,7 +739,7 @@ class SlideshowComponent extends SliderComponent {
 
   linkToSlide(event) {
     event.preventDefault();
-    const slideScrollPosition = this.slider.scrollLeft + this.sliderFirstItemNode.clientWidth * (this.sliderControlLinksArray.indexOf(event.currentTarget) + 1 - this.currentPage);
+    const slideScrollPosition = this.slider.scrollLeft + this.sliderFirstItemNode.clientWidth * (this.sliderControlLinksArray.indexOf(event.currentTarget) + 1 - this.currentPage) * this.documentDirection;
     this.slider.scrollTo({
       left: slideScrollPosition
     });
