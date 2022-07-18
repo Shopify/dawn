@@ -63,11 +63,32 @@
             {%- endif -%}
 
         {%- else -%}
+            
+            <iframe src="https://www.youtube.com/embed/{{ section.settings.video_url.id }}?enablejsapi=1" 
+              class="js-youtube" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            <img
+              class="multicolumn-card__image youtube-video-cover"
+              srcset="{%- if section.settings.video-image.width >= 275 -%}{{ section.settings.video-image | image_url: width: 275 }} 275w,{%- endif -%}
+              {%- if section.settings.video-image.width >= 550 -%}{{ section.settings.video-image | image_url: width: 550 }} 550w,{%- endif -%}
+              {%- if section.settings.image.width >= 710 -%}{{ section.settings.video-image | image_url: width: 710 }} 710w,{%- endif -%}
+              {%- if section.settings.video-image.width >= 1420 -%}{{ section.settings.video-image | image_url: width: 1420 }} 1420w,{%- endif -%}
+              {{ section.settings.video-image | image_url }} {{ section.settings.video-image.width }}w"
+              src="{{ section.settings.video-image | image_url: width: 550 }}"
+              sizes="(min-width: 990px) {% if section.blocks.size <= 2 %}710px{% else %}550px{% endif %},
+              (min-width: 750px) {% if section.blocks.size == 1 %}710px{% else %}550px{% endif %},
+              calc(100vw - 30px)"
+              alt="{{ section.settings.video-image.alt }}"
+              height="{{ section.settings.video-image.height }}"
+              width="{{ section.settings.video-image.width }}"
+            >
+
+
+        {%- else -%}
           
-        <video loop controls autoplay preload="metadata" poster="{{ section.settings.video-image | image_url: width:800 }}" class="custom-Img-txt-video">
-          <source src="{{ section.settings.video-tag }}" type="video/mp4">
-          Your browser does not support the video tag.
-        </video>
+            <video loop controls autoplay preload="metadata" poster="{{ section.settings.video-image | image_url: width:800 }}" class="custom-Img-txt-video">
+              <source src="{{ section.settings.video-tag }}" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
 
         {%- endif -%}
 
@@ -100,6 +121,17 @@
   </div>
 </div>
 
+<script>
+    $(".play-btn").click(function(){
+    $(this).css("display","none");
+    $(this).parent().find('.youtube-video-cover').css("display","none");
+    let id = $(this).data("id");
+    console.log(id);
+//     $(`${id}`).trigger( $(`${id}`).prop('paused') ? 'play' : 'pause'); 
+    document.getElementById(`${id}`).play();
+  });
+</script>
+
 {% schema %}
 {
   "name": "Loop Article Img Txt",
@@ -119,6 +151,18 @@
       "type": "image_picker",
       "id": "video-image",
       "label": "Video Cover Image"
+    },
+    {
+      "type": "video_url",
+      "id": "video_url",
+      "accept": [
+        "youtube",
+        "vimeo"
+      ],
+      "default": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+      "label": "t:sections.video.settings.video_url.label",
+      "placeholder": "t:sections.video.settings.video_url.placeholder",
+      "info": "t:sections.video.settings.video_url.info"
     },
     {
       "type": "text",
