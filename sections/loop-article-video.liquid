@@ -14,6 +14,15 @@
     }
   }
 {%- endstyle -%}
+<style>
+  .video-sec-img img{
+    display: block;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    border-radius: 40px;
+  }
+</style>
 
 <div style="background-color: {{ section.settings.color_scheme }}">
   <div class="video-section isolate{% unless section.settings.full_width %} page-width{% endunless %} section-{{ section.id }}-padding">
@@ -53,6 +62,7 @@
         </a>
       </div>
     </noscript>
+    {% if section.settings.video_url != blank %}
     <deferred-media class="video-section__media deferred-media no-js-hidden gradient global-media-settings{% if section.settings.full_width %} global-media-settings--full-width{% endif %}" data-media-id="{{ section.settings.video_url.id }}"
       {% if section.settings.cover_image != blank %} style="padding-bottom: {{ 1 | divided_by: section.settings.cover_image.aspect_ratio | times: 100 }}%;"{% endif %}
     >
@@ -94,8 +104,34 @@
         {%- endif -%}
       </template>
     </deferred-media>
+   {% elsif section.settings.video-tag != blank %}
+      <video controls id="play-video-custom" loop muted  preload="metadata" poster="{{ section.settings.cover_image | image_url: width:800 }}" class="custom-Img-txt-video">
+        <source src="{{ section.settings.video-tag }}" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="play-btn" data-id="play-video-custom">
+        {% include 'icon-play-button' %}
+      </div>
+    {% elsif section.settings.spotify != blank %}
+      <script src="https://open.spotify.com/embed-podcast/iframe-api/v1" async></script>
+      <div class="spotify-embaded-wrap">{{ section.settings.spotify }}</div>
+    {% elsif section.settings.tiktok != blank %}
+      <div class="tiktok-embaded-wrap">{{ section.settings.tiktok }}</div>
+    {% elsif section.settings.image != blank %}
+      <div class="video-sec-img"><img src="{{ section.settings.image | image_url: width: 2000 }}"></div>
+    {% endif %}
   </div>
 </div>
+<script>
+    $(".play-btn").click(function(){
+    $(this).css("display","none");
+    $(this).parent().find('.youtube-video-cover').css("display","none");
+    let id = $(this).data("id");
+    console.log(id);
+    // $(`${id}`).trigger( $(`${id}`).prop('paused') ? 'play' : 'pause'); 
+    document.getElementById(`${id}`).play();
+  });
+</script>
 
 {% schema %}
 {
@@ -143,8 +179,13 @@
       ],
       "default": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
       "label": "t:sections.video.settings.video_url.label",
-      "placeholder": "t:sections.video.settings.video_url.placeholder",
+      "placeholder": "Youtube or Vimeo Video Link",
       "info": "t:sections.video.settings.video_url.info"
+    },
+    {
+      "type": "text",
+      "id": "video-tag",
+      "label": "Video"
     },
     {
       "type": "text",
@@ -158,6 +199,21 @@
       "label": "t:sections.video.settings.full_width.label",
       "default": false
     },
+    {
+      "type": "html",
+      "id": "spotify",
+      "label": "Spotify"
+      },
+      {
+      "type": "html",
+      "id": "tiktok",
+      "label": "Tiktok"
+      },
+      {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+      },
     {
       "type": "color",
       "id": "color_scheme",
