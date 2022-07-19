@@ -93,7 +93,7 @@
         <source src="{{ section.settings.video_link }}" type="video/mp4">
       </video>
       {% else %}
-      <div id="player"></div>
+      <div id="{{ section.id }}"></div>
       
       {% comment %}
       <template>
@@ -114,6 +114,12 @@
 
 <script>
   // 2. This code loads the IFrame Player API code asynchronously.
+  if(window.playerInfo == null) {
+    window.playerInfo = [{id:'{{ section.id }}',videoId:'{{ section.settings.video_url.id }}'}];
+  } else {
+    window.playerInfo.push({id:'{{ section.id }}',videoId:'{{ section.settings.video_url.id }}'})
+  }
+
   var tag = document.createElement('script');
   tag.src = "https://www.youtube.com/iframe_api";
   var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -121,16 +127,24 @@
   var player;
   console.log('YouTube video url');
   console.log('{{ section.settings.video_url.id }}');
+  
   function onYouTubeIframeAPIReady() {
-    player = new YT.Player('player', {
-      width: '100%',
-      videoId: '{{ section.settings.video_url.id }}',
-      playerVars: { 'autoplay': 1, 'playsinline': 1  , 'loop' : 1 },
-      events: {
-        'onReady': onPlayerReady
-      }
-    });
+    for(var i = 0; i < playerInfo.length;i++) {
+          var curplayer = createPlayer(playerInfo[i]);
+        }
   }
+
+  function createPlayer(playerInfoY) {
+          return new YT.Player(playerInfoY.id, {
+            width: '100%',
+            videoId: playerInfoY.videoId,
+            playerVars: { 'autoplay': 1, 'playsinline': 1  , 'loop' : 1 , 'playlist' : playerInfoY.videoId },
+            events: {
+              'onReady': onPlayerReady
+            }
+          });
+      }
+  
   // 4. The API will call this function when the video player is ready.
   function onPlayerReady(event) {
     event.target.mute();
