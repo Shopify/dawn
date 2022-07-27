@@ -23,18 +23,9 @@ You can find a more detailed version of our theme code principles in the [contri
 
 ## Getting started
 
-1. Fork the repository and clone it:
-```sh
-git clone git@github.com:your-username/dawn.git
-cd dawn
-```
-2. Install the [Shopify CLI](https://github.com/Shopify/shopify-cli) by following [these steps](https://shopify.dev/themes/tools/cli/installation).
-3. Launch a development server in the `dawn/` folder:
-```sh
-shopify theme serve
-```
+We recommend using Dawn as a starting point for theme development. [Learn more on Shopify.dev](https://shopify.dev/themes/getting-started/create). 
 
->:information_source: You'll need access to a Shopify store in order to get started with theme development. If you don't already have one, you can set up a [development store](https://shopify.dev/themes/tools/development-stores).
+> If you're building a theme for the Shopify Theme Store, then you can use Dawn as a starting point. However, the theme that you submit needs to be [substantively different from Dawn](https://shopify.dev/themes/store/requirements#uniqueness) so that it provides added value for merchants. Learn about the [ways that you can use Dawn](https://shopify.dev/themes/tools/dawn#ways-to-use-dawn).
 
 ## Staying up to date with Dawn changes
 
