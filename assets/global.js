@@ -834,6 +834,8 @@ class VariantSelects extends HTMLElement {
   }
 
   renderProductInfo() {
+    const activeElementId = document.activeElement.id;
+    console.log('id active element', activeElementId)
     fetch(`${this.dataset.url}?variant=${this.currentVariant.id}&section_id=${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`)
       .then((response) => response.text())
       .then((responseText) => {
@@ -850,6 +852,8 @@ class VariantSelects extends HTMLElement {
 
         if (price) price.classList.remove('visibility-hidden');
         this.toggleAddButton(!this.currentVariant.available, window.variantStrings.soldOut);
+
+        document.querySelector('variant-radios') ? this.querySelector(`[for="${activeElementId}"]`).focus() : this.querySelector(`#${activeElementId}`).focus();
       });
   }
 
