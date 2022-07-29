@@ -27,7 +27,7 @@
         <div class="collage__item collage__item--{{ block.type }} collage__item--{{ section.settings.desktop_layout }}" {{ block.shopify_attributes }}>
           {%- case block.type -%}
             {%- when 'image' -%}
-              <div class="collage-card {% if section.settings.card_styles == '' %}global-media-settings{% else %}card-wrapper product-card-wrapper color-{{ settings.card_color_scheme }}{% endif %}">
+              <div class="collage-card {% if section.settings.card_styles == 'none' %}global-media-settings{% else %}card-wrapper product-card-wrapper color-{{ settings.card_color_scheme }}{% endif %}">
                 <div class="media media--transparent ratio"{% if block.settings.image != blank %} style="--ratio-percent: {{ 1 | divided_by: block.settings.image.aspect_ratio | times: 100 }}%"{% else %} style="--ratio-percent: 100%"{% endif %}>
                   {%- if block.settings.image != blank -%}
                     <img
@@ -52,23 +52,37 @@
                 </div>
               </div>
             {%- when 'product' -%}
+              {%- liquid 
+                if section.settings.card_styles == 'none' 
+                  assign wrapper_class = 'product-card-wrapper'
+                else 
+                 assign wrapper_class = section.settings.card_styles
+                endif
+             -%}
               {% render 'card-product',
                 card_product: block.settings.product,
                 media_aspect_ratio: 'adapt',
                 show_secondary_image: block.settings.second_image,
                 extend_height: true,
-                wrapper_class: section.settings.card_styles
+                wrapper_class: wrapper_class
               %}
             {%- when 'collection' -%}
+              {%- liquid 
+                  if section.settings.card_styles == 'none' 
+                    assign wrapper_class = 'collection-card-wrapper'
+                  else 
+                   assign wrapper_class = section.settings.card_styles
+                  endif
+               -%}
               {% render 'card-collection',
                 card_collection: block.settings.collection,
                 media_aspect_ratio: 'adapt',
                 columns: 2,
                 extend_height: true,
-                wrapper_class: section.settings.card_styles
+                wrapper_class: wrapper_class
               %}
             {%- when 'video' -%}
-              <div class="collage-card {% if section.settings.card_styles == '' %}global-media-settings{% else %}product-card-wrapper color-{{ settings.card_color_scheme }}{% endif %}">
+              <div class="collage-card {% if section.settings.card_styles == 'none' %}global-media-settings{% else %}product-card-wrapper color-{{ settings.card_color_scheme }}{% endif %}">
                 <noscript>
                   <a href="{{ block.settings.video_url }}" class="collage-card__link{% if block.settings.image_padding %} collage-card-spacing{% endif %}">
                     <div class="media media--transparent ratio"{% if block.settings.cover_image != blank %} style="--ratio-percent: {{ 1 | divided_by: block.settings.cover_image.aspect_ratio | times: 100 }}%"{% else %} style="--ratio-percent: 100%"{% endif %}>
@@ -220,7 +234,7 @@
       "id": "card_styles",
       "options": [
         {
-          "value": "",
+          "value": "none",
           "label": "t:sections.collage.settings.card_styles.options__1.label"
         },
         {
@@ -228,7 +242,7 @@
           "label": "t:sections.collage.settings.card_styles.options__2.label"
         }
       ],
-      "default": "",
+      "default": "none",
       "info": "t:sections.collage.settings.card_styles.info",
       "label": "t:sections.collage.settings.card_styles.label"
     },
