@@ -1,0 +1,51 @@
+{% if request.page_type == 'collection' or request.page_type == 'search' %}
+    {%- capture paginate_arr -%}
+        {{- paginate_by | divided_by: 2 | round | at_most: 50 -}},
+        {{- paginate_by | divided_by: 1.5 | round | at_most: 50 -}},
+        {{- paginate_by -}},
+        {{- paginate_by | times: 1.5 | round | at_most: 50 -}},
+        {{- paginate_by | times: 2 | round | at_most: 50 -}}
+    {%- endcapture -%}
+    {% assign paginate_arr = paginate_arr | split: ',' | uniq %}
+
+    <script>
+      if(typeof(Spurit) === 'undefined'){
+        var Spurit = {};
+      }
+      if(!Spurit.Preorder2){
+        Spurit.Preorder2 = {};
+      }
+      if(!Spurit.Preorder2.snippet){
+        Spurit.Preorder2.snippet = {};
+      }
+      if(!Spurit.Preorder2.snippet.products){
+        Spurit.Preorder2.snippet.products = {};
+      }
+    </script>
+{% endif %}
+
+{% if request.page_type == 'collection' %}
+    <script>
+      {% for i in paginate_arr %}
+          {% paginate collection.products by i %}
+              {% for product in collection.products %}
+                  {% render 'spurit_po2_product_details_snippet', product: product %}
+              {% endfor %}
+          {% endpaginate %}
+      {% endfor %}
+    </script>
+{% endif %}
+
+{% if request.page_type == 'search' %}
+    <script>
+      {% for i in paginate_arr %}
+          {% paginate search.results by i %}
+              {% for item in search.results %}
+                  {% if item.object_type == 'product' %}
+                      {% render 'spurit_po2_product_details_snippet', product: item %}
+                  {% endif %}
+              {% endfor %}
+          {% endpaginate %}
+      {% endfor %}
+    </script>
+{% endif %}
