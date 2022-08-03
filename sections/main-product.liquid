@@ -18,6 +18,19 @@
       padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
     }
 
+    @media screen and (min-width: 990px) {
+      .product:not(.product--no-media) .product__media-wrapper {
+        max-width: {{ section.settings.media_width }}%;
+        width: calc({{ section.settings.media_width }}% - var(--grid-desktop-horizontal-spacing) / 2);
+      }
+
+      .product:not(.product--no-media) .product__info-wrapper {
+        padding-left: 4rem;
+        max-width: calc(100% - {{ section.settings.media_width }}%);
+        width: calc((100% - {{ section.settings.media_width }}%) - var(--grid-desktop-horizontal-spacing) / 2);
+      }
+    }
+
     @media screen and (min-width: 750px) {
       .section-{{ section.id }}-padding {
         padding-top: {{ section.settings.padding_top }}px;
@@ -75,13 +88,7 @@
                 assign media_count = media_count | minus: variant_images.size | plus: 1
               endif
 
-              if section.settings.media_size == 'large'
-                assign media_width = 0.65
-              elsif section.settings.media_size == 'medium'
-                assign media_width = 0.55
-              elsif section.settings.media_size == 'small'
-                assign media_width = 0.45
-              endif
+              assign media_width = 0.65
             -%}
             {%- if product.selected_or_first_available_variant.featured_media != null -%}
               {%- assign featured_media = product.selected_or_first_available_variant.featured_media -%}
@@ -91,7 +98,7 @@
                 data-media-id="{{ section.id }}-{{ featured_media.id }}"
               >
                 {%- assign media_position = 1 -%}
-                {% render 'product-thumbnail', media: featured_media, position: media_position, desktop_layout: section.settings.gallery_layout, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: true, media_width: media_width, lazy_load: false %}
+                {% render 'product-thumbnail', media: featured_media, position: media_position, desktop_layout: section.settings.gallery_layout, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: true, media_width: media_width, lazy_load: false, aspect_ratio: section.settings.media_aspect_ratio %}
               </li>
             {%- endif -%}
             {%- for media in product.media -%}
@@ -107,7 +114,7 @@
                     if media_position > 1
                       assign lazy_load = true
                     endif
-                    render 'product-thumbnail', media: media, position: media_position, desktop_layout: section.settings.gallery_layout, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: true, media_width: media_width, lazy_load: lazy_load
+                    render 'product-thumbnail', media: media, position: media_position, desktop_layout: section.settings.gallery_layout, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: true, media_width: media_width, lazy_load: lazy_load, aspect_ratio: section.settings.media_aspect_ratio
                   -%}
                 </li>
               {%- endunless -%}
@@ -293,7 +300,7 @@
         {%- endif -%}
       </media-gallery>
     </div>
-    <div class="product__info-wrapper grid__item{% if settings.page_width > 1400 and section.settings.media_size == "small" %} product__info-wrapper--extra-padding{% endif %}">
+    <div class="product__info-wrapper grid__item{% if settings.page_width > 1400 and section.settings.media_width < 50 %} product__info-wrapper--extra-padding{% endif %}">
       <div
         id="ProductInfo-{{ section.id }}"
         class="product__info-container{% if section.settings.enable_sticky_info %} product__info-container--sticky{% endif %}"
@@ -728,7 +735,7 @@
                   data-media-id="{{ section.id }}-{{ featured_media.id }}"
                 >
                   {%- assign media_position = 1 -%}
-                  {% render 'product-thumbnail', media: featured_media, position: media_position, desktop_layout: section.settings.gallery_layout, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: true, media_width: media_width, lazy_load: false %}
+                  {% render 'product-thumbnail', media: featured_media, position: media_position, desktop_layout: section.settings.gallery_layout, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: true, media_width: media_width, lazy_load: false, aspect_ratio: section.settings.media_aspect_ratio %}
                 </li>
               {%- endif -%}
               {%- for media in product.media -%}
@@ -744,7 +751,7 @@
                       if media_position > 1
                         assign lazy_load = true
                       endif
-                      render 'product-thumbnail', media: media, position: media_position, desktop_layout: section.settings.gallery_layout, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: true, media_width: media_width, lazy_load: lazy_load
+                      render 'product-thumbnail', media: media, position: media_position, desktop_layout: section.settings.gallery_layout, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: true, media_width: media_width, lazy_load: lazy_load, aspect_ratio: section.settings.media_aspect_ratio
                     -%}
                   </li>
                 {%- endunless -%}
@@ -1452,20 +1459,46 @@
     },
     {
       "type": "select",
-      "id": "media_position",
+      "id": "media_aspect_ratio",
       "options": [
         {
-          "value": "left",
-          "label": "t:sections.main-product.settings.media_position.options__1.label"
+          "value": "original",
+          "label": "t:sections.main-product.settings.media_aspect_ratio.options__1.label"
         },
         {
-          "value": "right",
-          "label": "t:sections.main-product.settings.media_position.options__2.label"
+          "value": "square",
+          "label": "t:sections.main-product.settings.media_aspect_ratio.options__2.label"
+        },
+        {
+          "value": "2-3",
+          "label": "t:sections.main-product.settings.media_aspect_ratio.options__3.label"
+        },
+        {
+          "value": "4-3",
+          "label": "t:sections.main-product.settings.media_aspect_ratio.options__4.label"
+        },
+        {
+          "value": "5-4",
+          "label": "t:sections.main-product.settings.media_aspect_ratio.options__5.label"
+        },
+        {
+          "value": "16-9",
+          "label": "t:sections.main-product.settings.media_aspect_ratio.options__6.label"
         }
       ],
-      "default": "left",
-      "label": "t:sections.main-product.settings.media_position.label",
-      "info": "t:sections.main-product.settings.media_position.info"
+      "default": "original",
+      "label": "t:sections.main-product.settings.media_aspect_ratio.label"
+    },
+    {
+      "type": "range",
+      "id": "media_width",
+      "min": 35,
+      "max": 70,
+      "step": 5,
+      "unit": "%",
+      "label": "t:sections.main-product.settings.media_size.label",
+      "info": "t:sections.main-product.settings.media_size.info",
+      "default": 50
     },
     {
       "type": "select",
@@ -1493,24 +1526,20 @@
     },
     {
       "type": "select",
-      "id": "media_size",
+      "id": "media_position",
       "options": [
         {
-          "value": "small",
-          "label": "t:sections.main-product.settings.media_size.options__1.label"
+          "value": "left",
+          "label": "t:sections.main-product.settings.media_position.options__1.label"
         },
         {
-          "value": "medium",
-          "label": "t:sections.main-product.settings.media_size.options__2.label"
-        },
-        {
-          "value": "large",
-          "label": "t:sections.main-product.settings.media_size.options__3.label"
+          "value": "right",
+          "label": "t:sections.main-product.settings.media_position.options__2.label"
         }
       ],
-      "default": "large",
-      "label": "t:sections.main-product.settings.media_size.label",
-      "info": "t:sections.main-product.settings.media_size.info"
+      "default": "left",
+      "label": "t:sections.main-product.settings.media_position.label",
+      "info": "t:sections.main-product.settings.media_position.info"
     },
     {
       "type": "select",
