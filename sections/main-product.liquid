@@ -18,6 +18,23 @@
       padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
     }
 
+    @media screen and (min-width: 990px) {
+      .product:not(.product--no-media) .product__media-wrapper {
+        max-width: {{ section.settings.media_width }}%;
+        width: calc({{ section.settings.media_width }}% - var(--grid-desktop-horizontal-spacing) / 2);
+      }
+
+      .product:not(.product--no-media) .product__info-wrapper {
+        padding-left: 4rem;
+        max-width: calc(100% - {{ section.settings.media_width }}%);
+        width: calc((100% - {{ section.settings.media_width }}%) - var(--grid-desktop-horizontal-spacing) / 2);
+      }
+      
+      .product__media.media {
+        height: {{ section.settings.media_height }}vh;
+      }
+    }
+
     @media screen and (min-width: 750px) {
       .section-{{ section.id }}-padding {
         padding-top: {{ section.settings.padding_top }}px;
@@ -47,7 +64,7 @@
     >
   {%- endif -%}
 
-  <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.gallery_layout }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
+  <div class="product product--{{ section.settings.gallery_layout }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
     <div class="grid__item product__media-wrapper">
       <media-gallery
         id="MediaGallery-{{ section.id }}"
@@ -75,13 +92,7 @@
                 assign media_count = media_count | minus: variant_images.size | plus: 1
               endif
 
-              if section.settings.media_size == 'large'
-                assign media_width = 0.65
-              elsif section.settings.media_size == 'medium'
-                assign media_width = 0.55
-              elsif section.settings.media_size == 'small'
-                assign media_width = 0.45
-              endif
+              assign media_width = 0.65
             -%}
             {%- if product.selected_or_first_available_variant.featured_media != null -%}
               {%- assign featured_media = product.selected_or_first_available_variant.featured_media -%}
@@ -293,7 +304,7 @@
         {%- endif -%}
       </media-gallery>
     </div>
-    <div class="product__info-wrapper grid__item{% if settings.page_width > 1400 and section.settings.media_size == "small" %} product__info-wrapper--extra-padding{% endif %}">
+    <div class="product__info-wrapper grid__item{% if settings.page_width > 1400 and section.settings.media_width < 50 %} product__info-wrapper--extra-padding{% endif %}">
       <div
         id="ProductInfo-{{ section.id }}"
         class="product__info-container{% if section.settings.enable_sticky_info %} product__info-container--sticky{% endif %}"
@@ -1265,26 +1276,26 @@
       "label": "t:sections.main-product.settings.gallery_layout.label"
     },
     {
-      "type": "select",
-      "id": "media_size",
-      "options": [
-        {
-          "value": "small",
-          "label": "t:sections.main-product.settings.media_size.options__1.label"
-        },
-        {
-          "value": "medium",
-          "label": "t:sections.main-product.settings.media_size.options__2.label"
-        },
-        {
-          "value": "large",
-          "label": "t:sections.main-product.settings.media_size.options__3.label"
-        }
-      ],
-      "default": "large",
-      "label": "t:sections.main-product.settings.media_size.label",
-      "info": "t:sections.main-product.settings.media_size.info"
+      "type": "range",
+      "id": "media_width",
+      "min": 35,
+      "max": 70,
+      "step": 5,
+      "unit": "%",
+      "label": "Desktop media width",
+      "info": "t:sections.main-product.settings.media_size.info",
+      "default": 55
     },
+    {
+      "type": "range",
+      "id": "media_height",
+      "min": 25,
+      "max": 75,
+      "step": 5,
+      "unit": "%",
+      "label": "Desktop media height",
+      "default": 40
+    },    
     {
       "type": "select",
       "id": "mobile_thumbnails",
