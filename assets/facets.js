@@ -192,9 +192,6 @@ class FacetFiltersForm extends HTMLElement {
           forms.push(this.createSearchParams(form));
         }
       });
-      setTimeout(() => {
-        console.log(event.target.closest('form'), 'is it stil like thst')
-      }, 5000);
       this.onSubmitForm(forms.join('&'), event)
     }
   }
