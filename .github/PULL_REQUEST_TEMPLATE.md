@@ -18,7 +18,7 @@ Fixes #0.
 | 1 |   |   |   |   |
 
 **Testing steps/scenarios**
-<!-- List all the testing tasks that applies to your fix and help peers to review your work. -->
+<!-- List all the testing tasks that applies to your fix to help peers review your work. -->
 - [ ] 
 
 **Demo links**
