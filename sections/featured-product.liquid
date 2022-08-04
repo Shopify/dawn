@@ -44,17 +44,14 @@
 
 <section class="color-{{ section.settings.color_scheme }} {% if section.settings.secondary_background %}background-secondary{% else %}gradient{% endif %}">
   <div class="page-width section-{{ section.id }}-padding{% if section.settings.secondary_background %} isolate{% endif %}">
-    <div class="featured-product product grid grid--1-col gradient color-{{ section.settings.color_scheme }}{% if section.settings.secondary_background == false %} isolate{% endif %} {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
-      <div class="grid__item product__media-wrapper">
+    <div class="featured-product product grid grid--1-col gradient color-{{ section.settings.color_scheme }} product--{{ section.settings.media_position }}{% if section.settings.secondary_background == false %} isolate{% endif %} {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
+      <div class="grid__item product__media-wrapper{% if section.settings.media_position == 'right' %} medium-hide large-up-hide{% endif %}">
         <media-gallery
           id="MediaGallery-{{ section.id }}"
           role="region"
           aria-label="{{ 'products.product.media.gallery_viewer' | t }}"
           data-desktop-layout="stacked"
         >
-          <a class="skip-to-content-link button visually-hidden" href="#ProductInfo-{{ section.id }}">
-            {{ "accessibility.skip_to_product_info" | t }}
-          </a>
           <div id="GalleryViewer-{{ section.id }}" class="product__media-list">
             {%- if product.selected_or_first_available_variant.featured_media != null -%}
               {%- assign media = product.selected_or_first_available_variant.featured_media -%}
@@ -446,6 +443,46 @@
           </a>
         </div>
       </div>
+      {%- if section.settings.media_position == 'right' -%}
+        <div class="grid__item product__media-wrapper small-hide">
+          <media-gallery
+            id="MediaGallery-{{ section.id }}-right"
+            role="region"
+            aria-label="{{ 'products.product.media.gallery_viewer' | t }}"
+            data-desktop-layout="stacked"
+          >
+            <div id="GalleryViewer-{{ section.id }}-right" class="product__media-list">
+              {%- if product.selected_or_first_available_variant.featured_media != null -%}
+                {%- assign media = product.selected_or_first_available_variant.featured_media -%}
+                <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
+                  {% render 'product-thumbnail', media: media, position: 'featured', loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: 0.5 %}
+                </div>
+              {%- endif -%}
+              {%- for media in product.media -%}
+                {%- if media_to_render contains media.id and media.id != product.selected_or_first_available_variant.featured_media.id -%}
+                  <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
+                    {% render 'product-thumbnail', media: media, position: forloop.index, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: 0.5 %}
+                  </div>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+            {%- if first_3d_model -%}
+              <button
+                class="button button--full-width product__xr-button"
+                type="button"
+                aria-label="{{ 'products.product.xr_button_label' | t }}"
+                data-shopify-xr
+                data-shopify-model3d-id="{{ first_3d_model.id }}"
+                data-shopify-title="{{ product.title | escape }}"
+                data-shopify-xr-hidden
+              >
+                {% render 'icon-3d-model' %}
+                {{ 'products.product.xr_button' | t }}
+              </button>
+            {%- endif -%}
+          </media-gallery>
+        </div>
+      {%- endif -%}
     </div>
     <product-modal id="ProductModal-{{ section.id }}" class="product-media-modal media-modal">
       <div
@@ -788,6 +825,23 @@
       "type": "header",
       "content": "t:sections.featured-product.settings.header.content",
       "info": "t:sections.featured-product.settings.header.info"
+    },
+    {
+      "type": "select",
+      "id": "media_position",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.featured-product.settings.media_position.options__1.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.featured-product.settings.media_position.options__2.label"
+        }
+      ],
+      "default": "left",
+      "label": "t:sections.featured-product.settings.media_position.label",
+      "info": "t:sections.featured-product.settings.media_position.info"
     },
     {
       "type": "checkbox",
