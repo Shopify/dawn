@@ -20,8 +20,6 @@
     %}
 {% endcomment %}
 
-
-
 <noscript>
   {%- if media.media_type == 'video' or media.media_type == 'external_video' -%}
     <span class="product__media-icon motion-reduce quick-add-hidden">{% render 'icon-play' %}</span>
@@ -77,6 +75,8 @@
 </noscript>
 
 <modal-opener class="product__modal-opener product__modal-opener--{{ media.media_type }} no-js-hidden" data-modal="#ProductModal-{{ modal_id }}">
+  {% if media.media_type == 'video' or media.media_type == 'external_video' %}
+    {% else %}
   <span class="product__media-icon motion-reduce quick-add-hidden" aria-hidden="true">
     {%- liquid
       case media.media_type
@@ -89,8 +89,14 @@
       endcase
     -%}
   </span>
+    {% endif %}
 
   <div class="product__media media media--transparent gradient global-media-settings" style="padding-top: {{ 1 | divided_by: media.preview_image.aspect_ratio | times: 100 }}%;">
+    {% if media.media_type == 'video' or media.media_type == 'external_video' %}
+      <div class="media-type-video">
+      {{ media | video_tag: controls: true, autoplay: true, loop: true }}
+      </div>
+      {% else %}
     <img
       srcset="{% if media.preview_image.width >= 493 %}{{ media.preview_image | image_url: width: 493 }} 493w,{% endif %}
         {% if media.preview_image.width >= 600 %}{{ media.preview_image | image_url: width: 600 }} 600w,{% endif %}
@@ -111,6 +117,7 @@
       height="{{ 973 | divided_by: media.preview_image.aspect_ratio | ceil }}"
       alt="{{ media.preview_image.alt | escape }}"
     >
+      {% endif %}
   </div>
   <button class="product__media-toggle quick-add-hidden" type="button" aria-haspopup="dialog" data-media-id="{{ media.id }}">
     <span class="visually-hidden">
