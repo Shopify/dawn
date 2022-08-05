@@ -29,7 +29,7 @@ Fixes #0.
 
 **Checklist**
 - [ ] Added PR summary for [release notes](https://themes.shopify.com/themes/dawn/styles/default#ReleaseNotes)
-- [ ] Requested review from UX (Only for changes that are affecting the experience or perceivable visual details.)
+- [ ] Requested review from UX (Only for changes that are affecting the experience or perceivable visual details)
 - [ ] Created a ticket on the Help repository to notify the [help.shopify.com](https://help.shopify.com) team about updates to theme settings. (Internal-only task)
 - [ ] Followed [theme code principles](https://github.com/Shopify/dawn/blob/main/.github/CONTRIBUTING.md#theme-code-principles)
 - [ ] Linted with [Theme Check](https://github.com/Shopify/theme-check)
