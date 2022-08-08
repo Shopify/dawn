@@ -18,7 +18,6 @@ class DetailsModal extends HTMLElement {
     );
 
     this.summaryToggle.setAttribute('role', 'button');
-    this.summaryToggle.setAttribute('aria-expanded', 'false');
   }
 
   isOpen() {
