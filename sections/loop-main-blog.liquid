@@ -1,9 +1,164 @@
+{{ 'loop-main-blog.css' | asset_url | stylesheet_tag }}
+<div class="blog-section">
+    <div class="blog-container">
+        <div class="article-filter-wrapper flex-box">
+            <div class="favourites article-filter" onclick="return false;" data-value="all">
+                ALL
+                <span class="close-btn no-disp"></span>
+            </div>
+
+          {% for block in section.blocks %}
+            <div class="favourites article-filter" onclick="return false;" data-value="{{ block.settings.filter_id | handleize }}">
+                {{ block.settings.filter_id }}
+                <span class="close-btn no-disp"></span>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="w-dyn-lis7t">
+            <div class="new-blog-post-list two-column">
+            
+            
+                {% for link in linklists.blogs.links %}
+                {% assign blog = link.object %}
+                {%- paginate blog.articles by 250 -%}
+                {% for article in blog.articles %}
+              
+                <div class="new-blog-post-collection-item {% for tag in article.tags -%}{{tag | handleize  }} {%- endfor -%}"  data-handle="{{ filter_blog_handle | handleize  }}">
+                    <a href="{{ article.url }}" class="new-blog-post-link-block">
+                        <div class="new-blog-post-grid-image">
+                            {{ article.image | img_url: '500x' | img_tag }}
+                        </div>
+                        <div class="new-blog-post-grid-text-wrap">
+                            <h3 class="h5-heading text-primary">{{ article.title }}</h3>
+                            <div class="new-blog-post-bottom-info-wrap">
+                                <div class="new-blog-post-author-wrap">
+                                    <div>
+                                        {% if article.author != 'Shopify API' %}
+                                          <div class="new-blog-post-author-name">{{ article.author }}</div>
+                                        {% elsif article.author == 'Shopify API' %}
+                                          <div class="new-blog-post-author-name">Loop Earplugs</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="new-blog-post-date">{{article.published_at | date: format: 'abbreviated_date'}}</div>
+                            </div>
+                            <div class="blog-description">{{ article.content | strip_html | truncatewords: 20, "..." }}</div>
+                            <div class="new-blog-read-more">{{section.settings.read-more}}</div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+                {%- endpaginate -%}
+                {% endfor %}
+           
+    
+
+            </div>
+        </div>
+  
+        <div class="load-more-blog-posts-wrapper">
+            <div class="article-filter load-more-blog-posts">{{section.settings.load-more}}</div>
+        </div>
+  
+
+    </div>
+
+</div>
+
+
+
 {% schema %}
-  {
-    "name": "Section name",
-    "settings": []
-  }
+
+{
+    "name": "Loop Blog post",
+    "settings": [
+        {
+            "id":"read-more",
+            "label":"Read More Text",
+            "type":"text",
+            "default":"Read More"
+        },
+        {
+            "id":"load-more",
+            "label":"Read More Text",
+            "type":"text",
+            "default":"Load More"
+        }
+    ],
+     "blocks":[
+        {
+            "type": "select",
+            "name": "Select Filter",
+            "settings": [
+            {
+                "type": "text",
+                "id": "filter_id",
+                "label": "Enter Filter name",
+                "info":"NOTE: Tag given in the blog post should match with your input text for filter to work."
+            }                    
+            ]
+        }
+    ],
+
+    "presets": [
+    {
+        "name":"Loop Blog post"
+    }
+]
+
+}
+
+
 {% endschema %}
+
+
+<script>
+ 
+$('.article-filter-wrapper .article-filter').click(function () {
+  $(this).toggleClass('selected');
+  runFilter();
+});
+
+  
+   $(".new-blog-post-collection-item").hide();
+    $(".new-blog-post-collection-item:lt(9)").show();
+
+    $('.article-filter').click(function() {
+      $('.load-more-blog-posts').addClass('no-disp');
+      $(".new-blog-post-collection-item").show();
+    }); 
+  
+
+
+function runFilter() {
+  var favourites = [];
+  var classString = "";
+  $( ".article-filter.selected" ).each(function( index ) {
+    favourites.push($(this).data('value'));
+  });
+  var i;
+  if( !favourites.includes("all")){
+    $('.new-blog-post-collection-item').addClass('no-disp');
+    if (favourites.length > 0) {
+      for (i = 0; i < favourites.length; i++) {
+        $('.new-blog-post-collection-item.' + favourites[i]).addClass('tp');
+      }
+    } else {
+      $('.new-blog-post-collection-item').addClass('tp');
+    }
+    $('.new-blog-post-collection-item.tp').removeClass('no-disp');
+    $('.tp').removeClass('tp');
+  }
+  else{
+     $('.new-blog-post-collection-item').removeClass('no-disp');
+  }
+  
+
+}
+runFilter();
+
+  
+</script>
 
 {% stylesheet %}
 {% endstylesheet %}
