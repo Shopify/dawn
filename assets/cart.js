@@ -3,8 +3,8 @@ class CartRemoveButton extends HTMLElement {
     super();
     this.addEventListener('click', (event) => {
       event.preventDefault();
-        const cartItems = this.closest('cart-items') || this.closest('cart-drawer-items');
-        cartItems.updateQuantity(this.dataset.index, 0);
+      const cartItems = this.closest('cart-items') || this.closest('cart-drawer-items');
+      cartItems.updateQuantity(this.dataset.index, 0);
     });
   }
 }
