@@ -1,12 +1,102 @@
+{{ 'live-shopping-grid.css' | asset_url | stylesheet_tag }}
+
+<div class="live-shopping-grid">
+  <div class="page-width">
+    <h1 class="ls-heading">{{ section.settings.heading }}</h1>
+    <div class="ls-grid-wrapper">
+      {% for block in section.blocks %}
+        {% if block.type == "ls_card" %}
+          <div class="ls-grid-card {% if forloop.first %} full-width-card{% endif %}">
+            <img
+              src="{{ block.settings.image | img_url: '1500x' }}"
+              alt="{{ block.settings.image.src.alt }}"
+              loading="lazy"
+            >
+            <div class="ls-content-wrapper">
+              {% if block.settings.title != blank %}
+                <h2 class="banner__heading h1">{{ block.settings.title }}</h2>
+              {% endif %}
+              {% if block.settings.show_id != blank %}
+                <button
+                  id="liveshopping-{{ block.settings.show_id | escape }}-{{ forloop.index }}"
+                  class="ls-btn button button--primary no-border"
+                  data-showid="{{ block.settings.show_id | escape }}"
+                >
+                  {{ block.settings.btn_label }}
+                </button>
+              {% endif %}
+            </div>
+          </div>
+          {% if block.settings.show_id != blank %}
+            <script>
+              (function() {
+                window.initBambuserLiveShopping({
+                  showId: `{{ block.settings.show_id | escape }}`,
+                  node: document.getElementById('liveshopping-{{ block.settings.show_id | escape }}-{{ forloop.index }}'),
+                  type: "overlay",
+                });
+              })();
+            </script>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+<script>
+  if (!window.initBambuserLiveShopping){
+          window.initBambuserLiveShopping = function(item) { window.initBambuserLiveShopping.queue.push(item) }; window.initBambuserLiveShopping.queue = [];
+          var scriptNode = document.createElement('script');
+          scriptNode['src'] = 'https://lcx-embed-eu.bambuser.com/default/embed.js';
+          document.body.appendChild(scriptNode);
+        }
+</script>
 {% schema %}
-  {
-    "name": "Section name",
-    "settings": []
-  }
+{
+  "name": "Live shopping grid",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Title",
+      "default": "Watch our previous shows"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "ls_card",
+      "name": "Card",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Show title"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "btn_label",
+          "label": "Button label",
+          "default": "Watch show",
+          "info": "Button will be visible when a show id is entered."
+        },
+        {
+          "type": "text",
+          "id": "show_id",
+          "label": "Show ID"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Live shopping grid"
+    }
+  ]
+}
 {% endschema %}
-
-{% stylesheet %}
-{% endstylesheet %}
-
-{% javascript %}
-{% endjavascript %}
