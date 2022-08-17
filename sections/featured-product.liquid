@@ -17,6 +17,23 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+  
+  .section-{{ section.id }}-padding .media>img {
+    object-position: {{ section.settings.media_object_position }} center;
+  }
+
+  @media screen and (min-width: 990px) {
+    .product:not(.product--no-media) .product__media-wrapper {
+      max-width: {{ section.settings.media_width }}%;
+      width: calc({{ section.settings.media_width }}% - var(--grid-desktop-horizontal-spacing) / 2);
+    }
+
+    .product:not(.product--no-media) .product__info-wrapper {
+      padding-left: 4rem;
+      max-width: calc(100% - {{ section.settings.media_width }}%);
+      width: calc((100% - {{ section.settings.media_width }}%) - var(--grid-desktop-horizontal-spacing) / 2);
+    }
+  }
 {%- endstyle -%}
 
 <link rel="stylesheet" href="{{ 'component-deferred-media.css' | asset_url }}" media="print" onload="this.media='all'">
@@ -56,7 +73,7 @@
             {%- if product.selected_or_first_available_variant.featured_media != null -%}
               {%- assign media = product.selected_or_first_available_variant.featured_media -%}
               <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                {% render 'product-thumbnail', media: media, position: 'featured', loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: 0.5 %}
+                {% render 'product-thumbnail', media: media, position: 'featured', loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, aspect_ratio: section.settings.media_aspect_ratio, media_width: section.settings.media_width %}
               </div>
             {%- endif -%}
             {%- liquid
@@ -68,7 +85,7 @@
             {%- for media in product.media -%}
               {%- if media_to_render contains media.id and media.id != product.selected_or_first_available_variant.featured_media.id -%}
                 <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                  {% render 'product-thumbnail', media: media, position: forloop.index, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: 0.5 %}
+                  {% render 'product-thumbnail', media: media, position: forloop.index, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, aspect_ratio: section.settings.media_aspect_ratio, media_width: section.settings.media_width %}
                 </div>
               {%- endif -%}
             {%- endfor -%}
@@ -455,13 +472,13 @@
               {%- if product.selected_or_first_available_variant.featured_media != null -%}
                 {%- assign media = product.selected_or_first_available_variant.featured_media -%}
                 <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                  {% render 'product-thumbnail', media: media, position: 'featured', loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: 0.5 %}
+                  {% render 'product-thumbnail', media: media, position: 'featured', loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: section.settings.media_width %}
                 </div>
               {%- endif -%}
               {%- for media in product.media -%}
                 {%- if media_to_render contains media.id and media.id != product.selected_or_first_available_variant.featured_media.id -%}
                   <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                    {% render 'product-thumbnail', media: media, position: forloop.index, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: 0.5 %}
+                    {% render 'product-thumbnail', media: media, position: forloop.index, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: section.settings.media_width %}
                   </div>
                 {%- endif -%}
               {%- endfor -%}
@@ -843,6 +860,69 @@
       "label": "t:sections.featured-product.settings.media_position.label",
       "info": "t:sections.featured-product.settings.media_position.info"
     },
+    {
+      "type": "range",
+      "id": "media_width",
+      "min": 35,
+      "max": 70,
+      "step": 5,
+      "unit": "%",
+      "label": "Desktop media width",
+      "info": "t:sections.main-product.settings.media_size.info",
+      "default": 55
+    },
+    {
+      "type": "select",
+      "id": "media_aspect_ratio",
+      "options": [
+        {
+          "value": "original",
+          "label": "Original"
+        },
+        {
+          "value": "square",
+          "label": "Square"
+        },
+        {
+          "value": "4-3",
+          "label": "4:3"
+        },
+        {
+          "value": "4-5",
+          "label": "4:5"
+        },
+        {
+          "value": "2-3",
+          "label": "2:3"
+        },
+        {
+          "value": "16-9",
+          "label": "16:9"
+        }
+      ],
+      "default": "original",
+      "label": "Aspect ratio"
+    }, 
+    {
+      "type": "select",
+      "id": "media_object_position",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        }
+      ],
+      "default": "center",
+      "label": "Position"
+    }, 
     {
       "type": "checkbox",
       "id": "hide_variants",
