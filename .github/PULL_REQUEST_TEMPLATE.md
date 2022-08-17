@@ -17,6 +17,11 @@ Fixes #0.
 |---|---|---|---|---|
 | 1 |   |   |   |   |
 
+
+**Visual impact on existing themes**
+<!-- How will this visually affect merchants who upgrade to a new theme version with this change? -->
+
+
 **Testing steps/scenarios**
 <!-- List all the testing tasks that applies to your fix to help peers review your work. -->
 - [ ] Step 1
