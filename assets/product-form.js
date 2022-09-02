@@ -26,7 +26,7 @@ if (!customElements.get('product-form')) {
       delete config.headers['Content-Type'];
 
       const formData = new FormData(this.form);
-      if (this.dataset.cartType != 'page') {
+      if (this.cart) {
         formData.append('sections', this.cart.getSectionsToRender().map((section) => section.id));
         formData.append('sections_url', window.location.pathname);
         this.cart.setActiveElement(document.activeElement);
@@ -46,7 +46,7 @@ if (!customElements.get('product-form')) {
             soldOutMessage.classList.remove('hidden');
             this.error = true;
             return;
-          } else if (this.dataset.cartType == 'page') {
+          } else if (!this.cart) {
             window.location = window.routes.cart_url;
             return;
           }
