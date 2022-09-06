@@ -35,7 +35,7 @@ if (!customElements.get('quick-add-modal')) {
           if (window.ProductModel) window.ProductModel.loadShopifyXR();
 
           this.removeGalleryListSemantic();
-          this.updateImgSizes();
+          this.updateImageSizes();
           this.preventVariantURLSwitching();
           super.show(opener);
         })
@@ -88,23 +88,23 @@ if (!customElements.get('quick-add-modal')) {
       galleryList.querySelectorAll('[id^="Slide-"]').forEach(li => li.setAttribute('role', 'presentation'));
     }
 
-    updateImgSizes() {
-      const mediaGallery = this.modalContent.querySelector('[id^="MediaGallery-"]');
+    updateImageSizes() {
+      const product = this.modalContent.querySelector('.product');
+      const desktopColumns = product.classList.contains('product--columns');
+      if (!desktopColumns) return;
+
+      const mediaImages = product.querySelectorAll('.product__media img');
+      if (!mediaImages.length) return;
+
+      let mediaImageSizes = '(min-width: 1000px) 715px, (min-width: 750px) calc((100vw - 11.5rem) / 2), calc(100vw - 4rem)';
       
-      if (mediaGallery.dataset.desktopLayout === 'columns') {
-        const mediaGalleryImg = mediaGallery.querySelectorAll('.product__media img');
-        if (!mediaGalleryImg) return;
-
-        let mediaImgSizes = '(min-width: 1000px) 715px, (min-width: 750px) calc((100vw - 11.5rem) / 2), calc(100vw - 4rem)';
-        
-        if (mediaGallery.dataset.mediaSize === 'medium') {
-          mediaImgSizes = mediaImgSizes.replace('715px', '605px');
-        } else if (mediaGallery.dataset.mediaSize === 'small') {
-          mediaImgSizes = mediaImgSizes.replace('715px', '495px');
-        }
-
-        mediaGallery.querySelectorAll('.product__media img').forEach(img => img.setAttribute('sizes', mediaImgSizes));
+      if (product.classList.contains('product--medium')) {
+        mediaImageSizes = mediaImageSizes.replace('715px', '605px');
+      } else if (product.classList.contains('product--small')) {
+        mediaImageSizes = mediaImageSizes.replace('715px', '495px');
       }
+
+      mediaImages.forEach(img => img.setAttribute('sizes', mediaImageSizes));
     }
   });
 }
