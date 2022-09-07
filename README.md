@@ -1,3 +1,18 @@
+This repository is used for updating dawn-specific settings.
+
+If you wan to ship a fix that should apply to all OS 2.0 themes, use the public [dawn](https://github.com/Shopify/dawn) repository.
+
+More detail here about the purpose of each repo:
+
+| Repository | Audience | Purpose |
+|-|-|-|
+| [dawn](https://github.com/Shopify/dawn) | Public, merchant-facing | The foundation of what all of our themes are built on. Essentially, all themes are based on this repo (like [`dawn-private`](https://github.com/Shopify/dawn-private), [`taste`](https://github.com/Shopify/taste), [`crave`](https://github.com/Shopify/crave), etc.), and differ only in their setting configuration. Before working with this repo, read [Important read: Working with Dawn](https://vault.shopify.io/pages/18763-Important-read-Working-with-Dawn) |
+| [dawn-private](https://github.com/Shopify/dawn-private) | Shopify-only | The dawn-specific settings. It's an equivalent of taste, crave, etc. Only template/json updates can be merged in this repo. |
+
+If unsure where to open your issue/PR, ask in the [#help-flagship-themes](https://shopify.slack.com/archives/CB0JT58RE) channel.
+
+_____
+
 # Dawn
 
 [![Build status](https://github.com/shopify/dawn/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Shopify/dawn/actions/workflows/ci.yml?query=branch%3Amain)
