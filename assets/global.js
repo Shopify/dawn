@@ -721,13 +721,13 @@ class SlideshowComponent extends SliderComponent {
     this.sliderItemsToShow.forEach((item, index) => {
       const linkElements = item.querySelectorAll('a');
       if (index === this.currentPage - 1) {
-        if (linkElements.length ) linkElements.forEach(button => {
+        if (linkElements.length) linkElements.forEach(button => {
           button.removeAttribute('tabindex');
         });
         item.setAttribute('aria-hidden', 'false');
         item.removeAttribute('tabindex');
       } else {
-        if (linkElements.length ) linkElements.forEach(button => {
+        if (linkElements.length) linkElements.forEach(button => {
           button.setAttribute('tabindex', '-1');
         });
         item.setAttribute('aria-hidden', 'true');
