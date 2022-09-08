@@ -66,54 +66,59 @@
 
   // QUERY TO CHECK EMAIL CHECKBOX
   $(function () {
-    console.log(
-      $(".section__content input#checkout_buyer_accepts_marketing").val() +
-        "" +
-        Shopify.locale
-    );
-    console.log(Shopify.Checkout.step);
-    $("body").on("change", "#checkout_buyer_accepts_marketing", function () {
-      console.log($(this).prop("checked"));
-    });
+    console.log("checkout step: " + Shopify.Checkout.step);
 
-    $("body").on("keyup", "#checkout_email", function () {
-      console.log($(this).val());
-    });
-    if (Shopify.Checkout.step == "shipping_method") {
-      let email = localStorage.getItem("checkout_email");
-      let language = Shopify.locale;
-      console.log(language);
-      let data_json = {
-        token: "TusMfD",
-        properties: {
-          $email: email,
-          $language: `${language}`,
-        },
-      };
-      data_json = JSON.stringify(data_json);
-      console.log(data_json);
-      const settings = {
-        async: true,
-        crossDomain: true,
-        url: "https://a.klaviyo.com/api/identify",
-        method: "POST",
-        headers: {
-          Accept: "text/html",
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        data: {
-          data: data_json,
-        },
-      };
-
-      $.ajax(settings).done(function (response) {
-        console.log(response);
-      });
+    if (Shopify.Checkout.step == "payment_method") {
+      var interval = setInterval(checkEmail, 1000);
     }
-    $("body").on("click", "#continue_button", function () {
-      console.log($("#checkout_email").val());
-      let email = $("#checkout_email").val();
-      localStorage.setItem("checkout_email", email);
-    });
+
+    function checkEmail() {
+      let email = $(".review-block__content bdo").text();
+      console.log("bdo email: " + email);
+      if (email) {
+        console.log("got email:" + email);
+        let language = Shopify.locale;
+        submitLangToKlaviyo(email, language);
+        clearInterval(interval);
+      }
+    }
+
+    // let email = localStorage.getItem("checkout_email");
+    // $("body").on("click", "#continue_button", function () {
+    //   console.log($("#checkout_email").val());
+    //   let email = $("#checkout_email").val();
+    //   localStorage.setItem("checkout_email", email);
+    //   let language = Shopify.locale;
+    //   console.log(language);
+    // });
   });
+
+  function submitLangToKlaviyo(email, language) {
+    let data_json = {
+      token: "TusMfD",
+      properties: {
+        $email: email,
+        $language: `${language}`,
+      },
+    };
+    data_json = JSON.stringify(data_json);
+    console.log(data_json);
+    const settings = {
+      async: true,
+      crossDomain: true,
+      url: "https://a.klaviyo.com/api/identify",
+      method: "POST",
+      headers: {
+        Accept: "text/html",
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      data: {
+        data: data_json,
+      },
+    };
+
+    $.ajax(settings).done(function (response) {
+      console.log(response);
+    });
+  }
 })(Checkout.$);
