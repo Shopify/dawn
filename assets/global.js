@@ -925,15 +925,12 @@ class ProductRecommendations extends HTMLElement {
             this.innerHTML = recommendations.innerHTML;
           }
 
-          if (!this.querySelector('slideshow-component') && html.querySelector('.complementary-wrapper')) {
-            this.closest('.complementary-wrapper').remove();
+          if (!this.querySelector('slideshow-component') && this.classList.contains('complementary-products')) {
+            this.remove();
           }
 
           if (html.querySelector('.grid__item')) {
             this.classList.add('product-recommendations--loaded');
-            if(this.querySelector('.skeleton')) {
-              this.querySelector('.skeleton').remove();
-            }
           }
         })
         .catch(e => {
