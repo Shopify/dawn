@@ -47,8 +47,9 @@ if (!customElements.get('quick-add-modal')) {
 
     setInnerHTML(element, html) {
       element.innerHTML = html;
+
       element.querySelector('div[id^="ProductInfo-"]').classList.remove('product__info-container--sticky');
-      let colorScheme = element.querySelector('.product').classList[1];
+      let colorScheme = Array.from(element.querySelector('.product').classList).find(className => className.startsWith('color-'));
       element.classList.add(colorScheme);
 
       // Reinjects the script tags to allow execution. By default, scripts are disabled when using element.innerHTML.
