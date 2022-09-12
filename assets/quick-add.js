@@ -52,7 +52,7 @@ if (!customElements.get('quick-add-modal')) {
       // Prevent qucik-add-modal from pulling styling from the product page
       const colorScheme = Array.from(element.querySelector('div[id^="ProductInfo-"]').classList).find(className => className.startsWith('color-'));
       element.querySelector('div[id^="ProductInfo-"]').classList.remove('content-container', colorScheme);
-      element.querySelector('.product__info-wrapper').classList.remove('different-color-scheme');
+      element.querySelector('.product__info-wrapper').classList.remove('different-color-scheme', 'product__info-wrapper--extra-padding');
 
       // Reinjects the script tags to allow execution. By default, scripts are disabled when using element.innerHTML.
       element.querySelectorAll('script').forEach(oldScriptTag => {
@@ -102,7 +102,7 @@ if (!customElements.get('quick-add-modal')) {
       if (!mediaImages.length) return;
 
       let mediaImageSizes = '(min-width: 1000px) 715px, (min-width: 750px) calc((100vw - 11.5rem) / 2), calc(100vw - 4rem)';
-      
+
       if (product.classList.contains('product--medium')) {
         mediaImageSizes = mediaImageSizes.replace('715px', '605px');
       } else if (product.classList.contains('product--small')) {
