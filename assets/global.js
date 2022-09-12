@@ -721,13 +721,17 @@ class SlideshowComponent extends SliderComponent {
 
   setSlideVisibility() {
     this.sliderItemsToShow.forEach((item, index) => {
-      const button = item.querySelector('a');
+      const linkElements = item.querySelectorAll('a');
       if (index === this.currentPage - 1) {
-        if (button) button.removeAttribute('tabindex');
+        if (linkElements.length) linkElements.forEach(button => {
+          button.removeAttribute('tabindex');
+        });
         item.setAttribute('aria-hidden', 'false');
         item.removeAttribute('tabindex');
       } else {
-        if (button) button.setAttribute('tabindex', '-1');
+        if (linkElements.length) linkElements.forEach(button => {
+          button.setAttribute('tabindex', '-1');
+        });
         item.setAttribute('aria-hidden', 'true');
         item.setAttribute('tabindex', '-1');
       }
@@ -901,3 +905,43 @@ class VariantRadios extends VariantSelects {
 }
 
 customElements.define('variant-radios', VariantRadios);
+
+class ProductRecommendations extends HTMLElement {
+  constructor() {
+    super();
+  }
+
+  connectedCallback() {
+    const handleIntersection = (entries, observer) => {
+      if (!entries[0].isIntersecting) return;
+      observer.unobserve(this);
+
+      fetch(this.dataset.url)
+        .then(response => response.text())
+        .then(text => {
+          const html = document.createElement('div');
+          html.innerHTML = text;
+          const recommendations = html.querySelector('product-recommendations');
+
+          if (recommendations && recommendations.innerHTML.trim().length) {
+            this.innerHTML = recommendations.innerHTML;
+          }
+
+          if (!this.querySelector('slideshow-component') && this.classList.contains('complementary-products')) {
+            this.remove();
+          }
+
+          if (html.querySelector('.grid__item')) {
+            this.classList.add('product-recommendations--loaded');
+          }
+        })
+        .catch(e => {
+          console.error(e);
+        });
+    }
+
+    new IntersectionObserver(handleIntersection.bind(this), {rootMargin: '0px 0px 400px 0px'}).observe(this);
+  }
+}
+
+customElements.define('product-recommendations', ProductRecommendations);
