@@ -6,20 +6,20 @@
         ($("#quiz-kit-subscribe-UJBRs3twgJ-submit-form input").val() != "" &&
           $(".submit-form-terms").prop("checked") == true)
       ) {
-        $(`[data-aos-delay="450"]`).removeClass("quiz-quiz");
+        $(`[data-aos-delay="450"]`).removeClass("quiz_active");
         $(`[data-aos-delay="600"]`).css("display", "none");
       }
       else if (
         ($("#quiz-kit-subscribe-UJBRs3twgJ-submit-form input").val() != "" ||
           $(".submit-form-terms").prop("checked") == true)
       ) {
-        $(`[data-aos-delay="450"]`).addClass("quiz-quiz");
+        $(`[data-aos-delay="450"]`).addClass("quiz_active");
         $(`[data-aos-delay="600"]`).css("display", "none");
 
       }
       else {
         $(`[data-aos-delay="600"]`).css("display", "inline-block");
-        $(`[data-aos-delay="450"]`).removeClass("quiz-quiz");
+        $(`[data-aos-delay="450"]`).removeClass("quiz_active");
       }
     }
     checkEmail();
@@ -44,20 +44,20 @@ $(document).ready(function () {
         ($("#quiz-kit-subscribe-0Xd3Tp3VCR-submit-form input").val() != "" &&
           $(".submit-form-terms").prop("checked") == true)
       ) {
-        $(`[data-aos-delay="450"]`).removeClass("quiz-quiz");
+        $(`[data-aos-delay="450"]`).removeClass("quiz_active");
         $(`[data-aos-delay="600"]`).css("display", "none");
       }
       else if (
         ($("#quiz-kit-subscribe-0Xd3Tp3VCR-submit-form input").val() != "" ||
           $(".submit-form-terms").prop("checked") == true)
       ) {
-        $(`[data-aos-delay="450"]`).addClass("quiz-quiz");
+        $(`[data-aos-delay="450"]`).addClass("quiz_active");
         $(`[data-aos-delay="600"]`).css("display", "none");
 
       }
       else {
         $(`[data-aos-delay="600"]`).css("display", "inline-block");
-        $(`[data-aos-delay="450"]`).removeClass("quiz-quiz");
+        $(`[data-aos-delay="450"]`).removeClass("quiz_active");
       }
     }
     checkEmailDE();
