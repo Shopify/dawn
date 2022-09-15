@@ -1,9 +1,12 @@
 $(document).ready(function () {
+  // setTimeout(() => {
+  //   localStorage.setItem("gorgias.chat-access-token", "");
+  // }, 5000);
   console.log("geo redirect file");
   var language = localStorage.getItem("preferredLang");
   var country = localStorage.getItem("preferredCont");
   var cancelled = localStorage.getItem("cancelledModal");
-
+  userCountry = {};
   if (language && country) {
     language = language.toLowerCase();
     country = country.toLowerCase();
@@ -19,7 +22,7 @@ $(document).ready(function () {
         console.log(data);
         if (response.status === 200) {
           console.log(data.detected_values.country.name);
-          let userCountry = data.detected_values.country;
+          userCountry = data.detected_values.country;
           console.log(userCountry);
           //check if users country matches to the current store market
           checkUserLocation(userCountry);
@@ -39,21 +42,35 @@ $(document).ready(function () {
       $("#suggested").click();
     }
   }
-  $("#saveInfo").change(function () {
-    setLocaleDetails();
-  });
+  // $("#saveInfo").change(function () {
+  //   setLocaleDetails();
+  // });
 
   $("#suggested").click(function (event) {
     setLocaleDetails();
   });
 
+  $('.close-lang, .modal-span').click(function () {
+    // console.log("cancelled");
+    if (userCountry.handle.toLowerCase() == "de" && Shopify.country.toLowerCase() != "de") {
+      let preferredCont = "";
+      let preferredLang = "";
+      preferredCont = $("#country_code").val();
+      preferredLang = $("#locale_code").val();
+    
+      localStorage.setItem("preferredLang", preferredLang);
+      localStorage.setItem("preferredCont", preferredCont);
+      localStorage.setItem("cancelledModal", "true");
+    }
+  });
+
   function setLocaleDetails() {
     let preferredCont = "";
     let preferredLang = "";
-    if ($("#saveInfo").is(":checked")) {
+    // if ($("#saveInfo").is(":checked") || (userCountry.handle.toLowerCase() == "de" && Shopify.country.toLowerCase() != "de")) {
+    // }
       preferredCont = $("#country_code").val();
       preferredLang = $("#locale_code").val();
-    }
     localStorage.setItem("preferredLang", preferredLang);
     localStorage.setItem("preferredCont", preferredCont);
     // localStorage.setItem("cancelledModal", "true");
@@ -62,7 +79,7 @@ $(document).ready(function () {
   function checkUserLocation(userCountry) {
     console.log("function called");
     console.log(userCountry);
-    if (userCountry.handle.toLowerCase() == "de" && Shopify.country.toLowerCase() != "de") {
+    if (userCountry.handle.toLowerCase() == "de" && Shopify.country.toLowerCase() != "de" && !cancelled) {
       $(".modal").css("display", "flex");
     }
   }
