@@ -18,11 +18,18 @@
   assign variants_option3_arr = product.variants | map: 'option3'
 
   assign product_form_id = 'product-form-' | append: section.id
+
+  assign button_options_html = ''
+  assign dropdown_options_html = ''
 -%}
 
 {%- for value in option.values -%}
   {%- liquid
-    assign option_disabled = true
+    assign option_disabled = false
+    if block.settings.show_soldout_variants
+      assign option_disabled = true
+    endif
+
     for option1_name in variants_option1_arr
       case option.position
         when 1
@@ -53,8 +60,8 @@
       {{ value }}{% if option_disabled %}<span class="visually-hidden">{{ 'products.product.variant_sold_out_or_unavailable' | t }}</span>{% endif %}
     </label>
   {%- elsif block.settings.picker_type == 'dropdown' -%}
-    <option value="{{ value | escape }}"{% if option.selected_value == value %} selected="selected"{% endif %}{% if option_disabled and block.settings.select_soldout_type == 'disabled' %} aria-label="{{ 'products.product.variant_sold_out_or_unavailable' | t }}"{% endif %}>
-      {{ value }}{% if option_disabled %} [{{ 'products.product.unavailable' | t }}]{% endif %}
+    <option value="{{ value | escape }}"{% if option.selected_value == value %} selected="selected"{% endif %}>
+      {% if option_disabled %}{{ 'products.product.unavailable' | t: option_value: value }}{% else %}{{ value }}{% endif %}
     </option>
   {%- endif -%}
 {%- endfor -%}
