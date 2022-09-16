@@ -1,22 +1,27 @@
-Dawn 6.0.2 introduces a new cart drawer feature, additional customization options on the rich text section, and various fixes and enhancements.
+Dawn 7.0.0 introduces several fixes and enhancements to make the themes even more flexible and easy to use. We now offer additional customization options in the header to change the position of your logo, new ways of displaying your product page and featured product images, and a new complementary product block to help boost sales.
 
 ### Added
-- Important: We introduced new settings to the header section to control top and bottom section padding. This update may cause a visual change to your header. This can be modified by adjusting the bottom padding value.
-- We introduced a new theme setting that allows you to control what happens when an item is added to cart. Choose between a cart drawer, a pop-up notification, or linking directly to the cart page.
-- The rich text section is now more flexible. You can now customize the desktop content position, the content alignment, the size and formatting of headings, and the number of blocks added to the section.
+- The announcement bar section has a new setting that lets you set the text alignment.
+- The header is now more flexible. We added a new logo position option called “Middle center” to feature your logo in the center and your navigation menu on the left, on larger screens.
+- The product information section has a new layout option that allows you to split your product images into a two-column grid.
+- The product information section has a new block that allows you to display complementary products.
+- The product information and featured product sections now allow desktop media to be displayed on the left or on the right on larger screens.
+- We added pagination to the main collection list.
+- We introduced the ability to add and reorder sections, including app sections, to the customer account pages.
 
 ### Changed
-
-- Important: We moved “Show vendor” and “Enable cart note” checkboxes from the cart template to the theme settings under the heading “Cart”. This update may cause a visual change to your cart. This can be modified by adjusting the checkboxes in the theme settings.
+- Important: We introduced new theme settings to style “product cards”, “blog cards” and “collection cards” separately. Prior to this update, all these components were styled with the cards’ theme settings. If you have previously updated the style of your cards, this update may cause visual changes to your product cards, blog cards, or collection cards. This can be modified by adjusting their styling in theme settings.
+- We introduced a new setting on the collage section to let you apply product card styling to all card types featured in the section.
 
 ### Fixes and improvements
-
-- On larger screen sizes, the quick add modal included unnecessary empty space. This is now fixed.
-- We fixed an issue where the product media gallery sometimes hid the subsequent media when larger values of horizontal grid space were used.
-- The product media gallery included unnecessary empty space between the product media and the gallery controls. This is now fixed.
-- We fixed an issue where the collapsible row blocks in the collapsible content section were missing padding.
-- We fixed an issue where hiding the background of the content container on the slideshow section would not work if a gradient was set as the background color.
-- The recaptcha badge was not visible on the contact form. This is now fixed.
-- We fixed an issue where adding a menu block to the footer required a heading to display.
-- The experience of navigating paginated pages when using a screen reader or keyboard is improved.
-- We added a warning to the password footer link opening in a new tab, improving its accessibility.
+- We fixed the setting that displays the product’s vendor name on the cart pop up notification.
+- We fixed an issue where the search dropdown window wasn’t matching the width of the search input field on smaller screens.
+- We fixed an issue where the quick add buttons would still display when JavaScript was disabled.
+- We fixed an issue where the login link wouldn’t display properly in the menu drawer on Android.
+- We fixed video controls not being clickable on the featured product section.
+- We fixed an issue with the cart notification overlapping the rest of the content on Safari v15.6.
+- We added max width to iFrames placed in the product description so the content doesn’t overflow.
+- We fixed the slider padding being different on Safari from the rest of the browsers.
+- We fixed an issue where manually inputting a quantity in the cart drawer could remove the item in question.
+- We fixed a bug to allow the removal of filters.
+- We fixed focus rings for Windows High Contrast mode.
