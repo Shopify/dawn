@@ -77,7 +77,12 @@
       console.log("bdo email: " + email);
       if (email) {
         console.log("got email:" + email);
-        let language = Shopify.locale;
+        let language ;
+        if (Shopify.locale) {
+          language = Shopify.locale;
+        } else{
+          language = Shopify.Checkout.normalizedLocale;
+        }
         submitLangToKlaviyo(email, language);
         clearInterval(interval);
       }
