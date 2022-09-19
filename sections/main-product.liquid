@@ -353,6 +353,17 @@
                   {{ form | payment_terms }}
                 {%- endform -%}
               </div>
+            {%- when 'inventory' -%}
+              <p
+                class="product__text product__text--inventory no-js-hidden{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}"
+                id="inventory-{{ section.id }}"
+                {{ block.shopify_attributes }}
+              >
+                {{- block.settings.text -}}
+                {%- if product.selected_or_first_available_variant.available and product.selected_or_first_available_variant.inventory_management == 'shopify' -%}
+                  {{ 'products.product.inventory' | t: quantity: product.selected_or_first_available_variant.inventory_quantity }}
+                {%- endif -%}
+              </p>
             {%- when 'description' -%}
               {%- if product.description != blank -%}
                 <div class="product__description rte quick-add-hidden">
@@ -572,6 +583,7 @@
                           {{ variant.title }}
                           {%- if variant.available == false %} - {{ 'products.product.sold_out' | t }}{% endif %}
                           - {{ variant.price | money | strip_html }}
+                          {% if variant.available and variant.inventory_management == 'shopify' -%} - {{ 'products.product.inventory' | t: quantity: variant.inventory_quantity }}{% endif %}
                         </option>
                       {%- endfor -%}
                     </select>
@@ -1214,6 +1226,33 @@
       "type": "price",
       "name": "t:sections.main-product.blocks.price.name",
       "limit": 1
+    },
+    {
+      "type": "inventory",
+      "name": "t:sections.main-product.blocks.inventory.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "text_style",
+          "options": [
+            {
+              "value": "body",
+              "label": "t:sections.main-product.blocks.inventory.settings.text_style.options__1.label"
+            },
+            {
+              "value": "subtitle",
+              "label": "t:sections.main-product.blocks.inventory.settings.text_style.options__2.label"
+            },
+            {
+              "value": "uppercase",
+              "label": "t:sections.main-product.blocks.inventory.settings.text_style.options__3.label"
+            }
+          ],
+          "default": "body",
+          "label": "t:sections.main-product.blocks.inventory.settings.text_style.label"
+        }
+      ]
     },
     {
       "type": "quantity_selector",
