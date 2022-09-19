@@ -1,0 +1,92 @@
+if (typeof RebuyExtensions == "undefined") {
+    RebuyExtensions = {};
+}
+
+RebuyExtensions.supportedLocales = ["de"];
+
+RebuyExtensions.manageSmartCartRouting = function () {
+    if (
+        Rebuy &&
+        Rebuy.SmartCart &&
+        Rebuy.SmartCart.status &&
+        Rebuy.SmartCart.status != "disabled"
+    ) {
+        if (
+            Shopify &&
+            Shopify.locale &&
+            RebuyExtensions.supportedLocales.includes(Shopify.locale)
+        ) {
+            Rebuy.SmartCart.settings.checkout_button.routing = "custom";
+            Rebuy.SmartCart.settings.checkout_button.routing_link = `${Shopify.routes.root}checkout`;
+            console.log("This is a test");
+        } else {
+            Rebuy.SmartCart.settings.checkout_button.routing = "shopify";
+            Rebuy.SmartCart.settings.checkout_button.routing_link = "";
+        }
+    }
+};
+
+RebuyExtensions.enrichProductJSON = function (products) {
+    for (let i = 0; i < products.length; i++) {
+        updateProductJSON(products[i]);
+    }
+
+    function updateProductJSON(product) {
+        currentLocale = "";
+
+        if (
+            Shopify &&
+            Shopify.locale &&
+            RebuyExtensions.supportedLocales.includes(Shopify.locale)
+        ) {
+            currentLocale = `${Shopify.locale}`;
+        }
+
+        $.getJSON(
+            currentLocale + "/products/" + product.handle + ".js",
+            function (json) {
+                var new_product = json;
+
+                for (var i = 0; i < products.length; i++) {
+                    if (products[i].id == new_product.id) {
+                        // Update product title
+                        product.title = new_product.title;
+
+                        for (
+                            var j = 0, new_variant;
+                            j < new_product.variants.length;
+                            j++
+                        ) {
+                            new_variant = new_product.variants[j];
+
+                            for (
+                                var x = 0, variant;
+                                x < product.variants.length;
+                                x++
+                            ) {
+                                variant = product.variants[x];
+
+                                if (variant.id == new_variant.id) {
+                                    // Update variant title
+                                    variant.title = new_variant.title;
+
+                                    break;
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+                }
+            }
+        );
+    }
+};
+
+document.addEventListener("rebuy:cart.change", function (event) {
+    setTimeout(() => RebuyExtensions.manageSmartCartRouting(), 0);
+});
+
+document.addEventListener("rebuy.productsChange", function (event) {
+    RebuyExtensions.enrichProductJSON(event.detail.products);
+});

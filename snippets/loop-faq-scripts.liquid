@@ -1,0 +1,78 @@
+function searchFunction() {
+//   console.log("working");
+  var input, filter, ul, li, a, i, txtValue;
+  input = document.getElementById("searchInput-{{ section.id }}");
+  filter = input.value.toUpperCase();
+  ul = document.getElementById("searchListWrapper-{{ section.id }}");
+  li = ul.getElementsByTagName("li");
+  for (i = 0; i < li.length; i++) {
+    a = li[i].getElementsByTagName("a")[0];
+    txtValue = a.textContent || a.innerText;
+    contentValue = a.getAttribute("data-content");
+    //console.log(contentValue);
+    if (
+      (filter != "" && txtValue.toUpperCase().indexOf(filter) > -1) ||
+      (filter != "" && contentValue.toUpperCase().indexOf(filter) > -1)
+    ) {
+      //console.log(filter);
+      li[i].style.display = "block";
+    } else {
+      li[i].style.display = "";
+    }
+  }
+}
+
+$(document).ready(function () {
+  $(".panel-title").click(function () {
+    $(".accordian-item").toggle();
+    $(".panel-title-arrow svg").toggleClass("arrow-rotate");
+  });
+
+  $(".categories-list-item").click(function () {
+    $(".categories-list-item").removeClass("filter_highlight highlight");
+    $(this).toggleClass("filter_highlight");
+    $(".filter_wrap").removeClass("active_filter first_filter");
+
+    let data_filter = $(this).data("filter_heading");
+    // console.log(data_filter);
+
+    $(`.filter_${data_filter}`).toggleClass("active_filter");
+  });
+
+  // function to trigger a click on the element according to the hash of the url
+  function handleUrlChange() {
+    if (window.location.hash) {
+      // hash found
+      var hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
+      const el = document.getElementById(hash);
+      let category_tab = $(`#${hash}`).data("tab");
+      let category_tab_el = document.querySelector(`.${category_tab}`);
+      category_tab_el.click();
+    //   console.log(category_tab_el);
+      if (el) {
+        el.click();
+      }
+
+      $("html, body").animate(
+        {
+          scrollTop: $(`#${hash}`).offset().top - 200,
+        },
+        200,
+        function () {}
+      );
+    }
+  }
+  handleUrlChange();
+
+  // check if the hash of the url has changed
+  $(window).on("hashchange", function (e) {
+    handleUrlChange();
+  });
+
+  // set input value equal to the search result clicked
+  $(".hyper_link").on("click", function (event) {
+    let textVal = $(this).text();
+    $("#searchInput-{{ section.id }}").val(textVal);
+    $("#searchListWrapper-{{ section.id }} li").css("display", "");
+  });
+});

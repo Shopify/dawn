@@ -1,0 +1,96 @@
+$(document).ready(function () {
+  console.log("geo redirect file");
+  var language = localStorage.getItem("preferredLang");
+  var country = localStorage.getItem("preferredCont");
+  var cancelled = localStorage.getItem("cancelledModal");
+  userCountry = {};
+  if (language && country) {
+    language = language.toLowerCase();
+    country = country.toLowerCase();
+  }
+
+  if (!country && !language) {
+    fetch(
+      "/browsing_context_suggestions.json?source=geolocation_recommendation&country[enabled]=true&language[enabled]=true"
+    )
+      .then(async (response) => {
+        // get json response here
+        let data = await response.json();
+        console.log(data);
+        if (response.status === 200) {
+          console.log(data.detected_values.country.name);
+          userCountry = data.detected_values.country;
+          console.log(userCountry);
+          //check if users country matches to the current store market
+          checkUserLocation(userCountry);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  } else {
+    if (
+      Shopify.locale.toLowerCase() != language ||
+      Shopify.country.toLowerCase() != country
+    ) {
+      console.log("user language/country doesn't match");
+      $("#country_code").val(country);
+      $("#locale_code").val(language);
+      $("#suggested").click();
+    }
+  }
+  // $("#saveInfo").change(function () {
+  //   setLocaleDetails();
+  // });
+
+  $("#suggested").click(function (event) {
+    if ($("#saveInfo").is(":checked")) {
+      setLocaleDetails();
+      localStorage.setItem("cancelledModal", "true");
+    }else{
+      localStorage.setItem("preferredLang", "");
+      localStorage.setItem("preferredCont", "");
+    }
+  });
+
+  $(".close-lang, .modal-span").click(function () {
+    // console.log("cancelled");
+    if (
+      userCountry.handle.toLowerCase() == "de" &&
+      Shopify.country.toLowerCase() != "de"
+    ) {
+      // setLocaleDetails();
+      localStorage.setItem("cancelledModal", "true");
+    }
+  });
+
+  function setLocaleDetails() {
+    let preferredCont = "";
+    let preferredLang = "";
+    // if ($("#saveInfo").is(":checked")) {
+    // }
+    preferredCont = $("#country_code").val();
+    preferredLang = $("#locale_code").val();
+    localStorage.setItem("preferredLang", preferredLang);
+    localStorage.setItem("preferredCont", preferredCont);
+    // localStorage.setItem("cancelledModal", "true");
+  }
+
+  function checkUserLocation(userCountry) {
+    console.log("function called");
+    console.log(userCountry);
+    if (
+      userCountry.handle.toLowerCase() == "de" &&
+      Shopify.country.toLowerCase() != "de" &&
+      !cancelled
+    ) {
+      $(".modal").css("display", "flex");
+    } else if (
+      userCountry.handle.toLowerCase() == "de" &&
+      Shopify.country.toLowerCase() == "de" &&
+      cancelled
+    ) {
+      localStorage.setItem("cancelledModal", "");
+    }
+  }
+});

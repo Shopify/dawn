@@ -1,0 +1,649 @@
+{{ 'lang-select.css' | asset_url | stylesheet_tag }}
+<style>
+  /*the container must be positioned relative:*/
+  .custom-select {
+    position: relative;
+    font-family: Arial;
+  }
+
+  .custom-select select {
+    display: none; /*hide original SELECT element:*/
+  }
+
+  .select-selected {
+    /*   background-color: DodgerBlue; */
+  }
+
+  /*style the arrow inside the select element:*/
+  .select-selected:after {
+    position: absolute;
+    content: '';
+    top: 16px;
+    right: 10px;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    border-color: #000 transparent transparent transparent;
+  }
+
+  /*point the arrow upwards when the select box is open (active):*/
+  .select-selected.select-arrow-active:after {
+    border-color: transparent transparent #000 transparent;
+    top: 9px;
+  }
+
+  /*style the items (options), including the selected item:*/
+  .select-items div,
+  .select-selected {
+    color: #333;
+    font-family: Josefin Sans, sans-serif;
+    padding: 8px 16px;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 0.5px solid #babfc3;
+  }
+
+  /*style items (options):*/
+  .select-items {
+    position: absolute;
+    background-color: #fff;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 99;
+    border: 1px solid #babfc3;
+    max-height: 200px;
+    overflow: auto;
+  }
+
+  /*hide the items when the select box is closed:*/
+  .select-hide {
+    display: none;
+  }
+
+  .select-items div:hover,
+  .same-as-selected {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+</style>
+
+<div class="container flex-box">
+  <div class="modal">
+    <span class="modal-span"> </span>
+    <div class="modal-marg rel">
+      <span class="close-lang">{% include 'icon-close' %}</span>
+      <div class="justify-content flex-center modal-div">
+        {%- form 'localization', id: 'CountryLanguageForm', class: 'localization-form' -%}
+          <input
+            type="hidden"
+            id="country_code"
+            name="country_code"
+            value="{{ localization.country.iso_code | escape }}"
+          >
+          <input
+            type="hidden"
+            id="locale_code"
+            name="locale_code"
+            value="{{ localization.language.iso_code | escape }}"
+          >
+
+          <h2 id="modal-welcome" class="modal-content">
+            {%- assign country_name = localization.country.name | downcase -%}
+            {%- if country_name == 'belgium' -%}
+              {%- assign country_name = 'Global' -%}
+            {%- else -%}
+              {%- assign country_name = localization.country.name -%}
+            {%- endif -%}
+            {{ section.settings.country_title }}
+            <span class="current-country">{{ country_name }}</span>
+            {{ section.settings.language_title }}
+            <span class="current-lang">{{ localization.language.name }}</span>
+          </h2>
+          <div id="modal-div" class="no-disp">
+            <div class="flex-box flex-column justify-center">
+              <p class="country-text ">{{ section.settings.select_country }}</p>
+              <div class="custom-select custom-select-country notranslate" style="width:100%;">
+                <select class="modal-buttons notranslate" id="country-selector">
+                  <option class="" disabled>Select a country</option>
+                  {% for block in section.blocks %}
+                    {% if block.settings.block_country1 != blank -%}
+                      <option
+                        class="country-options"
+                        data-langs="{{ block.settings.block_lang1 | replace: ' ', '' }}"
+                        data-country="{{ block.settings.block_country1 | split: '-' | first }}"
+                        data-country-code="{{ block.settings.block_country1 | split: '-' | last }}"
+                        value="{{ block.settings.block_country1 | split: '-' | last | upcase}}"
+                      >
+                        {{ block.settings.block_country1 | split: '-' | first }}
+                      </option>
+                    {%- endif %}
+                    {% if block.settings.block_country2 != blank -%}
+                      <option
+                        class="country-options"
+                        data-langs="{{ block.settings.block_lang2 | replace: ' ', '' }}"
+                        data-country="{{ block.settings.block_country2 | split: '-' | first }}"
+                        data-country-code="{{ block.settings.block_country2 | split: '-' | last }}"
+                        value="{{ block.settings.block_country2 | split: '-' | last | upcase}}"
+                      >
+                        {{ block.settings.block_country2 | split: '-' | first }}
+                      </option>
+                    {%- endif %}
+                    {% if block.settings.block_country3 != blank -%}
+                      <option
+                        class="country-options"
+                        data-langs="{{ block.settings.block_lang3 | replace: ' ', '' }}"
+                        data-country="{{ block.settings.block_country3 | split: '-' | first }}"
+                        data-country-code="{{ block.settings.block_country3 | split: '-' | last }}"
+                        value="{{ block.settings.block_country3 | split: '-' | last | upcase}}"
+                      >
+                        {{ block.settings.block_country3 | split: '-' | first }}
+                      </option>
+                    {%- endif %}
+                    {% if block.settings.block_country4 != blank -%}
+                      <option
+                        class="country-options"
+                        data-langs="{{ block.settings.block_lang4 | replace: ' ', '' }}"
+                        data-country="{{ block.settings.block_country4 | split: '-' | first }}"
+                        data-country-code="{{ block.settings.block_country4 | split: '-' | last }}"
+                        value="{{ block.settings.block_country4 | split: '-' | last | upcase}}"
+                      >
+                        {{ block.settings.block_country4 | split: '-' | first }}
+                      </option>
+                    {%- endif %}
+                    {% if block.settings.block_country5 != blank -%}
+                      <option
+                        class="country-options"
+                        data-langs="{{ block.settings.block_lang5 | replace: ' ', '' }}"
+                        data-country="{{ block.settings.block_country5 | split: '-' | first }}"
+                        data-country-code="{{ block.settings.block_country5 | split: '-' | last }}"
+                        value="{{ block.settings.block_country5 | split: '-' | last | upcase}}"
+                      >
+                        {{ block.settings.block_country5 | split: '-' | first }}
+                      </option>
+                    {%- endif %}
+                    {% if block.settings.block_country6 != blank -%}
+                      <option
+                        class="country-options"
+                        data-langs="{{ block.settings.block_lang6 | replace: ' ', '' }}"
+                        data-country="{{ block.settings.block_country6 | split: '-' | first }}"
+                        data-country-code="{{ block.settings.block_country6 | split: '-' | last }}"
+                        value="{{ block.settings.block_country6 | split: '-' | last | upcase}}"
+                      >
+                        {{ block.settings.block_country6 | split: '-' | first }}
+                      </option>
+                    {%- endif %}
+                    {% if block.settings.block_country7 != blank -%}
+                      <option
+                        class="country-options"
+                        data-langs="{{ block.settings.block_lang7 | replace: ' ', '' }}"
+                        data-country="{{ block.settings.block_country7 | split: '-' | first }}"
+                        data-country-code="{{ block.settings.block_country7 | split: '-' | last }}"
+                        value="{{ block.settings.block_country7 | split: '-' | last | upcase}}"
+                      >
+                        {{ block.settings.block_country7 | split: '-' | first }}
+                      </option>
+                    {%- endif %}
+                    {% if block.settings.block_country8 != blank -%}
+                      <option
+                        class="country-options"
+                        data-langs="{{ block.settings.block_lang8 | replace: ' ', '' }}"
+                        data-country="{{ block.settings.block_country8 | split: '-' | first }}"
+                        data-country-code="{{ block.settings.block_country8 | split: '-' | last }}"
+                        value="{{ block.settings.block_country8 | split: '-' | last | upcase}}"
+                      >
+                        {{ block.settings.block_country8 | split: '-' | first }}
+                      </option>
+                    {%- endif %}
+                    {% if block.settings.block_country9 != blank -%}
+                      <option
+                        class="country-options"
+                        data-langs="{{ block.settings.block_lang9 | replace: ' ', '' }}"
+                        data-country="{{ block.settings.block_country9 | split: '-' | first }}"
+                        data-country-code="{{ block.settings.block_country9 | split: '-' | last }}"
+                        value="{{ block.settings.block_country9 | split: '-' | last | upcase}}"
+                      >
+                        {{ block.settings.block_country9 | split: '-' | first }}
+                      </option>
+                    {%- endif %}
+                    {% if block.settings.block_country10 != blank -%}
+                      <option
+                        class="country-options"
+                        data-langs="{{ block.settings.block_lang10 | replace: ' ', '' }}"
+                        data-country="{{ block.settings.block_country10 | split: '-' | first }}"
+                        data-country-code="{{ block.settings.block_country10 | split: '-' | last }}"
+                        value="{{ block.settings.block_country10 | split: '-' | last | upcase}}"
+                      >
+                        {{ block.settings.block_country10 | split: '-' | first }}
+                      </option>
+                    {%- endif %}
+                  {% endfor %}
+                </select>
+              </div>
+              <p class="lang-text ">{{ section.settings.select_language }}</p>
+              <div class="custom-select custom-select-language notranslate" style="width:100%;">
+                <select class="modal-buttons notranslate" id="language-selector">
+                  <option disabled>Select a language</option>
+                  {% for block in section.blocks %}
+                    {% assign languages1 = block.settings.block_lang1 | replace: ' ', '' | split: ',' %}
+                    {% assign languages2 = block.settings.block_lang2 | replace: ' ', '' | split: ',' %}
+                    {% assign languages3 = block.settings.block_lang3 | replace: ' ', '' | split: ',' %}
+                    {% assign languages4 = block.settings.block_lang4 | replace: ' ', '' | split: ',' %}
+                    {% assign languages5 = block.settings.block_lang5 | replace: ' ', '' | split: ',' %}
+                    {% assign languages6 = block.settings.block_lang6 | replace: ' ', '' | split: ',' %}
+                    {% assign languages7 = block.settings.block_lang7 | replace: ' ', '' | split: ',' %}
+                    {% assign languages8 = block.settings.block_lang8 | replace: ' ', '' | split: ',' %}
+                    {% assign languages9 = block.settings.block_lang9 | replace: ' ', '' | split: ',' %}
+                    {% assign languages10 = block.settings.block_lang10 | replace: ' ', '' | split: ',' %}
+
+                    {% assign languages = languages1
+                      | concat: languages2
+                      | concat: languages3
+                      | concat: languages4
+                      | concat: languages5
+                      | concat: languages6
+                      | concat: languages7
+                      | concat: languages8
+                      | concat: languages9
+                      | concat: languages10
+                    %}
+                    {% assign uniqLanguages = languages | uniq %}
+
+                    {% for lang in uniqLanguages %}
+                      <option class="language-options" data-lang="{{ lang }}" value="{{ lang }}">
+                        {% if lang == 'en' -%}
+                          English
+                        {%- elsif lang == 'nl' -%}
+                          Dutch
+                        {%- elsif lang == 'fr' -%}
+                          French
+                        {%- elsif lang == 'de' -%}
+                          German
+                        {%- elsif lang == 'it' -%}
+                          Italian
+                        {%- elsif lang == 'da' -%}
+                          Danish
+                        {%- elsif lang == 'ru' -%}
+                          Russian
+                        {% else -%}
+                          {{- lang | upcase -}}
+                        {%- endif %}
+                      </option>
+                    {% endfor %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+              <div class="checkbox_tooltip_wrapper">
+                <label class="checkbox-container"
+                  >Save information
+                  <input id="saveInfo" type="checkbox" />
+                  <span class="checkmark"></span>
+                </label>
+                <div class="tooltip">
+                  <div>
+                  {%- render 'language-select-info-icon' -%}
+                  </div>
+                  <span class="tooltiptext">This information will be save on your browser so we can redirect you to your preferred Country/Language.</span>
+                </div>
+              </div>
+           
+          </div>
+          <button
+            class="button button--primary  no-border lang-select-btn"
+            id="suggested"
+            style="margin-bottom: 12px !important;"
+          >
+            {{ section.settings.section_btn_text }}
+          </button>
+          <span class="modal-text change-lang-link">{{ section.settings.section_text }}</span>
+        {%- endform -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function () {
+    $('.langs').click(function () {
+      $('#menu').addClass('hidden-menu');
+      $('.modal').css('display', 'flex');
+    });
+    $('.close-lang, .modal-span').click(function () {
+      $('.modal').css('display', 'none');
+    });
+
+    $('.change-lang-link').click(function () {
+      //       $('#country-selector').removeClass('no-disp');
+      //       $('#language-selector').removeClass('no-disp');
+      //       $('.country-text, .lang-text, .custom-select').removeClass('no-disp');
+
+      $(this).addClass('no-disp');
+      $('#modal-div').removeClass('no-disp');
+    });
+
+    function changeLanguages() {
+      var langs = $('#country-selector').find('option:selected').data('langs');
+      var languagesArr = langs.split(',');
+
+      $('#language-selector option.language-options').each(function () {
+        var tempLang = $(this).data('lang');
+        let ele = $(".custom-select-language [data-lang='" + tempLang + "']");
+        if (languagesArr.includes(tempLang)) {
+          //           $(this).show();
+          //           ele.show();
+          ele.addClass('active');
+          ele.removeClass('no-disp');
+        } else {
+          //           $(this).hide();
+          //           ele.hide();
+          ele.removeClass('active');
+          ele.addClass('no-disp');
+        }
+      });
+      $('#language-selector option').removeAttr('selected');
+      $('#language-selector option.active').first().attr('selected', 'selected');
+      //       let latest_option = $("#language-selector option.active").first().val();
+
+      $('.custom-select-language .select-items div').removeClass('same-as-selected ');
+      let firstLangOption = $('.custom-select-language .select-items div.active').first();
+      firstLangOption.addClass('same-as-selected');
+      $('.custom-select-language .select-selected').html(firstLangOption.html());
+    }
+    changeLanguages();
+
+    function updateInputs() {
+      let country_code = $('#country-selector').val();
+      let locale_code = $('#language-selector').val();
+      country_code = country_code.trim();
+      locale_code = locale_code.trim();
+      $('#country_code').val(country_code);
+      $('#locale_code').val(locale_code);
+    }
+
+    $('#country-selector').change(function () {
+      changeLanguages();
+      updateInputs();
+    });
+    $('#language-selector').change(function () {
+      updateInputs();
+    });
+    updateInputs();
+
+    /* =====================================
+
+      CUSTOM SELECT TAG SCRIPT
+
+  ===================================== */
+
+    var x, i, j, l, ll, selElmnt, a, b, c;
+    /*look for any elements with the class "custom-select":*/
+    x = document.getElementsByClassName('custom-select');
+    l = x.length;
+    for (i = 0; i < l; i++) {
+      selElmnt = x[i].getElementsByTagName('select')[0];
+      ll = selElmnt.length;
+      /*for each element, create a new DIV that will act as the selected item:*/
+      a = document.createElement('DIV');
+      a.setAttribute('class', 'select-selected');
+      a.innerHTML = selElmnt.options[selElmnt.selectedIndex].innerHTML;
+      x[i].appendChild(a);
+      /*for each element, create a new DIV that will contain the option list:*/
+      b = document.createElement('DIV');
+      b.setAttribute('class', 'select-items select-hide');
+      for (j = 1; j < ll; j++) {
+        /*for each option in the original select element,
+      create a new DIV that will act as an option item:*/
+        c = document.createElement('DIV');
+        c.innerHTML = selElmnt.options[j].innerHTML;
+        selElmnt.options[j].getAttribute('data-lang')
+          ? (c.dataset.lang = selElmnt.options[j].getAttribute('data-lang'))
+          : null;
+        $(selElmnt.options[j]).hasClass('no-disp') ? $(c).addClass('no-disp') : null;
+        c.addEventListener('click', function (e) {
+          /*when an item is clicked, update the original select box,
+          and the selected item:*/
+          var y, i, k, s, h, sl, yl;
+          s = this.parentNode.parentNode.getElementsByTagName('select')[0];
+          sl = s.length;
+          h = this.parentNode.previousSibling;
+          for (i = 0; i < sl; i++) {
+            if (s.options[i].innerHTML == this.innerHTML) {
+              s.selectedIndex = i;
+
+              console.log(s.value);
+              h.innerHTML = this.innerHTML;
+              y = this.parentNode.getElementsByClassName('same-as-selected');
+              yl = y.length;
+              for (k = 0; k < yl; k++) {
+                y[k].removeAttribute('class');
+              }
+              this.setAttribute('class', 'same-as-selected');
+              break;
+            }
+          }
+          if ($(this).parent().parent().hasClass('custom-select-country')) {
+            changeLanguages();
+            updateInputs();
+          }
+          updateInputs();
+          h.click();
+        });
+        b.appendChild(c);
+      }
+      x[i].appendChild(b);
+      a.addEventListener('click', function (e) {
+        /*when the select box is clicked, close any other select boxes,
+        and open/close the current select box:*/
+        e.stopPropagation();
+        closeAllSelect(this);
+        this.nextSibling.classList.toggle('select-hide');
+        this.classList.toggle('select-arrow-active');
+      });
+    }
+    function closeAllSelect(elmnt) {
+      /*a function that will close all select boxes in the document,
+    except the current select box:*/
+      var x,
+        y,
+        i,
+        xl,
+        yl,
+        arrNo = [];
+      x = document.getElementsByClassName('select-items');
+      y = document.getElementsByClassName('select-selected');
+      xl = x.length;
+      yl = y.length;
+      for (i = 0; i < yl; i++) {
+        if (elmnt == y[i]) {
+          arrNo.push(i);
+        } else {
+          y[i].classList.remove('select-arrow-active');
+        }
+      }
+      for (i = 0; i < xl; i++) {
+        if (arrNo.indexOf(i)) {
+          x[i].classList.add('select-hide');
+        }
+      }
+    }
+    /*if the user clicks anywhere outside the select box,
+  then close all select boxes:*/
+    document.addEventListener('click', closeAllSelect);
+  });
+</script>
+{% schema %}
+{
+  "name": "Language Selector",
+  "settings": [
+    {
+      "type": "text",
+      "id": "country_title",
+      "label": "Country Title",
+      "default": "Your country is "
+    },
+    {
+      "type": "text",
+      "id": "language_title",
+      "label": "Language Title",
+      "default": "and language is set to "
+    },
+    {
+      "type": "text",
+      "id": "select_country",
+      "label": "Select Country Text",
+      "default": "Select Country"
+    },
+    {
+      "type": "text",
+      "id": "select_language",
+      "label": "Select Language Text",
+      "default": "Select Language"
+    },
+    {
+      "type": "text",
+      "id": "section_text",
+      "label": "Section Text",
+      "default": "Change Country and Language"
+    },
+    {
+      "type": "text",
+      "id": "section_btn_text",
+      "label": "Section Button Text",
+      "default": "Continue Shopping"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "languages",
+      "name": "Language and Country",
+      "settings": [
+        {
+          "type": "text",
+          "id": "block_country1",
+          "label": "Enter Country name - country code",
+          "info": "Eg: Netherlands-nl, French-fr"
+        },
+        {
+          "type": "text",
+          "id": "block_lang1",
+          "label": "Enter language in iso format",
+          "info": "Eg: en,fr"
+        },
+        {
+          "type": "text",
+          "id": "block_country2",
+          "label": "Enter Country name - country code",
+          "info": "Eg: Netherlands-nl, French-fr"
+        },
+        {
+          "type": "text",
+          "id": "block_lang2",
+          "label": "Enter language in iso format",
+          "info": "Eg: en,fr"
+        },
+        {
+          "type": "text",
+          "id": "block_country3",
+          "label": "Enter Country name - country code",
+          "info": "Eg: Netherlands-nl, French-fr"
+        },
+        {
+          "type": "text",
+          "id": "block_lang3",
+          "label": "Enter language in iso format",
+          "info": "Eg: en,fr"
+        },
+        {
+          "type": "text",
+          "id": "block_country4",
+          "label": "Enter Country name - country code",
+          "info": "Eg: Netherlands-nl, French-fr"
+        },
+        {
+          "type": "text",
+          "id": "block_lang4",
+          "label": "Enter language in iso format",
+          "info": "Eg: en,fr"
+        },
+        {
+          "type": "text",
+          "id": "block_country5",
+          "label": "Enter Country name - country code",
+          "info": "Eg: Netherlands-nl, French-fr"
+        },
+        {
+          "type": "text",
+          "id": "block_lang5",
+          "label": "Enter language in iso format",
+          "info": "Eg: en,fr"
+        },
+        {
+          "type": "text",
+          "id": "block_country6",
+          "label": "Enter Country name - country code",
+          "info": "Eg: Netherlands-nl, French-fr"
+        },
+        {
+          "type": "text",
+          "id": "block_lang6",
+          "label": "Enter language in iso format",
+          "info": "Eg: en,fr"
+        },
+        {
+          "type": "text",
+          "id": "block_country7",
+          "label": "Enter Country name - country code",
+          "info": "Eg: Netherlands-nl, French-fr"
+        },
+        {
+          "type": "text",
+          "id": "block_lang7",
+          "label": "Enter language in iso format",
+          "info": "Eg: en,fr"
+        },
+        {
+          "type": "text",
+          "id": "block_country8",
+          "label": "Enter Country name - country code",
+          "info": "Eg: Netherlands-nl, French-fr"
+        },
+        {
+          "type": "text",
+          "id": "block_lang8",
+          "label": "Enter language in iso format",
+          "info": "Eg: en,fr"
+        },
+        {
+          "type": "text",
+          "id": "block_country9",
+          "label": "Enter Country name - country code",
+          "info": "Eg: Netherlands-nl, French-fr"
+        },
+        {
+          "type": "text",
+          "id": "block_lang9",
+          "label": "Enter language in iso format",
+          "info": "Eg: en,fr"
+        },
+        {
+          "type": "text",
+          "id": "block_country10",
+          "label": "Enter Country name - country code",
+          "info": "Eg: Netherlands-nl, French-fr"
+        },
+        {
+          "type": "text",
+          "id": "block_lang10",
+          "label": "Enter language in iso format",
+          "info": "Eg: en,fr"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Language Selector"
+    }
+  ]
+}
+{% endschema %}
