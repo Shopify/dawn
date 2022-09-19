@@ -74,9 +74,9 @@
 
     function checkEmail() {
       let email = $(".review-block__content bdo").text();
-      console.log("bdo email: " + email);
+      // console.log("bdo email: " + email);
       if (email) {
-        console.log("got email:" + email);
+        // console.log("got email:" + email);
         let language ;
         if (Shopify.locale) {
           language = Shopify.locale;
