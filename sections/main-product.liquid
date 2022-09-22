@@ -384,6 +384,17 @@
                   {{ 'products.product.quantity.label' | t }}
                 </label>
 
+                {% assign minQuantity = product.selected_variant.metafields.quantity_rules.quantity_rule.value.minimumQuantity %}
+                {% assign maxQuantity = product.selected_variant.metafields.quantity_rules.quantity_rule.value.maximumQuantity %}
+                {% assign defaultQuantity = product.selected_variant.metafields.quantity_rules.quantity_rule.value.defaultQuantity %}
+                {% assign stepIncrement = product.selected_variant.metafields.quantity_rules.quantity_rule.value.stepIncrement %}
+
+
+                {% comment %} making quantity rules available for JS {% endcomment %}
+                {% for variant in product.variants %}
+                  <input type="hidden" name="qr-{{variant.id}}" value="{{ variant.metafields.quantity_rules.quantity_rule.value | json | escape}}" / >
+                {% endfor %}
+
                 <quantity-input class="quantity">
                   <button class="quantity__button no-js-hidden" name="minus" type="button">
                     <span class="visually-hidden">
@@ -391,14 +402,19 @@
                     </span>
                     {% render 'icon-minus' %}
                   </button>
+
                   <input
                     class="quantity__input"
                     type="number"
                     name="quantity"
                     id="Quantity-{{ section.id }}"
-                    min="1"
-                    value="1"
+                    min="{{ minQuantity | default: 1 }}"
+                    value="{{ defaultQuantity | default: 1 }}"
                     form="{{ product_form_id }}"
+                    data-min="{{ minQuantity }}"
+                    data-max="{{ maxQuantity }}"
+                    data-default="{{ defaultQuantity }}"
+                    data-step="{{ stepIncrement | default: 1 }}"
                   >
                   <button class="quantity__button no-js-hidden" name="plus" type="button">
                     <span class="visually-hidden">
@@ -407,6 +423,12 @@
                     {% render 'icon-plus' %}
                   </button>
                 </quantity-input>
+
+                <div>
+                  <div >min quantity: <strong id="min-quantity">{{ minQuantity | default: 1 }}</strong></div>
+                  <div >max quantity: <strong id="max-quantity">{{ maxQuantity | default: "&infin;" }}</strong></div>
+                  <div >increment: <strong id="increment">{{ stepIncrement | default: 1 }}</strong></div>
+                </div>
               </div>
             {%- when 'popup' -%}
               <modal-opener
