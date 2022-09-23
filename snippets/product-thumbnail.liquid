@@ -35,7 +35,6 @@
 {%- capture sizes -%}
   (min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | times: media_width | divided_by: desktop_columns | round }}px, (min-width: 990px) calc({{ media_width | times: 100 | divided_by: desktop_columns }}vw - 10rem), (min-width: 750px) calc((100vw - 11.5rem) / 2), calc(100vw - 4rem)
 {%- endcapture -%}
-
 <noscript>
   {%- if media.media_type == 'video' or media.media_type == 'external_video' -%}
     <span class="product__media-icon motion-reduce quick-add-hidden">{% render 'icon-play' %}</span>
@@ -69,17 +68,7 @@
 </noscript>
 
 <modal-opener class="product__modal-opener product__modal-opener--{{ media.media_type }} no-js-hidden" data-modal="#ProductModal-{{ modal_id }}">
-  <span class="product__media-icon motion-reduce quick-add-hidden" aria-hidden="true">
-    {%- liquid
-      case media.media_type
-      when 'video' or 'external_video'
-        render 'icon-play'
-      when 'model'
-        render 'icon-3d-model'
-      else
-        render 'icon-zoom'
-      endcase
-
+{%- liquid
       case aspect_ratio
         when '2-3'
           assign aspect_perc = '150'
@@ -92,14 +81,25 @@
           assign aspect_perc_x = 100 | divided_by: aspect_perc
       endcase
     -%}
+<div class="product-media-wrapper"{% if fit_in_viewport %} style="--max-bottom: min(calc(100vh - var(--viewport-offset)), {{ aspect_perc }}%); --width: calc(var(--max-bottom) * {{ aspect_perc_x }} + var(--media-border-width)); width: var(--width);"{% endif %}>
+  <span class="product__media-icon motion-reduce quick-add-hidden" aria-hidden="true">
+    {%- liquid
+      case media.media_type
+      when 'video' or 'external_video'
+        render 'icon-play'
+      when 'model'
+        render 'icon-3d-model'
+      else
+        render 'icon-zoom'
+      endcase
+    -%}
   </span>
-
   <div
     class="product__media media media--transparent media--{{ aspect_ratio }} gradient global-media-settings"
     {% if aspect_ratio == 'original' and fit_in_viewport == false %}
       style="padding-top: {{ 1 | divided_by: media.preview_image.aspect_ratio | times: 100 }}%;"
     {% elsif fit_in_viewport %}
-      data-fit style="--max-bottom: min(calc(100vh - 200px), {{ aspect_perc }}%); padding-bottom: var(--max-bottom); width: calc(var(--max-bottom) * {{ aspect_perc_x }})"
+      data-fit style="padding-bottom: var(--max-bottom); width: var(--width);"
     {% endif %}>
     {{ media.preview_image | image_url: width: 1946 | image_tag:
       loading: lazy,
@@ -113,6 +113,8 @@
       {{ 'products.product.media.open_media' | t: index: position }}
     </span>
   </button>
+
+</div>
 </modal-opener>
 
 {%- if media.media_type != 'image' -%}
