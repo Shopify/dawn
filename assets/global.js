@@ -171,6 +171,21 @@ class QuantityInput extends HTMLElement {
     this.querySelectorAll("button").forEach((button) =>
       button.addEventListener("click", this.onButtonClick.bind(this))
     );
+
+    this.input.addEventListener("blur", this.onInputBlur.bind(this));
+    // this.input.addEventListener("keydown", this.onInputSubmit.bind(this));
+
+    this.calcClosestCorrectValue = this.calcClosestCorrectValue.bind(this);
+    this.sanitizeInputValue = this.sanitizeInputValue.bind(this);
+
+    this.initQuantityRules = this.initQuantityRules.bind(this);
+    this.initQuantityRules();
+  }
+
+  initQuantityRules() {
+    this.input.value = Number(this.getAttribute('value'));
+    this.input.setAttribute('min', Number(this.getAttribute('min')));
+    this.input.setAttribute('max', Number(this.getAttribute('max')));
   }
 
   onButtonClick(event) {
@@ -183,6 +198,35 @@ class QuantityInput extends HTMLElement {
       : this.input.stepDown(step);
     if (previousValue !== this.input.value)
       this.input.dispatchEvent(this.changeEvent);
+  }
+
+  onInputBlur(event) {
+    this.sanitizeInputValue(event);
+  }
+
+  /* onInputSubmit(event) {
+    const { target, nativeEvent } = event;
+    const clonedNativeEvent = new KeyboardEvent("keydown", nativeEvent);
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.sanitizeInputValue(event)
+      target.dispatchEvent(clonedNativeEvent);
+    }
+  } */
+
+  sanitizeInputValue(event) {
+    const inputtedValue = event.target.value;
+    const sanitizedValue = this.calcClosestCorrectValue(inputtedValue);
+    this.input.value = sanitizedValue;
+  }
+
+  calcClosestCorrectValue(inputtedValue) {
+    const min = Number(this.getAttribute('min'));
+    const step = Number(this.getAttribute('step'));
+    const multiplier = Math.floor((inputtedValue - min) / step);
+    return step * multiplier + min;
   }
 }
 
@@ -996,19 +1040,20 @@ class VariantSelects extends HTMLElement {
   updateQuantityRules() {
     const variantId = `${this.currentVariant.id}`;
 
-    const elements = document.getElementsByName(`qr-${variantId}`);
-    const quantityRules = JSON.parse(elements?.[0].value || "{}");
+    const nodeWithQRData = document.querySelector(`input[name="qr-${variantId}"]`);
+    const quantityRules = JSON.parse(nodeWithQRData?.value || "{}");
 
-    const quantityInputs = document.getElementsByTagName("quantity-input");
+    const qi = document.querySelector("quantity-input");
+    qi.setAttribute("min", quantityRules?.minimumQuantity);
+    qi.setAttribute("max", quantityRules?.maximumQuantity);
+    qi.setAttribute("step", quantityRules?.stepIncrement);
+    qi.setAttribute("default", quantityRules?.defaultQuantity);
 
-    quantityInputs.forEach((qi) => {
-      qi.getElementsByTagName("input")[0].value =
-        quantityRules?.minimumQuantity || 1;
-      qi.setAttribute("min", quantityRules?.minimumQuantity);
-      qi.setAttribute("max", quantityRules?.maximumQuantity);
-      qi.setAttribute("step", quantityRules?.stepIncrement);
-      qi.setAttribute("default", quantityRules?.defaultQuantity);
-    });
+    const input = qi.querySelector("input");
+    input.value = quantityRules?.minimumQuantity || 1;
+    input.setAttribute('min', quantityRules?.minimumQuantity || 1);
+    input.setAttribute('max', quantityRules?.maximumQuantity || "");
+    input.setAttribute('value', quantityRules?.minimumQuantity || 1);
 
     document.getElementById("min-quantity").innerHTML =
       quantityRules?.minimumQuantity || 1;

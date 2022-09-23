@@ -142,7 +142,39 @@
                   <label class="form__label" for="Quantity-{{ section.id }}">
                     {{ 'products.product.quantity.label' | t }}
                   </label>
-                  <quantity-input class="quantity">
+
+                  {% comment %}
+                  get the "quantity_rules" metafields from:
+                    - the selected variant (if any)
+                    - the product itself (if product has no variants, there's technically a "default variant")
+                    - the first item from the list of available variants
+                  {% endcomment %}
+                  {% if product.selected_variant -%}
+                    {% assign source = product.selected_variant %}
+                  {%- elsif product.has_only_default_variant -%}
+                    {% assign source = product %}
+                  {%- else -%}
+                    {% assign source = product.variants.first %}
+                  {%- endif %}
+
+                  {% assign minQuantity = source.metafields.quantity_rules.quantity_rule.value.minimumQuantity %}
+                  {% assign maxQuantity = source.metafields.quantity_rules.quantity_rule.value.maximumQuantity %}
+                  {% assign defaultQuantity = source.metafields.quantity_rules.quantity_rule.value.defaultQuantity %}
+                  {% assign stepIncrement = source.metafields.quantity_rules.quantity_rule.value.stepIncrement %}
+
+                  {% comment %} making quantity rules available for JS {% endcomment %}
+                  {% for variant in product.variants %}
+                    <input type="hidden" name="qr-{{variant.id}}" value="{{ variant.metafields.quantity_rules.quantity_rule.value | json | escape }}" />
+                  {% endfor %}
+
+                  <quantity-input
+                    class="quantity"
+                    min="{{ minQuantity | default: 1 }}"
+                    max="{{ maxQuantity | default: nil }}"
+                    step="{{ stepIncrement | default: 1 }}"
+                    default="{{ defaultQuantity | default: 1 }}"
+                    value="{{ minQuantity | default: 1 }}"
+                  >
                     <button class="quantity__button no-js-hidden" name="minus" type="button">
                       <span class="visually-hidden">
                         {{- 'products.product.quantity.decrease' | t: product: product.title | escape -}}
@@ -154,8 +186,6 @@
                       type="number"
                       name="quantity"
                       id="Quantity-{{ section.id }}"
-                      min="1"
-                      value="1"
                       form="{{ product_form_id }}"
                     >
                     <button class="quantity__button no-js-hidden" name="plus" type="button">

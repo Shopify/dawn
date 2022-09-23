@@ -200,7 +200,35 @@
                       <label class="visually-hidden" for="Quantity-{{ item.index | plus: 1 }}">
                         {{ 'products.product.quantity.label' | t }}
                       </label>
-                      <quantity-input class="quantity">
+
+                      {% comment %}
+                      get the "quantity_rules" metafields from:
+                        - the product variant added to the cart
+                        - the product itself if no variant was selected (technically, the "default variant")
+                      {% endcomment %}
+                      {% if item.product.has_only_default_variant -%}
+                        {% assign source = item.product %}
+                      {%- else -%}
+                        {% assign source = item.variant %}
+                      {%- endif %}
+
+                      {% assign minQuantity = source.metafields.quantity_rules.quantity_rule.value.minimumQuantity %}
+                      {% assign maxQuantity = source.metafields.quantity_rules.quantity_rule.value.maximumQuantity %}
+                      {% assign defaultQuantity = source.metafields.quantity_rules.quantity_rule.value.defaultQuantity %}
+                      {% assign stepIncrement = source.metafields.quantity_rules.quantity_rule.value.stepIncrement %}
+
+                      <div>
+                        <p>min: {{ minQuantity }}</p>
+                        <p>max: {{ maxQuantity }}</p>
+                        <p>step: {{ stepIncrement }}</p>
+                      </div>
+                      <quantity-input
+                        class="quantity"
+                        min="{{ minQuantity | default: 0 }}"
+                        max="{{ maxQuantity | default: nil }}"
+                        step="{{ stepIncrement | default: 1 }}"
+                        value="{{ item.quantity }}"
+                      >
                         <button class="quantity__button no-js-hidden" name="minus" type="button">
                           <span class="visually-hidden">{{ 'products.product.quantity.decrease' | t: product: item.product.title | escape }}</span>
                           {% render 'icon-minus' %}
@@ -208,8 +236,6 @@
                         <input class="quantity__input"
                           type="number"
                           name="updates[]"
-                          value="{{ item.quantity }}"
-                          min="0"
                           aria-label="{{ 'products.product.quantity.input_label' | t: product: item.product.title | escape }}"
                           id="Quantity-{{ item.index | plus: 1 }}"
                           data-index="{{ item.index | plus: 1 }}"
