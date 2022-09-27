@@ -81,7 +81,12 @@
           assign aspect_perc_x = 100 | divided_by: aspect_perc
       endcase
     -%}
-<div class="product-media-wrapper"{% if fit_in_viewport %} style="--max-bottom: min(calc(100vh - var(--viewport-offset)), {{ aspect_perc }}%); --width: calc(var(--max-bottom) * {{ aspect_perc_x }} + var(--media-border-width)); width: var(--width);"{% endif %}>
+<div class="product-media-wrapper"
+  {% if fit_in_viewport and section.settings.media_fit == 'contain' %}
+    style="--max-bottom: min(calc(100vh - var(--viewport-offset)), {{ aspect_perc }}%); --width: calc(var(--max-bottom) * {{ aspect_perc_x }} + var(--media-border-width)); width: var(--width);"
+  {% elsif fit_in_viewport %}
+    style="--max-bottom: min(calc(100vh - var(--viewport-offset)), {{ aspect_perc }}%); --width: calc(var(--max-bottom) * {{ aspect_perc_x }} + var(--media-border-width));"
+  {% endif %}>
   <span class="product__media-icon motion-reduce quick-add-hidden" aria-hidden="true">
     {%- liquid
       case media.media_type
@@ -98,8 +103,10 @@
     class="product__media media media--transparent media--{{ aspect_ratio }} gradient global-media-settings"
     {% if aspect_ratio == 'original' and fit_in_viewport == false %}
       style="padding-top: {{ 1 | divided_by: media.preview_image.aspect_ratio | times: 100 }}%;"
-    {% elsif fit_in_viewport %}
+    {% elsif fit_in_viewport and section.settings.media_fit == 'contain' %}
       data-fit style="padding-bottom: var(--max-bottom); width: var(--width);"
+    {% elsif fit_in_viewport%}
+      data-fit style="padding-bottom: var(--max-bottom);"
     {% endif %}>
     {{ media.preview_image | image_url: width: 1946 | image_tag:
       loading: lazy,
