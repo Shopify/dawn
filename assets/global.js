@@ -846,6 +846,7 @@ class VariantSelects extends HTMLElement {
         const html = new DOMParser().parseFromString(responseText, 'text/html')
         const destination = document.getElementById(`price-${this.dataset.section}`);
         const source = html.getElementById(`price-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
+
         if (source && destination) destination.innerHTML = source.innerHTML;
 
         const price = document.getElementById(`price-${this.dataset.section}`);
@@ -863,6 +864,11 @@ class VariantSelects extends HTMLElement {
     const source = html.getElementById(id);
 
     if (source && destination) destination.innerHTML = source.innerHTML;
+    if (destination.innerHTML !== '#') {
+      destination.classList.remove('visually-hidden');
+    } else {
+      destination.classList.add('visually-hidden');
+    }
   }
 
   toggleAddButton(disable = true, text, modifyClass = true) {
