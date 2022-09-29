@@ -23,7 +23,7 @@
 
 {%- assign product = section.settings.product -%}
 
-{%- assign first_3d_model = product.media | where: "media_type", "model" | first -%}
+{%- assign first_3d_model = product.media | where: 'media_type', 'model' | first -%}
 {%- if first_3d_model -%}
   {{ 'component-product-model.css' | asset_url | stylesheet_tag }}
   <link
@@ -56,7 +56,14 @@
             {%- if product.selected_or_first_available_variant.featured_media != null -%}
               {%- assign media = product.selected_or_first_available_variant.featured_media -%}
               <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                {% render 'product-thumbnail', media: media, position: 'featured', loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: 0.5 %}
+                {% render 'product-thumbnail',
+                  media: media,
+                  position: 'featured',
+                  loop: section.settings.enable_video_looping,
+                  modal_id: section.id,
+                  xr_button: false,
+                  media_width: 0.5
+                %}
               </div>
             {%- endif -%}
             {%- liquid
@@ -66,9 +73,18 @@
               endfor
             -%}
             {%- for media in product.media -%}
-              {%- if media_to_render contains media.id and media.id != product.selected_or_first_available_variant.featured_media.id -%}
+              {%- if media_to_render contains media.id
+                and media.id != product.selected_or_first_available_variant.featured_media.id
+              -%}
                 <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                  {% render 'product-thumbnail', media: media, position: forloop.index, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: 0.5 %}
+                  {% render 'product-thumbnail',
+                    media: media,
+                    position: forloop.index,
+                    loop: section.settings.enable_video_looping,
+                    modal_id: section.id,
+                    xr_button: false,
+                    media_width: 0.5
+                  %}
                 </div>
               {%- endif -%}
             {%- endfor -%}
@@ -114,7 +130,12 @@
                 </h2>
               {%- when 'price' -%}
                 <div class="no-js-hidden" id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
-                  {%- render 'price', product: product, use_variant: true, show_badges: true, price_class: 'price--large' -%}
+                  {%- render 'price',
+                    product: product,
+                    use_variant: true,
+                    show_badges: true,
+                    price_class: 'price--large'
+                  -%}
                 </div>
                 {%- if shop.taxes_included or shop.shipping_policy.body != blank -%}
                   <div class="product__tax caption rte">
@@ -135,16 +156,43 @@
                   </div>
                 {%- endif -%}
               {%- when 'inventory' -%}
-                <p
-                  class="product__text product__text--inventory no-js-hidden{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}"
-                  id="inventory-{{ section.id }}"
-                  {{ block.shopify_attributes }}
-                >
-                  {{- block.settings.text -}}
-                  {%- if product.selected_or_first_available_variant.available and product.selected_or_first_available_variant.inventory_management == 'shopify' -%}
-                    {{ 'products.product.inventory' | t: quantity: product.selected_or_first_available_variant.inventory_quantity }}
-                  {%- endif -%}
-                </p>
+                {%- if product.selected_or_first_available_variant.inventory_quantity != 0 -%}
+                  <p
+                    class="product__text--inventory no-js-hidden{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}"
+                    id="inventory-{{ section.id }}"
+                    role="status"
+                    {{ block.shopify_attributes }}
+                  >
+                    {%- assign thresholdNumber = block.settings.inventory_threshold -%}
+                    {%- if product.selected_or_first_available_variant.inventory_quantity <= thresholdNumber -%}
+                      <svg width="15" height="15">
+                        <circle cx="7.5" cy="7.5" r="7.5" fill="rgb(238,148,65, 0.3)" />
+                        <circle cx="7.5" cy="7.5" r="5" stroke="rgb(255, 255, 255)" stroke-width="1" fill="rgb(238,148,65)" />
+                      </svg>
+                      {%- if block.settings.show_inventory_quantity == true -%}
+                        {{
+                          'products.product.inventory_low_stock_show_count'
+                          | t: quantity: product.selected_or_first_available_variant.inventory_quantity
+                        }}
+                      {%- else -%}
+                        {{ 'products.product.inventory_low_stock' | t }}
+                      {%- endif -%}
+                    {%- else -%}
+                      <svg width="15" height="15">
+                        <circle cx="7.5" cy="7.5" r="7.5" fill="rgb(62,214,96, 0.3)" />
+                        <circle cx="7.5" cy="7.5" r="5" stroke="rgb(255, 255, 255)" stroke-width="1" fill="rgb(62,214,96)" />
+                      </svg>
+                      {%- if block.settings.show_inventory_quantity == true -%}
+                        {{
+                          'products.product.inventory_in_stock_show_count'
+                          | t: quantity: product.selected_or_first_available_variant.inventory_quantity
+                        }}
+                      {%- else -%}
+                        {{ 'products.product.inventory_in_stock' | t }}
+                      {%- endif -%}
+                    {%- endif -%}
+                  </p>
+                {%- endif -%}
               {%- when 'quantity_selector' -%}
                 <div
                   class="product-form__input product-form__quantity{% if settings.inputs_shadow_vertical_offset != 0 and settings.inputs_shadow_vertical_offset < 0 %} product-form__quantity-top{% endif %}"
@@ -317,7 +365,13 @@
                             {{ variant.title }}
                             {%- if variant.available == false %} - {{ 'products.product.sold_out' | t }}{% endif %}
                             - {{ variant.price | money | strip_html }}
-                            {% if variant.available and variant.inventory_management == 'shopify' -%} - {{ 'products.product.inventory' | t: quantity: variant.inventory_quantity }}{% endif %}
+                            {% if variant.available and variant.inventory_management == 'shopify' -%}
+                              -
+                              {{
+                                'products.product.inventory_in_stock_show_count'
+                                | t: quantity: variant.inventory_quantity
+                              -}}
+                            {%- endif %}
                           </option>
                         {%- endfor -%}
                       </select>
@@ -345,7 +399,13 @@
                         <span class="product-form__error-message"></span>
                       </div>
 
-                      {%- form 'product', product, id: product_form_id, class: 'form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+                      {%- form 'product',
+                        product,
+                        id: product_form_id,
+                        class: 'form',
+                        novalidate: 'novalidate',
+                        data-type: 'add-to-cart-form'
+                      -%}
                         <input
                           type="hidden"
                           name="id"
@@ -408,12 +468,12 @@
                 {%- if product.metafields.reviews.rating.value != blank -%}
                   {% liquid
                     assign rating_decimal = 0
-                      assign decimal = product.metafields.reviews.rating.value.rating | modulo: 1
-                      if decimal >= 0.3 and decimal <= 0.7
+                    assign decimal = product.metafields.reviews.rating.value.rating | modulo: 1
+                    if decimal >= 0.3 and decimal <= 0.7
                       assign rating_decimal = 0.5
                     elsif decimal > 0.7
                       assign rating_decimal = 1
-                      endif
+                    endif
                   %}
                   <div
                     class="rating"
@@ -436,7 +496,7 @@
                     <span aria-hidden="true">({{ product.metafields.reviews.rating_count }})</span>
                     <span class="visually-hidden">
                       {{- product.metafields.reviews.rating_count }}
-                      {{ "accessibility.total_reviews" | t -}}
+                      {{ 'accessibility.total_reviews' | t -}}
                     </span>
                   </p>
                 {%- endif -%}
@@ -467,13 +527,29 @@
               {%- if product.selected_or_first_available_variant.featured_media != null -%}
                 {%- assign media = product.selected_or_first_available_variant.featured_media -%}
                 <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                  {% render 'product-thumbnail', media: media, position: 'featured', loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: 0.5 %}
+                  {% render 'product-thumbnail',
+                    media: media,
+                    position: 'featured',
+                    loop: section.settings.enable_video_looping,
+                    modal_id: section.id,
+                    xr_button: false,
+                    media_width: 0.5
+                  %}
                 </div>
               {%- endif -%}
               {%- for media in product.media -%}
-                {%- if media_to_render contains media.id and media.id != product.selected_or_first_available_variant.featured_media.id -%}
+                {%- if media_to_render contains media.id
+                  and media.id != product.selected_or_first_available_variant.featured_media.id
+                -%}
                   <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                    {% render 'product-thumbnail', media: media, position: forloop.index, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: 0.5 %}
+                    {% render 'product-thumbnail',
+                      media: media,
+                      position: forloop.index,
+                      loop: section.settings.enable_video_looping,
+                      modal_id: section.id,
+                      xr_button: false,
+                      media_width: 0.5
+                    %}
                   </div>
                 {%- endif -%}
               {%- endfor -%}
@@ -607,23 +683,27 @@
 </script>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     function isIE() {
       const ua = window.navigator.userAgent;
       const msie = ua.indexOf('MSIE ');
       const trident = ua.indexOf('Trident/');
 
-      return (msie > 0 || trident > 0);
+      return msie > 0 || trident > 0;
     }
 
     if (!isIE()) return;
     const hiddenInput = document.querySelector('#{{ product_form_id }} input[name="id"]');
     const noScriptInputWrapper = document.createElement('div');
-    const variantSwitcher = document.querySelector('variant-radios[data-section="{{ section.id }}"]') || document.querySelector('variant-selects[data-section="{{ section.id }}"]');
-    noScriptInputWrapper.innerHTML = document.querySelector('.product-form__noscript-wrapper-{{ section.id }}').textContent;
+    const variantSwitcher =
+      document.querySelector('variant-radios[data-section="{{ section.id }}"]') ||
+      document.querySelector('variant-selects[data-section="{{ section.id }}"]');
+    noScriptInputWrapper.innerHTML = document.querySelector(
+      '.product-form__noscript-wrapper-{{ section.id }}'
+    ).textContent;
     variantSwitcher.outerHTML = noScriptInputWrapper.outerHTML;
 
-    document.querySelector('#Variants-{{ section.id }}').addEventListener('change', function(event) {
+    document.querySelector('#Variants-{{ section.id }}').addEventListener('change', function (event) {
       hiddenInput.value = event.currentTarget.value;
     });
   });
