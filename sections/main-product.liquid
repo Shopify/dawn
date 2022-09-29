@@ -354,42 +354,45 @@
                 {%- endform -%}
               </div>
             {%- when 'inventory' -%}
-              <p
-                class="product__text--inventory no-js-hidden{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}"
-                id="inventory-{{ section.id }}"
-                {{ block.shopify_attributes }}
-              >
-                {%- assign thresholdNumber = block.settings.inventory_threshold | round -%}
-                {%- if product.selected_or_first_available_variant.inventory_quantity < thresholdNumber -%}
-                  {%- if block.settings.show_inventory_quantity == true -%}
-                    <svg width="16" height="16">
-                      <circle cx="8" cy="8" r="8" fill="white" />
-                      <circle cx="8" cy="8" r="4" stroke="rgb(238,148,65, 0.3)" stroke-width="6" fill="#EE9441" />
-                    </svg>
-                    Low stock: {{ product.selected_or_first_available_variant.inventory_quantity }} left
-                    {%- else -%}
-                    <svg width="16" height="16">
-                      <circle cx="8" cy="8" r="8" fill="white" />
-                      <circle cx="8" cy="8" r="4" stroke="rgb(238,148,65, 0.3)" stroke-width="6" fill="#EE9441" />
-                    </svg>
-                    Low stock
-                  {%- endif -%}
-                  {%- else -%}
+              {%- if product.selected_or_first_available_variant.inventory_quantity != 0 -%}
+                <p
+                  class="product__text--inventory no-js-hidden{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}"
+                  id="inventory-{{ section.id }}"
+                  role="status"
+                  {{ block.shopify_attributes }}
+                >
+                  {%- assign thresholdNumber = block.settings.inventory_threshold | round -%}
+                  {%- if product.selected_or_first_available_variant.inventory_quantity < thresholdNumber -%}
                     {%- if block.settings.show_inventory_quantity == true -%}
                       <svg width="16" height="16">
                         <circle cx="8" cy="8" r="8" fill="white" />
-                        <circle cx="8" cy="8" r="4" stroke="rgb(62,214,96, 0.3)" stroke-width="6" fill="rgb(62,214,96)" />
+                        <circle cx="8" cy="8" r="4" stroke="rgb(238,148,65, 0.3)" stroke-width="6" fill="#EE9441" />
                       </svg>
-                      {{ product.selected_or_first_available_variant.inventory_quantity }} in stock
+                      Low stock: {{ product.selected_or_first_available_variant.inventory_quantity }} left
                       {%- else -%}
                       <svg width="16" height="16">
                         <circle cx="8" cy="8" r="8" fill="white" />
-                        <circle cx="8" cy="8" r="4" stroke="rgb(62,214,96, 0.3)" stroke-width="6" fill="rgb(62,214,96)" />
+                        <circle cx="8" cy="8" r="4" stroke="rgb(238,148,65, 0.3)" stroke-width="6" fill="#EE9441" />
                       </svg>
-                        In Stock
+                      Low stock
                     {%- endif -%}
-                {%- endif -%}
-              </p>
+                    {%- else -%}
+                      {%- if block.settings.show_inventory_quantity == true -%}
+                        <svg width="16" height="16">
+                          <circle cx="8" cy="8" r="8" fill="white" />
+                          <circle cx="8" cy="8" r="4" stroke="rgb(62,214,96, 0.3)" stroke-width="6" fill="rgb(62,214,96)" />
+                        </svg>
+                        {{ product.selected_or_first_available_variant.inventory_quantity }} in stock
+                        {%- else -%}
+                        <svg width="16" height="16">
+                          <circle cx="8" cy="8" r="8" fill="white" />
+                          <circle cx="8" cy="8" r="4" stroke="rgb(62,214,96, 0.3)" stroke-width="6" fill="rgb(62,214,96)" />
+                        </svg>
+                          In Stock
+                      {%- endif -%}
+                  {%- endif -%}
+                </p>
+              {%- endif -%}
             {%- when 'description' -%}
               {%- if product.description != blank -%}
                 <div class="product__description rte quick-add-hidden">
@@ -1259,12 +1262,6 @@
       "limit": 1,
       "settings": [
         {
-          "type": "number",
-          "id": "inventory_threshold",
-          "label": "Low inventory threshold",
-          "default": 50
-        },
-        {
           "type": "select",
           "id": "text_style",
           "options": [
@@ -1283,6 +1280,13 @@
           ],
           "default": "body",
           "label": "t:sections.main-product.blocks.inventory.settings.text_style.label"
+        },
+        {
+          "type": "number",
+          "id": "inventory_threshold",
+          "label": "Display Low inventory threshold",
+          "info": "Choose 0 to always show in stock if available",
+          "default": 50
         },
         {
           "type": "checkbox",

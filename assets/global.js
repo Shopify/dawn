@@ -852,7 +852,7 @@ class VariantSelects extends HTMLElement {
         const inventory = document.getElementById(`inventory-${this.dataset.section}`);
 
         if (price) price.classList.remove('visibility-hidden');
-        if (inventory) inventory.classList.remove('visibility-hidden'), this.updateInventory(html);
+        if (inventory && inventory !== null) inventory.classList.remove('hidden'), this.updateInventory(html);
         this.toggleAddButton(!this.currentVariant.available, window.variantStrings.soldOut);
       });
   }
@@ -863,6 +863,7 @@ class VariantSelects extends HTMLElement {
     const source = html.getElementById(id);
 
     if (source && destination) destination.innerHTML = source.innerHTML;
+    if (source === null) destination.classList.add('hidden');
   }
 
   toggleAddButton(disable = true, text, modifyClass = true) {
@@ -892,7 +893,7 @@ class VariantSelects extends HTMLElement {
     if (!addButton) return;
     addButtonText.textContent = window.variantStrings.unavailable;
     if (price) price.classList.add('visibility-hidden');
-    if (inventory) inventory.classList.add('visibility-hidden');
+    if (inventory) inventory.classList.add('hidden');
   }
 
   getVariantData() {
