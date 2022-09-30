@@ -846,29 +846,20 @@ class VariantSelects extends HTMLElement {
         const html = new DOMParser().parseFromString(responseText, 'text/html')
         const destination = document.getElementById(`price-${this.dataset.section}`);
         const source = html.getElementById(`price-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
+        const skuSource = html.getElementById(`sku-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
+        const skuDestination = document.getElementById(`sku-${this.dataset.section}`);
 
         if (source && destination) destination.innerHTML = source.innerHTML;
+        if (skuSource && skuDestination) skuDestination.innerHTML = skuSource.innerHTML;
 
         const price = document.getElementById(`price-${this.dataset.section}`);
         const sku = document.getElementById(`sku-${this.dataset.section}`);
 
         if (price) price.classList.remove('visibility-hidden');
-        if (sku) this.updateSKU(html);
+        if (sku) sku.classList.remove('hidden');
+
         this.toggleAddButton(!this.currentVariant.available, window.variantStrings.soldOut);
       });
-  }
-
-  updateSKU(html) {
-    const id = `sku-${this.dataset.section}`;
-    const destination = document.getElementById(id);
-    const source = html.getElementById(id);
-
-    if (source && destination) destination.innerHTML = source.innerHTML;
-    if (destination.innerHTML !== '#') {
-      destination.classList.remove('hidden');
-    } else {
-      destination.classList.add('hidden');
-    }
   }
 
   toggleAddButton(disable = true, text, modifyClass = true) {
@@ -894,10 +885,12 @@ class VariantSelects extends HTMLElement {
     const addButton = button.querySelector('[name="add"]');
     const addButtonText = button.querySelector('[name="add"] > span');
     const price = document.getElementById(`price-${this.dataset.section}`);
+    const sku = document.getElementById(`sku-${this.dataset.section}`);
 
     if (!addButton) return;
     addButtonText.textContent = window.variantStrings.unavailable;
     if (price) price.classList.add('visibility-hidden');
+    if (sku) sku.classList.add('hidden');
   }
 
   getVariantData() {
