@@ -865,9 +865,9 @@ class VariantSelects extends HTMLElement {
 
     if (source && destination) destination.innerHTML = source.innerHTML;
     if (destination.innerHTML !== '#') {
-      destination.classList.remove('visually-hidden');
+      destination.classList.remove('hidden');
     } else {
-      destination.classList.add('visually-hidden');
+      destination.classList.add('hidden');
     }
   }
 
