@@ -846,24 +846,21 @@ class VariantSelects extends HTMLElement {
         const html = new DOMParser().parseFromString(responseText, 'text/html')
         const destination = document.getElementById(`price-${this.dataset.section}`);
         const source = html.getElementById(`price-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
+        const inventorySource = html.getElementById(`inventory-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
+        const inventoryDestination = document.getElementById(`inventory-${this.dataset.section}`);
+
         if (source && destination) destination.innerHTML = source.innerHTML;
+        if (inventorySource && inventoryDestination) inventoryDestination.innerHTML = inventorySource.innerHTML;
 
         const price = document.getElementById(`price-${this.dataset.section}`);
         const inventory = document.getElementById(`inventory-${this.dataset.section}`);
 
         if (price) price.classList.remove('visibility-hidden');
-        if (inventory && inventory !== null) inventory.classList.remove('hidden'), this.updateInventory(html);
+        if (inventory && inventorySource == null) inventory.classList.add('hidden');
+        if (inventory && inventorySource !== null) inventory.classList.remove('hidden');
+
         this.toggleAddButton(!this.currentVariant.available, window.variantStrings.soldOut);
       });
-  }
-
-  updateInventory(html) {
-    const id = `inventory-${this.dataset.section}`;
-    const destination = document.getElementById(id);
-    const source = html.getElementById(id);
-
-    if (source && destination) destination.innerHTML = source.innerHTML;
-    if (source === null) destination.classList.add('hidden');
   }
 
   toggleAddButton(disable = true, text, modifyClass = true) {
@@ -890,6 +887,7 @@ class VariantSelects extends HTMLElement {
     const addButtonText = button.querySelector('[name="add"] > span');
     const price = document.getElementById(`price-${this.dataset.section}`);
     const inventory = document.getElementById(`inventory-${this.dataset.section}`);
+
     if (!addButton) return;
     addButtonText.textContent = window.variantStrings.unavailable;
     if (price) price.classList.add('visibility-hidden');
