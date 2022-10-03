@@ -27,25 +27,16 @@
         <div class="collage__item collage__item--{{ block.type }} collage__item--{{ section.settings.desktop_layout }}" {{ block.shopify_attributes }}>
           {%- case block.type -%}
             {%- when 'image' -%}
-              <div class="collage-card color-{{ settings.card_color_scheme }}{% if block.settings.image_padding %} collage-card-spacing{% endif %}">
+              <div class="collage-card {% if section.settings.card_styles == 'none' %}global-media-settings{% else %}card-wrapper {{ section.settings.card_styles }} color-{{ settings.card_color_scheme }}{% endif %}">
                 <div class="media media--transparent ratio"{% if block.settings.image != blank %} style="--ratio-percent: {{ 1 | divided_by: block.settings.image.aspect_ratio | times: 100 }}%"{% else %} style="--ratio-percent: 100%"{% endif %}>
                   {%- if block.settings.image != blank -%}
-                    <img
-                      srcset="{%- if block.settings.image.width >= 550 -%}{{ block.settings.image | image_url: width: 550 }} 550w,{%- endif -%}
-                        {%- if block.settings.image.width >= 720 -%}{{ block.settings.image | image_url: width: 720 }} 720w,{%- endif -%}
-                        {%- if block.settings.image.width >= 990 -%}{{ block.settings.image | image_url: width: 990 }} 990w,{%- endif -%}
-                        {%- if block.settings.image.width >= 1100 -%}{{ block.settings.image | image_url: width: 1100 }} 1100w,{%- endif -%}
-                        {%- if block.settings.image.width >= 1500 -%}{{ block.settings.image | image_url: width: 1500 }} 1500w,{%- endif -%}
-                        {%- if block.settings.image.width >= 2200 -%}{{ block.settings.image | image_url: width: 2200 }} 2200w,{%- endif -%}
-                        {%- if block.settings.image.width >= 3000 -%}{{ block.settings.image | image_url: width: 3000 }} 3000w,{%- endif -%}
-                        {{ block.settings.image | image_url }} {{ block.settings.image.width }}w"
-                      src="{{ block.settings.image | image_url: width: 1500 }}"
-                      sizes="(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px)"
-                      alt="{{ block.settings.image.alt | escape }}"
-                      loading="lazy"
-                      width="{{ block.settings.image.width }}"
-                      height="{{ block.settings.image.height }}"
-                    >
+                    {%- capture sizes -%}(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px)}{%- endcapture -%}
+
+                    {{ block.settings.image | image_url: width: 3000 | image_tag:
+                      loading: 'lazy',
+                      sizes: sizes,
+                      widths: '550, 720, 990, 1100, 1500, 2200, 3000'
+                    }}
                   {%- else -%}
                     {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
                   {%- endif -%}
@@ -63,30 +54,21 @@
                 card_collection: block.settings.collection,
                 media_aspect_ratio: 'adapt',
                 columns: 2,
-                extend_height: true
+                extend_height: true,
+                wrapper_class: section.settings.card_styles
               %}
             {%- when 'video' -%}
-              <div class="collage-card color-{{ settings.card_color_scheme }}">
+              <div class="collage-card {% if section.settings.card_styles == 'none' %}global-media-settings{% else %}{{ section.settings.card_styles }} color-{{ settings.card_color_scheme }}{% endif %}">
                 <noscript>
                   <a href="{{ block.settings.video_url }}" class="collage-card__link{% if block.settings.image_padding %} collage-card-spacing{% endif %}">
                     <div class="media media--transparent ratio"{% if block.settings.cover_image != blank %} style="--ratio-percent: {{ 1 | divided_by: block.settings.cover_image.aspect_ratio | times: 100 }}%"{% else %} style="--ratio-percent: 100%"{% endif %}>
                       {%- if block.settings.cover_image != blank -%}
-                        <img
-                          srcset="{%- if block.settings.cover_image.width >= 550 -%}{{ block.settings.cover_image | image_url: width: 550 }} 550w,{%- endif -%}
-                            {%- if block.settings.cover_image.width >= 720 -%}{{ block.settings.cover_image | image_url: width: 720 }} 720w,{%- endif -%}
-                            {%- if block.settings.cover_image.width >= 990 -%}{{ block.settings.cover_image | image_url: width: 990 }} 990w,{%- endif -%}
-                            {%- if block.settings.cover_image.width >= 1100 -%}{{ block.settings.cover_image | image_url: width: 1100 }} 1100w,{%- endif -%}
-                            {%- if block.settings.cover_image.width >= 1500 -%}{{ block.settings.cover_image | image_url: width: 1500 }} 1500w,{%- endif -%}
-                            {%- if block.settings.cover_image.width >= 2200 -%}{{ block.settings.cover_image | image_url: width: 2200 }} 2200w,{%- endif -%}
-                            {%- if block.settings.cover_image.width >= 3000 -%}{{ block.settings.cover_image | image_url: width: 3000 }} 3000w,{%- endif -%}
-                            {{ block.settings.cover_image | image_url }} {{ block.settings.cover_image.width }}w"
-                          src="{{ block.settings.cover_image | image_url: width: 1500 }}"
-                          sizes="(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px)"
-                          alt="{{ block.settings.description | escape }}"
-                          loading="lazy"
-                          width="{{ block.settings.cover_image.width }}"
-                          height="{{ block.settings.cover_image.height }}"
-                        >
+                        {%- capture sizes -%}(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px){%- endcapture -%}
+                        {{ block.settings.cover_image | image_url: width: 3000 | image_tag:
+                          loading: 'lazy',
+                          sizes: sizes,
+                          widths: '550, 720, 990, 1100, 1500, 2200, 3000'
+                        }}
                       {%- else -%}
                         {{ 'collection-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
                       {%- endif -%}
@@ -100,24 +82,14 @@
                         <span class="deferred-media__poster-button motion-reduce">
                           {%- render 'icon-play' -%}
                         </span>
-  
+
                         {%- if block.settings.cover_image != blank -%}
-                          <img
-                            srcset="{%- if block.settings.cover_image.width >= 550 -%}{{ block.settings.cover_image | image_url: width: 550 }} 550w,{%- endif -%}
-                              {%- if block.settings.cover_image.width >= 720 -%}{{ block.settings.cover_image | image_url: width: 720 }} 720w,{%- endif -%}
-                              {%- if block.settings.cover_image.width >= 990 -%}{{ block.settings.cover_image | image_url: width: 990 }} 990w,{%- endif -%}
-                              {%- if block.settings.cover_image.width >= 1100 -%}{{ block.settings.cover_image | image_url: width: 1100 }} 1100w,{%- endif -%}
-                              {%- if block.settings.cover_image.width >= 1500 -%}{{ block.settings.cover_image | image_url: width: 1500 }} 1500w,{%- endif -%}
-                              {%- if block.settings.cover_image.width >= 2200 -%}{{ block.settings.cover_image | image_url: width: 2200 }} 2200w,{%- endif -%}
-                              {%- if block.settings.cover_image.width >= 3000 -%}{{ block.settings.cover_image | image_url: width: 3000 }} 3000w,{%- endif -%}
-                              {{ block.settings.cover_image | image_url }} {{ block.settings.cover_image.width }}w"
-                            src="{{ block.settings.cover_image | image_url: width: 1500 }}"
-                            sizes="(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px)"
-                            alt="{{ block.settings.description | escape }}"
-                            loading="lazy"
-                            width="{{ block.settings.cover_image.width }}"
-                            height="{{ block.settings.cover_image.height }}"
-                          >
+                          {%- capture sizes -%}(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px){%- endcapture -%}
+                          {{ block.settings.cover_image | image_url: width: 3000 | image_tag:
+                            loading: 'lazy',
+                            sizes: sizes,
+                            widths: '550, 720, 990, 1100, 1500, 2200, 3000'
+                          }}
                         {%- else -%}
                           {{ 'collection-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
                         {%- endif -%}
@@ -212,6 +184,23 @@
       ],
       "default": "collage",
       "label": "t:sections.collage.settings.mobile_layout.label"
+    },
+    {
+      "type": "select",
+      "id": "card_styles",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:sections.collage.settings.card_styles.options__1.label"
+        },
+        {
+          "value": "product-card-wrapper",
+          "label": "t:sections.collage.settings.card_styles.options__2.label"
+        }
+      ],
+      "default": "product-card-wrapper",
+      "info": "t:sections.collage.settings.card_styles.info",
+      "label": "t:sections.collage.settings.card_styles.label"
     },
     {
       "type": "select",
