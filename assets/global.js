@@ -846,14 +846,14 @@ class VariantSelects extends HTMLElement {
         const html = new DOMParser().parseFromString(responseText, 'text/html')
         const destination = document.getElementById(`price-${this.dataset.section}`);
         const source = html.getElementById(`price-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
-        const inventorySource = html.getElementById(`inventory-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
-        const inventoryDestination = document.getElementById(`inventory-${this.dataset.section}`);
+        const inventorySource = html.getElementById(`Inventory-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
+        const inventoryDestination = document.getElementById(`Inventory-${this.dataset.section}`);
 
         if (source && destination) destination.innerHTML = source.innerHTML;
         if (inventorySource && inventoryDestination) inventoryDestination.innerHTML = inventorySource.innerHTML;
 
         const price = document.getElementById(`price-${this.dataset.section}`);
-        const inventory = document.getElementById(`inventory-${this.dataset.section}`);
+        const inventory = document.getElementById(`Inventory-${this.dataset.section}`);
 
         if (price) price.classList.remove('visibility-hidden');
         if (inventory && inventorySource == null) inventory.classList.add('hidden');
@@ -886,7 +886,7 @@ class VariantSelects extends HTMLElement {
     const addButton = button.querySelector('[name="add"]');
     const addButtonText = button.querySelector('[name="add"] > span');
     const price = document.getElementById(`price-${this.dataset.section}`);
-    const inventory = document.getElementById(`inventory-${this.dataset.section}`);
+    const inventory = document.getElementById(`Inventory-${this.dataset.section}`);
 
     if (!addButton) return;
     addButtonText.textContent = window.variantStrings.unavailable;
