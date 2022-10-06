@@ -932,6 +932,10 @@ class VariantRadios extends VariantSelects {
     this.options = fieldsets.map((fieldset) => {
       return Array.from(fieldset.querySelectorAll('input')).find((radio) => radio.checked).value;
     });
+
+    this.availableVariants = JSON.parse(this.querySelector('[type="application/json"]').textContent).filter(variant => document.querySelector('[type=radio]:checked+label').innerText === variant.option1);
+
+    if (!this.availableVariants.map((variant) => variant.option2).includes(this.options[1])) this.options[1] = this.availableVariants[0].option2;
   }
 }
 
