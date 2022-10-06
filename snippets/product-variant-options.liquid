@@ -19,8 +19,6 @@
 
   assign product_form_id = 'product-form-' | append: section.id
 
-  assign button_options_html = ''
-  assign dropdown_options_html = ''
 -%}
 
 {%- for value in option.values -%}
@@ -28,6 +26,7 @@
     assign option_disabled = false
     if block.settings.show_soldout_variants
       assign option_disabled = true
+      assign testCounter = 'unavailable'
     endif
 
     for option1_name in variants_option1_arr
@@ -35,10 +34,14 @@
         when 1
           if variants_option1_arr[forloop.index0] == value and variants_available_arr[forloop.index0]
             assign option_disabled = false
+            assign testCounter = ''
           endif
         when 2
           if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == value and variants_available_arr[forloop.index0]
             assign option_disabled = false
+            assign testCounter = ''
+          elsif option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == value
+            assign testCounter = 'soldout'
           endif
         when 3
           if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == product.selected_or_first_available_variant.option2 and variants_option3_arr[forloop.index0] == value and variants_available_arr[forloop.index0]
@@ -55,6 +58,8 @@
           form="{{ product_form_id }}"
           {% if option.selected_value == value %}checked{% endif %}
           {% if option_disabled %}class="disabled"{% endif %}
+          data-test="{{ testCounter }}"
+          {% if testCounter == 'unavailable' %}disabled{% endif %}
     >
     <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}">
       {{ value }}{% if option_disabled %}<span class="visually-hidden">{{ 'products.product.variant_sold_out_or_unavailable' | t }}</span>{% endif %}
