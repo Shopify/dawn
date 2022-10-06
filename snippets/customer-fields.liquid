@@ -1,0 +1,320 @@
+{%- comment -%}
+  ---
+  Author: Helium
+  Documentation: https://customerfields.com/help
+  Version: 4.11.3
+  The following snippet exists to serve forms for the Customer Fields app.
+  YOU SHOULD NOT BE EDITING THIS FILE. CHANGES MAY BE OVERWRITTEN!
+  Instead, you should read our documentation and see how you can create 
+  custom forms or reach out to our support team for help.
+  ---
+{%- endcomment -%}
+
+{%- assign countries = shop.metafields.customer_fields.countries.value | default: shop.metafields.customer_fields.countries -%}
+{%- assign options = shop.metafields.customer_fields.options.value | default: shop.metafields.customer_fields.options -%}
+{%- assign legacy_custom_data = customer.metafields.customr.value | default: customer.metafields.customr -%}
+{%- assign access_token = customer.metafields.customer_fields.access_token.value | default: customer.metafields.customer_fields.access_token -%}
+
+
+{%- capture custom_data -%}
+{
+  {%- for key in shop.metafields.customer_fields.data_column_keys.value -%}
+  "{{ key }}": {{ customer.metafields.customer_fields[key].value | json }}{% unless forloop.last %},{% endunless %}
+  {%- endfor -%}
+}
+{% endcapture %}
+
+
+{% capture cf_init_data %}
+{
+  {% if customer %}
+  "shopifyCustomer": {
+    "id": {{ customer.id | json }},
+    "token": {{ access_token | json }},
+    "first_name": {{ customer.first_name | json }},
+    "last_name": {{ customer.last_name | json }},
+    "name": {{ customer.name | json }},
+    "email": {{ customer.email | json }},
+    "phone": {{ customer.phone | json }},
+    "default_address": {{ customer.default_address | json }},
+    "addresses": {{ customer.addresses | json }},
+    "addresses_count": {{ customer.addresses_count | json }},
+    "accepts_marketing": {{ customer.accepts_marketing | json }},
+    "orders": {{ customer.orders | json }},
+    "orders_count": {{ customer.orders_count | json }},
+    "tags": {{ customer.tags | json }},
+    "tax_exempt": {{ customer.tax_exempt | json }},
+    "total_spent": {{ customer.total_spent | json }},
+    "custom_data": {{ custom_data }},
+    "legacy_custom_data": {{ legacy_custom_data | json }}
+  },
+  {% endif %}
+  "domain": {{ shop.permanent_domain | json }},
+  "baseApiUrl": "https://app.customerfields.com",
+  "captchaSiteKey": "6Lf49FkiAAAAABrjDTxd-hcKj_rWkAiJ_TasJLTq",
+  "captchaEnabled": true,
+  "proxyPath": {{ options.proxy_path | default: "/tools/customr" | json }},
+  "countries": {{ countries | json }},
+  "locale": {{ request.locale.iso_code | json }},
+  "theme": {
+    "name": "Dawn",
+    "version": "7.0.1"
+  },
+  {% if request.locale.root_url %}
+  "localeRootPath": {{ request.locale.root_url | json }},
+  {% endif %}
+  {% if content_for_header contains "AdminBarInjector" or content_for_header contains "PreviewBarInjector" %}
+  "adminIsLoggedIn": true
+  {% else %}
+  "adminIsLoggedIn": false
+  {% endif %}
+}
+{% endcapture %}
+
+<script data-cf-init type="application/json">
+  {{ cf_init_data }}
+</script>
+
+{% unless customer_api %}
+<select data-cf-countries type="application/json" aria-hidden="true" style="display: none;">
+  {{ country_option_tags }}
+</select>
+{% endunless %}
+
+<script>
+  (function() {
+    var callbacksHandled = [];
+    var handleCallback = function(callback) {
+      if (callbacksHandled.indexOf(callback) > -1) return;
+
+      callback();
+      callbacksHandled.push(callback);
+    };
+
+    var domIsReady = function() {
+      return /complete|interactive|loaded/.test(document.readyState);
+    };
+
+    var customerExistsInWindow = function() {
+      return ('customer' in window.CF);
+    };
+
+    var embedFormHasMounted = function() {
+      return !!document.querySelector('.cf-form-inner');
+    };
+
+    var customerReady = function(callback) {
+      if (customerExistsInWindow()) {
+        handleCallback(callback);
+      } else {
+        var createListener = function() {
+          document.addEventListener("cf:customer_ready", function() {
+            handleCallback(callback);
+          });
+        };
+
+        if (domIsReady()) {
+          createListener();
+        } else {
+          document.addEventListener("DOMContentLoaded", function() {
+            if (customerExistsInWindow()) {
+              handleCallback(callback);
+            } else {
+              createListener();
+            }
+          });
+        }
+      }
+    }
+
+    var formsReady = function(callback) {
+      if (embedFormHasMounted()) {
+        handleCallback(callback);
+      } else {
+        var createListener = function() {
+          document.addEventListener("cf:ready", function() {
+            handleCallback(callback);
+          });
+        };
+
+        if (domIsReady()) {
+          createListener();
+        } else {
+          document.addEventListener("DOMContentLoaded", function() {
+            if (embedFormHasMounted()) {
+              handleCallback(callback);
+            } else {
+              createListener();
+            }
+          });
+        }
+      }
+    };
+
+    if (window.CF) {
+      window.CF.customerReady = customerReady;
+      window.CF.ready = formsReady;
+    } else {
+      window.CF = {
+        customerReady: customerReady,
+        ready: formsReady,
+      };
+    }
+  })();
+</script>
+
+<!--
+  Load Shopify recaptcha script on load instead of on form interaction. Makes disabling Shopify's onsubmit listener
+  more reliable. Will only target forms using this selector: form[data-cf-form]
+-->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    !function(){"use strict";window.Shopify=window.Shopify||{},window.Shopify.recaptchaV3=window.Shopify.recaptchaV3||{siteKey:""},window.Shopify.recaptchaV3.hideBadge=function(){if(null===document.querySelector("p[data-spam-detection-disclaimer]"))return;const t=document.createElement("style");document.head.appendChild(t);t.sheet.insertRule(".grecaptcha-badge { visibility: hidden; }")},window.Shopify.recaptchaV3.initialize=function(){const t=document.querySelectorAll('form[data-cf-form] input[name="form_type"][value="create_customer"]');for(var e=0;e<t.length;e++){var n=t[e].form,a=t[e].getAttribute("value");n.setAttribute("onsubmit",'window.Shopify.recaptchaV3.addToken(this, "'+a+'"); return false;')}},window.Shopify.recaptchaV3.addToken=function(t,e){grecaptcha.execute(window.Shopify.recaptchaV3.siteKey,{action:e}).then((function(e){var n=t.querySelector("input[name=recaptcha-v3-token]");n instanceof HTMLElement?n.setAttribute("value",e):((n=document.createElement("input")).setAttribute("name","recaptcha-v3-token"),n.setAttribute("type","hidden"),n.setAttribute("value",e),t.appendChild(n,t)),t.submit()}))},window.storefrontContactFormsRecaptchaCallback=function(){window.Shopify.recaptchaV3.initialize(),window.Shopify.recaptchaV3.hideBadge()};const t=document.createElement("script");t.setAttribute("src","https://www.recaptcha.net/recaptcha/api.js?onload=storefrontContactFormsRecaptchaCallback&render="+window.Shopify.recaptchaV3.siteKey+"&hl=en"),document.body.appendChild(t)}();
+  })
+</script>
+
+{% unless customer_api %}
+  {% if form_id != blank %}
+    {% form "create_customer", action: '', data-cf-form: form_id %}
+      <div class="cf-react-target">
+        <div class="cf-preload">
+          {% for i in (1..4) %}
+            <div class="cf-preload-label cf-preload-item"></div>
+            <div class="cf-preload-field cf-preload-item"></div>
+          {% endfor %}
+          {% for i in (1..2) %}
+            <span class="cf-preload-button cf-preload-item"></span>
+          {% endfor %}
+        </div>
+      </div>
+      <script data-cf-form="{{ form_id }}" type="application/json">
+        {
+          "id": {{ form_id | json }},
+          "formDataUrl": {{ "cf_form_data." | append: form_id | append: ".json" | asset_url | json }}
+        }
+      </script>
+    {% endform %}
+  {% endif %}
+  
+  <script>
+    (function() {
+      var $styles = document.createElement('link');
+
+      $styles.setAttribute('rel', 'stylesheet');
+      $styles.setAttribute('type', 'text/css');
+      $styles.setAttribute('href', '{{ "customer-fields.css" | asset_url }}');
+
+      document.head.appendChild($styles);
+    })();
+  </script>
+  <script async src="{{ 'customer-fields.js' | asset_url }}"></script>
+  
+
+  <style>
+    .cf-preload {
+      margin-top: 50px;
+      opacity: 0.5;
+      text-align: left;
+    }
+    
+    .cf-preload-item {
+      position: relative;
+      overflow: hidden;
+      background: #e2e2e2;
+      border-radius: 4px;
+      display: block !important;
+    }
+    
+    .cf-preload-item:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.5), rgba(255,255,255,0.5), rgba(255,255,255,0));
+      animation: cf-preload 1s cubic-bezier(0.33, 0.8, 0.85, 0.77) infinite;
+      z-index: 1;
+    }
+    
+    .cf-preload-label {
+      display: inline-block !important;
+      width: 50%;
+      height: 20px;
+      background: #eee;
+      margin-bottom: 5px;
+    }
+    
+    .cf-preload-field {
+      margin-bottom: 25px;
+      height: 40px;
+    }
+    
+    .cf-preload-button {
+      display: inline-block !important;
+      width: 120px;
+      margin-right: 15px;
+      height: 40px;
+    }
+    
+    .cf-form-inner {
+      animation: cf-fadein 500ms cubic-bezier(0.11, 0.33, 0.24, 1);
+    }
+  
+    @keyframes cf-preload {
+      from {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(100%);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes cf-fadein {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+{% else %}
+
+{% assign use_version = version | default: '4.11.3' %}
+
+<style>
+    [data-cf-view] {
+        opacity: 0;
+        transition: opacity 250ms ease-out;
+    }
+
+    [data-cf-loaded="true"] [data-cf-view] {
+        opacity: 1;
+    }
+</style>
+  
+    <script>
+      (function ensureCFScriptCompatibility() {
+        const version = "{{ use_version }}";
+        const [major, minor] = version.split('.').map(num => parseInt(num));
+        const minMajor = 4;
+        const minMinor = 8;
+
+        if (major < minMajor || (major === minMajor && minor < minMinor)) {
+          console.warn(
+            `[Customer Fields] Any calls to CF.customer.save or CF.customer.update will fail. You must require a version of 4.8.0 or greater while spam protection is enabled. Instead, you requested ${version}`
+          );
+        }
+      })();
+    </script>
+  
+
+  
+    <script async src="https://assets.customerfields.com/releases/{{ use_version }}/cf-api.js"></script>
+  
+{% endunless %}
