@@ -749,14 +749,24 @@ class SlideshowComponent extends SliderComponent {
 
 customElements.define('slideshow-component', SlideshowComponent);
 
+
 class VariantSelects extends HTMLElement {
   constructor() {
     super();
     this.addEventListener('change', this.onVariantChange);
+    this.currentPills = [...document.getElementById(`variant-radios-${this.dataset.section}`).children[1].querySelectorAll('label')];
+    this.availableVariants = JSON.parse(this.querySelector('[type="application/json"]').textContent).filter(variant => document.querySelector('[type=radio]:checked+label').innerText === variant.option1);
+
+    this.currentPills.forEach(pill => {
+      if (this.availableVariants.every(variant => variant.option2 !== pill.outerText)) {
+        pill.classList.add('variant-not-available');
+      }
+    });
   }
 
   onVariantChange() {
     this.updateOptions();
+    this.updateOptionsVariants();
     this.updateMasterId();
     this.toggleAddButton(true, '', false);
     this.updatePickupAvailability();
@@ -772,6 +782,20 @@ class VariantSelects extends HTMLElement {
       this.renderProductInfo();
       this.updateShareUrl();
     }
+  }
+
+  updateOptionsVariants() {
+    const observer = new MutationObserver(mutations => {
+      this.currentPills = [...document.getElementById(`variant-radios-${this.dataset.section}`).children[1].querySelectorAll('label')];
+      this.availableVariants = JSON.parse(this.querySelector('[type="application/json"]').textContent).filter(variant => document.querySelector('[type=radio]:checked+label').innerText === variant.option1);
+
+      this.currentPills.forEach(pill => {
+        if (this.availableVariants.every(variant => variant.option2 !== pill.outerText)) {
+          pill.classList.add('variant-not-available');
+        }
+      });
+    });
+    observer.observe(document.getElementById(`variant-radios-${this.dataset.section}`), { childList: true });
   }
 
   updateOptions() {
