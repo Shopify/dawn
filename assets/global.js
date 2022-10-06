@@ -846,18 +846,18 @@ class VariantSelects extends HTMLElement {
         const html = new DOMParser().parseFromString(responseText, 'text/html')
         const destination = document.getElementById(`price-${this.dataset.section}`);
         const source = html.getElementById(`price-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
-        const skuSource = html.getElementById(`sku-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
-        const skuDestination = document.getElementById(`sku-${this.dataset.section}`);
+        const skuSource = html.getElementById(`Sku-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
+        const skuDestination = document.getElementById(`Sku-${this.dataset.section}`);
 
         if (source && destination) destination.innerHTML = source.innerHTML;
         if (skuSource && skuDestination) skuDestination.innerHTML = skuSource.innerHTML;
 
         const price = document.getElementById(`price-${this.dataset.section}`);
-        const sku = document.getElementById(`sku-${this.dataset.section}`);
+        const sku = document.getElementById(`Sku-${this.dataset.section}`);
 
         if (price) price.classList.remove('visibility-hidden');
-        if (sku && skuSource.innerHTML.length === 0) sku.classList.add('hidden');
-        if (sku && skuSource.innerHTML.length !== 0) sku.classList.remove('hidden');
+        if (sku && skuSource.innerHTML.length === 0) sku.classList.add('visibility-hidden'), sku.setAttribute('aria-hidden', 'true');
+        if (sku && skuSource.innerHTML.length !== 0) sku.classList.remove('visibility-hidden'), sku.setAttribute('aria-hidden', 'false');
 
         this.toggleAddButton(!this.currentVariant.available, window.variantStrings.soldOut);
       });
@@ -886,12 +886,12 @@ class VariantSelects extends HTMLElement {
     const addButton = button.querySelector('[name="add"]');
     const addButtonText = button.querySelector('[name="add"] > span');
     const price = document.getElementById(`price-${this.dataset.section}`);
-    const sku = document.getElementById(`sku-${this.dataset.section}`);
+    const sku = document.getElementById(`Sku-${this.dataset.section}`);
 
     if (!addButton) return;
     addButtonText.textContent = window.variantStrings.unavailable;
     if (price) price.classList.add('visibility-hidden');
-    if (sku) sku.classList.add('hidden');
+    if (sku) sku.classList.add('visibility-hidden'), sku.setAttribute('aria-hidden', 'true');
   }
 
   getVariantData() {
