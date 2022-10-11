@@ -755,6 +755,40 @@ class VariantSelects extends HTMLElement {
     this.addEventListener('change', this.onVariantChange);
   }
 
+  checkThisOnVariantChange() {
+    //Do not run the rest of this function if it's not pills variants but select dropdown
+    if (!this.querySelector('[type=radio]')) return;
+    //Grab all the available variants based on the selected option 1
+    this.selectedOptionOneVariants = JSON.parse(this.querySelector('[type="application/json"]').textContent).filter(variant => this.querySelector('[type=radio]:checked+label').innerText === variant.option1);
+    //Array of all the input wrappers we have (option1, option2 and option3)
+    this.inputWrappers = [...this.querySelectorAll('.product-form__input')];
+    //If there is only option 1 inputs then early return, don't check the rest
+    if (!this.inputWrappers[1]) return;
+    //Select the inputs present in the HTML
+    this.option2Inputs = [...this.inputWrappers[1].querySelectorAll('input')];
+    //Create an array of all the available option 2 values of the currently selected option 1
+    this.selectedExistingOptions2 = this.selectedOptionOneVariants.filter(option => option.available).map( a => a.option2);
+    //For each input in the HTML check that the value is available in the array of available variants. If not, then add a class of disabled
+    this.option2Inputs.forEach(input => {
+      if (this.selectedExistingOptions2.includes(input.value)) {
+        input.classList.remove('disabled')
+      } else {
+        input.classList.add('disabled')
+      }
+    });
+    //Same as above here for option 3 values if they exist
+    if (!this.inputWrappers[2]) return;
+    this.option3Inputs = [...this.inputWrappers[2].querySelectorAll('input')];
+    this.selectedExistingOptions3 = this.selectedOptionOneVariants.filter(option => option.available).map( a => a.option3);
+    this.option3Inputs.forEach(input => {
+      if (this.selectedExistingOptions3.includes(input.value)) {
+        input.classList.remove('disabled')
+      } else {
+        input.classList.add('disabled')
+      }
+    });
+  }
+
   onVariantChange() {
     this.updateOptions();
     this.updateMasterId();
@@ -763,6 +797,7 @@ class VariantSelects extends HTMLElement {
     this.removeErrorMessage();
 
     if (!this.currentVariant) {
+      this.checkThisOnVariantChange();
       this.toggleAddButton(true, '', true);
       this.setUnavailable();
     } else {
