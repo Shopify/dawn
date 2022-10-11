@@ -59,6 +59,13 @@
   >
 {%- endif -%}
 
+{%- liquid
+    assign media_perc = section.settings.media_width
+    assign media_fit = section.settings.media_fit
+    assign set_aspect_ratio = 'original'
+    assign media_width = section.settings.media_width | times: 0.01
+  -%}
+
 <section class="color-{{ section.settings.color_scheme }} {% if section.settings.secondary_background %}background-secondary{% else %}gradient{% endif %}">
   <div class="page-width section-{{ section.id }}-padding{% if section.settings.secondary_background %} isolate{% endif %}">
     <div class="featured-product product grid grid--1-col gradient color-{{ section.settings.color_scheme }} product--{{ section.settings.media_position }}{% if section.settings.secondary_background == false %} isolate{% endif %} {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
@@ -73,7 +80,7 @@
             {%- if product.selected_or_first_available_variant.featured_media != null -%}
               {%- assign media = product.selected_or_first_available_variant.featured_media -%}
               <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                {% render 'product-thumbnail', media: media, position: 'featured', loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, aspect_ratio: section.settings.media_aspect_ratio, media_width: section.settings.media_width %}
+                {% render 'product-thumbnail', media: media, position: 'featured', loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: media_width, lazy_load: false, aspect_ratio: set_aspect_ratio, fit_in_viewport: section.settings.fit_in_viewport %}
               </div>
             {%- endif -%}
             {%- liquid
@@ -85,7 +92,7 @@
             {%- for media in product.media -%}
               {%- if media_to_render contains media.id and media.id != product.selected_or_first_available_variant.featured_media.id -%}
                 <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                  {% render 'product-thumbnail', media: media, position: forloop.index, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, aspect_ratio: section.settings.media_aspect_ratio, media_width: section.settings.media_width %}
+                  {% render 'product-thumbnail', media: media, position: forloop.index, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: media_width, lazy_load: false, aspect_ratio: set_aspect_ratio, fit_in_viewport: section.settings.fit_in_viewport %}
                 </div>
               {%- endif -%}
             {%- endfor -%}
@@ -806,6 +813,48 @@
     },
     {
       "type": "select",
+      "id": "media_fit",
+      "options": [
+        {
+          "value": "contain",
+          "label": "Original"
+        },
+        {
+          "value": "cover",
+          "label": "Crop to fit"
+        }
+      ],
+      "default": "contain",
+      "label": "Media fit"
+    },
+    {
+      "type": "checkbox",
+      "id": "fit_in_viewport",
+      "default": false,
+      "label": "Constrain media to screen size"
+    },
+    {
+      "type": "select",
+      "id": "media_width",
+      "options": [
+        {
+          "value": "45",
+          "label": "Small (45%)"
+        },
+        {
+          "value": "50",
+          "label": "Medium (50%)"
+        },
+        {
+          "value": "65",
+          "label": "Large (65%)"
+        }
+      ],
+      "default": "50",
+      "label": "Desktop media width"
+    },
+    {
+      "type": "select",
       "id": "color_scheme",
       "options": [
         {
@@ -842,65 +891,6 @@
       "type": "header",
       "content": "t:sections.featured-product.settings.header.content",
       "info": "t:sections.featured-product.settings.header.info"
-    },
-    {
-      "type": "select",
-      "id": "media_aspect_ratio",
-      "options": [
-        {
-          "value": "original",
-          "label": "t:sections.main-product.settings.media_aspect_ratio.options__1.label"
-        },
-        {
-          "value": "square",
-          "label": "t:sections.main-product.settings.media_aspect_ratio.options__2.label"
-        },
-        {
-          "value": "2-3",
-          "label": "t:sections.main-product.settings.media_aspect_ratio.options__3.label"
-        },
-        {
-          "value": "4-3",
-          "label": "t:sections.main-product.settings.media_aspect_ratio.options__4.label"
-        },
-        {
-          "value": "5-4",
-          "label": "t:sections.main-product.settings.media_aspect_ratio.options__5.label"
-        },
-        {
-          "value": "16-9",
-          "label": "t:sections.main-product.settings.media_aspect_ratio.options__6.label"
-        }
-      ],
-      "default": "original",
-      "label": "t:sections.main-product.settings.media_aspect_ratio.label"
-    },
-    {
-      "type": "select",
-      "id": "media_fit",
-      "options": [
-        {
-          "value": "contain",
-          "label": "Contain"
-        },
-        {
-          "value": "cover",
-          "label": "Cover"
-        }
-      ],
-      "default": "cover",
-      "label": "Media fit"
-    },
-    {
-      "type": "range",
-      "id": "media_width",
-      "min": 35,
-      "max": 70,
-      "step": 5,
-      "unit": "%",
-      "label": "Desktop media width",
-      "info": "t:sections.main-product.settings.media_size.info",
-      "default": 55
     },
     {
       "type": "select",
