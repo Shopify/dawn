@@ -229,6 +229,7 @@
                 {%- unless product.has_only_default_variant -%}
                   {%- if block.settings.picker_type == 'button' -%}
                     <variant-radios
+                      id="variant-radios-{{ section.id }}"
                       class="no-js-hidden"
                       data-section="{{ section.id }}"
                       data-url="{{ product.url }}"
@@ -238,21 +239,11 @@
                       {%- for option in product.options_with_values -%}
                         <fieldset class="js product-form__input">
                           <legend class="form__label">{{ option.name }}</legend>
-                          {%- for value in option.values -%}
-                            <input
-                              type="radio"
-                              id="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
-                              name="{{ option.name }}"
-                              value="{{ value | escape }}"
-                              form="{{ product_form_id }}"
-                              {% if option.selected_value == value %}
-                                checked
-                              {% endif %}
-                            >
-                            <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}">
-                              {{ value }}
-                            </label>
-                          {%- endfor -%}
+                          {% render 'product-variant-options',
+                            product: product,
+                            option: option,
+                            block: block
+                          %}
                         </fieldset>
                       {%- endfor -%}
                       <script type="application/json">
@@ -261,6 +252,7 @@
                     </variant-radios>
                   {%- else -%}
                     <variant-selects
+                      id="variant-selects-{{ section.id }}"
                       class="no-js-hidden"
                       data-section="{{ section.id }}"
                       data-url="{{ product.url }}"
@@ -279,16 +271,11 @@
                               name="options[{{ option.name | escape }}]"
                               form="{{ product_form_id }}"
                             >
-                              {%- for value in option.values -%}
-                                <option
-                                  value="{{ value | escape }}"
-                                  {% if option.selected_value == value %}
-                                    selected="selected"
-                                  {% endif %}
-                                >
-                                  {{ value }}
-                                </option>
-                              {%- endfor -%}
+                              {% render 'product-variant-options',
+                                product: product,
+                                option: option,
+                                block: block
+                              %}
                             </select>
                             {% render 'icon-caret' %}
                           </div>
@@ -865,6 +852,12 @@
           ],
           "default": "button",
           "label": "t:sections.featured-product.blocks.variant_picker.settings.picker_type.label"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_soldout_variants",
+          "default": false,
+          "label": "t:sections.featured-product.blocks.variant_picker.settings.show_soldout.label"
         }
       ]
     },
