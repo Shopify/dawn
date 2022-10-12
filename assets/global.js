@@ -945,8 +945,3 @@ class ProductRecommendations extends HTMLElement {
 }
 
 customElements.define('product-recommendations', ProductRecommendations);
-$(document).ready(function(){
-    $( window ).load(function() {
-       window.location.replace("/pages/register");
-    }); 
-    });
