@@ -774,7 +774,7 @@ class VariantSelects extends HTMLElement {
       if (this.selectedExistingOptions2.includes(input.getAttribute('value'))) {
         this.id.includes('variant-radios') ? input.classList.remove('disabled') : input.innerText = input.getAttribute('value');
       } else {
-        this.id.includes('variant-radios') ? input.classList.add('disabled') : input.innerText = input.getAttribute('value') + ` - ${window.variantStrings.unavailable}`;
+        this.id.includes('variant-radios') ? input.classList.add('disabled') : input.innerText = window.variantStrings.unavailable_with_option.replace('[value]', input.getAttribute('value'));
       }
     });
     //Same as above here for option 3 values if they exist
@@ -785,7 +785,7 @@ class VariantSelects extends HTMLElement {
       if (this.selectedExistingOptions3.includes(input.getAttribute('value'))) {
         this.id.includes('variant-radios') ? input.classList.remove('disabled') : input.innerText = input.getAttribute('value');
       } else {
-        this.id.includes('variant-radios') ? input.classList.add('disabled') : input.innerText = input.getAttribute('value') + ` - ${window.variantStrings.unavailable}`;
+        this.id.includes('variant-radios') ? input.classList.add('disabled') : input.innerText = window.variantStrings.unavailable_with_option.replace('[value]', input.getAttribute('value'));
       }
     });
   }
