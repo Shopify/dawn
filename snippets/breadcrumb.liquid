@@ -1,43 +1,33 @@
-{% unless template == 'index' or template == 'cart' or template == 'list-collections' %}
-  <nav class="breadcrumb" role="navigation" aria-label="breadcrumbs">
-    <a href="/" title="Home">Home</a>
-    {% if template contains 'page' %}
-      <span aria-hidden="true">&rsaquo;</span>
-      <span>{{ page.title }}</span>
-    {% elsif template contains 'product' %}
-    {% if collection.url %}
-      <span aria-hidden="true">&rsaquo;</span>
-      {{ collection.title | link_to: collection.url }}
-    {% endif %}
-    <span aria-hidden="true">&rsaquo;</span>
-    <span>{{ product.title }}</span>
-    {% elsif template contains 'collection' and collection.handle %}
-      <span aria-hidden="true">&rsaquo;</span>
-      {% if current_tags %}
-        {% capture url %}/collections/{{ collection.handle }}{% endcapture %}
-        {{ collection.title | link_to: url }}
-        <span aria-hidden="true">&rsaquo;</span>
-        <span>{{ current_tags | join: " + " }}</span>
-      {% else %}
-        <span>{{ collection.title }}</span>
-      {% endif %}
-    {% elsif template == 'blog' %}
-      <span aria-hidden="true">&rsaquo;</span>
-      {% if current_tags %}
-        {{ blog.title | link_to: blog.url }}
-        <span aria-hidden="true">&rsaquo;</span>
-        <span>{{ current_tags | join: " + " }}</span>
-      {% else %}
-        <span>{{ blog.title }}</span>
-      {% endif %}
-    {% elsif template == 'article' %}
-      <span aria-hidden="true">&rsaquo;</span>
-      {{ blog.title | link_to: blog.url }}
-      <span aria-hidden="true">&rsaquo;</span>
-      <span>{{ article.title }}</span>
-    {% else %}
-      <span aria-hidden="true">&rsaquo;</span>
-      <span>{{ page_title }}</span>
-    {% endif %}
-  </nav>
-{% endunless %}
+<div class="breadcrumbs">
+	<a href="{{ routes.root_url }}" title="{{'collections.breadcrumbs.back_to_home' | t }}">
+		{{- 'collections.breadcrumbs.home' | t -}}
+	</a>
+
+	{%- if template contains 'collection' -%}
+		<span class="breadcrumbs-sep">›</span>
+		{{- 'collections.breadcrumbs.collections' | t | link_to: routes.collections_url -}}
+		<span class="breadcrumbs-sep">›</span>
+
+		{%- if collection.handle -%}
+			{%- if collection.handle == 'all' -%}
+				{{- 'collections.breadcrumbs.default_collection' | t -}}
+			{%- else -%}
+				{{- collection.title -}}
+			{%- endif -%}
+		{%- endif -%}
+	{%- endif -%}
+
+	{%- if template contains 'product' -%}
+		<span class="breadcrumbs-sep">›</span>
+
+		{%- assign first_collection = product.collections[0] -%}
+		{%- if first_collection.handle != blank -%}
+			{{- first_collection.title | link_to: first_collection.url -}}
+			<span class="breadcrumbs-sep">›</span>
+		{%- endif -%}
+
+		{%- if product.handle -%}
+			<span>{{ product.title | escape }}</span>
+		{%- endif -%}
+	{%- endif -%}
+</div>
