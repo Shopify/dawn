@@ -44,6 +44,13 @@
   if media.media_type == 'image'
     assign image_class = 'image-magnify-' | append: section.settings.image_zoom
   endif
+
+  assign media_ratio = 1 | divided_by: media.preview_image.aspect_ratio | times: 100
+  if media.media_type == 'video' or media.media_type == 'external_video'
+    assign media_ratio = 1 | divided_by: media.aspect_ratio | times: 100
+  elsif media.media_type == 'model'
+    assign media_ratio = 100
+  endif
 -%}
 
 {%- capture sizes -%}
@@ -51,8 +58,8 @@
 {%- endcapture -%}
 
 <div
-  class="product-media-container gradient global-media-settings"
-  style="--ratio-percent: {{ preview_media_ratio }}%;"
+  class="product-media-container media-fit-contain{% if constrain_to_viewport %} constrain-height{% endif %} gradient global-media-settings"
+  style="--ratio-percent: {{ media_ratio }}%; --width-scale: {{ 100 | divided_by: media_ratio }};"
 >
   <noscript>
     {%- if media.media_type == 'video' or media.media_type == 'external_video' -%}
@@ -111,9 +118,9 @@
 
   {%- if media.media_type != 'image' -%}
     {%- if media.media_type == 'model' -%}
-      <product-model class="deferred-media media media--transparent no-js-hidden" style="--ratio-percent: 100%;" data-media-id="{{ media.id }}">
+      <product-model class="deferred-media media media--transparent no-js-hidden" data-media-id="{{ media.id }}">
     {%- else -%}
-      <deferred-media class="deferred-media media media--transparent no-js-hidden" style="--ratio-percent: {{ media_ratio }}%;" data-media-id="{{ media.id }}">
+      <deferred-media class="deferred-media media media--transparent no-js-hidden" data-media-id="{{ media.id }}">
     {%- endif -%}
     <button id="Deferred-Poster-Modal-{{ media.id }}" class="deferred-media__poster" type="button">
       <span class="deferred-media__poster-button motion-reduce">
