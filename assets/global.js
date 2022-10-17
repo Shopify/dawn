@@ -856,8 +856,7 @@ class VariantSelects extends HTMLElement {
         const inventory = document.getElementById(`Inventory-${this.dataset.section}`);
 
         if (price) price.classList.remove('visibility-hidden');
-        if (inventory && inventorySource.innerText === '') inventory.classList.add('visibility-hidden'), inventory.setAttribute('aria-hidden', 'true');
-        if (inventory && inventorySource.innerText !== '') inventory.classList.remove('visibility-hidden'), inventory.setAttribute('aria-hidden', 'false');
+        if (inventory) inventory.classList.toggle('visibility-hidden', inventorySource.innerText === ''), inventory.setAttribute('aria-hidden', `${inventorySource.innerText === ''}`);
 
         this.toggleAddButton(!this.currentVariant.available, window.variantStrings.soldOut);
       });
@@ -891,8 +890,7 @@ class VariantSelects extends HTMLElement {
     if (!addButton) return;
     addButtonText.textContent = window.variantStrings.unavailable;
     if (price) price.classList.add('visibility-hidden');
-    if (inventory) inventory.classList.add('visibility-hidden'), inventory.setAttribute('aria-hidden', 'true');
-
+    if (inventory) inventory.classList.add('visibility-hidden');
   }
 
   getVariantData() {
