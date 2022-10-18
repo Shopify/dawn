@@ -26,7 +26,7 @@ if (!customElements.get('product-form')) {
       delete config.headers['Content-Type'];
 
       
-      const formData = new FormData(data);
+      const formData = new FormData(this.form);
       let data = Object.fromEntries(formData.entries());
       
       if (this.cart) {
