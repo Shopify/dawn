@@ -229,6 +229,7 @@
                 {%- unless product.has_only_default_variant -%}
                   {%- if block.settings.picker_type == 'button' -%}
                     <variant-radios
+                      id="variant-radios-{{ section.id }}"
                       class="no-js-hidden"
                       data-section="{{ section.id }}"
                       data-url="{{ product.url }}"
@@ -238,21 +239,11 @@
                       {%- for option in product.options_with_values -%}
                         <fieldset class="js product-form__input">
                           <legend class="form__label">{{ option.name }}</legend>
-                          {%- for value in option.values -%}
-                            <input
-                              type="radio"
-                              id="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
-                              name="{{ option.name }}"
-                              value="{{ value | escape }}"
-                              form="{{ product_form_id }}"
-                              {% if option.selected_value == value %}
-                                checked
-                              {% endif %}
-                            >
-                            <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}">
-                              {{ value }}
-                            </label>
-                          {%- endfor -%}
+                          {% render 'product-variant-options',
+                            product: product,
+                            option: option,
+                            block: block
+                          %}
                         </fieldset>
                       {%- endfor -%}
                       <script type="application/json">
@@ -261,6 +252,7 @@
                     </variant-radios>
                   {%- else -%}
                     <variant-selects
+                      id="variant-selects-{{ section.id }}"
                       class="no-js-hidden"
                       data-section="{{ section.id }}"
                       data-url="{{ product.url }}"
@@ -279,16 +271,11 @@
                               name="options[{{ option.name | escape }}]"
                               form="{{ product_form_id }}"
                             >
-                              {%- for value in option.values -%}
-                                <option
-                                  value="{{ value | escape }}"
-                                  {% if option.selected_value == value %}
-                                    selected="selected"
-                                  {% endif %}
-                                >
-                                  {{ value }}
-                                </option>
-                              {%- endfor -%}
+                              {% render 'product-variant-options',
+                                product: product,
+                                option: option,
+                                block: block
+                              %}
                             </select>
                             {% render 'icon-caret' %}
                           </div>
@@ -625,52 +612,7 @@
         </div>
       {%- endif -%}
     </div>
-    <product-modal id="ProductModal-{{ section.id }}" class="product-media-modal media-modal">
-      <div
-        class="product-media-modal__dialog"
-        role="dialog"
-        aria-label="{{ 'products.modal.label' | t }}"
-        aria-modal="true"
-        tabindex="-1"
-      >
-        <button
-          id="ModalClose-{{ section.id }}"
-          type="button"
-          class="product-media-modal__toggle"
-          aria-label="{{ 'accessibility.close' | t }}"
-        >
-          {% render 'icon-close' %}
-        </button>
-
-        <div
-          class="product-media-modal__content color-background-1 gradient"
-          role="document"
-          aria-label="{{ 'products.modal.label' | t }}"
-          tabindex="0"
-        >
-          {%- liquid
-            if product.selected_or_first_available_variant.featured_media != null
-              assign media = product.selected_or_first_available_variant.featured_media
-              render 'product-media', media: media, loop: section.settings.enable_video_looping, variant_image: section.settings.hide_variants
-            endif
-          -%}
-
-          {%- for media in product.media -%}
-            {%- liquid
-              if section.settings.hide_variants and media_to_render contains media.id
-                assign variant_image = true
-              else
-                assign variant_image = false
-              endif
-
-              unless media.id == product.selected_or_first_available_variant.featured_media.id
-                render 'product-media', media: media, loop: section.settings.enable_video_looping, variant_image: variant_image
-              endunless
-            -%}
-          {%- endfor -%}
-        </div>
-      </div>
-    </product-modal>
+    {% render 'product-media-modal', product: product, variant_images: media_to_render %}
   </div>
 </section>
 
