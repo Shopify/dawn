@@ -61,7 +61,7 @@ if (!customElements.get('quick-add-modal')) {
     }
 
     preventVariantURLSwitching() {
-      this.modalContent.querySelector('variant-radios,variant-selects').setAttribute('data-update-url', 'false');
+      this.modalContent.querySelectorAll('variant-radios,variant-selects').forEach((variantSelect) => variantSelect.setAttribute('data-update-url', 'false'));
     }
 
     removeDOMElements() {
