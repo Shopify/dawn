@@ -26,14 +26,16 @@ if (!customElements.get('product-form')) {
       delete config.headers['Content-Type'];
 
       
-      const formData = new FormData(this.form);
-      let data = Object.fromEntries(formData.entries());
+      const formData = new FormData(this.form);      
       
       if (this.cart) {
         formData.append('sections', this.cart.getSectionsToRender().map((section) => section.id));
         formData.append('sections_url', window.location.pathname);
         this.cart.setActiveElement(document.activeElement);
       }
+
+      let data = Object.fromEntries(formData.entries());
+      
       config.body = formData;
 
       fetch(`${routes.cart_add_url}.js`, config)
