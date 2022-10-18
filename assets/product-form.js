@@ -34,9 +34,18 @@ if (!customElements.get('product-form')) {
         this.cart.setActiveElement(document.activeElement);
       }
 
-      let data = Object.fromEntries(formData.entries());
+      if (formData.get('embroidery-variant') === undefined){
+        config.body = formData;
+      } else {
+        let data = Object.fromEntries(formData.entries());
+        let datax = [];
+        datax.push({"id":data["id"],"quantity":data["quantity"]});
+        datax.push({"id":data["embroidery-variant"],"quantity":data["quantity"]})
+        config.body = datax;;
+      }
       
-      config.body = formData;
+      
+      
 
       fetch(`${routes.cart_add_url}.js`, config)
         .then((response) => response.json())
