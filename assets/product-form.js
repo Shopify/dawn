@@ -80,6 +80,7 @@ if (!customElements.get('product-form')) {
           let datax = {"items":[]};
           datax["items"].push({"id":data["id"],"quantity":data["quantity"]});
           datax["items"].push({"id":data["embroidery-variant"],"quantity":data["quantity"]})
+          datax["sections"] = data['sections']
           
           fetch(window.Shopify.routes.root + 'cart/add.js', {
             method: 'POST',
