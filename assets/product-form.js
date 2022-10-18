@@ -36,32 +36,7 @@ if (!customElements.get('product-form')) {
 
       if (formData.get('embroidery-variant') === undefined){
         config.body = formData;
-      
-      } else {
-        let data = Object.fromEntries(formData.entries());
-        let datax = {"items":[]};
-        datax["items"].push({"id":data["id"],"quantity":data["quantity"]});
-        datax["items"].push({"id":data["embroidery-variant"],"quantity":data["quantity"]})
-        
-        fetch(window.Shopify.routes.root + 'cart/add.js', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(datax)
-        })
-        .then(response => {
-          return response.json();
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-        });
-      }
-      
-      
-      
-
-      fetch(`${routes.cart_add_url}`, config)
+        fetch(`${routes.cart_add_url}`, config)
         .then((response) => response.json())
         .then((response) => {
           if (response.status) {
@@ -99,6 +74,27 @@ if (!customElements.get('product-form')) {
           if (!this.error) this.submitButton.removeAttribute('aria-disabled');
           this.querySelector('.loading-overlay__spinner').classList.add('hidden');
         });
+      
+      } else {
+        let data = Object.fromEntries(formData.entries());
+        let datax = {"items":[]};
+        datax["items"].push({"id":data["id"],"quantity":data["quantity"]});
+        datax["items"].push({"id":data["embroidery-variant"],"quantity":data["quantity"]})
+        
+        fetch(window.Shopify.routes.root + 'cart/add.js', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(datax)
+        })
+        .then(response => {
+          return response.json();
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+      }
     }
 
     handleErrorMessage(errorMessage = false) {
