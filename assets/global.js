@@ -761,9 +761,9 @@ class VariantSelects extends HTMLElement {
     this.toggleAddButton(true, '', false);
     this.updatePickupAvailability();
     this.removeErrorMessage();
+    this.updateVariantStatuses();
 
     if (!this.currentVariant) {
-      this.updateVariantStatuses();
       this.toggleAddButton(true, '', true);
       this.setUnavailable();
     } else {
@@ -876,25 +876,25 @@ class VariantSelects extends HTMLElement {
   }
 
   renderProductInfo() {
-    const activeElementId = document.activeElement.id;
+    // const activeElementId = document.activeElement.id;
     fetch(`${this.dataset.url}?variant=${this.currentVariant.id}&section_id=${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`)
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html')
         const destination = document.getElementById(`price-${this.dataset.section}`);
         const source = html.getElementById(`price-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
-        const variantPickerDestination = document.getElementById(`variant-radios-${this.dataset.section}`) || document.getElementById(`variant-selects-${this.dataset.section}`);
-        const variantPickerSource = html.getElementById(`variant-radios-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`) || html.getElementById(`variant-selects-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
+        // const variantPickerDestination = document.getElementById(`variant-radios-${this.dataset.section}`) || document.getElementById(`variant-selects-${this.dataset.section}`);
+        // const variantPickerSource = html.getElementById(`variant-radios-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`) || html.getElementById(`variant-selects-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
 
         if (source && destination) destination.innerHTML = source.innerHTML;
-        if (variantPickerSource && variantPickerDestination) variantPickerDestination.innerHTML = variantPickerSource.innerHTML;
+        // if (variantPickerSource && variantPickerDestination) variantPickerDestination.innerHTML = variantPickerSource.innerHTML;
 
         const price = document.getElementById(`price-${this.dataset.section}`);
 
         if (price) price.classList.remove('visibility-hidden');
         this.toggleAddButton(!this.currentVariant.available, window.variantStrings.soldOut);
 
-        document.querySelector('variant-radios') ? this.querySelector(`[for="${activeElementId}"]`).focus() : this.querySelector(`#${activeElementId}`).focus();
+        // document.querySelector('variant-radios') ? this.querySelector(`[for="${activeElementId}"]`).focus() : this.querySelector(`#${activeElementId}`).focus();
       });
   }
 
