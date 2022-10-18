@@ -41,6 +41,7 @@ if (!customElements.get('product-form')) {
         let datax = [];
         datax.push({"id":data["id"],"quantity":data["quantity"]});
         datax.push({"id":data["embroidery-variant"],"quantity":data["quantity"]})
+        datax = JSON.stringify(datax);
         config.body = datax;;
       }
       
