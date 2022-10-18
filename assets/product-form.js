@@ -41,8 +41,20 @@ if (!customElements.get('product-form')) {
         let datax = {"items":[]};
         datax["items"].push({"id":data["id"],"quantity":data["quantity"]});
         datax["items"].push({"id":data["embroidery-variant"],"quantity":data["quantity"]})
-        datax = JSON.stringify(datax);
-        config.body = datax;;
+        
+        fetch(window.Shopify.routes.root + 'cart/add.js', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(datax)
+        })
+        .then(response => {
+          return response.json();
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
       }
       
       
