@@ -34,7 +34,7 @@ if (!customElements.get('product-form')) {
           this.cart.setActiveElement(document.activeElement);
         }
   
-        if (formData.get('embroidery-variant') === undefined){
+        if (formData.get('embroidery-variant') === null){
           config.body = formData;
           fetch(`${routes.cart_add_url}`, config)
           .then((response) => response.json())
