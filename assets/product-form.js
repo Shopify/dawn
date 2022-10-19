@@ -96,8 +96,12 @@ if (!customElements.get('product-form')) {
           .then(response => response.json())
           .then((response) => {
             if (response.status){
+              if (data['embroidery-variant']==''){
+                this.handleErrorMessage("Embroidery is required.")
+              }else{
                 this.handleErrorMessage(response.description);
-
+              }
+                
                 const soldOutMessage = this.submitButton.querySelector('.sold-out-message');
                 if (!soldOutMessage) return;
                 this.submitButton.setAttribute('aria-disabled', true);
