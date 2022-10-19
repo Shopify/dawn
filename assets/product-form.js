@@ -79,10 +79,10 @@ if (!customElements.get('product-form')) {
           let data = Object.fromEntries(formData.entries());
           let datax = {"items":[]};
           datax["items"].push({"id":data["id"],"quantity":data["quantity"],"properties":{
-            "embroidery-variant":data["embroidery-variant"]
+            "_embroidery-variant":data["embroidery-variant"]
           }});
           datax["items"].push({"id":data["embroidery-variant"],"quantity":data["quantity"],"properties":{
-            "variant":data["id"]
+            "_variant":data["id"]
           }})
           datax["sections"] = data['sections']
           
