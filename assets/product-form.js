@@ -78,8 +78,12 @@ if (!customElements.get('product-form')) {
         } else {
           let data = Object.fromEntries(formData.entries());
           let datax = {"items":[]};
-          datax["items"].push({"id":data["id"],"quantity":data["quantity"]});
-          datax["items"].push({"id":data["embroidery-variant"],"quantity":data["quantity"]})
+          datax["items"].push({"id":data["id"],"quantity":data["quantity"],"properties":{
+            "embroidery-variant":data["embroidery-variant"]
+          }});
+          datax["items"].push({"id":data["embroidery-variant"],"quantity":data["quantity"],"properties":{
+            "variant":data["id"]
+          }})
           datax["sections"] = data['sections']
           
           fetch(window.Shopify.routes.root + 'cart/add.js', {
