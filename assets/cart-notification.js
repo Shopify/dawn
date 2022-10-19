@@ -31,11 +31,21 @@ class CartNotification extends HTMLElement {
   }
 
   renderContents(parsedState) {
+    if (parsedState.items.length > 0){
+      parsedState.items.forEach((item => {
+        this.cartItemKey = item.key;
+        this.getSectionsToRender().forEach((section => {
+          document.getElementById(section.id).innerHTML =
+          this.getSectionInnerHTML(parsedState.sections[section.id], section.selector);
+        }));
+      }));
+    } else{
       this.cartItemKey = parsedState.key;
       this.getSectionsToRender().forEach((section => {
         document.getElementById(section.id).innerHTML =
           this.getSectionInnerHTML(parsedState.sections[section.id], section.selector);
       }));
+    }
 
       if (this.header) this.header.reveal();
       this.open();
