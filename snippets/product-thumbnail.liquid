@@ -40,6 +40,10 @@
 
   assign preview_media_ratio = 1 | divided_by: media.preview_image.aspect_ratio | times: 100
   assign media_ratio = 1 | divided_by: media.aspect_ratio | times: 100
+
+  if media.media_type == 'image'
+    assign image_class = 'image-magnify-' | append: section.settings.image_zoom
+  endif
 -%}
 
 {%- capture sizes -%}
@@ -77,7 +81,7 @@
   </noscript>
 
   <modal-opener class="product__modal-opener product__modal-opener--{{ media.media_type }} no-js-hidden" data-modal="#ProductModal-{{ modal_id }}">
-    <span class="product__media-icon motion-reduce quick-add-hidden" aria-hidden="true">
+    <span class="product__media-icon motion-reduce quick-add-hidden{% if media.media_type == 'image' %} product__media-icon--{{ section.settings.image_zoom }}{% endif %}" aria-hidden="true">
       {%- liquid
         case media.media_type
         when 'video' or 'external_video'
@@ -91,13 +95,14 @@
     </span>
     <div class="product__media media media--transparent">
       {{ media.preview_image | image_url: width: 1946 | image_tag:
+        class: image_class,
         loading: lazy,
         sizes: sizes,
         widths: '246, 493, 600, 713, 823, 990, 1100, 1206, 1346, 1426, 1646, 1946',
         alt: media.preview_image.alt | escape
       }}
     </div>
-    <button class="product__media-toggle quick-add-hidden" type="button" aria-haspopup="dialog" data-media-id="{{ media.id }}">
+    <button class="product__media-toggle quick-add-hidden product__media-zoom-{{ section.settings.image_zoom }}" type="button" aria-haspopup="dialog" data-media-id="{{ media.id }}">
       <span class="visually-hidden">
         {{ 'products.product.media.open_media' | t: index: position }}
       </span>
