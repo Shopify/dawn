@@ -861,11 +861,9 @@ class VariantSelects extends HTMLElement {
         if (skuSource && skuDestination) skuDestination.innerHTML = skuSource.innerHTML;
 
         const price = document.getElementById(`price-${this.dataset.section}`);
-        const sku = document.getElementById(`Sku-${this.dataset.section}`);
 
         if (price) price.classList.remove('visibility-hidden');
-        if (sku && skuSource.innerHTML.length === 0) sku.classList.add('visibility-hidden'), sku.setAttribute('aria-hidden', 'true');
-        if (sku && skuSource.innerHTML.length !== 0) sku.classList.remove('visibility-hidden'), sku.setAttribute('aria-hidden', 'false');
+        if (skuDestination && skuSource) skuDestination.classList.toggle('visibility-hidden', skuSource.textContent.trim() === skuSource.querySelector('span').textContent.trim());
 
         this.toggleAddButton(!this.currentVariant.available, window.variantStrings.soldOut);
 
@@ -901,7 +899,7 @@ class VariantSelects extends HTMLElement {
     if (!addButton) return;
     addButtonText.textContent = window.variantStrings.unavailable;
     if (price) price.classList.add('visibility-hidden');
-    if (sku) sku.classList.add('visibility-hidden'), sku.setAttribute('aria-hidden', 'true');
+    if (sku) sku.classList.add('visibility-hidden');
   }
 
   getVariantData() {
