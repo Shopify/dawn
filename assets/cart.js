@@ -16,7 +16,7 @@ class CartRemoveAllButton extends HTMLElement {
     super();
     this.addEventListener('click', (event) => {
       event.preventDefault();
-      const cartItems = this.closest('cart-items') || this.closest('cart-drawer-items');
+      const cartItems = $('cart-items, cart-drawer-items').first();
       cartItems.updateQuantity(this.dataset.index, 0);
     });
   }
