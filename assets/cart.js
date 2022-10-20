@@ -16,10 +16,10 @@ class CartRemoveAllButton extends HTMLElement {
     super();
     this.addEventListener('click', (event) => {
       event.preventDefault();
-      const cartItems = document.querySelector('cart-drawer-items, cart-items');
-      //cartItems.updateQuantity(this.dataset.index, 0);
-      $('.cart-item').each(function(index){
-        cartItems.updateQuantity(index+1, 0);
+      fetch(`${routes.cart_url}/clear.js`)
+      .then((response) => response.json())
+      .then((response) =>{
+        console.log('cleared';)
       });
     });
   }
