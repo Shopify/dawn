@@ -109,7 +109,9 @@ class CartDrawer extends HTMLElement {
     .then((response) => {
       if (response.status) {
         console.log(response.description)
-      } 
+      } else{
+        this.renderContents(response);
+      }
     });
   }
 
