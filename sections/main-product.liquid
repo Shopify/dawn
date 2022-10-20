@@ -108,12 +108,13 @@
               </div>
             {%- when 'inventory' -%}
               <p
-                class="product__inventory no-js-hidden{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}"
+                class="product__inventory no-js-hidden{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}{% if product.selected_or_first_available_variant.inventory_management != 'shopify'%} visibility-hidden{% endif %}"
+                {{ block.shopify_attributes }}
                 {{ block.shopify_attributes }}
                 id="Inventory-{{ section.id }}"
                 role="status"
               >
-                {%- if product.selected_or_first_available_variant.inventory_quantity != 0 -%}
+                {%- if product.selected_or_first_available_variant.inventory_quantity != 0 and product.selected_or_first_available_variant.inventory_management == 'shopify' -%}
                   {%- if product.selected_or_first_available_variant.inventory_quantity <= block.settings.inventory_threshold -%}
                     <svg width="15" height="15" role="presentation">
                       <circle cx="7.5" cy="7.5" r="7.5" fill="rgb(238,148,65, 0.3)"/>
@@ -135,7 +136,7 @@
                         {{- 'products.product.inventory_in_stock' | t -}}
                     {%- endif -%}
                   {%- endif -%}
-                {%- else -%}
+                {%- elsif  product.selected_or_first_available_variant.inventory_management == 'shopify' -%}
                   {%- if product.selected_or_first_available_variant.inventory_policy == 'continue' -%}
                     <svg width="15" height="15" role="presentation">
                       <circle cx="7.5" cy="7.5" r="7.5" fill="rgb(62,214,96, 0.3)"/>
@@ -357,32 +358,6 @@
                           {{ variant.title }}
                           - {{ variant.price | money | strip_html }}
                           {%- if variant.available == false %} - {{ 'products.product.sold_out' | t }}{% endif %}
-                          {%- for block in section.blocks -%}
-                            {%- if block.type == 'inventory' -%}
-                              {%- if variant.available and variant.inventory_management == 'shopify' -%}
-                                {{- ' - ' -}}
-                                {%- if variant.inventory_quantity != 0 -%}
-                                  {%- if block.settings.show_inventory_quantity -%}
-                                    {%- if variant.inventory_quantity <= block.settings.inventory_threshold -%}
-                                      {{- 'products.product.inventory_low_stock_show_count' | t: quantity: variant.inventory_quantity -}}
-                                    {%- else -%}
-                                      {{- 'products.product.inventory_in_stock_show_count' | t: quantity: variant.inventory_quantity -}}
-                                    {%- endif -%}
-                                  {%- else -%}
-                                    {%- if variant.inventory_quantity <= block.settings.inventory_threshold -%}
-                                      {{- 'products.product.inventory_low_stock' | t -}}
-                                    {%- else -%}
-                                      {{- 'products.product.inventory_in_stock' | t -}}
-                                    {%- endif -%}
-                                  {%- endif -%}
-                                {%- else -%}
-                                  {%- if variant.inventory_policy == 'continue' -%}
-                                    {{- 'products.product.inventory_in_stock' | t -}}
-                                  {%- endif -%}
-                                {%- endif -%}
-                              {%- endif -%}
-                            {%- endif -%}
-                          {%- endfor -%}
                         </option>
                       {%- endfor -%}
                     </select>
