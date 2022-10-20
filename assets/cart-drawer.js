@@ -102,19 +102,6 @@ class CartDrawer extends HTMLElement {
   setActiveElement(element) {
     this.activeElement = element;
   }
-
-  clear(){
-    fetch(`${routes.cart_url}/clear.js`)
-    .then((response) => response.json())
-    .then((response) => {
-      if (response.status) {
-        console.log(response.description)
-      } else{
-        this.renderContents(response);
-      }
-    });
-  }
-
 }
 
 customElements.define('cart-drawer', CartDrawer);
