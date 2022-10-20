@@ -16,7 +16,7 @@ class CartRemoveAllButton extends HTMLElement {
     super();
     this.addEventListener('click', (event) => {
       event.preventDefault();
-      fetch(`${routes.cart_url}/clear.jscart-items,cart-icon-bubble,cart-live-region-text,cart-footer`)
+      fetch(`${routes.cart_url}/clear.js?sections=cart-items,cart-icon-bubble,cart-live-region-text,cart-footer`)
         .then((response) => {
           return response;
         })
