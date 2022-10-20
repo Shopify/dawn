@@ -19,7 +19,7 @@ class CartRemoveAllButton extends HTMLElement {
       fetch(`${routes.cart_url}/clear.js`)
       .then((response) => response.json())
       .then((response) =>{
-        console.log('cleared';)
+        console.log('cleared');
       });
     });
   }
