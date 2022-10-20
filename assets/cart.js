@@ -18,7 +18,7 @@ class CartRemoveAllButton extends HTMLElement {
       event.preventDefault();
       fetch(`${routes.cart_url}/clear.jscart-items,cart-icon-bubble,cart-live-region-text,cart-footer`)
         .then((response) => {
-          return response.text();
+          return response;
         })
         .then((state) => {
           const parsedState = JSON.parse(state);
