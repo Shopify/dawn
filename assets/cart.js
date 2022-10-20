@@ -20,7 +20,7 @@ class CartRemoveAllButton extends HTMLElement {
       .then((response) => response.json())
       .then((response) =>{
         console.log('cleared');
-        cart = document.querySelector('cart-drawer');
+        let cart = document.querySelector('cart-drawer');
         cart.close();
       });
     });
