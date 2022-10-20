@@ -104,7 +104,7 @@ class CartDrawer extends HTMLElement {
   }
 
   clear(){
-    fetch(`${routes.cart_url}.js`, config);
+    fetch(`${routes.cart_url}.js`);
   }
 
 }
