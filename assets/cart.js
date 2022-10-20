@@ -9,6 +9,8 @@ class CartRemoveButton extends HTMLElement {
   }
 }
 
+customElements.define('cart-remove-button', CartRemoveButton);
+
 class CartRemoveAllButton extends HTMLElement {
   constructor() {
     super();
@@ -20,7 +22,9 @@ class CartRemoveAllButton extends HTMLElement {
   }
 }
 
-customElements.define('cart-remove-button', CartRemoveButton);
+customElements.define('cart-remove-all-button', CartRemoveAllButton);
+
+
 
 class CartItems extends HTMLElement {
   constructor() {
