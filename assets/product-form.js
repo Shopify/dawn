@@ -78,8 +78,12 @@ if (!customElements.get('product-form')) {
         } else {
           let data = Object.fromEntries(formData.entries());
           let datax = {"items":[]};
-          datax["items"].push({"id":data["id"],"quantity":data["quantity"]});
-          datax["items"].push({"id":data["embroidery-variant"],"quantity":data["quantity"]})
+          datax["items"].push({"id":data["id"],"quantity":data["quantity"],"properties":{
+            "_embroidery-variant":data["embroidery-variant"]
+          }});
+          datax["items"].push({"id":data["embroidery-variant"],"quantity":data["quantity"],"properties":{
+            "_variant":data["id"]
+          }})
           datax["sections"] = data['sections']
           
           fetch(window.Shopify.routes.root + 'cart/add.js', {
@@ -92,8 +96,12 @@ if (!customElements.get('product-form')) {
           .then(response => response.json())
           .then((response) => {
             if (response.status){
+              if (data['embroidery-variant']==''){
+                this.handleErrorMessage("Embroidery is required.")
+              }else{
                 this.handleErrorMessage(response.description);
-
+              }
+                
                 const soldOutMessage = this.submitButton.querySelector('.sold-out-message');
                 if (!soldOutMessage) return;
                 this.submitButton.setAttribute('aria-disabled', true);

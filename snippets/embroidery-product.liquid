@@ -1,10 +1,19 @@
 {% comment %}
-Embroidery module for PDP 
+Embroidery control module for PDP 
 {% endcomment %}
 
 {% assign embroiderable = product.collections | where:'handle','embroiderable' | size %}  
 {% assign embroidery = all_products['embroidery'] %}
 
+{% assign location = customer.metafields.customer_fields.location.value %}
+
+
+
+{% if location != blank %}
+  {% assign emb_variants = embroidery.variants | where:'option1',location %}
+{% else %}
+  {% assign emb_variants = embroidery.variants %}
+{% endif %}
 
 {% if embroiderable == 1 %}
   {%- comment -%} if product in embroiderable collection, show embroidery ft. {%- endcomment -%}
@@ -54,21 +63,27 @@ Embroidery module for PDP
           
           <div id="embroidered-logo">
             <div class="em-logo-wrapper">
-              {%- for emb_variant in embroidery.variants -%}
-                <div class="emb-image-parent" style="position: relative; display: inline-block; line-height: 0;">
-                  <input id="{{ emb_variant.id }}" type="radio" name="embroidery-variant" value="{{ emb_variant.id }}" class="emb-front-image-option embroidered-logo-option" >
-                  <label class="emb-front-image-label" for="{{ emb_variant.id }}" style="background: url({{ emb_variant.image | img_url }}) center top / cover;"></label>
-                  <input type="hidden" id="{{  emb_variant.id }}" name="properties[Logo]" value="{{emb_variant.option1}}" >
-                </div>
+              {%- for emb_variant in emb_variants -%}
+                  <div class="emb-image-parent" style="position: relative; display: inline-block; line-height: 0;">
+                    <input id="{{ emb_variant.id }}" type="radio" name="embroidery" value="{{ emb_variant.id }}" class="emb-front-image-option embroidered-logo-option" {% if forloop.index0 == 0 %}
+                      checked
+                    {% endif %}>
+                      <label for="{{ emb_variant.id }}" class="emb-front-image-label" style="background: url({{ emb_variant.image | img_url }}) center top / cover;"></label>
+                    <input type="hidden" name="logo" value="{{emb_variant.option1}}" >
+                  </div>
               {%- endfor -%}
+              
             </div>
           </div>
+          <span id="embroidery-logo-selection">{{ emb_variants.first.title }}: {{ emb_variants.first.price | money }}</span>
           
           
         </div>
       </details>
     </div>
-{% endif %}
+
+{%- comment -%}text-align:left;font-size:12px;padding-top:10px;{%- endcomment -%}
+
 
 
 
@@ -119,7 +134,6 @@ Embroidery module for PDP
 
 .emb-front-image-label{
     display: inline-block !important;
-    line-height: normal;
     box-sizing: border-box;
     cursor: pointer;
     border: 0;
@@ -138,24 +152,25 @@ Embroidery module for PDP
     user-select: none;
     width: 100%;
     height: 94px;
-    color: transparent;
 }
         </style>
         
 <script>
 
-  $('input[name=embroidery-variant]').change(function(){
-    let emb_selection = $(this);
-    let master_emb = $('<input type="hidden" name="embroidery-variant">');
+  $('input[name=embroidery]').change(function(){
+    let emb_variant = $(this);
+    let emb_logo = emb_variant.next('input');
+    console.log(emb_variant)
+    console.log(emb_logo)
+    
+    let master_emb = $('input[name="embroidery-variant"]');
+
     let master_variant = $('product-form form input[name=id]');
-
-    master_emb.val(emb_selection.val())
-
-    master_variant.after(master_emb)
-
     
-    
+    master_emb.val(emb_variant.val())    
 
   });
 
 </script>
+
+{% endif %}
