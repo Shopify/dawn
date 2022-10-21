@@ -858,12 +858,14 @@ class VariantSelects extends HTMLElement {
 
         if (source && destination) destination.innerHTML = source.innerHTML;
         if (variantPickerSource && variantPickerDestination) variantPickerDestination.innerHTML = variantPickerSource.innerHTML;
-        if (skuSource && skuDestination) skuDestination.innerHTML = skuSource.innerHTML;
+        if (skuSource && skuDestination) {
+          skuDestination.innerHTML = skuSource.innerHTML;
+          skuDestination.classList.toggle('visibility-hidden', skuSource.classList.contains('visibility-hidden'));
+        }
 
         const price = document.getElementById(`price-${this.dataset.section}`);
 
         if (price) price.classList.remove('visibility-hidden');
-        if (skuDestination && skuSource) skuDestination.classList.toggle('visibility-hidden', skuSource.textContent.trim() === skuSource.querySelector('span').textContent.trim());
 
         this.toggleAddButton(!this.currentVariant.available, window.variantStrings.soldOut);
 
