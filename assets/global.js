@@ -821,11 +821,11 @@ class VariantSelects extends HTMLElement {
   }
 
   updateVariantStatuses() {
-    const selectedOptionOneSelector = this.id.includes('variant-radios') ? '[type=radio]:checked+label' : 'option:checked';
+    const selectedOptionOneSelector = this.id.includes('variant-radios') ? '[type=radio]:checked' : 'option:checked';
     const typeOfInput = this.id.includes('variant-radios') ? 'input' : 'option';
 
     //Grab all the existing variants based on the selected option 1
-    const selectedOptionOneVariants = JSON.parse(this.querySelector('[type="application/json"]').textContent).filter(variant => this.querySelector(selectedOptionOneSelector).innerText.trim() === variant.option1);
+    const selectedOptionOneVariants = JSON.parse(this.querySelector('[type="application/json"]').textContent).filter(variant => this.querySelector(selectedOptionOneSelector).value === variant.option1);
     //Array of all the input wrappers we have (option1, option2 and option3)
     const inputWrappers = [...this.querySelectorAll('.product-form__input')];
     //If there is only option 1 inputs then early return, don't check the rest
@@ -875,7 +875,7 @@ class VariantSelects extends HTMLElement {
 
   renderProductInfo() {
     const requestedVariantId = this.currentVariant.id;
-    
+
     fetch(`${this.dataset.url}?variant=${requestedVariantId}&section_id=${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`)
       .then((response) => response.text())
       .then((responseText) => {
