@@ -16,7 +16,8 @@ class CartRemoveAllButton extends HTMLElement {
     super();
     this.addEventListener('click', (event) => {
       event.preventDefault();
-      // add smooth cart clearing functionality
+      // TO-DO: add smooth cart clearing functionality
+      window.location.href = routes.cart_url+'/clear'
     });
   }
 }
