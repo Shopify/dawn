@@ -11,26 +11,6 @@ class CartRemoveButton extends HTMLElement {
 
 customElements.define('cart-remove-button', CartRemoveButton);
 
-class CartRemoveAllButton extends HTMLElement {
-  constructor() {
-    super();
-    this.addEventListener('click', (event) => {
-      event.preventDefault();
-      fetch(`${routes.cart_url}/clear.js`)
-      .then((response) => response.json())
-      .then((response) =>{
-        console.log('cleared');
-        let cart = document.querySelector('cart-drawer');
-        cart.close();
-      });
-    });
-  }
-}
-
-customElements.define('cart-remove-all-button', CartRemoveAllButton);
-
-
-
 class CartItems extends HTMLElement {
   constructor() {
     super();
