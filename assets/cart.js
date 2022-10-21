@@ -11,6 +11,20 @@ class CartRemoveButton extends HTMLElement {
 
 customElements.define('cart-remove-button', CartRemoveButton);
 
+class CartRemoveAllButton extends HTMLElement {
+  constructor() {
+    super();
+    this.addEventListener('click', (event) => {
+      event.preventDefault();
+      // add smooth cart clearing functionality
+    });
+  }
+}
+
+customElements.define('cart-remove-all-button', CartRemoveAllButton);
+
+
+
 class CartItems extends HTMLElement {
   constructor() {
     super();
