@@ -23,7 +23,6 @@ function moveWithHover(image, event, zoomRatio) {
 };
 
 function magnify(image, zoomRatio) {
-  // add full-size image on top of original
   const overlay = createOverlay(image);
   overlay.onclick = () => overlay.remove();
   overlay.onmousemove = (event) => moveWithHover(image, event, zoomRatio);
