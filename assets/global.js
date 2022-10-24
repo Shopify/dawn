@@ -821,26 +821,22 @@ class VariantSelects extends HTMLElement {
   }
 
   updateVariantStatuses() {
-    const selectedOptionOneSelector = this.id.includes('variant-radios') ? '[type=radio]:checked' : 'option:checked';
-    const typeOfInput = this.id.includes('variant-radios') ? 'input' : 'option';
-
-    //Grab all the existing variants based on the selected option 1
-    const selectedOptionOneVariants = JSON.parse(this.querySelector('[type="application/json"]').textContent).filter(variant => this.querySelector(selectedOptionOneSelector).value === variant.option1);
+    const typeOfInput = this.id.includes('variant-radios') ? 'input[type=radio]' : 'option';
+    //Grab all the existing variants based on the selected option1
+    const selectedOptionOneVariants = JSON.parse(this.querySelector('[type="application/json"]').textContent).filter(variant => this.querySelector(`${typeOfInput}:checked`).value === variant.option1);
     //Array of all the input wrappers we have (option1, option2 and option3)
     const inputWrappers = [...this.querySelectorAll('.product-form__input')];
-    //If there is only option 1 inputs then early return, don't check the rest
-    if (!inputWrappers[1]) return;
-    //Select the inputs present in the HTML
-    const option2Inputs = [...inputWrappers[1].querySelectorAll(typeOfInput)];
-    //Create an array of all the available option 2 values of the currently selected option 1
-    const selectedExistingOptions2 = selectedOptionOneVariants.filter(option => option.available).map( a => a.option2);
-    //For each input in the HTML check that the value is available in the array of available variants. If not, then add a class of disabled
-    this.setInputAvailability(option2Inputs, selectedExistingOptions2)
-    //Same as above here for option 3 values if they exist
-    if (!inputWrappers[2]) return;
-    const option3Inputs = [...inputWrappers[2].querySelectorAll(typeOfInput)];
-    const selectedExistingOptions3 = selectedOptionOneVariants.filter(option => option.available).map( a => a.option3);
-    this.setInputAvailability(option3Inputs, selectedExistingOptions3);
+    //Loop through each one except option1 and compare the input values to the
+    inputWrappers.forEach((option, index) => {
+      if (index === 0) return;
+      //Select the inputs
+      const optionInputs = [...option.querySelectorAll(typeOfInput)]
+      const previousOptionSelected = inputWrappers[`${ index - 1}`].querySelector(`${typeOfInput}:checked`).value;
+      //Creating an array of the available current options we're iterating through based on the currently selected one
+      const availableOptionInputsValue = selectedOptionOneVariants.filter(variant => variant.available && variant[`option${ index }`] === previousOptionSelected).map( a => a[`option${ index + 1 }`]);
+      //For each input in the HTML check that the value is available in the array of available variants. If not, then add a class of disabled
+      this.setInputAvailability(optionInputs, availableOptionInputsValue)
+    });
   }
 
   setInputAvailability(listOfOptions, listOfAvailableOptions) {
