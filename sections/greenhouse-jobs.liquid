@@ -1,0 +1,135 @@
+<link rel="stylesheet" href="{{ 'greenhouse-jobs.css' | asset_url }}">
+
+{%- style -%}
+  .section-{{ section.id }} {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }} {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<script>
+  function departmentTemplate(depts) {
+    
+    return `
+    <div class="column">
+      ${depts.map(dept => {
+        return `
+          <div class="department">
+            <h3>${dept.name}</h3>
+    
+            <ul class="jobs">
+              ${dept.jobs.map(job => {
+                return `
+                <li>
+                  <a href="${job.absolute_url}" target="_blank">
+                    ${job.title}
+                  </a>
+                  {% if section.settings.show_locations %}
+                    <p class="location">${job.location.name}</p>
+                  {% endif %}
+                </li>`;
+              }).join("")}
+          </div>
+          `
+        }).join("")}
+      </div>
+    `
+  }
+
+  async function getJobs() {
+    const data = await fetch("https://boards-api.greenhouse.io/v1/boards/loopearplugs/departments").then(async res => await res.json())
+    let { departments } = data;
+    departments = departments?.sort((a, b) => b.length - a.length)
+    const biggestArr = Math.max.apply(Math, departments.map(function (dept) { return dept.jobs.length }));
+    const first = []
+    const second = []
+    const third = []
+
+    for(let i = 0; i <= departments.length; i++) {
+      if(departments[i] && departments[i].jobs.length) {
+        if(departments[i].jobs.length <= 3) {
+          first.push(departments[i])
+        }
+        else if(departments[i].jobs.length < biggestArr) {
+          second.push(departments[i])
+        }
+        else if(departments[i].jobs.length === biggestArr) {
+          third.push(departments[i])
+        }
+      }
+    }
+
+    const greenhouseJobsContainer = document.querySelector("#greenhouse-jobs-container");
+    
+    [first, second, third].map(depts => {
+      greenhouseJobsContainer.innerHTML = greenhouseJobsContainer.innerHTML + departmentTemplate(depts);
+    })
+  }
+
+  getJobs()
+</script>
+
+<div class="page-width section-{{section.id}}">
+  <div class="greenhouse-jobs-wrapper">
+    {% if section.settings.title != blank %}
+      <h1>{{ section.settings.title }}</h1>
+    {% endif %}
+    <div id="greenhouse-jobs-container">
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Greenhouse Jobs",
+  "settings": [
+    {
+      "id": "show_locations",
+      "label": "Show locations",
+      "type": "checkbox",
+      "default": false
+    },
+    {
+      "id": "title",
+      "label": "Title",
+      "type": "text"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 88
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 88
+    }
+  ],
+  "presets": [
+    {
+      "name": "Greenhouse Jobs"
+    }
+  ]
+}
+{% endschema %}
