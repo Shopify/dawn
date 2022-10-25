@@ -1,18 +1,32 @@
 <footer class="footer">
-  {% for block in section.blocks %}  
-    {% case block.type %}
-  
-      {% when 'link' %}  
-        <div class="link" {{ block.shopify_attributes }}>   
-          {{ block.settings.linktext | link_to: block.settings.linkurl }}
-        </div> 
-  
-      {% when 'custom-text' %}
-        <div class="text" {{ block.shopify_attributes }}>{{ block.settings.custom-text-field }}</div>
-  
-    {% endcase %} 
-  {% endfor %}
+  <div class="footer__blocks-wrapper grid grid--1-col grid--2-col grid--4-col-tablet {{ footer_grid_class }}">
+    {%- for block in section.blocks -%}
+      <div class="footer-block grid__item{% if block.type == 'link_list' %} footer-block--menu{% endif %}" {{ block.shopify_attributes }}>
+        {%- if block.settings.heading != blank -%}
+          <h2 class="footer-block__heading">{{- block.settings.heading | escape -}}</h2>
+        {%- endif -%}
 
+        {%- case block.type -%}
+        {%- when 'text' -%}
+          <div class="footer-block__details-content rte">
+            {{ block.settings.subtext }}
+          </div>
+        {%- when 'link_list' -%}
+          {%- if block.settings.menu != blank -%}
+            <ul class="footer-block__details-content list-unstyled">
+              {%- for link in block.settings.menu.links -%}
+                <li>
+                  <a href="{{ link.url }}" class="link link--text list-menu__item list-menu__item--link{% if link.active %} list-menu__item--active{% endif %}">
+                    {{ link.title }}
+                  </a>
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        {%- endcase -%}
+      </div>
+    {%- endfor -%}
+  </div>
 </footer>  
 
 {% schema %}
@@ -22,7 +36,22 @@
   "blocks": [
     {
       "type": "link_list",
-      "name": "Footer Menu"
+      "name": "t:sections.footer.blocks.link_list.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "default": "Quick links",
+          "label": "t:sections.footer.blocks.link_list.settings.heading.label"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "default": "footer",
+          "label": "t:sections.footer.blocks.link_list.settings.menu.label",
+          "info": "t:sections.footer.blocks.link_list.settings.menu.info"
+        }
+      ]
     }
   ]
 }
