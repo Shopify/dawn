@@ -825,19 +825,13 @@ class VariantSelects extends HTMLElement {
   }
 
   updateVariantStatuses() {
-    //Grab all the existing variants based on the selected option1
     const selectedOptionOneVariants = this.variantData.filter(variant => this.querySelector(':checked').value === variant.option1);
-    //Array of all the input wrappers we have (option1, option2 and option3)
     const inputWrappers = [...this.querySelectorAll('.product-form__input')];
-    //Loop through each one except option1 and compare the input values to the
     inputWrappers.forEach((option, index) => {
       if (index === 0) return;
-      //Select the inputs
       const optionInputs = [...option.querySelectorAll('input[type="radio"], option')]
       const previousOptionSelected = inputWrappers[index - 1].querySelector(':checked').value;
-      //Creating an array of the available current options we're iterating through based on the currently selected one
       const availableOptionInputsValue = selectedOptionOneVariants.filter(variant => variant.available && variant[`option${ index }`] === previousOptionSelected).map(variantOption => variantOption[`option${ index + 1 }`]);
-      //For each input in the HTML check that the value is available in the array of available variants. If not, then add a class of disabled
       this.setInputAvailability(optionInputs, availableOptionInputsValue)
     });
   }
