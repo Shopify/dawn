@@ -865,10 +865,9 @@ class VariantSelects extends HTMLElement {
         if (variantPickerSource && variantPickerDestination) variantPickerDestination.innerHTML = variantPickerSource.innerHTML;
 
         const price = document.getElementById(`price-${this.dataset.section}`);
-        const inventory = document.getElementById(`Inventory-${this.dataset.section}`);
 
         if (price) price.classList.remove('visibility-hidden');
-        if (inventory) inventory.classList.toggle('visibility-hidden', inventorySource.innerText === '');
+        if (inventoryDestination) inventoryDestination.classList.toggle('visibility-hidden', inventorySource.innerText === '');
 
         this.toggleAddButton(!this.currentVariant.available, window.variantStrings.soldOut);
 
