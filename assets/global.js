@@ -825,19 +825,18 @@ class VariantSelects extends HTMLElement {
   }
 
   updateVariantStatuses() {
-    const typeOfInput = this.id.includes('variant-radios') ? 'input[type=radio]' : 'option';
     //Grab all the existing variants based on the selected option1
-    const selectedOptionOneVariants = JSON.parse(this.querySelector('[type="application/json"]').textContent).filter(variant => this.querySelector(`${typeOfInput}:checked`).value === variant.option1);
+    const selectedOptionOneVariants = this.variantData.filter(variant => this.querySelector(':checked').value === variant.option1);
     //Array of all the input wrappers we have (option1, option2 and option3)
     const inputWrappers = [...this.querySelectorAll('.product-form__input')];
     //Loop through each one except option1 and compare the input values to the
     inputWrappers.forEach((option, index) => {
       if (index === 0) return;
       //Select the inputs
-      const optionInputs = [...option.querySelectorAll(typeOfInput)]
-      const previousOptionSelected = inputWrappers[`${ index - 1}`].querySelector(`${typeOfInput}:checked`).value;
+      const optionInputs = [...option.querySelectorAll('input[type="radio"], option')]
+      const previousOptionSelected = inputWrappers[index - 1].querySelector(':checked').value;
       //Creating an array of the available current options we're iterating through based on the currently selected one
-      const availableOptionInputsValue = selectedOptionOneVariants.filter(variant => variant.available && variant[`option${ index }`] === previousOptionSelected).map( a => a[`option${ index + 1 }`]);
+      const availableOptionInputsValue = selectedOptionOneVariants.filter(variant => variant.available && variant[`option${ index }`] === previousOptionSelected).map(variantOption => variantOption[`option${ index + 1 }`]);
       //For each input in the HTML check that the value is available in the array of available variants. If not, then add a class of disabled
       this.setInputAvailability(optionInputs, availableOptionInputsValue)
     });
@@ -846,9 +845,9 @@ class VariantSelects extends HTMLElement {
   setInputAvailability(listOfOptions, listOfAvailableOptions) {
     listOfOptions.forEach(input => {
       if (listOfAvailableOptions.includes(input.getAttribute('value'))) {
-        this.id.includes('variant-radios') ? input.classList.remove('disabled') : input.innerText = input.getAttribute('value');
+        input.innerText = input.getAttribute('value');
       } else {
-        this.id.includes('variant-radios') ? input.classList.add('disabled') : input.innerText = window.variantStrings.unavailable_with_option.replace('[value]', input.getAttribute('value'));
+        input.innerText = window.variantStrings.unavailable_with_option.replace('[value]', input.getAttribute('value'));
       }
     });
   }
@@ -887,7 +886,7 @@ class VariantSelects extends HTMLElement {
         const source = html.getElementById(`price-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
         const skuSource = html.getElementById(`Sku-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
         const skuDestination = document.getElementById(`Sku-${this.dataset.section}`);
-        
+
         if (source && destination) destination.innerHTML = source.innerHTML;
         if (skuSource && skuDestination) {
           skuDestination.innerHTML = skuSource.innerHTML;
@@ -944,6 +943,16 @@ customElements.define('variant-selects', VariantSelects);
 class VariantRadios extends VariantSelects {
   constructor() {
     super();
+  }
+
+  setInputAvailability(listOfOptions, listOfAvailableOptions) {
+    listOfOptions.forEach(input => {
+      if (listOfAvailableOptions.includes(input.getAttribute('value'))) {
+        input.classList.remove('disabled');
+      } else {
+        input.classList.add('disabled');
+      }
+    });
   }
 
   updateOptions() {
