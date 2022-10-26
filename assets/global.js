@@ -755,6 +755,9 @@ class VariantSelects extends HTMLElement {
     this.toggleAddButton(true, '', false);
     this.updatePickupAvailability();
     this.removeErrorMessage();
+    
+    this.updateContinueSellingMessage();
+    
 
     if (!this.currentVariant) {
       this.toggleAddButton(true, '', true);
@@ -765,6 +768,27 @@ class VariantSelects extends HTMLElement {
       this.updateVariantInput();
       this.renderProductInfo();
       this.updateShareUrl();
+    }
+  }
+
+  updateContinueSellingMessage() {
+    this.variantWithInvData = this.variantWithInvData || JSON.parse(this.querySelector('#variantsWithInv').textContent);
+    const relatedInventory = this.variantWithInvData.find( el => el.id === this.variantData.find((variant) => {
+      return !variant.options.map((option, index) => {
+        return this.options[index] === option;
+      }).includes(false);
+    }).id);
+    
+    const continueMsg = document.querySelector(".continue-selling-msg");
+
+    if(!continueMsg) return false;
+
+    if(relatedInventory.inventory_policy === "continue" && relatedInventory.inventory_quantity <= 0) {
+      continueMsg.innerHTML = `<p style="padding: 16px; background: rgb(248,206,196);">
+      <b>Note: </b>Loop Engage is literally flying off the shelves and we're struggling to keep up! We'll have your order shipped within the next week.
+      </p>`
+    } else {
+      continueMsg.innerHTML = ``
     }
   }
 
