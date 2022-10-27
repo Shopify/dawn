@@ -25,7 +25,6 @@
       try {
          await fetch("https://boards-api.greenhouse.io/v1/boards/loopearplugs/jobs/4092617101", {
             method: "post",
-            mode: 'no-cors',
             headers,
             data: {
               "first_name": e.target[0].value,
@@ -33,7 +32,8 @@
               "email": e.target[2].value,
               "question_5555": e.target[3].value,
               "data_compliance[gdpr_consent_given]": e.target[4].value === "on"
-            }
+            },
+            mode: 'no-cors'
           })
           feedbackSuccess.style.display = "inline-block";
           greenhouseSpontForm.reset();
