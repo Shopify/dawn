@@ -772,8 +772,8 @@ class VariantSelects extends HTMLElement {
   }
 
   updateContinueSellingMessage() {
-    this.variantWithInvData = this.variantWithInvData || JSON.parse(this.querySelector('#variantsWithInv')?.textContent);
-    if(!this.variantWithInvData) return false;
+    if(!this.querySelector('#variantsWithInv')) return false;
+    this.variantWithInvData = this.variantWithInvData || JSON.parse(this.querySelector('#variantsWithInv').textContent);
     const relatedInventory = this.variantWithInvData.find( el => el.id === this.variantData.find((variant) => {
       return !variant.options.map((option, index) => {
         return this.options[index] === option;
