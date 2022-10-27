@@ -23,7 +23,7 @@
       headers.set("Content-Type", "application/json")
 
       try {
-         await fetch("https://boards-api.greenhouse.io/v1/boards/loopearplugs/jobs/4092617101", {
+         await fetch("https://proxy.cors.sh/https://boards-api.greenhouse.io/v1/boards/loopearplugs/jobs/4092617101", {
             method: "post",
             headers,
             data: {
