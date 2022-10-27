@@ -12,10 +12,10 @@
       btnSubmit.disabled = true;
       console.log({
         "first_name": e.target[0].value,
-        "first_name": e.target[0].value,
-        "email": e.target[1].value,
-        "question_5555": e.target[2].value,
-        "data_compliance[gdpr_consent_given]": e.target[3].value
+        "last_name": e.target[1].value,
+        "email": e.target[2].value,
+        "question_5555": e.target[3].value,
+        "data_compliance[gdpr_consent_given]": e.target[4].value
       });
        try {
          await fetch("https://boards-api.greenhouse.io/v1/boards/loopearplugs/jobs/4092617101", {
@@ -32,11 +32,12 @@
               "data_compliance[gdpr_consent_given]": e.target[4].value === "on"
             }
           })
-          feedbackSuccess.style.display = "initial";
+          feedbackSuccess.style.display = "inline-block";
+          greenhouseSpontForm.reset();
         } catch(error) {
-          feedbackErr.style.display = "initial";
+          feedbackErr.style.display = "inline-block";
         }
-
+        
         btnSubmit.disabled = false;
     })
   }
