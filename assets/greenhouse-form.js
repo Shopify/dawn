@@ -32,7 +32,8 @@
               "email": e.target[2].value,
               "question_5555": e.target[3].value,
               "data_compliance[gdpr_consent_given]": e.target[4].value === "on"
-            }
+            },
+            mode: 'no-cors'
           })
           feedbackSuccess.style.display = "inline-block";
           greenhouseSpontForm.reset();
