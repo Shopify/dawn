@@ -20,6 +20,7 @@
        try {
          await fetch("https://boards-api.greenhouse.io/v1/boards/loopearplugs/jobs/4092617101", {
            method: "post",
+           mode: 'no-cors',
            headers: {
              "Authorization": "Basic 8af68175223790f2fd2b9f7c04082d8b-101:",
              "Content-Type": "application/json"
