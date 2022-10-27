@@ -20,7 +20,7 @@
       });
 
       try {
-        await fetch("http://localhost:8888/.netlify/functions/proxy", {
+        await fetch("https://greenhouseapiproxy.netlify.app/.netlify/functions/proxy", {
         method: "post",
             headers: {
               'Content-Type': 'application/json'
