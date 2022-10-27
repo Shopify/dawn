@@ -16,7 +16,7 @@
         first_name: e.target[0].value,
         last_name: e.target[1].value,
         email: e.target[2].value,
-        question_5555: e.target[3].value
+        "job_application[answers_attributes][1][text_value]": e.target[3].value
       });
 
       try {
