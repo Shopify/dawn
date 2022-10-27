@@ -25,6 +25,7 @@
             headers: {
               'Content-Type': 'application/json'
             },  
+            mode: "no-cors",
             body
           })
           feedbackErr.style.display = "none";
