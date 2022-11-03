@@ -786,7 +786,7 @@ class VariantSelects extends HTMLElement {
 
     if(relatedInventory.inventory_policy === "continue" && relatedInventory.inventory_quantity <= 0) {
       continueMsg.innerHTML = `<p style="padding: 16px; background: rgb(248,206,196);">
-      <b>Note: </b>Loop Engage is literally flying off the shelves and we're struggling to keep up! We'll have your order shipped within the next week.
+      <b>Note: </b>Loop Engage is literally flying off the shelves and we're struggling to keep up! We'll have your order shipped within 3 to 4 weeks.
       </p>`
     } else {
       continueMsg.innerHTML = ``
