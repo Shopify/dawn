@@ -61,7 +61,10 @@ if (!customElements.get('quick-add-modal')) {
     }
 
     preventVariantURLSwitching() {
-      this.modalContent.querySelector('variant-radios,variant-selects').setAttribute('data-update-url', 'false');
+      const variantPicker = this.modalContent.querySelector('variant-radios,variant-selects');
+      if (!variantPicker) return;
+
+      variantPicker.setAttribute('data-update-url', 'false');
     }
 
     removeDOMElements() {
