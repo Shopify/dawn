@@ -68,6 +68,13 @@ function trapFocus(container, elementToFocus = container) {
   document.addEventListener('focusin', trapFocusHandlers.focusin);
 
   elementToFocus.focus();
+
+  if (elementToFocus.tagName === 'INPUT' &&
+    ['search', 'text', 'email', 'url'].includes(elementToFocus.type) &&
+    elementToFocus.value) {
+    const end = elementToFocus.value.length;
+    elementToFocus.setSelectionRange(0, end);
+  }
 }
 
 // Here run the querySelector to figure out if the browser supports :focus-visible or not and run code based on it.
