@@ -1,0 +1,255 @@
+{{ 'loop-linktree.css' | asset_url | stylesheet_tag }}
+{% style %}
+  .article_grid_container {
+    grid-template-columns: repeat({{ section.settings.columns_size }}, 1fr);
+  }
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+      padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    }
+
+    @media screen and (min-width: 750px) {
+      .section-{{ section.id }}-padding {
+        padding-top: {{ section.settings.padding_top }}px;
+        padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+    }
+{% endstyle %}
+<div class="loop_linktree">
+  <div class="loop_linktree_container">
+    <div class="share_icon_wrapper">
+      <button href="" class="share_loop share-button">
+        {% render 'icon-loop-linktree-share' %}
+      </button>
+    </div>
+    <a href="{{ routes.root_url }}" class="loop_linktree_uppersection">
+      <div class="logo_wrapper">
+        {%- if section.settings.logo_image != blank -%}
+          <img
+            class="loop_logo"
+            src="{{ section.settings.logo_image | img_url: '200x' }}"
+            alt="{{section.settings.logo_image.alt}}"
+          >
+        {%- else -%}
+          {{ 'image' | placeholder_svg_tag: 'my-custom-class' }}
+        {%- endif -%}
+      </div>
+      {%- if section.settings.loop_heading != blank -%}
+        <h1 class="loop_heading">{{- section.settings.loop_heading -}}</h1>
+      {%- endif -%}
+    </a>
+    <div class="loop_scoial_container">
+      {%- for block in section.blocks -%}
+        <div class="social_item">
+          {%- if block.settings.social_link_txt != blank -%}
+            <a
+              class="social_link"
+              href="{{- block.settings.social_link -}}"
+              target="_blank"
+            >
+              <span>{{- block.settings.social_link_txt -}}</span>
+              <div class="social_item_icon">
+                {% render 'icon-loop-linktree-share' %}
+              </div>
+            </a>
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+    {%- if section.settings.show_newsletter == true -%}
+      <div class="loop_linktree_newsletter">
+        <div class="newsletter_heading">
+          <h2>{{- section.settings.newsletter_heading -}}</h2>
+        </div>
+        <div>
+          {%- form 'customer', id: 'ContactFooter', class: 'footer__newsletter newsletter-form' -%}
+            <input type="hidden" name="contact[tags]" value="prospect,newsletter,{{ request.locale.iso_code }}">
+            <input type="hidden" name="contact[context]" value="section">
+            <div class="newsletter-form__field-wrapper">
+              <div class="field">
+                <input
+                  id="NewsletterForm--{{ section.id }}"
+                  type="email"
+                  name="contact[email]"
+                  class="field__input"
+                  value="{{ form.email }}"
+                  aria-required="true"
+                  autocorrect="off"
+                  autocapitalize="off"
+                  autocomplete="email"
+                  {% if form.errors %}
+                    autofocus
+                    aria-invalid="true"
+                    aria-describedby="ContactFooter-error"
+                  {% elsif form.posted_successfully? %}
+                    aria-describedby="ContactFooter-success"
+                  {% endif %}
+                  placeholder="{{ 'newsletter.label' | t }}"
+                  required
+                >
+                <label class="field__label" for="NewsletterForm--{{ section.id }}">
+                  {{ 'newsletter.label' | t }}
+                </label>
+                <button
+                  type="submit"
+                  class="newsletter-form__button field__button"
+                  name="commit"
+                  id="Subscribe"
+                  aria-label="{{ 'newsletter.button_label' | t }}"
+                >
+                  {% render 'icon-arrow' %}
+                </button>
+              </div>
+              {%- if form.errors -%}
+                <small class="newsletter-form__message form__message" id="ContactFooter-error">
+                  {%- render 'icon-error' -%}
+                  {{- form.errors.translated_fields.email | capitalize }}
+                  {{ form.errors.messages.email -}}
+                </small>
+              {%- endif -%}
+            </div>
+            {%- if form.posted_successfully? -%}
+              <h3
+                class="newsletter-form__message newsletter-form__message--success form__message"
+                id="ContactFooter-success"
+                tabindex="-1"
+                autofocus
+              >
+                {% render 'icon-success' -%}
+                {{- 'newsletter.success' | t }}
+              </h3>
+            {%- endif -%}
+          {%- endform -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+<script>
+  const shareButton = document.querySelector('.share-button');
+  const shareDialog = document.querySelector('.share-dialog');
+  const closeButton = document.querySelector('.close-button');
+
+  shareButton.addEventListener('click', (event) => {
+    if (navigator.share) {
+      navigator
+        .share({
+          title: 'Loop Earplugs',
+          url: '{{ request.path }}',
+        })
+        .then(() => {
+          console.log('Thanks for sharing!');
+        })
+        .catch(console.error);
+    } else {
+      shareDialog.classList.add('is-open');
+    }
+  });
+
+  closeButton.addEventListener('click', (event) => {
+    shareDialog.classList.remove('is-open');
+  });
+
+  $(document).ready(function(){
+    $( "#ContactFooter" ).submit(function( event ) {
+      console.log($("#NewsletterForm--footer").val());
+      let email = $("#NewsletterForm--footer").val();
+      let language = Shopify.locale;
+      console.log(language);
+      klaviyo.push(['identify', { $email: email, $language: language }]); //send users language as custom property to klaviyo
+    });
+  });
+
+</script>
+
+{% schema %}
+{
+  "name": "Loop Linktree",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo_image",
+      "label": "Logo image"
+    },
+    {
+      "type": "text",
+      "id": "loop_heading",
+      "label": "Heading",
+      "default": "@LoopEarplugs"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_newsletter",
+      "label": "Show Newsletter",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "newsletter_heading",
+      "label": "Newsletter Heading",
+      "default": "Stay in the Loop for updates and specials"
+    },
+    {
+      "type": "header",
+      "content": "SECTION PADDING"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 64
+    }
+  ],
+
+  "blocks": [
+    {
+      "type": "select",
+      "name": "Link",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "social_link_txt",
+          "label": "Text Here",
+          "default": "Discover Loop Engage - Designed for conversations"
+        },
+        {
+          "type": "url",
+          "id": "social_link",
+          "label": "Text Url"
+        }
+      ]
+    }
+  ],
+
+  "presets": [
+    {
+      "name": "Loop Linktree",
+      "blocks": [
+        {
+          "type": "select"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+
+{% stylesheet %}
+{% endstylesheet %}
+
+{% javascript %}
+{% endjavascript %}
