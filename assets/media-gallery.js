@@ -43,7 +43,7 @@ if (!customElements.get('media-gallery')) {
         if (this.elements.thumbnails) {
           activeMedia.parentElement.scrollTo({ left: activeMedia.offsetLeft });
         }
-        if (!this.elements.thumbnails || this.dataset.desktopLayout === 'stacked') {
+        if (!this.mql.matches || ((!this.elements.thumbnails || this.dataset.desktopLayout === 'stacked') && !this.dataset.hideVariantImages )) {
           activeMedia.scrollIntoView({behavior: 'smooth'});
         }
       });
