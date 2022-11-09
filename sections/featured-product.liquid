@@ -155,6 +155,15 @@
                     {%- endform -%}
                   </div>
                 {%- endif -%}
+              {%- when 'sku' -%}
+                <p
+                  class="product__sku no-js-hidden{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}{% if product.selected_or_first_available_variant.sku.size == 0 %} visibility-hidden{% endif %}"
+                  id="Sku-{{ section.id }}"
+                  role="status"
+                  {{ block.shopify_attributes }}
+                >
+                  <span class="visually-hidden">{{ 'products.product.sku' | t }}:</span> {{- product.selected_or_first_available_variant.sku -}}
+                </p>
               {%- when 'quantity_selector' -%}
                 <div
                   class="product-form__input product-form__quantity{% if settings.inputs_shadow_vertical_offset != 0 and settings.inputs_shadow_vertical_offset < 0 %} product-form__quantity-top{% endif %}"
@@ -229,6 +238,7 @@
                 {%- unless product.has_only_default_variant -%}
                   {%- if block.settings.picker_type == 'button' -%}
                     <variant-radios
+                      id="variant-radios-{{ section.id }}"
                       class="no-js-hidden"
                       data-section="{{ section.id }}"
                       data-url="{{ product.url }}"
@@ -238,21 +248,7 @@
                       {%- for option in product.options_with_values -%}
                         <fieldset class="js product-form__input">
                           <legend class="form__label">{{ option.name }}</legend>
-                          {%- for value in option.values -%}
-                            <input
-                              type="radio"
-                              id="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
-                              name="{{ option.name }}"
-                              value="{{ value | escape }}"
-                              form="{{ product_form_id }}"
-                              {% if option.selected_value == value %}
-                                checked
-                              {% endif %}
-                            >
-                            <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}">
-                              {{ value }}
-                            </label>
-                          {%- endfor -%}
+                          {% render 'product-variant-options', product: product, option: option, block: block %}
                         </fieldset>
                       {%- endfor -%}
                       <script type="application/json">
@@ -261,6 +257,7 @@
                     </variant-radios>
                   {%- else -%}
                     <variant-selects
+                      id="variant-selects-{{ section.id }}"
                       class="no-js-hidden"
                       data-section="{{ section.id }}"
                       data-url="{{ product.url }}"
@@ -279,16 +276,7 @@
                               name="options[{{ option.name | escape }}]"
                               form="{{ product_form_id }}"
                             >
-                              {%- for value in option.values -%}
-                                <option
-                                  value="{{ value | escape }}"
-                                  {% if option.selected_value == value %}
-                                    selected="selected"
-                                  {% endif %}
-                                >
-                                  {{ value }}
-                                </option>
-                              {%- endfor -%}
+                              {% render 'product-variant-options', product: product, option: option, block: block %}
                             </select>
                             {% render 'icon-caret' %}
                           </div>
@@ -325,8 +313,8 @@
                             value="{{ variant.id }}"
                           >
                             {{ variant.title }}
-                            {%- if variant.available == false %} - {{ 'products.product.sold_out' | t }}{% endif %}
                             - {{ variant.price | money | strip_html }}
+                            {%- if variant.available == false %} - {{ 'products.product.sold_out' | t }}{% endif %}
                           </option>
                         {%- endfor -%}
                       </select>
@@ -342,7 +330,6 @@
                         <svg
                           aria-hidden="true"
                           focusable="false"
-                          role="presentation"
                           class="icon icon-error"
                           viewBox="0 0 13 13"
                         >
@@ -387,7 +374,6 @@
                               <svg
                                 aria-hidden="true"
                                 focusable="false"
-                                role="presentation"
                                 class="spinner"
                                 viewBox="0 0 66 66"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -625,56 +611,18 @@
         </div>
       {%- endif -%}
     </div>
-    <product-modal id="ProductModal-{{ section.id }}" class="product-media-modal media-modal">
-      <div
-        class="product-media-modal__dialog"
-        role="dialog"
-        aria-label="{{ 'products.modal.label' | t }}"
-        aria-modal="true"
-        tabindex="-1"
-      >
-        <button
-          id="ModalClose-{{ section.id }}"
-          type="button"
-          class="product-media-modal__toggle"
-          aria-label="{{ 'accessibility.close' | t }}"
-        >
-          {% render 'icon-close' %}
-        </button>
-
-        <div
-          class="product-media-modal__content color-background-1 gradient"
-          role="document"
-          aria-label="{{ 'products.modal.label' | t }}"
-          tabindex="0"
-        >
-          {%- liquid
-            if product.selected_or_first_available_variant.featured_media != null
-              assign media = product.selected_or_first_available_variant.featured_media
-              render 'product-media', media: media, loop: section.settings.enable_video_looping, variant_image: section.settings.hide_variants
-            endif
-          -%}
-
-          {%- for media in product.media -%}
-            {%- liquid
-              if section.settings.hide_variants and media_to_render contains media.id
-                assign variant_image = true
-              else
-                assign variant_image = false
-              endif
-
-              unless media.id == product.selected_or_first_available_variant.featured_media.id
-                render 'product-media', media: media, loop: section.settings.enable_video_looping, variant_image: variant_image
-              endunless
-            -%}
-          {%- endfor -%}
-        </div>
-      </div>
-    </product-modal>
+    {% render 'product-media-modal', product: product, variant_images: media_to_render %}
   </div>
 </section>
 
 <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+{%- if section.settings.image_zoom == 'hover' -%}
+  <script id="EnableZoomOnHover-featured" src="{{ 'magnify.js' | asset_url }}" defer="defer"></script>
+{%- endif %}
+{%- if request.design_mode -%}
+  <script src="{{ 'theme-editor.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
 {%- if first_3d_model -%}
   <script type="application/json" id="ProductJSON-{{ product.id }}">
     {{ product.media | where: 'media_type', 'model' | json }}
@@ -839,6 +787,33 @@
       "type": "price",
       "name": "t:sections.featured-product.blocks.price.name",
       "limit": 1
+    },
+    {
+      "type": "sku",
+      "name": "t:sections.featured-product.blocks.sku.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "text_style",
+          "options": [
+            {
+              "value": "body",
+              "label": "t:sections.featured-product.blocks.sku.settings.text_style.options__1.label"
+            },
+            {
+              "value": "subtitle",
+              "label": "t:sections.featured-product.blocks.sku.settings.text_style.options__2.label"
+            },
+            {
+              "value": "uppercase",
+              "label": "t:sections.featured-product.blocks.sku.settings.text_style.options__3.label"
+            }
+          ],
+          "default": "body",
+          "label": "t:sections.featured-product.blocks.sku.settings.text_style.label"
+        }
+      ]
     },
     {
       "type": "quantity_selector",
@@ -1602,6 +1577,27 @@
       "default": "left",
       "label": "t:sections.featured-product.settings.media_position.label",
       "info": "t:sections.featured-product.settings.media_position.info"
+    },
+    {
+      "type": "select",
+      "id": "image_zoom",
+      "options": [
+        {
+          "value": "lightbox",
+          "label": "t:sections.main-product.settings.image_zoom.options__1.label"
+        },
+        {
+          "value": "hover",
+          "label": "t:sections.main-product.settings.image_zoom.options__2.label"
+        },
+        {
+          "value": "none",
+          "label": "t:sections.main-product.settings.image_zoom.options__3.label"
+        }
+      ],
+      "default": "lightbox",
+      "label": "t:sections.main-product.settings.image_zoom.label",
+      "info": "t:sections.main-product.settings.image_zoom.info"
     },
     {
       "type": "checkbox",
