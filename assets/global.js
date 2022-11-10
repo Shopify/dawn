@@ -145,12 +145,14 @@ function onKeyUpEscape(event) {
 class QuantityInput extends HTMLElement {
   constructor() {
     super();
+    this.checkRules()
     this.input = this.querySelector('input');
     this.changeEvent = new Event('change', { bubbles: true })
 
     this.querySelectorAll('button').forEach(
       (button) => button.addEventListener('click', this.onButtonClick.bind(this))
     );
+
   }
 
   onButtonClick(event) {
@@ -159,6 +161,22 @@ class QuantityInput extends HTMLElement {
 
     event.target.name === 'plus' ? this.input.stepUp() : this.input.stepDown();
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
+    if (this.input.value < 6) {
+    }
+    this.checkRules()
+  }
+
+  checkRules() {
+    const cartValue = this.dataset.quantityvalue || 0
+    const minimum = 6
+    const currentValue = document.querySelector('quantity-input input').value
+    if ((parseInt(currentValue) + parseInt(cartValue)) < minimum) {
+      document.querySelector('.product-form__submit').classList.add('disabled')
+      document.querySelector('.warning-quantity').classList.remove('hidden')
+    } else {
+      document.querySelector('.product-form__submit').classList.remove('disabled')
+      document.querySelector('.warning-quantity').classList.add('hidden')
+    }
   }
 }
 

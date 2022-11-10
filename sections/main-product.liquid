@@ -34,7 +34,15 @@
     <script src="{{ 'theme-editor.js' | asset_url }}" defer="defer"></script>
   {%- endif -%}
 
-  {%- assign first_3d_model = product.media | where: 'media_type', 'model' | first -%}
+  {%- liquid 
+    for item in cart.items
+      if item.product_id == product.id
+        assign quantity = item.quantity
+      endif
+    endfor
+  -%}
+
+  {%- assign first_3d_model = product.media | where: "media_type", "model" | first -%}
   {%- if first_3d_model -%}
     {{ 'component-product-model.css' | asset_url | stylesheet_tag }}
     <link
@@ -195,6 +203,7 @@
                 </details>
               </div>
             {%- when 'quantity_selector' -%}
+              <p class="warning-quantity" style="color: red">You need to buy at least 6</p>
               <div
                 class="product-form__input product-form__quantity{% if settings.inputs_shadow_vertical_offset != 0 and settings.inputs_shadow_vertical_offset < 0 %} product-form__quantity-top{% endif %}"
                 {{ block.shopify_attributes }}
@@ -202,8 +211,7 @@
                 <label class="form__label" for="Quantity-{{ section.id }}">
                   {{ 'products.product.quantity.label' | t }}
                 </label>
-
-                <quantity-input class="quantity">
+                <quantity-input class="quantity" data-quantityvalue="{{ quantity }}">
                   <button class="quantity__button no-js-hidden" name="minus" type="button">
                     <span class="visually-hidden">
                       {{- 'products.product.quantity.decrease' | t: product: product.title | escape -}}
@@ -215,8 +223,10 @@
                     type="number"
                     name="quantity"
                     id="Quantity-{{ section.id }}"
-                    min="1"
-                    value="1"
+                    min="2"
+                    max="100"
+                    step="2"
+                    value="2"
                     form="{{ product_form_id }}"
                   >
                   <button class="quantity__button no-js-hidden" name="plus" type="button">
