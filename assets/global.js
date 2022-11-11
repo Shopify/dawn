@@ -185,6 +185,9 @@ function updateRules(currentQty, currentVariant) {
   })
   .then((state) => {
     const parsedState = JSON.parse(state);
+    if (parsedState.items.length === 0) {
+      checkRules(0, 6, currentQty)
+    }
     parsedState.items.forEach((item) => {
       if (item.variant_id === parseInt(currentVariant)) {
         checkRules(item.quantity, 6, currentQty)
@@ -193,6 +196,9 @@ function updateRules(currentQty, currentVariant) {
       }
     })
   })
+  .catch(e => {
+    console.error(e);
+  });
 }
 
 function checkRules(cartValue, minimum, currentValue) {
