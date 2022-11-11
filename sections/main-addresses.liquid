@@ -16,6 +16,15 @@
   }
 {%- endstyle -%}
 
+<svg style="display: none">
+  <symbol id="icon-error" viewBox="0 0 13 13">
+    <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
+    <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
+    <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
+    <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
+  </symbol>
+</svg>
+
 {%- paginate customer.addresses by 5 -%}
   <div class="customer addresses section-{{ section.id }}-padding" data-customer-addresses>
     <svg style="display: none">
@@ -39,19 +48,19 @@
         <h2 id="AddressNewHeading">{{ 'customer.addresses.add_new' | t }}</h2>
         {%- if form.errors -%}
           <div>
-            <h2 class="form__message" tabindex="-1" autofocus>
+            <h3 class="form__message" tabindex="-1" autofocus>
               <svg aria-hidden="true" focusable="false">
                 <use href="#icon-error" />
               </svg>
               {{ 'templates.contact.form.error_heading' | t }}
-            </h2>
+            </h3>
             <ul>
               {%- for field in form.errors -%}
                 <li>
                   {%- if field == 'form' -%}
                     {{ form.errors.messages[field] }}
                   {%- else -%}
-                    <a href="#Address{{ field | capitalize }}New">
+                    <a href="#Address{{ field | camelize }}New">
                       {{ form.errors.translated_fields[field] | capitalize }}
                       {{ form.errors.messages[field] }}
                     </a>
@@ -135,6 +144,10 @@
               name="address[country]"
               data-default="{{ form.country }}"
               autocomplete="country"
+              {% if form.errors contains 'country' %}
+                aria-invalid="true"
+                aria-describedby="AddressCountryNewError"
+              {% endif %}
             >
               {{ all_country_option_tags }}
             </select>
@@ -143,6 +156,14 @@
             </svg>
           </div>
         </div>
+        {%- if form.errors contains 'country' -%}
+          <span id="AddressCountryNewError" class="form__message">
+            <svg aria-hidden="true" focusable="false">
+              <use href="#icon-error" />
+            </svg>
+            {{ form.errors.translated_fields['country'] | capitalize }} {{ form.errors.messages['country'] }}.
+          </span>
+        {%- endif -%}
         <div id="AddressProvinceContainerNew" class="field-country" style="display: none">
           <label for="AddressProvinceNew">{{ 'customer.addresses.province' | t }}</label>
           <div class="select">
