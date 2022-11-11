@@ -145,12 +145,8 @@ function onKeyUpEscape(event) {
 class QuantityInput extends HTMLElement {
   constructor() {
     super();
-    // const cartValue = this.dataset.quantityvalue || 0
-    // const minimum = 6
     const currentQty = document.querySelector('quantity-input input').value
-    const url_string = window.location.href;
-    const url = new URL(url_string);
-    const variant = url.searchParams.get("variant");
+    const variant = parseInt(document.querySelector('product-form .product-variant-id').value)
     updateRules(currentQty, variant)
     this.input = this.querySelector('input');
     this.changeEvent = new Event('change', { bubbles: true })
@@ -167,12 +163,8 @@ class QuantityInput extends HTMLElement {
 
     event.target.name === 'plus' ? this.input.stepUp() : this.input.stepDown();
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
-    const cartValue = this.dataset.quantityvalue || 0
-    const minimum = 6
     const currentQty = document.querySelector('quantity-input input').value
-    const url_string = window.location.href;
-    const url = new URL(url_string);
-    const variant = url.searchParams.get("variant");
+    const variant = parseInt(document.querySelector('product-form .product-variant-id').value)
     updateRules(currentQty, variant)
   }
 }
