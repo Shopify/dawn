@@ -857,6 +857,12 @@ class VariantSelects extends HTMLElement {
 
         if (price) price.classList.remove('visibility-hidden');
         this.toggleAddButton(!this.currentVariant.available, window.variantStrings.soldOut);
+
+        (function (d, dataset) {
+          const destination = document.getElementById(`product-form-delivery-promise-${dataset.section}`);
+          const source = d.getElementById(`product-form-delivery-promise-${dataset.originalSection ? dataset.originalSection : dataset.section}`);
+          if (source && destination) destination.innerHTML = source.innerHTML;
+        })(html, this.dataset);
         
         document.querySelector('variant-radios') ? this.querySelector(`[for="${activeElementId}"]`).focus() : this.querySelector(`#${activeElementId}`).focus();
       });
