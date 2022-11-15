@@ -8,14 +8,28 @@ class MainSearch extends HTMLElement {
   }
 
   setupEventListeners() {
+    let allSearchForms = []
+    document.querySelectorAll('form').forEach(form => {
+      if (form.querySelector('input[type="search"]') !== null) {
+        allSearchForms.push(form)
+      }
+    });
+    if (allSearchForms.length > 1) {
+      allSearchForms.forEach(form => form.addEventListener('reset', this.onFormReset.bind(this)))
+    }
     if (this.allSearchInputs.length > 1) {
       this.allSearchInputs.forEach(input => input.addEventListener('input', this.onInput.bind(this)))
     }
     this.input.addEventListener("focus", this.onInputFocus.bind(this));
   }
 
+  onFormReset () {
+    this.keepInSync('')
+  }
+
   onInput (event) {
-    this.keepInSync(event.target)
+    const target = event.target;
+    this.keepInSync(target.value, target)
   }
 
   onInputFocus () {
@@ -25,10 +39,10 @@ class MainSearch extends HTMLElement {
     }
   }
 
-  keepInSync (target) {
+  keepInSync (value, target) {
     this.allSearchInputs.forEach(input => {
-      if (input !== target) {
-        input.value = target.value
+      if (!target || input !== target) {
+        input.value = value
       }
     })
   }
