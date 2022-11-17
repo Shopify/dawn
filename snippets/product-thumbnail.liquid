@@ -11,6 +11,8 @@
     - loop: {Boolean} Enable video looping (optional)
     - modal_id: {String} The product modal that will be shown by clicking the thumbnail
     - xr_button: {Boolean} Renders the "View in your space" button (shopify-xr-button) if the media is a 3D Model
+    - constrain_to_viewport: {Boolean} Force media height to fit within viewport
+    - media_fit: {String} Method ("contain" or "cover") to fit image into container
     - media_width: {Float} The width percentage that the media column occupies on desktop.
     - lazy_load: {Boolean} Image should be lazy loaded. Default: true (optional)
 
@@ -38,9 +40,6 @@
     assign mobile_columns = 2
   endif
 
-  assign preview_media_ratio = 1 | divided_by: media.preview_image.aspect_ratio | times: 100
-  assign media_ratio = 1 | divided_by: media.aspect_ratio | times: 100
-
   if media.media_type == 'image'
     assign image_class = 'image-magnify-' | append: section.settings.image_zoom
   endif
@@ -51,8 +50,8 @@
 {%- endcapture -%}
 
 <div
-  class="product-media-container gradient global-media-settings"
-  style="--ratio-percent: {{ preview_media_ratio }}%;"
+  class="product-media-container media-type-{{ media.media_type }} media-fit-{{ media_fit }} global-media-settings gradient{% if constrain_to_viewport %} constrain-height{% endif %}"
+  style="--ratio: {{ media.aspect_ratio | default: 1.0 }}; --preview-ratio: {{ media.preview_image.aspect_ratio | default: 1.0 }};"
 >
   <noscript>
     {%- if media.media_type == 'video' or media.media_type == 'external_video' -%}
@@ -111,9 +110,9 @@
 
   {%- if media.media_type != 'image' -%}
     {%- if media.media_type == 'model' -%}
-      <product-model class="deferred-media media media--transparent no-js-hidden" style="--ratio-percent: 100%;" data-media-id="{{ media.id }}">
+      <product-model class="deferred-media media media--transparent no-js-hidden" data-media-id="{{ media.id }}">
     {%- else -%}
-      <deferred-media class="deferred-media media media--transparent no-js-hidden" style="--ratio-percent: {{ media_ratio }}%;" data-media-id="{{ media.id }}">
+      <deferred-media class="deferred-media media media--transparent no-js-hidden" data-media-id="{{ media.id }}">
     {%- endif -%}
     <button id="Deferred-Poster-Modal-{{ media.id }}" class="deferred-media__poster" type="button">
       <span class="deferred-media__poster-button motion-reduce">

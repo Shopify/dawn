@@ -1391,13 +1391,71 @@ a.product__text {
 /* Product-thumbnail snippet */
 
 .product-media-container {
+  --aspect-ratio: var(--preview-ratio);
+  --ratio-percent: calc(1 / var(--aspect-ratio) * 100%);
+  position: relative;
   width: 100%;
   max-width: calc(100% - calc(var(--media-border-width) * 2));
+}
+
+.product-media-container.constrain-height {
+  /* arbitrary offset value based on average theme spacing and header height */
+  --viewport-offset: 400px;
+  --constrained-min-height: 300px;
+  --constrained-height: max(var(--constrained-min-height), calc(100vh - var(--viewport-offset)));
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.product-media-container.constrain-height.media-fit-contain {
+  --contained-width: calc(var(--constrained-height) * var(--aspect-ratio));
+  width: min(var(--contained-width), 100%);
+}
+
+.product-media-container .media {
+  padding-top: var(--ratio-percent);
+}
+
+.product-media-container.constrain-height .media {
+  padding-top: min(var(--constrained-height), var(--ratio-percent));
+}
+
+@media screen and (max-width: 749px) {
+  .product-media-container.media-fit-cover {
+    display: flex;
+    align-self: stretch;
+  }
+
+  .product-media-container.media-fit-cover .media {
+    /* allow media img element to scale relative to modal-opener/product-media-container */
+    position: initial;
+  }
 }
 
 @media screen and (min-width: 750px) {
   .product-media-container {
     max-width: 100%;
+  }
+
+  .product-media-container:not(.media-type-image) {
+    /* override to use actual media ratio (not poster ratio) for video/models on desktop */
+    --aspect-ratio: var(--ratio);
+  }
+
+  .product-media-container.constrain-height {
+    --viewport-offset: 170px;
+    --constrained-min-height: 500px;
+  }
+
+  .product-media-container.media-fit-cover,
+  .product-media-container.media-fit-cover .product__modal-opener,
+  .product-media-container.media-fit-cover .media {
+    height: 100%;
+  }
+
+  .product-media-container.media-fit-cover .deferred-media__poster img {
+    object-fit: cover;
+    width: 100%;
   }
 }
 
@@ -1410,8 +1468,4 @@ a.product__text {
   .product-media-container .product__modal-opener:not(.product__modal-opener--image) {
     display: none;
   }
-}
-
-.product-media-container .media {
-  padding-top: var(--ratio-percent);
 }
