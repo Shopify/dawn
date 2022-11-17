@@ -5,6 +5,7 @@ class SearchForm extends HTMLElement {
 
     this.setupEventListeners();
   }
+
   setupEventListeners() {
     const form = this.querySelector('form.search');
     form.addEventListener('reset', this.onFormReset.bind(this));

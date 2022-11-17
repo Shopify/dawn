@@ -43,9 +43,7 @@ class PredictiveSearch extends HTMLElement {
   }
 
   onFormReset() {
-    this.input.value = '';
-    this.removeAttribute('results');
-    this.closeResults();
+    this.closeResults(true);
   }
 
   onFocus() {
@@ -199,15 +197,15 @@ class PredictiveSearch extends HTMLElement {
   }
 
   close(clearSearchTerm = false) {
+    this.closeResults(clearSearchTerm);
+    this.isOpen = false;
+  }
+
+  closeResults(clearSearchTerm = false) {
     if (clearSearchTerm) {
       this.input.value = '';
       this.removeAttribute('results');
     }
-    this.closeResults();
-    this.isOpen = false;
-  }
-
-  closeResults() {
     const selected = this.querySelector('[aria-selected="true"]');
 
     if (selected) selected.setAttribute('aria-selected', false);
