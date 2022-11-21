@@ -1,9 +1,7 @@
-class MainSearch extends HTMLElement {
+class MainSearch extends SearchForm {
   constructor() {
     super();
     this.allSearchInputs = document.querySelectorAll('input[type="search"]');
-    this.input = this.querySelector('input[type="search"]');
-
     this.setupEventListeners();
   }
 
