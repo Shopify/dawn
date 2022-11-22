@@ -5,37 +5,39 @@ class MainSearch extends SearchForm {
     this.setupEventListeners();
   }
 
-  setupEventListeners () {
+  setupEventListeners() {
     let allSearchForms = [];
     this.allSearchInputs.forEach(input => allSearchForms.push(input.form))
-    if (allSearchForms.length > 1) {
-      allSearchForms.forEach(form =>
-        form.addEventListener('reset', this.onFormReset.bind(this))
-      );
+    this.input.addEventListener("focus", this.onInputFocus.bind(this));
+    if (allSearchForms.length < 2) {
+      return;
     }
-    if (this.allSearchInputs.length > 1) {
-      this.allSearchInputs.forEach(input => input.addEventListener('input', this.onInput.bind(this)));
-    }
-    this.input.addEventListener('focus', this.onInputFocus.bind(this));
+    allSearchForms.forEach(form =>
+      form.addEventListener("reset", this.onFormReset.bind(this))
+    );
+    this.allSearchInputs.forEach(input =>
+      input.addEventListener("input", this.onInput.bind(this))
+    );
   }
 
-  onFormReset () {
+  onFormReset(event) {
+    super.onFormReset(event);
     this.keepInSync('');
   }
 
-  onInput (event) {
+  onInput(event) {
     const target = event.target;
     this.keepInSync(target.value, target);
   }
 
-  onInputFocus () {
+  onInputFocus() {
     const isSmallScreen = window.innerWidth < 750;
     if (isSmallScreen) {
       this.scrollIntoView({behavior: 'smooth'});
     }
   }
 
-  keepInSync (value, target) {
+  keepInSync(value, target) {
     this.allSearchInputs.forEach(input => {
       if (!target || input !== target) {
         input.value = value;

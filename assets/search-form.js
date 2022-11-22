@@ -4,10 +4,10 @@ class SearchForm extends HTMLElement {
     this.input = this.querySelector('input[type="search"]');
 
     const form = this.querySelector('form.search');
-    form.addEventListener('reset', this.onSearchFormReset.bind(this));
+    form.addEventListener('reset', this.onFormReset.bind(this));
   }
 
-  onSearchFormReset(event) {
+  onFormReset(event) {
     // Prevent default so the form reset doesn't set the value gotten from the url on page load
     event.preventDefault();
     // Don't reset if the user has selected an element on the predictive search dropdown
