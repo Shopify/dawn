@@ -171,6 +171,29 @@ class QuantityInput extends HTMLElement {
 
 customElements.define('quantity-input', QuantityInput);
 
+function updateQtyApiRules(variantId, section) {
+    // When I change the variant, I fetch the new variant rules
+  fetch(`/admin/api/2022-04/variants/${variantId}.json`).then((response) => {
+    return response.text()
+  })
+  .then((state) => {
+    const parsedState = JSON.parse(state);
+    if (parsedState.variant !== null) {
+      // hardcoding it for now
+      document.querySelector('.quantity-min').innerHTML = "5"
+      document.querySelector('.quantity-max').innerHTML = "100"
+      document.querySelector('.quantity-steps').innerHTML = "5"
+      const qty = document.getElementById(`Quantity-${section}`);
+      qty.setAttribute("min", 5);
+      qty.setAttribute("max", 100);
+      qty.setAttribute("step", 5);
+    }
+  })
+  .catch(e => {
+    console.error(e);
+  });
+}
+
 function updateRules(currentQty, currentVariant) {
   fetch("/cart.json").then((response) => {
     return response.text();
@@ -178,13 +201,13 @@ function updateRules(currentQty, currentVariant) {
   .then((state) => {
     const parsedState = JSON.parse(state);
     if (parsedState.items.length === 0) {
-      checkRules(0, 6, currentQty)
+      checkRules(0, currentQty)
     }
     parsedState.items.forEach((item) => {
       if (item.variant_id === parseInt(currentVariant)) {
-        checkRules(item.quantity, 6, currentQty)
+        checkRules(item.quantity,currentQty)
       } else {
-        checkRules(0, 6, currentQty)
+        checkRules(0, currentQty)
       }
     })
   })
@@ -193,13 +216,20 @@ function updateRules(currentQty, currentVariant) {
   });
 }
 
-function checkRules(cartValue, minimum, currentValue) {
-  if ((parseInt(currentValue) + parseInt(cartValue)) < minimum) {
-    document.querySelector('.product-form__submit').classList.add('disabled')
-    document.querySelector('.warning-quantity').classList.remove('hidden')
-  } else {
-    document.querySelector('.product-form__submit').classList.remove('disabled')
-    document.querySelector('.warning-quantity').classList.add('hidden')
+function checkRules(cartValue, currentValue) {
+  const minimumValue = document.querySelector('.quantity-min').innerHTML
+  const maxValue = document.querySelector('.quantity-max').innerHTML
+  const steps = document.querySelector('.quantity-steps').innerHTML
+
+  if (minimumValue && maxValue && steps) {
+    console.log(minimumValue, '0da0das', steps, maxValue)
+    if ((parseInt(currentValue) + parseInt(cartValue)) < minimumValue) {
+      document.querySelector('.product-form__submit').classList.add('disabled')
+      document.querySelector('.warning-quantity').classList.remove('hidden')
+    } else {
+      document.querySelector('.product-form__submit').classList.remove('disabled')
+      document.querySelector('.warning-quantity').classList.add('hidden')
+    }
   }
 }
 
@@ -830,6 +860,7 @@ class VariantSelects extends HTMLElement {
 
   updateQtyRules() {
     const currentQty = document.querySelector('quantity-input input').value
+    updateQtyApiRules(this.currentVariant.id, this.dataset.section)
     updateRules(currentQty, this.currentVariant.id)
   }
 
