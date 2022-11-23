@@ -147,7 +147,7 @@ class QuantityInput extends HTMLElement {
     super();
     const currentQty = document.querySelector('quantity-input input').value
     const variant = parseInt(document.querySelector('product-form .product-variant-id').value)
-    updateRules(currentQty, variant)
+    fetchCartVariantQty(currentQty, variant)
     this.input = this.querySelector('input');
     this.changeEvent = new Event('change', { bubbles: true })
 
@@ -165,13 +165,13 @@ class QuantityInput extends HTMLElement {
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
     const currentQty = document.querySelector('quantity-input input').value
     const variant = parseInt(document.querySelector('product-form .product-variant-id').value)
-    updateRules(currentQty, variant)
+    fetchCartVariantQty(currentQty, variant)
   }
 }
 
 customElements.define('quantity-input', QuantityInput);
 
-function updateQtyApiRules(variantId, section) {
+function fetchQtyRules(variantId, section) {
     // When I change the variant, I fetch the new variant rules
   fetch(`/admin/api/2022-04/variants/${variantId}.json`).then((response) => {
     return response.text()
@@ -194,20 +194,20 @@ function updateQtyApiRules(variantId, section) {
   });
 }
 
-function updateRules(currentQty, currentVariant) {
+function fetchCartVariantQty(currentQty, currentVariant) {
   fetch("/cart.json").then((response) => {
     return response.text();
   })
   .then((state) => {
     const parsedState = JSON.parse(state);
     if (parsedState.items.length === 0) {
-      checkRules(0, currentQty)
+      validateQtyRules(0, currentQty)
     }
     parsedState.items.forEach((item) => {
       if (item.variant_id === parseInt(currentVariant)) {
-        checkRules(item.quantity,currentQty)
+        validateQtyRules(item.quantity,currentQty)
       } else {
-        checkRules(0, currentQty)
+        validateQtyRules(0, currentQty)
       }
     })
   })
@@ -216,7 +216,7 @@ function updateRules(currentQty, currentVariant) {
   });
 }
 
-function checkRules(cartValue, currentValue) {
+function validateQtyRules(cartValue, currentValue) {
   const minimumValue = document.querySelector('.quantity-min').innerHTML
   const maxValue = document.querySelector('.quantity-max').innerHTML
   const steps = document.querySelector('.quantity-steps').innerHTML
@@ -860,8 +860,8 @@ class VariantSelects extends HTMLElement {
 
   updateQtyRules() {
     const currentQty = document.querySelector('quantity-input input').value
-    updateQtyApiRules(this.currentVariant.id, this.dataset.section)
-    updateRules(currentQty, this.currentVariant.id)
+    fetchQtyRules(this.currentVariant.id, this.dataset.section)
+    fetchCartVariantQty(currentQty, this.currentVariant.id)
   }
 
   updateMasterId() {
