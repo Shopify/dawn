@@ -151,10 +151,16 @@ class QuantityInput extends HTMLElement {
     this.input = this.querySelector('input');
     this.changeEvent = new Event('change', { bubbles: true })
 
+    this.input.addEventListener('change', this.onInputChange.bind(this))
     this.querySelectorAll('button').forEach(
       (button) => button.addEventListener('click', this.onButtonClick.bind(this))
     );
-
+  }
+  
+  onInputChange(event) {
+    event.preventDefault();
+    const variant = parseInt(document.querySelector('product-form .product-variant-id').value)
+    fetchCartVariantQty(this.input.value, variant)
   }
 
   onButtonClick(event) {
@@ -205,7 +211,7 @@ function fetchCartVariantQty(currentQty, currentVariant) {
     }
     parsedState.items.forEach((item) => {
       if (item.variant_id === parseInt(currentVariant)) {
-        validateQtyRules(item.quantity,currentQty)
+        validateQtyRules(item.quantity, currentQty)
       } else {
         validateQtyRules(0, currentQty)
       }
@@ -217,13 +223,18 @@ function fetchCartVariantQty(currentQty, currentVariant) {
 }
 
 function validateQtyRules(cartValue, currentValue) {
-  const minimumValue = document.querySelector('.quantity-min').innerHTML
+  const minValue = document.querySelector('.quantity-min').innerHTML
   const maxValue = document.querySelector('.quantity-max').innerHTML
   const steps = document.querySelector('.quantity-steps').innerHTML
 
-  if (minimumValue && maxValue && steps) {
-    console.log(minimumValue, '0da0das', steps, maxValue)
-    if ((parseInt(currentValue) + parseInt(cartValue)) < minimumValue) {
+  if (minValue && maxValue && steps) {
+    if (parseInt(currentValue) % parseInt(steps) !== 0) {
+      // Not allowing values that are not part of the increment rules
+      document.querySelector('.quantity__input').value = 5
+    } else if ((parseInt(currentValue) + parseInt(cartValue)) < minValue) {
+      document.querySelector('.product-form__submit').classList.add('disabled')
+      document.querySelector('.warning-quantity').classList.remove('hidden')
+    } else if ((parseInt(currentValue) + parseInt(cartValue)) > maxValue) {
       document.querySelector('.product-form__submit').classList.add('disabled')
       document.querySelector('.warning-quantity').classList.remove('hidden')
     } else {
