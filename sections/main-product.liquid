@@ -1,3 +1,16 @@
+{% assign productTags = product.tags | join: ', ' %}
+{% assign customerTags = customer.tags | join: ', ' %}
+
+{% if productTags contains 'b2b-only' %}
+  {%- if customer.metafields.sparklayer.authentication -%}
+
+  {%- else-%}
+    <script>
+      window.location.href = '/collections/all';
+    </script>
+  {%- endif-%}
+{% endif %}
+
 <section
   id="MainProduct-{{ section.id }}"
   class="page-width section-{{ section.id }}-padding"
@@ -86,8 +99,23 @@
                   </h2>
                 </a>
               </div>
+              {%- if customer.metafields.sparklayer.authentication -%}
+
+              {%- else -%}
+                {% assign hidePricesLoggedOut = false %}
+                {%- if hidePricesLoggedOut == true -%}
+                  <style>
+                    [data-spark="b2c-only"] { display:none !important; }
+                  </style>
+                  <div style="border: 1px solid #ccc; padding: 12px 15px; font-size: 15px" class="b2c-sign-in">
+                    Please <a href="/account/login" style="color: #000; text-decoration: underline">sign in</a> to see pricing
+                  </div>
+                {%- endif -%}
+              {%- endif -%}
+       
+              <spark-pdp parent-id="{{ product.id }}"></spark-pdp> 
             {%- when 'price' -%}
-              <div class="no-js-hidden" id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
+              <div data-spark="b2c-only" class="no-js-hidden" id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
                 {%- render 'price',
                   product: product,
                   use_variant: true,
@@ -196,6 +224,7 @@
               </div>
             {%- when 'quantity_selector' -%}
               <div
+                data-spark="b2c-only"
                 class="product-form__input product-form__quantity{% if settings.inputs_shadow_vertical_offset != 0 and settings.inputs_shadow_vertical_offset < 0 %} product-form__quantity-top{% endif %}"
                 {{ block.shopify_attributes }}
               >
@@ -255,7 +284,7 @@
             {%- when 'variant_picker' -%}
               {% render 'product-variant-picker', block: block, product: product %}
             {%- when 'buy_buttons' -%}
-              <div {{ block.shopify_attributes }}>
+              <div data-spark="b2c-only" {{ block.shopify_attributes }}>
                 <product-form class="product-form">
                   <div class="product-form__error-message-wrapper" role="alert" hidden>
                     <svg
