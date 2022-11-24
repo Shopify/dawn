@@ -8,19 +8,21 @@ class MainSearch extends SearchForm {
   setupEventListeners() {
     let allSearchForms = [];
     this.allSearchInputs.forEach(input => allSearchForms.push(input.form))
-    this.input.addEventListener("focus", this.onInputFocus.bind(this));
+    this.input.addEventListener('focus', this.onInputFocus.bind(this));
     if (allSearchForms.length < 2) return;
     allSearchForms.forEach(form =>
-      form.addEventListener("reset", this.onFormReset.bind(this))
+      form.addEventListener('reset', this.onFormReset.bind(this))
     );
     this.allSearchInputs.forEach(input =>
-      input.addEventListener("input", this.onInput.bind(this))
+      input.addEventListener('input', this.onInput.bind(this))
     );
   }
 
   onFormReset(event) {
     super.onFormReset(event);
-    this.keepInSync('');
+    if (super.shouldResetForm()) {
+      this.keepInSync('', this.input);
+    }
   }
 
   onInput(event) {
@@ -37,7 +39,7 @@ class MainSearch extends SearchForm {
 
   keepInSync(value, target) {
     this.allSearchInputs.forEach(input => {
-      if (!target || input !== target) {
+      if (input !== target) {
         input.value = value;
       }
     });
