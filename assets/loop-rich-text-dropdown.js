@@ -1,4 +1,4 @@
-var acc = document.querySelector(".accordion");
+var acc = document.querySelectorAll(".accordion.searchable_text");
 var i;
 for (i = 0; i < acc.length; i++) {
   acc[i].addEventListener("click", function () {
