@@ -62,7 +62,7 @@
     <div class="product__info-wrapper grid__item{% if settings.page_width > 1400 and section.settings.media_size == "small" %} product__info-wrapper--extra-padding{% endif %}">
       <div
         id="ProductInfo-{{ section.id }}"
-        class="product__info-container{% if section.settings.enable_sticky_info %} product__info-container--sticky{% endif %}"
+        class="product__info-container{% if section.settings.enable_sticky_info %} product__column-sticky{% endif %}"
       >
         {%- assign product_form_id = 'product-form-' | append: section.id -%}
 
@@ -246,141 +246,14 @@
                 {{- block.settings.text -}}
               </a>
             {%- when 'share' -%}
-              <share-button
-                id="Share-{{ section.id }}"
-                class="share-button quick-add-hidden"
-                {{ block.shopify_attributes }}
-              >
-                <button class="share-button__button hidden">
-                  {% render 'icon-share' %}
-                  {{ block.settings.share_label | escape }}
-                </button>
-                <details id="Details-{{ block.id }}-{{ section.id }}">
-                  <summary class="share-button__button">
-                    {% render 'icon-share' %}
-                    {{ block.settings.share_label | escape }}
-                  </summary>
-                  <div id="Product-share-{{ section.id }}" class="share-button__fallback motion-reduce">
-                    <div class="field">
-                      <span id="ShareMessage-{{ section.id }}" class="share-button__message hidden" role="status">
-                      </span>
-                      <input
-                        type="text"
-                        class="field__input"
-                        id="url"
-                        value="{{ product.selected_variant.url | default: product.url | prepend: request.origin }}"
-                        placeholder="{{ 'general.share.share_url' | t }}"
-                        onclick="this.select();"
-                        readonly
-                      >
-                      <label class="field__label" for="url">{{ 'general.share.share_url' | t }}</label>
-                    </div>
-                    <button class="share-button__close hidden no-js-hidden">
-                      {% render 'icon-close' %}
-                      <span class="visually-hidden">{{ 'general.share.close' | t }}</span>
-                    </button>
-                    <button class="share-button__copy no-js-hidden">
-                      {% render 'icon-clipboard' %}
-                      <span class="visually-hidden">{{ 'general.share.copy_to_clipboard' | t }}</span>
-                    </button>
-                  </div>
-                </details>
-              </share-button>
-              <script src="{{ 'share.js' | asset_url }}" defer="defer"></script>
+              {% assign share_url = product.selected_variant.url | default: product.url | prepend: request.origin %}
+              {% render 'share-button-block',
+                block: block,
+                share_link: share_url
+              %}
+
             {%- when 'variant_picker' -%}
-              {%- unless product.has_only_default_variant -%}
-                {%- if block.settings.picker_type == 'button' -%}
-                  <variant-radios
-                    id="variant-radios-{{ section.id }}"
-                    class="no-js-hidden"
-                    data-section="{{ section.id }}"
-                    data-url="{{ product.url }}"
-                    {{ block.shopify_attributes }}
-                  >
-                    {%- for option in product.options_with_values -%}
-                      <fieldset class="js product-form__input">
-                        <legend class="form__label">{{ option.name }}</legend>
-                        {% render 'product-variant-options',
-                          product: product,
-                          option: option,
-                          block: block
-                        %}
-                      </fieldset>
-                    {%- endfor -%}
-                    <script type="application/json">
-                      {{ product.variants | json }}
-                    </script>
-                  </variant-radios>
-                {%- else -%}
-                  <variant-selects
-                    id="variant-selects-{{ section.id }}"
-                    class="no-js-hidden"
-                    data-section="{{ section.id }}"
-                    data-url="{{ product.url }}"
-                    {{ block.shopify_attributes }}
-                  >
-                    {%- for option in product.options_with_values -%}
-                      <div class="product-form__input product-form__input--dropdown">
-                        <label class="form__label" for="Option-{{ section.id }}-{{ forloop.index0 }}">
-                          {{ option.name }}
-                        </label>
-                        <div class="select">
-                          <select
-                            id="Option-{{ section.id }}-{{ forloop.index0 }}"
-                            class="select__select"
-                            name="options[{{ option.name | escape }}]"
-                            form="{{ product_form_id }}"
-                          >
-                            {% render 'product-variant-options',
-                              product: product,
-                              option: option,
-                              block: block
-                            %}
-                          </select>
-                          {% render 'icon-caret' %}
-                        </div>
-                      </div>
-                    {%- endfor -%}
-
-                    <script type="application/json">
-                      {{ product.variants | json }}
-                    </script>
-                  </variant-selects>
-                {%- endif -%}
-              {%- endunless -%}
-
-              <noscript class="product-form__noscript-wrapper-{{ section.id }}">
-                <div class="product-form__input{% if product.has_only_default_variant %} hidden{% endif %}">
-                  <label class="form__label" for="Variants-{{ section.id }}">
-                    {{- 'products.product.product_variants' | t -}}
-                  </label>
-                  <div class="select">
-                    <select
-                      name="id"
-                      id="Variants-{{ section.id }}"
-                      class="select__select"
-                      form="{{ product_form_id }}"
-                    >
-                      {%- for variant in product.variants -%}
-                        <option
-                          {% if variant == product.selected_or_first_available_variant %}
-                            selected="selected"
-                          {% endif %}
-                          {% if variant.available == false %}
-                            disabled
-                          {% endif %}
-                          value="{{ variant.id }}"
-                        >
-                          {{ variant.title }}
-                          - {{ variant.price | money | strip_html }}
-                          {%- if variant.available == false %} - {{ 'products.product.sold_out' | t }}{% endif %}
-                        </option>
-                      {%- endfor -%}
-                    </select>
-                    {% render 'icon-caret' %}
-                  </div>
-                </div>
-              </noscript>
+              {% render 'product-variant-picker', block: block, product: product %}
             {%- when 'buy_buttons' -%}
               <div {{ block.shopify_attributes }}>
                 <product-form class="product-form">
@@ -514,7 +387,7 @@
                 </p>
               {%- endif -%}
             {%- when 'complementary' -%}
-              <product-recommendations class="complementary-products quick-add-hidden no-js-hidden{% if block.settings.make_collapsible_row %} is-accordion{% endif %}" data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ block.settings.product_list_limit }}&intent=complementary">
+              <product-recommendations class="complementary-products quick-add-hidden no-js-hidden{% if block.settings.make_collapsible_row %} is-accordion{% endif %}{% if block.settings.enable_quick_add %} complementary-products-contains-quick-add{% endif %}" data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ block.settings.product_list_limit }}&intent=complementary">
                 {%- if recommendations.performed and recommendations.products_count > 0 -%}
                   <aside aria-label="{{ 'accessibility.complementary_products' | t }}" {{ block.shopify_attributes }}{% if block.settings.make_collapsible_row %} class="product__accordion accordion"{% endif %}>
                     <div class="complementary-products__container">
@@ -549,7 +422,8 @@
                                       lazy_load: false,
                                       show_quick_add: block.settings.enable_quick_add,
                                       section_id: section.id,
-                                      horizontal_class: true
+                                      horizontal_class: true,
+                                      horizontal_quick_add: true
                                     %}
                                   </li>
                                 {%- endfor -%}
@@ -788,7 +662,7 @@
       "url": {{ request.origin | append: product.url | json }},
       {% if seo_media -%}
         "image": [
-          {{ seo_media | image_url: width: seo_media.preview_image.width | prepend: "https:" | json }}
+          {{ seo_media | image_url: width: 1920 | prepend: "https:" | json }}
         ],
       {%- endif %}
       "description": {{ product.description | strip_html | json }},
@@ -1748,7 +1622,7 @@
           "id": "image_1",
           "label": "t:sections.main-product.blocks.icon_with_text.settings.image_1.label"
         },
-       {
+        {
           "type": "text",
           "id": "heading_1",
           "default": "Heading",
@@ -1944,7 +1818,7 @@
           "id": "image_2",
           "label": "t:sections.main-product.blocks.icon_with_text.settings.image_2.label"
         },
-          {
+        {
           "type": "text",
           "id": "heading_2",
           "default": "Heading",
