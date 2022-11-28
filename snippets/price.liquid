@@ -21,10 +21,23 @@
   assign price = target.price | default: 1999
   assign available = target.available | default: false
   assign money_price = price | money
+-%}
+
+{%-liquid 
+  if settings.automatic_discount_enabled
+    for collection in product.collections
+      if collection.title == settings.automatic_discount_collection.title
+        assign compare_at_price = target.price
+        assign discount = 100 | minus: settings.automatic_discount_value
+        assign price = discount | times: 0.01 | times: target.price
+        break
+      endif
+    endfor
+  endif
+
   if settings.currency_code_enabled
     assign money_price = price | money_with_currency
   endif
-
   if target == product and product.price_varies
     assign money_price = 'products.product.price.from_price_html' | t: price: money_price
   endif
@@ -82,8 +95,12 @@
     </small>
   </div>
   {%- if show_badges -%}
-    <span class="badge price__badge-sale color-{{ settings.sale_badge_color_scheme }}">
-      {{ 'products.product.on_sale' | t }}
+    <span class="badge price__badge-sale">
+      {% if settings.automatic_discount_enabled %}
+        Save {{ settings.automatic_discount_value }}%
+      {% else %}
+        {{ 'products.product.on_sale' | t }}
+      {% endif %}
     </span>
 
     <span class="badge price__badge-sold-out color-{{ settings.sold_out_badge_color_scheme }}">
