@@ -18,6 +18,7 @@ class SearchForm extends HTMLElement {
     // Don't reset if the user has selected an element on the predictive search dropdown
     if (this.shouldResetForm()) {
       this.input.value = '';
+      this.input.focus()
     }
   }
 }
