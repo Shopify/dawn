@@ -1,9 +1,7 @@
-{%- for block in section.blocks -%}
-  {%- case block.type -%}
-    {%- when 'announcement' -%}
-	{% if forloop.first %}
-      <div class="announcement-bar topbar-usp-list" data-slide-speed="4000" role="region" aria-label="{{ 'sections.header.announcement' | t }}" {{ block.shopify_attributes }}>
-    {% endif %}
+<div class="announcement-bar color-{{ section.settings.color_scheme }} gradient topbar-usp-list" aria-label="{{ 'sections.header.announcement' | t }}" {{ block.shopify_attributes }}>
+  {%- for block in section.blocks -%}
+    {%- case block.type -%}
+      {%- when 'announcement' -%}
         {%- if block.settings.text != blank -%}
           {%- if block.settings.link != blank -%}
             <a href="{{ block.settings.link }}" class="announcement-bar__link link link--text focus-inset animate-arrow topbar-usp-item">
@@ -20,112 +18,149 @@
             </a>
           {%- endif -%} 
         {%- endif -%}
-        
-	{% if forloop.last %}
-      </div>
-	{% endif %}
-  {%- endcase -%}
-{%- endfor -%}
+      {% when 'countdown' %}
+        {% if block.settings.year != blank and block.settings.month != blank and block.settings.day != blank %}
+          <p class="announcement-bar__message h5 topbar-usp-item">
+            {{ block.settings.text }}
+            <span class="countdown"></span>
+          </p>
 
-{% if section.blocks.length > 1 %}
-<style>
-  .topbar-usp-list {
-  width: 100%;
-  padding: 0;
-  margin: 0;
-  list-style: none;
-  position: relative;
-  overflow: hidden; }
+          <script>
+            // Set the date we're counting down to
+            var countDownDate = new Date({{block.settings.year}}, {{block.settings.month}}, {{block.settings.day}}).getTime();
+            // Update the count down every 1 second
+            var x = setInterval(function() {
+            
+              // Get today's date and time
+              var now = new Date().getTime();
+            
+              // Find the distance between now and the count down date
+              var distance = countDownDate - now;
+            
+              // Time calculations for days, hours, minutes and seconds
+              var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+              var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+              var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+              var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+              // Display the result in the element with id="demo"
+              document.querySelector(".announcement-bar .countdown").innerHTML = hours + "h "
+              + minutes + "m " + seconds + "s ";
+            
+              // If the count down is finished, write some text
+              if (distance < 0) {
+                clearInterval(x);
+              }
+            }, 1000);
+          </script>
+        {% endif %}
+    {%- endcase -%}
+  {%- endfor -%}
+</div>
 
-.topbar-usp-item {
-  width: 100%;
-  text-align: center;
-  transition: .4s ease-out;
-  transform: translateY(120%);
-  display: block; }
-
-.topbar-usp-item.is-visible {
-  transform: translateY(0); }
-
-.topbar-usp-item.is-finished {
-  transform: translateY(-120%); }
-
-.topbar-usp-item.is-hidden {
-  display: none; }
-  
-
-  @media screen and (min-width: 750px) {
-    .topbar-usp-list {}
-  }
-  .announcement-bar__message {
-    padding: 7px 2rem;
-  }
-  
-  @media screen and (max-width: 749px) {  
-    .announcement-bar__message {
-      padding: 14.5px 2rem;
+{% if section.settings.sticky == true %}
+  <style>
+    #shopify-section-announcement-bar {
+      position: sticky !important;
+      top: 0;
     }
-  }
-</style>
-<script>
-  $(".topbar-usp-list").each(function() {
-          var t = $(this)
-          , e = t.find(".topbar-usp-item")
-          , n = e.length
-          , i = t.data("slide-speed");
-          e.first().addClass("is-visible"),
-            setInterval((function() {
-            var i = t.find(".is-visible").index();
-            t.find(".is-visible").removeClass("is-visible").addClass("is-finished").next().addClass("is-visible"),
-              setTimeout((function() {
-              t.find(".is-finished").removeClass("is-finished").addClass("is-hidden")
-            }
-                         ), 600),
-              setTimeout((function() {
-              t.find(".is-hidden").removeClass("is-hidden")
-            }
-                         ), 1200),
-              i === n - 1 && e.first().addClass("is-visible")
-          }
-                        ), i)
-        });
-</script>
-{% else %}
-<style>
-  .topbar-usp-list {
-  width: 100%;
-  padding: 0;
-  margin: 0;
-  list-style: none;
-  position: relative;
-  overflow: hidden; }
+  </style>
+  <script>
+    var lastScrollTop = 0;
 
-.topbar-usp-item {
-  width: 100%;
-  text-align: center;
-  transition: .4s ease-out;
-  display: block; }
-  
+    window.addEventListener("scroll", function(){
+      var st = window.pageYOffset || document.documentElement.scrollTop;
+      var announcementBar = document.querySelector("#shopify-section-announcement-bar");
+      var header = document.querySelector("sticky-header.header-wrapper");
 
-  @media screen and (min-width: 750px) {
-    .topbar-usp-list {}
-  }
-  .announcement-bar__message {
-    padding: 7px 2rem;
-  }
-  
-  @media screen and (max-width: 749px) {  
-    .announcement-bar__message {
-      padding: 14.5px 2rem;
-    }
-  }
-</style>
+      if (st < lastScrollTop){
+        if(announcementBar && header) {
+          var headerHeight = header.offsetHeight;
+          announcementBar.style.top = `${headerHeight}px`;
+          console.log(announcementBar.style.top)
+        }
+      } else {
+        announcementBar.style.top = 0;
+      }
+      lastScrollTop = st <= 0 ? 0 : st;
+    }, false);
+  </script>
 {% endif %}
+
+<style>
+  .topbar-usp-list {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  position: relative;
+  overflow: hidden; }
+
+.topbar-usp-item {
+  width: 100%;
+  text-align: center;
+  transition: .4s ease-out;
+  display: block; }
+  
+
+  @media screen and (min-width: 750px) {
+    .topbar-usp-list {}
+  }
+  .announcement-bar__message {
+    padding: 7px 2rem;
+  }
+  
+  @media screen and (max-width: 749px) {  
+    .announcement-bar__message {
+      padding: 14.5px 2rem;
+    }
+  }
+</style>
 
 {% schema %}
 {
   "name": "t:sections.announcement-bar.name",
   "max_blocks": 12,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "sticky",
+      "label": "Sticky announcement bar",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.all.colors.accent_1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.all.colors.accent_2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.all.colors.background_1.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.all.colors.background_2.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.all.colors.inverse.label"
+        },
+        {
+          "value": "green",
+          "label": "Green"
+        }
+      ],
+      "default": "accent-1",
+      "label": "t:sections.all.colors.label"
+    }
+  ],
   "blocks": [
     {
       "type": "announcement",
@@ -138,37 +173,38 @@
           "label": "t:sections.announcement-bar.blocks.announcement.settings.text.label"
         },
         {
-          "type": "select",
-          "id": "color_scheme",
-          "options": [
-            {
-              "value": "accent-1",
-              "label": "t:sections.all.colors.accent_1.label"
-            },
-            {
-              "value": "accent-2",
-              "label": "t:sections.all.colors.accent_2.label"
-            },
-            {
-              "value": "background-1",
-              "label": "t:sections.all.colors.background_1.label"
-            },
-            {
-              "value": "background-2",
-              "label": "t:sections.all.colors.background_2.label"
-            },
-            {
-              "value": "inverse",
-              "label": "t:sections.all.colors.inverse.label"
-            }
-          ],
-          "default": "accent-1",
-          "label": "t:sections.all.colors.label"
-        },
-        {
           "type": "url",
           "id": "link",
           "label": "t:sections.announcement-bar.blocks.announcement.settings.link.label"
+        }
+      ]
+    },
+    {
+      "type": "countdown",
+      "name": "Countdown Timer",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text"
+        },
+        {
+          "type": "text",
+          "id": "year",
+          "label": "Year",
+          "info": "Format YYYY."
+        },
+        {
+          "type": "text",
+          "id": "month",
+          "label": "Month",
+          "info": "Format MM."
+        },
+        {
+          "type": "text",
+          "id": "day",
+          "label": "Day",
+          "info": "Format DD."
         }
       ]
     }
