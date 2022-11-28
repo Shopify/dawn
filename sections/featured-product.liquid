@@ -21,7 +21,17 @@
 
 <link rel="stylesheet" href="{{ 'component-deferred-media.css' | asset_url }}" media="print" onload="this.media='all'">
 
-{%- assign product = section.settings.product -%}
+{%- liquid
+  assign product = section.settings.product
+
+  if section.settings.media_size == 'large'
+    assign media_width = 0.65
+  elsif section.settings.media_size == 'medium'
+    assign media_width = 0.55
+  elsif section.settings.media_size == 'small'
+    assign media_width = 0.45
+  endif
+-%}
 
 {%- assign first_3d_model = product.media | where: 'media_type', 'model' | first -%}
 {%- if first_3d_model -%}
@@ -44,7 +54,7 @@
 
 <section class="color-{{ section.settings.color_scheme }} {% if section.settings.secondary_background %}background-secondary{% else %}gradient{% endif %}">
   <div class="page-width section-{{ section.id }}-padding{% if section.settings.secondary_background %} isolate{% endif %}">
-    <div class="featured-product product grid grid--1-col gradient color-{{ section.settings.color_scheme }} product--{{ section.settings.media_position }}{% if section.settings.secondary_background == false %} isolate{% endif %} {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
+    <div class="featured-product product product--{{ section.settings.media_size }} grid grid--1-col gradient color-{{ section.settings.color_scheme }} product--{{ section.settings.media_position }}{% if section.settings.secondary_background == false %} isolate{% endif %} {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
       <div class="grid__item product__media-wrapper{% if section.settings.media_position == 'right' %} medium-hide large-up-hide{% endif %}">
         <media-gallery
           id="MediaGallery-{{ section.id }}"
@@ -62,7 +72,9 @@
                   loop: section.settings.enable_video_looping,
                   modal_id: section.id,
                   xr_button: false,
-                  media_width: 0.5
+                  media_width: media_width,
+                  media_fit: section.settings.media_fit,
+                  constrain_to_viewport: section.settings.constrain_to_viewport
                 %}
               </div>
             {%- endif -%}
@@ -83,7 +95,9 @@
                     loop: section.settings.enable_video_looping,
                     modal_id: section.id,
                     xr_button: false,
-                    media_width: 0.5
+                    media_width: media_width,
+                    media_fit: section.settings.media_fit,
+                    constrain_to_viewport: section.settings.constrain_to_viewport
                   %}
                 </div>
               {%- endif -%}
@@ -204,93 +218,7 @@
                 %}
 
               {%- when 'variant_picker' -%}
-                {%- unless product.has_only_default_variant -%}
-                  {%- if block.settings.picker_type == 'button' -%}
-                    <variant-radios
-                      id="variant-radios-{{ section.id }}"
-                      class="no-js-hidden"
-                      data-section="{{ section.id }}"
-                      data-url="{{ product.url }}"
-                      data-update-url="false"
-                      {{ block.shopify_attributes }}
-                    >
-                      {%- for option in product.options_with_values -%}
-                        <fieldset class="js product-form__input">
-                          <legend class="form__label">{{ option.name }}</legend>
-                          {% render 'product-variant-options', product: product, option: option, block: block %}
-                        </fieldset>
-                      {%- endfor -%}
-                      <script type="application/json">
-                        {{ product.variants | json }}
-                      </script>
-                    </variant-radios>
-                  {%- else -%}
-                    <variant-selects
-                      id="variant-selects-{{ section.id }}"
-                      class="no-js-hidden"
-                      data-section="{{ section.id }}"
-                      data-url="{{ product.url }}"
-                      data-update-url="false"
-                      {{ block.shopify_attributes }}
-                    >
-                      {%- for option in product.options_with_values -%}
-                        <div class="product-form__input product-form__input--dropdown">
-                          <label class="form__label" for="Option-{{ section.id }}-{{ forloop.index0 }}">
-                            {{ option.name }}
-                          </label>
-                          <div class="select">
-                            <select
-                              id="Option-{{ section.id }}-{{ forloop.index0 }}"
-                              class="select__select"
-                              name="options[{{ option.name | escape }}]"
-                              form="{{ product_form_id }}"
-                            >
-                              {% render 'product-variant-options', product: product, option: option, block: block %}
-                            </select>
-                            {% render 'icon-caret' %}
-                          </div>
-                        </div>
-                      {%- endfor -%}
-
-                      <script type="application/json">
-                        {{ product.variants | json }}
-                      </script>
-                    </variant-selects>
-                  {%- endif -%}
-                {%- endunless -%}
-
-                <noscript class="product-form__noscript-wrapper-{{ section.id }}">
-                  <div class="product-form__input{% if product.has_only_default_variant %} hidden{% endif %}">
-                    <label class="form__label" for="Variants-{{ section.id }}">
-                      {{- 'products.product.product_variants' | t -}}
-                    </label>
-                    <div class="select">
-                      <select
-                        name="id"
-                        id="Variants-{{ section.id }}"
-                        class="select__select"
-                        form="{{ product_form_id }}"
-                      >
-                        {%- for variant in product.variants -%}
-                          <option
-                            {% if variant == product.selected_or_first_available_variant %}
-                              selected="selected"
-                            {% endif %}
-                            {% if variant.available == false %}
-                              disabled
-                            {% endif %}
-                            value="{{ variant.id }}"
-                          >
-                            {{ variant.title }}
-                            - {{ variant.price | money | strip_html }}
-                            {%- if variant.available == false %} - {{ 'products.product.sold_out' | t }}{% endif %}
-                          </option>
-                        {%- endfor -%}
-                      </select>
-                      {% render 'icon-caret' %}
-                    </div>
-                  </div>
-                </noscript>
+                {% render 'product-variant-picker', block: block, product: product, update_url: false %}
               {%- when 'buy_buttons' -%}
                 <div {{ block.shopify_attributes }}>
                   {%- if product != blank -%}
@@ -541,7 +469,9 @@
                     loop: section.settings.enable_video_looping,
                     modal_id: section.id,
                     xr_button: false,
-                    media_width: 0.5
+                    media_width: media_width,
+                    media_fit: section.settings.media_fit,
+                    constrain_to_viewport: section.settings.constrain_to_viewport
                   %}
                 </div>
               {%- endif -%}
@@ -556,7 +486,9 @@
                       loop: section.settings.enable_video_looping,
                       modal_id: section.id,
                       xr_button: false,
-                      media_width: 0.5
+                      media_width: media_width,
+                      media_fit: section.settings.media_fit,
+                      constrain_to_viewport: section.settings.constrain_to_viewport
                     %}
                   </div>
                 {%- endif -%}
@@ -615,7 +547,7 @@
     "url": {{ request.origin | append: product.url | json }},
     {% if seo_media -%}
       "image": [
-        {{ seo_media | image_url: width: seo_media.preview_image.width | prepend: "https:" | json }}
+        {{ seo_media | image_url: width: 1920 | prepend: "https:" | json }}
       ],
     {%- endif %}
     "description": {{ product.description | strip_html | json }},
@@ -1529,6 +1461,49 @@
       "type": "header",
       "content": "t:sections.featured-product.settings.header.content",
       "info": "t:sections.featured-product.settings.header.info"
+    },
+    {
+      "type": "select",
+      "id": "media_size",
+      "options": [
+        {
+          "value": "small",
+          "label": "t:sections.main-product.settings.media_size.options__1.label"
+        },
+        {
+          "value": "medium",
+          "label": "t:sections.main-product.settings.media_size.options__2.label"
+        },
+        {
+          "value": "large",
+          "label": "t:sections.main-product.settings.media_size.options__3.label"
+        }
+      ],
+      "default": "medium",
+      "label": "t:sections.main-product.settings.media_size.label",
+      "info": "t:sections.main-product.settings.media_size.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "constrain_to_viewport",
+      "default": false,
+      "label": "t:sections.main-product.settings.constrain_to_viewport.label"
+    },
+    {
+      "type": "select",
+      "id": "media_fit",
+      "options": [
+        {
+          "value": "contain",
+          "label": "t:sections.main-product.settings.media_fit.options__1.label"
+        },
+        {
+          "value": "cover",
+          "label": "t:sections.main-product.settings.media_fit.options__2.label"
+        }
+      ],
+      "default": "contain",
+      "label": "t:sections.main-product.settings.media_fit.label"
     },
     {
       "type": "select",
