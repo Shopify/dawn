@@ -29,7 +29,6 @@ if (!customElements.get('product-form')) {
       if (this.cart) {
         formData.append('sections', this.cart.getSectionsToRender().map((section) => section.id));
         formData.append('sections_url', window.location.pathname);
-        console.log(formData, '----')
         this.cart.setActiveElement(document.activeElement);
       }
       config.body = formData;

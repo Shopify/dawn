@@ -165,26 +165,16 @@ class QuantityInput extends HTMLElement {
 
   onButtonClick(event) {
 
-    let rootUrl = this.dataset.rootUrl;
-    if (!rootUrl.endsWith("/")) {
-      rootUrl = rootUrl + "/";
-    }
-
-    const variantSectionUrl = `${rootUrl}variants/${variantId}/?section_id=pickup-availability`;
-
-    fetch(variantSectionUrl)
-      .then(response => response.text())
-      .then(text => {
-        const sectionInnerHTML = new DOMParser()
-          .parseFromString(text, 'text/html')
-          .querySelector('.shopify-section');
-        this.renderPreview(sectionInnerHTML);
-      })
-      .catch(e => {
-        const button = this.querySelector('button');
-        if (button) button.removeEventListener('click', this.onClickRefreshList);
-        this.renderError();
-      });
+    // fetch("test")
+    //   .then(response => response.text())
+    //   .then(text => {
+    //     const sectionInnerHTML = new DOMParser()
+    //       .parseFromString(text, 'text/html')
+    //       .querySelector('.shopify-section');
+    //     this.renderPreview(sectionInnerHTML);
+    //   })
+    //   .catch(e => {
+    //   });
   
     event.preventDefault();
     const previousValue = this.input.value;
@@ -983,15 +973,12 @@ class VariantSelects extends HTMLElement {
     fetch(`${this.dataset.url}?variant=${requestedVariantId}&section_id=${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`)
       .then((response) => response.text())
       .then((responseText) => {
-        console.log('test', '-----', responseText)
         const html = new DOMParser().parseFromString(responseText, 'text/html')
         const destination = document.getElementById(`price-${this.dataset.section}`);
         const source = html.getElementById(`price-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
 
         const destinationQty = document.getElementById(`test-${this.dataset.section}`);
         const sourceQty = html.getElementById(`test-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
-
-        console.log(destinationQty, '----', sourceQty)
 
         if (sourceQty && destinationQty) destinationQty.innerHTML = sourceQty.innerHTML;
 
