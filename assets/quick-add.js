@@ -73,6 +73,9 @@ if (!customElements.get('quick-add-modal')) {
 
       const productModal = this.productElement.querySelector('product-modal');
       if (productModal) productModal.remove();
+
+      const modalDialog = this.productElement.querySelectorAll('modal-dialog');
+      if (modalDialog) modalDialog.forEach(modal => modal.remove());
     }
 
     preventDuplicatedIDs() {
