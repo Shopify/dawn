@@ -164,7 +164,7 @@ class QuantityInput extends HTMLElement {
   }
 
   onButtonClick(event) {
-
+    // grab the latest qty from cart
     // fetch("test")
     //   .then(response => response.text())
     //   .then(text => {
@@ -235,20 +235,21 @@ function fetchCartVariantQty(currentQty, currentVariant) {
 }
 
 function validateQtyRules(cartValue, currentValue) {
-  const minValue = document.querySelector('.quantity-min').innerHTML
-  const maxValue = document.querySelector('.quantity-max').innerHTML
-  const steps = document.querySelector('.quantity-steps').innerHTML
+  const minValue = parseInt(document.querySelector('.quantity-min').innerHTML)
+  const maxValue = parseInt(document.querySelector('.quantity-max').innerHTML)
+  const steps = parseInt(document.querySelector('.quantity-steps').innerHTML)
 
   if (minValue && maxValue && steps) {
-    if (parseInt(currentValue) % parseInt(steps) !== 0) {
-      // Not allowing values that are not part of the increment rules
-      document.querySelector('.quantity__input').value = 5
-    } else if ((parseInt(currentValue) + parseInt(cartValue)) < minValue) {
+    if ((parseInt(currentValue) + parseInt(cartValue)) <= minValue) {
       document.querySelector('.product-form__submit').classList.add('disabled')
-    } else if ((parseInt(currentValue) + parseInt(cartValue)) > maxValue) {
+      document.querySelector(".quantity__button[name='minus']").classList.add('disabled')
+    } else if ((parseInt(currentValue) + parseInt(cartValue)) >= maxValue) {
       document.querySelector('.product-form__submit').classList.add('disabled')
+      document.querySelector(".quantity__button[name='plus']").classList.add('disabled')
     } else {
       document.querySelector('.product-form__submit').classList.remove('disabled')
+      document.querySelector(".quantity__button[name='plus']").classList.remove('disabled')
+      document.querySelector(".quantity__button[name='minus']").classList.remove('disabled')
     }
   }
 }
@@ -968,19 +969,28 @@ class VariantSelects extends HTMLElement {
   }
 
   renderProductInfo() {
-    const requestedVariantId = this.currentVariant.id;
 
-    fetch(`${this.dataset.url}?variant=${requestedVariantId}&section_id=${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`)
+    fetch(`/cart?section_id=main-cart-items`)
+    .then((response) => response.text())
+    .then((responseText) => {
+      const html = new DOMParser().parseFromString(responseText, 'text/html')
+
+      // Updating qty UI depending on new variant information
+      const destinationQty = document.getElementById(`test-${this.dataset.section}`);
+      const sourceQty = html.getElementById(`${this.currentVariant.id}`);
+      if (sourceQty) {
+        const valueQtyCart = sourceQty.querySelector('input').value
+        if (valueQtyCart && destinationQty) destinationQty.querySelector('input').dataset.cartquantity = valueQtyCart;
+        if (valueQtyCart && destinationQty) document.querySelector('.quantity-cart').innerHTML = valueQtyCart;
+      }
+    });
+
+    fetch(`${this.dataset.url}?variant=${this.currentVariant.id}&section_id=${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`)
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html')
         const destination = document.getElementById(`price-${this.dataset.section}`);
         const source = html.getElementById(`price-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
-
-        const destinationQty = document.getElementById(`test-${this.dataset.section}`);
-        const sourceQty = html.getElementById(`test-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
-
-        if (sourceQty && destinationQty) destinationQty.innerHTML = sourceQty.innerHTML;
 
         if (source && destination) destination.innerHTML = source.innerHTML;
         if (inventorySource && inventoryDestination) inventoryDestination.innerHTML = inventorySource.innerHTML;

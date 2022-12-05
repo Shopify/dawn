@@ -16,6 +16,13 @@ if (!customElements.get('product-form')) {
       if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
       this.handleErrorMessage();
+      const destinationQty = this.closest('.product__info-container').querySelector('quantity-input')
+      const currentValue = destinationQty.querySelector('input').value
+      if (parseInt(currentValue) % 5 !== 0) {
+        // Not allowing values that are not part of the increment rules
+        document.querySelector('.qty-rules-error').removeAttribute('hidden');
+        return
+      }
 
       this.submitButton.setAttribute('aria-disabled', true);
       this.submitButton.classList.add('loading');
@@ -70,6 +77,18 @@ if (!customElements.get('product-form')) {
           if (this.cart && this.cart.classList.contains('is-empty')) this.cart.classList.remove('is-empty');
           if (!this.error) this.submitButton.removeAttribute('aria-disabled');
           this.querySelector('.loading-overlay__spinner').classList.add('hidden');
+          // Update cart qty
+          fetch(`/cart?section_id=main-cart-items`)
+          .then((response) => response.text())
+          .then((responseText) => {
+            const html = new DOMParser().parseFromString(responseText, 'text/html')
+      
+            // Updating qty UI depending on new variant information
+            const sourceQty = html.getElementById(`${evt.target.querySelector('.product-variant-id').value}`);
+            const valueQtyCart = sourceQty.querySelector('input').value
+            if (valueQtyCart && destinationQty) destinationQty.querySelector('input').dataset.cartquantity = valueQtyCart;
+            if (valueQtyCart && destinationQty) document.querySelector('.quantity-cart').innerHTML = valueQtyCart;
+          });
         });
     }
 
