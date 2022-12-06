@@ -34,12 +34,39 @@ class CartNotification extends HTMLElement {
   renderContents(parsedState) {
       this.cartItemKey = parsedState.key;
       this.getSectionsToRender().forEach((section => {
-        document.getElementById(section.id).innerHTML =
-          this.getSectionInnerHTML(parsedState.sections[section.id], section.selector);
+        let innerHtml = this.getSectionInnerHTML(parsedState.sections[section.id], section.selector);
+
+        if (section.id == 'cart-live-region-text')
+        {
+          this.setNoficationMessage(innerHtml);
+          innerHtml = innerHtml.replace(" GBP", "");
+          innerHtml = innerHtml.replace("New subtotal: ", "Subtotal<br>");
+        }
+        
+        document.getElementById(section.id).innerHTML = innerHtml;
       }));
 
       if (this.header) this.header.reveal();
       this.open();
+  }
+
+  setNoficationMessage(html) {
+    let messageElement = document.getElementById('cart-notification__message');
+    if (!messageElement) {
+      return;
+    }
+
+    let totalPrice = html.match(/New subtotal: £([\d\.]+) GBP/)[1];
+    let notificationMessage;
+    if (Number(totalPrice) >= 60)
+    {
+      notificationMessage = 'Congratulations! You are entitled to free nationwide delivery.';
+    }
+    else
+    {
+      notificationMessage = 'Buy more and save: get free delivery when buying additional items over £60.';
+    }
+    messageElement.innerHTML = notificationMessage;
   }
 
   getSectionsToRender() {
@@ -53,6 +80,9 @@ class CartNotification extends HTMLElement {
       },
       {
         id: 'cart-icon-bubble'
+      },
+      {
+        id: 'cart-live-region-text'
       }
     ];
   }

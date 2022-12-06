@@ -1,0 +1,146 @@
+<script>
+  if(typeof(Spurit) === 'undefined'){
+    var Spurit = {};
+  }
+  if(!Spurit['Discountmanager']){
+    Spurit['Discountmanager'] = {};
+  }
+  if(!Spurit['Discountmanager'].snippet){
+    Spurit['Discountmanager'].snippet = {};
+  }
+
+  if (!Spurit['Discountmanager'].snippet.products) {
+    Spurit['Discountmanager'].snippet.products = {};
+  }
+  Spurit['Discountmanager'].snippet.userId = '387973';
+  Spurit['Discountmanager'].snippet.signature = '17d344b3682465133f47edc22d990020';
+  Spurit['Discountmanager'].snippet.domain = 'https://discountmanager.amai.com';
+  Spurit['Discountmanager'].snippet.shopHash = '74dbae931d72746282297f02330ba47a';
+
+  Spurit['Discountmanager'].snippet.appDataFile = '{{"dmr.js" | asset_url }}';
+
+  Spurit['Discountmanager'].snippet.loopStep = 6;
+  Spurit['Discountmanager'].snippet.logStt = {productPage: false, cartPage: false, cartDrawer: false};
+
+  {% if collection %}
+  {% paginate collection.products %}
+  {% for product in collection.products %}
+  Spurit['Discountmanager'].snippet.products['{{product.handle}}'] = {{product.id}};
+  {% endfor %}
+  {% endpaginate %}
+  {% endif %}
+  {% if product %}
+  Spurit['Discountmanager'].snippet.product = {{product.id}};
+  {% endif %}
+</script>
+{% assign commonLoad = false %}
+{% if request.page_type == 'collection' or request.page_type == 'search' or request.page_type == 'product' or request.page_type == 'cart' or request.page_type == 'index' %}
+{% if commonLoad %}
+  <script src="https://amaicdn.com/discountmanager/common.js"></script>
+  <link href="https://amaicdn.com/discountmanager/common.css" rel="stylesheet" type="text/css" media="all">
+{% endif %}
+{% endif %}
+
+{% if request.page_type == 'product' %}
+<style>
+  /* countdown */
+  .countdown {
+    display: flex;
+    column-gap: 10px;
+  }
+  .countdown div {
+    text-align: center;
+    position: relative;
+    padding: 0 10px;
+  }
+  .countdown div + div:before {
+    content: ":";
+    display: block;
+    font-size: 22px;
+    position: absolute;
+    top: 22%;
+    left: -8px;
+  }
+  .countdown .num {
+    margin-bottom: 8px;
+    font-size: 38px;
+  }
+</style>
+{% endif %}
+
+{% if request.page_type == 'cart' %}
+<script>
+  function removeHiddenProperties() {
+    const normalizeAccents = (str) => {
+      let cloneStr = str;
+      cloneStr = cloneStr.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+      cloneStr = cloneStr.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+      cloneStr = cloneStr.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+      cloneStr = cloneStr.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+      cloneStr = cloneStr.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+      cloneStr = cloneStr.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+      cloneStr = cloneStr.replace(/đ/g, "d");
+      cloneStr = cloneStr.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+      cloneStr = cloneStr.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+      cloneStr = cloneStr.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+      cloneStr = cloneStr.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+      cloneStr = cloneStr.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+      cloneStr = cloneStr.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+      cloneStr = cloneStr.replace(/Đ/g, "D");
+      return cloneStr;
+    };
+    const elements = [
+      ...findRangeTextOnContainer(document.body, "_campaign", normalizeAccents),
+      ...findRangeTextOnContainer(document.body, "_rule", normalizeAccents),
+      ...findRangeTextOnContainer(document.body, "_origprice", normalizeAccents),
+    ];
+    elements.forEach((z) => {
+      z.commonAncestorContainer.parentElement.style.display = "none";
+    });
+  }
+
+  function findRangeTextOnContainer(target, textSearch, normalizeAccents) {
+    const matchedRanges = [];
+    let node;
+    const walk = document.createNodeIterator(target, NodeFilter.SHOW_TEXT, {
+      acceptNode: function (incomingNode) {
+        // Exclusions Style & Script tags
+        if (["STYLE", "SCRIPT"].includes(incomingNode.nodeName))
+          return NodeFilter.FILTER_REJECT;
+        // Exclusions inline style
+        if (
+                ["STYLE", "SCRIPT"].includes(
+                        incomingNode.parentNode?.nodeName || ""
+                )
+        )
+          return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+    while ((node = walk.nextNode())) {
+      const textNode = node;
+      const nodeTextContent = normalizeAccents(textNode?.textContent || "");
+      if (nodeTextContent) {
+        const regex = new RegExp(normalizeAccents(textSearch), "gi");
+        let match;
+        while ((match = regex.exec(nodeTextContent)) != null) {
+          const range = document.createRange();
+          if (
+                  textNode &&
+                  match.index < nodeTextContent.length &&
+                  match.index + textSearch.length < nodeTextContent.length + 1
+          ) {
+            range.setStart(textNode, match.index);
+            range.setEnd(textNode, match.index + textSearch.length);
+            matchedRanges.push(range);
+          }
+        }
+      }
+    }
+    return matchedRanges;
+  }
+</script>
+{% endif %}
+
+
+

@@ -23,6 +23,7 @@
   {%- endstyle -%}
 
   <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'spice_addon_product_runtime_modification.js' | asset_url }}" defer="defer"></script>
 
   {%- assign first_3d_model = product.media | where: "media_type", "model" | first -%}
   {%- if first_3d_model -%}
@@ -32,6 +33,8 @@
   {%- endif -%}
 
   <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.gallery_layout }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
+
+  {%- if section.settings.enable_product_media -%}
     <div class="grid__item product__media-wrapper">
       <media-gallery id="MediaGallery-{{ section.id }}" role="region" {% if section.settings.enable_sticky_info %}class="product__media-gallery"{% endif %} aria-label="{{ 'products.product.media.gallery_viewer' | t }}" data-desktop-layout="{{ section.settings.gallery_layout }}">
         <div id="GalleryStatus-{{ section.id }}" class="visually-hidden" role="status"></div>
@@ -198,6 +201,8 @@
         {%- endif -%}
       </media-gallery>
     </div>
+  {%- endif -%}
+
     <div class="product__info-wrapper grid__item{% if settings.page_width > 1400 and section.settings.media_size == "small" %} product__info-wrapper--extra-padding{% endif %}">
       <div id="ProductInfo-{{ section.id }}" class="product__info-container{% if section.settings.enable_sticky_info %} product__info-container--sticky{% endif %}">
         {%- assign product_form_id = 'product-form-' | append: section.id -%}
@@ -212,7 +217,7 @@
             </p>
           {%- when 'title' -%}
             <div class="product__title" {{ block.shopify_attributes }}>
-              <h1>{{ product.title | escape }}</h1>
+              <h1 style="font-weight: bold; font-size: calc(var(--font-heading-scale) * 2.3rem);">{{ product.title | escape }}</h1>
               <a href="{{ product.url }}" class="product__title">
                 <h2 class="h1">
                   {{ product.title | escape }}
@@ -221,7 +226,7 @@
             </div>
           {%- when 'price' -%}
             <div class="no-js-hidden" id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
-              {%- render 'price', product: product, use_variant: true, show_badges: true, price_class: 'price--large' -%}
+              {%- render 'price', product: product, use_variant: true, show_badges: true, price_class: 'price--large price--x-large' -%}
             </div>
             {%- if shop.taxes_included or shop.shipping_policy.body != blank -%}
               <div class="product__tax caption rte">
@@ -1005,6 +1010,12 @@
     }
   ],
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_product_media",
+      "default": true,
+      "label": "t:sections.main-product.settings.enable_product_media.label"
+    },
     {
       "type": "checkbox",
       "id": "enable_sticky_info",

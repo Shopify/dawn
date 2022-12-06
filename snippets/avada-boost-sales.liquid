@@ -1,0 +1,140 @@
+
+      
+{% include 'avada-cdt-status' %}
+{% include 'avada-badge-status' %}
+{% include 'avada-sales-pop-status' %}
+{% include 'avada-enhancements' %}
+{% include 'avada-back-to-stock-status' %}
+{% include 'avada-bs-fsb-setting-status' %}
+{% assign scripttags = content_for_header | split: 'var urls = ["' %}
+{% if scripttags.size > 1 %}
+  {% assign scripttags = scripttags[1] %}
+  {% assign scripttags = scripttags | split: '"];' %}
+  {% if scripttags.size > 1 %}
+    {% assign scripttags = scripttags[0] %}
+    {% assign scripttags = scripttags | split: '","' %}
+  {% endif %}
+{% endif %}
+
+{% assign avada_badge_scripttag = "" %}
+{% for url in scripttags %}
+  {% if url contains "avada-badge.min.js"%}
+    {% assign avada_badge_scripttag = url %}
+  {% endif %}
+{% endfor %}
+
+{% if avada_badge_scripttag != "" and avadaBadgeStatus == false %}
+  {% assign content_for_header = content_for_header | remove: avada_badge_scripttag %}
+{% endif %}
+
+{% assign avada_countdown_scripttag = "" %}
+{% for url in scripttags %}
+  {% if url contains "avada-countdown.min.js"%}
+    {% assign avada_countdown_scripttag = url %}
+  {% endif %}
+{% endfor %}
+
+{% if avada_countdown_scripttag != "" and avadaCDTStatus == false %}
+  {% assign content_for_header = content_for_header | remove: avada_countdown_scripttag %}
+{% endif %}
+
+{% assign avada_back_to_stock_scripttag = "" %}
+{% for url in scripttags %}
+  {% if url contains "avada-back-to-stock.min.js"%}
+    {% assign avada_back_to_stock_scripttag = url %}
+  {% endif %}
+{% endfor %}
+
+{% if avada_back_to_stock_scripttag != "" and avadaBTSStatus == false %}
+  {% assign content_for_header = content_for_header | remove: avada_back_to_stock_scripttag %}
+{% endif %}
+
+{% assign avada_sales_pop_scriptag = "" %}
+{% for url in scripttags %}
+  {% if url contains "avada-sale-pops.min.js"%}
+    {% assign avada_sales_pop_scriptag = url %}
+  {% endif %}
+{% endfor %}
+{% if avada_sales_pop_scriptag != "" and avadaSalePopStatus == false %}
+  {% assign content_for_header = content_for_header | remove: avada_sales_pop_scriptag %}
+{% endif %}
+
+{% assign avada_boost_scripttag = "" %}
+{% for url in scripttags %}
+  {% if url contains "avada-boost-sales.min.js"%}
+    {% assign avada_boost_scripttag = url %}
+  {% endif %}
+{% endfor %}
+{% if avada_boost_scripttag != "" and avadaBsProtection == false and avadaBsHideCheckout == false and avadaBsSticky == false and avadaBsMultiplePixel == false and avadaBsInactive == false and avadaBsAnimation == false and avadaBsWhatsapp == false and avadaBsMessenger == false and avadaBsLivechat == false %}
+  {% assign content_for_header = content_for_header | remove: avada_boost_scripttag %}
+{% endif %}
+
+{% assign avada_fsb_scripttag = "" %}
+{% for url in scripttags %}
+  {% if url contains "avada-fsb.min.js"%}
+    {% assign avada_fsb_scripttag = url %}
+  {% endif %}
+{% endfor %}
+{% if avada_fsb_scripttag != "" and avadaBsFsbStatus == false %}
+  {% assign content_for_header = content_for_header | remove: avada_fsb_scripttag %}
+{% endif %}
+
+      <script>
+        const AVADA_CDT = {};
+        AVADA_CDT.template = "{{ template }}";
+        AVADA_CDT.collections = [];
+        {% for collection in product.collections %}
+          AVADA_CDT.collections.push("{{ collection.id }}");
+        {% endfor %}
+
+        const AVADA_INVQTY = {};
+        {% for var in product.variants %}
+          AVADA_INVQTY[{{- var.id -}}] = {{ var.inventory_quantity | default: 0 }};
+        {% endfor %}
+
+        AVADA_CDT.cartitem = {{ cart.item_count }};
+        AVADA_CDT.moneyformat = `{{ shop.money_format | replace: "$", "\$" }}`;
+        AVADA_CDT.cartTotalPrice = {{ cart.total_price }};
+        {% if product %}
+        AVADA_CDT.selected_variant_id = {{ product.selected_or_first_available_variant.id }};
+        AVADA_CDT.product = {"id": {{product.id | json}},"title": {{product.title | json}},"handle": {{product.handle | json}},"vendor": {{product.vendor | json}},
+            "type": {{product.type | json}},"tags": {{ product.tags | json}},"price": {{product.price | json}},"price_min": {{product.price_min | json}},"price_max": {{product.price_max | json}},
+            "available": {{product.available}},"price_varies": {{product.price_varies | json}},"compare_at_price": {{product.compare_at_price | json}},
+            "compare_at_price_min": {{product.compare_at_price_min | json}},"compare_at_price_max": {{product.compare_at_price_max | json}},
+            "compare_at_price_varies": {{product.compare_at_price_varies | json}},"variants": {{product.variants | json}},"featured_image": {{product.featured_image | json}},"images": {{product.images | json}}
+            };
+        {% endif %}
+
+        window.AVADA_BADGES = window.AVADA_BADGES || {};
+        window.AVADA_BADGES = {{ shop.metafields.avada_trust_badges.data | json }};
+
+        window.AVADA_GENERAL_SETTINGS = window.AVADA_GENERAL_SETTINGS || {};
+        window.AVADA_GENERAL_SETTINGS = {{ shop.metafields.avada_gs.data | json }};
+
+        window.AVADA_COUNDOWNS = window.AVADA_COUNDOWNS || {};
+        window.AVADA_COUNDOWNS = {{ shop.metafields.avada_countdowns.data | json }};
+
+        window.AVADA_INACTIVE_TAB = window.AVADA_INACTIVE_TAB || {};
+        window.AVADA_INACTIVE_TAB = {{ shop.metafields.avada_inactive_tab.data | json }};
+
+        window.AVADA_LIVECHAT = window.AVADA_LIVECHAT || {};
+        window.AVADA_LIVECHAT = {{ shop.metafields.avada_livechat.data | json }};
+
+        window.AVADA_STICKY_ATC = window.AVADA_STICKY_ATC || {};
+        window.AVADA_STICKY_ATC = {{ shop.metafields.avada_sticky_cart.data | json }};
+
+        window.AVADA_ATC_ANIMATION = window.AVADA_ATC_ANIMATION || {};
+        window.AVADA_ATC_ANIMATION = {{ shop.metafields.avada_animation_atc.data | json }};
+
+        window.AVADA_SP = window.AVADA_SP || {};
+        window.AVADA_SP = {{ shop.metafields.avada_sale_pops.data | json }};
+
+         window.AVADA_BS_FSB = window.AVADA_BS_FSB || {};
+         window.AVADA_BS_FSB = {
+          bars: {{ shop.metafields.avada_fsb.data | json }},
+          cart: {{cart.total_price}},
+          compatible: {
+            langify: '{{cart.attributes.language}}'
+          }
+        };
+      </script>

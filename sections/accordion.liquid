@@ -1,0 +1,134 @@
+{{ 'component-accordion.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+  #accordion-hidden-checkbox-{{ section.id }} {
+    display: none;
+  }
+
+  #according-title-{{ section.id }} {
+    display: block;
+    cursor: pointer;
+    width: 100%;
+    transition: ease .5s;
+  }
+
+  #accordion-hidden-checkbox-{{ section.id }}:checked + #according-title-{{ section.id }} .icon-caret {
+    transform: rotate(180deg);
+  }
+{%- endstyle -%}
+
+{% javascript %}
+  function toggleAccordion(checkbox_element) {
+    let checkbox = $(checkbox_element);
+    let number_of_sections = checkbox.data("number-of-sections");
+    let next_section = checkbox.closest("section").nextAll().slice(0, number_of_sections);
+
+    if (checkbox.is(':checked')) {
+      next_section.css("display", "block");
+    } else {
+      next_section.css("display", "none");
+    }
+  }
+
+  $(".accordion-hidden-checkbox").change(function(evt) {
+    toggleAccordion(evt.currentTarget);
+  })
+
+  $(document).ready(function() {
+    $(".accordion-hidden-checkbox").each(function(index, element) {
+      toggleAccordion(element);
+    });
+  });
+{% endjavascript %}
+
+<div class="page-width isolate">
+  <div class="accordion" style="margin-top: {% if section.settings.collapse_top_border %}-1px{% else %}0{% endif %}; border-top-color: rgb(var(--color-base-accent-2)); border-bottom-color: rgb(var(--color-base-accent-2));"> <!-- zero margin top helps to make the accordions stick to each other -->
+
+    <summary style="padding-top: 0; padding-bottom: 0;">
+      <input type="checkbox" id="accordion-hidden-checkbox-{{ section.id }}" class="accordion-hidden-checkbox" data-number-of-sections="{{ section.settings.number_of_sections }}" {% if section.settings.expand_by_default %} checked {% endif %}/>
+      <label for="accordion-hidden-checkbox-{{ section.id }}" id="according-title-{{ section.id }}" class="section-{{ section.id }}-padding" style="color: #353334;">
+        {{ section.settings.heading }}
+        <div style="color: rgb(var(--color-base-accent-2))">
+          {% render 'icon-caret' %}
+        </div>
+      </label>
+    </summary>
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Accordion",
+  "class": "section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Collapsible content"
+    },
+    {
+      "type": "checkbox",
+      "id": "expand_by_default",
+      "default": false,
+      "label": "Expand by default"
+    },
+    {
+      "type": "range",
+      "id": "number_of_sections",
+      "min": 1,
+      "max": 25,
+      "step": 1,
+      "default": 1,
+      "label": "Number of sections to show/hide"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    },
+    {
+      "type": "checkbox",
+      "id": "collapse_top_border",
+      "label": "Collapse top border with previous accordion",
+      "default": false
+    }    
+  ],
+  "blocks": [],
+  "presets": [
+    {
+      "name": "Accordion",
+      "blocks": []
+    }
+  ]
+}
+{% endschema %}

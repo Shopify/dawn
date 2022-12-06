@@ -3,6 +3,8 @@
 <link rel="stylesheet" href="{{ 'component-menu-drawer.css' | asset_url }}" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="{{ 'component-cart-notification.css' | asset_url }}" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="{{ 'component-cart-items.css' | asset_url }}" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="{{ 'pickadate-default.css' | asset_url }}" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="{{ 'pickadate-default.date.css' | asset_url }}" media="print" onload="this.media='all'">
 {%- if settings.predictive_search_enabled -%}
   <link rel="stylesheet" href="{{ 'component-price.css' | asset_url }}" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="{{ 'component-loading-overlay.css' | asset_url }}" media="print" onload="this.media='all'">
@@ -80,6 +82,17 @@
       padding-top: 0.5rem;
     }
   }
+
+  #cart-delivery-datepicker_label {
+    display: flex;
+    align-items: center;
+  }
+
+  @media screen and (min-width: 750px) {
+    #cart-delivery-datepicker_label {
+      margin-right: 1rem;
+    }
+  }
 </style>
 
 {%- style -%}
@@ -104,6 +117,94 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  .cart-notification-form__error_field {
+    box-shadow: 0 0 0.1rem 0.1rem red;
+  }
+
+  .cart-notification-form__error {
+    position: absolute;
+    display: block;
+    color: red;
+    font-weight: bold;
+  }
+
+  .cart-notification-form__error-hidden {
+    display: none;
+  }
+
+  .cutoff-message {
+    text-align: center;
+    font-weight: bold;
+    color: rgb(var(--color-base-accent-2));
+  }
+
+  /* the style for the datepicker to override the component settings */
+  .picker__holder {
+    background-color: rgba(0, 0, 0, 0.8) !important;
+  }
+
+  /* the style for the datepicker to override the component settings */
+  .picker__box {
+    border-radius: 0.8em !important;
+    font-size: 1.7rem !important;
+  }
+
+  .picker__frame {
+    width: 50rem !important;
+    margin-bottom: 30vh !important;
+  }
+
+  .picker__frame:before {
+    content: "";
+    z-index: -1;
+    position: absolute;
+    background-image: url(//cdn.shopify.com/s/files/1/0654/7338/0587/files/Datepick_bg.png?v=1665957408);
+    background-repeat: no-repeat;
+    background-size: 53rem 43rem;
+    width: 53rem;
+    height: 43rem;
+    left: -2rem;
+    top: -4rem;
+  }
+
+  .picker__frame, .picker__holder {
+    transform: translateY(-100vh);
+    transition: background 0s ease-out;
+  }
+
+  @media screen and (max-width: 749px) {
+    .picker__frame {
+      width: 95% !important;
+      margin-bottom: 5vh !important;
+    }
+
+    .picker__frame:before {
+      background-size: 100vw 100%;
+      width: 100vw;
+      height: 115%;
+      left: -3vw;
+      top: -8vw;
+    }
+  }
+
+  header #cart-delivery-datepicker_label,
+  header #cart-delivery-datepicker {
+    display: none;
+  }
+
+  #cart-delivery-datepicker {
+    user-select: none;
+  }
+
+  #cart-delivery-datepicker::selection { 
+    background: none; 
+  }
+
+  #cart-delivery-datepicker:focus {
+    outline: none;
+    box-shadow: none;
+  }
 {%- endstyle -%}
 
 <script src="{{ 'details-disclosure.js' | asset_url }}" defer="defer"></script>
@@ -112,6 +213,11 @@
 {%- if settings.cart_type == "drawer" -%}
   <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
 {%- endif -%}
+<script src="{{ 'pickadate-picker.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'pickadate-picker.date.js' | asset_url }}" defer="defer"></script>
+<input type="hidden" id="cart_delivery_date_picker_disabled_week_days" value="{{ settings.cart_delivery_date_picker_disabled_week_days }}"/>
+<input type="hidden" id="cart_delivery_date_picker_disabled_dates" value="{{ settings.cart_delivery_date_picker_disabled_dates }}"/>
+<script src="{{ 'cart-delivery-datepicker.js' | asset_url }}" defer="defer"></script>
 
 <svg xmlns="http://www.w3.org/2000/svg" class="hidden">
   <symbol id="icon-search" viewbox="0 0 18 19" fill="none">
@@ -578,6 +684,20 @@
           </span>
         </a>
       {%- endif -%}
+
+      <label id="cart-delivery-datepicker_label" class="header-cart-delivery-datepicker" for="cart-delivery-datepicker">Delivery date</label>
+      <input id="cart-delivery-datepicker-hidden" 
+        name="cart-delivery-date-hidden" 
+        required 
+        form="cart-notification-form" 
+        class="header-cart-delivery-datepicker"
+        style="display: none;">
+      <input id="cart-delivery-datepicker" 
+        name="cart-delivery-date"
+        title="Please select delivery date"
+        class="header-cart-delivery-datepicker"
+        readonly>
+      <div id="cart-notification-form__error" class="header-cart-delivery-datepicker cart-notification-form__error cart-notification-form__error-hidden">Required</div>
 
       <a href="{{ routes.cart_url }}" class="header__icon header__icon--cart link focus-inset" id="cart-icon-bubble">
         {%- liquid

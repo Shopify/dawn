@@ -8,10 +8,34 @@
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
   }
 
+  .section-{{ section.id }}-background {
+    background-color: {{ section.settings.background_color }} !important;
+  }
+
+  .multicolumn-card-{{ section.id }}-background {
+    background-color: {{ section.settings.card_background_color }} !important;
+    background-image: none !important;
+  }
+
+  .multicolumn-card .full-unstyled-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.3rem;
+  }
+
   @media screen and (min-width: 750px) {
     .section-{{ section.id }}-padding {
       padding-top: {{ section.settings.padding_top }}px;
       padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+
+    .title-{{ section.id }}-width {
+      width: {{ section.settings.desktop_width_percentage }}%;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .title-{{ section.id }}-width {
+      width: {{ section.settings.mobile_width_percentage }}%;
     }
   }
 {%- endstyle -%}
@@ -24,11 +48,11 @@
   endif
 -%}
 
-<div class="multicolumn color-{{ section.settings.color_scheme }} gradient{% unless section.settings.background_style == 'none' and settings.text_boxes_border_thickness > 0 or settings.text_boxes_shadow_opacity > 0 %} background-{{ section.settings.background_style }}{% endunless %}{% if section.settings.title == blank %} no-heading{% endif %}">
+<div class="multicolumn color-{{ section.settings.color_scheme }} gradient{% unless section.settings.background_style == 'none' and settings.text_boxes_border_thickness > 0 or settings.text_boxes_shadow_opacity > 0 %} background-{{ section.settings.background_style }}{% endunless %}{% if section.settings.title == blank %} no-heading{% endif %}{% if section.settings.override_background_color %} section-{{ section.id }}-background{% endif %}">
   <div class="page-width section-{{ section.id }}-padding isolate">
     {%- unless section.settings.title == blank -%}
       <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin">
-        <h2 class="title {{ section.settings.heading_size }}">
+        <h2 class="title {{ section.settings.heading_size }} title-{{ section.id }}-width" style="{% if section.settings.center_title %}margin-left: auto; margin-right: auto; text-align: center;{% endif %}">
           {{ section.settings.title | escape }}
         </h2>
         {%- if section.settings.button_label != blank and show_mobile_slider -%}
@@ -56,7 +80,8 @@
           {%- endif -%}
 
           <li id="Slide-{{ section.id }}-{{ forloop.index }}" class="multicolumn-list__item grid__item{% if section.settings.swipe_on_mobile %} slider__slide{% endif %}{% if section.settings.column_alignment == 'center' %} center{% endif %}{{ empty_column }}" {{ block.shopify_attributes }}>            
-            <div class="multicolumn-card content-container">
+            <div class="multicolumn-card content-container{% if section.settings.override_card_background_color %} multicolumn-card-{{ section.id }}-background{% endif %}">
+              {%- if block.settings.column_link != blank -%}<a href="{{ block.settings.column_link }}" class="full-unstyled-link">{%- endif -%}
               {%- if block.settings.image != blank -%}
                 {% if section.settings.image_ratio == 'adapt' or section.settings.image_ratio == 'circle' %}
                   {% assign spaced_image = true %}
@@ -92,10 +117,14 @@
                 {%- if block.settings.text != blank -%}
                   <div class="rte">{{ block.settings.text }}</div>
                 {%- endif -%}
+                {%- if block.settings.html_text != blank -%}
+                  <div class="rte">{{ block.settings.html_text }}</div>
+                {%- endif -%}
                 {%- if block.settings.link_label != blank -%}
                   <a class="link animate-arrow" {% if block.settings.link == blank %}role="link" aria-disabled="true"{% else %}href="{{ block.settings.link }}"{% endif %}>{{ block.settings.link_label | escape }}<span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span></a>
                 {%- endif -%}
               </div>
+              {%- if block.settings.column_link != blank -%}</a>{%- endif -%}
             </div>
           </li>
         {%- endfor -%}
@@ -135,6 +164,32 @@
       "id": "title",
       "default": "Multicolumn",
       "label": "t:sections.multicolumn.settings.title.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "center_title",
+      "default": false,
+      "label": "Center heading"
+    },
+    {
+      "type": "range",
+      "id": "desktop_width_percentage",
+      "min": 5,
+      "max": 100,
+      "step": 5,
+      "unit": "pc",
+      "label": "Desktop heading width",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "mobile_width_percentage",
+      "min": 5,
+      "max": 100,
+      "step": 5,
+      "unit": "pc",
+      "label": "mobile heading width",
+      "default": 100
     },
     {
       "type": "select",
@@ -329,6 +384,30 @@
       "unit": "px",
       "label": "t:sections.all.padding.padding_bottom",
       "default": 36
+    },
+    {
+      "type": "checkbox",
+      "id": "override_background_color",
+      "default": false,
+      "label": "Override background color"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "transparent"
+    },
+    {
+      "type": "checkbox",
+      "id": "override_card_background_color",
+      "default": false,
+      "label": "Override card background color"
+    },
+    {
+      "type": "color",
+      "id": "card_background_color",
+      "label": "Card background color",
+      "default": "transparent"
     }
   ],
   "blocks": [
@@ -354,6 +433,11 @@
           "label": "t:sections.multicolumn.blocks.column.settings.text.label"
         },
         {
+          "type": "html",
+          "id": "html_text",
+          "label": "HTML description"
+        },
+        {
           "type": "text",
           "id": "link_label",
           "label": "t:sections.multicolumn.blocks.column.settings.link_label.label"
@@ -362,6 +446,11 @@
           "type": "url",
           "id": "link",
           "label": "t:sections.multicolumn.blocks.column.settings.link.label"
+        },
+        {
+          "type": "url",
+          "id": "column_link",
+          "label": "Link for the whole column"
         }
       ]
     }
