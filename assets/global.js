@@ -145,9 +145,13 @@ function onKeyUpEscape(event) {
 class QuantityInput extends HTMLElement {
   constructor() {
     super();
-    const currentQty = document.querySelector('quantity-input input').value
-    const variant = parseInt(document.querySelector('product-form .product-variant-id').value)
-    fetchCartVariantQty(currentQty, variant)
+    const currentQty = this.querySelector('input').value
+    if (this.classList.contains('cart-quantity')) {
+      this.variantId = parseInt(this.dataset.variantid)
+    } else {
+      this.variantId = parseInt(document.querySelector('product-form .product-variant-id').value)
+    }
+    fetchCartVariantQty(currentQty, this.variantId, this)
     this.input = this.querySelector('input');
     this.changeEvent = new Event('change', { bubbles: true })
 
@@ -159,8 +163,7 @@ class QuantityInput extends HTMLElement {
   
   onInputChange(event) {
     event.preventDefault();
-    const variant = parseInt(document.querySelector('product-form .product-variant-id').value)
-    fetchCartVariantQty(this.input.value, variant)
+    fetchCartVariantQty(this.input.value, this.variantId, this)
   }
 
   onButtonClick(event) {
@@ -181,9 +184,8 @@ class QuantityInput extends HTMLElement {
 
     event.target.name === 'plus' ? this.input.stepUp() : this.input.stepDown();
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
-    const currentQty = document.querySelector('quantity-input input').value
-    const variant = parseInt(document.querySelector('product-form .product-variant-id').value)
-    fetchCartVariantQty(currentQty, variant)
+    const currentQty = this.querySelector('input').value
+    fetchCartVariantQty(currentQty, this.variantId, this)
   }
 }
 
@@ -198,10 +200,10 @@ function fetchQtyRules(variantId, section) {
     const parsedState = JSON.parse(state);
     if (parsedState.variant !== null) {
       // hardcoding it for now
-      document.querySelector('.quantity-min').innerHTML = "5"
-      document.querySelector('.quantity-max').innerHTML = "100"
-      document.querySelector('.quantity-steps').innerHTML = "5"
       const qty = document.getElementById(`Quantity-${section}`);
+      qty.closest('.product-form__quantity').querySelector('.quantity-min').innerHTML = "10"
+      qty.closest('.product-form__quantity').querySelector('.quantity-max').innerHTML = "100"
+      qty.closest('.product-form__quantity').querySelector('.quantity-steps').innerHTML = "5"
       qty.setAttribute("min", 5);
       qty.setAttribute("max", 100);
       qty.setAttribute("step", 5);
@@ -212,20 +214,20 @@ function fetchQtyRules(variantId, section) {
   });
 }
 
-function fetchCartVariantQty(currentQty, currentVariant) {
+function fetchCartVariantQty(currentQty, currentVariant, quantityElement) {
   fetch("/cart.json").then((response) => {
     return response.text();
   })
   .then((state) => {
     const parsedState = JSON.parse(state);
     if (parsedState.items.length === 0) {
-      validateQtyRules(0, currentQty)
+      validateQtyRules(0, currentQty, quantityElement)
     }
     parsedState.items.forEach((item) => {
       if (item.variant_id === parseInt(currentVariant)) {
-        validateQtyRules(item.quantity, currentQty)
+        validateQtyRules(item.quantity, currentQty, quantityElement)
       } else {
-        validateQtyRules(0, currentQty)
+        validateQtyRules(0, currentQty, quantityElement)
       }
     })
   })
@@ -234,22 +236,24 @@ function fetchCartVariantQty(currentQty, currentVariant) {
   });
 }
 
-function validateQtyRules(cartValue, currentValue) {
-  const minValue = parseInt(document.querySelector('.quantity-min').innerHTML)
-  const maxValue = parseInt(document.querySelector('.quantity-max').innerHTML)
-  const steps = parseInt(document.querySelector('.quantity-steps').innerHTML)
+function validateQtyRules(cartValue, currentValue, quantityElement) {
+  const input = quantityElement.querySelector('.quantity__input')
+  const min = parseInt(input.min)
+  const max = parseInt(input.max)
+  const step = parseInt(input.step)
 
-  if (minValue && maxValue && steps) {
-    if ((parseInt(currentValue) + parseInt(cartValue)) <= minValue) {
-      document.querySelector('.product-form__submit').classList.add('disabled')
-      document.querySelector(".quantity__button[name='minus']").classList.add('disabled')
-    } else if ((parseInt(currentValue) + parseInt(cartValue)) >= maxValue) {
-      document.querySelector('.product-form__submit').classList.add('disabled')
-      document.querySelector(".quantity__button[name='plus']").classList.add('disabled')
+  if ((min !== null || max !== null || step !== null) && currentValue !== null && cartValue !== null) {
+    // If the amount in cart is more than the min, thew new min is the step
+    if (parseInt(cartValue) >= min) {
+      quantityElement.querySelector('input').setAttribute("min", step)
+    }
+    if (((parseInt(currentValue) + parseInt(cartValue))) <= min) {
+      quantityElement.querySelector(".quantity__button[name='minus']").classList.add('disabled')
+    } else if ((parseInt(currentValue) + parseInt(cartValue)) >= max) {
+      quantityElement.querySelector(".quantity__button[name='plus']").classList.add('disabled')
     } else {
-      document.querySelector('.product-form__submit').classList.remove('disabled')
-      document.querySelector(".quantity__button[name='plus']").classList.remove('disabled')
-      document.querySelector(".quantity__button[name='minus']").classList.remove('disabled')
+      quantityElement.querySelector(".quantity__button[name='plus']").classList.remove('disabled')
+      quantityElement.querySelector(".quantity__button[name='minus']").classList.remove('disabled')
     }
   }
 }
@@ -880,9 +884,11 @@ class VariantSelects extends HTMLElement {
   }
 
   updateQtyRules() {
-    const currentQty = document.querySelector('quantity-input input').value
+    // Grab the closest input
+    const currentQty = parseInt(this.closest('div').querySelector('quantity-input input').value)
+    const quantityElement = this.closest('div').querySelector('quantity-input')
     fetchQtyRules(this.currentVariant.id, this.dataset.section)
-    fetchCartVariantQty(currentQty, this.currentVariant.id)
+    fetchCartVariantQty(currentQty, this.currentVariant.id, quantityElement)
   }
 
   updateMasterId() {
@@ -976,7 +982,7 @@ class VariantSelects extends HTMLElement {
       const html = new DOMParser().parseFromString(responseText, 'text/html')
 
       // Updating qty UI depending on new variant information
-      const destinationQty = document.getElementById(`test-${this.dataset.section}`);
+      const destinationQty = document.getElementById(`quantity-${this.dataset.section}`);
       const sourceQty = html.getElementById(`${this.currentVariant.id}`);
       if (sourceQty) {
         const valueQtyCart = sourceQty.querySelector('input').value
