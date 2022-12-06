@@ -249,8 +249,10 @@ function validateQtyRules(cartValue, currentValue, quantityElement) {
     }
     if (((parseInt(currentValue) + parseInt(cartValue))) <= min) {
       quantityElement.querySelector(".quantity__button[name='minus']").classList.add('disabled')
+      quantityElement.querySelector(".quantity__button[name='plus']").classList.remove('disabled')
     } else if ((parseInt(currentValue) + parseInt(cartValue)) >= max) {
       quantityElement.querySelector(".quantity__button[name='plus']").classList.add('disabled')
+      quantityElement.querySelector(".quantity__button[name='minus']").classList.remove('disabled')
     } else {
       quantityElement.querySelector(".quantity__button[name='plus']").classList.remove('disabled')
       quantityElement.querySelector(".quantity__button[name='minus']").classList.remove('disabled')
