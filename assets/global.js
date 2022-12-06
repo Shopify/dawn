@@ -972,7 +972,7 @@ class VariantRadios extends VariantSelects {
 
 customElements.define('variant-radios', VariantRadios);
 
-class ProductRecommendations extends HTMLElement {
+class RelatedProducts extends HTMLElement {
   constructor() {
     super();
   }
@@ -987,7 +987,7 @@ class ProductRecommendations extends HTMLElement {
         .then(text => {
           const html = document.createElement('div');
           html.innerHTML = text;
-          const recommendations = html.querySelector('product-recommendations');
+          const recommendations = html.querySelector('related-products');
 
           if (recommendations && recommendations.innerHTML.trim().length) {
             this.innerHTML = recommendations.innerHTML;
@@ -998,7 +998,7 @@ class ProductRecommendations extends HTMLElement {
           }
 
           if (html.querySelector('.grid__item')) {
-            this.classList.add('product-recommendations--loaded');
+            this.classList.add('related-products--loaded');
           }
         })
         .catch(e => {
@@ -1010,4 +1010,4 @@ class ProductRecommendations extends HTMLElement {
   }
 }
 
-customElements.define('product-recommendations', ProductRecommendations);
+customElements.define('related-products', RelatedProducts);
