@@ -149,7 +149,7 @@ class QuantityInput extends HTMLElement {
     if (this.classList.contains('cart-quantity')) {
       this.variantId = parseInt(this.dataset.variantid)
     } else {
-      this.variantId = parseInt(document.querySelector('product-form .product-variant-id').value)
+      this.variantId = parseInt(document.querySelector('.product__info-wrapper .product-variant-id').value)
     }
     fetchCartVariantQty(currentQty, this.variantId, this)
     this.input = this.querySelector('input');
