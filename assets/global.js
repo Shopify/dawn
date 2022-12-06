@@ -204,8 +204,8 @@ function fetchQtyRules(variantId, section) {
       qty.closest('.product-form__quantity').querySelector('.quantity-min').innerHTML = "10"
       qty.closest('.product-form__quantity').querySelector('.quantity-max').innerHTML = "100"
       qty.closest('.product-form__quantity').querySelector('.quantity-steps').innerHTML = "5"
-      qty.setAttribute("min", 5);
-      qty.setAttribute("max", 100);
+      qty.setAttribute("min", 10);
+      qty.setAttribute("max", 40);
       qty.setAttribute("step", 5);
     }
   })
