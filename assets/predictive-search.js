@@ -11,9 +11,6 @@ class PredictiveSearch extends SearchForm {
   setupEventListeners() {
     this.input.form.addEventListener('submit', this.onFormSubmit.bind(this));
 
-    this.input.addEventListener('input', debounce((event) => {
-      this.onChange(event);
-    }, 300).bind(this));
     this.input.addEventListener('focus', this.onFocus.bind(this));
     this.addEventListener('focusout', this.onFocusOut.bind(this));
     this.addEventListener('keyup', this.onKeyup.bind(this));
@@ -25,6 +22,7 @@ class PredictiveSearch extends SearchForm {
   }
 
   onChange() {
+    super.onChange();
     const searchTerm = this.getQuery();
 
     if (!searchTerm.length) {
