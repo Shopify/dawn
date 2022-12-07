@@ -84,7 +84,7 @@ if (!customElements.get('product-form')) {
             const html = new DOMParser().parseFromString(responseText, 'text/html')
       
             // Updating qty UI depending on new variant information
-            const sourceQty = html.getElementById(`${evt.target.querySelector('.product-variant-id').value}`);
+            const sourceQty = html.querySelector((`[data-variantid~="${evt.target.querySelector('.product-variant-id').value}"]`))
             const valueQtyCart = sourceQty.querySelector('input').value
             if (valueQtyCart && destinationQty) destinationQty.querySelector('input').dataset.cartquantity = valueQtyCart;
             if (valueQtyCart && destinationQty) document.querySelector('.quantity-cart').innerHTML = valueQtyCart;

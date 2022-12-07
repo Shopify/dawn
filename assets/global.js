@@ -985,7 +985,7 @@ class VariantSelects extends HTMLElement {
 
       // Updating qty UI depending on new variant information
       const destinationQty = document.getElementById(`quantity-${this.dataset.section}`);
-      const sourceQty = html.getElementById(`${this.currentVariant.id}`);
+      const sourceQty = html.querySelector((`[data-variantid~="${this.currentVariant.id}"]`))
       if (sourceQty) {
         const valueQtyCart = sourceQty.querySelector('input').value
         if (valueQtyCart && destinationQty) destinationQty.querySelector('input').dataset.cartquantity = valueQtyCart;
