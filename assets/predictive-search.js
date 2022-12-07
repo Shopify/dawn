@@ -4,6 +4,7 @@ class PredictiveSearch extends SearchForm {
     this.cachedResults = {};
     this.predictiveSearchResults = this.querySelector('[data-predictive-search]');
     this.isOpen = false;
+    this.abortController = new AbortController();
 
     this.setupEventListeners();
   }
@@ -40,6 +41,8 @@ class PredictiveSearch extends SearchForm {
   onFormReset(event) {
     super.onFormReset(event);
     if (super.shouldResetForm()) {
+      this.abortController.abort();
+      this.abortController = new AbortController();
       this.closeResults(true);
     }
   }
@@ -131,7 +134,10 @@ class PredictiveSearch extends SearchForm {
       return;
     }
 
-    fetch(`${routes.predictive_search_url}?q=${encodeURIComponent(searchTerm)}&${encodeURIComponent('resources[type]')}=product&${encodeURIComponent('resources[limit]')}=4&section_id=predictive-search`)
+    fetch(
+      `${routes.predictive_search_url}?q=${encodeURIComponent(searchTerm)}&${encodeURIComponent('resources[type]')}=product&${encodeURIComponent('resources[limit]')}=4&section_id=predictive-search`,
+      {signal: this.abortController.signal}
+    )
       .then((response) => {
         if (!response.ok) {
           var error = new Error(response.status);
@@ -147,6 +153,10 @@ class PredictiveSearch extends SearchForm {
         this.renderSearchResults(resultsMarkup);
       })
       .catch((error) => {
+        if (error?.code === 20) {
+          // Code 20 means the call was aborted
+          return;
+        }
         this.close();
         throw error;
       });
@@ -209,6 +219,7 @@ class PredictiveSearch extends SearchForm {
     if (selected) selected.setAttribute('aria-selected', false);
 
     this.input.setAttribute('aria-activedescendant', '');
+    this.removeAttribute('loading');
     this.removeAttribute('open');
     this.input.setAttribute('aria-expanded', false);
     this.resultsMaxHeight = false
