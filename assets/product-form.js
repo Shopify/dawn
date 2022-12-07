@@ -78,15 +78,15 @@ if (!customElements.get('product-form')) {
           if (!this.error) this.submitButton.removeAttribute('aria-disabled');
           this.querySelector('.loading-overlay__spinner').classList.add('hidden');
 
-          console.log(this, this.closest('section').dataset.section, '----')
-          const dataSection = this.closest('section').dataset.section
-          fetch(`${this.dataset.url}?variant=${evt.target.querySelector('.product-variant-id').value}&section_id=${dataSection}`)
+          const section = this.closest('section')
+          const url = section.querySelector('variant-radios').dataset.url
+          fetch(`${url}?variant=${evt.target.querySelector('.product-variant-id').value}&section_id=${section.dataset.section}`)
           .then((response) => response.text())
           .then((responseText) => {
             const html = new DOMParser().parseFromString(responseText, 'text/html')
 
             // Updating qty UI depending on new variant information
-            const destinationQty = document.getElementById(`quantity-${dataSection}`);
+            const destinationQty = document.getElementById(`quantity-${section.dataset.section}`);
             const sourceQty = html.querySelector('.quantity-cart')
             if (sourceQty) {
               const valueQtyCart = sourceQty.innerHTML
