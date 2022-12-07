@@ -997,7 +997,7 @@ class VariantSelects extends HTMLElement {
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html')
-
+        console.log('hello')
         // Updating qty UI depending on new variant information
         const destinationQty = document.getElementById(`quantity-${this.dataset.section}`);
         // const sourceQty = html.querySelector((`[data-variantid~="${this.currentVariant.id}"]`))
