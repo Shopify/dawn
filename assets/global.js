@@ -146,6 +146,7 @@ class QuantityInput extends HTMLElement {
   constructor() {
     super();
     const currentQty = this.querySelector('input').value
+    // Checking if the qty input is in the cart or not
     if (this.classList.contains('cart-quantity')) {
       this.variantId = parseInt(this.dataset.variantid)
     } else {
@@ -213,7 +214,7 @@ function fetchQtyRules(variantId, elementId) {
   .then((state) => {
     const parsedState = JSON.parse(state);
     if (parsedState.variant !== null) {
-      // hardcoding it for now
+      // hardcoding it for now: updtaing the qty rules
       const qty = document.getElementById(elementId);
       qty.closest('.product-form__quantity').querySelector('.quantity-min').innerHTML = "10"
       qty.closest('.product-form__quantity').querySelector('.quantity-max').innerHTML = "100"
@@ -992,25 +993,21 @@ class VariantSelects extends HTMLElement {
 
   renderProductInfo() {
 
-    fetch(`/cart?section_id=main-cart-items`)
-    .then((response) => response.text())
-    .then((responseText) => {
-      const html = new DOMParser().parseFromString(responseText, 'text/html')
-
-      // Updating qty UI depending on new variant information
-      const destinationQty = document.getElementById(`quantity-${this.dataset.section}`);
-      const sourceQty = html.querySelector((`[data-variantid~="${this.currentVariant.id}"]`))
-      if (sourceQty) {
-        const valueQtyCart = sourceQty.querySelector('input').value
-        if (valueQtyCart && destinationQty) destinationQty.querySelector('input').dataset.cartquantity = valueQtyCart;
-        if (valueQtyCart && destinationQty) document.querySelector('.quantity-cart').innerHTML = valueQtyCart;
-      }
-    });
-
     fetch(`${this.dataset.url}?variant=${this.currentVariant.id}&section_id=${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`)
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html')
+
+        // Updating qty UI depending on new variant information
+        const destinationQty = document.getElementById(`quantity-${this.dataset.section}`);
+        // const sourceQty = html.querySelector((`[data-variantid~="${this.currentVariant.id}"]`))
+        const sourceQty = html.querySelector('.quantity-cart')
+        if (sourceQty) {
+          const valueQtyCart = sourceQty.innerHTML
+          if (valueQtyCart && destinationQty) destinationQty.querySelector('input').dataset.cartquantity = valueQtyCart;
+          if (valueQtyCart && destinationQty) document.querySelector('.quantity-cart').innerHTML = valueQtyCart;
+        }
+
         const destination = document.getElementById(`price-${this.dataset.section}`);
         const source = html.getElementById(`price-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
 
