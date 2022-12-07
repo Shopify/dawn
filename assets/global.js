@@ -152,7 +152,8 @@ class QuantityInput extends HTMLElement {
     } else {
       this.variantId = parseInt(document.querySelector('.product__info-wrapper .product-variant-id').value)
     }
-    fetchCartVariantQty(currentQty, this.variantId, this)
+    validateQtyRules(this.dataset.cartquantity, currentQty, this)
+
     this.input = this.querySelector('input');
     this.changeEvent = new Event('change', { bubbles: true })
 
@@ -164,30 +165,18 @@ class QuantityInput extends HTMLElement {
   
   onInputChange(event) {
     event.preventDefault();
-    fetchCartVariantQty(this.input.value, this.variantId, this)
+    validateQtyRules(this.dataset.cartquantity, currentQty, this)
   }
 
   onButtonClick(event) {
-    
-    // grab the latest qty from cart
-    // fetch("test")
-    //   .then(response => response.text())
-    //   .then(text => {
-    //     const sectionInnerHTML = new DOMParser()
-    //       .parseFromString(text, 'text/html')
-    //       .querySelector('.shopify-section');
-    //     this.renderPreview(sectionInnerHTML);
-    //   })
-    //   .catch(e => {
-    //   });
-  
     event.preventDefault();
     const previousValue = this.input.value;
 
     event.target.name === 'plus' ? this.input.stepUp() : this.input.stepDown();
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
     const currentQty = this.querySelector('input').value
-    fetchCartVariantQty(currentQty, this.variantId, this)
+
+    validateQtyRules(this.dataset.cartquantity, currentQty, this)
 
     if (event.target.form && event.target.form.id === 'CartDrawer-Form') {
       // Check all qty inputs with add to cart active that have that active variant id
@@ -223,28 +212,6 @@ function fetchQtyRules(variantId, elementId) {
       qty.setAttribute("max", 40);
       qty.setAttribute("step", 5);
     }
-  })
-  .catch(e => {
-    console.error(e);
-  });
-}
-
-function fetchCartVariantQty(currentQty, currentVariant, quantityElement) {
-  fetch("/cart.json").then((response) => {
-    return response.text();
-  })
-  .then((state) => {
-    const parsedState = JSON.parse(state);
-    if (parsedState.items.length === 0) {
-      validateQtyRules(0, currentQty, quantityElement)
-    }
-    parsedState.items.forEach((item) => {
-      if (item.variant_id === parseInt(currentVariant)) {
-        validateQtyRules(item.quantity, currentQty, quantityElement)
-      } else {
-        validateQtyRules(0, currentQty, quantityElement)
-      }
-    })
   })
   .catch(e => {
     console.error(e);
@@ -905,7 +872,7 @@ class VariantSelects extends HTMLElement {
     const currentQty = parseInt(this.closest('div').querySelector('quantity-input input').value)
     const quantityElement = this.closest('div').querySelector('quantity-input')
     fetchQtyRules(this.currentVariant.id, `Quantity-${this.dataset.section}`)
-    fetchCartVariantQty(currentQty, this.currentVariant.id, quantityElement)
+    validateQtyRules(this.closest('div').querySelector('.quantity__input').dataset.cartquantity, currentQty, quantityElement)
   }
 
   updateMasterId() {
