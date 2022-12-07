@@ -186,7 +186,6 @@ class QuantityInput extends HTMLElement {
     event.target.name === 'plus' ? this.input.stepUp() : this.input.stepDown();
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
     const currentQty = this.querySelector('input').value
-    console.log(currentQty, '----')
     fetchCartVariantQty(currentQty, this.variantId, this)
 
     if (event.target.form && event.target.form.id === 'CartDrawer-Form') {
@@ -215,9 +214,7 @@ function fetchQtyRules(variantId, elementId) {
     const parsedState = JSON.parse(state);
     if (parsedState.variant !== null) {
       // hardcoding it for now
-      console.log(variantId, elementId, qty)
       const qty = document.getElementById(elementId);
-      console.log('update values')
       qty.closest('.product-form__quantity').querySelector('.quantity-min').innerHTML = "10"
       qty.closest('.product-form__quantity').querySelector('.quantity-max').innerHTML = "100"
       qty.closest('.product-form__quantity').querySelector('.quantity-steps').innerHTML = "5"
