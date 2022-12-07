@@ -167,6 +167,7 @@ class QuantityInput extends HTMLElement {
   }
 
   onButtonClick(event) {
+    
     // grab the latest qty from cart
     // fetch("test")
     //   .then(response => response.text())
@@ -185,13 +186,27 @@ class QuantityInput extends HTMLElement {
     event.target.name === 'plus' ? this.input.stepUp() : this.input.stepDown();
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
     const currentQty = this.querySelector('input').value
+    console.log(currentQty, '----')
     fetchCartVariantQty(currentQty, this.variantId, this)
+
+    if (event.target.form && event.target.form.id === 'CartDrawer-Form') {
+      // Check all qty inputs with add to cart active that have that active variant id
+      if (document.querySelector('.product-variant-id').value === this.dataset.variantid) {
+        // Updating all quantities in the page
+        const allQtys =  document.querySelectorAll('.product-variant-id')
+        allQtys.forEach((qty) => {
+        if (qty.value === this.dataset.variantid) {
+          document.querySelector('.quantity-cart').innerHTML = currentQty
+        }
+        })
+      }
+    }
   }
 }
 
 customElements.define('quantity-input', QuantityInput);
 
-function fetchQtyRules(variantId, section) {
+function fetchQtyRules(variantId, elementId) {
     // When I change the variant, I fetch the new variant rules
   fetch(`/admin/api/2022-04/variants/${variantId}.json`).then((response) => {
     return response.text()
@@ -200,7 +215,9 @@ function fetchQtyRules(variantId, section) {
     const parsedState = JSON.parse(state);
     if (parsedState.variant !== null) {
       // hardcoding it for now
-      const qty = document.getElementById(`Quantity-${section}`);
+      console.log(variantId, elementId, qty)
+      const qty = document.getElementById(elementId);
+      console.log('update values')
       qty.closest('.product-form__quantity').querySelector('.quantity-min').innerHTML = "10"
       qty.closest('.product-form__quantity').querySelector('.quantity-max').innerHTML = "100"
       qty.closest('.product-form__quantity').querySelector('.quantity-steps').innerHTML = "5"
@@ -889,7 +906,7 @@ class VariantSelects extends HTMLElement {
     // Grab the closest input
     const currentQty = parseInt(this.closest('div').querySelector('quantity-input input').value)
     const quantityElement = this.closest('div').querySelector('quantity-input')
-    fetchQtyRules(this.currentVariant.id, this.dataset.section)
+    fetchQtyRules(this.currentVariant.id, `Quantity-${this.dataset.section}`)
     fetchCartVariantQty(currentQty, this.currentVariant.id, quantityElement)
   }
 
