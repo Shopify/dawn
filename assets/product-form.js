@@ -20,7 +20,6 @@ if (!customElements.get('product-form')) {
       const currentValue = destinationQty.querySelector('input').value
       if (parseInt(currentValue) % 5 !== 0) {
         // Not allowing values that are not part of the increment rules
-        document.querySelector('.qty-rules-error').removeAttribute('hidden');
         return
       }
 
