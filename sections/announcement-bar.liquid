@@ -1,35 +1,280 @@
-{%- for block in section.blocks -%}
-  {%- case block.type -%}
-    {%- when 'announcement' -%}
-      <div class="announcement-bar color-{{ block.settings.color_scheme }} gradient" role="region" aria-label="{{ 'sections.header.announcement' | t }}" {{ block.shopify_attributes }}>
-        {%- if block.settings.text != blank -%}
-          {%- if block.settings.link != blank -%}
-            <a href="{{ block.settings.link }}" class="announcement-bar__link link link--text focus-inset animate-arrow">
-          {%- endif -%}
-              <div class="page-width">
-                <p class="announcement-bar__message {{ block.settings.text_alignment }} h5">
-                  {{ block.settings.text | escape }}
-                  {%- if block.settings.link != blank -%}
-                    {% render 'icon-arrow' %}
-                  {%- endif -%}
-                </p>
-              </div>
-          {%- if block.settings.link != blank -%}
+<div class="utility-bar color-{{ section.settings.color_scheme }} gradient">
+  <div class="footer__content-bottom-wrapper utility-bar__bottom-wrapper page-width">
+    {%- liquid 
+      assign country_selector = section.settings.enable_country_selector
+      assign language_selector = section.settings.enable_language_selector
+      assign social = section.settings.show_social
+
+      assign social_media_has_links = false
+      if settings.social_twitter_link != blank or settings.social_facebook_link != blank or settings.social_pinterest_link != blank or settings.social_instagram_link != blank or settings.social_tiktok_link != blank or settings.social_tumblr_link != blank or settings.social_snapchat_link != blank or settings.social_youtube_link != blank or settings.social_vimeo_link != blank
+        assign social_media_has_links = true
+      endif
+
+      assign social_media = false
+      if social and social_media_has_links
+        assign social_media = true
+      endif
+
+      assign country_and_language = false
+      if country_selector and language_selector
+        assign country_and_language = true
+      endif
+
+      assign announcement_only = false
+      unless social_media or country_selector or language_selector
+        assign announcement_only = true
+      endunless
+    -%}
+    {%- if social_media -%}
+      <ul class="footer__list-social list-unstyled list-social" role="list">
+        {%- if settings.social_twitter_link != blank -%}
+          <li class="list-social__item">
+            <a href="{{ settings.social_twitter_link }}" class="link list-social__link" >
+              {%- render 'icon-twitter' -%}
+              <span class="visually-hidden">{{ 'general.social.links.twitter' | t }}</span>
             </a>
-          {%- endif -%}
+          </li>
         {%- endif -%}
-      </div>
-  {%- endcase -%}
-{%- endfor -%}
+        {%- if settings.social_facebook_link != blank -%}
+          <li class="list-social__item">
+            <a href="{{ settings.social_facebook_link }}" class="link list-social__link" >
+              {%- render 'icon-facebook' -%}
+              <span class="visually-hidden">{{ 'general.social.links.facebook' | t }}</span>
+            </a>
+          </li>
+        {%- endif -%}
+        {%- if settings.social_pinterest_link != blank -%}
+          <li class="list-social__item">
+            <a href="{{ settings.social_pinterest_link }}" class="link list-social__link" >
+              {%- render 'icon-pinterest' -%}
+              <span class="visually-hidden">{{ 'general.social.links.pinterest' | t }}</span>
+            </a>
+          </li>
+        {%- endif -%}
+        {%- if settings.social_instagram_link != blank -%}
+          <li class="list-social__item">
+            <a href="{{ settings.social_instagram_link }}" class="link list-social__link" >
+              {%- render 'icon-instagram' -%}
+              <span class="visually-hidden">{{ 'general.social.links.instagram' | t }}</span>
+            </a>
+          </li>
+        {%- endif -%}
+        {%- if settings.social_tiktok_link != blank -%}
+          <li class="list-social__item">
+            <a href="{{ settings.social_tiktok_link }}" class="link list-social__link" >
+              {%- render 'icon-tiktok' -%}
+              <span class="visually-hidden">{{ 'general.social.links.tiktok' | t }}</span>
+            </a>
+          </li>
+        {%- endif -%}
+        {%- if settings.social_tumblr_link != blank -%}
+          <li class="list-social__item">
+            <a href="{{ settings.social_tumblr_link }}" class="link list-social__link" >
+              {%- render 'icon-tumblr' -%}
+              <span class="visually-hidden">{{ 'general.social.links.tumblr' | t }}</span>
+            </a>
+          </li>
+        {%- endif -%}
+        {%- if settings.social_snapchat_link != blank -%}
+          <li class="list-social__item">
+            <a href="{{ settings.social_snapchat_link }}" class="link list-social__link" >
+              {%- render 'icon-snapchat' -%}
+              <span class="visually-hidden">{{ 'general.social.links.snapchat' | t }}</span>
+            </a>
+          </li>
+        {%- endif -%}
+        {%- if settings.social_youtube_link != blank -%}
+          <li class="list-social__item">
+            <a href="{{ settings.social_youtube_link }}" class="link list-social__link" >
+              {%- render 'icon-youtube' -%}
+              <span class="visually-hidden">{{ 'general.social.links.youtube' | t }}</span>
+            </a>
+          </li>
+        {%- endif -%}
+        {%- if settings.social_vimeo_link != blank -%}
+          <li class="list-social__item">
+            <a href="{{ settings.social_vimeo_link }}" class="link list-social__link" >
+              {%- render 'icon-vimeo' -%}
+              <span class="visually-hidden">{{ 'general.social.links.vimeo' | t }}</span>
+            </a>
+          </li>
+        {%- endif -%}
+      </ul>
+    {%- endif -%}
+
+    {%- for block in section.blocks -%}
+      {%- case block.type -%}
+        {%- when 'announcement' -%}
+          <div class="announcement-bar
+            {%- if social_media and country_and_language or country_selector or language_selector %} announcement-bar--third
+            {%- elsif social_media or country_and_language or country_selector or language_selector %} announcement-bar--half
+            {%- else %} announcement-bar--full{%- endif -%}"
+            role="region"
+            aria-label="{{ 'sections.header.announcement' | t }}"
+            {{ block.shopify_attributes }}
+          >
+            {%- if block.settings.text != blank -%}
+              {%- if block.settings.link != blank -%}
+                <a href="{{ block.settings.link }}" class="announcement-bar__link link link--text focus-inset animate-arrow">
+              {%- endif -%}
+                  <div class="announcement-bar__container{% if announcement_only %} page-width{% endif %}">
+                    <p class="announcement-bar__message {{ block.settings.text_alignment }} h5">
+                      {{ block.settings.text | escape }}
+                      {%- if block.settings.link != blank -%}
+                        {% render 'icon-arrow' %}
+                      {%- endif -%}
+                    </p>
+                  </div>
+              {%- if block.settings.link != blank -%}
+                </a>
+              {%- endif -%}
+            {%- endif -%}
+          </div>
+      {%- endcase -%}
+    {%- endfor -%}
+
+    <div class="footer__column footer__localization utility-bar__column utility-bar__localization isolate">
+      {%- if country_selector and localization.available_countries.size > 1 -%}
+        <localization-form>
+          {%- form 'localization', id: 'UtilityCountryForm', class: 'localization-form' -%}
+            <div class="no-js-hidden">
+              {% comment %} <h2 class="caption-large text-body" id="UtilityCountryLabel">{{ 'localization.country_label' | t }}</h2> {% endcomment %}
+              <div class="disclosure">
+                <button type="button" class="disclosure__button localization-form__select localization-selector link link--text caption-large" aria-expanded="false" aria-controls="UtilityCountryList" aria-describedby="UtilityCountryLabel">
+                  {%- if section.settings.compact_country_selector -%}
+                    {{ localization.country.currency.iso_code }} {{ localization.country.currency.symbol }}
+                  {%- else -%}
+                    {{ localization.country.name }} ({{ localization.country.currency.iso_code }} {{ localization.country.currency.symbol }})
+                  {%- endif -%}
+                  {% render 'icon-caret' %}
+                </button>
+                <div class="disclosure__list-wrapper" hidden>
+                  <ul id="UtilityCountryList" role="list" class="disclosure__list list-unstyled">
+                    {%- for country in localization.available_countries -%}
+                      <li class="disclosure__item" tabindex="-1">
+                        <a class="link link--text disclosure__link caption-large{% if country.iso_code == localization.country.iso_code %} disclosure__link--active{% endif %} focus-inset" href="#"{% if country.iso_code == localization.country.iso_code %} aria-current="true"{% endif %} data-value="{{ country.iso_code }}">
+                          {{ country.name }} <span class="localization-form__currency">({{ country.currency.iso_code }} {{ country.currency.symbol }})</span>
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </div>
+              </div>
+              <input type="hidden" name="country_code" value="{{ localization.country.iso_code }}">
+            </div>
+          {%- endform -%}
+        </localization-form>
+      {%- endif -%}
+
+      {%- if language_selector and localization.available_languages.size > 1 -%}
+        <localization-form>
+          {%- form 'localization', id: 'UtilityLanguageForm', class: 'localization-form' -%}
+            <div class="no-js-hidden">
+              {% comment %} <h2 class="caption-large text-body" id="UtilityLanguageLabel">{{ 'localization.language_label' | t }}</h2> {% endcomment %}
+              <div class="disclosure">
+                <button type="button" class="disclosure__button localization-form__select localization-selector link link--text caption-large" aria-expanded="false" aria-controls="UtilityLanguageList" aria-describedby="UtilityLanguageLabel">
+                  {{ localization.language.endonym_name | capitalize }}
+                  {% render 'icon-caret' %}
+                </button>
+                <div class="disclosure__list-wrapper" hidden>
+                  <ul id="UtilityLanguageList" role="list" class="disclosure__list list-unstyled">
+                    {%- for language in localization.available_languages -%}
+                      <li class="disclosure__item" tabindex="-1">
+                        <a class="link link--text disclosure__link caption-large{% if language.iso_code == localization.language.iso_code %} disclosure__link--active{% endif %} focus-inset" href="#" hreflang="{{ language.iso_code }}" lang="{{ language.iso_code }}"{% if language.iso_code == localization.language.iso_code %} aria-current="true"{% endif %} data-value="{{ language.iso_code }}">
+                          {{ language.endonym_name | capitalize }}
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </div>
+              </div>
+              <input type="hidden" name="locale_code" value="{{ localization.language.iso_code }}">
+            </div>
+          {%- endform -%}
+        </localization-form>
+      {%- endif -%}
+    </div>
+
+  </div>
+</div>
 
 {% schema %}
 {
-  "name": "t:sections.announcement-bar.name",
-  "max_blocks": 12,
+  "name": "Utility bar",
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.all.colors.accent_1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.all.colors.accent_2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.all.colors.background_1.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.all.colors.background_2.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.all.colors.inverse.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.all.colors.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.footer.settings.header__2.content",
+      "info": "t:sections.footer.settings.header__2.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social",
+      "default": false,
+      "label": "t:sections.footer.settings.show_social.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.footer.settings.header__3.content",
+      "info": "t:sections.footer.settings.header__4.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_country_selector",
+      "default": true,
+      "label": "t:sections.footer.settings.enable_country_selector.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "compact_country_selector",
+      "default": false,
+      "label": "Remove country name (new)"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.footer.settings.header__5.content",
+      "info": "t:sections.footer.settings.header__6.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_language_selector",
+      "default": true,
+      "label": "t:sections.footer.settings.enable_language_selector.label"
+    }
+  ],
   "blocks": [
     {
       "type": "announcement",
       "name": "t:sections.announcement-bar.blocks.announcement.name",
+      "limit": 1,
       "settings": [
         {
           "type": "text",
@@ -56,34 +301,6 @@
           ],
           "default": "center",
           "label": "t:sections.announcement-bar.blocks.announcement.settings.text_alignment.label"
-        },
-        {
-          "type": "select",
-          "id": "color_scheme",
-          "options": [
-            {
-              "value": "accent-1",
-              "label": "t:sections.all.colors.accent_1.label"
-            },
-            {
-              "value": "accent-2",
-              "label": "t:sections.all.colors.accent_2.label"
-            },
-            {
-              "value": "background-1",
-              "label": "t:sections.all.colors.background_1.label"
-            },
-            {
-              "value": "background-2",
-              "label": "t:sections.all.colors.background_2.label"
-            },
-            {
-              "value": "inverse",
-              "label": "t:sections.all.colors.inverse.label"
-            }
-          ],
-          "default": "accent-1",
-          "label": "t:sections.all.colors.label"
         },
         {
           "type": "url",
