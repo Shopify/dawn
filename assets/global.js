@@ -146,12 +146,6 @@ class QuantityInput extends HTMLElement {
   constructor() {
     super();
     const currentQty = this.querySelector('input').value
-    // Checking if the qty input is in the cart or not
-    if (this.classList.contains('cart-quantity')) {
-      this.variantId = parseInt(this.dataset.variantid)
-    } else {
-      this.variantId = parseInt(document.querySelector('.product__info-wrapper .product-variant-id').value)
-    }
     validateQtyRules(this.dataset.cartquantity, currentQty, this)
 
     this.input = this.querySelector('input');
@@ -175,48 +169,12 @@ class QuantityInput extends HTMLElement {
     event.target.name === 'plus' ? this.input.stepUp() : this.input.stepDown();
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
     const currentQty = this.querySelector('input').value
-
     validateQtyRules(this.dataset.cartquantity, currentQty, this)
-
-    if (event.target.form && event.target.form.id === 'CartDrawer-Form') {
-      // Check all qty inputs with add to cart active that have that active variant id
-      if (document.querySelector('.product-variant-id').value === this.dataset.variantid) {
-        // Updating all quantities in the page
-        const allQtys =  document.querySelectorAll('.product-variant-id')
-        allQtys.forEach((qty) => {
-        if (qty.value === this.dataset.variantid) {
-          document.querySelector('.quantity-cart').innerHTML = currentQty
-        }
-        })
-      }
-    }
   }
 }
 
 customElements.define('quantity-input', QuantityInput);
 
-function fetchQtyRules(variantId, elementId) {
-    // When I change the variant, I fetch the new variant rules
-  fetch(`/admin/api/2022-04/variants/${variantId}.json`).then((response) => {
-    return response.text()
-  })
-  .then((state) => {
-    const parsedState = JSON.parse(state);
-    if (parsedState.variant !== null) {
-      // hardcoding it for now: updtaing the qty rules
-      const qty = document.getElementById(elementId);
-      qty.closest('.product-form__quantity').querySelector('.quantity-min').innerHTML = "10"
-      qty.closest('.product-form__quantity').querySelector('.quantity-max').innerHTML = "100"
-      qty.closest('.product-form__quantity').querySelector('.quantity-steps').innerHTML = "5"
-      qty.setAttribute("min", 10);
-      qty.setAttribute("max", 40);
-      qty.setAttribute("step", 5);
-    }
-  })
-  .catch(e => {
-    console.error(e);
-  });
-}
 
 function validateQtyRules(cartValue, currentValue, quantityElement) {
   const input = quantityElement.querySelector('.quantity__input')
@@ -849,7 +807,6 @@ class VariantSelects extends HTMLElement {
     this.toggleAddButton(true, '', false);
     this.updatePickupAvailability();
     this.removeErrorMessage();
-    this.updateQtyRules();
 
     if (!this.currentVariant) {
       this.toggleAddButton(true, '', true);
@@ -865,14 +822,6 @@ class VariantSelects extends HTMLElement {
 
   updateOptions() {
     this.options = Array.from(this.querySelectorAll('select'), (select) => select.value);
-  }
-
-  updateQtyRules() {
-    // Grab the closest input
-    const currentQty = parseInt(this.closest('div').querySelector('quantity-input input').value)
-    const quantityElement = this.closest('div').querySelector('quantity-input')
-    fetchQtyRules(this.currentVariant.id, `Quantity-${this.dataset.section}`)
-    validateQtyRules(this.closest('div').querySelector('.quantity__input').dataset.cartquantity, currentQty, quantityElement)
   }
 
   updateMasterId() {
@@ -959,22 +908,10 @@ class VariantSelects extends HTMLElement {
   }
 
   renderProductInfo() {
-
     fetch(`${this.dataset.url}?variant=${this.currentVariant.id}&section_id=${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`)
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html')
-        console.log('hello')
-        // Updating qty UI depending on new variant information
-        const destinationQty = document.getElementById(`quantity-${this.dataset.section}`);
-        // const sourceQty = html.querySelector((`[data-variantid~="${this.currentVariant.id}"]`))
-        const sourceQty = html.querySelector('.quantity-cart')
-        if (sourceQty) {
-          const valueQtyCart = sourceQty.innerHTML
-          if (valueQtyCart && destinationQty) destinationQty.querySelector('input').dataset.cartquantity = valueQtyCart;
-          if (valueQtyCart && destinationQty) document.querySelector('.quantity-cart').innerHTML = valueQtyCart;
-        }
-
         const destination = document.getElementById(`price-${this.dataset.section}`);
         const source = html.getElementById(`price-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
 

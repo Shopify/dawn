@@ -16,12 +16,6 @@ if (!customElements.get('product-form')) {
       if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
       this.handleErrorMessage();
-      const destinationQty = this.closest('.product__info-container').querySelector('quantity-input')
-      const currentValue = destinationQty.querySelector('input').value
-      if (parseInt(currentValue) % 5 !== 0) {
-        // Not allowing values that are not part of the increment rules
-        return
-      }
 
       this.submitButton.setAttribute('aria-disabled', true);
       this.submitButton.classList.add('loading');
@@ -76,24 +70,6 @@ if (!customElements.get('product-form')) {
           if (this.cart && this.cart.classList.contains('is-empty')) this.cart.classList.remove('is-empty');
           if (!this.error) this.submitButton.removeAttribute('aria-disabled');
           this.querySelector('.loading-overlay__spinner').classList.add('hidden');
-
-          const section = this.closest('section')
-          const url = section.querySelector('variant-radios').dataset.url
-          fetch(`${url}?variant=${evt.target.querySelector('.product-variant-id').value}&section_id=${section.dataset.section}`)
-          .then((response) => response.text())
-          .then((responseText) => {
-            const html = new DOMParser().parseFromString(responseText, 'text/html')
-
-            // Updating qty UI depending on new variant information
-            const destinationQty = document.getElementById(`quantity-${section.dataset.section}`);
-            const sourceQty = html.querySelector('.quantity-cart')
-            if (sourceQty) {
-              const valueQtyCart = sourceQty.innerHTML
-              if (valueQtyCart && destinationQty) destinationQty.querySelector('input').dataset.cartquantity = valueQtyCart;
-              if (valueQtyCart && destinationQty) this.closest('section').querySelector('.quantity-cart').innerHTML = valueQtyCart;
-            }
-          })
-
         });
     }
 
