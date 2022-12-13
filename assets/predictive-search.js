@@ -3,8 +3,11 @@ class PredictiveSearch extends SearchForm {
     super();
     this.cachedResults = {};
     this.predictiveSearchResults = this.querySelector('[data-predictive-search]');
+    this.allPredictiveSearchInstances =
+      document.querySelectorAll('predictive-search');
     this.isOpen = false;
     this.abortController = new AbortController();
+    this.searchTerm = '';
 
     this.setupEventListeners();
   }
@@ -24,14 +27,14 @@ class PredictiveSearch extends SearchForm {
 
   onChange() {
     super.onChange();
-    const searchTerm = this.getQuery();
+    this.searchTerm = this.getQuery();
 
-    if (!searchTerm.length) {
+    if (!this.searchTerm.length) {
       this.close(true);
       return;
     }
 
-    this.getSearchResults(searchTerm);
+    this.getSearchResults(this.searchTerm);
   }
 
   onFormSubmit(event) {
@@ -41,6 +44,7 @@ class PredictiveSearch extends SearchForm {
   onFormReset(event) {
     super.onFormReset(event);
     if (super.shouldResetForm()) {
+      this.searchTerm = '';
       this.abortController.abort();
       this.abortController = new AbortController();
       this.closeResults(true);
@@ -48,14 +52,17 @@ class PredictiveSearch extends SearchForm {
   }
 
   onFocus() {
-    const searchTerm = this.getQuery();
+    const currentSearchTerm = this.getQuery();
 
-    if (!searchTerm.length) return;
+    if (!currentSearchTerm.length) return;
 
-    if (this.getAttribute('results') === 'true') {
+    if (this.searchTerm !== currentSearchTerm) {
+      // Search term was changed from other search input, treat it as a user change
+      this.onChange();
+    } else if (this.getAttribute('results') === 'true') {
       this.open();
     } else {
-      this.getSearchResults(searchTerm);
+      this.getSearchResults(this.searchTerm);
     }
   }
 
@@ -149,7 +156,12 @@ class PredictiveSearch extends SearchForm {
       })
       .then((text) => {
         const resultsMarkup = new DOMParser().parseFromString(text, 'text/html').querySelector('#shopify-section-predictive-search').innerHTML;
-        this.cachedResults[queryKey] = resultsMarkup;
+        // Save bandwidth keeping the cache in all instances synced
+        this.allPredictiveSearchInstances.forEach(
+          (predictiveSearchInstance) => {
+            predictiveSearchInstance.cachedResults[queryKey] = resultsMarkup;
+          }
+        );
         this.renderSearchResults(resultsMarkup);
       })
       .catch((error) => {
