@@ -31,8 +31,15 @@ class CartItems extends HTMLElement {
     }, 300);
 
     this.addEventListener('change', this.debouncedOnChange.bind(this));
-    document.body.addEventListener('quantity-update', this.onPropagate.bind(this))
 
+  }
+
+  connectedCallback() {
+    document.body.addEventListener('quantity-update', this.onPropagate.bind(this))
+  }
+
+  disconnectedCallback() {
+    document.body.removeEventListener('quantity-update', this.onPropagate.bind(this))
   }
 
   onChange(event) {

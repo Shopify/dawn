@@ -13,9 +13,15 @@ class ProductInfo extends HTMLElement {
       this.variantSelects.addEventListener('change', this.onVariantChange.bind(this));
     }
     this.submitButton.addEventListener('cart-success', this.onSubmit.bind(this))
+  }
 
+  connectedCallback() {
     // listening to propagation
     document.body.addEventListener('quantity-update', this.onPropagate.bind(this))
+  }
+
+  disconnectedCallback() {
+    document.body.removeEventListener('quantity-update', this.onPropagate.bind(this))
   }
 
   onPropagate(event) {
