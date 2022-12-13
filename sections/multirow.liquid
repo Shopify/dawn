@@ -21,23 +21,41 @@
     assign odd_class = 'image-with-text__grid--reverse'
     assign even_class = 'image-with-text__grid--standard'
   endif
+
+  assign transparent_content = false
+  if section.settings.row_color_scheme == section.settings.section_color_scheme
+    assign transparent_content = true
+  endif
+
+  if settings.text_boxes_border_thickness > 0 and settings.text_boxes_border_opacity > 0 and settings.media_border_thickness > 0 and settings.media_border_opacity > 0
+    assign borders_class = 'collapse-borders'
+  endif
+  unless transparent_content and settings.media_border_thickness > 0 and settings.text_boxes_shadow_opacity == 0 and settings.text_boxes_border_thickness == 0 or settings.text_boxes_border_opacity == 0
+    assign corners_class = 'collapse-corners'
+  endunless
 -%}
 
 <div class="multirow section-{{ section.id }}-padding gradient color-{{ section.settings.section_color_scheme }}">
   <div class="page-width">
     {%- for block in section.blocks -%}
-      <div class="image-with-text image-with-text--{{ section.settings.content_layout }} isolate{% if settings.text_boxes_border_thickness > 0 and settings.text_boxes_border_opacity > 0 and settings.media_border_thickness > 0 and settings.media_border_opacity > 0 %} collapse-borders{% endif %}{% unless section.settings.color_scheme == 'background-1' and settings.media_border_thickness > 0 and settings.text_boxes_shadow_opacity == 0 and settings.text_boxes_border_thickness == 0 or settings.text_boxes_border_opacity == 0 %} collapse-corners{% endunless %}">
+      <div class="image-with-text isolate {{ borders_class }} {{ corners_class }}">
         <div class="image-with-text__grid grid grid--gapless grid--1-col grid--{% if section.settings.desktop_image_width == 'medium' %}2-col-tablet{% else %}3-col-tablet{% endif %}{% if section.settings.image_layout contains 'alternate' %} {% cycle odd_class, even_class %}{% else %} {{ odd_class }}{% endif %}">
           <div class="image-with-text__media-item image-with-text__media-item--{{ section.settings.desktop_image_width }} image-with-text__media-item--{{ section.settings.desktop_content_position }} grid__item">
-            <div class="image-with-text__media image-with-text__media--{{ section.settings.image_height }} gradient color-{{ section.settings.row_color_scheme }} global-media-settings {% if block.settings.image != blank %}media{% else %}image-with-text__media--placeholder placeholder{% endif %}"
-              {% if section.settings.image_height == 'adapt' and block.settings.image != blank %} style="padding-bottom: {{ 1 | divided_by: block.settings.image.aspect_ratio | times: 100 }}%;"{% endif %}
+            <div
+              class="image-with-text__media image-with-text__media--{{ section.settings.image_height }} gradient color-{{ section.settings.row_color_scheme }} global-media-settings {% if block.settings.image != blank %}media{% else %}image-with-text__media--placeholder placeholder{% endif %}"
+              {% if section.settings.image_height == 'adapt' and block.settings.image != blank %}
+                style="padding-bottom: {{ 1 | divided_by: block.settings.image.aspect_ratio | times: 100 }}%;"
+              {% endif %}
             >
               {%- if block.settings.image != blank -%}
-                {%- capture sizes -%}(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 2 }}px, (min-width: 750px) calc((100vw - 130px) / 2), calc((100vw - 50px) / 2){%- endcapture -%}
-                {{ block.settings.image | image_url: width: 1500 | image_tag:
-                  loading: 'lazy',
-                  sizes: sizes,
-                  widths: '165, 360, 535, 750, 1070, 1500'
+                {%- capture sizes -%}
+                  (min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 2 }}px,
+                  (min-width: 750px) calc((100vw - 130px) / 2), calc((100vw - 50px) / 2)
+                {%- endcapture -%}
+                {{
+                  block.settings.image
+                  | image_url: width: 1500
+                  | image_tag: loading: 'lazy', sizes: sizes, widths: '165, 360, 535, 750, 1070, 1500'
                 }}
               {%- else -%}
                 {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
@@ -45,9 +63,14 @@
             </div>
           </div>
           <div class="image-with-text__text-item grid__item">
-            <div id="ImageWithText--{{ section.id }}" class="image-with-text__content image-with-text__content--{{ section.settings.desktop_content_position }} image-with-text__content--desktop-{{ section.settings.desktop_content_alignment }} image-with-text__content--mobile-{{ section.settings.mobile_content_alignment }} image-with-text__content--{{ section.settings.image_height }} gradient color-{{ section.settings.row_color_scheme }} content-container">
+            <div
+              id="ImageWithText--{{ section.id }}"
+              class="image-with-text__content image-with-text__content--{{ section.settings.desktop_content_position }} image-with-text__content--desktop-{{ section.settings.desktop_content_alignment }} image-with-text__content--mobile-{{ section.settings.mobile_content_alignment }} image-with-text__content--{{ section.settings.image_height }} content-container{% unless transparent_content %} gradient color-{{ section.settings.row_color_scheme }}{% endunless %}"
+            >
               {%- if block.settings.caption -%}
-                <p class="image-with-text__text image-with-text__text--caption caption-with-letter-spacing caption-with-letter-spacing--medium">{{ block.settings.caption | escape }}</p>
+                <p class="image-with-text__text image-with-text__text--caption caption-with-letter-spacing caption-with-letter-spacing--medium">
+                  {{ block.settings.caption | escape }}
+                </p>
               {%- endif -%}
               {%- if block.settings.heading -%}
                 <h2 class="image-with-text__heading {{ section.settings.heading_size }}">
@@ -58,7 +81,14 @@
                 <div class="image-with-text__text rte {{ section.settings.text_style }}">{{ block.settings.text }}</div>
               {%- endif -%}
               {%- if block.settings.button_label != blank -%}
-                <a{% if block.settings.button_link == blank %} role="link" aria-disabled="true"{% else %} href="{{ block.settings.button_link }}"{% endif %} class="button button--{{ section.settings.button_style }}">
+                <a
+                  {% if block.settings.button_link == blank %}
+                    role="link" aria-disabled="true"
+                  {% else %}
+                    href="{{ block.settings.button_link }}"
+                  {% endif %}
+                  class="button button--{{ section.settings.button_style }}"
+                >
                   {{ block.settings.button_label | escape }}
                 </a>
               {%- endif -%}
@@ -126,19 +156,19 @@
       "options": [
         {
           "value": "h2",
-          "label": "Small"
+          "label": "t:sections.multirow.settings.heading_size.options__1.label"
         },
         {
           "value": "h1",
-          "label": "Medium"
+          "label": "t:sections.multirow.settings.heading_size.options__2.label"
         },
         {
           "value": "h0",
-          "label": "Large"
+          "label": "t:sections.multirow.settings.heading_size.options__3.label"
         }
       ],
       "default": "h1",
-      "label": "Heading size"
+      "label": "t:sections.multirow.settings.heading_size.label"
     },
     {
       "type": "select",
@@ -146,15 +176,15 @@
       "options": [
         {
           "value": "body",
-          "label": "Body"
+          "label": "t:sections.multirow.settings.text_style.options__1.label"
         },
         {
           "value": "subtitle",
-          "label": "Subtitle"
+          "label": "t:sections.multirow.settings.text_style.options__2.label"
         }
       ],
       "default": "body",
-      "label": "Text style"
+      "label": "t:sections.multirow.settings.text_style.label"
     },
     {
       "type": "select",
@@ -162,15 +192,15 @@
       "options": [
         {
           "value": "primary",
-          "label": "Primary"
+          "label": "t:sections.multirow.settings.button_style.options__1.label"
         },
         {
           "value": "secondary",
-          "label": "Outline"
+          "label": "t:sections.multirow.settings.button_style.options__2.label"
         }
       ],
       "default": "secondary",
-      "label": "Button style"
+      "label": "t:sections.multirow.settings.button_style.label"
     },
     {
       "type": "select",
@@ -294,10 +324,9 @@
       "default": "background-1",
       "label": "t:sections.all.colors.label"
     },
-
     {
       "type": "header",
-      "content": "Mobile layout"
+      "content": "t:sections.multirow.settings.header_mobile.content"
     },
     {
       "type": "select",
