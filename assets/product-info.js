@@ -1,55 +1,64 @@
 class ProductInfo extends HTMLElement {
   constructor() {
     super();
-
-    this.createObserver();
-
     this.input = this.querySelector('.quantity__input');
     this.currentVariant = this.querySelector('.product-variant-id');
     this.variantSelects = this.querySelector('variant-radios')
     this.submitButton = this.querySelector('[type="submit"]');
     this.destinationQty = this.querySelector('.quantity-cart')
 
-    this.variantSelects.addEventListener('change', this.onVariantChange.bind(this));
-    this.submitButton.addEventListener('click', this.onSubmit.bind(this))
+    if (this.variantSelects) {
+      this.variantSelects.addEventListener('change', this.onVariantChange.bind(this));
+    }
+    this.submitButton.addEventListener('cart-success', this.onSubmit.bind(this))
+
+    // listening to propagation
+    document.body.addEventListener('quantity-update', this.onPropagate.bind(this))
   }
 
-  createObserver() {
-    const targetNode = document.getElementById('global-state');
-    const config = { childList: true };
-
-    const globalData = JSON.parse(document.querySelector('#global-state').text)
-
-    // Create an observer instance linked to the callback function
-    const observer = new MutationObserver((mutationList) => {
-      for (const mutation of mutationList) {
-        if (mutation.type === 'childList') {
-          if (this.currentVariant.value === globalData.variantId) {
-            console.log('There has been a change', this.destinationQty);
-            this.destinationQty.innerHTML = globalData.newVariantQty
-          }
-        }
-      }
-    });
-
-    // Start observing the target node for configured mutations
-    observer.observe(targetNode, config);
-    // observer.disconnect();  
-
+  onPropagate(event) {
+    // Update all elements in the page
+    if (event.detail.variant === this.currentVariant.value) {
+      this.destinationQty.innerHTML = event.detail.quantity
+      this.input.dataset.cartquantity = event.detail.quantity
+    }
   }
 
-
-  onSubmit() {
-    fetchCartQty(this.dataset.url, this.currentVariant.value,  this.dataset.section, this.input, this.destinationQty)
-      // Update global data 
-    document.querySelector('#global-state').innerHTML = `{ newVariantQty: ${this.input.value}, variantId: ${this.currentVariant.value} }`
+  onSubmit(event) {
+    // wait until it's added to cart
+    if (event.type === 'cart-success') {
+      this.fetchCartQty(this.currentVariant.value, this.input, this.destinationQty)
+    }
   }
 
   onVariantChange() {
     // Get qty rules
     fetchQtyRules(this.currentVariant.value, this.input)
     // Get cart qty
-    fetchCartQty(this.dataset.url, this.currentVariant.value,  this.dataset.section, this.input, this.destinationQty)
+    this.fetchCartQty(this.currentVariant.value, this.input, this.destinationQty)
+  }
+
+  fetchCartQty(id, input, destinationQty) {
+    fetch("/cart?section_id=main-cart-items")
+    .then((response) => response.text())
+    .then((responseText) => {
+      const html = new DOMParser().parseFromString(responseText, 'text/html')
+      const sourceQty = html.querySelector((`[data-variantid~="${id}"]`))
+      if (sourceQty) {
+        const valueQtyCart = sourceQty.value
+        if (valueQtyCart) this.currentCart = valueQtyCart;
+        if (valueQtyCart && input) input.dataset.cartquantity = valueQtyCart;
+        if (valueQtyCart && input) destinationQty.innerHTML = valueQtyCart;
+        const quantityUpdate = new CustomEvent('quantity-update', {
+          bubbles: true,
+          detail: { quantity: valueQtyCart, variant: this.currentVariant.value }
+        });
+        document.body.dispatchEvent(quantityUpdate);
+      }
+    })
+    .catch(e => {
+      console.error(e);
+    });
   }
 }
 
@@ -77,16 +86,3 @@ function fetchQtyRules(variantId, qty) {
   });
 }
 
-function fetchCartQty(url, id, section, input, destinationQty) {
-  fetch(`${url}?variant=${id}&section_id=${section}`)
-  .then((response) => response.text())
-  .then((responseText) => {
-    const html = new DOMParser().parseFromString(responseText, 'text/html')
-    const sourceQty = html.querySelector((`[data-variantid~="${id}"]`))
-    if (sourceQty) {
-      const valueQtyCart = sourceQty.innerHTML
-      if (valueQtyCart && input) input.dataset.cartquantity = valueQtyCart;
-      if (valueQtyCart && input) destinationQty.innerHTML = valueQtyCart;
-    }
-  })
-}

@@ -158,6 +158,7 @@ class QuantityInput extends HTMLElement {
   }
   
   onInputChange(event) {
+    const currentQty = this.querySelector('input').value
     event.preventDefault();
     validateQtyRules(this.dataset.cartquantity, currentQty, this)
   }

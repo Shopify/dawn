@@ -25,10 +25,19 @@ class CartItems extends HTMLElement {
     }, 300);
 
     this.addEventListener('change', this.debouncedOnChange.bind(this));
+    document.body.addEventListener('quantity-update', this.onPropagate.bind(this))
+
   }
 
   onChange(event) {
-    this.updateQuantity(event.target.dataset.index, event.target.value, document.activeElement.getAttribute('name'));
+    this.updateQuantity(event.target.dataset.index, event.target.value, document.activeElement.getAttribute('name'), event.target.dataset.variantid);
+  }
+
+  onPropagate(event) {
+    if (this.querySelector(`[data-variantid~="${event.detail.variant}"]`)) {
+      this.querySelector(`[data-variantid~="${event.detail.variant}"]`).value = event.detail.quantity
+      this.querySelector(`[data-variantid~="${event.detail.variant}"]`).dataset.cartquantity = event.detail.quantity
+    }
   }
 
   getSectionsToRender() {
@@ -56,7 +65,7 @@ class CartItems extends HTMLElement {
     ];
   }
 
-  updateQuantity(line, quantity, name) {
+  updateQuantity(line, quantity, name, variantId) {
     this.enableLoading(line);
 
     const body = JSON.stringify({
@@ -96,6 +105,13 @@ class CartItems extends HTMLElement {
           trapFocus(cartDrawerWrapper, document.querySelector('.cart-item__name'))
         }
         this.disableLoading();
+        // if it's a success, update global info
+        const quantityUpdate = new CustomEvent('quantity-update', {
+          bubbles: true,
+          detail: { quantity: quantity, variant: variantId }
+        });
+        document.body.dispatchEvent(quantityUpdate);
+
       }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         const errors = document.getElementById('cart-errors') || document.getElementById('CartDrawer-CartErrors');

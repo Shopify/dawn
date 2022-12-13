@@ -70,6 +70,10 @@ if (!customElements.get('product-form')) {
           if (this.cart && this.cart.classList.contains('is-empty')) this.cart.classList.remove('is-empty');
           if (!this.error) this.submitButton.removeAttribute('aria-disabled');
           this.querySelector('.loading-overlay__spinner').classList.add('hidden');
+          const cartSuccess = new CustomEvent('cart-success', {
+            bubbles: true
+          });
+          this.submitButton.dispatchEvent(cartSuccess);
         });
     }
 
