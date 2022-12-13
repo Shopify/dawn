@@ -6,6 +6,8 @@ class ProductInfo extends HTMLElement {
     this.variantSelects = this.querySelector('variant-radios')
     this.submitButton = this.querySelector('[type="submit"]');
     this.destinationQty = this.querySelector('.quantity-cart')
+  
+    this.input.addEventListener('change', this.onQuantityUpdate.bind(this))
 
     if (this.variantSelects) {
       this.variantSelects.addEventListener('change', this.onVariantChange.bind(this));
@@ -28,6 +30,13 @@ class ProductInfo extends HTMLElement {
     // wait until it's added to cart
     if (event.type === 'cart-success') {
       this.fetchCartQty(this.currentVariant.value, this.input, this.destinationQty)
+    }
+  }
+
+  onQuantityUpdate(event) {
+    // If the amount in cart is more than the min, thew new min is the step (only in the pdp and feat prod)
+    if (parseInt(this.input.dataset.cartquantity) >= parseInt(this.input.min) && (Object.keys(this.input.dataset).length === 0)) {
+      this.input.setAttribute("min", step)
     }
   }
 

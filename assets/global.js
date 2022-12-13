@@ -159,7 +159,6 @@ class QuantityInput extends HTMLElement {
   
   onInputChange(event) {
     const currentQty = this.querySelector('input').value
-    event.preventDefault();
     validateQtyRules(this.dataset.cartquantity, currentQty, this)
   }
 
@@ -184,10 +183,6 @@ function validateQtyRules(cartValue, currentValue, quantityElement) {
   const step = parseInt(input.step)
 
   if ((min !== null || max !== null || step !== null) && currentValue !== null && cartValue !== null) {
-    // If the amount in cart is more than the min, thew new min is the step (only in the pdp and feat prod)
-    if (parseInt(cartValue) >= min && (Object.keys(quantityElement.dataset).length === 0)) {
-      quantityElement.querySelector('input').setAttribute("min", step)
-    }
     if (((parseInt(currentValue) + parseInt(cartValue))) <= min) {
       quantityElement.querySelector(".quantity__button[name='minus']").classList.add('disabled')
       quantityElement.querySelector(".quantity__button[name='plus']").classList.remove('disabled')
