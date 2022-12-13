@@ -24,17 +24,27 @@
     <h2 class="collage-wrapper-title {{ section.settings.heading_size }}">{{ section.settings.heading | escape }}</h2>
     <div class="collage{% if section.settings.mobile_layout == 'collage' %} collage--mobile{% endif %}">
       {%- for block in section.blocks -%}
-        <div class="collage__item collage__item--{{ block.type }} collage__item--{{ section.settings.desktop_layout }}" {{ block.shopify_attributes }}>
+        <div
+          class="collage__item collage__item--{{ block.type }} collage__item--{{ section.settings.desktop_layout }}"
+          {{ block.shopify_attributes }}
+        >
           {%- case block.type -%}
             {%- when 'image' -%}
               <div class="collage-card {% if section.settings.card_styles == 'none' %}global-media-settings{% else %}card-wrapper {{ section.settings.card_styles }} color-{{ settings.card_color_scheme }}{% endif %}">
-                <div class="media media--transparent ratio"{% if block.settings.image != blank %} style="--ratio-percent: {{ 1 | divided_by: block.settings.image.aspect_ratio | times: 100 }}%"{% else %} style="--ratio-percent: 100%"{% endif %}>
+                <div
+                  class="media media--transparent ratio"
+                  {% if block.settings.image != blank %}
+                    style="--ratio-percent: {{ 1 | divided_by: block.settings.image.aspect_ratio | times: 100 }}%"
+                  {% else %}
+                    style="--ratio-percent: 100%"
+                  {% endif %}
+                >
                   {%- if block.settings.image != blank -%}
-                    {%- capture sizes -%}(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px)}{%- endcapture -%}
-                    {{ block.settings.image | image_url: width: 3000 | image_tag:
-                      loading: 'lazy',
-                      sizes: sizes,
-                      widths: '550, 720, 990, 1100, 1500, 2200, 3000'
+                    {%- capture sizes -%}(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px){%- endcapture -%}
+                    {{
+                      block.settings.image
+                      | image_url: width: 3000
+                      | image_tag: loading: 'lazy', sizes: sizes, widths: '550, 720, 990, 1100, 1500, 2200, 3000'
                     }}
                   {%- else -%}
                     {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
@@ -59,14 +69,34 @@
             {%- when 'video' -%}
               <div class="collage-card {% if section.settings.card_styles == 'none' %}global-media-settings{% else %}{{ section.settings.card_styles }} color-{{ settings.card_color_scheme }}{% endif %}">
                 <noscript>
-                  <a href="{{ block.settings.video_url }}" class="collage-card__link{% if block.settings.image_padding %} collage-card-spacing{% endif %}">
-                    <div class="media media--transparent ratio"{% if block.settings.cover_image != blank %} style="--ratio-percent: {{ 1 | divided_by: block.settings.cover_image.aspect_ratio | times: 100 }}%"{% else %} style="--ratio-percent: 100%"{% endif %}>
+                  <a
+                    href="{{ block.settings.video_url }}"
+                    class="collage-card__link{% if block.settings.image_padding %} collage-card-spacing{% endif %}"
+                  >
+                    <div
+                      class="media media--transparent ratio"
+                      {% if block.settings.cover_image != blank %}
+                        style="--ratio-percent: {{ 1 | divided_by: block.settings.cover_image.aspect_ratio | times: 100 }}%"
+                      {% else %}
+                        style="--ratio-percent: 100%"
+                      {% endif %}
+                    >
                       {%- if block.settings.cover_image != blank -%}
-                        {%- capture sizes -%}(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px){%- endcapture -%}
-                        {{ block.settings.cover_image | image_url: width: 3000 | image_tag:
-                          loading: 'lazy',
-                          sizes: sizes,
-                          widths: '550, 720, 990, 1100, 1500, 2200, 3000'
+                        {%- capture sizes -%}
+                          (min-width: {{ settings.page_width }}px)
+                          {% if section.blocks.size == 1 -%}
+                            calc({{ settings.page_width }}px - 100px)
+                          {%- else -%}
+                            {{- settings.page_width | minus: 100 | times: 0.67 | round }}px
+                          {%- endif -%}
+                          , (min-width: 750px)
+                          {%- if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif -%}
+                          , calc(100vw - 30px)
+                        {%- endcapture -%}
+                        {{
+                          block.settings.cover_image
+                          | image_url: width: 3000
+                          | image_tag: loading: 'lazy', sizes: sizes, widths: '550, 720, 990, 1100, 1500, 2200, 3000'
                         }}
                       {%- else -%}
                         {{ 'collection-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
@@ -76,18 +106,41 @@
                 </noscript>
                 <modal-opener class="no-js-hidden" data-modal="#PopupModal-{{ block.id }}">
                   <div class="deferred-media">
-                    <button class="deferred-media__poster full-unstyled-link{% if block.settings.image_padding %} collage-card-spacing{% endif %}" type="button" aria-label="{{ 'sections.video.load_video' | t: description: block.settings.description | escape }}" aria-haspopup="dialog" data-media-id="{{ block.settings.video_url.id }}">
-                      <div class="media media--transparent ratio"{% if block.settings.cover_image != blank %} style="--ratio-percent: {{ 1 | divided_by: block.settings.cover_image.aspect_ratio | times: 100 }}%"{% else %} style="--ratio-percent: 100%"{% endif %}>
+                    <button
+                      class="deferred-media__poster full-unstyled-link{% if block.settings.image_padding %} collage-card-spacing{% endif %}"
+                      type="button"
+                      aria-label="{{ 'sections.video.load_video' | t: description: block.settings.description | escape }}"
+                      aria-haspopup="dialog"
+                      data-media-id="{{ block.settings.video_url.id }}"
+                    >
+                      <div
+                        class="media media--transparent ratio"
+                        {% if block.settings.cover_image != blank %}
+                          style="--ratio-percent: {{ 1 | divided_by: block.settings.cover_image.aspect_ratio | times: 100 }}%"
+                        {% else %}
+                          style="--ratio-percent: 100%"
+                        {% endif %}
+                      >
                         <span class="deferred-media__poster-button motion-reduce">
                           {%- render 'icon-play' -%}
                         </span>
 
                         {%- if block.settings.cover_image != blank -%}
-                          {%- capture sizes -%}(min-width: {{ settings.page_width }}px) {% if section.blocks.size == 1 %}calc({{ settings.page_width }}px - 100px){% else %}{{ settings.page_width | minus: 100 | times: 0.67 | round }}px{% endif %}, (min-width: 750px){% if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif %}, calc(100vw - 30px){%- endcapture -%}
-                          {{ block.settings.cover_image | image_url: width: 3000 | image_tag:
-                            loading: 'lazy',
-                            sizes: sizes,
-                            widths: '550, 720, 990, 1100, 1500, 2200, 3000'
+                          {%- capture sizes -%}
+                            (min-width: {{ settings.page_width }}px)
+                            {% if section.blocks.size == 1 -%}
+                              calc({{ settings.page_width }}px - 100px)
+                            {%- else -%}
+                              {{- settings.page_width | minus: 100 | times: 0.67 | round }}px
+                            {%- endif -%}
+                            , (min-width: 750px)
+                            {%- if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif -%}
+                            , calc(100vw - 30px)
+                          {%- endcapture -%}
+                          {{
+                            block.settings.cover_image
+                            | image_url: width: 3000
+                            | image_tag: loading: 'lazy', sizes: sizes, widths: '550, 720, 990, 1100, 1500, 2200, 3000'
                           }}
                         {%- else -%}
                           {{ 'collection-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
@@ -97,15 +150,40 @@
                   </div>
                 </modal-opener>
                 <modal-dialog id="PopupModal-{{ block.id }}" class="modal-video media-modal color-background-1">
-                  <div class="modal-video__content" role="dialog" aria-label="{{ block.settings.description | escape }}" aria-modal="true" tabindex="-1">
-                    <button id="ModalClose-{{ block.id }}" type="button" class="modal-video__toggle" aria-label="{{ 'accessibility.close' | t }}">{% render 'icon-close' %}</button>
+                  <div
+                    class="modal-video__content"
+                    role="dialog"
+                    aria-label="{{ block.settings.description | escape }}"
+                    aria-modal="true"
+                    tabindex="-1"
+                  >
+                    <button
+                      id="ModalClose-{{ block.id }}"
+                      type="button"
+                      class="modal-video__toggle"
+                      aria-label="{{ 'accessibility.close' | t }}"
+                    >
+                      {% render 'icon-close' %}
+                    </button>
                     <div class="modal-video__content-info">
                       <deferred-media class="modal-video__video template-popup">
                         <template>
                           {%- if block.settings.video_url.type == 'youtube' -%}
-                            <iframe src="https://www.youtube.com/embed/{{ block.settings.video_url.id }}?enablejsapi=1" class="js-youtube" allow="autoplay; encrypted-media" allowfullscreen title="{{ block.settings.description | escape }}" ></iframe>
+                            <iframe
+                              src="https://www.youtube.com/embed/{{ block.settings.video_url.id }}?enablejsapi=1"
+                              class="js-youtube"
+                              allow="autoplay; encrypted-media"
+                              allowfullscreen
+                              title="{{ block.settings.description | escape }}"
+                            ></iframe>
                           {%- else -%}
-                            <iframe src="https://player.vimeo.com/video/{{ block.settings.video_url.id }}" class="js-vimeo" allow="autoplay; encrypted-media" allowfullscreen title="{{ block.settings.description | escape }}"></iframe>
+                            <iframe
+                              src="https://player.vimeo.com/video/{{ block.settings.video_url.id }}"
+                              class="js-vimeo"
+                              allow="autoplay; encrypted-media"
+                              allowfullscreen
+                              title="{{ block.settings.description | escape }}"
+                            ></iframe>
                           {%- endif -%}
                         </template>
                       </deferred-media>
@@ -314,10 +392,7 @@
         {
           "type": "video_url",
           "id": "video_url",
-          "accept": [
-            "youtube",
-            "vimeo"
-          ],
+          "accept": ["youtube", "vimeo"],
           "default": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
           "label": "t:sections.collage.blocks.video.settings.video_url.label",
           "placeholder": "t:sections.collage.blocks.video.settings.video_url.placeholder",
