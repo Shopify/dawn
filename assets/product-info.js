@@ -1,3 +1,5 @@
+import PubSub from "./pubsub.js";
+
 class ProductInfo extends HTMLElement {
   constructor() {
     super();
@@ -6,8 +8,8 @@ class ProductInfo extends HTMLElement {
     this.variantSelects = this.querySelector('variant-radios')
     this.submitButton = this.querySelector('[type="submit"]');
     this.destinationQty = this.querySelector('.quantity-cart')
-  
     this.input.addEventListener('change', this.onQuantityUpdate.bind(this))
+
 
     if (this.variantSelects) {
       this.variantSelects.addEventListener('change', this.onVariantChange.bind(this));
@@ -16,19 +18,18 @@ class ProductInfo extends HTMLElement {
   }
 
   connectedCallback() {
-    // listening to propagation
-    document.body.addEventListener('quantity-update', this.onPropagate.bind(this))
+    PubSub.subscribe('quantity-update', this.onPropagate.bind(this))
   }
 
   disconnectedCallback() {
-    document.body.removeEventListener('quantity-update', this.onPropagate.bind(this))
+    PubSub.unsubscribe('quantity-update')
   }
 
-  onPropagate(event) {
+  onPropagate(data) {
     // Update all elements in the page
-    if (event.detail.variant === this.currentVariant.value) {
-      this.destinationQty.innerHTML = event.detail.quantity
-      this.input.dataset.cartquantity = event.detail.quantity
+    if (data.variant === this.currentVariant.value) {
+      this.destinationQty.innerHTML = data.quantity
+      this.input.dataset.cartquantity = data.quantity
     }
   }
 
@@ -64,11 +65,7 @@ class ProductInfo extends HTMLElement {
         if (valueQtyCart) this.currentCart = valueQtyCart;
         if (valueQtyCart && input) input.dataset.cartquantity = valueQtyCart;
         if (valueQtyCart && input) destinationQty.innerHTML = valueQtyCart;
-        const quantityUpdate = new CustomEvent('quantity-update', {
-          bubbles: true,
-          detail: { quantity: valueQtyCart, variant: this.currentVariant.value }
-        });
-        document.body.dispatchEvent(quantityUpdate);
+        PubSub.publish('quantity-update', { "quantity": valueQtyCart, "variant": this.currentVariant.value })
       }
     })
     .catch(e => {

@@ -1,3 +1,5 @@
+import PubSub from "./pubsub.js";
+
 class CartRemoveButton extends HTMLElement {
   constructor() {
     super();
@@ -20,7 +22,6 @@ customElements.define('cart-remove-button', CartRemoveButton);
 class CartItems extends HTMLElement {
   constructor() {
     super();
-
     this.lineItemStatusElement = document.getElementById('shopping-cart-line-item-status') || document.getElementById('CartDrawer-LineItemStatus');
 
     this.currentItemCount = Array.from(this.querySelectorAll('[name="updates[]"]'))
@@ -35,21 +36,21 @@ class CartItems extends HTMLElement {
   }
 
   connectedCallback() {
-    document.body.addEventListener('quantity-update', this.onPropagate.bind(this))
+    PubSub.subscribe('quantity-update', this.onPropagate.bind(this))
   }
 
   disconnectedCallback() {
-    document.body.removeEventListener('quantity-update', this.onPropagate.bind(this))
+    PubSub.unsubscribe('quantity-update')
   }
 
   onChange(event) {
     this.updateQuantity(event.target.dataset.index, event.target.value, document.activeElement.getAttribute('name'), event.target.dataset.variantid);
   }
 
-  onPropagate(event) {
-    if (this.querySelector(`[data-variantid~="${event.detail.variant}"]`)) {
-      this.querySelector(`[data-variantid~="${event.detail.variant}"]`).value = event.detail.quantity
-      this.querySelector(`[data-variantid~="${event.detail.variant}"]`).dataset.cartquantity = event.detail.quantity
+  onPropagate(data) {
+    if (this.querySelector(`[data-variantid~="${data.variant}"]`)) {
+      this.querySelector(`[data-variantid~="${data.variant}"]`).value = data.quantity
+      this.querySelector(`[data-variantid~="${data.variant}"]`).dataset.cartquantity = data.quantity
     }
   }
 
@@ -119,11 +120,7 @@ class CartItems extends HTMLElement {
         }
         this.disableLoading();
         // if it's a success, update global info
-        const quantityUpdate = new CustomEvent('quantity-update', {
-          bubbles: true,
-          detail: { quantity: quantity, variant: variantId }
-        });
-        document.body.dispatchEvent(quantityUpdate);
+        PubSub.publish('quantity-update', { "quantity": quantity, "variant": variantId })
 
       }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
