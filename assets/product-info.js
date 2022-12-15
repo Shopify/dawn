@@ -26,7 +26,7 @@ class ProductInfo extends HTMLElement {
   }
 
   onPropagate(data) {
-    // Update all elements in the page
+    // Update elements in the page with the new qty
     if (data.variant === this.currentVariant.value) {
       this.destinationQty.innerHTML = data.quantity
       this.input.dataset.cartquantity = data.quantity
@@ -40,7 +40,7 @@ class ProductInfo extends HTMLElement {
     }
   }
 
-  onQuantityUpdate(event) {
+  onQuantityUpdate() {
     // If the amount in cart is more than the min, thew new min is the step (only in the pdp and feat prod)
     if (parseInt(this.input.dataset.cartquantity) >= parseInt(this.input.min) && (Object.keys(this.input.dataset).length === 0)) {
       this.input.setAttribute("min", step)
@@ -77,7 +77,6 @@ class ProductInfo extends HTMLElement {
 customElements.define('product-info', ProductInfo);
 
 function fetchQtyRules(variantId, qty) {
-  // When I change the variant, I fetch the new variant rules
   fetch(`/admin/api/2022-04/variants/${variantId}.json`).then((response) => {
     return response.text()
   })

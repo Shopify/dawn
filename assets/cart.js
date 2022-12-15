@@ -115,7 +115,6 @@ class CartItems extends HTMLElement {
           trapFocus(cartDrawerWrapper, document.querySelector('.cart-item__name'))
         }
         this.disableLoading();
-        // if it's a success, update global info
         PubSub.publish('quantity-update', { "quantity": quantity, "variant": variantId })
 
       }).catch(() => {
