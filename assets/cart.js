@@ -3,6 +3,7 @@ import PubSub from "./pubsub.js";
 class CartRemoveButton extends HTMLElement {
   constructor() {
     super();
+
     this.addEventListener('click', (event) => {
       event.preventDefault();
       const cartItems = this.closest('cart-items') || this.closest('cart-drawer-items');
@@ -32,7 +33,6 @@ class CartItems extends HTMLElement {
     }, 300);
 
     this.addEventListener('change', this.debouncedOnChange.bind(this));
-
   }
 
   connectedCallback() {

@@ -145,8 +145,8 @@ function onKeyUpEscape(event) {
 class QuantityInput extends HTMLElement {
   constructor() {
     super();
-    const currentQty = this.querySelector('input').value
-    validateQtyRules(this.dataset.cartquantity, currentQty, this)
+    this.currentQty = this.querySelector('input').value
+    validateQtyRules(this.dataset.cartquantity, this.currentQty, this)
 
     this.input = this.querySelector('input');
     this.changeEvent = new Event('change', { bubbles: true })
@@ -158,8 +158,7 @@ class QuantityInput extends HTMLElement {
   }
   
   onInputChange(event) {
-    const currentQty = this.querySelector('input').value
-    validateQtyRules(this.dataset.cartquantity, currentQty, this)
+    validateQtyRules(this.dataset.cartquantity, this.currentQty, this)
   }
 
   onButtonClick(event) {
@@ -168,8 +167,7 @@ class QuantityInput extends HTMLElement {
 
     event.target.name === 'plus' ? this.input.stepUp() : this.input.stepDown();
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
-    const currentQty = this.querySelector('input').value
-    validateQtyRules(this.dataset.cartquantity, currentQty, this)
+    validateQtyRules(this.dataset.cartquantity, this.currentQty, this)
   }
 }
 
@@ -182,7 +180,7 @@ function validateQtyRules(cartValue, currentValue, quantityElement) {
   const max = parseInt(input.max)
   const step = parseInt(input.step)
 
-  if ((min !== null || max !== null || step !== null) && currentValue !== null && cartValue !== null) {
+  if (currentValue !== null && cartValue !== null) {
     if (((parseInt(currentValue) + parseInt(cartValue))) <= min) {
       quantityElement.querySelector(".quantity__button[name='minus']").classList.add('disabled')
       quantityElement.querySelector(".quantity__button[name='plus']").classList.remove('disabled')
