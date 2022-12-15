@@ -9,11 +9,7 @@ class CartRemoveButton extends HTMLElement {
       const cartItems = this.closest('cart-items') || this.closest('cart-drawer-items');
       cartItems.updateQuantity(this.dataset.index, 0);
 
-      const quantityUpdate = new CustomEvent('quantity-update', {
-        bubbles: true,
-        detail: { quantity: 0, variant: event.target.closest('.cart-item__quantity-wrapper').querySelector('input').dataset.variantid }
-      });
-      document.body.dispatchEvent(quantityUpdate);
+      PubSub.publish('quantity-update', { "quantity": 0, "variant": event.target.closest('.cart-item__quantity-wrapper').querySelector('input').dataset.variantid })
     });
   }
 }

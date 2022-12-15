@@ -157,7 +157,7 @@ class QuantityInput extends HTMLElement {
     );
   }
   
-  onInputChange(event) {
+  onInputChange() {
     validateQtyRules(this.dataset.cartquantity, this.currentQty, this)
   }
 
@@ -178,18 +178,21 @@ function validateQtyRules(cartValue, currentValue, quantityElement) {
   const input = quantityElement.querySelector('.quantity__input')
   const min = parseInt(input.min)
   const max = parseInt(input.max)
-  const step = parseInt(input.step)
 
   if (currentValue !== null && cartValue !== null) {
-    if (((parseInt(currentValue) + parseInt(cartValue))) <= min) {
-      quantityElement.querySelector(".quantity__button[name='minus']").classList.add('disabled')
-      quantityElement.querySelector(".quantity__button[name='plus']").classList.remove('disabled')
-    } else if ((parseInt(currentValue) + parseInt(cartValue)) >= max) {
-      quantityElement.querySelector(".quantity__button[name='plus']").classList.add('disabled')
-      quantityElement.querySelector(".quantity__button[name='minus']").classList.remove('disabled')
+    const absoluteAmount = parseInt(currentValue) + parseInt(cartValue)
+    const minusButton = quantityElement.querySelector(".quantity__button[name='minus']")
+    const addButton = quantityElement.querySelector(".quantity__button[name='plus']")
+
+    if (absoluteAmount <= min) {
+      minusButton.classList.add('disabled')
+      addButton.classList.remove('disabled')
+    } else if (max !== null && (absoluteAmount >= max)) {
+      addButton.classList.add('disabled')
+      minusButton.classList.remove('disabled')
     } else {
-      quantityElement.querySelector(".quantity__button[name='plus']").classList.remove('disabled')
-      quantityElement.querySelector(".quantity__button[name='minus']").classList.remove('disabled')
+      addButton.classList.remove('disabled')
+      minusButton.classList.remove('disabled')
     }
   }
 }
