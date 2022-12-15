@@ -62,10 +62,12 @@ class ProductInfo extends HTMLElement {
       const sourceQty = html.querySelector((`[data-variantid~="${id}"]`))
       if (sourceQty) {
         const valueQtyCart = sourceQty.value
-        if (valueQtyCart) this.currentCart = valueQtyCart;
         if (valueQtyCart && input) input.dataset.cartquantity = valueQtyCart;
         if (valueQtyCart && input) destinationQty.innerHTML = valueQtyCart;
         PubSub.publish('quantity-update', { "quantity": valueQtyCart, "variant": this.currentVariant.value })
+      } else {
+        if (input) input.dataset.cartquantity = 0;
+        destinationQty.innerHTML = 0;
       }
     })
     .catch(e => {
