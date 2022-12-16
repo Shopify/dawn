@@ -1,4 +1,4 @@
-import { subscribe, publish } from "./pubsub.js";
+import { subscribe } from "./pubsub.js";
 
 class ProductInfo extends HTMLElement {
   constructor() {
@@ -14,30 +14,15 @@ class ProductInfo extends HTMLElement {
     if (this.variantSelects) {
       this.variantSelects.addEventListener('change', this.onVariantChange.bind(this));
     }
-    this.submitButton.addEventListener('cart-success', this.onSubmit.bind(this))
   }
 
   connectedCallback() {
-    subscribe('quantity-update', this.onPropagate.bind(this))
+    subscribe('cart-update', this.fetchCartQty.bind(this))
   }
 
   disconnectedCallback() {
-    const unsubscribe = subscribe('quantity-update', this.onPropagate.bind(this));
-    unsubscribe()  }
-
-  onPropagate(data) {
-    // Update elements in the page with the new qty
-    if (data.variant === this.currentVariant.value) {
-      this.destinationQty.innerHTML = data.quantity
-      this.input.dataset.cartquantity = data.quantity
-    }
-  }
-
-  onSubmit(event) {
-    // wait until it's added to cart
-    if (event.type === 'cart-success') {
-      this.fetchCartQty(this.currentVariant.value, this.input, this.destinationQty)
-    }
+    const unsubscribe = subscribe('cart-update', this.fetchCartQty.bind(this));
+    unsubscribe()  
   }
 
   onQuantityUpdate() {
@@ -51,23 +36,22 @@ class ProductInfo extends HTMLElement {
     // Get qty rules
     fetchQtyRules(this.currentVariant.value, this.input)
     // Get cart qty
-    this.fetchCartQty(this.currentVariant.value, this.input, this.destinationQty)
+    this.fetchCartQty()
   }
 
-  fetchCartQty(id, input, destinationQty) {
+  fetchCartQty() {
     fetch("/cart?section_id=main-cart-items")
     .then((response) => response.text())
     .then((responseText) => {
       const html = new DOMParser().parseFromString(responseText, 'text/html')
-      const sourceQty = html.querySelector((`[data-variantid~="${id}"]`))
+      const sourceQty = html.querySelector((`[data-variantid~="${this.currentVariant.value}"]`))
       if (sourceQty) {
         const valueQtyCart = sourceQty.value
-        if (valueQtyCart && input) input.dataset.cartquantity = valueQtyCart;
-        if (valueQtyCart && input) destinationQty.innerHTML = valueQtyCart;
-        publish('quantity-update', { "quantity": valueQtyCart, "variant": this.currentVariant.value })
+        if (valueQtyCart && this.input) this.input.dataset.cartquantity = valueQtyCart;
+        if (valueQtyCart && this.input) this.destinationQty.innerHTML = valueQtyCart;
       } else {
-        if (input) input.dataset.cartquantity = 0;
-        destinationQty.innerHTML = 0;
+        if (this.input) this.input.dataset.cartquantity = 0;
+        this.destinationQty.innerHTML = 0;
       }
     })
     .catch(e => {

@@ -8,8 +8,6 @@ class CartRemoveButton extends HTMLElement {
       event.preventDefault();
       const cartItems = this.closest('cart-items') || this.closest('cart-drawer-items');
       cartItems.updateQuantity(this.dataset.index, 0);
-
-      publish('quantity-update', { "quantity": 0, "variant": event.target.closest('.cart-item__quantity-wrapper').querySelector('input').dataset.variantid })
     });
   }
 }
@@ -32,23 +30,29 @@ class CartItems extends HTMLElement {
   }
 
   connectedCallback() {
-    subscribe('quantity-update', this.onPropagate.bind(this))
+    subscribe('cart-update', this.onPropagate.bind(this))
   }
 
   disconnectedCallback() {
-    const unsubscribe = subscribe('quantity-update', this.onPropagate.bind(this));
+    const unsubscribe = subscribe('cart-update', this.onPropagate.bind(this));
     unsubscribe()
   }
 
   onChange(event) {
-    this.updateQuantity(event.target.dataset.index, event.target.value, document.activeElement.getAttribute('name'), event.target.dataset.variantid);
+    this.updateQuantity(event.target.dataset.index, event.target.value, document.activeElement.getAttribute('name'));
   }
 
-  onPropagate(data) {
-    if (this.querySelector(`[data-variantid~="${data.variant}"]`)) {
-      this.querySelector(`[data-variantid~="${data.variant}"]`).value = data.quantity
-      this.querySelector(`[data-variantid~="${data.variant}"]`).dataset.cartquantity = data.quantity
-    }
+  onPropagate() {
+    fetch("/cart?section_id=main-cart-items")
+    .then((response) => response.text())
+    .then((responseText) => {
+      const html = new DOMParser().parseFromString(responseText, 'text/html')
+      const sourceQty = html.querySelector(('cart-items'))
+      this.innerHTML = sourceQty.innerHTML
+    })
+    .catch(e => {
+      console.error(e);
+    });
   }
 
   getSectionsToRender() {
@@ -76,7 +80,7 @@ class CartItems extends HTMLElement {
     ];
   }
 
-  updateQuantity(line, quantity, name, variantId) {
+  updateQuantity(line, quantity, name) {
     this.enableLoading(line);
 
     const body = JSON.stringify({
@@ -116,7 +120,7 @@ class CartItems extends HTMLElement {
           trapFocus(cartDrawerWrapper, document.querySelector('.cart-item__name'))
         }
         this.disableLoading();
-        publish('quantity-update', { "quantity": quantity, "variant": variantId })
+        publish('cart-update', undefined)
 
       }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));

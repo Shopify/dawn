@@ -1,3 +1,5 @@
+import { publish } from "./pubsub.js";
+
 if (!customElements.get('product-form')) {
   customElements.define('product-form', class ProductForm extends HTMLElement {
     constructor() {
@@ -70,10 +72,7 @@ if (!customElements.get('product-form')) {
           if (this.cart && this.cart.classList.contains('is-empty')) this.cart.classList.remove('is-empty');
           if (!this.error) this.submitButton.removeAttribute('aria-disabled');
           this.querySelector('.loading-overlay__spinner').classList.add('hidden');
-          const cartSuccess = new CustomEvent('cart-success', {
-            bubbles: true
-          });
-          this.submitButton.dispatchEvent(cartSuccess);
+          publish('cart-update', undefined)
         });
     }
 
