@@ -145,9 +145,6 @@ function onKeyUpEscape(event) {
 class QuantityInput extends HTMLElement {
   constructor() {
     super();
-    this.currentQty = this.querySelector('input').value
-    validateQtyRules(this.dataset.cartquantity, this.currentQty, this)
-
     this.input = this.querySelector('input');
     this.changeEvent = new Event('change', { bubbles: true })
 
@@ -155,10 +152,12 @@ class QuantityInput extends HTMLElement {
     this.querySelectorAll('button').forEach(
       (button) => button.addEventListener('click', this.onButtonClick.bind(this))
     );
+    validateQtyRules(this.input.dataset.cartquantity, this.input.value, this)
+
   }
   
-  onInputChange() {
-    validateQtyRules(this.dataset.cartquantity, this.currentQty, this)
+  onInputChange(event) {
+    validateQtyRules(this.input.dataset.cartquantity, event.target.value, this)
   }
 
   onButtonClick(event) {
@@ -167,7 +166,8 @@ class QuantityInput extends HTMLElement {
 
     event.target.name === 'plus' ? this.input.stepUp() : this.input.stepDown();
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
-    validateQtyRules(this.dataset.cartquantity, this.currentQty, this)
+    const newValue = this.input.value
+    validateQtyRules(this.input.dataset.cartquantity, newValue, this)
   }
 }
 

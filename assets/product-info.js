@@ -26,8 +26,10 @@ if (!customElements.get('product-info')) {
 
     onQuantityUpdate() {
       // If the amount in cart is more than the min, thew new min is the step (only in the pdp and feat prod)
-      if (parseInt(this.input.dataset.cartquantity) >= parseInt(this.input.min) && (Object.keys(this.input.dataset).length === 0)) {
-        this.input.setAttribute("min", step)
+      if (parseInt(this.input.dataset.cartquantity) >= parseInt(this.input.min)) {
+        this.input.min = this.input.step
+        this.input.max = (parseInt(this.input.dataset.max) - parseInt(this.input.dataset.cartquantity))
+        // if the are items in cart, the new max is max - the items in cart
       }
     }
 
