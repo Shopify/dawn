@@ -9,29 +9,40 @@
   <div id="login" class="inventables__shopify-login">
     <iframe id="logout" scrolling="no" src="{{ shop.metafields.development.local_address }}/logout" style="border: none; height: 0px; width: 0px;">
     </iframe>
-    <iframe id="inventables" scrolling="no" src="{{ shop.metafields.development.local_address }}/shopify/login_form" style="border: none;">
-    </iframe>
-    <script type="text/javascript">
-      window.addEventListener("message", (event) => {
-          if (event.origin === "{{ shop.metafields.development.local_address }}") {
-              var data = JSON.parse(event.data);
-              var authenticated = data.authenticated;
-              if (authenticated === 'true') {
-                let searchParams = new URLSearchParams(window.location.search);
-                let checkoutUrl = searchParams.get('checkout_url');
-                if (checkoutUrl) {
-                  window.location.href = checkoutUrl;
-                } else {
-                  window.location.href = event.origin + "/checkout";
-                }
-              } else {
-                    document.getElementsByClassName("inventables__shopify-login__flash-message__text")[0].innerHTML = 'Incorrect email or password. Please try again.';
-              }
-          }
-      }, false);
-    </script>
   </div>
 </div>
+<script type="text/javascript">
+  window.onload = function() {
+    let loginDiv = document.getElementById("login");
+    let loginForm = document.createElement("iframe");
+    loginForm.scrolling = "no";
+    loginForm.style = "border: none;";
+    loginForm.id="inventables";
+
+    let searchParams = new URLSearchParams(window.location.search);
+    let iframeSource = "{{ shop.metafields.development.local_address }}/shopify/login_form?" + searchParams.toString();
+    loginForm.setAttribute("src", iframeSource);
+    loginDiv.appendChild(loginForm);
+  }
+
+  window.addEventListener("message", (event) => {
+    if (event.origin === "{{ shop.metafields.development.local_address }}") {
+      var data = JSON.parse(event.data);
+      var authenticated = data.authenticated;
+      if (authenticated === 'true') {
+        let searchParams = new URLSearchParams(window.location.search);
+        let checkoutUrl = searchParams.get('checkout_url');
+        if (checkoutUrl) {
+          window.location.href = checkoutUrl;
+        } else {
+          window.location.href = event.origin + "/checkout";
+        }
+      } else {
+        document.getElementsByClassName("inventables__shopify-login__flash-message__text")[0].innerHTML = 'Incorrect email or password. Please try again.';
+      }
+    }
+  }, false);
+</script>
 
 {%- style -%}
   .section-{{ section.id }}-padding {
