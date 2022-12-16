@@ -1,5 +1,3 @@
-import { subscribe, publish } from "./pubsub.js";
-
 class CartRemoveButton extends HTMLElement {
   constructor() {
     super();
@@ -34,8 +32,8 @@ class CartItems extends HTMLElement {
   }
 
   disconnectedCallback() {
-    const unsubscribe = subscribe('cart-update', this.onPropagate.bind(this));
-    unsubscribe()
+    const sub = subscribe('cart-update', this.onPropagate.bind(this));
+    sub.unsubscribe()
   }
 
   onChange(event) {
@@ -43,16 +41,18 @@ class CartItems extends HTMLElement {
   }
 
   onPropagate() {
-    fetch("/cart?section_id=main-cart-items")
-    .then((response) => response.text())
-    .then((responseText) => {
-      const html = new DOMParser().parseFromString(responseText, 'text/html')
-      const sourceQty = html.querySelector(('cart-items'))
-      this.innerHTML = sourceQty.innerHTML
-    })
-    .catch(e => {
-      console.error(e);
-    });
+    if (this.tagName === 'CART-ITEMS') {
+      fetch("/section_id=main-cart-items")
+      .then((response) => response.text())
+      .then((responseText) => {
+        const html = new DOMParser().parseFromString(responseText, 'text/html')
+        const sourceQty = html.querySelector('cart-items')
+        this.innerHTML = sourceQty.innerHTML
+      })
+      .catch(e => {
+        console.error(e);
+      });
+    }
   }
 
   getSectionsToRender() {

@@ -1,5 +1,3 @@
-import { publish } from "./pubsub.js";
-
 if (!customElements.get('product-form')) {
   customElements.define('product-form', class ProductForm extends HTMLElement {
     constructor() {
