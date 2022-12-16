@@ -48,6 +48,12 @@ if (!customElements.get('product-info')) {
         const sourceQty = html.querySelector((`[data-variantid~="${this.currentVariant.value}"]`))
         if (sourceQty) {
           const valueQtyCart = sourceQty.value
+          if (valueQtyCart > 0) { 
+            this.querySelector('.quantity__rules-cart').classList.remove('hidden')
+          } else {
+            console.log('hello')
+            this.querySelector('.quantity__rules-cart').classList.add('hidden')
+          }
           if (valueQtyCart && this.input) this.input.dataset.cartquantity = valueQtyCart;
           if (valueQtyCart && this.input) this.destinationQty.innerHTML = valueQtyCart;
         } else {
@@ -62,8 +68,6 @@ if (!customElements.get('product-info')) {
   }
 )};
 
-// customElements.define('product-info', ProductInfo);
-
 function fetchQtyRules(variantId, qty) {
   fetch(`/admin/api/2022-04/variants/${variantId}.json`).then((response) => {
     return response.text()
@@ -72,12 +76,12 @@ function fetchQtyRules(variantId, qty) {
     const parsedState = JSON.parse(state);
     if (parsedState.variant !== null) {
       // Updating qty rules
-      qty.closest('.product-form__quantity').querySelector('.quantity-min').innerHTML = "10"
-      qty.closest('.product-form__quantity').querySelector('.quantity-max').innerHTML = "100"
-      qty.closest('.product-form__quantity').querySelector('.quantity-steps').innerHTML = "5"
-      qty.setAttribute("min", 10);
-      qty.setAttribute("max", 40);
-      qty.setAttribute("step", 5);
+      qty.closest('.product-form__quantity').querySelector('.quantity-min').innerHTML = parsedState.variant.quantityLimit.min
+      qty.closest('.product-form__quantity').querySelector('.quantity-max').innerHTML = parsedState.variant.quantityLimit.max
+      qty.closest('.product-form__quantity').querySelector('.quantity-steps').innerHTML = parsedState.variant.quantityLimit.increment
+      qty.setAttribute("min", parsedState.variant.quantityLimit.min);
+      qty.setAttribute("max", parsedState.variant.quantityLimit.max);
+      qty.setAttribute("step", parsedState.variant.quantityLimit.increment);
     }
   })
   .catch(e => {

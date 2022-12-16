@@ -20,8 +20,3 @@ function publish(eventName, data) {
     })
   }
 }
-
-// export {
-//   subscribe,
-//   publish
-// }
