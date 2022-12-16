@@ -1,4 +1,4 @@
-import PubSub from "./pubsub.js";
+import { subscribe, publish } from "./pubsub.js";
 
 class CartRemoveButton extends HTMLElement {
   constructor() {
@@ -9,7 +9,7 @@ class CartRemoveButton extends HTMLElement {
       const cartItems = this.closest('cart-items') || this.closest('cart-drawer-items');
       cartItems.updateQuantity(this.dataset.index, 0);
 
-      PubSub.publish('quantity-update', { "quantity": 0, "variant": event.target.closest('.cart-item__quantity-wrapper').querySelector('input').dataset.variantid })
+      publish('quantity-update', { "quantity": 0, "variant": event.target.closest('.cart-item__quantity-wrapper').querySelector('input').dataset.variantid })
     });
   }
 }
@@ -32,11 +32,12 @@ class CartItems extends HTMLElement {
   }
 
   connectedCallback() {
-    PubSub.subscribe('quantity-update', this.onPropagate.bind(this))
+    subscribe('quantity-update', this.onPropagate.bind(this))
   }
 
   disconnectedCallback() {
-    PubSub.unsubscribe('quantity-update')
+    const unsubscribe = subscribe('quantity-update', this.onPropagate.bind(this));
+    unsubscribe()
   }
 
   onChange(event) {
@@ -115,7 +116,7 @@ class CartItems extends HTMLElement {
           trapFocus(cartDrawerWrapper, document.querySelector('.cart-item__name'))
         }
         this.disableLoading();
-        PubSub.publish('quantity-update', { "quantity": quantity, "variant": variantId })
+        publish('quantity-update', { "quantity": quantity, "variant": variantId })
 
       }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));

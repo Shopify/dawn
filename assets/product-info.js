@@ -1,4 +1,4 @@
-import PubSub from "./pubsub.js";
+import { subscribe, publish } from "./pubsub.js";
 
 class ProductInfo extends HTMLElement {
   constructor() {
@@ -18,12 +18,12 @@ class ProductInfo extends HTMLElement {
   }
 
   connectedCallback() {
-    PubSub.subscribe('quantity-update', this.onPropagate.bind(this))
+    subscribe('quantity-update', this.onPropagate.bind(this))
   }
 
   disconnectedCallback() {
-    PubSub.unsubscribe('quantity-update')
-  }
+    const unsubscribe = subscribe('quantity-update', this.onPropagate.bind(this));
+    unsubscribe()  }
 
   onPropagate(data) {
     // Update elements in the page with the new qty
@@ -64,7 +64,7 @@ class ProductInfo extends HTMLElement {
         const valueQtyCart = sourceQty.value
         if (valueQtyCart && input) input.dataset.cartquantity = valueQtyCart;
         if (valueQtyCart && input) destinationQty.innerHTML = valueQtyCart;
-        PubSub.publish('quantity-update', { "quantity": valueQtyCart, "variant": this.currentVariant.value })
+        publish('quantity-update', { "quantity": valueQtyCart, "variant": this.currentVariant.value })
       } else {
         if (input) input.dataset.cartquantity = 0;
         destinationQty.innerHTML = 0;

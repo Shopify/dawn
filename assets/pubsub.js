@@ -1,27 +1,27 @@
-class PubSub {
-  subscribers = {}
-  
-  subscribe(eventName, callback) {
-    if (!Array.isArray(this.subscribers[eventName])) {
-      this.subscribers[eventName] = []
-    }
-    this.subscribers[eventName].push(callback);
-  };
+let subscribers = {}
 
-  unsubscribe(eventName) {
-    const index = this.subscribers[eventName].length - 1;
-    this.subscribers[eventName].splice(index, 1);
+function subscribe(eventName, callback) {
+  if (subscribers[eventName] === undefined) {
+    subscribers[eventName] = []
   }
-
-  publish(eventName, data) {
-    if (this.subscribers[eventName]) {
-      this.subscribers[eventName].forEach((callback) => {
-        callback(data)
-      })
-    } else {
-      return
+  subscribers[eventName].push(callback);
+  const index = subscribers[eventName].length - 1
+  return {
+    unsubscribe() {
+      subscribers[eventName].splice(index, 1)
     }
+  }
+};
+
+function publish(eventName, data) {
+  if (subscribers[eventName]) {
+    subscribers[eventName].forEach((callback) => {
+      callback(data)
+    })
   }
 }
 
-export default new PubSub();
+export {
+  subscribe,
+  publish
+}
