@@ -36,7 +36,7 @@ if (!customElements.get('product-info')) {
 
     onVariantChange() {
       // Get qty rules
-      fetchQtyRules(this.currentVariant.value, this.input)
+      // fetchQtyRules(this.currentVariant.value, this.input, this)
       // Get cart qty
       this.fetchCartQty()
     }
@@ -61,6 +61,25 @@ if (!customElements.get('product-info')) {
           this.destinationQty.innerHTML = 0;
           this.querySelector('.quantity__rules-cart').classList.add('hidden')
         }
+        this.fetchQtyRules();
+      })
+      .catch(e => {
+        console.error(e);
+      });
+    }
+
+    fetchQtyRules() {
+      fetch(`${this.dataset.url}?variant=${this.currentVariant.value}&section_id=${this.dataset.section}`).then((response) => {
+        return response.text()
+      })
+      .then((responseText) => {
+        const html = new DOMParser().parseFromString(responseText, 'text/html')
+        const sourceQty = html.querySelector(('quantity-input'))
+        const sourceQtyRules = html.querySelector(('.quantity__rules'))
+        if (sourceQty && sourceQtyRules) {
+          this.input.innerHTML = sourceQty.innerHTML
+          this.querySelector('.quantity__rules').innerHTML = sourceQtyRules.innerHTML
+        }
       })
       .catch(e => {
         console.error(e);
@@ -69,24 +88,5 @@ if (!customElements.get('product-info')) {
   }
 )};
 
-function fetchQtyRules(variantId, qty) {
-  fetch(`/admin/api/2022-04/variants/${variantId}.json`).then((response) => {
-    return response.text()
-  })
-  .then((state) => {
-    const parsedState = JSON.parse(state);
-    if (parsedState.variant !== null) {
-      // Updating qty rules
-      // qty.closest('.product-form__quantity').querySelector('.quantity-min').innerHTML = parsedState.variant.quantityLimit.min
-      // qty.closest('.product-form__quantity').querySelector('.quantity-max').innerHTML = parsedState.variant.quantityLimit.max
-      // qty.closest('.product-form__quantity').querySelector('.quantity-steps').innerHTML = parsedState.variant.quantityLimit.increment
-      // qty.setAttribute("min", parsedState.variant.quantityLimit.min);
-      // qty.setAttribute("max", parsedState.variant.quantityLimit.max);
-      // qty.setAttribute("step", parsedState.variant.quantityLimit.increment);
-    }
-  })
-  .catch(e => {
-    console.error(e);
-  });
-}
+
 
