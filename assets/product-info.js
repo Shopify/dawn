@@ -35,13 +35,12 @@ if (!customElements.get('product-info')) {
     }
 
     onVariantChange() {
-      // Get qty rules
-      // fetchQtyRules(this.currentVariant.value, this.input, this)
-      // Get cart qty
+      // Get cart qty then qty rules
       this.fetchCartQty()
     }
 
     fetchCartQty() {
+      this.querySelector('.product-form__input .loading-overlay').classList.remove('hidden');
       fetch("/cart?section_id=main-cart-items")
       .then((response) => response.text())
       .then((responseText) => {
@@ -80,6 +79,7 @@ if (!customElements.get('product-info')) {
           this.input.innerHTML = sourceQty.innerHTML
           this.querySelector('.quantity__rules').innerHTML = sourceQtyRules.innerHTML
         }
+        this.querySelector('.product-form__input .loading-overlay').classList.add('hidden');
       })
       .catch(e => {
         console.error(e);
