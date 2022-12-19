@@ -180,7 +180,11 @@ function validateQtyRules(cartValue, currentValue, quantityElement) {
   const max = parseInt(input.max)
 
   if (currentValue !== null && cartValue !== null) {
-    const absoluteAmount = parseInt(currentValue) + parseInt(cartValue)
+    // Only need to account for what is already in cart for sections that arent cart
+    let absoluteAmount = parseInt(currentValue) + parseInt(cartValue)
+    if (quantityElement.classList.contains('cart-quantity')) {
+      absoluteAmount = parseInt(currentValue)
+    }
     const minusButton = quantityElement.querySelector(".quantity__button[name='minus']")
     const addButton = quantityElement.querySelector(".quantity__button[name='plus']")
 

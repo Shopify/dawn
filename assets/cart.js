@@ -42,7 +42,7 @@ class CartItems extends HTMLElement {
 
   onPropagate() {
     if (this.tagName === 'CART-ITEMS') {
-      fetch("/section_id=main-cart-items")
+      fetch("/cart?section_id=main-cart-items")
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html')

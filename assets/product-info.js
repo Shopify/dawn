@@ -7,6 +7,7 @@ if (!customElements.get('product-info')) {
       this.variantSelects = this.querySelector('variant-radios')
       this.submitButton = this.querySelector('[type="submit"]');
       this.destinationQty = this.querySelector('.quantity-cart')
+      this.onQuantityUpdate();
       this.input.addEventListener('change', this.onQuantityUpdate.bind(this))
 
 
