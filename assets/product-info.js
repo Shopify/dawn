@@ -77,12 +77,12 @@ function fetchQtyRules(variantId, qty) {
     const parsedState = JSON.parse(state);
     if (parsedState.variant !== null) {
       // Updating qty rules
-      qty.closest('.product-form__quantity').querySelector('.quantity-min').innerHTML = parsedState.variant.quantityLimit.min
-      qty.closest('.product-form__quantity').querySelector('.quantity-max').innerHTML = parsedState.variant.quantityLimit.max
-      qty.closest('.product-form__quantity').querySelector('.quantity-steps').innerHTML = parsedState.variant.quantityLimit.increment
-      qty.setAttribute("min", parsedState.variant.quantityLimit.min);
-      qty.setAttribute("max", parsedState.variant.quantityLimit.max);
-      qty.setAttribute("step", parsedState.variant.quantityLimit.increment);
+      // qty.closest('.product-form__quantity').querySelector('.quantity-min').innerHTML = parsedState.variant.quantityLimit.min
+      // qty.closest('.product-form__quantity').querySelector('.quantity-max').innerHTML = parsedState.variant.quantityLimit.max
+      // qty.closest('.product-form__quantity').querySelector('.quantity-steps').innerHTML = parsedState.variant.quantityLimit.increment
+      // qty.setAttribute("min", parsedState.variant.quantityLimit.min);
+      // qty.setAttribute("max", parsedState.variant.quantityLimit.max);
+      // qty.setAttribute("step", parsedState.variant.quantityLimit.increment);
     }
   })
   .catch(e => {
