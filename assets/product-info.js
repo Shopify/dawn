@@ -7,9 +7,7 @@ if (!customElements.get('product-info')) {
       this.variantSelects = this.querySelector('variant-radios')
       this.submitButton = this.querySelector('[type="submit"]');
       this.destinationQty = this.querySelector('.quantity-cart')
-      this.onQuantityUpdate();
       this.input.addEventListener('change', this.onQuantityUpdate.bind(this))
-
 
       if (this.variantSelects) {
         this.variantSelects.addEventListener('change', this.onVariantChange.bind(this));
@@ -17,6 +15,7 @@ if (!customElements.get('product-info')) {
     }
 
     connectedCallback() {
+      this.onQuantityUpdate();
       subscribe('cart-update', this.fetchCartQty.bind(this))
     }
 
