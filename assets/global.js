@@ -180,23 +180,23 @@ function validateQtyRules(cartValue, currentValue, quantityElement) {
   const max = parseInt(input.max)
 
   if (currentValue !== null && cartValue !== null) {
-    // Only need to account for what is already in cart for sections that arent cart
-    let absoluteAmount = parseInt(currentValue) + parseInt(cartValue)
-    if (quantityElement.classList.contains('cart-quantity')) {
-      absoluteAmount = parseInt(currentValue)
-    }
     const minusButton = quantityElement.querySelector(".quantity__button[name='minus']")
     const addButton = quantityElement.querySelector(".quantity__button[name='plus']")
 
-    if (absoluteAmount <= min) {
+    if (parseInt(cartValue) === max) {
       minusButton.classList.add('disabled')
-      addButton.classList.remove('disabled')
-    } else if (max !== null && (absoluteAmount >= max)) {
       addButton.classList.add('disabled')
-      minusButton.classList.remove('disabled')
     } else {
-      addButton.classList.remove('disabled')
-      minusButton.classList.remove('disabled')
+      if (parseInt(currentValue) === min) {
+        minusButton.classList.add('disabled')
+        addButton.classList.remove('disabled')
+      } else if (max !== null && (parseInt(currentValue) === max)) {
+        addButton.classList.add('disabled')
+        minusButton.classList.remove('disabled')
+      } else {
+        addButton.classList.remove('disabled')
+        minusButton.classList.remove('disabled')
+      }
     }
   }
 }
