@@ -155,11 +155,16 @@ class QuantityInput extends HTMLElement {
   }
 
   connectedCallback() {
-    validateQtyRules(this.input.dataset.cartquantity, this.input.value, this.input. this)
+    subscribe('quantity-updated', this.validateQtyRules.bind(this))
   }
-  
+
+  disconnectedCallback() {
+    const sub = subscribe('quantity-updated',this.validateQtyRules.bind(this));
+    sub.unsubscribe()
+  }
+
   onInputChange(event) {
-    validateQtyRules(this.input.dataset.cartquantity, event.target.value, this.input, this)
+    this.validateQtyRules(event.target.value)
   }
 
   onButtonClick(event) {
@@ -169,38 +174,37 @@ class QuantityInput extends HTMLElement {
     event.target.name === 'plus' ? this.input.stepUp() : this.input.stepDown();
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
     const newValue = this.input.value
-    validateQtyRules(this.input.dataset.cartquantity, newValue, this.input, this)
+    this.validateQtyRules(newValue)
+  }
+
+  validateQtyRules(currentValue) {
+    const cartValue = this.input.dataset.cartquantity
+    if (currentValue !== null && cartValue !== null) {
+      const min = parseInt(this.input.min)
+      const max = parseInt(this.input.max)
+      const minusButton = this.querySelector(".quantity__button[name='minus']")
+      const addButton = this.querySelector(".quantity__button[name='plus']")
+
+      if (parseInt(cartValue) === max) {
+        minusButton.classList.add('disabled')
+        addButton.classList.add('disabled')
+      } else {
+        if (parseInt(currentValue) === min) {
+          minusButton.classList.add('disabled')
+          addButton.classList.remove('disabled')
+        } else if (max !== null && (parseInt(currentValue) === max)) {
+          addButton.classList.add('disabled')
+          minusButton.classList.remove('disabled')
+        } else {
+          addButton.classList.remove('disabled')
+          minusButton.classList.remove('disabled')
+        }
+      }
+    }  
   }
 }
 
 customElements.define('quantity-input', QuantityInput);
-
-
-function validateQtyRules(cartValue, currentValue, input, quantityElement) {
-  const min = parseInt(input.min)
-  const max = parseInt(input.max)
-
-  if (currentValue !== null && cartValue !== null) {
-    const minusButton = quantityElement.querySelector(".quantity__button[name='minus']")
-    const addButton = quantityElement.querySelector(".quantity__button[name='plus']")
-
-    if (parseInt(cartValue) === max) {
-      minusButton.classList.add('disabled')
-      addButton.classList.add('disabled')
-    } else {
-      if (parseInt(currentValue) === min) {
-        minusButton.classList.add('disabled')
-        addButton.classList.remove('disabled')
-      } else if (max !== null && (parseInt(currentValue) === max)) {
-        addButton.classList.add('disabled')
-        minusButton.classList.remove('disabled')
-      } else {
-        addButton.classList.remove('disabled')
-        minusButton.classList.remove('disabled')
-      }
-    }
-  }
-}
 
 function debounce(fn, wait) {
   let t;

@@ -30,6 +30,7 @@ if (!customElements.get('product-info')) {
         this.input.min = this.input.step
         this.input.max = (parseInt(this.input.dataset.max) - parseInt(this.input.dataset.cartquantity))
         // if the are items in cart, the new max is max - the items in cart
+        publish('quantity-updated', undefined)
       }
     }
 
