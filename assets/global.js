@@ -152,12 +152,14 @@ class QuantityInput extends HTMLElement {
     this.querySelectorAll('button').forEach(
       (button) => button.addEventListener('click', this.onButtonClick.bind(this))
     );
-    validateQtyRules(this.input.dataset.cartquantity, this.input.value, this)
+  }
 
+  connectedCallback() {
+    validateQtyRules(this.input.dataset.cartquantity, this.input.value, this.input. this)
   }
   
   onInputChange(event) {
-    validateQtyRules(this.input.dataset.cartquantity, event.target.value, this)
+    validateQtyRules(this.input.dataset.cartquantity, event.target.value, this.input, this)
   }
 
   onButtonClick(event) {
@@ -167,15 +169,14 @@ class QuantityInput extends HTMLElement {
     event.target.name === 'plus' ? this.input.stepUp() : this.input.stepDown();
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
     const newValue = this.input.value
-    validateQtyRules(this.input.dataset.cartquantity, newValue, this)
+    validateQtyRules(this.input.dataset.cartquantity, newValue, this.input, this)
   }
 }
 
 customElements.define('quantity-input', QuantityInput);
 
 
-function validateQtyRules(cartValue, currentValue, quantityElement) {
-  const input = quantityElement.querySelector('.quantity__input')
+function validateQtyRules(cartValue, currentValue, input, quantityElement) {
   const min = parseInt(input.min)
   const max = parseInt(input.max)
 
