@@ -7,6 +7,7 @@ if (!customElements.get('product-info')) {
       this.variantSelects = this.querySelector('variant-radios')
       this.submitButton = this.querySelector('[type="submit"]');
       this.destinationQty = this.querySelector('.quantity-cart')
+
       this.input.addEventListener('change', this.onQuantityUpdate.bind(this))
 
       if (this.variantSelects) {
@@ -73,7 +74,7 @@ if (!customElements.get('product-info')) {
       })
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html')
-        const sourceQty = html.querySelector(('quantity-input'))
+        const sourceQty = html.querySelector(('.quantity-input'))
         const sourceQtyRules = html.querySelector(('.quantity__rules'))
         if (sourceQty && sourceQtyRules) {
           this.input.innerHTML = sourceQty.innerHTML
