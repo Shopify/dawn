@@ -154,13 +154,16 @@ class QuantityInput extends HTMLElement {
     );
   }
 
+  quantityUpdateUnsubscriber = undefined;
+
   connectedCallback() {
-    subscribe('quantity-updated', this.validateQtyRules.bind(this))
+    this.quantityUpdateUnsubscriber = subscribe('quantity-updated', this.validateQtyRules.bind(this))
   }
 
   disconnectedCallback() {
-    const sub = subscribe('quantity-updated',this.validateQtyRules.bind(this));
-    sub.unsubscribe()
+    if (this.quantityUpdateUnsubscriber) {
+      this.quantityUpdateUnsubscriber();
+    }
   }
 
   onInputChange(event) {
@@ -200,7 +203,7 @@ class QuantityInput extends HTMLElement {
           minusButton.classList.remove('disabled')
         }
       }
-    }  
+    }
   }
 }
 
