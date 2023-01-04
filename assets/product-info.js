@@ -50,16 +50,14 @@ if (!customElements.get('product-info')) {
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html')
         const sourceQty = html.querySelector((`[data-variantid~="${this.currentVariant.value}"]`))
+        const quantityRulesCartClassname = '.quantity__rules-cart';
         if (sourceQty) {
           const valueQtyCart = sourceQty.value;
-          const quantityRulesCartClassname = '.quantity__rules-cart';
-          if (valueQtyCart > 0) {
-            this.querySelector(quantityRulesCartClassname).classList.remove('hidden')
-          } else {
-            this.querySelector(quantityRulesCartClassname).classList.add('hidden')
+          this.querySelector(quantityRulesCartClassname).classList.toggle('hidden', valueQtyCart <= 0);
+          if (valueQtyCart && this.input) {
+            this.input.dataset.cartquantity = valueQtyCart;
+            this.destinationQty.innerHTML = valueQtyCart;
           }
-          if (valueQtyCart && this.input) this.input.dataset.cartquantity = valueQtyCart;
-          if (valueQtyCart && this.input) this.destinationQty.innerHTML = valueQtyCart;
         } else {
           if (this.input) this.input.dataset.cartquantity = 0;
           this.destinationQty.innerHTML = 0;
