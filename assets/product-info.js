@@ -49,7 +49,7 @@ if (!customElements.get('product-info')) {
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html')
-        const sourceQty = html.querySelector((`[data-variantid~="${this.currentVariant.value}"]`))
+        const sourceQty = html.querySelector((`[data-quantity-variant-id~="${this.currentVariant.value}"]`))
         const quantityRulesCartClassname = '.quantity__rules-cart';
         if (sourceQty) {
           const valueQtyCart = sourceQty.value;
