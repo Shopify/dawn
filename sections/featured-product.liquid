@@ -35,6 +35,8 @@
   endif
 -%}
 
+{% comment %} TODO: assign `product.selected_or_first_available_variant` to variable and replace usage to reduce verbosity {% endcomment %}
+
 {%- assign first_3d_model = product.media | where: 'media_type', 'model' | first -%}
 {%- if first_3d_model -%}
   {{ 'component-product-model.css' | asset_url | stylesheet_tag }}
@@ -189,27 +191,29 @@
                   <label class="form__label" for="Quantity-{{ section.id }}">
                     {{ 'products.product.quantity.label' | t }}
                   </label>
+                  {% comment %} TODO: enable theme-check once `item_count_for_variant` is accepted as valid filter {% endcomment %}
+                  {% # theme-check-disable %}
+                  {%- assign cart_qty = cart | item_count_for_variant: product.selected_or_first_available_variant.id -%}
+                  {% # theme-check-enable %}
                   <quantity-input class="quantity">
                     <button class="quantity__button no-js-hidden" name="minus" type="button">
                       <span class="visually-hidden">
                         {{- 'products.product.quantity.decrease' | t: product: product.title | escape -}}
                       </span>
                       {% render 'icon-minus' %}
-                    </button>
+                    </button>                    
                     <input
                       class="quantity__input"
                       type="number"
                       name="quantity"
-                      id="Quantity-{{ section.id }}"
-                      {% # theme-check-disable %}
-                      data-cartquantity="{{ cart | item_count_for_variant: product.selected_or_first_available_variant.id }}"
+                      id="Quantity-{{ section.id }}"                      
+                      data-cartquantity="{{ cart_qty }}"                     
                       data-min="{{ product.selected_or_first_available_variant.quantity_limit.min }}"
                       {% if  product.selected_or_first_available_variant.quantity_limit.max != nil %}data-max="{{ product.selected_or_first_available_variant.quantity_limit.max }}"{% endif %}
                       min="{{ product.selected_or_first_available_variant.quantity_limit.min }}"
                       {% if  product.selected_or_first_available_variant.quantity_limit.max != nil %}max="{{ product.selected_or_first_available_variant.quantity_limit.max }}"{% endif %}
                       step="{{ product.selected_or_first_available_variant.quantity_limit.increment }}"
-                      value="{{ product.selected_or_first_available_variant.quantity_limit.min }}"
-                      {% # theme-check-enable %}
+                      value="{{ product.selected_or_first_available_variant.quantity_limit.min }}"                      
                       form="{{ product_form_id }}"
                     />
                     <button class="quantity__button no-js-hidden" name="plus" type="button">
@@ -218,8 +222,7 @@
                       </span>
                       {% render 'icon-plus' %}
                     </button>
-                  </quantity-input>
-                  {% # theme-check-disable %}
+                  </quantity-input>                  
                   <div class="quantity__rules caption">
                     <div class="loading-overlay hidden">
                       <div class="loading-overlay__spinner">
@@ -227,9 +230,8 @@
                           <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
                         </svg>
                       </div>
-                    </div>
-                    {%- assign cart_qty = cart | item_count_for_variant: product.selected_or_first_available_variant.id -%}
-                    <span class="quantity__rules-cart{% if  cart_qty == 0 %} hidden{% endif %}"><span class="quantity-cart">{{ cart | item_count_for_variant: product.selected_or_first_available_variant.id }}</span> in cart</span>
+                    </div>                  
+                    <span class="quantity__rules-cart{% if cart_qty == 0 %} hidden{% endif %}"><span class="quantity-cart">{{ cart_qty }}</span> in cart</span>
                     {%- if product.selected_or_first_available_variant.quantity_limit.min > 1 or product.selected_or_first_available_variant.quantity_limit.max != nil or product.selected_or_first_available_variant.quantity_limit.increment > 1 -%}
                       <span>(</span>
                     {%- endif -%}                    {%- if product.selected_or_first_available_variant.quantity_limit.min > 1 -%}
@@ -245,7 +247,6 @@
                       <span>)</span>
                     {%- endif -%}   
                   </div>
-                  {% # theme-check-enable %}
                 </div>
               {%- when 'share' -%}
                 {% assign share_url = product.selected_variant.url | default: product.url | prepend: request.origin %}
