@@ -40,7 +40,7 @@ class PredictiveSearch extends SearchForm {
   onFormSubmit(event) {
     if (
       !this.getQuery().length ||
-      this.querySelector('a[aria-selected="true"]')
+      this.querySelector('[aria-selected="true"] a')
     )
       event.preventDefault();
   }
@@ -104,11 +104,16 @@ class PredictiveSearch extends SearchForm {
   }
 
   switchOption(direction) {
-    if (!this.getAttribute('open')) return;
+    if (!this.getAttribute("open")) return;
 
-    const moveUp = direction === 'up';
+    const moveUp = direction === "up";
     const selectedElement = this.querySelector('[aria-selected="true"]');
-    const allElements = this.querySelectorAll('a, button.predictive-search__item');
+
+    // Filter out hidden elements (duplicated page and article resources) thanks
+    // to this https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetParent
+    const allVisibleElements = Array.from(
+      this.querySelectorAll("li, button.predictive-search__item")
+    ).filter((element) => element.offsetParent !== null);
     let activeElementIndex = 0;
 
     if (moveUp && !selectedElement) return;
@@ -116,41 +121,41 @@ class PredictiveSearch extends SearchForm {
     let selectedElementIndex = -1;
     let i = 0;
 
-    while (selectedElementIndex === -1 && i <= allElements.length) {
-      if (allElements[i] === selectedElement) {
+    while (selectedElementIndex === -1 && i <= allVisibleElements.length) {
+      if (allVisibleElements[i] === selectedElement) {
         selectedElementIndex = i;
       }
       i++;
     }
 
-    this.statusElement.textContent = '';
+    this.statusElement.textContent = "";
 
     if (!moveUp && selectedElement) {
       activeElementIndex =
-        selectedElementIndex === allElements.length - 1
+        selectedElementIndex === allVisibleElements.length - 1
           ? 0
           : selectedElementIndex + 1;
     } else if (moveUp) {
       activeElementIndex =
         selectedElementIndex === 0
-          ? allElements.length - 1
+          ? allVisibleElements.length - 1
           : selectedElementIndex - 1;
     }
 
     if (activeElementIndex === selectedElementIndex) return;
 
-    const activeElement = allElements[activeElementIndex];
+    const activeElement = allVisibleElements[activeElementIndex];
 
-    activeElement.setAttribute('aria-selected', true);
-    if (selectedElement) selectedElement.setAttribute('aria-selected', false);
+    activeElement.setAttribute("aria-selected", true);
+    if (selectedElement) selectedElement.setAttribute("aria-selected", false);
 
     this.setLiveRegionText(activeElement.textContent);
-    this.input.setAttribute('aria-activedescendant', activeElement.id);
+    this.input.setAttribute("aria-activedescendant", activeElement.id);
   }
 
   selectOption() {
     const selectedProduct = this.querySelector(
-      'a[aria-selected="true"], button[aria-selected="true"]'
+      '[aria-selected="true"] a, button[aria-selected="true"]'
     );
 
     if (selectedProduct) selectedProduct.click();
