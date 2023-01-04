@@ -432,11 +432,13 @@ class HeaderDrawer extends MenuDrawer {
     summaryElement.setAttribute('aria-expanded', true);
     trapFocus(this.mainDetailsToggle, summaryElement);
     document.body.classList.add(`overflow-hidden-${this.dataset.breakpoint}`);
+    summaryElement.classList.add(`drawer-open`);
   }
 
   closeMenuDrawer(event, elementToFocus) {
     super.closeMenuDrawer(event, elementToFocus);
     this.header.classList.remove('menu-open');
+    elementToFocus.classList.remove(`drawer-open`);
   }
 }
 
