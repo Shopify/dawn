@@ -38,7 +38,11 @@ class PredictiveSearch extends SearchForm {
   }
 
   onFormSubmit(event) {
-    if (!this.getQuery().length || this.querySelector('[aria-selected="true"] a')) event.preventDefault();
+    if (
+      !this.getQuery().length ||
+      this.querySelector('a[aria-selected="true"]')
+    )
+      event.preventDefault();
   }
 
   onFormReset(event) {
@@ -69,7 +73,7 @@ class PredictiveSearch extends SearchForm {
   onFocusOut() {
     setTimeout(() => {
       if (!this.contains(document.activeElement)) this.close();
-    })
+    });
   }
 
   onKeyup(event) {
@@ -104,20 +108,38 @@ class PredictiveSearch extends SearchForm {
 
     const moveUp = direction === 'up';
     const selectedElement = this.querySelector('[aria-selected="true"]');
-    const allElements = this.querySelectorAll('li');
-    let activeElement = this.querySelector('li');
+    const allElements = this.querySelectorAll('a, button.predictive-search__item');
+    let activeElementIndex = 0;
 
     if (moveUp && !selectedElement) return;
+
+    let selectedElementIndex = -1;
+    let i = 0;
+
+    while (selectedElementIndex === -1 && i <= allElements.length) {
+      if (allElements[i] === selectedElement) {
+        selectedElementIndex = i;
+      }
+      i++;
+    }
 
     this.statusElement.textContent = '';
 
     if (!moveUp && selectedElement) {
-      activeElement = selectedElement.nextElementSibling || allElements[0];
+      activeElementIndex =
+        selectedElementIndex === allElements.length - 1
+          ? 0
+          : selectedElementIndex + 1;
     } else if (moveUp) {
-      activeElement = selectedElement.previousElementSibling || allElements[allElements.length - 1];
+      activeElementIndex =
+        selectedElementIndex === 0
+          ? allElements.length - 1
+          : selectedElementIndex - 1;
     }
 
-    if (activeElement === selectedElement) return;
+    if (activeElementIndex === selectedElementIndex) return;
+
+    const activeElement = allElements[activeElementIndex];
 
     activeElement.setAttribute('aria-selected', true);
     if (selectedElement) selectedElement.setAttribute('aria-selected', false);
@@ -127,13 +149,15 @@ class PredictiveSearch extends SearchForm {
   }
 
   selectOption() {
-    const selectedProduct = this.querySelector('[aria-selected="true"] a, [aria-selected="true"] button');
+    const selectedProduct = this.querySelector(
+      'a[aria-selected="true"], button[aria-selected="true"]'
+    );
 
     if (selectedProduct) selectedProduct.click();
   }
 
   getSearchResults(searchTerm) {
-    const queryKey = searchTerm.replace(" ", "-").toLowerCase();
+    const queryKey = searchTerm.replace(' ', '-').toLowerCase();
     this.setLiveRegionLoadingState();
 
     if (this.cachedResults[queryKey]) {
@@ -142,8 +166,10 @@ class PredictiveSearch extends SearchForm {
     }
 
     fetch(
-      `${routes.predictive_search_url}?q=${encodeURIComponent(searchTerm)}&${encodeURIComponent('resources[type]')}=product&${encodeURIComponent('resources[limit]')}=4&section_id=predictive-search`,
-      {signal: this.abortController.signal}
+      `${routes.predictive_search_url}?q=${encodeURIComponent(
+        searchTerm
+      )}&section_id=predictive-search`,
+      { signal: this.abortController.signal }
     )
       .then((response) => {
         if (!response.ok) {
@@ -210,7 +236,8 @@ class PredictiveSearch extends SearchForm {
   }
 
   open() {
-    this.predictiveSearchResults.style.maxHeight = this.resultsMaxHeight || `${this.getResultsMaxHeight()}px`;
+    this.predictiveSearchResults.style.maxHeight =
+      this.resultsMaxHeight || `${this.getResultsMaxHeight()}px`;
     this.setAttribute('open', true);
     this.input.setAttribute('aria-expanded', true);
     this.isOpen = true;
