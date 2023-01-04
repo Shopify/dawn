@@ -146,9 +146,9 @@ class QuantityInput extends HTMLElement {
   constructor() {
     super();
     this.input = this.querySelector('input');
-    this.changeEvent = new Event('change', { bubbles: true })
+    this.changeEvent = new Event('change', { bubbles: true });
 
-    this.input.addEventListener('change', this.onInputChange.bind(this))
+    this.input.addEventListener('change', this.onInputChange.bind(this));
     this.querySelectorAll('button').forEach(
       (button) => button.addEventListener('click', this.onButtonClick.bind(this))
     );
@@ -157,7 +157,7 @@ class QuantityInput extends HTMLElement {
   quantityUpdateUnsubscriber = undefined;
 
   connectedCallback() {
-    this.quantityUpdateUnsubscriber = subscribe('quantity-updated', this.validateQtyRules.bind(this))
+    this.quantityUpdateUnsubscriber = subscribe('quantity-updated', this.validateQtyRules.bind(this));
   }
 
   disconnectedCallback() {
@@ -167,7 +167,7 @@ class QuantityInput extends HTMLElement {
   }
 
   onInputChange(event) {
-    this.validateQtyRules(event.target.value)
+    this.validateQtyRules(event.target.value);
   }
 
   onButtonClick(event) {
@@ -176,31 +176,31 @@ class QuantityInput extends HTMLElement {
 
     event.target.name === 'plus' ? this.input.stepUp() : this.input.stepDown();
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
-    const newValue = this.input.value
-    this.validateQtyRules(newValue)
+    const newValue = this.input.value;
+    this.validateQtyRules(newValue);
   }
 
   validateQtyRules(currentValue) {
-    const cartValue = this.input.dataset.cartquantity
+    const cartValue = this.input.dataset.cartquantity;
     if (currentValue !== null && cartValue !== null) {
-      const min = parseInt(this.input.min)
-      const max = parseInt(this.input.max)
-      const minusButton = this.querySelector(".quantity__button[name='minus']")
-      const addButton = this.querySelector(".quantity__button[name='plus']")
+      const min = parseInt(this.input.min);
+      const max = parseInt(this.input.max);
+      const minusButton = this.querySelector(".quantity__button[name='minus']");
+      const addButton = this.querySelector(".quantity__button[name='plus']");
 
       if (parseInt(cartValue) === max) {
-        minusButton.classList.add('disabled')
-        addButton.classList.add('disabled')
+        minusButton.classList.add('disabled');
+        addButton.classList.add('disabled');
       } else {
         if (parseInt(currentValue) === min) {
-          minusButton.classList.add('disabled')
-          addButton.classList.remove('disabled')
-        } else if (max !== null && (parseInt(currentValue) === max)) {
-          addButton.classList.add('disabled')
-          minusButton.classList.remove('disabled')
+          minusButton.classList.add('disabled');
+          addButton.classList.remove('disabled');
+        } else if (max !== null && parseInt(currentValue) === max) {
+          addButton.classList.add('disabled');
+          minusButton.classList.remove('disabled');
         } else {
-          addButton.classList.remove('disabled')
-          minusButton.classList.remove('disabled')
+          addButton.classList.remove('disabled');
+          minusButton.classList.remove('disabled');
         }
       }
     }
