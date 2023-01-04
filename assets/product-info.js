@@ -30,9 +30,9 @@ if (!customElements.get('product-info')) {
 
     onQuantityUpdate() {
       // If the amount in cart is more than the min, thew new min is the step (only in the pdp and feat prod)
-      if (parseInt(this.input.dataset.cartquantity) >= parseInt(this.input.min)) {
+      if (parseInt(this.input.dataset.cartQuantity) >= parseInt(this.input.min)) {
         this.input.min = this.input.step
-        this.input.max = (parseInt(this.input.dataset.max) - parseInt(this.input.dataset.cartquantity))
+        this.input.max = (parseInt(this.input.dataset.max) - parseInt(this.input.dataset.cartQuantity))
         // if the are items in cart, the new max is max - the items in cart
         publish('quantity-updated', undefined)
       }
@@ -55,11 +55,11 @@ if (!customElements.get('product-info')) {
           const valueQtyCart = sourceQty.value;
           this.querySelector(quantityRulesCartClassname).classList.toggle('hidden', valueQtyCart <= 0);
           if (valueQtyCart && this.input) {
-            this.input.dataset.cartquantity = valueQtyCart;
+            this.input.dataset.cartQuantity = valueQtyCart;
             this.destinationQty.innerHTML = valueQtyCart;
           }
         } else {
-          if (this.input) this.input.dataset.cartquantity = 0;
+          if (this.input) this.input.dataset.cartQuantity = 0;
           this.destinationQty.innerHTML = 0;
           this.querySelector(quantityRulesCartClassname).classList.add('hidden')
         }

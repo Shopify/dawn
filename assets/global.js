@@ -181,7 +181,7 @@ class QuantityInput extends HTMLElement {
   }
 
   validateQtyRules(currentValue) {
-    const cartValue = this.input.dataset.cartquantity;
+    const cartValue = this.input.dataset.cartQuantity;
     if (currentValue !== null && cartValue !== null) {
       const min = parseInt(this.input.min);
       const max = parseInt(this.input.max);
