@@ -30,7 +30,7 @@ class CartItems extends HTMLElement {
   cartUpdateUnsubscriber = undefined;
 
   connectedCallback() {
-    this.cartUpdateUnsubscriber = subscribe('cart-update', this.onCartUpdate.bind(this))
+    this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.productAddToCart, this.onCartUpdate.bind(this))
   }
 
   disconnectedCallback() {
@@ -121,7 +121,7 @@ class CartItems extends HTMLElement {
           trapFocus(cartDrawerWrapper, document.querySelector('.cart-item__name'))
         }
         this.disableLoading();
-        publish('cart-update', undefined)
+        publish(PUB_SUB_EVENTS.cartUpdate, undefined)
 
       }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));

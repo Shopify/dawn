@@ -16,15 +16,20 @@ if (!customElements.get('product-info')) {
     }
 
     cartUpdateUnsubscriber = undefined;
+    productCartUpdateUnsubscriber = undefined;
 
     connectedCallback() {
       this.onQuantityUpdate();
-      this.cartUpdateUnsubscriber = subscribe('cart-update', this.fetchCartQty.bind(this))
+      this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, this.fetchCartQty.bind(this));
+      this.productCartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.productAddToCart, this.fetchCartQty.bind(this));
     }
 
     disconnectedCallback() {
       if (this.cartUpdateUnsubscriber) {
         this.cartUpdateUnsubscriber();
+      }
+      if (this.productCartUpdateUnsubscriber) {
+        this.productCartUpdateUnsubscriber();
       }
     }
 
@@ -34,7 +39,7 @@ if (!customElements.get('product-info')) {
         this.input.min = this.input.step
         this.input.max = (parseInt(this.input.dataset.max) - parseInt(this.input.dataset.cartQuantity))
         // if the are items in cart, the new max is max - the items in cart
-        publish('quantity-updated', undefined)
+        publish(PUB_SUB_EVENTS.quantityUpdate, undefined)
       }
     }
 
