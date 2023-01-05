@@ -149,16 +149,15 @@ class PredictiveSearch extends SearchForm {
     activeElement.setAttribute("aria-selected", true);
     if (selectedElement) selectedElement.setAttribute("aria-selected", false);
 
-    this.setLiveRegionText(activeElement.textContent);
     this.input.setAttribute("aria-activedescendant", activeElement.id);
   }
 
   selectOption() {
-    const selectedProduct = this.querySelector(
+    const selectedOption = this.querySelector(
       '[aria-selected="true"] a, button[aria-selected="true"]'
     );
 
-    if (selectedProduct) selectedProduct.click();
+    if (selectedOption) selectedOption.click();
   }
 
   getSearchResults(searchTerm) {
