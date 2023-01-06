@@ -21,15 +21,11 @@ if (!customElements.get('product-info')) {
     connectedCallback() {
       this.onQuantityUpdate();
       this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, this.fetchCartQty.bind(this));
-      this.productCartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.productAddToCart, this.fetchCartQty.bind(this));
     }
 
     disconnectedCallback() {
       if (this.cartUpdateUnsubscriber) {
         this.cartUpdateUnsubscriber();
-      }
-      if (this.productCartUpdateUnsubscriber) {
-        this.productCartUpdateUnsubscriber();
       }
     }
 
@@ -57,7 +53,7 @@ if (!customElements.get('product-info')) {
         const sourceQty = html.querySelector((`[data-quantity-variant-id~="${this.currentVariant.value}"]`))
         const quantityRulesCartClassname = '.quantity__rules-cart';
         if (sourceQty) {
-          const valueQtyCart = sourceQty.value;
+          const valueQtyCart = sourceQty.value;         
           this.querySelector(quantityRulesCartClassname).classList.toggle('hidden', valueQtyCart <= 0);
           if (valueQtyCart && this.input) {
             this.input.dataset.cartQuantity = valueQtyCart;
