@@ -196,13 +196,16 @@
                 class="product-form__input product-form__quantity{% if settings.inputs_shadow_vertical_offset != 0 and settings.inputs_shadow_vertical_offset < 0 %} product-form__quantity-top{% endif %}"
                 {{ block.shopify_attributes }}
               >
-                <label class="form__label" for="Quantity-{{ section.id }}">
-                  {{ 'products.product.quantity.label' | t }}
-                </label>
                 {% comment %} TODO: enable theme-check once `item_count_for_variant` is accepted as valid filter {% endcomment %}
                 {% # theme-check-disable %}
                 {%- assign cart_qty = cart | item_count_for_variant: product.selected_or_first_available_variant.id -%}
                 {% # theme-check-enable %}
+                <label class="form__label" for="Quantity-{{ section.id }}">
+                  {{ 'products.product.quantity.label' | t }}
+                  <span class="quantity__rules-cart{% if cart_qty == 0 %} hidden{% endif %}">
+                    ({{- 'products.product.quantity.in_cart_html' | t: quantity: cart_qty -}})
+                  </span>
+                </label>
                 <quantity-input class="quantity">
                   <button class="quantity__button no-js-hidden" name="minus" type="button">
                     <span class="visually-hidden">
@@ -237,11 +240,7 @@
                         <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
                       </svg>
                     </div>
-                  </div>                  
-                  <span class="quantity__rules-cart{% if cart_qty == 0 %} hidden{% endif %}">{{ 'products.product.quantity.in_cart_html' | t: quantity: cart_qty }}</span>
-                  {%- if product.selected_or_first_available_variant.quantity_limit.min > 1 or product.selected_or_first_available_variant.quantity_limit.max != nil or product.selected_or_first_available_variant.quantity_limit.increment > 1 -%}
-                    <span>(</span>
-                  {%- endif -%}                   
+                  </div>
                   {%- if product.selected_or_first_available_variant.quantity_limit.min > 1 -%}
                     <span class="divider">{{ 'products.product.quantity.minimum_of' | t: quantity: product.selected_or_first_available_variant.quantity_limit.min }}</span>
                   {%- endif -%}
@@ -251,10 +250,7 @@
                   {%- if product.selected_or_first_available_variant.quantity_limit.increment > 1 -%}
                     <span class="divider">{{ 'products.product.quantity.multiples_of' | t: quantity: product.selected_or_first_available_variant.quantity_limit.increment }}</span>
                   {%- endif -%}
-                  {%- if product.selected_or_first_available_variant.quantity_limit.min > 1 or product.selected_or_first_available_variant.quantity_limit.max != nil or product.selected_or_first_available_variant.quantity_limit.increment > 1 -%}
-                    <span>)</span>
-                  {%- endif -%}             
-                </div>              
+                </div>
               </div>
             {%- when 'popup' -%}
               <modal-opener
