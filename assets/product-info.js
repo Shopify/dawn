@@ -16,7 +16,6 @@ if (!customElements.get('product-info')) {
     }
 
     cartUpdateUnsubscriber = undefined;
-    productCartUpdateUnsubscriber = undefined;
 
     connectedCallback() {
       this.onQuantityUpdate();
@@ -30,17 +29,15 @@ if (!customElements.get('product-info')) {
     }
 
     onQuantityUpdate() {
-      // If the amount in cart is more than the min, thew new min is the step (only in the pdp and feat prod)
-      if (parseInt(this.input.dataset.cartQuantity) >= parseInt(this.input.min)) {
+      // If the quantity in the cart is more than the minimum value, the input minimum is set to the step value     
+      if (parseInt(this.input.dataset.cartQuantity) >= parseInt(this.input.min)) {       
         this.input.min = this.input.step
         this.input.max = (parseInt(this.input.dataset.max) - parseInt(this.input.dataset.cartQuantity))
-        // if the are items in cart, the new max is max - the items in cart
         publish(PUB_SUB_EVENTS.quantityUpdate, undefined)
       }
     }
 
     onVariantChange() {
-      // Get cart qty then qty rules
       this.fetchCartQty()
     }
 

@@ -134,7 +134,7 @@ class CartItems extends HTMLElement {
         } else if (document.querySelector('.cart-item') && cartDrawerWrapper) {
           trapFocus(cartDrawerWrapper, document.querySelector('.cart-item__name'))
         }
-        publish(PUB_SUB_EVENTS.cartUpdate, {source: 'product-form'});
+        publish(PUB_SUB_EVENTS.cartUpdate, {source: 'cart-items'});
       }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         const errors = document.getElementById('cart-errors') || document.getElementById('CartDrawer-CartErrors');
