@@ -38,11 +38,7 @@ class PredictiveSearch extends SearchForm {
   }
 
   onFormSubmit(event) {
-    if (
-      !this.getQuery().length ||
-      this.querySelector('[aria-selected="true"] a')
-    )
-      event.preventDefault();
+    if (!this.getQuery().length || this.querySelector('[aria-selected="true"] a')) event.preventDefault();
   }
 
   onFormReset(event) {
@@ -73,7 +69,7 @@ class PredictiveSearch extends SearchForm {
   onFocusOut() {
     setTimeout(() => {
       if (!this.contains(document.activeElement)) this.close();
-    });
+    })
   }
 
   onKeyup(event) {
@@ -104,9 +100,9 @@ class PredictiveSearch extends SearchForm {
   }
 
   switchOption(direction) {
-    if (!this.getAttribute("open")) return;
+    if (!this.getAttribute('open')) return;
 
-    const moveUp = direction === "up";
+    const moveUp = direction === 'up';
     const selectedElement = this.querySelector('[aria-selected="true"]');
 
     // Filter out hidden elements (duplicated page and article resources) thanks
@@ -146,10 +142,10 @@ class PredictiveSearch extends SearchForm {
 
     const activeElement = allVisibleElements[activeElementIndex];
 
-    activeElement.setAttribute("aria-selected", true);
-    if (selectedElement) selectedElement.setAttribute("aria-selected", false);
+    activeElement.setAttribute('aria-selected', true);
+    if (selectedElement) selectedElement.setAttribute('aria-selected', false);
 
-    this.input.setAttribute("aria-activedescendant", activeElement.id);
+    this.input.setAttribute('aria-activedescendant', activeElement.id);
   }
 
   selectOption() {
@@ -161,7 +157,7 @@ class PredictiveSearch extends SearchForm {
   }
 
   getSearchResults(searchTerm) {
-    const queryKey = searchTerm.replace(' ', '-').toLowerCase();
+    const queryKey = searchTerm.replace(" ", "-").toLowerCase();
     this.setLiveRegionLoadingState();
 
     if (this.cachedResults[queryKey]) {
@@ -240,8 +236,7 @@ class PredictiveSearch extends SearchForm {
   }
 
   open() {
-    this.predictiveSearchResults.style.maxHeight =
-      this.resultsMaxHeight || `${this.getResultsMaxHeight()}px`;
+    this.predictiveSearchResults.style.maxHeight = this.resultsMaxHeight || `${this.getResultsMaxHeight()}px`;
     this.setAttribute('open', true);
     this.input.setAttribute('aria-expanded', true);
     this.isOpen = true;
