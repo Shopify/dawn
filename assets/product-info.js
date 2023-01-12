@@ -42,7 +42,7 @@ if (!customElements.get('product-info')) {
     }
 
     fetchCartQty() {
-      this.querySelector('.product-form__input .loading-overlay').classList.remove('hidden');
+      this.querySelector('.quantity__rules-cart .loading-overlay').classList.remove('hidden');
       fetch("/cart?section_id=main-cart-items")
       .then((response) => response.text())
       .then((responseText) => {
@@ -80,7 +80,8 @@ if (!customElements.get('product-info')) {
           this.input.innerHTML = sourceQty.innerHTML
           this.querySelector('.quantity__rules').innerHTML = sourceQtyRules.innerHTML
         }
-        this.querySelector('.product-form__input .loading-overlay').classList.add('hidden');
+        // TODO: Move this to ensure loading state is removed even if error is thrown
+        this.querySelector('.quantity__rules-cart .loading-overlay').classList.add('hidden');
       })
       .catch(e => {
         console.error(e);
