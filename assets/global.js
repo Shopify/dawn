@@ -417,6 +417,11 @@ customElements.define('menu-drawer', MenuDrawer);
 class HeaderDrawer extends MenuDrawer {
   constructor() {
     super();
+
+    this.onResize = () => {
+      document.documentElement.style.setProperty('--header-bottom-position', `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`);
+      document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
+    };
   }
 
   openMenuDrawer(summaryElement) {
@@ -430,6 +435,7 @@ class HeaderDrawer extends MenuDrawer {
     });
 
     summaryElement.setAttribute('aria-expanded', true);
+    window.addEventListener('resize', this.onResize);
     trapFocus(this.mainDetailsToggle, summaryElement);
     document.body.classList.add(`overflow-hidden-${this.dataset.breakpoint}`);
     summaryElement.classList.add(`drawer-open`);
@@ -437,8 +443,10 @@ class HeaderDrawer extends MenuDrawer {
 
   closeMenuDrawer(event, elementToFocus) {
     super.closeMenuDrawer(event, elementToFocus);
+    console.log(elementToFocus);
     this.header.classList.remove('menu-open');
     elementToFocus.classList.remove(`drawer-open`);
+    window.removeEventListener('resize', this.onResize);
   }
 }
 
