@@ -368,7 +368,7 @@ class MenuDrawer extends HTMLElement {
     this.closeAnimation(this.mainDetailsToggle);
   }
 
-  onFocusOut(event) {
+  onFocusOut() {
     setTimeout(() => {
       if (this.mainDetailsToggle.hasAttribute('open') && !this.mainDetailsToggle.contains(document.activeElement)) this.closeMenuDrawer();
     });
@@ -417,11 +417,6 @@ customElements.define('menu-drawer', MenuDrawer);
 class HeaderDrawer extends MenuDrawer {
   constructor() {
     super();
-
-    this.onResize = () => {
-      document.documentElement.style.setProperty('--header-bottom-position', `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`);
-      document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
-    };
   }
 
   openMenuDrawer(summaryElement) {
@@ -442,12 +437,17 @@ class HeaderDrawer extends MenuDrawer {
   }
 
   closeMenuDrawer(event, elementToFocus) {
+    if (!elementToFocus) return;
     super.closeMenuDrawer(event, elementToFocus);
-    console.log(elementToFocus);
     this.header.classList.remove('menu-open');
     elementToFocus.classList.remove(`drawer-open`);
     window.removeEventListener('resize', this.onResize);
   }
+
+  onResize = () => {
+    this.header && document.documentElement.style.setProperty('--header-bottom-position', `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`);
+    document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
+  };
 }
 
 customElements.define('header-drawer', HeaderDrawer);
