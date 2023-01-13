@@ -51,6 +51,7 @@ if (!customElements.get('product-form')) {
             return;
           }
 
+          if (!this.error) publish(PUB_SUB_EVENTS.cartUpdate, {source: 'product-form'});
           this.error = false;
           const quickAddModal = this.closest('quick-add-modal');
           if (quickAddModal) {
@@ -70,7 +71,6 @@ if (!customElements.get('product-form')) {
           if (this.cart && this.cart.classList.contains('is-empty')) this.cart.classList.remove('is-empty');
           if (!this.error) this.submitButton.removeAttribute('aria-disabled');
           this.querySelector('.loading-overlay__spinner').classList.add('hidden');
-          publish(PUB_SUB_EVENTS.cartUpdate, {source: 'product-form'});
         });
     }
 
