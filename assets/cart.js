@@ -17,9 +17,6 @@ class CartItems extends HTMLElement {
     super();
     this.lineItemStatusElement = document.getElementById('shopping-cart-line-item-status') || document.getElementById('CartDrawer-LineItemStatus');
 
-    this.currentItemCount = Array.from(this.querySelectorAll('[name="updates[]"]'))
-      .reduce((total, quantityInput) => total + parseInt(quantityInput.value), 0);
-
     const debouncedOnChange = debounce((event) => {
       this.onChange(event);
     }, ON_CHANGE_DEBOUNCE_TIMER);
@@ -106,7 +103,7 @@ class CartItems extends HTMLElement {
 
         if (parsedState.errors) {
           quantityElement.value = quantityElement.getAttribute('value');
-          this.updateLiveRegions(line, this.currentItemCount, parsedState.errors);
+          this.updateLiveRegions(line, parsedState.errors);
           return;
         }
 
@@ -123,8 +120,9 @@ class CartItems extends HTMLElement {
           elementToReplace.innerHTML = 
             this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
         }));
-        
-        this.updateLiveRegions(line, parsedState.item_count, window.cartStrings.quantityError.replace('[quantity]', quantityElement.value));
+        const updatedValue = parsedState.items[line - 1].quantity;
+        const message = updatedValue !== parseInt(quantityElement.value) ? window.cartStrings.quantityError.replace('[quantity]', updatedValue) : '';
+        this.updateLiveRegions(line, message);
 
         const lineItem = document.getElementById(`CartItem-${line}`) || document.getElementById(`CartDrawer-Item-${line}`);
         if (lineItem && lineItem.querySelector(`[name="${name}"]`)) {
@@ -145,13 +143,10 @@ class CartItems extends HTMLElement {
       });
   }
 
-  updateLiveRegions(line, itemCount, message) {
-    if (this.currentItemCount === itemCount) {
-      const lineItemError = document.getElementById(`Line-item-error-${line}`) || document.getElementById(`CartDrawer-LineItemError-${line}`);
-      lineItemError.querySelector('.cart-item__error-text').innerHTML = message;
-    }
+  updateLiveRegions(line, message) {
+    const lineItemError = document.getElementById(`Line-item-error-${line}`) || document.getElementById(`CartDrawer-LineItemError-${line}`);
+    lineItemError.querySelector('.cart-item__error-text').innerHTML = message;
 
-    this.currentItemCount = itemCount;
     this.lineItemStatusElement.setAttribute('aria-hidden', true);
 
     const cartStatus = document.getElementById('cart-live-region-text') || document.getElementById('CartDrawer-LiveRegionText');
