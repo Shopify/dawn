@@ -6,9 +6,7 @@ if (!customElements.get('product-info')) {
       this.currentVariant = this.querySelector('.product-variant-id');
       this.variantSelects = this.querySelector('variant-radios')
       this.submitButton = this.querySelector('[type="submit"]');
-      this.destinationQty = this.querySelector('.quantity-cart')
-
-      this.input.addEventListener('change', this.onQuantityUpdate.bind(this))
+      this.destinationQty = this.querySelector('.quantity-cart');
 
       if (this.variantSelects) {
         this.variantSelects.addEventListener('change', this.onVariantChange.bind(this));
@@ -18,7 +16,7 @@ if (!customElements.get('product-info')) {
     cartUpdateUnsubscriber = undefined;
 
     connectedCallback() {
-      this.onQuantityUpdate();
+      this.setQuantityBoundries();    
       this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, this.fetchCartQty.bind(this));
     }
 
@@ -28,13 +26,23 @@ if (!customElements.get('product-info')) {
       }
     }
 
-    onQuantityUpdate() {
-      // If the quantity in the cart is more than the minimum value, the input minimum is set to the step value     
-      if (parseInt(this.input.dataset.cartQuantity) >= parseInt(this.input.min)) {       
-        this.input.min = this.input.step
-        this.input.max = (parseInt(this.input.dataset.max) - parseInt(this.input.dataset.cartQuantity))
-        publish(PUB_SUB_EVENTS.quantityUpdate, undefined)
+    setQuantityBoundries() {
+      const data = {
+        cartQuantity: this.input.dataset.cartQuantity ? parseInt(this.input.dataset.cartQuantity) : 0,
+        min: this.input.dataset.min ? parseInt(this.input.dataset.min) : 1,
+        max: this.input.dataset.max ? parseInt(this.input.dataset.max) : null,
+        step: this.input.step ? parseInt(this.input.step) : 1
       }
+
+      let min = data.min;
+      const max = data.max === null ? data.max : data.max - data.cartQuantity;
+      if (max !== null) min = Math.min(min, max);
+      if (data.cartQuantity >= data.min) min = Math.min(min, data.step);
+
+      this.input.min = min;
+      this.input.max = max;
+      this.input.value = min;
+      publish(PUB_SUB_EVENTS.quantityUpdate, undefined);  
     }
 
     onVariantChange() {
@@ -80,6 +88,7 @@ if (!customElements.get('product-info')) {
           this.input.innerHTML = sourceQty.innerHTML
           this.querySelector('.quantity__rules').innerHTML = sourceQtyRules.innerHTML
         }
+        this.setQuantityBoundries();
         // TODO: Move this to ensure loading state is removed even if error is thrown
         this.querySelector('.quantity__rules-cart .loading-overlay').classList.add('hidden');
       })

@@ -157,6 +157,7 @@ class QuantityInput extends HTMLElement {
   quantityUpdateUnsubscriber = undefined;
 
   connectedCallback() {
+    this.validateQtyRules();
     this.quantityUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.quantityUpdate, this.validateQtyRules.bind(this));
   }
 
@@ -167,7 +168,7 @@ class QuantityInput extends HTMLElement {
   }
 
   onInputChange(event) {
-    this.validateQtyRules(event.target.value);
+    this.validateQtyRules();
   }
 
   onButtonClick(event) {
@@ -176,34 +177,20 @@ class QuantityInput extends HTMLElement {
 
     event.target.name === 'plus' ? this.input.stepUp() : this.input.stepDown();
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
-    const newValue = this.input.value;
-    this.validateQtyRules(newValue);
   }
 
-  validateQtyRules(currentValue) {
-    const cartValue = this.input.dataset.cartQuantity;
-    if (currentValue !== null && cartValue !== null) {
+  validateQtyRules() {
+    const value = parseInt(this.input.value);
+    if (this.input.min) {
       const min = parseInt(this.input.min);
-      const max = parseInt(this.input.max);
-      const minusButton = this.querySelector(".quantity__button[name='minus']");
-      const addButton = this.querySelector(".quantity__button[name='plus']");
-
-      if (parseInt(cartValue) === max) {
-        minusButton.classList.add('disabled');
-        addButton.classList.add('disabled');
-      } else {
-        if (parseInt(currentValue) === min) {
-          minusButton.classList.add('disabled');
-          addButton.classList.remove('disabled');
-        } else if (max !== null && parseInt(currentValue) === max) {
-          addButton.classList.add('disabled');
-          minusButton.classList.remove('disabled');
-        } else {
-          addButton.classList.remove('disabled');
-          minusButton.classList.remove('disabled');
-        }
-      }
+      const buttonMinus = this.querySelector(".quantity__button[name='minus']");
+      buttonMinus.classList.toggle('disabled', value <= min);
     }
+    if (this.input.max) {
+      const max = parseInt(this.input.max);
+      const buttonPlus = this.querySelector(".quantity__button[name='plus']");
+      buttonPlus.classList.toggle('disabled', value >= max);
+    } 
   }
 }
 
