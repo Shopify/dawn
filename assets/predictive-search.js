@@ -3,6 +3,7 @@ class PredictiveSearch extends SearchForm {
     super();
     this.cachedResults = {};
     this.predictiveSearchResults = this.querySelector('[data-predictive-search]');
+    this.searchForButton = this.querySelector("#search-for-button");
     this.allPredictiveSearchInstances =
       document.querySelectorAll('predictive-search');
     this.isOpen = false;
@@ -27,7 +28,25 @@ class PredictiveSearch extends SearchForm {
 
   onChange() {
     super.onChange();
-    this.searchTerm = this.getQuery();
+    const newSearchTerm = this.getQuery();
+    if (!this.searchTerm || !newSearchTerm.startsWith(this.searchTerm)) {
+      // Hide the results when they are no longer relevant for the new search term
+      this.clearResources();
+    }
+
+    if (!this.searchForButton) {
+      this.searchForButton = this.querySelector("#search-for-button");
+    }
+    if (this.searchForButton) {
+      // Update the term asap, don't wait for the predictive search query to finish loading
+      const newTextSearchButton = this.searchForButton.innerText.replace(
+        this.searchTerm,
+        newSearchTerm
+      );
+      this.searchForButton.innerText = newTextSearchButton;
+    }
+
+    this.searchTerm = newSearchTerm;
 
     if (!this.searchTerm.length) {
       this.close(true);
@@ -262,6 +281,10 @@ class PredictiveSearch extends SearchForm {
     this.input.setAttribute('aria-expanded', false);
     this.resultsMaxHeight = false
     this.predictiveSearchResults.removeAttribute('style');
+  }
+
+  clearResources() {
+    this.querySelector("#predictive-search__results-groups-wrapper")?.remove();
   }
 }
 
