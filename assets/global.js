@@ -433,14 +433,12 @@ class HeaderDrawer extends MenuDrawer {
     window.addEventListener('resize', this.onResize);
     trapFocus(this.mainDetailsToggle, summaryElement);
     document.body.classList.add(`overflow-hidden-${this.dataset.breakpoint}`);
-    summaryElement.classList.add(`drawer-open`);
   }
 
   closeMenuDrawer(event, elementToFocus) {
     if (!elementToFocus) return;
     super.closeMenuDrawer(event, elementToFocus);
     this.header.classList.remove('menu-open');
-    elementToFocus.classList.remove(`drawer-open`);
     window.removeEventListener('resize', this.onResize);
   }
 
