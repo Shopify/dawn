@@ -1,13 +1,13 @@
 {% comment %}
-    Renders product buy-buttons.
-    Accepts:
-    - product: {Object} product object.
-    - block: {Object} passing the block information.
-    - product_form_id: {String} product form id.
-    - show_pickup_availability:: {Boolean} for the pickup availability. If true the pickup availability is rendered, false - not rendered (optional).
+  Renders product buy-buttons.
+  Accepts:
+  - product: {Object} product object.
+  - block: {Object} passing the block information.
+  - product_form_id: {String} product form id.
+  - show_pickup_availability:: {Boolean} for the pickup availability. If true the pickup availability is rendered, false - not rendered (optional).
 
-    Usage:
-    {% render 'buy-buttons', block: block, product: product, product_form_id: product_form_id, show_pickup_availability: true %}
+  Usage:
+  {% render 'buy-buttons', block: block, product: product, product_form_id: product_form_id, show_pickup_availability: true %}
 {% endcomment %}
 <div {{ block.shopify_attributes }}>
   {%- if product != blank -%}
@@ -39,19 +39,29 @@
           name="id"
           value="{{ product.selected_or_first_available_variant.id }}"
           disabled
+          class="product-variant-id"
         >
         <div class="product-form__buttons">
           <button
             type="submit"
             name="add"
             class="product-form__submit button button--full-width {% if block.settings.show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
-            {% if product.selected_or_first_available_variant.available == false %}
+            {% if product.selected_or_first_available_variant.available == false
+              or product.selected_or_first_available_variant.quantity_rule.min
+                > product.selected_or_first_available_variant.inventory_quantity
+            %}
               disabled
             {% endif %}
           >
             <span>
               {%- if product.selected_or_first_available_variant.available -%}
-                {{ 'products.product.add_to_cart' | t }}
+                {%- if product.selected_or_first_available_variant.quantity_rule.min
+                    > product.selected_or_first_available_variant.inventory_quantity
+                -%}
+                  {{ 'products.product.sold_out' | t }}
+                {%- else -%}
+                  {{ 'products.product.add_to_cart' | t }}
+                {%- endif -%}
               {%- else -%}
                 {{ 'products.product.sold_out' | t }}
               {%- endif -%}
