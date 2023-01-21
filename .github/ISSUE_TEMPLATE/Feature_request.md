@@ -1,7 +1,10 @@
 ---
 name: Feature request
 about: Use this template for suggesting a Dawn enhancement
+title: ''
 labels: enhancement
+assignees: ''
+
 ---
 
 ## Describe the enhancement you'd like
@@ -14,4 +17,3 @@ labels: enhancement
 
 ## Additional context/screenshots
 <!-- Maybe a screenshot or design? -->
-
