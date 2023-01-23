@@ -906,6 +906,7 @@ class VariantSelects extends HTMLElement {
 
   renderProductInfo() {
     const requestedVariantId = this.currentVariant.id;
+    const sectionId = this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section;
 
     fetch(`${this.dataset.url}?variant=${requestedVariantId}&section_id=${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`)
       .then((response) => response.text())
@@ -935,6 +936,11 @@ class VariantSelects extends HTMLElement {
         if (inventoryDestination) inventoryDestination.classList.toggle('visibility-hidden', inventorySource.innerText === '');
 
         this.toggleAddButton(!this.currentVariant.available, window.variantStrings.soldOut);
+
+        // Update quantity form
+        const quantityFormCurrent = document.getElementById(`Quantity-Form-${sectionId}`);
+        const quantityFormUpdated = html.getElementById(`Quantity-Form-${sectionId}`);
+        if (quantityFormCurrent && quantityFormUpdated) quantityFormCurrent.innerHTML = quantityFormUpdated.innerHTML;
       });
   }
 
