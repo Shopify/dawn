@@ -1,0 +1,112 @@
+{% if section.settings.show_related %}
+  <div class="contents quick-buy">
+    <div class=" features-box page-width">
+
+      <div class="grid page-width d-flex">
+        <div class="grid__item medium-up--one-half">
+          <div class="quick-buy-title">
+            <h2>{{section.settings.heading}}
+            </h2>
+          </div>
+          <!-- <div class="features_image ">
+          <img src="{{section.settings.image | img_url:'1920x'}}" alt="">
+          </div> -->
+        </div>
+        <div class="grid__item medium-up--one-half-new">
+          <p>{{section.settings.description}}
+          </p>
+        </div>
+      </div>
+
+      <div class="grid page-width d-flex quick-variants">
+        {% include 'bold-product' with product, hide_action: 'break' %}
+        <!-- Regular Product Variants -->
+
+        {% for variant in product.variants %}
+          {% if variant.sku contains "PRO" %}
+            {% assign qb_variant_min = variant.option1 | slice: -2 | floor | at_least: 1 %}
+          {% endif %}
+
+          {% include 'bold-variant' with variant %}
+          <div class="grid__item two-eighths small--one-third">
+            <div class="product-title">
+              {% if qb_variant_min %}
+                <h3>{{ qb_variant_min | times: 12 }}
+                  Zones —
+                  {{ qb_variant_min }}
+                  {{ qb_variant_min | pluralize: 'Kit', 'Kits'}}
+                </h3>
+              {% else %}
+                <h3>{{ variant.title }}
+                </h3>
+              {% endif %}
+            </div>
+            <img src="{{variant.image | img_url:'master'}}">
+            <div class="product-price">
+              {% if qb_variant_min > 1 %}
+                <span class="product-price__price">{{variant.price | times: qb_variant_min | money_without_trailing_zeros }}
+                </span>
+                {% if bold_selected_or_first_available_variant.compare_at_price > bold_selected_or_first_available_variant.price %}
+                  <span class="product-price__sale-label">{{ 'products.product.on_sale' | t }}</span>
+                {% endif %}
+                <span class="shipdelay">Save
+                  {{ variant.price | minus: bold_selected_or_first_available_variant.compare_at_price | times: qb_variant_min | abs | money_without_trailing_zeros }}
+                </span>
+              {% else %}
+                <span class="product-price__price">{{variant.price | money_without_trailing_zeros }}
+                </span>
+                {% if variant.compare_at_price > variant.price %}
+                  <span class="product-price__sale-label">{{ 'products.product.on_sale' | t }}</span>                
+                {% endif %}
+              {% endif %}
+            </div>
+            {% form 'product', product %}
+              <div class="product-add">
+                <input type="hidden" name="quantity" value="{{ qb_variant_min }}" pattern="[0-9]*"/>
+                <input type="hidden" name="id" value="{{ bold_selected_or_first_available_variant.id }}"/>
+                <button type="submit" class="atc btn btn--small" {% unless product.available %}disabled="disabled"{% endunless %}>
+                  {% if product.available %}
+                    {{ 'products.product.add_to_cart' | t }}
+                  {% else %}
+                    {{ 'products.product.sold_out' | t }}
+                  {% endif %}
+                </button>
+              </div>
+            {% endform %}
+          </div>
+        {%endfor%}
+      </div>
+    </div>
+  </div>
+
+{%endif%}
+
+
+{% schema %}
+  {
+    "name": "Infinitely Expandable",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "show_related",
+        "label": "Show Section",
+        "default": true
+      }, {
+        "id": "heading",
+        "type": "text",
+        "label": "Heading",
+        "default": "Title"
+      }, {
+        "id": "image",
+        "type": "image_picker",
+        "label": "Image"
+      }, {
+        "id": "description",
+        "type": "textarea",
+        "label": "Section Description"
+      }
+
+
+    ]
+  }
+{% endschema %}
