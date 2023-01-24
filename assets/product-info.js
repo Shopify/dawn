@@ -6,7 +6,6 @@ if (!customElements.get('product-info')) {
       this.currentVariant = this.querySelector('.product-variant-id');
       this.variantSelects = this.querySelector('variant-radios')
       this.submitButton = this.querySelector('[type="submit"]');
-      this.destinationQty = this.querySelector('.quantity-cart');
 
       if (this.variantSelects) {
         this.variantSelects.addEventListener('change', this.onVariantChange.bind(this));
@@ -54,21 +53,16 @@ if (!customElements.get('product-info')) {
       fetch("/cart?section_id=main-cart-items")
       .then((response) => response.text())
       .then((responseText) => {
-        const html = new DOMParser().parseFromString(responseText, 'text/html')
-        const sourceQty = html.querySelector((`[data-quantity-variant-id~="${this.currentVariant.value}"]`))
-        const quantityRulesCartClassname = '.quantity__rules-cart';
-        if (sourceQty) {
-          const valueQtyCart = sourceQty.value;         
-          this.querySelector(quantityRulesCartClassname).classList.toggle('hidden', valueQtyCart <= 0);
-          if (valueQtyCart && this.input) {
-            this.input.dataset.cartQuantity = valueQtyCart;
-            this.destinationQty.innerHTML = valueQtyCart;
-          }
-        } else {
-          if (this.input) this.input.dataset.cartQuantity = 0;
-          this.destinationQty.innerHTML = 0;
-          this.querySelector(quantityRulesCartClassname).classList.add('hidden')
+        const html = new DOMParser().parseFromString(responseText, 'text/html');
+        const source = html.querySelector((`[data-quantity-variant-id~="${this.currentVariant.value}"]`));
+        
+        if (source) {
+          const quantityInCart = parseInt(source.value);
+          this.querySelector('.quantity__input').dataset.cartQuantity = quantityInCart;
+          this.querySelector('.quantity-cart').innerHTML = quantityInCart;
+          this.querySelector('.quantity__rules-cart').classList.toggle('hidden', quantityInCart <= 0);
         }
+
         this.fetchQtyRules();
       })
       .catch(e => {
@@ -84,6 +78,7 @@ if (!customElements.get('product-info')) {
         const html = new DOMParser().parseFromString(responseText, 'text/html')
         const sourceQty = html.querySelector(('.quantity-input'))
         const sourceQtyRules = html.querySelector(('.quantity__rules'))
+        this.input = this.querySelector('.quantity__input');
         if (sourceQty && sourceQtyRules) {
           this.input.innerHTML = sourceQty.innerHTML
           this.querySelector('.quantity__rules').innerHTML = sourceQtyRules.innerHTML
