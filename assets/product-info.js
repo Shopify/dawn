@@ -51,23 +51,23 @@ if (!customElements.get('product-info')) {
     fetchCartQty() {
       this.querySelector('.quantity__rules-cart .loading-overlay').classList.remove('hidden');
       fetch("/cart?section_id=main-cart-items")
-      .then((response) => response.text())
-      .then((responseText) => {
-        const html = new DOMParser().parseFromString(responseText, 'text/html');
-        const source = html.querySelector((`[data-quantity-variant-id~="${this.currentVariant.value}"]`));
-        
-        if (source) {
-          const quantityInCart = parseInt(source.value);
-          this.querySelector('.quantity__input').dataset.cartQuantity = quantityInCart;
-          this.querySelector('.quantity-cart').innerHTML = quantityInCart;
-          this.querySelector('.quantity__rules-cart').classList.toggle('hidden', quantityInCart <= 0);
-        }
+        .then((response) => response.text())
+        .then((responseText) => {
+          const html = new DOMParser().parseFromString(responseText, 'text/html');
+          const source = html.querySelector((`[data-quantity-variant-id~="${this.currentVariant.value}"]`));
+          
+          if (source) {
+            const quantityInCart = parseInt(source.value);
+            this.querySelector('.quantity__input').dataset.cartQuantity = quantityInCart;
+            this.querySelector('.quantity-cart').innerHTML = quantityInCart;
+            this.querySelector('.quantity__rules-cart').classList.toggle('hidden', quantityInCart <= 0);
+          }
 
-        this.fetchQtyRules();
-      })
-      .catch(e => {
-        console.error(e);
-      });
+          this.fetchQtyRules();
+        })
+        .catch(e => {
+          console.error(e);
+        });
     }
 
     fetchQtyRules() {
