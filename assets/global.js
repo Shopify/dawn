@@ -937,7 +937,6 @@ class VariantSelects extends HTMLElement {
 
         this.toggleAddButton(!this.currentVariant.available, window.variantStrings.soldOut);
 
-        // Update quantity form
         const quantityFormCurrent = document.getElementById(`Quantity-Form-${sectionId}`);
         const quantityFormUpdated = html.getElementById(`Quantity-Form-${sectionId}`);
         if (quantityFormCurrent && quantityFormUpdated) quantityFormCurrent.innerHTML = quantityFormUpdated.innerHTML;
