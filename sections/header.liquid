@@ -146,6 +146,10 @@
             background: #766294;
         }
     }
+
+  .menu-drawer__info-link {
+    justify-content: space-between;
+  }
 </style>
 
 {%- style -%}
@@ -171,19 +175,6 @@
     }
   }
 {%- endstyle -%}
-
-{% assign arrx = "" %}
-{% for block in section.blocks %}
-  {% case block.type %}
-    {% when 'highlight' %}
-		{% if arrx == "" %}
-      		{% assign arrx = block.settings.number %}
-		{% else %}
-			{% assign arrx = arrx | append: "," | append: block.settings.number %}
-		{% endif %}
-  {% endcase %}
-{% endfor %}
-{% assign arr = arrx | split: "," %}
 
 <script src="{{ 'details-disclosure.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'details-modal.js' | asset_url }}" defer="defer"></script>
@@ -215,70 +206,84 @@
           <div id="menu-drawer" class="gradient menu-drawer motion-reduce" tabindex="-1">
             <div class="menu-drawer__inner-container">
               <div class="menu-drawer__navigation-container">
-                <nav class="menu-drawer__navigation custom_menu-drawer__navigation--{{ section.id }}">
-                  <ul class="menu-drawer__menu has-submenu list-menu" role="list">
-                    {%- for link in section.settings.menu.links -%}
-                      <li>
-                        {%- if link.links != blank -%}
-                          <details id="Details-menu-drawer-menu-item-{{ forloop.index }}">
-                            <summary class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.child_active %} menu-drawer__menu-item--active{% endif %} {% assign forloopx = forloop.index | append: "" %}{% for a in arr %}{% if a == forloopx %} pill-button button button--primary{% endif %}{% endfor %}">
-                              {{ link.title | escape }}
-                              {% render 'icon-arrow' %}
-                              {% render 'icon-caret' %}
-                            </summary>
-                            <div id="link-{{ link.title | escape }}" class="menu-drawer__submenu has-submenu gradient motion-reduce" tabindex="-1">
-                              <div class="menu-drawer__inner-submenu">
-                                <button class="menu-drawer__close-button link link--text focus-inset" aria-expanded="true">
-                                  {% render 'icon-arrow' %}
-                                  {{ link.title | escape }}
-                                </button>
-                                <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
-                                  {%- for childlink in link.links -%}
-                                    <li>
-                                      {%- if childlink.links == blank -%}
-                                        <a href="{{ childlink.url }}" class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if childlink.current %} menu-drawer__menu-item--active{% endif %}"{% if childlink.current %} aria-current="page"{% endif %}>
-                                          {{ childlink.title | escape }} <span class="product-label">{{ childlink.object.metafields.custom.label }}</span>
-                                        </a>
-                                      {%- else -%}
-                                        <details id="Details-menu-drawer-submenu-{{ forloop.index }}">
-                                          <summary class="menu-drawer__menu-item link link--text list-menu__item focus-inset">
-                                            {{ childlink.title | escape }}
-                                            {% render 'icon-arrow' %}
-                                            {% render 'icon-caret' %}
-                                          </summary>
-                                          <div id="childlink-{{ childlink.title | escape }}" class="menu-drawer__submenu has-submenu gradient motion-reduce">
-                                            <button class="menu-drawer__close-button link link--text focus-inset" aria-expanded="true">
-                                              {% render 'icon-arrow' %}
+                {% comment %} Mobile navigation {% endcomment %}
+                {% if false %}
+                  <nav class="menu-drawer__navigation custom_menu-drawer__navigation--{{ section.id }}">
+                    <ul class="menu-drawer__menu has-submenu list-menu" role="list">
+                      {%- for link in section.settings.menu.links -%}
+                        <li>
+                          {%- if link.links != blank -%}
+                            <details id="Details-menu-drawer-menu-item-{{ forloop.index }}">
+                              <summary class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.child_active %} menu-drawer__menu-item--active{% endif %} {% assign forloopx = forloop.index | append: "" %}{% for a in arr %}{% if a == forloopx %} pill-button button button--primary{% endif %}{% endfor %}">
+                                {{ link.title | escape }}
+                                {% render 'icon-arrow' %}
+                                {% render 'icon-caret' %}
+                              </summary>
+                              <div id="link-{{ link.title | escape }}" class="menu-drawer__submenu has-submenu gradient motion-reduce" tabindex="-1">
+                                <div class="menu-drawer__inner-submenu">
+                                  <button class="menu-drawer__close-button link link--text focus-inset" aria-expanded="true">
+                                    {% render 'icon-arrow' %}
+                                    {{ link.title | escape }}
+                                  </button>
+                                  <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
+                                    {%- for childlink in link.links -%}
+                                      <li>
+                                        {%- if childlink.links == blank -%}
+                                          <a href="{{ childlink.url }}" class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if childlink.current %} menu-drawer__menu-item--active{% endif %}"{% if childlink.current %} aria-current="page"{% endif %}>
+                                            {{ childlink.title | escape }} <span class="product-label">{{ childlink.object.metafields.custom.label }}</span>
+                                          </a>
+                                        {%- else -%}
+                                          <details id="Details-menu-drawer-submenu-{{ forloop.index }}">
+                                            <summary class="menu-drawer__menu-item link link--text list-menu__item focus-inset">
                                               {{ childlink.title | escape }}
-                                            </button>
-                                            <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
-                                              {%- for grandchildlink in childlink.links -%}
-                                                <li>
-                                                  <a href="{{ grandchildlink.url }}" class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if grandchildlink.current %} menu-drawer__menu-item--active{% endif %} {% assign forloopx = forloop.index | append: "" %}{% for a in arr %}{% if a == forloopx %} pill-button button button--primary{% endif %}{% endfor %}"{% if grandchildlink.current %} aria-current="page"{% endif %}>
-                                                    {{ grandchildlink.title | escape }}
-                                                  </a>
-                                                </li>
-                                              {%- endfor -%}
-                                            </ul>
-                                          </div>
-                                        </details>
-                                      {%- endif -%}
-                                    </li>
-                                  {%- endfor -%}
-                                </ul>
+                                              {% render 'icon-arrow' %}
+                                              {% render 'icon-caret' %}
+                                            </summary>
+                                            <div id="childlink-{{ childlink.title | escape }}" class="menu-drawer__submenu has-submenu gradient motion-reduce">
+                                              <button class="menu-drawer__close-button link link--text focus-inset" aria-expanded="true">
+                                                {% render 'icon-arrow' %}
+                                                {{ childlink.title | escape }}
+                                              </button>
+                                              <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
+                                                {%- for grandchildlink in childlink.links -%}
+                                                  <li>
+                                                    <a href="{{ grandchildlink.url }}" class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if grandchildlink.current %} menu-drawer__menu-item--active{% endif %} {% assign forloopx = forloop.index | append: "" %}{% for a in arr %}{% if a == forloopx %} pill-button button button--primary{% endif %}{% endfor %}"{% if grandchildlink.current %} aria-current="page"{% endif %}>
+                                                      {{ grandchildlink.title | escape }}
+                                                    </a>
+                                                  </li>
+                                                {%- endfor -%}
+                                              </ul>
+                                            </div>
+                                          </details>
+                                        {%- endif -%}
+                                      </li>
+                                    {%- endfor -%}
+                                  </ul>
+                                </div>
                               </div>
-                            </div>
-                          </details>
-                        {%- else -%}
-                          <a href="{{ link.url }}" class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.current %} menu-drawer__menu-item--active{% endif %} {% assign forloopx = forloop.index | append: "" %}{% for a in arr %}{% if a == forloopx %} pill-button button button--primary{% endif %}{% endfor %}"{% if link.current %} aria-current="page"{% endif %}>
-                            {{ link.title | escape }}
-                          </a>
-                        {%- endif -%}
-                      </li>
-                    {%- endfor -%}
-                  </ul>
-                </nav>
+                            </details>
+                          {%- else -%}
+                            <a href="{{ link.url }}" class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.current %} menu-drawer__menu-item--active{% endif %} {% assign forloopx = forloop.index | append: "" %}{% for a in arr %}{% if a == forloopx %} pill-button button button--primary{% endif %}{% endfor %}"{% if link.current %} aria-current="page"{% endif %}>
+                              {{ link.title | escape }}
+                            </a>
+                          {%- endif -%}
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  </nav>
+                {% else %}
+                  {% render "custom-mobile-nav" %}
+                {% endif %}
+                {% comment %} End mobile navigation {% endcomment %}
                 <div class="menu-drawer__utility-links custom_menu-drawer__navigation--{{ section.id }}">
+                  {% for link in section.settings.mobile_info_menu.links %}
+                    <a href="" class="menu-drawer__info-link menu-drawer__account link">
+                      {{ link.title }}
+                      <span>
+                        {% render 'icon-arrow' %}
+                      </span>
+                    </a>
+                  {% endfor %}
                   {% if section.settings.show_language_selector %}
                     {% render 'language-select-flag' %}
                   {% endif %}
@@ -308,6 +313,14 @@
                         <a href="{{ settings.social_facebook_link }}" class="list-social__link link">
                           {%- render 'icon-facebook' -%}
                           <span class="visually-hidden">{{ 'general.social.links.facebook' | t }}</span>
+                        </a>
+                      </li>
+                    {%- endif -%}
+                    {%- if settings.social_linkedin_link != blank -%}
+                      <li class="list-social__item">
+                        <a href="{{ settings.social_linkedin_link }}" class="link list-social__link" target="_blank">
+                          {%- render 'icon-linkedin' -%}
+                          <span class="visually-hidden">LinkedIn</span>
                         </a>
                       </li>
                     {%- endif -%}
@@ -930,6 +943,20 @@
     },
     {
       "type": "header",
+      "content": "Custom mobile menu"
+    },
+    {
+      "type": "link_list",
+      "id": "mobile_menu",
+      "label": "Mobile menu"
+    },
+    {
+      "type": "link_list",
+      "id": "mobile_info_menu",
+      "label": "Mobile info menu"
+    },
+    {
+      "type": "header",
       "content": "Language selector"
     },
     {
@@ -979,13 +1006,24 @@
   ],
   "blocks": [
     {
-      "type": "highlight",
-      "name": "Highlight buttons",
+      "type": "bestseller",
+      "name": "Bestseller",
       "settings": [
         {
-          "type": "number",
-          "id": "number",
-          "label": "Highlight button order number"
+          "type": "image_picker",
+          "id": "image",
+          "label": "Product image"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Background color"
+
         }
       ]
     }

@@ -1,0 +1,163 @@
+<style>
+.menu-drawer__navigation--custom {
+  padding: 12px;
+  width: 100%;
+}
+
+.menu-drawer__navigation--custom .menu-drawer__menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 16px;
+}
+
+.menu-drawer__navigation--custom .menu-drawer__menu li {
+  width: 100%;
+}
+
+.menu-drawer__navigation--custom .menu-drawer__menu li:first-child .button,
+.menu-drawer__navigation--custom .menu-drawer__menu li:last-child .button {
+  position: relative;
+  z-index: 2;
+  font-weight: 600;
+}
+
+.menu-drawer__navigation--custom .menu-drawer__menu li:first-child .button::after {
+  background-color: #766294;
+  z-index: -1;
+  box-shadow: unset;
+}
+.menu-drawer__navigation--custom .menu-drawer__menu li:last-child .button::after {
+  background-color: #FF7E8F;
+  z-index: -1;
+  box-shadow: unset;
+}
+
+{% comment %} Bestsellers {% endcomment %}
+.bestsellers  {
+  padding: 0 12px;
+}
+
+.bestsellers h3 {
+  margin-top: 34px;
+  margin-bottom: 10px;
+}
+
+.bestsellers__grid {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  align-self: middle;
+  gap: 8px;
+}
+
+.bestsellers .bestsellers__bestseller a {
+  font-size: 13px;
+  color: white;
+  text-decoration: none;
+}
+
+.bestsellers .bestsellers__bestseller a span {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+}
+
+.bestsellers .bestsellers__bestseller .image {
+  background-color: #766294;
+  border-radius: 16px;
+}
+
+.bestsellers .bestsellers__bestseller img {
+  max-width: 100%;
+  height: auto;
+}
+</style>
+
+<nav class="menu-drawer__navigation--custom menu-drawer__navigation custom_menu-drawer__navigation--{{ section.id }}">
+  <ul class="menu-drawer__menu has-submenu list-menu" role="list">
+    {%- for link in section.settings.mobile_menu.links -%}
+      <li>
+        {%- if link.links != blank -%}
+          <details id="Details-menu-drawer-menu-item-{{ forloop.index }}">
+            <summary class="button button--secondary menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.child_active %} menu-drawer__menu-item--active{% endif %}">
+              {{ link.title | escape }}
+            </summary>
+            <div id="link-{{ link.title | escape }}" class="menu-drawer__submenu has-submenu gradient motion-reduce" tabindex="-1">
+              <div class="menu-drawer__inner-submenu">
+                <button class="menu-drawer__close-button link link--text focus-inset" aria-expanded="true">
+                  {% render 'icon-arrow' %}
+                  {{ link.title | escape }}
+                </button>
+                <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
+                  {%- for childlink in link.links -%}
+                    <li>
+                      {%- if childlink.links == blank -%}
+                        <a href="{{ childlink.url }}" class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if childlink.current %} menu-drawer__menu-item--active{% endif %}"{% if childlink.current %} aria-current="page"{% endif %}>
+                          {{ childlink.title | escape }} <span class="product-label">{{ childlink.object.metafields.custom.label }}</span>
+                        </a>
+                      {%- else -%}
+                        <details id="Details-menu-drawer-submenu-{{ forloop.index }}">
+                          <summary class="menu-drawer__menu-item link link--text list-menu__item focus-inset">
+                            {{ childlink.title | escape }}
+                            {% render 'icon-arrow' %}
+                            {% render 'icon-caret' %}
+                          </summary>
+                          <div id="childlink-{{ childlink.title | escape }}" class="menu-drawer__submenu has-submenu gradient motion-reduce">
+                            <button class="menu-drawer__close-button link link--text focus-inset" aria-expanded="true">
+                              {% render 'icon-arrow' %}
+                              {{ childlink.title | escape }}
+                            </button>
+                            <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
+                              {%- for grandchildlink in childlink.links -%}
+                                <li>
+                                  <a href="{{ grandchildlink.url }}" class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if grandchildlink.current %} menu-drawer__menu-item--active{% endif %} {% assign forloopx = forloop.index | append: "" %}{% for a in arr %}{% if a == forloopx %} pill-button button button--primary{% endif %}{% endfor %}"{% if grandchildlink.current %} aria-current="page"{% endif %}>
+                                    {{ grandchildlink.title | escape }}
+                                  </a>
+                                </li>
+                              {%- endfor -%}
+                            </ul>
+                          </div>
+                        </details>
+                      {%- endif -%}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            </div>
+          </details>
+        {%- else -%}
+          <a href="{{ link.url }}" class="button button--secondary menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.current %} menu-drawer__menu-item--active{% endif %} {% assign forloopx = forloop.index | append: "" %}{% for a in arr %}{% if a == forloopx %} pill-button button button--primary{% endif %}{% endfor %}"{% if link.current %} aria-current="page"{% endif %}>
+            {{ link.title | escape }}
+          </a>
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+  </ul>
+</nav>
+{% if section.blocks != blank %}
+  <div class="bestsellers">
+    <h3>Best Sellers</h3>
+    <div class="bestsellers__grid">
+      {% for block in section.blocks %}
+        {% if block.type == "bestseller" %}
+          <div class="bestsellers__bestseller">
+            <a href="{{ block.settings.product.url }}">
+              <div class="image" {% if block.settings.background_color != blank %}style="background-color: {{ block.settings.background_color }} !important"{% endif %}>
+                {% if block.settings.image == blank %}
+                  <img src="{{ block.settings.product.featured_image | image_url: width: "300" }}" width="300" height="300" loading="lazy" alt="">
+                {% else %}
+                  <img src="{{ block.settings.image | image_url: width: "300" }}" width="300" height="300" loading="lazy" alt="">
+                {% endif %}
+              </div>
+              <span>
+                Shop {{ block.settings.product.title }}
+              </span>
+            </a>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}

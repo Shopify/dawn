@@ -7,7 +7,14 @@
   display: block;
 }
 
+.loop-hero-banner--wrapper img {
+  object-position: {{ section.settings.image.presentation.focal_point }};
+}
+
 @media screen and (max-width: 750px) {
+  .loop-hero-banner--wrapper img {
+    object-position: {{ section.settings.image_mobile.presentation.focal_point }};
+  }
   .loop-hero-banner--wrapper::before {
     padding-bottom: {{ 1 | divided_by: section.settings.image_mobile.aspect_ratio | times: 100 }}%;
     content: '';
@@ -17,7 +24,7 @@
 {% endstyle %}
 
 <div class="{{ section.settings.layout }} loop-hero-banner--wrapper">
-  <div class="hero-banner--container">
+  <div class="hero-banner--container {% if section.settings.center_content %}centered{% endif %} {% if section.settings.overlay_mobile %}hero-banner__overlay-mobile{% endif %}">
     <div class="hero-media">
       {%- if section.settings.image -%}
         <picture>
@@ -60,11 +67,8 @@
             {{ section.settings.image | image_url }} {{ section.settings.image.width }}w"
             sizes="(min-width: 750px) 50vw, 100vw"
             src="{{ section.settings.image | image_url: width: 1500 }}"
-            {% unless forloop.index0 == 0 %}
-              loading="lazy"
-            {% else %}
-              fetchpriority="high"
-            {% endunless %}
+            loading="eager"
+            fetchpriority="high"
             alt="{{ section.settings.image.alt | escape }}"
             width="{{ section.settings.image.width }}"
             height="{{ section.settings.image.width | divided_by: section.settings.image.aspect_ratio | round }}"
@@ -79,11 +83,87 @@
       <div class="content">
         {% for block in section.blocks %}
           {% case block.type %}
+            {%- when 'caption' -%}
+              <p class="custom-caption">
+                {{ block.settings.content | escape }}
+              </p>
             {% when "heading" %}
               <h2 style="max-width: {{ block.settings.heading_max_width }}; color: {{ block.settings.heading_color }}">{{ block.settings.heading | newline_to_br }}</h2>
             {% when "subheading" %}
               <div class="subheading" style="max-width: {{ block.settings.subheading_max_width }}%; color: {{ block.settings.subheading_color }}">
                 {{ block.settings.subheading }}
+              </div>
+            {% when "klaviyo_form" %}
+              <div class="block-form">
+                <div class="klaviyo-form-{{block.settings.form_id}}" style="margin: 0 auto"></div>
+              </div>
+            {% when "newsletter_form" %}
+              <div class="block-form">
+                {%- form 'customer', id: 'NewsletterHero', class: 'footer__newsletter newsletter-form' -%}
+                  <input type="hidden" name="contact[tags]" value="prospect,newsletter,{{ request.locale.iso_code }},{{block.settings.custom_tags}}">
+                  <input type="hidden" name="contact[context]" value="section">
+                  <div class="newsletter-form__field-wrapper">
+                    <div class="field">
+                      <input
+                        id="NewsletterForm--{{ section.id }}"
+                        type="email"
+                        name="contact[email]"
+                        class="field__input"
+                        value="{{ form.email }}"
+                        aria-required="true"
+                        autocorrect="off"
+                        autocapitalize="off"
+                        autocomplete="email"
+                        style="padding-top: 2.2rem !important; padding-bottom: 0.8rem !important; padding-right: 5rem !important;"
+                        {% if form.errors %}
+                          autofocus
+                          aria-invalid="true"
+                          aria-describedby="NewsletterHero-error"
+                        {% elsif form.posted_successfully? %}
+                          aria-describedby="NewsletterHero-success"
+                        {% endif %}
+                        placeholder="{{ 'newsletter.label' | t }}"
+                        required
+                      >
+                      <label class="field__label" for="NewsletterForm--{{ section.id }}" style="width: unset;">
+                        Email address
+                      </label>
+                    </div>
+                    <div class="field--submit">
+                      <button
+                        type="submit"
+                        class="newsletter-form__button field__button"
+                        name="commit"
+                        id="Subscribe"
+                        aria-label="{{ 'newsletter.button_label' | t }}"
+                      >
+                        Notify me
+                      </button>
+                    </div>
+                    <small class="gdpr-disclaimer">
+                      By submitting this form, you consent to receive email from us.
+                      We take good care of your data, read how in our <a href="/policies/privacy-policy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+                    </small>
+                    {%- if form.errors -%}
+                      <small class="newsletter-form__message form__message" id="NewsletterHero-error">
+                        {%- render 'icon-error' -%}
+                        {{- form.errors.translated_fields.email | capitalize }}
+                        {{ form.errors.messages.email -}}
+                      </small>
+                    {%- endif -%}
+                  </div>
+                  {%- if form.posted_successfully? -%}
+                    <small
+                      class="newsletter-form__message newsletter-form__message--success form__message"
+                      id="NewsletterHero-success"
+                      tabindex="-1"
+                      autofocus
+                    >
+                      {% render 'icon-success' -%}
+                      {{- 'newsletter.success' | t }}
+                    </small>
+                  {%- endif -%}
+                {%- endform -%}
               </div>
             {% when "buttons" %}
               <div class="buttons">
@@ -95,6 +175,7 @@
                       role="link" aria-disabled="true"
                     {% endif %} 
                     class="button 
+                    button-{{block.id}}1
                     {% if block.settings.button_style_secondary %}
                       button--secondary
                     {% else %}
@@ -102,6 +183,19 @@
                     {% endif %}">
                     {{ block.settings.button_label | escape }}
                   </a>
+                  <style>
+                    .buttons a.button-{{block.id}}1 {
+                      {% if block.settings.button_bg != blank %}
+                        background-color: {{ block.settings.button_bg }} !important;
+                      {% endif %}
+                      {% if block.settings.button_color != blank %}
+                        color: {{ block.settings.button_color }} !important;
+                      {% endif %}
+                      {% if block.settings.button_border != blank %}
+                        border-color: {{ block.settings.button_border }} !important;
+                      {% endif %}
+                    }
+                  </style>
                 {% endif %}
                 {%- if block.settings.button2_label != blank -%}
                   <a 
@@ -111,13 +205,27 @@
                       role="link" aria-disabled="true"
                     {% endif %} 
                     class="button 
+                    button-{{block.id}}2
                     {% if block.settings.button2_style_secondary %}
                       button--secondary
                     {% else %}
                       button--primary
                     {% endif %}">
                       {{ block.settings.button2_label | escape }}
-                    </a>
+                  </a>
+                  <style>
+                    .buttons a.button-{{block.id}}2 {
+                      {% if block.settings.button2_bg != blank %}
+                        background-color: {{ block.settings.button2_bg }} !important;
+                      {% endif %}
+                      {% if block.settings.button2_color != blank %}
+                        color: {{ block.settings.button2_color }} !important;
+                      {% endif %}
+                      {% if block.settings.button2_border != blank %}
+                        border-color: {{ block.settings.button2_border }} !important;
+                      {% endif %}
+                    }
+                  </style>
                 {%- endif -%}
               </div>
           {% endcase %}
@@ -148,6 +256,16 @@
       ],
       "default": "full_bleed",
       "label": "t:sections.slideshow.settings.layout.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "overlay_mobile",
+      "label": "Overlay content on mobile"
+    },
+    {
+      "type": "checkbox",
+      "id": "center_content",
+      "label": "Center content"
     },
     {
       "type": "header",
@@ -243,6 +361,21 @@
           "default": false
         },
         {
+          "type": "color",
+          "id": "button_bg",
+          "label": "Button 1 background"
+        },
+        {
+          "type": "color",
+          "id": "button_border",
+          "label": "Button 1 border color"
+        },
+        {
+          "type": "color",
+          "id": "button_color",
+          "label": "Button 1 text color"
+        },
+        {
           "type": "header",
           "content": "Button 2"
         },
@@ -263,6 +396,21 @@
           "id": "button2_style_secondary",
           "label": "t:sections.slideshow.blocks.slide.settings.secondary_style.label",
           "default": false
+        },
+        {
+          "type": "color",
+          "id": "button2_bg",
+          "label": "Button 2 background"
+        },
+        {
+          "type": "color",
+          "id": "button2_border",
+          "label": "Button 2 border color"
+        },
+        {
+          "type": "color",
+          "id": "button2_color",
+          "label": "Button 2 text color"
         }
       ]
     },

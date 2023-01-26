@@ -1,0 +1,173 @@
+<style>
+  .collection--filters {
+    padding: 22px 0 0;
+  }
+  .collection--filters h2 {
+    text-align: center;
+    margin: 0;
+    margin-bottom: 16px;
+  }
+
+  .collection--filters--container {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .collection--filter {
+    padding: 12px 9px;
+    border: 1px solid black;
+    border-radius: 1rem;
+    font-size: 16px;
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    flex-wrap: wrap;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .collection--filter .collection--filter--dot {
+    width: 18px;
+    height: 18px;
+    border: 1px solid black;
+    display: block;
+    border-radius: 100%;
+  }
+
+  .collection--filter__active .collection--filter--dot {
+    background-color: #de3d5e;
+    padding: 2px;
+    background-clip: content-box;
+  }
+
+  .collection--filter--label {
+    margin-left: 7px;
+    line-height: 106%;
+  }
+
+  .collection--filter:not(:last-child) {
+    margin-bottom: 1rem;
+  }
+
+  aside#main-collection-filters {
+    display: none;
+  }
+
+  @media screen and (min-width: 992px) {
+    aside#main-collection-filters {
+      display: block;
+    }
+
+    .collection--filters {
+      display: none;
+    }
+  }
+</style>
+
+{% if section.blocks != blank %}
+  <div class="page-width">
+    <div class="collection--filters">
+      <h2>{{ section.settings.title }}</h2>
+
+      <div class="collection--filters--container">
+        {% for block in section.blocks %}
+          <div class="collection--filter" data-value="{{ block.settings.value }}">
+            <div class="collection--filter--dot"></div>
+            <span class="collection--filter--label">
+              {{ block.settings.label }}
+            </span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<script>
+  const filters = document.querySelectorAll('.collection--filters .collection--filter');
+  const productCards = document.querySelectorAll('.product-grid li.grid__item[data-filter]');
+  if (filters && productCards) {
+    const toggleFilter = (filter) => {
+      const activeFilter = document.querySelector('.collection--filters .collection--filter__active');
+      const filterValue = filter.dataset.value;
+      const products = document.querySelectorAll(`#product-grid .grid__item`);
+
+      {% comment %} Show all products {% endcomment %}
+      products.forEach(product => {
+        product.style.display = "initial";
+      })
+      
+      if (activeFilter === filter) {
+        {% comment %} Remove current filter {% endcomment %}
+        filter.classList.remove('collection--filter__active');
+      } else {
+        {% comment %} Apply selected filter {% endcomment %}
+        products.forEach(product => {
+          if(product.dataset.filter != filterValue) product.style.display = "none";
+        })
+        filter.classList.add('collection--filter__active');
+      }
+      
+      {% comment %} Unselect initial filter {% endcomment %}
+      if(activeFilter) activeFilter.classList.remove('collection--filter__active');
+    };
+
+    filters.forEach((filter) => {
+      console.log(filter)
+      filter.addEventListener('click', (e) => {
+        toggleFilter(filter);
+      });
+    });
+  }
+</script>
+
+{% schema %}
+{
+  "name": "Collection filters",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "label": "Title",
+      "id": "title"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "filter",
+      "name": "Filter",
+      "settings": [
+        {
+          "type": "text",
+          "label": "Label",
+          "id": "label"
+        },
+        {
+          "type": "select",
+          "label": "Value",
+          "id": "value",
+          "info": "These filters are predefined in Product Metafields. If we want a new filter approach, contact a developer.",
+          "options": [
+            {
+              "label": "27db",
+              "value": "27db"
+            },
+            {
+              "label": "18db",
+              "value": "18db"
+            },
+            {
+              "label": "16db",
+              "value": "16db"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection filters"
+    }
+  ]
+}
+{% endschema %}
