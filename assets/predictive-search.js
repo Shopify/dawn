@@ -30,7 +30,7 @@ class PredictiveSearch extends SearchForm {
     const newSearchTerm = this.getQuery();
     if (!this.searchTerm || !newSearchTerm.startsWith(this.searchTerm)) {
       // Hide the results when they are no longer relevant for the new search term
-      this.clearResources();
+      this.closeResults(false);
     }
 
     // Update the term asap, don't wait for the predictive search query to finish loading
@@ -112,10 +112,7 @@ class PredictiveSearch extends SearchForm {
     const searchForButton = this.querySelector("#search-for-button");
     const currentButtonText = searchForButton?.innerText;
     if (currentButtonText) {
-      const buttonIcon = searchForButton.innerHTML.replace(
-        currentButtonText,
-        ""
-      );
+      const buttonIcon = searchForButton.querySelector("svg").outerHTML;
       if (currentButtonText.match(new RegExp(previousTerm, "g")).length > 1) {
         // The new term matches part of the button text and not just the search term, do not replace to avoid mistakes
         return;
@@ -288,10 +285,6 @@ class PredictiveSearch extends SearchForm {
     this.input.setAttribute('aria-expanded', false);
     this.resultsMaxHeight = false
     this.predictiveSearchResults.removeAttribute('style');
-  }
-
-  clearResources() {
-    this.querySelector("#predictive-search__results-groups-wrapper")?.remove();
   }
 }
 
