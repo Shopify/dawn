@@ -939,7 +939,21 @@ class VariantSelects extends HTMLElement {
 
         const quantityFormCurrent = document.getElementById(`Quantity-Form-${sectionId}`);
         const quantityFormUpdated = html.getElementById(`Quantity-Form-${sectionId}`);
-        if (quantityFormCurrent && quantityFormUpdated) quantityFormCurrent.innerHTML = quantityFormUpdated.innerHTML;
+        const selectors = ['.quantity__input', '.quantity__rules', '.quantity__label'];
+        for (let selector of selectors) { 
+          const current = quantityFormCurrent.querySelector(selector);
+          const updated = quantityFormUpdated.querySelector(selector);
+          if (!current || !updated) continue;
+          if (selector === '.quantity__input') {
+            const attributes = ['data-cart-quantity', 'data-min', 'data-max', 'step'];
+            for (let attribute of attributes) {
+              const valueUpdated = updated.getAttribute(attribute);
+              if (valueUpdated !== null) current.setAttribute(attribute, valueUpdated);
+            }
+          } else {
+            current.innerHTML = updated.innerHTML;
+          }
+        }
       });
   }
 
