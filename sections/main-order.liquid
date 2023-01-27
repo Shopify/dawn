@@ -299,27 +299,31 @@
               </td>
             </tr>
           {%- endif -%}
-          {%- if order.total_refunded_amount > 0 -%}
-            <tr role="row">
-              <td id="RowTotalRefund" role="rowheader" scope="row" colspan="3">
-                {{ 'customer.order.total_refunded' | t }}
-              </td>
-              <td
-                headers="RowTotalRefund"
-                role="cell"
-                colspan="2"
-                data-label="{{ 'customer.order.total_refunded' | t }}"
-              >
-                -{{ order.total_refunded_amount | money_with_currency }}
-              </td>
-            </tr>
-          {%- endif -%}
-          <tr role="row">
+          <tr role="row" class="order-details__totals">
             <td id="RowTotal" role="rowheader" scope="row" colspan="3">{{ 'customer.order.total' | t }}</td>
             <td headers="RowTotal" role="cell" colspan="2" data-label="{{ 'customer.order.total' | t }}">
-              {{ order.total_net_amount | money_with_currency }}
+              {{ order.total_price | money_with_currency }}
             </td>
           </tr>
+          {%- for transaction in order.transactions -%}
+            {%- if transaction.kind == 'refund' -%}
+              <tr role="row">
+                <td id="RowTotalRefund-{{ forloop.index }}" role="rowheader" scope="row" colspan="3">
+                  {{ 'customer.order.refund' | t -}}
+                  <br>
+                  <span class="caption">{{ transaction.gateway_display_name }}</span>
+                </td>
+                <td
+                  headers="RowTotalRefund-{{ forloop.index }}"
+                  role="cell"
+                  colspan="2"
+                  data-label="{{ 'customer.order.refund' | t }}"
+                >
+                  -{{ transaction.amount | money_with_currency }}
+                </td>
+              </tr>
+            {%- endif -%}
+          {%- endfor -%}
         </tfoot>
       </table>
     </div>
