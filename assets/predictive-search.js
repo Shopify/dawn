@@ -110,16 +110,17 @@ class PredictiveSearch extends SearchForm {
   }
 
   updateSearchForTerm(previousTerm, newTerm) {
-    const searchForButton = this.querySelector("#search-for-button");
-    const currentButtonText = searchForButton?.innerText;
+    const searchForTextElement = this.querySelector(
+      "[data-predictive-search-search-for-text]"
+    );
+    const currentButtonText = searchForTextElement?.innerText;
     if (currentButtonText) {
-      const buttonIcon = searchForButton.querySelector("svg").outerHTML;
       if (currentButtonText.match(new RegExp(previousTerm, "g")).length > 1) {
         // The new term matches part of the button text and not just the search term, do not replace to avoid mistakes
         return;
       }
       const newButtonText = currentButtonText.replace(previousTerm, newTerm);
-      searchForButton.innerHTML = newButtonText + buttonIcon;
+      searchForTextElement.innerText = newButtonText;
     }
   }
 
