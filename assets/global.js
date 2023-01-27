@@ -190,7 +190,7 @@ class QuantityInput extends HTMLElement {
       const max = parseInt(this.input.max);
       const buttonPlus = this.querySelector(".quantity__button[name='plus']");
       buttonPlus.classList.toggle('disabled', value >= max);
-    } 
+    }
   }
 }
 
@@ -335,6 +335,10 @@ class MenuDrawer extends HTMLElement {
   bindEvents() {
     this.querySelectorAll('summary').forEach(summary => summary.addEventListener('click', this.onSummaryClick.bind(this)));
     this.querySelectorAll('button').forEach(button => button.addEventListener('click', this.onCloseButtonClick.bind(this)));
+    this.querySelectorAll('button').forEach(button => button.addEventListener('keyup', (event) => {
+      event.preventDefault();
+      if (event.code.toUpperCase() === 'SPACE') this.onCloseButtonClick(event);
+    }));
   }
 
   onKeyUp(event) {

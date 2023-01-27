@@ -199,7 +199,7 @@ class FacetFiltersForm extends HTMLElement {
   onActiveFilterClick(event) {
     event.preventDefault();
     FacetFiltersForm.toggleActiveFacets();
-    const url = event.currentTarget.href.indexOf('?') == -1 ? '' : event.currentTarget.href.slice(event.currentTarget.href.indexOf('?') + 1);
+    const url = event.currentTarget.dataset.url.indexOf('?') == -1 ? '' : event.currentTarget.dataset.url.slice(event.currentTarget.dataset.url.indexOf('?') + 1);
     FacetFiltersForm.renderPage(url);
   }
 }
@@ -248,8 +248,7 @@ customElements.define('price-range', PriceRange);
 class FacetRemove extends HTMLElement {
   constructor() {
     super();
-    const facetLink = this.querySelector('a');
-    facetLink.setAttribute('role', 'button');
+    const facetLink = this.querySelector('button');
     facetLink.addEventListener('click', this.closeFilter.bind(this));
     facetLink.addEventListener('keyup', (event) => {
       event.preventDefault();
