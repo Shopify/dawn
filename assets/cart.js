@@ -121,7 +121,7 @@ class CartItems extends HTMLElement {
           elementToReplace.innerHTML = 
             this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
         }));
-        const updatedValue = parsedState.items[line - 1].quantity;
+        const updatedValue = parsedState.items[line - 1]?.quantity;
         let message = '';
         if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
           message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
@@ -149,7 +149,7 @@ class CartItems extends HTMLElement {
 
   updateLiveRegions(line, message) {
     const lineItemError = document.getElementById(`Line-item-error-${line}`) || document.getElementById(`CartDrawer-LineItemError-${line}`);
-    lineItemError.querySelector('.cart-item__error-text').innerHTML = message;
+    if (lineItemError) lineItemError.querySelector('.cart-item__error-text').innerHTML = message;
 
     this.lineItemStatusElement.setAttribute('aria-hidden', true);
 
