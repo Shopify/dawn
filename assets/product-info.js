@@ -12,6 +12,7 @@ if (!customElements.get('product-info')) {
     variantChangeUnsubscriber = undefined;
 
     connectedCallback() {
+      if (!this.input) return;
       this.setQuantityBoundries();    
       this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, this.fetchQuantityRules.bind(this));
       this.variantChangeUnsubscriber = subscribe(PUB_SUB_EVENTS.variantChange, (event) => {
