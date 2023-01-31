@@ -1,0 +1,553 @@
+{%- comment -%}
+BOLD-PRODUCT.LIQUID
+Last updated: 2018-Oct-16
+ 
+Sets all the appropriate liquid variables for Bold Apps that affect the product.
+Creates an updated JSON object that takes all appropriate apps into account. Can mimic all three types of product objects that Shopify uses.
+When installing, use {%- include 'bold-product', output: 'json' -%} to replace {{ product | json }} in the theme's liquid code.
+Alternatively, use {%- include 'bold-product', output: 'json', escape: true -%} to replace {{ product | json | escape }} in the theme's liquid code.
+ 
+FLAGS:
+output:              'none' | 'default' | 'script' | 'json'                   Controls how much data is printed
+endpoint:            'js' | 'json' | false (default)                          Prints 'layout none' to create an AJAX endpoint. Resulting object will be formatted to match either the '.js' or '.json' style of output. If set to a truth-y value other than 'json' will act like a '.js' endpoint.
+hide_action:         'header' | 'error' | 'break' | 'skip' | 'none' (default) Determines what happens if the product is hidden
+sort_by:             {string} | null (default)                                If set, attempts to sort variants by the provided field
+sort_order:          'desc' | 'asc' (default)                                 If set to 'desc' (descending), reverses the variant sort
+customer_tag:        {string} | null (default)                                If set, forces bold-product to calculate as though the customer had the specified tag
+quick_price:         true | false (default)                                   If true, uses the metafields set by the CSP/QB apps to get the prices. Output must be 'none' to be allowed
+additional_includes: {string} | null (default)                                If set, includes the additional products after setting the initial bold_product liquid variables
+variant_includes:    {string} | null (default)                                Additional include files to be passed on to bold-variant (comma-delimited)
+escape:              {bool} | false (default)                                 If set, forces bold-product to escape its json output
+ 
+REQUIRED: bold-variant.liquid is needed for full product handling.
+ 
+OPTIONAL: bold-product-error.liquid - If this snippet exists, it will be used to display content other than 'Product not available'
+to the customer if the hide_action is either 'break' or 'error'.
+A bold-product-error snippet can access:
+product: The liquid variable representing the product that is hidden
+reason:  Why the product is hidden. Possible values are:
+'customer-hide-tag' | 'motivator-hidden-product' | 'options-hidden-product' | 'duplicate-and-hide' | 'other'
+{%- endcomment -%}
+ 
+{%- comment -%}
+============================================================================================================
+ASSIGN LIQUID VARIABLES
+============================================================================================================
+{%- endcomment -%}
+ 
+{%- assign bold_product = bold-product | default: product -%}
+{%- assign bold_price = bold_product.price -%}
+{%- assign bold_price_min = bold_product.price_min -%}
+{%- assign bold_price_max = bold_product.price_max -%}
+{%- assign bold_price_varies = bold_product.price_varies -%}
+{%- assign bold_compare_at_price = bold_product.compare_at_price -%}
+{%- assign bold_compare_at_price_min = bold_product.compare_at_price_min -%}
+{%- assign bold_compare_at_price_max = bold_product.compare_at_price_max -%}
+{%- assign bold_compare_at_price_varies = bold_product.compare_at_price_varies -%}
+{%- assign bold_selected_or_first_available_variant = bold_product.selected_or_first_available_variant | default: bold_product.variants.first | default: bold_product.variants[0] -%}
+ 
+{%- if product or bold-product -%}
+    {%- assign bold_apps_installed = shop | map: 'metafields' | map: 'bold_apps_installed' | first -%}
+ 
+    {%- comment -%}Assign flags to their default values if not set {%- endcomment -%}
+    {%- assign escape_output = escape | default: false -%}
+    {%- assign bold_product_output = output | default: 'default' -%}
+    {%- assign bold_product_endpoint = endpoint | default: false -%}
+    {%- if bold_product_endpoint -%}{%- assign bold_product_output = 'json' -%}{%- endif -%}
+ 
+    {%- assign bold_product_hide_action = hide_action | default: 'none' -%}
+    {%- assign bold_product_sort_by = sort_by | default: nil -%}
+    {%- assign bold_product_sort_order = sort_order | default: 'asc' -%}
+    {%- assign bold_product_quick_price = quick_price | default: false -%}
+ 
+    {%- if bold_product_hide_action == 'skip' and output == blank -%}
+        {%- assign product_metafield_check = bold_product.variants | map: 'metafields' | map: 'shappify_csp' | map: 'csp_tag' | uniq -%}
+        {%- if product_metafield_check.size > 1 or product_metafield_check.first != blank -%}
+            {%- assign has_csp = true -%}
+        {%- else -%}
+            {%- assign has_csp = false -%}
+        {%- endif -%}
+        {%- if quick_price == blank and shop.metafields.shop_csp_tag_group.shop_csp_tag and has_csp -%}
+            {%- assign bold_product_quick_price = true -%}
+        {%- endif -%}
+    {%- endif -%}
+ 
+    {%- if bold_apps_installed contains 'Quantity Breaks' or bold_apps_installed contains 'Customer Pricing' or bold_apps_installed contains 'Product Bundles' or bold_apps_installed contains 'The Motivator' -%}
+        {%- unless csp_customer_tag -%}
+            {%- if customer.tags and shop.metafields.shop_csp_tag_group.shop_csp_tag -%}
+                {%- assign all_shop_tags = shop.metafields.shop_csp_tag_group.shop_csp_tag | append: ',default' | split: ',' -%}
+                {%- for customer_tag in customer.tags -%}
+                    {%- if all_shop_tags contains customer_tag -%}
+                        {%- assign csp_customer_tag = customer_tag -%}
+                    {%- endif -%}
+                {%- endfor -%}
+            {%- endif -%}
+            {%- assign bold_product_customer_tag = customer_tag | default: csp_customer_tag | default: 'default' -%}
+        {%- endunless -%}
+ 
+        {%- if bold_product_output == 'json' and bold_product_endpoint -%}{%- layout none -%}{%- endif -%}
+ 
+        {%- assign variant_list = bold_product.variants -%}
+        {%- if bold_product_sort_by != blank -%}{%- assign variant_list = variant_list | sort: bold_product_sort_by -%}{%- endif -%}
+        {%- if bold_product_sort_order == 'desc' or bold_product_sort_order == 'descending' -%}{%- assign variant_list = variant_list | reverse -%}{%- endif -%}
+        {%- assign variant_list = variant_list | default: bold_product.variants -%}
+ 
+        {%- if bold_product_output == 'json' -%}
+            {%- assign requires_variant_loop = true -%}
+            {%- elsif bold_product_quick_price and bold_product_output == 'none' -%}
+            {%- assign requires_variant_loop = false -%}
+        {%- else -%}
+            {%- assign requires_variant_loop = bold_product.metafields.shappify_bundle | default: bold_product.metafields.shappify_csp | default: bold_product.metafields.shappify_qb | default: shop.metafields.shop_csp_tag_group | default: shop.metafields.bold_measurement | default: shop.metafields.bold_rp | default: false -%}
+        {%- endif -%}
+ 
+        {%- capture bold_bundles_widget -%}
+            <div class="bold-bundle" data-product-id="{{ product.id }}"></div>
+        {%- endcapture -%}
+ 
+        {%- assign product_has_btm = false -%}
+        {%- assign product_has_csp = false -%}
+        {%- assign product_has_qb = false -%}
+        {%- assign product_has_ro = false -%}
+        {%- assign product_has_bdl = false -%}
+ 
+        {%- assign bold_hidden_product = false -%}
+        {%- assign bold_trigger_break = false -%}
+ 
+        {%- if requires_variant_loop -%}
+            {%- comment -%}INTIALIZE VARIABLES, CLEAR OLD VALUES {%- endcomment -%}
+            {%- assign bold_price_min = 1000000000000000000 -%}               {%- comment -%}Starting the count at Shopify's max allowed value {%- endcomment -%}
+            {%- assign bold_price_max = 0 -%}
+            {%- assign bold_price = bold_price_min -%}
+            {%- assign bold_price_varies = false -%}
+ 
+            {%- assign bold_compare_at_price_min = 1000000000000000000  -%}   {%- comment -%}Starting the count at Shopify's max allowed value {%- endcomment -%}
+            {%- assign bold_compare_at_price_max = 0 -%}
+            {%- assign bold_compare_at_price = bold_compare_at_price_min -%}
+            {%- assign bold_compare_at_price_varies = false -%}
+ 
+            {%- assign bold_selected_or_first_available_variant = "" -%}
+            {%- assign bold_variants_size = 0 -%}
+ 
+            {%- assign options1 = nil -%}
+            {%- assign options2 = nil -%}
+            {%- assign options3 = nil -%}
+ 
+            {%- assign bold_product_available = false -%}
+ 
+            {%- comment -%}SET LIQUID PRODUCT VARIABLES DERIVED FROM VARIANT VALUES {%- endcomment -%}
+ 
+            {%- assign variant_output_json = '' -%}
+            {%- for variant in variant_list -%}
+                {%- capture bold_variant_check -%}
+                    {%- include 'bold-variant' with variant, output: 'json', hide_action: 'skip', base_product: bold_product, customer_tag: bold_product_customer_tag, price_style: bold_product_endpoint -%}
+                {%- endcapture -%}
+ 
+                {%- unless bold_product_output == 'none' -%}
+                    {%- if bold_variant_check contains 'Liquid error' -%}
+                        {%- assign variant_output_json = variant_list | json -%}
+                        {%- break -%}
+                    {%- endif -%}
+                {%- endunless -%}
+ 
+                {%- if variant_output_json.size > 1 -%}{%- assign variant_output_json = variant_output_json | append: ',' -%}{%- endif -%}
+                {%- assign variant_output_json = variant_output_json | append: bold_variant_check -%}
+ 
+                {%- if bold_variant_price < bold_price_min -%}{%- assign bold_price_min = bold_variant_price -%}{%- endif -%}
+                {%- if bold_variant_price > bold_price_max -%}{%- assign bold_price_max = bold_variant_price -%}{%- endif -%}
+                {%- if bold_price_max != bold_price_min -%}{%- assign bold_price_varies = true -%}{%- endif -%}
+                {%- assign bold_price = bold_price_min -%}
+ 
+                {%- if variant.compare_at_price < bold_compare_at_price_min -%}{%- assign bold_compare_at_price_min = variant.compare_at_price -%}{%- endif -%}
+                {%- if variant.compare_at_price > bold_compare_at_price_max -%}{%- assign bold_compare_at_price_max = variant.compare_at_price -%}{%- endif -%}
+                {%- if bold_compare_at_price_max != bold_compare_at_price_min -%}{%- assign bold_compare_at_price_varies = true -%}{%- endif -%}
+                {%- assign bold_compare_at_price = bold_compare_at_price_min -%}
+ 
+                {%- if variant.id == bold_product.selected_or_first_available_variant.id -%}{%- assign bold_selected_or_first_available_variant = variant -%}{%- endif -%}
+                {%- if bold_selected_or_first_available_variant == "" -%}{%- assign bold_selected_or_first_available_variant = variant -%}{%- endif -%}
+                {%- if bold_selected_or_first_available_variant.available == false and variant.available == true -%}{%- assign bold_selected_or_first_available_variant = variant -%}{%- endif -%}
+                {%- assign bold_variants_size = bold_variants_size | plus: 1 -%}
+ 
+                {%- unless options1 contains option1_clean_name or option1_clean_name == blank -%}
+                {%- unless options1 == blank -%}{%- assign options1 = options1 | join: '~~' | append: '~~' -%}{%- endunless -%}
+                {%- assign options1 = options1 | append: option1_clean_name | split: '~~' -%}
+                {%- endunless -%}
+ 
+                {%- unless options2 contains option2_clean_name or option2_clean_name == blank -%}
+                {%- unless options2 == blank -%}{%- assign options2 = options2 | join: '~~' | append: '~~' -%}{%- endunless -%}
+                {%- assign options2 = options2 | append: option2_clean_name | split: '~~' -%}
+                {%- endunless -%}
+ 
+                {%- unless options3 contains option3_clean_name or option3_clean_name == blank -%}
+                {%- unless options3 == blank -%}{%- assign options3 = options3 | join: '~~' | append: '~~' -%}{%- endunless -%}
+                {%- assign options3 = options3 | append: option3_clean_name | split: '~~' -%}
+                {%- endunless -%}
+ 
+                {%- assign bold_product_available = bold_product_available | default: bold_variant_available -%}
+                {%- assign product_has_btm = variant_has_btm | default: product_has_btm -%}
+                {%- assign product_has_csp = variant_has_csp | default: product_has_csp -%}
+                {%- assign product_has_qb = variant_has_qb | default: product_has_qb -%}
+                {%- assign product_has_ro = variant_has_ro | default: product_has_ro -%}
+                {%- assign product_has_bdl = variant_has_bdl | default: product_has_bdl -%}
+ 
+            {%- endfor -%}
+ 
+            {%- if variant_output_json.first != '[' -%}
+                {%- assign variant_output_json = '[' | append: variant_output_json | append: ']' -%}
+            {%- endif -%}
+ 
+            {%- comment -%}Failsafe: This will set all the Bold prices to "NaN" (Not A Number) in the unexpected case where all variants are supposed to be hidden from the customer {%- endcomment -%}
+            {%- if bold_variants_size == 0 -%}{%- assign bold_price_min = "NaN" -%}{%- assign bold_price_max = "NaN" -%}{%- assign bold_price = "NaN" -%}{%- assign bold_compare_at_price_min = "NaN" -%}{%- assign bold_compare_at_price_max = "NaN" -%}{%- assign bold_compare_at_price = "NaN" -%}{%- endif -%}
+ 
+            {%- comment -%}Failsafe: This will set all the Bold compare_at prices to the default compare_at_prices when 'compare_at' is not found {%- endcomment -%}
+            {%- if bold_compare_at_price_min > bold_compare_at_price_max -%}{%- assign bold_compare_at_price_min = bold_product.compare_at_price_min -%}{%- assign bold_compare_at_price_max = bold_product.compare_at_price_max -%}{%- assign bold_compare_at_price = bold_product.compare_at_price -%}{%- endif -%}
+ 
+            {%- comment -%}Failsafe: If no valid variants exist, fail back to product.selected_or_first_available_variant after all {%- endcomment -%}
+            {%- if bold_selected_or_first_available_variant == "" -%}{%- assign bold_selected_or_first_available_variant = product.selected_or_first_available_variant -%}{%- endif -%}
+ 
+        {%- else -%}
+ 
+            {%- if bold_product_quick_price -%}
+                {%- assign money_prefix = shop.money_format | split: '{{' | first -%}
+                {%- assign money_suffix = shop.money_format | split: '}}' | last -%}
+                {%- assign high_tag = bold_product_customer_tag | append: '_price_high' -%}
+                {%- assign bold_price_min = bold_product.metafields.shappify_csp[bold_product_customer_tag] | default: bold_product.metafields.shappify_qb.qb_min | default: bold_product.price | remove: money_prefix | remove: money_suffix | remove: '.' | remove: ',' | remove: ' ' | times: 1 -%}
+                {%- assign bold_price_max = bold_product.metafields.shappify_csp[high_tag] | default: bold_product.price_max  | remove: money_prefix | remove: money_suffix | remove: '.' | remove: ',' | remove: ' ' | times: 1 -%}
+                {%- assign bold_price = bold_price_min -%}
+                {%- if bold_price_max == bold_price_min -%}
+                    {%- assign bold_price_varies = false -%}
+                {%- else -%}
+                    {%- assign bold_price_varies = true -%}
+                {%- endif -%}
+            {%- else -%}
+                {%- assign bold_price_min = bold_product.price_min -%}
+                {%- assign bold_price_max = bold_product.price_max -%}
+                {%- assign bold_price = bold_product.price -%}
+                {%- assign bold_price_varies = bold_product.price_varies -%}
+            {%- endif -%}
+ 
+ 
+            {%- assign bold_compare_at_price_min = bold_product.compare_at_price_min  -%}
+            {%- assign bold_compare_at_price_max = bold_product.compare_at_price_max -%}
+            {%- assign bold_compare_at_price = bold_product.compare_at_price -%}
+            {%- assign bold_compare_at_price_varies = bold_product.compare_at_price_varies -%}
+ 
+            {%- assign bold_selected_or_first_available_variant = bold_product.selected_or_first_available_variant -%}
+            {%- assign bold_variants_size = bold_product.variants.size -%}
+ 
+            {%- assign options1 = bold_product.options[0].values -%}
+            {%- assign options2 = bold_product.options[1].values -%}
+            {%- assign options3 = bold_product.options[2].values -%}
+ 
+            {%- assign bold_product_available = false -%}
+            {%- assign variant_output_json = variant_list | json -%}
+        {%- endif -%}
+ 
+        {%- if bold_product_endpoint == 'json' -%}
+            {%- assign cents = bold_price | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+            {%- assign dollars = bold_price | times: 0.01 | floor -%}
+            {%- assign bold_price = dollars | append: '.' | append: cents -%}
+ 
+            {%- assign cents = bold_price_min | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+            {%- assign dollars = bold_price_min | times: 0.01 | floor -%}
+            {%- assign bold_price_min = dollars | append: '.' | append: cents -%}
+ 
+            {%- assign cents = bold_price_max | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+            {%- assign dollars = bold_price_max | times: 0.01 | floor -%}
+            {%- assign bold_price_max = dollars | append: '.' | append: cents -%}
+ 
+            {%- assign cents = bold_compare_at_price | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+            {%- assign dollars = bold_compare_at_price | times: 0.01 | floor -%}
+            {%- assign bold_compare_at_price = dollars | append: '.' | append: cents -%}
+ 
+            {%- assign cents = bold_compare_at_price_min | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+            {%- assign dollars = bold_compare_at_price_min | times: 0.01 | floor -%}
+            {%- assign bold_compare_at_price_min = dollars | append: '.' | append: cents -%}
+ 
+            {%- assign cents = bold_compare_at_price_max | modulo: 100 | prepend: '00' | slice: -2, 2 -%}
+            {%- assign dollars = bold_compare_at_price_max | times: 0.01 | floor -%}
+            {%- assign bold_compare_at_price_max = dollars | append: '.' | append: cents -%}
+        {%- endif -%}
+ 
+    {%- endif -%}
+ 
+    {%- comment -%}
+    ============================================================================================================
+    HANDLE HIDDEN PRODUCTS
+    ============================================================================================================
+    {%- endcomment -%}
+ 
+    {%- comment -%}CHECK FOR CSP VISIBILITY {%- endcomment -%}
+    {%- assign csp_hide_tag = false -%}
+    {%- assign hide_check = bold_product_customer_tag | append: '-HIDE' -%}
+    {%- if bold_product.tags contains hide_check -%}{%- assign csp_hide_tag = true -%}{%- endif -%}
+    {%- comment -%}END OF CSP CHECK {%- endcomment -%}
+ 
+    {%- unless bold_product.id == blank -%}
+        {%- if csp_hide_tag == true or bold_product.type == 'OPTIONS_HIDDEN_PRODUCT' or bold_product.type == 'MOTIVATOR_HIDDEN_PRODUCT' or bold_product.metafields.inventory.ShappifyHidden == "true" -%}
+            {%- assign bold_hidden_product = true -%}
+ 
+            {%- comment -%}What is the reason for the hidden product? {%- endcomment -%}
+            {%- if csp_hide_tag == true -%}                                          {%- assign reason = 'customer-hide-tag' -%}
+                {%- elsif bold_product.type == 'MOTIVATOR_HIDDEN_PRODUCT' -%}            {%- assign reason = 'motivator-hidden-product' -%}
+                {%- elsif bold_product.type == 'OPTIONS_HIDDEN_PRODUCT' -%}              {%- assign reason = 'options-hidden-product' -%}
+                {%- elsif bold_product.metafields.inventory.ShappifyHidden == "true" -%} {%- assign reason = 'duplicate-and-hide' -%}
+            {%- else -%}                                                             {%- assign reason = 'other' -%}
+            {%- endif -%}
+ 
+            {%- capture hidden_product_output -%}
+            {%- case bold_product_hide_action -%}
+            {%- when 'break' -%}
+            {%- capture error_page_check -%}{%- include 'bold-product-error' with reason, product: bold_product -%}{%- endcapture -%}
+            {%- unless error_page_check contains 'Liquid error' -%}
+            {{- error_page_check -}}
+        {%- else -%}
+            <p class='bold_not_available'>Product is not available</p>
+            {%- endunless -%}
+            {%- assign bold_trigger_break = true -%}
+ 
+            {%- when 'error' -%}
+            {%- include 'bold-product-error' with reason, product: bold_product -%}
+            {%- assign bold_trigger_break = true -%}
+ 
+            {%- when 'skip' -%}
+            {%- continue -%}
+ 
+            {%- when 'header' -%}
+            {%- if template == 'product' -%}<meta name="robots" content="noindex">{%- endif -%}
+            {%- endcase -%}
+            {%- endcapture%}
+        {%- endif -%}
+    {%- endunless -%}
+ 
+    {%- comment -%}
+    ============================================================================================================
+    MIN/MAX QUANTITY
+    ============================================================================================================
+    {%- endcomment -%}
+ 
+    {%- if bold_apps_installed contains 'Customer Pricing' or bold_apps_installed contains 'Quantity Breaks' -%}
+ 
+        {%- assign bold_product_min = false -%}
+        {%- assign bold_product_max = false -%}
+        {%- for tag in bold_product.tags -%}
+            {%- assign lowercase_tag = tag | downcase | replace: 'min ', 'min_' | replace: 'min-', 'min_' | replace: 'max ', 'max_' | replace: 'max-', 'max_' -%}
+            {%- assign lowercase_customer_tag = bold_product_customer_tag | downcase -%}
+            {%- if lowercase_tag contains 'min_' -%}
+                {%- assign tag_info = lowercase_tag | split: 'min_' -%}
+                {%- assign cust_tag = tag_info.first | strip -%}
+                {%- if tag_info.first == blank or cust_tag == lowercase_customer_tag -%}
+                    {%- assign bold_product_min = tag_info | last | times: 1 %}
+                {%- endif -%}
+                {%- elsif lowercase_tag contains 'max_' -%}
+                {%- assign tag_info = lowercase_tag | split: 'max_' -%}
+                {%- assign cust_tag = tag_info.first | strip -%}
+                {%- if tag_info.first == blank or cust_tag == lowercase_customer_tag -%}
+                    {%- assign bold_product_max = tag_info | last | times: 1 %}
+                {%- endif -%}
+            {%- endif -%}
+        {%- endfor -%}
+ 
+    {%- endif -%}
+ 
+    {%- comment -%}
+    ============================================================================================================
+    BEGIN JSON OUTPUT
+    ============================================================================================================
+    {%- endcomment -%}
+ 
+    {%- unless no_quick_shop_buy == true -%}
+    {%- assign variant_ids = product | map: 'variants' | map: 'id' -%}
+    {%- assign bold_variant_ids = bold_product.variants | map: 'id' -%}
+    {%- capture bold_product_json -%}
+    {%- if bold_product_endpoint == 'json' -%}
+        {
+        "product":
+    {%- endif -%}
+    {
+    "id": {{- bold_product_id | default: bold_product.id | json -}},
+    "title": {{- bold_product_title | default: bold_product.title | json -}},
+ 
+    {%- if bold_product_endpoint == 'json' -%}
+        "body_html": {{- bold_product.description | json -}},
+        "template_suffix": {{- bold_product.template_suffix | json -}},
+        "images": [
+        {%- for image in bold_product.images -%}
+            {
+            "id": {{- image.id | json -}},
+            "product_id": {{- image.product_id | json -}},
+            "position": {{- image.position | json -}},
+            "src": {{- image.src | json -}},
+            "variant_ids": {{- variant_ids | json -}}
+            } {%- unless forloop.last -%},{%- endunless -%}
+        {%- endfor -%}],
+        "image":
+        {
+        "id": {{- bold_product.featured_image.id | json -}},
+        "product_id": {{- bold_product.featured_image.product_id | json -}},
+        "position": {{- bold_product.featured_image.position | json -}},
+        "src": {{- bold_product.featured_image.src | json -}},
+        "variant_ids": {{- variant_ids | json -}}
+        },
+    {%- endif -%}
+ 
+    "handle": {{- bold_product_handle | default: bold_product.handle | json -}},
+    "description": {{- bold_product.description | json -}},
+    "published_at": {%- capture published_at -%}{{- bold_product.published_at | date: "%F" -}}T{{- bold_product.published_at | date: "%T" -}}{%- endcapture -%}{{- shop.timezone -}}{{- published_at | json -}},
+    "created_at": {%- capture created_at -%}{{- bold_product.created_at | date: "%F" -}}T{{- bold_product.created_at | date: "%T" -}}{%- endcapture -%}{{- shop.timezone -}}{{- created_at | json -}},
+    "vendor": {{- bold_product.vendor | json -}},
+    "{%- if bold_product_endpoint == 'json' -%}product_{%- endif -%}type": {{- bold_product.type | json -}},
+    "tags": {%- unless bold_product_endpoint == 'json' -%}{{- bold_product.tags | json -}}{%- else -%}{{- bold_product.tags | join: ',' | json -}}{%- endunless -%},
+    "price": {{- bold_price | default: bold_product.price | json -}},
+    "price_min": {{- bold_price_min | default: bold_product.price_min | json -}},
+    "price_max": {{- bold_price_max | default: bold_product.price_max | json -}},
+    "price_varies": {{- bold_price_varies | json -}},
+    "compare_at_price": {{- bold_compare_at_price | default: bold_product.compare_at_price | json -}},
+    "compare_at_price_min": {{- bold_compare_at_price_min | default: bold_product.compare_at_price_min | json -}},
+    "compare_at_price_max": {{- bold_compare_at_price_max | default: bold_product.compare_at_price_max | json -}},
+    "compare_at_price_varies": {{- bold_compare_at_price_varies | json -}},
+    "all_variant_ids": {{- bold_variant_ids | json -}},
+    "variants": {%- if variant_output_json -%}{{- variant_output_json -}}{%- else -%}{{- bold_product.variants | json -}}{%- endif -%},
+    "available": {{- bold_product_available | json -}},
+ 
+    {%- unless bold_product_endpoint == 'json' -%}
+        "images": {{- bold_product.images | json -}},
+    {%- endunless -%}
+ 
+    "featured_image": {{- bold_product.featured_image | json -}},
+    "options":
+    {%- if bold_product_endpoint -%}
+    [
+    {%- for opt in bold_product.options -%}
+        {%- assign option_name = 'options' | append: forloop.index -%}
+        {
+        "name": {{- opt | json -}},
+        {%- if bold_product_endpoint == 'json' -%}"product_id":{{- bold_product.id | json -}},{%- endif -%}
+        "position":{{-  forloop.index | json -}},
+        "values":{{- [option_name] | json -}}
+        } {%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
+    ]
+    {%- else -%}
+        {{- bold_product.options | json -}}
+    {%- endif -%},
+    "url": {{- bold_product.url | json -}}
+ 
+    {%- comment -%}FLAGS TO INDICATE WHICH APPS ARE IN PLAY {%- endcomment -%}
+    {%- if product_has_btm -%},"hasBTM": true{%- endif -%}
+    {%- if product_has_csp -%},"hasCSP": true{%- endif -%}
+    {%- if product_has_qb -%},"hasQB": true{%- endif -%}
+    {%- if product_has_ro -%},"hasRO": true{%- endif -%}
+    {%- if product_has_bdl -%},"hasBDL": true{%- endif -%}
+ 
+    {%- comment -%}SET MINIMUM/MAXIMUM QUANTITIES{%- endcomment -%}
+    {%- if bold_product_min -%},"min": {{ bold_product_min | json }}{%- endif -%}
+    {%- if bold_product_max -%},"max": {{ bold_product_max | json }}{%- endif -%}
+    }
+    {%- if bold_product_endpoint == 'json' -%}
+        }
+    {%- endif -%}
+    {%- endcapture -%}
+ 
+    {%- unless bold_product_output == 'json' or bold_product_output == 'none'-%}
+        <script>
+          var currentScript = document.currentScript || document.scripts[document.scripts.length - 1];
+          var boldVariantIds = {{- bold_variant_ids | json -}};
+          var boldProductHandle = {{- bold_product.handle | json -}};
+          var BOLD = BOLD || {};
+          BOLD.products = BOLD.products || {};
+          BOLD.variant_lookup = BOLD.variant_lookup || {};
+          if (window.BOLD && !BOLD.common) {
+              BOLD.common = BOLD.common || {};
+              BOLD.common.Shopify = BOLD.common.Shopify || {};
+              window.BOLD.common.Shopify.products = window.BOLD.common.Shopify.products || {};
+              window.BOLD.common.Shopify.variants = window.BOLD.common.Shopify.variants || {};
+              window.BOLD.common.Shopify.handles = window.BOLD.common.Shopify.handles || {};
+              window.BOLD.common.Shopify.saveProduct = function (handle, product) {
+                  if (typeof handle === 'string' && typeof window.BOLD.common.Shopify.products[handle] === 'undefined') {
+                      if (typeof product === 'number') {
+                          window.BOLD.common.Shopify.handles[product] = handle;
+                          product = { id: product };
+                      }
+                      window.BOLD.common.Shopify.products[handle] = product;
+                  }
+              };
+              window.BOLD.common.Shopify.saveVariant = function (variant_id, variant) {
+                  if (typeof variant_id === 'number' && typeof window.BOLD.common.Shopify.variants[variant_id] === 'undefined') {
+                      window.BOLD.common.Shopify.variants[variant_id] = variant;
+                  }
+              };
+          }
+ 
+          for (var boldIndex = 0; boldIndex < boldVariantIds.length; boldIndex = boldIndex + 1) {
+            BOLD.variant_lookup[boldVariantIds[boldIndex]] = boldProductHandle;
+          }
+ 
+          BOLD.products[boldProductHandle] = {{- bold_product_json -}};
+ 
+          {%- if product_has_qb -%}
+          {%- assign qb_pricing_html = bold_product | map: 'variants' | map: 'metafields' | map: 'shappify_qb' | map: 'pricing_html' -%};
+          {%- assign csp_pricing_html = bold_product | map: 'variants' | map: 'metafields' | map: 'shappify_csp' | map: 'pricing_html' -%};
+          var pricingHTML = {%- if qb_pricing_html[0] -%}{{- qb_pricing_html | json -}}{%- else -%}{{- csp_pricing_html | json -}}{%- endif -%};
+ 
+          for (var boldIndex = 0; boldIndex < pricingHTML.length; boldIndex = boldIndex + 1) {
+            var element = document.createElement('DIV');
+            element.className = 'bold-hidden';
+            element.style.display = 'none';
+            element.id = 'variant_html_' + boldVariantIds[boldIndex];
+            element.innerHTML = pricingHTML[boldIndex];
+ 
+            if (document.body) {
+              document.body.prepend(element);
+            } else if (document.head) {
+              document.head.prepend(element);
+            }
+          }
+          {%- endif -%}
+ 
+          {%- assign bold_rp = product | map: 'variants' | map: 'metafields' | map: 'bold_rp' -%}
+          var boldCSPMetafields = {
+          {%- if bold_apps_installed contains 'Customer Pricing' -%}
+          {%- for variant in product.variants -%}{%- assign csp_metafield_namespace = variant.id | prepend: "csp" -%}{{variant.id}}:{{ product.metafields[csp_metafield_namespace] | json }}{%- unless forloop.last -%}, {%- endunless -%}{%- endfor -%}
+          {%- endif -%}
+          };
+          var boldTempProduct = {{- product | json -}};
+          var bold_rp = {{- bold_rp | json -}};
+          if(boldTempProduct){
+            window.BOLD.common.Shopify.saveProduct(boldTempProduct.handle, boldTempProduct.id);
+            for (var boldIndex = 0; boldTempProduct && boldIndex < boldTempProduct.variants.length; boldIndex = boldIndex + 1){
+              var rp_group_id = bold_rp[boldIndex].rp_group_id ? '' + bold_rp[boldIndex].rp_group_id : '';
+              window.BOLD.common.Shopify.saveVariant(
+                  boldTempProduct.variants[boldIndex].id,
+                  {
+                    product_id: boldTempProduct.id,
+                    product_handle: boldTempProduct.handle,
+                    price: boldTempProduct.variants[boldIndex].price,
+                    group_id: rp_group_id,
+                    csp_metafield: boldCSPMetafields[boldTempProduct.variants[boldIndex].id]
+                  }
+              );
+            }
+          }
+ 
+          currentScript.parentNode.removeChild(currentScript);
+        </script>
+    {%- endunless -%}
+ 
+    {%- if bold_product_output == 'json' or bold_product_output == 'js' -%}
+        {%- if escape_output -%}
+            {{- bold_product_json | strip_newlines | escape -}}
+        {%- else -%}
+            {{- bold_product_json | strip_newlines -}}
+        {%- endif -%}
+    {%- endif -%}
+ 
+    {%- if bold_hidden_product -%}
+        {{- hidden_product_output -}}
+    {%- endif -%}
+    {%- endunless -%}
+ 
+    {%- if bold_trigger_break -%}
+        {%- break -%}
+    {%- endif -%}
+ 
+{%- endif -%}

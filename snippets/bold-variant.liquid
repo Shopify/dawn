@@ -1,0 +1,304 @@
+{%- comment -%}
+BOLD-VARIANT.LIQUID
+Last updated: 2018-December-7
+ 
+Sets all appropriate liquid variables for Bold Apps that affect the variant.
+Creates an updated JSON object that includes key information relating to our apps.
+Combines the functionality of bold-hidden-variants, bold-base-variant and bold-variant-inventory
+ 
+FLAGS:
+  base_product:      {product object}                          Base product object for the variant, used to check/set several properties. If not supplied, defaults to bold_product. If no bold_product is set, defaults to product
+  line_item:         {line item object} | null (default)       If set, pass the line item to the included snippets - some apps may adjust prices differently depending on whether we're influencing the cart total or not
+  output:            'json' | 'none'  (default)                Controls whether anything is printed to the DOM
+  hide_action:       'skip' | 'none'  (default)                Forces a 'continue' to skip hidden variants when 'skip' is set
+  customer_tag:      {string} | null (default)                 If set, forces bold-variant to calculate as though the customer had the specified tag
+  price_style:       'json' | null (default)                   If set, sets prices as '10.00' instead of 1000
+  custom_app_list:   {string} | null (default)                 List of apps to apply to the price. Associated snippets will be automatically included.  If not specified, will check for a shop metafield to get a list of all relevant apps that need to be included.
+  third_party_check: false | true (default)                    If true, runs additional checks that we know about to be compatible with third-party apps
+  additonal_includes: {string} | null (default)                 Additional snippets that need to be included after the initial liquid variable assignments (comma-delimited)
+ 
+{%- endcomment -%}
+ 
+{%- comment -%}
+============================================================================================================
+    ASSIGN LIQUID VARIABLES
+============================================================================================================
+{%- endcomment -%}
+ 
+ 
+{%- comment -%} Assign flags to their default values if not set {%- endcomment -%}
+ 
+{%- assign bold_apps_installed = shop | map: 'metafields' | map: 'bold_apps_installed' | first -%}
+ 
+{%- assign bold_variant = bold-variant | default: variant -%}
+{%- assign bold_variant_line_item = line_item | default: false -%}
+{%- assign bold_variant_base_product = base_product | default: bold_product | default: bold_variant_line_item.product | default: product | default: item.product | default: item -%}
+{%- assign bold_variant_output = output | default: 'none' -%}
+{%- assign bold_variant_hide_action = hide_action | default: 'none' -%}
+{%- assign bold_variant_customer_tag = customer_tag | default: csp_customer_tag -%}
+ 
+{%- comment -%} Check for CSP visibility. Other 'hide' rules are based directly on metafields on the variants. {%- endcomment -%}
+ 
+{%- assign csp_hidden = false -%}
+{%- if bold_variant_hide_action == 'skip' and bold_apps_installed contains 'Customer Pricing' -%}
+  {%- if shop.metafields.shop_csp_tag_group.shop_csp_tag or bold_variant.metafields.shappify_csp -%}
+    {%- assign csp_flag_string = ' (' | append: bold_variant_customer_tag | append: ')' -%}
+    {%- assign all_shop_tags = shop.metafields.shop_csp_tag_group.shop_csp_tag | append: ',default' | split: ',' -%}
+ 
+    {%- unless bold_variant.metafields.shappify_csp.csp_tag == blank -%}
+ 
+      {%- if bold_variant.metafields.shappify_csp.csp_tag == 'default' and bold_variant_customer_tag != 'default' -%}
+        {%- if bold_variant_base_product -%}
+          {%- assign found_csp_level = false -%}
+          {%- assign csp_bases = bold_variant_base_product | map: 'variants' | map: 'metafields' | map: 'shappify_csp' |  map: 'csp_base' -%}
+          {%- assign csp_tags = bold_variant_base_product | map: 'variants' | map: 'metafields' | map: 'shappify_csp' |  map: 'csp_tag' -%}
+          {%- if csp_bases contains bold_variant.id and csp_tags contains bold_variant_customer_tag -%}{%- assign found_csp_level = true -%}{%- endif -%}
+          {%- if found_csp_level -%}{%- continue -%}{%- endif -%}
+        {%- endif -%}
+      {%- elsif bold_variant_customer_tag != bold_variant.metafields.shappify_csp.csp_tag -%}
+        {%- continue -%}
+      {%- endif -%}
+    {%- assign bold_variant_title = bold_variant.title | remove: csp_flag_string -%}
+    {%- endunless -%}
+  {%- endif -%}
+{%- endif -%}
+ 
+{%- assign app_list = '' -%}
+{%- if app_list != blank and custom_app_list != blank -%}
+  {%- assign bold_variant_app_list = app_list | append: ',' | append: custom_app_list -%}
+{%- else -%}
+  {%- assign bold_variant_app_list = app_list | default: custom_app_list | default: false -%}
+{%- endif -%}
+ 
+{%- assign bold_variant_price = bold_variant.price -%}
+ 
+{%- if bold_variant_app_list -%}
+ 
+  {%- assign bold_variant_app_list = bold_variant_app_list | split: ',' -%}
+  {%- for app in bold_variant_app_list -%}
+    {%- assign snippet_title = 'bold-' | append: app | append: '-variant' -%}
+    {%- capture silence_output -%}
+        {%- include snippet_title with bold_variant, base_product: bold_variant_base_product, line_item: bold_variant_line_item, customer_tag: bold_variant_customer_tag -%}
+    {%- endcapture -%}
+  {%- endfor -%}
+ 
+{%- endif -%}
+ 
+{%- assign bold_variant_available = bold_variant.available -%}
+ 
+{% if bold_apps_installed contains 'Quantity Breaks' or bold_apps_installed contains 'Customer Pricing' or bold_apps_installed contains 'Product Bundles' %}
+  {%- comment -%} Find the base variant and base variant's inventory {%- endcomment -%}
+  {%- assign bold_base_variant_id = bold_variant.metafields.shappify_csp['csp_base'] | default: bold_variant.metafields.shappify_qb['qb_parent'] | default: bold_variant.metafields.shappify_bundle['bundle_parent'] | default: bold_variant.id -%}
+ 
+  {%- comment -%} Make sure we can find the indicated base variant! {%- endcomment -%}
+  {%- assign bold_is_base_variant = true -%}
+  {%- assign bold_base_variant = bold_variant -%}
+  {%- unless bold_base_variant_id == bold_variant.id -%}
+    {%- for variant_check in bold_variant_base_product.variants -%}
+      {%- if variant_check.id == bold_base_variant_id -%}
+        {%- assign bold_base_variant = variant_check -%}
+        {%- assign bold_is_base_variant = false -%}
+        {%- break -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endunless -%}
+ 
+  {%- comment -%} Assign inventory variables (based on the base_variant, if different from the current variant) {%- endcomment -%}
+  {%- assign target_variant_inventory_quantity = bold_base_variant.inventory_quantity -%}
+  {%- assign target_variant_inventory_policy = bold_base_variant.inventory_policy -%}
+ 
+  {%- assign bold_variant_cart_quantity = 0 -%}
+  {%- for inv_check_item in cart.items -%}
+    {%- assign cart_variant = inv_check_item.variant -%}
+    {%- assign cart_base_variant_id = cart_variant.metafields.shappify_csp['csp_base'] | default: cart_variant.metafields.shappify_qb['qb_parent'] | default: cart_variant.metafields.shappify_bundle['bundle_parent'] | default: cart_variant.id -%}
+    {%- if cart_base_variant_id == bold_base_variant_id -%}
+      {%- assign bold_variant_cart_quantity = bold_variant_cart_quantity | plus: inv_check_item.quantity -%}
+    {%- endif -%}
+  {%- endfor -%}
+ 
+  {%- assign bold_variant_inventory_quantity =  bold_base_variant.inventory_quantity  -%}
+  {%- assign bold_variant_remaining_quantity = bold_variant_inventory_quantity | minus: bold_variant_cart_quantity -%}
+  {%- assign bold_variant_inventory_policy = bold_base_variant.inventory_policy -%}
+  {%- assign bold_variant_inventory_management = bold_base_variant.inventory_management -%}
+ 
+  {%- comment -%} Now that we've established quantity, re-evaluate the variant's availablility {%- endcomment -%}
+  {%- if bold_variant_remaining_quantity <= 0 and bold_variant_inventory_policy == 'deny' and bold_variant_inventory_management != blank -%}
+    {%- assign bold_variant_available = false -%}
+  {%- endif -%}
+ 
+ 
+  {%- comment -%} If we're calling this from bold-cart-item, also set the max quantity the line item can go up to {%- endcomment -%}
+  {%- if bold_item and bold_variant_inventory_management != blank and bold_variant_inventory_policy == 'deny' -%}
+    {%- assign bold_item_max_quantity = bold_item.quantity | plus: bold_variant_remaining_quantity -%}
+  {%- else -%}
+    {%- assign bold_item_max_quantity = '' -%}
+  {%- endif -%}
+ 
+  {%- comment -%} Check for QB level, hide variant and update title as appropriate {%- endcomment -%}
+  {%- if bold_apps_installed contains 'Quantity Breaks'  or bold_apps_installed contains 'Customer Pricing' -%}
+    {%- assign qb_hidden = false -%}
+    {%- assign qb_level = bold_variant.metafields.shappify_qb.qb_qty | default: bold_variant.metafields.shappify_csp.csp_qty | times: 1 -%}
+    {%- if qb_level > 1 -%}{%- assign qb_hidden = true -%}{%- endif -%}
+    {%- if bold_variant.title == '1+' -%}
+      {%- assign bold_variant_title = 'Default title' -%}
+    {%- endif -%}
+  {%- endif -%}
+ 
+  {%- comment -%} If required, check for third-party Hide Rules as well {%- endcomment -%}
+ 
+  {%- if third_party_check == blank -%}{%- assign third_party_check = true -%}{%- endif -%}
+  {%- assign third_party_hidden = false -%}
+  {%- if third_party_check -%}
+    {%- if bold_variant.title contains '% Off' or bold_variant.metafields.brodev_scn.hide == "true" or bold_variant.metafields.secomapp.freegifts or bold_variant.title contains '(Bundle price)' -%}{%- assign third_party_hidden = true%}{%- endif -%}
+  {%- endif -%}
+ 
+  {%- if csp_hidden or qb_hidden or third_party_hidden or bold_variant.metafields.shappify_bundle.is_bundle == 'true' or third_party_hidden -%}
+    {%- assign bold_hidden_variant = true -%}
+  {%- else -%}
+    {%- assign bold_hidden_variant = false -%}
+  {%- endif -%}
+ 
+ 
+  {%- comment -%} Check for presence of our apps {%- endcomment -%}
+  {%- if bold_variant.metafields.bold_measurement.formula -%}{%- assign variant_has_btm = true -%}{%- else -%}{%- assign variant_has_btm = false -%}{%- endif -%}
+  {%- if bold_variant.metafields.shappify_csp.csp_tag -%}{%- assign variant_has_csp = true -%}{%- else -%}{%- assign variant_has_csp = false -%}{%- endif -%}
+  {%- if bold_variant.metafields.shappify_qb.pricing_html or bold_variant.metafields.shappify_csp.pricing_html -%}{%- assign variant_has_qb = true -%}{%- else -%}{%- assign variant_has_qb = false -%}{%- endif -%}
+  {%- if bold_variant.metafields.bold_rp.rp_group_id -%}{%- assign variant_has_ro = true -%}{%- else -%}{%- assign variant_has_ro = false -%}{%- endif -%}
+  {%- assign bdl_check = base_product.variants | map: 'metafields' | map: 'shappify_bundle' | map: 'bundle_parent' -%}
+  {%- if bdl_check contains bold_variant.id -%}{%- assign variant_has_bdl = true -%}{%- else -%}{%- assign variant_has_bdl = false -%}{%- endif -%}
+ 
+ 
+  {%- if bold_variant_hide_action == 'skip' and bold_hidden_variant -%}{%- continue -%}{%- endif -%}
+{% endif %}
+ 
+  {%- assign option1_clean_name = variant.option1 | remove: csp_flag_string -%}
+  {%- assign option2_clean_name = variant.option2 | remove: csp_flag_string -%}
+  {%- assign option3_clean_name = variant.option3 | remove: csp_flag_string -%}
+ 
+{%- comment -%}
+============================================================================================================
+    BEGIN JSON OUTPUT
+============================================================================================================
+{%- endcomment -%}
+{%- if bold_variant_output == 'json' -%}
+{
+  "id":{{- bold_variant.id | json -}},
+  "product_id":{{- bold_variant_base_product.id | json -}},
+  "product_handle":{{- bold_variant_base_product.handle | json -}},
+  "title":{{- bold_variant_title | default: bold_variant.title | json -}},
+  "option1":{%- unless option1_clean_name == blank -%}{{- option1_clean_name | json -}}{%- else -%}null{%- endunless -%},
+  "option2":{%- unless option2_clean_name == blank -%}{{- option2_clean_name | json -}}{%- else -%}null{%- endunless -%},
+  "option3":{%- unless option3_clean_name == blank -%}{{- option3_clean_name | json -}}{%- else -%}null{%- endunless -%},
+  "sku":{{- bold_variant.sku | json -}},
+  "requires_shipping":{{- bold_variant.requires_shipping | json -}},
+  "taxable":{{- bold_variant.taxable | json -}},
+  "featured_image":
+  {%- if bold_variant.featured_image == blank -%}
+    {{bold_base_variant.featured_image | json}},
+  {%- else -%}
+    {
+    "created_at":{%- capture created_at -%}{{- bold_variant.featured_image.created_at -}}T{{- bold_variant.featured_image.created_at | date: "%T" -}}{%- endcapture -%}{{- shop.timezone -}}{{- created_at | json -}},
+    "id":{{- bold_variant.featured_image.id | json -}},
+    "position":{{- bold_variant.featured_image.position | json -}},
+    "product_id":{{- bold_variant.featured_image.product_id | json -}},
+    "src":{{- bold_variant.featured_image.src | json -}},
+    "updated_at":{%- capture updated_at -%}{{- bold_variant.featured_image.updated_at | date: "%F" -}}T{{- bold_variant.featured_image.updated_at | date: "%T" -}}{%- endcapture -%}{{- shop.timezone -}}{{- updated_at | json -}},
+    "width":{{- bold_variant.featured_image.width -}},
+    "height":{{- bold_variant.featured_image.height -}}
+    },
+  {%- endif -%}
+ 
+  "image_id":{{variant.featured_image.id | default: bold_base_variant.featured_image.id | json -}},
+  "available":{{- bold_variant_available | json -}},
+  "name":{{- bold_variant_base_product.title | append: " - " | append: bold_variant.title | remove: csp_flag_string | json -}},
+  "options":{{- bold_variant.options | json | remove: csp_flag_string -}},
+  "price":{%- unless price_style == 'json' -%}{{- bold_variant_price | default: bold_variant.price | json -}}{%- else -%}{%- assign cents = bold_variant_price | default: bold_variant.price | modulo: 100 | prepend: '00' | slice: -2, 2 -%}{%- assign dollars = bold_variant_price | default: bold_variant.price | times: 0.01 | floor -%}{{- dollars | append: '.' | append: cents | json -}}{%- endunless -%},
+  "weight":{{- bold_variant.weight | json -}},
+  "compare_at_price":{%- if bold_base_variant.compare_at_price == blank -%}null{% else %}{%- unless price_style == 'json' -%}{{- bold_variant_compare_at_price | default: bold_variant.compare_at_price | json -}}{%- else -%}{%- assign cents = bold_variant_compare_at_price | default: bold_variant.compare_at_price | modulo: 100 | prepend: '00' | slice: -2, 2 -%}{%- assign dollars = bold_variant_compare_at_price | default: bold_variant.compare_at_price | times: 0.01 | floor -%}{{- dollars | append: '.' | append: cents | json -}}{%- endunless -%}{%- endif -%},
+  "inventory_quantity":{{- bold_variant_inventory_quantity | default: variant.inventory_quantity | json -}},
+  "inventory_management":{{- bold_variant_inventory_management | default: variant.inventory_management | json -}},
+  "inventory_policy":{{- bold_variant_inventory_policy | default: variant.inventory_policy | json -}},
+  "inventory_in_cart":  {{- bold_variant_cart_quantity | default: 0 | json -}},
+  "inventory_remaining":{{- bold_variant_remaining_quantity | default: bold_variant_inventory_quantity | default: bold_variant.inventory_quantity | json -}},
+  "incoming":{{- bold_variant.incoming | default: bold_base_variant.incoming | json -}},
+  "next_incoming_date":{{- bold_variant.next_incoming_date  | default: bold_base_variant.next_incoming_date | date: "%Y-%m-%d" | json -}},
+  "taxable":{%- unless bold_variant_taxable == blank -%}{{- bold_variant_taxable | json -}}{%- else -%}{{- bold_variant.taxable | json -}}{%- endunless -%},
+  "barcode":{{- variant.barcode | json -}}
+ 
+{% comment %}
+  {%- comment -%} SPECIAL HANDLING FOR CSP {%- endcomment -%}
+  {%- if variant_has_csp -%}
+    ,"csp_lookup":{
+      {%- for tag in all_shop_tags -%}
+        {%- assign found_variant = '' -%}
+        {%- if forloop.first != true -%},{%- endif -%}{{- tag | json -}}:
+        {%- for csp_variant in bold_variant_base_product.variants -%}
+          {%- if csp_variant.metafields.shappify_csp.csp_qty and csp_variant.metafields.shappify_csp.csp_qty != 1 -%}{%- continue -%}{%- endif -%}
+          {%- assign base_check = csp_variant.metafields.shappify_csp.csp_base | default: csp_variant.id -%}
+          {%- if base_check == bold_base_variant.id and csp_variant.metafields.shappify_csp.csp_tag == tag -%}
+            {%- assign found_variant = csp_variant -%}
+            {{- break -}}
+          {%- endif -%}
+        {%- endfor -%}
+        {
+          "id":{{- found_variant.id | json -}},
+          "price":{{- found_variant.price | json -}}
+          {%- if found_variant.metafields.shappify_csp.pricing_html -%},"grid":{{- found_variant.metafields.shappify_csp.pricing_html | json -}}{%- endif -%}
+        }
+      {%- endfor -%}
+    }
+  {%- endif -%}
+  {%- comment -%} END OF CSP SPECIAL HANDLING {%- endcomment -%}
+ 
+  {%- comment -%} SPECIAL HANDLING FOR BTM {%- endcomment -%}
+  {%- if variant_has_btm -%}
+    ,"btm_lookup":{{- bold_variant.metafields.bold_measurement | json -}}
+  {%- endif -%}
+  {%- comment -%} END OF BTM SPECIAL HANDLING {%- endcomment -%}
+ 
+  {%- comment -%} SPECIAL HANDLING FOR QB {%- endcomment -%}
+  {%- if variant_has_qb -%}
+    ,"qb_lookup":{
+      "levels": {
+      {%- assign qb_price_varies = false -%}
+      {%- assign not_first_tag = false -%}
+      {%- for qb_variant in bold_variant_base_product.variants -%}
+        {%- if qb_variant.metafields.shappify_qb.qb_parent == bold_variant.id or qb_variant.metafields.shappify_csp.csp_base == bold_base_variant.id or qb_variant.id == bold_base_variant.id -%}
+          {%- if qb_variant.metafields.shappify_csp.csp_tag == blank or qb_variant.metafields.shappify_csp.csp_tag == bold_variant_customer_tag -%}
+            {%- if not_first_tag -%},{%- endif -%}{%- assign not_first_tag = true -%}
+            {%- unless qb_variant.price == bold_variant.price -%}{%- assign qb_price_varies = true -%}{%- endunless -%}
+            "{{- qb_variant.metafields.shappify_qb.qb_qty | default: qb_variant.metafields.shappify_csp.csp_qty | default: 1 -}}": {"id":{{- qb_variant.id -}},"price":{{- qb_variant.price -}}}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      }
+      {%- if qb_price_varies -%}
+        ,"qb_price_varies": {{- qb_price_varies | json -}}
+        ,"grid": {{- bold_variant.metafields.shappify_qb.pricing_html | default: bold_variant.metafields.shappify_csp.pricing_html | json -}}
+      {%- endif -%}
+    }
+  {%- endif -%}
+  {%- comment -%} END OF QB SPECIAL HANDLING {%- endcomment -%}
+ 
+  {%- comment -%} SPECIAL HANDLING FOR RO {%- endcomment -%}
+  {%- if variant_has_ro -%}
+    ,"ro_lookup":{{- bold_variant.metafields.bold_rp | json | remove: 'rp_' -}}
+  {%- endif -%}
+  {%- comment -%} END OF RO SPECIAL HANDLING {%- endcomment -%}
+ 
+  {%- comment -%} SPECIAL HANDLING FOR BUNDLES {%- endcomment -%}
+  {%- if variant_has_bdl -%}
+    ,"bdl_lookup":{
+    {%- for bdl_variant in base_product.variants -%}
+      {%- unless bold_variant.id == bdl_variant.metafields.shappify_bundle.bundle_parent -%}{%- continue -%}{%- endunless -%}
+      "id":{{- bdl_variant.id -}},
+      "price":{{- bdl_variant.price | json -}},
+      "bundle_group":{{- bdl_variant.metafields.shappify_bundle.bundle_group -}}
+      {%- break -%}
+    {%- endfor -%}
+    }
+  {%- endif -%}
+  {%- comment -%} END OF BUNDLES SPECIAL HANDLING {%- endcomment -%}
+{% endcomment %}
+}
+{%- endif -%}
