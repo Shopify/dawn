@@ -3,7 +3,67 @@
 {% comment %}ly_liquid_scripts_end{% endcomment %}
 <!doctype html>
 <html class="no-js" lang="{{ request.locale.iso_code }}"{% comment %}ly_dir_replace_for_[]_begin{% endcomment %}{%- assign language_code = '_' | append: request.locale.iso_code -%}{%- if '_ar_he_fa_ur' contains language_code -%} dir="rtl" {%- endif -%}{% comment %}ly_dir_replace_end{% endcomment %}>
-  <head>
+  <head>{% comment %}START Partytown by Builder{% endcomment %}
+<script>
+  partytown = {
+    debug: false,
+    lib: "/apps/builder/partytown/0.6.4/",
+    forward: [],
+    resolveUrl: function (url) {
+      if ([].some((hostname)=>url.hostname.toLowerCase().includes(hostname))) {
+        var proxyUrl = new URL("https://cdn.builder.io/api/v1/proxy-api?apiKey=bfae0b819ced455ea9ea03af3d27375d");
+        proxyUrl.searchParams.append('url', url.href);
+        return proxyUrl;
+      }
+      return url;
+    },
+    swPath: "partytown-sw.js?apiKey=bfae0b819ced455ea9ea03af3d27375d",
+  };
+</script>
+<script src="/apps/builder/partytown/0.6.4/partytown.js?apiKey=bfae0b819ced455ea9ea03af3d27375d"></script>
+<script>
+  function isAcceptableScriptTagType(node) {
+    var javaScriptNodeTypes = ["application/javascript", "text/javascript"];
+    return (!node.type || javaScriptNodeTypes.includes(node.type))
+  }
+  var urlSearchParams = new URLSearchParams(window.location.search);
+  var partytownConfig = (urlSearchParams.get("partytown") || "").toLowerCase();
+  if (!partytownConfig) {
+    // Set default partytownConfig to default if user has enabled for production users
+    partytownConfig = false ? "default" : "none";
+  }
+
+  var patchedFn = {
+    apply(target, ctx, args) {
+      if (args[0].tagName === "SCRIPT" && isAcceptableScriptTagType(args[0])) {
+        if (partytownConfig === "all") {
+          // Enable Partytown for ALL plugins
+          args[0].type = "text/partytown";
+          console.debug("partytown: all");
+        } else if (partytownConfig === "default") {
+          console.debug("partytown: default", args[0].src);
+          const isAppVerified = [].find((url)=>{
+            return (args[0].src || "").includes(url)
+          })
+          if(isAppVerified) {
+            args[0].type = "text/partytown";
+            console.debug("partytown: default");
+          }
+        } else {
+          // Do nothing if partytownConfig is niether 'all' nor 'default'
+          console.debug("partytown: none");
+        }
+      }
+      return Reflect.apply(...arguments);
+    }
+  };
+  Node.prototype.appendChild = new Proxy(Node.prototype.appendChild, patchedFn);
+  Node.prototype.insertBefore = new Proxy(Node.prototype.insertBefore, patchedFn);
+
+  
+
+</script>
+{% comment %}END Partytown by Builder{% endcomment %}
 	{% include "pandectes-rules" %}
   
     <script src="https://cdn.intelligems.io/7416095055af.js" defer></script>
