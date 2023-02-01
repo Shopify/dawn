@@ -121,10 +121,14 @@ class CartItems extends HTMLElement {
           elementToReplace.innerHTML = 
             this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
         }));
-        const updatedValue = parsedState.items[line - 1]?.quantity;
+        const updatedValue = parsedState.items[line - 1] ? parsedState.items[line - 1].quantity : undefined;
         let message = '';
         if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
-          message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
+          if (typeof updatedValue === 'undefined') {
+            message = window.cartStrings.error;
+          } else {
+            message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
+          }
         }
         this.updateLiveRegions(line, message);
 
