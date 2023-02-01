@@ -940,7 +940,8 @@ class VariantSelects extends HTMLElement {
 
         publish(PUB_SUB_EVENTS.variantChange, {data: {
           sectionId,
-          html
+          html,
+          variant: this.currentVariant
         }});
       });
   }
