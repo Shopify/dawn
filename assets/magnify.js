@@ -4,12 +4,12 @@ function createOverlay(image) {
   overlay.setAttribute('class', 'image-magnify-full-size');
   overlay.setAttribute('aria-hidden', 'true');
   
-  const bgImg = new Image();
-  bgImg.onload = () => {
+  const overlayImage = new Image();
+  overlayImage.onload = () => {
     overlay.style.backgroundImage = `url('${image.src}')`;
     image.parentElement.insertBefore(overlay, image);
   }
-  bgImg.src = image.src;
+  overlayImage.src = image.src;
   return overlay;
 };
 
