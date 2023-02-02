@@ -6,23 +6,33 @@ if (!customElements.get('product-info')) {
       this.currentVariant = this.querySelector('.product-variant-id');
       this.variantSelects = this.querySelector('variant-radios')
       this.submitButton = this.querySelector('[type="submit"]');
-      this.destinationQty = this.querySelector('.quantity-cart');
-
-      if (this.variantSelects) {
-        this.variantSelects.addEventListener('change', this.onVariantChange.bind(this));
-      }
     }
 
     cartUpdateUnsubscriber = undefined;
+    variantChangeUnsubscriber = undefined;
 
     connectedCallback() {
-      this.setQuantityBoundries();    
-      this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, this.fetchCartQty.bind(this));
+      if (!this.input) return;
+      this.quantityForm = this.querySelector('.product-form__quantity');
+      if (!this.quantityForm) return;
+      this.setQuantityBoundries();  
+      if (!this.dataset.originalSection) {
+        this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, this.fetchQuantityRules.bind(this));
+      }
+      this.variantChangeUnsubscriber = subscribe(PUB_SUB_EVENTS.variantChange, (event) => {
+        const sectionId = this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section;
+        if (event.data.sectionId !== sectionId) return;
+        this.updateQuantityRules(event.data.sectionId, event.data.html);
+        this.setQuantityBoundries();
+      });
     }
 
     disconnectedCallback() {
       if (this.cartUpdateUnsubscriber) {
         this.cartUpdateUnsubscriber();
+      }
+      if (this.variantChangeUnsubscriber) {
+        this.variantChangeUnsubscriber();
       }
     }
 
@@ -45,56 +55,41 @@ if (!customElements.get('product-info')) {
       publish(PUB_SUB_EVENTS.quantityUpdate, undefined);  
     }
 
-    onVariantChange() {
-      this.fetchCartQty()
-    }
-
-    fetchCartQty() {
+    fetchQuantityRules() {
       this.querySelector('.quantity__rules-cart .loading-overlay').classList.remove('hidden');
-      fetch("/cart?section_id=main-cart-items")
-      .then((response) => response.text())
-      .then((responseText) => {
-        const html = new DOMParser().parseFromString(responseText, 'text/html')
-        const sourceQty = html.querySelector((`[data-quantity-variant-id~="${this.currentVariant.value}"]`))
-        const quantityRulesCartClassname = '.quantity__rules-cart';
-        if (sourceQty) {
-          const valueQtyCart = sourceQty.value;         
-          this.querySelector(quantityRulesCartClassname).classList.toggle('hidden', valueQtyCart <= 0);
-          if (valueQtyCart && this.input) {
-            this.input.dataset.cartQuantity = valueQtyCart;
-            this.destinationQty.innerHTML = valueQtyCart;
-          }
-        } else {
-          if (this.input) this.input.dataset.cartQuantity = 0;
-          this.destinationQty.innerHTML = 0;
-          this.querySelector(quantityRulesCartClassname).classList.add('hidden')
-        }
-        this.fetchQtyRules();
-      })
-      .catch(e => {
-        console.error(e);
-      });
-    }
-
-    fetchQtyRules() {
       fetch(`${this.dataset.url}?variant=${this.currentVariant.value}&section_id=${this.dataset.section}`).then((response) => {
         return response.text()
       })
       .then((responseText) => {
-        const html = new DOMParser().parseFromString(responseText, 'text/html')
-        const sourceQty = html.querySelector(('.quantity-input'))
-        const sourceQtyRules = html.querySelector(('.quantity__rules'))
-        if (sourceQty && sourceQtyRules) {
-          this.input.innerHTML = sourceQty.innerHTML
-          this.querySelector('.quantity__rules').innerHTML = sourceQtyRules.innerHTML
-        }
+        const html = new DOMParser().parseFromString(responseText, 'text/html');
+        this.updateQuantityRules(this.dataset.section, html);
         this.setQuantityBoundries();
-        // TODO: Move this to ensure loading state is removed even if error is thrown
-        this.querySelector('.quantity__rules-cart .loading-overlay').classList.add('hidden');
       })
       .catch(e => {
         console.error(e);
+      })
+      .finally(() => {
+        this.querySelector('.quantity__rules-cart .loading-overlay').classList.add('hidden');
       });
+    }
+
+    updateQuantityRules(sectionId, html) {
+      const quantityFormUpdated = html.getElementById(`Quantity-Form-${sectionId}`);
+      const selectors = ['.quantity__input', '.quantity__rules', '.quantity__label'];
+      for (let selector of selectors) { 
+        const current = this.quantityForm.querySelector(selector);
+        const updated = quantityFormUpdated.querySelector(selector);
+        if (!current || !updated) continue;
+        if (selector === '.quantity__input') {
+          const attributes = ['data-cart-quantity', 'data-min', 'data-max', 'step'];
+          for (let attribute of attributes) {
+            const valueUpdated = updated.getAttribute(attribute);
+            if (valueUpdated !== null) current.setAttribute(attribute, valueUpdated);
+          }
+        } else {
+          current.innerHTML = updated.innerHTML;
+        }
+      }
     }
   }
 )};
