@@ -1,0 +1,213 @@
+{%- style -%}
+  .section-{{ section.id }} {
+    background: #766294;
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }} {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+  /* Job list */
+  .departement-jobs * {
+    color: white;
+  }
+  
+  .greenhouse-jobs-wrapper h2 {
+    color: #F8CEC4;
+    text-align: center;
+    margin-top: 0;
+  }
+  
+  .departement-jobs h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+  }
+
+  .departement-jobs ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+
+  .departement-jobs ul li {
+    margin-top: 16px;
+    margin-right: 9px;
+    display: flex;
+  }
+  
+  .departement-jobs ul li a {
+    padding: 9px 30px;
+    border: 1px solid white;
+    border-radius: 69px;
+    text-decoration: none;
+    color: white;
+  }
+
+  /* Job form */
+  .spontaneous_greenhouse--wrapper {
+    padding-top: 36px;
+  }
+  
+  .spontaneous_greenhouse--wrapper * {
+    letter-spacing: 0.06rem;
+  }
+  
+  .spontaneous_greenhouse--wrapper h2 {
+    color: #F8CEC4;
+    text-align: center;
+  }
+  
+  .spontaneous_greenhouse--wrapper .subtitle {
+    line-height: 26px;
+    color: white;
+    text-align: center;
+  }
+
+  .spontaneous_greenhouse--wrapper #spontaneous_greenhouse--form label[for=consent] {
+    color: white;
+  }
+
+{%- endstyle -%}
+
+<script>
+  function departmentTemplate(dept) {
+    
+    return `
+    <div class="departement-jobs">
+      <h3>${dept.name}</h3>
+
+      <ul class="jobs">
+        ${dept.jobs.map(job => {
+          return `
+          <li>
+            <a href="${job.absolute_url}" target="_blank">
+              ${job.title}
+            </a>
+            {% if section.settings.show_locations %}
+              <p class="location">${job.location.name}</p>
+            {% endif %}
+          </li>`;
+        }).join("")}
+      </div>
+    `
+  }
+
+  async function getJobs() {
+    const departement = await fetch("https://boards-api.greenhouse.io/v1/boards/loopearplugs/departments/{{section.settings.filter}}").then(async res => await res.json())
+    const greenhouseJobsContainer = document.querySelector("#greenhouse-jobs-container");
+    greenhouseJobsContainer.innerHTML = greenhouseJobsContainer.innerHTML + departmentTemplate(departement);
+  }
+
+  getJobs()
+</script>
+
+<div class="section-{{section.id}}" id="open-positions">
+    <div class="page-width">
+    <div class="greenhouse-jobs-wrapper">
+      {% if section.settings.title != blank %}
+        <h2>{{ section.settings.title }}</h1>
+      {% endif %}
+      <div id="greenhouse-jobs-container">
+      </div>
+    </div>
+    {% if section.settings.show_form %}
+      <div class="spontaneous_greenhouse--wrapper">
+        {% if section.settings.form_title != blank %}
+          <h2>{{ section.settings.form_title }}</h2>
+        {% endif %}
+        {% if section.settings.form_subtitle != blank %}
+          <p class="subtitle">{{ section.settings.form_subtitle }}</p>
+        {% endif %}
+        {% render "greenhouse-form" %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Greenhouse Jobs",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Job list"
+    },
+    {
+      "id": "show_locations",
+      "label": "Show locations",
+      "type": "checkbox",
+      "default": false
+    },
+    {
+      "type": "text",
+      "label": "filter",
+      "id": "filter",
+      "info": "Must be an exact match to the department's ID in Greenhouse"
+    },
+    {
+      "id": "title",
+      "label": "Title",
+      "type": "text"
+    },
+    {
+      "type": "header",
+      "content": "Job form"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_form",
+      "label": "Show form",
+      "default": true
+    },
+    {
+      "id": "form_title",
+      "label": "Form title",
+      "type": "text"
+    },
+    {
+      "id": "form_subtitle",
+      "label": "Form subtitle",
+      "type": "text"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 88
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 88
+    }
+  ],
+  "presets": [
+    {
+      "name": "Greenhouse Jobs by departement"
+    }
+  ]
+}
+{% endschema %}
