@@ -22,6 +22,9 @@
   .comparison--grid--item section * {
     margin: 0;
   }
+  .comparison--grid--item .price {
+    font-size: 32px;
+  }
   .comparison--grid--item section h3,
   .comparison--grid--item section p {
     margin: 8px 0;
@@ -32,6 +35,20 @@
   }
   .comparison--grid--item section:not(:last-child) {
     border-bottom: 1px solid black;
+  }
+  {% comment %} Product block {% endcomment %}
+  .comparison--grid--item .product img {
+    width: 100%;
+    max-width: 220px;
+    margin: 16px auto 0;
+  }
+  .comparison--grid--item .product variant-radios {
+    margin: 1rem 0 0;
+    display: block;
+  }
+  .comparison--grid--item .product .price {
+    padding: 0;
+    padding-bottom: 1rem;
   }
   {% comment %} Reduction block {% endcomment %}
   .comparison--grid--item .reduction .reduction--header {
@@ -57,6 +74,26 @@
   .comparison--grid--item .included a {
     color: #C35E66;
   }
+  {% comment %} Details block {% endcomment %}
+  .comparison--grid--item .details img {
+    width: 100%;
+    max-width: 320px;
+    margin: 16px auto 0;
+  }
+  {% comment %} Buy now block {% endcomment %}
+  .comparison--grid--item .buy img {
+    width: 100%;
+    max-width: 220px;
+    margin: 16px auto 0;
+  }
+  .comparison--grid--item variant-radios {
+    margin: 1rem 0 0;
+    display: block;
+  }
+  .comparison--grid--item .price {
+    padding: 0;
+    padding-bottom: 1rem;
+  }
 </style>
 
 <section class="comparison">
@@ -64,6 +101,13 @@
     <div class="comparison--grid">
       {% for block in section.blocks %}
         <div class="comparison--grid--item">
+          <section class="product">
+            <h3>{{ block.settings.product.title }}</h3>
+            <img src="{{ block.settings.product.featured_image | image_url: width: 750 }}" alt="{{ block.settings.product.title }}">
+            {% render "variant-swatch" product: block.settings.product %}
+            {% render "price" product: block.settings.product %}
+            <a class="button" href="">Buy now</a>
+          </section>
           <section class="reduction">
             {% if block.settings.product.metafields.custom.product_filter %}
               <div class="reduction--header">
@@ -121,12 +165,47 @@
               <a href="{{ block.settings.included_extras_link }}">{{ block.settings.included_extras_label }} <span>{% render "icon-arrow" %}</span> </a>
             {% endif %}
           </section>
-          <section></section>
+          <section class="details">
+            <h3>{{ block.settings.image_title }}</h3>
+            <img src="{{ block.settings.image_image | image_url: width: 750 }}" alt="image">
+          </section>
+          <section class="buy">
+            <h3>{{ block.settings.product.title }}</h3>
+            <img src="{{ block.settings.product.featured_image | image_url: width: 750 }}" alt="{{ block.settings.product.title }}">
+            {% render "variant-swatch" product: block.settings.product %}
+            {% render "price" product: block.settings.product %}
+            <a class="button" href="">Buy now</a>
+          </section>
         </div>
       {% endfor %}
     </div>
   </div>
 </section>
+
+<script>
+  const sections = document.querySelectorAll(".comparison--grid--item section:not(.product):not(.details):not(.buy)");
+  let highestSections = {};
+
+  sections.forEach(section => {
+    const className = section.classList.item(0);
+    const height = section.scrollHeight;
+
+    if(!highestSections[className] || highestSections[className] < height) {
+      highestSections[className] = height;
+    }
+  })
+
+  sections.forEach(section => {
+    const className = section.classList.item(0);
+    const height = section.scrollHeight;
+    console.log(className, highestSections[className], height)
+    if(highestSections[className] && highestSections[className] >= height) {
+      section.style.height = `${highestSections[className]}px`
+    }
+  })
+
+  console.log(highestSections);
+</script>
 
 {% schema %}
 {
