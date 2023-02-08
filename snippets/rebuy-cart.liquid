@@ -69,7 +69,7 @@
             v-html="freeShippingHelperMessage()"
             ></div>
         </div>
-  
+
         <ig-shipping-progress-container></ig-shipping-progress-container>
 
         <div
@@ -479,7 +479,7 @@
         <div class="rebuy-cart__flyout-discount-container" v-if="discountEnabled()">
 
             <form class="rebuy-cart__flyout-discount-form" v-if="shouldShowDiscountInput()" v-on:submit="applyDiscount(null, $event)">
-            <div 
+            <div
                 class="rebuy-input-wrapper rebuy-input-wrapper--floating-label"
                 v-bind:class="[discount.inputValue ? 'show-label' : '' ]"
             >
@@ -711,7 +711,7 @@ function waitForAndRemove(selector) {
 
 const igChooseProgressBar = setInterval(function () {
 
-    //Check if Intelligems is loaded    
+    //Check if Intelligems is loaded
     if (window.igData?.user?.igId) {
         if (!!window.igData.user.getTestGroup(window.igData.user.getExperiments()[0]?.id)?.freeShippingThreshold) {
             waitForAndRemove(".rebuy-shipping-bar");
@@ -723,3 +723,116 @@ const igChooseProgressBar = setInterval(function () {
 }, 500)
 </script>
 {% endraw %}
+
+<script type="text/javascript">
+  // Remove from cart GTM dataLayer enhanced eCommerce event
+  var removeFromCartHandler = function(button, product) {
+    window.dataLayer = window.dataLayer || []
+    window.dataLayer.push({ecommerce: null})
+    window.dataLayer.push({
+      event: 'removeFromCart',
+      ecommerce: {
+        remove: {
+          products: [{
+            'name': product.title,
+            'id': product.id,
+            'price': product.price / 100,
+            'brand': product.vendor,
+            'category': product.product_type,
+            'variant': product.variant_title,
+            'quantity': product.quantity
+          }]
+        }
+      }
+    })
+  }
+
+  var attachRemove = function() {
+    var widget = document.querySelector(".rebuy-cart")
+    if(widget && !widget.hasAttribute("add-listener")) {
+
+      widget.setAttribute("add-listener", 'true')
+      widget.querySelector(".rebuy-cart__flyout-body").addEventListener("click", function(event) {
+        button = event.target.classList.contains(".rebuy-cart__flyout-item-remove") ? button : event.target.closest(".rebuy-cart__flyout-item-remove")
+
+        if(!button) {
+          return
+        }
+
+        var buttons = widget.querySelectorAll(".rebuy-cart__flyout-item-remove")
+        buttons = Array.prototype.slice.call(buttons)
+
+        var index = buttons.indexOf(button)
+        var products = widget.__vue__.items()
+
+        console.log("Clicked", button, products[index])
+        removeFromCartHandler(button, products[index])
+      })
+    }
+  }
+  setInterval(attachRemove, 100)
+
+  // Add to cart GTM dataLayer enhanced eCommerce event -->
+  var cart = '{{ cart | json }}'
+  cart = cart.length > 30 ? JSON.parse(cart) : null
+  var clickHandler = function(element, product) {
+    window.dataLayer = window.dataLayer || []
+    window.dataLayer.push({ecommerce: null})
+    window.dataLayer.push({
+      'event': 'addToCart',
+      'ecommerce': {
+        'currencyCode': cart ? cart.currency : 'EUR',
+        'add': {
+          'products': [{
+            'name': product.title,
+            'id': product.id,
+            'price': product.selected_variant.price,
+            'brand': product.vendor,
+            'category': product.product_type,
+            'variant': product.selected_variant.title,
+            'quantity': product.quantity
+          }]
+        }
+      }
+    })
+  }
+
+  setInterval(function() {
+    var widgets = document.querySelectorAll(".rebuy-cart__flyout-recommendations [data-rebuy-id]")
+    widgets = Array.prototype.slice.call(widgets)
+
+    for(widget of widgets) {
+      if(!widget.hasAttribute("add-listener")) {
+        console.log("Attaching")
+        widget.setAttribute("add-listener", "true")
+        widget.addEventListener("click", function(event){
+          button = event.target.classList.contains("rebuy-button") ? button : event.target.closest(".rebuy-button")
+          var buttons = widget.querySelectorAll(".rebuy-button")
+          buttons = Array.prototype.slice.call(buttons)
+          var index = buttons.indexOf(button)
+          var products = widget.__vue__.products
+
+          console.log("Clicked", button, products[index])
+          clickHandler(button, products[index])
+        })
+      }
+      var products = widget.__vue__.products
+      var buttons = widget.querySelectorAll(".rebuy-button")
+      buttons = Array.prototype.slice.call(buttons)
+
+
+      for(button of buttons) {
+        if(button.getAttribute('add-listener') !== 'true') {
+          continue
+        }
+
+        console.log("Adding event listener", button)
+        button.addEventListener("click", function(event) {
+          clickHandler(button, products[buttons.indexOf(button)])
+        })
+        button.setAttribute('add-listener', 'true')
+      }
+    }
+  }, 100)
+</script>
+
