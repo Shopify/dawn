@@ -21,8 +21,8 @@
 <html lang="{{ locale }}" dir="{{ direction }}" class="{{ checkout_html_classes }}">
   <head>
 	{% include "pandectes-rules" %}
-	
-     
+
+
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, height=device-height, minimum-scale=1.0, user-scalable=0">
@@ -101,7 +101,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   function checkoutInformation() {
     const orderSummaryToggle = document.querySelector(".order-summary-toggle");
     const orderSummary = document.querySelector("#order-summary");
-    
+
     const checkoutInformationTemplate = `
       <style>
         .checkout-info--container {
@@ -147,3 +147,86 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   	$('.total-line__price .order-summary__small-text').text('Free');
   }
 </script>
+
+<!-- Checkout GTM dataLayer enhanced eCommerce event -->
+<script type="text/javascript" defer="defer">
+  var checkout = {{ checkout | json }}
+
+  var trackStep = function() {
+    var step = null
+    switch(Shopify.Checkout.step) {
+      case "contact_information":
+        step = 1
+        break;
+      case "shipping_method":
+        step = 2
+        break;
+      case "payment_method":
+        step = 3
+        break;
+      case "processing":
+        step = 4
+        break;
+    }
+    var isPurchase = Shopify.Checkout.page === "thank_you"
+    window.dataLayer = window.dataLayer || []
+    window.dataLayer.push({ecommerce: null})
+    if(!isPurchase) {
+      window.dataLayer.push({
+        'ecommerce': {
+          'event': 'checkout',
+          'currencyCode': checkout.currency,
+          'checkout': {
+            'actionField': { 'step': step }
+            'products': checkout.line_items.map(li => {
+              var product = li.product
+              return {
+                'name': product.title,
+                'id': product.id,
+                'price': li.unit_price / 100,
+                'brand': product.vendor,
+                'category': product.tags[0],
+                'variant': product.selected_variant ? product.selected_variant.title : '',
+                'quantity': li.quantity
+              }
+            })
+          }
+        }
+      })
+    } else {
+      window.dataLayer.push({
+        'ecommerce': {
+          'event': 'purchase',
+          'currencyCode': checkout.currency,
+          'purchase': {
+            'actionField': {
+              'id': checkout.id,
+              'affiliation': 'Online Store',
+              'revenue': checkout.total_price,
+              'tax': checkout.tax_price,
+              'shipping': checkout.shipping_price,
+            },
+            'products': checkout.line_items.map(li => {
+              var product = li.product
+              return {
+                'name': product.title,
+                'id': product.id,
+                'price': li.unit_price / 100,
+                'brand': product.vendor,
+                'category': product.tags[0],
+                'variant': product.selected_variant ? product.selected_variant.title : '',
+                'quantity': li.quantity
+              }
+            })
+          }
+        }
+      })
+    }
+  }
+  trackStep()
+  (function($) {
+    $(document).on("page:load", trackStep)
+  })(Checkout.$);
+
+</script>
+
