@@ -42,7 +42,8 @@ class CartItems extends HTMLElement {
   }
 
   onChange(event) {
-    this.updateQuantity(event.target.dataset.index, event.target.value, document.activeElement.getAttribute('name'));
+    const newQuantity = event.target.max ? Math.min(event.target.value, event.target.max) : event.target.value;
+    this.updateQuantity(event.target.dataset.index, newQuantity, document.activeElement.getAttribute('name'));
   }
 
   onCartUpdate() {
