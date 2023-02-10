@@ -1,8 +1,8 @@
 (function() {
-  const greenhouseSpontForm = document.querySelector("form#spontaneous_greenhouse");
-  const btnSubmit = document.querySelector("form#spontaneous_greenhouse input[type=submit]");
-  const feedbackErr = document.querySelector("form#spontaneous_greenhouse .feedback-container .feedback-error");
-  const feedbackSuccess = document.querySelector("form#spontaneous_greenhouse .feedback-container .feedback-success");
+  const greenhouseSpontForm = document.querySelector("form#spontaneous_greenhouse--form");
+  const btnSubmit = document.querySelector("form#spontaneous_greenhouse--form input[type=submit]");
+  const feedbackErr = document.querySelector("form#spontaneous_greenhouse--form .feedback-container .feedback-error");
+  const feedbackSuccess = document.querySelector("form#spontaneous_greenhouse--form .feedback-container .feedback-success");
 
   function handleFormSubmit() {
     if(!greenhouseSpontForm) return false;
@@ -20,7 +20,7 @@
       });
 
       try {
-        await fetch("https://greenhouseapiproxy.netlify.app/.netlify/functions/proxy", {
+        await fetch("https://greenhouseapiproxy.loopearplugs.workers.dev/", {
         method: "post",
             headers: {
               'Content-Type': 'application/json'
