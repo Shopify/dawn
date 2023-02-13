@@ -16,17 +16,18 @@
 
 <script>
   function departmentTemplate(depts) {
-    
     return `
     <div class="column">
-      ${depts.map(dept => {
-        return `
+      ${depts
+        .map((dept) => {
+          return `
           <div class="department">
             <h3>${dept.name}</h3>
     
             <ul class="jobs">
-              ${dept.jobs.map(job => {
-                return `
+              ${dept.jobs
+                .map((job) => {
+                  return `
                 <li>
                   <a href="${job.absolute_url}" target="_blank">
                     ${job.title}
@@ -35,47 +36,62 @@
                     <p class="location">${job.location.name}</p>
                   {% endif %}
                 </li>`;
-              }).join("")}
+                })
+                .join('')}
           </div>
-          `
-        }).join("")}
+          `;
+        })
+        .join('')}
       </div>
-    `
+    `;
   }
 
   async function getJobs() {
-    const data = await fetch("https://boards-api.greenhouse.io/v1/boards/loopearplugs/departments").then(async res => await res.json())
+    const data = await fetch('https://boards-api.greenhouse.io/v1/boards/loopearplugs/departments').then(
+      async (res) => await res.json()
+    );
     let { departments } = data;
-    departments = departments?.sort((a, b) => b.length - a.length)
-    const biggestArr = Math.max.apply(Math, departments.map(function (dept) { return dept.jobs.length }));
-    const first = []
-    const second = []
-    const third = []
 
-    let lastColumnCount = 0
-    for(let i = 0; i <= departments.length; i++) {
-      if(departments[i] && departments[i].jobs.length) {
-        if(departments[i].jobs.length <= 6) {
-          first.push(departments[i])
+    departments = departments
+      .filter((dep) => {
+        if (`${dep.id}` === '4013439101') {
+          return false;
         }
-        else if(departments[i].jobs.length < biggestArr || lastColumnCount > 0) {
-          second.push(departments[i])
-        }
-        else if(departments[i].jobs.length === biggestArr) {
-          lastColumnCount++
-          third.push(departments[i])
+        return true;
+      })
+      .sort((a, b) => b.length - a.length);
+    const biggestArr = Math.max.apply(
+      Math,
+      departments.map(function (dept) {
+        return dept.jobs.length;
+      })
+    );
+    const first = [];
+    const second = [];
+    const third = [];
+
+    let lastColumnCount = 0;
+    for (let i = 0; i <= departments.length; i++) {
+      if (departments[i] && departments[i].jobs.length) {
+        if (departments[i].jobs.length <= 6) {
+          first.push(departments[i]);
+        } else if (departments[i].jobs.length < biggestArr || lastColumnCount > 0) {
+          second.push(departments[i]);
+        } else if (departments[i].jobs.length === biggestArr) {
+          lastColumnCount++;
+          third.push(departments[i]);
         }
       }
     }
 
-    const greenhouseJobsContainer = document.querySelector("#greenhouse-jobs-container");
-    
-    [third, second, first].map(depts => {
+    const greenhouseJobsContainer = document.querySelector('#greenhouse-jobs-container');
+
+    [third, second, first].map((depts) => {
       greenhouseJobsContainer.innerHTML = greenhouseJobsContainer.innerHTML + departmentTemplate(depts);
-    })
+    });
   }
 
-  getJobs()
+  getJobs();
 </script>
 
 <div class="page-width section-{{section.id}}" id="open-positions">
@@ -83,8 +99,7 @@
     {% if section.settings.title != blank %}
       <h1>{{ section.settings.title }}</h1>
     {% endif %}
-    <div id="greenhouse-jobs-container">
-    </div>
+    <div id="greenhouse-jobs-container"></div>
   </div>
 </div>
 
