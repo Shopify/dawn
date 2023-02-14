@@ -1,20 +1,31 @@
-(function() {
-    // Add animation classes.
-    function onIntersection(entries) {
-        for (const entry of entries) {
-            entry.target.classList.add('animate');
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate--active');
-            }
+const SCROLL_TRIGGER_CLASSNAME = "scroll-trigger";
+const IN_VIEW_CLASSNAME = "scrolled-into-view";
+
+const OPTIONS = {
+    threshold: 0.5,
+};
+
+function onIntersection(entries, observer) {
+    for (const entry of entries) {
+        if (entry.isIntersecting) {
+            entry.target.classList.add(IN_VIEW_CLASSNAME);
+        observer.unobserve(entry.target);
         }
     }
+}
 
-    const intersectionObserver = new IntersectionObserver(onIntersection, {
-        thresholds: [1],
-    });
-    const selector = '.section, .banner__box, .product__info-wrapper';
-    const elementsToObserve = Array.from(document.querySelectorAll(selector));
+function initializeScrollTrigger() {
+    const scrollTriggerElements = Array.from(
+        document.getElementsByClassName(SCROLL_TRIGGER_CLASSNAME)
+    );
 
-    // Observe intersections between the viewport and the elements.
-    elementsToObserve.forEach((element) => intersectionObserver.observe(element));
-})();
+    if (scrollTriggerElements.length === 0) {
+        return;
+    }
+
+    const observer = new IntersectionObserver(onIntersection, OPTIONS);
+
+    scrollTriggerElements.forEach((element) => observer.observe(element));
+}
+
+window.addEventListener("load", initializeScrollTrigger);
