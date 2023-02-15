@@ -33,13 +33,12 @@ if (!customElements.get('product-form')) {
 
     updateCartQty() {
       this.cartQty = parseInt(this.submitButton.dataset.cartqty);
+      this.updateType = routes.cart_add_url;
       if (this.cartQty > 0) {
         this.updateType = routes.cart_change_url;
-      } else {
-        this.updateType = routes.cart_add_url;
       }
       if (this.updateType ===  routes.cart_change_url) {
-        this.selectedVariant = this.form.querySelector(`[name='id']`).value
+        this.selectedVariant = parseInt(this.form.querySelector(`[name='id']`).value);
       }
     }
 
@@ -89,11 +88,11 @@ if (!customElements.get('product-form')) {
           const quickAddModal = this.closest('quick-add-modal');
           if (quickAddModal) {
             document.body.addEventListener('modalClosed', () => {
-              setTimeout(() => { this.cart.renderContents(response, parseInt(this.selectedVariant)) });
+              setTimeout(() => { this.cart.renderContents(response, this.selectedVariant) });
             }, { once: true });
             quickAddModal.hide(true);
           } else {
-            this.cart.renderContents(response, parseInt(this.selectedVariant));
+            this.cart.renderContents(response, this.selectedVariant);
           }
         })
         .catch((e) => {

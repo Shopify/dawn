@@ -51,7 +51,10 @@ if (!customElements.get('product-info')) {
 
       this.input.min = min;
       this.input.max = max;
-      this.input.value = data.cartQuantity;
+      this.input.value = min;
+      if (data.cartQuantity > 0) {
+        this.input.value = data.cartQuantity;
+      }
       publish(PUB_SUB_EVENTS.quantityUpdate, undefined);  
     }
 
