@@ -8,11 +8,44 @@ if (!customElements.get('product-form')) {
       this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
       this.cart = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
       this.submitButton = this.querySelector('[type="submit"]');
+      this.updateType = routes.cart_add_url;
+      this.selectedVariant = undefined
+
       if (document.querySelector('cart-drawer')) this.submitButton.setAttribute('aria-haspopup', 'dialog');
+    }
+
+    cartUpdateUnsubscriber = undefined;
+    variantChangeUnsubscriber = undefined;
+
+    connectedCallback() {
+      this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, this.updateCartQty.bind(this));
+      this.variantChangeUnsubscriber = subscribe(PUB_SUB_EVENTS.variantChange, this.updateCartQty.bind(this));
+    }
+  
+    disconnectedCallback() {
+      if (this.cartUpdateUnsubscriber) {
+        this.cartUpdateUnsubscriber();
+      }
+      if (this.variantChangeUnsubscriber) {
+        this.variantChangeUnsubscriber();
+      }
+    }
+
+    updateCartQty() {
+      this.cartQty = parseInt(this.submitButton.dataset.cartqty);
+      if (this.cartQty > 0) {
+        this.updateType = routes.cart_change_url;
+      } else {
+        this.updateType = routes.cart_add_url;
+      }
+      if (this.updateType ===  routes.cart_change_url) {
+        this.selectedVariant = this.form.querySelector(`[name='id']`).value
+      }
     }
 
     onSubmitHandler(evt) {
       evt.preventDefault();
+      this.updateCartQty();
       if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
       this.handleErrorMessage();
@@ -33,7 +66,7 @@ if (!customElements.get('product-form')) {
       }
       config.body = formData;
 
-      fetch(`${routes.cart_add_url}`, config)
+      fetch(`${this.updateType}`, config)
         .then((response) => response.json())
         .then((response) => {
           if (response.status) {
@@ -56,11 +89,11 @@ if (!customElements.get('product-form')) {
           const quickAddModal = this.closest('quick-add-modal');
           if (quickAddModal) {
             document.body.addEventListener('modalClosed', () => {
-              setTimeout(() => { this.cart.renderContents(response) });
+              setTimeout(() => { this.cart.renderContents(response, parseInt(this.selectedVariant)) });
             }, { once: true });
             quickAddModal.hide(true);
           } else {
-            this.cart.renderContents(response);
+            this.cart.renderContents(response, parseInt(this.selectedVariant));
           }
         })
         .catch((e) => {

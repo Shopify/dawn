@@ -30,8 +30,21 @@ class CartNotification extends HTMLElement {
     removeTrapFocus(this.activeElement);
   }
 
-  renderContents(parsedState) {
-      this.cartItemKey = parsedState.key;
+  renderContents(parsedState, selectedVariant) {
+    this.renderSections = true;
+    this.cartItemKey = parsedState.key;
+    if (parsedState.items) {
+      if (parsedState.items.filter(i => i.variant_id === selectedVariant).length === 0) {
+        this.renderSections = false;
+        return
+      }
+      parsedState.items.forEach((item) => {
+        if (item.variant_id === selectedVariant && item.key) {
+          this.cartItemKey = item.key;
+        }
+      })
+    }
+    if (this.renderSections) {
       this.getSectionsToRender().forEach((section => {
         document.getElementById(section.id).innerHTML =
           this.getSectionInnerHTML(parsedState.sections[section.id], section.selector);
@@ -39,6 +52,7 @@ class CartNotification extends HTMLElement {
 
       if (this.header) this.header.reveal();
       this.open();
+    }
   }
 
   getSectionsToRender() {

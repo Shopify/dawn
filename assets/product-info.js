@@ -91,6 +91,12 @@ if (!customElements.get('product-info')) {
           current.innerHTML = updated.innerHTML;
         }
       }
+
+      const quantityButtonUpdated = html.getElementById(`Buy-Buttons-${sectionId}`);
+      const currentButton = this.submitButton
+      const updatedButton = quantityButtonUpdated.querySelector('.product-form__submit')
+      currentButton.innerHTML = updatedButton.innerHTML
+      currentButton.dataset.cartqty = updatedButton.dataset.cartqty
     }
   }
 )};
