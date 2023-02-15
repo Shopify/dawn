@@ -12,15 +12,19 @@
       e.preventDefault();
       // btnSubmit.disabled = true;
 
-      const body = JSON.stringify({
-        first_name: e.target[0].value,
-        last_name: e.target[1].value,
-        email: e.target[2].value,
-        question_4395730101: e.target[3].value
-      });
+      const bodyObject = {
+        job_id: e.target[0].value,
+        first_name: e.target[2].value,
+        last_name: e.target[3].value,
+        email: e.target[4].value
+      }
+
+      bodyObject[e.target[1].value] = e.target[5].value;
+
+      const body = JSON.stringify(bodyObject);
 
       try {
-        await fetch("http://127.0.0.1:8787/", {
+        await fetch("https://greenhouseapiproxy.loopearplugs.workers.dev/", {
           method: "post",
           headers: {
             'Content-Type': 'application/json'
@@ -30,7 +34,7 @@
         })
         feedbackErr.style.display = "none";
         feedbackSuccess.style.display = "inline-block";
-        // greenhouseSpontForm.reset();
+        greenhouseSpontForm.reset();
       } catch (error) {
         feedbackErr.style.display = "inline-block";
         feedbackSuccess.style.display = "none";
