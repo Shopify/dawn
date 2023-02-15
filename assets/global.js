@@ -190,7 +190,7 @@ class QuantityInput extends HTMLElement {
       const max = parseInt(this.input.max);
       const buttonPlus = this.querySelector(".quantity__button[name='plus']");
       buttonPlus.classList.toggle('disabled', value >= max);
-    } 
+    }
   }
 }
 
@@ -553,6 +553,10 @@ class DeferredMedia extends HTMLElement {
       this.setAttribute('loaded', true);
       const deferredElement = this.appendChild(content.querySelector('video, model-viewer, iframe'));
       if (focus) deferredElement.focus();
+      if (deferredElement.nodeName == 'VIDEO' && deferredElement.getAttribute('autoplay')) {
+        // force autoplay for safari
+        deferredElement.play();
+      }
     }
   }
 }
