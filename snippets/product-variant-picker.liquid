@@ -1,13 +1,13 @@
 {% comment %}
-    Renders product variant-picker
+  Renders product variant-picker
 
-    Accepts:
-    - product: {Object} product object.
-    - block: {Object} passing the block information.
-    - update_url: {Boolean} whether or not to update url when changing variants. If false, the url isn't updated. Default: true (optional).
-
-    Usage:
-    {% render 'product-variant-picker', block: block, product: product %}
+  Accepts:
+  - product: {Object} product object.
+  - block: {Object} passing the block information.
+  - product_form_id: {String} Id of the product form to which the variant picker is associated.
+  - update_url: {Boolean} whether or not to update url when changing variants. If false, the url isn't updated. Default: true (optional).
+  Usage:
+  {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
 {% endcomment %}
 {%- unless product.has_only_default_variant -%}
   {%- if block.settings.picker_type == 'button' -%}
@@ -16,7 +16,9 @@
       class="no-js-hidden"
       data-section="{{ section.id }}"
       data-url="{{ product.url }}"
-      {% if update_url == false %}data-update-url="false"{% endif %}
+      {% if update_url == false %}
+        data-update-url="false"
+      {% endif %}
       {{ block.shopify_attributes }}
     >
       {%- for option in product.options_with_values -%}
@@ -35,7 +37,9 @@
       class="no-js-hidden"
       data-section="{{ section.id }}"
       data-url="{{ product.url }}"
-      {% if update_url == false %}data-update-url="false"{% endif %}
+      {% if update_url == false %}
+        data-update-url="false"
+      {% endif %}
       {{ block.shopify_attributes }}
     >
       {%- for option in product.options_with_values -%}
@@ -86,9 +90,29 @@
             {% endif %}
             value="{{ variant.id }}"
           >
-            {{ variant.title }}
-            - {{ variant.price | money | strip_html }}
-            {%- if variant.available == false %} - {{ 'products.product.sold_out' | t }}{% endif %}
+            {%- liquid
+              echo variant.title
+              echo variant.price | money | strip_html | prepend: ' - '
+              if variant.available == false
+                echo 'products.product.sold_out' | t | prepend: ' - '
+              endif
+              if variant.quantity_rule.increment > 1
+                echo 'products.product.quantity.multiples_of' | t: quantity: variant.quantity_rule.increment | prepend: ' - '
+              endif
+              if variant.quantity_rule.min > 1
+                echo 'products.product.quantity.minimum_of' | t: quantity: variant.quantity_rule.min | prepend: ' - '
+              endif
+              if variant.quantity_rule.max != null
+                echo 'products.product.quantity.maximum_of' | t: quantity: variant.quantity_rule.max | prepend: ' - '
+              endif
+              # TODO: enable theme-check once `item_count_for_variant` is accepted as valid filter
+              # theme-check-disable
+              assign cart_quantity = cart | item_count_for_variant: variant.id
+              # theme-check-enable
+              if cart_quantity > 0
+                echo 'products.product.quantity.in_cart_html' | t: quantity: cart_quantity | prepend: ' - '
+              endif
+            -%}
           </option>
         {%- endfor -%}
       </select>

@@ -27,7 +27,17 @@ class PredictiveSearch extends SearchForm {
 
   onChange() {
     super.onChange();
-    this.searchTerm = this.getQuery();
+    const newSearchTerm = this.getQuery();
+    if (!this.searchTerm || !newSearchTerm.startsWith(this.searchTerm)) {
+      // Remove the results when they are no longer relevant for the new search term
+      // so they don't show up when the dropdown opens again
+      this.querySelector("#predictive-search-results-groups-wrapper")?.remove();
+    }
+
+    // Update the term asap, don't wait for the predictive search query to finish loading
+    this.updateSearchForTerm(this.searchTerm, newSearchTerm);
+
+    this.searchTerm = newSearchTerm;
 
     if (!this.searchTerm.length) {
       this.close(true);
@@ -99,37 +109,76 @@ class PredictiveSearch extends SearchForm {
     }
   }
 
+  updateSearchForTerm(previousTerm, newTerm) {
+    const searchForTextElement = this.querySelector(
+      "[data-predictive-search-search-for-text]"
+    );
+    const currentButtonText = searchForTextElement?.innerText;
+    if (currentButtonText) {
+      if (currentButtonText.match(new RegExp(previousTerm, "g")).length > 1) {
+        // The new term matches part of the button text and not just the search term, do not replace to avoid mistakes
+        return;
+      }
+      const newButtonText = currentButtonText.replace(previousTerm, newTerm);
+      searchForTextElement.innerText = newButtonText;
+    }
+  }
+
   switchOption(direction) {
     if (!this.getAttribute('open')) return;
 
     const moveUp = direction === 'up';
     const selectedElement = this.querySelector('[aria-selected="true"]');
-    const allElements = this.querySelectorAll('li');
-    let activeElement = this.querySelector('li');
+
+    // Filter out hidden elements (duplicated page and article resources) thanks
+    // to this https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetParent
+    const allVisibleElements = Array.from(
+      this.querySelectorAll("li, button.predictive-search__item")
+    ).filter((element) => element.offsetParent !== null);
+    let activeElementIndex = 0;
 
     if (moveUp && !selectedElement) return;
 
-    this.statusElement.textContent = '';
+    let selectedElementIndex = -1;
+    let i = 0;
 
-    if (!moveUp && selectedElement) {
-      activeElement = selectedElement.nextElementSibling || allElements[0];
-    } else if (moveUp) {
-      activeElement = selectedElement.previousElementSibling || allElements[allElements.length - 1];
+    while (selectedElementIndex === -1 && i <= allVisibleElements.length) {
+      if (allVisibleElements[i] === selectedElement) {
+        selectedElementIndex = i;
+      }
+      i++;
     }
 
-    if (activeElement === selectedElement) return;
+    this.statusElement.textContent = "";
+
+    if (!moveUp && selectedElement) {
+      activeElementIndex =
+        selectedElementIndex === allVisibleElements.length - 1
+          ? 0
+          : selectedElementIndex + 1;
+    } else if (moveUp) {
+      activeElementIndex =
+        selectedElementIndex === 0
+          ? allVisibleElements.length - 1
+          : selectedElementIndex - 1;
+    }
+
+    if (activeElementIndex === selectedElementIndex) return;
+
+    const activeElement = allVisibleElements[activeElementIndex];
 
     activeElement.setAttribute('aria-selected', true);
     if (selectedElement) selectedElement.setAttribute('aria-selected', false);
 
-    this.setLiveRegionText(activeElement.textContent);
     this.input.setAttribute('aria-activedescendant', activeElement.id);
   }
 
   selectOption() {
-    const selectedProduct = this.querySelector('[aria-selected="true"] a, [aria-selected="true"] button');
+    const selectedOption = this.querySelector(
+      '[aria-selected="true"] a, button[aria-selected="true"]'
+    );
 
-    if (selectedProduct) selectedProduct.click();
+    if (selectedOption) selectedOption.click();
   }
 
   getSearchResults(searchTerm) {
@@ -142,8 +191,10 @@ class PredictiveSearch extends SearchForm {
     }
 
     fetch(
-      `${routes.predictive_search_url}?q=${encodeURIComponent(searchTerm)}&${encodeURIComponent('resources[type]')}=product&${encodeURIComponent('resources[limit]')}=4&section_id=predictive-search`,
-      {signal: this.abortController.signal}
+      `${routes.predictive_search_url}?q=${encodeURIComponent(
+        searchTerm
+      )}&section_id=predictive-search`,
+      { signal: this.abortController.signal }
     )
       .then((response) => {
         if (!response.ok) {
@@ -205,7 +256,7 @@ class PredictiveSearch extends SearchForm {
   }
 
   getResultsMaxHeight() {
-    this.resultsMaxHeight = window.innerHeight - document.getElementById('shopify-section-header').getBoundingClientRect().bottom;
+    this.resultsMaxHeight = window.innerHeight - document.querySelector('.section-header').getBoundingClientRect().bottom;
     return this.resultsMaxHeight;
   }
 
