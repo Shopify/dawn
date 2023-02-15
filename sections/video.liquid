@@ -20,6 +20,13 @@
   assign video_alt = section.settings.video.alt | default: section.settings.description
   assign alt = 'sections.video.load_video' | t: description: video_alt | escape
   assign poster = section.settings.video.preview_image | default: section.settings.cover_image
+
+  if section.settings.video != null
+    assign ratio_diff = section.settings.video.aspect_ratio | minus: poster.aspect_ratio | abs
+    if ratio_diff < 0.01 and ratio_diff > 0
+      assign fix_ratio = true
+    endif
+  endif
 -%}
 
 {%- capture sizes -%}
@@ -67,7 +74,7 @@
       </div>
     </noscript>
     <deferred-media
-      class="video-section__media deferred-media no-js-hidden gradient global-media-settings{% if section.settings.full_width %} global-media-settings--full-width{% endif %}"
+      class="video-section__media deferred-media no-js-hidden gradient global-media-settings{% if section.settings.full_width %} global-media-settings--full-width{% endif %}{% if fix_ratio %} media-fit-cover{% endif %}"
       data-media-id="{{ video_id }}"
       {% if poster != null %}
         style="--ratio-percent: {{ 1 | divided_by: poster.aspect_ratio | times: 100 }}%;"
@@ -92,7 +99,7 @@
         </span>
       </button>
       <template>
-        {%- if section.settings.video == null -%}
+        {%- if section.settings.video == null and section.settings.video_url != null -%}
           {%- liquid
             assign loop = ''
             if section.settings.enable_video_looping
@@ -119,12 +126,11 @@
         {%- else -%}
           {{ section.settings.video
             | video_tag:
-              image_size: "2048x",
+              image_size: "480x",
               autoplay: true,
               loop: section.settings.enable_video_looping,
               controls: true,
-              muted: false,
-              preload: "none"
+              muted: false
           }}
         {%- endif -%}
       </template>
@@ -208,6 +214,10 @@
       "id": "description",
       "label": "t:sections.video.settings.description.label",
       "info": "t:sections.video.settings.description.info"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.video.settings.header__3.content"
     },
     {
       "type": "checkbox",
