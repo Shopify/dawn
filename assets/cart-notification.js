@@ -36,7 +36,6 @@ class CartNotification extends HTMLElement {
     if (parsedState.items) {
       if (parsedState.items.filter(i => i.variant_id === selectedVariant).length === 0) {
         this.renderSections = false;
-        return
       }
       parsedState.items.forEach((item) => {
         if (item.variant_id === selectedVariant && item.key) {
