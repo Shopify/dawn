@@ -51,13 +51,13 @@ if (!customElements.get('product-info')) {
 
       this.input.min = min;
       this.input.max = max;
-      this.input.value = min;
+      this.input.value = data.cartQuantity;
       publish(PUB_SUB_EVENTS.quantityUpdate, undefined);  
     }
 
     fetchQuantityRules() {
       if (!this.currentVariant || !this.currentVariant.value) return;
-      this.querySelector('.quantity__rules-cart .loading-overlay').classList.remove('hidden');
+      // this.querySelector('.quantity .loading-overlay').classList.remove('hidden');
       fetch(`${this.dataset.url}?variant=${this.currentVariant.value}&section_id=${this.dataset.section}`).then((response) => {
         return response.text()
       })
@@ -70,13 +70,13 @@ if (!customElements.get('product-info')) {
         console.error(e);
       })
       .finally(() => {
-        this.querySelector('.quantity__rules-cart .loading-overlay').classList.add('hidden');
+        // this.querySelector('.quantity .loading-overlay').classList.add('hidden');
       });
     }
 
     updateQuantityRules(sectionId, html) {
       const quantityFormUpdated = html.getElementById(`Quantity-Form-${sectionId}`);
-      const selectors = ['.quantity__input', '.quantity__rules', '.quantity__label'];
+      const selectors = ['.quantity__input', '.quantity__rules'];
       for (let selector of selectors) { 
         const current = this.quantityForm.querySelector(selector);
         const updated = quantityFormUpdated.querySelector(selector);
