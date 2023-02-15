@@ -8,7 +8,7 @@ if (!customElements.get('product-form')) {
       this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
       this.cart = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
       this.submitButton = this.querySelector('[type="submit"]');
-      this.updateType = routes.cart_add_url;
+      this.cartUrl = routes.cart_add_url;
       this.selectedVariant = undefined
 
       if (document.querySelector('cart-drawer')) this.submitButton.setAttribute('aria-haspopup', 'dialog');
@@ -33,11 +33,11 @@ if (!customElements.get('product-form')) {
 
     updateCartQty() {
       this.cartQty = parseInt(this.submitButton.dataset.cartqty);
-      this.updateType = routes.cart_add_url;
+      this.cartUrl = routes.cart_add_url;
       if (this.cartQty > 0) {
-        this.updateType = routes.cart_change_url;
+        this.cartUrl = routes.cart_change_url;
       }
-      if (this.updateType ===  routes.cart_change_url) {
+      if (this.cartUrl ===  routes.cart_change_url) {
         this.selectedVariant = parseInt(this.form.querySelector(`[name='id']`).value);
       }
     }
@@ -65,7 +65,7 @@ if (!customElements.get('product-form')) {
       }
       config.body = formData;
 
-      fetch(`${this.updateType}`, config)
+      fetch(`${this.cartUrl}`, config)
         .then((response) => response.json())
         .then((response) => {
           if (response.status) {
