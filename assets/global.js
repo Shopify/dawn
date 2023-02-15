@@ -190,7 +190,7 @@ class QuantityInput extends HTMLElement {
       const max = parseInt(this.input.max);
       const buttonPlus = this.querySelector(".quantity__button[name='plus']");
       buttonPlus.classList.toggle('disabled', value >= max);
-    } 
+    }
   }
 }
 
@@ -764,18 +764,21 @@ class SlideshowComponent extends SliderComponent {
   setSlideVisibility() {
     this.sliderItemsToShow.forEach((item, index) => {
       const linkElements = item.querySelectorAll('a');
+      var slideshowText = item.querySelector('.slideshow__text');
       if (index === this.currentPage - 1) {
         if (linkElements.length) linkElements.forEach(button => {
           button.removeAttribute('tabindex');
         });
         item.setAttribute('aria-hidden', 'false');
         item.removeAttribute('tabindex');
+        slideshowText.classList.add('scrolled-into-view');
       } else {
         if (linkElements.length) linkElements.forEach(button => {
           button.setAttribute('tabindex', '-1');
         });
         item.setAttribute('aria-hidden', 'true');
         item.setAttribute('tabindex', '-1');
+        slideshowText.classList.remove('scrolled-into-view');
       }
     });
   }
