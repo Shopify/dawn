@@ -341,6 +341,7 @@
       this.addEventListener('keyup', this.onContainerKeyUp.bind(this));
 
       this.querySelectorAll('a').forEach(item => item.addEventListener('click', this.onItemClick.bind(this)));
+      this.focusoutTimer = null;
     }
 
     hidePanel() {
@@ -366,13 +367,19 @@
       this.elements.button.focus();
       this.elements.panel.toggleAttribute('hidden');
       this.elements.button.setAttribute('aria-expanded', (this.elements.button.getAttribute('aria-expanded') === 'false').toString());
+      if (this.focusoutTimer) {
+        clearTimeout(this.focusoutTimer);
+        this.focusoutTimer = null;
+      }
     }
 
     closeSelector(event) {
-      const shouldClose = event.relatedTarget && event.relatedTarget.nodeName === 'BUTTON';
-      if (event.relatedTarget === null || shouldClose) {
-        this.hidePanel();
-      }
+      this.focusoutTimer = setTimeout(() => {
+        const shouldClose = event.relatedTarget && event.relatedTarget.nodeName === 'BUTTON';
+        if (event.relatedTarget === null || shouldClose) {
+          this.hidePanel();
+        }
+      }, 150);
     }
   }
 
