@@ -24,7 +24,7 @@
       const body = JSON.stringify(bodyObject);
 
       try {
-        await fetch("https://greenhouseapiproxy.loopearplugs.workers.dev/", {
+        await fetch("http://0.0.0.0:8787", {
           method: "post",
           headers: {
             'Content-Type': 'application/json'
