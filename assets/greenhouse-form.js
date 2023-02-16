@@ -24,7 +24,7 @@
       const body = JSON.stringify(bodyObject);
 
       try {
-        await fetch("http://0.0.0.0:8787", {
+        await fetch("http://10.50.4.123:8787", {
           method: "post",
           headers: {
             'Content-Type': 'application/json'
