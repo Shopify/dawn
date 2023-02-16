@@ -13,18 +13,18 @@
       // btnSubmit.disabled = true;
 
       const bodyObject = {
-        job_id: e.target[0].value,
+        job_id: e.target[1].value,
         first_name: e.target[2].value,
         last_name: e.target[3].value,
         email: e.target[4].value
       }
 
-      bodyObject[e.target[1].value] = e.target[5].value;
+      bodyObject[e.target[0].value] = e.target[5].value;
 
       const body = JSON.stringify(bodyObject);
 
       try {
-        await fetch("http://10.50.4.123:8787", {
+        await fetch("https://greenhouseapiproxy.loopearplugs.workers.dev/", {
           method: "post",
           headers: {
             'Content-Type': 'application/json'
