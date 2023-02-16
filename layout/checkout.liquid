@@ -17,15 +17,17 @@
   {% endif %}
 {% endcapture %}
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="{{ locale }}" dir="{{ direction }}" class="{{ checkout_html_classes }}">
   <head>
-	{% include "pandectes-rules" %}
-
+    {% include 'pandectes-rules' %}
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, height=device-height, minimum-scale=1.0, user-scalable=0">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, height=device-height, minimum-scale=1.0, user-scalable=0"
+    >
     <meta name="referrer" content="origin">
     <title>{{ page_title }}</title>
 
@@ -38,23 +40,41 @@
     <script src="https://cdn.intelligems.io/7416095055af.js"></script>
 
     <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-M2VWM8F');</script>
+    <script>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-M2VWM8F');
+    </script>
     <!-- End Google Tag Manager -->
 
     <!-- FigPii Tracking Code -->
-      <script id="piiTester" type="text/javascript" async="async" crossorigin="anonymous" src="//tracking-cdn.figpii.com/b5a934bc7f988289ca4f3743affd207b.js"></script>
+    <script
+      id="piiTester"
+      type="text/javascript"
+      async="async"
+      crossorigin="anonymous"
+      src="//tracking-cdn.figpii.com/b5a934bc7f988289ca4f3743affd207b.js"
+    ></script>
     <!-- End FigPii Tracking Code -->
-
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M2VWM8F"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
+    <noscript
+      ><iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-M2VWM8F"
+        height="0"
+        width="0"
+        style="display:none;visibility:hidden"
+      ></iframe
+    ></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     {{ skip_to_content_link }}
 
     <header class="banner" data-header role="banner">
@@ -92,12 +112,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 
     {{ tracking_code }}
-  
-
-</body>
+  </body>
 </html>
 
 <script>
+  
   function checkoutInformation() {
     const orderSummaryToggle = document.querySelector(".order-summary-toggle");
     const orderSummary = document.querySelector("#order-summary");
@@ -146,13 +165,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   if (total >= 3400){
   	$('.total-line__price .order-summary__small-text').text('Free');
   }
+
 </script>
 
 <!-- Checkout GTM dataLayer enhanced eCommerce event -->
 <script type="text/javascript" defer="defer">
-  var checkout = {{ checkout | json }}
+  const line_items = [];
 
-  var trackStep = function() {
+  {% for line_item in checkout.line_items %}
+    line_items.push({product: {{line_item.product | json}}})
+  {% endfor %}
+
+  var checkout = {
+    currency: {{ checkout.currency | json }},
+    line_items,
+    id: {{ checkout.id | json }},
+    total_price: {{ checkout.total_price | json }},
+    tax_price: {{ checkout.tax_price | json }},
+    shipping_price: {{ checkout.shipping_price | json }}
+  }
+
+  function trackStep() {
     var step = null
     switch(Shopify.Checkout.step) {
       case "contact_information":
@@ -223,10 +256,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       })
     }
   }
-  trackStep()
-  (function($) {
+
+  trackStep();
+
+  (function($, trackStep) {
     $(document).on("page:load", trackStep)
-  })(Checkout.$);
-
+  })(Checkout.$, trackStep);
 </script>
-
