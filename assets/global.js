@@ -10,7 +10,7 @@ document.querySelectorAll('[id^="Details-"] summary').forEach((summary) => {
   summary.setAttribute('role', 'button');
   summary.setAttribute('aria-expanded', summary.parentNode.hasAttribute('open'));
 
-  if(summary.nextElementSibling.getAttribute('id')) {
+  if (summary.nextElementSibling.getAttribute('id')) {
     summary.setAttribute('aria-controls', summary.nextElementSibling.id);
   }
 
@@ -42,11 +42,11 @@ function trapFocus(container, elementToFocus = container) {
     document.addEventListener('keydown', trapFocusHandlers.keydown);
   };
 
-  trapFocusHandlers.focusout = function() {
+  trapFocusHandlers.focusout = function () {
     document.removeEventListener('keydown', trapFocusHandlers.keydown);
   };
 
-  trapFocusHandlers.keydown = function(event) {
+  trapFocusHandlers.keydown = function (event) {
     if (event.code.toUpperCase() !== 'TAB') return; // If not TAB key
     // On the last focusable element and tab forward, focus the first element.
     if (event.target === last && !event.shiftKey) {
@@ -73,7 +73,7 @@ function trapFocus(container, elementToFocus = container) {
 // Here run the querySelector to figure out if the browser supports :focus-visible or not and run code based on it.
 try {
   document.querySelector(":focus-visible");
-} catch(e) {
+} catch (e) {
   focusVisiblePolyfill();
 }
 
@@ -83,7 +83,7 @@ function focusVisiblePolyfill() {
   let mouseClick = null;
 
   window.addEventListener('keydown', (event) => {
-    if(navKeys.includes(event.code.toUpperCase())) {
+    if (navKeys.includes(event.code.toUpperCase())) {
       mouseClick = false;
     }
   });
@@ -181,13 +181,13 @@ if ((typeof window.Shopify) == 'undefined') {
   window.Shopify = {};
 }
 
-Shopify.bind = function(fn, scope) {
-  return function() {
+Shopify.bind = function (fn, scope) {
+  return function () {
     return fn.apply(scope, arguments);
   }
 };
 
-Shopify.setSelectorByValue = function(selector, value) {
+Shopify.setSelectorByValue = function (selector, value) {
   for (var i = 0, count = selector.options.length; i < count; i++) {
     var option = selector.options[i];
     if (value == option.value || value == option.innerHTML) {
@@ -197,11 +197,11 @@ Shopify.setSelectorByValue = function(selector, value) {
   }
 };
 
-Shopify.addListener = function(target, eventName, callback) {
-  target.addEventListener ? target.addEventListener(eventName, callback, false) : target.attachEvent('on'+eventName, callback);
+Shopify.addListener = function (target, eventName, callback) {
+  target.addEventListener ? target.addEventListener(eventName, callback, false) : target.attachEvent('on' + eventName, callback);
 };
 
-Shopify.postLink = function(path, options) {
+Shopify.postLink = function (path, options) {
   options = options || {};
   var method = options['method'] || 'post';
   var params = options['parameters'] || {};
@@ -210,7 +210,7 @@ Shopify.postLink = function(path, options) {
   form.setAttribute("method", method);
   form.setAttribute("action", path);
 
-  for(var key in params) {
+  for (var key in params) {
     var hiddenField = document.createElement("input");
     hiddenField.setAttribute("type", "hidden");
     hiddenField.setAttribute("name", key);
@@ -222,34 +222,34 @@ Shopify.postLink = function(path, options) {
   document.body.removeChild(form);
 };
 
-Shopify.CountryProvinceSelector = function(country_domid, province_domid, options) {
-  this.countryEl         = document.getElementById(country_domid);
-  this.provinceEl        = document.getElementById(province_domid);
+Shopify.CountryProvinceSelector = function (country_domid, province_domid, options) {
+  this.countryEl = document.getElementById(country_domid);
+  this.provinceEl = document.getElementById(province_domid);
   this.provinceContainer = document.getElementById(options['hideElement'] || province_domid);
 
-  Shopify.addListener(this.countryEl, 'change', Shopify.bind(this.countryHandler,this));
+  Shopify.addListener(this.countryEl, 'change', Shopify.bind(this.countryHandler, this));
 
   this.initCountry();
   this.initProvince();
 };
 
 Shopify.CountryProvinceSelector.prototype = {
-  initCountry: function() {
+  initCountry: function () {
     var value = this.countryEl.getAttribute('data-default');
     Shopify.setSelectorByValue(this.countryEl, value);
     this.countryHandler();
   },
 
-  initProvince: function() {
+  initProvince: function () {
     var value = this.provinceEl.getAttribute('data-default');
     if (value && this.provinceEl.options.length > 0) {
       Shopify.setSelectorByValue(this.provinceEl, value);
     }
   },
 
-  countryHandler: function(e) {
-    var opt       = this.countryEl.options[this.countryEl.selectedIndex];
-    var raw       = opt.getAttribute('data-provinces');
+  countryHandler: function (e) {
+    var opt = this.countryEl.options[this.countryEl.selectedIndex];
+    var raw = opt.getAttribute('data-provinces');
     var provinces = JSON.parse(raw);
 
     this.clearOptions(this.provinceEl);
@@ -267,13 +267,13 @@ Shopify.CountryProvinceSelector.prototype = {
     }
   },
 
-  clearOptions: function(selector) {
+  clearOptions: function (selector) {
     while (selector.firstChild) {
       selector.removeChild(selector.firstChild);
     }
   },
 
-  setOptions: function(selector, values) {
+  setOptions: function (selector, values) {
     for (var i = 0, count = values.length; i < values.length; i++) {
       var opt = document.createElement('option');
       opt.value = values[i];
@@ -302,10 +302,10 @@ class MenuDrawer extends HTMLElement {
   }
 
   onKeyUp(event) {
-    if(event.code.toUpperCase() !== 'ESCAPE') return;
+    if (event.code.toUpperCase() !== 'ESCAPE') return;
 
     const openDetailsElement = event.target.closest('details[open]');
-    if(!openDetailsElement) return;
+    if (!openDetailsElement) return;
 
     openDetailsElement === this.mainDetailsToggle ? this.closeMenuDrawer(event, this.mainDetailsToggle.querySelector('summary')) : this.closeSubmenu(openDetailsElement);
   }
@@ -323,7 +323,7 @@ class MenuDrawer extends HTMLElement {
     }
 
     if (detailsElement === this.mainDetailsToggle) {
-      if(isOpen) event.preventDefault();
+      if (isOpen) event.preventDefault();
       isOpen ? this.closeMenuDrawer(event, summaryElement) : this.openMenuDrawer(summaryElement);
     } else {
       setTimeout(() => {
@@ -561,14 +561,16 @@ class SliderComponent extends HTMLElement {
 
     if (this.currentPageElement && this.pageTotalElement) {
       this.currentPageElement.textContent = this.currentPage;
-      this.pageTotalElement.textContent =  Array.from(this.sliderItems).filter(element => element.classList.contains('hidden') != true).length;//this.totalPages;
+      this.pageTotalElement.textContent = Array.from(this.sliderItems).filter(element => element.classList.contains('hidden') != true).length;//this.totalPages;
     }
 
     if (this.currentPage != previousPage) {
-      this.dispatchEvent(new CustomEvent('slideChanged', { detail: {
-        currentPage: this.currentPage,
-        currentElement: this.sliderItemsToShow[this.currentPage - 1]
-      }}));
+      this.dispatchEvent(new CustomEvent('slideChanged', {
+        detail: {
+          currentPage: this.currentPage,
+          currentElement: this.sliderItemsToShow[this.currentPage - 1]
+        }
+      }));
     }
 
     if (this.enableSliderLooping) return;
@@ -755,9 +757,9 @@ class VariantSelects extends HTMLElement {
     this.toggleAddButton(true, '', false);
     this.updatePickupAvailability();
     this.removeErrorMessage();
-    
+
     this.updateContinueSellingMessage();
-    
+
 
     if (!this.currentVariant) {
       this.toggleAddButton(true, '', true);
@@ -772,19 +774,19 @@ class VariantSelects extends HTMLElement {
   }
 
   updateContinueSellingMessage() {
-    if(!this.querySelector('#variantsWithInv')) return false;
+    if (!this.querySelector('#variantsWithInv')) return false;
     this.variantWithInvData = this.variantWithInvData || JSON.parse(this.querySelector('#variantsWithInv').textContent);
-    const relatedInventory = this.variantWithInvData.find( el => el.id === this.variantData.find((variant) => {
+    const relatedInventory = this.variantWithInvData.find(el => el.id === this.variantData.find((variant) => {
       return !variant.options.map((option, index) => {
         return this.options[index] === option;
       }).includes(false);
     }).id);
-    
+
     const continueMsg = document.querySelector(".continue-selling-msg");
 
-    if(!continueMsg) return false;
+    if (!continueMsg) return false;
 
-    if(relatedInventory.inventory_policy === "continue" && relatedInventory.inventory_quantity <= 0) {
+    if (relatedInventory.inventory_policy === "continue" && relatedInventory.inventory_quantity <= 0) {
       continueMsg.innerHTML = `<p style="padding: 16px; background: rgb(248,206,196);">
       <b>Note: </b>Loop Engage is literally flying off the shelves and we're struggling to keep up! We'll have your order shipped within 7 working days.
       </p>`
@@ -810,24 +812,24 @@ class VariantSelects extends HTMLElement {
     if (!this.currentVariant.featured_media) return;
 
     const mediaGallery = document.getElementById(`MediaGallery-${this.dataset.section}`);
-    if( mediaGallery ) {
-    mediaGallery.setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media.id}`, true);
+    if (mediaGallery) {
+      mediaGallery.setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media.id}`, true);
     } else {
-    return;
+      return;
     }
 
     const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
     if (!modalContent) return;
-    const newMediaModal = modalContent.querySelector( `[data-media-id="${this.currentVariant.featured_media.id}"]`);
+    const newMediaModal = modalContent.querySelector(`[data-media-id="${this.currentVariant.featured_media.id}"]`);
     modalContent.prepend(newMediaModal);
-     
-    if(this.dataset.section.indexOf("__main") > -1 ) {
-      if(document.querySelector(".product--thumbnail_slider") != null) {
+
+    if (this.dataset.section.indexOf("__main") > -1) {
+      if (document.querySelector(".product--thumbnail_slider") != null) {
         var elements = document.querySelector(".product--thumbnail_slider").querySelectorAll(".thumb-alt-hide");
         for (let i = 0; i < elements.length; i++) {
           elements[i].classList.add("hidden");
         }
-        var element = document.querySelector(".product--thumbnail_slider").querySelectorAll(".thumbnail-alt-"+this.currentVariant.featured_media.alt.replace('#',''));
+        var element = document.querySelector(".product--thumbnail_slider").querySelectorAll(".thumbnail-alt-" + this.currentVariant.featured_media.alt.replace('#', ''));
         for (let j = 0; j < element.length; j++) {
           element[j].classList.remove("hidden");
         }
@@ -837,7 +839,7 @@ class VariantSelects extends HTMLElement {
 
   updateURL() {
     if (!this.currentVariant || this.dataset.updateUrl === 'false') return;
-    window.history.replaceState({ }, '', `${this.dataset.url}?variant=${this.currentVariant.id}`);
+    window.history.replaceState({}, '', `${this.dataset.url}?variant=${this.currentVariant.id}`);
   }
 
   updateShareUrl() {
@@ -943,19 +945,19 @@ class VariantRadios extends VariantSelects {
 customElements.define('variant-radios', VariantRadios);
 
 var elements = document.querySelectorAll('.multicolumn-card-clickable');
-elements.forEach((item)=>{
-  	var url = item.getAttribute('data-card-link');
-    item.addEventListener('click', function (e) {
-      window.location.href= url;
-    });
- }, {
+elements.forEach((item) => {
+  var url = item.getAttribute('data-card-link');
+  item.addEventListener('click', function (e) {
+    window.location.href = url;
+  });
+}, {
   passive: true
 });
 
 // Open all external links in a new tab
 var links = document.links;
-for (let i = 0, linksLength = links.length ; i < linksLength ; i++) {
-  if (links[i].hostname !== window.location.hostname) {
+for (let i = 0, linksLength = links.length; i < linksLength; i++) {
+  if (links[i].hostname !== window.location.hostname && !links[i].hostname.contains("loopearplugs.com")) {
     links[i].target = '_blank';
     links[i].rel = 'noreferrer noopener';
   }
@@ -964,7 +966,7 @@ for (let i = 0, linksLength = links.length ; i < linksLength ; i++) {
 // Accordion code
 var acc = document.querySelectorAll(".accordion:not(.product__accordion)");
 var i;
-console.log({acc})
+console.log({ acc })
 for (i = 0; i < acc.length; i++) {
   acc[i].addEventListener("click", function () {
     this.classList.toggle("activate");
