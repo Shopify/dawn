@@ -14,27 +14,42 @@ if (!customElements.get('product-form')) {
       if (document.querySelector('cart-drawer')) this.submitButton.setAttribute('aria-haspopup', 'dialog');
     }
 
-    cartUpdateUnsubscriber = undefined;
     variantChangeUnsubscriber = undefined;
+    quantityChangeUnsubscriber = undefined;
 
     connectedCallback() {
-      this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, this.updateCartQty.bind(this));
-      this.variantChangeUnsubscriber = subscribe(PUB_SUB_EVENTS.variantChange, this.updateCartQty.bind(this));
+      this.variantChangeUnsubscriber = subscribe(PUB_SUB_EVENTS.variantChange, (event) => {
+        const inputValue = event.data.quantityForm.querySelector('.quantity__input').value
+        const cartQty = event.data.quantityForm.querySelector('.quantity__input').dataset.cartQuantity
+        this.updateCartUrl(inputValue, cartQty);
+      })
+      this.quantityChangeUnsubscriber = subscribe(PUB_SUB_EVENTS.quantityChange, (event) => {
+        this.updateCartUrl(event.data.value, event.data.cartQty);
+      });
     }
   
     disconnectedCallback() {
-      if (this.cartUpdateUnsubscriber) {
-        this.cartUpdateUnsubscriber();
-      }
       if (this.variantChangeUnsubscriber) {
         this.variantChangeUnsubscriber();
       }
+      if (this.quantityChangeUnsubscriber) {
+        this.quantityChangeUnsubscriber();
+      }
     }
 
-    updateCartQty() {
-      this.cartQty = parseInt(this.submitButton.dataset.cartqty);
+    updateCartUrl(inputValue, cartQuantity) {
+      if (inputValue && cartQuantity) {
+        this.cartQty = cartQuantity
+        this.quantityInputNumber = inputValue
+      } else {
+        this.cartQty = parseInt(this.submitButton.dataset.cartqty);
+        this.quantityInputNumber = parseInt(this.form.closest('.product__info-container').querySelector('.quantity__input').value);
+      }
+
       this.cartUrl = routes.cart_add_url;
-      if (this.cartQty > 0) {
+      if (this.cartQty === this.quantityInputNumber) {
+        this.cartUrl = undefined;
+      } else if (this.cartQty > 0) {
         this.cartUrl = routes.cart_change_url;
       }
       if (this.cartUrl ===  routes.cart_change_url) {
@@ -44,28 +59,30 @@ if (!customElements.get('product-form')) {
 
     onSubmitHandler(evt) {
       evt.preventDefault();
-      this.updateCartQty();
-      if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
+      this.updateCartUrl();
 
       this.handleErrorMessage();
 
-      this.submitButton.setAttribute('aria-disabled', true);
-      this.submitButton.classList.add('loading');
-      this.querySelector('.loading-overlay__spinner').classList.remove('hidden');
+      if (this.cartUrl) {
+        if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
-      const config = fetchConfig('javascript');
-      config.headers['X-Requested-With'] = 'XMLHttpRequest';
-      delete config.headers['Content-Type'];
+        this.submitButton.setAttribute('aria-disabled', true);
+        this.submitButton.classList.add('loading');
+        this.querySelector('.loading-overlay__spinner').classList.remove('hidden');
+  
+        const config = fetchConfig('javascript');
+        config.headers['X-Requested-With'] = 'XMLHttpRequest';
+        delete config.headers['Content-Type'];
+  
+        const formData = new FormData(this.form);
+        if (this.cart) {
+          formData.append('sections', this.cart.getSectionsToRender().map((section) => section.id));
+          formData.append('sections_url', window.location.pathname);
+          this.cart.setActiveElement(document.activeElement);
+        }
+        config.body = formData;
 
-      const formData = new FormData(this.form);
-      if (this.cart) {
-        formData.append('sections', this.cart.getSectionsToRender().map((section) => section.id));
-        formData.append('sections_url', window.location.pathname);
-        this.cart.setActiveElement(document.activeElement);
-      }
-      config.body = formData;
-
-      fetch(`${this.cartUrl}`, config)
+        fetch(`${this.cartUrl}`, config)
         .then((response) => response.json())
         .then((response) => {
           if (response.status) {
@@ -104,6 +121,14 @@ if (!customElements.get('product-form')) {
           if (!this.error) this.submitButton.removeAttribute('aria-disabled');
           this.querySelector('.loading-overlay__spinner').classList.add('hidden');
         });
+      } else {
+        if (this.cart) {
+          this.cart.open();
+        } else {
+          window.location = window.routes.cart_url;
+          return;
+        }
+      }
     }
 
     handleErrorMessage(errorMessage = false) {

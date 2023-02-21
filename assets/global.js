@@ -169,6 +169,7 @@ class QuantityInput extends HTMLElement {
 
   onInputChange(event) {
     this.validateQtyRules();
+    publish(PUB_SUB_EVENTS.quantityChange, {data: { value: event.target.value, cartQty: event.target.dataset.cartQuantity }});  
   }
 
   onButtonClick(event) {
@@ -930,6 +931,7 @@ class VariantSelects extends HTMLElement {
         }
 
         const price = document.getElementById(`price-${this.dataset.section}`);
+        const quantityForm = document.getElementById(`Quantity-Form-${this.dataset.section}`);
 
         if (price) price.classList.remove('visibility-hidden');
 
@@ -941,7 +943,8 @@ class VariantSelects extends HTMLElement {
         publish(PUB_SUB_EVENTS.variantChange, {data: {
           sectionId,
           html,
-          variant: this.currentVariant
+          variant: this.currentVariant,
+          quantityForm
         }});
       });
   }

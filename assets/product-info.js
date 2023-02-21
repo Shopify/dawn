@@ -6,10 +6,12 @@ if (!customElements.get('product-info')) {
       this.currentVariant = this.querySelector('.product-variant-id');
       this.variantSelects = this.querySelector('variant-radios')
       this.submitButton = this.querySelector('[type="submit"]');
+      this.updateButton(this.input.value, this.input.dataset.cartQuantity);
     }
 
     cartUpdateUnsubscriber = undefined;
     variantChangeUnsubscriber = undefined;
+    quantityChangeUnsubscriber = undefined;
 
     connectedCallback() {
       if (!this.input) return;
@@ -25,6 +27,9 @@ if (!customElements.get('product-info')) {
         this.updateQuantityRules(event.data.sectionId, event.data.html);
         this.setQuantityBoundries();
       });
+      this.quantityChangeUnsubscriber = subscribe(PUB_SUB_EVENTS.quantityChange, (event) => {
+        this.updateButton(event.data.value, event.data.cartQty);
+      });
     }
 
     disconnectedCallback() {
@@ -33,6 +38,9 @@ if (!customElements.get('product-info')) {
       }
       if (this.variantChangeUnsubscriber) {
         this.variantChangeUnsubscriber();
+      }
+      if (this.quantityChangeUnsubscriber) {
+        this.quantityChangeUnsubscriber();
       }
     }
 
@@ -66,7 +74,7 @@ if (!customElements.get('product-info')) {
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
         this.updateQuantityRules(this.dataset.section, html);
-        this.setQuantityBoundries();
+        this.setQuantityBoundries(html);
       })
       .catch(e => {
         console.error(e);
@@ -92,10 +100,25 @@ if (!customElements.get('product-info')) {
       }
 
       const quantityButtonUpdated = html.getElementById(`Buy-Buttons-${sectionId}`);
-      const currentButton = this.submitButton
+      const input = quantityFormUpdated.querySelector('.quantity__input');
       const updatedButton = quantityButtonUpdated.querySelector('.product-form__submit')
-      currentButton.innerHTML = updatedButton.innerHTML
+      const currentButton = this.submitButton
+      if (input.dataset.cartQuantity === input.value) {
+        currentButton.querySelector('.cart-label').innerHTML = updatedButton.querySelector('.added-to-cart').innerHTML;
+      } else {
+        currentButton.innerHTML = updatedButton.innerHTML
+      }
       currentButton.dataset.cartqty = updatedButton.dataset.cartqty
+    }
+
+    updateButton(value, cartQty) {
+      if (cartQty === value) {
+        this.submitButton.querySelector('.cart-label').innerHTML = this.submitButton.querySelector('.added-to-cart').innerHTML;
+      } else if (cartQty > 0) {
+        this.submitButton.querySelector('.cart-label').innerText = this.submitButton.querySelector('.cart-label').dataset.updatecart;
+      } else {
+        this.submitButton.querySelector('.cart-label').innerText = this.submitButton.querySelector('.cart-label').dataset.addcart;
+      }
     }
   }
 )};
