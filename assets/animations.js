@@ -2,7 +2,7 @@ const SCROLL_TRIGGER_CLASSNAME = "scroll-trigger";
 const IN_VIEW_CLASSNAME = "scrolled-into-view";
 
 const OPTIONS = {
-    threshold: 0.5,
+  threshold: 0.5,
 };
 
 function onIntersection(entries, observer) {
