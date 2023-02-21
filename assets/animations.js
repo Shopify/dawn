@@ -6,26 +6,26 @@ const OPTIONS = {
 };
 
 function onIntersection(entries, observer) {
-    for (const entry of entries) {
-        if (entry.isIntersecting) {
-            entry.target.classList.add(IN_VIEW_CLASSNAME);
-        observer.unobserve(entry.target);
-        }
+  for (const entry of entries) {
+    if (entry.isIntersecting) {
+      entry.target.classList.add(IN_VIEW_CLASSNAME);
+      observer.unobserve(entry.target);
     }
+  }
 }
 
 function initializeScrollTrigger() {
-    const scrollTriggerElements = Array.from(
-        document.getElementsByClassName(SCROLL_TRIGGER_CLASSNAME)
-    );
+  const scrollTriggerElements = Array.from(
+    document.getElementsByClassName(SCROLL_TRIGGER_CLASSNAME)
+  );
 
-    if (scrollTriggerElements.length === 0) {
-        return;
-    }
+  if (scrollTriggerElements.length === 0) {
+    return;
+  }
 
-    const observer = new IntersectionObserver(onIntersection, OPTIONS);
+  const observer = new IntersectionObserver(onIntersection, OPTIONS);
 
-    scrollTriggerElements.forEach((element) => observer.observe(element));
+  scrollTriggerElements.forEach((element) => observer.observe(element));
 }
 
 window.addEventListener("load", initializeScrollTrigger);
