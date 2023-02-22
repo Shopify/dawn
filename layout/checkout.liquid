@@ -77,6 +77,8 @@
           {% comment %}
             TODO:
             - [ ] Test Gift Card items - they appear to have no sku
+            - [ ] Sometimes the "contact_information" is skipped,
+                  in which case the begin_checkout event won't be recorded
           {% endcomment%}
           if (Shopify.Checkout.step === "contact_information") {
             dataLayer.push({ ecommerce: null });
@@ -84,13 +86,13 @@
               event: "begin_checkout",
               ecommerce: {
                 currency: "USD",
-                value: {{ checkout.total_price | money_without_currency }},
+                value: {{ checkout.total_price | money_without_currency | remove: "," }},
                 items: [
                   {% for item in checkout.line_items %}
                     {
                       item_id: "{{ item.sku }}",
                       item_name: "{{ item.title }}",
-                      price: {{ item.original_price | money_without_currency }},
+                      price: {{ item.original_price | money_without_currency | remove: "," }},
                       quantity: {{ item.quantity }}
                     },
                   {% endfor %}
@@ -110,14 +112,14 @@
                 event: "add_shipping_info",
                 ecommerce: {
                   currency: "USD",
-                  value: {{ checkout.total_price | money_without_currency }},
+                  value: {{ checkout.total_price | money_without_currency | remove: "," }},
                   shipping_tier: "{{ checkout.shipping_method.title }}",
                   items: [
                     {% for item in checkout.line_items %}
                       {
                         item_id: "{{ item.sku }}",
                         item_name: "{{ item.title }}",
-                        price: {{ item.original_price | money_without_currency }},
+                        price: {{ item.original_price | money_without_currency | remove: "," }},
                         quantity: {{ item.quantity }}
                       },
                     {% endfor %}
@@ -135,16 +137,16 @@
                 event: "purchase",
                 ecommerce: {
                   transaction_id: "{{ checkout.order_id }}",
-                  value: {{ checkout.total_price | money_without_currency }},
-                  tax: {{ checkout.tax_price | money_without_currency }},
-                  shipping: {{ checkout.shipping_price | money_without_currency }},
+                  value: {{ checkout.total_price | money_without_currency | remove: "," }},
+                  tax: {{ checkout.tax_price | money_without_currency | remove: "," }},
+                  shipping: {{ checkout.shipping_price | money_without_currency | remove: "," }},
                   currency: "USD",
                   items: [
                     {% for item in checkout.line_items %}
                       {
                         item_id: "{{ item.sku }}",
                         item_name: "{{ item.title }}",
-                        price: {{ item.original_price | money_without_currency }},
+                        price: {{ item.original_price | money_without_currency | remove: "," }},
                         quantity: {{ item.quantity }}
                       },
                     {% endfor %}
