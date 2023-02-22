@@ -1,6 +1,3 @@
-<script src="{{ 'lozad.js' | asset_url }}"></script>
-
-
 {%- style -%}
   .custom_video-{{ section.id }} {
     object-fit:cover;
@@ -30,14 +27,17 @@
       </div>
     {%- endunless -%}
     {% if section.settings.video_url != blank %}
-      <video 
-        {%if section.settings.video_loop%}loop="loop"{%endif%}
-        playsinline="playsinline" 
-        controls="controls" 
-        autoplay="autoplay" 
-        muted="muted" 
-        class="lozad" 
-        preload="metadata">
+      <video
+        {% if section.settings.video_loop %}
+          loop="loop"
+        {% endif %}
+        playsinline="playsinline"
+        controls="controls"
+        autoplay="autoplay"
+        muted="muted"
+        class="lazy"
+        preload="metadata"
+      >
         <source data-src="{{ section.settings.video_url }}" type="video/mp4">
       </video>
     {% endif %}
@@ -45,8 +45,32 @@
 </div>
 
 <script>
-  const observer = lozad(); // lazy loads elements with default selector as '.lozad'
-  observer.observe();
+  document.addEventListener('DOMContentLoaded', function () {
+    var lazyVideos = [].slice.call(document.querySelectorAll('video.lazy'));
+
+    if ('IntersectionObserver' in window) {
+      var lazyVideoObserver = new IntersectionObserver(function (entries, observer) {
+        entries.forEach(function (video) {
+          if (video.isIntersecting) {
+            for (var source in video.target.children) {
+              var videoSource = video.target.children[source];
+              if (typeof videoSource.tagName === 'string' && videoSource.tagName === 'SOURCE') {
+                videoSource.src = videoSource.dataset.src;
+              }
+            }
+
+            video.target.load();
+            video.target.classList.remove('lazy');
+            lazyVideoObserver.unobserve(video.target);
+          }
+        });
+      });
+
+      lazyVideos.forEach(function (lazyVideo) {
+        lazyVideoObserver.observe(lazyVideo);
+      });
+    }
+  });
 </script>
 
 {% schema %}
@@ -82,24 +106,24 @@
       "label": "t:sections.all.heading_size.label"
     },
     {
-        "type": "select",
-        "id": "text_alignment",
-        "label": "Text alignment",
-        "options": [
-            {
-            "value": "left",
-            "label": "left"
-            },
-            {
-            "value": "middle",
-            "label": "Middle"
-            },
-            {
-            "value": "right",
-            "label": "right"
-            }
-        ],
-        "default": "left"
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "left"
+        },
+        {
+          "value": "middle",
+          "label": "Middle"
+        },
+        {
+          "value": "right",
+          "label": "right"
+        }
+      ],
+      "default": "left"
     },
     {
       "type": "text",
@@ -107,16 +131,16 @@
       "label": "Shopify Video URL"
     },
     {
-        "type": "checkbox",
-        "id": "video_autoplay",
-        "label": "Video Autoplay",
-        "default": false
+      "type": "checkbox",
+      "id": "video_autoplay",
+      "label": "Video Autoplay",
+      "default": false
     },
     {
-        "type": "checkbox",
-        "id": "video_loop",
-        "label": "Video Loop",
-        "default": false
+      "type": "checkbox",
+      "id": "video_loop",
+      "label": "Video Loop",
+      "default": false
     },
     {
       "type": "text",
