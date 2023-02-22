@@ -102,6 +102,31 @@
 
         {% comment %} On Page Loads and Changes {% endcomment %}
         $(document).on("page:load page:change", function() {
+          {% comment %} Ecommerce Add Shipping Info {% endcomment %}
+          if (Shopify.Checkout.step === "shipping_method") {
+            $('[data-shipping-method-form="true"]').on("submit", function() {
+              dataLayer.push({ ecommerce: null });
+              dataLayer.push({
+                event: "add_shipping_info",
+                ecommerce: {
+                  currency: "USD",
+                  value: {{ checkout.total_price | money_without_currency }},
+                  shipping_tier: "{{ checkout.shipping_method.title }}",
+                  items: [
+                    {% for item in checkout.line_items %}
+                      {
+                        item_id: "{{ item.sku }}",
+                        item_name: "{{ item.title }}",
+                        price: {{ item.original_price | money_without_currency }},
+                        quantity: {{ item.quantity }}
+                      },
+                    {% endfor %}
+                  ]
+                }
+              });
+            });
+          }
+
           {% comment %} Ecommerce Purchase {% endcomment %}
           {% if first_time_accessed %}
             if (Shopify.Checkout.page === "thank_you") {
