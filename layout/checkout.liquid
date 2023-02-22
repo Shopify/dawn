@@ -173,7 +173,12 @@
   var line_items = [];
 
   {% for line_item in checkout.line_items %}
-    line_items.push({product: {{line_item.product | json}}})
+    line_items.push({product: {{line_item.product | json}},
+                    quantity: {{line_item.quantity}},
+                    price: {{line_item.final_price}},
+                   sku: "{{line_item.sku}}",
+                    title: "{{line_item.title}}"
+                     })
   {% endfor %}
 
   var checkout = {
@@ -215,13 +220,13 @@
             'products': checkout.line_items.map(li => {
               var product = li.product
               return {
-                'name': product.title,
-                'id': product.id,
+                'name': li.title,
+                'id': li.sku,
                 'price': li.price / 100,
                 'brand': product.vendor,
-                'category': product.tags[0],
-                'variant': product.selected_variant ? product.selected_variant.title : '',
-                'quantity': checkout.total_price/ li.price
+                'category': product.type,
+                'variant': product.title,
+                'quantity': li.quantity
               }
             })
           }
@@ -243,12 +248,12 @@
             'products': checkout.line_items.map(li => {
               var product = li.product
               return {
-                'name': product.title,
-                'id': product.id,
-                'price': li.unit_price / 100,
+                'name': li.title,
+                'id': li.sku,
+                'price': li.price / 100,
                 'brand': product.vendor,
-                'category': product.tags[0],
-                'variant': product.selected_variant ? product.selected_variant.title : '',
+                'category': product.type,
+                'variant': product.title,
                 'quantity': li.quantity
               }
             })
@@ -257,8 +262,6 @@
       })
     }
   }
-
-  trackStep();
 
   (function($, trackStep) {
     $(document).on("page:load", trackStep)
