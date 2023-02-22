@@ -66,11 +66,36 @@
 
     <script>
       (function($) {
-        $(document).on("page:load page:change", function() {
-          if (typeof window.dataLayer === "undefined") {
-            return;
-          }
+        if (typeof window.dataLayer === "undefined") {
+          return;
+        }
 
+        {% comment %} On Page Loads Only {% endcomment %}
+        $(document).on("page:load", function() {
+          {% comment %} Ecommerce Begin Checkout {% endcomment %}
+          if (Shopify.Checkout.step === "contact_information") {
+            dataLayer.push(
+              event: "begin_checkout",
+              ecommerce: {
+                currency: "USD",
+                value: {{ checkout.total_price | money_without_currency }},
+                items: [
+                  {{ for item in checkout.line_items }}
+                    {
+                      item_id: "{{ item.sku }}"
+                      item_name: "{{ item.title }}"
+                      price: {{ item.unit_price | money_without_currency }}
+                      quantity: {{ item.quantity }}
+                    }
+                  {{ endfor }}
+                ]
+              }
+            )
+          }
+        })(Checkout.$);
+
+        {% comment %} On Page Loads and Changes {% endcomment %}
+        $(document).on("page:load page:change", function() {
           {% comment %} Ecommerce Purchase {% endcomment %}
           {% if first_time_accessed %}
             if (Shopify.Checkout.page === "thank_you") {
