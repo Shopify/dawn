@@ -197,7 +197,14 @@
                 </details>
               </div>
             {%- when 'recipient_form' -%}
-              {%- capture recipient_form_elements -%}
+              {%- form 'product',
+                product,
+                id: "recipient-form-{{ section.id }}",
+                class: 'form',
+                novalidate: 'novalidate',
+                data-type: 'add-to-cart-form'
+              -%}
+                {%- assign gift_card_recipient_control_flag = "properties[__shopify_send_gift_card_to_recipient]" %}
                 <script src="{{ 'recipient-form.js' | asset_url }}" defer="defer"></script>
                 <recipient-form class="product-form__input recipient-form"
                   data-section-id="{{ section.id }}"
@@ -208,6 +215,8 @@
                     id="Recipient-Checkbox-{{ section.id }}"
                     form="{{ product_form_id }}"
                     type="checkbox"
+                    name="{{ gift_card_recipient_control_flag }}"
+                    disabled
                     unchecked
                     >
                   <label class="recipient-checkbox" for="Recipient-Checkbox-{{ section.id }}">
@@ -234,6 +243,9 @@
                         type="email"
                         placeholder="{{ 'recipient.form.email' | t }}"
                         name="properties[Recipient email]"
+                        {%- if form.email %}
+                          value="{{ form.email }}"
+                        {%- endif %}
                       >
                       <label class="field__label" for="Recipient-Email-{{ section.id }}">{{ 'recipient.form.email' | t }}</label>
                     </div>
@@ -247,6 +259,9 @@
                         form="{{ product_form_id }}"
                         name="properties[Recipient name]"
                         placeholder="{{ 'recipient.form.name' | t }}"
+                        {%- if form.name %}
+                          value="{{ form.name }}"
+                        {%- endif %}
                       >
                       <label class="field__label" for="Recipient-Name-{{ section.id }}">{{ 'recipient.form.name' | t }}</label>
                     </div>
@@ -264,16 +279,20 @@
                         name="properties[Message]"
                         maxlength="{{ max_chars_message }}"
                         placeholder="{{ 'recipient.form.message' | t }}"
+                        {%- if form.message %}
+                          value="{{ form.message }}"
+                        {%- endif %}
                       ></textarea>
                       <label class="form__label field__label" for="Recipient-Message-{{ section.id }}">
                         {{ 'recipient.form.message' | t }}
                       </label>
                     </div>
                   </div>
+                  <input type="hidden" name="{{ gift_card_recipient_control_flag }}" value="if_present" form="{{ product_form_id }}" id="Recipient-Control-{{ section.id }}" >
                 </recipient-form>
-              {%- endcapture %}
+              {%- endform %}
 
-              {%- render 'buy-buttons', block: block, product: product, product_form_id: product_form_id, section_id: section.id, show_pickup_availability: false, nested_form_elements: recipient_form_elements -%}
+              {%- render 'buy-buttons', block: block, product: product, product_form_id: product_form_id, section_id: section.id, show_pickup_availability: false -%}
             {%- when 'quantity_selector' -%}
               <div
                 id="Quantity-Form-{{ section.id }}"
