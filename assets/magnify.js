@@ -25,7 +25,7 @@ function prepareOverlay(container, image) {
 }
 
 function toggleLoadingSpinner(image) {
-  const loadingSpinner = document.getElementById(`loading-spinner-${image.dataset.mediaId}`);
+  const loadingSpinner = image.parentElement.parentElement.querySelector(`.loading-overlay__spinner`);
   loadingSpinner.classList.toggle('hidden');
 }
 
