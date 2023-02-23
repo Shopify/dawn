@@ -27,7 +27,17 @@ class PredictiveSearch extends SearchForm {
 
   onChange() {
     super.onChange();
-    this.searchTerm = this.getQuery();
+    const newSearchTerm = this.getQuery();
+    if (!this.searchTerm || !newSearchTerm.startsWith(this.searchTerm)) {
+      // Remove the results when they are no longer relevant for the new search term
+      // so they don't show up when the dropdown opens again
+      this.querySelector("#predictive-search-results-groups-wrapper")?.remove();
+    }
+
+    // Update the term asap, don't wait for the predictive search query to finish loading
+    this.updateSearchForTerm(this.searchTerm, newSearchTerm);
+
+    this.searchTerm = newSearchTerm;
 
     if (!this.searchTerm.length) {
       this.close(true);
@@ -96,6 +106,21 @@ class PredictiveSearch extends SearchForm {
       event.code === 'ArrowDown'
     ) {
       event.preventDefault();
+    }
+  }
+
+  updateSearchForTerm(previousTerm, newTerm) {
+    const searchForTextElement = this.querySelector(
+      "[data-predictive-search-search-for-text]"
+    );
+    const currentButtonText = searchForTextElement?.innerText;
+    if (currentButtonText) {
+      if (currentButtonText.match(new RegExp(previousTerm, "g")).length > 1) {
+        // The new term matches part of the button text and not just the search term, do not replace to avoid mistakes
+        return;
+      }
+      const newButtonText = currentButtonText.replace(previousTerm, newTerm);
+      searchForTextElement.innerText = newButtonText;
     }
   }
 

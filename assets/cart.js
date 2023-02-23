@@ -100,6 +100,7 @@ class CartItems extends HTMLElement {
       .then((state) => {
         const parsedState = JSON.parse(state);
         const quantityElement = document.getElementById(`Quantity-${line}`) || document.getElementById(`Drawer-quantity-${line}`);
+        const items = document.querySelectorAll('.cart-item');
 
         if (parsedState.errors) {
           quantityElement.value = quantityElement.getAttribute('value');
@@ -120,8 +121,15 @@ class CartItems extends HTMLElement {
           elementToReplace.innerHTML = 
             this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
         }));
-        const updatedValue = parsedState.items[line - 1].quantity;
-        const message = updatedValue !== parseInt(quantityElement.value) ? window.cartStrings.quantityError.replace('[quantity]', updatedValue) : '';
+        const updatedValue = parsedState.items[line - 1] ? parsedState.items[line - 1].quantity : undefined;
+        let message = '';
+        if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
+          if (typeof updatedValue === 'undefined') {
+            message = window.cartStrings.error;
+          } else {
+            message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
+          }
+        }
         this.updateLiveRegions(line, message);
 
         const lineItem = document.getElementById(`CartItem-${line}`) || document.getElementById(`CartDrawer-Item-${line}`);
@@ -145,7 +153,7 @@ class CartItems extends HTMLElement {
 
   updateLiveRegions(line, message) {
     const lineItemError = document.getElementById(`Line-item-error-${line}`) || document.getElementById(`CartDrawer-LineItemError-${line}`);
-    lineItemError.querySelector('.cart-item__error-text').innerHTML = message;
+    if (lineItemError) lineItemError.querySelector('.cart-item__error-text').innerHTML = message;
 
     this.lineItemStatusElement.setAttribute('aria-hidden', true);
 
