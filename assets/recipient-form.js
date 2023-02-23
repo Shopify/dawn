@@ -6,9 +6,9 @@ if (!customElements.get('recipient-form')) {
       this.checkboxInput.disabled = false;
       this.hiddenControlField = this.querySelector(`#Recipient-Control-${ this.dataset.sectionId }`);
       this.hiddenControlField.disabled = true;
-      this.emailInput = this.querySelector(`#Recipient-Email-${ this.dataset.sectionId }`);
-      this.nameInput = this.querySelector(`#Recipient-Name-${ this.dataset.sectionId }`);
-      this.messageInput = this.querySelector(`#Recipient-Message-${ this.dataset.sectionId }`);
+      this.emailInput = this.querySelector(`#Recipient-email-${ this.dataset.sectionId }`);
+      this.nameInput = this.querySelector(`#Recipient-name-${ this.dataset.sectionId }`);
+      this.messageInput = this.querySelector(`#Recipient-message-${ this.dataset.sectionId }`);
       this.currentProductVariantId = this.dataset.productVariantId;
       this.addEventListener('change', this.onChange.bind(this));
     }
@@ -37,7 +37,7 @@ if (!customElements.get('recipient-form')) {
 
       if (this.variantChangeUnsubscriber) {
         this.variantChangeUnsubscriber();
-      }      
+      }
     }
 
     onChange() {
