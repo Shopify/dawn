@@ -814,7 +814,6 @@ class VariantSelects extends HTMLElement {
       this.updateVariantInput();
       this.renderProductInfo();
       this.updateShareUrl();
-      // this.toggleAddButton(true, '', false);
     }
   }
 
@@ -933,7 +932,7 @@ class VariantSelects extends HTMLElement {
         const price = document.getElementById(`price-${this.dataset.section}`);
         const quantityForm = document.getElementById(`Quantity-Form-${this.dataset.section}`);
 
-        const test = quantityForm.querySelector('.quantity__input').value === quantityForm.querySelector('.quantity__input').dataset.cartQuantity;
+        const qtyMatchesCart = quantityForm.querySelector('.quantity__input').value === quantityForm.querySelector('.quantity__input').dataset.cartQuantity;
 
         if (price) price.classList.remove('visibility-hidden');
 
@@ -941,7 +940,7 @@ class VariantSelects extends HTMLElement {
 
         const addButtonUpdated = html.getElementById(`ProductSubmitButton-${sectionId}`);
 
-        this.toggleAddButton(addButtonUpdated ? addButtonUpdated.hasAttribute('disabled') : true, window.variantStrings.soldOut, true, addButtonUpdated, test);
+        this.toggleAddButton(addButtonUpdated ? addButtonUpdated.hasAttribute('disabled') : true, window.variantStrings.soldOut, true, addButtonUpdated, qtyMatchesCart);
 
         publish(PUB_SUB_EVENTS.variantChange, {data: {
           sectionId,
@@ -952,7 +951,7 @@ class VariantSelects extends HTMLElement {
       });
   }
 
-  toggleAddButton(disable = true, text, modifyClass = true, addButtonUpdated, test) {
+  toggleAddButton(disable = true, text, modifyClass = true, addButtonUpdated, qtyMatchesCart) {
     const productForm = document.getElementById(`product-form-${this.dataset.section}`);
     if (!productForm) return;
     const addButton = productForm.querySelector('[name="add"]');
@@ -962,7 +961,7 @@ class VariantSelects extends HTMLElement {
     if (disable) {
       addButton.setAttribute('disabled', 'disabled');
       if (text) addButtonText.textContent = text;
-    } else if (test) {
+    } else if (qtyMatchesCart) {
       addButton.removeAttribute('disabled');
       addButtonUpdated.querySelector('.cart-label-default').classList.add('hidden')
       addButtonUpdated.querySelector('.added-to-cart').classList.remove('hidden')
