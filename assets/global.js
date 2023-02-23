@@ -801,7 +801,6 @@ class VariantSelects extends HTMLElement {
   onVariantChange() {
     this.updateOptions();
     this.updateMasterId();
-    this.toggleAddButton(true, '', false);
     this.updatePickupAvailability();
     this.removeErrorMessage();
     this.updateVariantStatuses();
@@ -815,6 +814,7 @@ class VariantSelects extends HTMLElement {
       this.updateVariantInput();
       this.renderProductInfo();
       this.updateShareUrl();
+      // this.toggleAddButton(true, '', false);
     }
   }
 
@@ -933,12 +933,15 @@ class VariantSelects extends HTMLElement {
         const price = document.getElementById(`price-${this.dataset.section}`);
         const quantityForm = document.getElementById(`Quantity-Form-${this.dataset.section}`);
 
+        const test = quantityForm.querySelector('.quantity__input').value === quantityForm.querySelector('.quantity__input').dataset.cartQuantity;
+
         if (price) price.classList.remove('visibility-hidden');
 
         if (inventoryDestination) inventoryDestination.classList.toggle('visibility-hidden', inventorySource.innerText === '');
 
         const addButtonUpdated = html.getElementById(`ProductSubmitButton-${sectionId}`);
-        this.toggleAddButton(addButtonUpdated ? addButtonUpdated.hasAttribute('disabled') : true, window.variantStrings.soldOut);
+
+        this.toggleAddButton(addButtonUpdated ? addButtonUpdated.hasAttribute('disabled') : true, window.variantStrings.soldOut, true, addButtonUpdated, test);
 
         publish(PUB_SUB_EVENTS.variantChange, {data: {
           sectionId,
@@ -949,19 +952,25 @@ class VariantSelects extends HTMLElement {
       });
   }
 
-  toggleAddButton(disable = true, text, modifyClass = true) {
+  toggleAddButton(disable = true, text, modifyClass = true, addButtonUpdated, test) {
     const productForm = document.getElementById(`product-form-${this.dataset.section}`);
     if (!productForm) return;
     const addButton = productForm.querySelector('[name="add"]');
-    const addButtonText = productForm.querySelector('[name="add"] > span');
+    const addButtonText = productForm.querySelector('[name="add"] > span > span');
     if (!addButton) return;
 
     if (disable) {
       addButton.setAttribute('disabled', 'disabled');
       if (text) addButtonText.textContent = text;
+    } else if (test) {
+      addButton.removeAttribute('disabled');
+      addButtonUpdated.querySelector('.cart-label-default').classList.add('hidden')
+      addButtonUpdated.querySelector('.added-to-cart').classList.remove('hidden')
     } else {
       addButton.removeAttribute('disabled');
-      addButtonText.textContent = window.variantStrings.addToCart;
+      addButtonUpdated.querySelector('.cart-label-default').classList.remove('hidden')
+      addButtonUpdated.querySelector('.added-to-cart').classList.add('hidden')
+      addButtonText.textContent = addButtonUpdated.querySelector('.cart-label-default').innerText;
     }
 
     if (!modifyClass) return;
@@ -970,7 +979,7 @@ class VariantSelects extends HTMLElement {
   setUnavailable() {
     const button = document.getElementById(`product-form-${this.dataset.section}`);
     const addButton = button.querySelector('[name="add"]');
-    const addButtonText = button.querySelector('[name="add"] > span');
+    const addButtonText = button.querySelector('[name="add"] > span > span');
     const price = document.getElementById(`price-${this.dataset.section}`);
     const inventory = document.getElementById(`Inventory-${this.dataset.section}`);
     const sku = document.getElementById(`Sku-${this.dataset.section}`);

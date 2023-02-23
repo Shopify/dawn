@@ -63,6 +63,7 @@ if (!customElements.get('product-info')) {
       if (data.cartQuantity > 0) {
         this.input.value = data.cartQuantity;
       }
+      this.updateButton(parseInt(this.input.value), data.cartQuantity)
       publish(PUB_SUB_EVENTS.quantityUpdate, undefined);  
     }
 
@@ -74,7 +75,7 @@ if (!customElements.get('product-info')) {
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
         this.updateQuantityRules(this.dataset.section, html);
-        this.setQuantityBoundries(html);
+        this.setQuantityBoundries();
       })
       .catch(e => {
         console.error(e);
@@ -98,26 +99,20 @@ if (!customElements.get('product-info')) {
           current.innerHTML = updated.innerHTML;
         }
       }
-
-      const quantityButtonUpdated = html.getElementById(`Buy-Buttons-${sectionId}`);
-      const input = quantityFormUpdated.querySelector('.quantity__input');
-      const updatedButton = quantityButtonUpdated.querySelector('.product-form__submit')
-      const currentButton = this.submitButton
-      if (input.dataset.cartQuantity === input.value) {
-        currentButton.querySelector('.cart-label').innerHTML = updatedButton.querySelector('.added-to-cart').innerHTML;
-      } else {
-        currentButton.innerHTML = updatedButton.innerHTML
-      }
-      currentButton.dataset.cartqty = updatedButton.dataset.cartqty
     }
 
     updateButton(value, cartQty) {
       if (cartQty === value) {
-        this.submitButton.querySelector('.cart-label').innerHTML = this.submitButton.querySelector('.added-to-cart').innerHTML;
+        this.submitButton.querySelector('.added-to-cart').classList.remove('hidden')
+        this.submitButton.querySelector('.cart-label-default').classList.add('hidden')
       } else if (cartQty > 0) {
-        this.submitButton.querySelector('.cart-label').innerText = this.submitButton.querySelector('.cart-label').dataset.updatecart;
+        this.submitButton.querySelector('.added-to-cart').classList.add('hidden')
+        this.submitButton.querySelector('.cart-label-default').classList.remove('hidden')
+        this.submitButton.querySelector('.cart-label-default').innerText = window.variantStrings.updateCart;
       } else {
-        this.submitButton.querySelector('.cart-label').innerText = this.submitButton.querySelector('.cart-label').dataset.addcart;
+        this.submitButton.querySelector('.added-to-cart').classList.add('hidden')
+        this.submitButton.querySelector('.cart-label-default').classList.remove('hidden')
+        this.submitButton.querySelector('.cart-label-default').innerText = window.variantStrings.addToCart;
       }
     }
   }

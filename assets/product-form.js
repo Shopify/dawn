@@ -42,7 +42,7 @@ if (!customElements.get('product-form')) {
         this.cartQty = cartQuantity
         this.quantityInputNumber = inputValue
       } else {
-        this.cartQty = parseInt(this.submitButton.dataset.cartqty);
+        this.cartQty = parseInt(this.form.closest('.product__info-container').querySelector('.quantity__input').dataset.cartQuantity);
         this.quantityInputNumber = parseInt(this.form.closest('.product__info-container').querySelector('.quantity__input').value);
       }
 
