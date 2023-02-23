@@ -3,6 +3,9 @@ if (!customElements.get('recipient-form')) {
     constructor() {
       super();
       this.checkboxInput = this.querySelector(`#Recipient-Checkbox-${ this.dataset.sectionId }`);
+      this.checkboxInput.disabled = false;
+      this.hiddenControlField = this.querySelector(`#Recipient-Control-${ this.dataset.sectionId }`);
+      this.hiddenControlField.disabled = true;
       this.emailInput = this.querySelector(`#Recipient-Email-${ this.dataset.sectionId }`);
       this.nameInput = this.querySelector(`#Recipient-Name-${ this.dataset.sectionId }`);
       this.messageInput = this.querySelector(`#Recipient-Message-${ this.dataset.sectionId }`);
