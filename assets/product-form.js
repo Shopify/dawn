@@ -9,6 +9,8 @@ if (!customElements.get('product-form')) {
       this.cart = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
       this.submitButton = this.querySelector('[type="submit"]');
       if (document.querySelector('cart-drawer')) this.submitButton.setAttribute('aria-haspopup', 'dialog');
+
+      this.showError = this.dataset.showError === 'true';
     }
 
     onSubmitHandler(evt) {
@@ -37,6 +39,7 @@ if (!customElements.get('product-form')) {
         .then((response) => response.json())
         .then((response) => {
           if (response.status) {
+            publish(PUB_SUB_EVENTS.cartError, {source: 'product-form', productVariantId: formData.get('id'), errors: response.description});
             this.handleErrorMessage(response.description);
 
             const soldOutMessage = this.submitButton.querySelector('.sold-out-message');
@@ -75,6 +78,8 @@ if (!customElements.get('product-form')) {
     }
 
     handleErrorMessage(errorMessage = false) {
+      if (!this.showError) return;
+
       this.errorMessageWrapper = this.errorMessageWrapper || this.querySelector('.product-form__error-message-wrapper');
       if (!this.errorMessageWrapper) return;
       this.errorMessage = this.errorMessage || this.errorMessageWrapper.querySelector('.product-form__error-message');
