@@ -56,6 +56,7 @@ if (!customElements.get('recipient-form')) {
     onChange() {
       if (!this.checkboxInput.checked) {
         this.clearInputFields();
+        this.clearErrorMessage();
       }
     }
 
