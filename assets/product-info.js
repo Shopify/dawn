@@ -28,7 +28,9 @@ if (!customElements.get('product-info')) {
         this.setQuantityBoundries();
       });
       this.quantityChangeUnsubscriber = subscribe(PUB_SUB_EVENTS.quantityChange, (event) => {
-        this.updateButton(event.data.value, event.data.cartQty);
+        if (event.data.id !== 'CartDrawer-Form') {
+          this.updateButton(event.data.value, event.data.cartQty);
+        }
       });
     }
 

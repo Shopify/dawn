@@ -169,7 +169,7 @@ class QuantityInput extends HTMLElement {
 
   onInputChange(event) {
     this.validateQtyRules();
-    publish(PUB_SUB_EVENTS.quantityChange, {data: { value: event.target.value, cartQty: event.target.dataset.cartQuantity }});  
+    publish(PUB_SUB_EVENTS.quantityChange, {data: { value: event.target.value, cartQty: event.target.dataset.cartQuantity, id: event.target.form.id }});  
   }
 
   onButtonClick(event) {
