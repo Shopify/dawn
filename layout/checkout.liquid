@@ -32,9 +32,9 @@
 
     {{ checkout_stylesheets }}
     {{ checkout_scripts }}
-  
-  {% render 'shogun-head' %}
-</head>
+
+    {% render 'shogun-head' %}
+  </head>
   <body>
     {%- unless google_tag_manager_container_id == blank -%}
       <!-- Google Tag Manager (noscript) -->
@@ -58,7 +58,6 @@
             {{ alternative_payment_methods }}
           </header>
           <main class="main__content" role="main">
-            <h1>Is this thing on?</h1>
             {{ content_for_layout }}
           </main>
           <footer class="main__footer" role="contentinfo">
@@ -77,5 +76,39 @@
     </div>
 
     {{ tracking_code }}
+
+    <script>
+      (function($) {
+        if (typeof window.dataLayer === "undefined") {
+          return;
+        }
+
+        $(document).on("page:load page:change", function() {
+          {% comment %}
+            TODO:
+            - [ ] Test Gift Card items - they appear to have no sku
+            - [ ] Sometimes the "contact_information" is skipped,
+                  in which case the begin_checkout event won't be recorded
+            - [ ] X-Carves (and possibly other products) are represented differently:
+                  X-Carves are now a single item with sku 30686-07(M|D), whereas before
+                  Shopify we listed all the items that make up an X-Carve
+          {% endcomment %}
+
+          if (Shopify.Checkout.step === "contact_information") {
+            {% render "google-data-layer-ecommerce-begin-checkout" %}
+          }
+
+          if (Shopify.Checkout.step === "payment_method") {
+            {% if checkout.requires_shipping %}
+              {% render "google-data-layer-ecommerce-add-shipping-info" %}
+            {% endif %}
+          }
+
+          if (Shopify.Checkout.page === "thank_you") {
+            {% render "google-data-layer-ecommerce-purchase" %}
+          }
+        });
+      })(Checkout.$);
+    </script>
   </body>
 </html>
