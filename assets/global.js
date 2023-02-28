@@ -400,7 +400,7 @@ class MenuDrawer extends HTMLElement {
     this.closeAnimation(this.mainDetailsToggle);
   }
 
-  onFocusOut(event) {
+  onFocusOut() {
     setTimeout(() => {
       if (this.mainDetailsToggle.hasAttribute('open') && !this.mainDetailsToggle.contains(document.activeElement)) this.closeMenuDrawer();
     });
@@ -462,14 +462,22 @@ class HeaderDrawer extends MenuDrawer {
     });
 
     summaryElement.setAttribute('aria-expanded', true);
+    window.addEventListener('resize', this.onResize);
     trapFocus(this.mainDetailsToggle, summaryElement);
     document.body.classList.add(`overflow-hidden-${this.dataset.breakpoint}`);
   }
 
   closeMenuDrawer(event, elementToFocus) {
+    if (!elementToFocus) return;
     super.closeMenuDrawer(event, elementToFocus);
     this.header.classList.remove('menu-open');
+    window.removeEventListener('resize', this.onResize);
   }
+
+  onResize = () => {
+    this.header && document.documentElement.style.setProperty('--header-bottom-position', `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`);
+    document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
+  };
 }
 
 customElements.define('header-drawer', HeaderDrawer);
