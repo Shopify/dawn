@@ -39,7 +39,7 @@ if (!customElements.get('product-form')) {
         .then((response) => response.json())
         .then((response) => {
           if (response.status) {
-            publish(PUB_SUB_EVENTS.cartError, {source: 'product-form', productVariantId: formData.get('id'), errors: response.description});
+            publish(PUB_SUB_EVENTS.cartError, {source: 'product-form', productVariantId: formData.get('id'), errors: response.description, message: response.message});
             this.handleErrorMessage(response.description);
 
             const soldOutMessage = this.submitButton.querySelector('.sold-out-message');

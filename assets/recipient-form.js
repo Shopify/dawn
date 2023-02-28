@@ -34,7 +34,7 @@ if (!customElements.get('recipient-form')) {
 
       this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartError, (event) => {
         if (event.source === 'product-form' && event.productVariantId.toString() === this.currentProductVariantId) {
-          this.displayErrorMessage(event.errors);
+          this.displayErrorMessage(event.message, event.errors);
         }
       });
     }
@@ -66,14 +66,50 @@ if (!customElements.get('recipient-form')) {
       this.messageInput.value = '';
     }
 
-    displayErrorMessage(message) {
+    displayErrorMessage(title, body) {
       this.errorMessageWrapper.hidden = false;
-      this.errorMessage.innerText = message;
+      if (typeof body === 'object') {
+        this.errorMessage.innerText = title;
+        return Object.entries(body).forEach(([key, value]) => {
+          const errorMessageId = `RecipientForm-${ key }-error-${ this.dataset.sectionId }`
+          const errorMessageEl = this.querySelector(`#${errorMessageId}`);
+          const errorTextEl = errorMessageEl?.querySelector('.message__text')
+          if (!errorTextEl) {
+            return
+          }
+
+          errorTextEl.innerText = value;
+          errorMessageEl.hidden = false;
+
+          const inputEl = this[`${key}Input`];
+          if (!inputEl) {
+            return;
+          }
+
+          inputEl.setAttribute('aria-invalid', true);
+          inputEl.setAttribute('aria-describedby', errorMessageId);
+        });
+      }
+
+      this.errorMessage.innerText = body;
     }
 
     clearErrorMessage() {
       this.errorMessageWrapper.hidden = true;
       this.errorMessage.innerText = '';
+
+      this.querySelectorAll('.form__message').forEach(field => {
+        field.hidden = true;
+        const textField = field.querySelector('.message__text');
+        if (textField) {
+          textField.innerText = '';
+        }
+      });
+
+      [this.emailInput, this.messageInput, this.nameInput].forEach(inputEl => {
+        inputEl.setAttribute('aria-invalid', false);
+        inputEl.removeAttribute('aria-describedby');
+      });
     }
 
     resetRecipientForm() {
