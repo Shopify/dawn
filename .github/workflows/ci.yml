@@ -1,25 +1,17 @@
 name: CI
-on: push
+on:
+  push:
+    branches:
+      - main
 jobs:
-  lhci:
-    name: Lighthouse
+  clear-cache:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Lighthouse
-        uses: shopify/lighthouse-ci-action@1.0
+      - name: Clear cache
+        uses: fjogeleit/http-request-action@v1
         with:
-          app_id: ${{ secrets.SHOP_APP_ID }}
-          app_password: ${{ secrets.SHOP_APP_PASSWORD }}
-          store: ${{ secrets.SHOP_STORE }}
-          password: ${{ secrets.SHOP_PASSWORD }}
-          lhci_github_app_token: ${{ secrets.LHCI_GITHUB_TOKEN }}
-  theme-check:
-    name: Theme Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Theme Check
-        uses: shopify/theme-check-action@v1
-        with:
-          token: ${{ github.token }}
+          url: "https://api.cloudflare.com/client/v4/zones/a958faed8c1d9f46bd966b474e662394/purge_cache"
+          method: "POST"
+          bearerToken: ${{ secrets.CF_API_TOKEN }}
+          customHeaders: '{"Content-Type": "application/json"}'
+          data: '{ "purge_everything": true }'
