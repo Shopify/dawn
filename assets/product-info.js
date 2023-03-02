@@ -105,16 +105,20 @@ if (!customElements.get('product-info')) {
 
     updateButton(value, cartQty) {
       if (cartQty === value) {
+        this.submitButton.querySelector('.added-to-cart-text').innerText = window.variantStrings.addedToCart.replace('[quantity]', cartQty);
         this.submitButton.querySelector('.added-to-cart').classList.remove('hidden')
         this.submitButton.querySelector('.cart-label-default').classList.add('hidden')
+        this.submitButton.classList.add('added-to-cart')
       } else if (cartQty > 0) {
         this.submitButton.querySelector('.added-to-cart').classList.add('hidden')
         this.submitButton.querySelector('.cart-label-default').classList.remove('hidden')
         this.submitButton.querySelector('.cart-label-default').innerText = window.variantStrings.updateCart;
+        this.submitButton.classList.remove('added-to-cart')
       } else {
         this.submitButton.querySelector('.added-to-cart').classList.add('hidden')
         this.submitButton.querySelector('.cart-label-default').classList.remove('hidden')
         this.submitButton.querySelector('.cart-label-default').innerText = window.variantStrings.addToCart;
+        this.submitButton.classList.remove('added-to-cart')
       }
     }
   }
