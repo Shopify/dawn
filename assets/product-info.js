@@ -62,8 +62,11 @@ if (!customElements.get('product-info')) {
       this.input.min = min;
       this.input.max = max;
       this.input.value = min;
+
       if (data.cartQuantity > 0) {
         this.input.value = data.cartQuantity;
+        this.input.min = data.min;
+        this.input.max = data.max;
       }
       this.updateButton(parseInt(this.input.value), data.cartQuantity)
       publish(PUB_SUB_EVENTS.quantityUpdate, undefined);  
