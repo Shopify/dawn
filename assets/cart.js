@@ -46,8 +46,7 @@ class CartItems extends HTMLElement {
   }
 
   onCartUpdate() {
-    const body = JSON.stringify('?section_id=main-cart-items');
-    fetch(`${routes.cart_url}`, { ...fetchConfig(), ...{ body } })
+    fetch(`${routes.cart_url}?section_id=main-cart-items`)
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
