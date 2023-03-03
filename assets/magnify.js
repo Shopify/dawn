@@ -1,12 +1,33 @@
 // create a container and set the full-size image as its background
 function createOverlay(image) {
+  const overlayImage = document.createElement('img');
+  overlayImage.setAttribute('src', `${image.src}`);
   overlay = document.createElement('div');
-  overlay.setAttribute('class', 'image-magnify-full-size');
-  overlay.setAttribute('aria-hidden', 'true');
-  overlay.style.backgroundImage = `url('${image.src}')`;
-  image.parentElement.insertBefore(overlay, image);
+  prepareOverlay(overlay, overlayImage);
+
+  image.style.opacity = '50%';
+  toggleLoadingSpinner(image);
+
+  overlayImage.onload = () => {
+    toggleLoadingSpinner(image);
+    image.parentElement.insertBefore(overlay, image);
+    image.style.opacity = '100%';
+  }
+
   return overlay;
 };
+
+function prepareOverlay(container, image) {
+  container.setAttribute('class', 'image-magnify-full-size');
+  container.setAttribute('aria-hidden', 'true');
+  container.style.backgroundImage = `url('${image.src}')`;
+  container.style.backgroundColor = 'var(--gradient-background)';
+}
+
+function toggleLoadingSpinner(image) {
+  const loadingSpinner = image.parentElement.parentElement.querySelector(`.loading-overlay__spinner`);
+  loadingSpinner.classList.toggle('hidden');
+}
 
 function moveWithHover(image, event, zoomRatio) {
   // calculate mouse position
@@ -14,8 +35,8 @@ function moveWithHover(image, event, zoomRatio) {
   const container = event.target.getBoundingClientRect();
   const xPosition = event.clientX - container.left;
   const yPosition = event.clientY - container.top;
-  const xPercent = `${xPosition / (overlay.clientWidth / 100)}%`;
-  const yPercent = `${yPosition / ((overlay.clientWidth * ratio) / 100)}%`;
+  const xPercent = `${xPosition / (image.clientWidth / 100)}%`;
+  const yPercent = `${yPosition / ((image.clientWidth * ratio) / 100)}%`;
 
   // determine what to show in the frame
   overlay.style.backgroundPosition = `${xPercent} ${yPercent}`;
