@@ -79,7 +79,7 @@ if (!customElements.get('recipient-form')) {
           }
 
           errorTextEl.innerText = value;
-          errorMessageEl.hidden = false;
+          errorMessageEl.classList.remove('hidden');
 
           const inputEl = this[`${key}Input`];
           if (!inputEl) {
@@ -99,7 +99,7 @@ if (!customElements.get('recipient-form')) {
       this.errorMessage.innerText = '';
 
       this.querySelectorAll('.form__message').forEach(field => {
-        field.hidden = true;
+        field.classList.add('hidden');
         const textField = field.querySelector('.message__text');
         if (textField) {
           textField.innerText = '';
