@@ -113,7 +113,6 @@ if (!customElements.get('recipient-form')) {
 
     clearErrorMessage() {
       this.errorMessageWrapper.hidden = true;
-      this.errorMessage.innerText = '';
 
       if (this.errorMessageList) {
         this.errorMessageList.innerHTML = '';
