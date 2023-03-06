@@ -73,15 +73,15 @@ if (!customElements.get('recipient-form')) {
         return Object.entries(body).forEach(([key, value]) => {
           const message = `${key} ${value}`;
           const errorMessageId = `RecipientForm-${ key }-error-${ this.dataset.sectionId }`
-          const errorMessageSelector = `#${errorMessageId}`;
-          const errorMessageEl = this.querySelector(errorMessageSelector);
+          const fieldSelector = `#Recipient-${ key }-${ this.dataset.sectionId }`;
+          const errorMessageEl = this.querySelector(`#${errorMessageId}`);
           const errorTextEl = errorMessageEl?.querySelector('.error-message')
           if (!errorTextEl) {
             return
           }
 
           if (this.errorMessageList) {
-            const li = this.createErrorListItem(errorMessageSelector, message);
+            const li = this.createErrorListItem(fieldSelector, message);
             li && this.errorMessageList.appendChild(li);
           }
 
