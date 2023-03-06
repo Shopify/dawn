@@ -98,7 +98,7 @@ if (!customElements.get('recipient-form')) {
       this.errorMessageWrapper.hidden = true;
       this.errorMessage.innerText = '';
 
-      this.querySelectorAll('.form__message').forEach(field => {
+      this.querySelectorAll('.recipient-fields .form__message').forEach(field => {
         field.classList.add('hidden');
         const textField = field.querySelector('.message__text');
         if (textField) {
