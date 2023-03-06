@@ -12,9 +12,9 @@ function onIntersection(elements, observer) {
   })
 }
 
-function initializeScrollAnimationTrigger() {
+function initializeScrollAnimationTrigger(rootEl = document) {
   const animationTriggerElements = Array.from(
-    document.getElementsByClassName(SCROLL_ANIMATION_TRIGGER_CLASSNAME)
+    rootEl.getElementsByClassName(SCROLL_ANIMATION_TRIGGER_CLASSNAME)
   );
   if (animationTriggerElements.length === 0) return;
 
@@ -26,4 +26,4 @@ function initializeScrollAnimationTrigger() {
 
 window.addEventListener('DOMContentLoaded', () => initializeScrollAnimationTrigger());
 
-document.addEventListener('shopify:section:load', () => initializeScrollAnimationTrigger());
+document.addEventListener('shopify:section:load', (event) => initializeScrollAnimationTrigger(event.target));
