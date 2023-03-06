@@ -10,6 +10,7 @@ if (!customElements.get('recipient-form')) {
       this.nameInput = this.querySelector(`#Recipient-name-${ this.dataset.sectionId }`);
       this.messageInput = this.querySelector(`#Recipient-message-${ this.dataset.sectionId }`);
       this.errorMessageWrapper = this.querySelector('.product-form__recipient-error-message-wrapper');
+      this.errorMessageList = this.errorMessageWrapper.querySelector('ul');
       this.errorMessage = this.errorMessageWrapper.querySelector('.error-message');
       this.currentProductVariantId = this.dataset.productVariantId;
       this.addEventListener('change', this.onChange.bind(this));
@@ -69,16 +70,22 @@ if (!customElements.get('recipient-form')) {
     displayErrorMessage(title, body) {
       this.errorMessageWrapper.hidden = false;
       if (typeof body === 'object') {
-        this.errorMessage.innerText = title;
         return Object.entries(body).forEach(([key, value]) => {
+          const message = `${key} ${value}`;
           const errorMessageId = `RecipientForm-${ key }-error-${ this.dataset.sectionId }`
-          const errorMessageEl = this.querySelector(`#${errorMessageId}`);
-          const errorTextEl = errorMessageEl?.querySelector('.message__text')
+          const errorMessageSelector = `#${errorMessageId}`;
+          const errorMessageEl = this.querySelector(errorMessageSelector);
+          const errorTextEl = errorMessageEl?.querySelector('.error-message')
           if (!errorTextEl) {
             return
           }
 
-          errorTextEl.innerText = value;
+          if (this.errorMessageList) {
+            const li = this.createErrorListItem(errorMessageSelector, message);
+            li && this.errorMessageList.appendChild(li);
+          }
+
+          errorTextEl.innerText = message;
           errorMessageEl.classList.remove('hidden');
 
           const inputEl = this[`${key}Input`];
@@ -94,13 +101,27 @@ if (!customElements.get('recipient-form')) {
       this.errorMessage.innerText = body;
     }
 
+    createErrorListItem(target, message) {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.setAttribute('href', target);
+      a.innerText = message;
+      li.appendChild(a);
+      li.className = "error-message";
+      return li;
+    }
+
     clearErrorMessage() {
       this.errorMessageWrapper.hidden = true;
       this.errorMessage.innerText = '';
 
+      if (this.errorMessageList) {
+        this.errorMessageList.innerHTML = '';
+      }
+
       this.querySelectorAll('.recipient-fields .form__message').forEach(field => {
         field.classList.add('hidden');
-        const textField = field.querySelector('.message__text');
+        const textField = field.querySelector('.error-message');
         if (textField) {
           textField.innerText = '';
         }
