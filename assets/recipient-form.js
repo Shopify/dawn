@@ -68,6 +68,7 @@ if (!customElements.get('recipient-form')) {
     }
 
     displayErrorMessage(title, body) {
+      this.clearErrorMessage();
       this.errorMessageWrapper.hidden = false;
       if (typeof body === 'object') {
         return Object.entries(body).forEach(([key, value]) => {
