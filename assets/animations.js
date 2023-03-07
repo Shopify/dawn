@@ -1,5 +1,5 @@
-const SCROLL_ANIMATION_TRIGGER_CLASSNAME = 'scroll-animation__trigger';
-const SCROLL_ANIMATION_ACTIVE_CLASSNAME = 'scroll-animation__trigger--active';
+const SCROLL_ANIMATION_TRIGGER_CLASSNAME = 'scroll-trigger';
+const SCROLL_ANIMATION_ACTIVE_CLASSNAME = 'scroll-trigger--active';
 
 function onIntersection(elements, observer) {
   elements.forEach((element) => {
