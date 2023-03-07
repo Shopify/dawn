@@ -72,9 +72,11 @@ if (!customElements.get('recipient-form')) {
       this.errorMessageWrapper.hidden = false;
       if (typeof body === 'object') {
         return Object.entries(body).forEach(([key, value]) => {
-          const message = `${key} ${value}`;
           const errorMessageId = `RecipientForm-${ key }-error-${ this.dataset.sectionId }`
           const fieldSelector = `#Recipient-${ key }-${ this.dataset.sectionId }`;
+          const labelEl = this.querySelector(`${fieldSelector}+label`);
+          const label = labelEl?.innerText || key;
+          const message = `${label} ${value}`;
           const errorMessageEl = this.querySelector(`#${errorMessageId}`);
           const errorTextEl = errorMessageEl?.querySelector('.error-message')
           if (!errorTextEl) {
