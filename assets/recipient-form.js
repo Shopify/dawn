@@ -10,8 +10,9 @@ if (!customElements.get('recipient-form')) {
       this.nameInput = this.querySelector(`#Recipient-name-${ this.dataset.sectionId }`);
       this.messageInput = this.querySelector(`#Recipient-message-${ this.dataset.sectionId }`);
       this.errorMessageWrapper = this.querySelector('.product-form__recipient-error-message-wrapper');
-      this.errorMessageList = this.errorMessageWrapper.querySelector('ul');
-      this.errorMessage = this.errorMessageWrapper.querySelector('.error-message');
+      this.errorMessageList = this.errorMessageWrapper?.querySelector('ul');
+      this.errorMessage = this.errorMessageWrapper?.querySelector('.error-message');
+      this.defaultErrorHeader = this.errorMessage?.innerText;
       this.currentProductVariantId = this.dataset.productVariantId;
       this.addEventListener('change', this.onChange.bind(this));
     }
@@ -71,6 +72,7 @@ if (!customElements.get('recipient-form')) {
       this.clearErrorMessage();
       this.errorMessageWrapper.hidden = false;
       if (typeof body === 'object') {
+        this.errorMessage.innerText = this.defaultErrorHeader;
         return Object.entries(body).forEach(([key, value]) => {
           const errorMessageId = `RecipientForm-${ key }-error-${ this.dataset.sectionId }`
           const fieldSelector = `#Recipient-${ key }-${ this.dataset.sectionId }`;
