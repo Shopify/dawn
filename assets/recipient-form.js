@@ -90,7 +90,7 @@ if (!customElements.get('recipient-form')) {
             li && this.errorMessageList.appendChild(li);
           }
 
-          errorTextEl.innerText = message;
+          errorTextEl.innerText = `${message}.`;
           errorMessageEl.classList.remove('hidden');
 
           const inputEl = this[`${key}Input`];
