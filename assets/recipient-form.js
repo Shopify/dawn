@@ -86,8 +86,7 @@ if (!customElements.get('recipient-form')) {
           }
 
           if (this.errorMessageList) {
-            const li = this.createErrorListItem(fieldSelector, message);
-            li && this.errorMessageList.appendChild(li);
+            this.errorMessageList.appendChild(this.createErrorListItem(fieldSelector, message));
           }
 
           errorTextEl.innerText = `${message}.`;
