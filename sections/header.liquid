@@ -159,10 +159,22 @@
                 <nav class="menu-drawer__navigation">
                   <ul class="menu-drawer__menu has-submenu list-menu" role="list">
                     {%- for link in section.settings.menu.links -%}
+
+                      {% liquid
+                        for block in section.blocks
+                          assign is_targeted_menu_item = false
+                          if block.type == 'style' and link.title == block.settings.menu_title
+                            assign is_targeted_menu_item = true
+                            assign style_color_red = block.settings.colors.red
+                            assign style_color_green = block.settings.colors.green
+                            assign style_color_blue = block.settings.colors.blue
+                          endif
+                        endfor
+                      %}
                       <li>
                         {%- if link.links != blank -%}
                           <details id="Details-menu-drawer-menu-item-{{ forloop.index }}">
-                            <summary class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.child_active %} menu-drawer__menu-item--active{% endif %}">
+                            <summary class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.child_active %} menu-drawer__menu-item--active{% endif %}" {% if is_targeted_menu_item %} style="--color-foreground: {{ style_color_red }}, {{ style_color_green }}, {{style_color_blue }}"{% endif %}>
                               {{ link.title | escape }}
                               {% render 'icon-arrow' %}
                               {% render 'icon-caret' %}
@@ -458,11 +470,22 @@
         <nav class="header__inline-menu">
           <ul class="list-menu list-menu--inline" role="list">
             {%- for link in section.settings.menu.links -%}
+              {% liquid
+                for block in section.blocks
+                  assign is_targeted_menu_item = false
+                  if block.type == 'style' and link.title == block.settings.menu_title
+                    assign is_targeted_menu_item = true
+                    assign style_color_red = block.settings.colors.red
+                    assign style_color_green = block.settings.colors.green
+                    assign style_color_blue = block.settings.colors.blue
+                  endif
+                endfor
+              %}
               <li>
                 {%- if link.links != blank -%}
                   <header-menu>
                     <details id="Details-HeaderMenu-{{ forloop.index }}">
-                      <summary class="header__menu-item list-menu__item link focus-inset">
+                      <summary class="header__menu-item list-menu__item link focus-inset"{% if is_targeted_menu_item %} style="--color-foreground: {{ style_color_red }}, {{ style_color_green }}, {{style_color_blue }}"{% endif %}>
                         <span {%- if link.child_active %} class="header__active-menu-item"{% endif %}>{{ link.title | escape }}</span>
                         {% render 'icon-caret' %}
                       </summary>
@@ -496,7 +519,7 @@
                     </details>
                   </header-menu>
                 {%- else -%}
-                  <a href="{{ link.url }}" class="header__menu-item list-menu__item link link--text focus-inset"{% if link.current %} aria-current="page"{% endif %}>
+                  <a href="{{ link.url }}" class="header__menu-item list-menu__item link link--text focus-inset"{% if link.current %} aria-current="page"{% endif %}{% if is_targeted_menu_item %} style="--color-foreground: {{ style_color_red }}, {{ style_color_green }}, {{style_color_blue }}"{% endif %}>
                     <span {%- if link.current %} class="header__active-menu-item"{% endif %}>{{ link.title | escape }}</span>
                   </a>
                 {%- endif -%}
@@ -508,35 +531,69 @@
         <nav class="header__inline-menu">
           <ul class="list-menu list-menu--inline" role="list">
             {%- for link in section.settings.menu.links -%}
+              {% liquid
+                assign is_targeted_menu_item = false
+                for block in section.blocks
+                  if block.type == 'style' and link.title == block.settings.menu_title
+                    assign is_targeted_menu_item = true
+                    assign style_color_red = block.settings.colors.red
+                    assign style_color_green = block.settings.colors.green
+                    assign style_color_blue = block.settings.colors.blue
+                  endif
+                endfor
+              %}
               <li>
                 {%- if link.links != blank -%}
                   <header-menu>
                     <details id="Details-HeaderMenu-{{ forloop.index }}" class="mega-menu">
-                      <summary class="header__menu-item list-menu__item link focus-inset">
-                        <span {%- if link.child_active %} class="header__active-menu-item"{% endif %}>{{ link.title | escape }}</span>
+                      <summary class="header__menu-item list-menu__item link focus-inset"{% if is_targeted_menu_item %} style="--color-foreground: {{ style_color_red }}, {{ style_color_green }}, {{style_color_blue }}"{% endif %}>
+          <span {%- if link.child_active %} class="header__active-menu-item"{% endif %}>{{ link.title | escape }}</span>
                         {% render 'icon-caret' %}
                       </summary>
                       <div id="MegaMenu-Content-{{ forloop.index }}" class="mega-menu__content gradient motion-reduce global-settings-popup" tabindex="-1">
-                        <ul class="mega-menu__list page-width{% if link.levels == 1 %} mega-menu__list--condensed{% endif %}" role="list">
-                          {%- for childlink in link.links -%}
-                            <li>
-                              <a href="{{ childlink.url }}" class="mega-menu__link mega-menu__link--level-2 link{% if childlink.current %} mega-menu__link--active{% endif %}"{% if childlink.current %} aria-current="page"{% endif %}>
-                                {{ childlink.title | escape }}
-                              </a>
-                              {%- if childlink.links != blank -%}
-                                <ul class="list-unstyled" role="list">
-                                  {%- for grandchildlink in childlink.links -%}
-                                    <li>
-                                      <a href="{{ grandchildlink.url }}" class="mega-menu__link link{% if grandchildlink.current %} mega-menu__link--active{% endif %}"{% if grandchildlink.current %} aria-current="page"{% endif %}>
-                                        {{ grandchildlink.title | escape }}
-                                      </a>
-                                    </li>
-                                  {%- endfor -%}
-                                </ul>
-                              {%- endif -%}
-                            </li>
-                          {%- endfor -%}
-                        </ul>
+                        <div class="mega-menu__content--block page-width">
+                          <ul class="mega-menu__list{% if link.levels == 1 %} mega-menu__list--condensed{% endif %}" role="list">
+                            {%- for childlink in link.links -%}
+                              <li>
+                                <a href="{{ childlink.url }}" class="mega-menu__link mega-menu__link--level-2 link{% if childlink.current %} mega-menu__link--active{% endif %}"{% if childlink.current %} aria-current="page"{% endif %}>
+                                  {{ childlink.title | escape }}
+                                </a>
+                                {%- if childlink.links != blank -%}
+                                  <ul class="list-unstyled" role="list">
+                                    {%- for grandchildlink in childlink.links -%}
+                                      <li>
+                                        <a href="{{ grandchildlink.url }}" class="mega-menu__link link{% if grandchildlink.current %} mega-menu__link--active{% endif %}"{% if grandchildlink.current %} aria-current="page"{% endif %}>
+                                          {{ grandchildlink.title | escape }}
+                                        </a>
+                                      </li>
+                                    {%- endfor -%}
+                                  </ul>
+                                {%- endif -%}
+                              </li>
+                            {%- endfor -%}
+                          </ul>
+                          <div class="promos">
+                            {% for block in section.blocks %}
+                              {% if block.type == 'style' and link.title == block.settings.menu_title %}
+                                <div class="promo-wrapper">
+                                  {% if block.settings.image_specific != blank %}
+                                    {{
+                                      block.settings.image_specific
+                                      | image_url: width: 600
+                                      | image_tag: loading: 'lazy', widths: '200, 300, 400, 500, 600'
+                                    }}
+                                  {% endif %}
+                                  {% if block.settings.promo_title_specific %}
+                                    <h3>{{ block.settings.promo_title_specific }}</h3>
+                                  {% endif%}
+                                  {% if block.settings.promo_text_specific %}
+                                    <p>{{ block.settings.promo_text_specific }}</p>
+                                  {% endif %}
+                                </div>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                        </div>
                       </div>
                     </details>
                   </header-menu>
@@ -1075,6 +1132,39 @@
       "unit": "px",
       "label": "t:sections.all.padding.padding_bottom",
       "default": 20
+    }
+  ],
+  "blocks": [
+    {
+      "type": "style",
+      "name": "Style block",
+      "settings": [
+        {
+          "type": "text",
+          "id": "menu_title",
+          "label": "Enter the menu title that you want to target"
+        },
+        {
+          "type": "color",
+          "id": "colors",
+          "label": "Menu item color"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_specific",
+          "label": "Promo image"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "promo_title_specific",
+          "label": "Promo heading"
+        },
+        {
+          "type": "text",
+          "id": "promo_text_specific",
+          "label": "Promo text"
+        }
+      ]
     }
   ]
 }
