@@ -84,7 +84,6 @@
                     {%- liquid
                       assign number_of_columns = section.settings.columns_desktop
                       assign number_of_columns_mobile = section.settings.columns_mobile
-                      assign max_image_width = settings.page_width | times: 2
                       if section.settings.image_width == 'half'
                         assign image_width = 0.5
                       elsif section.settings.image_width == 'third'
@@ -94,15 +93,17 @@
                       endif
                     -%}
                     {% capture sizes %}
-                      (min-width: 990px) {{ settings.page_width | times: image_width | divided_by: number_of_columns | round: 0 }}px,
-                      calc(100vw * {{ image_width }} / {{ number_of_columns_mobile }})
+                      (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }} - 100 - ({{ settings.spacing_grid_horizontal }} * ({{ number_of_columns }} - 1))) * {{ image_width }} /  {{ number_of_columns }}),
+                      (min-width: 990px) calc((100vw - ({{ settings.spacing_grid_horizontal }}px * ({{ number_of_columns }} - 1)) - 100px) * {{ image_width }} / {{ number_of_columns }}),
+                      (min-width: 750px) calc((100vw - ({{ settings.spacing_grid_horizontal }}px * ({{ number_of_columns_mobile }} - 1)) - 100px) * {{ image_width }} / {{ number_of_columns_mobile }}),
+                      calc((100vw - ({{ settings.spacing_grid_horizontal }}px * ({{ number_of_columns_mobile }} - 1) / 2) - 30px) * {{ image_width }} / {{ number_of_columns_mobile }})
                     {% endcapture %}
                     {{
                       block.settings.image
-                      | image_url: width: max_image_width
+                      | image_url: width: 3200
                       | image_tag:
                         loading: 'lazy',
-                        widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3250',
+                        widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
                         sizes: sizes,
                         class: 'multicolumn-card__image'
                     }}
