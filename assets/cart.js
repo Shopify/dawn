@@ -46,7 +46,7 @@ class CartItems extends HTMLElement {
   }
 
   onCartUpdate() {
-    fetch('/cart?section_id=main-cart-items')
+    fetch(`${routes.cart_url}?section_id=main-cart-items`)
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
@@ -116,9 +116,9 @@ class CartItems extends HTMLElement {
         if (cartDrawerWrapper) cartDrawerWrapper.classList.toggle('is-empty', parsedState.item_count === 0);
 
         this.getSectionsToRender().forEach((section => {
-          const elementToReplace = 
+          const elementToReplace =
             document.getElementById(section.id).querySelector(section.selector) || document.getElementById(section.id);
-          elementToReplace.innerHTML = 
+          elementToReplace.innerHTML =
             this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
         }));
         const updatedValue = parsedState.items[line - 1] ? parsedState.items[line - 1].quantity : undefined;
