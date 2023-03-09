@@ -7,8 +7,8 @@ if (!customElements.get('product-form')) {
       this.form.querySelector('[name=id]').disabled = false;
       this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
       this.cart = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
-      this.submitButton = this.querySelector('[type="submit"]:not(.sticky-atc)');
-      this.submitButtonAtc = this.querySelector('[type="submit"].sticky-atc');
+      this.submitButton = this.querySelector('[type="submit"]:not(.sticky-atc)[data-oos="0"]');
+      this.submitButtonAtc = this.querySelector('[type="submit"].sticky-atc[data-oos="0"]');
       this.submitButton.disabled = false;
       this.submitButtonAtc.disabled = false;
 
