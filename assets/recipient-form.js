@@ -81,9 +81,7 @@ if (!customElements.get('recipient-form')) {
           const message = `${label} ${value}`;
           const errorMessageElement = this.querySelector(`#${errorMessageId}`);
           const errorTextElement = errorMessageElement?.querySelector('.error-message')
-          if (!errorTextElement) {
-            return
-          }
+          if (!errorTextElement) return;
 
           if (this.errorMessageList) {
             this.errorMessageList.appendChild(this.createErrorListItem(fieldSelector, message));
@@ -93,9 +91,7 @@ if (!customElements.get('recipient-form')) {
           errorMessageElement.classList.remove('hidden');
 
           const inputElement = this[`${key}Input`];
-          if (!inputElement) {
-            return;
-          }
+          if (!inputElement) return;
 
           inputElement.setAttribute('aria-invalid', true);
           inputElement.setAttribute('aria-describedby', errorMessageId);
@@ -118,16 +114,12 @@ if (!customElements.get('recipient-form')) {
     clearErrorMessage() {
       this.errorMessageWrapper.hidden = true;
 
-      if (this.errorMessageList) {
-        this.errorMessageList.innerHTML = '';
-      }
+      if (this.errorMessageList) this.errorMessageList.innerHTML = '';
 
       this.querySelectorAll('.recipient-fields .form__message').forEach(field => {
         field.classList.add('hidden');
         const textField = field.querySelector('.error-message');
-        if (textField) {
-          textField.innerText = '';
-        }
+        if (textField) textField.innerText = '';
       });
 
       [this.emailInput, this.messageInput, this.nameInput].forEach(inputElement => {
