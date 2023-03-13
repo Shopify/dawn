@@ -10,7 +10,7 @@ if (!customElements.get('product-form')) {
       this.submitButton = this.querySelector('[type="submit"]');
       if (document.querySelector('cart-drawer')) this.submitButton.setAttribute('aria-haspopup', 'dialog');
 
-      this.showError = this.dataset.showError === 'true';
+      this.hideErrors = this.dataset.hideErrors === 'true';
     }
 
     onSubmitHandler(evt) {
@@ -78,7 +78,7 @@ if (!customElements.get('product-form')) {
     }
 
     handleErrorMessage(errorMessage = false) {
-      if (!this.showError) return;
+      if (this.hideErrors) return;
 
       this.errorMessageWrapper = this.errorMessageWrapper || this.querySelector('.product-form__error-message-wrapper');
       if (!this.errorMessageWrapper) return;
