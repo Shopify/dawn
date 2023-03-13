@@ -76,12 +76,12 @@ if (!customElements.get('recipient-form')) {
         return Object.entries(body).forEach(([key, value]) => {
           const errorMessageId = `RecipientForm-${ key }-error-${ this.dataset.sectionId }`
           const fieldSelector = `#Recipient-${ key }-${ this.dataset.sectionId }`;
-          const labelEl = this.querySelector(`${fieldSelector}+label`);
-          const label = labelEl?.innerText || key;
+          const labelElement = this.querySelector(`${fieldSelector}+label`);
+          const label = labelElement?.innerText || key;
           const message = `${label} ${value}`;
-          const errorMessageEl = this.querySelector(`#${errorMessageId}`);
-          const errorTextEl = errorMessageEl?.querySelector('.error-message')
-          if (!errorTextEl) {
+          const errorMessageElement = this.querySelector(`#${errorMessageId}`);
+          const errorTextElement = errorMessageElement?.querySelector('.error-message')
+          if (!errorTextElement) {
             return
           }
 
@@ -89,16 +89,16 @@ if (!customElements.get('recipient-form')) {
             this.errorMessageList.appendChild(this.createErrorListItem(fieldSelector, message));
           }
 
-          errorTextEl.innerText = `${message}.`;
-          errorMessageEl.classList.remove('hidden');
+          errorTextElement.innerText = `${message}.`;
+          errorMessageElement.classList.remove('hidden');
 
-          const inputEl = this[`${key}Input`];
-          if (!inputEl) {
+          const inputElement = this[`${key}Input`];
+          if (!inputElement) {
             return;
           }
 
-          inputEl.setAttribute('aria-invalid', true);
-          inputEl.setAttribute('aria-describedby', errorMessageId);
+          inputElement.setAttribute('aria-invalid', true);
+          inputElement.setAttribute('aria-describedby', errorMessageId);
         });
       }
 
@@ -130,9 +130,9 @@ if (!customElements.get('recipient-form')) {
         }
       });
 
-      [this.emailInput, this.messageInput, this.nameInput].forEach(inputEl => {
-        inputEl.setAttribute('aria-invalid', false);
-        inputEl.removeAttribute('aria-describedby');
+      [this.emailInput, this.messageInput, this.nameInput].forEach(inputElement => {
+        inputElement.setAttribute('aria-invalid', false);
+        inputElement.removeAttribute('aria-describedby');
       });
     }
 
