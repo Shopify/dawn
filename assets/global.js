@@ -814,17 +814,7 @@ class VariantSelects extends HTMLElement {
       this.updateVariantInput();
       this.renderProductInfo();
       this.updateShareUrl();
-      this.updateSku();
-      this.updateBarcode();
     }
-  }
-
-  updateSku() {
-        getSku(this.currentVariant.id);
-  }
-
-  updateBarcode() {
-        getBarcode(this.currentVariant.id);
   }
   
   updateOptions() {
