@@ -600,12 +600,26 @@
         <nav class="header__inline-menu">
           <ul class="list-menu list-menu--inline" role="list">
             {%- for link in section.settings.menu.links -%}
+              {%- liquid
+                assign style_item = false
+                comment
+                  checking contains on array rather than a string list will prevent partial strings from returning false positives
+                endcomment
+                if handleized_list contains link.handle
+                  assign style_item = true
+                endif
+              -%}
               <li>
                 {%- if link.links != blank -%}
                   <header-menu>
                     <details id="Details-HeaderMenu-{{ forloop.index }}" class="mega-menu">
-                      <summary class="header__menu-item list-menu__item link focus-inset">
+                      <summary class="header__menu-item list-menu__item link focus-inset{% if style_item %} {{ item_style_classes }}{% endif %}">
                         <span {%- if link.child_active %} class="header__active-menu-item"{% endif %}>{{ link.title | escape }}</span>
+                        {%- if style_item and apply_badge -%}
+                          <span class="badge price__badge-sale color-{{ settings.sale_badge_color_scheme }}">
+                            {{ 'products.product.on_sale' | t }}
+                          </span>
+                        {%- endif -%}
                         {% render 'icon-caret' %}
                       </summary>
                       <div id="MegaMenu-Content-{{ forloop.index }}" class="mega-menu__content gradient motion-reduce global-settings-popup" tabindex="-1">
@@ -670,8 +684,13 @@
                     </details>
                   </header-menu>
                 {%- else -%}
-                  <a href="{{ link.url }}" class="header__menu-item list-menu__item link link--text focus-inset"{% if link.current %} aria-current="page"{% endif %}>
+                  <a href="{{ link.url }}" class="header__menu-item list-menu__item link link--text focus-inset{% if style_item %} {{ item_style_classes }}{% endif %}"{% if link.current %} aria-current="page"{% endif %}>
                     <span {%- if link.current %} class="header__active-menu-item"{% endif %}>{{ link.title | escape }}</span>
+                    {%- if style_item and apply_badge -%}
+                      <span class="badge price__badge-sale color-{{ settings.sale_badge_color_scheme }}">
+                        {{ 'products.product.on_sale' | t }}
+                      </span>
+                    {%- endif -%}
                   </a>
                 {%- endif -%}
               </li>
