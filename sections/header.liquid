@@ -114,6 +114,11 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  .header__menu-item--color {
+    --item-color: {{ section.settings.menu_item_color }};
+
+  }
 {%- endstyle -%}
 
 <script src="{{ 'details-disclosure.js' | asset_url }}" defer="defer"></script>
@@ -126,6 +131,26 @@
 {%- if section.settings.enable_country_selector or section.settings.enable_language_selector -%}
   <script src="{{ 'localization-form.js' | asset_url }}" defer="defer"></script>
 {%- endif -%}
+
+{%- liquid
+  assign item_style_classes = ''
+  if section.settings.menu_item_color.alpha != 0
+    assign item_style_classes = item_style_classes | append: ' header__menu-item--color'
+  endif
+
+  if section.settings.apply_badge
+    assign apply_badge = true
+    assign item_style_classes = item_style_classes | append: ' header__menu-item--badge'
+  endif
+
+  assign target_list = section.settings.menu_item_styled | append: '' | split: ','
+  assign handleized_list = ''
+  for target in target_list
+    assign handleized_target = target | handleize
+    assign handleized_list = handleized_list | append: handleized_target | append: ','
+  endfor
+  assign handleized_list = handleized_list | split: ','
+-%}
 
 <svg xmlns="http://www.w3.org/2000/svg" class="hidden">
   <symbol id="icon-search" viewbox="0 0 18 19" fill="none">
@@ -480,12 +505,26 @@
         <nav class="header__inline-menu">
           <ul class="list-menu list-menu--inline" role="list">
             {%- for link in section.settings.menu.links -%}
+              {%- liquid
+                assign style_item = false
+                comment
+                  checking contains on array rather than a string list will prevent partial strings from returning false positives
+                endcomment
+                if handleized_list contains link.handle
+                  assign style_item = true
+                endif
+              -%}
               <li>
                 {%- if link.links != blank -%}
                   <header-menu>
                     <details id="Details-HeaderMenu-{{ forloop.index }}">
-                      <summary class="header__menu-item list-menu__item link focus-inset">
+                      <summary class="header__menu-item list-menu__item link focus-inset{% if style_item %} {{ item_style_classes }}{% endif %}">
                         <span {%- if link.child_active %} class="header__active-menu-item"{% endif %}>{{ link.title | escape }}</span>
+                        {%- if style_item and apply_badge -%}
+                          <span class="badge price__badge-sale color-{{ settings.sale_badge_color_scheme }}">
+                            {{ 'products.product.on_sale' | t }}
+                          </span>
+                        {%- endif -%}
                         {% render 'icon-caret' %}
                       </summary>
                       <ul id="HeaderMenu-MenuList-{{ forloop.index }}" class="header__submenu list-menu list-menu--disclosure gradient caption-large motion-reduce global-settings-popup" role="list" tabindex="-1">
@@ -544,8 +583,13 @@
                     </details>
                   </header-menu>
                 {%- else -%}
-                  <a href="{{ link.url }}" class="header__menu-item list-menu__item link link--text focus-inset"{% if link.current %} aria-current="page"{% endif %}>
+                  <a href="{{ link.url }}" class="header__menu-item list-menu__item link link--text focus-inset{% if style_item %} {{ item_style_classes }}{% endif %}"{% if link.current %} aria-current="page"{% endif %}>
                     <span {%- if link.current %} class="header__active-menu-item"{% endif %}>{{ link.title | escape }}</span>
+                    {%- if style_item and apply_badge -%}
+                      <span class="badge price__badge-sale color-{{ settings.sale_badge_color_scheme }}">
+                        {{ 'products.product.on_sale' | t }}
+                      </span>
+                    {%- endif -%}
                   </a>
                 {%- endif -%}
               </li>
