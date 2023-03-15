@@ -765,11 +765,23 @@ class VariantSelects extends HTMLElement {
       this.toggleAddButton(true, '', true);
       this.setUnavailable();
     } else {
+      this.updateStickyAtcDataAttribute();
       this.updateMedia();
       this.updateURL();
       this.updateVariantInput();
       this.renderProductInfo();
       this.updateShareUrl();
+    }
+  }
+
+  updateStickyAtcDataAttribute() {
+    const stickyAtc = document.querySelector('.product-form__submit.sticky-atc');
+    if (!stickyAtc) return false;
+
+    if (this.currentVariant.available) {
+      stickyAtc.dataset.oos = "0"
+    } else {
+      stickyAtc.dataset.oos = "1"
     }
   }
 
