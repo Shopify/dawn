@@ -76,8 +76,8 @@ if (!customElements.get('recipient-form')) {
         return Object.entries(body).forEach(([key, value]) => {
           const errorMessageId = `RecipientForm-${ key }-error-${ this.dataset.sectionId }`
           const fieldSelector = `#Recipient-${ key }-${ this.dataset.sectionId }`;
-          const labelElement = this.querySelector(`${fieldSelector}+label`);
-          const label = labelElement?.innerText || key;
+          const placeholderElement = this.querySelector(`${fieldSelector}`);
+          const label = placeholderElement?.getAttribute('placeholder') || key;
           const message = `${label} ${value}`;
           const errorMessageElement = this.querySelector(`#${errorMessageId}`);
           const errorTextElement = errorMessageElement?.querySelector('.error-message')
