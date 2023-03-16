@@ -27,7 +27,13 @@ function initializeScrollAnimationTrigger(rootEl = document, isDesignModeEvent =
   const observer = new IntersectionObserver(onIntersection, {
     rootMargin: '0px 0px -50px 0px',
   });
-  animationTriggerElements.forEach((element) => observer.observe(element));
+  animationTriggerElements.forEach((element) => {
+    if (element.hasAttribute('data-3d-model')) {
+      const modelObserver = new IntersectionObserver(onIntersection);
+      modelObserver.observe(element);
+    }
+    observer.observe(element);
+  });
 }
 
 window.addEventListener('DOMContentLoaded', () => initializeScrollAnimationTrigger());
