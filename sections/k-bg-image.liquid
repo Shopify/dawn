@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="{{ 'k-bg-image-styles.css' | asset_url }}" media="print" onload="this.media='all'">
+
 {% assign background_color = "bg-" | append: section.settings.background_color %}
 
 <section class="bg-img {{background_color}}">
@@ -7,11 +9,12 @@
     {% assign align = "text-" | append: block.settings.align %}
     {% assign align_items = "align-" | append: block.settings.align_items %}
     {% assign justify = "justify-" | append: block.settings.justify %}
-    {% assign heading_font_size = "font-size-" | append: block.settings.heading_font_size %}
-    {% assign text_font_size = "font-size-" | append: block.settings.text_font_size %}
+    {% assign heading_color = "brand-" | append: block.settings.heading_color %}
     {% assign heading_font_weight = "font-weight-" | append: block.settings.heading_font_weight %}
+    {% assign subheading_color = "brand-" | append: block.settings.subheading_color %}
+    {% assign subheading_font_weight = "font-weight-" | append: block.settings.subheading_font_weight %}
+    {% assign text_font_size = "font-size-" | append: block.settings.text_font_size %}
     {% assign text_font_weight = "font-weight-" | append: block.settings.text_font_weight %}
-    {% assign heading_font_color = "brand-" | append: block.settings.heading_font_color %}
     {% assign text_font_color = "brand-" | append: block.settings.text_font_color %}
     {% assign cta_bg = "bg-" | append: block.settings.cta_bg %}
     {% assign cta_color = "brand-" | append: block.settings.cta_color %}
@@ -37,10 +40,17 @@
             }
           }
         </style>
+        
         <div class="bg-img-content-container">
-          {% if section.settings.heading != blank or section.settings.subheading != blank %}
-            {% render 'headings' %}
-          {% endif %}
+          <div class="headings-all page-width">
+            {% if block.settings.heading != blank %}
+              <h2 class="heading text-center {{heading_color}} {{heading_font_weight}}">{{ block.settings.heading }}</h2>
+            {% endif %}
+            {% if block.settings.subheading != blank %}
+              <h3 class="subheading text-center {{subheading_color}} {{subheading_font_weight}}">{{ block.settings.subheading }}</h3>
+            {% endif %}
+          </div>
+
           <div class="bg-img-inner {{justify}} {{align_items}} {{bg_img_height}}">
             <div class="bg-img-content-wrapper {{align}}">
               <div class="bg-img-content">
@@ -83,7 +93,16 @@
         <div class="bg-img-video-container">
           {{ block.settings.video1 | video_tag: autoplay: true, muted: true, loop: true}}
         </div>
-        {% include 'headings' %}
+
+        <div class="headings-all page-width">
+            {% if section.settings.heading != blank %}
+              <h2 class="heading text-center {{heading_color}} {{heading_font_weight}}">{{ section.settings.heading }}</h2>
+            {% endif %}
+            {% if section.settings.subheading != blank %}
+              <h3 class="subheading text-center {{subheading_color}} {{subheading_font_weight}}">{{ section.settings.subheading }}</h3>
+            {% endif %}
+          </div>
+
         <div class="bg-img-content-wrapper {{align}}">
           <div class="bg-img-content">
             {% if block.settings.title != blank %}
@@ -111,8 +130,31 @@
         </div>
       </div>
     {% endif %}
+    {% style %}
+      .bg-img-container {
+        padding:  {{ block.settings.block_padding }}px 0px;
+      }
+      .bg-img-video-container {
+        padding:  {{ block.settings.block_padding }}px 0px;
+      }
+      .bg-img .heading {
+        font-size: {{ block.settings.heading_font_size }}px;
+      }
+      .bg-img .subheading {
+        font-size: {{ block.settings.subheading_font_size }}px;
+      }
+    {% endstyle %}
+
   {% endfor%}
 </section>
+
+{% style %}
+  .bg-img {
+    padding: {{section.settings.section_padding}}px 0px;
+    margin-top: {{section.settings.section_margin_top}}px;
+    margin-bottom: {{section.settings.section_margin_bottom}}px;
+  }
+{% endstyle %}
 
 {% schema %}
   {
@@ -128,38 +170,43 @@
             "value": "white",
             "label": "White"
           }, {
-            "value": "lighter-blue",
+            "value": "light-blue",
             "label": "Blue"
+          }, {
+            "value": "lighter-blue",
+            "label": "Light Blue"
           }
         ]
+      }, 
+      {
+        "type": "range",
+        "id": "section_padding",
+        "min":  0,
+        "max":  100,
+        "step":  1,
+        "unit": "px" ,
+        "label": "Section Padding",
+        "default":  10
       },
       {
-        "id": "heading",
-        "type": "text",
-        "label": "Heading",
-        "default": "Title"
+        "type": "range",
+        "id": "section_margin_top",
+        "min":  0,
+        "max":  50,
+        "step":  1,
+        "unit": "px" ,
+        "label": "Section Margin Top",
+        "default":  10
       },
       {
-        "id": "subheading",
-        "type": "text",
-        "label": "Subheading",
-        "default": "Sub Title"
-      },
-      {
-        "type": "checkbox",
-        "id": "use_padding_top",
-        "label": "Use top padding",
-        "default": false
-      }, {
-        "type": "checkbox",
-        "id": "use_padding_bottom",
-        "label": "Use bottom padding",
-        "default": false
-      }, {
-        "type": "checkbox",
-        "id": "use_container",
-        "label": "Use container",
-        "default": false
+        "type": "range",
+        "id": "section_margin_bottom",
+        "min":  0,
+        "max":  50,
+        "step":  1,
+        "unit": "px" ,
+        "label": "Section Margin Bottom",
+        "default":  10
       }
     ],
     "blocks": [
@@ -223,59 +270,39 @@
             "type": "video",
             "id": "video1",
             "label": "Hero Video"
-          }, {
+          },
+          {
             "type": "image_picker",
             "id": "logo",
             "label": "Image"
-          }, {
+          },
+          {
             "type": "checkbox",
             "id": "hide_logo",
             "label": "Hide Image Initially",
             "default": false
-          }, {
-            "type": "html",
-            "id": "title",
+          },
+          {
+            "type": "range",
+            "id": "block_padding",
+            "min":  0,
+            "max":  100,
+            "step":  1,
+            "unit": "px" ,
+            "label": "Section Padding",
+            "default":  10
+          },
+          {
+            "id": "heading",
+            "type": "text",
             "label": "Heading",
-            "default": "This is a default header"
-          }, {
+            "default": "Title"
+          },
+          {
             "type": "select",
-            "id": "heading_font_size",
-            "label": "Heading Font Size",
-            "default": "large",
-            "options": [
-              {
-                "value": "small",
-                "label": "Small"
-              }, {
-                "value": "medium",
-                "label": "Medium"
-              }, {
-                "value": "large",
-                "label": "Large"
-              }
-            ]
-          }, {
-            "type": "select",
-            "id": "heading_font_weight",
-            "label": "Heading Font Weight",
-            "default": "bold",
-            "options": [
-              {
-                "value": "light",
-                "label": "Light"
-              }, {
-                "value": "regular",
-                "label": "Regular"
-              }, {
-                "value": "bold",
-                "label": "Bold"
-              }
-            ]
-          }, {
-            "type": "select",
-            "id": "heading_font_color",
+            "id": "heading_color",
             "label": "Heading Font Color",
-            "default": "blue",
+            "default": "dark-gray",
             "options": [
               {
                 "value": "blue",
@@ -300,7 +327,100 @@
                 "label": "Dark"
               }
             ]
-          }, {
+          },
+          {
+            "type": "range",
+            "id": "heading_font_size",
+            "min": 18,
+            "max": 68,
+            "step": 2,
+            "unit": "px",
+            "label": "Heading Font size",
+            "default": 32
+          }, 
+          {
+            "type": "select",
+            "id": "heading_font_weight",
+            "label": "Heading Font Weight",
+            "default": "bold",
+            "options": [
+              {
+                "value": "light",
+                "label": "Light"
+              }, {
+                "value": "regular",
+                "label": "Regular"
+              }, {
+                "value": "bold",
+                "label": "Bold"
+              }
+            ]
+          },
+          {
+            "id": "subheading",
+            "type": "text",
+            "label": "Sub Heading",
+            "default": "Sub Title"
+          },
+          {
+            "type": "select",
+            "id": "subheading_color",
+            "label": "Heading Font Color",
+            "default": "dark-gray",
+            "options": [
+              {
+                "value": "blue",
+                "label": "Blue"
+              },
+              {
+                "value": "dark-blue",
+                "label": "Dark Blue"
+              },
+              {
+                "value": "gray",
+                "label": "Gray"
+              },
+              {
+                "value": "dark-gray",
+                "label": "Dark Gray"
+              }, {
+                "value": "white",
+                "label": "White"
+              }, {
+                "value": "dark",
+                "label": "Dark"
+              }
+            ]
+          },
+          {
+            "type": "range",
+            "id": "subheading_font_size",
+            "min": 18,
+            "max": 68,
+            "step": 2,
+            "unit": "px",
+            "label": "Sub Heading Font size",
+            "default": 24
+          }, 
+          {
+            "type": "select",
+            "id": "subheading_font_weight",
+            "label": "Sub Heading Font Weight",
+            "default": "bold",
+            "options": [
+              {
+                "value": "light",
+                "label": "Light"
+              }, {
+                "value": "regular",
+                "label": "Regular"
+              }, {
+                "value": "bold",
+                "label": "Bold"
+              }
+            ]
+          },
+          {
             "type": "html",
             "id": "text",
             "label": "Text"
@@ -501,139 +621,3 @@
     ]
   }
 {% endschema %}
-
-{% stylesheet %}
-  .bg-img-showcase {
-    position: relative;
-    height: 100vh;
-    display: grid;
-    grid-template-rows: repeat(3, 1fr);
-    color: #fff;
-    padding: 0 20px;
-  }
-  .bg-img-video-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: no-repeat center center/cover;
-    z-index: -1;
-  }
-  .bg-img-video-container video {
-    min-width: 100%;
-    min-height: 100%;
-    object-fit: cover;
-    position: absolute;
-    top: 0;
-    left: 50px;
-    transform: translate(-50px, -60px);
-  }
-  .bg-img-container {
-    position: relative;
-    display: grid;
-    color: #fff;
-    background: no-repeat;
-  }
-  .bg-img-inner {
-    position: relative;
-    display: flex;
-    padding: 55px 0;
-    z-index: 2;
-  }
-  .bg-img-content-wrapper {
-    display: flex;
-    max-width: 700px;
-    margin: 0 100px;
-    z-index: 3;
-  }
-  .bg-img-content {
-    display: flex;
-    margin: 0 auto;
-    flex-direction: column;
-  }
-  .bg-img-header {
-    margin: 0 auto 20px;
-    width: 100%;
-    line-height: 70px;
-  }
-  .bg-img-text {
-    line-height: 35px;
-    background: var(--brand-refresh-white-clear);
-    padding: 40px;
-    border-radius: 40px;
-  }
-  .bg-img-logo {
-    width: 70%;
-    margin: 0 auto;
-  }
-  .bg-img-logo img {
-    max-width: 100%;
-  }
-  .bg-img-button {
-    text-align: center;
-    margin-top: 60px;
-  }
-  .bg-img-button a {
-    padding: 20px 40px;
-    border-radius: 40px;
-    font-size: 30px;
-    font-weight: 700;
-    cursor: pointer;
-  }
-  /* MEDIA QUERIES */
-  @media(max-width: 1515px) {
-    .bg-img-video-container video {
-      top: 0;
-      left: 0;
-      transform: translate(0px, 0px);
-    }
-  }
-  @media(max-width: 1280px) {
-    .bg-img-inner {
-      justify-content: center;
-      padding-top: 0;
-      height: 100%;
-    }
-    .bg-img-content {
-      text-align: center;
-    }
-    .bg-img-logo {
-      display: block;
-    }
-    .bg-img-text {
-      font-size: 24px;
-      margin-top: 40px;
-    }
-    .bg-img-button {
-      margin-top: 35px;
-    }
-    .bg-img-button a {
-      padding: 15px 35px;
-    }
-  }
-  @media(max-width: 767px) {
-    .bg-img-content-wrapper {
-      margin: 0 auto;
-      padding: 0 30px;
-    }
-  }
-  @media(max-width: 600px) {
-    .bg-img-text {
-      font-size: 18px;
-      line-height: 30px;
-      padding: 20px;
-    }
-    .bg-img-header {
-      font-size: 40px;
-      line-height: 50px;
-    }
-    .bg-img-button {
-      margin-top: 40px;
-    }
-    .bg-img-button a {
-      padding: 10px 30px;
-    }
-  }
-{% endstylesheet %}
