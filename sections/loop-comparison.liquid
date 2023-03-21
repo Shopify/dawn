@@ -273,29 +273,43 @@
 
 <script>
   const sections = document.querySelectorAll(
-    '.comparison--grid--item section:not(.product):not(.buy), .comparison--grid--item .product--tagline'
+    '.comparison--grid--item section:not(.product):not(.buy):not(.details), .comparison--grid--item .product--tagline'
   );
   let highestSections = {};
 
-  sections.forEach((section) => {
-    const className = section.classList.item(0);
-    const height = section.scrollHeight;
+  function adaptHeight() {
+    sections.forEach((section) => {
+      const className = section.classList.item(0);
+      const height = section.scrollHeight;
 
-    if (!highestSections[className] || highestSections[className] < height) {
-      highestSections[className] = height;
-    }
+      if (!highestSections[className] || highestSections[className] < height) {
+        highestSections[className] = height;
+      }
+    });
+
+    sections.forEach((section) => {
+      const className = section.classList.item(0);
+      const height = section.scrollHeight;
+      if (highestSections[className] && highestSections[className] >= height) {
+        section.style.height = `${highestSections[className]}px`;
+      }
+    });
+  }
+
+  adaptHeight();
+
+  document.querySelectorAll('main .details img').forEach((image) => {
+    image.addEventListener('load', (e) => {
+      const parentHeight = image.parentNode.offsetHeight;
+      const allDetailsBlocks = document.querySelectorAll('main .details');
+      const maxHeight = [...allDetailsBlocks].sort((a, b) => a - b)[0];
+      if (parentHeight > maxHeight.offsetHeight) {
+        allDetailsBlocks.forEach((block) => {
+          block.style.height = `${parentHeight}px`;
+        });
+      }
+    });
   });
-
-  sections.forEach((section) => {
-    const className = section.classList.item(0);
-    const height = section.scrollHeight;
-    console.log(className, highestSections[className], height);
-    if (highestSections[className] && highestSections[className] >= height) {
-      section.style.height = `${highestSections[className]}px`;
-    }
-  });
-
-  console.log(highestSections);
 </script>
 
 {% schema %}
