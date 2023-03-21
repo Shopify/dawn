@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="{{ 'k-article-carousel-styles.css' | asset_url }}" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="{{ 'k-bullets-surrounding-styles.css' | asset_url }}" media="print" onload="this.media='all'">
 
 {% assign background_color = "bg-" | append: section.settings.background_color %}
 {% assign heading_color = "brand-" | append: section.settings.heading_color %}
@@ -6,8 +6,16 @@
 {% assign subheading_color = "brand-" | append: section.settings.subheading_color %}
 {% assign subheading_font_weight = "font-weight-" | append: section.settings.subheading_font_weight %}
 
-<div class="article-carousel {{background_color}}">
+{% case section.settings.bullet_color %}
+  {% when 'blue' %}
+    {% assign bullet_font_color = 'ha-blue' %}
+    {% assign bullet_img_color = 'ha-blue-span' %}
+  {% when 'green' %}
+    {% assign bullet_font_color = 'hubitat-green' %}
+    {% assign bullet_img_color = 'hubitat-green-span' %}
+{% endcase %}
 
+<section class="bullet-surround {{background_color}}">
   <div class="headings-all page-width">
     {% if section.settings.heading != blank %}
       <h2 class="heading text-center {{heading_color}} {{heading_font_weight}}">{{ section.settings.heading }}</h2>
@@ -17,39 +25,54 @@
     {% endif %}
   </div>
 
-  <div class="page-width">
-    <div class="article-caro-container">
+  <div class="inner-content">
+    <div class="img-container">
+      <img src="{{ section.settings.image | img_url: 'master'}}" alt="">
+    </div>
+
+    <div class="bullet-container">
       {% for block in section.blocks %}
-        <div class="article-box">
-          <a href="{{ block.settings.url }}" target="_blank">
-            <div class="playIcon">
-              <img src="{{ block.settings.image | img_url: 'master' }}" alt="video cover"/>
+        <div class="bullets bullet-{{forloop.index}}">
+          <div class="bullet-front">
+            <div class="bullet-img">
+              <img src="{{ block.settings.bullet_img | img_url: 'master'}}" alt="">
             </div>
-          </a>
-          <a href="{{ block.settings.url }}" target="_blank">{{block.settings.heading}}</a>
+            <span class="bullet-span">{{ block.settings.bullet }}</span>
+          </div>
         </div>
       {% endfor %}
     </div>
+
+    <div class="bullet-container-mobile">
+      <div class="img-container-mobile">
+        <img src="{{ section.settings.image | img_url: 'master'}}" alt="">
+      </div>
+      <ul>
+        {% for block in section.blocks %}
+          <li>{{ block.settings.bullet }}</li>
+        {% endfor %}
+      </ul>
+    </div>
   </div>
-</div>
+</section>
 
 {% style %}
-  .article-carousel {
+  .bullet-surround {
     padding:  {{ section.settings.section_padding }}px 0px;
     margin-top: {{ section.settings.section_margin_top }}px;
     margin-bottom: {{ section.settings.section_margin_bottom }}px;
   }
-  .article-carousel .heading {
+  .bullet-surround .heading {
     font-size: {{ section.settings.heading_font_size }}px;
   }
-  .article-carousel .subheading {
+  .bullet-surround .subheading {
     font-size: {{ section.settings.subheading_font_size }}px;
   }
 {% endstyle %}
 
 {% schema %}
   {
-    "name": "Article Carousel",
+    "name": "Bullets Surrounding Image",
     "settings": [
       {
         "type": "select",
@@ -226,63 +249,58 @@
             "label": "Bold"
           }
         ]
+      },
+      {
+        "type": "image_picker",
+        "id": "image",
+        "label": "Center Image"
+      }, {
+        "type": "select",
+        "id": "bullet_color",
+        "label": "Bullet Color",
+        "options": [
+          {
+            "value": "blue",
+            "label": "HA-Blue"
+          }, {
+            "value": "green",
+            "label": "Hubitat Green"
+          }
+        ]
       }
     ],
     "blocks": [
       {
-        "type": "article",
-        "name": "Article",
+        "type": "image",
+        "name": "Bullet & Image",
         "settings": [
           {
-            "id": "image",
+            "type": "text",
+            "id": "bullet",
+            "label": "Bullet"
+          }, {
             "type": "image_picker",
-            "label": "article Image"
-          }, {
-            "id": "heading",
-            "type": "text",
-            "label": "Heading",
-            "default": "Title"
-          }, {
-            "id": "url",
-            "type": "text",
-            "label": "Video URL"
+            "id": "bullet_img",
+            "label": "Bullet Image"
           }
         ]
       }
     ],
     "presets": [
       {
-        "name": "Article Carousel",
-        "category": "article"
+        "name": "Bullets Surrounding Image",
+        "category": "Image"
       }
     ]
   }
 {% endschema %}
 
 <script>
-      $(".article-caro-container").slick({
-        dots: false,
-        infinite: true,
-        speed: 1000,
-        slidesToShow: 3,
-        slidesToScroll: 1,
-        autoplay: true,
-        autoplaySpeed: 5500,
-        cssEase: 'ease',
-        responsive: [
-          {
-            breakpoint: 950,
-            settings: {
-              slidesToShow: 2,
-              slidesToScroll: 1
-            }
-          }, {
-            breakpoint: 600,
-            settings: {
-              slidesToShow: 1,
-              slidesToScroll: 1
-            }
-          }
-        ]
-      });
+  $(".bullet-front", "section.bullet-surround").on('mouseenter', (e) => {
+    $(".bullet-img", $(e.currentTarget)).addClass("{{ bullet_font_color }}");
+    $(".bullet-span", $(e.currentTarget)).addClass("{{ bullet_img_color }}");
+  }).on('mouseleave', (e) => {
+    $(".bullet-img", $(e.currentTarget)).removeClass("{{ bullet_font_color }}");
+    $(".bullet-span", $(e.currentTarget)).removeClass("{{ bullet_img_color }}");
+  })
 </script>
