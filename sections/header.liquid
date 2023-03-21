@@ -517,11 +517,32 @@
         <nav class="header__inline-menu">
           <ul class="list-menu list-menu--inline" role="list">
             {%- for link in section.settings.menu.links -%}
+              {% liquid
+                if link.type == 'collection_link'
+                  assign collection = link.object
+                  assign highlight = collection.metafields.custom.menu_promotion.value
+                endif
+
+                if link.type == 'product_link'
+                  assign product = link.object
+                  assign highlight = product.metafields.custom.menu_promotion.value
+                endif
+
+                if link.type == 'blog_link'
+                  assign blog = link.object
+                  assign highlight = blog.metafields.custom.menu_promotion.value
+                endif
+
+                if link.type == 'page_link'
+                  assign page = link.object
+                  assign highlight = page.metafields.custom.menu_promotion.value
+                endif
+              %}
               <li>
                 {%- if link.links != blank -%}
                   <header-menu>
                     <details id="Details-HeaderMenu-{{ forloop.index }}" class="mega-menu">
-                      <summary class="header__menu-item list-menu__item link focus-inset">
+                      <summary class="header__menu-item list-menu__item link focus-inset{% if highlight.style_link == true %} style-link{% endif %}">
                         <span {%- if link.child_active %} class="header__active-menu-item"{% endif %}>{{ link.title | escape }}</span>
                         {% render 'icon-caret' %}
                       </summary>
@@ -546,6 +567,19 @@
                             </li>
                           {%- endfor -%}
                         </ul>
+                        {% if highlight != null %}
+                          <div class="menu-promo">
+                            <h3>{{ highlight.title }}</h3>
+                            {{
+                              highlight.image
+                              | image_url: width: 150
+                              | image_tag: loading: 'lazy'
+                            }}
+                            {% if highlight.url != nil %}
+                              <a href="{{ highlight.url }}">I'm a link</a>
+                            {% endif %}
+                          </div>
+                        {% endif %}
                       </div>
                     </details>
                   </header-menu>
