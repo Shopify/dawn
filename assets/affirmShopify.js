@@ -32,7 +32,7 @@
 	// Use your live public API Key and https://cdn1.affirm.com/js/v2/affirm.js script to point to Affirm production environment.
 <!-- End Affirm -->;
 
-let promosJSON = '[{"promoStatus":true,"pageType":"product","selector":null,"onChange":null,"fontSize":"12","logoType":"logo","logoColor":"blue","position":"afterend","addCents":false,"saleSelector":null,"comparePrices":false,"dataElement":".product-form__input","alaElement":"#affirm-messaging","shopifyPageType":"product"},{"promoStatus":false,"pageType":"cart","selector":null,"onChange":null,"fontSize":"12","logoType":"logo","logoColor":"blue","position":"afterend","addCents":false,"saleSelector":null,"comparePrices":false,"dataElement":null,"alaElement":null,"shopifyPageType":"global"}]';
+let promosJSON = '[{"promoStatus":true,"pageType":"product","selector":null,"onChange":null,"fontSize":"12","logoType":"logo","logoColor":"blue","position":"afterend","addCents":false,"saleSelector":null,"comparePrices":false,"dataElement":".product-form__input","alaElement":"#affirm-messaging","shopifyPageType":"product"}]';
 
 let promos = JSON.parse(promosJSON);
 
