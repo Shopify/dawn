@@ -59,6 +59,9 @@ if (!customElements.get('recipient-form')) {
       if (!this.checkboxInput.checked) {
         this.clearInputFields();
         this.clearErrorMessage();
+        this.checkboxInput.setAttribute('aria-expanded', false)
+      } else {
+        this.checkboxInput.setAttribute('aria-expanded', true)
       }
     }
 
