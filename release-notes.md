@@ -1,26 +1,37 @@
-Dawn 10.0.0 introduces new color schemes, animation options across templates and sections, performance improvements for large images, an improved announcement bar, and the ability to change the shape of product cards images.
+Dawn 8.0.0 provides more customizability options to the header & footer, add a new multi-row section for product images and text, and improve the display of product images and logos. The platform has also centralized the logo settings, improved search, added social media logos and language and currency picker by default, and fixed several bugs with product pages and customer orders.
 
 ### Added
-- Important: Fade in animations will now be enabled by default on your theme. If you’d like to disable them, navigate to your theme settings → animations → uncheck “Reveal sections on scroll”.
-- Important: We’ve introduced a new visual way of setting your theme's colors. In your theme settings, you can now configure 5+ color schemes and apply them across sections in your themes. The default colors are created based on your theme’s current color settings, but we recommend reviewing them before publishing.
-- We’ve added new animations to your theme settings where you can have sections fade in or slide in when the user scrolls.
-- You can pick a new hover effect for buttons and cards - 3D lift.
-- You now have options to add animations on the Image with Text and Image Banner sections.
-- We added options to change the shape of the product card images.
-- We introduced the ability to send and schedule a gift card to a recipient.
-- You can now create different color schemes and apply them across your pages and sections.
+- Important: Product images on the Product Page, Featured Product Section, and Quick Buy Modal will now be adjusted by default to fit within the screen's height. You can still turn this off if you’d like your images to be bigger.
+- We built a new mechanism to add sections & apps to your site's header & footer area directly from the online store editor.
+- We added a "Multi-row" section that lets you create a repeatable pattern of images and text. It also connects to metaobjects in the admin for a supercharged workflow.
+- We added a new setting that will constrain the height of product images on the Product Page and Featured Product Section. You'll now have the option to display product images in their original aspect ratio or crop them to fill the allotted space.
+- The product page now displays quantity rules tied to a product variant (minimum, maximum, increments) when they apply. The product page also indicates if a buyer already has quantity for an item in their cart.
+- We added an option for buyers to Follow your store on the Shop App.
+- We added a new block to display icons with text to the product information section.
+- We added an option to disable zoom on product images.
+- We added an Inventory and SKU block to the product information section
+- We added a new "Brand Information" block to the footer that allows you to share a small blurb about your brand and display social links.
+- We added a "Medium" height option to the Image with Text section.
+- We added more width options and resized the default width of the product image on the Featured Product section.
+- We added an option to automatically reduce the size of your Logo with a Sticky header when you scroll down the page.
+- We added a checkbox to show policy links on your site's footer.
 
 ### Changed
-- Important: Color schemes now apply to content on the Image Banner and Slideshow sections, regardless of container visibility. Please review and adjust color schemes to ensure the content is readable.
-- There are now unique identifiers on navigation links, which lets you add custom CSS in the Header section.
-- We improved the announcement bar by adding a slider for each announcement instead of stacking them on top of each other.
-- We introduced new placeholder images across all theme sections.
+- Important: We changed the default height of the Image Banner from “Adapt to image size” to “medium” to better display larger images on screens. This will result in a slight visual change for themes who previously had this setting enabled. If you would like to revert the change, select “Adapt to first image” option in the “Banner height” setting.
+- We centralized the logo settings from the Header & Password sections to the Global Settings.
+- We changed the default height of the Slideshow Section to "Medium" instead of "Adapt to Image".
+- We improved the search by displaying more results.
+- We now enable language and currency picker by default in the footer so it will automatically display if your shop has multiple currencies and/or languages.
+- We show social media logos by default so they are automatically displayed if populated in your settings.
 
 ### Fixes and improvements
-- We fixed some spacing issues in the mobile drawer.
-- We improved the performance of the Collage section images.
-- We fixed some accessibility issues with the language and currency picker in the mobile drawer.
-- We fixed the facet filter animation duration to match the menu drawer.
+- We now show which variants are sold out or unavailable with better visual cues.
+- We improved the Complementary Product Cards on the Product page by making the cards more compact.
+- We streamlined the appearance of the Thumbnails product images by making them all the same size.
+- We made some improvements to Search: We added a clear button to the search input, we sync the search terms between the main search page and search bar in the header, and we automatically scroll to the top of the page when searching from mobile.
+- We fixed a bug where bullet points were not aligning properly in some sections.
+- We fixed a bug with how colour gradients were displayed in the Header section.
+- We fixed a bug on the customer pages, so that order totals now display refunds.
 
 ### Removed
-- Important: Decorative icons will now always inherit text color.
+- We removed the “Use Original Aspect Ratio” setting in the collage section.
