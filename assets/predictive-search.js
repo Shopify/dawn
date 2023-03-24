@@ -253,7 +253,9 @@ class PredictiveSearch extends SearchForm {
   setLiveRegionResults() {
     this.removeAttribute('loading');
     const liveRegionCount = this.querySelector('[data-predictive-search-live-region-count-value]');
-    if (liveRegionCount && liveRegionCount.textContent) this.setLiveRegionText(liveRegionCount.textContent);
+    if (liveRegionCount && liveRegionCount.textContent) {
+      this.setLiveRegionText(liveRegionCount.textContent);
+    };
   }
 
   getResultsMaxHeight() {
