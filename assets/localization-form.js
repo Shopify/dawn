@@ -23,6 +23,7 @@ if (!customElements.get('localization-form')) {
       if (event.code.toUpperCase() !== 'ESCAPE') return;
 
       this.hidePanel();
+      event.stopPropagation();
       this.elements.button.focus();
     }
 
@@ -40,6 +41,7 @@ if (!customElements.get('localization-form')) {
     }
 
     closeSelector(event) {
+      console.log(event.relatedTarget)
       const isChild = this.elements.panel.contains(event.relatedTarget) || this.elements.button.contains(event.relatedTarget);
       if (!event.relatedTarget || !isChild) {
         this.hidePanel();
