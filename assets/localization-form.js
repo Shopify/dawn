@@ -8,7 +8,7 @@ if (!customElements.get('localization-form')) {
         panel: this.querySelector('.disclosure__list-wrapper'),
       };
       this.elements.button.addEventListener('click', this.openSelector.bind(this));
-      this.elements.button.addEventListener('focusout', this.closeSelector.bind(this));
+      this.addEventListener('focusout', this.closeSelector.bind(this));
       this.addEventListener('keyup', this.onContainerKeyUp.bind(this));
 
       this.querySelectorAll('a').forEach(item => item.addEventListener('click', this.onItemClick.bind(this)));
@@ -22,6 +22,7 @@ if (!customElements.get('localization-form')) {
     onContainerKeyUp(event) {
       if (event.code.toUpperCase() !== 'ESCAPE') return;
 
+      if(this.elements.button.getAttribute('aria-expanded') == 'false') return;
       this.hidePanel();
       event.stopPropagation();
       this.elements.button.focus();
@@ -42,7 +43,7 @@ if (!customElements.get('localization-form')) {
 
     closeSelector(event) {
       console.log(event.relatedTarget)
-      const isChild = this.elements.panel.contains(event.relatedTarget) || this.elements.button.contains(event.relatedTarget);
+      const isChild = this.contains(event.relatedTarget);
       if (!event.relatedTarget || !isChild) {
         this.hidePanel();
       }
