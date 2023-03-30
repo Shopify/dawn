@@ -41,58 +41,44 @@
                   {% endif %}
                 >
                   {%- if block.settings.image != blank -%}
-                    {%- if section.settings.desktop_layout == 'left' -%}
-                      {%- if forloop.first -%}
-                        {%- capture sizes -%}
-                          (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - 100px) * 2 / 3),
+                    {%- liquid
+                      if section.settings.desktop_layout == 'left'
+                        assign large_block = forloop.first
+                      else
+                        assign large_block = forloop.last
+                      endif
+
+                      assign grid_space_desktop = settings.spacing_grid_horizontal | divided_by: 2 | append: 'px'
+                      assign grid_space_mobile = settings.spacing_grid_horizontal | divided_by: 4 | append: 'px'
+                    -%}
+                    {%- if large_block -%}
+                      {%- capture sizes -%}
+                        {% if section.blocks.size != 1 -%}(min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - 100px) * 2 / 3 - {{ grid_space_desktop }}){% else %}(min-width: {{ settings.page_width }}px) calc({{ settings.page_width }}px - 100px){% endif %},
+                        {% if section.blocks.size != 1 -%}(min-width: 750px) calc((100vw - 100px) * 2 / 3 - {{ grid_space_desktop }}){% else %}(min-width: 750px) calc(100vw - 100px){% endif %},
+                        {% if section.blocks.size == 2 and section.settings.mobile_layout == 'collage' -%}calc((100vw - 30px) / 2){% else %}calc(100vw - 30px){% endif %}
                         {%- endcapture -%}
-                        {{
-                          block.settings.image
-                          | image_url: width: 3100
-                          | image_tag:
-                            loading: 'lazy',
-                            sizes: sizes,
-                            widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200'
-                        }}
-                      {%- else -%}
-                        {%- capture sizes -%}
-                           (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - 100px) * 1 / 3),
-                        {%- endcapture -%}
-                        {{
-                          block.settings.image
-                          | image_url: width: 3100
-                          | image_tag:
-                            loading: 'lazy',
-                            sizes: sizes,
-                            widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200'
-                        }}
-                      {%- endif -%}
+                      {{
+                        block.settings.image
+                        | image_url: width: 3200
+                        | image_tag:
+                          loading: 'lazy',
+                          sizes: sizes,
+                          widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200'
+                      }}
                     {%- else -%}
-                      {%- if forloop.last -%}
-                        {%- capture sizes -%}
-                          (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - 100px) * 2 / 3),
+                      {%- capture sizes -%}
+                           (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - 100px) * 1 / 3 - {{ settings.spacing_grid_horizontal }}px / 2),
+                           (min-width: 750px) calc((100vw - 100px) * 1 / 3 - {{ grid_space_desktop }}),
+                           {% if section.settings.mobile_layout == 'collage' %}calc((100vw - 30px) / 2 - {{ grid_space_mobile }}){% else %}calc(100vw - 30px){% endif %}
                         {%- endcapture -%}
-                        {{
-                          block.settings.image
-                          | image_url: width: 3100
-                          | image_tag:
-                            loading: 'lazy',
-                            sizes: sizes,
-                            widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200'
-                        }}
-                      {%- else -%}
-                        {%- capture sizes -%}
-                          (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - 100px) * 1 / 3),
-                        {%- endcapture -%}
-                        {{
-                          block.settings.image
-                          | image_url: width: 3100
-                          | image_tag:
-                            loading: 'lazy',
-                            sizes: sizes,
-                            widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200'
-                        }}
-                      {%- endif -%}
+                      {{
+                        block.settings.image
+                        | image_url: width: 3200
+                        | image_tag:
+                          loading: 'lazy',
+                          sizes: sizes,
+                          widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200'
+                      }}
                     {%- endif -%}
                   {%- else -%}
                     {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
