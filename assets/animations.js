@@ -2,11 +2,12 @@ const SCROLL_ANIMATION_TRIGGER_CLASSNAME = 'scroll-trigger';
 const SCROLL_ANIMATION_ACTIVE_CLASSNAME = 'scroll-trigger--active';
 
 function onIntersection(elements, observer) {
-  elements.forEach((element) => {
+  elements.forEach((element, index) => {
     if (element.isIntersecting) {
       const elementTarget = element.target;
       elementTarget.classList.add(SCROLL_ANIMATION_ACTIVE_CLASSNAME);
-
+      if (elementTarget.hasAttribute("data-cascade"))
+        elementTarget.setAttribute('style', `--animation-order: ${index};`);
       observer.unobserve(elementTarget);
     }
   })
