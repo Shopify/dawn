@@ -22,7 +22,13 @@ function initializeScrollAnimationTrigger(rootEl = document) {
   const observer = new IntersectionObserver(onIntersection, {
     threshold: 0.1,
   });
-  animationTriggerElements.forEach((element) => observer.observe(element));
+  animationTriggerElements.forEach((element) => {
+    if (element.hasAttribute('data-3d-model')) {
+      const modelObserver = new IntersectionObserver(onIntersection);
+      modelObserver.observe(element);
+    }
+    observer.observe(element);
+  });
 }
 
 window.addEventListener('DOMContentLoaded', () => initializeScrollAnimationTrigger());
