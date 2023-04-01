@@ -690,13 +690,13 @@ class SlideshowComponent extends SliderComponent {
     this.addEventListener('focusin', this.focusInHandling.bind(this));
     this.addEventListener('focusout', this.focusOutHandling.bind(this));
 
-    if(this.querySelector('.slideshow__autoplay') !== null) {
+    if(this.querySelector('.slideshow__autoplay')) {
       this.sliderAutoplayButton = this.querySelector('.slideshow__autoplay');
       this.sliderAutoplayButton.addEventListener('click', this.autoPlayToggle.bind(this));
       this.autoplayButtonIsSetToPlay = true;
       this.play();
     } else {
-      !this.reducedMotion.matches ? this.play() : this.pause();
+      this.reducedMotion.matches ? this.pause() : this.play();
     }
   }
 
@@ -739,7 +739,7 @@ class SlideshowComponent extends SliderComponent {
   }
 
   focusOutHandling(event) {
-    if (this.sliderAutoplayButton !== undefined ) {
+    if (this.sliderAutoplayButton) {
       const focusedOnAutoplayButton = event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
       if (!this.autoplayButtonIsSetToPlay || focusedOnAutoplayButton) return;
       this.play();
@@ -749,7 +749,7 @@ class SlideshowComponent extends SliderComponent {
   }
 
   focusInHandling(event) {
-    if (this.sliderAutoplayButton !== undefined ) {
+    if (this.sliderAutoplayButton) {
       const focusedOnAutoplayButton = event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
       if (focusedOnAutoplayButton && this.autoplayButtonIsSetToPlay) {
         this.play();
