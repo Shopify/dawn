@@ -1,0 +1,106 @@
+{%- comment %}
+  Hey there! This snippet is managed by Locksmith (uselocksmith.com). You can
+  fiddle with what's below, but your changes will be reset the next time that
+  Locksmith interacts with your shop.
+
+  Last updated: Mon, 10 Oct 2022 21:57:23 +0000
+  Integration version: v6.29
+{% endcomment -%}
+
+{%include 'locksmith-variables', locksmith_scope: nil%}{%if locksmith_access_denied_content == blank%}{%capture locksmith_access_denied_content%}{%if locksmith_manual_lock%}{{content_for_layout}}{%elsif locksmith_server_lock%}<div id="locksmith-content">
+        <div id="locksmith-spinner-wrapper" style="background:#FFF;z-index:999999;top:0;left:0;right:0;bottom:0;position:fixed">
+          <style>
+            @keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+
+            .locksmith-spinner {
+              display: flex;
+              width: 100%;
+              height: 50vh;
+              color: #777;
+              align-items: center;
+              justify-content: center;
+            }
+
+            .locksmith-spinner .spinner {
+              display: block;
+              animation: spin 600ms linear infinite;
+              position: relative;
+              width: 50px;
+              height: 50px;
+            }
+
+            .locksmith-spinner .spinner svg {
+              /* ran into a theme once that defined dimensions for all (??) svg elements */
+              width: inherit;
+              height: inherit;
+            }
+
+            .locksmith-spinner .spinner-ring {
+              stroke: currentColor;
+              stroke-dasharray: 100%;
+              stroke-width: 2px;
+              stroke-linecap: round;
+              fill: none;
+            }
+          </style>
+          <div class="locksmith-spinner">
+            <div class="spinner">
+              <svg width="100%" height="100%">
+                <svg preserveAspectRatio="xMinYMin">
+                  <circle class="spinner-ring" cx="50%" cy="50%" r="45%"></circle>
+                </svg>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>{%assign _7=true%}<script data-locksmith>
+        var load = function () {
+          Locksmith.postResource(
+            {},
+            {
+              container: 'locksmith-content',
+              spinner: false
+            }
+          );
+        };
+
+        if (typeof Locksmith !== 'undefined') {
+          load();
+        } else {
+          window.addEventListener('load', load);
+        }
+      </script>{%endif%}{%endcapture%}{%endif%}{%include 'locksmith-content-variables'%}{%include 'locksmith-variables', locksmith_scope: nil%}{%if locksmith_access_denied%}{%capture content_for_header%}{{content_for_header|replace:'.oembed', ''|replace:'.atom', ''|replace:'link rel="alternate" type="application/json+oembed"', 'link'|replace:' title="Feed" rel="alternate" type="application/atom+xml"', ''}}{%endcapture%}{%endif%}{%capture locksmith_initializations%}{%if locksmith_access_denied and locksmith_manual_lock == false and locksmith_noindex%}<meta name="robots" content="noindex" />{%endif%}{{locksmith_json}}{{locksmith_client}}
+
+  <script data-locksmith>Locksmith.jsonTag={{locksmith_json|json}};Locksmith.jsonTagSignature={{locksmith_json_signature|json}}</script>{%endcapture%}{%if locksmith_access_granted or locksmith_manual_lock%}{%if locksmith_redirect != blank%}{%assign content_for_layout=locksmith_redirect%}{%endif%}{%else%}{%assign content_for_layout=locksmith_access_denied_content%}{%endif%}{%capture _3%}<script data-locksmith>
+    var load = function () {
+{%unless _7%}
+          if (document.querySelectorAll('.locksmith-manual-trigger').length > 0) {
+            Locksmith.ping();
+          }
+{%endunless%}
+
+      Locksmith.util.on('submit', 'locksmith-resource-form', function (event) {
+        event.preventDefault();
+        var data = Locksmith.util.serializeForm(event.target);
+        Locksmith.postResource(data, { spinner: false, container: 'locksmith-content' });
+      });
+
+      Locksmith.util.on('click', 'locksmith-manual-trigger', function (event) {
+        event.preventDefault();
+        Locksmith.postResource({}, { spinner: true, container: document });
+      });
+
+      Locksmith.submitPasscode = function (passcode) {
+        Locksmith.postResource(
+          { passcode: passcode },
+          { spinner: false, container: 'locksmith-content' }
+        );
+      };
+    };
+
+    if (typeof Locksmith !== 'undefined') {
+      load();
+    } else {
+      window.addEventListener('load', load);
+    }
+  </script>{%endcapture%}{%unless request.design_mode or request.host contains ".shopifypreview.com" or request.page_type == "password"%}{%assign locksmith_content_for_layout_addenda=_3%}{%endunless%}{%if locksmith_access_denied and content_for_layout contains '<input type="hidden" name="form_type" value="customer_login" />'%}{%assign locksmith_original_template=template%}{%assign template='customers/login'%}{%endif%}
