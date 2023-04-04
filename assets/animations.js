@@ -1,5 +1,5 @@
-const SCROLL_ANIMATION_TRIGGER_CLASSNAME = 'scroll-trigger';
-const SCROLL_ANIMATION_ACTIVE_CLASSNAME = 'scroll-trigger--active';
+const SCROLL_ANIMATION_TRIGGER_CLASSNAME = "scroll-trigger";
+const SCROLL_ANIMATION_ACTIVE_CLASSNAME = "scroll-trigger--active";
 
 function onIntersection(elements, observer) {
   elements.forEach((element, index) => {
@@ -7,10 +7,10 @@ function onIntersection(elements, observer) {
       const elementTarget = element.target;
       elementTarget.classList.add(SCROLL_ANIMATION_ACTIVE_CLASSNAME);
       if (elementTarget.hasAttribute("data-cascade"))
-        elementTarget.setAttribute('style', `--animation-order: ${index};`);
+        elementTarget.setAttribute("style", `--animation-order: ${index};`);
       observer.unobserve(elementTarget);
     }
-  })
+  });
 }
 
 function initializeScrollAnimationTrigger(rootEl = document) {
@@ -23,14 +23,14 @@ function initializeScrollAnimationTrigger(rootEl = document) {
     threshold: 0.1,
   });
   animationTriggerElements.forEach((element) => {
-    if (element.hasAttribute('data-3d-model')) {
-      const modelObserver = new IntersectionObserver(onIntersection);
-      modelObserver.observe(element);
-    }
     observer.observe(element);
   });
 }
 
-window.addEventListener('DOMContentLoaded', () => initializeScrollAnimationTrigger());
+window.addEventListener("DOMContentLoaded", () =>
+  initializeScrollAnimationTrigger()
+);
 
-document.addEventListener('shopify:section:load', (event) => initializeScrollAnimationTrigger(event.target));
+document.addEventListener("shopify:section:load", (event) =>
+  initializeScrollAnimationTrigger(event.target)
+);
