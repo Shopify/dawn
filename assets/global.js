@@ -675,21 +675,29 @@ class SlideshowComponent extends SliderComponent {
     this.slider.addEventListener('scroll', this.setSlideVisibility.bind(this));
     this.setSlideVisibility();
 
+    this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    this.reducedMotion.addEventListener('change',() => {
+      if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
+    });
+
     if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
   }
 
   setAutoPlay() {
-    this.sliderAutoplayButton = this.querySelector('.slideshow__autoplay');
     this.autoplaySpeed = this.slider.dataset.speed * 1000;
-
-    this.sliderAutoplayButton.addEventListener('click', this.autoPlayToggle.bind(this));
     this.addEventListener('mouseover', this.focusInHandling.bind(this));
     this.addEventListener('mouseleave', this.focusOutHandling.bind(this));
     this.addEventListener('focusin', this.focusInHandling.bind(this));
     this.addEventListener('focusout', this.focusOutHandling.bind(this));
 
-    this.play();
-    this.autoplayButtonIsSetToPlay = true;
+    if(this.querySelector('.slideshow__autoplay')) {
+      this.sliderAutoplayButton = this.querySelector('.slideshow__autoplay');
+      this.sliderAutoplayButton.addEventListener('click', this.autoPlayToggle.bind(this));
+      this.autoplayButtonIsSetToPlay = true;
+      this.play();
+    } else {
+      this.reducedMotion.matches ? this.pause() : this.play();
+    }
   }
 
   onButtonClick(event) {
@@ -731,16 +739,24 @@ class SlideshowComponent extends SliderComponent {
   }
 
   focusOutHandling(event) {
-    const focusedOnAutoplayButton = event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
-    if (!this.autoplayButtonIsSetToPlay || focusedOnAutoplayButton) return;
-    this.play();
+    if (this.sliderAutoplayButton) {
+      const focusedOnAutoplayButton = event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
+      if (!this.autoplayButtonIsSetToPlay || focusedOnAutoplayButton) return;
+      this.play();
+    } else if(!this.reducedMotion.matches) {
+      this.play();
+    }
   }
 
   focusInHandling(event) {
-    const focusedOnAutoplayButton = event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
-    if (focusedOnAutoplayButton && this.autoplayButtonIsSetToPlay) {
-      this.play();
-    } else if (this.autoplayButtonIsSetToPlay) {
+    if (this.sliderAutoplayButton) {
+      const focusedOnAutoplayButton = event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
+      if (focusedOnAutoplayButton && this.autoplayButtonIsSetToPlay) {
+        this.play();
+      } else if (this.autoplayButtonIsSetToPlay) {
+        this.pause();
+      }
+    } else if (this.querySelector('.announcement-bar-slider').contains(event.target)) {
       this.pause();
     }
   }
