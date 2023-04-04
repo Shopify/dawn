@@ -19,7 +19,6 @@ class VariantGridItems extends HTMLElement {
     const debouncedOnChange = debounce((event) => {
       this.onChange(event);
     }, ON_CHANGE_DEBOUNCE_TIMER);
-    this.style.visibility = 'visible';
     this.addEventListener('change', debouncedOnChange.bind(this));
   }
 
