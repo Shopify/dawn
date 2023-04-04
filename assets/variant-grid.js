@@ -4,13 +4,13 @@ class VariantGridRemoveButton extends HTMLElement {
 
     this.addEventListener('click', (event) => {
       event.preventDefault();
-      const cartItems = this.closest('variantgrid-items');
+      const cartItems = this.closest('variant-grid-items');
       cartItems.updateQuantity(this.dataset.index, 0);
     });
   }
 }
 
-customElements.define('variantgrid-remove-button', VariantGridRemoveButton);
+customElements.define('variant-grid-remove-button', VariantGridRemoveButton);
 
 class VariantGridItems extends HTMLElement {
   constructor() {
@@ -26,7 +26,8 @@ class VariantGridItems extends HTMLElement {
 
   connectedCallback() {
     this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (event) => {
-      if (event.source === 'variantgrid-items') {
+      console.log(event, 'event')
+      if (event.source === 'variant-grid-items') {
         return;
       }
       // If its another section that made the update
@@ -50,24 +51,16 @@ class VariantGridItems extends HTMLElement {
   }
 
   onCartUpdate() {
-    // let rootUrl = this.dataset.rootUrl;
-    // if (!rootUrl.endsWith("/")) {
-    //   rootUrl = rootUrl + "/";
-    // }
-
-    // console.log(rootUrl, 'HEY')
-    // const variantSectionUrl = `${rootUrl}variants/${variantId}/?section_id=variant-grid`;
-
-    // fetch(`${routes.cart_url}?section_id=main-cart-items`)
-    //   .then((response) => response.text())
-    //   .then((responseText) => {
-    //     const html = new DOMParser().parseFromString(responseText, 'text/html');
-    //     const sourceQty = html.querySelector('cart-items');
-    //     this.innerHTML = sourceQty.innerHTML;
-    //   })
-    //   .catch(e => {
-    //     console.error(e);
-    //   });
+    fetch(`${window.location.pathname}?section_id=variant-grid`)
+      .then((response) => response.text())
+      .then((responseText) => {
+        const html = new DOMParser().parseFromString(responseText, 'text/html');
+        const sourceQty = html.querySelector('variant-grid-items');
+        this.innerHTML = sourceQty.innerHTML;
+      })
+      .catch(e => {
+        console.error(e);
+      });
   }
 
   getSectionsToRender() {
@@ -88,9 +81,9 @@ class VariantGridItems extends HTMLElement {
         selector: '.shopify-section'
       },
       {
-        id: 'total-test',
+        id: 'variantgrid-total',
         section: document.getElementById('variant-grid').dataset.id,
-        selector: '.total-variant-grid'
+        selector: '.variantgrid-total'
       }
     ];
   }
@@ -255,4 +248,4 @@ class VariantGridItems extends HTMLElement {
   }
 }
 
-customElements.define('variantgrid-items', VariantGridItems);
+customElements.define('variant-grid-items ', VariantGridItems);
