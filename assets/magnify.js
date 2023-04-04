@@ -12,10 +12,10 @@ function createOverlay(image) {
     toggleLoadingSpinner(image);
     image.parentElement.insertBefore(overlay, image);
     image.style.opacity = '100%';
-  }
+  };
 
   return overlay;
-};
+}
 
 function prepareOverlay(container, image) {
   container.setAttribute('class', 'image-magnify-full-size');
@@ -41,7 +41,7 @@ function moveWithHover(image, event, zoomRatio) {
   // determine what to show in the frame
   overlay.style.backgroundPosition = `${xPercent} ${yPercent}`;
   overlay.style.backgroundSize = `${image.width * zoomRatio}px`;
-};
+}
 
 function magnify(image, zoomRatio) {
   const overlay = createOverlay(image);
@@ -52,7 +52,7 @@ function magnify(image, zoomRatio) {
 
 function enableZoomOnHover(zoomRatio) {
   const images = document.querySelectorAll('.image-magnify-hover');
-  images.forEach(image => {
+  images.forEach((image) => {
     image.onclick = (event) => {
       magnify(image, zoomRatio);
       moveWithHover(image, event, zoomRatio);
