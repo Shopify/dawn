@@ -22,4 +22,6 @@ const observer = new IntersectionObserver(el => {
     }
   });
 });
-observer.observe($('.counter-container').get(0));
+
+var $counter = $('.counter-container');
+if ($counter.length) { observer.observe($counter.get(0)); }
