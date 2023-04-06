@@ -29,7 +29,6 @@ function removeAnimation(element) {
 }
 
 function initializeScrollAnimationTrigger(event, rootEl = document) {
-  event ? console.log(event.type) : console.log('No event passed');
   const animationTriggerElements = Array.from(rootEl.getElementsByClassName(SCROLL_ANIMATION_TRIGGER_CLASSNAME));
   if (animationTriggerElements.length === 0) return;
 
