@@ -15,7 +15,6 @@ function onIntersection(elements, observer) {
 
 function isInViewport(element) {
   const rect = element.getBoundingClientRect();
-  console.log(rect);
   return (
     rect.top >= 0 &&
     rect.left >= 0 &&
@@ -24,18 +23,19 @@ function isInViewport(element) {
   );
 }
 
-function initializeScrollAnimationTrigger(rootEl = document) {
+function removeAnimation(element) {
+  element.classList.remove('animate--slide-in');
+  element.classList.remove('animate--fade-in');
+}
+
+function initializeScrollAnimationTrigger(event, rootEl = document) {
+  event ? console.log(event.type) : console.log('No event passed');
   const animationTriggerElements = Array.from(rootEl.getElementsByClassName(SCROLL_ANIMATION_TRIGGER_CLASSNAME));
   if (animationTriggerElements.length === 0) return;
 
-  console.log(isInViewport(animationTriggerElements[0]));
-
   animationTriggerElements.forEach((element) => {
-    if (isInViewport(element)) {
-      element.classList.remove(SCROLL_ANIMATION_ACTIVE_CLASSNAME);
-      element.classList.remove(SCROLL_ANIMATION_TRIGGER_CLASSNAME);
-      element.classList.remove('animate--slide-in');
-      element.style = `--animation-order: 0;`;
+    if (isInViewport(element) || event) {
+      removeAnimation(element);
     }
   });
 
@@ -47,4 +47,4 @@ function initializeScrollAnimationTrigger(rootEl = document) {
 
 window.addEventListener('DOMContentLoaded', () => initializeScrollAnimationTrigger());
 
-document.addEventListener('shopify:section:load', (event) => initializeScrollAnimationTrigger(event.target));
+document.addEventListener('shopify:section:load', (event) => initializeScrollAnimationTrigger(event, event.target));
