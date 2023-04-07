@@ -19,45 +19,69 @@
       </div>
 
       <div class="quick-variants page-width">
-        <!-- Regular Product Variants -->
-
-        {% for variant in product.variants %}
-          {% if variant.sku contains "PRO" %}
-            {% assign qb_variant_min = variant.option1 | slice: -2 | floor | at_least: 1 %}
-          {% endif %}
-
-          
-          <div class="quick-product-box" data-variant-id="{{ variant.id }}">
-            <div class="product-title">
-              <h3>{{ variant.title }}</h3>
+        
+        {% if product.has_only_default_variant %}
+          <!-- Pro kits with Quantity Breaks-->
+          {% assign quantity_breaks = "1|0|8,2|1000|9,3|2000|10,5|3000|11" | split: "," %}
+          {% for qty_discount in quantity_breaks %}
+            {% assign qty = qty_discount | split: "|" %}
+            <div class="quick-product-box" data-variant-id="{{ product.selected_or_first_available_variant.id }}" data-qty="{{ qty[0] }}">
+              <div class="product-title">
+                <h3>{{ 12 | times: qty[0] }} Zones</h3>
+              </div>
+              {% assign img_index = qty[2] | times: 1 %}
+              <img src="{{product.images[img_index] | img_url:'master'}}">
+              <div class="price product-price">
+                <span class="product-price__price">{{ product.price | minus: qty[1] | times: qty[0] | money_without_trailing_zeros }}
+                  </span>
+                  {% assign discount = qty[1] | times: qty[0] %}
+                  {% if discount > 0 %}
+                  <span class="product-price__sale-label">Save
+                    {{ discount | money_without_trailing_zeros }}
+                  </span>
+                  {% endif %}
+              </div>
+              {% render 'buy-buttons', product: product %}
             </div>
+          {% endfor %}
 
-            <img src="{{variant.image | img_url:'master'}}">
-
-            <div class="product-price">
-              {% if qb_variant_min > 1 %}
-                <span class="product-price__price">{{variant.price | times: qb_variant_min | money_without_trailing_zeros }}
-                </span>
-                <span class="shipdelay">Save
-                  {{ variant.price | minus: product.selected_or_first_available_variant.compare_at_price | times: qb_variant_min | abs | money_without_trailing_zeros }}
-                </span>
-              {% else %}
-                <span class="product-price__price">{{variant.price | money_without_trailing_zeros }}
-                </span>
-                {% if variant.compare_at_price > variant.price %}
-                  <span class="product-price__sale-label">{{ 'products.product.on_sale' | t }}</span>                
+        {% else %}
+        <!-- Regular Product Variants / Starter kits -->
+          {% for variant in product.variants %}        
+            <div class="quick-product-box" data-variant-id="{{ variant.id }}">
+              <div class="product-title">
+                <h3>{{ variant.title }}</h3>
+              </div>
+              <img src="{{variant.image | img_url:'master'}}">
+              <div class="price product-price">
+                {% if qb_variant_min > 1 %}
+                  <span class="product-price__price">{{variant.price | times: qb_variant_min | money_without_trailing_zeros }}
+                  </span>
+                  <span class="shipdelay">Save
+                    {{ variant.price | minus: product.selected_or_first_available_variant.compare_at_price | times: qb_variant_min | abs | money_without_trailing_zeros }}
+                  </span>
+                {% else %}
+                  <span class="product-price__price">{{variant.price | money_without_trailing_zeros }}
+                  </span>
+                  {% if variant.compare_at_price > variant.price %}
+                    <span class="product-price__sale-label">{{ 'products.product.on_sale' | t }}</span>                
+                  {% endif %}
                 {% endif %}
-              {% endif %}
+              </div>
+              {% render 'buy-buttons', product: product %}            
             </div>
-            {% render 'buy-buttons', product: product %}            
-          </div>
-        {%endfor%}
+          {% endfor %}
+        {% endif  %}
       </div>
     </div>
   </div>
   <script>
     $('.quick-product-box', '.quick-variants').each(function(i){
-      $('input.product-variant-id', this).val($(this).data('variant-id'));
+      let $this = $(this);
+      $('input.product-variant-id', this).val($this.data('variant-id'));
+      if ($this.data('qty')) {
+        $('form', this).append( $('<input></input>').attr('type', 'hidden').attr('name', 'quantity').val($this.data('qty')) );
+      }
     });
   </script>
 
