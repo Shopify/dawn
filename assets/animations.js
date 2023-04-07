@@ -15,17 +15,11 @@ function onIntersection(elements, observer) {
 
 function isInViewport(element) {
   const rect = element.getBoundingClientRect();
-  return (
-    rect.top >= 0 &&
-    rect.left >= 0 &&
-    rect.top <= (window.innerHeight || document.documentElement.clientHeight) &&
-    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-  );
+  return rect.top >= 0 && rect.left >= 0 && rect.top <= window.innerHeight && rect.right <= window.innerWidth;
 }
 
 function removeAnimation(element) {
-  element.classList.remove('animate--slide-in');
-  element.classList.remove('animate--fade-in');
+  element.classList.add('scroll-trigger--in-viewport');
 }
 
 function initializeScrollAnimationTrigger(event, rootEl = document) {
