@@ -27,17 +27,9 @@
           {% endif %}
 
           
-          <div class="quick-product-box">
+          <div class="quick-product-box" data-variant-id="{{ variant.id }}">
             <div class="product-title">
-              {% if qb_variant_min %}
-                <h3>{{ qb_variant_min | times: 12 }}
-                  Zones —
-                  {{ qb_variant_min }}
-                  {{ qb_variant_min | pluralize: 'Kit', 'Kits'}}
-                </h3>
-              {% else %}
-                <h3>{{ variant.title }}</h3>
-              {% endif %}
+              <h3>{{ variant.title }}</h3>
             </div>
 
             <img src="{{variant.image | img_url:'master'}}">
@@ -46,11 +38,8 @@
               {% if qb_variant_min > 1 %}
                 <span class="product-price__price">{{variant.price | times: qb_variant_min | money_without_trailing_zeros }}
                 </span>
-                {% if bold_selected_or_first_available_variant.compare_at_price > bold_selected_or_first_available_variant.price %}
-                  <span class="product-price__sale-label">{{ 'products.product.on_sale' | t }}</span>
-                {% endif %}
                 <span class="shipdelay">Save
-                  {{ variant.price | minus: bold_selected_or_first_available_variant.compare_at_price | times: qb_variant_min | abs | money_without_trailing_zeros }}
+                  {{ variant.price | minus: product.selected_or_first_available_variant.compare_at_price | times: qb_variant_min | abs | money_without_trailing_zeros }}
                 </span>
               {% else %}
                 <span class="product-price__price">{{variant.price | money_without_trailing_zeros }}
@@ -60,26 +49,17 @@
                 {% endif %}
               {% endif %}
             </div>
-
-            {% form 'product', product %}
-              <div class="product-add">
-                <input type="hidden" name="quantity" value="{{ qb_variant_min }}" pattern="[0-9]*"/>
-                <input type="hidden" name="id" value="{{ bold_selected_or_first_available_variant.id }}"/>
-                <button type="submit" class="atc" {% unless product.available %}disabled="disabled"{% endunless %}>
-                  {% if product.available %}
-                    {{ 'products.product.add_to_cart' | t }}
-                  {% else %}
-                    {{ 'products.product.sold_out' | t }}
-                  {% endif %}
-                </button>
-              </div>
-            {% endform %}
-            
+            {% render 'buy-buttons', product: product %}            
           </div>
         {%endfor%}
       </div>
     </div>
   </div>
+  <script>
+    $('.quick-product-box', '.quick-variants').each(function(i){
+      $('input.product-variant-id', this).val($(this).data('variant-id'));
+    });
+  </script>
 
 {% schema %}
   {
