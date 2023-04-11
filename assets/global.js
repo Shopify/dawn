@@ -486,11 +486,20 @@ class ModalOpener extends HTMLElement {
     super();
 
     const button = this.querySelector('button');
+    const video = this.querySelector("video");
 
     if (!button) return;
     button.addEventListener('click', () => {
-      const modal = document.querySelector(this.getAttribute('data-modal'));
-      if (modal) modal.show(button);
+      if (this.classList.contains("product__modal-opener--video")) {
+        if (video.paused) {
+          video.play();
+        } else {
+          video.pause();
+        }
+      } else {
+        const modal = document.querySelector(this.getAttribute('data-modal'));
+        if (modal) modal.show(button);
+      }
     });
   }
 }
