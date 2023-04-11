@@ -18,7 +18,8 @@ function initializeScrollAnimationTrigger(rootEl = document) {
   if (animationTriggerElements.length === 0) return;
 
   const observer = new IntersectionObserver(onIntersection, {
-    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px',
+    threshold: 0,
   });
   animationTriggerElements.forEach((element) => observer.observe(element));
 }
