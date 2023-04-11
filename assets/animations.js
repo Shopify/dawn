@@ -27,7 +27,7 @@ function initializeScrollAnimationTrigger(event, rootEl = document) {
   if (animationTriggerElements.length === 0) return;
 
   animationTriggerElements.forEach((element) => {
-    if (isInViewport(element) || event) {
+    if (event) {
       removeAnimation(element);
     }
   });
