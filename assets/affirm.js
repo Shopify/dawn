@@ -1,5 +1,4 @@
-<script>
- _affirm_config = {
+_affirm_config = {
    public_api_key:  "AMIZYW36PAIWPHDH",
    script:          "https://cdn1-sandbox.affirm.com/js/v2/affirm.js"
  };
