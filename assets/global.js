@@ -725,6 +725,14 @@ class SlideshowComponent extends SliderComponent {
     this.addEventListener('focusin', this.focusInHandling.bind(this));
     this.addEventListener('focusout', this.focusOutHandling.bind(this));
 
+    this.arrowButtonWasInteracted = false;
+    this.sliderArrowButtons = this.querySelectorAll('.announcement-bar-slider .slider-button');
+    this.sliderArrowButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        this.arrowButtonWasInteracted = true;
+      }, {once: true});
+    });
+
     if (this.querySelector('.slideshow__autoplay')) {
       this.sliderAutoplayButton = this.querySelector('.slideshow__autoplay');
       this.sliderAutoplayButton.addEventListener('click', this.autoPlayToggle.bind(this));
@@ -780,7 +788,7 @@ class SlideshowComponent extends SliderComponent {
         event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
       if (!this.autoplayButtonIsSetToPlay || focusedOnAutoplayButton) return;
       this.play();
-    } else if (!this.reducedMotion.matches) {
+    } else if (!this.reducedMotion.matches && !this.arrowButtonWasInteracted) {
       this.play();
     }
   }
