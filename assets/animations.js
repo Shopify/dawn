@@ -26,11 +26,13 @@ function initializeScrollAnimationTrigger(event, rootEl = document) {
   const animationTriggerElements = Array.from(rootEl.getElementsByClassName(SCROLL_ANIMATION_TRIGGER_CLASSNAME));
   if (animationTriggerElements.length === 0) return;
 
-  animationTriggerElements.forEach((element) => {
-    if (event) {
-      removeAnimation(element);
-    }
-  });
+  if (Shopify.designMode) {
+    animationTriggerElements.forEach((element) => {
+      if (event) {
+        removeAnimation(element);
+      }
+    });
+  }
 
   const observer = new IntersectionObserver(onIntersection, {
     threshold: 0.1,
