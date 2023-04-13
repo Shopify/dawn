@@ -44,7 +44,5 @@ window.addEventListener('DOMContentLoaded', () => initializeScrollAnimationTrigg
 
 if (Shopify.designMode) {
   document.addEventListener('shopify:section:load', (event) => initializeScrollAnimationTrigger(event, event.target));
-  document.addEventListener('shopify:section:reorder', (event) =>
-    initializeScrollAnimationTrigger(event, event.target)
-  );
+  document.addEventListener('shopify:section:reorder', (event) => initializeScrollAnimationTrigger(event));
 }
