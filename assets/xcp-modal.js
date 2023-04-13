@@ -5,9 +5,9 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function init(trigger) {
-    var modalTargetClass = '.' + trigger.getAttribute('data-modalTarget');
-    var closedClass      = trigger.getAttribute('data-modalTargetClosed');
-    var closerClass      = '.' + trigger.getAttribute('data-modalCloser');
+    var modalTargetClass = '.' + trigger.getAttribute('data-modal-target');
+    var closedClass      = trigger.getAttribute('data-modal-target-closed');
+    var closerClass      = '.' + trigger.getAttribute('data-modal-closer');
 
     var modalTarget = document.querySelector(modalTargetClass);
     var closer      = document.querySelector(closerClass);
