@@ -40,4 +40,9 @@ function initializeScrollAnimationTrigger(event, rootEl = document) {
 
 window.addEventListener('DOMContentLoaded', () => initializeScrollAnimationTrigger());
 
-document.addEventListener('shopify:section:load', (event) => initializeScrollAnimationTrigger(event, event.target));
+if (Shopify.designMode) {
+  document.addEventListener('shopify:section:load', (event) => initializeScrollAnimationTrigger(event, event.target));
+  document.addEventListener('shopify:section:reorder', (event) =>
+    initializeScrollAnimationTrigger(event, event.target)
+  );
+}
