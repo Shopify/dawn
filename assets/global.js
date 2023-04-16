@@ -18,7 +18,7 @@ document.querySelectorAll('[id^="Details-"] summary').forEach((summary) => {
     event.currentTarget.setAttribute('aria-expanded', !event.currentTarget.closest('details').hasAttribute('open'));
   });
 
-  if (summary.closest('header-drawer')) return;
+  if (summary.closest('header-drawer, menu-drawer')) return;
   summary.parentElement.addEventListener('keyup', onKeyUpEscape);
 });
 
@@ -418,6 +418,8 @@ class MenuDrawer extends HTMLElement {
     document.body.classList.remove(`overflow-hidden-${this.dataset.breakpoint}`);
     removeTrapFocus(elementToFocus);
     this.closeAnimation(this.mainDetailsToggle);
+
+    if (event instanceof KeyboardEvent) elementToFocus?.setAttribute('aria-expanded', false);
   }
 
   onFocusOut() {
