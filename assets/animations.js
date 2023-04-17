@@ -13,15 +13,13 @@ function onIntersection(elements, observer) {
   });
 }
 
-function initializeScrollAnimationTrigger(event, rootEl = document) {
+function initializeScrollAnimationTrigger(rootEl = document, isEditorEvent = false) {
   const animationTriggerElements = Array.from(rootEl.getElementsByClassName(SCROLL_ANIMATION_TRIGGER_CLASSNAME));
   if (animationTriggerElements.length === 0) return;
 
-  if (Shopify.designMode) {
+  if (Shopify.designMode && isEditorEvent) {
     animationTriggerElements.forEach((element) => {
-      if (event) {
-        element.classList.add('scroll-trigger--in-viewport');
-      }
+      element.classList.add('scroll-trigger--design-mode');
     });
   }
 
@@ -34,6 +32,6 @@ function initializeScrollAnimationTrigger(event, rootEl = document) {
 window.addEventListener('DOMContentLoaded', () => initializeScrollAnimationTrigger());
 
 if (Shopify.designMode) {
-  document.addEventListener('shopify:section:load', (event) => initializeScrollAnimationTrigger(event, event.target));
-  document.addEventListener('shopify:section:reorder', (event) => initializeScrollAnimationTrigger(event));
+  document.addEventListener('shopify:section:load', (event) => initializeScrollAnimationTrigger(event.target, true));
+  document.addEventListener('shopify:section:reorder', () => initializeScrollAnimationTrigger(document, true));
 }
