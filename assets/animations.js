@@ -13,11 +13,11 @@ function onIntersection(elements, observer) {
   });
 }
 
-function initializeScrollAnimationTrigger(rootEl = document, isEditorEvent = false) {
+function initializeScrollAnimationTrigger(rootEl = document, isDesignMode = false) {
   const animationTriggerElements = Array.from(rootEl.getElementsByClassName(SCROLL_ANIMATION_TRIGGER_CLASSNAME));
   if (animationTriggerElements.length === 0) return;
 
-  if (Shopify.designMode && isEditorEvent) {
+  if (isDesignMode) {
     animationTriggerElements.forEach((element) => {
       element.classList.add('scroll-trigger--design-mode');
     });
