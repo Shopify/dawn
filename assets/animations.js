@@ -21,6 +21,7 @@ function initializeScrollAnimationTrigger(rootEl = document, isDesignMode = fals
     animationTriggerElements.forEach((element) => {
       element.classList.add('scroll-trigger--design-mode');
     });
+    return;
   }
 
   const observer = new IntersectionObserver(onIntersection, {
