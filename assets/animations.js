@@ -13,9 +13,16 @@ function onIntersection(elements, observer) {
   });
 }
 
-function initializeScrollAnimationTrigger(rootEl = document) {
+function initializeScrollAnimationTrigger(rootEl = document, isDesignModeEvent = false) {
   const animationTriggerElements = Array.from(rootEl.getElementsByClassName(SCROLL_ANIMATION_TRIGGER_CLASSNAME));
   if (animationTriggerElements.length === 0) return;
+
+  if (isDesignModeEvent) {
+    animationTriggerElements.forEach((element) => {
+      element.classList.add('scroll-trigger--design-mode');
+    });
+    return;
+  }
 
   const observer = new IntersectionObserver(onIntersection, {
     rootMargin: '0px 0px -50px 0px',
@@ -25,4 +32,7 @@ function initializeScrollAnimationTrigger(rootEl = document) {
 
 window.addEventListener('DOMContentLoaded', () => initializeScrollAnimationTrigger());
 
-document.addEventListener('shopify:section:load', (event) => initializeScrollAnimationTrigger(event.target));
+if (Shopify.designMode) {
+  document.addEventListener('shopify:section:load', (event) => initializeScrollAnimationTrigger(event.target, true));
+  document.addEventListener('shopify:section:reorder', () => initializeScrollAnimationTrigger(document, true));
+}
