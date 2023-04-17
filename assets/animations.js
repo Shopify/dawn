@@ -13,11 +13,11 @@ function onIntersection(elements, observer) {
   });
 }
 
-function initializeScrollAnimationTrigger(rootEl = document, isDesignMode = false) {
+function initializeScrollAnimationTrigger(rootEl = document, isDesignModeEvent = false) {
   const animationTriggerElements = Array.from(rootEl.getElementsByClassName(SCROLL_ANIMATION_TRIGGER_CLASSNAME));
   if (animationTriggerElements.length === 0) return;
 
-  if (isDesignMode) {
+  if (isDesignModeEvent) {
     animationTriggerElements.forEach((element) => {
       element.classList.add('scroll-trigger--design-mode');
     });
