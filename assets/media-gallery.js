@@ -86,6 +86,7 @@ if (!customElements.get('media-gallery')) {
       const deferredMedia = activeItem.querySelector('.deferred-media');
       let video;
       if (deferredMedia) {
+
         deferredMedia.loadContent(false);
         if (activeItem.querySelector(".deferred-media video")) {
           video = activeItem.querySelector(".deferred-media video");
