@@ -83,7 +83,6 @@ if (!customElements.get('media-gallery')) {
 
     playActiveMedia(activeItem) {
       window.pauseAllMedia();
-      console.log(activeItem.querySelector("video"));
       const deferredMedia = activeItem.querySelector('.deferred-media');
       let video;
       if (deferredMedia) {
