@@ -486,10 +486,10 @@ class ModalOpener extends HTMLElement {
     super();
 
     const button = this.querySelector('button');
-    const video = this.querySelector("video");
 
     if (!button) return;
     button.addEventListener('click', () => {
+      const video = this.querySelector("video");
       if (this.classList.contains("product__modal-opener--video")) {
         if (video.paused) {
           video.play();
@@ -604,11 +604,31 @@ class SliderComponent extends HTMLElement {
 
   onButtonClick(event) {
     event.preventDefault();
+    const activeSliderItems = Array.from(this.sliderItems).filter(element => element.clientWidth > 0);;
     const step = event.currentTarget.dataset.step || 1;
+    let element = activeSliderItems[this.currentPage - step];
+
+    // Pause a video when changing slides
+    if (element && element.querySelector("video")) {
+      const video = element.querySelector("video");
+      video.pause();
+    }
+
     this.slideScrollPosition = event.currentTarget.name === 'next' ? this.slider.scrollLeft + (step * this.sliderItemOffset) : this.slider.scrollLeft - (step * this.sliderItemOffset);
     this.slider.scrollTo({
       left: this.slideScrollPosition
-    });
+    })
+
+    // Play a video when changing slides
+    if (event.currentTarget.name === 'next') {
+      element = activeSliderItems[this.currentPage - step + 1];
+    } else {
+      element = activeSliderItems[this.currentPage - step - 1];
+    }
+    if (element && element.querySelector("video")) {
+      const video = element.querySelector("video");
+      video.play();
+    }
   }
 }
 
