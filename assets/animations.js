@@ -5,9 +5,12 @@ function onIntersection(elements, observer) {
   elements.forEach((element, index) => {
     if (element.isIntersecting) {
       const elementTarget = element.target;
-      elementTarget.classList.remove(SCROLL_ANIMATION_OFFSCREEN);
-      if (elementTarget.hasAttribute('data-cascade'))
-        elementTarget.setAttribute('style', `--animation-order: ${index};`);
+      if (elementTarget.classList.contains(SCROLL_ANIMATION_OFFSCREEN)) {
+        elementTarget.classList.remove(SCROLL_ANIMATION_OFFSCREEN);
+        if (elementTarget.hasAttribute('data-cascade')) {
+          elementTarget.setAttribute('style', `--animation-order: ${index};`);
+        }
+      }
       observer.unobserve(elementTarget);
     } else {
       element.target.classList.add(SCROLL_ANIMATION_OFFSCREEN);
