@@ -17,11 +17,6 @@ function onIntersection(elements, observer) {
   });
 }
 
-function isInViewport(element) {
-  const rect = element.getBoundingClientRect();
-  return rect.top >= 0 && rect.left >= 0 && rect.top <= window.innerHeight && rect.right <= window.innerWidth;
-}
-
 function initializeScrollAnimationTrigger(rootEl = document, isDesignModeEvent = false) {
   const animationTriggerElements = Array.from(rootEl.getElementsByClassName(SCROLL_ANIMATION_TRIGGER_CLASSNAME));
   if (animationTriggerElements.length === 0) return;
