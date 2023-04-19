@@ -1,14 +1,18 @@
 const SCROLL_ANIMATION_TRIGGER_CLASSNAME = 'scroll-trigger';
-const SCROLL_ANIMATION_ACTIVE_CLASSNAME = 'scroll-trigger--active';
+const SCROLL_ANIMATION_OFFSCREEN = 'scroll-trigger--offscreen';
 
 function onIntersection(elements, observer) {
   elements.forEach((element, index) => {
     if (element.isIntersecting) {
       const elementTarget = element.target;
-      elementTarget.classList.add(SCROLL_ANIMATION_ACTIVE_CLASSNAME);
-      if (elementTarget.hasAttribute('data-cascade'))
-        elementTarget.setAttribute('style', `--animation-order: ${index};`);
+      if (elementTarget.classList.contains(SCROLL_ANIMATION_OFFSCREEN)) {
+        elementTarget.classList.remove(SCROLL_ANIMATION_OFFSCREEN);
+        if (elementTarget.hasAttribute('data-cascade'))
+          elementTarget.setAttribute('style', `--animation-order: ${index};`);
+      }
       observer.unobserve(elementTarget);
+    } else {
+      element.target.classList.add(SCROLL_ANIMATION_OFFSCREEN);
     }
   });
 }
@@ -32,10 +36,7 @@ function initializeScrollAnimationTrigger(rootEl = document, isDesignModeEvent =
   const observer = new IntersectionObserver(onIntersection, {
     rootMargin: '0px 0px -50px 0px',
   });
-  animationTriggerElements.forEach((element) => {
-    if (!isInViewport(element)) element.classList.remove(SCROLL_ANIMATION_ACTIVE_CLASSNAME);
-    observer.observe(element);
-  });
+  animationTriggerElements.forEach((element) => observer.observe(element));
 }
 
 window.addEventListener('DOMContentLoaded', () => initializeScrollAnimationTrigger());
