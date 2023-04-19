@@ -17,18 +17,14 @@
 {%- endstyle -%}
 
 {%-liquid 
-  assign test = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128"
-  assign test2 = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128"
-  assign test3 = test| split: ','
-  assign test4 = test2| split: ','
   assign variants_option1_arr = product.variants | map: 'option1' | uniq
   assign variants_option2_arr = product.variants | map: 'option2' | uniq
   assign variants_option3_arr = product.variants | map: 'option3' | uniq
 -%}
 
 <variant-grid-items class="page-width section-{{ section.id }}-padding no-js-hidden" id="variant-grid" data-id="{{ section.id }}" data-root-url="{{ routes.root_url }}">
-  {%- for option3 in test3 -%}
-    {%- for option2 in test4 -%}
+  {%- for option3 in variants_option3_arr -%}
+    {%- for option2 in variants_option2_arr -%}
       <div class="variant-grid js-contents">
         {%- if option3 -%}
           {% assign options3_arr = product.variants | where: "option3", option3 %}
@@ -38,84 +34,86 @@
           <div class="variant-grid-item" id="Variant-{{ variant.id }}">
             {% assign options2_arr = product.variants | where: "option2", option2 %}
             {%- if option2 -%} <span class="option2"> {{ options2_arr.first.product.options_with_values[1].name }} {{ option2 }}</span>{%- endif -%}
-              {% assign variants_options1 = product.variants | where: "option1", option1 %}
-              {% assign variants_options2 = variants_options1 | where: "option2", option2 %}
-              {% assign variants_options3 = variants_options2 | where: "option3", option3 %}
-              {% assign current_variant = variants_options3 | first %}
-              {%- unless current_variant == nil -%}
-                <div class="options1">
-                  <div class="variant-grid__quantity">
-                    <div class="">
-                      <p>{{ variants_options1.first.product.options_with_values[0].name }}{{ option1 }}</p>
-                      <p>Price{{ current_variant.price | money }}</p>
-                      <div class="variant-grid__quantity-wrapper">
-                        <label class="visually-hidden" for="Quantity-{{ variant.index | plus: 1 }}">
-                          {{ 'products.product.quantity.label' | t }}
-                        </label>
-                        <quantity-input class="quantity">
-                          <button class="quantity__button no-js-hidden" name="minus" type="button">
-                            <span class="visually-hidden">
-                              {{- 'products.product.quantity.decrease' | t: product: variant.product.title | escape -}}
-                            </span>
-                            {% render 'icon-minus' %}
-                          </button>
-                          <input
-                            class="quantity__input"
-                            data-quantity-variant-id="{{ variant.id }}"
-                            type="number"
-                            name="updates[]"
-                            {% # theme-check-disable %}
-                            value="{{ cart | item_count_for_variant: variant.id }}"
-                            data-cart-quantity="{{ cart | item_count_for_variant: variant.id }}"
-                            min="{{ item.variant.quantity_rule.min }}"
-                            {% if item.variant.quantity_rule.max != null %}
-                              max="{{ item.variant.quantity_rule.max }}"
-                            {% endif %}
-                            step="{{ item.variant.quantity_rule.increment }}"
-                            {% # theme-check-enable %}
-                            aria-label="{{ 'products.product.quantity.input_label' | t: product: variant.product.title | escape }}"
-                            id="Quantity-{{ variant.id }}"
+              {%- for option1 in variants_option1_arr -%}
+                {% assign variants_options1 = product.variants | where: "option1", option1 %}
+                {% assign variants_options2 = variants_options1 | where: "option2", option2 %}
+                {% assign variants_options3 = variants_options2 | where: "option3", option3 %}
+                {% assign current_variant = variants_options3 | first %}
+                {%- unless current_variant == nil -%}
+                  <div class="options1">
+                    <div class="variant-grid__quantity">
+                      <div class="">
+                        <p>{{ variants_options1.first.product.options_with_values[0].name }}{{ option1 }}</p>
+                        <p>Price{{ current_variant.price | money }}</p>
+                        <div class="variant-grid__quantity-wrapper">
+                          <label class="visually-hidden" for="Quantity-{{ variant.index | plus: 1 }}">
+                            {{ 'products.product.quantity.label' | t }}
+                          </label>
+                          <quantity-input class="quantity">
+                            <button class="quantity__button no-js-hidden" name="minus" type="button">
+                              <span class="visually-hidden">
+                                {{- 'products.product.quantity.decrease' | t: product: variant.product.title | escape -}}
+                              </span>
+                              {% render 'icon-minus' %}
+                            </button>
+                            <input
+                              class="quantity__input"
+                              data-quantity-variant-id="{{ variant.id }}"
+                              type="number"
+                              name="updates[]"
+                              {% # theme-check-disable %}
+                              value="{{ cart | item_count_for_variant: variant.id }}"
+                              data-cart-quantity="{{ cart | item_count_for_variant: variant.id }}"
+                              min="{{ item.variant.quantity_rule.min }}"
+                              {% if item.variant.quantity_rule.max != null %}
+                                max="{{ item.variant.quantity_rule.max }}"
+                              {% endif %}
+                              step="{{ item.variant.quantity_rule.increment }}"
+                              {% # theme-check-enable %}
+                              aria-label="{{ 'products.product.quantity.input_label' | t: product: variant.product.title | escape }}"
+                              id="Quantity-{{ variant.id }}"
+                              data-index="{{ variant.id }}"
+                            >
+                            <button class="quantity__button no-js-hidden" name="plus" type="button">
+                              <span class="visually-hidden">
+                                {{- 'products.product.quantity.increase' | t: product: variant.product.title | escape -}}
+                              </span>
+                              {% render 'icon-plus' %}
+                            </button>
+                          </quantity-input>
+
+                          <variant-grid-remove-button
+                            id="Remove-{{ variant.id }}"
                             data-index="{{ variant.id }}"
                           >
-                          <button class="quantity__button no-js-hidden" name="plus" type="button">
-                            <span class="visually-hidden">
-                              {{- 'products.product.quantity.increase' | t: product: variant.product.title | escape -}}
-                            </span>
-                            {% render 'icon-plus' %}
-                          </button>
-                        </quantity-input>
-
-                        <variant-grid-remove-button
-                          id="Remove-{{ variant.id }}"
-                          data-index="{{ variant.id }}"
+                            <a
+                              href="{{ variant.url_to_remove }}"
+                              class="button button--tertiary"
+                              aria-label="{{ 'sections.cart.remove_title' | t: title: variant.title }}"
+                            >
+                              {% render 'icon-remove' %}
+                            </a>
+                          </variant-grid-remove-button>
+                        </div>
+                      </div>
+                      <div class="variant-grid__error" id="Variant-item-error" role="alert">
+                        <small class="variant-grid__error-text"></small>
+                        <svg
+                          aria-hidden="true"
+                          focusable="false"
+                          class="icon icon-error"
+                          viewBox="0 0 13 13"
                         >
-                          <a
-                            href="{{ variant.url_to_remove }}"
-                            class="button button--tertiary"
-                            aria-label="{{ 'sections.cart.remove_title' | t: title: variant.title }}"
-                          >
-                            {% render 'icon-remove' %}
-                          </a>
-                        </variant-grid-remove-button>
+                          <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
+                          <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
+                          <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
+                          <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
+                        </svg>
                       </div>
                     </div>
-                    <div class="variant-grid__error" id="Variant-item-error" role="alert">
-                      <small class="variant-grid__error-text"></small>
-                      <svg
-                        aria-hidden="true"
-                        focusable="false"
-                        class="icon icon-error"
-                        viewBox="0 0 13 13"
-                      >
-                        <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
-                        <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
-                        <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
-                        <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
-                      </svg>
-                    </div>
-                  </div>
-              </div>
+                </div>
               {%- endunless -%}
+            {%- endfor -%}
           </div>
         </div>
       </div>
