@@ -61,12 +61,12 @@ if (!customElements.get('recipient-form')) {
     }
 
     onChange() {
-      if (!this.checkboxInput.checked) {
+      if (this.checkboxInput.checked) {
+        this.enableInputFields();
+      } else {
         this.clearInputFields();
         this.disableInputFields();
         this.clearErrorMessage();
-      } else {
-        this.enableInputFields();
       }
     }
 
