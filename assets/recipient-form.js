@@ -2,15 +2,15 @@ if (!customElements.get('recipient-form')) {
   customElements.define('recipient-form', class RecipientForm extends HTMLElement {
     constructor() {
       super();
-      this.checkboxInput = this.querySelector(`#Recipient-Checkbox-${ this.dataset.sectionId }`);
+      this.checkboxInput = this.querySelector(`#Recipient-checkbox-${ this.dataset.sectionId }`);
       this.checkboxInput.disabled = false;
-      this.hiddenControlField = this.querySelector(`#Recipient-Control-${ this.dataset.sectionId }`);
+      this.hiddenControlField = this.querySelector(`#Recipient-control-${ this.dataset.sectionId }`);
       this.hiddenControlField.disabled = true;
       this.emailInput = this.querySelector(`#Recipient-email-${ this.dataset.sectionId }`);
       this.nameInput = this.querySelector(`#Recipient-name-${ this.dataset.sectionId }`);
       this.messageInput = this.querySelector(`#Recipient-message-${ this.dataset.sectionId }`);
-      this.sendonInput = this.querySelector(`#Recipient-send_on-${ this.dataset.sectionId }`);
-      this.offsetProperty = this.querySelector(`#Recipient-Offset-${ this.dataset.sectionId }`);
+      this.sendonInput = this.querySelector(`#Recipient-send-on-${ this.dataset.sectionId }`);
+      this.offsetProperty = this.querySelector(`#Recipient-timezone-offset-${ this.dataset.sectionId }`);
       if (this.offsetProperty) this.offsetProperty.value = new Date().getTimezoneOffset();
 
       this.errorMessageWrapper = this.querySelector('.product-form__recipient-error-message-wrapper');
