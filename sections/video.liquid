@@ -27,14 +27,22 @@
       assign fix_ratio = true
     endif
   endif
+
+  assign widths = '375, 750, 1100, 1500, 1780, 2000, 3000, 3840'
+  assign size_multiplier = 1
+
+  if section.settings.image_behavior == 'ambient'
+    assign widths = '450, 900, 1320, 1800, 2136, 2400, 3600, 4608'
+    assign size_multiplier = 1.2
+  endif
 -%}
 
 {%- capture sizes -%}
   {% if section.settings.full_width -%}
-    100vw
+    {{ 100 | times: size_multiplier }}vw
   {%- else -%}
-    (min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 }}px, (min-width: 750px)
-    calc(100vw - 10rem), 100vw
+    (min-width: {{ settings.page_width }}px) {{ settings.page_width | times: size_multiplier | minus: 100 }}px, (min-width: 750px)
+    calc({{ 100 | times: size_multiplier }}vw - 10rem), {{ 100 | times: size_multiplier }}vw
   {%- endif %}
 {%- endcapture -%}
 
@@ -61,18 +69,10 @@
         {%- if section.settings.video == null and section.settings.video_url != null -%}
           <a
             href="{{ section.settings.video_url }}"
-            class="video-section__poster media media--transparent{% if poster == null %} video-section__placeholder{% endif %}"
+            class="video-section__poster media media--transparent{% if poster == null %} video-section__placeholder{% endif %}{% if section.settings.image_behavior %} animate--{{ section.settings.image_behavior }}{% endif %}"
           >
             {%- if poster != null -%}
-              {{
-                poster
-                | image_url: width: 3840
-                | image_tag:
-                  loading: 'lazy',
-                  sizes: sizes,
-                  widths: '375, 750, 1100, 1500, 1780, 2000, 3000, 3840',
-                  alt: alt
-              }}
+              {{ poster | image_url: width: 4608 | image_tag: loading: 'lazy', sizes: sizes, widths: widths, alt: alt }}
             {%- else -%}
               {{ 'collection-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
             {%- endif -%}
@@ -94,16 +94,12 @@
     >
       <button
         id="Deferred-Poster-Modal-{{ video_id }}"
-        class="video-section__poster media deferred-media__poster media--landscape"
+        class="video-section__poster media deferred-media__poster media--landscape{% if section.settings.image_behavior %} animate--{{ section.settings.image_behavior }}{% endif %}"
         type="button"
         aria-label="{{ alt }}"
       >
         {%- if poster != null -%}
-          {{
-            poster
-            | image_url: width: 3840
-            | image_tag: loading: 'lazy', sizes: sizes, widths: '375, 750, 1100, 1500, 1780, 2000, 3000, 3840', alt: alt
-          }}
+          {{ poster | image_url: width: 4608 | image_tag: loading: 'lazy', sizes: sizes, widths: widths, alt: alt }}
         {%- else -%}
           {{ 'collection-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
         {%- endif -%}
@@ -228,6 +224,26 @@
       "id": "description",
       "label": "t:sections.video.settings.description.label",
       "info": "t:sections.video.settings.description.info"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.animation.content"
+    },
+    {
+      "type": "select",
+      "id": "image_behavior",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:sections.all.animation.image_behavior.options__1.label"
+        },
+        {
+          "value": "ambient",
+          "label": "t:sections.all.animation.image_behavior.options__2.label"
+        }
+      ],
+      "default": "none",
+      "label": "t:sections.all.animation.image_behavior.label"
     },
     {
       "type": "header",
