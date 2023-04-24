@@ -47,11 +47,9 @@
                     {%- liquid
                       assign widths = '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200'
                       assign size_multiplier = 1
-                      assign max_width = 3200
 
                       if block.settings.image_behavior == 'ambient'
                         assign size_multiplier = 1.2
-                        assign max_width = max_width | times: size_multiplier
                         assign widths = '60, 90, 120, 180, 240, 360, 480, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000, 3300, 3600, 3840'
                       endif
 
@@ -72,7 +70,7 @@
                         {%- endcapture -%}
                       {{
                         block.settings.image
-                        | image_url: width: max_width
+                        | image_url: width: 3840
                         | image_tag: loading: 'lazy', sizes: sizes, widths: widths
                       }}
                     {%- else -%}
@@ -155,7 +153,7 @@
                       data-media-id="{{ block.settings.video_url.id }}"
                     >
                       <div
-                        class="media media--transparent ratio"
+                        class="media media--transparent ratio{% if block.settings.image_behavior != 'none' %} animate--{{ block.settings.image_behavior }}{% endif %}"
                         {% if block.settings.cover_image != blank %}
                           style="--ratio-percent: {{ 1 | divided_by: block.settings.cover_image.aspect_ratio | times: 100 }}%"
                         {% else %}
@@ -167,21 +165,33 @@
                         </span>
 
                         {%- if block.settings.cover_image != blank -%}
+                          {% liquid
+                            assign widths = '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200'
+                            assign size_multiplier = 1
+
+                            if block.settings.image_behavior == 'ambient'
+                              assign size_multiplier = 1.2
+                              assign widths = '60, 90, 120, 180, 240, 360, 480, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000, 3300, 3600, 3840'
+                            endif
+
+                            assign page_width = settings.page_width | times: size_multiplier
+                          %}
+
                           {%- capture sizes -%}
                             (min-width: {{ settings.page_width }}px)
                             {% if section.blocks.size == 1 -%}
-                              calc({{ settings.page_width }}px - 100px)
+                              calc({{ page_width }}px - 100px)
                             {%- else -%}
-                              {{- settings.page_width | minus: 100 | times: 0.67 | round }}px
+                              {{- page_width | minus: 100 | times: 0.67 | round }}px
                             {%- endif -%}
                             , (min-width: 750px)
-                            {%- if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif -%}
-                            , calc(100vw - 30px)
+                            {%- if section.blocks.size == 1 %} calc({{ 100 | times: size_multiplier }}vw - 100px){% else %} {{ 500 | times: size_multiplier }}px{% endif -%}
+                            , calc({{ 100 | times: size_multiplier }}vw - 30px)
                           {%- endcapture -%}
                           {{
                             block.settings.cover_image
-                            | image_url: width: 3000
-                            | image_tag: loading: 'lazy', sizes: sizes, widths: '550, 720, 990, 1100, 1500, 2200, 3000'
+                            | image_url: width: 3840
+                            | image_tag: loading: 'lazy', sizes: sizes, widths: widths
                           }}
                         {%- else -%}
                           {{ 'collection-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
@@ -441,6 +451,22 @@
           "type": "image_picker",
           "id": "cover_image",
           "label": "t:sections.collage.blocks.video.settings.cover_image.label"
+        },
+        {
+          "type": "select",
+          "id": "image_behavior",
+          "options": [
+            {
+              "value": "none",
+              "label": "t:sections.all.animation.image_behavior.options__1.label"
+            },
+            {
+              "value": "ambient",
+              "label": "t:sections.all.animation.image_behavior.options__2.label"
+            }
+          ],
+          "default": "none",
+          "label": "t:sections.all.animation.image_behavior.label"
         },
         {
           "type": "video_url",
