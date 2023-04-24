@@ -38,13 +38,42 @@
 
 {% assign usecasesShown = false %}
 
-<div class="color-{{ section.settings.color_scheme }}">
+{% assign contains_swatches = false %}
+
+{% liquid 
+  for block in section.blocks
+    if block.type == "variant-swatches"
+      assign contains_swatches = true
+    endif
+  endfor
+%}
+
+{% if section.settings.background_image != blank %}
+  <style>
+    #shopify-section-{{section.id}} > div {
+      background-image: url('{{ section.settings.background_image | image_url: width: 1500 }}')
+    }
+  </style>
+{% endif %}
+
+<div class="color-{{ section.settings.color_scheme }} loop-featured-product--wrapper">
   <div class="page-width">
     <div class="image-with-text image-with-text--{{ section.settings.content_layout }} isolate{% if settings.text_boxes_border_thickness > 0 and settings.text_boxes_border_opacity > 0 and settings.media_border_thickness > 0 and settings.media_border_opacity > 0 %} collapse-borders{% endif %}{% unless section.settings.color_scheme == 'background-1' and settings.media_border_thickness > 0 and settings.text_boxes_shadow_opacity == 0 and settings.text_boxes_border_thickness == 0 or settings.text_boxes_border_opacity == 0 %} collapse-corners{% endunless %} section-{{ section.id }}-padding">
       <div class="image-with-text__grid grid grid--gapless grid--1-col grid--{% if section.settings.desktop_image_width == 'medium' %}2-col-tablet{% else %}3-col-tablet{% endif %}{% if section.settings.layout == 'text_first' %} image-with-text__grid--reverse{% endif %}">
         <div class="image-with-text__media-item image-with-text__media-item--{{ section.settings.desktop_image_width }} image-with-text__media-item--{{ section.settings.desktop_content_position }} grid__item">
           <div class="image-with-text__media image-with-text__media--{{ section.settings.height }} global-media-settings image-with-text__media--placeholder placeholder">
-            {%- if section.settings.image != blank -%}
+            {%- if contains_swatches and section.settings.product.featured_image != blank -%}
+              <div class="variant-images" style="height: 100%;">
+                {% for variant in section.settings.product.variants %}
+                  {% if variant.featured_image %}
+                    <img style="width: 100%;
+                      display: block;
+                      height: 100%;
+                      object-fit: contain;" src="{{ variant.featured_image.src | image_url }}" alt="{{ product.title }} - {{ variant.title }}" {% unless forloop.index0 == 0 %}loading="lazy"{% endunless %} width height data-id="{{variant.id}}">
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {%- elsif section.settings.image != blank -%}
               <img
                 srcset="{%- if section.settings.image.width >= 165 -%}{{ section.settings.image | image_url: width: 165 }} 165w,{%- endif -%}
                   {%- if section.settings.image.width >= 360 -%}{{ section.settings.image | image_url: width: 360 }} 360w,{%- endif -%}
@@ -97,7 +126,7 @@
                   <div class="image-with-text__text rte  custom_image-with-text__text--{{ section.id }} {{ block.settings.text_style }}"  style="margin-top:{{ block.settings.description_padding }}px;" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
                   {% if section.settings.product.metafields.custom.usp_image != blank and usecasesShown != true %}
                     <img class="FpPLPUserMoments_benefits custom" src="{{ section.settings.product.metafields.custom.usp_image }}" alt="{{ section.settings.product.title | escape }} usp" loading="lazy">
-            
+
                     <style>
                       .FpPLPUserMoments_benefits.custom {
                         margin-top: 16px;
@@ -110,10 +139,12 @@
                   {% assign usecasesShown = true %}
                 {%- when 'button' -%}
                   {%- if block.settings.button_label != blank -%}
-                    <a href="{{ section.settings.product.url }}" class="button{% if block.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}  {% if block.settings.button_bgcolor != blank %}no-border{% endif %}" {% if block.settings.button_bgcolor != blank %}style="background-color: {{ block.settings.button_bgcolor }};color: {{ block.settings.button_txtcolor }}; {%- if block.settings.button_padding  -%}margin-top:{{ block.settings.button_padding }}px;{%- endif -%};margin-bottom:0px;""{% endif %}  {{ block.shopify_attributes }}>
+                    <a href="{{ section.settings.product.url }}" class="link-button button{% if block.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}  {% if block.settings.button_bgcolor != blank %}no-border{% endif %}" {% if block.settings.button_bgcolor != blank %}style="background-color: {{ block.settings.button_bgcolor }};color: {{ block.settings.button_txtcolor }}; {%- if block.settings.button_padding  -%}margin-top:{{ block.settings.button_padding }}px;{%- endif -%};margin-bottom:0px;""{% endif %}  {{ block.shopify_attributes }}>
                       {{ block.settings.button_label | escape }}
                     </a>
                   {%- endif -%}
+                {% when "variant-swatches" %}
+                  {% render 'variant-swatch' product: section.settings.product %}
               {%- endcase -%}
             {%- endfor -%}
           </div>
@@ -122,6 +153,33 @@
     </div>
   </div>
 </div>
+
+<script>
+  const sectionContainer = document.querySelector("#shopify-section-{{ section.id }}");
+  const variantSwatches = sectionContainer.querySelectorAll("variant-radios a[data-id]");
+  const allImages = sectionContainer.querySelectorAll(".variant-images img");
+  const linkButton = sectionContainer.querySelector("a.button.link-button");
+
+  function handleClick(e, swatch) {
+    e.preventDefault();
+
+    const variantId = swatch.dataset.id;
+    allImages.forEach(image => image.style.display = "none");
+    variantSwatches.forEach((swatch) => swatch.classList.remove("active"));
+    
+    swatch.classList.add("active");
+    const imageToShow = sectionContainer.querySelector(`.variant-images img[data-id="${variantId}"]`);
+    imageToShow.style.display = "block";
+
+    linkButton.href = swatch.href;
+  }
+
+  variantSwatches.forEach((swatch, i) => {
+    if(i === 0) swatch.classList.add("active");
+    swatch.addEventListener("click", (e) => handleClick(e, swatch))
+  })
+</script>
+
 {% schema %}
 {
   "name": "Featured product",
@@ -207,6 +265,11 @@
         "default": "contain",
         "label": "image property",
         "info": "gives object-fit property to image"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image"
     },
     {
       "type": "select",
@@ -454,6 +517,10 @@
           "default": 48
         }
       ]
+    },
+    {
+      "type": "variant-swatches",
+      "name": "Variant swatches"
     }
   ],
   "presets": [
