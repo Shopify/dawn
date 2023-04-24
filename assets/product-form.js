@@ -47,7 +47,7 @@ if (!customElements.get('product-form')) {
               publish(PUB_SUB_EVENTS.cartError, {
                 source: 'product-form',
                 productVariantId: formData.get('id'),
-                errors: response.description,
+                errors: response.errors || response.description,
                 message: response.message,
               });
               this.handleErrorMessage(response.description);
