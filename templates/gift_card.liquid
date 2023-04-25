@@ -52,18 +52,23 @@
         --font-body-scale: {{ settings.body_scale | divided_by: 100.0 }};
         --font-heading-scale: {{ settings.heading_scale | times: 1.0 | divided_by: settings.body_scale }};
 
-        --color-background: {{ settings.color_schemes['background-1'].settings.background.red }},{{ settings.color_schemes['background-1'].settings.background.green }},{{ settings.color_schemes['background-1'].settings.background.blue }};
-        --gradient-background: {{ settings.color_schemes['background-1'].settings.background_gradient | default: 'rgb(var(--color-background))' }};
-        --color-text: {{ settings.color_schemes['background-1'].settings.text.red }},{{ settings.color_schemes['background-1'].settings.text.green }},{{ settings.color_schemes['background-1'].settings.text.blue }};
-        --color-button: {{ settings.color_schemes['background-1'].settings.button.red }},{{ settings.color_schemes['background-1'].settings.button.green }},{{ settings.color_schemes['background-1'].settings.button.blue }};
-        --color-button-label: {{ settings.color_schemes['background-1'].settings.button_label.red }},{{ settings.color_schemes['background-1'].settings.button_label.green }},{{ settings.color_schemes['background-1'].settings.button_label.blue }};
-        --color-secondary-button-label: {{ settings.color_schemes['background-1'].settings.secondary_button_label.red }},{{ settings.color_schemes['background-1'].settings.secondary_button_label.green }},{{ settings.color_schemes['background-1'].settings.secondary_button_label.blue }};
-        --color-shadow: {{ settings.color_schemes['background-1'].settings.shadow.red }},{{ settings.color_schemes['background-1'].settings.shadow.green }},{{ settings.color_schemes['background-1'].settings.shadow.blue }};
+        {% assign scheme = settings.color_schemes['background-1'] %}
+        --color-background: {{ scheme.settings.background.red }},{{ scheme.settings.background.green }},{{ scheme.settings.background.blue }};
+        {% if scheme.settings.background_gradient != empty %}
+          --gradient-background: {{ scheme.settings.background_gradient }};
+        {% else %}
+          --gradient-background: {{ scheme.settings.background }};
+        {% endif %}
+        --color-text: {{ scheme.settings.text.red }},{{ scheme.settings.text.green }},{{ scheme.settings.text.blue }};
+        --color-button: {{ scheme.settings.button.red }},{{ scheme.settings.button.green }},{{ scheme.settings.button.blue }};
+        --color-button-label: {{ scheme.settings.button_label.red }},{{ scheme.settings.button_label.green }},{{ scheme.settings.button_label.blue }};
+        --color-secondary-button-label: {{ scheme.settings.secondary_button_label.red }},{{ scheme.settings.secondary_button_label.green }},{{ scheme.settings.secondary_button_label.blue }};
+        --color-shadow: {{ scheme.settings.shadow.red }},{{ scheme.settings.shadow.green }},{{ scheme.settings.shadow.blue }};
 
-        --color-sale-badge: {{ settings.color_sale_badge.red }},{{ settings.color_sale_badge.green }},{{ settings.color_sale_badge.blue }};
-        --color-sale-badge-label: {{ settings.color_sale_badge_label.red }},{{ settings.color_sale_badge_label.green }},{{ settings.color_sale_badge_label.blue }};
-        --color-soldout-badge: {{ settings.color_soldout_badge.red }},{{ settings.color_soldout_badge.green }},{{ settings.color_soldout_badge.blue }};
-        --color-soldout-badge-label: {{ settings.color_soldout_badge_label.red }},{{ settings.color_soldout_badge_label.green }},{{ settings.color_soldout_badge_label.blue }};
+        {% assign badge_scheme_id = settings.sold_out_badge_color_scheme | append: '' %}
+        {% assign badge_scheme = settings.color_schemes[badge_scheme_id] %}
+        --color-soldout-badge: {{ badge_scheme.settings.background.red }},{{ badge_scheme.settings.background.green }},{{ badge_scheme.settings.background.blue }};
+        --color-soldout-badge-label: {{ badge_scheme.settings.text.red }},{{ badge_scheme.settings.text.green }},{{ badge_scheme.settings.text.blue }};
 
         --page-width: {{ settings.page_width | divided_by: 10 }}rem;
         --page-width-margin: {% if settings.page_width == '1600' %}2{% else %}0{% endif %}rem;
@@ -107,9 +112,7 @@
             {{ gift_card.balance | money }}
           {% endif %}
         </h1>
-
-          <p class="badge badge--expired">{{ 'gift_cards.issued.expired' | t }}</p>
-
+        <p class="badge badge--expired">{{ 'gift_cards.issued.expired' | t }}</p>
       </div>
       {% if gift_card.expires_on %}
         {%- assign gift_card_expiration_date = gift_card.expires_on | date: '%B %e, %Y' -%}
@@ -123,13 +126,7 @@
       <div class="gift-card__image-wrapper">
         {%- if settings.logo != blank -%}
           {%- assign logo_alt = settings.logo.alt | default: shop.name | escape -%}
-          {{
-          settings.logo
-          | image_url: width: 570
-          | image_tag:
-            class: "gift-card__image",
-            alt: logo_alt
-        }}
+          {{ settings.logo | image_url: width: 570 | image_tag: class: 'gift-card__image', alt: logo_alt }}
         {%- else %}
           <img
             class="gift-card__image"
@@ -144,7 +141,7 @@
       <div class="gift-card__text-wrapper">
         <p class="gift-card__text">{{ 'gift_cards.issued.how_to_use_gift_card' | t }}</p>
       </div>
-      <p id='gift-card-code' class="gift-card__number">{{ gift_card.code | format_code }}</p>
+      <p id="gift-card-code" class="gift-card__number">{{ gift_card.code | format_code }}</p>
       <div class="gift-card__qr-code" data-identifier="{{ gift_card.qr_identifier }}"></div>
       {%- if gift_card.pass_url -%}
         <a href="{{ gift_card.pass_url }}" class="gift_card__apple-wallet no-print">
