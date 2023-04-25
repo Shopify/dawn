@@ -1,0 +1,163 @@
+{{ 'template-collection.css' | asset_url | stylesheet_tag }}
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+
+<style>
+  .collection:not(:first-of-type) {
+    padding-top: 10rem;
+  }
+
+  .collection .heading {
+    margin: 1rem;
+  }
+
+  .collection .heading h2,
+  .collection .heading a {
+    margin: 0;
+  }
+
+  .collection .heading a {
+    font-size: 15px;
+    color: #757470;
+  }
+
+  .collection.new h2::after {
+    content: 'New';
+    text-transform: uppercase;
+    color: #ff7e8f;
+    font-size: 13px;
+    vertical-align: super;
+  }
+
+  .collection {
+    display: none;
+  }
+  .collection:has(li:not([style*="display: none"])) {
+    display: block;
+  }
+
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+</style>
+
+<div class="section-{{ section.id }}-padding">
+  <div class="page-width">
+    {% for block in section.blocks %}
+      <div class="collection {% if block.settings.new_enabled %}new{% endif %}">
+        <div class="heading">
+          <h2>{{ block.settings.heading }}</h2>
+          {% if block.settings.link_url %}
+            <a href="{{ block.settings.link_url }}">{{ block.settings.link_label }}</a>
+          {% endif %}
+        </div>
+        <div
+          class="
+            collections-grid grid product-grid grid--1-col-tablet-down
+            grid--4-col-desktop
+          "
+          id="product-grid"
+        >
+          {% for product in block.settings.collection.products %}
+            {% liquid
+              assign lazy_load = false
+              if forloop.index > 2
+                assign lazy_load = true
+              endif
+            %}
+            <li
+              class="grid__item"
+              {% if product.metafields.custom.product_filter != blank %}
+                data-filter="{{ product.metafields.custom.product_filter }}"
+              {% endif %}
+            >
+              {% render 'card-product',
+                card_product: product,
+                show_secondary_image: true,
+                show_rating: true,
+                lazy_load: lazy_load,
+                show_quick_add: false,
+                section_id: section.id
+              %}
+            </li>
+          {%- endfor -%}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Segmented Collections",
+  "class": "section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Collection",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading"
+        },
+        {
+          "type": "url",
+          "id": "link_url",
+          "label": "Link URL"
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Link label"
+        },
+        {
+          "type": "checkbox",
+          "id": "new_enabled",
+          "label": "New"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Segmented Collections"
+    }
+  ]
+}
+{% endschema %}
