@@ -1,0 +1,148 @@
+{{- 'mobile-navigation.css' | asset_url | stylesheet_tag -}}
+
+<nav class="menu-drawer__navigation--custom menu-drawer__navigation">
+  <ul class="menu-drawer__menu has-submenu list-menu" role="list">
+    {%- for link in section.settings.mobile_menu.links -%}
+      <li>
+        {%- if link.links != blank -%}
+          {%- if forloop.index == 1 -%}
+            <details id="Details-menu-drawer-menu-item-{{ forloop.index }}">
+              <summary class="mobile-menu__item {% if forloop.index == 1 %}mobile-menu__item--first{% endif %} focus-inset{% if link.child_active %} menu-drawer__menu-item--active{% endif %}">
+                {{ link.title | escape }}
+                {% render 'icon-arrow-bold', stroke_color: '#FFFFFF' %}
+              </summary>
+              <div
+                id="link-{{ link.title | escape }}"
+                class="menu-drawer__submenu has-submenu gradient motion-reduce"
+                tabindex="-1"
+              >
+                <div class="menu-drawer__inner-submenu">
+                  <button
+                    class="menu-drawer__close-button mobile-menu__item {% if forloop.index == 1 %}mobile-menu__item--first{% endif %} focus-inset"
+                    aria-expanded="true"
+                  >
+                    {% render 'icon-arrow-bold', stroke_color: '#FFFFFF' %}
+                    {{ link.title | escape }}
+                  </button>
+                  <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
+                    {%- for childlink in link.links -%}
+                      <li>
+                        {%- if childlink.links == blank -%}
+                          {%- capture child_link_icon -%}
+                            {%- if childlink.url == '/pages/quiz' -%}
+                              {% render 'icon-question-circle' %}
+                            {%- elsif childlink.url == '/pages/compare-loop-earplugs' -%}
+                              {% render 'icon-compare' %}
+                            {%- endif -%}
+                          {%- endcapture -%}
+                          <a
+                            href="{{ childlink.url }}"
+                            class="mobile-menu__item list-menu__item focus-inset{% if childlink.current %} menu-drawer__menu-item--active{% endif %}"
+                            {% if childlink.current %}
+                              aria-current="page"
+                            {% endif %}
+                          >
+                            {{ child_link_icon }}
+                            {{ childlink.title | escape }}
+                            <span class="product-label">{{ childlink.object.metafields.custom.label }}</span>
+                          </a>
+                        {%- else -%}
+                          <details id="Details-menu-drawer-submenu-{{ forloop.index }}">
+                            <summary class="menu-drawer__menu-item link link--text list-menu__item focus-inset">
+                              {{ childlink.title | escape }}
+                              {% render 'icon-arrow' %}
+                              {% render 'icon-caret' %}
+                            </summary>
+                            <div
+                              id="childlink-{{ childlink.title | escape }}"
+                              class="menu-drawer__submenu has-submenu gradient motion-reduce"
+                            >
+                              <button
+                                class="menu-drawer__close-button link link--text focus-inset"
+                                aria-expanded="true"
+                              >
+                                {% render 'icon-arrow' %}
+                                {{ childlink.title | escape }}
+                              </button>
+                              <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
+                                {%- for grandchildlink in childlink.links -%}
+                                  <li>
+                                    <a
+                                      href="{{ grandchildlink.url }}"
+                                      class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if grandchildlink.current %} menu-drawer__menu-item--active{% endif %} {% assign forloopx = forloop.index | append: "" %}{% for a in arr %}{% if a == forloopx %} pill-button button button--primary{% endif %}{% endfor %}"
+                                      {% if grandchildlink.current %}
+                                        aria-current="page"
+                                      {% endif %}
+                                    >
+                                      {{ grandchildlink.title | escape }}
+                                    </a>
+                                  </li>
+                                {%- endfor -%}
+                              </ul>
+                            </div>
+                          </details>
+                        {%- endif -%}
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </div>
+              </div>
+            </details>
+          {%- else -%}
+            <div class="mobile-menu__accordion">
+              <details id="Details-menu-drawer-menu-item-{{ forloop.index }}">
+                <summary class="mobile-menu__item {% if forloop.index == 2 %}mobile-menu__item--second{% else %}mobile-menu__item--others{% endif %}">
+                  {{ link.title | escape }}
+                  {% render 'icon-caret' %}
+                </summary>
+                <ul class="list-menu">
+                  {%- for childlink in link.links -%}
+                    <li>
+                      <a href="{{ childlink.url }}">
+                        {{ childlink.title | escape }}
+                        <span class="product-label">{{ childlink.object.metafields.custom.label }}</span>
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </details>
+            </div>
+          {%- endif -%}
+        {%- else -%}
+          <a
+            href="{{ link.url }}"
+            class="mobile-menu__item {% if forloop.index == 2 %}mobile-menu__item--second{% else %}mobile-menu__item--others{% endif %} focus-inset{% if link.current %} menu-drawer__menu-item--active{% endif %} {% assign forloopx = forloop.index | append: "" %}{% for a in arr %}{% if a == forloopx %} pill-button button button--primary{% endif %}{% endfor %}"
+            {% if link.current %}
+              aria-current="page"
+            {% endif %}
+          >
+            {{ link.title | escape }}
+          </a>
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+  </ul>
+</nav>
+
+{% if section.blocks != blank %}
+  <div class="mobile-menu__best-sellers">
+    <h3>{{ 'sections.header.mobile_menu_best_seller_title' | t }}</h3>
+
+    {% for block in section.blocks %}
+      {% if block.type == 'bestseller' %}
+        <a
+          href="{{ block.settings.product.url }}"
+          class="button button--secondary mobile-menu__item mobile-menu__item--others focus-inset{% if link.current %} menu-drawer__menu-item--active{% endif %} {% assign forloopx = forloop.index | append: "" %}{% for a in arr %}{% if a == forloopx %} pill-button button button--primary{% endif %}{% endfor %}"
+          {% if link.current %}
+            aria-current="page"
+          {% endif -%}
+          style="background-color: {{ block.settings.background_color }}; color: {{ block.settings.text_color }}"
+        >
+          {{ block.settings.product.title | escape -}}
+          <sup>{{- block.settings.badge_text -}}</sup>
+          {% render 'icon-arrow-bold', stroke_color: block.settings.text_color %}
+        </a>
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}

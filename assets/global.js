@@ -287,9 +287,17 @@ class MenuDrawer extends HTMLElement {
   constructor() {
     super();
 
-    this.mainDetailsToggle = this.querySelector('details');
+    // this.mainDetailsToggle = this.querySelector('details');
 
-    if (navigator.platform === 'iPhone') document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
+    // select all details except under div..mobile-menu__accordion
+    this.mainDetailsToggle = this.querySelector('details:not(div.mobile-menu__accordion details)');
+
+    let platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
+    if (platform === 'iPhone')
+      document.documentElement.style.setProperty(
+        '--viewport-height',
+        `${window.innerHeight}px`
+      );
 
     this.addEventListener('keyup', this.onKeyUp.bind(this));
     this.addEventListener('focusout', this.onFocusOut.bind(this));
@@ -311,6 +319,10 @@ class MenuDrawer extends HTMLElement {
   }
 
   onSummaryClick(event) {
+
+    // except under div..mobile-menu__accordion
+    if (event.currentTarget.parentNode.parentNode.classList.contains('mobile-menu__accordion')) return;
+
     const summaryElement = event.currentTarget;
     const detailsElement = summaryElement.parentNode;
     const parentMenuElement = detailsElement.closest('.has-submenu');
@@ -1002,3 +1014,6 @@ for (let i = 0, linksLength = links.length; i < linksLength; i++) {
     links[i].rel = 'noreferrer noopener';
   }
 }
+
+
+
