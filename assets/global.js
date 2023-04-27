@@ -713,17 +713,17 @@ class SlideshowComponent extends SliderComponent {
     this.slider.addEventListener('scroll', this.setSlideVisibility.bind(this));
     this.setSlideVisibility();
 
-    this.mobileLayout = window.matchMedia('(max-width: 749px)');
+    this.desktopLayout = window.matchMedia('(min-width: 750px)');
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     this.reducedMotion.addEventListener('change', () => {
-      if (this.slider.getAttribute('data-autoplay') === 'true' && !this.mobileLayout.matches) this.setAutoPlay();
+      if (this.slider.getAttribute('data-autoplay') === 'true' && this.desktopLayout.matches) this.setAutoPlay();
     });
 
-    window.addEventListener('resize', () => {
-      this.mobileLayout.matches || this.arrowButtonWasInteracted || this.reducedMotion.matches ? this.pause() : this.play();
+    this.desktopLayout.addEventListener('change', (event) => {
+      !event.matches || this.arrowButtonWasInteracted || this.reducedMotion.matches ? this.pause() : this.play();
     });
 
-    if (this.slider.getAttribute('data-autoplay') === 'true' && !this.mobileLayout.matches) this.setAutoPlay();
+    if (this.slider.getAttribute('data-autoplay') === 'true' && this.desktopLayout.matches) this.setAutoPlay();
   }
 
   setAutoPlay() {
@@ -795,7 +795,7 @@ class SlideshowComponent extends SliderComponent {
         event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
       if (!this.autoplayButtonIsSetToPlay || focusedOnAutoplayButton) return;
       this.play();
-    } else if (!this.reducedMotion.matches && !this.arrowButtonWasInteracted && !this.mobileLayout.matches) {
+    } else if (!this.reducedMotion.matches && !this.arrowButtonWasInteracted && this.desktopLayout.matches) {
       this.play();
     }
   }
