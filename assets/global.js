@@ -715,15 +715,16 @@ class SlideshowComponent extends SliderComponent {
 
     this.desktopLayout = window.matchMedia('(min-width: 750px)');
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
     this.reducedMotion.addEventListener('change', () => {
-      if (this.slider.getAttribute('data-autoplay') === 'true' && this.desktopLayout.matches) this.setAutoPlay();
+      if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
     });
 
     this.desktopLayout.addEventListener('change', (event) => {
-      !event.matches || this.arrowButtonWasInteracted || this.reducedMotion.matches ? this.pause() : this.play();
+      if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
     });
 
-    if (this.slider.getAttribute('data-autoplay') === 'true' && this.desktopLayout.matches) this.setAutoPlay();
+    if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
   }
 
   setAutoPlay() {
@@ -746,7 +747,7 @@ class SlideshowComponent extends SliderComponent {
       this.autoplayButtonIsSetToPlay = true;
       this.play();
     } else {
-      this.reducedMotion.matches || this.arrowButtonWasInteracted ? this.pause() : this.play();
+      this.reducedMotion.matches || this.arrowButtonWasInteracted || !this.desktopLayout.matches ? this.pause() : this.play();
     }
   }
 
