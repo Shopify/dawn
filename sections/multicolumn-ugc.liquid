@@ -88,7 +88,7 @@
 
     {%- capture block_html -%}
       <div class="multicolumn-card content-container">
-        {%- if block.settings.image != blank -%}
+        {%- if block.settings.image != blank or block.settings.video -%}
           {% if section.settings.image_ratio == 'adapt' or section.settings.image_ratio == 'circle' %}
             {% assign spaced_image = true %}
           {% endif %}
@@ -97,7 +97,9 @@
               {% if section.settings.image_ratio == 'adapt' %}
                 style="padding-bottom: {{ 1 | divided_by: highest_ratio | times: section.settings.image_size }}%;"
               {% endif %}>
-              {% if block.settings.video == blank %}
+
+
+              {% unless block.settings.video %}
               <img
                 class="multicolumn-card__image"
                 srcset="{%- if block.settings.image.width >= 275 -%}{{ block.settings.image | image_url: width: 275 }} 275w,{%- endif -%}
@@ -116,11 +118,22 @@
                 loading="lazy"
               >
               {% else %}
-              <video autoplay loop muted playsinline preload="metadata" poster="{{ block.settings.image | image_url: width: 550 }}">
-                <source src="{{ block.settings.video }}" type="video/mp4">
-                Your browser does not support the video tag.
-              </video>
-              {% endif %}
+                <video
+                  {% if block.settings.video_loop %}
+                    loop="loop"
+                  {% endif %}
+                  playsinline="playsinline"
+                  controls="controls"
+                  {% if block.settings.video_autoplay %}
+                    autoplay="autoplay"
+                  {% endif %}
+                  muted="muted"
+                  class="lazy"
+                  preload="metadata"
+                >
+                  <source data-src="{{ block.settings.video.sources[1].url }}" type="video/mp4">
+                </video>
+              {% endunless %}
             </div>
           </div>
         {%- endif -%}
@@ -193,6 +206,35 @@
     </div>
   </section>
 {%- endif -%}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var lazyVideos = [].slice.call(document.querySelectorAll('video.lazy'));
+
+    if ('IntersectionObserver' in window) {
+      var lazyVideoObserver = new IntersectionObserver(function (entries, observer) {
+        entries.forEach(function (video) {
+          if (video.isIntersecting) {
+            for (var source in video.target.children) {
+              var videoSource = video.target.children[source];
+              if (typeof videoSource.tagName === 'string' && videoSource.tagName === 'SOURCE') {
+                videoSource.src = videoSource.dataset.src;
+              }
+            }
+
+            video.target.load();
+            video.target.classList.remove('lazy');
+            lazyVideoObserver.unobserve(video.target);
+          }
+        });
+      });
+
+      lazyVideos.forEach(function (lazyVideo) {
+        lazyVideoObserver.observe(lazyVideo);
+      });
+    }
+  });
+</script>
 
 {% schema %}
 {
@@ -472,14 +514,25 @@
           "label": "t:sections.multicolumn.blocks.column.settings.image.label"
         },
         {
-          "type": "text",
+          "type": "video",
           "id": "video",
-          "label": "Video"
+          "label": "t:sections.multicolumn.blocks.column.settings.video.label"
+        },
+        {
+          "type": "checkbox",
+          "id": "video_autoplay",
+          "default": false,
+          "label": "t:sections.multicolumn.blocks.column.settings.video_autoplay.label"
+        },
+        {
+          "type": "checkbox",
+          "id": "video_loop",
+          "default": false,
+          "label": "t:sections.multicolumn.blocks.column.settings.video_loop.label"
         },
         {
           "type": "text",
           "id": "title",
-          "default": "Column",
           "label": "t:sections.multicolumn.blocks.column.settings.title.label"
         },
         {
@@ -497,7 +550,6 @@
         {
           "type": "richtext",
           "id": "text",
-          "default": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
           "label": "t:sections.multicolumn.blocks.column.settings.text.label"
         },
         {
