@@ -51,30 +51,27 @@
       {{ body_font_bold_italic | font_face: font_display: 'swap' }}
       {{ settings.type_header_font | font_face: font_display: 'swap' }}
 
-      {% for scheme in settings.color_schemes %}
-        {% if forloop.index == 1 %}
+      {% for scheme in settings.color_schemes -%}
+        {% assign scheme_classes = scheme_classes | append: ', .color-' | append: scheme.id %}
+        {% if forloop.index == 1 -%}
           :root,
-        {% endif %}
+        {%- endif %}
         .color-{{ scheme.id }} {
           --color-scheme-background: {{ scheme.settings.background.red }},{{ scheme.settings.background.green }},{{ scheme.settings.background.blue }};
-          {% if scheme.settings.background_gradient != empty %}
+          {% if scheme.settings.background_gradient != empty -%}
             --color-scheme-background-gradient: {{ scheme.settings.background_gradient }};
-          {% else %}
+          {%- else -%}
             --color-scheme-background-gradient: {{ scheme.settings.background }};
-          {% endif %}
+          {%- endif %}
           --color-scheme-text: {{ scheme.settings.text.red }},{{ scheme.settings.text.green }},{{ scheme.settings.text.blue }};
           --color-scheme-button: {{ scheme.settings.button.red }},{{ scheme.settings.button.green }},{{ scheme.settings.button.blue }};
           --color-scheme-button-label: {{ scheme.settings.button_label.red }},{{ scheme.settings.button_label.green }},{{ scheme.settings.button_label.blue }};
           --color-scheme-secondary-button-label: {{ scheme.settings.secondary_button_label.red }},{{ scheme.settings.secondary_button_label.green }},{{ scheme.settings.secondary_button_label.blue }};
           --color-scheme-shadow: {{ scheme.settings.shadow.red }},{{ scheme.settings.shadow.green }},{{ scheme.settings.shadow.blue }};
         }
-      {% endfor %}
+      {%- endfor %}
 
-      {% for scheme in settings.color_schemes %}
-        .color-{{ scheme.id }},
-      {% endfor %}
-      :root
-      {
+      {{ scheme_classes | prepend: ':root' }} {
         --color-background: var(--color-scheme-background);
         --gradient-background: var(--color-scheme-background-gradient);
         --color-foreground: var(--color-scheme-text);
@@ -86,7 +83,9 @@
         --color-badge-background: var(--color-background);
         --color-badge-border: var(--color-foreground);
         --payment-terms-background-color: rgb(var(--color-scheme-background));
+      }
 
+      {{ scheme_classes | prepend: 'body' }} {
         color: rgba(var(--color-foreground), 0.75);
         background-color: rgb(var(--color-background));
       }
@@ -227,8 +226,6 @@
       }
 
       body {
-        color: rgba(var(--color-foreground), 0.75);
-        background-color: rgb(var(--color-background));
         display: grid;
         grid-template-rows: auto auto 1fr auto;
         grid-template-columns: 100%;
