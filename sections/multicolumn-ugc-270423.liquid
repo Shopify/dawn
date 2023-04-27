@@ -1,170 +1,79 @@
-{%- if section.blocks.size > 0 -%}
+{{ 'section-multicolumn.css' | asset_url | stylesheet_tag }}
+{{ 'section-multicolumn-ugc.css' | asset_url | stylesheet_tag }}
+<link rel="stylesheet" href="{{ 'component-slider.css' | asset_url }}" media="print" onload="this.media='all'">
+<noscript>{{ 'component-slider.css' | asset_url | stylesheet_tag }}</noscript>
 
-  {{ 'section-multicolumn.css' | asset_url | stylesheet_tag }}
-	{{ 'multicolumn-ugc.css' | asset_url | stylesheet_tag }}
-	{{ 'component-slider.css' | asset_url | stylesheet_tag }}
+<style>
+  .custom_multicolumn-card__info-{{ section.id }} h3{
+    line-height: 130%;
+    {% comment %} color: #1D1D1F; {% endcomment %}
+    max-width: {{ section.settings.heading_max_width }}%;
+    margin: 0 auto !important;
 
-	{%- style -%}
-		.section-{{ section.id }}-padding {
-			padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
-			padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
-		}
-
-		@media screen and (min-width: 750px) {
-			.section-{{ section.id }}-padding {
-				padding-top: {{ section.settings.padding_top }}px;
-				padding-bottom: {{ section.settings.padding_bottom }}px;
-			}
-		}
-
-    /* custom css */
-    .custom_multicolumn-card__info-{{ section.id }} h3{
-      line-height: 130%;
-      {% comment %} color: #1D1D1F; {% endcomment %}
-      max-width: {{ section.settings.heading_max_width }}%;
-      margin: 0 auto !important;
-    }
+  }
     .custom_multicolumn-card__info-{{ section.id }} p{
-      font-size: 20px;
-      line-height: 130%;
-      color: inherit;
-      max-width: {{section.settings.sub_heading_max_width}}%;
-      margin: 0 auto !important;
-      letter-spacing: -0.02em;
-    }
-    .custom_multicolumn-card__info-{{ section.id }} {
-      word-wrap: break-word;
-    }
-    @media screen and (max-width: 749px) {
-      .custom-grid--peek.slider .grid__item:last-of-type {
-        padding-right: 1.5rem;
-      }
-    }
+    font-size: 20px;
+    line-height: 130%;
+    color: inherit;
+    max-width: {{section.settings.sub_heading_max_width}}%;
+    margin: 0 auto !important;
+    letter-spacing: -0.02em;
+  }
+
+  .custom_multicolumn-card__info-{{ section.id }} {
+    word-wrap: break-word;
+  }
+
+
+
+@media screen and (max-width: 749px) {
+
+  .custom-grid--peek.slider .grid__item:last-of-type {
+    padding-right: 1.5rem;
+  }
+
+}
+
     @media screen and (max-width: 479px) {
-      .custom_multicolumn-card__info-{{ section.id }} h3{
-        max-width: 100%;
-      }
-      .custom_multicolumn-card__info-{{ section.id }} p{
-        max-width: 100%;
-      }
+    .custom_multicolumn-card__info-{{ section.id }} h3{
+      max-width: 100%;
     }
-	{%- endstyle -%}
 
-	{%- liquid
-		assign columns_mobile_int = section.settings.columns_mobile | plus: 0
-		assign show_mobile_slider = false
-		if section.settings.swipe_on_mobile and section.blocks.size > columns_mobile_int
-			assign show_mobile_slider = true
-		endif
-	-%}
+    .custom_multicolumn-card__info-{{ section.id }} p{
+      max-width: 100%;
+    }
+  }
+</style>
 
-	{%- if show_mobile_slider -%}
-    {{- 'swiper-bundle.min.css' | asset_url | stylesheet_tag -}}
-		<script src="{{- 'swiper-bundle.min.js' | asset_url -}}" defer="defer"></script>
-    <script src="{{- 'multicolumn-ugc.js' | asset_url -}}" defer="defer"></script>
-	{%- endif -%}
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
 
-  {%- capture data_swiper_options -%}
-    "slidesPerViewMobile": {{ section.settings.columns_mobile | times: 1.3 | round: 1 }},
-    "slidesPerViewDesktop": {{ section.settings.columns_desktop }},
-    "spaceBetweenMobile": {{ section.settings.space_between_mobile }},
-    "spaceBetweenDesktop": {{ section.settings.space_between_desktop }},
-    "slidesOffsetBeforeMobile": {{ section.settings.space_between_mobile }},
-    "slidesOffsetBeforeDesktop": 0,
-  {%- endcapture -%}
-  {%- assign data_swiper_options = data_swiper_options | strip_newlines | remove_last: ',' -%}
-  {%- assign data_swiper_options = '{' | append: data_swiper_options | append: '}' -%}
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
 
-  {%- liquid
-    assign highest_ratio = 0
-    for block in section.blocks
-      if block.settings.image.aspect_ratio > highest_ratio
-        assign highest_ratio = block.settings.image.aspect_ratio
-      endif
-    endfor
-  -%}
+{%- liquid
+  assign columns_mobile_int = section.settings.columns_mobile | plus: 0
+  assign show_mobile_slider = false
+  if section.settings.swipe_on_mobile and section.blocks.size > columns_mobile_int
+    assign show_mobile_slider = true
+  endif
+-%}
 
-  {%- for block in section.blocks -%}
-
-    {%- capture block_html -%}
-      <div class="multicolumn-card content-container">
-        {%- if block.settings.image != blank -%}
-          {% if section.settings.image_ratio == 'adapt' or section.settings.image_ratio == 'circle' %}
-            {% assign spaced_image = true %}
-          {% endif %}
-          <div class="multicolumn-card__image-wrapper multicolumn-card__image-wrapper--{{ section.settings.image_width }}-width{% if section.settings.image_width != 'full' or spaced_image %} multicolumn-card-spacing{% endif %}">
-            <div class="media media--transparent media--{{ section.settings.image_ratio }}"
-              {% if section.settings.image_ratio == 'adapt' %}
-                style="padding-bottom: {{ 1 | divided_by: highest_ratio | times: section.settings.image_size }}%;"
-              {% endif %}>
-              {% if block.settings.video == blank %}
-              <img
-                class="multicolumn-card__image"
-                srcset="{%- if block.settings.image.width >= 275 -%}{{ block.settings.image | image_url: width: 275 }} 275w,{%- endif -%}
-                  {%- if block.settings.image.width >= 550 -%}{{ block.settings.image | image_url: width: 550 }} 550w,{%- endif -%}
-                  {%- if block.settings.image.width >= 710 -%}{{ block.settings.image | image_url: width: 710 }} 710w,{%- endif -%}
-                  {%- if block.settings.image.width >= 1420 -%}{{ block.settings.image | image_url: width: 1420 }} 1420w,{%- endif -%}
-                  {{ block.settings.image | image_url }} {{ block.settings.image.width }}w"
-                src="{{ block.settings.image | image_url: width: 550 }}"
-                sizes="(min-width: 990px) {% if section.blocks.size <= 2 %}710px{% else %}550px{% endif %},
-                  (min-width: 750px) {% if section.blocks.size == 1 %}710px{% else %}550px{% endif %},
-                  (max-width: 560px) 300px,
-                  calc(100vw - 30px)"
-                alt="{{ block.settings.image.alt }}"
-                height="{{ block.settings.image.height }}"
-                width="{{ block.settings.image.width }}"
-                loading="lazy"
-              >
-              {% else %}
-              <video autoplay loop muted playsinline preload="metadata" poster="{{ block.settings.image | image_url: width: 550 }}">
-                <source src="{{ block.settings.video }}" type="video/mp4">
-                Your browser does not support the video tag.
-              </video>
-              {% endif %}
-            </div>
-          </div>
-        {%- endif -%}
-        <div class="multicolumn-card__info custom_multicolumn-card__info-{{ section.id }}">
-          {%- if block.settings.title != blank -%}
-            <h3 style="{% if block.settings.col_heading_font_size %}font-size:{{ block.settings.col_heading_font_size }}px;{% endif %}">{{ block.settings.title | escape }}</h3>
-          {%- endif -%}
-          {%- if block.settings.text != blank -%}
-            <div class="rte" style="{% if block.settings.text_color %}color:{{ block.settings.text_color }};{% endif %}">{{ block.settings.text }}</div>
-          {%- endif -%}
-          {%- if block.settings.founder_text != blank -%}
-            <div class="rte" style="{% if block.settings.founder_color %}color:{{ block.settings.founder_color }};{% endif %}font-size:20px;letter-spacing: -0.02em;">{{ block.settings.founder_text }}</div>
-          {%- endif -%}
-          {%- if block.settings.link_label != blank -%}
-            <a class="link animate-arrow" {% if block.settings.link == blank %}role="link" aria-disabled="true"{% else %}href="{{ block.settings.link }}"{% endif %}>{{ block.settings.link_label | escape }}<span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span></a>
-          {%- endif -%}
-        </div>
-        {%- if block.settings.username != blank -%}
-          <div class="multicolumn-card__username rte">
-            {{ block.settings.username }}
-          </div>
-        {%- endif -%}
-      </div>
-    {%- endcapture -%}
-
-    {%- if show_mobile_slider -%}
-      {%- capture block_html -%}
-        <div class="swiper-slide multicolumn__swiper-slide multicolumn-list__item {% if section.settings.swipe_on_mobile %} slider__slide{% endif %}{% if section.settings.column_alignment == 'center' %} center{% endif %}{{ empty_column }}" {{ block.shopify_attributes }}>
-          {{ block_html }}
-        </div>
-      {%- endcapture -%}
-    {%- endif -%}
-
-    {%- assign blocks_html = blocks_html | append: block_html -%}
-
-  {%- endfor -%}
-
-  <section class="multicolumn multicolumn-ugc color-{{ section.settings.color_scheme }} gradient{% unless section.settings.background_style == 'none' and settings.text_boxes_border_thickness > 0 or settings.text_boxes_shadow_opacity > 0 %} background-{{ section.settings.background_style }}{% endunless %}{% if section.settings.title == blank %} no-heading{% endif %} section-{{ section.id }}-padding">
-
+<div class="multicolumn color-{{ section.settings.color_scheme }} gradient{% unless section.settings.background_style == 'none' and settings.text_boxes_border_thickness > 0 or settings.text_boxes_shadow_opacity > 0 %} background-{{ section.settings.background_style }}{% endunless %}{% if section.settings.title == blank %} no-heading{% endif %}">
+  <div class="page-width section-{{ section.id }}-padding isolate">
     {%- unless section.settings.title == blank -%}
       <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin {% if section.settings.heading_center %}center{% endif %}">
-        <h3 class="title {{ section.settings.heading_size }}">
+        <h2 class="title {{ section.settings.heading_size }}">
           {{ section.settings.title | escape }}
-        </h3>
+        </h2>
         {%- if section.settings.subtitle -%}
           <div class="subtitle">{{ section.settings.subtitle }}</div>
         {%- endif -%}
@@ -174,25 +83,121 @@
       </div>
     {%- endunless -%}
 
-    <div class="container page-width isolate">
+    <slider-component class="slider-mobile-gutter">
+      <ul class="multicolumn-list contains-content-container grid grid--{{ section.settings.columns_mobile }}-col-tablet-down grid--{{ section.settings.columns_desktop }}-col-desktop{% if show_mobile_slider %} slider slider--mobile grid--peek custom-grid--peek {% endif %}"
+        id="Slider-{{ section.id }}"
+        role="list"
+      >
+        {%- liquid
+          assign highest_ratio = 0
+          for block in section.blocks
+            if block.settings.image.aspect_ratio > highest_ratio
+              assign highest_ratio = block.settings.image.aspect_ratio
+            endif
+          endfor
+        -%}
+        {%- for block in section.blocks -%}
+          {%- assign empty_column = '' -%}
+          {%- if block.settings.image == blank and block.settings.title == blank and block.settings.text == blank and block.settings.link_label == blank -%}
+            {%- assign empty_column = ' multicolumn-list__item--empty' -%}
+          {%- endif -%}
+
+          <li id="Slider-{{ section.id }}-{{ forloop.index }}" class="multicolumn-list__item grid__item{% if section.settings.swipe_on_mobile %} slider__slide{% endif %}{% if section.settings.column_alignment == 'center' %} center{% endif %}{{ empty_column }}" {{ block.shopify_attributes }}>
+            <div class="multicolumn-card content-container">
+              {%- if block.settings.image != blank -%}
+                {% if section.settings.image_ratio == 'adapt' or section.settings.image_ratio == 'circle' %}
+                  {% assign spaced_image = true %}
+                {% endif %}
+                <div class="multicolumn-card__image-wrapper multicolumn-card__image-wrapper--{{ section.settings.image_width }}-width{% if section.settings.image_width != 'full' or spaced_image %} multicolumn-card-spacing{% endif %}">
+                  <div class="media media--transparent media--{{ section.settings.image_ratio }}"
+                    {% if section.settings.image_ratio == 'adapt' %}
+                      style="padding-bottom: {{ 1 | divided_by: highest_ratio | times: section.settings.image_size }}%;"
+                    {% endif %}>
+                    {% if block.settings.video == blank %}
+                    <img
+                      class="multicolumn-card__image"
+                      srcset="{%- if block.settings.image.width >= 275 -%}{{ block.settings.image | image_url: width: 275 }} 275w,{%- endif -%}
+                        {%- if block.settings.image.width >= 550 -%}{{ block.settings.image | image_url: width: 550 }} 550w,{%- endif -%}
+                        {%- if block.settings.image.width >= 710 -%}{{ block.settings.image | image_url: width: 710 }} 710w,{%- endif -%}
+                        {%- if block.settings.image.width >= 1420 -%}{{ block.settings.image | image_url: width: 1420 }} 1420w,{%- endif -%}
+                        {{ block.settings.image | image_url }} {{ block.settings.image.width }}w"
+                      src="{{ block.settings.image | image_url: width: 550 }}"
+                      sizes="(min-width: 990px) {% if section.blocks.size <= 2 %}710px{% else %}550px{% endif %},
+                        (min-width: 750px) {% if section.blocks.size == 1 %}710px{% else %}550px{% endif %},
+                        (max-width: 560px) 300px,
+                        calc(100vw - 30px)"
+                      alt="{{ block.settings.image.alt }}"
+                      height="{{ block.settings.image.height }}"
+                      width="{{ block.settings.image.width }}"
+                      loading="lazy"
+                    >
+                    {% else %}
+                    <video autoplay loop muted playsinline preload="metadata" poster="{{ block.settings.image | image_url: width: 550 }}">
+                      <source src="{{ block.settings.video }}" type="video/mp4">
+                      Your browser does not support the video tag.
+                    </video>
+                    {% endif %}
+                  </div>
+                </div>
+              {%- endif -%}
+              <div class="multicolumn-card__info custom_multicolumn-card__info-{{ section.id }}">
+                {%- if block.settings.title != blank -%}
+                  <h3 style="{% if block.settings.col_heading_font_size %}font-size:{{ block.settings.col_heading_font_size }}px;{% endif %}">{{ block.settings.title | escape }}</h3>
+                {%- endif -%}
+                {%- if block.settings.text != blank -%}
+                  <div class="rte" style="{% if block.settings.text_color %}color:{{ block.settings.text_color }};{% endif %}">{{ block.settings.text }}</div>
+                {%- endif -%}
+                {%- if block.settings.founder_text != blank -%}
+                  <div class="rte" style="{% if block.settings.founder_color %}color:{{ block.settings.founder_color }};{% endif %}font-size:20px;letter-spacing: -0.02em;">{{ block.settings.founder_text }}</div>
+                {%- endif -%}
+                {%- if block.settings.link_label != blank -%}
+                  <a class="link animate-arrow" {% if block.settings.link == blank %}role="link" aria-disabled="true"{% else %}href="{{ block.settings.link }}"{% endif %}>{{ block.settings.link_label | escape }}<span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span></a>
+                {%- endif -%}
+              </div>
+              {%- if block.settings.username != blank -%}
+                <div class="multicolumn-card__username rte">
+                  {{ block.settings.username }}
+                </div>
+              {%- endif -%}
+            </div>
+          </li>
+        {%- endfor -%}
+      </ul>
+
       {%- if show_mobile_slider -%}
-        <multicolumn-ugc
-          class="swiper multicolumn__swiper"
-          data-swiper-options='{{- data_swiper_options -}}'
-        >
-          <div class="swiper-wrapper multicolumn__swiper-wrapper">
-            {{ blocks_html }}
-          </div><!-- /.swiper-wrapper -->
-          <div class="swiper-pagination multicolumn__swiper-pagination"></div>
-        </multicolumn-ugc>
-      {%- else -%}
-        <div class="multicolumn__grid multicolumn-list contains-content-container grid grid--{{ section.settings.columns_mobile }}-col-tablet-down grid--{{ section.settings.columns_desktop }}-col-desktop{% if show_mobile_slider %} slider slider--mobile grid--peek custom-grid--peek {% endif %}">
-          {{ blocks_html }}
-        </div><!-- /.multicolumn__grid -->
+        <div class="slider-buttons no-js-hidden medium-hide">
+          <div class="slideshow__control-wrapper">
+            {%- for block in section.blocks -%}
+              <button class="slider-counter__link slider-counter__link--dots link" aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}" aria-controls="Slider-{{ section.id }}-{{ forloop.index }}">
+                <span class="dot"></span>
+              </button>
+            {%- endfor -%}
+          </div>
+        </div>
+        <noscript>
+          <div class="slider-buttons">
+            <div class="slider-counter">
+              {%- for block in section.blocks -%}
+                <a href="#Slider-{{ section.id }}-{{ forloop.index }}" class="slider-counter__link link" aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}">
+                  {{ forloop.index }}
+                </a>
+              {%- endfor -%}
+            </div>
+          </div>
+        </noscript>
+      {%- endif -%}
+
+    </slider-component>
+
+    <div class="center{% if show_mobile_slider %} small-hide medium-hide{% endif %}">
+      {%- if section.settings.button_label != blank -%}
+        <a class="button button--primary"{% if section.settings.button_link == blank %} role="link" aria-disabled="true"{% else %} href="{{ section.settings.button_link }}"{% endif %} {% if section.settings.button_bgcolor_1 != blank %}style="background-color: {{ section.settings.button_bgcolor_1 }};color: {{section.settings.button_txtcolor_1}};"{% endif %}>
+          {{ section.settings.button_label | escape }}
+        </a>
       {%- endif -%}
     </div>
-  </section>
-{%- endif -%}
+  </div>
+</div>
 
 {% schema %}
 {
@@ -316,12 +321,6 @@
       "label": "t:sections.multicolumn.settings.column_alignment.label"
     },
     {
-      "type": "number",
-      "id": "space_between_desktop",
-      "label": "t:sections.multicolumn.settings.space_between_desktop.label",
-      "default": 28
-    },
-    {
       "type": "select",
       "id": "background_style",
       "options": [
@@ -429,12 +428,6 @@
       "id": "swipe_on_mobile",
       "default": false,
       "label": "t:sections.multicolumn.settings.swipe_on_mobile.label"
-    },
-    {
-      "type": "number",
-      "id": "space_between_mobile",
-      "label": "t:sections.multicolumn.settings.space_between_mobile.label",
-      "default": 12
     },
     {
       "type": "header",
