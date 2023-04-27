@@ -76,19 +76,20 @@ class FacetFiltersForm extends HTMLElement {
   }
 
   static renderProductGridContainer(html) {
-    document.getElementById('ProductGridContainer').innerHTML = new DOMParser()
-      .parseFromString(html, 'text/html')
-      .getElementById('ProductGridContainer').innerHTML;
+    const productGridContainer = new DOMParser().parseFromString(html, 'text/html').getElementById('ProductGridContainer');
+    if (!productGridContainer) return;
+    document.getElementById('ProductGridContainer').innerHTML = productGridContainer.innerHTML;
   }
 
   static renderProductCount(html) {
-    const count = new DOMParser().parseFromString(html, 'text/html').getElementById('ProductCount').innerHTML;
+    const count = new DOMParser().parseFromString(html, 'text/html').getElementById('ProductCount');
+    if (!count) return;
     const container = document.getElementById('ProductCount');
     const containerDesktop = document.getElementById('ProductCountDesktop');
-    container.innerHTML = count;
+    container.innerHTML = count.innerHTML;
     container.classList.remove('loading');
     if (containerDesktop) {
-      containerDesktop.innerHTML = count;
+      containerDesktop.innerHTML = count.innerHTML;
       containerDesktop.classList.remove('loading');
     }
   }
@@ -163,6 +164,9 @@ class FacetFiltersForm extends HTMLElement {
     return [
       {
         section: document.getElementById('product-grid').dataset.id,
+      },
+      {
+        section: document.getElementById('main-collection-filters').dataset.id,
       },
     ];
   }
