@@ -725,6 +725,13 @@ class SlideshowComponent extends SliderComponent {
       this.desktopLayout.addEventListener('change', (event) => {
         if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
       });
+
+      this.announcementSliderArrowButtons = this.querySelectorAll('.announcement-bar-slider .slider-button');
+      this.announcementSliderArrowButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          this.announcementBarArrowButtonWasClicked = true;
+        }, {once: true});
+      });
     }
 
     if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
@@ -736,13 +743,6 @@ class SlideshowComponent extends SliderComponent {
     this.addEventListener('mouseleave', this.focusOutHandling.bind(this));
     this.addEventListener('focusin', this.focusInHandling.bind(this));
     this.addEventListener('focusout', this.focusOutHandling.bind(this));
-
-    this.announcementSliderArrowButtons = this.querySelectorAll('.announcement-bar-slider .slider-button');
-    this.announcementSliderArrowButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        this.announcementBarArrowButtonWasClicked = true;
-      }, {once: true});
-    });
 
     if (this.querySelector('.slideshow__autoplay')) {
       this.sliderAutoplayButton = this.querySelector('.slideshow__autoplay');
