@@ -701,7 +701,6 @@ class SlideshowComponent extends SliderComponent {
     super();
     this.sliderControlWrapper = this.querySelector('.slider-buttons');
     this.enableSliderLooping = true;
-    this.announcementBarArrowButtonWasClicked = false;
 
     if (!this.sliderControlWrapper) return;
 
@@ -713,16 +712,20 @@ class SlideshowComponent extends SliderComponent {
     this.slider.addEventListener('scroll', this.setSlideVisibility.bind(this));
     this.setSlideVisibility();
 
-    this.desktopLayout = window.matchMedia('(min-width: 750px)');
-    this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (this.querySelector('.announcement-bar-slider')) {
+      this.announcementBarArrowButtonWasClicked = false;
 
-    this.reducedMotion.addEventListener('change', () => {
-      if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
-    });
+      this.desktopLayout = window.matchMedia('(min-width: 750px)');
+      this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    this.desktopLayout.addEventListener('change', (event) => {
-      if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
-    });
+      this.reducedMotion.addEventListener('change', () => {
+        if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
+      });
+
+      this.desktopLayout.addEventListener('change', (event) => {
+        if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
+      });
+    }
 
     if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
   }
