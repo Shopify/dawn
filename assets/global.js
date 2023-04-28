@@ -701,7 +701,7 @@ class SlideshowComponent extends SliderComponent {
     super();
     this.sliderControlWrapper = this.querySelector('.slider-buttons');
     this.enableSliderLooping = true;
-    this.arrowButtonWasInteracted = false;
+    this.announcementBarArrowButtonWasClicked = false;
 
     if (!this.sliderControlWrapper) return;
 
@@ -734,10 +734,10 @@ class SlideshowComponent extends SliderComponent {
     this.addEventListener('focusin', this.focusInHandling.bind(this));
     this.addEventListener('focusout', this.focusOutHandling.bind(this));
 
-    this.sliderArrowButtons = this.querySelectorAll('.announcement-bar-slider .slider-button');
-    this.sliderArrowButtons.forEach((button) => {
+    this.announcementSliderArrowButtons = this.querySelectorAll('.announcement-bar-slider .slider-button');
+    this.announcementSliderArrowButtons.forEach((button) => {
       button.addEventListener('click', () => {
-        this.arrowButtonWasInteracted = true;
+        this.announcementBarArrowButtonWasClicked = true;
       }, {once: true});
     });
 
@@ -747,7 +747,7 @@ class SlideshowComponent extends SliderComponent {
       this.autoplayButtonIsSetToPlay = true;
       this.play();
     } else {
-      this.reducedMotion.matches || this.arrowButtonWasInteracted || !this.desktopLayout.matches ? this.pause() : this.play();
+      this.reducedMotion.matches || this.announcementBarArrowButtonWasClicked || !this.desktopLayout.matches ? this.pause() : this.play();
     }
   }
 
@@ -796,7 +796,7 @@ class SlideshowComponent extends SliderComponent {
         event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
       if (!this.autoplayButtonIsSetToPlay || focusedOnAutoplayButton) return;
       this.play();
-    } else if (!this.reducedMotion.matches && !this.arrowButtonWasInteracted && this.desktopLayout.matches) {
+    } else if (!this.reducedMotion.matches && !this.announcementBarArrowButtonWasClicked && this.desktopLayout.matches) {
       this.play();
     }
   }
