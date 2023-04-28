@@ -1,0 +1,65 @@
+{% liquid
+  assign currencies_using_comma_decimals = 'ANG,ARS,BRL,BYN,BYR,CLF,CLP,COP,CRC,CZK,DKK,EUR,HRK,HUF,IDR,ISK,MZN,NOK,PLN,RON,RUB,SEK,TRY,UYU,VES,VND' | split: ','
+  assign uses_comma_decimals = false
+  if currencies_using_comma_decimals contains cart.currency.iso_code
+    assign uses_comma_decimals = true
+  endif
+%}
+
+<price-range class="facets__price">
+  <span class="field-currency">{{ cart.currency.symbol }}</span>
+  <div class="field">
+    <input
+      class="field__input"
+      name="{{ filter.min_value.param_name }}"
+      id="{{ id }}-{{ filter.label | escape }}-GTE"
+      {%- if filter.min_value.value -%}
+        {%- if uses_comma_decimals -%}
+          value="{{ filter.min_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
+        {%- else -%}
+          value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"
+        {%- endif %}
+      {%- endif -%}
+      type="number"
+      placeholder="0"
+      min="0"
+      {%- if uses_comma_decimals -%}
+        max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
+      {%- else -%}
+        max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+      {% endif %}
+    >
+    <label class="field__label" for="Filter-{{ filter.label | escape }}-GTE">
+      {{- 'products.facets.from' | t -}}
+    </label>
+  </div>
+  {%- if filter_type != 'vertical' -%}
+    <span class="field-currency">{{ cart.currency.symbol }}</span>
+  {%- endif -%}
+  <div class="field">
+    <input
+      class="field__input"
+      name="{{ filter.max_value.param_name }}"
+      id="Filter-{{ filter.label | escape }}-LTE"
+      {%- if filter.max_value.value -%}
+        {%- if uses_comma_decimals -%}
+          value="{{ filter.max_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
+        {%- else -%}
+          value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"
+        {%- endif %}
+      {%- endif -%}
+      type="number"
+      min="0"
+      {%- if uses_comma_decimals -%}
+        placeholder="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
+        max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
+      {%- else -%}
+        placeholder="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+        max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
+      {% endif %}
+    >
+    <label class="field__label" for="Filter-{{ filter.label | escape }}-LTE">
+      {{- 'products.facets.to' | t -}}
+    </label>
+  </div>
+</price-range>
