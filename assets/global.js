@@ -726,8 +726,7 @@ class SlideshowComponent extends SliderComponent {
         if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
       });
 
-      this.announcementSliderArrowButtons = this.querySelectorAll('.announcement-bar-slider .slider-button');
-      this.announcementSliderArrowButtons.forEach((button) => {
+      [this.prevButton, this.nextButton].forEach((button) => {
         button.addEventListener('click', () => {
           this.announcementBarArrowButtonWasClicked = true;
         }, {once: true});
