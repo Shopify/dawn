@@ -79,6 +79,13 @@ class FacetFiltersForm extends HTMLElement {
     document.getElementById('ProductGridContainer').innerHTML = new DOMParser()
       .parseFromString(html, 'text/html')
       .getElementById('ProductGridContainer').innerHTML;
+
+    document
+      .getElementById('ProductGridContainer')
+      .querySelectorAll('.grid__item')
+      .forEach((element) => {
+        element.classList.add('scroll-trigger--facet-cancel');
+      });
   }
 
   static renderProductCount(html) {
