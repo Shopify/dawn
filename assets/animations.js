@@ -49,7 +49,7 @@ function initializeScrollZoomAnimationTrigger() {
   if (animationTriggerElements.length === 0) return;
 
   const observer = new IntersectionObserver(zoomInIntersection, {
-    threshold: [0, 0.25, 0.5, 0.75, 1],
+    threshold: [0, 0.2, 0.4, 0.6, 0.8, 1],
   });
 
   animationTriggerElements.forEach((element) => observer.observe(element));
