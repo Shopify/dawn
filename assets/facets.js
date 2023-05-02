@@ -82,7 +82,7 @@ class FacetFiltersForm extends HTMLElement {
 
     document
       .getElementById('ProductGridContainer')
-      .querySelectorAll('.grid__item')
+      .querySelectorAll('.scroll-trigger')
       .forEach((element) => {
         element.classList.add('scroll-trigger--facet-cancel');
       });
