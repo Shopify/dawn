@@ -1,6 +1,6 @@
 const SCROLL_ANIMATION_TRIGGER_CLASSNAME = 'scroll-trigger';
 const SCROLL_ANIMATION_OFFSCREEN_CLASSNAME = 'scroll-trigger--offscreen';
-const SCROLL_ANIMATION_FACET_CLASSNAME = 'scroll-trigger--cancel';
+const SCROLL_ANIMATION_CANCEL_CLASSNAME = 'scroll-trigger--cancel';
 
 function onIntersection(elements, observer) {
   elements.forEach((element, index) => {
@@ -14,7 +14,7 @@ function onIntersection(elements, observer) {
       observer.unobserve(elementTarget);
     } else {
       element.target.classList.add(SCROLL_ANIMATION_OFFSCREEN_CLASSNAME);
-      element.target.classList.remove(SCROLL_ANIMATION_FACET_CLASSNAME);
+      element.target.classList.remove(SCROLL_ANIMATION_CANCEL_CLASSNAME);
     }
   });
 }
