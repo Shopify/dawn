@@ -27,6 +27,11 @@
   }
 {%- endstyle -%}
 
+{% if section.settings.enable_infinite %}
+  <script src="{{ 'ajaxinate.min.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'main-collection.js' | asset_url }}" defer="defer"></script>
+{% endif %}
+
 <div class="section-{{ section.id }}-padding">
   {%- paginate collection.products by section.settings.products_per_page -%}
     {% comment %} Sort is the first tabbable element when filter type is vertical {% endcomment %}
@@ -175,9 +180,13 @@
               {%- endfor -%}
             </ul>
 
-            {%- if paginate.pages > 1 -%}
-              {% render 'pagination', paginate: paginate, anchor: '' %}
-            {%- endif -%}
+              {% if section.settings.enable_infinite %}
+                {% render 'pagination-infinite', paginate: paginate, anchor: '' %}
+              {% else %}
+              {%- if paginate.pages > 1 -%}
+                {% render 'pagination', paginate: paginate, anchor: '' %}
+              {%- endif -%}
+              {% endif %}
           </div>
         {%- endif -%}
       </div>
@@ -193,6 +202,12 @@
   "name": "t:sections.main-collection-product-grid.name",
   "class": "section",
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_infinite",
+      "label": "Enable Infinite Scroll",
+      "default": true
+    },
     {
       "type": "range",
       "id": "products_per_page",
