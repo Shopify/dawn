@@ -34,9 +34,29 @@ function initializeScrollAnimationTrigger(rootEl = document, isDesignModeEvent =
   animationTriggerElements.forEach((element) => observer.observe(element));
 }
 
-window.addEventListener('DOMContentLoaded', () => initializeScrollAnimationTrigger());
+window.addEventListener('DOMContentLoaded', () => {
+  initializeScrollAnimationTrigger();
+  initializeScrollZoomAnimationTrigger();
+});
 
 if (Shopify.designMode) {
   document.addEventListener('shopify:section:load', (event) => initializeScrollAnimationTrigger(event.target, true));
   document.addEventListener('shopify:section:reorder', () => initializeScrollAnimationTrigger(document, true));
+}
+
+function initializeScrollZoomAnimationTrigger() {
+  const animationTriggerElements = Array.from(document.getElementsByClassName('animate--zoom-in'));
+  if (animationTriggerElements.length === 0) return;
+
+  const observer = new IntersectionObserver(zoomInIntersection, {
+    threshold: [0, 0.25, 0.5, 0.75, 1],
+  });
+
+  animationTriggerElements.forEach((element) => observer.observe(element));
+}
+
+function zoomInIntersection(entries, observer) {
+  entries.forEach((entry) => {
+    console.log(entry.intersectionRatio);
+  });
 }
