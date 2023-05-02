@@ -22,7 +22,6 @@ function initializeScrollAnimationTrigger(rootEl = document, isDesignModeEvent =
   if (animationTriggerElements.length === 0) return;
 
   if (isDesignModeEvent) {
-    console.log(animationTriggerElements);
     animationTriggerElements.forEach((element) => {
       element.classList.add('scroll-trigger--design-mode');
     });
