@@ -1,6 +1,6 @@
 const SCROLL_ANIMATION_TRIGGER_CLASSNAME = 'scroll-trigger';
 const SCROLL_ANIMATION_OFFSCREEN_CLASSNAME = 'scroll-trigger--offscreen';
-const SCROLL_ANIMATION_FACET_CLASSNAME = 'scroll-trigger--facet-cancel';
+const SCROLL_ANIMATION_FACET_CLASSNAME = 'scroll-trigger--cancel';
 
 function onIntersection(elements, observer) {
   elements.forEach((element, index) => {
