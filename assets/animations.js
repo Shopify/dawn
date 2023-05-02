@@ -57,6 +57,8 @@ function initializeScrollZoomAnimationTrigger() {
 
 function zoomInIntersection(entries, observer) {
   entries.forEach((entry) => {
-    console.log(entry.intersectionRatio);
+    const ratioValue = entry.intersectionRatio.toFixed(2);
+    console.log(ratioValue);
+    entry.target.style.setProperty('--zoom-in-ratio', ratioValue);
   });
 }
