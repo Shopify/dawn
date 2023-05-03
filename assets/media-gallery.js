@@ -46,10 +46,10 @@ if (!customElements.get('media-gallery')) {
 
         this.preventStickyHeader();
         window.setTimeout(() => {
-          if (this.elements.thumbnails) {
+          if ((this.elements.thumbnails || this.dataset.enableStickyInfo === 'true') && this.mql.matches) {
             activeMedia.parentElement.scrollTo({ left: activeMedia.offsetLeft });
           }
-          if (!this.mql.matches || ((!this.elements.thumbnails || this.dataset.desktopLayout === 'stacked') && !this.dataset.hideVariantImages )) {
+          if ((!this.elements.thumbnails || this.dataset.desktopLayout === 'stacked') && this.dataset.enableStickyInfo === 'false' || !this.mql.matches) {
             activeMedia.scrollIntoView({ behavior: 'smooth' });
           }
         });
