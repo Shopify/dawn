@@ -862,9 +862,39 @@ class SlideshowComponent extends SliderComponent {
       this.currentPage === this.sliderItems.length
         ? 0
         : this.slider.scrollLeft + this.slider.querySelector('.slideshow__slide').clientWidth;
-    this.slider.scrollTo({
-      left: slideScrollPosition,
-    });
+    setTimeout(() => {
+      this.slider.scrollTo({
+        left: slideScrollPosition,
+      });
+    }, 200);
+
+    if (this.querySelector('.announcement-bar-slider')) {
+      this.querySelectorAll('.announcement-bar__message').forEach((slide) => {
+        if (slideScrollPosition !== 0) {
+          slide.classList.add(`announcement-bar-slider--fade-out-next`);
+          setTimeout(() => {
+            slide.classList.remove(`announcement-bar-slider--fade-out-next`);
+          }, 200);
+          setTimeout(() => {
+            slide.classList.add(`announcement-bar-slider--fade-in-next`);
+          }, 200);
+          setTimeout(() => {
+            slide.classList.remove(`announcement-bar-slider--fade-in-next`);
+          }, 400);
+        } else {
+          slide.classList.add(`announcement-bar-slider--fade-out-previous`);
+          setTimeout(() => {
+            slide.classList.remove(`announcement-bar-slider--fade-out-previous`);
+          }, 200);
+          setTimeout(() => {
+            slide.classList.add(`announcement-bar-slider--fade-in-previous`);
+          }, 200);
+          setTimeout(() => {
+            slide.classList.remove(`announcement-bar-slider--fade-in-previous`);
+          }, 400);
+        }
+      });
+    }
   }
 
   setSlideVisibility() {
