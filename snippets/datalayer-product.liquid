@@ -1,6 +1,6 @@
 <!-- Product detail view GTM dataLayer enhanced eCommerce event -->
 <script type="text/javascript" defer="defer">
-  console.log('adding productView to cart GTM datalayer')
+  console.log('adding new productView to cart GTM datalayer - datalayer-product.liquid')
   var product = {{ product | json }}
   var cart = {{ cart | json }}
 
@@ -9,19 +9,19 @@
         variant = product.variants[i]
         if (variant.public_title == document.querySelector(".selected-val").innerText){
           var chosen_title = variant.public_title
-          var chosen_sku = variant.sku
+          var chosen_sku = variant.id
           var chosen_name = variant.name
         }
       }
     } else {
           var chosen_title = product.variants[0].public_title
-          var chosen_sku = product.variants[0].sku
+          var chosen_sku = product.variants[0].id
           var chosen_name = product.variants[0].name
     }
       window.dataLayer = window.dataLayer || []
       window.dataLayer.push({ecommerce: null})
       window.dataLayer.push({
-          'event': 'viewProduct',
+          'event': 'view_product_new',
           'ecommerce': {
             'currencyCode': cart.currency,
             'detail': {
@@ -37,5 +37,47 @@
             }
           }
         })
+
 </script>
 
+<script type="text/javascript" defer="defer">
+  console.log('adding add to cart GTM datalayer - datalayer-product.liquid')
+  var product = {{ product | json }}
+  var cart = {{ cart | json }}
+
+  var addToCart = document.querySelector('button[name=add]')
+  var attach = function() {
+    addToCart.addEventListener("click", function(event) {
+      window.dataLayer = window.dataLayer || []
+      window.dataLayer.push({ecommerce: null})
+      window.dataLayer.push({
+        'event': 'add_to_cart_new',
+        'ecommerce': {
+            'currencyCode': cart.currency,
+            'add': {
+              'products': [{
+                'name': chosen_name,
+                'id': chosen_sku,
+                'price': product.price / 100,
+                'brand': product.vendor,
+                'category': product.type,
+                'variant': chosen_title,
+                'quantity': 1
+              }]
+          }
+        }
+      })
+    })
+  }
+
+  var tryAttaching = function() {
+    addToCart = document.querySelector('button[name=add]')
+    if(addToCart) {
+      attach()
+    } else {
+      setTimeout(tryAttaching, 1)
+    }
+  }
+
+  tryAttaching()
+</script>

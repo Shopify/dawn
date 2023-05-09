@@ -87,6 +87,37 @@ document.addEventListener("rebuy:cart.change", function (event) {
     setTimeout(() => RebuyExtensions.manageSmartCartRouting(), 0);
 });
 
+console.log("adding add to cart listener to rebuy")
+document.addEventListener("rebuy.add", function (event) {
+    console.log("adding to cart using rebuy")
+    console.log(event)
+  // Add to cart GTM dataLayer enhanced eCommerce event -->
+  var cart = {{ cart | json }}
+  //cart = cart.length > 0 ? JSON.parse(cart) : null
+  var clickHandler = function(element, product) {
+    window.dataLayer = window.dataLayer || []
+    window.dataLayer.push({ecommerce: null})
+    window.dataLayer.push({
+      'event': 'addToCart',
+      'ecommerce': {
+        'currencyCode': cart ? cart.currency : 'EUR',
+        'add': {
+          'products': [{
+            'name': product.title,
+            'id': product.id,
+            'price': product.selected_variant.price,
+            'brand': product.vendor,
+            'category': product.product_type,
+            'variant': product.selected_variant.title,
+            'quantity': product.quantity
+          }]
+        }
+      }
+    })
+  }
+});
+
+                                  
 document.addEventListener("rebuy.productsChange", function (event) {
     RebuyExtensions.enrichProductJSON(event.detail.products);
 });
