@@ -925,10 +925,45 @@
 
 
 <script>
-
+   var product = {{ product | json }}
+    var cart = {{ cart | json }}
     var radios = document.querySelectorAll('.product-form__input input[type=radio]');
     function changeHandler(event) {
       this.parentElement.querySelectorAll('.selected-val')[0].innerHTML = this.value;
+      if (product.variants.length > 1){
+        // DataLayer push
+      for (var i = 0; i< product.variants.length; i++){
+            variant = product.variants[i]
+            if (variant.public_title == document.querySelector(".selected-val").innerText){
+              var chosen_title = variant.public_title
+              var chosen_sku = variant.sku
+              var chosen_name = variant.name
+            }
+          }
+        } else {
+              var chosen_title = product.variants[0].public_title
+              var chosen_sku = product.variants[0].id
+              var chosen_name = product.variants[0].name
+        }
+        window.dataLayer = window.dataLayer || []
+        window.dataLayer.push({ecommerce: null})
+        window.dataLayer.push({
+            'event': 'view_product_new',
+            'ecommerce': {
+              'currencyCode': cart.currency,
+              'detail': {
+                'products': [{
+                  'name': chosen_name,
+                  'id': chosen_sku,
+                  'price': product.price / 100,
+                  'brand': product.vendor,
+                  'category': product.type,
+                  'variant': chosen_title,
+                  'quantity': 1
+                }]
+              }
+            }
+          })
     }
     Array.prototype.forEach.call(radios, function (radio) {
       radio.addEventListener('change', changeHandler);
