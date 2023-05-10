@@ -1,6 +1,8 @@
 const SCROLL_ANIMATION_TRIGGER_CLASSNAME = 'scroll-trigger';
 const SCROLL_ANIMATION_OFFSCREEN_CLASSNAME = 'scroll-trigger--offscreen';
+const SCROLL_ZOOM_IN_TRIGGER_CLASSNAME = 'animate--zoom-in';
 
+// Scroll in animation logic
 function onIntersection(elements, observer) {
   elements.forEach((element, index) => {
     if (element.isIntersecting) {
@@ -34,28 +36,18 @@ function initializeScrollAnimationTrigger(rootEl = document, isDesignModeEvent =
   animationTriggerElements.forEach((element) => observer.observe(element));
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  initializeScrollAnimationTrigger();
-  initializeScrollZoomAnimationTrigger();
-});
-
-if (Shopify.designMode) {
-  document.addEventListener('shopify:section:load', (event) => initializeScrollAnimationTrigger(event.target, true));
-  document.addEventListener('shopify:section:reorder', () => initializeScrollAnimationTrigger(document, true));
-}
-
+// Zoom in animation logic
 function initializeScrollZoomAnimationTrigger() {
-  const animationTriggerElements = Array.from(document.getElementsByClassName('animate--zoom-in'));
-  const scaleAmount = 0.5 / 100;
+  const animationTriggerElements = Array.from(document.getElementsByClassName(SCROLL_ZOOM_IN_TRIGGER_CLASSNAME));
+  const scaleAmount = 0.3 / 100;
   if (animationTriggerElements.length === 0) return;
 
   let scrollPositionY = 0;
 
   animationTriggerElements.forEach((element) => {
     let elementIsVisible = false;
-    const observer = new IntersectionObserver((elements, self) => {
+    const observer = new IntersectionObserver((elements) => {
       elements.forEach((entry) => {
-        console.log(entry);
         elementIsVisible = entry.isIntersecting;
       });
     });
@@ -64,10 +56,10 @@ function initializeScrollZoomAnimationTrigger() {
     element.style.setProperty('--zoom-in-ratio', 1 + scaleAmount * percentageSeen(element));
 
     window.addEventListener('scroll', () => {
-      if (elementIsVisible) {
-        scrollPositionY = window.scrollY;
-        element.style.setProperty('--zoom-in-ratio', 1 + scaleAmount * percentageSeen(element));
-      }
+      if (!elementIsVisible) return;
+
+      scrollPositionY = window.scrollY;
+      element.style.setProperty('--zoom-in-ratio', 1 + scaleAmount * percentageSeen(element));
     });
   });
 }
@@ -75,20 +67,31 @@ function initializeScrollZoomAnimationTrigger() {
 function percentageSeen(element) {
   const viewportHeight = window.innerHeight;
   const scrollY = window.scrollY;
-  const elementY = element.getBoundingClientRect().top + scrollY;
+  const elementPositionY = element.getBoundingClientRect().top + scrollY;
   const borderHeight =
     parseInt(getComputedStyle(element).getPropertyValue('border-top-width')) +
     parseInt(getComputedStyle(element).getPropertyValue('border-bottom-width'));
   const elementHeight = element.offsetHeight + borderHeight;
 
-  if (elementY > scrollY + viewportHeight) {
+  if (elementPositionY > scrollY + viewportHeight) {
     return 0;
-  } else if (elementY + elementHeight < scrollY) {
+  } else if (elementPositionY + elementHeight < scrollY) {
     return 100;
   } else {
-    const distance = scrollY + viewportHeight - elementY;
+    const distance = scrollY + viewportHeight - elementPositionY;
     let percentage = distance / ((viewportHeight + elementHeight) / 100);
     percentage = Math.round(percentage);
+    console.log(percentage);
     return percentage;
   }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  initializeScrollAnimationTrigger();
+  initializeScrollZoomAnimationTrigger();
+});
+
+if (Shopify.designMode) {
+  document.addEventListener('shopify:section:load', (event) => initializeScrollAnimationTrigger(event.target, true));
+  document.addEventListener('shopify:section:reorder', () => initializeScrollAnimationTrigger(document, true));
 }
