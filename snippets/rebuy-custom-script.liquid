@@ -82,9 +82,42 @@ RebuyExtensions.enrichProductJSON = function (products) {
         );
     }
 };
-function trackAddToCart(event){
-    console.log("adding to cart function using rebuy")
+
+
+document.addEventListener("rebuy:cart.change", function (event) {
+    setTimeout(() => RebuyExtensions.manageSmartCartRouting(), 0);
+});
+
+console.log("adding add to cart listener to rebuy")
+document.addEventListener("rebuy.add", function (event) {
+  console.log("adding to cart rebuy:add using rebuy")
     console.log(event)
+ var product = event.detail.item
+  // Add to cart GTM dataLayer enhanced eCommerce event -->
+    window.dataLayer = window.dataLayer || []
+    window.dataLayer.push({ecommerce: null})
+    window.dataLayer.push({
+      'event': 'add_to_cart_new',
+      'ecommerce': {
+        'currencyCode': event.detail.cart.getCurrency : 'EUR',
+        'add': {
+          'products': [{
+            'name': product.title,
+            'id': product.id,
+            'price': product.price / 100,
+            'brand': product.vendor,
+            'category': product.product_type,
+            'variant': product.variant_title,
+            'quantity': product.quantity
+          }]
+        }
+      }
+    })
+});
+document.addEventListener("rebuy:cart.add", function (event) {
+  console.log("adding to cart rebuy:card.add using rebuy")
+    console.log(event)
+var cart = {{ cart | json }}
  var product = event.detail.product
   // Add to cart GTM dataLayer enhanced eCommerce event -->
     window.dataLayer = window.dataLayer || []
@@ -106,17 +139,6 @@ function trackAddToCart(event){
         }
       }
     })
-  }
-document.addEventListener("rebuy:cart.change", function (event) {
-    setTimeout(() => RebuyExtensions.manageSmartCartRouting(), 0);
-});
-
-console.log("adding add to cart listener to rebuy")
-document.addEventListener("rebuy.add", function (event) {
-  trackAddToCart(event)
-});
-document.addEventListener("rebuy:cart.add", function (event) {
-  trackAddToCart(event)
 });
 
                                   
