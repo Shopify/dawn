@@ -81,7 +81,6 @@ function percentageSeen(element) {
     const distance = scrollY + viewportHeight - elementPositionY;
     let percentage = distance / ((viewportHeight + elementHeight) / 100);
     percentage = Math.round(percentage);
-    console.log(percentage);
     return percentage;
   }
 }
