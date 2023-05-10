@@ -464,10 +464,60 @@
 {% render 'gem-app-footer-scripts', GEM_FOOTER_SCRIPT: GEM_FOOTER_SCRIPT %}
 <!--End_Gem_Page_Footer_Script-->
 
-{% comment %} RUM tracking GA {% endcomment %}
-<script
-  src="//cdn.jsdelivr.net/npm/web-vitals-google-analytics-shopify/dist/web-vitals-google-analytics-shopify.min.js"
-  data-shopify-template="{{ template }}" defer></script>
-{% comment %} End RUM tracking GA {% endcomment %}
+{% comment %} RUMVision {% endcomment %}
+<script>
+  function setCookie(name,value,days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days*24*60*60*1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+  }
+  function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+  }
+  function eraseCookie(name) {   
+    document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+  }
+</script>
+
+<script>
+  function randomIntFromInterval(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min)
+  }
+  const random = randomIntFromInterval(1, 10);
+  const loadRUMCookie = getCookie("rvload");
+
+  console.log({random, loadRUMCookie})
+
+  if(loadRUMCookie === "1" || random === 1) {
+    if(!loadRUMCookie) setCookie("rvload", "1", 365);
+    window.rumv = window.rumv || function() { (window.rumv.q = window.rumv.q || []).push(arguments) };
+    (function(rum, vi,si,on, d) {
+      if ( !new RegExp([d].join('|')).test( on.hostname ) ) {
+        return;
+      }
+      var s = JSON.parse( sessionStorage.getItem('rumv') || '{"pageviews":0}' ); s.pageviews++;
+      if ( s.urls && s.regex && ( s.page = eval('('+s.regex+')')( s.urls, on.pathname ) ) && !s.page.type ) {
+        return sessionStorage.setItem('rumv', JSON.stringify( s ) );
+      }
+
+      vi.rumv.storage = s;
+      var head = si.querySelector('head'), js = si.createElement('script');
+      js.src = 'https://d5yoctgpv4cpx.cloudfront.net/RUM-'+rum+'/v3-'+on.hostname+'.js';
+      head.appendChild(js);
+    })( '33DED20F3E', window, document, location, 'loopearplugs.com' );
+  }
+</script>
+{% comment %} End RUMVision {% endcomment %}
 </body>
 </html>
