@@ -688,11 +688,17 @@ class SliderComponent extends HTMLElement {
       event.currentTarget.name === 'next'
         ? this.slider.scrollLeft + step * this.sliderItemOffset
         : this.slider.scrollLeft - step * this.sliderItemOffset;
-    setTimeout (() => {
+    if (this.querySelector('.announcement-bar-slider')) {
+      setTimeout (() => {
+        this.slider.scrollTo({
+          left: this.slideScrollPosition,
+        });
+      }, 200);
+    } else {
       this.slider.scrollTo({
         left: this.slideScrollPosition,
       });
-    }, 200);
+    }
   }
 }
 
@@ -811,11 +817,17 @@ class SlideshowComponent extends SliderComponent {
     } else if (isLastSlide && event.currentTarget.name === 'next') {
       this.slideScrollPosition = 0;
     }
-    setTimeout (() => {
+    if (this.querySelector('.announcement-bar-slider')) {
+      setTimeout (() => {
+        this.slider.scrollTo({
+          left: this.slideScrollPosition,
+        });
+      }, 200);
+    } else {
       this.slider.scrollTo({
         left: this.slideScrollPosition,
       });
-    }, 200);
+    }
   }
 
   update() {
