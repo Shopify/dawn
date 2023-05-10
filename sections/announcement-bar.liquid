@@ -1,59 +1,90 @@
-<div class="announcement-bar color-{{ section.settings.color_scheme }} gradient topbar-usp-list" aria-label="{{ 'sections.header.announcement' | t }}" {{ block.shopify_attributes }}>
+<div
+  class="announcement-bar color-{{ section.settings.color_scheme }} gradient topbar-usp-list"
+  aria-label="{{ 'sections.header.announcement' | t }}"
+  {{ block.shopify_attributes }}>
   {%- for block in section.blocks -%}
     {%- case block.type -%}
       {%- when 'announcement' -%}
         {%- if block.settings.text != blank -%}
           {%- if block.settings.link != blank -%}
             <a href="{{ block.settings.link }}" class="announcement-bar__link link link--text focus-inset animate-arrow topbar-usp-item">
-          {%- endif -%}
-              
-              <p class="announcement-bar__message h5 {% if block.settings.link == blank %}topbar-usp-item{% endif %}">
-                {{ block.settings.text | escape }}
-                {%- if block.settings.link != blank -%}
-                  {% render 'icon-arrow' %}
-                {%- endif -%}
-              </p>
-              
-          {%- if block.settings.link != blank -%}
+            {%- endif -%}
+            <p class="announcement-bar__message h5 {% if block.settings.link == blank %}topbar-usp-item{% endif %}">
+              {{ block.settings.text | escape }}
+              {%- if block.settings.link != blank -%}
+                {% render 'icon-arrow' %}
+              {%- endif -%}
+            </p>
+            {%- if block.settings.link != blank -%}
             </a>
-          {%- endif -%} 
+          {%- endif -%}
         {%- endif -%}
-      {% when 'countdown' %}
-        {% if block.settings.year != blank and block.settings.month != blank and block.settings.day != blank %}
-          <p class="announcement-bar__message h5 topbar-usp-item">
-            {{ block.settings.text }}
-            <span class="countdown"></span>
-          </p>
 
-          <script>
-            // Set the date we're counting down to
-            var countDownDate = new Date({{block.settings.year}}, {{block.settings.month}}, {{block.settings.day}}).getTime();
-            // Update the count down every 1 second
-            var x = setInterval(function() {
-            
-              // Get today's date and time
-              var now = new Date().getTime();
-            
-              // Find the distance between now and the count down date
-              var distance = countDownDate - now;
-            
-              // Time calculations for days, hours, minutes and seconds
-              var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-              var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-              var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-              var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-              // Display the result in the element with id="demo"
-              document.querySelector(".announcement-bar .countdown").innerHTML = hours + "h "
-              + minutes + "m " + seconds + "s ";
-            
-              // If the count down is finished, write some text
-              if (distance < 0) {
-                clearInterval(x);
+      {% when 'freeshipping' %}
+        {% if block.settings.text != blank %}
+          {%- assign default_currency = shop.metaobjects.shipping_thresholds[ shop.currency ].currency -%}
+          {%- assign default_threshold = shop.metaobjects.shipping_thresholds[ shop.currency ].threshold_price | round -%}
+          <script type="application/json" id="shipping-thresholds">
+            {
+              "default": {
+                "currency": "{{ default_currency }}",
+                "threshold": "{{ default_threshold }}"
               }
-            }, 1000);
+              {%- for metaobject in shop.metaobjects.shipping_thresholds.values -%}
+                {%if forloop.first%},{%endif%}
+                "{{ metaobject.currency }}": {
+                  "currency": "{{ metaobject.currency }}",
+                  "threshold": "{{ metaobject.threshold_price }}"
+                }{% unless forloop.last %},{% endunless %}
+              {%- endfor -%}
+            }
           </script>
+
+          <p class="announcement-bar__message h5 js-freeshipping-text">
+          {%- if block.settings.text_position == 'right' -%}
+            <span class="js-freeshipping-threshold">{{ default_threshold }}</span> <span class="js-freeshipping-currency">{{ default_currency }}</span> {{ block.settings.text }}
+          {%- else -%}
+            {{ block.settings.text }} <span class="js-freeshipping-threshold">{{ default_threshold }}</span> <span class="js-freeshipping-currency">{{ default_currency }}</span>
+          {%- endif -%}
+          </p>
         {% endif %}
+
+      {% when 'countdown' %}
+      {% if block.settings.year != blank and block.settings.month != blank and block.settings.day != blank %}
+        <p class="announcement-bar__message h5 topbar-usp-item">
+          {{ block.settings.text }}
+          <span class="countdown"></span>
+        </p>
+
+        <script>
+          // Set the date we're counting down to
+          var countDownDate = new Date({{ block.settings.year }}, {{ block.settings.month }}, {{ block.settings.day }}).getTime();
+
+// Update the count down every 1 second
+          var x = setInterval(function() {
+
+// Get today's date and time
+            var now = new Date().getTime();
+
+// Find the distance between now and the count down date
+            var distance = countDownDate - now;
+
+// Time calculations for days, hours, minutes and seconds
+            var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+// Display the result in the element with id="demo"
+            document.querySelector(".announcement-bar .countdown").innerHTML = hours + "h " + minutes + "m " + seconds + "s ";
+
+// If the count down is finished, write some text
+            if (distance < 0) {
+              clearInterval(x);
+            }
+          }, 1000);
+        </script>
+      {% endif %}
     {%- endcase -%}
   {%- endfor -%}
 </div>
@@ -68,39 +99,42 @@
   <script>
     var lastScrollTop = 0;
 
-    window.addEventListener("scroll", function(){
+    window.addEventListener("scroll", function() {
       var st = window.pageYOffset || document.documentElement.scrollTop;
       var announcementBar = document.querySelector("#shopify-section-announcement-bar");
       var header = document.querySelector("sticky-header.header-wrapper");
 
-      if (st < lastScrollTop){
-        if(announcementBar && header) {
+      if (st < lastScrollTop) {
+        if (announcementBar && header) {
           var headerHeight = header.offsetHeight;
           announcementBar.style.top = `${headerHeight}px`;
         }
       } else {
         announcementBar.style.top = 0;
-      }
-      lastScrollTop = st <= 0 ? 0 : st;
+      } lastScrollTop = st <= 0
+        ? 0
+        : st;
     }, false);
   </script>
 {% endif %}
 
 <style>
   .topbar-usp-list {
-  width: 100%;
-  padding: 0;
-  margin: 0;
-  list-style: none;
-  position: relative;
-  overflow: hidden; }
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    position: relative;
+    overflow: hidden;
+  }
 
-.topbar-usp-item {
-  width: 100%;
-  text-align: center;
-  transition: .4s ease-out;
-  display: block; }
-  
+  .topbar-usp-item {
+    width: 100%;
+    text-align: center;
+    transition: 0.4s ease-out;
+    display: block;
+  }
+
 
   @media screen and (min-width: 750px) {
     .topbar-usp-list {}
@@ -108,8 +142,8 @@
   .announcement-bar__message {
     padding: 7px 2rem;
   }
-  
-  @media screen and (max-width: 749px) {  
+
+  @media screen and (max-width: 749px) {
     .announcement-bar__message {
       padding: 14.5px 2rem;
     }
@@ -117,103 +151,124 @@
 </style>
 
 {% schema %}
-{
-  "name": "t:sections.announcement-bar.name",
-  "max_blocks": 12,
-  "settings": [
-    {
-      "type": "checkbox",
-      "id": "sticky",
-      "label": "Sticky announcement bar",
-      "default": false
-    },
-    {
-      "type": "select",
-      "id": "color_scheme",
-      "options": [
-        {
-          "value": "accent-1",
-          "label": "t:sections.all.colors.accent_1.label"
-        },
-        {
-          "value": "accent-2",
-          "label": "t:sections.all.colors.accent_2.label"
-        },
-        {
-          "value": "background-1",
-          "label": "t:sections.all.colors.background_1.label"
-        },
-        {
-          "value": "background-2",
-          "label": "t:sections.all.colors.background_2.label"
-        },
-        {
-          "value": "inverse",
-          "label": "t:sections.all.colors.inverse.label"
-        },
-        {
-          "value": "green",
-          "label": "Green"
-        }
-      ],
-      "default": "accent-1",
-      "label": "t:sections.all.colors.label"
-    }
-  ],
-  "blocks": [
-    {
-      "type": "announcement",
-      "name": "t:sections.announcement-bar.blocks.announcement.name",
-      "settings": [
-        {
-          "type": "text",
-          "id": "text",
-          "default": "Welcome to our store",
-          "label": "t:sections.announcement-bar.blocks.announcement.settings.text.label"
-        },
-        {
-          "type": "url",
-          "id": "link",
-          "label": "t:sections.announcement-bar.blocks.announcement.settings.link.label"
-        }
-      ]
-    },
-    {
-      "type": "countdown",
-      "name": "Countdown Timer",
-      "settings": [
-        {
-          "type": "text",
-          "id": "text",
-          "label": "Text"
-        },
-        {
-          "type": "text",
-          "id": "year",
-          "label": "Year",
-          "info": "Format YYYY."
-        },
-        {
-          "type": "text",
-          "id": "month",
-          "label": "Month",
-          "info": "Format MM."
-        },
-        {
-          "type": "text",
-          "id": "day",
-          "label": "Day",
-          "info": "Format DD."
-        }
-      ]
-    }
-  ],
-  "default": {
+  {
+    "name": "t:sections.announcement-bar.name",
+    "max_blocks": 12,
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "sticky",
+        "label": "Sticky announcement bar",
+        "default": false
+      }, {
+        "type": "select",
+        "id": "color_scheme",
+        "options": [
+          {
+            "value": "accent-1",
+            "label": "t:sections.all.colors.accent_1.label"
+          },
+          {
+            "value": "accent-2",
+            "label": "t:sections.all.colors.accent_2.label"
+          },
+          {
+            "value": "background-1",
+            "label": "t:sections.all.colors.background_1.label"
+          },
+          {
+            "value": "background-2",
+            "label": "t:sections.all.colors.background_2.label"
+          }, {
+            "value": "inverse",
+            "label": "t:sections.all.colors.inverse.label"
+          }, {
+            "value": "green",
+            "label": "Green"
+          }
+        ],
+        "default": "accent-1",
+        "label": "t:sections.all.colors.label"
+      }
+    ],
     "blocks": [
       {
-        "type": "announcement"
+        "type": "announcement",
+        "name": "t:sections.announcement-bar.blocks.announcement.name",
+        "settings": [
+          {
+            "type": "text",
+            "id": "text",
+            "default": "Welcome to our store",
+            "label": "t:sections.announcement-bar.blocks.announcement.settings.text.label"
+          }, {
+            "type": "url",
+            "id": "link",
+            "label": "t:sections.announcement-bar.blocks.announcement.settings.link.label"
+          }
+        ]
+      },
+      {
+        "type": "freeshipping",
+        "name": "Free Shipping",
+        "settings": [
+          {
+            "type": "text",
+            "id": "text",
+            "label": "Text",
+            "default": "Free shipping"
+          },
+          {
+            "type": "select",
+            "id": "text_position",
+            "label": "Text position",
+            "options": [
+              {
+                "value": "left",
+                "label": "Left"
+              },
+              {
+                "value": "right",
+                "label": "Right"
+              }
+            ],
+            "default": "left"
+          }
+        ]
+      },
+      {
+        "type": "countdown",
+        "name": "Countdown Timer",
+        "settings": [
+          {
+            "type": "text",
+            "id": "text",
+            "label": "Text"
+          }, {
+            "type": "text",
+            "id": "year",
+            "label": "Year",
+            "info": "Format YYYY."
+          }, {
+            "type": "text",
+            "id": "month",
+            "label": "Month",
+            "info": "Format MM."
+          }, {
+            "type": "text",
+            "id": "day",
+            "label": "Day",
+            "info": "Format DD."
+          }
+        ]
       }
-    ]
+    ],
+    "default": {
+      "blocks": [
+        {
+          "type": "announcement"
+        }
+      ]
+    }
   }
-}
 {% endschema %}
