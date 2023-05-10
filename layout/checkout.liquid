@@ -166,4 +166,90 @@
   	$('.total-line__price .order-summary__small-text').text('Free');
   }
 
+  
+  var checkout = {
+    currency: {{ checkout.currency | json }},
+    line_items,
+    order_name: {{ checkout.order_name | json }},
+    total_price: {{ checkout.total_price}},
+    tax_price: {{ checkout.tax_price}},
+    shipping_price: {{ checkout.shipping_price}}
+  }
+
+console.log("adding datalayer checkout")
+  function trackStep() {
+    var step = null
+    switch(Shopify.Checkout.step) {
+      case "contact_information":
+        step = 1
+        break;
+      case "shipping_method":
+        step = 2
+        break;
+      case "payment_method":
+        step = 3
+        break;
+      case "processing":
+        step = 4
+        break;
+    }
+    var isPurchase = Shopify.Checkout.page === "thank_you"
+    window.dataLayer = window.dataLayer || []
+    window.dataLayer.push({ecommerce: null})
+    if(!isPurchase) {
+      window.dataLayer.push({
+        'event': 'checkout',
+        'ecommerce': {
+          'currencyCode': checkout.currency,
+          'checkout': {
+            'actionField': { 'step': step },
+            'products': checkout.line_items.map(li => {
+              var product = li.product
+              return {
+                'name': li.title,
+                'id': li.sku,
+                'price': li.price / 100,
+                'brand': product.vendor,
+                'category': product.type,
+                'variant': li.variant_title,
+                'quantity': li.quantity
+              }
+            })
+          }
+        }
+      })
+    } else {
+      window.dataLayer.push({
+        'event': 'purchase_new',
+        'ecommerce': {
+          'currencyCode': checkout.currency,
+          'purchase': {
+            'actionField': {
+              'id': checkout.order_name,
+              'affiliation': 'Online Store',
+              'revenue': +checkout.total_price /100,
+              'tax': +checkout.tax_price /100,
+              'shipping': +checkout.shipping_price /100,
+            },
+            'products': checkout.line_items.map(li => {
+              var product = li.product
+              return {
+                'name': li.title,
+                'id': li.sku,
+                'price': li.price / 100,
+                'brand': product.vendor,
+                'category': product.type,
+                'variant': li.variant_title,
+                'quantity': li.quantity
+              }
+            })
+          }
+        }
+      })
+    }
+  }
+
+  (function($, trackStep) {
+    $(document).on("page:load", trackStep)
+  })(Checkout.$, trackStep);
 
