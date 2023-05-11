@@ -1,6 +1,7 @@
 const SCROLL_ANIMATION_TRIGGER_CLASSNAME = 'scroll-trigger';
 const SCROLL_ANIMATION_OFFSCREEN_CLASSNAME = 'scroll-trigger--offscreen';
 const SCROLL_ZOOM_IN_TRIGGER_CLASSNAME = 'animate--zoom-in';
+const SCROLL_ANIMATION_CANCEL_CLASSNAME = 'scroll-trigger--cancel';
 
 // Scroll in animation logic
 function onIntersection(elements, observer) {
@@ -15,6 +16,7 @@ function onIntersection(elements, observer) {
       observer.unobserve(elementTarget);
     } else {
       element.target.classList.add(SCROLL_ANIMATION_OFFSCREEN_CLASSNAME);
+      element.target.classList.remove(SCROLL_ANIMATION_CANCEL_CLASSNAME);
     }
   });
 }
