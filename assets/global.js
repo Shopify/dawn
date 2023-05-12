@@ -721,6 +721,8 @@ class SlideshowComponent extends SliderComponent {
     this.setSlideVisibility();
 
     if (this.querySelector('.announcement-bar-slider')) {
+      this.currentSlide = 1;
+      this.allAnnouncements = Array.from(this.querySelectorAll('.announcement-bar__message'));
       this.announcementBarArrowButtonWasClicked = false;
 
       this.desktopLayout = window.matchMedia('(min-width: 750px)');
@@ -736,49 +738,14 @@ class SlideshowComponent extends SliderComponent {
         button.addEventListener('click', () => {
           this.announcementBarArrowButtonWasClicked = true;
         }, {once: true});
-      });
 
-      [this.prevButton, this.nextButton].forEach((button) => {
         button.addEventListener('click', () => {
-          if (this.slideScrollPosition !== 0) {
-            this.querySelectorAll('.announcement-bar__message').forEach((slide) => {
-                slide.classList.add(`announcement-bar-slider--fade-out-${button.name}`);
-                setTimeout(() => {
-                  slide.classList.remove(`announcement-bar-slider--fade-out-${button.name}`);
-                }, 200);
-                setTimeout(() => {
-                  slide.classList.add(`announcement-bar-slider--fade-in-${button.name}`);
-                }, 200);
-                setTimeout(() => {
-                  slide.classList.remove(`announcement-bar-slider--fade-in-${button.name}`);
-                }, 400);
-            });
-          } else if (this.slideScrollPosition === 0 && button.name === 'next') {
-            this.querySelectorAll('.announcement-bar__message').forEach((slide) => {
-              slide.classList.add(`announcement-bar-slider--fade-out-previous`);
-              setTimeout(() => {
-                slide.classList.remove(`announcement-bar-slider--fade-out-previous`);
-              }, 200);
-              setTimeout(() => {
-                slide.classList.add(`announcement-bar-slider--fade-in-previous`);
-              }, 200);
-              setTimeout(() => {
-                slide.classList.remove(`announcement-bar-slider--fade-in-previous`);
-              }, 400);
-            });
+          if (button.name === 'next') {
+            this.applyAnimation(button.name);
+            this.currentSlide = this.currentSlide === this.allAnnouncements.length ? 1 : this.currentSlide + 1;
           } else {
-            this.querySelectorAll('.announcement-bar__message').forEach((slide) => {
-              slide.classList.add(`announcement-bar-slider--fade-out-next`);
-              setTimeout(() => {
-                slide.classList.remove(`announcement-bar-slider--fade-out-next`);
-              }, 200);
-              setTimeout(() => {
-                slide.classList.add(`announcement-bar-slider--fade-in-next`);
-              }, 200);
-              setTimeout(() => {
-                slide.classList.remove(`announcement-bar-slider--fade-in-next`);
-              }, 400);
-            });
+            this.applyAnimation(button.name);
+            this.currentSlide = this.currentSlide === 1 ? this.allAnnouncements.length : this.currentSlide - 1;
           }
         });
       });
@@ -910,32 +877,8 @@ class SlideshowComponent extends SliderComponent {
             left: slideScrollPosition,
           });
         }, 200);
-
-        this.querySelectorAll('.announcement-bar__message').forEach((slide) => {
-          if (slideScrollPosition !== 0) {
-            slide.classList.add(`announcement-bar-slider--fade-out-next`);
-            setTimeout(() => {
-              slide.classList.remove(`announcement-bar-slider--fade-out-next`);
-            }, 200);
-            setTimeout(() => {
-              slide.classList.add(`announcement-bar-slider--fade-in-next`);
-            }, 200);
-            setTimeout(() => {
-              slide.classList.remove(`announcement-bar-slider--fade-in-next`);
-            }, 400);
-          } else {
-            slide.classList.add(`announcement-bar-slider--fade-out-previous`);
-            setTimeout(() => {
-              slide.classList.remove(`announcement-bar-slider--fade-out-previous`);
-            }, 200);
-            setTimeout(() => {
-              slide.classList.add(`announcement-bar-slider--fade-in-previous`);
-            }, 200);
-            setTimeout(() => {
-              slide.classList.remove(`announcement-bar-slider--fade-in-previous`);
-            }, 400);
-          }
-        });
+        this.currentSlide = this.currentSlide === this.allAnnouncements.length ? 1 : this.currentSlide + 1;
+        this.applyAnimation();
       });
     } else {
       this.slider.scrollTo({
@@ -962,6 +905,47 @@ class SlideshowComponent extends SliderComponent {
         item.setAttribute('aria-hidden', 'true');
         item.setAttribute('tabindex', '-1');
       }
+    });
+  }
+
+  applyAnimation(button = 'next') {
+    requestAnimationFrame(() => {
+      this.querySelectorAll('.announcement-bar__message').forEach((slide) => {
+        if (this.currentSlide === this.allAnnouncements.length && button === 'previous') {
+          slide.classList.add(`announcement-bar-slider--fade-out-next`);
+          setTimeout(() => {
+            slide.classList.remove(`announcement-bar-slider--fade-out-next`);
+          }, 200);
+          setTimeout(() => {
+            slide.classList.add(`announcement-bar-slider--fade-in-next`);
+          }, 200);
+          setTimeout(() => {
+            slide.classList.remove(`announcement-bar-slider--fade-in-next`);
+          }, 400);
+        } else if (this.currentSlide === 1 && button === 'next') {
+            slide.classList.add(`announcement-bar-slider--fade-out-previous`);
+            setTimeout(() => {
+              slide.classList.remove(`announcement-bar-slider--fade-out-previous`);
+            }, 200);
+            setTimeout(() => {
+              slide.classList.add(`announcement-bar-slider--fade-in-previous`);
+            }, 200);
+            setTimeout(() => {
+              slide.classList.remove(`announcement-bar-slider--fade-in-previous`);
+            }, 400);
+        } else {
+            slide.classList.add(`announcement-bar-slider--fade-out-${button}`);
+            setTimeout(() => {
+              slide.classList.remove(`announcement-bar-slider--fade-out-${button}`);
+            }, 200);
+            setTimeout(() => {
+              slide.classList.add(`announcement-bar-slider--fade-in-${button}`);
+            }, 200);
+            setTimeout(() => {
+              slide.classList.remove(`announcement-bar-slider--fade-in-${button}`);
+            }, 400);
+        }
+      });
     });
   }
 
