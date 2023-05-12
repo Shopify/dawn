@@ -11,7 +11,7 @@ if (!customElements.get('recipient-form')) {
       this.messageInput = this.querySelector(`#Recipient-message-${ this.dataset.sectionId }`);
       this.sendonInput = this.querySelector(`#Recipient-send-on-${ this.dataset.sectionId }`);
       this.offsetProperty = this.querySelector(`#Recipient-timezone-offset-${ this.dataset.sectionId }`);
-      if (this.offsetProperty) this.offsetProperty.value = new Date().getTimezoneOffset();
+      if (this.offsetProperty) this.offsetProperty.value = new Date().getTimezoneOffset().toString();
 
       this.errorMessageWrapper = this.querySelector('.product-form__recipient-error-message-wrapper');
       this.errorMessageList = this.errorMessageWrapper?.querySelector('ul');
