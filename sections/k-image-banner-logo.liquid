@@ -1,0 +1,407 @@
+{{ 'section-image-banner.css' | asset_url | stylesheet_tag }}
+
+{%- if section.settings.image_height == 'adapt' and section.settings.video != blank or section.settings.image != blank -%}
+  {%- style -%}
+    @media screen and (max-width: 749px) {
+      #Banner-{{ section.id }}::before,
+      #Banner-{{ section.id }} .banner__media::before,
+      #Banner-{{ section.id }}:not(.banner--mobile-bottom) .banner__content::before {
+        {% if section.settings.video != blank %}
+            padding-bottom: {{ 1 | divided_by: section.settings.video.preview_image.aspect_ratio | times: 100 }}%;
+        {% else %}
+            padding-bottom: {{ 1 | divided_by: section.settings.image.aspect_ratio | times: 100 }}%;
+        {% endif %}
+        content: '';
+        display: block;
+      }
+    }
+    @media screen and (min-width: 750px) {
+        #Banner-{{ section.id }}::before,
+        #Banner-{{ section.id }} .banner__media::before {
+            {% if section.settings.video != blank %}
+                padding-bottom: {{ 1 | divided_by: section.settings.video.preview_image.aspect_ratio | times: 100 }}%;
+            {% else %}
+                padding-bottom: {{ 1 | divided_by: section.settings.image.aspect_ratio | times: 100 }}%;
+            {% endif %}
+            content: '';
+            display: block;
+        }
+    }
+  {%- endstyle -%}
+{%- endif -%}
+
+{%- style -%}
+    #shopify-section-{{ section.id }} .page-width {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .media-logo.media-logo-2 {
+        max-width: 60%;
+        margin-left: auto;
+        margin-top: 0;
+        margin-right: 2rem;
+    }
+
+    #Banner-{{ section.id }}::after {
+        opacity: {{ section.settings.image_overlay_opacity | divided_by: 100.0 }};
+    }
+
+    @media screen and (min-width: 750px) {
+        #shopify-section-{{ section.id }} .banner__box {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            max-width: 56rem;
+            min-width: unset;
+            width: 50%;
+        }
+    }
+    @media (max-width: 749px) {
+        #shopify-section-{{ section.id }} .banner__content {
+            min-height: 85vh !important;
+        }
+    }
+{%- endstyle -%}
+
+{%- liquid
+  if section.settings.image_behavior == 'ambient'
+    assign half_width = '60vw'
+    assign full_width = '120vw'
+    assign stacked_sizes = '(min-width: 750px) 60vw, 120vw'
+    assign widths = '450, 660, 900, 1320, 1800, 2136, 2400, 3600, 7680'
+  else
+    assign half_width = '50vw'
+    assign full_width = '100vw'
+    assign stacked_sizes = '(min-width: 750px) 50vw, 100vw'
+    assign widths = '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840'
+  endif
+-%}
+
+<div
+  id="Banner-{{ section.id }}"
+  class="banner banner--content-align-{{ section.settings.desktop_content_alignment }} banner--content-align-mobile-{{ section.settings.mobile_content_alignment }} banner--{{ section.settings.image_height }} {% if section.settings.image_height == 'adapt' and section.settings.image != blank %} banner--adapt{% endif %}banner--desktop-transparent{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+>
+  {%- if section.settings.image != blank or section.settings.video != blank -%}
+    <div class="banner__media media{% if section.settings.image == blank and section.settings.video == blank %} placeholder{% endif %}{% if section.settings.image_behavior != 'none' %} animate--{{ section.settings.image_behavior }}{% endif %}
+    {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}
+    bg-mobile-pos-{{ section.settings.bg_alignment_mobile }}">
+
+    {% if section.settings.video != blank %}
+        {{ section.settings.video
+            | video_tag:
+                image_size: "1920x",
+                loop: true,
+                controls: false,
+                muted: true,
+                autoplay: true,
+                playsinline: 'playsinline'
+            }}
+    {% endif %}
+  
+    {% unless section.settings.video != blank %}
+      {%- liquid
+        assign image_height = section.settings.image.width | divided_by: section.settings.image.aspect_ratio
+          assign sizes = full_width
+      -%}
+      {{
+        section.settings.image
+        | image_url: width: 3840
+        | image_tag:
+          loading: 'lazy',
+          width: section.settings.image.width,
+          height: image_height,
+          class: image_class,
+          sizes: sizes,
+          widths: widths
+      }}
+    {% endunless %}
+    </div>
+  {%- endif -%}
+  {% if section.settings.image_logo1 != blank or section.settings.image_logo2 != blank %}
+    {%- liquid
+        assign number_of_columns = 1
+        assign number_of_columns_mobile = 1
+        assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+        assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+        assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+        assign image_width = 1
+    -%}
+    
+    {% capture sizes %}
+    (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+    (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+    (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+    calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+    {% endcapture %}
+
+    <div class="banner__content banner__content--{{ section.settings.desktop_content_position }} page-width{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+        <div class="banner__box content-container content-container--full-width-mobile ">
+            {% if section.settings.image_logo1 != blank %}
+                <div class="media-logo media-logo-1">
+                    <div
+                        class="media media--transparent media--adapt"
+                        style="padding-bottom: {{ 1 | divided_by: section.settings.image_logo1.aspect_ratio | times: 100 }}%;"
+                    >
+                        {{
+                        section.settings.image_logo1
+                        | image_url: width: 3200
+                        | image_tag:
+                            loading: 'lazy',
+                            widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                            sizes: sizes
+                        }}
+                    </div>
+                </div>
+            {% endif %}
+            {% if section.settings.image_logo2 != blank %}
+                <div class="media-logo media-logo-2">
+                    <div
+                        class="media media--transparent media--adapt"
+                        style="padding-bottom: {{ 1 | divided_by: section.settings.image_logo2.aspect_ratio | times: 100 }}%;"
+                    >
+                        {{
+                        section.settings.image_logo2
+                        | image_url: width: 3200
+                        | image_tag:
+                            loading: 'lazy',
+                            widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                            sizes: sizes
+                        }}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% schema %}
+{
+  "name": "K Image Banner w Logo",
+  "tag": "section",
+  "class": "section banner-w-logo",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+        "type": "image_picker",
+        "id": "image",
+        "label": "t:sections.image-banner.settings.image.label"
+    },
+    {
+        "type": "video",
+        "id": "video",
+        "label": "Video background",
+        "info": "Image assigned will be disregarded"
+    },
+    {
+        "type": "image_picker",
+        "id": "image_logo1",
+        "label": "Image Logo 1"
+    },
+    {
+        "type": "image_picker",
+        "id": "image_logo2",
+        "label": "Image Logo 2"
+    },
+    {
+      "type": "range",
+      "id": "image_overlay_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 10,
+      "unit": "%",
+      "label": "t:sections.image-banner.settings.image_overlay_opacity.label",
+      "default": 0
+    },
+    {
+      "type": "select",
+      "id": "image_height",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "t:sections.image-banner.settings.image_height.options__1.label"
+        },
+        {
+          "value": "small",
+          "label": "t:sections.image-banner.settings.image_height.options__2.label"
+        },
+        {
+          "value": "medium",
+          "label": "t:sections.image-banner.settings.image_height.options__3.label"
+        },
+        {
+          "value": "large",
+          "label": "t:sections.image-banner.settings.image_height.options__4.label"
+        }
+      ],
+      "default": "medium",
+      "label": "t:sections.image-banner.settings.image_height.label",
+      "info": "t:sections.image-banner.settings.image_height.info"
+    },
+    {
+      "type": "select",
+      "id": "desktop_content_position",
+      "options": [
+        {
+          "value": "top-left",
+          "label": "t:sections.image-banner.settings.desktop_content_position.options__1.label"
+        },
+        {
+          "value": "top-center",
+          "label": "t:sections.image-banner.settings.desktop_content_position.options__2.label"
+        },
+        {
+          "value": "top-right",
+          "label": "t:sections.image-banner.settings.desktop_content_position.options__3.label"
+        },
+        {
+          "value": "middle-left",
+          "label": "t:sections.image-banner.settings.desktop_content_position.options__4.label"
+        },
+        {
+          "value": "middle-center",
+          "label": "t:sections.image-banner.settings.desktop_content_position.options__5.label"
+        },
+        {
+          "value": "middle-right",
+          "label": "t:sections.image-banner.settings.desktop_content_position.options__6.label"
+        },
+        {
+          "value": "bottom-left",
+          "label": "t:sections.image-banner.settings.desktop_content_position.options__7.label"
+        },
+        {
+          "value": "bottom-center",
+          "label": "t:sections.image-banner.settings.desktop_content_position.options__8.label"
+        },
+        {
+          "value": "bottom-right",
+          "label": "t:sections.image-banner.settings.desktop_content_position.options__9.label"
+        }
+      ],
+      "default": "middle-center",
+      "label": "t:sections.image-banner.settings.desktop_content_position.label"
+    },
+    {
+      "type": "select",
+      "id": "desktop_content_alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.image-banner.settings.desktop_content_alignment.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.image-banner.settings.desktop_content_alignment.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.image-banner.settings.desktop_content_alignment.options__3.label"
+        }
+      ],
+      "default": "center",
+      "label": "t:sections.image-banner.settings.desktop_content_alignment.label"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.all.colors.accent_1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.all.colors.accent_2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.all.colors.background_1.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.all.colors.background_2.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.all.colors.inverse.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.all.colors.label",
+      "info": "t:sections.image-banner.settings.color_scheme.info"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.animation.content"
+    },
+    {
+      "type": "select",
+      "id": "image_behavior",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:sections.all.animation.image_behavior.options__1.label"
+        },
+        {
+          "value": "ambient",
+          "label": "t:sections.all.animation.image_behavior.options__2.label"
+        }
+      ],
+      "default": "none",
+      "label": "t:sections.all.animation.image_behavior.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.image-banner.settings.mobile.content"
+    },
+    {
+      "type": "select",
+      "id": "mobile_content_alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.image-banner.settings.mobile_content_alignment.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.image-banner.settings.mobile_content_alignment.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.image-banner.settings.mobile_content_alignment.options__3.label"
+        }
+      ],
+      "default": "center",
+      "label": "t:sections.image-banner.settings.mobile_content_alignment.label"
+    },
+    {
+        "type": "select",
+        "id": "bg_alignment_mobile",
+        "options": [
+          {
+            "value": "left",
+            "label": "t:sections.slideshow.blocks.slide.settings.text_alignment_mobile.options__1.label"
+          },
+          {
+            "value": "center",
+            "label": "t:sections.slideshow.blocks.slide.settings.text_alignment_mobile.options__2.label"
+          },
+          {
+            "value": "right",
+            "label": "t:sections.slideshow.blocks.slide.settings.text_alignment_mobile.options__3.label"
+          }
+        ],
+        "default": "center",
+        "label": "Background alignment mobile"
+    }
+  ],
+  "presets": [
+    {
+      "name": "K Image Banner w Logo"
+    }
+  ]
+}
+{% endschema %}
