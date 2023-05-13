@@ -30,12 +30,55 @@
 <noscript>{{ 'component-cart-notification.css' | asset_url | stylesheet_tag }}</noscript>
 <noscript>{{ 'component-cart-items.css' | asset_url | stylesheet_tag }}</noscript>
 
+{% if section.settings.enable_transparent_header_home and request.page_type == 'index' %}
+  {%- assign transparent_header = true -%}
+{%- endif -%}
+
 <style>
   header-drawer {
     justify-self: start;
     margin-left: -1.2rem;
   }
 
+  {% if transparent_header %}
+    .section-header:not(.scrolled-past-header) .header-wrapper:not(:focus-within) .h2,
+    .section-header:not(.scrolled-past-header) .header-wrapper:not(:focus-within) .header__icon,
+    .section-header:not(.scrolled-past-header) .header-wrapper:not(:focus-within) .header__menu-item,
+    .section-header:not(.scrolled-past-header) .header-wrapper:not(:focus-within) .header__active-menu-item,
+    .section-header:not(.scrolled-past-header) .header-wrapper:not(:focus-within) .header__heading-link,
+    .section-header:not(.scrolled-past-header) .header-wrapper:not(:focus-within) .localization-selector.link {
+      color: {{ section.settings.transparent_text_color }};
+    }
+
+    @media screen and (min-width: 990px) {
+      .section-header:not(.scrolled-past-header) .header-wrapper--dropdown .h2,
+      .section-header:not(.scrolled-past-header) .header-wrapper--dropdown .header__icon,
+      .section-header:not(.scrolled-past-header) .header-wrapper--dropdown .header__menu-item,
+      .section-header:not(.scrolled-past-header) .header-wrapper--dropdown .header__active-menu-item,
+      .section-header:not(.scrolled-past-header) .header-wrapper--dropdown .header__heading-link,
+      .section-header:not(.scrolled-past-header) .header-wrapper--dropdown .localization-selector.link {
+        color: {{ section.settings.transparent_text_color }};
+      }
+   }
+  {% endif %}
+
+  {% if section.settings.sticky_header_type == 'on-scroll-up' %}
+    .section-header.scrolled-past-header .header-wrapper.gradient:not(:focus-within) {
+      animation: headerReveal var(--duration-long) ease;
+    }
+    @keyframes headerReveal {
+      0% {
+        background-color: transparent;
+        transform: translateY(-2em);
+      }
+      50% {
+        transform: translateY(0em);
+      }
+      100% {
+        background-color: var(--gradient-background);
+      }
+    }
+  {% endif %}
 
   {%- if section.settings.sticky_header_type == 'reduce-logo-size' -%}
     .scrolled-past-header .header__heading-logo-wrapper {
@@ -151,7 +194,7 @@
   endfor
 -%}
 
-<{% if section.settings.sticky_header_type != 'none' %}sticky-header data-sticky-type="{{ section.settings.sticky_header_type }}"{% else %}div{% endif %} class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}">
+<{% if section.settings.sticky_header_type != 'none' %}sticky-header data-sticky-type="{{ section.settings.sticky_header_type }}"{% else %}div{% endif %} class="header-wrapper color-{{ section.settings.color_scheme }} header-wrapper--{{ section.settings.menu_type_desktop }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}{% if transparent_header %} header-wrapper--transparent{% endif %}">
   {%- liquid
     assign social_links = false
     assign localization_forms = false
@@ -182,19 +225,37 @@
           <a href="{{ routes.root_url }}" class="header__heading-link link link--text focus-inset">
             {%- if settings.logo != blank -%}
               <div class="header__heading-logo-wrapper">
+                {%- liquid
+                  assign preload = true
+                  if transparent_header and section.settings.transparent_logo != blank
+                    assign preload = false
+                  endif
+                -%}
                 {%- assign logo_alt = settings.logo.alt | default: shop.name | escape -%}
                 {%- assign logo_height = settings.logo_width | divided_by: settings.logo.aspect_ratio -%}
                 {% capture sizes %}(max-width: {{ settings.logo_width | times: 2 }}px) 50vw, {{ settings.logo_width }}px{% endcapture %}
                 {% capture widths %}{{ settings.logo_width }}, {{ settings.logo_width | times: 1.5 | round }}, {{ settings.logo_width | times: 2 }}{% endcapture %}
                 {{ settings.logo | image_url: width: 600 | image_tag:
-                  class: 'header__heading-logo motion-reduce',
+                  class: 'header__heading-logo header__heading-logo--default motion-reduce',
                   widths: widths,
                   height: logo_height,
                   width: settings.logo_width,
                   alt: logo_alt,
                   sizes: sizes,
-                  preload: true
+                  preload: preload
                 }}
+                {%- if transparent_header and section.settings.transparent_logo != blank -%}
+                  {%- assign transparent_logo_height = section.settings.transparent_logo | divided_by: section.settings.transparent_logo.aspect_ratio -%}
+                  {{ section.settings.transparent_logo | image_url: width: 600 | image_tag:
+                    class: 'header__heading-logo header__heading-logo--transparent motion-reduce',
+                    widths: widths,
+                    height: transparent_logo_height,
+                    width: settings.logo_width,
+                    alt: logo_alt,
+                    sizes: sizes,
+                    preload: true
+                  }}
+                {%- endif -%}
               </div>
             {%- else -%}
               <span class="h2">{{ shop.name }}</span>
@@ -222,19 +283,37 @@
           <a href="{{ routes.root_url }}" class="header__heading-link link link--text focus-inset">
             {%- if settings.logo != blank -%}
               <div class="header__heading-logo-wrapper">
+                {%- liquid
+                  assign preload = true
+                  if transparent_header and section.settings.transparent_logo != blank
+                    assign preload = false
+                  endif
+                -%}
                 {%- assign logo_alt = settings.logo.alt | default: shop.name | escape -%}
                 {%- assign logo_height = settings.logo_width | divided_by: settings.logo.aspect_ratio -%}
                 {% capture sizes %}(min-width: 750px) {{ settings.logo_width }}px, 50vw{% endcapture %}
                 {% capture widths %}{{ settings.logo_width }}, {{ settings.logo_width | times: 1.5 | round }}, {{ settings.logo_width | times: 2 }}{% endcapture %}
                 {{ settings.logo | image_url: width: 600 | image_tag:
-                  class: 'header__heading-logo',
+                  class: 'header__heading-logo header__heading-logo--default motion-reduce',
                   widths: widths,
                   height: logo_height,
                   width: settings.logo_width,
                   alt: logo_alt,
                   sizes: sizes,
-                  preload: true
+                  preload: preload
                 }}
+                {%- if transparent_header and section.settings.transparent_logo != blank -%}
+                  {%- assign transparent_logo_height = section.settings.transparent_logo | divided_by: section.settings.transparent_logo.aspect_ratio -%}
+                  {{ section.settings.transparent_logo | image_url: width: 600 | image_tag:
+                    class: 'header__heading-logo header__heading-logo--transparent motion-reduce',
+                    widths: widths,
+                    height: transparent_logo_height,
+                    width: settings.logo_width,
+                    alt: logo_alt,
+                    sizes: sizes,
+                    preload: true
+                  }}
+                {%- endif -%}
               </div>
             {%- else -%}
               <span class="h2">{{ shop.name }}</span>
@@ -386,7 +465,7 @@
     }
 
     setHeaderHeight() {
-      document.documentElement.style.setProperty('--header-height', `${this.header.offsetHeight}px`);
+      document.documentElement.style.setProperty('--header-height', `${this.offsetHeight}px`);
     }
 
     disconnectedCallback() {
@@ -400,7 +479,7 @@
         observer.disconnect();
       });
 
-      observer.observe(this.header);
+      observer.observe(this);
     }
 
     onScroll() {
@@ -513,58 +592,6 @@
   "settings": [
     {
       "type": "select",
-      "id": "logo_position",
-      "options": [
-        {
-          "value": "top-left",
-          "label": "t:sections.header.settings.logo_position.options__2.label"
-        },
-        {
-          "value": "top-center",
-          "label": "t:sections.header.settings.logo_position.options__3.label"
-        },
-        {
-          "value": "middle-left",
-          "label": "t:sections.header.settings.logo_position.options__1.label"
-        },
-        {
-          "value": "middle-center",
-          "label": "t:sections.header.settings.logo_position.options__4.label"
-        }
-      ],
-      "default": "middle-left",
-      "label": "t:sections.header.settings.logo_position.label",
-      "info": "t:sections.header.settings.logo_help.content"
-    },
-    {
-      "type": "link_list",
-      "id": "menu",
-      "default": "main-menu",
-      "label": "t:sections.header.settings.menu.label"
-    },
-    {
-      "type": "select",
-      "id": "menu_type_desktop",
-      "options": [
-        {
-          "value": "dropdown",
-          "label": "t:sections.header.settings.menu_type_desktop.options__1.label"
-        },
-        {
-          "value": "mega",
-          "label": "t:sections.header.settings.menu_type_desktop.options__2.label"
-        },
-        {
-          "value": "drawer",
-          "label": "t:sections.header.settings.menu_type_desktop.options__3.label"
-        }
-      ],
-      "default": "dropdown",
-      "label": "t:sections.header.settings.menu_type_desktop.label",
-      "info": "t:sections.header.settings.menu_type_desktop.info"
-    },
-    {
-      "type": "select",
       "id": "sticky_header_type",
       "options": [
         {
@@ -601,6 +628,108 @@
     },
     {
       "type": "header",
+      "content": "t:sections.header.settings.logo.content"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:sections.header.settings.logo_help.content"
+    },
+    {
+      "type": "select",
+      "id": "logo_position",
+      "options": [
+        {
+          "value": "top-left",
+          "label": "t:sections.header.settings.logo_position.options__2.label"
+        },
+        {
+          "value": "top-center",
+          "label": "t:sections.header.settings.logo_position.options__3.label"
+        },
+        {
+          "value": "middle-left",
+          "label": "t:sections.header.settings.logo_position.options__1.label"
+        },
+        {
+          "value": "middle-center",
+          "label": "t:sections.header.settings.logo_position.options__4.label"
+        }
+      ],
+      "default": "middle-left",
+      "label": "t:sections.header.settings.logo_position.label"
+    },
+    {
+      "type": "select",
+      "id": "mobile_logo_position",
+      "options": [
+        {
+          "value": "center",
+          "label": "t:sections.header.settings.mobile_logo_position.options__1.label"
+        },
+        {
+          "value": "left",
+          "label": "t:sections.header.settings.mobile_logo_position.options__2.label"
+        }
+      ],
+      "default": "center",
+      "label": "t:sections.header.settings.mobile_logo_position.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.header.settings.menu.content"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "default": "main-menu",
+      "label": "t:sections.header.settings.menu.label"
+    },
+    {
+      "type": "select",
+      "id": "menu_type_desktop",
+      "options": [
+        {
+          "value": "dropdown",
+          "label": "t:sections.header.settings.menu_type_desktop.options__1.label"
+        },
+        {
+          "value": "mega",
+          "label": "t:sections.header.settings.menu_type_desktop.options__2.label"
+        },
+        {
+          "value": "drawer",
+          "label": "t:sections.header.settings.menu_type_desktop.options__3.label"
+        }
+      ],
+      "default": "dropdown",
+      "label": "t:sections.header.settings.menu_type_desktop.label",
+      "info": "t:sections.header.settings.menu_type_desktop.info"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.header.settings.transparent_overlay_header.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_transparent_header_home",
+      "default": false,
+      "label": "t:sections.header.settings.enable_transparent_header.label"
+    },
+    {
+      "type": "image_picker",
+      "id": "transparent_logo",
+      "label": "t:sections.header.settings.transparent_logo.label",
+      "info": "t:sections.header.settings.transparent_logo.info"
+    },
+    {
+      "type": "color",
+      "id": "transparent_text_color",
+      "default": "#FFFFFF",
+      "label": "t:sections.header.settings.transparent_text_color.label",
+      "info": "t:sections.header.settings.transparent_text_color.info"
+    },
+    {
+      "type": "header",
       "content": "t:sections.header.settings.header__3.content",
       "info": "t:sections.header.settings.header__4.info"
     },
@@ -620,26 +749,6 @@
       "id": "enable_language_selector",
       "default": true,
       "label": "t:sections.header.settings.enable_language_selector.label"
-    },
-    {
-      "type": "header",
-      "content": "t:sections.header.settings.mobile_layout.content"
-    },
-    {
-      "type": "select",
-      "id": "mobile_logo_position",
-      "options": [
-        {
-          "value": "center",
-          "label": "t:sections.header.settings.mobile_logo_position.options__1.label"
-        },
-        {
-          "value": "left",
-          "label": "t:sections.header.settings.mobile_logo_position.options__2.label"
-        }
-      ],
-      "default": "center",
-      "label": "t:sections.header.settings.mobile_logo_position.label"
     },
     {
       "type": "header",
