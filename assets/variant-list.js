@@ -1,72 +1,20 @@
 class VariantListRemoveButton extends HTMLElement {
   constructor() {
     super();
+
     this.addEventListener('click', (event) => {
       event.preventDefault();
-      const variantList = this.closest('variant-list');
-      variantList.updateQuantity(this.dataset.index, 0);
+      const cartItems = this.closest('variant-list');
+      cartItems.updateQuantity(this.dataset.index, 0);
     });
   }
 }
 
 customElements.define('variant-list-remove-button', VariantListRemoveButton);
 
-class VariantListRemoveAllButton extends HTMLElement {
-  constructor() {
-    super();
-    const allVariants = Array.from(document.querySelectorAll('[data-variant-id]'));
-    const items = {}
-    let hasVariantsInCart = false;
-    this.variantList = this.closest('variant-list');
-
-    allVariants.forEach((variant) => {
-      const cartQty = parseInt(variant.dataset.cartQty);
-      if (cartQty > 0) {
-        hasVariantsInCart = true;
-        items[parseInt(variant.dataset.variantId)] = 0;
-      }
-    });
-
-    if (!hasVariantsInCart) {
-      this.classList.add('hidden');
-    }
-
-    this.actions = {
-      confirm: 'confirm',
-      remove: 'remove',
-      cancel: 'cancel'
-    }
-
-    this.addEventListener('click', (event) => {
-      event.preventDefault();
-      if (this.dataset.action === this.actions.confirm) {
-        this.toggleConfirmation(false, true);
-      } else if (this.dataset.action === this.actions.remove) {
-        this.variantList.updateMultipleQty(items);
-        this.toggleConfirmation(true, false);
-      } else if (this.dataset.action === this.actions.cancel) {
-        this.toggleConfirmation(true, false);
-      }
-    });
-  }
-
-  toggleConfirmation(showConfirmation, showInfo) {
-    this.variantList.querySelector('.variant-list-total__confirmation').classList.toggle('hidden', showConfirmation);
-    this.variantList.querySelector('.variant-list-total__info').classList.toggle('hidden', showInfo)
-  }
-}
-
-customElements.define('variant-list-remove-all-button', VariantListRemoveAllButton);
-
-
 class VariantList extends HTMLElement {
   constructor() {
     super();
-    this.actions = {
-      add: 'ADD',
-      update: 'UPDATE'
-    }
-    this.variantListId = 'variant-list'
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
     const debouncedOnChange = debounce((event) => {
       this.onChange(event);
@@ -78,13 +26,12 @@ class VariantList extends HTMLElement {
 
   connectedCallback() {
     this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (event) => {
-      if (event.source === this.variantListId) {
+      if (event.source === 'variant-list') {
         return;
       }
       // If its another section that made the update
       this.onCartUpdate();
     });
-    this.sectionId = this.dataset.id;
   }
 
   disconnectedCallback() {
@@ -94,17 +41,11 @@ class VariantList extends HTMLElement {
   }
 
   onChange(event) {
-    const inputValue = parseInt(event.target.value);
-    const cartQuantity = parseInt(event.target.dataset.cartQuantity);
-    const index = event.target.dataset.index;
-    const name = document.activeElement.getAttribute('name');
-
-    const quantity = inputValue - cartQuantity;
-
-    if (cartQuantity > 0) {
-      this.updateQuantity(index, inputValue, name, this.actions.update);
+    const qty = parseInt(event.target.value) - parseInt(event.target.dataset.cartQuantity)
+    if (parseInt(event.target.dataset.cartQuantity) > 0) {
+      this.updateQuantity(event.target.dataset.index, event.target.value, document.activeElement.getAttribute('name'), 'UPDATE');
     } else {
-      this.updateQuantity(index, quantity, name, this.actions.add);
+      this.updateQuantity(event.target.dataset.index, qty, document.activeElement.getAttribute('name'), 'ADD');
     }
   }
 
@@ -113,7 +54,7 @@ class VariantList extends HTMLElement {
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
-        const sourceQty = html.querySelector(this.variantListId);
+        const sourceQty = html.querySelector('variant-list');
         this.innerHTML = sourceQty.innerHTML;
       })
       .catch(e => {
@@ -124,8 +65,8 @@ class VariantList extends HTMLElement {
   getSectionsToRender() {
     return [
       {
-        id: this.variantListId,
-        section: document.getElementById(this.variantListId).dataset.id,
+        id: 'variant-list',
+        section: document.getElementById('variant-list').dataset.id,
         selector: '.js-contents'
       },
       {
@@ -134,86 +75,33 @@ class VariantList extends HTMLElement {
         selector: '.shopify-section'
       },
       {
-        id: 'variant-list-live-region-text',
+        id: 'cart-live-region-text',
         section: 'cart-live-region-text',
         selector: '.shopify-section'
       },
       {
-        id: 'variant-list-total',
-        section: document.getElementById(this.variantListId).dataset.id,
-        selector: '.variant-list__total'
+        id: 'variantlist-total',
+        section: document.getElementById('variant-list').dataset.id,
+        selector: '.variantlist-total'
       }
     ];
   }
 
-  renderSections(parsedState) {
-    this.getSectionsToRender().forEach((section => {
-      const sectionElement = document.getElementById(section.id);
-      const elementToReplace = sectionElement && sectionElement.querySelector(section.selector) ? sectionElement.querySelector(section.selector) : sectionElement;
-      if (elementToReplace) {
-        elementToReplace.innerHTML =
-        this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
-      }  
-    }));
-  }
-
-  updateMultipleQty(items) {
-    this.querySelector('.variant-remove-total .loading-overlay').classList.remove('hidden');
+  updateQuantity(id, quantity, name, action) {
+    this.enableLoading(id);
 
     const body = JSON.stringify({
-      updates: items,
-      sections: this.getSectionsToRender().map((section) => section.section),
-      sections_url: window.location.pathname
-    });
-
-    this.updateMessage();
-    this.setErrorMessage();
-
-    fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } })
-      .then((response) => {
-        return response.text();
-      })
-      .then((state) => {
-        const parsedState = JSON.parse(state);
-        this.renderSections(parsedState);
-      }).catch(() => {
-        this.setErrorMessage(window.cartStrings.error);
-      })
-      .finally(() => {
-        this.querySelector('.variant-remove-total .loading-overlay').classList.add('hidden');
-      });
-  }
-
-  updateQuantity(id, quantity, name, action) {
-    this.toggleLoading(id, true);
-
-    let routeUrl = routes.cart_change_url;
-    let body = JSON.stringify({
       quantity,
       id,
       sections: this.getSectionsToRender().map((section) => section.section),
       sections_url: window.location.pathname
     });
-    let fetchConfigType;
-    if (action === this.actions.add) {
-      fetchConfigType = 'javascript';
-      routeUrl = routes.cart_add_url;
-      body = JSON.stringify({
-        items: [
-          {
-            quantity: parseInt(quantity),
-            id: parseInt(id)
-          }
-        ],
-        sections: this.getSectionsToRender().map((section) => section.section),
-        sections_url: window.location.pathname
-      });
+    let routeUrl = routes.cart_change_url
+    if (action === 'ADD') {
+      routeUrl = routes.cart_add_url
     }
 
-    this.updateMessage();
-    this.setErrorMessage();
-
-    fetch(`${routeUrl}`, { ...fetchConfig(fetchConfigType), ...{ body } })
+    fetch(`${routeUrl}`, { ...fetchConfig(), ...{ body } })
       .then((response) => {
         return response.text();
       })
@@ -222,114 +110,69 @@ class VariantList extends HTMLElement {
         const quantityElement = document.getElementById(`Quantity-${id}`);
         const items = document.querySelectorAll('.variant-item');
 
-        if (parsedState.description || parsedState.errors) {
-          this.resetQuantityInput(id, quantityElement);
-          if (parsedState.errors) {
-            this.updateLiveRegions(id, parsedState.errors);
-          } else {
-            this.updateLiveRegions(id, parsedState.description);
-          }
+        if (parsedState.errors) {
+          quantityElement.value = quantityElement.getAttribute('value');
+          this.updateLiveRegions(id, parsedState.errors);
           return;
         }
 
         this.classList.toggle('is-empty', parsedState.item_count === 0);
 
-        this.renderSections(parsedState);
+        this.getSectionsToRender().forEach((section => {
+          const elementToReplace =
+            document.getElementById(section.id).querySelector(section.selector) || document.getElementById(section.id);
+          elementToReplace.innerHTML =
+            this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
+        }));
+        let message = '';
+        if (action === 'ADD') {
+          const updatedValue = parsedState.quantity ? parsedState.quantity : undefined;
+          if (parsedState.quantity !== parseInt(quantityElement.value)) {
+            if (typeof updatedValue === 'undefined') {
+              message = window.cartStrings.error;
+            } else {
+              message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
+            }
+            this.updateLiveRegions(id, message);
+          }
 
-        let hasError = false;
+        } else {
+          const currentItem = parsedState.items.find((item) => item.variant_id === parseInt(id));
+          const updatedValue = currentItem ? currentItem.quantity : undefined;
 
-        const currentItem = parsedState.items.find((item) => item.variant_id === parseInt(id));
-        const updatedValue = currentItem ? currentItem.quantity : undefined;
-        if (updatedValue && updatedValue !== parseInt(quantityElement.value)) {
-          this.updateError(updatedValue, id)
-          hasError = true;
+          if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
+            if (typeof updatedValue === 'undefined') {
+              message = window.cartStrings.error;
+            } else {
+              message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
+            }
+            this.updateLiveRegions(id, message);
+          }
         }
 
         const variantItem = document.getElementById(`Variant-${id}`);
         if (variantItem && variantItem.querySelector(`[name="${name}"]`)) {
           variantItem.querySelector(`[name="${name}"]`).focus();
         }
-        publish(PUB_SUB_EVENTS.cartUpdate, { source: this.variantListId });
-
-        if (hasError) {
-          this.updateMessage();
-        } else if (action === this.actions.add) {
-          this.updateMessage(parseInt(quantity))
-        } else if (action === this.actions.update) {
-          this.updateMessage(parseInt(quantity - quantityElement.dataset.cartQuantity))
-        } else {
-          this.updateMessage(-parseInt(quantityElement.dataset.cartQuantity))
-        }
+        publish(PUB_SUB_EVENTS.cartUpdate, { source: 'variant-list' });
       }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
-        this.resetQuantityInput(id);
-        this.setErrorMessage(window.cartStrings.error);
+        const errors = document.getElementById('variantlist-errors');
+        errors.textContent = window.cartStrings.error;
       })
       .finally(() => {
-        this.toggleLoading(id);
+        this.disableLoading(id);
       });
-  }
 
-  resetQuantityInput(id, quantityElement) {
-    const input = quantityElement ?? document.getElementById(`Quantity-${id}`);
-    input.value = input.getAttribute('value');
-  }
-
-  setErrorMessage(message = null) {
-    this.errorMessageTemplate = this.errorMessageTemplate ?? document.getElementById(`VariantListErrorTemplate-${this.sectionId}`).cloneNode(true);
-    const errorElements = document.querySelectorAll('.variant-list-error');
-    
-    errorElements.forEach((errorElement) => {
-      errorElement.innerHTML = '';
-      if (!message) return;
-      const updatedMessageElement = this.errorMessageTemplate.cloneNode(true);
-      updatedMessageElement.content.querySelector('.variant-list-error-message').innerText = message;
-      errorElement.appendChild(updatedMessageElement.content);
-    });
-  }
-
-  updateMessage(quantity = null) {
-    const messages = this.querySelectorAll('.variant-list__message-text');
-    const icons = this.querySelectorAll('.variant-list__message-icon');
-
-    if(quantity === null || isNaN(quantity)) {
-      messages.forEach(message => message.innerHTML = '');
-      icons.forEach(icon => icon.classList.add('hidden'));
-      return;
-    }
-
-    const isQuantityNegative = quantity < 0;
-    const absQuantity = Math.abs(quantity);
-
-    const textTemplate = isQuantityNegative
-      ? (absQuantity === 1 ? window.variantListStrings.itemRemoved : window.variantListStrings.itemsRemoved)
-      : (quantity === 1 ? window.variantListStrings.itemAdded : window.variantListStrings.itemsAdded);
-
-    messages.forEach((msg) => msg.innerHTML = textTemplate.replace('[quantity]', absQuantity));
-
-    if (!isQuantityNegative) {
-      icons.forEach((i) => i.classList.remove('hidden'));
-    }
-
-  }
-
-  updateError(updatedValue, id) {
-    let message = '';
-    if (typeof updatedValue === 'undefined') {
-      message = window.cartStrings.error;
-    } else {
-      message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
-    }
-    this.updateLiveRegions(id, message);
   }
 
   updateLiveRegions(id, message) {
-    const variantItemError = document.getElementById(`Variant-list-item-error-${id}`);
-    if (variantItemError) variantItemError.querySelector('.variant-item__error-text').innerHTML = message;
+    const variantItemError = document.getElementById(`Variant-item-list-${id}`);
+    if (variantItemError) variantItemError.querySelector('.variant-list__error-text').innerHTML = message;
 
     this.variantItemStatusElement.setAttribute('aria-hidden', true);
 
-    const cartStatus = document.getElementById('variant-list-live-region-text');
+    const cartStatus = document.getElementById('cart-live-region-text');
     cartStatus.setAttribute('aria-hidden', false);
 
     setTimeout(() => {
@@ -343,19 +186,26 @@ class VariantList extends HTMLElement {
       .querySelector(selector).innerHTML;
   }
 
-  toggleLoading(id, enable) {
-    const variantList = document.getElementById(this.variantListId);
+  enableLoading(id) {
+    console.log(id, 'id')
+    const variantList = document.getElementById('variant-list');
+    variantList.classList.add('cart__items--disabled');
+
     const variantListItems = this.querySelectorAll(`#Variant-${id} .loading-overlay`);
 
-    if (enable) {
-      variantList.classList.add('cart__items--disabled');
-      [...variantListItems].forEach((overlay) => overlay.classList.remove('hidden'));
-      document.activeElement.blur();
-      this.variantItemStatusElement.setAttribute('aria-hidden', false);
-    } else {
-      variantList.classList.remove('cart__items--disabled');
-      variantListItems.forEach((overlay) => overlay.classList.add('hidden'));
-    }
+    [...variantListItems].forEach((overlay) => overlay.classList.remove('hidden'));
+
+    document.activeElement.blur();
+    this.variantItemStatusElement.setAttribute('aria-hidden', false);
+  }
+
+  disableLoading(id) {
+    const variantList = document.getElementById('variant-list');
+    variantList.classList.remove('cart__items--disabled');
+
+    const variantListItems = this.querySelectorAll(`#Variant-${id} .loading-overlay`);
+
+    variantListItems.forEach((overlay) => overlay.classList.add('hidden'));
   }
 }
 
