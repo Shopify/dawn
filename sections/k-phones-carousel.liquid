@@ -1,237 +1,320 @@
-<link rel="stylesheet" href="{{ 'k-phones-caro-styles.css' | asset_url }}" media="print" onload="this.media='all'">
+{{ 'component-slider.css' | asset_url | stylesheet_tag }}
 
-{% assign background_color = "bg-" | append: section.settings.background_color %}
-{% assign heading_color = "brand-" | append: section.settings.heading_color %}
-{% assign heading_font_weight = "font-weight-" | append: section.settings.heading_font_weight %}
-{% assign subheading_color = "brand-" | append: section.settings.subheading_color %}
-{% assign subheading_font_weight = "font-weight-" | append: section.settings.subheading_font_weight %}
+{%- style -%}
+  #shopify-section-{{ section.id }} .grid {
+    --grid-desktop-horizontal-spacing: 4rem;
+  }
+  #shopify-section-{{ section.id }} .slider--desktop {
+    margin-right: 1px;
+  }
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
 
-<section class="phones-carousel {{background_color}}">
 
-  <div class="headings-all page-width">
-    {% if section.settings.heading != blank %}
-      <h2 class="heading text-center {{heading_color}} {{heading_font_weight}}">{{ section.settings.heading }}</h2>
-    {% endif %}
-    {% if section.settings.subheading != blank %}
-      <h3 class="subheading text-center {{subheading_color}} {{subheading_font_weight}}">{{ section.settings.subheading }}</h3>
-    {% endif %}
-  </div>
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
 
-  <div class="phones-container">
-    {%for block in section.blocks%}
-        <div class="image-card">
-          <div class="phones-image-box"><img src="{{block.settings.image | img_url:'master'}}"></div>
-          <div class="image-card-content">
-            <h4>{{ block.settings.image_title }}</h4>
-          </div>
+{% liquid
+  assign columns_mobile_int = section.settings.columns_mobile | plus: 0
+
+  assign show_mobile_slider = false
+  if section.settings.swipe_on_mobile and section.blocks.size > columns_mobile_int
+    assign show_mobile_slider = true
+  endif
+
+  assign show_desktop_slider = false
+  if section.settings.enable_desktop_slider and section.blocks.size >= section.settings.columns_desktop
+    assign show_desktop_slider = true
+  endif
+%}
+
+{% if show_desktop_slider or show_mobile_slider %}
+  <script src="{{ 'k-component-slider-extras.js' | asset_url }}" defer></script>
+{% endif %}
+
+
+<div class="color-{{ section.settings.color_scheme }} isolate gradient">
+  <div class="section-{{ section.id }}-padding">
+    <div class="collection__title title-wrapper title-wrapper--no-top-margin page-width {% if show_mobile_slider %} title-wrapper--self-padded-tablet-down{% endif %}{% if show_desktop_slider %} collection__title--desktop-slider{% endif %}">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="title inline-richtext center {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+      {%- if section.settings.subheading != blank -%}
+        <div class="collection__description center rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+            {{ section.settings.subheading }}
         </div>
-    {%endfor%}
-  </div>
-</section>
+      {%- endif -%}
+    </div>
+    
+    <slider-component class="slider-container-adapt slider-mobile-gutter {% if show_mobile_slider == false %} page-width{% endif %} page-width page-width-desktop{% if show_desktop_slider %} slider-component-desktop{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+      <ul
+        id="Slider-{{ section.id }}"
+        class="grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down{% if show_mobile_slider or show_desktop_slider %} slider{% if show_desktop_slider %} {% if section.settings.aligned_center %} aligned-vertical{% endif %} slider--desktop{% endif %}{% if show_mobile_slider %} slider--tablet grid--peek{% endif %}{% endif %}"
+        role="list"
+        aria-label="{{ 'general.slider.name' | t }}"
+        data-autoplay="{{ section.settings.auto_rotate }}"
+        data-speed="{{ section.settings.change_slides_speed }}"
+      >
 
-{% style %}
-  .phones-carousel {
-    padding:  {{ section.settings.section_padding }}px 0px;
-    margin-top: {{ section.settings.section_margin_top }}px;
-    margin-bottom: {{ section.settings.section_margin_bottom }}px;
-  }
-  .phones-carousel .heading {
-    font-size: {{ section.settings.heading_font_size }}px;
-    margin-top: 0px;
-  }
-  .phones-carousel .subheading {
-    font-size: {{ section.settings.subheading_font_size }}px;
-    margin-bottom: 50px;
-  }
-  .phones-carousel .alt-heading {
-    font-size: {{ section.settings.alt_heading_font_size }}px;
-  }
-  .phones-carousel-para {
-    font-size: {{ section.settings.text_font_size }}px;
-    padding:  {{ section.settings.para_padding }}px;
-  }
-{% endstyle %}
+        {% for block in section.blocks %}
+          <li
+            id="Slide-{{ section.id }}-{{ forloop.index }}"
+            class="grid__item {% if show_mobile_slider or show_desktop_slider %} slider__slide{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+          >
+            <div class="k-card">
+              {% if block.settings.image != blank %}
+                <div
+                  class="media media--transparent media--{{ section.settings.image_ratio }}"
+                  {% if section.settings.image_ratio == 'adapt' %}
+                    style="padding-bottom: {{ 1 | divided_by: block.settings.image.aspect_ratio | times: 100 }}%;"
+                  {% endif %}
+                >
+                  {%- liquid
+                    assign number_of_columns = section.settings.columns_desktop
+                    assign number_of_columns_mobile = section.settings.columns_mobile
+                    assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                    assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                    assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+                    assign image_width = 1
+                  -%}
+                  {% capture sizes %}
+                    (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+                    (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+                    (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+                    calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+                  {% endcapture %}
+                  {{
+                    block.settings.image
+                    | image_url: width: 3200
+                    | image_tag:
+                      loading: 'lazy',
+                      widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                      sizes: sizes
+                  }}
+                </div>
+              {% endif %}
+              <div class="card__information">
+                <h3><strong>{{ block.settings.image_title }}</strong></h3>
+              </div>
+            </div>
+          </li>
+        {%- endfor -%}
+      </ul>
+
+      {%- if show_mobile_slider or show_desktop_slider -%}
+        <div class="slider-buttons no-js-hidden">
+          <button
+            type="button"
+            class="slider-button slider-button--prev"
+            name="previous"
+            aria-label="{{ 'general.slider.previous_slide' | t }}"
+            aria-controls="Slider-{{ section.id }}"
+          >
+            {% render 'icon-caret' %}
+          </button>
+          <div class="slider-counter caption">
+            <span class="slider-counter--current">1</span>
+            <span aria-hidden="true"> / </span>
+            <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+            <span class="slider-counter--total">{{ section.blocks.size }}</span>
+          </div>
+          <button
+            type="button"
+            class="slider-button slider-button--next"
+            name="next"
+            aria-label="{{ 'general.slider.next_slide' | t }}"
+            aria-controls="Slider-{{ section.id }}"
+          >
+            {% render 'icon-caret' %}
+          </button>
+        </div>
+      {%- endif -%}
+    </slider-component>
+  </div>
+</div>
+
+{%- if request.design_mode -%}
+  <script src="{{ 'theme-editor.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
 
 {% schema %}
   {
     "name": "Phones carousel",
+    "class": "k-hero k-section",
+    "tag": "section",
     "max_blocks": 20,
     "settings": [
       {
-        "type": "select",
-        "id": "background_color",
-        "label": "Background Color",
-        "default": "white",
-        "options": [
-          {
-            "value": "white",
-            "label": "White"
-          }, {
-            "value": "light-blue",
-            "label": "Blue"
-          }, {
-            "value": "lighter-blue",
-            "label": "Light Blue"
-          }
-        ]
-      },
-      {
-        "type": "range",
-        "id": "section_padding",
-        "min":  0,
-        "max":  100,
-        "step":  2,
-        "unit": "px" ,
-        "label": "Section Padding",
-        "default":  10
-      },
-      {
-        "type": "range",
-        "id": "section_margin_top",
-        "min":  0,
-        "max":  50,
-        "step":  1,
-        "unit": "px" ,
-        "label": "Section Margin Top",
-        "default":  10
-      },
-      {
-        "type": "range",
-        "id": "section_margin_bottom",
-        "min":  0,
-        "max":  50,
-        "step":  1,
-        "unit": "px" ,
-        "label": "Section Margin Bottom",
-        "default":  10
-      }, 
-      {
+        "type": "inline_richtext",
         "id": "heading",
-        "type": "text",
-        "label": "Heading",
-        "default": "Title"
+        "default": "Featured collection",
+        "label": "t:sections.featured-collection.settings.title.label"
       },
       {
         "type": "select",
-        "id": "heading_color",
-        "label": "Heading Font Color",
-        "default": "dark-gray",
+        "id": "heading_size",
         "options": [
           {
-            "value": "blue",
-            "label": "Blue"
+            "value": "h2",
+            "label": "t:sections.all.heading_size.options__1.label"
           },
           {
-            "value": "dark-blue",
-            "label": "Dark Blue"
+            "value": "h1",
+            "label": "t:sections.all.heading_size.options__2.label"
           },
           {
-            "value": "gray",
-            "label": "Gray"
-          },
-          {
-            "value": "dark-gray",
-            "label": "Dark Gray"
-          }, {
-            "value": "white",
-            "label": "White"
-          }, {
-            "value": "dark",
-            "label": "Dark"
+            "value": "h0",
+            "label": "t:sections.all.heading_size.options__3.label"
           }
-        ]
+        ],
+        "default": "h1",
+        "label": "t:sections.all.heading_size.label"
       },
       {
-        "type": "range",
-        "id": "heading_font_size",
-        "min": 18,
-        "max": 68,
-        "step": 2,
-        "unit": "px",
-        "label": "Heading Font size",
-        "default": 32
-      }, 
-      {
-        "type": "select",
-        "id": "heading_font_weight",
-        "label": "Heading Font Weight",
-        "default": "bold",
-        "options": [
-          {
-            "value": "light",
-            "label": "Light"
-          }, {
-            "value": "regular",
-            "label": "Regular"
-          }, {
-            "value": "bold",
-            "label": "Bold"
-          }
-        ]
-      },
-      {
+        "type": "richtext",
         "id": "subheading",
-        "type": "text",
-        "label": "Sub Heading",
-        "default": "Sub Title"
+        "label": "t:sections.featured-collection.settings.description.label"
       },
       {
         "type": "select",
-        "id": "subheading_color",
-        "label": "Heading Font Color",
-        "default": "dark-gray",
+        "id": "image_ratio",
         "options": [
           {
-            "value": "blue",
-            "label": "Blue"
+            "value": "adapt",
+            "label": "t:sections.multicolumn.settings.image_ratio.options__1.label"
           },
           {
-            "value": "dark-blue",
-            "label": "Dark Blue"
+            "value": "portrait",
+            "label": "t:sections.multicolumn.settings.image_ratio.options__2.label"
           },
           {
-            "value": "gray",
-            "label": "Gray"
+            "value": "square",
+            "label": "t:sections.multicolumn.settings.image_ratio.options__3.label"
           },
           {
-            "value": "dark-gray",
-            "label": "Dark Gray"
-          }, {
-            "value": "white",
-            "label": "White"
-          }, {
-            "value": "dark",
-            "label": "Dark"
+            "value": "circle",
+            "label": "t:sections.multicolumn.settings.image_ratio.options__4.label"
           }
-        ]
+        ],
+        "default": "adapt",
+        "label": "t:sections.multicolumn.settings.image_ratio.label"
       },
       {
         "type": "range",
-        "id": "subheading_font_size",
-        "min": 18,
-        "max": 68,
+        "id": "columns_desktop",
+        "min": 1,
+        "max": 6,
+        "step": 1,
+        "default": 3,
+        "label": "t:sections.multicolumn.settings.columns_desktop.label"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_desktop_slider",
+        "label": "t:sections.featured-collection.settings.enable_desktop_slider.label",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "auto_rotate",
+        "label": "t:sections.slideshow.settings.auto_rotate.label",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "change_slides_speed",
+        "min": 3,
+        "max": 9,
         "step": 2,
-        "unit": "px",
-        "label": "Sub Heading Font size",
-        "default": 24
-      }, 
+        "unit": "s",
+        "label": "t:sections.slideshow.settings.change_slides_speed.label",
+        "default": 5
+      },
       {
         "type": "select",
-        "id": "subheading_font_weight",
-        "label": "Sub Heading Font Weight",
-        "default": "bold",
+        "id": "color_scheme",
         "options": [
           {
-            "value": "light",
-            "label": "Light"
-          }, {
-            "value": "regular",
-            "label": "Regular"
-          }, {
-            "value": "bold",
-            "label": "Bold"
+            "value": "accent-1",
+            "label": "t:sections.all.colors.accent_1.label"
+          },
+          {
+            "value": "accent-2",
+            "label": "t:sections.all.colors.accent_2.label"
+          },
+          {
+            "value": "background-1",
+            "label": "t:sections.all.colors.background_1.label"
+          },
+          {
+            "value": "background-2",
+            "label": "t:sections.all.colors.background_2.label"
+          },
+          {
+            "value": "inverse",
+            "label": "t:sections.all.colors.inverse.label"
           }
-        ]
+        ],
+        "default": "background-1",
+        "label": "t:sections.all.colors.label"
+      },
+      {
+        "type": "header",
+        "content": "t:sections.multicolumn.settings.header_mobile.content"
+      },
+      {
+        "type": "select",
+        "id": "columns_mobile",
+        "options": [
+          {
+            "value": "1",
+            "label": "t:sections.multicolumn.settings.columns_mobile.options__1.label"
+          },
+          {
+            "value": "2",
+            "label": "t:sections.multicolumn.settings.columns_mobile.options__2.label"
+          }
+        ],
+        "default": "1",
+        "label": "t:sections.multicolumn.settings.columns_mobile.label"
+      },
+      {
+        "type": "checkbox",
+        "id": "swipe_on_mobile",
+        "default": false,
+        "label": "t:sections.multicolumn.settings.swipe_on_mobile.label"
+      },
+      {
+        "type": "header",
+        "content": "t:sections.all.padding.section_padding_heading"
+      },
+      {
+        "type": "range",
+        "id": "padding_top",
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px",
+        "label": "t:sections.all.padding.padding_top",
+        "default": 36
+      },
+      {
+        "type": "range",
+        "id": "padding_bottom",
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px",
+        "label": "t:sections.all.padding.padding_bottom",
+        "default": 36
       }
     ],
     "blocks": [
@@ -260,32 +343,3 @@
     ]
   }
 {% endschema %}
-
-<script>
-      $(".phones-container").slick({
-        dots: false,
-        infinite: true,
-        speed: 1000,
-        slidesToShow: 3,
-        slidesToScroll: 1,
-        autoplay: true,
-        autoplaySpeed: 5500,
-        cssEase: 'ease',
-        arrows: true,
-        responsive: [
-          {
-            breakpoint: 992,
-            settings: {
-              slidesToShow: 2,
-              slidesToScroll: 1
-            }
-          }, {
-            breakpoint: 650,
-            settings: {
-              slidesToShow: 1,
-              slidesToScroll: 1
-            }
-          }
-        ]
-      });
-</script>
