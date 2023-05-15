@@ -900,7 +900,7 @@ class SlideshowComponent extends SliderComponent {
             button.removeAttribute('tabindex');
           });
         item.setAttribute('aria-hidden', 'false');
-        if (this.querySelector('.announcement-bar-slider')) item.childNodes[1].classList.remove('hidden');
+        if (Shopify.designMode && this.querySelector('.announcement-bar-slider')) item.childNodes[1].classList.remove('hidden');
         item.removeAttribute('tabindex');
       } else {
         if (linkElements.length)
@@ -908,7 +908,7 @@ class SlideshowComponent extends SliderComponent {
             button.setAttribute('tabindex', '-1');
           });
         item.setAttribute('aria-hidden', 'true');
-        if (this.querySelector('.announcement-bar-slider')) item.childNodes[1].classList.add('hidden');
+        if (Shopify.designMode && this.querySelector('.announcement-bar-slider')) item.childNodes[1].classList.add('hidden');
         item.setAttribute('tabindex', '-1');
       }
     });
