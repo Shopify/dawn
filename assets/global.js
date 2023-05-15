@@ -742,10 +742,10 @@ class SlideshowComponent extends SliderComponent {
         button.addEventListener('click', () => {
           if (button.name === 'next') {
             this.applyAnimation(button.name);
-            this.currentSlide = this.currentSlide === this.allAnnouncements.length ? 1 : this.currentSlide + 1;
+            this.updateAnnouncementBarSlide(button.name);
           } else {
             this.applyAnimation(button.name);
-            this.currentSlide = this.currentSlide === 1 ? this.allAnnouncements.length : this.currentSlide - 1;
+            this.updateAnnouncementBarSlide(button.name);
           }
         });
       });
@@ -871,15 +871,13 @@ class SlideshowComponent extends SliderComponent {
         : this.slider.scrollLeft + this.slider.querySelector('.slideshow__slide').clientWidth;
 
     if (this.querySelector('.announcement-bar-slider')) {
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          this.slider.scrollTo({
-            left: slideScrollPosition,
-          });
-        }, 200);
-        this.currentSlide = this.currentSlide === this.allAnnouncements.length ? 1 : this.currentSlide + 1;
-        this.applyAnimation();
-      });
+      setTimeout(() => {
+        this.slider.scrollTo({
+          left: slideScrollPosition,
+        });
+      }, 200);
+      this.updateAnnouncementBarSlide();
+      this.applyAnimation();
     } else {
       this.slider.scrollTo({
         left: slideScrollPosition,
@@ -947,6 +945,14 @@ class SlideshowComponent extends SliderComponent {
         }
       });
     });
+  }
+
+  updateAnnouncementBarSlide(button = 'next') {
+    if (button === 'next') {
+      this.currentSlide = this.currentSlide === this.allAnnouncements.length ? 1 : this.currentSlide + 1;
+    } else {
+      this.currentSlide = this.currentSlide === 1 ? this.allAnnouncements.length : this.currentSlide - 1;
+    }
   }
 
   linkToSlide(event) {
