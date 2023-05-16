@@ -139,6 +139,7 @@ class VariantList extends HTMLElement {
         } else {
           const currentItem = parsedState.items.find((item) => item.variant_id === parseInt(id));
           const updatedValue = currentItem ? currentItem.quantity : undefined;
+          console.log(updatedValue, 'hehehhe', parsedState.items)
 
           if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
             if (typeof updatedValue === 'undefined') {
