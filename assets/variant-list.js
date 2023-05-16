@@ -4,8 +4,8 @@ class VariantListRemoveButton extends HTMLElement {
 
     this.addEventListener('click', (event) => {
       event.preventDefault();
-      const cartItems = this.closest('variant-list');
-      cartItems.updateQuantity(this.dataset.index, 0);
+      const variantList = this.closest('variant-list');
+      variantList.updateQuantity(this.dataset.index, 0);
     });
   }
 }
@@ -187,7 +187,6 @@ class VariantList extends HTMLElement {
   }
 
   enableLoading(id) {
-    console.log(id, 'id')
     const variantList = document.getElementById('variant-list');
     variantList.classList.add('cart__items--disabled');
 
