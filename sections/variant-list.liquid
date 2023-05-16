@@ -1,5 +1,4 @@
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
-{{ 'component-discounts.css' | asset_url | stylesheet_tag }}
 {{ 'component-loading-overlay.css' | asset_url | stylesheet_tag }}
 {{ 'variant-list.css' | asset_url | stylesheet_tag }}
 
@@ -25,8 +24,8 @@
   data-id="{{ section.id }}"
   data-root-url="{{ routes.root_url }}"
 >
-  <form class="cart__contents critical-hidden" method="post" id="cart">
-    <div class="cart__items" id="main-variant-items" data-id="{{ section.id }}">
+  <form class="variant__contents critical-hidden" method="post" id="cart">
+    <div class="variant__items" id="main-variant-items" data-id="{{ section.id }}">
       <div class="js-contents">
         {%- if product.variants.size > 0 -%}
           <table class="variant-items">
@@ -82,27 +81,42 @@
                         <span class="variant-item__sku product-option break">{{ variant.sku | escape }}</span>
                       {%- endif -%}
                     </div>
-                    {%- if variant.price != variant.compare_at_price -%}
-                      <div class="variant-item__discounted-prices">
-                        <span class="visually-hidden">
+
+                    <div class="loading-overlay hidden">
+                      <div class="loading-overlay__spinner">
+                        <svg
+                          aria-hidden="true"
+                          focusable="false"
+                          class="spinner"
+                          viewBox="0 0 66 66"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+                        </svg>
+                      </div>
+                    </div>
+
+                    {%- if variant.compare_at_price != variant.price -%}
+                      <dl class="variant-item__discounted-prices">
+                        <dt class="visually-hidden">
                           {{ 'products.product.price.regular_price' | t }}
-                        </span>
-                        <s class="variant-item__old-price">
-                          {{- variant.compare_at_price | money -}}
-                        </s>
-                        <span class="visually-hidden">
+                        </dt>
+                        <dd>
+                          <s class="variant-item__old-price price price--end">
+                            {{ variant.compare_at_price | money }}
+                          </s>
+                        </dd>
+                        <dt class="visually-hidden">
                           {{ 'products.product.price.sale_price' | t }}
-                        </span>
-                        <strong class="variant-item__final-price">
+                        </dt>
+                        <dd class="price">
                           {{ variant.price | money }}
-                          <span> /unit </span>
-                        </strong>
-                      </div>
+                        </dd>
+                      </dl>
                     {%- else -%}
-                      <div>
+                      <span class="price">
                         {{ variant.compare_at_price | money }}
-                        <span> /unit </span>
-                      </div>
+                      </span>
                     {%- endif -%}
 
                     {%- if product.has_only_default_variant == false or variant.selling_plan_allocation != null -%}
@@ -120,59 +134,18 @@
                       <p class="product-option">{{ variant.selling_plan_allocation.selling_plan.name }}</p>
                     {%- endif -%}
 
-                    <div class="loading-overlay hidden">
-                      <div class="loading-overlay__spinner">
-                        <svg
-                          aria-hidden="true"
-                          focusable="false"
-                          class="spinner"
-                          viewBox="0 0 66 66"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
-                        </svg>
+                    {%- if variant.available and variant.unit_price_measurement -%}
+                      <div class="unit-price caption">
+                        <span class="visually-hidden">{{ 'products.product.price.unit_price' | t }}</span>
+                        {{ variant.unit_price | money }}
+                        <span aria-hidden="true">/</span>
+                        <span class="visually-hidden">&nbsp;{{ 'accessibility.unit_price_separator' | t }}&nbsp;</span>
+                        {%- if variant.unit_price_measurement.reference_value != 1 -%}
+                          {{- variant.unit_price_measurement.reference_value -}}
+                        {%- endif -%}
+                        {{ variant.unit_price_measurement.reference_unit }}
                       </div>
-                    </div>
-
-                    <div class="variant-item__price-wrapper">
-                      {%- if variant.original_line_price != variant.final_line_price -%}
-                        <dl class="variant-item__discounted-prices">
-                          <dt class="visually-hidden">
-                            {{ 'products.product.price.regular_price' | t }}
-                          </dt>
-                          <dd>
-                            <s class="variant-item__old-price price price--end">
-                              {{ variant.original_line_price | money }}
-                            </s>
-                          </dd>
-                          <dt class="visually-hidden">
-                            {{ 'products.product.price.sale_price' | t }}
-                          </dt>
-                          <dd class="price price--end">
-                            {{ variant.final_line_price | money }}
-                          </dd>
-                        </dl>
-                      {%- else -%}
-                        <span class="price price--end">
-                          {{ variant.original_line_price | money }}
-                        </span>
-                      {%- endif -%}
-
-                      {%- if variant.available and variant.unit_price_measurement -%}
-                        <div class="unit-price caption">
-                          <span class="visually-hidden">{{ 'products.product.price.unit_price' | t }}</span>
-                          {{ variant.unit_price | money }}
-                          <span aria-hidden="true">/</span>
-                          <span class="visually-hidden"
-                            >&nbsp;{{ 'accessibility.unit_price_separator' | t }}&nbsp;</span
-                          >
-                          {%- if variant.unit_price_measurement.reference_value != 1 -%}
-                            {{- variant.unit_price_measurement.reference_value -}}
-                          {%- endif -%}
-                          {{ variant.unit_price_measurement.reference_unit }}
-                        </div>
-                      {%- endif -%}
-                    </div>
+                    {%- endif -%}
                   </td>
                   <td class="variant-item__quantity small-hide">
                     <div class="variant-item__quantity-wrapper">
@@ -265,27 +238,40 @@
                   </td>
 
                   <td class="variant-item__details small-hide">
-                    {%- if variant.price != variant.compare_at_price -%}
-                      <div class="variant-item__discounted-prices">
-                        <span class="visually-hidden">
+                    <div class="loading-overlay hidden">
+                      <div class="loading-overlay__spinner">
+                        <svg
+                          aria-hidden="true"
+                          focusable="false"
+                          class="spinner"
+                          viewBox="0 0 66 66"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+                        </svg>
+                      </div>
+                    </div>
+                    {%- if variant.compare_at_price != variant.price -%}
+                      <dl class="variant-item__discounted-prices">
+                        <dt class="visually-hidden">
                           {{ 'products.product.price.regular_price' | t }}
-                        </span>
-                        <s class="variant-item__old-price">
-                          {{- variant.compare_at_price | money -}}
-                        </s>
-                        <span class="visually-hidden">
+                        </dt>
+                        <dd>
+                          <s class="variant-item__old-price price price--end">
+                            {{ variant.compare_at_price | money }}
+                          </s>
+                        </dd>
+                        <dt class="visually-hidden">
                           {{ 'products.product.price.sale_price' | t }}
-                        </span>
-                        <strong class="variant-item__final-price">
+                        </dt>
+                        <dd class="price">
                           {{ variant.price | money }}
-                          <span> /unit </span>
-                        </strong>
-                      </div>
+                        </dd>
+                      </dl>
                     {%- else -%}
-                      <div>
+                      <span class="price">
                         {{ variant.compare_at_price | money }}
-                        <span> /unit </span>
-                      </div>
+                      </span>
                     {%- endif -%}
 
                     {%- if product.has_only_default_variant == false or variant.selling_plan_allocation != null -%}
@@ -303,44 +289,7 @@
                       <p class="product-option">{{ variant.selling_plan_allocation.selling_plan.name }}</p>
                     {%- endif -%}
 
-                    <div class="loading-overlay hidden">
-                      <div class="loading-overlay__spinner">
-                        <svg
-                          aria-hidden="true"
-                          focusable="false"
-                          class="spinner"
-                          viewBox="0 0 66 66"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
-                        </svg>
-                      </div>
-                    </div>
-
                     <div class="variant-item__price-wrapper">
-                      {%- if variant.original_line_price != variant.final_line_price -%}
-                        <dl class="variant-item__discounted-prices">
-                          <dt class="visually-hidden">
-                            {{ 'products.product.price.regular_price' | t }}
-                          </dt>
-                          <dd>
-                            <s class="variant-item__old-price price price--end">
-                              {{ variant.original_line_price | money }}
-                            </s>
-                          </dd>
-                          <dt class="visually-hidden">
-                            {{ 'products.product.price.sale_price' | t }}
-                          </dt>
-                          <dd class="price price--end">
-                            {{ variant.final_line_price | money }}
-                          </dd>
-                        </dl>
-                      {%- else -%}
-                        <span class="price price--end">
-                          {{ variant.original_line_price | money }}
-                        </span>
-                      {%- endif -%}
-
                       {%- if variant.available and variant.unit_price_measurement -%}
                         <div class="unit-price caption">
                           <span class="visually-hidden">{{ 'products.product.price.unit_price' | t }}</span>
