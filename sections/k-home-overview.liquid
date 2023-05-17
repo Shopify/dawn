@@ -1,369 +1,345 @@
-<link rel="stylesheet" href="{{ 'k-home-overview-styles.css' | asset_url }}" media="print" onload="this.media='all'">
 
-{% assign background_color = "bg-" | append: section.settings.background_color %}
-{% assign heading_color = "brand-" | append: section.settings.heading_color %}
-{% assign heading_font_weight = "font-weight-" | append: section.settings.heading_font_weight %}
-{% assign subheading_color = "brand-" | append: section.settings.subheading_color %}
-{% assign subheading_font_weight = "font-weight-" | append: section.settings.subheading_font_weight %}
-{% assign para_color = "brand-" | append: section.settings.para_color %}
-{% assign para_font_weight = "font-weight-" | append: section.settings.para_font_weight %}
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+  
+  #shopify-section-{{ section.id }} .description {
+    margin-top: 5rem;
+  }
+  .home-image {
+    position: relative;
+  }
+  .text-cursor {
+    position: absolute;
+    z-index: 2;
+    display: block;
+    top: var(--vertical-desktop);
+    left: var(--horizontal-desktop);
+    text-align: center;
+  }
+  .text-cursor p {
+    line-height: 1em;
+    margin: 0;
+  }
 
-<div class="home-overview page-width">
-  <div class="headings-all page-width">
-    {% if section.settings.heading != blank %}
-    <h2 class="heading text-center {{heading_color}} {{heading_font_weight}}">{{ section.settings.heading }}</h2>
-    {% endif %}
-    {% if section.settings.subheading != blank %}
-      <h3 class="subheading text-center {{subheading_color}} {{subheading_font_weight}}">{{ section.settings.subheading }}</h3>
-    {% endif %}
-  </div>
-  <div class="home-overview-content">
-    {% if section.settings.image != blank %}
-    <div class="home-image-box">
-      <div class="home-img-container">
-        <img class="home-img-bg" src="{{ section.settings.image | img_url: 'master' }}" alt="">
-        <span class="home-garage"></span>
-        <span class="home-tablet"></span>
-        <span class="home-front-window"></span>
-        <span class="home-side-window"></span>
-        <span class="home-motion"></span>
-        <span class="home-slide-door"></span>
-        <span class="home-sink"></span>
-        <span class="home-logo"></span>
-        <span class="home-bath"></span>
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+    #shopify-section-{{ section.id }} .home-image {
+      max-width: {{ section.settings.image_width }}%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+  @media (max-width: 749px) {
+    .text-cursor {
+      top: var(--vertical-mobile);
+      left: var(--horizontal-mobile);
+    }
+  }
+{%- endstyle -%}
+
+<div class="color-{{ section.settings.color_scheme }} isolate gradient">
+  <div class="section-{{ section.id }}-padding">
+    <div class="page-width">
+      <div class="collection__title title-wrapper center title-wrapper--no-top-margin {% if show_mobile_slider %} title-wrapper--self-padded-tablet-down{% endif %}{% if show_desktop_slider %} collection__title--desktop-slider{% endif %}">
+        {%- if section.settings.title != blank -%}
+          <h2 class="title inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">{{ section.settings.title }}</h2>
+        {%- endif -%}
       </div>
-      
-      <div class="modal garage hide ">
-        <h4>Motion Sensor</h4>
-        <img src="https://cdn.shopify.com/s/files/1/2085/3145/files/motion.png?v=1679581751" alt="">
-      </div>
+      <div class="home-image">
+        {% if section.settings.image_desktop != blank %}
+          <div class="home__media media small-hide media--transparent media--adapt {% if section.settings.image_behavior != 'none' %} animate--{{ section.settings.image_behavior }}{% endif %}"
+          style="padding-bottom: {{ 1 | divided_by: section.settings.image_desktop.aspect_ratio | times: 100 }}%;">
+              {%- liquid
+                assign height = section.settings.image_desktop.width | divided_by: section.settings.image_desktop.aspect_ratio | round
+                if section.settings.image_behavior == 'ambient'
+                  assign sizes = '120vw'
+                  assign widths = '450, 660, 900, 1320, 1800, 2136, 2400, 3600, 7680'
+                else
+                  assign sizes = '100vw'
+                  assign widths = '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840'
+                endif
+              -%}
+              {{
+                section.settings.image_desktop
+                | image_url: width: 3840
+                | image_tag:
+                  loading: 'lazy',
+                  height: height,
+                  sizes: sizes,
+                  widths: widths
+              }}
+          </div>
+        {% endif %}
+        {% if section.settings.image_mobile != blank %}
+          <div class="home__media media large-up-hide medium-hide media--transparent media--adapt {% if section.settings.image_behavior != 'none' %} animate--{{ section.settings.image_behavior }}{% endif %}"
+          style="padding-bottom: {{ 1 | divided_by: section.settings.image_mobile.aspect_ratio | times: 100 }}%;">
+              {%- liquid
+                assign height = section.settings.image_mobile.width | divided_by: section.settings.image_mobile.aspect_ratio | round
+                if section.settings.image_behavior == 'ambient'
+                  assign sizes = '120vw'
+                  assign widths = '450, 660, 900, 1320, 1800, 2136, 2400, 3600, 7680'
+                else
+                  assign sizes = '100vw'
+                  assign widths = '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840'
+                endif
+              -%}
+              {{
+                section.settings.image_mobile
+                | image_url: width: 3840
+                | image_tag:
+                  loading: 'lazy',
+                  height: height,
+                  sizes: sizes,
+                  widths: widths
+              }}
+          </div>
+        {% endif %}
 
-      <div class="modal tablet hide ">
-        <h4>Tablet</h4>
-        <img src="https://cdn.shopify.com/s/files/1/2085/3145/files/tablet.png?v=1679581750" alt="">
-        <p>Serves as a central interface for your smart home. Not required, but acts as a perfect replacement for an old alarm keypad.</p>
+        {% for block in section.blocks %}
+          <span class="text-cursor subtitle"
+          style="
+          --vertical-desktop: {{ block.settings.vertical_position }}%;
+          --horizontal-desktop: {{ block.settings.horizontal_position }}%;
+          --vertical-mobile: {{ block.settings.vertical_position_mb }}%;
+          --horizontal-mobile: {{ block.settings.horizontal_position_mb }}%;">
+            <span>{{ block.settings.text }}</span>
+          </span>
+        {% endfor %}
       </div>
-
-      <div class="modal front-window hide ">
-        <h4>Window Sensor</h4>
-        <img src="https://cdn.shopify.com/s/files/1/2085/3145/files/WiredWindowSensor_1.png?v=1679581751" alt="">
-      </div>
-
-      <div class="modal side-window hide ">
-        <h4>Window Sensor</h4>
-        <img src="https://cdn.shopify.com/s/files/1/2085/3145/files/WiredWindowSensor_1.png?v=1679581751" alt="">
-      </div>
-
-      <div class="modal motion hide ">
-        <h4>Motion Sensor</h4>
-        <img src="https://cdn.shopify.com/s/files/1/2085/3145/files/motion.png?v=1679581751" alt="">
-      </div>
-
-      <div class="modal slide-door hide ">
-        <h4>Door Sensor</h4>
-        <img src="https://cdn.shopify.com/s/files/1/2085/3145/files/WiredWindowSensor_1.png?v=1679581751" alt="">
-      </div>
-
-      <div class="modal sink hide ">
-        <h4>Leak Detector</h4>
-        <img src="https://cdn.shopify.com/s/files/1/2085/3145/files/water_leak.png?v=1679581751" alt="">
-      </div>
-
-      <div class="modal logo hide ">
-        <h4>Konnected Alarm Panel</h4>
-        <img src="https://cdn.shopify.com/s/files/1/2085/3145/files/board.png?v=1679581751" alt="">
-        <p>Installs in place of your traditional wired alarm panel and makes your wired sensors smart.</p>
-      </div>
-
-      <div class="modal bath hide ">
-        <h4>Leak Detector</h4>
-        <img src="https://cdn.shopify.com/s/files/1/2085/3145/files/water_leak.png?v=1679581751" alt="">
-      </div>
-
+      {%- if section.settings.description != blank -%}
+        <div class="{{ section.settings.description_style }} description center rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+            {{ section.settings.description -}}
+        </div>
+      {%- endif -%}
     </div>
-    {% endif %}
-  </div>
-
-  <div class="para-container {{para_color}} {{para_font_weight}}">
-    {{ section.settings.paragraph }}
   </div>
 </div>
 
-{% style %}
-  .home-overview .heading {
-    font-size: {{ section.settings.heading_font_size }}px;
-  }
-  .home-overview .subheading {
-    font-size: {{ section.settings.subheading_font_size }}px;
-  }
-  .home-overview {
-    padding:  {{ section.settings.section_padding }}px 0px;
-    margin-top: {{ section.settings.section_margin_top }}px;
-    margin-bottom: {{ section.settings.section_margin_bottom }}px;
-  }
-{% endstyle %}
-{% schema  %}
+{% schema %}
   {
-    "name": "Home Overview",
+    "name": "K Home Overview",
+    "tag": "section",
+    "class": "home-overview section",
+    "disabled_on": {
+      "groups": ["header", "footer"]
+    },
     "settings": [
-        {
-        "type": "select",
-        "id": "background_color",
-        "label": "Background Color",
-        "default": "white",
-        "options": [
-          {
-            "value": "white",
-            "label": "White"
-          }, {
-            "value": "light-blue",
-            "label": "Blue"
-          }, {
-            "value": "lighter-blue",
-            "label": "Light Blue"
-          }
-        ]
-      },
       {
-        "type": "range",
-        "id": "section_padding",
-        "min":  0,
-        "max":  100,
-        "step":  2,
-        "unit": "px" ,
-        "label": "Section Padding",
-        "default":  10
+        "type": "inline_richtext",
+        "id": "title",
+        "default": "Featured collection",
+        "label": "t:sections.featured-collection.settings.title.label"
       },
-      {
-        "type": "range",
-        "id": "section_margin_top",
-        "min":  0,
-        "max":  50,
-        "step":  1,
-        "unit": "px" ,
-        "label": "Section Margin Top",
-        "default":  10
-      },
-      {
-        "type": "range",
-        "id": "section_margin_bottom",
-        "min":  0,
-        "max":  50,
-        "step":  1,
-        "unit": "px" ,
-        "label": "Section Margin Bottom",
-        "default":  10
-      },
-      {
-        "id": "image",
-        "type": "image_picker",
-        "label": "Icon Top"
-      },
-      {
-        "id": "heading",
-        "type": "text",
-        "label": "Heading",
-        "default": "Title"
-      }, {
-        "type": "select",
-        "id": "heading_color",
-        "label": "Heading Font Color",
-        "default": "dark-gray",
-        "options": [
-          {
-            "value": "blue",
-            "label": "Blue"
-          },
-          {
-            "value": "dark-blue",
-            "label": "Dark Blue"
-          },
-          {
-            "value": "gray",
-            "label": "Gray"
-          },
-          {
-            "value": "dark-gray",
-            "label": "Dark Gray"
-          }, {
-            "value": "white",
-            "label": "White"
-          }, {
-            "value": "dark",
-            "label": "Dark"
-          }
-        ]
-      }, {
-        "type": "range",
-        "id": "heading_font_size",
-        "min": 18,
-        "max": 68,
-        "step": 2,
-        "unit": "px",
-        "label": "Heading Font size",
-        "default": 32
-      }, 
       {
         "type": "select",
-        "id": "heading_font_weight",
-        "label": "Heading Font Weight",
-        "default": "bold",
+        "id": "heading_size",
         "options": [
           {
-            "value": "light",
-            "label": "Light"
-          }, {
-            "value": "regular",
-            "label": "Regular"
-          }, {
-            "value": "bold",
-            "label": "Bold"
-          }
-        ]
-      },
-      {
-        "id": "subheading",
-        "type": "text",
-        "label": "Sub Heading",
-        "default": "Sub Title"
-      }, {
-        "type": "select",
-        "id": "subheading_color",
-        "label": "Heading Font Color",
-        "default": "dark-gray",
-        "options": [
-          {
-            "value": "blue",
-            "label": "Blue"
+            "value": "h2",
+            "label": "t:sections.all.heading_size.options__1.label"
           },
           {
-            "value": "dark-blue",
-            "label": "Dark Blue"
+            "value": "h1",
+            "label": "t:sections.all.heading_size.options__2.label"
           },
           {
-            "value": "gray",
-            "label": "Gray"
-          },
-          {
-            "value": "dark-gray",
-            "label": "Dark Gray"
-          }, {
-            "value": "white",
-            "label": "White"
-          }, {
-            "value": "dark",
-            "label": "Dark"
+            "value": "h0",
+            "label": "t:sections.all.heading_size.options__3.label"
           }
-        ]
-      }, {
-        "type": "range",
-        "id": "subheading_font_size",
-        "min": 18,
-        "max": 68,
-        "step": 2,
-        "unit": "px",
-        "label": "Sub Heading Font size",
-        "default": 24
-      }, 
-      {
-        "type": "select",
-        "id": "subheading_font_weight",
-        "label": "Sub Heading Font Weight",
-        "default": "bold",
-        "options": [
-          {
-            "value": "light",
-            "label": "Light"
-          }, {
-            "value": "regular",
-            "label": "Regular"
-          }, {
-            "value": "bold",
-            "label": "Bold"
-          }
-        ]
+        ],
+        "default": "h1",
+        "label": "t:sections.all.heading_size.label"
       },
       {
         "type": "richtext",
-        "id": "paragraph",
-        "label": "Paragraph",
-        "default": "<p>Enter Paragraph Text</p>"
+        "id": "description",
+        "label": "t:sections.featured-collection.settings.description.label"
       },
       {
         "type": "select",
-        "id": "para_color",
-        "label": "Heading Font Color",
-        "default": "dark-gray",
+        "id": "description_style",
+        "label": "t:sections.featured-collection.settings.description_style.label",
         "options": [
           {
-            "value": "blue",
-            "label": "Blue"
+            "value": "body",
+            "label": "t:sections.featured-collection.settings.description_style.options__1.label"
           },
           {
-            "value": "dark-blue",
-            "label": "Dark Blue"
+            "value": "subtitle",
+            "label": "t:sections.featured-collection.settings.description_style.options__2.label"
           },
           {
-            "value": "gray",
-            "label": "Gray"
-          },
-          {
-            "value": "dark-gray",
-            "label": "Dark Gray"
-          }, {
-            "value": "white",
-            "label": "White"
-          }, {
-            "value": "dark",
-            "label": "Dark"
+            "value": "uppercase",
+            "label": "t:sections.featured-collection.settings.description_style.options__3.label"
           }
-        ]
-      }, {
+        ],
+        "default": "body"
+      },
+      {
+        "type": "header",
+        "content": "Images"
+      },
+      {
+        "type": "image_picker",
+        "id": "image_desktop",
+        "label": "Image Desktop"
+      },
+      {
+        "type": "image_picker",
+        "id": "image_mobile",
+        "label": "Image Mobile"
+      },
+      {
         "type": "range",
-        "id": "para_font_size",
-        "min": 18,
-        "max": 68,
-        "step": 2,
-        "unit": "px",
-        "label": "Sub Heading Font size",
-        "default": 24
-      }, 
+        "id": "image_width",
+        "min": 50,
+        "max": 100,
+        "step": 1,
+        "default": 100,
+        "unit": "%",
+        "label": "Image width"
+      },
       {
         "type": "select",
-        "id": "para_font_weight",
-        "label": "Sub Heading Font Weight",
-        "default": "bold",
+        "id": "image_behavior",
         "options": [
           {
-            "value": "light",
-            "label": "Light"
-          }, {
-            "value": "regular",
-            "label": "Regular"
-          }, {
-            "value": "bold",
-            "label": "Bold"
+            "value": "none",
+            "label": "t:sections.all.animation.image_behavior.options__1.label"
+          },
+          {
+            "value": "ambient",
+            "label": "t:sections.all.animation.image_behavior.options__2.label"
+          }
+        ],
+        "default": "none",
+        "label": "t:sections.all.animation.image_behavior.label"
+      },
+      {
+        "type": "select",
+        "id": "color_scheme",
+        "options": [
+          {
+            "value": "accent-1",
+            "label": "t:sections.all.colors.accent_1.label"
+          },
+          {
+            "value": "accent-2",
+            "label": "t:sections.all.colors.accent_2.label"
+          },
+          {
+            "value": "background-1",
+            "label": "t:sections.all.colors.background_1.label"
+          },
+          {
+            "value": "background-2",
+            "label": "t:sections.all.colors.background_2.label"
+          },
+          {
+            "value": "inverse",
+            "label": "t:sections.all.colors.inverse.label"
+          }
+        ],
+        "default": "background-1",
+        "label": "t:sections.all.colors.label",
+        "info": "t:sections.all.colors.has_cards_info"
+      },
+      {
+        "type": "header",
+        "content": "t:sections.all.padding.section_padding_heading"
+      },
+      {
+        "type": "range",
+        "id": "padding_top",
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px",
+        "label": "t:sections.all.padding.padding_top",
+        "default": 36
+      },
+      {
+        "type": "range",
+        "id": "padding_bottom",
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px",
+        "label": "t:sections.all.padding.padding_bottom",
+        "default": 36
+      }
+    ],
+    "blocks": [
+      {
+        "type": "text",
+        "name": "Text",
+        "settings": [
+          {
+            "type": "richtext",
+            "id": "text",
+            "label": "Text"
+          },
+          {
+            "type": "header",
+            "content": "Desktop Position"
+          },
+          {
+            "type": "range",
+            "id": "vertical_position",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "unit": "%",
+            "label": "Vertical Position",
+            "default": 50
+          },
+          {
+            "type": "range",
+            "id": "horizontal_position",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "unit": "%",
+            "label": "Horizontal Position",
+            "default": 50
+          },
+          {
+            "type": "header",
+            "content": "Mobile Position"
+          },
+          {
+            "type": "range",
+            "id": "vertical_position_mb",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "unit": "%",
+            "label": "Vertical Position",
+            "default": 50
+          },
+          {
+            "type": "range",
+            "id": "horizontal_position_mb",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "unit": "%",
+            "label": "Horizontal Position",
+            "default": 50
           }
         ]
       }
     ],
     "presets": [
       {
-        "name": "Home Overview"
+        "name": "K Home Overview"
       }
     ]
   }
 {% endschema %}
-
-<script>
-
-  $('.home-img-container span').mouseenter(function(e){
-    let modalName = e.target.className.substring(5);
-    $('.home-image-box .modal.' + modalName).removeClass('hide');
-    gtag('event', 'homepage_detail_hover', { 'detail_card': modalName })
-  }).mouseleave(function(e){
-    let modalName = e.target.className.substring(5)
-    $('.home-image-box .modal.' + modalName).addClass('hide');
-  })
-  
-</script>
