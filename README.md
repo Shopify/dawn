@@ -22,10 +22,11 @@ Dawn represents a HTML-first, JavaScript-only-as-needed approach to theme develo
 You can find a more detailed version of our theme code principles in the [contribution guide](https://github.com/Shopify/dawn/blob/main/.github/CONTRIBUTING.md#theme-code-principles).
 
 ## Getting started
-
 We recommend using Dawn as a starting point for theme development. [Learn more on Shopify.dev](https://shopify.dev/themes/getting-started/create). 
 
 > If you're building a theme for the Shopify Theme Store, then you can use Dawn as a starting point. However, the theme that you submit needs to be [substantively different from Dawn](https://shopify.dev/themes/store/requirements#uniqueness) so that it provides added value for merchants. Learn about the [ways that you can use Dawn](https://shopify.dev/themes/tools/dawn#ways-to-use-dawn).
+
+Please note that the main branch may include code for features not yet released. The "stable" version of Dawn is available in the theme store.
 
 ## Staying up to date with Dawn changes
 
