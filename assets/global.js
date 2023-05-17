@@ -696,7 +696,7 @@ class SliderComponent extends HTMLElement {
 
 customElements.define('slider-component', SliderComponent);
 
-class SlideshowComponent extends SliderComponent {
+class SlideshowSharedComponent extends SliderComponent {
   constructor() {
     super();
     this.sliderControlWrapper = this.querySelector('.slider-buttons');
@@ -704,32 +704,14 @@ class SlideshowComponent extends SliderComponent {
 
     if (!this.sliderControlWrapper) return;
 
+    this.desktopLayout = window.matchMedia('(min-width: 750px)');
+    this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
     this.sliderFirstItemNode = this.slider.querySelector('.slideshow__slide');
     if (this.sliderItemsToShow.length > 0) this.currentPage = 1;
 
-    this.sliderControlLinksArray = Array.from(this.sliderControlWrapper.querySelectorAll('.slider-counter__link'));
-    this.sliderControlLinksArray.forEach((link) => link.addEventListener('click', this.linkToSlide.bind(this)));
     this.slider.addEventListener('scroll', this.setSlideVisibility.bind(this));
     this.setSlideVisibility();
-
-    if (this.querySelector('.announcement-bar-slider')) {
-      this.announcementBarArrowButtonWasClicked = false;
-
-      this.desktopLayout = window.matchMedia('(min-width: 750px)');
-      this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-      [this.reducedMotion, this.desktopLayout].forEach((mediaQuery) => {
-        mediaQuery.addEventListener('change', () => {
-          if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
-        });
-      });
-
-      [this.prevButton, this.nextButton].forEach((button) => {
-        button.addEventListener('click', () => {
-          this.announcementBarArrowButtonWasClicked = true;
-        }, {once: true});
-      });
-    }
 
     if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
   }
@@ -740,15 +722,6 @@ class SlideshowComponent extends SliderComponent {
     this.addEventListener('mouseleave', this.focusOutHandling.bind(this));
     this.addEventListener('focusin', this.focusInHandling.bind(this));
     this.addEventListener('focusout', this.focusOutHandling.bind(this));
-
-    if (this.querySelector('.slideshow__autoplay')) {
-      this.sliderAutoplayButton = this.querySelector('.slideshow__autoplay');
-      this.sliderAutoplayButton.addEventListener('click', this.autoPlayToggle.bind(this));
-      this.autoplayButtonIsSetToPlay = true;
-      this.play();
-    } else {
-      this.reducedMotion.matches || this.announcementBarArrowButtonWasClicked || !this.desktopLayout.matches ? this.pause() : this.play();
-    }
   }
 
   onButtonClick(event) {
@@ -771,23 +744,7 @@ class SlideshowComponent extends SliderComponent {
 
   update() {
     super.update();
-    this.sliderControlButtons = this.querySelectorAll('.slider-counter__link');
     this.prevButton.removeAttribute('disabled');
-
-    if (!this.sliderControlButtons.length) return;
-
-    this.sliderControlButtons.forEach((link) => {
-      link.classList.remove('slider-counter__link--active');
-      link.removeAttribute('aria-current');
-    });
-    this.sliderControlButtons[this.currentPage - 1].classList.add('slider-counter__link--active');
-    this.sliderControlButtons[this.currentPage - 1].setAttribute('aria-current', true);
-  }
-
-  autoPlayToggle() {
-    this.togglePlayButtonState(this.autoplayButtonIsSetToPlay);
-    this.autoplayButtonIsSetToPlay ? this.pause() : this.play();
-    this.autoplayButtonIsSetToPlay = !this.autoplayButtonIsSetToPlay;
   }
 
   focusOutHandling(event) {
@@ -826,16 +783,6 @@ class SlideshowComponent extends SliderComponent {
     clearInterval(this.autoplay);
   }
 
-  togglePlayButtonState(pauseAutoplay) {
-    if (pauseAutoplay) {
-      this.sliderAutoplayButton.classList.add('slideshow__autoplay--paused');
-      this.sliderAutoplayButton.setAttribute('aria-label', window.accessibilityStrings.playSlideshow);
-    } else {
-      this.sliderAutoplayButton.classList.remove('slideshow__autoplay--paused');
-      this.sliderAutoplayButton.setAttribute('aria-label', window.accessibilityStrings.pauseSlideshow);
-    }
-  }
-
   autoRotateSlides() {
     const slideScrollPosition =
       this.currentPage === this.sliderItems.length
@@ -866,6 +813,72 @@ class SlideshowComponent extends SliderComponent {
       }
     });
   }
+}
+
+customElements.define('slideshow-shared-component', SlideshowSharedComponent);
+
+class SlideshowSectionComponent extends SlideshowSharedComponent {
+  constructor() {
+    super();
+
+    this.sliderControlLinksArray = Array.from(this.sliderControlWrapper.querySelectorAll('.slider-counter__link'));
+    this.sliderControlLinksArray.forEach((link) => link.addEventListener('click', this.linkToSlide.bind(this)));
+  }
+
+  setAutoPlay() {
+    super.setAutoPlay();
+    this.sliderAutoplayButton = this.querySelector('.slideshow__autoplay');
+    this.sliderAutoplayButton.addEventListener('click', this.autoPlayToggle.bind(this));
+    this.autoplayButtonIsSetToPlay = true;
+    this.play();
+  }
+
+  update() {
+    super.update();
+    this.sliderControlButtons = this.querySelectorAll('.slider-counter__link');
+
+    if (!this.sliderControlButtons.length) return;
+
+    this.sliderControlButtons.forEach((link) => {
+      link.classList.remove('slider-counter__link--active');
+      link.removeAttribute('aria-current');
+    });
+    this.sliderControlButtons[this.currentPage - 1].classList.add('slider-counter__link--active');
+    this.sliderControlButtons[this.currentPage - 1].setAttribute('aria-current', true);
+  }
+
+  autoPlayToggle() {
+    this.togglePlayButtonState(this.autoplayButtonIsSetToPlay);
+    this.autoplayButtonIsSetToPlay ? this.pause() : this.play();
+    this.autoplayButtonIsSetToPlay = !this.autoplayButtonIsSetToPlay;
+  }
+
+  focusOutHandling(event) {
+    const focusedOnAutoplayButton =
+      event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
+    if (!this.autoplayButtonIsSetToPlay || focusedOnAutoplayButton) return;
+    this.play();
+  }
+
+  focusInHandling(event) {
+    const focusedOnAutoplayButton =
+      event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
+    if (focusedOnAutoplayButton && this.autoplayButtonIsSetToPlay) {
+      this.play();
+    } else if (this.autoplayButtonIsSetToPlay) {
+      this.pause();
+    }
+  }
+
+  togglePlayButtonState(pauseAutoplay) {
+    if (pauseAutoplay) {
+      this.sliderAutoplayButton.classList.add('slideshow__autoplay--paused');
+      this.sliderAutoplayButton.setAttribute('aria-label', window.accessibilityStrings.playSlideshow);
+    } else {
+      this.sliderAutoplayButton.classList.remove('slideshow__autoplay--paused');
+      this.sliderAutoplayButton.setAttribute('aria-label', window.accessibilityStrings.pauseSlideshow);
+    }
+  }
 
   linkToSlide(event) {
     event.preventDefault();
@@ -879,7 +892,42 @@ class SlideshowComponent extends SliderComponent {
   }
 }
 
-customElements.define('slideshow-component', SlideshowComponent);
+customElements.define('slideshow-section-component', SlideshowSectionComponent);
+
+class AnnouncementBarSlider extends SlideshowSharedComponent {
+  constructor() {
+    super();
+
+    this.announcementBarArrowButtonWasClicked = false;
+
+    [this.reducedMotion, this.desktopLayout].forEach((mediaQuery) => {
+      mediaQuery.addEventListener('change', () => {
+        if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
+      });
+    });
+
+    [this.prevButton, this.nextButton].forEach((button) => {
+      button.addEventListener('click', () => {
+        this.announcementBarArrowButtonWasClicked = true;
+      }, {once: true});
+    });
+  }
+
+  setAutoPlay() {
+    super.setAutoPlay();
+    this.reducedMotion.matches || this.announcementBarArrowButtonWasClicked || !this.desktopLayout.matches ? this.pause() : this.play();
+  }
+
+  focusOutHandling() {
+    if (!this.reducedMotion.matches && !this.announcementBarArrowButtonWasClicked && this.desktopLayout.matches) this.play();
+  }
+
+  focusInHandling(event) {
+    if (this.querySelector('.announcement-bar-slider').contains(event.target)) this.pause();
+  }
+}
+
+customElements.define('announcement-bar-slider', AnnouncementBarSlider);
 
 class VariantSelects extends HTMLElement {
   constructor() {
@@ -1149,7 +1197,7 @@ class ProductRecommendations extends HTMLElement {
             this.innerHTML = recommendations.innerHTML;
           }
 
-          if (!this.querySelector('slideshow-component') && this.classList.contains('complementary-products')) {
+          if (!this.querySelector('slideshow-section-component') && this.classList.contains('complementary-products')) {
             this.remove();
           }
 
