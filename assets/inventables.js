@@ -20,21 +20,25 @@ function suppressInvalidOptions(metaFields, variantData) {
   });
 }
 
-
-
 document.addEventListener('DOMContentLoaded', () => {
   let variantRadios = document.querySelectorAll('variant-radios')[0];
   let variantData = variantRadios.getVariantData();
   let metaFields = document.querySelectorAll('variant-metafields')[0].getMetafields();
+
+  // First, disable the ability to select any options marked as unavailable in metafields.
   suppressInvalidOptions(metaFields, variantData);
 
   const fieldsets = Array.from(variantRadios.querySelectorAll('fieldset'));
   const optionGroups = fieldsets.map((fs) => { return Array.from(fs.querySelectorAll('input'))  });
   const labelGroups = fieldsets.map((fs) => { return Array.from(fs.querySelectorAll('label'))  });
   optionGroups.forEach((og, i) => {
+
+    // If the currently checked option is not available, we need to reset to an available one.
     const availableOptions = [];
     let needsReset = false;
 
+    // Go through each option, and if it's not available, hide it. If it is available, mark it as such, in
+    // case we need to reset to it.
     og.forEach((option, j) => {
       let availableVariant = variantData.find((variant) => {
         return variant.options[i] === option.value && variant.available  });
