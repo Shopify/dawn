@@ -32,15 +32,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const optionGroups = fieldsets.map((fs) => { return Array.from(fs.querySelectorAll('input'))  });
   const labelGroups = fieldsets.map((fs) => { return Array.from(fs.querySelectorAll('label'))  });
   optionGroups.forEach((og, i) => {
-    const labelGroup = labelGroups[i];
-    let availableVariants = og.map((option, j) => {
+    const availableOptions = [];
+    let needsReset = false;
+
+    og.forEach((option, j) => {
       let availableVariant = variantData.find((variant) => {
         return variant.options[i] === option.value && variant.available  });
       if (!availableVariant) {
+        if (option.checked) {
+          needsReset = true;
+        }
+
         option.style.display = 'none';
         labelGroups[i][j].style.display = 'none';
+      } else {
+        availableOptions.push(option);
       }
     });
+
+    if (needsReset && availableOptions.length > 0) {
+      availableOptions[0].checked = true;
+    }
   });
 
   variantRadios.onVariantChange();
