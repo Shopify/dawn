@@ -4,17 +4,14 @@ class VariantMetafields extends HTMLElement {
   }
 
   getMetafields() {
-    this.metafields = this.metafields || this.querySelector('[type="application/json"]').textContent;
+    this.metafields = this.metafields || JSON.parse(this.querySelector('[type="application/json"]').textContent);
     return this.metafields;
   }
 }
 
 customElements.define('variant-metafields', VariantMetafields);
 
-function suppressInvalidOptions() {
-  let metaFields = JSON.parse(document.querySelectorAll('variant-metafields')[0].getMetafields());
-  let variantSelect = document.querySelectorAll('variant-selects, variant-radios')[0]
-  let variantData = variantSelect.getVariantData();
+function suppressInvalidOptions(metaFields, variantData) {
   variantData.forEach((variant) => {
     let metaField = metaFields[variant.id];
     if (metaField) {
@@ -23,8 +20,28 @@ function suppressInvalidOptions() {
   });
 }
 
+
+
 document.addEventListener('DOMContentLoaded', () => {
-  suppressInvalidOptions();
-  let variantSelect = document.querySelectorAll('variant-selects, variant-radios')[0];
-  variantSelect.onVariantChange();
+  let variantRadios = document.querySelectorAll('variant-radios')[0];
+  let variantData = variantRadios.getVariantData();
+  let metaFields = document.querySelectorAll('variant-metafields')[0].getMetafields();
+  suppressInvalidOptions(metaFields, variantData);
+
+  const fieldsets = Array.from(variantRadios.querySelectorAll('fieldset'));
+  const optionGroups = fieldsets.map((fs) => { return Array.from(fs.querySelectorAll('input'))  });
+  const labelGroups = fieldsets.map((fs) => { return Array.from(fs.querySelectorAll('label'))  });
+  optionGroups.forEach((og, i) => {
+    const labelGroup = labelGroups[i];
+    let availableVariants = og.map((option, j) => {
+      let availableVariant = variantData.find((variant) => {
+        return variant.options[i] === option.value && variant.available  });
+      if (!availableVariant) {
+        option.style.display = 'none';
+        labelGroups[i][j].style.display = 'none';
+      }
+    });
+  });
+
+  variantRadios.onVariantChange();
 });
