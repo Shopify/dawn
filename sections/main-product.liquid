@@ -47,6 +47,18 @@
     >
   {%- endif -%}
 
+  <variant-metafields>
+    <script type="application/json">
+      {
+        {% for variant in product.variants %}
+          "{{ variant.id }}": {
+            "available": {{ variant.metafields.custom.available_for_purchase |  metafield_text |  default: true }}
+          }{%- unless forloop.last -%},{%- endunless -%}
+        {% endfor %}
+      }
+    </script>
+  </variant-metafields>
+
   <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
     <div class="grid__item product__media-wrapper{% if section.settings.media_position == 'right' %} medium-hide large-up-hide{% endif %}">
       <media-gallery
@@ -556,6 +568,10 @@
                         <option
                           {% if variant == product.selected_or_first_available_variant %}
                             selected="selected"
+                          {% endif %}
+                          {%  assign available_for_purchase =  variant.metafields.custom.available_for_purchase | metafield_text |  default: true %}
+                          {% if available_for_purchase == "false" %}
+                            disabled
                           {% endif %}
                           {% if variant.available == false %}
                             disabled
