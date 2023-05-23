@@ -15,6 +15,9 @@ customElements.define('variant-list-remove-button', VariantListRemoveButton);
 class VariantList extends HTMLElement {
   constructor() {
     super();
+    this.addAction = 'ADD'
+    this.updateAction = 'UPDATE'
+    this.variantListId = 'variant-list'
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
     const debouncedOnChange = debounce((event) => {
       this.onChange(event);
@@ -26,7 +29,7 @@ class VariantList extends HTMLElement {
 
   connectedCallback() {
     this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (event) => {
-      if (event.source === 'variant-list') {
+      if (event.source === this.variantListId) {
         return;
       }
       // If its another section that made the update
@@ -43,9 +46,9 @@ class VariantList extends HTMLElement {
   onChange(event) {
     const qty = parseInt(event.target.value) - parseInt(event.target.dataset.cartQuantity)
     if (parseInt(event.target.dataset.cartQuantity) > 0) {
-      this.updateQuantity(event.target.dataset.index, event.target.value, document.activeElement.getAttribute('name'), 'UPDATE');
+      this.updateQuantity(event.target.dataset.index, event.target.value, document.activeElement.getAttribute('name'), this.updateAction);
     } else {
-      this.updateQuantity(event.target.dataset.index, qty, document.activeElement.getAttribute('name'), 'ADD');
+      this.updateQuantity(event.target.dataset.index, qty, document.activeElement.getAttribute('name'), this.addAction);
     }
   }
 
@@ -54,7 +57,7 @@ class VariantList extends HTMLElement {
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
-        const sourceQty = html.querySelector('variant-list');
+        const sourceQty = html.querySelector(this.variantListId);
         this.innerHTML = sourceQty.innerHTML;
       })
       .catch(e => {
@@ -65,8 +68,8 @@ class VariantList extends HTMLElement {
   getSectionsToRender() {
     return [
       {
-        id: 'variant-list',
-        section: document.getElementById('variant-list').dataset.id,
+        id: this.variantListId,
+        section: document.getElementById(this.variantListId).dataset.id,
         selector: '.js-contents'
       },
       {
@@ -81,7 +84,7 @@ class VariantList extends HTMLElement {
       },
       {
         id: 'variantlist-total',
-        section: document.getElementById('variant-list').dataset.id,
+        section: document.getElementById(this.variantListId).dataset.id,
         selector: '.variantlist-total'
       }
     ];
@@ -97,7 +100,7 @@ class VariantList extends HTMLElement {
       sections_url: window.location.pathname
     });
     let routeUrl = routes.cart_change_url
-    if (action === 'ADD') {
+    if (action === this.addAction) {
       routeUrl = routes.cart_add_url
     }
 
@@ -124,30 +127,20 @@ class VariantList extends HTMLElement {
           elementToReplace.innerHTML =
             this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
         }));
+
         let message = '';
-        if (action === 'ADD') {
+
+        if (action === this.addAction) {
           const updatedValue = parsedState.quantity ? parsedState.quantity : undefined;
           if (parsedState.quantity !== parseInt(quantityElement.value)) {
-            if (typeof updatedValue === 'undefined') {
-              message = window.cartStrings.error;
-            } else {
-              message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
-            }
-            this.updateLiveRegions(id, message);
+            this.updateError(updatedValue, id, message)
           }
-
         } else {
           const currentItem = parsedState.items.find((item) => item.variant_id === parseInt(id));
           const updatedValue = currentItem ? currentItem.quantity : undefined;
-          console.log(updatedValue, 'hehehhe', parsedState.items)
 
           if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
-            if (typeof updatedValue === 'undefined') {
-              message = window.cartStrings.error;
-            } else {
-              message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
-            }
-            this.updateLiveRegions(id, message);
+            this.updateError(updatedValue, id)
           }
         }
 
@@ -155,7 +148,7 @@ class VariantList extends HTMLElement {
         if (variantItem && variantItem.querySelector(`[name="${name}"]`)) {
           variantItem.querySelector(`[name="${name}"]`).focus();
         }
-        publish(PUB_SUB_EVENTS.cartUpdate, { source: 'variant-list' });
+        publish(PUB_SUB_EVENTS.cartUpdate, { source: this.variantListId });
       }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         const errors = document.getElementById('variantlist-errors');
@@ -164,7 +157,15 @@ class VariantList extends HTMLElement {
       .finally(() => {
         this.disableLoading(id);
       });
+  }
 
+  updateError(updatedValue, id, message) {
+    if (typeof updatedValue === 'undefined') {
+      message = window.cartStrings.error;
+    } else {
+      message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
+    }
+    this.updateLiveRegions(id, message);
   }
 
   updateLiveRegions(id, message) {
@@ -188,7 +189,7 @@ class VariantList extends HTMLElement {
   }
 
   enableLoading(id) {
-    const variantList = document.getElementById('variant-list');
+    const variantList = document.getElementById(this.variantListId);
     variantList.classList.add('cart__items--disabled');
 
     const variantListItems = this.querySelectorAll(`#Variant-${id} .loading-overlay`);
@@ -200,7 +201,7 @@ class VariantList extends HTMLElement {
   }
 
   disableLoading(id) {
-    const variantList = document.getElementById('variant-list');
+    const variantList = document.getElementById(this.variantListId);
     variantList.classList.remove('cart__items--disabled');
 
     const variantListItems = this.querySelectorAll(`#Variant-${id} .loading-overlay`);
