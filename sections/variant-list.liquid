@@ -35,7 +35,7 @@
               <tr>
                 <th class="caption-with-letter-spacing" colspan="1" scope="col">Product</th>
                 <th class="medium-hide large-up-hide right caption-with-letter-spacing" colspan="1" scope="col">
-                  {{ 'sections.cart.headings.total' | t }}
+                  {{ 'sections.variant_list.item_subtotal' | t }}
                 </th>
                 <th class="variant-items__heading--wide small-hide caption-with-letter-spacing" colspan="1" scope="col">
                   {{ 'products.product.quantity.label' | t }}
@@ -44,7 +44,7 @@
                   {{ 'sections.cart.headings.price' | t }}
                 </th>
                 <th class="small-hide right caption-with-letter-spacing" colspan="1" scope="col">
-                  {{ 'sections.cart.headings.total' | t }}
+                  {{ 'sections.variant_list.item_subtotal' | t }}
                 </th>
               </tr>
             </thead>
@@ -146,6 +146,9 @@
                       <div class="variant-item__quantity-info">
                         {% render 'icon-info' %}
                       </div>
+                      {% # theme-check-disable %}
+                      {% assign cart_qty = cart | item_count_for_variant: variant.id %}
+                      {% # theme-check-enable %}
                       <quantity-input class="quantity cart-quantity">
                         <button class="quantity__button no-js-hidden" name="minus" type="button">
                           <span class="visually-hidden">
@@ -158,15 +161,13 @@
                           data-quantity-variant-id="{{ variant.id }}"
                           type="number"
                           name="updates[]"
-                          {% # theme-check-disable %}
-                          value="{{ cart | item_count_for_variant: variant.id }}"
-                          data-cart-quantity="{{ cart | item_count_for_variant: variant.id }}"
+                          value="{{ cart_qty }}"
+                          data-cart-quantity="{{ cart_qty }}"
                           min="{{ variant.quantity_rule.min }}"
                           {% if variant.quantity_rule.max != null %}
                             max="{{ variant.quantity_rule.max }}"
                           {% endif %}
                           step="{{ variant.quantity_rule.increment }}"
-                          {% # theme-check-enable %}
                           aria-label="{{ 'products.product.quantity.input_label' | t: product: variant.title | escape }}"
                           id="Quantity-{{ variant.id }}"
                           data-index="{{ variant.id }}"
@@ -178,19 +179,20 @@
                           {% render 'icon-plus' %}
                         </button>
                       </quantity-input>
-
-                      <variant-list-remove-button
-                        id="Remove-{{ variant.id }}"
-                        data-index="{{ variant.id }}"
-                      >
-                        <a
-                          href="{{ variant.url_to_remove }}"
-                          class="button button--tertiary"
-                          aria-label="{{ 'sections.cart.remove_title' | t: title: variant.title }}"
+                      {%- if cart_qty > 0 -%}
+                        <variant-list-remove-button
+                          id="Remove-{{ variant.id }}"
+                          data-index="{{ variant.id }}"
                         >
-                          {% render 'icon-remove' %}
-                        </a>
-                      </variant-list-remove-button>
+                          <a
+                            href="{{ variant.url_to_remove }}"
+                            class="button button--tertiary"
+                            aria-label="{{ 'sections.cart.remove_title' | t: title: variant.title }}"
+                          >
+                            {% render 'icon-remove' %}
+                          </a>
+                        </variant-list-remove-button>
+                      {%- endif -%}
                     </div>
                     <div class="variant-item__error" id="Line-item-error-{{ variant.id }}" role="alert">
                       <small class="variant-item__error-text"></small>
@@ -381,7 +383,7 @@
     <div class="totals right">
       <div>
         <h2 class="totals__subtotal-value">{{ cart.total_price | money_with_currency }}</h2>
-        <p class="totals__subtotal">{{ 'sections.variant_list.subtotal' | t }}</p>
+        <p class="totals__subtotal">{{ 'sections.variant_list.product_subtotal' | t }}</p>
       </div>
       <small class="tax-note caption-large rte">
         {%- if cart.taxes_included and shop.shipping_policy.body != blank -%}
