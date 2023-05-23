@@ -13,7 +13,7 @@ if (!customElements.get('pickup-availability')) {
       }
 
       fetchAvailability(variantId) {
-        let rootUrl = this.dataset.baseUrl;
+        let rootUrl = this.dataset.baseUrl; 
         if (!rootUrl.endsWith('/')) {
           rootUrl = rootUrl + '/';
         }
