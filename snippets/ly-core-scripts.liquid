@@ -103,15 +103,9 @@
       var type = '';
       afterHost = afterHost.substring(0, (afterHost.indexOf("#") == -1) ? afterHost.length : afterHost.indexOf("#"));
       afterHost = afterHost.substring(0, (afterHost.indexOf("?") == -1) ? afterHost.length : afterHost.indexOf("?"));
-      name = afterHost.replace(/(_[0-9]+x[0-9]*|_{width}x|_{size})?(_crop_(top|center|bottom|left|right))?(@[0-9]*x)?(\.progressive)?\.(png\.jpg|jpe?g|png|gif|webp)/gi, "");
-
-      if(afterHost.search(/(\.png\.jpg|\.jpg\.jpg)/gi) > -1) {
-        type = afterHost.substring(afterHost.search(/(\.png\.jpg|\.jpg\.jpg)/gi)+1, afterHost.length);
-      } else {
-        type = afterHost.substring(afterHost.lastIndexOf('.')+1, afterHost.length);
-      }
-      
-      file = afterHost.replace(/(_[0-9]+x[0-9]*|_{width}x|_{size})?(_crop_(top|center|bottom|left|right))?(@[0-9]*x)?(\.progressive)?\.(png\.jpg|jpe?g|png|gif|webp)/gi, '.'+type);
+      name = afterHost.replace(/(_[0-9]+x[0-9]*|_{width}x|_{size})?(_crop_(top|center|bottom|left|right))?(@[0-9]*x)?(\.progressive)?\.(jpe?g|png|gif|webp)/gi, "");
+      type = afterHost.substring(afterHost.lastIndexOf('.')+1, afterHost.length);
+      file = afterHost.replace(/(_[0-9]+x[0-9]*|_{width}x|_{size})?(_crop_(top|center|bottom|left|right))?(@[0-9]*x)?(\.progressive)?\.(jpe?g|png|gif|webp)/gi, '.'+type);
 
       return {
         host: host,
@@ -345,8 +339,6 @@
       if(langify.settings.observe && !LyHelper.isIE()) {
         var langifyObserver = this.langifyObserverCore();
         langifyObserver.init();
-        
-        // HOTFIX: translation observer sometimes refuses to trigger on page load_
         langifyObserver.triggerCustomContents();
 
         langify.api = {
@@ -443,8 +435,7 @@
           var target = document.documentElement || document.body; // main window
         } else {
           if (observerTarget.nodeName  === 'IFRAME') {
-            try { var target = observerTarget.contentDocument || observerTarget.contentWindow.document; }
-            catch { return false; }
+            var target = observerTarget.contentDocument || observerTarget.contentWindow.document; // iframe
           } else {
             var target = observerTarget;
           }
@@ -966,10 +957,6 @@
         for(var i = 0; i < openSwitchers.length; i++) {
           openSwitchers[i].classList.remove('ly-is-open');
         }
-
-        target.getElementsByClassName('ly-custom-dropdown-current')[0].setAttribute('aria-expanded', 'true');
-      } else {
-        target.getElementsByClassName('ly-custom-dropdown-current')[0].setAttribute('aria-expanded', 'false');
       }
       target.classList.toggle('ly-is-open');
       var isOut = LyHelper.isOutOfViewport(target);
@@ -1013,161 +1000,120 @@
   * @class LanguageDetection
   */
   class LanguageDetection {
-    hreflangList = null;
-
     constructor() {
       LyHelper.log('LanguageDetection instantiation');
     }
 
     init() {
-      if(LyHelper.inIframe()) return null;
-      var currentLang = langify.locale.iso_code.toLowerCase();
-      //var localizationData = this.getLocalizationData();
-      this.hreflangList = this.getHreflangList();
+      var currentLang = langify.locale.iso_code;
+      var localizationData = this.getLocalizationData();
 
       var userLang = navigator.language || navigator.userLanguage;
-      userLang = userLang.toLowerCase();
       var bot = /bot|google|baidu|bing|msn|duckduckbot|teoma|slurp|yandex|Chrome-Lighthouse/i.test(navigator.userAgent);
       var blockedRoutes = window.lyBlockedRoutesList || [];
       var blockedRoute = blockedRoutes.find(x => window.location.pathname.indexOf(x) === 0);
       var is404 = document.getElementsByClassName('template-404').length;
 
       if(LyHelper.getVal('redirected') === 'true') {
-        LyHelper.setCookie('ly-lang-selected', currentLang, 365);
+        LyHelper.setCookie('ly-lang-selected', langify.locale.iso_code, 365);
         var _href = window.location.href;
         history.replaceState(null, '', _href.replace(/(\?|&)(redirected=true)/i, ''));
+
         return null;
       }
 
-      if(!is404 && !bot && !blockedRoute && LyHelper.getVal('ly-lang-detect') !== 'off') {
+      if(!LyHelper.inIframe() && !is404 && !bot && !blockedRoute && LyHelper.getVal('ly-lang-detect') !== 'off') {
         if(userLang && !LyHelper.getCookie('ly-lang-selected')) {
-          var hasMatch = this.matchHreflangList(userLang);
-          if(currentLang !== this._hreflangToLanguageCode(hasMatch)) {
-            if(hasMatch) {
-              this.redirectMatched(userLang);
-            } else if (!hasMatch && langify.settings.switcher.languageDetectionDefault) {
-              // Redirect to default language
-              this.redirectMatched(langify.settings.switcher.languageDetectionDefault);
-            }
+          if(currentLang !== userLang) {
+            LyHelper.setCookie('ly-lang-selected', userLang, 365);
+            this.redirect(localizationData);
           }
         } else {
           if(LyHelper.getCookie('ly-lang-selected') && LyHelper.getCookie('ly-lang-selected') !== currentLang) {
+
             // Only save cookie when the domain feature is active
             if(LyHelper.isDomainFeatureEnabled()) {
               LyHelper.setCookie('ly-lang-selected', currentLang, 365);
             }
-            this.redirectMatched(LyHelper.getCookie('ly-lang-selected'));
+            this.redirect(localizationData);
           }
         }
       }
+
+      /*
+      if(!langify.helper.inIframe() && !is404 && !bot && !blockedRoute && langify.helper.getVal('ly-lang-detect') !== 'off') {
+        if(userLang && !langify.helper.getCookie('ly-lang-selected')) {
+          var rootUrl = languageUrls[userLang];
+          if(!rootUrl) {
+            userLang = userLang.substring(0, 2);
+            rootUrl = languageUrls[userLang];
+          }
+          if(!rootUrl) {
+            for(var lang in languageUrls) {
+              if(lang.substring(0, 2) === userLang) {
+                userLang = lang;
+                rootUrl = languageUrls[userLang];
+              }
+            }
+          }
+          if(langify.settings.switcher.languageDetectionDefault) {
+            if(!rootUrl) {
+              userLang = langify.settings.switcher.languageDetectionDefault;
+              rootUrl = languageUrls[userLang];
+            }
+          }
+          if(rootUrl) {
+            if(currentLang !== userLang) {
+              langify.helper.setCookie('ly-lang-selected', userLang, 365);
+              this.redirect(rootUrl);
+            }
+          }
+        } else {
+          if(langify.helper.getCookie('ly-lang-selected') && langify.helper.getCookie('ly-lang-selected') !== currentLang) {
+            if(languageUrls[langify.helper.getCookie('ly-lang-selected')]) {
+
+              // Only save cookie when the domain feature is active
+              if(langify.helper.isDomainFeatureEnabled()) {
+                langify.helper.setCookie('ly-lang-selected', currentLang, 365);
+              }
+              this.redirect(languageUrls[langify.helper.getCookie('ly-lang-selected')]);
+            }
+          }
+        }
+      }
+      */
       
       this._geolocationAppSupport();
     }
-    redirectMatched(userLang) {
-      var match = this.matchHreflangList(userLang);
-      if(match) {
-        this.redirectHref(match.href, match.lang);
+    redirect(localizationData) {
+      var additionalFields = [];
+      var additionalParams = '?redirected=true';
+      if(location.search.indexOf('?') >= 0) {
+        additionalParams = '&redirected=true';
       }
-      return match;
-    }
-    matchHreflangList(userLang) {
-      var matchedHreflang = false;
-      var browserLang = userLang;
-
-      // Find candidates
-      var candidates = this.hreflangList.filter(item => item.lang === browserLang);
-      if(candidates.length === 0) {
-        browserLang = userLang.toLowerCase();
-        candidates = this.hreflangList.filter(item => item.lang.toLowerCase().indexOf(browserLang) === 0);
-      }
-      if(candidates.length === 0) {
-        browserLang = userLang.toLowerCase().substring(0, 2);
-        candidates = this.hreflangList.filter(item => item.lang.toLowerCase().indexOf(browserLang) === 0);
-      }
-
-      // Handle candidates
-      if(candidates.length === 1) {
-        return({href: candidates[0].href, lang: browserLang});
-      } 
-      else if(candidates.length > 1) {
-        var preferedCandidate = candidates.find(item => item.href.indexOf(window.location.host) >= 0)
-        if(preferedCandidate) {
-          return({href: preferedCandidate.href, lang: browserLang});
-        } else {
-          return({href: candidates[0].href, lang: browserLang});
-        }
-      } 
-      
-      return false;
-    }
-    redirectHref(href, userLang) {
-      var queryString = window.location.search;
-      if(queryString === '') {
-        queryString = '?redirected=true';
-      } else {
-        queryString += '&redirected=true';
-      }
-      window.location.replace(href + queryString);
-    }
-    getHreflangList() {
-      var hreflangTags = document.querySelectorAll('link[hreflang]');
-      var hreflangList = [];
-      var countryCode = false;
-      // Cross Domain Links option
-      if(LyHelper.isDomainFeatureEnabled()) {
-        for(var i = 0; i < langify.locale.languages.length; i++) {
-          hreflangList.push({
-            href: 'https://' + langify.locale.languages[i].domain + window.location.pathname + window.location.search + window.location.hash,
-            lang: langify.locale.languages[i].iso_code,
-          });
-        }
-      }
-      for(var i = 0; i < hreflangTags.length; i++) {
-        var hreflang = hreflangTags[i].getAttribute('hreflang').toLowerCase();
-        hreflang = hreflang.replace('zh-hans', 'zh-cn').replace('zh-hant', 'zh-tw'); // Chinese special cases
-        hreflangList.push({
-          href: hreflangTags[i].getAttribute('href'),
-          lang: hreflang
+      if(localizationData.country_code) {
+        additionalFields.push({
+          name: 'country_code',
+          value: localizationData.country_code
         });
       }
-      return hreflangList;
-    }
-    _langToHreflang(userLang) {
-      var hreflang = '';
-      this.hreflangList.map(function(item) {
-        if(item.lang === userLang) {
-          hreflang = userLang;
-        }
-      });
-      if(hreflang === '') {
-        this.hreflangList.map(function(item) {
-          var browserLang = userLang.toLowerCase();
-          if(item.lang.toLowerCase().indexOf(browserLang) === 0) {
-            hreflang = browserLang;
-          }
-          else if(item.lang.toLowerCase().indexOf(browserLang.substring(0, 2)) === 0) {
-            hreflang = browserLang.substring(0, 2);
-          }
-        });        
-      }
-      return hreflang || userLang;
-    }
-    _hreflangToLanguageCode(hreflangTag) {
-      if(!hreflangTag || !hreflangTag.lang) return false;
-	  var languageCode = false;
-      langify.locale.languages.forEach(function(item) {
-        if(item.iso_code.toLowerCase() === hreflangTag.lang.toLowerCase()) {
-          languageCode = item.iso_code;
-        }
-      });
-      if(!languageCode) {
-        langify.locale.languages.forEach(function(item) {
-          if(item.iso_code.toLowerCase() === hreflangTag.lang.substring(0, 2).toLowerCase()) {
-            languageCode = item.iso_code;
-          }
+      if(localizationData.currency_code) {
+        additionalFields.push({
+          name: 'currency_code',
+          value: localizationData.currency_code
         });
       }
-      return languageCode;
+      LyHelper.localizationRedirect('language_code', localizationData.language_code, additionalFields, additionalParams);
+    }
+    getLocalizationData() {
+      var browserLang = navigator.language || navigator.userLanguage;
+      var localization = browserLang.split('-');
+      var data = {};
+      data.language_code = localization[0];
+      if(localization.length === 2) {
+        data.country_code = localization[1];
+      }
+      return data;
     }
     _geolocationAppSupport() {
       var target = document.querySelector('body');
@@ -1214,45 +1160,50 @@
   * @class Recommendation
   */
   class Recommendation extends LanguageDetection {
-    
     constructor() {
       super();
       LyHelper.log('Recommendation instantiation');
     }
 
     init() {
-      this.hreflangList = this.getHreflangList();
-
-      var userLang = navigator.language || navigator.userLanguage;
-      userLang = userLang.toLowerCase();
-
-      var recommendation = this.matchHreflangList(userLang);
-      var recommendationLanguageCode = this._hreflangToLanguageCode(recommendation);
-      if(recommendationLanguageCode && recommendationLanguageCode !== langify.locale.iso_code && !LyHelper.getCookie('ly-lang-selected')) {
-        this.recommended_language_code = recommendationLanguageCode;
-        this.recommended_country_code = null;
-        this.recommended_currency_code = null;
-        this._translateStrings(recommendationLanguageCode);
+      this.recommended_language_code = this._findRecommendedLanguage();
+      this.recommended_country_code = null;
+      this.recommended_currency_code = null;
+      if(this.recommended_language_code && this.recommended_language_code !== langify.locale.iso_code && !LyHelper.getCookie('ly-lang-selected')) {
+        this._translateStrings(this.recommended_language_code);
         this._bindings();
       } else {
         return false;
       }
     }
 
+    _findRecommendedLanguage() {
+      var browserLang = this.getLocalizationData().language_code;
+      var match = langify.locale.languages.find(function(lang) { return lang.iso_code === browserLang; });
+      var recommendedLang = false;
+      if(!match) {
+        browserLang = browserLang.substring(0, 2);
+        match = langify.locale.languages.find(function(lang) { return lang.iso_code === browserLang; });
+      }
+      if(match) {
+        recommendedLang = browserLang;
+      }
+      return recommendedLang;
+    }
+
     _translateStrings(languageCode) {
       var recommendationElement = document.querySelectorAll('.ly-recommendation')[0];
       var strings = langify.settings.switcher.recommendation_strings[languageCode];
-      var recommendationStr = 'Looks like your browser is set to [[language]]. Change the language?';
+      var recommendationStr = 'Looks like your browser is set to English. Change the language?';
       var buttonStr = 'Change';
-      var matchedLanguageCode = this._langToHreflang(languageCode).toLowerCase();
-      var languageStr = langify.settings.switcher.languages.find(x => x.iso_code.toLowerCase() === matchedLanguageCode) ? langify.settings.switcher.languages.find(x => x.iso_code.toLowerCase() === matchedLanguageCode).name : languageCode.toUpperCase();
+      var languageStr = 'English';
       if(strings) {
-        recommendationStr = strings.recommendation ? strings.recommendation : recommendationStr;
-        buttonStr = strings.button ? strings.button : buttonStr;
-        languageStr = strings.language ? strings.language : languageStr;
+        recommendationStr = strings.recommendation ? strings.recommendation : 'Looks like your browser is set to English. Change the language?';
+        buttonStr = strings.button ? strings.button : 'Change';
+        languageStr = strings.language ? strings.language : 'English';
       }
       var newCode = recommendationElement.innerHTML;
-      newCode = newCode.replaceAll('[[recommendation]]', recommendationStr).replaceAll('[[button]]', buttonStr).replaceAll('[[language]]', languageStr);
+      newCode = newCode.replaceAll('[[recommendation]]', recommendationStr).replaceAll('[[button]]', buttonStr);
       recommendationElement.innerHTML = newCode;     
     }
 
@@ -1267,28 +1218,21 @@
 
       form.addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        if(_this.recommended_country_code || _this.recommended_currency_code) {
-          // When a country or currency is involved, use old redirection
-          var additionalFields = [];
-          if(_this.recommended_country_code) {
-            additionalFields.push({
-              name: 'country_code',
-              value: _this.recommended_country_code
-            });
-          }
-          if(_this.recommended_currency_code) {
-            additionalFields.push({
-              name: 'currency_code',
-              value: _this.recommended_currency_code
-            });
-          }
-          LyHelper.setCookie('ly-lang-selected', _this.recommended_language_code, 365);
-          LyHelper.localizationRedirect('language_code', _this.recommended_language_code, additionalFields);
-        } else {
-          //...or use new hreflang redirection
-          _this.redirectMatched(_this.recommended_language_code);
+        var additionalFields = [];
+        if(_this.recommended_country_code) {
+          additionalFields.push({
+            name: 'country_code',
+            value: _this.recommended_country_code
+          });
         }
+        if(_this.recommended_currency_code) {
+          additionalFields.push({
+            name: 'currency_code',
+            value: _this.recommended_currency_code
+          });
+        }
+        LyHelper.setCookie('ly-lang-selected', _this.recommended_language_code, 365);
+        LyHelper.localizationRedirect('language_code', _this.recommended_language_code, additionalFields);
       });
       
       // Overwrite switchers
@@ -1307,10 +1251,10 @@
       }
 
       for(var i = 0; i < nativeSelects.length; i++) {
-        nativeSelects[i].onchange = _this._selectNativeDropdownEntry.bind(this);
+        nativeSelects[i].onchange = this._selectNativeDropdownEntry.bind(this);
         
         if(nativeSelects[i].classList.contains('ly-languages-switcher')) {
-          nativeSelects[i].value = _this.recommended_language_code;
+          nativeSelects[i].value = this.recommended_language_code;
         }
       }
 
@@ -1320,7 +1264,7 @@
         }
         
         if(customDropdown[i].classList.contains('ly-languages-switcher')) {
-          _this._selectCustomDropdownEntry(customDropdown[i], customDropdown[i].querySelector('.ly-custom-dropdown-list a[data-language-code="'+ _this.recommended_language_code +'"]'));
+          this._selectCustomDropdownEntry(customDropdown[i], customDropdown[i].querySelector('.ly-custom-dropdown-list a[data-language-code="'+ this.recommended_language_code +'"]'));
         }
       } 
       if(!lyForceOff) {
@@ -1345,7 +1289,6 @@
     }
 
     _selectCustomDropdownEntry(element, entry) {
-      if(!entry) return;
       var _this = this;
       var currentElem = element.querySelector('.ly-custom-dropdown-current');
       var currentIcon = currentElem.querySelector('.ly-icon');        
@@ -1439,7 +1382,7 @@
   var langify = window.langify || {};
   var customContents = {};
   var customContents_image = {};
-  var langifySettingsOverwrites = {};
+
   var defaultSettings = {
     debug: false,               // BOOL : Enable/disable console logs
     observe: true,              // BOOL : Enable/disable the entire mutation observer (off switch)
@@ -1449,17 +1392,12 @@
     maxMutations: 5,
     timeout: 100,               // INT : Milliseconds to wait after a mutation, before the next mutation event will be allowed for the element
     linksBlacklist: [],
-  };
-
-  if(langify.settings) { 
-    langifySettingsOverwrites = Object.assign({}, langify.settings);
-    langify.settings = Object.assign(defaultSettings, langify.settings); 
-  } else { 
-    langify.settings = defaultSettings; 
   }
 
+  if(langify.settings) { langify.settings = Object.assign(defaultSettings, langify.settings) } else { langify.settings = defaultSettings }
+
   {%- if themeSettings -%}
-    langify.settings = Object.assign(langify.settings, {{ themeSettings | json }}, langifySettingsOverwrites);
+    langify.settings = Object.assign(langify.settings, {{ themeSettings | json }});
   {% endif %}
 
   langify.settings.theme = {{ themeSettings | json }};
