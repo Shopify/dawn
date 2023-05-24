@@ -73,6 +73,7 @@
     >
   {%- endif -%}
   {% assign title = section.blocks | where: 'type', 'title' | first %}
+  {% assign price = section.blocks | where: 'type', 'xcp-price' | first %}
 
   <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
     {%- if title -%}
@@ -85,6 +86,23 @@
         </a>
       </div>
     {%- endif -%}
+    {% if price %}
+      <div class="mobile">
+        <div class="no-js-hidden" id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
+          {%- render 'xcp-price', product: product, use_variant: true, show_badges: true, price_class: 'price--large', settings: block.settings -%}
+        </div>
+        <div {{ block.shopify_attributes }}>
+          {%- assign product_form_installment_id = 'product-form-installment-' | append: section.id -%}
+          {%- form 'product', product, id: product_form_installment_id, class: 'installment caption-large' -%}
+            <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+            {% comment%}
+            hide "From $X/mo with Shop Pay" banner
+            {{ form | payment_terms }}
+            {% endcomment %}
+          {%- endform -%}
+        </div>
+      </div>
+    {% endif %}
 
     <div class="grid__item product__media-wrapper{% if section.settings.media_position == 'right' %} medium-hide large-up-hide{% endif %} xcp-grid-media">
       <media-gallery
@@ -385,18 +403,20 @@
               </div>
             {%- when 'xcp-price' -%}
               <div class="buy-box__container">
-                <div class="no-js-hidden" id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
-                  {%- render 'xcp-price', product: product, use_variant: true, show_badges: true, price_class: 'price--large', settings: block.settings -%}
-                </div>
-                <div {{ block.shopify_attributes }}>
-                  {%- assign product_form_installment_id = 'product-form-installment-' | append: section.id -%}
-                  {%- form 'product', product, id: product_form_installment_id, class: 'installment caption-large' -%}
-                    <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
-                    {% comment%}
-                    hide "From $X/mo with Shop Pay" banner
-                    {{ form | payment_terms }}
-                    {% endcomment %}
-                  {%- endform -%}
+                <div class="desktop">
+                  <div class="no-js-hidden" id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
+                    {%- render 'xcp-price', product: product, use_variant: true, show_badges: true, price_class: 'price--large', settings: block.settings -%}
+                  </div>
+                  <div {{ block.shopify_attributes }}>
+                    {%- assign product_form_installment_id = 'product-form-installment-' | append: section.id -%}
+                    {%- form 'product', product, id: product_form_installment_id, class: 'installment caption-large' -%}
+                      <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+                      {% comment%}
+                      hide "From $X/mo with Shop Pay" banner
+                      {{ form | payment_terms }}
+                      {% endcomment %}
+                    {%- endform -%}
+                  </div>
                 </div>
             {%- when 'description' -%}
               {%- if product.description != blank -%}
@@ -1244,6 +1264,12 @@
           "type": "checkbox",
           "label": "Currency Code enabled",
           "default": false
+        },
+        {
+          "id": "price_color",
+          "type": "color",
+          "label": "Price Color",
+          "default": "#FFB762"
         }
       ]
     },
