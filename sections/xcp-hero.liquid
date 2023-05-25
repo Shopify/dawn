@@ -1,0 +1,141 @@
+{%- assign video_id = section.settings.background_video.id | default: section.settings.background_video_url.id -%}
+
+{% style %}
+.xcp-overview__hero__video-bg {
+  position: relative;
+  width: 100%;
+  height: 676px;
+  overflow: hidden;
+}
+
+.xcp-overview__hero__video-bg::after {
+  content: " ";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgb(2,0,36);
+  background: linear-gradient(90deg, var(--gradient-base-background-1) 0%, rgba(255,255,255,0) 82%);
+}
+
+.xcp-overview__hero__video-bg iframe{
+  position: absolute;
+  top:-373px;
+  left: 0;
+  width: 100%;
+  height: 90vw;
+}
+
+.xcp-overview__hero__content--wrapper {
+  position: relative;
+}
+
+.xcp-overview__hero__content--wrapper-abs {
+  position: absolute;
+  bottom: 300px;
+  left: 543px;
+  width: 500px;
+}
+.xcp-overview__hero__content__header {
+  font-size: 30px;
+  max-width: 369px;
+}
+{% endstyle %}
+
+<div class="xcp-overview__hero__video-bg">
+  {%- if section.settings.video == null and section.settings.background_video_url != null -%}
+    {%- if section.settings.background_video_url.type == 'youtube' -%}
+      <iframe
+              src="https://www.youtube.com/embed/{{ video_id }}?enablejsapi=1&autoplay=1&mute=1&controls=0{{ loop }}"
+              class="js-youtube"
+              allow="autoplay; encrypted-media"
+              allowfullscreen
+              title="{{ section.settings.description | escape }}"
+      ></iframe>
+    {%- else -%}
+      <iframe
+          src="https://player.vimeo.com/video/{{video_id}}?h=7a2d360dea&autoplay=0&loop=1&controls=0&muted=1"
+          frameborder="0"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowfullscreen></iframe>
+    {%- endif -%}
+  {%- else -%}
+    {{ section.settings.video | video_tag: controls: false, muted: true }}
+  {%- endif -%}
+</div>
+<div class="xcp-overview__hero__content--wrapper">
+  <div class="xcp-overview__hero__content--wrapper-abs">
+    <h2 class="xcp-overview__hero__content__header">{{section.settings.header}}</h2>
+    {% for block in section.blocks %}
+      {% case block.type %}
+        {% when 'text' %}
+          {{block.settings.content}}
+        {% when 'btn' %}
+          <a class="btn btn-primary" href="{{block.settings.link}}">{{block.settings.label}}</a>
+      {% endcase %}
+    {% endfor %}
+  </div>
+</div>
+{% schema %}
+{
+  "name": "XCP Hero",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "video",
+      "id": "background_video",
+      "label": "Background Video"
+    },
+    {
+      "type": "video_url",
+      "id": "background_video_url",
+      "label": "Background Video URL",
+      "accept": [
+        "youtube",
+        "vimeo"
+      ]
+    },
+    {
+      "type": "html",
+      "id": "header",
+      "label": "Header"
+    }
+  ],
+  "blocks": [
+    {
+      "name": "Content",
+      "type": "text",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content"
+        }
+      ]
+    },
+    {
+      "name": "Button",
+      "type": "btn",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+ "presets": [
+    {
+      "name": "XCPro Hero"
+    }
+ ]
+}
+{% endschema %}
