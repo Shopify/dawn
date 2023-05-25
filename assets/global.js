@@ -1173,6 +1173,8 @@ const buy_online_container = document.querySelectorAll(
   ".how-buying-content-container"
 )[0];
 
+if(buy_online_container) {
 image_container.addEventListener("click", () => {
-  buy_online_container.scrollIntoView({ behavior: "smooth", block: "center" });
-});
+    buy_online_container.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+}
