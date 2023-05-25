@@ -1,5 +1,7 @@
 {{ 'xcp_navbar.css' | asset_url | stylesheet_tag }}
 {% assign nav_items = section.blocks | where: 'type', 'xcp-nav-item' %}
+{%- assign schedule_call_block =  section.blocks | where: 'type', 'xcp-nav-schedule-a-call' | first -%}
+{%- assign order_now_block =  section.blocks | where: 'type', 'xcp-nav-order-now' | first -%}
 
 <div class="xcp-navbar__container" data-target="xcp-navbar">
   <nav class="xcp-navbar xcp-navbar__desktop">
@@ -16,12 +18,15 @@
             <a href="{{nav_item.settings.href}}">{{nav_item.settings.label}}</a>
           </li>
         {% endfor %}
-        <li>
-          <button name="button" type="submit" class="btn btn-primary xcp-navbar__schedule-demo xcp-modal" data-target="calendly-modal-trigger" data-modal-target="xcp-demo__modal" data-modal-target-closed="xcp-demo__modal--closed" data-modal-closer="xcp-demo__modal-close">Schedule A Call</button>
-        </li>
-        <li>
-          <a class="btn btn-primary xcp-navbar__order-now" href="/cart/add?id={{ product.variants.first.id }}&quantity=1">Order Now</a>
-        </li>
+
+        {%- if schedule_call_block -%}
+          <li>
+            <button name="button" type="submit" class="btn btn-primary xcp-navbar__schedule-demo xcp-modal xcp-nav-schedule-a-call" data-target="calendly-modal-trigger" data-modal-target="xcp-demo__modal" data-modal-target-closed="xcp-demo__modal--closed" data-modal-closer="xcp-demo__modal-close">Schedule A Call</button>
+          </li>
+        {%- endif -%}
+        {%- if order_now_block -%}
+          {% render 'xcp-order-now', settings: order_now_block.settings, submit_label: order_now_block.settings.label %}
+        {%- endif -%}
       </ul>
     </div>
   </nav>
@@ -45,11 +50,18 @@
   </nav>
 
   <ul class="xcp-navbar__menu hide">
-    <li class="xcp-navbar__menu-item">
-      <p>
-      <a class="xcp-modal" data-target="calendly-modal-trigger" data-modal-target="xcp-demo__modal" data-modal-target-closed="xcp-demo__modal--closed" data-modal-closer="xcp-demo__modal-close">Schedule A Call</a>
-      </p>
-    </li>
+    {%- if schedule_call_block -%}
+      <li class="xcp-navbar__menu-item">
+        <p>
+          <a
+            class="xcp-modal xcp-nav-schedule-a-call"
+            data-target="calendly-modal-trigger"
+            data-modal-target="xcp-demo__modal"
+            data-modal-target-closed="xcp-demo__modal--closed"
+            data-modal-closer="xcp-demo__modal-close">{{schedule_call_block.settings.label}}</a>
+        </p>
+      </li>
+    {%- endif -%}
     {% for nav_item in nav_items %}
       <li class="xcp-navbar__menu-item">
         <p>
@@ -121,6 +133,32 @@ document.querySelectorAll('[data-target="calendly-modal-trigger"]').forEach(func
            "type": "url",
            "id": "href",
            "label": "HRef"
+         }
+       ]
+     },
+     {
+       "name": "Schedule a call",
+       "type": "xcp-nav-schedule-a-call",
+       "limit": 1,
+       "settings": [
+         {
+           "type": "text",
+           "id": "label",
+           "label": "Label",
+           "default": "Schedule a Call"
+         }
+       ]
+     },
+     {
+       "name": "Order Now",
+       "type": "xcp-nav-order-now",
+       "limit": 1,
+       "settings": [
+         {
+           "type": "text",
+           "id": "label",
+           "label": "Label",
+           "default": "Order Now"
          }
        ]
      }
