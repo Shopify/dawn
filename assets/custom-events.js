@@ -29,6 +29,7 @@ var main = function () {
 
               if (activeCountry.length == 0) ;
                 const flagImg = activeCountry[0].flag_image
+                const countryName = activeCountry[0].country_name
                 const page = activeCountry[0].reseller_page
 
                 if (flagImg != null || flagImg != '' ) {
@@ -45,7 +46,7 @@ var main = function () {
                     resLink.href = page;
                     resLink.classList.add('link','accent-link','reseller-link')
 
-                    resLink.textContent = 'See ' + country_code + ' Resellers';
+                    resLink.textContent = countryName;
                     headerIcons.insertAdjacentElement('afterend', resLink);
                 }
 
