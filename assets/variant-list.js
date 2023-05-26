@@ -149,7 +149,7 @@ class VariantList extends HTMLElement {
           variantItem.querySelector(`[name="${name}"]`).focus();
         }
         publish(PUB_SUB_EVENTS.cartUpdate, { source: this.variantListId });
-      }).catch(() => {
+      }).catch((e) => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         const errors = document.getElementById('variantlist-errors');
         errors.textContent = window.cartStrings.error;
