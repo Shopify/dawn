@@ -50,32 +50,92 @@
 .xcp-overview__hero__content__text {
   color: white;
 }
-{% endstyle %}
 
-<div class="xcp-overview__hero__video-bg">
-  {%- if section.settings.video == null and section.settings.background_video_url != null -%}
-    {%- if section.settings.background_video_url.type == 'youtube' -%}
-      <iframe
-              src="https://www.youtube.com/embed/{{ video_id }}?enablejsapi=1&autoplay=1&mute=1&controls=0{{ loop }}"
-              class="js-youtube"
-              allow="autoplay; encrypted-media"
-              allowfullscreen
-              title="{{ section.settings.description | escape }}"
-      ></iframe>
+.xcp-hero .desktop {
+  display: block;
+}
+
+.xcp-hero .mobile {
+  display: none;
+}
+
+.xcp-overview__hero__img {
+  width: 100%;
+}
+
+.xcp-overview__hero__overlay {
+  min-height: 650px;
+  padding: 20px;
+}
+
+@media (max-width: 750px) {
+  .xcp-hero .desktop {
+    display: none;
+  }
+
+  .xcp-hero .mobile {
+    display: block;
+  }
+
+  .xcp-hero .xcp-overview__hero__content--wrapper-abs {
+    bottom: 276px;
+    left: 0;
+    max-width: 70vw;
+  }
+
+  .xcp-overview__hero__content__header {
+    font-size: 20px;
+  }
+}
+
+{% endstyle %}
+<div class="xcp-hero">
+  <div class="xcp-overview__hero__video-bg desktop">
+    {%- if section.settings.video == null and section.settings.background_video_url != null -%}
+      {%- if section.settings.background_video_url.type == 'youtube' -%}
+        <iframe
+                src="https://www.youtube.com/embed/{{ video_id }}?enablejsapi=1&autoplay=1&mute=1&controls=0{{ loop }}"
+                class="js-youtube"
+                allow="autoplay; encrypted-media"
+                allowfullscreen
+                title="{{ section.settings.description | escape }}"
+        ></iframe>
+      {%- else -%}
+        <iframe
+            src="https://player.vimeo.com/video/{{video_id}}?h=7a2d360dea&autoplay=0&loop=1&controls=0&muted=1"
+            frameborder="0"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowfullscreen></iframe>
+      {%- endif -%}
     {%- else -%}
-      <iframe
-          src="https://player.vimeo.com/video/{{video_id}}?h=7a2d360dea&autoplay=0&loop=1&controls=0&muted=1"
-          frameborder="0"
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowfullscreen></iframe>
+      {{ section.settings.video | video_tag: controls: false, muted: true }}
     {%- endif -%}
-  {%- else -%}
-    {{ section.settings.video | video_tag: controls: false, muted: true }}
-  {%- endif -%}
-</div>
-<div class="xcp-overview__hero__content--wrapper">
-  <div class="xcp-overview__hero__content--wrapper-abs">
-    <h2 class="xcp-overview__hero__content__header">{{section.settings.header}}</h2>
+  </div>
+  <div class="xcp-overview__hero__overlay mobile">
+    <img class="xcp-overview__hero__img" src="{{section.settings.img_mobile | image_url}}">
+    </img>
+  <div>
+  <div class="xcp-overview__hero__content--wrapper">
+    <div class="xcp-overview__hero__content--wrapper-abs">
+      <h2 class="xcp-overview__hero__content__header">{{section.settings.header}}</h2>
+    </div>
+  </div>
+  <div class="xcp-overview__hero__content--wrapper desktop">
+    <div class="xcp-overview__hero__content--wrapper-abs">
+      <h2 class="xcp-overview__hero__content__header">{{section.settings.header}}</h2>
+      {% for block in section.blocks %}
+        {% case block.type %}
+          {% when 'text' %}
+            <div class="xcp-overview__hero__content__text">
+              {{block.settings.content}}
+            </div>
+          {% when 'btn' %}
+            <a class="btn btn-primary" href="{{block.settings.link}}">{{block.settings.label}}</a>
+        {% endcase %}
+      {% endfor %}
+    </div>
+  </div>
+  <div class="xcp-overview__hero__blocks mobile">
     {% for block in section.blocks %}
       {% case block.type %}
         {% when 'text' %}
@@ -107,6 +167,11 @@
         "youtube",
         "vimeo"
       ]
+    },
+    {
+      "type": "image_picker",
+      "id": "img_mobile",
+      "label": "Mobile image"
     },
     {
       "type": "html",
