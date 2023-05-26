@@ -25,252 +25,48 @@
   <form class="variant__contents critical-hidden" method="post">
     <div class="variant__items" id="main-variant-items">
       <div class="js-contents">
-        {%- if product.variants.size > 0 -%}
-          <table class="variant-items">
-            <caption class="visually-hidden">
-              {{ 'sections.cart.title' | t }}
-            </caption>
-            <thead>
-              <tr>
-                <th class="caption-with-letter-spacing" colspan="1" scope="col">Product</th>
-                <th class="medium-hide large-up-hide right caption-with-letter-spacing" colspan="1" scope="col">
-                  {{ 'sections.variant_list.item_subtotal' | t }}
-                </th>
-                <th class="variant-items__heading--wide small-hide caption-with-letter-spacing" colspan="1" scope="col">
-                  {{ 'products.product.quantity.label' | t }}
-                </th>
-                <th class="variant-items__heading--wide small-hide caption-with-letter-spacing" colspan="1" scope="col">
-                  {{ 'sections.cart.headings.price' | t }}
-                </th>
-                <th class="small-hide right caption-with-letter-spacing" colspan="1" scope="col">
-                  {{ 'sections.variant_list.item_subtotal' | t }}
-                </th>
-              </tr>
-            </thead>
+        <table class="variant-items">
+          <caption class="visually-hidden">
+            {{ 'sections.cart.title' | t }}
+          </caption>
+          <thead>
+            <tr>
+              <th class="caption-with-letter-spacing" colspan="1" scope="col">Product</th>
+              <th class="medium-hide large-up-hide right caption-with-letter-spacing" colspan="1" scope="col">
+                {{ 'sections.variant_list.item_subtotal' | t }}
+              </th>
+              <th class="variant-items__heading--wide small-hide caption-with-letter-spacing" colspan="1" scope="col">
+                {{ 'products.product.quantity.label' | t }}
+              </th>
+              <th class="variant-items__heading--wide small-hide caption-with-letter-spacing" colspan="1" scope="col">
+                {{ 'sections.cart.headings.price' | t }}
+              </th>
+              <th class="small-hide right caption-with-letter-spacing" colspan="1" scope="col">
+                {{ 'sections.variant_list.item_subtotal' | t }}
+              </th>
+            </tr>
+          </thead>
 
-            <tbody>
+          <tbody>
+            {%- if product.has_only_default_variant -%}
+              {%- render 'variant-list-row',
+                item: product,
+                image: product.featured_media,
+                sku: product.selected_or_first_available_variant.sku,
+                variant: product.selected_or_first_available_variant
+              -%}
+            {%- else -%}
               {%- for variant in product.variants -%}
-                <tr class="variant-item" id="Variant-{{ variant.id }}">
-                  <td class="variant-item__media{% unless variant.image and section.settings.show_image %} small-hide{% endunless %}">
-                    {% if variant.image and section.settings.show_image %}
-                      <div class="variant-item__image-container gradient global-media-settings">
-                        {%- assign img_height = 45 | divided_by: variant.image.aspect_ratio | ceil -%}
-                        {{
-                          variant.image
-                          | image_url: width: 45
-                          | image_tag:
-                            loading: 'lazy',
-                            fetchpriority: 'low',
-                            decoding: 'async',
-                            class: 'variant-item__image',
-                            width: 45,
-                            height: img_height,
-                            alt: variant.image.alt
-                          | escape
-                        }}
-                      </div>
-                    {% endif %}
-                    <div class="small-hide">
-                      <span class="variant-item__name h4 break">{{ variant.title | escape }}</span>
-                      {%- if section.settings.show_sku -%}
-                        <span class="variant-item__sku product-option break">{{ variant.sku | escape }}</span>
-                      {%- endif -%}
-                    </div>
-                  </td>
-
-                  <td class="variant-item__details medium-hide large-up-hide">
-                    <div class="variant-item__info">
-                      <span class="variant-item__name h4 break">{{ variant.title | escape }}</span>
-                      {%- if section.settings.show_sku -%}
-                        <span class="variant-item__sku product-option break">{{ variant.sku | escape }}</span>
-                      {%- endif -%}
-                    </div>
-
-                    {%- render 'loading-overlay' -%}
-
-                    {%- if variant.compare_at_price != variant.price -%}
-                      <dl class="variant-item__discounted-prices">
-                        <dt class="visually-hidden">
-                          {{ 'products.product.price.regular_price' | t }}
-                        </dt>
-                        <dd>
-                          <s class="variant-item__old-price price price--end">
-                            {{ variant.compare_at_price | money }}
-                          </s>
-                        </dd>
-                        <dt class="visually-hidden">
-                          {{ 'products.product.price.sale_price' | t }}
-                        </dt>
-                        <dd class="price">
-                          {{ variant.price | money -}}
-                          <span>/ea</span>
-                        </dd>
-                      </dl>
-                    {%- else -%}
-                      <span class="price">
-                        {{ variant.price | money -}}
-                        <span>/ea</span>
-                      </span>
-                    {%- endif -%}
-
-                    {%- if product.has_only_default_variant == false or variant.selling_plan_allocation != null -%}
-                      <p class="product-option">{{ variant.selling_plan_allocation.selling_plan.name }}</p>
-                    {%- endif -%}
-
-                    {%- if variant.available and variant.unit_price_measurement -%}
-                      <div class="unit-price caption">
-                        <span class="visually-hidden">{{ 'products.product.price.unit_price' | t }}</span>
-                        {{ variant.unit_price | money }}
-                        <span aria-hidden="true">/</span>
-                        <span class="visually-hidden">&nbsp;{{ 'accessibility.unit_price_separator' | t }}&nbsp;</span>
-                        {%- if variant.unit_price_measurement.reference_value != 1 -%}
-                          {{- variant.unit_price_measurement.reference_value -}}
-                        {%- endif -%}
-                        {{ variant.unit_price_measurement.reference_unit }}
-                      </div>
-                    {%- endif -%}
-                  </td>
-
-                  <td class="variant-item__quantity small-hide">
-                    <div class="variant-item__quantity-wrapper">
-                      <label class="visually-hidden" for="Quantity-{{ variant.id }}">
-                        {{ 'products.product.quantity.label' | t }}
-                      </label>
-                      <div class="variant-item__quantity-info">
-                        {% render 'icon-info' %}
-                      </div>
-                      {% # theme-check-disable %}
-                      {% assign cart_qty = cart | item_count_for_variant: variant.id %}
-                      {% # theme-check-enable %}
-                      {% render 'quantity-input', variant: variant %}
-                      {%- if cart_qty > 0 -%}
-                        <variant-list-remove-button
-                          id="Remove-{{ variant.id }}"
-                          data-index="{{ variant.id }}"
-                        >
-                          <a
-                            href="{{ variant.url_to_remove }}"
-                            class="button button--tertiary"
-                            aria-label="{{ 'sections.cart.remove_title' | t: title: variant.title }}"
-                          >
-                            {% render 'icon-remove' %}
-                          </a>
-                        </variant-list-remove-button>
-                      {%- endif -%}
-                    </div>
-                    <div class="variant-item__error" id="Line-item-error-{{ variant.id }}" role="alert">
-                      <small class="variant-item__error-text"></small>
-                      <svg
-                        aria-hidden="true"
-                        focusable="false"
-                        class="icon icon-error"
-                        viewBox="0 0 13 13"
-                      >
-                        <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
-                        <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
-                        <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
-                        <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
-                      </svg>
-                    </div>
-                  </td>
-
-                  <td class="variant-item__price small-hide">
-                    {%- render 'loading-overlay' -%}
-
-                    {%- if variant.compare_at_price != variant.price -%}
-                      <dl class="variant-item__discounted-prices">
-                        <dt class="visually-hidden">
-                          {{ 'products.product.price.regular_price' | t }}
-                        </dt>
-                        <dd>
-                          <s class="variant-item__old-price price price--end">
-                            {{ variant.compare_at_price | money }}
-                          </s>
-                        </dd>
-                        <dt class="visually-hidden">
-                          {{ 'products.product.price.sale_price' | t }}
-                        </dt>
-                        <dd class="price">
-                          {{ variant.price | money -}}
-                          <span>/ea</span>
-                        </dd>
-                      </dl>
-                    {%- else -%}
-                      <span class="price">
-                        {{ variant.price | money -}}
-                        <span>/ea</span>
-                      </span>
-                    {%- endif -%}
-
-                    {%- if product.has_only_default_variant == false or variant.selling_plan_allocation != null -%}
-                      <p class="product-option">{{ variant.selling_plan_allocation.selling_plan.name }}</p>
-                    {%- endif -%}
-
-                    <div class="variant-item__price-wrapper">
-                      {%- if variant.available and variant.unit_price_measurement -%}
-                        <div class="unit-price caption">
-                          <span class="visually-hidden">{{ 'products.product.price.unit_price' | t }}</span>
-                          {{ variant.unit_price | money }}
-                          <span aria-hidden="true">/</span>
-                          <span class="visually-hidden"
-                            >&nbsp;{{ 'accessibility.unit_price_separator' | t }}&nbsp;</span
-                          >
-                          {%- if variant.unit_price_measurement.reference_value != 1 -%}
-                            {{- variant.unit_price_measurement.reference_value -}}
-                          {%- endif -%}
-                          {{ variant.unit_price_measurement.reference_unit }}
-                        </div>
-                      {%- endif -%}
-                    </div>
-                  </td>
-
-                  <td class="variant-item__totals right">
-                    {%- render 'loading-overlay' -%}
-                    <span>Placeholder</span>
-                  </td>
-                  <td class="variant-item__quantity{% if variant.image and section.settings.show_image %} variant-item__quantity-image{% endif %} medium-hide large-up-hide">
-                    <div class="variant-item__quantity-wrapper">
-                      <label class="visually-hidden" for="Quantity-{{ variant.id }}">
-                        {{ 'products.product.quantity.label' | t }}
-                      </label>
-                      <div class="variant-item__quantity-info">
-                        {% render 'icon-info' %}
-                      </div>
-                      {% render 'quantity-input', variant: variant %}
-
-                      <variant-list-remove-button
-                        id="Remove-{{ variant.id }}"
-                        data-index="{{ variant.id }}"
-                      >
-                        <a
-                          href="{{ variant.url_to_remove }}"
-                          class="button button--tertiary"
-                          aria-label="{{ 'sections.cart.remove_title' | t: title: variant.title }}"
-                        >
-                          {% render 'icon-remove' %}
-                        </a>
-                      </variant-list-remove-button>
-                    </div>
-                    <div class="variant-item__error" id="Line-item-error-{{ variant.id }}" role="alert">
-                      <small class="variant-item__error-text"></small>
-                      <svg
-                        aria-hidden="true"
-                        focusable="false"
-                        class="icon icon-error"
-                        viewBox="0 0 13 13"
-                      >
-                        <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
-                        <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
-                        <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
-                        <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
-                      </svg>
-                    </div>
-                  </td>
-                </tr>
+                {%- render 'variant-list-row',
+                  item: variant,
+                  image: variant.image,
+                  sku: variant.sku,
+                  variant: variant
+                -%}
               {%- endfor -%}
-            </tbody>
-          </table>
-        {%- endif -%}
+            {%- endif -%}
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -284,30 +80,33 @@
     >
       {{ 'accessibility.loading' | t }}
     </p>
-    <div id="variantlist-errors"></div>
   </form>
-  <div class="variantlist-total" id="variantlist-total">
-    <a href="/cart" class="button button--secondary">
-      {{- 'sections.variant_list.view_cart' | t -}}
-    </a>
-    <div class="totals right">
-      <div>
-        <h2 class="totals__subtotal-value">{{ cart.total_price | money_with_currency }}</h2>
-        <p class="totals__subtotal">{{ 'sections.variant_list.product_subtotal' | t }}</p>
+
+  {%- unless product.has_only_default_variant -%}
+    <div class="variantlist-total" id="variantlist-total">
+      <a href="/cart" class="button button--secondary">
+        {{- 'sections.variant_list.view_cart' | t -}}
+      </a>
+      <div class="totals right">
+        <div>
+          <h2 class="totals__subtotal-value">{{ cart.total_price | money_with_currency }}</h2>
+          <p class="totals__subtotal">{{ 'sections.variant_list.product_subtotal' | t }}</p>
+        </div>
+        <small class="tax-note caption-large rte">
+          {%- if cart.taxes_included and shop.shipping_policy.body != blank -%}
+            {{ 'sections.cart.taxes_included_and_shipping_policy_html' | t: link: shop.shipping_policy.url }}
+          {%- elsif cart.taxes_included -%}
+            {{ 'sections.cart.taxes_included_but_shipping_at_checkout' | t }}
+          {%- elsif shop.shipping_policy.body != blank -%}
+            {{ 'sections.cart.taxes_and_shipping_policy_at_checkout_html' | t: link: shop.shipping_policy.url }}
+          {%- else -%}
+            {{ 'sections.cart.taxes_and_shipping_at_checkout' | t }}
+          {%- endif -%}
+        </small>
       </div>
-      <small class="tax-note caption-large rte">
-        {%- if cart.taxes_included and shop.shipping_policy.body != blank -%}
-          {{ 'sections.cart.taxes_included_and_shipping_policy_html' | t: link: shop.shipping_policy.url }}
-        {%- elsif cart.taxes_included -%}
-          {{ 'sections.cart.taxes_included_but_shipping_at_checkout' | t }}
-        {%- elsif shop.shipping_policy.body != blank -%}
-          {{ 'sections.cart.taxes_and_shipping_policy_at_checkout_html' | t: link: shop.shipping_policy.url }}
-        {%- else -%}
-          {{ 'sections.cart.taxes_and_shipping_at_checkout' | t }}
-        {%- endif -%}
-      </small>
     </div>
-  </div>
+    <div id="variantlist-errors"></div>
+  {%- endunless -%}
 </variant-list>
 
 {% schema %}
