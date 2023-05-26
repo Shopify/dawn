@@ -35,7 +35,26 @@ var swiper2 = new Swiper(".fwx-product-images-swiper", {
 	},
 	on: {
 		slideChange: function () {
+			const sliderContainer = document.querySelector(".fwx-product-images-swiper");
+			const videos = sliderContainer.querySelectorAll("video");
+			const youtubeVideos = sliderContainer.querySelectorAll("iframe");
 			gallerySwiper.activeIndex = this.activeIndex;
+
+			// stop and reset all youtube videos
+			for(let video of youtubeVideos) {
+				if(video) {
+					video.src = video.src
+				}
+			}
+
+			// stop and reset all videos
+			for(let video of videos) {
+				if(video) {
+					video.pause(); 
+					video.currentTime = 0;
+				}
+			}
 		}
 	}
 });
+

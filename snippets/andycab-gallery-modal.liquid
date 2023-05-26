@@ -9,20 +9,39 @@
                 {% continue %}
               {% else %}
                <div class="swiper-slide">
-                   {%- if media != blank -%}
-                        {% if media.media_type == 'external_video' %}
-                          {% if media.host == 'youtube' %}
-                            {{ media | external_video_url: color: 'white' | external_video_tag }}
-                          {% endif %}
-                        {% else %}
-                       <img data-src="{{ media | image_url: width: 2000 }}"
-                          width=""
-                          height=""
-                          class="swiper-lazy"
-                          loading="lazy">
-                       <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
+                  {%- if media != blank -%}
+                    {% comment %}
+                      new video logic
+                    {% endcomment %}
+                    {% case media.media_type %}
+                    {% when 'external_video' %}
+                      {{ media | external_video_url: color: 'white' | external_video_tag }}
+                    {% when 'image' %}
+                      <img src="{{ media | img_url: '1000x' }}" loading="lazy" width="" height="">
+                    {% when 'video' %}
+                      <span class="product-modal-video-container">
+                        {{ media | video_tag: controls: true }}
+                      </span>
+                    {% endcase %}
+
+                    {% comment %}
+                      old video logic
+                    {% endcomment %}
+                    {% comment %}
+                    {% if media.media_type == 'external_video' %}
+                      {% if media.host == 'youtube' %}
+                        {{ media | external_video_url: color: 'white' | external_video_tag }}
+                      {% endif %}
+                    {% else %}
+                      <img src="{{ media | image_url: width: 2000 }}"
+                        width=""
+                        height=""
+                        class="swiper-lazy"
+                        loading="lazy">
+                      <div class="swiper-lazy-preloader swiper-lazy-preloader-white"></div>
                     {% endif %}
-                   {%- endif -%}
+                    {% endcomment %}
+                  {%- endif -%}
                </div>
               {% endif %}
            {%- endfor -%}
@@ -44,6 +63,25 @@
       document.querySelectorAll('[data-close-modal]').forEach(button => {
         button.addEventListener('click', () =>{
           body.classList.remove('gallery-modal-open')
+          const sliderContainer = document.querySelector("#andycab-gallery-swiper");
+          const videos = sliderContainer.querySelectorAll("video");
+          const youtubeVideos = sliderContainer.querySelectorAll("iframe");
+          gallerySwiper.activeIndex = this.activeIndex;
+
+          // stop and reset all youtube videos
+          for(let video of youtubeVideos) {
+            if(video) {
+              video.src = video.src
+            }
+          }
+
+          // stop and reset all videos
+          for(let video of videos) {
+            if(video) {
+              video.pause(); 
+              video.currentTime = 0;
+            }
+          }
         });
       })
 
@@ -64,7 +102,26 @@
            },
            on: {
              slideChange: function(){
-               this.index = this.activeIndex;
+                this.index = this.activeIndex;
+                const sliderContainer = document.querySelector("#andycab-gallery-swiper");
+                const videos = sliderContainer.querySelectorAll("video");
+                const youtubeVideos = sliderContainer.querySelectorAll("iframe");
+                gallerySwiper.activeIndex = this.activeIndex;
+
+                // stop and reset all youtube videos
+                for(let video of youtubeVideos) {
+                  if(video) {
+                    video.src = video.src
+                  }
+                }
+
+                // stop and reset all videos
+                for(let video of videos) {
+                  if(video) {
+                    video.pause(); 
+                    video.currentTime = 0;
+                  }
+                }
              }
            }
          });
@@ -161,7 +218,7 @@
   left: 0;
   height: 100%;
   width: 100%;
-  z-index: 3;
+  z-index: 4;
   display:flex;
 }
    #gallery-modal{
@@ -223,6 +280,24 @@
    .gallery-modal-open button.andycab-close-modal-button{
      transform: translateY(0);
    }
+
+  /* andycab modal slider */
+  .andycab-modal-content .swiper-slide-active {
+    height: inherit !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .andycab-modal-content .product-modal-video-container {
+    height: inherit;
+  }
+
+  .andycab-modal-content .product-modal-video-container video {
+    height: inherit;
+    object-fit: fill;
+  }
+
    @media screen and (min-width:750px){
      #gallery-modal .andycab-close-modal-button{
        top:24px;
