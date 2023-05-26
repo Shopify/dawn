@@ -704,16 +704,11 @@ class SlideshowSharedComponent extends SliderComponent {
 
     if (!this.sliderControlWrapper) return;
 
-    this.desktopLayout = window.matchMedia('(min-width: 750px)');
-    this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
     this.sliderFirstItemNode = this.slider.querySelector('.slideshow__slide');
     if (this.sliderItemsToShow.length > 0) this.currentPage = 1;
 
     this.slider.addEventListener('scroll', this.setSlideVisibility.bind(this));
     this.setSlideVisibility();
-
-    if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
   }
 
   setAutoPlay() {
@@ -747,29 +742,12 @@ class SlideshowSharedComponent extends SliderComponent {
     this.prevButton.removeAttribute('disabled');
   }
 
-  focusOutHandling(event) {
-    if (this.sliderAutoplayButton) {
-      const focusedOnAutoplayButton =
-        event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
-      if (!this.autoplayButtonIsSetToPlay || focusedOnAutoplayButton) return;
-      this.play();
-    } else if (!this.reducedMotion.matches && !this.announcementBarArrowButtonWasClicked && this.desktopLayout.matches) {
-      this.play();
-    }
+  focusOutHandling() {
+    this.play();
   }
 
-  focusInHandling(event) {
-    if (this.sliderAutoplayButton) {
-      const focusedOnAutoplayButton =
-        event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
-      if (focusedOnAutoplayButton && this.autoplayButtonIsSetToPlay) {
-        this.play();
-      } else if (this.autoplayButtonIsSetToPlay) {
-        this.pause();
-      }
-    } else if (this.querySelector('.announcement-bar-slider').contains(event.target)) {
-      this.pause();
-    }
+  focusInHandling() {
+    this.pause();
   }
 
   play() {
@@ -819,10 +797,13 @@ customElements.define('slideshow-shared-component', SlideshowSharedComponent);
 
 class SlideshowSectionComponent extends SlideshowSharedComponent {
   constructor() {
+    debugger;
     super();
 
     this.sliderControlLinksArray = Array.from(this.sliderControlWrapper.querySelectorAll('.slider-counter__link'));
     this.sliderControlLinksArray.forEach((link) => link.addEventListener('click', this.linkToSlide.bind(this)));
+
+    if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay()
   }
 
   setAutoPlay() {
@@ -896,21 +877,24 @@ customElements.define('slideshow-section-component', SlideshowSectionComponent);
 
 class AnnouncementBarSlider extends SlideshowSharedComponent {
   constructor() {
+    debugger;
     super();
-
     this.announcementBarArrowButtonWasClicked = false;
+    this.desktopLayout = window.matchMedia('(min-width: 750px)');
+    this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     [this.reducedMotion, this.desktopLayout].forEach((mediaQuery) => {
       mediaQuery.addEventListener('change', () => {
         if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
       });
-    });
 
-    [this.prevButton, this.nextButton].forEach((button) => {
-      button.addEventListener('click', () => {
-        this.announcementBarArrowButtonWasClicked = true;
-      }, {once: true});
+      if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay()
     });
+  }
+
+  onButtonClick(event) {
+    super.onButtonClick(event);
+    this.announcementBarArrowButtonWasClicked = true;
   }
 
   setAutoPlay() {
