@@ -27,7 +27,7 @@ var main = function () {
               var country_code = ip2c.split(';')[1];
               const activeCountry = countriesData.countries.filter(item => item.country_iso === country_code);
 
-              if (activeCountry.length == 0) ;
+              if (activeCountry.length == 0) return;
                 const flagImg = activeCountry[0].flag_image
                 const countryName = activeCountry[0].country_name
                 const page = activeCountry[0].reseller_page
