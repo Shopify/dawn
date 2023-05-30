@@ -18,9 +18,12 @@ var main = function () {
             const resellerLink = document.querySelector('.header__icon--reseller')
             const flagWrapper = resellerLink.querySelector('.flag-img')
             const headerIcons = document.querySelector('.header__icons')
+            const shopBtn = document.querySelector('.shop-btn')
 
             if( countriesData.countries.length == 0 ) return;
 
+            shopBtn?.classList.add('animated')
+            
             fetch('https://ip2c.org/s')
             .then(response => response.text())
             .then(ip2c => {
