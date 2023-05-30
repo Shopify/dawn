@@ -51,8 +51,8 @@ var main = function () {
 
                     resLink.textContent = countryName;
                     headerIcons.insertAdjacentElement('afterend', resLink);
+                    resellerLink.href = page;
                 }
-
                 resellerLink.classList.remove('disabled')
             })
             .catch(error => console.error(error));
