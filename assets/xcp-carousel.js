@@ -5,25 +5,11 @@ document.addEventListener('DOMContentLoaded', function () {
   if (carousels.length > 0) {
     console.log('has carousels')
     Array.from(carousels).forEach(carousel => {
-      const leftArrow = carousel.getElementsByClassName('xcp-grid-carousel__carousel__left-arrow')[0]
-      const rightArrow = carousel.getElementsByClassName('xcp-grid-carousel__carousel__right-arrow')[0]
-
-      if (leftArrow) {
-        leftArrow.addEventListener('click', function() {
-          const activeIndex = carouselActiveIndex(carousel)
-          console.log('left arrow active index', activeIndex)
-          scrollToIndex(carousel, parseInt(activeIndex) - 1)
-        })
-      }
-
-      if (rightArrow) {
-        rightArrow.addEventListener('click', function() {
-          const activeIndex = carouselActiveIndex(carousel)
-          scrollToIndex(carousel, parseInt(activeIndex) + 1)
-        })
-      }
+      handleArrows(carousel)
+      handleSwipe(carousel)
     })
   }
+
   function carouselActiveIndex(carousel) {
     const images = carousel.getElementsByClassName('xcp-grid-carousel__carousel__image')
     console.log(images)
@@ -61,5 +47,58 @@ document.addEventListener('DOMContentLoaded', function () {
       imageToActivate.classList.add('active')
       indicatorToActivate.classList.add('active')
     }
+  }
+
+  function handleArrows(carousel) {
+    const leftArrow = carousel.getElementsByClassName('xcp-grid-carousel__carousel__left-arrow')[0]
+    const rightArrow = carousel.getElementsByClassName('xcp-grid-carousel__carousel__right-arrow')[0]
+
+    if (leftArrow) {
+      leftArrow.addEventListener('click', function() {
+        const activeIndex = carouselActiveIndex(carousel)
+        console.log('left arrow active index', activeIndex)
+        scrollToIndex(carousel, parseInt(activeIndex) - 1)
+      })
+    }
+
+    if (rightArrow) {
+      rightArrow.addEventListener('click', function() {
+        const activeIndex = carouselActiveIndex(carousel)
+        scrollToIndex(carousel, parseInt(activeIndex) + 1)
+      })
+    }
+  }
+
+  function handleSwipe(carousel) {
+    var touchstartX = 0;
+    var touchstartY = 0;
+    var touchendX = 0;
+    var touchendY = 0;
+
+    var gesuredZone = carousel;
+
+    gesuredZone.addEventListener('touchstart', function(event) {
+      touchstartX = event.changedTouches[0].screenX;
+      touchstartY = event.changedTouches[0].screenY;
+    }, false);
+
+    gesuredZone.addEventListener('touchend', function(event) {
+      touchendX = event.changedTouches[0].screenX;
+      touchendY = event.changedTouches[0].screenY;
+      handleGesure();
+    }, false); 
+
+    function handleGesure() {
+      const activeIndex = carouselActiveIndex(carousel)
+      if (touchendX < touchstartX) {
+        scrollToIndex(carousel, parseInt(activeIndex) + 1)
+      }
+      if (touchendX > touchstartX) {
+        scrollToIndex(carousel, parseInt(activeIndex) - 1)
+      }
+      if (touchendY > touchstartY) {
+        scrollToIndex(carousel, parseInt(activeIndex) + 1)
+      }
+    } 
   }
 })
