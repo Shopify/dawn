@@ -95,26 +95,39 @@
       <label class="visually-hidden" for="Quantity-{{ variant.id }}">
         {{ 'products.product.quantity.label' | t }}
       </label>
-      <div class="variant-item__quantity-info">
-        {% render 'icon-info' %}
-      </div>
-      {% # theme-check-disable %}
-      {% assign cart_qty = cart | item_count_for_variant: variant.id %}
-      {% # theme-check-enable %}
-      {% render 'quantity-input', variant: variant %}
-      {%- if cart_qty > 0 -%}
-        <variant-list-remove-button
-          id="Remove-{{ variant.id }}"
-          data-index="{{ variant.id }}"
-        >
-          <a
-            href="{{ item.url_to_remove }}"
-            class="button button--tertiary"
-            aria-label="{{ 'sections.cart.remove_title' | t: title: item.title }}"
+      {%- liquid
+        assign check_against_inventory = true
+        if variant.inventory_management != 'shopify' or variant.inventory_policy == 'continue'
+          assign check_against_inventory = false
+        endif
+        if variant.quantity_rule.min > variant.inventory_quantity and check_against_inventory
+          assign quantity_rule_soldout = true
+        endif
+      -%}
+      {%- if variant.available == false or quantity_rule_soldout -%}
+        <span> {{ 'products.product.sold_out' | t }} </span>
+      {%- else -%}
+        <div class="variant-item__quantity-info">
+          {% render 'icon-info' %}
+        </div>
+        {% # theme-check-disable %}
+        {% assign cart_qty = cart | item_count_for_variant: variant.id %}
+        {% # theme-check-enable %}
+        {% render 'quantity-input', variant: variant %}
+        {%- if cart_qty > 0 -%}
+          <variant-list-remove-button
+            id="Remove-{{ variant.id }}"
+            data-index="{{ variant.id }}"
           >
-            {% render 'icon-remove' %}
-          </a>
-        </variant-list-remove-button>
+            <a
+              href="{{ item.url_to_remove }}"
+              class="button button--tertiary"
+              aria-label="{{ 'sections.cart.remove_title' | t: title: item.title }}"
+            >
+              {% render 'icon-remove' %}
+            </a>
+          </variant-list-remove-button>
+        {%- endif -%}
       {%- endif -%}
     </div>
     <div class="variant-item__error" id="Line-item-error-{{ item.id }}" role="alert">
