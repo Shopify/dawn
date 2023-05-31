@@ -46,7 +46,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (index < images.length && index >= 0) {
       clearActive(carousel)
       carouselInner.style.left = `-${imageToActivate.offsetLeft}px` 
-      carouselInner.scrollBy(100, 0)
       imageToActivate.classList.add('active')
       indicatorToActivate.classList.add('active')
     }
