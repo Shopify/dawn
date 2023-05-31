@@ -1,9 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
-  console.log('js carousel') 
   const carousels = document.getElementsByClassName('xcp-grid-carousel')
 
   if (carousels.length > 0) {
-    console.log('has carousels')
     Array.from(carousels).forEach(carousel => {
       handleArrows(carousel)
       handleSwipe(carousel)
@@ -11,18 +9,21 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function carouselActiveIndex(carousel) {
-    const images = carousel.getElementsByClassName('xcp-grid-carousel__carousel__image')
-    console.log(images)
-    const activeImage = Array.from(images).filter(img => {
-      return img.classList.contains('active')
-    })
-
-    console.log(activeImage)
+    const activeImage = carouselActiveImage(carousel)
     if (activeImage) {
       return activeImage[0].dataset.itemIndex
     } else {
       return null
     }
+  }
+
+  function carouselActiveImage(carousel) {
+    const images = carousel.getElementsByClassName('xcp-grid-carousel__carousel__image')
+    const activeImage = Array.from(images).filter(img => {
+      return img.classList.contains('active')
+    })
+
+    return activeImage
   }
 
   function clearActive(carousel) {
@@ -39,11 +40,13 @@ document.addEventListener('DOMContentLoaded', function () {
   function scrollToIndex(carousel, index) {
     const imageToActivate = carousel.querySelector(`.xcp-grid-carousel__carousel__image[data-item-index="${index}"]`)
     const indicatorToActivate = carousel.querySelector(`.xcp-grid-carousel__carousel__indicator[data-item-index="${index}"]`)
+    const carouselInner = carousel.querySelector('.xcp-grid-carousel__carousel__inner')
 
     const images = carousel.getElementsByClassName('xcp-grid-carousel__carousel__image')
     if (index < images.length && index >= 0) {
       clearActive(carousel)
-      imageToActivate.scrollIntoView()
+      carouselInner.style.left = `-${imageToActivate.offsetLeft}px` 
+      carouselInner.scrollBy(100, 0)
       imageToActivate.classList.add('active')
       indicatorToActivate.classList.add('active')
     }
@@ -56,7 +59,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (leftArrow) {
       leftArrow.addEventListener('click', function() {
         const activeIndex = carouselActiveIndex(carousel)
-        console.log('left arrow active index', activeIndex)
         scrollToIndex(carousel, parseInt(activeIndex) - 1)
       })
     }
