@@ -1,7 +1,6 @@
 class VariantListRemoveButton extends HTMLElement {
   constructor() {
     super();
-
     this.addEventListener('click', (event) => {
       event.preventDefault();
       const variantList = this.closest('variant-list');
@@ -11,6 +10,30 @@ class VariantListRemoveButton extends HTMLElement {
 }
 
 customElements.define('variant-list-remove-button', VariantListRemoveButton);
+
+class VariantListRemoveAllButton extends HTMLElement {
+  constructor() {
+    super();
+    const allVariants = Array.from(document.querySelectorAll('[data-variantid]'));
+    const variantsInCart = allVariants.filter((variant) => parseInt(variant.dataset.cartqty) > 0)
+    if (variantsInCart.length === 0) {
+      this.classList.add('hidden')
+    }
+    const variantList = this.closest('variant-list');
+    const items = {}
+    variantsInCart.forEach((variant) => {
+      items[parseInt(variant.dataset.variantid)] = 0;
+    })
+
+    this.addEventListener('click', (event) => {
+      event.preventDefault();
+      variantList.updateMultipleQty(items);
+    });
+  }
+}
+
+customElements.define('variant-list-remove-all-button', VariantListRemoveAllButton);
+
 
 class VariantList extends HTMLElement {
   constructor() {
@@ -90,6 +113,36 @@ class VariantList extends HTMLElement {
     ];
   }
 
+  updateMultipleQty(items) {
+    this.querySelector('.variant-remove-total .loading-overlay').classList.remove('hidden');
+
+    const body = JSON.stringify({
+      updates: items,
+      sections: this.getSectionsToRender().map((section) => section.section),
+      sections_url: window.location.pathname
+    });
+
+    fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } })
+      .then((response) => {
+        return response.text();
+      })
+      .then((state) => {
+        const parsedState = JSON.parse(state);
+        this.getSectionsToRender().forEach((section => {
+          const elementToReplace =
+            document.getElementById(section.id).querySelector(section.selector) || document.getElementById(section.id);
+          elementToReplace.innerHTML =
+            this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
+        }));
+      }).catch(() => {
+        const errors = document.getElementById('variantlist-errors');
+        errors.textContent = window.cartStrings.error;
+      })
+      .finally(() => {
+        this.querySelector('.variant-remove-total .loading-overlay').classList.add('hidden');
+      });
+  }
+
   updateQuantity(id, quantity, name, action) {
     this.enableLoading(id);
 
@@ -99,6 +152,7 @@ class VariantList extends HTMLElement {
       sections: this.getSectionsToRender().map((section) => section.section),
       sections_url: window.location.pathname
     });
+
     let routeUrl = routes.cart_change_url
     if (action === this.addAction) {
       routeUrl = routes.cart_add_url
@@ -149,7 +203,15 @@ class VariantList extends HTMLElement {
           variantItem.querySelector(`[name="${name}"]`).focus();
         }
         publish(PUB_SUB_EVENTS.cartUpdate, { source: this.variantListId });
-      }).catch((e) => {
+
+        if (action === this.addAction) {
+          this.updateButton(parseInt(quantity))
+        } else if (action === this.updateAction) {
+          this.updateButton(parseInt(quantity - quantityElement.dataset.cartQuantity))
+        } else {
+          this.updateButton(-parseInt(quantityElement.dataset.cartQuantity))
+        }
+      }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         const errors = document.getElementById('variantlist-errors');
         errors.textContent = window.cartStrings.error;
@@ -157,6 +219,26 @@ class VariantList extends HTMLElement {
       .finally(() => {
         this.disableLoading(id);
       });
+  }
+
+  updateButton(quantity) {
+    if (quantity < 0) {
+      if (quantity === -1) {
+        window.variantListStrings.itemsRemoved.replace('[quantity]', quantity);
+        this.querySelector('.variant-list__button').innerHTML = `${Math.abs(quantity)} item removed`;
+      } else {
+        window.variantListStrings.itemsRemoved.replace('[quantity]', quantity);
+        this.querySelector('.variant-list__button').innerHTML = `${Math.abs(quantity)} items removed`;
+      }
+    } else {
+      if (quantity === 1) {
+        window.variantListStrings.itemAdded.replace('[quantity]', quantity);
+        this.querySelector('.variant-list__button').innerHTML = `${quantity} item added`;
+      } else {
+        window.variantListStrings.itemsAdded.replace('[quantity]', quantity);
+        this.querySelector('.variant-list__button').innerHTML = `${quantity} items added`;
+      }
+    }
   }
 
   updateError(updatedValue, id, message) {
