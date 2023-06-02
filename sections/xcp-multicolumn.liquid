@@ -33,16 +33,49 @@
     {% endif %}
   }
 
+  .xcp-multicolumn .desktop {
+    display: block;
+  }
+
+  .xcp-multicolumn .mobile {
+    display: none;
+  }
+
   .xcp-multicolumn .multicolumn-card__info .rte {
     text-align: center;
   }
 
+  .xcp-multicolumn-card__video-wrapper {
+    width: 99%;
+    margin: 0 auto !important;
+  }
+
+  .xcp-multicolumn__video--wrapper {
+    position: relative;
+  }
+
+  .xcp-multicolumn__video {
+    position: absolute;
+    width: 200%;
+    min-height: 300px;
+    left: 0;
+    border: 0;
+  }
+
   @media screen and (max-width: 750px) {
+    .xcp-multicolumn .desktop {
+      display: none;
+    }
+
+    .xcp-multicolumn .mobile {
+      display: block;
+    }
     .xcp-multicolumn .multicolumn-card {
       margin-bottom: {{ section.settings.card_margin_right}}px;
       margin-right: 0;
     }
   }
+
 {%- endstyle -%}
 
 {%- liquid
@@ -87,46 +120,51 @@
           <li id="Slide-{{ section.id }}-{{ forloop.index }}" class="multicolumn-list__item grid__item{% if section.settings.swipe_on_mobile %} slider__slide{% endif %}{% if section.settings.column_alignment == 'center' %} center{% endif %}{{ empty_column }}" {{ block.shopify_attributes }}>            
             <div class="multicolumn-card content-container">
               {%- if block.settings.video or block.settings.video_url -%}
-                <div class="multicolumn-card__video-wrapper multicolumn-card__video-wrapper--{{ section.settings.image_width }}-width{% if section.settings.image_width != 'full' or spaced_image %} multicolumn-card-spacing{% endif %}">
+                <div class="xcp-multicolumn-card__video-wrapper desktop multicolumn-card__video-wrapper multicolumn-card__video-wrapper--{{ section.settings.image_width }}-width{% if section.settings.image_width != 'full' or spaced_image %} multicolumn-card-spacing{% endif %}">
                   <div class="media media--transparent media--{{ section.settings.image_ratio }}"
                     {% if section.settings.image_ratio == 'adapt' %}
                       style="padding-bottom: {{ 1 | divided_by: highest_ratio | times: 100 }}%;"
                     {% endif %}>
-                    {%- if block.settings.video == null and section.settings.video_url != null -%}
-                      {%- liquid
-                        assign loop = ''
-                        if block.settings.enable_video_looping
-                          assign loop = '&loop=1&playlist=' | append: video_id
-                        endif
-                      -%}
-                      {%- if block.settings.video_url.type == 'youtube' -%}
-                        <iframe
-                                src="https://www.youtube.com/embed/{{ video_id }}?enablejsapi=1&autoplay=1{{ loop }}"
-                                class="js-youtube xcp-multicolumn__video"
-                                allow="autoplay; allow-scripts; encrypted-media"
-                                allowfullscreen
-                                title="{{ block.settings.description | escape }}"
-                        ></iframe>
+                    <div class="xcp-multicolumn__video--wrapper">
+                      {%- if block.settings.video == null and block.settings.video_url != null -%}
+                        {%- assign video_id = block.settings.video.id | default: block.settings.video_url.id %}
+                        {%- liquid
+                          assign loop = ''
+                          if block.settings.enable_video_looping
+                            assign loop = '&loop=1&playlist=' | append: video_id
+                          endif
+                        -%}
+                        {%- if block.settings.video_url.type == 'youtube' -%}
+                          <iframe
+                                  src="https://www.youtube.com/embed/{{ video_id }}?enablejsapi=1&autoplay=1{{ loop }}"
+                                  class="js-youtube xcp-multicolumn__video"
+                                  allow="autoplay; allow-scripts; encrypted-media"
+                                  allowfullscreen
+                                  style="left: -{{block.settings.video_left}}px;"
+                                  title="{{ block.settings.description | escape }}"
+                          ></iframe>
+                        {%- else -%}
+                          <iframe
+                                  src="https://player.vimeo.com/video/{{ video_id }}?title=0&byline=0&portrait=0&muted=1&controls=0&autoplay=1&loop=1"
+                                  class="js-vimeo xcp-multicolumn__video"
+                                  allow="autoplay; encrypted-media"
+                                  allowfullscreen
+                                  style="left: -{{block.settings.video_left}}px;"
+                                  title="{{ block.settings.description | escape }}"
+                          ></iframe>
+                        {%- endif -%}
                       {%- else -%}
-                        <iframe
-                                src="https://player.vimeo.com/video/{{ video_id }}?title=0&byline=0&portrait=0{{ loop }}"
-                                class="js-vimeo xcp-multicolumn__video"
-                                allow="autoplay; encrypted-media"
-                                allowfullscreen
-                                title="{{ block.settings.description | escape }}"
-                        ></iframe>
+                        {{ block.settings.video
+                        | video_tag:
+                        image_size: "1100x",
+                        autoplay: true,
+                        loop: block.settings.enable_video_looping,
+                        controls: true,
+                        muted: false,
+                        class: 'xcp-multicolumn__video'
+                        }}
                       {%- endif -%}
-                    {%- else -%}
-                      {{ block.settings.video
-                      | video_tag:
-                      image_size: "1100x",
-                      autoplay: true,
-                      loop: block.settings.enable_video_looping,
-                      controls: true,
-                      muted: false,
-                      class: 'xcp-multicolumn__video'
-                      }}
-                    {%- endif -%}
+                    </div>
                   </div>
                 </div>
               {%- endif -%}
@@ -134,7 +172,11 @@
                 {% if section.settings.image_ratio == 'adapt' or section.settings.image_ratio == 'circle' %}
                   {% assign spaced_image = true %}
                 {% endif %}
-                <div class="multicolumn-card__image-wrapper multicolumn-card__image-wrapper--{{ section.settings.image_width }}-width{% if section.settings.image_width != 'full' or spaced_image %} multicolumn-card-spacing{% endif %}">
+                {%- assign img_mobile_class = "" -%}
+                {% if block.settings.video or block.settings.video_url %}
+                  {%- assign img_mobile_class = "mobile" -%}
+                {% endif %}
+                <div class="multicolumn-card__image-wrapper {{img_mobile_class}} multicolumn-card__image-wrapper--{{ section.settings.image_width }}-width{% if section.settings.image_width != 'full' or spaced_image %} multicolumn-card-spacing{% endif %}">
                   <div class="media media--transparent media--{{ section.settings.image_ratio }}"
                     {% if section.settings.image_ratio == 'adapt' %}
                       style="padding-bottom: {{ 1 | divided_by: highest_ratio | times: 100 }}%;"
@@ -448,6 +490,16 @@
             "youtube",
             "vimeo"
           ]
+        },
+        {
+          "type": "range",
+          "id": "video_left",
+          "min": 40,
+          "max": 270,
+          "step": 5,
+          "unit": "px",
+          "label": "Card Video left position",
+          "default": 70 
         },
         {
           "type": "image_picker",
