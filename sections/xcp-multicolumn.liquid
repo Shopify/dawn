@@ -86,7 +86,51 @@
 
           <li id="Slide-{{ section.id }}-{{ forloop.index }}" class="multicolumn-list__item grid__item{% if section.settings.swipe_on_mobile %} slider__slide{% endif %}{% if section.settings.column_alignment == 'center' %} center{% endif %}{{ empty_column }}" {{ block.shopify_attributes }}>            
             <div class="multicolumn-card content-container">
-              {%- if block.settings.image != blank -%}
+              {%- if block.settings.video or block.settings.video_url -%}
+                <div class="multicolumn-card__video-wrapper multicolumn-card__video-wrapper--{{ section.settings.image_width }}-width{% if section.settings.image_width != 'full' or spaced_image %} multicolumn-card-spacing{% endif %}">
+                  <div class="media media--transparent media--{{ section.settings.image_ratio }}"
+                    {% if section.settings.image_ratio == 'adapt' %}
+                      style="padding-bottom: {{ 1 | divided_by: highest_ratio | times: 100 }}%;"
+                    {% endif %}>
+                    {%- if block.settings.video == null and section.settings.video_url != null -%}
+                      {%- liquid
+                        assign loop = ''
+                        if block.settings.enable_video_looping
+                          assign loop = '&loop=1&playlist=' | append: video_id
+                        endif
+                      -%}
+                      {%- if block.settings.video_url.type == 'youtube' -%}
+                        <iframe
+                                src="https://www.youtube.com/embed/{{ video_id }}?enablejsapi=1&autoplay=1{{ loop }}"
+                                class="js-youtube xcp-multicolumn__video"
+                                allow="autoplay; allow-scripts; encrypted-media"
+                                allowfullscreen
+                                title="{{ block.settings.description | escape }}"
+                        ></iframe>
+                      {%- else -%}
+                        <iframe
+                                src="https://player.vimeo.com/video/{{ video_id }}?title=0&byline=0&portrait=0{{ loop }}"
+                                class="js-vimeo xcp-multicolumn__video"
+                                allow="autoplay; encrypted-media"
+                                allowfullscreen
+                                title="{{ block.settings.description | escape }}"
+                        ></iframe>
+                      {%- endif -%}
+                    {%- else -%}
+                      {{ block.settings.video
+                      | video_tag:
+                      image_size: "1100x",
+                      autoplay: true,
+                      loop: block.settings.enable_video_looping,
+                      controls: true,
+                      muted: false,
+                      class: 'xcp-multicolumn__video'
+                      }}
+                    {%- endif -%}
+                  </div>
+                </div>
+              {%- endif -%}
+              {%- if block.settings.image != blank and block.settings.video == nil and blocks.settings.video_url == nil -%}
                 {% if section.settings.image_ratio == 'adapt' or section.settings.image_ratio == 'circle' %}
                   {% assign spaced_image = true %}
                 {% endif %}
@@ -391,6 +435,20 @@
       "type": "column",
       "name": "t:sections.multicolumn.blocks.column.name",
       "settings": [
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Video"
+        },
+        {
+          "type": "video_url",
+          "id": "video_url",
+          "label": "Video URL",
+          "accept": [
+            "youtube",
+            "vimeo"
+          ]
+        },
         {
           "type": "image_picker",
           "id": "image",
