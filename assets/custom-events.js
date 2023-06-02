@@ -22,7 +22,6 @@ var main = function () {
 
             if( countriesData.countries.length == 0 ) return;
 
-            shopBtn?.classList.add('animated')
             
             fetch('https://ip2c.org/s')
             .then(response => response.text())
@@ -31,6 +30,7 @@ var main = function () {
               const activeCountry = countriesData.countries.filter(item => item.country_iso === country_code);
 
               if (activeCountry.length == 0) return;
+                shopBtn?.classList.add('animated')
                 const flagImg = activeCountry[0].flag_image
                 const countryName = activeCountry[0].country_name
                 const page = activeCountry[0].reseller_page
