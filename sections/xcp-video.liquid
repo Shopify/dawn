@@ -14,6 +14,12 @@
     }
   }
 
+  .xcp-video .video-section__media--wrapper iframe {
+    width: 100%;
+    min-height: 567px;
+    border: 0;
+  }
+
   .video-section__media--wrapper-{{section.id}} {
     width: {{section.settings.video_width}}%;
     margin: 0 auto;
@@ -50,7 +56,7 @@
 {%- endcapture -%}
 
 <div class="color-{{ section.settings.color_scheme }} gradient">
-  <div class="video-section isolate{% unless section.settings.full_width %} page-width{% endunless %} section-{{ section.id }}-padding">
+  <div class="xcp-video video-section isolate{% unless section.settings.full_width %} page-width{% endunless %} section-{{ section.id }}-padding">
     <div {% if section.settings.full_width %} class="page-width" {% endif %}>
       {%- unless section.settings.heading == blank -%}
         <div class="title-wrapper title-wrapper--no-top-margin">
@@ -91,68 +97,42 @@
       </div>
     </noscript>
     <div class="video-section__media--wrapper video-section__media--wrapper-{{section.id}}">
-      <deferred-media
-              class="video-section__media video-section__media-{{section.id}} deferred-media no-js-hidden gradient global-media-settings{% if section.settings.full_width %} global-media-settings--full-width{% endif %}{% if fix_ratio %} media-fit-cover{% endif %}"
-              data-media-id="{{ video_id }}"
-              {% if poster != null %}
-                style="--ratio-percent: {{ 1 | divided_by: poster.aspect_ratio | times: 100 }}%;"
-              {% endif %}
-      >
-        <button
-                id="Deferred-Poster-Modal-{{ video_id }}"
-                class="video-section__poster media deferred-media__poster media--landscape"
-                type="button"
-                aria-label="{{ alt }}"
-        >
-          {%- if poster != null -%}
-            {{ poster
-            | image_url: width: 3840
-            | image_tag: loading: 'lazy', sizes: sizes, widths: '375, 750, 1100, 1500, 1780, 2000, 3000, 3840', alt: alt
-            }}
+      <div>
+        {%- if section.settings.video == null and section.settings.video_url != null -%}
+          {%- liquid
+            assign loop = ''
+            if section.settings.enable_video_looping
+              assign loop = '&loop=1&playlist=' | append: video_id
+            endif
+          -%}
+          {%- if section.settings.video_url.type == 'youtube' -%}
+            <iframe
+                    src="https://www.youtube.com/embed/{{ video_id }}?enablejsapi=1&autoplay=1{{ loop }}"
+                    class="js-youtube"
+                    allow="autoplay; allow-scripts; encrypted-media"
+                    allowfullscreen
+                    title="{{ section.settings.description | escape }}"
+            ></iframe>
           {%- else -%}
-            {{ 'collection-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+            <iframe
+                    src="https://player.vimeo.com/video/{{ video_id }}?title=0&byline=0&portrait=0{{ loop }}"
+                    class="js-vimeo"
+                    allow="autoplay; encrypted-media"
+                    allowfullscreen
+                    title="{{ section.settings.description | escape }}"
+            ></iframe>
           {%- endif -%}
-          <span class="deferred-media__poster-button motion-reduce">
-            {%- render 'icon-play' -%}
-          </span>
-        </button>
-        <template>
-          {%- if section.settings.video == null and section.settings.video_url != null -%}
-            {%- liquid
-              assign loop = ''
-              if section.settings.enable_video_looping
-                assign loop = '&loop=1&playlist=' | append: video_id
-              endif
-            -%}
-            {%- if section.settings.video_url.type == 'youtube' -%}
-              <iframe
-                      src="https://www.youtube.com/embed/{{ video_id }}?enablejsapi=1&autoplay=1{{ loop }}"
-                      class="js-youtube"
-                      allow="autoplay; allow-scripts; encrypted-media"
-                      allowfullscreen
-                      title="{{ section.settings.description | escape }}"
-              ></iframe>
-            {%- else -%}
-              <iframe
-                      src="https://player.vimeo.com/video/{{ video_id }}?title=0&byline=0&portrait=0{{ loop }}"
-                      class="js-vimeo"
-                      allow="autoplay; encrypted-media"
-                      allowfullscreen
-                      title="{{ section.settings.description | escape }}"
-              ></iframe>
-            {%- endif -%}
-          {%- else -%}
-            {{ section.settings.video
-            | video_tag:
-            image_size: "1100x",
-            autoplay: true,
-            loop: section.settings.enable_video_looping,
-            controls: true,
-            muted: false
-            }}
-          {%- endif -%}
-        </template>
-      </deferred-media>
+        {%- else -%}
+          {{ section.settings.video
+          | video_tag:
+          image_size: "1100x",
+          autoplay: true,
+          loop: section.settings.enable_video_looping,
+          controls: true,
+          muted: false
+          }}
+        {%- endif -%}
+      </div>
     </div>
   </div>
 </div>
