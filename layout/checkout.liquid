@@ -52,5 +52,44 @@
         </aside>
       </div>
     </div>
+
+    {{ tracking_code }}
+
+    <script>
+      (function($) {
+        if (typeof window.dataLayer === "undefined") {
+          return;
+        }
+
+        $(document).on("page:load page:change", function() {
+          {% comment %}
+            TODO:
+            - [ ] Test Gift Card items - they appear to have no sku
+            - [ ] Sometimes the "contact_information" is skipped,
+                  in which case the begin_checkout event won't be recorded
+            - [ ] X-Carves (and possibly other products) are represented differently:
+                  X-Carves are now a single item with sku 30686-07(M|D), whereas before
+                  Shopify we listed all the items that make up an X-Carve
+            - [ ] Check what happens in skus_comma_separated when a line_item has no SKU
+          {% endcomment %}
+
+          {%- assign skus_comma_separated = checkout.line_items | map: "sku" | uniq | sort | join: "," -%}
+
+          if (Shopify.Checkout.step === "contact_information") {
+            {% render "google-data-layer-ecommerce-begin-checkout", skus: skus_comma_separated %}
+          }
+
+          if (Shopify.Checkout.step === "payment_method") {
+            {% if checkout.requires_shipping %}
+              {% render "google-data-layer-ecommerce-add-shipping-info", skus: skus_comma_separated %}
+            {% endif %}
+          }
+
+          if (Shopify.Checkout.page === "thank_you") {
+            {% render "google-data-layer-ecommerce-purchase", skus: skus_comma_separated %}
+          }
+        });
+      })(Checkout.$);
+    </script>
   </body>
 </html>
