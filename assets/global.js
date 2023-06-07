@@ -609,6 +609,10 @@ class SliderComponent extends HTMLElement {
     this.pageTotalElement = this.querySelector('.slider-counter--total');
     this.prevButton = this.querySelector('button[name="previous"]');
     this.nextButton = this.querySelector('button[name="next"]');
+    this.announcementBarSlider = this.querySelector('.announcement-bar-slider');
+
+    // Value below should match --duration-default CSS value
+    this.delay = this.announcementBarSlider ? 200 : 0;
 
     if (!this.slider || !this.nextButton) return;
 
@@ -688,17 +692,11 @@ class SliderComponent extends HTMLElement {
       event.currentTarget.name === 'next'
         ? this.slider.scrollLeft + step * this.sliderItemOffset
         : this.slider.scrollLeft - step * this.sliderItemOffset;
-    if (this.querySelector('.announcement-bar-slider')) {
-      setTimeout (() => {
-        this.slider.scrollTo({
-          left: this.slideScrollPosition,
-        });
-      }, 200);
-    } else {
+    setTimeout (() => {
       this.slider.scrollTo({
         left: this.slideScrollPosition,
       });
-    }
+    }, this.delay);
   }
 }
 
@@ -720,7 +718,7 @@ class SlideshowComponent extends SliderComponent {
     this.slider.addEventListener('scroll', this.setSlideVisibility.bind(this));
     this.setSlideVisibility();
 
-    if (this.querySelector('.announcement-bar-slider')) {
+    if (this.announcementBarSlider) {
       this.currentSlide = 1;
       this.allAnnouncements = Array.from(this.querySelectorAll('.announcement-bar__message'));
       this.announcementBarArrowButtonWasClicked = false;
@@ -740,13 +738,8 @@ class SlideshowComponent extends SliderComponent {
         }, {once: true});
 
         button.addEventListener('click', () => {
-          if (button.name === 'next') {
-            this.applyAnimation(button.name);
-            this.updateAnnouncementBarSlide(button.name);
-          } else {
-            this.applyAnimation(button.name);
-            this.updateAnnouncementBarSlide(button.name);
-          }
+          this.applyAnimation(button.name);
+          this.updateAnnouncementBarSlide(button.name);
         });
       });
     }
@@ -784,17 +777,11 @@ class SlideshowComponent extends SliderComponent {
     } else if (isLastSlide && event.currentTarget.name === 'next') {
       this.slideScrollPosition = 0;
     }
-    if (this.querySelector('.announcement-bar-slider')) {
-      setTimeout (() => {
-        this.slider.scrollTo({
-          left: this.slideScrollPosition,
-        });
-      }, 200);
-    } else {
+    setTimeout (() => {
       this.slider.scrollTo({
         left: this.slideScrollPosition,
       });
-    }
+    }, this.delay);
   }
 
   update() {
@@ -838,7 +825,7 @@ class SlideshowComponent extends SliderComponent {
       } else if (this.autoplayButtonIsSetToPlay) {
         this.pause();
       }
-    } else if (this.querySelector('.announcement-bar-slider').contains(event.target)) {
+    } else if (this.announcementBarSlider.contains(event.target)) {
       this.pause();
     }
   }
@@ -870,12 +857,12 @@ class SlideshowComponent extends SliderComponent {
         ? 0
         : this.slider.scrollLeft + this.slider.querySelector('.slideshow__slide').clientWidth;
 
-    if (this.querySelector('.announcement-bar-slider')) {
+    if (this.announcementBarSlider) {
       setTimeout(() => {
         this.slider.scrollTo({
           left: slideScrollPosition,
         });
-      }, 200);
+      }, this.delay);
       this.updateAnnouncementBarSlide();
       this.applyAnimation();
     } else {
@@ -913,35 +900,29 @@ class SlideshowComponent extends SliderComponent {
           slide.classList.add(`announcement-bar-slider--fade-out-next`);
           setTimeout(() => {
             slide.classList.remove(`announcement-bar-slider--fade-out-next`);
-          }, 200);
-          setTimeout(() => {
             slide.classList.add(`announcement-bar-slider--fade-in-next`);
-          }, 200);
+          }, this.delay);
           setTimeout(() => {
             slide.classList.remove(`announcement-bar-slider--fade-in-next`);
-          }, 400);
+          }, this.delay * 2);
         } else if (this.currentSlide === 1 && button === 'next') {
             slide.classList.add(`announcement-bar-slider--fade-out-previous`);
             setTimeout(() => {
               slide.classList.remove(`announcement-bar-slider--fade-out-previous`);
-            }, 200);
-            setTimeout(() => {
               slide.classList.add(`announcement-bar-slider--fade-in-previous`);
-            }, 200);
+            }, this.delay);
             setTimeout(() => {
               slide.classList.remove(`announcement-bar-slider--fade-in-previous`);
-            }, 400);
+            }, this.delay * 2);
         } else {
             slide.classList.add(`announcement-bar-slider--fade-out-${button}`);
             setTimeout(() => {
               slide.classList.remove(`announcement-bar-slider--fade-out-${button}`);
-            }, 200);
-            setTimeout(() => {
               slide.classList.add(`announcement-bar-slider--fade-in-${button}`);
-            }, 200);
+            }, this.delay);
             setTimeout(() => {
               slide.classList.remove(`announcement-bar-slider--fade-in-${button}`);
-            }, 400);
+            }, this.delay * 2);
         }
       });
     });
