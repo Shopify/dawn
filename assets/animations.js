@@ -41,7 +41,7 @@ function initializeScrollAnimationTrigger(rootEl = document, isDesignModeEvent =
 // Zoom in animation logic
 function initializeScrollZoomAnimationTrigger() {
   const animationTriggerElements = Array.from(document.getElementsByClassName(SCROLL_ZOOM_IN_TRIGGER_CLASSNAME));
-  const scaleAmount = 0.3 / 100;
+  const scaleAmount = 0.2 / 100;
   if (animationTriggerElements.length === 0) return;
 
   let scrollPositionY = 0;
