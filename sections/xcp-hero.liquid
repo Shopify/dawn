@@ -1,0 +1,307 @@
+{%- assign video_id = section.settings.background_video.id | default: section.settings.background_video_url.id -%}
+
+{% style %}
+.xcp-overview__hero__video-bg {
+  position: relative;
+  width: 100%;
+  height: 676px;
+  overflow: hidden;
+}
+
+.xcp-overview__hero__video-bg::after {
+  content: " ";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgb(2,0,36);
+  background: linear-gradient(90deg, var(--gradient-base-background-1) 0%, rgba(255,255,255,0) 82%);
+}
+
+.xcp-overview__hero__video-bg iframe{
+  position: absolute;
+  width: 160vw;
+  height: 90vw;
+  bottom: -{{section.settings.video_bottom_position}}vw;
+  right: -{{section.settings.video_right_position}}px;
+}
+
+@media screen and (max-width: 1130px) {
+  .xcp-overview__hero__video-bg iframe{
+    bottom: 0;
+  }
+}
+
+.xcp-overview__hero__content--wrapper {
+  position: absolute;
+  width: 100%
+}
+
+.xcp-overview__hero__content--wrapper-abs {
+  position: relative;
+  bottom: {{section.settings.content_bottom}}px;
+  width: 100%;
+}
+
+.xcp-overview__hero__content--wrapper-center {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: {{section.settings.content_padding_left}}px;
+}
+
+.xcp-overview__hero__content__header {
+  font-size: 30px;
+  max-width: 381px;
+  line-height: 33px;
+}
+
+.xcp-overview__hero__content__header span {
+  color: var(--gradient-base-accent-2);
+}
+
+.xcp-overview__hero__content__text {
+  color: white;
+  max-width: 380px;
+  font-size: 14px;
+  line-height: 19px;
+  font-family: 'AlrightSans-Light';
+  font-weight: bold;
+}
+
+.xcp-hero .desktop {
+  display: block;
+}
+
+.xcp-hero .mobile {
+  display: none;
+}
+
+.xcp-overview__hero__img {
+  width: 100%;
+}
+
+.xcp-overview__hero__overlay {
+  min-height: 650px;
+  padding: 20px;
+}
+
+@media (max-width: 750px) {
+  .xcp-hero .desktop {
+    display: none;
+  }
+
+  .xcp-hero .mobile {
+    display: block;
+  }
+
+  .xcp-hero .xcp-overview__hero__content--wrapper-abs {
+    left: 20px;
+    top: -3px;
+    max-width: 70vw;
+  }
+
+  .xcp-overview__hero__content__header {
+    font-size: 20px;
+  }
+
+  .xcp-overview__hero__overlay {
+    min-height: unset;
+    padding: 20px;
+  }
+
+  .xcp-overview__hero__overlay::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 249px;
+    left: 0;
+    width: 100%;
+    height: 31vw;
+    background: rgb(2,0,36);
+    background: linear-gradient(180deg, var(--gradient-base-background-1) 0%, rgba(255,255,255,0) 82%);
+  }
+
+  .xcp-overview__hero__blocks {
+    width: 80%;
+    margin: 0 auto;
+  }
+
+  .xcp-overview__hero__blocks .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .xcp-overview__hero__content--wrapper {
+    z-index: 10;
+
+  }
+}
+{% endstyle %}
+<div class="xcp-hero">
+  <div class="xcp-overview__hero__video-bg desktop">
+    {%- if section.settings.video == null and section.settings.background_video_url != null -%}
+      {%- if section.settings.background_video_url.type == 'youtube' -%}
+        <iframe
+                src="https://www.youtube.com/embed/{{ video_id }}?enablejsapi=1&autoplay=1&mute=1&controls=0{{ loop }}"
+                class="js-youtube"
+                allow="autoplay; encrypted-media"
+                allowfullscreen
+                title="{{ section.settings.description | escape }}"
+        ></iframe>
+      {%- else -%}
+        <iframe
+            src="https://player.vimeo.com/video/{{video_id}}?h=7a2d360dea&autoplay=1&loop=1&controls=0&muted=1"
+            frameborder="0"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowfullscreen></iframe>
+      {%- endif -%}
+    {%- else -%}
+      {{ section.settings.video | video_tag: controls: false, muted: true }}
+    {%- endif -%}
+  </div>
+  <div class="xcp-overview__hero__content--wrapper mobile">
+    <div class="xcp-overview__hero__content--wrapper-abs">
+      <h2 class="xcp-overview__hero__content__header">{{section.settings.header}}</h2>
+    </div>
+  </div>
+  <div class="xcp-overview__hero__overlay mobile">
+    <img class="xcp-overview__hero__img" src="{{section.settings.img_mobile | image_url}}"/>
+  </div>
+  <div class="xcp-overview__hero__content--wrapper desktop">
+    <div class="xcp-overview__hero__content--wrapper-abs">
+      <div class="xcp-overview__hero__content--wrapper-center">
+        <h2 class="xcp-overview__hero__content__header">{{section.settings.header}}</h2>
+        {% for block in section.blocks %}
+          {% case block.type %}
+            {% when 'text' %}
+              <div class="xcp-overview__hero__content__text">
+                {{block.settings.content}}
+              </div>
+            {% when 'btn' %}
+              <a class="btn btn-primary" href="{{block.settings.link}}">{{block.settings.label}}</a>
+          {% endcase %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="xcp-overview__hero__blocks mobile">
+    {% for block in section.blocks %}
+      {% case block.type %}
+        {% when 'text' %}
+          <div class="xcp-overview__hero__content__text">
+            {{block.settings.content}}
+          </div>
+        {% when 'btn' %}
+          <a class="btn btn-primary" href="{{block.settings.link}}">{{block.settings.label}}</a>
+      {% endcase %}
+    {% endfor %}
+  </div>
+</div>
+{% schema %}
+{
+  "name": "XCP Hero",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "video",
+      "id": "background_video",
+      "label": "Background Video"
+    },
+    {
+      "type": "video_url",
+      "id": "background_video_url",
+      "label": "Background Video URL",
+      "accept": [
+        "youtube",
+        "vimeo"
+      ]
+    },
+    {
+      "type": "image_picker",
+      "id": "img_mobile",
+      "label": "Mobile image"
+    },
+    {
+      "type": "html",
+      "id": "header",
+      "label": "Header"
+    },
+    {
+      "type": "range",
+      "id": "content_padding_left",
+      "label": "Content padding left",
+      "min": 0,
+      "max": 1000,
+      "step": 10,
+      "unit": "px",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "content_bottom",
+      "label": "Content bottom",
+      "min": 340,
+      "max": 710,
+      "step": 10,
+      "unit": "px",
+      "default": 560
+    },
+    {
+      "type": "range",
+      "id": "video_bottom_position",
+      "label": "Video Bottom position",
+      "min": 0,
+      "max": 300,
+      "step": 10,
+      "unit": "vw",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "video_right_position",
+      "label": "Video Bottom position",
+      "min": 0,
+      "max": 1000,
+      "step": 10,
+      "unit": "px",
+      "default": 570 
+    }
+  ],
+  "blocks": [
+    {
+      "name": "Content",
+      "type": "text",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content"
+        }
+      ]
+    },
+    {
+      "name": "Button",
+      "type": "btn",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+ "presets": [
+    {
+      "name": "XCPro Hero"
+    }
+ ]
+}
+{% endschema %}
