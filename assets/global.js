@@ -903,36 +903,26 @@ class SlideshowComponent extends SliderComponent {
     });
   }
 
+  updateSlideClass(slide, button) {
+    slide.classList.add(`announcement-bar-slider--fade-out-${button}`);
+    setTimeout(() => {
+      slide.classList.remove(`announcement-bar-slider--fade-out-${button}`);
+      slide.classList.add(`announcement-bar-slider--fade-in-${button}`);
+    }, this.delay);
+    setTimeout(() => {
+      slide.classList.remove(`announcement-bar-slider--fade-in-${button}`);
+    }, this.delay * 2);
+  }
+
   applyAnimation(button = 'next') {
     requestAnimationFrame(() => {
       this.querySelectorAll('.announcement-bar__message').forEach((slide) => {
         if (this.currentSlide === this.allAnnouncements.length && button === 'previous') {
-          slide.classList.add(`announcement-bar-slider--fade-out-next`);
-          setTimeout(() => {
-            slide.classList.remove(`announcement-bar-slider--fade-out-next`);
-            slide.classList.add(`announcement-bar-slider--fade-in-next`);
-          }, this.delay);
-          setTimeout(() => {
-            slide.classList.remove(`announcement-bar-slider--fade-in-next`);
-          }, this.delay * 2);
+          this.updateSlideClass(slide, 'next');
         } else if (this.currentSlide === 1 && button === 'next') {
-            slide.classList.add(`announcement-bar-slider--fade-out-previous`);
-            setTimeout(() => {
-              slide.classList.remove(`announcement-bar-slider--fade-out-previous`);
-              slide.classList.add(`announcement-bar-slider--fade-in-previous`);
-            }, this.delay);
-            setTimeout(() => {
-              slide.classList.remove(`announcement-bar-slider--fade-in-previous`);
-            }, this.delay * 2);
+          this.updateSlideClass(slide, 'previous');
         } else {
-            slide.classList.add(`announcement-bar-slider--fade-out-${button}`);
-            setTimeout(() => {
-              slide.classList.remove(`announcement-bar-slider--fade-out-${button}`);
-              slide.classList.add(`announcement-bar-slider--fade-in-${button}`);
-            }, this.delay);
-            setTimeout(() => {
-              slide.classList.remove(`announcement-bar-slider--fade-in-${button}`);
-            }, this.delay * 2);
+          this.updateSlideClass(slide, button);
         }
       });
     });
