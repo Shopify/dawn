@@ -609,10 +609,6 @@ class SliderComponent extends HTMLElement {
     this.pageTotalElement = this.querySelector('.slider-counter--total');
     this.prevButton = this.querySelector('button[name="previous"]');
     this.nextButton = this.querySelector('button[name="next"]');
-    this.announcementBarSlider = this.querySelector('.announcement-bar-slider');
-
-    // Value below should match --duration-default CSS value
-    this.delay = this.announcementBarSlider ? 200 : 0;
 
     if (!this.slider || !this.nextButton) return;
 
@@ -692,11 +688,9 @@ class SliderComponent extends HTMLElement {
       event.currentTarget.name === 'next'
         ? this.slider.scrollLeft + step * this.sliderItemOffset
         : this.slider.scrollLeft - step * this.sliderItemOffset;
-    setTimeout (() => {
-      this.slider.scrollTo({
-        left: this.slideScrollPosition,
-      });
-    }, this.delay);
+    this.slider.scrollTo({
+      left: this.slideScrollPosition,
+    });
   }
 }
 
@@ -712,6 +706,10 @@ class SlideshowComponent extends SliderComponent {
 
     this.sliderFirstItemNode = this.slider.querySelector('.slideshow__slide');
     if (this.sliderItemsToShow.length > 0) this.currentPage = 1;
+
+    this.announcementBarSlider = this.querySelector('.announcement-bar-slider');
+    // Value below should match --duration-default CSS value
+    this.delay = this.announcementBarSlider ? 200 : 0;
 
     this.sliderControlLinksArray = Array.from(this.sliderControlWrapper.querySelectorAll('.slider-counter__link'));
     this.sliderControlLinksArray.forEach((link) => link.addEventListener('click', this.linkToSlide.bind(this)));
@@ -765,7 +763,19 @@ class SlideshowComponent extends SliderComponent {
   }
 
   onButtonClick(event) {
-    super.onButtonClick(event);
+    // This is copied from the parent component because we need to add a delay.
+    event.preventDefault();
+    const step = event.currentTarget.dataset.step || 1;
+    this.slideScrollPosition =
+      event.currentTarget.name === 'next'
+        ? this.slider.scrollLeft + step * this.sliderItemOffset
+        : this.slider.scrollLeft - step * this.sliderItemOffset;
+    setTimeout (() => {
+      this.slider.scrollTo({
+        left: this.slideScrollPosition,
+      });
+    }, this.delay);
+
     const isFirstSlide = this.currentPage === 1;
     const isLastSlide = this.currentPage === this.sliderItemsToShow.length;
 
