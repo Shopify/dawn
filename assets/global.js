@@ -717,7 +717,6 @@ class SlideshowComponent extends SliderComponent {
     this.setSlideVisibility();
 
     if (this.announcementBarSlider) {
-      this.currentSlide = 1;
       this.allAnnouncements = Array.from(this.querySelectorAll('.announcement-bar__message'));
       this.announcementBarArrowButtonWasClicked = false;
 
@@ -737,7 +736,6 @@ class SlideshowComponent extends SliderComponent {
 
         button.addEventListener('click', () => {
           this.applyAnimation(button.name);
-          this.updateAnnouncementBarSlide(button.name);
         });
       });
     }
@@ -873,7 +871,6 @@ class SlideshowComponent extends SliderComponent {
           left: slideScrollPosition,
         });
       }, this.delay);
-      this.updateAnnouncementBarSlide();
       this.applyAnimation();
     } else {
       this.slider.scrollTo({
@@ -915,25 +912,21 @@ class SlideshowComponent extends SliderComponent {
   }
 
   applyAnimation(button = 'next') {
+    const itemsCount = this.sliderItems.length;
+    const increment = button === 'next' ? 1 : -1;
+    const nextPage = ((this.currentPage + increment - 1) % itemsCount + itemsCount) % itemsCount + 1;
+
     requestAnimationFrame(() => {
       this.querySelectorAll('.announcement-bar__message').forEach((slide) => {
-        if (this.currentSlide === this.allAnnouncements.length && button === 'previous') {
+        if (nextPage === this.allAnnouncements.length && button === 'previous') {
           this.updateSlideClass(slide, 'next');
-        } else if (this.currentSlide === 1 && button === 'next') {
+        } else if (nextPage === 1 && button === 'next') {
           this.updateSlideClass(slide, 'previous');
         } else {
           this.updateSlideClass(slide, button);
         }
       });
     });
-  }
-
-  updateAnnouncementBarSlide(button = 'next') {
-    if (button === 'next') {
-      this.currentSlide = this.currentSlide === this.allAnnouncements.length ? 1 : this.currentSlide + 1;
-    } else {
-      this.currentSlide = this.currentSlide === 1 ? this.allAnnouncements.length : this.currentSlide - 1;
-    }
   }
 
   linkToSlide(event) {
