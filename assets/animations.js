@@ -73,10 +73,7 @@ function percentageSeen(element) {
   const viewportHeight = window.innerHeight;
   const scrollY = window.scrollY;
   const elementPositionY = element.getBoundingClientRect().top + scrollY;
-  const borderHeight =
-    parseInt(getComputedStyle(element).getPropertyValue('border-top-width')) +
-    parseInt(getComputedStyle(element).getPropertyValue('border-bottom-width'));
-  const elementHeight = element.offsetHeight + borderHeight;
+  const elementHeight = element.offsetHeight;
 
   if (elementPositionY > scrollY + viewportHeight) {
     // If we haven't reached the image yet
