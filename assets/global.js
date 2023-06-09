@@ -708,8 +708,8 @@ class SlideshowComponent extends SliderComponent {
     if (this.sliderItemsToShow.length > 0) this.currentPage = 1;
 
     this.announcementBarSlider = this.querySelector('.announcement-bar-slider');
-    // Value below should match --duration-default CSS value
-    this.delay = this.announcementBarSlider ? 200 : 0;
+    // Value below should match --duration-announcement-bar CSS value
+    this.delay = this.announcementBarSlider ? 250 : 0;
 
     this.sliderControlLinksArray = Array.from(this.sliderControlWrapper.querySelectorAll('.slider-counter__link'));
     this.sliderControlLinksArray.forEach((link) => link.addEventListener('click', this.linkToSlide.bind(this)));
