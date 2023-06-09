@@ -41,8 +41,10 @@ function initializeScrollAnimationTrigger(rootEl = document, isDesignModeEvent =
 // Zoom in animation logic
 function initializeScrollZoomAnimationTrigger() {
   const animationTriggerElements = Array.from(document.getElementsByClassName(SCROLL_ZOOM_IN_TRIGGER_CLASSNAME));
-  const scaleAmount = 0.2 / 100;
+
   if (animationTriggerElements.length === 0) return;
+
+  const scaleAmount = 0.2 / 100;
 
   animationTriggerElements.forEach((element) => {
     let elementIsVisible = false;
@@ -73,11 +75,14 @@ function percentageSeen(element) {
   const elementHeight = element.offsetHeight + borderHeight;
 
   if (elementPositionY > scrollY + viewportHeight) {
+    // If we haven't reached the image yet
     return 0;
   } else if (elementPositionY + elementHeight < scrollY) {
+    // If we've completely scrolled past the image
     return 100;
   }
 
+  // When the image is in the viewport
   const distance = scrollY + viewportHeight - elementPositionY;
   let percentage = distance / ((viewportHeight + elementHeight) / 100);
   return Math.round(percentage);
