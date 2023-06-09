@@ -917,13 +917,21 @@ class SlideshowComponent extends SliderComponent {
     const nextPage = ((this.currentPage + increment - 1) % itemsCount + itemsCount) % itemsCount + 1;
 
     requestAnimationFrame(() => {
-      this.querySelectorAll('.announcement-bar__message').forEach((slide) => {
-        if (nextPage === this.allAnnouncements.length && button === 'previous') {
-          this.updateSlideClass(slide, 'next');
-        } else if (nextPage === 1 && button === 'next') {
-          this.updateSlideClass(slide, 'previous');
-        } else {
-          this.updateSlideClass(slide, button);
+      this.allAnnouncements.forEach((announcement, index) => {
+        const announcementIndex = index + 1;
+        const isNextAnnouncementLast = nextPage === itemsCount;
+        const isNextAnnouncementFirst = nextPage === 1;
+        const isCurrentAnnouncementLast = announcementIndex === itemsCount;
+        const isNextAnnouncement = nextPage === announcementIndex
+
+        if (isNextAnnouncementLast && button === 'previous' && (announcementIndex === 1 || isCurrentAnnouncementLast)) {
+          this.updateSlideClass(announcement, 'next');
+        } else if (isNextAnnouncementFirst && button === 'next' && (isNextAnnouncement || isCurrentAnnouncementLast)) {
+          this.updateSlideClass(announcement, 'previous');
+        } else if (isNextAnnouncement || nextPage - 1 === announcementIndex && button === 'next') {
+          this.updateSlideClass(announcement, button);
+        } else if (isNextAnnouncement || nextPage + 1 === announcementIndex && button === 'previous') {
+          this.updateSlideClass(announcement, button);
         }
       });
     });
