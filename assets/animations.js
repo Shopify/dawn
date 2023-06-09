@@ -44,8 +44,6 @@ function initializeScrollZoomAnimationTrigger() {
   const scaleAmount = 0.2 / 100;
   if (animationTriggerElements.length === 0) return;
 
-  let scrollPositionY = 0;
-
   animationTriggerElements.forEach((element) => {
     let elementIsVisible = false;
     const observer = new IntersectionObserver((elements) => {
@@ -60,7 +58,6 @@ function initializeScrollZoomAnimationTrigger() {
     window.addEventListener('scroll', () => {
       if (!elementIsVisible) return;
 
-      scrollPositionY = window.scrollY;
       element.style.setProperty('--zoom-in-ratio', 1 + scaleAmount * percentageSeen(element));
     });
   });
@@ -79,12 +76,11 @@ function percentageSeen(element) {
     return 0;
   } else if (elementPositionY + elementHeight < scrollY) {
     return 100;
-  } else {
-    const distance = scrollY + viewportHeight - elementPositionY;
-    let percentage = distance / ((viewportHeight + elementHeight) / 100);
-    percentage = Math.round(percentage);
-    return percentage;
   }
+
+  const distance = scrollY + viewportHeight - elementPositionY;
+  let percentage = distance / ((viewportHeight + elementHeight) / 100);
+  return Math.round(percentage);
 }
 
 window.addEventListener('DOMContentLoaded', () => {
