@@ -225,18 +225,20 @@ class VariantList extends HTMLElement {
     if (quantity < 0) {
       if (quantity === -1) {
         window.variantListStrings.itemsRemoved.replace('[quantity]', quantity);
-        this.querySelector('.variant-list__button').innerHTML = `${Math.abs(quantity)} item removed`;
+        this.querySelector('.variant-list__button-text').innerHTML = `${Math.abs(quantity)} item removed`;
       } else {
         window.variantListStrings.itemsRemoved.replace('[quantity]', quantity);
-        this.querySelector('.variant-list__button').innerHTML = `${Math.abs(quantity)} items removed`;
+        this.querySelector('.variant-list__button-text').innerHTML = `${Math.abs(quantity)} items removed`;
       }
     } else {
       if (quantity === 1) {
         window.variantListStrings.itemAdded.replace('[quantity]', quantity);
-        this.querySelector('.variant-list__button').innerHTML = `${quantity} item added`;
+        this.querySelector('.variant-list__button-text').innerHTML = `${quantity} item added`;
+        this.querySelector('.variant-list__button-icon').classList.remove('hidden');
       } else {
         window.variantListStrings.itemsAdded.replace('[quantity]', quantity);
-        this.querySelector('.variant-list__button').innerHTML = `${quantity} items added`;
+        this.querySelector('.variant-list__button-text').innerHTML = `${quantity} items added`;
+        this.querySelector('.variant-list__button-icon').classList.remove('hidden');
       }
     }
   }
