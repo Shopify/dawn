@@ -15,8 +15,10 @@ customElements.define('variant-list-remove-button', VariantListRemoveButton);
 class VariantList extends HTMLElement {
   constructor() {
     super();
-    this.addAction = 'ADD'
-    this.updateAction = 'UPDATE'
+    this.actions = {
+      add: 'ADD',
+      update: 'UPDATE'
+    }
     this.variantListId = 'variant-list'
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
     const debouncedOnChange = debounce((event) => {
@@ -46,9 +48,9 @@ class VariantList extends HTMLElement {
   onChange(event) {
     const qty = parseInt(event.target.value) - parseInt(event.target.dataset.cartQuantity)
     if (parseInt(event.target.dataset.cartQuantity) > 0) {
-      this.updateQuantity(event.target.dataset.index, event.target.value, document.activeElement.getAttribute('name'), this.updateAction);
+      this.updateQuantity(event.target.dataset.index, event.target.value, document.activeElement.getAttribute('name'), this.actions.update);
     } else {
-      this.updateQuantity(event.target.dataset.index, qty, document.activeElement.getAttribute('name'), this.addAction);
+      this.updateQuantity(event.target.dataset.index, qty, document.activeElement.getAttribute('name'), this.actions.add);
     }
   }
 
@@ -100,7 +102,7 @@ class VariantList extends HTMLElement {
       sections_url: window.location.pathname
     });
     let routeUrl = routes.cart_change_url
-    if (action === this.addAction) {
+    if (action === this.actions.add) {
       routeUrl = routes.cart_add_url
     }
 
@@ -130,7 +132,7 @@ class VariantList extends HTMLElement {
 
         let message = '';
 
-        if (action === this.addAction) {
+        if (action === this.actions.add) {
           const updatedValue = parsedState.quantity ? parsedState.quantity : undefined;
           if (parsedState.quantity !== parseInt(quantityElement.value)) {
             this.updateError(updatedValue, id, message)
