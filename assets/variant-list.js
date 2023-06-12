@@ -91,9 +91,9 @@ class VariantList extends HTMLElement {
         selector: '.shopify-section'
       },
       {
-        id: 'variantlist-total',
+        id: 'variant-list-total',
         section: document.getElementById(this.variantListId).dataset.id,
-        selector: '.variantlist-total'
+        selector: '.variant-list-total'
       }
     ];
   }
@@ -199,7 +199,7 @@ class VariantList extends HTMLElement {
   toggleLoading(id, enable) {
     const variantList = document.getElementById(this.variantListId);
     const variantListItems = this.querySelectorAll(`#Variant-${id} .loading-overlay`);
-  
+
     if (enable) {
       variantList.classList.add('cart__items--disabled');
       [...variantListItems].forEach((overlay) => overlay.classList.remove('hidden'));
