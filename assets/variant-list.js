@@ -196,25 +196,19 @@ class VariantList extends HTMLElement {
       .querySelector(selector).innerHTML;
   }
 
-  enableLoading(id) {
+  toggleLoading(id, enable) {
     const variantList = document.getElementById(this.variantListId);
-    variantList.classList.add('cart__items--disabled');
-
     const variantListItems = this.querySelectorAll(`#Variant-${id} .loading-overlay`);
-
-    [...variantListItems].forEach((overlay) => overlay.classList.remove('hidden'));
-
-    document.activeElement.blur();
-    this.variantItemStatusElement.setAttribute('aria-hidden', false);
-  }
-
-  disableLoading(id) {
-    const variantList = document.getElementById(this.variantListId);
-    variantList.classList.remove('cart__items--disabled');
-
-    const variantListItems = this.querySelectorAll(`#Variant-${id} .loading-overlay`);
-
-    variantListItems.forEach((overlay) => overlay.classList.add('hidden'));
+  
+    if (enable) {
+      variantList.classList.add('cart__items--disabled');
+      [...variantListItems].forEach((overlay) => overlay.classList.remove('hidden'));
+      document.activeElement.blur();
+      this.variantItemStatusElement.setAttribute('aria-hidden', false);
+    } else {
+      variantList.classList.remove('cart__items--disabled');
+      variantListItems.forEach((overlay) => overlay.classList.add('hidden'));
+    }
   }
 }
 
