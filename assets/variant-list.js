@@ -95,9 +95,9 @@ class VariantList extends HTMLElement {
     const quantity = inputValue - cartQuantity;
 
     if (cartQuantity > 0) {
-      this.updateQuantity(index, inputValue, name, this.updateAction);
+      this.updateQuantity(index, inputValue, name, this.actions.update);
     } else {
-      this.updateQuantity(index, quantity, name, this.addAction);
+      this.updateQuantity(index, quantity, name, this.actions.add);
     }
   }
 
@@ -230,14 +230,14 @@ class VariantList extends HTMLElement {
         }
         publish(PUB_SUB_EVENTS.cartUpdate, { source: this.variantListId });
 
-        if (action === this.addAction) {
+        if (action === this.actions.add) {
           this.updateButton(parseInt(quantity))
         } else if (action === this.updateAction) {
           this.updateButton(parseInt(quantity - quantityElement.dataset.cartQuantity))
         } else {
           this.updateButton(-parseInt(quantityElement.dataset.cartQuantity))
         }
-      }).catch((e) => {
+      }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         const errors = document.getElementById('variantlist-errors');
         errors.textContent = window.cartStrings.error;
