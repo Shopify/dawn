@@ -15,10 +15,11 @@ class VariantListRemoveAllButton extends HTMLElement {
   constructor() {
     super();
     const allVariants = Array.from(document.querySelectorAll('[data-variantid]'));
-    const variantsInCart = allVariants.filter((variant) => parseInt(variant.dataset.cartqty) > 0)
+    const variantsInCart = allVariants.filter((variant) => parseInt(variant.dataset.cartqty) > 0);
     if (variantsInCart.length === 0) {
-      this.classList.add('hidden')
+      this.classList.add('hidden');
     }
+
     this.variantList = this.closest('variant-list');
     const items = {}
     variantsInCart.forEach((variant) => {
@@ -248,23 +249,22 @@ class VariantList extends HTMLElement {
   }
 
   updateButton(quantity) {
-    if (quantity < 0) {
-      if (quantity === -1) {
-        this.querySelector('.variant-list__button-text').innerHTML = window.variantListStrings.itemsRemoved.replace('[quantity]', Math.abs(quantity));
-      } else {
-        this.querySelector('.variant-list__button-text').innerHTML = window.variantListStrings.itemsRemoved.replace('[quantity]', Math.abs(quantity));
-      }
-      this.replaceContent();
-    } else {
-      if (quantity === 1) {
-        this.querySelector('.variant-list__button-text').innerHTML = window.variantListStrings.itemAdded.replace('[quantity]', quantity);
-        this.querySelector('.variant-list__button-icon').classList.remove('hidden');
-      } else {
-        this.querySelector('.variant-list__button-text').innerHTML = window.variantListStrings.itemsAdded.replace('[quantity]', quantity);
-        this.querySelector('.variant-list__button-icon').classList.remove('hidden');
-      }
-      this.replaceContent();
+    const buttonTextElement = this.querySelector('.variant-list__button-text');
+    const buttonIconElement = this.querySelector('.variant-list__button-icon');
+    const isQuantityNegative = quantity < 0;
+    const absQuantity = Math.abs(quantity);
+
+    const textTemplate = isQuantityNegative
+      ? window.variantListStrings.itemsRemoved
+      : (quantity === 1 ? window.variantListStrings.itemAdded : window.variantListStrings.itemsAdded);
+
+    buttonTextElement.innerHTML = textTemplate.replace('[quantity]', absQuantity);
+
+    if (!isQuantityNegative) {
+      buttonIconElement.classList.remove('hidden');
     }
+
+    this.replaceContent();
   }
 
   replaceContent() {
