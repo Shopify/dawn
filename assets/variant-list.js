@@ -46,11 +46,17 @@ class VariantList extends HTMLElement {
   }
 
   onChange(event) {
-    const qty = parseInt(event.target.value) - parseInt(event.target.dataset.cartQuantity)
-    if (parseInt(event.target.dataset.cartQuantity) > 0) {
-      this.updateQuantity(event.target.dataset.index, event.target.value, document.activeElement.getAttribute('name'), this.actions.update);
+    const inputValue = parseInt(event.target.value);
+    const cartQuantity = parseInt(event.target.dataset.cartQuantity);
+    const index = event.target.dataset.index;
+    const name = document.activeElement.getAttribute('name');
+
+    const quantity = inputValue - cartQuantity;
+
+    if (cartQuantity > 0) {
+      this.updateQuantity(index, inputValue, name, this.updateAction);
     } else {
-      this.updateQuantity(event.target.dataset.index, qty, document.activeElement.getAttribute('name'), this.actions.add);
+      this.updateQuantity(index, quantity, name, this.addAction);
     }
   }
 
