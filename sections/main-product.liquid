@@ -10,6 +10,9 @@
   {{ 'component-rating.css' | asset_url | stylesheet_tag }}
   {{ 'component-loading-overlay.css' | asset_url | stylesheet_tag }}
   {{ 'component-deferred-media.css' | asset_url | stylesheet_tag }}
+  {%- if product.quantity_price_breaks_configured? -%}
+    {{ 'component-volume-pricing.css' | asset_url | stylesheet_tag }}
+  {%- endif -%}
 
   {%- style -%}
     .section-{{ section.id }}-padding {
@@ -27,6 +30,10 @@
 
   <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+  {%- if product.quantity_price_breaks_configured? -%}
+    <script src="{{ 'show-more.js' | asset_url }}" defer="defer"></script>
+  {%- endif -%}
+
   {% if section.settings.image_zoom == 'hover' %}
     <script id="EnableZoomOnHover-main" src="{{ 'magnify.js' | asset_url }}" defer="defer"></script>
   {% endif %}
@@ -97,6 +104,11 @@
                   price_class: 'price--large'
                 -%}
               </div>
+              {%- if product.quantity_price_breaks_configured? -%}
+                <div class="volume-pricing-note">
+                  <span class="caption">{{ 'products.product.volume_pricing.note' | t -}}</span>
+                </div>
+              {%- endif -%}
               {%- if cart.taxes_included or shop.shipping_policy.body != blank -%}
                 <div class="product__tax caption rte">
                   {%- if cart.taxes_included -%}
@@ -281,6 +293,36 @@
                     </span>
                   {%- endif -%}
                 </div>
+                {%- if product.quantity_price_breaks_configured? -%}
+                  <volume-pricing class="parent-display">
+                    <span class="caption-large">{{ 'products.product.volume_pricing.title' | t -}}</span>
+                    <ul class="list-unstyled">
+                      <li>
+                        <span>{{ product.selected_or_first_available_variant.quantity_rule.min }}+</span>
+                        <span>{{ product.selected_or_first_available_variant.price | money_with_currency }}/ea</span>
+                      </li>
+                      {%- for price_break in product.selected_or_first_available_variant.quantity_price_breaks -%}
+                        <li class="{%- if forloop.index >= 3 -%}show-more-item hidden{%- endif -%}">
+                          <span>{{ price_break.minimum_quantity }}<span aria-hidden="true">+</span></span>
+                          <span>{{ price_break.price | money_with_currency }}/ea</span>
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                    {%- if product.selected_or_first_available_variant.quantity_price_breaks.size >= 3 -%}
+                      <show-more-button>
+                        <button
+                          class="button-show-more link underlined-link no-js-hidden"
+                          id="Show-More-{{ section.id }}"
+                          type="button"
+                        >
+                          <span class="label-show-more label-text"
+                            ><span aria-hidden="true">+ </span>{{ 'products.facets.show_more' | t -}}
+                          </span>
+                        </button>
+                      </show-more-button>
+                   {%- endif -%}
+                  </volume-pricing>
+                {%- endif -%}
               </div>
             {%- when 'popup' -%}
               <modal-opener
