@@ -19,16 +19,34 @@ class VariantListRemoveAllButton extends HTMLElement {
     if (variantsInCart.length === 0) {
       this.classList.add('hidden')
     }
-    const variantList = this.closest('variant-list');
+    this.variantList = this.closest('variant-list');
     const items = {}
     variantsInCart.forEach((variant) => {
       items[parseInt(variant.dataset.variantid)] = 0;
     })
 
+    this.actions = {
+      confirm: 'confirm',
+      remove: 'remove',
+      cancel: 'cancel'
+    }
+
     this.addEventListener('click', (event) => {
       event.preventDefault();
-      variantList.updateMultipleQty(items);
+      if (this.dataset.action === this.actions.confirm) {
+        this.toggleConfirmation(false, true);
+      } else if (this.dataset.action === this.actions.remove) {
+        this.variantList.updateMultipleQty(items);
+        this.toggleConfirmation(true, false);
+      } else if (this.dataset.action === this.actions.cancel) {
+        this.toggleConfirmation(true, false);
+      }
     });
+  }
+
+  toggleConfirmation(showConfirmation, showInfo) {
+    this.variantList.querySelector('.variant-list-total__confirmation').classList.toggle('hidden', showConfirmation);
+    this.variantList.querySelector('.variant-list-total__info').classList.toggle('hidden', showInfo)
   }
 }
 
