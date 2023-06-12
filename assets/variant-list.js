@@ -134,7 +134,7 @@ class VariantList extends HTMLElement {
       {
         id: 'variant-list-total',
         section: document.getElementById(this.variantListId).dataset.id,
-        selector: '.variant-list-total'
+        selector: '.variant-list__total'
       }
     ];
   }
@@ -170,7 +170,7 @@ class VariantList extends HTMLElement {
   }
 
   updateQuantity(id, quantity, name, action) {
-    this.enableLoading(id);
+    this.toggleLoading(id, true);
 
     const body = JSON.stringify({
       quantity,
@@ -237,13 +237,13 @@ class VariantList extends HTMLElement {
         } else {
           this.updateButton(-parseInt(quantityElement.dataset.cartQuantity))
         }
-      }).catch(() => {
+      }).catch((e) => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         const errors = document.getElementById('variantlist-errors');
         errors.textContent = window.cartStrings.error;
       })
       .finally(() => {
-        this.disableLoading(id);
+        this.toggleLoading(id);
       });
   }
 
