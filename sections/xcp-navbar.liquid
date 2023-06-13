@@ -11,6 +11,69 @@
   padding: 4px 20px;
   line-height: 2;
 }
+
+.xcp-navbar__menu-item-dropdown--wrapper {
+  position: absolute;
+  width: 0;
+}
+
+.xcp-navbar__container .hide {
+  display: none
+}
+.xcp-navbar__menu-item-dropdown {
+  position: relative;
+  top: 102px;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  left: 111px;
+  border-radius: 10px;
+  padding-inline-start: 0;
+  padding-inline-end: 0;
+  min-width: 200px;
+  padding: 5px 0;
+  z-index: 105;
+}
+.xcp-navbar__menu-item--desktop {
+  cursor: pointer;
+}
+
+.xcp-navbar__menu-item-dropdown a {
+  color: black;
+  padding: 4px 15px;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+.xcp-navbar__menu-item-dropdown--mobile {
+  display: flex;
+  flex-direction: column;
+  padding-inline-start: 0;
+  list-style: none;
+}
+
+.xcp-navbar-item-dropdown__menu-button {
+  width: 30px;
+  height: 30px;
+  float-right
+}
+
+
+.xcp-navbar__menu-item-dropdown--mobile li {
+  color: inherit;
+  padding: 4px 15px;
+}
+
+.xcp-navbar__menu-item-dropdown a:active {
+  color: white;
+  color: #0088cc;
+  text-decoration: none;
+}
+
+.xcp-navbar__menu-item-dropdown a:hover {
+  color: white;
+  background-color: #7d55c7;
+}
 {% endstyle %}
 
 <div class="xcp-navbar__container" data-target="xcp-navbar">
@@ -23,14 +86,37 @@
 
     <div>
       <ul class="xcp-navbar__menu--desktop">
-        {% for nav_item in nav_items %}
-          <li class="xcp-navbar__menu-item--desktop">
-            {%- if nav_item.settings.selected -%}
-              <span class="current-page">{{nav_item.settings.label}}</span>
-            {%- else -%}
-              <a href="{{nav_item.settings.href}}">{{nav_item.settings.label}}</a>
-            {%- endif -%}
-          </li>
+        {% for block in section.blocks %}
+          {% case block.type %}
+            {% when 'xcp-nav-item' %}
+              <li class="xcp-navbar__menu-item--desktop">
+                {%- if nav_item.settings.selected -%}
+                  <span class="current-page">{{block.settings.label}}</span>
+                {%- else -%}
+                  <a href="{{nav_item.settings.href}}">{{block.settings.label}}</a>
+                {%- endif -%}
+              </li>
+            {% when 'xcp-nav-item-dropdown' %}
+              <li class="xcp-navbar__menu-item--desktop toggle-dropdown" data-target="xcp-navbar__menu-item-dropdown-{{block.id}}">
+                {{block.settings.label}}
+              </li>
+              <div class="xcp-navbar__menu-item-dropdown--wrapper">
+                <ul id="xcp-navbar__menu-item-dropdown-{{block.id}}" class="xcp-navbar__menu-item-dropdown block-{{block.id}} hide">
+                  {% if block.settings.inner_label_1 %}
+                    <a href="{{block.settings.inner_url_1}}">{{block.settings.inner_label_1}}</a>
+                  {% endif %}
+                  {% if block.settings.inner_label_2 %}
+                    <a href="{{block.settings.inner_url_2}}">{{block.settings.inner_label_2}}</a>
+                  {% endif %}
+                  {% if block.settings.inner_label_3 %}
+                    <a href="{{block.settings.inner_url_3}}">{{block.settings.inner_label_3}}</a>
+                  {% endif %}
+                  {% if block.settings.inner_label_4 %}
+                    <a href="{{block.settings.inner_url_4}}">{{block.settings.inner_label_4}}</a>
+                  {% endif %}
+                </ul>
+              </div>
+          {% endcase %}
         {% endfor %}
 
         {%- if schedule_call_block -%}
@@ -83,12 +169,41 @@
         </p>
       </li>
     {%- endif -%}
-    {% for nav_item in nav_items %}
-      <li class="xcp-navbar__menu-item">
-        <p>
-        <a href="{{nav_item.settings.href}}">{{nav_item.settings.label}}</a>
-        </p>
-      </li>
+    {% for block in section.blocks %}
+      {% case block.type %}
+        {% when 'xcp-nav-item' %}
+          <li class="xcp-navbar__menu-item">
+            <p>
+              <a href="{{block.settings.href}}">{{block.settings.label}}</a>
+            </p>
+          </li>
+        {% when 'xcp-nav-item-dropdown' %}
+          <li class="xcp-navbar__menu-item toggle-dropdown" data-target="xcp-navbar__menu-item-dropdown-{{block.id}}--mobile">
+            <p>
+            {{block.settings.label}}
+            <span class="xcp-navbar-item-dropdown__menu-button">
+              <img src="https://d2rhdy377k7eul.cloudfront.net/assets/shared/chevron-thin-down-b23145d8ba5d6aa865fb1b83982b648ed16708190ebdd5704f1a18aa1f4606ce.svg">
+            </span>
+            <span class="xcp-navbar-item-dropdown__menu-button hide">
+              <img src="https://d2rhdy377k7eul.cloudfront.net/assets/shared/chevron-thin-up-49f9ae0663ff97639e6cd9cdcd2477220e5c81b70df5db6682f7ba86e41951b0.svg">
+            </span>
+            </p>
+            <ul id="xcp-navbar__menu-item-dropdown-{{block.id}}--mobile" class="xcp-navbar__menu-item-dropdown--mobile block-{{block.id}} hide">
+              {% if block.settings.inner_label_1 %}
+                <li><a href="{{block.settings.inner_url_1}}">{{block.settings.inner_label_1}}</a></li>
+              {% endif %}
+              {% if block.settings.inner_label_2 %}
+                <li><a href="{{block.settings.inner_url_2}}">{{block.settings.inner_label_2}}</a></li>
+              {% endif %}
+              {% if block.settings.inner_label_3 %}
+                <li><a href="{{block.settings.inner_url_3}}">{{block.settings.inner_label_3}}</a></li>
+              {% endif %}
+              {% if block.settings.inner_label_4 %}
+                <li><a href="{{block.settings.inner_url_4}}">{{block.settings.inner_label_4}}</a></li>
+              {% endif %}
+            </ul>
+          </li>
+      {% endcase %}
     {% endfor %}
   </ul>
 
@@ -127,6 +242,8 @@ menuButtons.forEach(function(menuButton) {
   })
 })
 </script>
+
+<script src="{{'xcp-navbar-dropdown.js' | asset_url}}"></script>
 {% schema %}
 {
   "name": "XCPro Navbar",
@@ -154,6 +271,57 @@ menuButtons.forEach(function(menuButton) {
            "id": "selected",
            "label": "Selected",
            "default": false
+         }
+       ]
+     },
+     {
+       "name": "Nav Item Dropdown",
+       "type": "xcp-nav-item-dropdown",
+       "settings": [
+         {
+           "type": "text",
+           "id": "label",
+           "label": "Label"
+         },
+         {
+           "type": "text",
+           "id": "inner_label_1",
+           "label": "Inner Label 1"
+         },
+         {
+           "type": "url",
+           "id": "inner_url_1",
+           "label": "Inner URL 1"
+         },
+         {
+           "type": "text",
+           "id": "inner_label_2",
+           "label": "Inner Label 2"
+         },
+         {
+           "type": "url",
+           "id": "inner_url_2",
+           "label": "Inner URL 2"
+         },
+         {
+           "type": "text",
+           "id": "inner_label_3",
+           "label": "Inner Label 3"
+         },
+         {
+           "type": "url",
+           "id": "inner_url_3",
+           "label": "Inner URL 3"
+         },
+         {
+           "type": "text",
+           "id": "inner_label_4",
+           "label": "Inner Label 4"
+         },
+         {
+           "type": "url",
+           "id": "inner_url_4",
+           "label": "Inner URL 4"
          }
        ]
      },
