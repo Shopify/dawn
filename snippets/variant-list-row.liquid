@@ -107,95 +107,123 @@
     {%- render 'loading-overlay' -%}
     <span class="price">Placeholder</span>
   </td>
-  <td class="variant-item__quantity">
-    <div class="variant-item__quantity-wrapper">
-      <label class="visually-hidden" for="Quantity-{{ variant.id }}">
-        {{ 'products.product.quantity.label' | t }}
-      </label>
-      <div class="variant-item__quantity-info">
-        {% render 'icon-info' %}
-      </div>
-      {% render 'quantity-input', variant: variant %}
-      {%- if cart_qty > 0 -%}
-        <variant-list-remove-button
-          id="Remove-{{ variant.id }}"
-          data-index="{{ variant.id }}"
-        >
-          <a
-            href="{{ item.url_to_remove }}"
-            class="button button--tertiary"
-            aria-label="{{ 'sections.cart.remove_title' | t: title: item.title }}"
-          >
-            {% render 'icon-remove' %}
-          </a>
-        </variant-list-remove-button>
-      {%- endif -%}
-    </div>
-    <div class="variant-item__error" id="Line-item-error-{{ variant.id }}" role="alert">
-      <small class="variant-item__error-text"></small>
-      <svg
-        aria-hidden="true"
-        focusable="false"
-        class="icon icon-error"
-        viewBox="0 0 13 13"
-      >
-        <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
-        <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
-        <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
-        <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
-      </svg>
-    </div>
 
-    <qty-vol-popover class="modal hidden">
-      <div class="quantity__rules caption no-js-hidden">
-        {%- if product.selected_or_first_available_variant.quantity_rule.increment > 1 -%}
-          <span class="divider">
-            {{-
-              'products.product.quantity.multiples_of'
-              | t: quantity: product.selected_or_first_available_variant.quantity_rule.increment
-            -}}
-          </span>
-        {%- endif -%}
-        {%- if product.selected_or_first_available_variant.quantity_rule.min > 1 -%}
-          <span class="divider">
-            {{-
-              'products.product.quantity.minimum_of'
-              | t: quantity: product.selected_or_first_available_variant.quantity_rule.min
-            -}}
-          </span>
-        {%- endif -%}
-        {%- if product.selected_or_first_available_variant.quantity_rule.max != null -%}
-          <span class="divider">
-            {{-
-              'products.product.quantity.maximum_of'
-              | t: quantity: product.selected_or_first_available_variant.quantity_rule.max
-            -}}
-          </span>
+  <td class="variant-item__quantity">
+    <quantity-popover>
+      <div class="variant-item__quantity-wrapper">
+        <label class="visually-hidden" for="Quantity-{{ variant.id }}">
+          {{ 'products.product.quantity.label' | t }}
+        </label>
+        {%- liquid
+          assign check_against_inventory = true
+          if variant.inventory_management != 'shopify' or variant.inventory_policy == 'continue'
+            assign check_against_inventory = false
+          endif
+          if variant.quantity_rule.min > variant.inventory_quantity and check_against_inventory
+            assign quantity_rule_soldout = true
+          endif
+        -%}
+        <div class="variant-item__info">
+          {%- if product.selected_or_first_available_variant.quantity_rule.increment > 1
+            or product.selected_or_first_available_variant.quantity_rule.min > 1
+            or product.selected_or_first_available_variant.quantity_rule.max != null
+            or product.quantity_price_breaks_configured?
+          -%}
+            <button class="variant-item__quantity-info button button--tertiary" aria-expanded="false">
+              {% render 'icon-info' %}
+            </button>
+          {%- endif -%}
+          {%- if variant.available == false or quantity_rule_soldout -%}
+            <span class="variant-item__sold-out h4"> {{ 'products.product.sold_out' | t }} </span>
+          {%- else -%}
+            {% comment %} TODO: Remove theme check {% endcomment %}
+            {% # theme-check-disable %}
+            {% assign cart_qty = cart | item_count_for_variant: variant.id %}
+            {% # theme-check-enable %}
+            {% render 'quantity-input', variant: variant %}
+          {%- endif -%}
+        </div>
+        {%- if cart_qty > 0 -%}
+          <variant-list-remove-button
+            id="Remove-{{ variant.id }}"
+            data-index="{{ variant.id }}"
+          >
+            <a
+              href="{{ item.url_to_remove }}"
+              class="button button--tertiary"
+              aria-label="{{ 'sections.cart.remove_title' | t: title: item.title }}"
+            >
+              {% render 'icon-remove' %}
+            </a>
+          </variant-list-remove-button>
         {%- endif -%}
       </div>
-      <button class="button button--tertiary" type="button" aria-label="{{ 'accessibility.close' | t }}">
-        {%- render 'icon-close' -%}
-      </button>
-      {%- if product.quantity_price_breaks_configured? -%}
-        <volume-pricing class="parent-display">
-          <ul class="list-unstyled">
-            <li>
-              <span>{{ product.selected_or_first_available_variant.quantity_rule.min }}+</span>
-              <span>{{ product.selected_or_first_available_variant.price | money_with_currency }}/ea</span>
-            </li>
-            {%- for price_break in product.selected_or_first_available_variant.quantity_price_breaks -%}
+      <div class="variant-item__error" id="Line-item-error-{{ item.id }}" role="alert">
+        <small class="variant-item__error-text"></small>
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          class="icon icon-error"
+          viewBox="0 0 13 13"
+        >
+          <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
+          <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
+          <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
+          <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
+        </svg>
+      </div>
+
+      <div class="global-settings-popup quantity-popover__info" hidden tabindex="-1">
+        <div class="quantity__rules caption no-js-hidden">
+          {%- if product.selected_or_first_available_variant.quantity_rule.increment > 1 -%}
+            <span class="divider">
+              {{-
+                'products.product.quantity.multiples_of'
+                | t: quantity: product.selected_or_first_available_variant.quantity_rule.increment
+              -}}
+            </span>
+          {%- endif -%}
+          {%- if product.selected_or_first_available_variant.quantity_rule.min > 1 -%}
+            <span class="divider">
+              {{-
+                'products.product.quantity.minimum_of'
+                | t: quantity: product.selected_or_first_available_variant.quantity_rule.min
+              -}}
+            </span>
+          {%- endif -%}
+          {%- if product.selected_or_first_available_variant.quantity_rule.max != null -%}
+            <span class="divider">
+              {{-
+                'products.product.quantity.maximum_of'
+                | t: quantity: product.selected_or_first_available_variant.quantity_rule.max
+              -}}
+            </span>
+          {%- endif -%}
+        </div>
+        <button class="button-close button button--tertiary" type="button" aria-label="{{ 'accessibility.close' | t }}">
+          {%- render 'icon-close' -%}
+        </button>
+        {%- if product.quantity_price_breaks_configured? -%}
+          <volume-pricing class="parent-display">
+            <ul class="list-unstyled">
               <li>
-                <span>
-                  {{- price_break.minimum_quantity -}}
-                  <span aria-hidden="true">+</span></span
-                >
-                <span>{{ price_break.price | money_with_currency }}/ea</span>
+                <span>{{ product.selected_or_first_available_variant.quantity_rule.min }}+</span>
+                <span>{{ product.selected_or_first_available_variant.price | money_with_currency }}/ea</span>
               </li>
-            {%- endfor -%}
-          </ul>
-        </volume-pricing>
-      {%- endif -%}
-    </qty-vol-popover>
+              {%- for price_break in product.selected_or_first_available_variant.quantity_price_breaks -%}
+                <li>
+                  <span>
+                    {{- price_break.minimum_quantity -}}
+                    <span aria-hidden="true">+</span></span
+                  >
+                  <span>{{ price_break.price | money_with_currency }}/ea</span>
+                </li>
+              {%- endfor -%}
+            </ul>
+          </volume-pricing>
+        {%- endif -%}
+      </div>
+    </quantity-popover>
   </td>
   <td class="variant-item__price small-hide">
     {%- render 'loading-overlay' -%}
