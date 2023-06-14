@@ -1,11 +1,7 @@
 class DetailsDisclosure extends HTMLElement {
   constructor() {
     super();
-    this.mainDetailsToggle = this.querySelector('details');
-    if (this.mainDetailsToggle !== null) {
-      this.content = this.mainDetailsToggle.querySelector('summary').nextElementSibling;
-    }
-
+    this.content = this.mainDetailsToggle?.querySelector('summary').nextElementSibling;
     this.mainDetailsToggle?.addEventListener('focusout', this.onFocusOut.bind(this));
     this.mainDetailsToggle?.addEventListener('toggle', this.onToggle.bind(this));
   }
@@ -17,20 +13,18 @@ class DetailsDisclosure extends HTMLElement {
   }
 
   onToggle() {
-    if (!this.animations) this.animations = this.content.getAnimations();
+    if (!this.animations) this.animations = this.content?.getAnimations();
 
-    if (this.mainDetailsToggle.hasAttribute('open')) {
-      this.animations.forEach(animation => animation.play());
+    if (this.mainDetailsToggle?.hasAttribute('open')) {
+      this.animations?.forEach(animation => animation.play());
     } else {
-      this.animations.forEach(animation => animation.cancel());
+      this.animations?.forEach(animation => animation.cancel());
     }
   }
 
   close() {
-    if (this.mainDetailsToggle !== null) {
-      this.mainDetailsToggle.removeAttribute('open');
-      this.mainDetailsToggle.querySelector('summary').setAttribute('aria-expanded', false);
-    }
+    this.mainDetailsToggle?.removeAttribute('open');
+    this.mainDetailsToggle?.querySelector('summary').setAttribute('aria-expanded', false);
   }
 }
 
@@ -44,7 +38,7 @@ class HeaderMenu extends DetailsDisclosure {
 
   onToggle() {
     if (!this.header) return;
-    this.header.preventHide = this.mainDetailsToggle.open;
+    this.header.preventHide = this.mainDetailsToggle?.open;
 
     if (document.documentElement.style.getPropertyValue('--header-bottom-position-desktop') !== '') return;
     document.documentElement.style.setProperty('--header-bottom-position-desktop', `${Math.floor(this.header.getBoundingClientRect().bottom)}px`);
