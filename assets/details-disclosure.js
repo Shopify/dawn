@@ -6,8 +6,8 @@ class DetailsDisclosure extends HTMLElement {
       this.content = this.mainDetailsToggle.querySelector('summary').nextElementSibling;
     }
 
-    this.mainDetailsToggle.addEventListener('focusout', this.onFocusOut.bind(this));
-    this.mainDetailsToggle.addEventListener('toggle', this.onToggle.bind(this));
+    this.mainDetailsToggle?.addEventListener('focusout', this.onFocusOut.bind(this));
+    this.mainDetailsToggle?.addEventListener('toggle', this.onToggle.bind(this));
   }
 
   onFocusOut() {
