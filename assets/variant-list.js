@@ -37,12 +37,6 @@ class VariantListRemoveAllButton extends HTMLElement {
       cancel: 'cancel'
     }
 
-    this.actions = {
-      confirm: 'confirm',
-      remove: 'remove',
-      cancel: 'cancel'
-    }
-
     this.addEventListener('click', (event) => {
       event.preventDefault();
       if (this.dataset.action === this.actions.confirm) {
@@ -243,11 +237,11 @@ class VariantList extends HTMLElement {
         publish(PUB_SUB_EVENTS.cartUpdate, { source: this.variantListId });
 
         if (action === this.actions.add) {
-          this.updateButton(parseInt(quantity))
+          this.updateMessage(parseInt(quantity))
         } else if (action === this.actions.update) {
-          this.updateButton(parseInt(quantity - quantityElement.dataset.cartQuantity))
+          this.updateMessage(parseInt(quantity - quantityElement.dataset.cartQuantity))
         } else {
-          this.updateButton(-parseInt(quantityElement.dataset.cartQuantity))
+          this.updateMessage(-parseInt(quantityElement.dataset.cartQuantity))
         }
       }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
@@ -259,9 +253,10 @@ class VariantList extends HTMLElement {
       });
   }
 
-  updateButton(quantity) {
-    const buttonTextElement = this.querySelector('.variant-list__button-text');
-    const buttonIconElement = this.querySelector('.variant-list__button-icon');
+  updateMessage(quantity) {
+    const message = this.querySelector('.variant-list__message-text');
+    const icon = this.querySelector('.variant-list__message-icon');
+
     const isQuantityNegative = quantity < 0;
     const absQuantity = Math.abs(quantity);
 
@@ -269,28 +264,14 @@ class VariantList extends HTMLElement {
       ? window.variantListStrings.itemsRemoved
       : (quantity === 1 ? window.variantListStrings.itemAdded : window.variantListStrings.itemsAdded);
 
-    buttonTextElement.innerHTML = textTemplate.replace('[quantity]', absQuantity);
+    message.innerHTML = textTemplate.replace('[quantity]', absQuantity);
 
     if (!isQuantityNegative) {
-      buttonIconElement.classList.remove('hidden');
+      icon.classList.remove('hidden');
     }
 
-    this.replaceContent();
   }
 
-  replaceContent() {
-    setTimeout(() => {
-      this.querySelector('.variant-list__button-text').innerHTML = window.variantListStrings.viewCart;
-      this.querySelector('.variant-list__button-icon').classList.add('hidden');
-    }, 5000);
-  }
-
-  replaceContent() {
-    setTimeout(() => {
-      this.querySelector('.variant-list__button-text').innerHTML = window.variantListStrings.viewCart;
-      this.querySelector('.variant-list__button-icon').classList.add('hidden');
-    }, 5000);
-  }
 
   updateError(updatedValue, id, message) {
     if (typeof updatedValue === 'undefined') {
