@@ -1,7 +1,6 @@
 class VariantListRemoveButton extends HTMLElement {
   constructor() {
     super();
-
     this.addEventListener('click', (event) => {
       event.preventDefault();
       const variantList = this.closest('variant-list');
@@ -11,6 +10,49 @@ class VariantListRemoveButton extends HTMLElement {
 }
 
 customElements.define('variant-list-remove-button', VariantListRemoveButton);
+
+class VariantListRemoveAllButton extends HTMLElement {
+  constructor() {
+    super();
+    const allVariants = Array.from(document.querySelectorAll('[data-variantid]'));
+    const variantsInCart = allVariants.filter((variant) => parseInt(variant.dataset.cartqty) > 0);
+    if (variantsInCart.length === 0) {
+      this.classList.add('hidden');
+    }
+
+    this.variantList = this.closest('variant-list');
+    const items = {}
+    variantsInCart.forEach((variant) => {
+      items[parseInt(variant.dataset.variantid)] = 0;
+    })
+
+    this.actions = {
+      confirm: 'confirm',
+      remove: 'remove',
+      cancel: 'cancel'
+    }
+
+    this.addEventListener('click', (event) => {
+      event.preventDefault();
+      if (this.dataset.action === this.actions.confirm) {
+        this.toggleConfirmation(false, true);
+      } else if (this.dataset.action === this.actions.remove) {
+        this.variantList.updateMultipleQty(items);
+        this.toggleConfirmation(true, false);
+      } else if (this.dataset.action === this.actions.cancel) {
+        this.toggleConfirmation(true, false);
+      }
+    });
+  }
+
+  toggleConfirmation(showConfirmation, showInfo) {
+    this.variantList.querySelector('.variant-list-total__confirmation').classList.toggle('hidden', showConfirmation);
+    this.variantList.querySelector('.variant-list-total__info').classList.toggle('hidden', showInfo)
+  }
+}
+
+customElements.define('variant-list-remove-all-button', VariantListRemoveAllButton);
+
 
 class VariantList extends HTMLElement {
   constructor() {
@@ -54,9 +96,9 @@ class VariantList extends HTMLElement {
     const quantity = inputValue - cartQuantity;
 
     if (cartQuantity > 0) {
-      this.updateQuantity(index, inputValue, name, this.updateAction);
+      this.updateQuantity(index, inputValue, name, this.actions.update);
     } else {
-      this.updateQuantity(index, quantity, name, this.addAction);
+      this.updateQuantity(index, quantity, name, this.actions.add);
     }
   }
 
@@ -93,13 +135,43 @@ class VariantList extends HTMLElement {
       {
         id: 'variant-list-total',
         section: document.getElementById(this.variantListId).dataset.id,
-        selector: '.variant-list-total'
+        selector: '.variant-list__total'
       }
     ];
   }
 
+  updateMultipleQty(items) {
+    this.querySelector('.variant-remove-total .loading-overlay').classList.remove('hidden');
+
+    const body = JSON.stringify({
+      updates: items,
+      sections: this.getSectionsToRender().map((section) => section.section),
+      sections_url: window.location.pathname
+    });
+
+    fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } })
+      .then((response) => {
+        return response.text();
+      })
+      .then((state) => {
+        const parsedState = JSON.parse(state);
+        this.getSectionsToRender().forEach((section => {
+          const elementToReplace =
+            document.getElementById(section.id).querySelector(section.selector) || document.getElementById(section.id);
+          elementToReplace.innerHTML =
+            this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
+        }));
+      }).catch(() => {
+        const errors = document.getElementById('variantlist-errors');
+        errors.textContent = window.cartStrings.error;
+      })
+      .finally(() => {
+        this.querySelector('.variant-remove-total .loading-overlay').classList.add('hidden');
+      });
+  }
+
   updateQuantity(id, quantity, name, action) {
-    this.enableLoading(id);
+    this.toggleLoading(id, true);
 
     const body = JSON.stringify({
       quantity,
@@ -107,6 +179,7 @@ class VariantList extends HTMLElement {
       sections: this.getSectionsToRender().map((section) => section.section),
       sections_url: window.location.pathname
     });
+
     let routeUrl = routes.cart_change_url
     if (action === this.actions.add) {
       routeUrl = routes.cart_add_url
@@ -157,14 +230,48 @@ class VariantList extends HTMLElement {
           variantItem.querySelector(`[name="${name}"]`).focus();
         }
         publish(PUB_SUB_EVENTS.cartUpdate, { source: this.variantListId });
-      }).catch((e) => {
+
+        if (action === this.actions.add) {
+          this.updateButton(parseInt(quantity))
+        } else if (action === this.updateAction) {
+          this.updateButton(parseInt(quantity - quantityElement.dataset.cartQuantity))
+        } else {
+          this.updateButton(-parseInt(quantityElement.dataset.cartQuantity))
+        }
+      }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         const errors = document.getElementById('variantlist-errors');
         errors.textContent = window.cartStrings.error;
       })
       .finally(() => {
-        this.disableLoading(id);
+        this.toggleLoading(id);
       });
+  }
+
+  updateButton(quantity) {
+    const buttonTextElement = this.querySelector('.variant-list__button-text');
+    const buttonIconElement = this.querySelector('.variant-list__button-icon');
+    const isQuantityNegative = quantity < 0;
+    const absQuantity = Math.abs(quantity);
+
+    const textTemplate = isQuantityNegative
+      ? window.variantListStrings.itemsRemoved
+      : (quantity === 1 ? window.variantListStrings.itemAdded : window.variantListStrings.itemsAdded);
+
+    buttonTextElement.innerHTML = textTemplate.replace('[quantity]', absQuantity);
+
+    if (!isQuantityNegative) {
+      buttonIconElement.classList.remove('hidden');
+    }
+
+    this.replaceContent();
+  }
+
+  replaceContent() {
+    setTimeout(() => {
+      this.querySelector('.variant-list__button-text').innerHTML = window.variantListStrings.viewCart;
+      this.querySelector('.variant-list__button-icon').classList.add('hidden');
+    }, 5000);
   }
 
   updateError(updatedValue, id, message) {
