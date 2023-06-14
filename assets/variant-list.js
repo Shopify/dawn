@@ -15,16 +15,21 @@ class VariantListRemoveAllButton extends HTMLElement {
   constructor() {
     super();
     const allVariants = Array.from(document.querySelectorAll('[data-variant-id]'));
-    const variantsInCart = allVariants.filter((variant) => parseInt(variant.dataset.cartQty) > 0);
-    if (variantsInCart.length === 0) {
+    const items = {}
+    let hasVariantsInCart = false;
+    this.variantList = this.closest('variant-list');
+
+    allVariants.forEach((variant) => {
+      const cartQty = parseInt(variant.dataset.cartQty);
+      if (cartQty > 0) {
+        hasVariantsInCart = true;
+        items[parseInt(variant.dataset.variantId)] = 0;
+      }
+    });
+
+    if (!hasVariantsInCart) {
       this.classList.add('hidden');
     }
-
-    this.variantList = this.closest('variant-list');
-    const items = {}
-    variantsInCart.forEach((variant) => {
-      items[parseInt(variant.dataset.variantId)] = 0;
-    })
 
     this.actions = {
       confirm: 'confirm',
