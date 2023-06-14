@@ -288,6 +288,13 @@ class VariantList extends HTMLElement {
   }
 
 
+  replaceContent() {
+    setTimeout(() => {
+      this.querySelector('.variant-list__button-text').innerHTML = window.variantListStrings.viewCart;
+      this.querySelector('.variant-list__button-icon').classList.add('hidden');
+    }, 5000);
+  }
+
   updateError(updatedValue, id, message) {
     if (typeof updatedValue === 'undefined') {
       message = window.cartStrings.error;
