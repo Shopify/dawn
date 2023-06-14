@@ -264,7 +264,7 @@ class VariantList extends HTMLElement {
         } else {
           this.updateMessage(-parseInt(quantityElement.dataset.cartQuantity))
         }
-      }).catch(() => {
+      }).catch((e) => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         const errors = document.getElementById('variantlist-errors');
         errors.textContent = window.cartStrings.error;
