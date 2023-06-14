@@ -1,17 +1,16 @@
 class QuantityPopover extends HTMLElement {
   constructor() {
     super();
-    this.infoButton = this.querySelector('.variant-item__quantity-info');
+    this.infoButton = this.querySelector('.variant-item__quantity-info.medium-hide');
     this.popoverInfo = this.querySelector('.quantity-popover__info');
     this.closeButton = this.querySelector('.button-close');
-    this.qtyInput = this.querySelector('.quantity__input');
 
     this.infoButton.addEventListener('click', this.togglePopover.bind(this));
-    this.closeButton.addEventListener('click', this.togglePopover.bind(this));
+    this.closeButton.addEventListener('click', this.closePopover.bind(this));
     this.infoButton.addEventListener('focusout', this.closePopover.bind(this));
-    this.qtyInput.addEventListener('focusout', this.closePopover.bind(this));
     this.popoverInfo.addEventListener('focusout', this.closePopover.bind(this));
-
+    this.addEventListener('mouseenter', this.toggleAccessibility.bind(this));
+    this.addEventListener('mouseleave', this.toggleAccessibility.bind(this));
   }
 
   togglePopover(event) {
@@ -25,6 +24,11 @@ class QuantityPopover extends HTMLElement {
     if (this.infoButton.getAttribute('aria-expanded') === 'true') {
       this.closeButton.focus();
     }
+    this.toggleAccessibility(event);
+  }
+
+  toggleAccessibility(event) {
+    event.preventDefault();
     this.popoverInfo.toggleAttribute('hidden');
   }
 
