@@ -37,12 +37,6 @@ class VariantListRemoveAllButton extends HTMLElement {
       cancel: 'cancel'
     }
 
-    this.actions = {
-      confirm: 'confirm',
-      remove: 'remove',
-      cancel: 'cancel'
-    }
-
     this.addEventListener('click', (event) => {
       event.preventDefault();
       if (this.dataset.action === this.actions.confirm) {
