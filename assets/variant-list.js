@@ -14,8 +14,8 @@ customElements.define('variant-list-remove-button', VariantListRemoveButton);
 class VariantListRemoveAllButton extends HTMLElement {
   constructor() {
     super();
-    const allVariants = Array.from(document.querySelectorAll('[data-variantid]'));
-    const variantsInCart = allVariants.filter((variant) => parseInt(variant.dataset.cartqty) > 0);
+    const allVariants = Array.from(document.querySelectorAll('[data-variant-id]'));
+    const variantsInCart = allVariants.filter((variant) => parseInt(variant.dataset.cartQty) > 0);
     if (variantsInCart.length === 0) {
       this.classList.add('hidden');
     }
@@ -23,7 +23,7 @@ class VariantListRemoveAllButton extends HTMLElement {
     this.variantList = this.closest('variant-list');
     const items = {}
     variantsInCart.forEach((variant) => {
-      items[parseInt(variant.dataset.variantid)] = 0;
+      items[parseInt(variant.dataset.variantId)] = 0;
     })
 
     this.actions = {
@@ -233,7 +233,7 @@ class VariantList extends HTMLElement {
 
         if (action === this.actions.add) {
           this.updateButton(parseInt(quantity))
-        } else if (action === this.updateAction) {
+        } else if (action === this.actions.update) {
           this.updateButton(parseInt(quantity - quantityElement.dataset.cartQuantity))
         } else {
           this.updateButton(-parseInt(quantityElement.dataset.cartQuantity))
