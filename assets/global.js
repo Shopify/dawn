@@ -688,8 +688,12 @@ class SliderComponent extends HTMLElement {
       event.currentTarget.name === 'next'
         ? this.slider.scrollLeft + step * this.sliderItemOffset
         : this.slider.scrollLeft - step * this.sliderItemOffset;
+    this.setSlidePosition(this.slideScrollPosition);
+  }
+
+  setSlidePosition(position) {
     this.slider.scrollTo({
-      left: this.slideScrollPosition,
+      left: position,
     });
   }
 }
@@ -761,18 +765,7 @@ class SlideshowComponent extends SliderComponent {
   }
 
   onButtonClick(event) {
-    // This is copied from the parent component because we need to add a delay.
-    event.preventDefault();
-    const step = event.currentTarget.dataset.step || 1;
-    this.slideScrollPosition =
-      event.currentTarget.name === 'next'
-        ? this.slider.scrollLeft + step * this.sliderItemOffset
-        : this.slider.scrollLeft - step * this.sliderItemOffset;
-    setTimeout (() => {
-      this.slider.scrollTo({
-        left: this.slideScrollPosition,
-      });
-    }, this.delay);
+    super.onButtonClick(event);
 
     const isFirstSlide = this.currentPage === 1;
     const isLastSlide = this.currentPage === this.sliderItemsToShow.length;
@@ -785,9 +778,14 @@ class SlideshowComponent extends SliderComponent {
     } else if (isLastSlide && event.currentTarget.name === 'next') {
       this.slideScrollPosition = 0;
     }
+
+    this.setSlidePosition(this.slideScrollPosition);
+  }
+
+  setSlidePosition(position) {
     setTimeout (() => {
       this.slider.scrollTo({
-        left: this.slideScrollPosition,
+        left: position,
       });
     }, this.delay);
   }
@@ -865,17 +863,9 @@ class SlideshowComponent extends SliderComponent {
         ? 0
         : this.slider.scrollLeft + this.slider.querySelector('.slideshow__slide').clientWidth;
 
+    this.setSlidePosition(slideScrollPosition);
     if (this.announcementBarSlider) {
-      setTimeout(() => {
-        this.slider.scrollTo({
-          left: slideScrollPosition,
-        });
-      }, this.delay);
       this.applyAnimation();
-    } else {
-      this.slider.scrollTo({
-        left: slideScrollPosition,
-      });
     }
   }
 
@@ -923,13 +913,16 @@ class SlideshowComponent extends SliderComponent {
         const isNextAnnouncementFirst = nextPage === 1;
         const isCurrentAnnouncementLast = announcementIndex === itemsCount;
         const isNextAnnouncement = nextPage === announcementIndex
-
+        // If the next announcement is going to be last while we press previous button we apply animation to the first announcement and last one with "next" effect
         if (isNextAnnouncementLast && button === 'previous' && (announcementIndex === 1 || isCurrentAnnouncementLast)) {
           this.updateSlideClass(announcement, 'next');
+        // If the next announcement is going to be first while we press next button we apply animation to the last announcement and first one with "previous" effect
         } else if (isNextAnnouncementFirst && button === 'next' && (isNextAnnouncement || isCurrentAnnouncementLast)) {
           this.updateSlideClass(announcement, 'previous');
+        // If we press next button we apply animation to the next announcement and the current one
         } else if (isNextAnnouncement || nextPage - 1 === announcementIndex && button === 'next') {
           this.updateSlideClass(announcement, button);
+        // If we press previous button we apply animation to the previous announcement and the current one
         } else if (isNextAnnouncement || nextPage + 1 === announcementIndex && button === 'previous') {
           this.updateSlideClass(announcement, button);
         }
