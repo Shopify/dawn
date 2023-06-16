@@ -737,10 +737,6 @@ class SlideshowComponent extends SliderComponent {
         button.addEventListener('click', () => {
           this.announcementBarArrowButtonWasClicked = true;
         }, {once: true});
-
-        button.addEventListener('click', () => {
-          this.applyAnimation(button.name);
-        });
       });
     }
 
@@ -770,7 +766,10 @@ class SlideshowComponent extends SliderComponent {
     const isFirstSlide = this.currentPage === 1;
     const isLastSlide = this.currentPage === this.sliderItemsToShow.length;
 
-    if (!isFirstSlide && !isLastSlide) return;
+    if (!isFirstSlide && !isLastSlide) {
+      this.applyAnimation(event.currentTarget.name);
+      return;
+    }
 
     if (isFirstSlide && event.currentTarget.name === 'previous') {
       this.slideScrollPosition =
@@ -780,6 +779,8 @@ class SlideshowComponent extends SliderComponent {
     }
 
     this.setSlidePosition(this.slideScrollPosition);
+
+    this.applyAnimation(event.currentTarget.name);
   }
 
   setSlidePosition(position) {
@@ -864,9 +865,7 @@ class SlideshowComponent extends SliderComponent {
         : this.slider.scrollLeft + this.slider.querySelector('.slideshow__slide').clientWidth;
 
     this.setSlidePosition(slideScrollPosition);
-    if (this.announcementBarSlider) {
-      this.applyAnimation();
-    }
+    this.applyAnimation();
   }
 
   setSlideVisibility() {
@@ -902,6 +901,8 @@ class SlideshowComponent extends SliderComponent {
   }
 
   applyAnimation(button = 'next') {
+    if (!this.announcementBarSlider) return;
+
     const itemsCount = this.sliderItems.length;
     const increment = button === 'next' ? 1 : -1;
     const nextPage = ((this.currentPage + increment - 1) % itemsCount + itemsCount) % itemsCount + 1;
