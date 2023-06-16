@@ -903,7 +903,6 @@ class SlideshowComponent extends SliderComponent {
 
     const itemsCount = this.sliderItems.length;
     const increment = button === 'next' ? 1 : -1;
-    const nextPage = ((this.currentPage + increment - 1) % itemsCount + itemsCount) % itemsCount + 1;
 
     const currentIndex = this.currentPage - 1;
     let nextIndex = (currentIndex + increment) % itemsCount;
@@ -915,20 +914,23 @@ class SlideshowComponent extends SliderComponent {
     this.removeAnimation(currentSlide);
     this.removeAnimation(nextSlide);
 
+    const annimationClassIn = "announcement-bar-slider--fade-in";
+    const annimationClassOut = "announcement-bar-slider--fade-out";
+
     if (button === 'next' && currentIndex !== itemsCount - 1) {
-      currentSlide.classList.add('announcement-bar-slider--fade-out-next');
-      nextSlide.classList.add('announcement-bar-slider--fade-in-next');
+      currentSlide.classList.add(`${annimationClassOut}-next`);
+      nextSlide.classList.add(`${annimationClassIn}-next`);
     } else if (button === 'next') {
-      currentSlide.classList.add('announcement-bar-slider--fade-out-previous');
-      nextSlide.classList.add('announcement-bar-slider--fade-in-previous');
+      currentSlide.classList.add(`${annimationClassOut}-previous`);
+      nextSlide.classList.add(`${annimationClassIn}-previous`);
     }
 
     if (button === 'previous' && currentIndex !== 0) {
-      currentSlide.classList.add('announcement-bar-slider--fade-out-previous');
-      nextSlide.classList.add('announcement-bar-slider--fade-in-previous');
+      currentSlide.classList.add(`${annimationClassOut}-previous`);
+      nextSlide.classList.add(`${annimationClassIn}-previous`);
     } else {
-      currentSlide.classList.add('announcement-bar-slider--fade-out-next');
-      nextSlide.classList.add('announcement-bar-slider--fade-in-next');
+      currentSlide.classList.add(`${annimationClassOut}-next`);
+      nextSlide.classList.add(`${annimationClassIn}-next`);
     }
   }
 
