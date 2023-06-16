@@ -889,15 +889,13 @@ class SlideshowComponent extends SliderComponent {
     });
   }
 
-  updateSlideClass(slide, button) {
-    slide.classList.add(`announcement-bar-slider--fade-out-${button}`);
-    setTimeout(() => {
-      slide.classList.remove(`announcement-bar-slider--fade-out-${button}`);
-      slide.classList.add(`announcement-bar-slider--fade-in-${button}`);
-    }, this.delay);
-    setTimeout(() => {
-      slide.classList.remove(`announcement-bar-slider--fade-in-${button}`);
-    }, this.delay * 2);
+  removeAnimation(element) {
+    const classArray = Array.from(element.classList);
+    classArray.forEach(className => {
+      if (className.startsWith('announcement-bar-slider--fade')) {
+        element.classList.remove(className);
+      }
+    });
   }
 
   applyAnimation(button = 'next') {
@@ -907,28 +905,31 @@ class SlideshowComponent extends SliderComponent {
     const increment = button === 'next' ? 1 : -1;
     const nextPage = ((this.currentPage + increment - 1) % itemsCount + itemsCount) % itemsCount + 1;
 
-    requestAnimationFrame(() => {
-      this.allAnnouncements.forEach((announcement, index) => {
-        const announcementIndex = index + 1;
-        const isNextAnnouncementLast = nextPage === itemsCount;
-        const isNextAnnouncementFirst = nextPage === 1;
-        const isCurrentAnnouncementLast = announcementIndex === itemsCount;
-        const isNextAnnouncement = nextPage === announcementIndex
-        // If the next announcement is going to be last while we press previous button we apply animation to the first announcement and last one with "next" effect
-        if (isNextAnnouncementLast && button === 'previous' && (announcementIndex === 1 || isCurrentAnnouncementLast)) {
-          this.updateSlideClass(announcement, 'next');
-        // If the next announcement is going to be first while we press next button we apply animation to the last announcement and first one with "previous" effect
-        } else if (isNextAnnouncementFirst && button === 'next' && (isNextAnnouncement || isCurrentAnnouncementLast)) {
-          this.updateSlideClass(announcement, 'previous');
-        // If we press next button we apply animation to the next announcement and the current one
-        } else if (isNextAnnouncement || nextPage - 1 === announcementIndex && button === 'next') {
-          this.updateSlideClass(announcement, button);
-        // If we press previous button we apply animation to the previous announcement and the current one
-        } else if (isNextAnnouncement || nextPage + 1 === announcementIndex && button === 'previous') {
-          this.updateSlideClass(announcement, button);
-        }
-      });
-    });
+    const currentIndex = this.currentPage - 1;
+    let nextIndex = (currentIndex + increment) % itemsCount;
+    nextIndex = nextIndex === -1 ? itemsCount - 1 : nextIndex;
+
+    const nextSlide = this.sliderItems[nextIndex];
+    const currentSlide = this.sliderItems[currentIndex];
+
+    this.removeAnimation(currentSlide);
+    this.removeAnimation(nextSlide);
+
+    if (button === 'next' && currentIndex !== itemsCount - 1) {
+      currentSlide.classList.add('announcement-bar-slider--fade-out-next');
+      nextSlide.classList.add('announcement-bar-slider--fade-in-next');
+    } else if (button === 'next') {
+      currentSlide.classList.add('announcement-bar-slider--fade-out-previous');
+      nextSlide.classList.add('announcement-bar-slider--fade-in-previous');
+    }
+
+    if (button === 'previous' && currentIndex !== 0) {
+      currentSlide.classList.add('announcement-bar-slider--fade-out-previous');
+      nextSlide.classList.add('announcement-bar-slider--fade-in-previous');
+    } else {
+      currentSlide.classList.add('announcement-bar-slider--fade-out-next');
+      nextSlide.classList.add('announcement-bar-slider--fade-in-next');
+    }
   }
 
   linkToSlide(event) {
