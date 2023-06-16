@@ -261,7 +261,7 @@ class VariantList extends HTMLElement {
     const absQuantity = Math.abs(quantity);
 
     const textTemplate = isQuantityNegative
-      ? window.variantListStrings.itemsRemoved
+      ? (absQuantity === 1 ? window.variantListStrings.itemRemoved : window.variantListStrings.itemsRemoved)
       : (quantity === 1 ? window.variantListStrings.itemAdded : window.variantListStrings.itemsAdded);
 
     message.innerHTML = textTemplate.replace('[quantity]', absQuantity);
