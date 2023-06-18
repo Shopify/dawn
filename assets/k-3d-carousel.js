@@ -1,106 +1,101 @@
-//slideshow style interval
-var autoSwap = setInterval( swap,3500);
+// Slideshow style interval
+var autoSwap = setInterval(() => { swap('clockwise') }, 3500);
 
-//pause slideshow and reinstantiate on mouseout
-$('ul, span').hover(
-  function () {
-    clearInterval(autoSwap);
-}, 
-  function () {
-   autoSwap = setInterval( swap,3500);
+// Pause slideshow and reinstantiate on mouseout
+const gallery = document.querySelector('.gallery');
+
+gallery.addEventListener('mouseenter', function() {
+  clearInterval(autoSwap);
+});
+
+gallery.addEventListener('mouseleave', function() {
+  autoSwap = setInterval(() => { swap('clockwise') }, 3500);
 });
 
 //global variables
-var items = [];
-var startItem = 1;
-var position = 0;
-var itemCount = $('.carousel li.items').length;
-var leftpos = itemCount;
-var resetCount = itemCount;
+var galleryItems = document.querySelectorAll('.gallery .gallery-item');
 
-//unused: gather text inside items class
-$('li.items').each(function(index) {
-    items[index] = $(this).text();
-});
-
-//swap images function
 function swap(action) {
   var direction = action;
   
   //moving carousel backwards
-  if(direction == 'counter-clockwise') {
-    var leftitem = $('.left-pos').attr('id') - 1;
-    if(leftitem == 0) {
-      leftitem = itemCount;
-    }
+  if (direction === 'counter-clockwise') {
+      var items = galleryItems;
+      var mainPosItem = document.querySelector('.main-pos');
+      var rightPosItem = document.querySelector('.right-pos');
+      var leftPosItem = document.querySelector('.left-pos');
     
-    $('.right-pos').removeClass('right-pos').addClass('back-pos');
-    $('.main-pos').removeClass('main-pos').addClass('right-pos');
-    $('.left-pos').removeClass('left-pos').addClass('main-pos');
-    $('#'+leftitem+'').removeClass('back-pos').addClass('left-pos');
+      // Move classes to previous items
+      mainPosItem.classList.remove('main-pos');
+      rightPosItem.classList.remove('right-pos');
+      leftPosItem.classList.remove('left-pos');
     
-    startItem--;
-    if(startItem < 1) {
-      startItem = itemCount;
-    }
+      var mainPosIndex = Array.from(items).indexOf(mainPosItem);
+      var rightPosIndex = Array.from(items).indexOf(rightPosItem);
+      var leftPosIndex = Array.from(items).indexOf(leftPosItem);
+    
+      var prevMainPosIndex = leftPosIndex;
+      var prevRightPosIndex = (rightPosIndex - 1 + items.length) % items.length;
+      var prevLeftPosIndex = (leftPosIndex - 1 + items.length) % items.length;
+    
+      
+      items.forEach(e=> {
+        e.classList.add('back-pos')
+      })
+      
+      items[prevMainPosIndex].classList.remove('back-pos');
+      items[prevRightPosIndex].classList.remove('back-pos');
+      items[prevLeftPosIndex].classList.remove('back-pos');
+    
+      items[prevMainPosIndex].classList.add('main-pos');
+      items[prevRightPosIndex].classList.add('right-pos');
+      items[prevLeftPosIndex].classList.add('left-pos');
   }
   
   //moving carousel forward
-  if(direction == 'clockwise' || direction == '' || direction == null ) {
-    function pos(positionvalue) {
-      if(positionvalue != 'leftposition') {
-        //increment image list id
-        position++;
-        
-        //if final result is greater than image count, reset position.
-        if((startItem+position) > resetCount) {
-          position = 1-startItem;
-        }
-      }
+  if (direction === 'clockwise' || direction === '' || direction === null) {
+      var items = galleryItems;
+      var mainPosItem = document.querySelector('.main-pos');
+      var rightPosItem = document.querySelector('.right-pos');
+      var leftPosItem = document.querySelector('.left-pos');
     
-      //setting the left positioned item
-      if(positionvalue == 'leftposition') {
-        //left positioned image should always be one left than main positioned image.
-        position = startItem - 1;
+      // Move classes to next items
+      mainPosItem.classList.remove('main-pos');
+      rightPosItem.classList.remove('right-pos');
+      leftPosItem.classList.remove('left-pos');
+    
+      var mainPosIndex = Array.from(items).indexOf(mainPosItem);
+      var rightPosIndex = Array.from(items).indexOf(rightPosItem);
+      var leftPosIndex = Array.from(items).indexOf(leftPosItem);
+    
+      var nextMainPosIndex = rightPosIndex;
+      var nextRightPosIndex = (rightPosIndex + 1) % items.length;
+      var nextLeftPosIndex = mainPosIndex;
+    
       
-        //reset last image in list to left position if first image is in main position
-        if(position < 1) {
-          position = itemCount;
-        }
-      }
-   
-      return position;
-    }  
-  
-   $('#'+ startItem +'').removeClass('main-pos').addClass('left-pos');
-   $('#'+ (startItem+pos()) +'').removeClass('right-pos').addClass('main-pos');
-   $('#'+ (startItem+pos()) +'').removeClass('back-pos').addClass('right-pos');
-   $('#'+ pos('leftposition') +'').removeClass('left-pos').addClass('back-pos');
+      items.forEach(e=> {
+        e.classList.add('back-pos')
+      })
 
-    startItem++;
-    position=0;
-    if(startItem > itemCount) {
-      startItem = 1;
-    }
+      items[nextMainPosIndex].classList.remove('back-pos')
+      items[nextRightPosIndex].classList.remove('back-pos')
+      items[nextLeftPosIndex].classList.remove('back-pos')
+
+
+      items[nextMainPosIndex].classList.add('main-pos');
+      items[nextRightPosIndex].classList.add('right-pos');
+      items[nextLeftPosIndex].classList.add('left-pos');
+
   }
 }
 
-//next button click function
-$('#next').click(function() {
-  swap('clockwise');
-});
-
-//prev button click function
-$('#prev').click(function() {
-  swap('counter-clockwise');
-});
-
 //if any visible items are clicked
-$('li').click(function() {
-  if($(this).attr('class') == 'items left-pos') {
-     swap('counter-clockwise'); 
-  }
-  else {
-    swap('clockwise'); 
-  }
+galleryItems.forEach(function(item) {
+  item.addEventListener('click', function() {
+    if (item.classList.contains('left-pos')) {
+      swap('counter-clockwise');
+    } else {
+      swap('clockwise');
+    }
+  });
 });
