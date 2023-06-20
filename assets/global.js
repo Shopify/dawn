@@ -785,22 +785,28 @@ class SlideshowComponent extends SliderComponent {
   }
 
   setSlidePosition(position) {
-   // Set transition class to slider before animation starts
-   this.slider.classList.add(this.sliderTransitionSelector);
-   // Clear any previous timeout that is yet to run
-   if (this.setPositionTimeout) clearTimeout(this.setPositionTimeout);
-   this.setPositionTimeout = setTimeout (() => {
-     // Set new scroll position after 1st half of animation ends
-     this.slider.scrollTo({
-       left: position,
-     });
-   }, this.delay);
-   // Clear any previous timeout that is yet to run
-   if (this.transitionEndTimeout) clearTimeout(this.transitionEndTimeout);
-   this.transitionEndTimeout = setTimeout (() => {
-     // Remove transition class to slider after animation ends
-     this.slider.classList.remove(this.sliderTransitionSelector);
-   }, this.delay * 2);
+    if (this.announcementBarSlider) {
+      // Set transition class to slider before animation starts
+      this.slider.classList.add(this.sliderTransitionSelector);
+      // Clear any previous timeout that is yet to run
+      if (this.setPositionTimeout) clearTimeout(this.setPositionTimeout);
+      this.setPositionTimeout = setTimeout (() => {
+        // Set new scroll position after 1st half of animation ends
+        this.slider.scrollTo({
+          left: position,
+        });
+      }, this.delay);
+      // Clear any previous timeout that is yet to run
+      if (this.transitionEndTimeout) clearTimeout(this.transitionEndTimeout);
+      this.transitionEndTimeout = setTimeout (() => {
+        // Remove transition class to slider after animation ends
+        this.slider.classList.remove(this.sliderTransitionSelector);
+      }, this.delay * 2);
+    } else {
+      this.slider.scrollTo({
+        left: position,
+      });
+    }
   }
 
   update() {
@@ -874,7 +880,7 @@ class SlideshowComponent extends SliderComponent {
     const slideScrollPosition =
       this.currentPage === this.sliderItems.length
         ? 0
-        : this.slider.scrollLeft + this.slider.querySelector('.slideshow__slide').clientWidth;
+        : this.slider.scrollLeft + this.sliderItemOffset;
 
     this.setSlidePosition(slideScrollPosition);
     this.applyAnimation();
