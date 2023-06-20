@@ -932,24 +932,17 @@ class SlideshowComponent extends SliderComponent {
     this.removeAnimation(currentSlide);
     this.removeAnimation(nextSlide);
 
-    const annimationClassIn = "announcement-bar-slider--fade-in";
-    const annimationClassOut = "announcement-bar-slider--fade-out";
+    const animationClassIn = "announcement-bar-slider--fade-in";
+    const animationClassOut = "announcement-bar-slider--fade-out";
 
-    if (button === 'next' && currentIndex !== itemsCount - 1) {
-      currentSlide.classList.add(`${annimationClassOut}-next`);
-      nextSlide.classList.add(`${annimationClassIn}-next`);
-    } else if (button === 'next') {
-      currentSlide.classList.add(`${annimationClassOut}-previous`);
-      nextSlide.classList.add(`${annimationClassIn}-previous`);
-    }
+    const isFirstSlide = currentIndex === 0;
+    const isLastSlide = currentIndex === itemsCount - 1;
 
-    if (button === 'previous' && currentIndex !== 0) {
-      currentSlide.classList.add(`${annimationClassOut}-previous`);
-      nextSlide.classList.add(`${annimationClassIn}-previous`);
-    } else {
-      currentSlide.classList.add(`${annimationClassOut}-next`);
-      nextSlide.classList.add(`${annimationClassIn}-next`);
-    }
+    const shouldMoveNext = (button === 'next' && !isLastSlide) || (button === 'previous' && isFirstSlide);
+    const direction = shouldMoveNext ? 'next' : 'previous';
+
+    currentSlide.classList.add(`${animationClassOut}-${direction}`);
+    nextSlide.classList.add(`${animationClassIn}-${direction}`);
   }
 
   linkToSlide(event) {
