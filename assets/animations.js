@@ -41,8 +41,10 @@ function initializeScrollAnimationTrigger(rootEl = document, isDesignModeEvent =
 // Zoom in animation logic
 function initializeScrollZoomAnimationTrigger() {
   const animationTriggerElements = Array.from(document.getElementsByClassName(SCROLL_ZOOM_IN_TRIGGER_CLASSNAME));
-  const scaleAmount = 0.2 / 100;
+
   if (animationTriggerElements.length === 0) return;
+
+  const scaleAmount = 0.2 / 100;
 
   animationTriggerElements.forEach((element) => {
     let elementIsVisible = false;
@@ -55,11 +57,15 @@ function initializeScrollZoomAnimationTrigger() {
 
     element.style.setProperty('--zoom-in-ratio', 1 + scaleAmount * percentageSeen(element));
 
-    window.addEventListener('scroll', () => {
-      if (!elementIsVisible) return;
+    window.addEventListener(
+      'scroll',
+      throttle(() => {
+        if (!elementIsVisible) return;
 
-      element.style.setProperty('--zoom-in-ratio', 1 + scaleAmount * percentageSeen(element));
-    });
+        element.style.setProperty('--zoom-in-ratio', 1 + scaleAmount * percentageSeen(element));
+      }),
+      { passive: true }
+    );
   });
 }
 
@@ -67,17 +73,17 @@ function percentageSeen(element) {
   const viewportHeight = window.innerHeight;
   const scrollY = window.scrollY;
   const elementPositionY = element.getBoundingClientRect().top + scrollY;
-  const borderHeight =
-    parseInt(getComputedStyle(element).getPropertyValue('border-top-width')) +
-    parseInt(getComputedStyle(element).getPropertyValue('border-bottom-width'));
-  const elementHeight = element.offsetHeight + borderHeight;
+  const elementHeight = element.offsetHeight;
 
   if (elementPositionY > scrollY + viewportHeight) {
+    // If we haven't reached the image yet
     return 0;
   } else if (elementPositionY + elementHeight < scrollY) {
+    // If we've completely scrolled past the image
     return 100;
   }
 
+  // When the image is in the viewport
   const distance = scrollY + viewportHeight - elementPositionY;
   let percentage = distance / ((viewportHeight + elementHeight) / 100);
   return Math.round(percentage);
