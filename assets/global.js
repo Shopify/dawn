@@ -179,6 +179,42 @@ class QuantityInput extends HTMLElement {
 
   onInputChange(event) {
     this.validateQtyRules();
+    this.updatePricePerItem();
+  }
+
+  updatePricePerItem() {
+    this.getVolumePricingArray();
+    this.getCartQuantity();
+
+    const enteredQty = parseInt(this.input.value);
+    this.currentQtyForVolumePricing = this.getCartQuantity() + enteredQty;
+
+    for (let pair of this.qtyPricePairs) {
+      if (this.currentQtyForVolumePricing >= pair[0]) {
+        let pricePerItem = pair[1];
+        const pricePerItemCurrent = document.querySelector('.price-per-item span');
+        pricePerItemCurrent.innerHTML = pricePerItem;
+        break;
+      }
+    }
+  }
+
+  getCartQuantity() {
+    const cartQuantity = parseInt(document.querySelector('input[name="quantity"]').dataset.cartQuantity);
+    return cartQuantity;
+  }
+
+  getVolumePricingArray() {
+    const volumePricing = document.querySelector('#Volume-template--17233048109078__main');
+    this.qtyPricePairs = [];
+
+    volumePricing.querySelectorAll('li').forEach(li => {
+      const qty = parseInt(li.querySelector('span:first-child').textContent);
+      const price = (li.querySelector('span:not(:first-child):last-child').textContent);
+      this.qtyPricePairs.push([qty, price]);
+    });
+
+    this.qtyPricePairs.reverse();
   }
 
   onButtonClick(event) {
@@ -1036,9 +1072,7 @@ class VariantSelects extends HTMLElement {
         );
 
         const quantityInputDestination = document.getElementById(`Quantity-Form-${this.dataset.section}`);
-        console.log(quantityInputDestination);
         const quantityInputSource = html.getElementById(`Quantity-Form-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
-        console.log(quantityInputSource);
 
         const volumePricingDestination = document.getElementById(`Volume-${this.dataset.section}`);
 

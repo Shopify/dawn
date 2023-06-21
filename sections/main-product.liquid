@@ -235,7 +235,7 @@
                     <span>({{- 'products.product.quantity.in_cart_html' | t: quantity: cart_qty -}})</span>
                   </span>
                 </label>
-                <quantity-input class="quantity">
+                <quantity-input class="quantity" data-url="{{ product.url }}" data-section="{{ section.id }}">
                   <button class="quantity__button no-js-hidden" name="minus" type="button">
                     <span class="visually-hidden">
                       {{- 'products.product.quantity.decrease' | t: product: product.title | escape -}}
@@ -246,6 +246,7 @@
                     class="quantity__input"
                     type="number"
                     name="quantity"
+                    data-variant-id="{{ product.selected_or_first_available_variant.id }}"
                     id="Quantity-{{ section.id }}"
                     data-cart-quantity="{{ cart_qty }}"
                     data-min="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
@@ -271,16 +272,18 @@
 
                 -%}
                 {%- if product.quantity_price_breaks_configured? -%}
-                  {%- if curentQtyForVolumePricing  < volumePricingArray.last.minimum_quantity -%}
-                    <span>{{ product.selected_or_first_available_variant.price | money_with_currency }}/ea</span>
-                  {%- else -%}
-                    {%- for price_break in volumePricingArray -%}
-                      {%- if curentQtyForVolumePricing >= price_break.minimum_quantity -%}
-                        <span>{{ price_break.price | money_with_currency }}/ea</span>
-                        {%- break -%}
-                      {%- endif -%}
-                    {%- endfor -%}
-                  {%- endif -%}
+                  <div class='price-per-item'>
+                    {%- if curentQtyForVolumePricing  < volumePricingArray.last.minimum_quantity -%}
+                      <span>{{ product.selected_or_first_available_variant.price | money_with_currency }}/ea</span>
+                    {%- else -%}
+                      {%- for price_break in volumePricingArray -%}
+                        {%- if curentQtyForVolumePricing >= price_break.minimum_quantity -%}
+                          <span>{{ price_break.price | money_with_currency }}/ea</span>
+                          {%- break -%}
+                        {%- endif -%}
+                      {%- endfor -%}
+                    {%- endif -%}
+                  </div>
                 {%- endif -%}
                 <div class="quantity__rules caption no-js-hidden">
                   {%- if product.selected_or_first_available_variant.quantity_rule.increment > 1 -%}
