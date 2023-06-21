@@ -722,7 +722,6 @@ class SlideshowComponent extends SliderComponent {
     this.setSlideVisibility();
 
     if (this.announcementBarSlider) {
-      this.allAnnouncements = Array.from(this.querySelectorAll('.announcement-bar__message'));
       this.announcementBarArrowButtonWasClicked = false;
 
       this.desktopLayout = window.matchMedia('(min-width: 750px)');
@@ -789,24 +788,19 @@ class SlideshowComponent extends SliderComponent {
       // Set transition class to slider before animation starts
       this.slider.classList.add(this.sliderTransitionSelector);
       // Clear any previous timeout that is yet to run
-      if (this.setPositionTimeout) clearTimeout(this.setPositionTimeout);
-      this.setPositionTimeout = setTimeout (() => {
-        // Set new scroll position after 1st half of animation ends
-        this.slider.scrollTo({
-          left: position,
-        });
-      }, this.delay);
-      // Clear any previous timeout that is yet to run
       if (this.transitionEndTimeout) clearTimeout(this.transitionEndTimeout);
       this.transitionEndTimeout = setTimeout (() => {
         // Remove transition class to slider after animation ends
         this.slider.classList.remove(this.sliderTransitionSelector);
       }, this.delay * 2);
-    } else {
+    }
+
+    if (this.setPositionTimeout) clearTimeout(this.setPositionTimeout);
+    this.setPositionTimeout = setTimeout (() => {
       this.slider.scrollTo({
         left: position,
       });
-    }
+    }, this.delay);
   }
 
   update() {
