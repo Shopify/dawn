@@ -53,7 +53,7 @@ class CartItems extends HTMLElement {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
         const sourceQty = html.querySelector('cart-items');
         this.innerHTML = sourceQty.innerHTML;
-        document.querySelector('cart-items').classList.remove('is-empty');
+        this.classList.remove('is-empty');
       })
       .catch((e) => {
         console.error(e);
