@@ -40,6 +40,8 @@ function initializeScrollAnimationTrigger(rootEl = document, isDesignModeEvent =
 
 // Zoom in animation logic
 function initializeScrollZoomAnimationTrigger() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
   const animationTriggerElements = Array.from(document.getElementsByClassName(SCROLL_ZOOM_IN_TRIGGER_CLASSNAME));
 
   if (animationTriggerElements.length === 0) return;
