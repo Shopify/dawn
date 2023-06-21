@@ -192,7 +192,7 @@ class QuantityInput extends HTMLElement {
     for (let pair of this.qtyPricePairs) {
       if (this.currentQtyForVolumePricing >= pair[0]) {
         let pricePerItem = pair[1];
-        const pricePerItemCurrent = document.querySelector('.price-per-item span');
+        const pricePerItemCurrent = document.querySelector('.price-per-item span:last-child');
         pricePerItemCurrent.innerHTML = pricePerItem;
         break;
       }
@@ -205,7 +205,7 @@ class QuantityInput extends HTMLElement {
   }
 
   getVolumePricingArray() {
-    const volumePricing = document.querySelector('#Volume-template--17233048109078__main');
+    const volumePricing = document.querySelector('volume-pricing[id^="Volume-"]');
     this.qtyPricePairs = [];
 
     volumePricing.querySelectorAll('li').forEach(li => {

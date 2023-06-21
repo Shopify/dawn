@@ -235,56 +235,59 @@
                     <span>({{- 'products.product.quantity.in_cart_html' | t: quantity: cart_qty -}})</span>
                   </span>
                 </label>
-                <quantity-input class="quantity" data-url="{{ product.url }}" data-section="{{ section.id }}">
-                  <button class="quantity__button no-js-hidden" name="minus" type="button">
-                    <span class="visually-hidden">
-                      {{- 'products.product.quantity.decrease' | t: product: product.title | escape -}}
-                    </span>
-                    {% render 'icon-minus' %}
-                  </button>
-                  <input
-                    class="quantity__input"
-                    type="number"
-                    name="quantity"
-                    data-variant-id="{{ product.selected_or_first_available_variant.id }}"
-                    id="Quantity-{{ section.id }}"
-                    data-cart-quantity="{{ cart_qty }}"
-                    data-min="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
-                    min="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
-                    {% if product.selected_or_first_available_variant.quantity_rule.max != null %}
-                      data-max="{{ product.selected_or_first_available_variant.quantity_rule.max }}"
-                      max="{{ product.selected_or_first_available_variant.quantity_rule.max }}"
-                    {% endif %}
-                    step="{{ product.selected_or_first_available_variant.quantity_rule.increment }}"
-                    value="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
-                    form="{{ product_form_id }}"
-                  />
-                  <button class="quantity__button no-js-hidden" name="plus" type="button">
-                    <span class="visually-hidden">
-                      {{- 'products.product.quantity.increase' | t: product: product.title | escape -}}
-                    </span>
-                    {% render 'icon-plus' %}
-                  </button>
-                </quantity-input>
-                {%- liquid
-                  assign volumePricingArray = product.selected_or_first_available_variant.quantity_price_breaks | sort: 'price'
-                  assign curentQtyForVolumePricing = cart_qty | plus: product.selected_or_first_available_variant.quantity_rule.min
+                <div class="price-per-item-container">
+                  <quantity-input class="quantity" data-url="{{ product.url }}" data-section="{{ section.id }}">
+                    <button class="quantity__button no-js-hidden" name="minus" type="button">
+                      <span class="visually-hidden">
+                        {{- 'products.product.quantity.decrease' | t: product: product.title | escape -}}
+                      </span>
+                      {% render 'icon-minus' %}
+                    </button>
+                    <input
+                      class="quantity__input"
+                      type="number"
+                      name="quantity"
+                      data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+                      id="Quantity-{{ section.id }}"
+                      data-cart-quantity="{{ cart_qty }}"
+                      data-min="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
+                      min="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
+                      {% if product.selected_or_first_available_variant.quantity_rule.max != null %}
+                        data-max="{{ product.selected_or_first_available_variant.quantity_rule.max }}"
+                        max="{{ product.selected_or_first_available_variant.quantity_rule.max }}"
+                      {% endif %}
+                      step="{{ product.selected_or_first_available_variant.quantity_rule.increment }}"
+                      value="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
+                      form="{{ product_form_id }}"
+                    />
+                    <button class="quantity__button no-js-hidden" name="plus" type="button">
+                      <span class="visually-hidden">
+                        {{- 'products.product.quantity.increase' | t: product: product.title | escape -}}
+                      </span>
+                      {% render 'icon-plus' %}
+                    </button>
+                  </quantity-input>
+                  {%- liquid
+                    assign volumePricingArray = product.selected_or_first_available_variant.quantity_price_breaks | sort: 'price'
+                    assign curentQtyForVolumePricing = cart_qty | plus: product.selected_or_first_available_variant.quantity_rule.min
 
-                -%}
-                {%- if product.quantity_price_breaks_configured? -%}
-                  <div class='price-per-item'>
-                    {%- if curentQtyForVolumePricing  < volumePricingArray.last.minimum_quantity -%}
-                      <span>{{ product.selected_or_first_available_variant.price | money_with_currency }}/ea</span>
-                    {%- else -%}
-                      {%- for price_break in volumePricingArray -%}
-                        {%- if curentQtyForVolumePricing >= price_break.minimum_quantity -%}
-                          <span>{{ price_break.price | money_with_currency }}/ea</span>
-                          {%- break -%}
-                        {%- endif -%}
-                      {%- endfor -%}
-                    {%- endif -%}
-                  </div>
-                {%- endif -%}
+                  -%}
+                  {%- if product.quantity_price_breaks_configured? -%}
+                    <div class='price-per-item'>
+                      {%- if curentQtyForVolumePricing  < volumePricingArray.last.minimum_quantity -%}
+                        <span>at</span>
+                        <span>{{ product.selected_or_first_available_variant.price | money_with_currency }}/ea</span>
+                      {%- else -%}
+                        {%- for price_break in volumePricingArray -%}
+                          {%- if curentQtyForVolumePricing >= price_break.minimum_quantity -%}
+                            <span>{{ price_break.price | money_with_currency }}/ea</span>
+                            {%- break -%}
+                          {%- endif -%}
+                        {%- endfor -%}
+                      {%- endif -%}
+                    </div>
+                  {%- endif -%}
+                </div>
                 <div class="quantity__rules caption no-js-hidden">
                   {%- if product.selected_or_first_available_variant.quantity_rule.increment > 1 -%}
                     <span class="divider">
