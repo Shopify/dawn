@@ -1034,6 +1034,12 @@ class VariantSelects extends HTMLElement {
         const volumePricingSource = html.getElementById(
           `Volume-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`
         );
+
+        const quantityInputDestination = document.getElementById(`Quantity-Form-${this.dataset.section}`);
+        console.log(quantityInputDestination);
+        const quantityInputSource = html.getElementById(`Quantity-Form-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
+        console.log(quantityInputSource);
+
         const volumePricingDestination = document.getElementById(`Volume-${this.dataset.section}`);
 
         if (source && destination) destination.innerHTML = source.innerHTML;
@@ -1045,6 +1051,10 @@ class VariantSelects extends HTMLElement {
 
         if (volumePricingSource && volumePricingDestination) {
           volumePricingDestination.innerHTML = volumePricingSource.innerHTML;
+        }
+
+        if (quantityInputSource && quantityInputDestination) {
+          quantityInputDestination.innerHTML = quantityInputSource.innerHTML;
         }
 
         const price = document.getElementById(`price-${this.dataset.section}`);
