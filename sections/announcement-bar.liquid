@@ -1,18 +1,33 @@
 {{ 'component-slideshow.css' | asset_url | stylesheet_tag }}
 {{ 'component-slider.css' | asset_url | stylesheet_tag }}
+{%- if section.settings.enable_country_selector or section.settings.enable_language_selector -%}
+  {{ 'component-localization-form.css' | asset_url | stylesheet_tag: preload: true }}
+{%- endif -%}
+
+{%- if section.settings.enable_country_selector or section.settings.enable_language_selector -%}
+  <script src="{{ 'localization-form.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
 
 {%- liquid
   assign social_icons = true
   if settings.social_facebook_link == blank and settings.social_instagram_link == blank and settings.social_youtube_link == blank and settings.social_tiktok_link == blank and settings.social_twitter_link == blank and settings.social_pinterest_link == blank and settings.social_snapchat_link == blank and settings.social_tumblr_link == blank and settings.social_vimeo_link == blank
     assign social_icons = false
   endif
+  assign language_country_selector = false
+  if section.settings.enable_country_selector or section.settings.enable_language_selector
+    assign language_country_selector = true
+  endif
+  assign announcement_bar = true
+  if section.blocks.size == 0
+    assign announcement_bar = false
+  endif
 -%}
 
 <div
-  class="utility-bar color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator and section.blocks.size > 0 %} utility-bar--bottom-border{% elsif section.settings.show_line_separator and section.settings.show_social and social_icons%} utility-bar--bottom-border-social-only{% endif %}"
+  class="utility-bar color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator and section.blocks.size > 0 %} utility-bar--bottom-border{% elsif section.settings.show_line_separator and section.settings.show_social and social_icons%} utility-bar--bottom-border-social-only{% endif %}{% if section.settings.enable_country_selector or section.settings.enable_language_selector %} header__icons--localization header__localization{% endif %}"
   {{ block.shopify_attributes }}
 >
-  <div class="page-width{% if section.settings.show_social and social_icons %} utility-bar__grid{% endif %}">
+  <div class="page-width{% if announcement_bar and language_country_selector or section.settings.show_social and social_icons %} utility-bar__grid--3-col{% elsif language_country_selector or section.settings.show_social and social_icons %} utility-bar__grid--2-col{% endif %}">
     {%- if section.settings.show_social and social_icons -%}
       {%- render 'social-icons' -%}
     {%- endif -%}
@@ -115,6 +130,87 @@
         </div>
       </slideshow-component>
     {%- endif -%}
+    <div class="desktop-localization-wrapper">
+      {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
+        <noscript class="small-hide medium-hide">
+          {%- form 'localization', id: 'HeaderCountryMobileFormNoScript', class: 'localization-form' -%}
+            <div class="localization-form__select">
+              <h2 class="visually-hidden" id="HeaderCountryMobileLabelNoScript">
+                {{ 'localization.country_label' | t }}
+              </h2>
+              <select
+                class="localization-selector link"
+                name="country_code"
+                aria-labelledby="HeaderCountryMobileLabelNoScript"
+              >
+                {%- for country in localization.available_countries -%}
+                  <option
+                    value="{{ country.iso_code }}"
+                    {%- if country.iso_code == localization.country.iso_code %}
+                      selected
+                    {% endif %}
+                  >
+                    {{ country.name }} ({{ country.currency.iso_code }}
+                    {{ country.currency.symbol }})
+                  </option>
+                {%- endfor -%}
+              </select>
+              {% render 'icon-caret' %}
+            </div>
+            <button class="button button--tertiary">{{ 'localization.update_country' | t }}</button>
+          {%- endform -%}
+        </noscript>
+
+        <localization-form class="small-hide medium-hide no-js-hidden">
+          {%- form 'localization', id: 'HeaderCountryForm', class: 'localization-form' -%}
+            <div>
+              <h2 class="visually-hidden" id="HeaderCountryLabel">{{ 'localization.country_label' | t }}</h2>
+              {%- render 'country-localization', localPosition: 'HeaderCountry' -%}
+            </div>
+          {%- endform -%}
+        </localization-form>
+      {% endif %}
+
+      {%- if section.settings.enable_language_selector and localization.available_languages.size > 1 -%}
+        <noscript class="small-hide medium-hide">
+          {%- form 'localization', id: 'HeaderLanguageMobileFormNoScript', class: 'localization-form' -%}
+            <div class="localization-form__select">
+              <h2 class="visually-hidden" id="HeaderLanguageMobileLabelNoScript">
+                {{ 'localization.language_label' | t }}
+              </h2>
+              <select
+                class="localization-selector link"
+                name="locale_code"
+                aria-labelledby="HeaderLanguageMobileLabelNoScript"
+              >
+                {%- for language in localization.available_languages -%}
+                  <option
+                    value="{{ language.iso_code }}"
+                    lang="{{ language.iso_code }}"
+                    {%- if language.iso_code == localization.language.iso_code %}
+                      selected
+                    {% endif %}
+                  >
+                    {{ language.endonym_name | capitalize }}
+                  </option>
+                {%- endfor -%}
+              </select>
+              {% render 'icon-caret' %}
+            </div>
+            <button class="button button--tertiary">{{ 'localization.update_language' | t }}</button>
+          {%- endform -%}
+        </noscript>
+
+        <localization-form class="small-hide medium-hide no-js-hidden">
+          {%- form 'localization', id: 'HeaderLanguageForm', class: 'localization-form' -%}
+            <div>
+              <h2 class="visually-hidden" id="HeaderLanguageLabel">{{ 'localization.language_label' | t }}</h2>
+              {%- render 'language-localization', localPosition: 'HeaderLanguage' -%}
+            </div>
+          {%- endform -%}
+        </localization-form>
+      {%- endif -%}
+    </div>
   </div>
 </div>
 
