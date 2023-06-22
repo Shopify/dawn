@@ -254,8 +254,8 @@ class VariantList extends HTMLElement {
   }
 
   updateMessage(quantity) {
-    const message = this.querySelector('.variant-list__message-text');
-    const icon = this.querySelector('.variant-list__message-icon');
+    const messages = this.querySelectorAll('.variant-list__message-text');
+    const icons = this.querySelectorAll('.variant-list__message-icon');
 
     const isQuantityNegative = quantity < 0;
     const absQuantity = Math.abs(quantity);
@@ -264,10 +264,10 @@ class VariantList extends HTMLElement {
       ? (absQuantity === 1 ? window.variantListStrings.itemRemoved : window.variantListStrings.itemsRemoved)
       : (quantity === 1 ? window.variantListStrings.itemAdded : window.variantListStrings.itemsAdded);
 
-    message.innerHTML = textTemplate.replace('[quantity]', absQuantity);
+    messages.forEach((msg) => msg.innerHTML = textTemplate.replace('[quantity]', absQuantity));
 
     if (!isQuantityNegative) {
-      icon.classList.remove('hidden');
+      icons.forEach((i) => i.classList.remove('hidden'));
     }
 
   }
