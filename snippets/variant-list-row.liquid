@@ -123,19 +123,18 @@
             assign quantity_rule_soldout = true
           endif
 
-          assign has_popover = false
-          if product.selected_or_first_available_variant.quantity_rule.increment > 1 or product.selected_or_first_available_variant.quantity_rule.min > 1 or product.selected_or_first_available_variant.quantity_rule.max != null or product.quantity_price_breaks_configured?
-            assign has_popover = true
+          assign has_qty_rules = false
+          if product.selected_or_first_available_variant.quantity_rule.increment > 1 or product.selected_or_first_available_variant.quantity_rule.min > 1 or product.selected_or_first_available_variant.quantity_rule.max != null
+            assign has_qty_rules = true
+          endif
+
+          assign has_vol_pricing = false
+          if product.selected_or_first_available_variant.quantity_price_breaks.size > 0
+            assign has_vol_pricing = true
           endif
         -%}
-        <div class="variant-item__quantity-wrap{% if has_popover %} variant-item__quantity-wrap--hover{% endif %}">
-          {%- if has_popover -%}
-            <button
-              class="variant-item__quantity-info button button--tertiary medium-hide large-up-hide"
-              aria-expanded="false"
-            >
-              {% render 'icon-info' %}
-            </button>
+        <div class="variant-item__quantity-wrap{% if has_qty_rules or has_vol_pricing %} variant-item__quantity-wrap--hover{% endif %}">
+          {%- if has_qty_rules or has_vol_pricing -%}
             <span class="variant-item__quantity-info button button--tertiary small-hide">
               {% render 'icon-info' %}
             </span>
@@ -165,6 +164,21 @@
           </variant-list-remove-button>
         {%- endif -%}
       </div>
+      {%- if has_qty_rules or has_vol_pricing -%}
+        <button
+          class="variant-item__quantity-info button button--tertiary medium-hide large-up-hide"
+          aria-expanded="false"
+        >
+          {% render 'icon-info' %}
+          <span>
+            {%- if has_vol_pricing -%}
+              Volume pricing available
+            {%- elsif has_qty_rules -%}
+              View quantity rules
+            {%- endif -%}
+          </span>
+        </button>
+      {%- endif -%}
       <div class="variant-item__error" id="Line-item-error-{{ item.id }}" role="alert">
         <small class="variant-item__error-text"></small>
         <svg
