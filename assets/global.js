@@ -214,6 +214,18 @@ function debounce(fn, wait) {
   };
 }
 
+function throttle(fn, delay) {
+  let lastCall = 0;
+  return function (...args) {
+    const now = new Date().getTime();
+    if (now - lastCall < delay) {
+      return;
+    }
+    lastCall = now;
+    return fn(...args);
+  };
+}
+
 function fetchConfig(type = 'json') {
   return {
     method: 'POST',
@@ -725,9 +737,13 @@ class SlideshowComponent extends SliderComponent {
       });
 
       [this.prevButton, this.nextButton].forEach((button) => {
-        button.addEventListener('click', () => {
-          this.announcementBarArrowButtonWasClicked = true;
-        }, {once: true});
+        button.addEventListener(
+          'click',
+          () => {
+            this.announcementBarArrowButtonWasClicked = true;
+          },
+          { once: true }
+        );
       });
     }
 
@@ -747,7 +763,9 @@ class SlideshowComponent extends SliderComponent {
       this.autoplayButtonIsSetToPlay = true;
       this.play();
     } else {
-      this.reducedMotion.matches || this.announcementBarArrowButtonWasClicked || !this.desktopLayout.matches ? this.pause() : this.play();
+      this.reducedMotion.matches || this.announcementBarArrowButtonWasClicked || !this.desktopLayout.matches
+        ? this.pause()
+        : this.play();
     }
   }
 
@@ -796,7 +814,11 @@ class SlideshowComponent extends SliderComponent {
         event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
       if (!this.autoplayButtonIsSetToPlay || focusedOnAutoplayButton) return;
       this.play();
-    } else if (!this.reducedMotion.matches && !this.announcementBarArrowButtonWasClicked && this.desktopLayout.matches) {
+    } else if (
+      !this.reducedMotion.matches &&
+      !this.announcementBarArrowButtonWasClicked &&
+      this.desktopLayout.matches
+    ) {
       this.play();
     }
   }
