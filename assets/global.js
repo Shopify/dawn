@@ -785,7 +785,7 @@ class SlideshowComponent extends SliderComponent {
     const isLastSlide = this.currentPage === this.sliderItemsToShow.length;
 
     if (!isFirstSlide && !isLastSlide) {
-      this.appleAnimationToAnnouncementBar(event.currentTarget.name);
+      this.applyAnimationToAnnouncementBar(event.currentTarget.name);
       return;
     }
 
@@ -798,7 +798,7 @@ class SlideshowComponent extends SliderComponent {
 
     this.setSlidePosition(this.slideScrollPosition);
 
-    this.appleAnimationToAnnouncementBar(event.currentTarget.name);
+    this.applyAnimationToAnnouncementBar(event.currentTarget.name);
   }
 
   setSlidePosition(position) {
@@ -888,7 +888,7 @@ class SlideshowComponent extends SliderComponent {
         : this.slider.scrollLeft + this.sliderItemOffset;
 
     this.setSlidePosition(slideScrollPosition);
-    this.appleAnimationToAnnouncementBar();
+    this.applyAnimationToAnnouncementBar();
   }
 
   setSlideVisibility() {
@@ -920,7 +920,7 @@ class SlideshowComponent extends SliderComponent {
     });
   }
 
-  appleAnimationToAnnouncementBar(button = 'next') {
+  applyAnimationToAnnouncementBar(button = 'next') {
     if (!this.announcementBarSlider) return;
 
     const itemsCount = this.sliderItems.length;
