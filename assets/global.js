@@ -165,15 +165,22 @@ class QuantityInput extends HTMLElement {
   }
 
   quantityUpdateUnsubscriber = undefined;
+  updatePricePerItemUnsubscriber = undefined;
 
   connectedCallback() {
     this.validateQtyRules();
     this.quantityUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.quantityUpdate, this.validateQtyRules.bind(this));
+    this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.updatePricePerItem, (updatedCartQuantity) => {
+      this.updatePricePerItem(updatedCartQuantity);
+    });
   }
 
   disconnectedCallback() {
     if (this.quantityUpdateUnsubscriber) {
       this.quantityUpdateUnsubscriber();
+    }
+    if (this.updatePricePerItemUnsubscriber) {
+      this.updatePricePerItemUnsubscriber();
     }
   }
 
@@ -182,12 +189,14 @@ class QuantityInput extends HTMLElement {
     this.updatePricePerItem();
   }
 
-  updatePricePerItem() {
+  updatePricePerItem(updatedCartQuantity) {
     this.getVolumePricingArray();
-    this.getCartQuantity();
 
-    const enteredQty = parseInt(this.input.value);
-    this.currentQtyForVolumePricing = this.getCartQuantity() + enteredQty;
+    this.inputOnProductPage = this.querySelector('input[name="quantity"]');
+    if (this.inputOnProductPage) {
+      const enteredQty = parseInt(this.inputOnProductPage.value);
+      this.currentQtyForVolumePricing = this.getCartQuantity(updatedCartQuantity) + enteredQty;
+    }
 
     for (let pair of this.qtyPricePairs) {
       if (this.currentQtyForVolumePricing >= pair[0]) {
@@ -199,9 +208,13 @@ class QuantityInput extends HTMLElement {
     }
   }
 
-  getCartQuantity() {
-    const cartQuantity = parseInt(document.querySelector('input[name="quantity"]').dataset.cartQuantity);
-    return cartQuantity;
+  getCartQuantity(updatedCartQuantity) {
+    if (updatedCartQuantity) {
+      return updatedCartQuantity;
+    } else {
+      const cartQuantity = parseInt(document.querySelector('input[name="quantity"]').dataset.cartQuantity);
+      return cartQuantity;
+    }
   }
 
   getVolumePricingArray() {

@@ -5,4 +5,5 @@ const PUB_SUB_EVENTS = {
   quantityUpdate: 'quantity-update',
   variantChange: 'variant-change',
   cartError: 'cart-error',
+  updatePricePerItem: 'update-price-per-item',
 };

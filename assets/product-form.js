@@ -82,6 +82,9 @@ if (!customElements.get('product-form')) {
             } else {
               this.cart.renderContents(response);
             }
+
+            const updatedCartQuantity = response.quantity;
+            publish(PUB_SUB_EVENTS.updatePricePerItem, updatedCartQuantity );
           })
           .catch((e) => {
             console.error(e);
