@@ -214,6 +214,18 @@ function debounce(fn, wait) {
   };
 }
 
+function throttle(fn, delay) {
+  let lastCall = 0;
+  return function (...args) {
+    const now = new Date().getTime();
+    if (now - lastCall < delay) {
+      return;
+    }
+    lastCall = now;
+    return fn(...args);
+  };
+}
+
 function fetchConfig(type = 'json') {
   return {
     method: 'POST',
@@ -712,10 +724,28 @@ class SlideshowComponent extends SliderComponent {
     this.slider.addEventListener('scroll', this.setSlideVisibility.bind(this));
     this.setSlideVisibility();
 
-    this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    this.reducedMotion.addEventListener('change', () => {
-      if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
-    });
+    if (this.querySelector('.announcement-bar-slider')) {
+      this.announcementBarArrowButtonWasClicked = false;
+
+      this.desktopLayout = window.matchMedia('(min-width: 750px)');
+      this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      [this.reducedMotion, this.desktopLayout].forEach((mediaQuery) => {
+        mediaQuery.addEventListener('change', () => {
+          if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
+        });
+      });
+
+      [this.prevButton, this.nextButton].forEach((button) => {
+        button.addEventListener(
+          'click',
+          () => {
+            this.announcementBarArrowButtonWasClicked = true;
+          },
+          { once: true }
+        );
+      });
+    }
 
     if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
   }
@@ -733,7 +763,9 @@ class SlideshowComponent extends SliderComponent {
       this.autoplayButtonIsSetToPlay = true;
       this.play();
     } else {
-      this.reducedMotion.matches ? this.pause() : this.play();
+      this.reducedMotion.matches || this.announcementBarArrowButtonWasClicked || !this.desktopLayout.matches
+        ? this.pause()
+        : this.play();
     }
   }
 
@@ -782,7 +814,11 @@ class SlideshowComponent extends SliderComponent {
         event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
       if (!this.autoplayButtonIsSetToPlay || focusedOnAutoplayButton) return;
       this.play();
-    } else if (!this.reducedMotion.matches) {
+    } else if (
+      !this.reducedMotion.matches &&
+      !this.announcementBarArrowButtonWasClicked &&
+      this.desktopLayout.matches
+    ) {
       this.play();
     }
   }
