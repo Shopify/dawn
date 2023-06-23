@@ -122,12 +122,12 @@
           endif
 
           assign has_qty_rules = false
-          if product.selected_or_first_available_variant.quantity_rule.increment > 1 or product.selected_or_first_available_variant.quantity_rule.min > 1 or product.selected_or_first_available_variant.quantity_rule.max != null
+          if variant.quantity_rule.increment > 1 or variant.quantity_rule.min > 1 or variant.quantity_rule.max != null
             assign has_qty_rules = true
           endif
 
           assign has_vol_pricing = false
-          if product.selected_or_first_available_variant.quantity_price_breaks.size > 0
+          if variant.quantity_price_breaks.size > 0
             assign has_vol_pricing = true
           endif
         -%}
@@ -194,33 +194,24 @@
 
       {%- if has_vol_pricing or has_qty_rules -%}
         <div
-          class="global-settings-popup quantity-popover__info{% unless product.selected_or_first_available_variant.quantity_rule.increment > 1 or product.selected_or_first_available_variant.quantity_rule.min > 1 or product.selected_or_first_available_variant.quantity_rule.max != null %} quantity-popover__info--wide{% endunless %}"
+          class="global-settings-popup quantity-popover__info{% unless variant.quantity_rule.increment > 1 or variant.quantity_rule.min > 1 or variant.quantity_rule.max != null %} quantity-popover__info--wide{% endunless %}"
           tabindex="-1"
           hidden
         >
           <div class="quantity__rules caption no-js-hidden">
-            {%- if product.selected_or_first_available_variant.quantity_rule.increment > 1 -%}
+            {%- if variant.quantity_rule.increment > 1 -%}
               <span class="divider">
-                {{-
-                  'products.product.quantity.multiples_of'
-                  | t: quantity: product.selected_or_first_available_variant.quantity_rule.increment
-                -}}
+                {{- 'products.product.quantity.multiples_of' | t: quantity: variant.quantity_rule.increment -}}
               </span>
             {%- endif -%}
-            {%- if product.selected_or_first_available_variant.quantity_rule.min > 1 -%}
+            {%- if variant.quantity_rule.min > 1 -%}
               <span class="divider">
-                {{-
-                  'products.product.quantity.minimum_of'
-                  | t: quantity: product.selected_or_first_available_variant.quantity_rule.min
-                -}}
+                {{- 'products.product.quantity.minimum_of' | t: quantity: variant.quantity_rule.min -}}
               </span>
             {%- endif -%}
-            {%- if product.selected_or_first_available_variant.quantity_rule.max != null -%}
+            {%- if variant.quantity_rule.max != null -%}
               <span class="divider">
-                {{-
-                  'products.product.quantity.maximum_of'
-                  | t: quantity: product.selected_or_first_available_variant.quantity_rule.max
-                -}}
+                {{- 'products.product.quantity.maximum_of' | t: quantity: variant.quantity_rule.max -}}
               </span>
             {%- endif -%}
           </div>
@@ -231,14 +222,14 @@
           >
             {%- render 'icon-close' -%}
           </button>
-          {%- if product.quantity_price_breaks_configured? -%}
+          {%- if variant.quantity_price_breaks.size > 0 -%}
             <volume-pricing class="parent-display">
               <ul class="list-unstyled">
                 <li>
-                  <span>{{ product.selected_or_first_available_variant.quantity_rule.min }}+</span>
-                  <span>{{ product.selected_or_first_available_variant.price | money_with_currency }}/ea</span>
+                  <span>{{ variant.quantity_rule.min }}+</span>
+                  <span>{{ variant.price | money_with_currency }}/ea</span>
                 </li>
-                {%- for price_break in product.selected_or_first_available_variant.quantity_price_breaks -%}
+                {%- for price_break in variant.quantity_price_breaks -%}
                   <li>
                     <span>
                       {{- price_break.minimum_quantity -}}
