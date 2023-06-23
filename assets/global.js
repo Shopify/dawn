@@ -779,6 +779,7 @@ class SlideshowComponent extends SliderComponent {
 
   onButtonClick(event) {
     super.onButtonClick(event);
+    this.wasClicked = true;
 
     const isFirstSlide = this.currentPage === 1;
     const isLastSlide = this.currentPage === this.sliderItemsToShow.length;
@@ -890,7 +891,10 @@ class SlideshowComponent extends SliderComponent {
     this.applyAnimationToAnnouncementBar();
   }
 
-  setSlideVisibility() {
+  setSlideVisibility(event) {
+    if (!this.wasClicked) {
+      console.log('remove all animation');
+    }
     this.sliderItemsToShow.forEach((item, index) => {
       const linkElements = item.querySelectorAll('a');
       if (index === this.currentPage - 1) {
@@ -909,6 +913,7 @@ class SlideshowComponent extends SliderComponent {
         item.setAttribute('tabindex', '-1');
       }
     });
+    this.wasClicked = false;
   }
 
   removeAnimation(element) {
@@ -932,9 +937,6 @@ class SlideshowComponent extends SliderComponent {
     const nextSlide = this.sliderItems[nextIndex];
     const currentSlide = this.sliderItems[currentIndex];
 
-    this.removeAnimation(currentSlide);
-    this.removeAnimation(nextSlide);
-
     const animationClassIn = 'announcement-bar-slider--fade-in';
     const animationClassOut = 'announcement-bar-slider--fade-out';
 
@@ -946,6 +948,11 @@ class SlideshowComponent extends SliderComponent {
 
     currentSlide.classList.add(`${animationClassOut}-${direction}`);
     nextSlide.classList.add(`${animationClassIn}-${direction}`);
+
+    setTimeout(() => {
+      this.removeAnimation(currentSlide);
+      this.removeAnimation(nextSlide);
+    }, this.announcerBarAnimationDelay * 2);
   }
 
   linkToSlide(event) {
