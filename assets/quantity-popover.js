@@ -36,6 +36,7 @@ class QuantityPopover extends HTMLElement {
   toggleAccessibility(event) {
     event.preventDefault();
     this.popoverInfo.toggleAttribute('hidden');
+    this.infoButton.classList.toggle('variant-item__quantity-info--open')
   }
 
   closePopover(event) {
