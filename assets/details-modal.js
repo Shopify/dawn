@@ -12,7 +12,7 @@ class DetailsModal extends HTMLElement {
       'click',
       this.onSummaryClick.bind(this)
     );
-    this.querySelector('button[type="button"]').addEventListener(
+    this.querySelector('button[type="button"]')?.addEventListener(
       'click',
       this.close.bind(this)
     );

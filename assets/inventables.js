@@ -22,6 +22,9 @@ function suppressInvalidOptions(metaFields, variantData) {
 
 document.addEventListener('DOMContentLoaded', () => {
   let variantRadios = document.querySelectorAll('variant-radios')[0];
+  if (variantRadios == null) {
+    return;
+  }
   let variantData = variantRadios.getVariantData();
   let metaFields = document.querySelectorAll('variant-metafields')[0].getMetafields();
 
