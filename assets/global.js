@@ -767,7 +767,7 @@ class SlideshowComponent extends SliderComponent {
     const isLastSlide = this.currentPage === this.sliderItemsToShow.length;
 
     if (!isFirstSlide && !isLastSlide) {
-      this.applyAnimation(event.currentTarget.name);
+      this.appleAnimationToAnnouncementBar(event.currentTarget.name);
       return;
     }
 
@@ -780,21 +780,10 @@ class SlideshowComponent extends SliderComponent {
 
     this.setSlidePosition(this.slideScrollPosition);
 
-    this.applyAnimation(event.currentTarget.name);
+    this.appleAnimationToAnnouncementBar(event.currentTarget.name);
   }
 
   setSlidePosition(position) {
-    if (this.announcementBarSlider) {
-      // Set transition class to slider before animation starts
-      this.slider.classList.add(this.sliderTransitionSelector);
-      // Clear any previous timeout that is yet to run
-      if (this.transitionEndTimeout) clearTimeout(this.transitionEndTimeout);
-      this.transitionEndTimeout = setTimeout (() => {
-        // Remove transition class to slider after animation ends
-        this.slider.classList.remove(this.sliderTransitionSelector);
-      }, this.delay * 2);
-    }
-
     if (this.setPositionTimeout) clearTimeout(this.setPositionTimeout);
     this.setPositionTimeout = setTimeout (() => {
       this.slider.scrollTo({
@@ -877,7 +866,7 @@ class SlideshowComponent extends SliderComponent {
         : this.slider.scrollLeft + this.sliderItemOffset;
 
     this.setSlidePosition(slideScrollPosition);
-    this.applyAnimation();
+    this.appleAnimationToAnnouncementBar();
   }
 
   setSlideVisibility() {
@@ -902,15 +891,14 @@ class SlideshowComponent extends SliderComponent {
   }
 
   removeAnimation(element) {
-    const classArray = Array.from(element.classList);
-    classArray.forEach(className => {
+    Array.from(element.classList).forEach(className => {
       if (className.startsWith('announcement-bar-slider--fade')) {
         element.classList.remove(className);
       }
     });
   }
 
-  applyAnimation(button = 'next') {
+  appleAnimationToAnnouncementBar(button = 'next') {
     if (!this.announcementBarSlider) return;
 
     const itemsCount = this.sliderItems.length;
@@ -926,8 +914,8 @@ class SlideshowComponent extends SliderComponent {
     this.removeAnimation(currentSlide);
     this.removeAnimation(nextSlide);
 
-    const animationClassIn = "announcement-bar-slider--fade-in";
-    const animationClassOut = "announcement-bar-slider--fade-out";
+    const animationClassIn = 'announcement-bar-slider--fade-in';
+    const animationClassOut = 'announcement-bar-slider--fade-out';
 
     const isFirstSlide = currentIndex === 0;
     const isLastSlide = currentIndex === itemsCount - 1;
