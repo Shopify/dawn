@@ -209,7 +209,7 @@ class QuantityInput extends HTMLElement {
   }
 
   getCartQuantity(updatedCartQuantity) {
-    if (updatedCartQuantity) {
+    if (updatedCartQuantity || updatedCartQuantity === 0) {
       return updatedCartQuantity;
     } else {
       const cartQuantity = parseInt(document.querySelector('input[name="quantity"]').dataset.cartQuantity);
