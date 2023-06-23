@@ -784,17 +784,6 @@ class SlideshowComponent extends SliderComponent {
   }
 
   setSlidePosition(position) {
-    if (this.announcementBarSlider) {
-      // Set transition class to slider before animation starts
-      this.slider.classList.add(this.sliderTransitionSelector);
-      // Clear any previous timeout that is yet to run
-      if (this.transitionEndTimeout) clearTimeout(this.transitionEndTimeout);
-      this.transitionEndTimeout = setTimeout (() => {
-        // Remove transition class to slider after animation ends
-        this.slider.classList.remove(this.sliderTransitionSelector);
-      }, this.delay * 2);
-    }
-
     if (this.setPositionTimeout) clearTimeout(this.setPositionTimeout);
     this.setPositionTimeout = setTimeout (() => {
       this.slider.scrollTo({
