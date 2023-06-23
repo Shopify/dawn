@@ -725,8 +725,7 @@ class SlideshowComponent extends SliderComponent {
 
     this.announcementBarSlider = this.querySelector('.announcement-bar-slider');
     // Value below should match --duration-announcement-bar CSS value
-    this.delay = this.announcementBarSlider ? 250 : 0;
-    this.sliderTransitionSelector = 'slider--transition';
+    this.announcerBarAnimationDelay = this.announcementBarSlider ? 250 : 0;
 
     this.sliderControlLinksArray = Array.from(this.sliderControlWrapper.querySelectorAll('.slider-counter__link'));
     this.sliderControlLinksArray.forEach((link) => link.addEventListener('click', this.linkToSlide.bind(this)));
@@ -807,7 +806,7 @@ class SlideshowComponent extends SliderComponent {
       this.slider.scrollTo({
         left: position,
       });
-    }, this.delay);
+    }, this.announcerBarAnimationDelay);
   }
 
   update() {
