@@ -584,11 +584,13 @@ details > * {
 :root {
   --duration-short: 100ms;
   --duration-default: 200ms;
+  --duration-medium: 300ms;
   --duration-long: 500ms;
   --duration-extra-long: 600ms;
   --duration-extended: 3s;
-  --animation-slide-in: slideIn var(--duration-extra-long) cubic-bezier(0, 0, 0.3, 1) forwards;
-  --animation-fade-in: fadeIn var(--duration-extra-long) cubic-bezier(0, 0, 0.3, 1);
+  --ease-out-slow: cubic-bezier(0, 0, 0.3, 1);
+  --animation-slide-in: slideIn var(--duration-extra-long) var(--ease-out-slow) forwards;
+  --animation-fade-in: fadeIn var(--duration-extra-long) var(--ease-out-slow);
 }
 
 .underlined-link,
@@ -1110,7 +1112,6 @@ summary::-webkit-details-marker {
   display: block;
   background-color: rgba(var(--color-foreground), 0.1);
   position: relative;
-  overflow: hidden;
 }
 
 .media--transparent {
@@ -1135,26 +1136,28 @@ summary::-webkit-details-marker {
 }
 
 .media--square {
-  padding-bottom: 100%;
+  padding-bottom: calc(100% - var(--media-border-width) * 2);
 }
 
 .media--portrait {
-  padding-bottom: 125%;
+  padding-bottom: calc(125% - var(--media-border-width) * 2);
 }
 
 .media--landscape {
-  padding-bottom: 66.6%;
+  padding-bottom: calc(66.6% - var(--media-border-width) * 2);
 }
 
 .media--cropped {
-  padding-bottom: 56%;
+  padding-bottom: calc(56% - var(--media-border-width) * 2);
+
 }
 
 .media--16-9 {
-  padding-bottom: 56.25%;
+  padding-bottom: calc(56.25% - var(--media-border-width) * 2);
 }
 
 .media--circle {
+  left: calc(-1 * var(--button-size));
   padding-bottom: 100%;
   border-radius: 50%;
 }
@@ -1165,7 +1168,7 @@ summary::-webkit-details-marker {
 
 @media screen and (min-width: 990px) {
   .media--cropped {
-    padding-bottom: 63%;
+    padding-bottom: calc(63% - var(--media-border-width) * 2);
   }
 }
 
@@ -2122,20 +2125,29 @@ product-info .loading-overlay:not(.hidden) ~ *,
   }
 }
 
-.utility-bar__grid {
+.utility-bar__grid--3-col,
+.utility-bar__grid--2-col {
   display: grid;
   grid-template-columns: 1fr;
+  grid-template-areas: 'announcements';
 }
 
-.utility-bar__grid .list-social {
+.utility-bar__grid--3-col .list-social,
+.utility-bar__grid--2-col .list-social {
   justify-content: flex-start;
   align-content: center;
   margin-left: -1.2rem;
+  grid-area: social-icons;
 }
 
 @media screen and (max-width: 989px) {
-  .utility-bar .utility-bar__grid .list-social {
+  .utility-bar .utility-bar__grid--3-col .list-social,
+  .utility-bar .utility-bar__grid--2-col .list-social {
     display: none;
+  }
+
+  .utility-bar.header__icons--localization {
+    min-height: 0;
   }
 }
 
@@ -2144,9 +2156,14 @@ product-info .loading-overlay:not(.hidden) ~ *,
 }
 
 @media screen and (min-width: 990px) {
-  .utility-bar__grid {
+  .utility-bar__grid--3-col {
     grid-template-columns: 3fr 4fr 3fr;
     grid-template-areas: 'social-icons announcements language-currency';
+  }
+
+  .utility-bar__grid--2-col {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: 'social-icons language-currency';
   }
 
   .announcement-bar.announcement-bar--one-announcement,
@@ -2165,13 +2182,14 @@ product-info .loading-overlay:not(.hidden) ~ *,
   justify-content: center;
   flex-wrap: wrap;
   align-content: center;
+  grid-area: announcements;
 }
 
 .announcement-bar .slider--everywhere {
   margin-bottom: 0;
 }
 
-.utility-bar__grid .announcement-bar-slider {
+.utility-bar__grid--3-col .announcement-bar-slider {
   width: 100%;
 }
 
@@ -2205,6 +2223,11 @@ product-info .loading-overlay:not(.hidden) ~ *,
   .announcement-bar .slider-button--prev {
     margin-left: -3.2rem;
   }
+}
+
+.utility-bar__grid--3-col .desktop-localization-wrapper,
+.utility-bar__grid--2-col .desktop-localization-wrapper {
+  grid-area: language-currency;
 }
 
 @media screen and (min-width: 990px) {
@@ -3174,6 +3197,17 @@ details-disclosure > details {
   height: 100vh;
 }
 
+/* Zoom in image on scroll */
+.animate--zoom-in {
+  --zoom-in-ratio: 1;
+}
+
+.animate--zoom-in > img,
+.animate--zoom-in > svg {
+  transition: scale var(--duration-short) linear;
+  scale: var(--zoom-in-ratio);
+}
+
 /* Animations */
 
 @media (prefers-reduced-motion: no-preference) {
@@ -3244,7 +3278,7 @@ details-disclosure > details {
   }
 }
 
-/* Element Hovers: 3d Lift */
+/* Element Hovers: Vertical Lift, 3d Lift */
 
 @media (prefers-reduced-motion: no-preference) and (hover: hover) {
   .animate--hover-3d-lift .card-wrapper .card--card,
@@ -3363,5 +3397,54 @@ details-disclosure > details {
   :root {
     --easter-egg: none;
     --sparkle: url('./sparkle.gif');
+  }
+
+  .animate--hover-vertical-lift .button:not(.button--tertiary),
+  .animate--hover-vertical-lift .shopify-challenge__button,
+  .animate--hover-vertical-lift .customer button,
+  .animate--hover-vertical-lift .shopify-payment-button__button {
+    transition: transform var(--duration-default) var(--ease-out-slow);
+  }
+
+  .animate--hover-vertical-lift .card-wrapper .card--card,
+  .animate--hover-vertical-lift .card-wrapper .card--standard .card__inner {
+    transition: transform var(--duration-medium) var(--ease-out-slow);
+  }
+
+  .animate--hover-vertical-lift .card-wrapper:hover .card--card,
+  .animate--hover-vertical-lift .card-wrapper:hover .card--standard .card__inner {
+    transform: translateY(-0.75rem);
+  }
+
+  .animate--hover-vertical-lift .card-wrapper:active .card--card,
+  .animate--hover-vertical-lift .card-wrapper:active .card--standard .card__inner {
+    transform: translateY(-0.5rem);
+  }
+
+  .animate--hover-vertical-lift .button:not(.button--tertiary):not([disabled]):hover,
+  .animate--hover-vertical-lift .shopify-challenge__button:not([disabled]):hover,
+  .animate--hover-vertical-lift .customer button:not([disabled]):hover,
+  .animate--hover-vertical-lift .shopify-payment-button__button:hover {
+    transform: translateY(-0.25rem);
+  }
+
+  .animate--hover-vertical-lift .button:not(.button--tertiary):not([disabled]):active,
+  .animate--hover-vertical-lift .shopify-challenge__button:not([disabled]):active,
+  .animate--hover-vertical-lift .customer button:not([disabled]):active,
+  .animate--hover-vertical-lift .shopify-payment-button__button:active {
+    transform: translateY(0);
+  }
+
+  .animate--hover-vertical-lift .button:not([disabled]):hover:after,
+  .animate--hover-vertical-lift .customer button:not([disabled]):hover:after,
+  .animate--hover-vertical-lift .shopify-payment-button__button:not([disabled]):hover:after {
+    --border-offset: 0.3px; /* Default is 1.3px as defined above in this file. This removes 1px to prevent the border from growing on buttons when this effect is on.  */
+    box-shadow: 0 0 0 calc(var(--buttons-border-width) + var(--border-offset))
+        rgba(var(--color-button-text), var(--border-opacity)),
+      0 0 0 var(--buttons-border-width) rgba(var(--color-button), var(--alpha-button-background));
+  }
+
+  .animate--hover-vertical-lift .button:not([disabled]).button--secondary:hover:after {
+    --border-offset: 0px; /* Prevent the border from growing on buttons when this effect is on. */
   }
 }
