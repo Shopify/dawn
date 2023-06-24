@@ -157,7 +157,9 @@ class QuantityInput extends HTMLElement {
     super();
     this.input = this.querySelector('input');
     this.changeEvent = new Event('change', { bubbles: true });
-
+    if (this.input.hasAttribute('data-volume-pricing')) {
+      this.isVolumePricing = this.querySelector('input[name="quantity"]').dataset.volumePricing;
+    }
     this.input.addEventListener('change', this.onInputChange.bind(this));
     this.querySelectorAll('button').forEach((button) =>
       button.addEventListener('click', this.onButtonClick.bind(this))
@@ -170,10 +172,12 @@ class QuantityInput extends HTMLElement {
   connectedCallback() {
     this.validateQtyRules();
     this.quantityUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.quantityUpdate, this.validateQtyRules.bind(this));
-    this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.updatePricePerItem, (updatedCartQuantity) => {
-      this.updateInputOnProductPage();
-      this.updatePricePerItem(updatedCartQuantity);
-    });
+    if (this.isVolumePricing === 'true') {
+      this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.updatePricePerItem, (updatedCartQuantity) => {
+        this.updateInputOnProductPage();
+        this.updatePricePerItem(updatedCartQuantity);
+      });
+    }
   }
 
   disconnectedCallback() {
@@ -187,7 +191,7 @@ class QuantityInput extends HTMLElement {
 
   onInputChange(event) {
     this.validateQtyRules();
-    this.updatePricePerItem();
+    if (this.isVolumePricing === 'true') this.updatePricePerItem();
   }
 
   updatePricePerItem(updatedCartQuantity) {
