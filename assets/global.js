@@ -171,6 +171,7 @@ class QuantityInput extends HTMLElement {
     this.validateQtyRules();
     this.quantityUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.quantityUpdate, this.validateQtyRules.bind(this));
     this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.updatePricePerItem, (updatedCartQuantity) => {
+      this.updateInputOnProductPage();
       this.updatePricePerItem(updatedCartQuantity);
     });
   }
@@ -205,6 +206,12 @@ class QuantityInput extends HTMLElement {
         pricePerItemCurrent.innerHTML = pricePerItem;
         break;
       }
+    }
+  }
+
+  updateInputOnProductPage() {
+    if (this.inputOnProductPage) {
+      this.inputOnProductPage.value = Number(this.inputOnProductPage.min);
     }
   }
 
