@@ -4,6 +4,7 @@
   data-section="{{ section.id }}"
 >
   {{ 'section-main-product.css' | asset_url | stylesheet_tag }}
+  {{ 'product-bootshopper.css' | asset_url | stylesheet_tag }}
   {{ 'component-accordion.css' | asset_url | stylesheet_tag }}
   {{ 'component-price.css' | asset_url | stylesheet_tag }}
   {{ 'component-slider.css' | asset_url | stylesheet_tag }}
@@ -106,6 +107,16 @@
                     {{ 'products.product.shipping_policy_html' | t: link: shop.shipping_policy.url }}
                   {%- endif -%}
                 </div>
+                <div>
+                  {%- assign cur_variant = product.selected_variant | default: product.selected_or_first_available_variant -%}
+                  {%- if cur_variant.inventory_quantity > 5 -%}
+                    <ul class="product-quantity-indicator green"><li>{% render 'icon-circle-check-solid' %}<span>Op voorraad (levertijd: 1 tot 3 werkdagen)</span></li></ul>
+                  {%- elsif cur_variant.inventory_quantity <= 0 -%}
+                    <ul class="product-quantity-indicator red"><li>{% render 'icon-xmark-solid' %}<span>Niet op voorraad (Levertijd: neem contact op)</span></li></ul>
+                  {%- elsif cur_variant.inventory_quantity > 0 -%}
+                    <ul class="product-quantity-indicator orange"><li>{% render 'icon-exclamation-solid' %}<span>Beperkte voorraad (levertijd: 1 tot 3 werkdagen)</span></li></ul>
+                  {%- endif -%}
+                </div>
               {%- endif -%}
               <div {{ block.shopify_attributes }}>
                 {%- assign product_form_installment_id = 'product-form-installment-' | append: section.id -%}
@@ -173,8 +184,16 @@
                 id="Sku-{{ section.id }}"
                 role="status"
                 {{ block.shopify_attributes }}
-              >
+              >SKU: 
                 <span class="visually-hidden">{{ 'products.product.sku' | t }}:</span> {{- product.selected_or_first_available_variant.sku -}}
+              </p>
+              <p
+                class="product__sku no-js-hidden{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}{% if product.selected_or_first_available_variant.barcode.size == 0 %} visibility-hidden{% endif %}"
+                id="Barcode-{{ section.id }}"
+                role="status"
+                {{ block.shopify_attributes }}
+              >Barcode: 
+                <span class="visually-hidden">{{ 'products.product.barcode' | t }}:</span> {{- product.selected_or_first_available_variant.barcode -}}
               </p>
             {%- when 'custom_liquid' -%}
               {{ block.settings.custom_liquid }}
