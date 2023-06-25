@@ -1,7 +1,10 @@
 ---
 name: Bug report
 about: Use this template for reporting a bug
+title: ''
 labels: bug
+assignees: ''
+
 ---
 
 ## Describe the current behavior
@@ -21,4 +24,3 @@ labels: bug
 
 ## Additional context/screenshots
 <!-- Add any other context about the problem here. If applicable, add screenshots to help explain. -->
-
