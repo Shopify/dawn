@@ -18,9 +18,49 @@
       padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
     }
 
-    .product__description strong {
-      color: white;
+    .xcp-product .price {
+      {% if section.settings.background_color == 'white' %}
+        color: black;
+      {% else %}
+        color: white;
+      {% endif %}
     }
+
+    .xcp-product .price__container {
+      font-size: 18pt;
+    }
+
+    .xcp-product .price--on-sale .price-item--regular {
+      font-size: 18pt;
+      font-weight: normal;
+      {% if section.settings.background_color == 'white' %}
+        color: black;
+      {% else %}
+        color: white;
+      {% endif %}
+    }
+
+    .xcp-product .price--on-sale {
+      color: var(--gradient-base-accent-2);
+      font-weight: bold;
+    }
+
+    .xcp-product .price--on-sale .xcp-affirm {
+      font-weight: normal;
+    }
+
+    {% if section.settings.background_color == 'white' %}
+      .xcp-affirm {
+        color: black;
+      }
+      .affirm-as-low-as .affirm-modal-trigger {
+        color: black !important;
+      }
+
+      .__affirm-logo.__affirm-logo-white {
+        color: black;
+      }
+    {% endif %}
 
     @media screen and (min-width: 750px) {
       .section-{{ section.id }}-padding {
@@ -46,6 +86,34 @@
       margin: 0.5rem 0;
     }
 
+    .xcp-product {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .xcp-product .product__media-gallery {
+      margin-left: 0;
+      width: 100%;
+    }
+
+    .xcp-product .product__info-wrapper {
+      max-width: 50% !important;
+    }
+
+    .xcp-price__price-diff {
+      color: black;
+      font-size: 18pt;
+      line-height: 24pt;
+      font-weight: 400;
+      letter-spacing: 0.06rem;
+    }
+
+    .xcp-product .xc-three-column-text .xc-three-column-text__columns {
+      display: flex;
+      list-style: none;
+      justify-content: space-between;
+    }
+
     @media screen and (max-width: 750px) {
       .product-form {
         max-width: unset !important;
@@ -62,6 +130,10 @@
       .product__media-item {
         width: 90% !important;
         margin: 0 10% !important;
+      }
+
+      .xcp-product .product__info-wrapper {
+        max-width: 100% !important;
       }
     }
   {%- endstyle -%}
@@ -89,7 +161,7 @@
   {% assign title = section.blocks | where: 'type', 'title' | first %}
   {% assign price = section.blocks | where: 'type', 'xcp-price' | first %}
 
-  <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
+  <div class="product xcp-product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
     {%- if title -%}
       <div class="product__title mobile" {{ block.shopify_attributes }}>
         <h1>{{ product.title | escape }}</h1>
@@ -118,7 +190,7 @@
       </div>
     {% endif %}
 
-    <div class="grid__item product__media-wrapper{% if section.settings.media_position == 'right' %} medium-hide large-up-hide{% endif %} xcp-grid-media">
+    <div class="grid__item xcp__grid__item product__media-wrapper{% if section.settings.media_position == 'right' %} medium-hide large-up-hide{% endif %} xcp-grid-media">
       <media-gallery
         id="MediaGallery-{{ section.id }}"
         role="region"
@@ -791,6 +863,8 @@
               {% render 'xcp-size-select', settings: block.settings %}
             {%- when "xcp-clyde-cta" -%}
               {% render 'xcp-clyde-cta' %}
+            {%- when "xc-three-column-text" -%}
+              {% render 'xc-three-column-text', settings: block.settings %}
           {%- endcase -%}
         {%- endfor -%}
         <a href="{{ product.url }}" class="link product__view-details animate-arrow">
@@ -1617,6 +1691,42 @@
       "type": "xcp-clyde-cta",
       "name": "XCPro Clyde CTA",
       "settings": []
+    },
+    {
+      "type": "xc-three-column-text",
+      "name": "XC Three Column text",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "heading"
+        },
+        {
+          "type": "range",
+          "id": "max_width",
+          "label": "Max Width",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 73
+        },
+        {
+          "type": "richtext",
+          "id": "text1",
+          "label": "Text 1"
+        },
+        {
+          "type": "richtext",
+          "id": "text2",
+          "label": "Text 2"
+        },
+        {
+          "type": "richtext",
+          "id": "text3",
+          "label": "Text 3"
+        }
+      ]
     }
   ],
   "settings": [
@@ -1740,6 +1850,22 @@
       "unit": "px",
       "label": "t:sections.all.padding.padding_bottom",
       "default": 36
+    },
+    {
+      "type": "select",
+      "id": "background_color",
+      "options": [
+        {
+          "value": "white",
+          "label": "White"
+        },
+        {
+          "value": "dark",
+          "label": "Dark"
+        }
+      ],
+      "default": "dark",
+      "label": "t:sections.main-product.settings.mobile_thumbnails.label"
     }
   ]
 }
