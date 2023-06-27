@@ -158,7 +158,7 @@ class QuantityInput extends HTMLElement {
     this.input = this.querySelector('input');
     this.changeEvent = new Event('change', { bubbles: true });
     if (this.input.hasAttribute('data-volume-pricing')) {
-      this.isVolumePricing = this.querySelector('input[name="quantity"]').dataset.volumePricing;
+      this.isVolumePricing = this.querySelector('input[name="quantity"]').dataset.volumePricing === 'true';
     }
     if (this.input.hasAttribute('data-variant-id')) {
       this.variantId = this.querySelector('input[name="quantity"]').dataset.variantId;
@@ -175,19 +175,25 @@ class QuantityInput extends HTMLElement {
   connectedCallback() {
     this.validateQtyRules();
     this.quantityUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.quantityUpdate, this.validateQtyRules.bind(this));
-    if (this.isVolumePricing === 'true') {
+    if (this.isVolumePricing) {
       this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.updatePricePerItem, (cartData) => {
         this.updateInputOnProductPage();
+        // Item was added to cart via product page
         if (cartData['variant_id'] !== undefined) {
           this.updatePricePerItem(cartData.quantity);
+        // Qty was updated in cart
+        } else if (cartData.item_count !== 0) {
+          const isVariant = cartData.items.find((item) => item.variant_id.toString() === this.variantId);
+          if (isVariant) {
+            // The variant is still in cart
+            this.updatePricePerItem(isVariant.quantity);
+          } else {
+            // The variant was removed from cart, qty is 0
+            this.updatePricePerItem(0);
+          }
+        // All items were removed from cart
         } else {
-          cartData.items.forEach((item) => {
-            if (item.variant_id.toString() === this.variantId) {
-              this.updatePricePerItem(item.quantity);
-            } else {
-              this.updatePricePerItem(0);
-            }
-          });
+          this.updatePricePerItem(0);
         }
       });
     }
@@ -204,7 +210,7 @@ class QuantityInput extends HTMLElement {
 
   onInputChange(event) {
     this.validateQtyRules();
-    if (this.isVolumePricing === 'true') this.updatePricePerItem();
+    if (this.isVolumePricing) this.updatePricePerItem();
   }
 
   updatePricePerItem(updatedCartQuantity) {
