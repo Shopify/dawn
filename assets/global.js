@@ -893,7 +893,6 @@ class SlideshowComponent extends SliderComponent {
 
   setSlideVisibility(event) {
     if (!this.wasClicked) {
-      console.log('remove all animation');
     }
     this.sliderItemsToShow.forEach((item, index) => {
       const linkElements = item.querySelectorAll('a');
