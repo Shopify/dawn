@@ -160,6 +160,9 @@ class QuantityInput extends HTMLElement {
     if (this.input.hasAttribute('data-volume-pricing')) {
       this.isVolumePricing = this.querySelector('input[name="quantity"]').dataset.volumePricing;
     }
+    if (this.input.hasAttribute('data-variant-id')) {
+      this.variantId = this.querySelector('input[name="quantity"]').dataset.variantId;
+    }
     this.input.addEventListener('change', this.onInputChange.bind(this));
     this.querySelectorAll('button').forEach((button) =>
       button.addEventListener('click', this.onButtonClick.bind(this))
@@ -173,9 +176,19 @@ class QuantityInput extends HTMLElement {
     this.validateQtyRules();
     this.quantityUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.quantityUpdate, this.validateQtyRules.bind(this));
     if (this.isVolumePricing === 'true') {
-      this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.updatePricePerItem, (updatedCartQuantity) => {
+      this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.updatePricePerItem, (cartData) => {
         this.updateInputOnProductPage();
-        this.updatePricePerItem(updatedCartQuantity);
+        if (cartData['variant_id'] !== undefined) {
+          this.updatePricePerItem(cartData.quantity);
+        } else {
+          cartData.items.forEach((item) => {
+            if (item.variant_id.toString() === this.variantId) {
+              this.updatePricePerItem(item.quantity);
+            } else {
+              this.updatePricePerItem(0);
+            }
+          });
+        }
       });
     }
   }

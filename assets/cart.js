@@ -148,8 +148,8 @@ class CartItems extends HTMLElement {
           trapFocus(cartDrawerWrapper, document.querySelector('.cart-item__name'));
         }
 
-        const updatedCartQuantity = parsedState.item_count;
-        publish(PUB_SUB_EVENTS.updatePricePerItem, updatedCartQuantity );
+        const cartData = parsedState;
+        publish(PUB_SUB_EVENTS.updatePricePerItem, cartData );
         publish(PUB_SUB_EVENTS.cartUpdate, { source: 'cart-items' });
       })
       .catch(() => {

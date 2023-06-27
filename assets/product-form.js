@@ -83,8 +83,8 @@ if (!customElements.get('product-form')) {
               this.cart.renderContents(response);
             }
 
-            const updatedCartQuantity = response.quantity;
-            publish(PUB_SUB_EVENTS.updatePricePerItem, updatedCartQuantity );
+            const cartData = response;
+            publish(PUB_SUB_EVENTS.updatePricePerItem, cartData );
           })
           .catch((e) => {
             console.error(e);
