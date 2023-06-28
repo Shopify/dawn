@@ -892,8 +892,6 @@ class SlideshowComponent extends SliderComponent {
   }
 
   setSlideVisibility(event) {
-    if (!this.wasClicked) {
-    }
     this.sliderItemsToShow.forEach((item, index) => {
       const linkElements = item.querySelectorAll('a');
       if (index === this.currentPage - 1) {
@@ -913,14 +911,6 @@ class SlideshowComponent extends SliderComponent {
       }
     });
     this.wasClicked = false;
-  }
-
-  removeAnimation(element) {
-    Array.from(element.classList).forEach(className => {
-      if (className.startsWith('announcement-bar-slider--fade')) {
-        element.classList.remove(className);
-      }
-    });
   }
 
   applyAnimationToAnnouncementBar(button = 'next') {
@@ -949,8 +939,8 @@ class SlideshowComponent extends SliderComponent {
     nextSlide.classList.add(`${animationClassIn}-${direction}`);
 
     setTimeout(() => {
-      this.removeAnimation(currentSlide);
-      this.removeAnimation(nextSlide);
+      currentSlide.classList.remove(`${animationClassOut}-${direction}`);
+      nextSlide.classList.remove(`${animationClassIn}-${direction}`);
     }, this.announcerBarAnimationDelay * 2);
   }
 
