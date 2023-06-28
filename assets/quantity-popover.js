@@ -20,7 +20,7 @@ class QuantityPopover extends HTMLElement {
 
   togglePopover(event) {
     event.preventDefault();
-    const isExpanded = this.infoButton.getAttribute('aria-expanded') === true;
+    const isExpanded = this.infoButton.getAttribute('aria-expanded') === 'true';
 
     this.infoButton.setAttribute(
       'aria-expanded',
