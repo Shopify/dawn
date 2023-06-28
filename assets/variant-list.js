@@ -133,7 +133,7 @@ class VariantList extends HTMLElement {
         selector: '.shopify-section'
       },
       {
-        id: 'cart-live-region-text',
+        id: 'variant-list-live-region-text',
         section: 'cart-live-region-text',
         selector: '.shopify-section'
       },
@@ -167,8 +167,7 @@ class VariantList extends HTMLElement {
             this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
         }));
       }).catch(() => {
-        const errors = document.getElementById('variantlist-errors');
-        errors.textContent = window.cartStrings.error;
+        this.handleError();
       })
       .finally(() => {
         this.querySelector('.variant-remove-total .loading-overlay').classList.add('hidden');
@@ -230,11 +229,13 @@ class VariantList extends HTMLElement {
         }));
 
         let message = '';
+        let hasError = false;
 
         if (action === this.actions.add) {
           const updatedValue = parsedState.quantity ? parsedState.quantity : undefined;
           if (parsedState.quantity !== parseInt(quantityElement.value)) {
             this.updateError(updatedValue, id, message)
+            hasError = true;
           }
         } else {
           const currentItem = parsedState.items.find((item) => item.variant_id === parseInt(id));
@@ -242,6 +243,7 @@ class VariantList extends HTMLElement {
 
           if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
             this.updateError(updatedValue, id)
+            hasError = true;
           }
         }
 
@@ -251,7 +253,9 @@ class VariantList extends HTMLElement {
         }
         publish(PUB_SUB_EVENTS.cartUpdate, { source: this.variantListId });
 
-        if (action === this.actions.add) {
+        if (hasError) {
+          this.updateMessage();
+        } else if (action === this.actions.add) {
           this.updateMessage(parseInt(quantity))
         } else if (action === this.actions.update) {
           this.updateMessage(parseInt(quantity - quantityElement.dataset.cartQuantity))
@@ -260,17 +264,30 @@ class VariantList extends HTMLElement {
         }
       }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
-        const errors = document.getElementById('variantlist-errors');
-        errors.textContent = window.cartStrings.error;
+        this.handleError();
       })
       .finally(() => {
         this.toggleLoading(id);
       });
   }
 
-  updateMessage(quantity) {
+  handleError(id, message) {
+    this.updateMessage();
+    const errorElements = document.querySelectorAll('.variant-list-errors');
+    errorElements.forEach((element) => {
+      element.textContent = window.cartStrings.error;
+    });
+  }
+
+  updateMessage(quantity = null) {
     const messages = this.querySelectorAll('.variant-list__message-text');
     const icons = this.querySelectorAll('.variant-list__message-icon');
+
+    if(quantity === null || isNaN(quantity)) {
+      messages.forEach(message => message.innerHTML = '');
+      icons.forEach(icon => icon.classList.add('hidden'));
+      return;
+    }
 
     const isQuantityNegative = quantity < 0;
     const absQuantity = Math.abs(quantity);
@@ -298,12 +315,12 @@ class VariantList extends HTMLElement {
   }
 
   updateLiveRegions(id, message) {
-    const variantItemError = document.getElementById(`Variant-item-list-${id}`);
-    if (variantItemError) variantItemError.querySelector('.variant-list__error-text').innerHTML = message;
+    const variantItemError = document.getElementById(`Variant-list-item-error-${id}`);
+    if (variantItemError) variantItemError.querySelector('.variant-item__error-text').innerHTML = message;
 
     this.variantItemStatusElement.setAttribute('aria-hidden', true);
 
-    const cartStatus = document.getElementById('cart-live-region-text');
+    const cartStatus = document.getElementById('variant-list-live-region-text');
     cartStatus.setAttribute('aria-hidden', false);
 
     setTimeout(() => {
