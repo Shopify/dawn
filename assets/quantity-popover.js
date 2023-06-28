@@ -30,9 +30,6 @@ if (!customElements.get('quantity-popover')) {
           !isExpanded
         );
 
-        if (isExpanded) {
-          this.closeButton.focus();
-        }
         this.toggleAccessibility(event);
       }
 
@@ -40,6 +37,11 @@ if (!customElements.get('quantity-popover')) {
         event.preventDefault();
         this.popoverInfo.toggleAttribute('hidden');
         this.infoButton.classList.toggle('variant-item__quantity-info--open');
+
+        const isOpen = this.infoButton.classList.contains('variant-item__quantity-info--open');
+        if (isOpen) {
+          this.closeButton.focus();
+        }
       }
 
       closePopover(event) {
