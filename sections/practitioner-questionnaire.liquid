@@ -1,0 +1,453 @@
+{{ 'section-contact-form.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{% if customer.tags contains "practitioner approved" %}
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <div class="contact page-width page-width--narrow section-{{ section.id }}-padding">
+    <h3 class="title title-wrapper--no-top-margin {{ section.settings.heading_size }}">You are currently <strong>approved</strong> to purchase practitioner products.</h3>
+  </div>
+</div>
+
+{% elsif customer.tags contains "practitioner pending" %}
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <div class="contact page-width page-width--narrow section-{{ section.id }}-padding">
+    <h3 class="title title-wrapper--no-top-margin {{ section.settings.heading_size }}">You're approval to purchase practitioner products is currently <strong>pending</strong>.</h3>
+  </div>
+</div>
+
+{% else %}
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <div class="contact page-width page-width--narrow section-{{ section.id }}-padding">
+    <p>Please fill in the health questionnaire form to be a practitioner approved patient.</p>
+    <p>Fields marked with an asterisk (*) are required fields.</p>
+    <h2 class="title title-wrapper--no-top-margin {{ section.settings.heading_size }}">{{ section.settings.heading | escape }}</h2>
+    {%- form 'contact', id: 'PractitionerQuestionnaireForm', class: 'isolate' -%}
+      {%- if form.posted_successfully? -%}
+        <div class="form-status form-status-list form__message" tabindex="-1" autofocus>{% render 'icon-success' %} {{ 'templates.practitioner-questionnaire.form.post_success' | t }}</div>
+      {%- elsif form.errors -%}
+        <div class="form__message">
+          <h2 class="form-status caption-large text-body" role="alert" tabindex="-1" autofocus>{% render 'icon-error' %} {{ 'templates.practitioner-questionnaire.form.error_heading' | t }}</h2>
+        </div>
+        <ul class="form-status-list caption-large" role="list">
+          <li>
+            <a href="#PractitionerQuestionnaireForm-email" class="link">
+              {{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}
+            </a>
+          </li>
+        </ul>
+      {%- endif -%}
+      <div>
+
+        <input class="field__input" type="hidden" id="PractitionerQuestionnaireForm-id" name="contact[id]" value="{{ customer.id }}" required>
+      
+        <div class="field">
+          <input class="field__input" autocomplete="name" type="text" id="PractitionerQuestionnaireForm-name" name="contact[{{ 'templates.practitioner-questionnaire.form.name' | t }}]" value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}" placeholder="{{ 'templates.practitioner-questionnaire.form.name' | t }}" required>
+          <label class="field__label" for="PractitionerQuestionnaireForm-name">{{ 'templates.practitioner-questionnaire.form.name' | t }} <span aria-hidden="true">*</span></label>
+        </div>
+        
+        <div class="field">
+          <input class="field__input" autocomplete="age" type="text" id="PractitionerQuestionnaireForm-age" name="contact[{{ 'templates.practitioner-questionnaire.form.age' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.age' | t }}" required>
+          <label class="field__label" for="PractitionerQuestionnaireForm-age">{{ 'templates.practitioner-questionnaire.form.age' | t }} <span aria-hidden="true">*</span></label>
+        </div>
+        
+        <div class="field">
+          <input class="field__input" autocomplete="gender" type="text" id="PractitionerQuestionnaireForm-gender" name="contact[{{ 'templates.practitioner-questionnaire.form.gender' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.gender' | t }}" required>
+          <label class="field__label" for="PractitionerQuestionnaireForm-gender">{{ 'templates.practitioner-questionnaire.form.gender' | t }} <span aria-hidden="true">*</span></label>
+        </div>
+        
+        <div class="field field--with-error">
+          <input class="field__input" autocomplete="email" type="email" id="PractitionerQuestionnaireForm-email" name="contact[email]" spellcheck="false"autocapitalize="off" value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}" aria-required="true" {% if form.errors contains 'email' %} aria-invalid="true" aria-describedby="PractitionerQuestionnaireForm-email-error"{% endif %} placeholder="{{ 'templates.practitioner-questionnaire.form.email' | t }}" required readonly>
+          <label class="field__label" for="PractitionerQuestionnaireForm-email">{{ 'templates.practitioner-questionnaire.form.email' | t }} <span aria-hidden="true">*</span></label>
+          {%- if form.errors contains 'email' -%}
+            <small class="contact__field-error" id="PractitionerQuestionnaireForm-email-error">
+              <span class="visually-hidden">{{ 'accessibility.error' | t }}</span>
+              <span class="form__message">{% render 'icon-error' %}{{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}</span>
+            </small>
+          {%- endif -%}
+        </div>
+      </div>
+    
+      <div class="field">
+        <input class="field__input" autocomplete="tel" type="text" id="PractitionerQuestionnaireForm-phone" name="contact[{{ 'templates.practitioner-questionnaire.form.phone' | t }}]" value="{% if form.phone %}{{ form.phone }}{% elsif customer %}{{ customer.default_address.phone }}{% endif %}" placeholder="{{ 'templates.practitioner-questionnaire.form.phone' | t }}" required>
+        <label class="field__label" for="PractitionerQuestionnaireForm-phone">{{ 'templates.practitioner-questionnaire.form.phone' | t }} <span aria-hidden="true">*</span></label>
+      </div>
+
+    <h2>Primary health complaint</h2>
+    
+      <div class="field">
+        <textarea rows="10" id="PractitionerQuestionnaireForm-healthcomplaint1" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.healthcomplaint1' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.healthcomplaint1' | t }}" required>
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="PractitionerQuestionnaireForm-healthcomplaint1">{{ 'templates.practitioner-questionnaire.form.healthcomplaint1' | t }} <span aria-hidden="true">*</span></label>
+      </div>
+    
+      <div class="field">
+        <textarea rows="10" id="PractitionerQuestionnaireForm-healthcomplaint2" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.healthcomplaint2' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.healthcomplaint1' | t }}" required>
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="PractitionerQuestionnaireForm-healthcomplaint2">{{ 'templates.practitioner-questionnaire.form.healthcomplaint2' | t }} <span aria-hidden="true">*</span></label>
+      </div>
+    
+      <div class="field">
+        <textarea rows="10" id="PractitionerQuestionnaireForm-healthcomplaint3" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.healthcomplaint3' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.healthcomplaint1' | t }}" required>
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="PractitionerQuestionnaireForm-healthcomplaint3">{{ 'templates.practitioner-questionnaire.form.healthcomplaint3' | t }} <span aria-hidden="true">*</span></label>
+      </div>
+    
+      <div class="field">
+        <textarea rows="10" id="PractitionerQuestionnaireForm-healthcomplaint4" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.healthcomplaint4' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.healthcomplaint1' | t }}" required>
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="PractitionerQuestionnaireForm-healthcomplaint4">{{ 'templates.practitioner-questionnaire.form.healthcomplaint4' | t }} <span aria-hidden="true">*</span></label>
+      </div>
+
+    <h2>Diet and lifestyle</h2>
+
+      <div class="field">
+        <textarea rows="10" id="PractitionerQuestionnaireForm-dietlifestyle1" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.dietlifestyle1' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.dietlifestyle1' | t }}" required>
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="PractitionerQuestionnaireForm-dietlifestyle1">{{ 'templates.practitioner-questionnaire.form.dietlifestyle1' | t }} <span aria-hidden="true">*</span></label>
+      </div>
+
+      <div class="field">
+        <textarea rows="10" id="PractitionerQuestionnaireForm-dietlifestyle2" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.dietlifestyle2' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.dietlifestyle2' | t }}" required>
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="PractitionerQuestionnaireForm-dietlifestyle2">{{ 'templates.practitioner-questionnaire.form.dietlifestyle2' | t }} <span aria-hidden="true">*</span></label>
+      </div>
+
+      <div class="field">
+        <textarea rows="10" id="PractitionerQuestionnaireForm-dietlifestyle3" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.dietlifestyle3' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.dietlifestyle3' | t }}" required>
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="PractitionerQuestionnaireForm-dietlifestyle3">{{ 'templates.practitioner-questionnaire.form.dietlifestyle3' | t }} <span aria-hidden="true">*</span></label>
+      </div>
+
+      <div class="field">
+        <textarea rows="10" id="PractitionerQuestionnaireForm-dietlifestyle4" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.dietlifestyle4' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.dietlifestyle4' | t }}" required>
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="PractitionerQuestionnaireForm-dietlifestyle4">{{ 'templates.practitioner-questionnaire.form.dietlifestyle4' | t }} <span aria-hidden="true">*</span></label>
+      </div>
+    
+      <div class="field">
+        <textarea rows="10" id="PractitionerQuestionnaireForm-dietlifestyle5" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.dietlifestyle5' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.dietlifestyle5' | t }}" required>
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="PractitionerQuestionnaireForm-dietlifestyle5">{{ 'templates.practitioner-questionnaire.form.dietlifestyle5' | t }} <span aria-hidden="true">*</span></label>
+      </div>
+    
+      <div class="field">
+        <textarea rows="10" id="PractitionerQuestionnaireForm-dietlifestyle6" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.dietlifestyle6' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.dietlifestyle6' | t }}" required>
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="PractitionerQuestionnaireForm-dietlifestyle6">{{ 'templates.practitioner-questionnaire.form.dietlifestyle6' | t }} <span aria-hidden="true">*</span></label>
+      </div>
+    
+      <div class="field">
+        <textarea rows="10" id="PractitionerQuestionnaireForm-dietlifestyle7" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.dietlifestyle7' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.dietlifestyle7' | t }}" required>
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="PractitionerQuestionnaireForm-dietlifestyle7">{{ 'templates.practitioner-questionnaire.form.dietlifestyle7' | t }} <span aria-hidden="true">*</span></label>
+      </div>
+
+      <div class="field">
+        <textarea rows="10" id="PractitionerQuestionnaireForm-dietlifestyle8" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.dietlifestyle8' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.dietlifestyle8' | t }}" required>
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="PractitionerQuestionnaireForm-dietlifestyle8">{{ 'templates.practitioner-questionnaire.form.dietlifestyle8' | t }} <span aria-hidden="true">*</span></label>
+      </div>
+    
+      <div class="field">
+        <textarea rows="10" id="PractitionerQuestionnaireForm-dietlifestyle9" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.dietlifestyle9' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.dietlifestyle9' | t }}" required>
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="PractitionerQuestionnaireForm-dietlifestyle9">{{ 'templates.practitioner-questionnaire.form.dietlifestyle9' | t }} <span aria-hidden="true">*</span></label>
+      </div>
+    
+      <div class="field">
+        <textarea rows="10" id="PractitionerQuestionnaireForm-dietlifestyle10" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.dietlifestyle10' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.dietlifestyle10' | t }}" required>
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="PractitionerQuestionnaireForm-dietlifestyle10">{{ 'templates.practitioner-questionnaire.form.dietlifestyle10' | t }} <span aria-hidden="true">*</span></label>
+      </div>
+    
+      <div class="field">
+        <textarea rows="10" id="PractitionerQuestionnaireForm-dietlifestyle11" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.dietlifestyle11' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.dietlifestyle11' | t }}" required>
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="PractitionerQuestionnaireForm-dietlifestyle11">{{ 'templates.practitioner-questionnaire.form.dietlifestyle11' | t }} <span aria-hidden="true">*</span></label>
+      </div>
+    
+    <h2>Do you have any of the following medical conditions</h2>
+    
+    <div class="field" style="padding: 10px;">
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions1-yes" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions1' | t }}]" value="YES" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions1-yes" style="padding-right: 10px;">YES</label>
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions1-no" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions1' | t }}]" value="NO" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions1-no">NO</label>
+      <legend for="PractitionerQuestionnaireForm-medicalconditions1" style="padding-left: 10px;">{{ 'templates.practitioner-questionnaire.form.medicalconditions1' | t }} <span aria-hidden="true">*</span></legend>
+	</div>
+
+    <div class="field" style="padding: 10px;">
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions2-yes" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions2' | t }}]" value="YES" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions2-yes" style="padding-right: 10px;">YES</label>
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions2-no" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions2' | t }}]" value="NO" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions2-no">NO</label>
+      <legend for="PractitionerQuestionnaireForm-medicalconditions2" style="padding-left: 10px;">{{ 'templates.practitioner-questionnaire.form.medicalconditions2' | t }} <span aria-hidden="true">*</span></legend>
+	</div>
+
+    <div class="field" style="padding: 10px;">
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions3-yes" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions3' | t }}]" value="YES" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions3-yes" style="padding-right: 10px;">YES</label>
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions3-no" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions3' | t }}]" value="NO" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions3-no">NO</label>
+      <legend for="PractitionerQuestionnaireForm-medicalconditions3" style="padding-left: 10px;">{{ 'templates.practitioner-questionnaire.form.medicalconditions3' | t }} <span aria-hidden="true">*</span></legend>
+	</div>
+
+    <div class="field" style="padding: 10px;">
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions4-yes" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions4' | t }}]" value="YES" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions4-yes" style="padding-right: 10px;">YES</label>
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions4-no" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions4' | t }}]" value="NO" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions4-no">NO</label>
+      <legend for="PractitionerQuestionnaireForm-medicalconditions4" style="padding-left: 10px;">{{ 'templates.practitioner-questionnaire.form.medicalconditions4' | t }} <span aria-hidden="true">*</span></legend>
+	</div>
+
+    <div class="field" style="padding: 10px;">
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions5-yes" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions5' | t }}]" value="YES" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions5-yes" style="padding-right: 10px;">YES</label>
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions5-no" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions5' | t }}]" value="NO" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions5-no">NO</label>
+      <legend for="PractitionerQuestionnaireForm-medicalconditions5" style="padding-left: 10px;">{{ 'templates.practitioner-questionnaire.form.medicalconditions5' | t }} <span aria-hidden="true">*</span></legend>
+	</div>
+
+    <div class="field" style="padding: 10px;">
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions6-yes" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions6' | t }}]" value="YES" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions6-yes" style="padding-right: 10px;">YES</label>
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions6-no" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions6' | t }}]" value="NO" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions6-no">NO</label>
+      <legend for="PractitionerQuestionnaireForm-medicalconditions6" style="padding-left: 10px;">{{ 'templates.practitioner-questionnaire.form.medicalconditions6' | t }} <span aria-hidden="true">*</span></legend>
+	</div>
+
+    <div class="field" style="padding: 10px;">
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions7-yes" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions7' | t }}]" value="YES" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions7-yes" style="padding-right: 10px;">YES</label>
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions7-no" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions7' | t }}]" value="NO" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions7-no">NO</label>
+      <legend for="PractitionerQuestionnaireForm-medicalconditions7" style="padding-left: 10px;">{{ 'templates.practitioner-questionnaire.form.medicalconditions7' | t }} <span aria-hidden="true">*</span></legend>
+	</div>
+
+    <div class="field" style="padding: 10px;">
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions8-yes" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions8' | t }}]" value="YES" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions8-yes" style="padding-right: 10px;">YES</label>
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions8-no" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions8' | t }}]" value="NO" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions8-no">NO</label>
+      <legend for="PractitionerQuestionnaireForm-medicalconditions8" style="padding-left: 10px;">{{ 'templates.practitioner-questionnaire.form.medicalconditions8' | t }} <span aria-hidden="true">*</span></legend>
+	</div>
+
+    <div class="field" style="padding: 10px;">
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions9-yes" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions9' | t }}]" value="YES" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions9-yes" style="padding-right: 10px;">YES</label>
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions9-no" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions9' | t }}]" value="NO" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions9-no">NO</label>
+      <legend for="PractitionerQuestionnaireForm-medicalconditions9" style="padding-left: 10px;">{{ 'templates.practitioner-questionnaire.form.medicalconditions9' | t }} <span aria-hidden="true">*</span></legend>
+	</div>
+
+    <div class="field" style="padding: 10px;">
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions10-yes" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions10' | t }}]" value="YES" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions10-yes" style="padding-right: 10px;">YES</label>
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions10-no" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions10' | t }}]" value="NO" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions10-no">NO</label>
+      <legend for="PractitionerQuestionnaireForm-medicalconditions10" style="padding-left: 10px;">{{ 'templates.practitioner-questionnaire.form.medicalconditions10' | t }} <span aria-hidden="true">*</span></legend>
+	</div>
+
+    <div class="field" style="padding: 10px;">
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions11-yes" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions11' | t }}]" value="YES" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions11-yes" style="padding-right: 10px;">YES</label>
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions11-no" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions11' | t }}]" value="NO" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions11-no">NO</label>
+      <legend for="PractitionerQuestionnaireForm-medicalconditions11" style="padding-left: 10px;">{{ 'templates.practitioner-questionnaire.form.medicalconditions11' | t }} <span aria-hidden="true">*</span></legend>
+	</div>
+
+    <div class="field" style="padding: 10px;">
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions12-yes" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions12' | t }}]" value="YES" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions12-yes" style="padding-right: 10px;">YES</label>
+      <input type="radio" id="PractitionerQuestionnaireForm-medicalconditions12-no" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions12' | t }}]" value="NO" required>
+      <label for="PractitionerQuestionnaireForm-medicalconditions12-no">NO</label>
+      <legend for="PractitionerQuestionnaireForm-medicalconditions12" style="padding-left: 10px;">{{ 'templates.practitioner-questionnaire.form.medicalconditions12' | t }} <span aria-hidden="true">*</span></legend>
+	</div>
+
+    <div class="field">
+      <textarea rows="10" id="PractitionerQuestionnaireForm-medicalconditions13" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.medicalconditions13' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.medicalconditions13' | t }}" required>
+        {{- form.body -}}
+      </textarea>
+      <label class="form__label field__label" for="PractitionerQuestionnaireForm-medicalconditions13">{{ 'templates.practitioner-questionnaire.form.medicalconditions13' | t }} <span aria-hidden="true">*</span></label>
+    </div>
+    
+    <h2>Medication History</h2>
+
+    <div class="field">
+      <textarea rows="10" id="PractitionerQuestionnaireForm-medicationhistory1" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.medicationhistory1' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.medicationhistory1' | t }}" required>
+        {{- form.body -}}
+      </textarea>
+      <label class="form__label field__label" for="PractitionerQuestionnaireForm-medicationhistory1">{{ 'templates.practitioner-questionnaire.form.medicationhistory1' | t }} <span aria-hidden="true">*</span></label>
+    </div>
+
+    <div class="field">
+      <textarea rows="10" id="PractitionerQuestionnaireForm-medicationhistory2" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.medicationhistory2' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.medicationhistory2' | t }}" required>
+        {{- form.body -}}
+      </textarea>
+      <label class="form__label field__label" for="PractitionerQuestionnaireForm-medicationhistory2">{{ 'templates.practitioner-questionnaire.form.medicationhistory2' | t }} <span aria-hidden="true">*</span></label>
+    </div>
+
+    <h2>Other and/or referring practitioners you see and why (not compulsory)</h2>
+
+        <div class="field">
+          <input class="field__input" type="text" id="PractitionerQuestionnaireForm-practitionerdetails1" name="contact[{{ 'templates.practitioner-questionnaire.form.practitionerdetails1' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.practitionerdetails1' | t }}">
+          <label class="field__label" for="PractitionerQuestionnaireForm-practitionerdetails1">{{ 'templates.practitioner-questionnaire.form.practitionerdetails1' | t }}</label>
+        </div>
+
+      <div class="field">
+        <input class="field__input"  type="tel" id="PractitionerQuestionnaireForm-practitionerdetails2" name="contact[{{ 'templates.practitioner-questionnaire.form.practitionerdetails2' | t }}]" pattern="[0-9\-]*" placeholder="{{ 'templates.practitioner-questionnaire.form.practitionerdetails2' | t }}">
+        <label class="field__label" for="PractitionerQuestionnaireForm-practitionerdetails2">{{ 'templates.practitioner-questionnaire.form.practitionerdetails2' | t }}</label>
+      </div>
+    
+      <div class="field">
+        <input class="field__input" type="email" id="PractitionerQuestionnaireForm-practitionerdetails3" name="contact[{{ 'templates.practitioner-questionnaire.form.practitionerdetails3' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.practitionerdetails3' | t }}">
+        <label class="field__label" for="PractitionerQuestionnaireForm-practitionerdetails3">{{ 'templates.practitioner-questionnaire.form.practitionerdetails3' | t }}</label>
+      </div>
+    
+    <div class="field">
+      <textarea rows="10" id="PractitionerQuestionnaireForm-practitionerdetails4" class="text-area field__input" name="contact[{{ 'templates.practitioner-questionnaire.form.practitionerdetails4' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.practitionerdetails4' | t }}">
+        {{- form.body -}}
+      </textarea>
+      <label class="form__label field__label" for="PractitionerQuestionnaireForm-practitionerdetails4">{{ 'templates.practitioner-questionnaire.form.practitionerdetails4' | t }}</label>
+    </div>
+    
+      <div class="field" style="padding: 10px;">
+        <input type="checkbox" id="PractitionerQuestionnaireForm-termsandconditions" name="contact[{{ 'templates.practitioner-questionnaire.form.termsandconditions' | t }}]" placeholder="{{ 'templates.practitioner-questionnaire.form.termsandconditions' | t }}" required>
+        <label for="PractitionerQuestionnaireForm-termsandconditions">{{ 'templates.practitioner-questionnaire.form.termsandconditions' | t }}</label>
+      </div>
+    
+      <div class="contact__button">
+        <button type="submit" class="button">
+          {{ 'templates.practitioner-questionnaire.form.send' | t }}
+        </button>
+      </div>
+    
+    {%- endform -%}
+  </div>
+</div>
+
+{% endif %}
+  
+{% schema %}
+{
+  "name": "t:sections.practitioner-questionnaire.name",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Contact form",
+      "label": "Heading"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_size.options__2.label"
+        },
+        {
+          "value": "h0",
+          "label": "t:sections.all.heading_size.options__3.label"
+        }
+      ],
+      "default": "h1",
+      "label": "t:sections.all.heading_size.label"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.all.colors.accent_1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.all.colors.accent_2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.all.colors.background_1.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.all.colors.background_2.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.all.colors.inverse.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.all.colors.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.practitioner-questionnaire.presets.name"
+    }
+  ]
+}
+{% endschema %}

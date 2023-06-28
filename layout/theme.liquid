@@ -1,6 +1,11 @@
+{%- comment %}<locksmith:3202>{% endcomment -%}
+{%- include 'locksmith' -%}
+{%- comment %}</locksmith:3202>{% endcomment -%}
+
 <!doctype html>
 <html class="no-js" lang="{{ request.locale.iso_code }}">
   <head>
+    {{ locksmith_initializations }}
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -24,7 +29,10 @@
     </title>
 
     {% if page_description %}
-      <meta name="description" content="{{ page_description | escape }}">
+      {%- comment %}<locksmith:f11e>{% endcomment -%}
+      {%- capture var %}{% render 'locksmith-variables', variable: 'transparent', hiding_scope: 'resource' %}{% endcapture %}{% if var == 'true' %}<meta name="description" content="{{ page_description | escape }}">{% endif -%}
+      {%- comment %}original: <meta name="description" content="{{ page_description | escape }}">{%- endcomment %}
+      {%- comment %}</locksmith:f11e>{% endcomment -%}
     {% endif %}
 
     {% render 'meta-tags' %}
@@ -262,6 +270,7 @@
         document.documentElement.classList.add('shopify-design-mode');
       }
     </script>
+    <script type="text/javascript" src="https://www.pricepond.com.au/salestracker/pa-sales.js"></script>
   </head>
 
   <body class="gradient{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}">
@@ -316,8 +325,67 @@
       };
     </script>
 
+    <!-- Begin Podium -->
+    <script defer src="https://connect.podium.com/widget.js#ORG_TOKEN=0b22aa7f-bf92-4839-936b-6aa127198115" id="podium-widget" data-organization-api-token="0b22aa7f-bf92-4839-936b-6aa127198115"></script>
+    <!-- End Podium -->
+
     {%- if settings.predictive_search_enabled -%}
       <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
+    <!-- Begin Shopify-Afterpay JavaScript Snippet (v1.1.6) -->
+    {% if cart.currency.iso_code == shop.currency %}
+      <script type="text/javascript">
+        // Overrides:
+        // var afterpay_min = 1.00;       // As per your Afterpay contract.
+        // var afterpay_max = 2000.00;    // As per your Afterpay contract.
+        // var afterpay_msg_size = 'sm';  // Can be 'xs', 'sm', 'md' or 'lg'.
+        // var afterpay_bold_amount = true;
+        var afterpay_logo_theme = 'black';  // Can be 'colour', 'black' or 'white'.
+        var afterpay_modal_open_icon = true;
+        // var afterpay_hide_upper_limit = false;
+        // var afterpay_hide_lower_limit = true;
+        // var afterpay_show_if_outside_limits = true;
+        // var afterpay_cbt_enabled = false;
+        // var afterpay_apr_loans_available = false;
+
+        // var afterpay_product_integration_enabled = true;
+        var afterpay_product_selector = '.afterpay-inner';
+        // var afterpay_variable_price_fallback = false;
+        // var afterpay_variable_price_fallback_selector = '';
+        // var afterpay_variable_price_fallback_method = 'mutation';  // Can be 'mutation' or 'interval'.
+
+        // var afterpay_cart_integration_enabled = true;
+        var afterpay_cart_static_selector = '.additional-checkout-buttons';
+        // var afterpay_variable_subtotal_fallback = false;
+        // var afterpay_variable_subtotal_fallback_selector = '';
+        // var afterpay_variable_subtotal_fallback_method = 'mutation'; // Can be 'mutation' or 'interval'.
+        // var afterpay_cart_dynamic_integration_enabled = false;
+
+        // var afterpay_footer_logo_enabled = true;
+        // var afterpay_footer_logo_format = 'icon';  // Can be 'icon', 'stacked' or 'logo'.
+        // var afterpay_footer_logo_theme = 'colour'; // Can be 'colour', 'black' or 'white'.
+        // var afterpay_footer_logo_background = 'border';  // Can be 'border' or 'transparent'.
+        // var afterpay_footer_logo_container = 'footer ul.payment-icons';
+        // var afterpay_footer_logo_template = '<li class="payment-icon"><object data="{logo_path}" type="image/svg+xml"></object></li>';
+
+        // Non-editable fields:
+        var afterpay_js_language = {{ localization.language.iso_code | slice: 0, 2 | json }};
+        var afterpay_js_country = {{ localization.country.iso_code | json }};
+        var afterpay_shop_currency = {{ shop.currency | json }};
+        var afterpay_cart_currency = {{ cart.currency.iso_code | json }};
+        var afterpay_shop_money_format = {{ shop.money_format | json }};
+        var afterpay_shop_permanent_domain = {{ shop.permanent_domain | json }};
+        var afterpay_theme_name = {{ theme.name | json }};
+        var afterpay_product = {{ product | json }};
+        var afterpay_current_variant = {{ product.selected_or_first_available_variant | json }};
+        var afterpay_cart_total_price = {{ cart.total_price | json }};
+        var afterpay_js_snippet_version = '1.1.6';
+      </script>
+      <script type="text/javascript" src="https://static.afterpay.com/shopify-afterpay-javascript.js"></script>
+    {% else %}
+      <!-- Afterpay disabled: {{ cart.currency.iso_code }} != {{ shop.currency }} -->
+    {% endif %}
+    <!-- End Shopify-Afterpay JavaScript Snippet (v1.1.6) -->
+
   </body>
 </html>
