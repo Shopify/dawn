@@ -1,133 +1,154 @@
+{{ 'component-slider.css' | asset_url | stylesheet_tag }}
+
+{% style %}
+  .logos-card__image-wrapper {
+      padding: 0 2.5rem;
+  }
+  
+  .seen--footer-grid {
+    display: flex !important;
+    flex-wrap: wrap;
+  }
+
+  .logos-card__image-wrapper {
+    opacity: .5;
+    transition: all ease .3s;
+  }
+
+  .logos-card__image-wrapper:hover {
+    opacity: 1;
+  }
+
+  @media (max-width: 749px) {
+    .logos-card__image-wrapper {
+        padding: 1rem;
+    }
+    .seen--footer-grid {
+      margin-top: 0 !important;
+    }
+  }
+{% endstyle %}
+
+{% liquid
+  assign logos_size = 0
+  
+  for i in (1..6)
+    assign image_name = 'logo_image' | append: i
+
+    if section.settings[image_name] != blank
+      assign logos_size = logos_size | plus: 1
+    endif
+  endfor
+
+  assign show_mobile_slider = false
+
+  assign show_desktop_slider = false
+
+  if section.settings.enable_desktop_slider and logos_size >= 6
+    assign show_desktop_slider = true
+  endif
+%}
+
+{% if show_desktop_slider or show_mobile_slider %}
+  <script src="{{ 'k-component-slider-extras.js' | asset_url }}" defer></script>
+{% endif %}
+
 <div class="click-icons-snip">
-  <h2 class="click-snip-heading center">As Seen On:</h2>
-  <div class="click-icons-snip-all page-width">
-    <div class="click-icons-snip-container page-width">
-      <div class="click-icon-snip-box">
-        <a href="https://www.cnet.com/reviews/konnected-alarm-panel-preview/" target="_blank">
-          <div class="icon-snip-img-container">
-            <img src="https://cdn.shopify.com/s/files/1/2085/3145/files/katman_1.png?v=1679514564" alt="CNET" loading="lazy">
+    <div class="section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}" data-cascade>
+      <slider-component class="slider-container-adapt slider-mobile-gutter {% if show_mobile_slider == false %} page-width{% endif %} page-width-desktop{% if show_desktop_slider %} slider-component-desktop{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+        {%- unless section.settings.heading_logos == blank -%}
+          <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin justify-center align-center">
+              <h3 class="title inline-richtext h2">
+                {{ section.settings.heading_logos }}
+              </h3>
           </div>
-        </a>
-      </div>
-    </div>
-  
-    <div class="click-icons-snip-container page-width">
-      <div class="click-icon-snip-box">
-        <a href="https://www.techhive.com/article/578565/konnected-alarm-review.html" target="_blank">
-          <div class="icon-snip-img-container">
-            <img src="https://cdn.shopify.com/s/files/1/2085/3145/files/katman_1_1.png?v=1679514564" alt="TechHive" loading="lazy">
+        {%- endunless -%}
+        <ul
+          id="Slider-{{ section.id }}"
+          class="grid grid--6-col-desktop seen--footer-grid grid--3-col-tablet-down{% if show_mobile_slider or show_desktop_slider %} slider{% if show_desktop_slider %} aligned-vertical slider--desktop{% endif %}{% if show_mobile_slider %} slider--tablet grid--peek{% endif %}{% else %} align-center{% endif %}"
+          role="list"
+          aria-label="{{ 'general.slider.name' | t }}"
+          data-autoplay="false"
+          data-speed="0"
+        >
+          {% for i in (1..6) %}
+              {% assign image_name = 'logo_image' | append: i %}
+              {% assign image_link = 'image_link' | append: i %}
+              
+              {% if section.settings[image_name] != blank %}
+                {% assign logo_image = section.settings[image_name] %}
+                <li
+                  id="Slide-{{ section.id }}-{{ forloop.index }}"
+                  class="grid__item {% if show_mobile_slider or show_desktop_slider %} slider__slide{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+                >
+                  <div class="logos-card__image-wrapper">
+                    {% if section.settings[image_link] != blank %}
+                      <a href="{{ section.settings[image_link] }}">
+                    {% endif %}
+                      <div
+                        class="media media--transparent media--adapt"
+                          style="padding-bottom: {{ 1 | divided_by: logo_image.aspect_ratio | times: 100 }}%;"
+                      >
+                        {%- liquid
+                          assign number_of_columns = 6
+                          assign number_of_columns_mobile = 6
+                          assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                          assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                          assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+                          assign image_width = 1
+                        -%}
+                        {% capture sizes %}
+                          (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+                          (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+                          (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+                          calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+                        {% endcapture %}
+                        {{
+                          logo_image
+                          | image_url: width: 3200
+                          | image_tag:
+                            loading: 'lazy',
+                            widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                            sizes: sizes,
+                            class: 'multicolumn-card__image'
+                        }}
+                      </div>
+                    {% if section.settings[image_link] != blank %}
+                      </a>
+                    {% endif %}
+                  </div>
+                </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+        {%- if show_mobile_slider or show_desktop_slider -%}
+          <div class="slider-buttons no-js-hidden">
+            <button
+              type="button"
+              class="slider-button slider-button--prev"
+              name="previous"
+              aria-label="{{ 'general.slider.previous_slide' | t }}"
+              aria-controls="Slider-{{ section.id }}"
+            >
+              {% render 'icon-caret' %}
+            </button>
+            <div class="slider-counter caption">
+              <span class="slider-counter--current">1</span>
+              <span aria-hidden="true"> / </span>
+              <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+              <span class="slider-counter--total">{{ section.blocks.size }}</span>
+            </div>
+            <button
+              type="button"
+              class="slider-button slider-button--next"
+              name="next"
+              aria-label="{{ 'general.slider.next_slide' | t }}"
+              aria-controls="Slider-{{ section.id }}"
+            >
+              {% render 'icon-caret' %}
+            </button>
           </div>
-        </a>
-      </div>
-    </div>
-    
-    <div class="click-icons-snip-container page-width">
-      <div class="click-icon-snip-box">
-        <a href="https://bgr.com/tech/konnected-alarm-system-smartthings-kickstarter-launch/" target="_blank">
-          <div class="icon-snip-img-container">
-            <img src="https://cdn.shopify.com/s/files/1/2085/3145/files/katman_1_2.png?v=1679514564" alt="BGR" loading="lazy">
-          </div>
-        </a>
-      </div>
-    </div>
-  
-    <div class="click-icons-snip-container page-width">
-      <div class="click-icon-snip-box">
-        <a href="https://www.twice.com/vip-awards/announcing-the-winners-of-the-2020-twice-vip-awards" target="_blank">
-          <div class="icon-snip-img-container">
-            <img src="https://cdn.shopify.com/s/files/1/2085/3145/files/katman_1_3.png?v=1679514564" alt="TWICE VIP Award 2020" loading="lazy">
-          </div>
-        </a>
-      </div>
-    </div>
-  
-    <div class="click-icons-snip-container page-width">
-      <div class="click-icon-snip-box">
-        <a href="https://www.residentialsystems.com/tag/konnected" target="_blank">
-          <div class="icon-snip-img-container">
-            <img src="https://cdn.shopify.com/s/files/1/2085/3145/files/katman_1_4.png?v=1679514564" alt="Residential Systems" loading="lazy">
-          </div>
-        </a>
-      </div>
-    </div>
-  
-    <div class="click-icons-snip-container page-width">
-      <div class="click-icon-snip-box">
-        <a href="https://appmyhome.com/konnected-alarm-panel-review/" target="_blank">
-          <div class="icon-snip-img-container">
-            <img src="https://cdn.shopify.com/s/files/1/2085/3145/files/katman_1_5.png?v=1679514564" alt="AppMyHome" loading="lazy">
-          </div>
-        </a>
-      </div>
-    </div>
+        {%- endif -%}
+      </slider-component>
   </div>
-  
-  
 </div>
-
-<style> 
-  .click-icons-snip .click-icon-snip-box img {
-  width: 100%;
-  }
-  .click-icons-snip {
-    width:100%;
-    padding: 15px 0 0 0;
-  }
-  .click-icons-snip .click-icons-snip-all {
-    display: flex;
-    align-items: center;
-  }
-  .click-icons-snip .click-icons-snip-container {
-    width: 100%;
-    margin-top: 20px;
-  }
-  .click-icons-snip .click-icon-snip-box .icon-snip-img-container{
-    width: 150%;
-    margin: 0 auto;
-    opacity: 50%;
-    transition: .3s;
-  }
-  .click-icons-snip .click-icon-snip-box .icon-snip-img-container:hover {
-    opacity: 100%;
-  }
-</style>
-
-<script>
-  $(".click-icons-container").slick({
-    dots: false,
-    infinite: true,
-    speed: 1000,
-    slidesToShow: 6,
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 2500,
-    cssEase: 'ease',
-    arrows: false,
-    responsive: [
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 5,
-          slidesToScroll: 5,
-          infinite: true,
-          dots: true,
-          arrows: true
-        }
-      }, {
-        breakpoint: 600,
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: 1,
-          dots: true,
-        }
-      }, {
-        breakpoint: 480,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-          dots: true,
-        }
-      }
-    ]
-  });
-</script>
