@@ -2,19 +2,24 @@ if (!customElements.get('recipient-form')) {
   customElements.define('recipient-form', class RecipientForm extends HTMLElement {
     constructor() {
       super();
-      this.checkboxInput = this.querySelector(`#Recipient-Checkbox-${ this.dataset.sectionId }`);
+      this.checkboxInput = this.querySelector(`#Recipient-checkbox-${ this.dataset.sectionId }`);
       this.checkboxInput.disabled = false;
-      this.hiddenControlField = this.querySelector(`#Recipient-Control-${ this.dataset.sectionId }`);
+      this.hiddenControlField = this.querySelector(`#Recipient-control-${ this.dataset.sectionId }`);
       this.hiddenControlField.disabled = true;
       this.emailInput = this.querySelector(`#Recipient-email-${ this.dataset.sectionId }`);
       this.nameInput = this.querySelector(`#Recipient-name-${ this.dataset.sectionId }`);
       this.messageInput = this.querySelector(`#Recipient-message-${ this.dataset.sectionId }`);
+      this.sendonInput = this.querySelector(`#Recipient-send-on-${ this.dataset.sectionId }`);
+      this.offsetProperty = this.querySelector(`#Recipient-timezone-offset-${ this.dataset.sectionId }`);
+      if (this.offsetProperty) this.offsetProperty.value = new Date().getTimezoneOffset();
+
       this.errorMessageWrapper = this.querySelector('.product-form__recipient-error-message-wrapper');
       this.errorMessageList = this.errorMessageWrapper?.querySelector('ul');
       this.errorMessage = this.errorMessageWrapper?.querySelector('.error-message');
       this.defaultErrorHeader = this.errorMessage?.innerText;
       this.currentProductVariantId = this.dataset.productVariantId;
       this.addEventListener('change', this.onChange.bind(this));
+      this.onChange();
     }
 
     cartUpdateUnsubscriber = undefined;
@@ -56,16 +61,38 @@ if (!customElements.get('recipient-form')) {
     }
 
     onChange() {
-      if (!this.checkboxInput.checked) {
+      if (this.checkboxInput.checked) {
+        this.enableInputFields();
+      } else {
         this.clearInputFields();
+        this.disableInputFields();
         this.clearErrorMessage();
       }
     }
 
+    inputFields() {
+      return [
+        this.emailInput,
+        this.nameInput,
+        this.messageInput,
+        this.sendonInput
+      ];
+    }
+
+    disableableFields() {
+      return [...this.inputFields(), this.offsetProperty];
+    }
+
     clearInputFields() {
-      this.emailInput.value = '';
-      this.nameInput.value = '';
-      this.messageInput.value = '';
+      this.inputFields().forEach((field) => field.value = '');
+    }
+
+    enableInputFields() {
+      this.disableableFields().forEach((field) => field.disabled = false);
+    }
+
+    disableInputFields() {
+      this.disableableFields().forEach((field) => field.disabled = true);
     }
 
     displayErrorMessage(title, body) {
@@ -76,9 +103,7 @@ if (!customElements.get('recipient-form')) {
         return Object.entries(body).forEach(([key, value]) => {
           const errorMessageId = `RecipientForm-${ key }-error-${ this.dataset.sectionId }`
           const fieldSelector = `#Recipient-${ key }-${ this.dataset.sectionId }`;
-          const placeholderElement = this.querySelector(`${fieldSelector}`);
-          const label = placeholderElement?.getAttribute('placeholder') || key;
-          const message = `${label} ${value}`;
+          const message = `${value.join(', ')}`;
           const errorMessageElement = this.querySelector(`#${errorMessageId}`);
           const errorTextElement = errorMessageElement?.querySelector('.error-message')
           if (!errorTextElement) return;
@@ -122,7 +147,7 @@ if (!customElements.get('recipient-form')) {
         if (textField) textField.innerText = '';
       });
 
-      [this.emailInput, this.messageInput, this.nameInput].forEach(inputElement => {
+      [this.emailInput, this.messageInput, this.nameInput, this.sendonInput].forEach(inputElement => {
         inputElement.setAttribute('aria-invalid', false);
         inputElement.removeAttribute('aria-describedby');
       });
