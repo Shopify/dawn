@@ -157,12 +157,6 @@ class QuantityInput extends HTMLElement {
     super();
     this.input = this.querySelector('input');
     this.changeEvent = new Event('change', { bubbles: true });
-    if (this.input.hasAttribute('data-volume-pricing')) {
-      this.isVolumePricing = this.querySelector('input[name="quantity"]').dataset.volumePricing === 'true';
-    }
-    if (this.input.hasAttribute('data-variant-id')) {
-      this.variantId = this.querySelector('input[name="quantity"]').dataset.variantId;
-    }
     this.input.addEventListener('change', this.onInputChange.bind(this));
     this.querySelectorAll('button').forEach((button) =>
       button.addEventListener('click', this.onButtonClick.bind(this))
@@ -170,94 +164,20 @@ class QuantityInput extends HTMLElement {
   }
 
   quantityUpdateUnsubscriber = undefined;
-  updatePricePerItemUnsubscriber = undefined;
 
   connectedCallback() {
     this.validateQtyRules();
     this.quantityUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.quantityUpdate, this.validateQtyRules.bind(this));
-    if (this.isVolumePricing) {
-      this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.updatePricePerItem, (cartData) => {
-        this.updateInputOnProductPage();
-        // Item was added to cart via product page
-        if (cartData['variant_id'] !== undefined) {
-          this.updatePricePerItem(cartData.quantity);
-        // Qty was updated in cart
-        } else if (cartData.item_count !== 0) {
-          const isVariant = cartData.items.find((item) => item.variant_id.toString() === this.variantId);
-          if (isVariant) {
-            // The variant is still in cart
-            this.updatePricePerItem(isVariant.quantity);
-          } else {
-            // The variant was removed from cart, qty is 0
-            this.updatePricePerItem(0);
-          }
-        // All items were removed from cart
-        } else {
-          this.updatePricePerItem(0);
-        }
-      });
-    }
   }
 
   disconnectedCallback() {
     if (this.quantityUpdateUnsubscriber) {
       this.quantityUpdateUnsubscriber();
     }
-    if (this.updatePricePerItemUnsubscriber) {
-      this.updatePricePerItemUnsubscriber();
-    }
   }
 
   onInputChange(event) {
     this.validateQtyRules();
-    if (this.isVolumePricing) this.updatePricePerItem();
-  }
-
-  updatePricePerItem(updatedCartQuantity) {
-    this.getVolumePricingArray();
-
-    this.inputOnProductPage = this.querySelector('input[name="quantity"]');
-    if (this.inputOnProductPage) {
-      const enteredQty = parseInt(this.inputOnProductPage.value);
-      this.currentQtyForVolumePricing = this.getCartQuantity(updatedCartQuantity) + enteredQty;
-    }
-
-    for (let pair of this.qtyPricePairs) {
-      if (this.currentQtyForVolumePricing >= pair[0]) {
-        let pricePerItem = pair[1];
-        const pricePerItemCurrent = document.querySelector('.price-per-item span:last-child');
-        pricePerItemCurrent.innerHTML = pricePerItem;
-        break;
-      }
-    }
-  }
-
-  updateInputOnProductPage() {
-    if (this.inputOnProductPage) {
-      this.inputOnProductPage.value = Number(this.inputOnProductPage.min);
-    }
-  }
-
-  getCartQuantity(updatedCartQuantity) {
-    if (updatedCartQuantity || updatedCartQuantity === 0) {
-      return updatedCartQuantity;
-    } else {
-      const cartQuantity = parseInt(document.querySelector('input[name="quantity"]').dataset.cartQuantity);
-      return cartQuantity;
-    }
-  }
-
-  getVolumePricingArray() {
-    const volumePricing = document.querySelector('volume-pricing[id^="Volume-"]');
-    this.qtyPricePairs = [];
-
-    volumePricing.querySelectorAll('li').forEach(li => {
-      const qty = parseInt(li.querySelector('span:first-child').textContent);
-      const price = (li.querySelector('span:not(:first-child):last-child').textContent);
-      this.qtyPricePairs.push([qty, price]);
-    });
-
-    this.qtyPricePairs.reverse();
   }
 
   onButtonClick(event) {
@@ -284,6 +204,94 @@ class QuantityInput extends HTMLElement {
 }
 
 customElements.define('quantity-input', QuantityInput);
+
+class PricePerItem extends HTMLElement {
+  constructor() {
+    super();
+    this.input = this.querySelector('input');
+    this.variantId = this.querySelector('input[name="quantity"]').dataset.variantId;
+    this.input.addEventListener('change', this.onInputChange.bind(this));
+  }
+
+  updatePricePerItemUnsubscriber = undefined;
+
+  connectedCallback() {
+    this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.updatePricePerItem, (cartData) => {
+      this.updateInputOnProductPage();
+      // Item was added to cart via product page
+      if (cartData['variant_id'] !== undefined) {
+        this.updatePricePerItem(cartData.quantity);
+      // Qty was updated in cart
+      } else if (cartData.item_count !== 0) {
+        const isVariant = cartData.items.find((item) => item.variant_id.toString() === this.variantId);
+        if (isVariant) {
+          // The variant is still in cart
+          this.updatePricePerItem(isVariant.quantity);
+        } else {
+          // The variant was removed from cart, qty is 0
+          this.updatePricePerItem(0);
+        }
+      // All items were removed from cart
+      } else {
+        this.updatePricePerItem(0);
+      }
+    });
+  }
+
+  disconnectedCallback() {
+    if (this.updatePricePerItemUnsubscriber) {
+      this.updatePricePerItemUnsubscriber();
+    }
+  }
+
+  onInputChange() {
+    this.updatePricePerItem();
+  }
+
+  updatePricePerItem(updatedCartQuantity) {
+    this.getVolumePricingArray();
+
+    const enteredQty = parseInt(this.input.value);
+    this.currentQtyForVolumePricing = this.getCartQuantity(updatedCartQuantity) + enteredQty;
+
+    for (let pair of this.qtyPricePairs) {
+      if (this.currentQtyForVolumePricing >= pair[0]) {
+        let pricePerItem = pair[1];
+        const pricePerItemCurrent = document.querySelector('.price-per-item span:last-child');
+        pricePerItemCurrent.innerHTML = pricePerItem;
+        break;
+      }
+    }
+  }
+
+  updateInputOnProductPage() {
+    this.input.value = Number(this.input.min);
+  }
+
+  getCartQuantity(updatedCartQuantity) {
+    if (updatedCartQuantity || updatedCartQuantity === 0) {
+      return updatedCartQuantity;
+    } else {
+      const cartQuantity = parseInt(document.querySelector('input[name="quantity"]').dataset.cartQuantity);
+      return cartQuantity;
+    }
+  }
+
+  getVolumePricingArray() {
+    const volumePricing = document.querySelector('volume-pricing[id^="Volume-"]');
+    this.qtyPricePairs = [];
+
+    volumePricing.querySelectorAll('li').forEach(li => {
+      const qty = parseInt(li.querySelector('span:first-child').textContent);
+      const price = (li.querySelector('span:not(:first-child):last-child').textContent);
+      this.qtyPricePairs.push([qty, price]);
+    });
+
+    this.qtyPricePairs.reverse();
+  }
+}
+
+customElements.define('price-per-item', PricePerItem);
 
 function debounce(fn, wait) {
   let t;
