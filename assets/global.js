@@ -1122,8 +1122,8 @@ class VariantSelects extends HTMLElement {
           `Volume-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`
         );
 
-        const quantityInputDestination = document.getElementById(`Quantity-Form-${this.dataset.section}`);
-        const quantityInputSource = html.getElementById(`Quantity-Form-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
+        const pricePerItemDestination = document.querySelector(`price-per-item .price-per-item`);
+        const pricePerItemSource = html.querySelector(`price-per-item .price-per-item`);
 
         const volumePricingDestination = document.getElementById(`Volume-${this.dataset.section}`);
 
@@ -1138,8 +1138,8 @@ class VariantSelects extends HTMLElement {
           volumePricingDestination.innerHTML = volumePricingSource.innerHTML;
         }
 
-        if (quantityInputSource && quantityInputDestination) {
-          quantityInputDestination.innerHTML = quantityInputSource.innerHTML;
+        if (pricePerItemSource && pricePerItemDestination) {
+          pricePerItemDestination.innerHTML = pricePerItemSource.innerHTML;
         }
 
         const price = document.getElementById(`price-${this.dataset.section}`);
