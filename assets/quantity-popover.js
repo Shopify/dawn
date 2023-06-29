@@ -12,7 +12,7 @@ if (!customElements.get('quantity-popover')) {
 
         this.infoButton.addEventListener('click', this.togglePopover.bind(this));
         this.closeButton.addEventListener('click', this.closePopover.bind(this));
-        this.infoButton.addEventListener('focusout', this.closePopover.bind(this));
+        this.closeButton.addEventListener('focusout', this.closePopover.bind(this));
         this.popoverInfo.addEventListener('focusout', this.closePopover.bind(this));
 
         if (this.mql.matches) {
@@ -30,16 +30,18 @@ if (!customElements.get('quantity-popover')) {
           !isExpanded
         );
 
-        if (isExpanded) {
-          this.closeButton.focus();
-        }
         this.toggleAccessibility(event);
       }
 
       toggleAccessibility(event) {
         event.preventDefault();
+        const isExpanded = this.infoButton.getAttribute('aria-expanded') === 'true';
         this.popoverInfo.toggleAttribute('hidden');
         this.infoButton.classList.toggle('variant-item__quantity-info--open');
+
+        if (isExpanded) {
+          this.closeButton.focus();
+        }
       }
 
       closePopover(event) {
