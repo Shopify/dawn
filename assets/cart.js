@@ -148,9 +148,7 @@ class CartItems extends HTMLElement {
           trapFocus(cartDrawerWrapper, document.querySelector('.cart-item__name'));
         }
 
-        const cartData = parsedState;
-        publish(PUB_SUB_EVENTS.updatePricePerItem, cartData );
-        publish(PUB_SUB_EVENTS.cartUpdate, { source: 'cart-items' });
+        publish(PUB_SUB_EVENTS.cartUpdate, { source: 'cart-items', cartData: parsedState});
       })
       .catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));

@@ -65,7 +65,7 @@ if (!customElements.get('product-form')) {
             }
 
             if (!this.error)
-              publish(PUB_SUB_EVENTS.cartUpdate, { source: 'product-form', productVariantId: formData.get('id') });
+              publish(PUB_SUB_EVENTS.cartUpdate, { source: 'product-form', productVariantId: formData.get('id'), cartData: response });
             this.error = false;
             const quickAddModal = this.closest('quick-add-modal');
             if (quickAddModal) {
@@ -82,9 +82,6 @@ if (!customElements.get('product-form')) {
             } else {
               this.cart.renderContents(response);
             }
-
-            const cartData = response;
-            publish(PUB_SUB_EVENTS.updatePricePerItem, cartData );
           })
           .catch((e) => {
             console.error(e);

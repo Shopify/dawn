@@ -216,14 +216,14 @@ class PricePerItem extends HTMLElement {
   updatePricePerItemUnsubscriber = undefined;
 
   connectedCallback() {
-    this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.updatePricePerItem, (cartData) => {
+    this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (response) => {
       this.updateInputOnProductPage();
       // Item was added to cart via product page
-      if (cartData['variant_id'] !== undefined) {
-        this.updatePricePerItem(cartData.quantity);
+      if (response.cartData['variant_id'] !== undefined) {
+        this.updatePricePerItem(response.cartData.quantity);
       // Qty was updated in cart
-      } else if (cartData.item_count !== 0) {
-        const isVariant = cartData.items.find((item) => item.variant_id.toString() === this.variantId);
+      } else if (response.cartData.item_count !== 0) {
+        const isVariant = response.cartData.items.find((item) => item.variant_id.toString() === this.variantId);
         if (isVariant) {
           // The variant is still in cart
           this.updatePricePerItem(isVariant.quantity);
