@@ -214,9 +214,15 @@ class PricePerItem extends HTMLElement {
   }
 
   updatePricePerItemUnsubscriber = undefined;
+  cartUpdateStartedUnsubscriber = undefined;
 
   connectedCallback() {
+    this.cartUpdateStartedUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdateStarted, () => {
+      this.querySelector('.loading-overlay').classList.remove('hidden');
+    });
+
     this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (response) => {
+      this.querySelector('.loading-overlay').classList.add('hidden');
       this.updateInputOnProductPage();
       // Item was added to cart via product page
       if (response.cartData['variant_id'] !== undefined) {
@@ -241,6 +247,9 @@ class PricePerItem extends HTMLElement {
   disconnectedCallback() {
     if (this.updatePricePerItemUnsubscriber) {
       this.updatePricePerItemUnsubscriber();
+    }
+    if (this.cartUpdateStartedUnsubscriber) {
+      this.cartUpdateStartedUnsubscriber();
     }
   }
 
