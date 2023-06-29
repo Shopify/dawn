@@ -178,16 +178,25 @@ class VariantList extends HTMLElement {
   updateQuantity(id, quantity, name, action) {
     this.toggleLoading(id, true);
 
-    const body = JSON.stringify({
+    let routeUrl = routes.cart_change_url;
+    let body = JSON.stringify({
       quantity,
       id,
       sections: this.getSectionsToRender().map((section) => section.section),
       sections_url: window.location.pathname
     });
-
-    let routeUrl = routes.cart_change_url
     if (action === this.actions.add) {
-      routeUrl = routes.cart_add_url
+      routeUrl = routes.cart_add_url;
+      body = JSON.stringify({
+        items: [
+          {
+            quantity: parseInt(quantity),
+            id: parseInt(id)
+          }
+        ],
+        sections: this.getSectionsToRender().map((section) => section.section),
+        sections_url: window.location.pathname
+      });
     }
 
     fetch(`${routeUrl}`, { ...fetchConfig(), ...{ body } })
