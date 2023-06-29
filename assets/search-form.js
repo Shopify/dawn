@@ -6,21 +6,18 @@ class SearchForm extends HTMLElement {
 
     if (this.input) {
       this.input.form.addEventListener('reset', this.onFormReset.bind(this));
-      this.input.addEventListener(
-        'input',
-        debounce((event) => {
-          this.onChange(event);
-        }, 300).bind(this)
-      );
+      this.input.addEventListener('input', debounce((event) => {
+        this.onChange(event);
+      }, 300).bind(this))
     }
   }
 
   toggleResetButton() {
     const resetIsHidden = this.resetButton.classList.contains('hidden');
     if (this.input.value.length > 0 && resetIsHidden) {
-      this.resetButton.classList.remove('hidden');
-    } else if (this.input.value.length === 0 && !resetIsHidden) {
-      this.resetButton.classList.add('hidden');
+      this.resetButton.classList.remove('hidden')
+    } else if (this.input.value.length === 0  && !resetIsHidden) {
+      this.resetButton.classList.add('hidden')
     }
   }
 
@@ -29,7 +26,7 @@ class SearchForm extends HTMLElement {
   }
 
   shouldResetForm() {
-    return !document.querySelector('[aria-selected="true"] a');
+    return !document.querySelector('[aria-selected="true"] a')
   }
 
   onFormReset(event) {

@@ -16,7 +16,7 @@
         {% render 'icon-close' %}
       </span>
     </summary>
-    <div id="menu-drawer" class="gradient menu-drawer motion-reduce">
+    <div id="menu-drawer" class="gradient menu-drawer motion-reduce" tabindex="-1">
       <div class="menu-drawer__inner-container">
         <div class="menu-drawer__navigation-container">
           <nav class="menu-drawer__navigation">
@@ -25,10 +25,7 @@
                 <li>
                   {%- if link.links != blank -%}
                     <details id="Details-menu-drawer-menu-item-{{ forloop.index }}">
-                      <summary
-                        id="HeaderDrawer-{{ link.handle }}"
-                        class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.child_active %} menu-drawer__menu-item--active{% endif %}"
-                      >
+                      <summary class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.child_active %} menu-drawer__menu-item--active{% endif %}">
                         {{ link.title | escape }}
                         {% render 'icon-arrow' %}
                         {% render 'icon-caret' %}
@@ -48,7 +45,6 @@
                               <li>
                                 {%- if childlink.links == blank -%}
                                   <a
-                                    id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}"
                                     href="{{ childlink.url }}"
                                     class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if childlink.current %} menu-drawer__menu-item--active{% endif %}"
                                     {% if childlink.current %}
@@ -58,11 +54,8 @@
                                     {{ childlink.title | escape }}
                                   </a>
                                 {%- else -%}
-                                  <details id="Details-menu-drawer-{{ link.handle }}-{{ childlink.handle }}">
-                                    <summary
-                                      id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}"
-                                      class="menu-drawer__menu-item link link--text list-menu__item focus-inset"
-                                    >
+                                  <details id="Details-menu-drawer-submenu-{{ forloop.index }}">
+                                    <summary class="menu-drawer__menu-item link link--text list-menu__item focus-inset">
                                       {{ childlink.title | escape }}
                                       {% render 'icon-arrow' %}
                                       {% render 'icon-caret' %}
@@ -78,15 +71,10 @@
                                         {% render 'icon-arrow' %}
                                         {{ childlink.title | escape }}
                                       </button>
-                                      <ul
-                                        class="menu-drawer__menu list-menu"
-                                        role="list"
-                                        tabindex="-1"
-                                      >
+                                      <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
                                         {%- for grandchildlink in childlink.links -%}
                                           <li>
                                             <a
-                                              id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
                                               href="{{ grandchildlink.url }}"
                                               class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if grandchildlink.current %} menu-drawer__menu-item--active{% endif %}"
                                               {% if grandchildlink.current %}
@@ -109,7 +97,6 @@
                     </details>
                   {%- else -%}
                     <a
-                      id="HeaderDrawer-{{ link.handle }}"
                       href="{{ link.url }}"
                       class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.current %} menu-drawer__menu-item--active{% endif %}"
                       {% if link.current %}
@@ -142,38 +129,9 @@
             {%- if section.settings.enable_country_selector or section.settings.enable_language_selector -%}
               <div class="menu-drawer__localization header__localization">
                 {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
-                  <noscript>
-                    {%- form 'localization', id: 'HeaderCountryMobileFormNoScriptDrawer', class: 'localization-form' -%}
-                      <div class="localization-form__select">
-                        <h2 class="visually-hidden" id="HeaderCountryMobileLabelNoScriptDrawer">
-                          {{ 'localization.country_label' | t }}
-                        </h2>
-                        <select
-                          class="localization-selector link"
-                          name="country_code"
-                          aria-labelledby="HeaderCountryMobileLabelNoScriptDrawer"
-                        >
-                          {%- for country in localization.available_countries -%}
-                            <option
-                              value="{{ country.iso_code }}"
-                              {%- if country.iso_code == localization.country.iso_code %}
-                                selected
-                              {% endif %}
-                            >
-                              {{ country.name }} ({{ country.currency.iso_code }}
-                              {{ country.currency.symbol }})
-                            </option>
-                          {%- endfor -%}
-                        </select>
-                        {% render 'icon-caret' %}
-                      </div>
-                      <button class="button button--tertiary">{{ 'localization.update_country' | t }}</button>
-                    {%- endform -%}
-                  </noscript>
-
-                  <localization-form class="no-js-hidden">
+                  <localization-form>
                     {%- form 'localization', id: 'HeaderCountryMobileForm', class: 'localization-form' -%}
-                      <div>
+                      <div class="no-js-hidden">
                         <h2 class="visually-hidden" id="HeaderCountryMobileLabel">
                           {{ 'localization.country_label' | t }}
                         </h2>
@@ -184,41 +142,9 @@
                 {% endif %}
 
                 {%- if section.settings.enable_language_selector and localization.available_languages.size > 1 -%}
-                  <noscript>
-                    {%- form 'localization',
-                      id: 'HeaderLanguageMobileFormNoScriptDrawer',
-                      class: 'localization-form'
-                    -%}
-                      <div class="localization-form__select">
-                        <h2 class="visually-hidden" id="HeaderLanguageMobileLabelNoScriptDrawer">
-                          {{ 'localization.language_label' | t }}
-                        </h2>
-                        <select
-                          class="localization-selector link"
-                          name="locale_code"
-                          aria-labelledby="HeaderLanguageMobileLabelNoScriptDrawer"
-                        >
-                          {%- for language in localization.available_languages -%}
-                            <option
-                              value="{{ language.iso_code }}"
-                              lang="{{ language.iso_code }}"
-                              {%- if language.iso_code == localization.language.iso_code %}
-                                selected
-                              {% endif %}
-                            >
-                              {{ language.endonym_name | capitalize }}
-                            </option>
-                          {%- endfor -%}
-                        </select>
-                        {% render 'icon-caret' %}
-                      </div>
-                      <button class="button button--tertiary">{{ 'localization.update_language' | t }}</button>
-                    {%- endform -%}
-                  </noscript>
-
-                  <localization-form class="no-js-hidden">
+                  <localization-form>
                     {%- form 'localization', id: 'HeaderLanguageMobileForm', class: 'localization-form' -%}
-                      <div>
+                      <div class="no-js-hidden">
                         <h2 class="visually-hidden" id="HeaderLanguageMobileLabel">
                           {{ 'localization.language_label' | t }}
                         </h2>
