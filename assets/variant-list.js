@@ -154,6 +154,9 @@ class VariantList extends HTMLElement {
       sections_url: window.location.pathname
     });
 
+    this.updateMessage();
+    this.setErrorMessage();
+
     fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } })
       .then((response) => {
         return response.text();
@@ -167,7 +170,7 @@ class VariantList extends HTMLElement {
             this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
         }));
       }).catch(() => {
-        this.handleError();
+        this.setErrorMessage(window.cartStrings.error);
       })
       .finally(() => {
         this.querySelector('.variant-remove-total .loading-overlay').classList.add('hidden');
@@ -199,6 +202,9 @@ class VariantList extends HTMLElement {
         sections_url: window.location.pathname
       });
     }
+
+    this.updateMessage();
+    this.setErrorMessage();
 
     fetch(`${routeUrl}`, { ...fetchConfig(fetchConfigType), ...{ body } })
       .then((response) => {
@@ -264,18 +270,23 @@ class VariantList extends HTMLElement {
         }
       }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
-        this.handleError();
+        this.setErrorMessage(window.cartStrings.error);
       })
       .finally(() => {
         this.toggleLoading(id);
       });
   }
 
-  handleError(id, message) {
-    this.updateMessage();
-    const errorElements = document.querySelectorAll('.variant-list-errors');
-    errorElements.forEach((element) => {
-      element.textContent = window.cartStrings.error;
+  setErrorMessage(message = null) {
+    this.errorMessageTemplate = this.errorMessageTemplate ?? document.querySelector('.variant-list-error template').cloneNode(true);
+    const errorElements = document.querySelectorAll('.variant-list-error');
+    
+    errorElements.forEach((errorElement) => {
+      errorElement.innerHTML = '';
+      if (!message) return;
+      const updatedMessageElement = this.errorMessageTemplate.cloneNode(true);
+      updatedMessageElement.content.querySelector('.variant-list-error-message').innerText = message;
+      errorElement.appendChild(updatedMessageElement.content);
     });
   }
 
