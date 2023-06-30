@@ -107,35 +107,35 @@
   </td>
 
   <td class="variant-item__quantity">
+    {%- liquid
+      assign check_against_inventory = true
+      if variant.inventory_management != 'shopify' or variant.inventory_policy == 'continue'
+        assign check_against_inventory = false
+      endif
+      if variant.quantity_rule.min > variant.inventory_quantity and check_against_inventory
+        assign quantity_rule_soldout = true
+      endif
+
+      assign has_qty_rules = false
+      if variant.quantity_rule.increment > 1 or variant.quantity_rule.min > 1 or variant.quantity_rule.max != null
+        assign has_qty_rules = true
+      endif
+
+      assign has_vol_pricing = false
+      if variant.quantity_price_breaks.size > 0
+        assign has_vol_pricing = true
+      endif
+    -%}
     <quantity-popover>
-      <div class="variant-item__quantity-wrapper">
+      <div class="variant-item__quantity-wrapper{% if has_qty_rules == false and  has_vol_pricing == false %} variant-item__quantity-wrapper--no-info{% endif %}">
         <label class="visually-hidden" for="Quantity-{{ variant.id }}">
           {{ 'products.product.quantity.label' | t }}
         </label>
-        {%- liquid
-          assign check_against_inventory = true
-          if variant.inventory_management != 'shopify' or variant.inventory_policy == 'continue'
-            assign check_against_inventory = false
-          endif
-          if variant.quantity_rule.min > variant.inventory_quantity and check_against_inventory
-            assign quantity_rule_soldout = true
-          endif
-
-          assign has_qty_rules = false
-          if variant.quantity_rule.increment > 1 or variant.quantity_rule.min > 1 or variant.quantity_rule.max != null
-            assign has_qty_rules = true
-          endif
-
-          assign has_vol_pricing = false
-          if variant.quantity_price_breaks.size > 0
-            assign has_vol_pricing = true
-          endif
-        -%}
         <div class="variant-item__quantity-wrap{% if has_qty_rules or has_vol_pricing %} variant-item__quantity-wrap--hover{% endif %}">
           {%- if has_qty_rules or has_vol_pricing -%}
-            <span class="variant-item__quantity-info button button--tertiary small-hide">
+            <button class="variant-item__quantity-info button button--tertiary small-hide">
               {% render 'icon-info' %}
-            </span>
+            </button>
           {%- endif -%}
           {%- if variant.available == false or quantity_rule_soldout -%}
             <span class="variant-item__sold-out h4"> {{ 'products.product.sold_out' | t }} </span>
