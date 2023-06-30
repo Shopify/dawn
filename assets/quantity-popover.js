@@ -5,17 +5,28 @@ if (!customElements.get('quantity-popover')) {
       constructor() {
         super();
         this.mql = window.matchMedia('(min-width: 750px)');
-        this.infoButton = this.querySelector('.variant-item__quantity-info.medium-hide');
+        this.infoButtonDesktop = this.querySelector('.variant-item__quantity-info.small-hide');
+        this.infoButtonMobile = this.querySelector('.variant-item__quantity-info.medium-hide');
         this.popoverInfo = this.querySelector('.quantity-popover__info');
         this.closeButton = this.querySelector('.button-close');
         this.variantInfo = this.querySelector('.variant-item__quantity-wrap');
 
-        this.infoButton.addEventListener('click', this.togglePopover.bind(this));
-        this.closeButton.addEventListener('click', this.closePopover.bind(this));
-        this.closeButton.addEventListener('focusout', this.closePopover.bind(this));
-        this.popoverInfo.addEventListener('focusout', this.closePopover.bind(this));
+        if (this.closeButton) {
+          this.closeButton.addEventListener('click', this.closePopover.bind(this));
+        }
 
-        if (this.mql.matches) {
+        if (this.popoverInfo) {
+          this.popoverInfo.addEventListener('focusout', this.closePopover.bind(this));
+        }
+
+        if (this.infoButtonDesktop && this.infoButtonMobile) {
+          this.infoButtonDesktop.addEventListener('click', this.togglePopover.bind(this));
+          this.infoButtonMobile.addEventListener('click', this.togglePopover.bind(this));
+          this.infoButtonDesktop.addEventListener('focusout', this.closePopover.bind(this));
+          this.infoButtonMobile.addEventListener('focusout', this.closePopover.bind(this));
+        }
+
+        if (this.infoButtonDesktop && this.mql.matches) {
           this.addEventListener('mouseenter', this.toggleAccessibility.bind(this));
           this.addEventListener('mouseleave', this.closePopover.bind(this));
         }
@@ -23,23 +34,37 @@ if (!customElements.get('quantity-popover')) {
 
       togglePopover(event) {
         event.preventDefault();
-        const isExpanded = this.infoButton.getAttribute('aria-expanded') === 'true';
 
-        this.infoButton.setAttribute(
-          'aria-expanded',
-          !isExpanded
-        );
+        if (this.mql.matches) {
+          const isExpanded = this.infoButtonDesktop.getAttribute('aria-expanded') === 'true';
+          this.infoButtonDesktop.setAttribute(
+            'aria-expanded',
+            !isExpanded
+          );
+        } else {
+          const isExpanded = this.infoButtonMobile.getAttribute('aria-expanded') === 'true';
+          this.infoButtonMobile.setAttribute(
+            'aria-expanded',
+            !isExpanded
+          );
+        }
 
         this.toggleAccessibility(event);
       }
 
       toggleAccessibility(event) {
         event.preventDefault();
-        const isExpanded = this.infoButton.getAttribute('aria-expanded') === 'true';
         this.popoverInfo.toggleAttribute('hidden');
-        this.infoButton.classList.toggle('variant-item__quantity-info--open');
 
-        if (isExpanded) {
+        let isOpen = this.infoButtonMobile.getAttribute('aria-expanded') === 'true';
+        this.infoButtonMobile.classList.toggle('variant-item__quantity-info--open');
+
+        if (this.mql.matches) {
+          isOpen = this.infoButtonDesktop.getAttribute('aria-expanded') === 'true';
+          this.infoButtonDesktop.classList.toggle('variant-item__quantity-info--open');
+        }
+
+        if (isOpen) {
           this.closeButton.focus();
         }
       }
@@ -50,8 +75,14 @@ if (!customElements.get('quantity-popover')) {
 
         if (!event.relatedTarget || !isChild) {
           this.popoverInfo.setAttribute('hidden', true);
-          this.infoButton.setAttribute('aria-expanded', 'true');
-          this.infoButton.classList.remove('variant-item__quantity-info--open');
+          if (this.mql.matches) {
+            this.infoButtonDesktop.setAttribute('aria-expanded', 'true');
+            this.infoButtonDesktop.classList.remove('variant-item__quantity-info--open');
+          } else {
+            this.infoButtonMobile.setAttribute('aria-expanded', 'true');
+            this.infoButtonMobile.classList.remove('variant-item__quantity-info--open');
+          }
+
         }
       }
 
