@@ -35,19 +35,10 @@ if (!customElements.get('quantity-popover')) {
       togglePopover(event) {
         event.preventDefault();
 
-        if (this.mql.matches) {
-          const isExpanded = this.infoButtonDesktop.getAttribute('aria-expanded') === 'true';
-          this.infoButtonDesktop.setAttribute(
-            'aria-expanded',
-            !isExpanded
-          );
-        } else {
-          const isExpanded = this.infoButtonMobile.getAttribute('aria-expanded') === 'true';
-          this.infoButtonMobile.setAttribute(
-            'aria-expanded',
-            !isExpanded
-          );
-        }
+        const button = this.mql.matches ? this.infoButtonDesktop : this.infoButtonMobile;
+        const isExpanded = button.getAttribute('aria-expanded') === 'true';
+        
+        button.setAttribute('aria-expanded', !isExpanded);
 
         this.toggleAccessibility(event);
       }
