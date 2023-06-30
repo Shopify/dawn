@@ -185,7 +185,9 @@ class VariantList extends HTMLElement {
       sections: this.getSectionsToRender().map((section) => section.section),
       sections_url: window.location.pathname
     });
+    let fetchConfigType;
     if (action === this.actions.add) {
+      fetchConfigType = 'javascript';
       routeUrl = routes.cart_add_url;
       body = JSON.stringify({
         items: [
@@ -199,7 +201,7 @@ class VariantList extends HTMLElement {
       });
     }
 
-    fetch(`${routeUrl}`, { ...fetchConfig(), ...{ body } })
+    fetch(`${routeUrl}`, { ...fetchConfig(fetchConfigType), ...{ body } })
       .then((response) => {
         return response.text();
       })
@@ -208,9 +210,13 @@ class VariantList extends HTMLElement {
         const quantityElement = document.getElementById(`Quantity-${id}`);
         const items = document.querySelectorAll('.variant-item');
 
-        if (parsedState.errors) {
+        if (parsedState.description || parsedState.errors) {
           quantityElement.value = quantityElement.getAttribute('value');
-          this.updateLiveRegions(id, parsedState.errors);
+          if (parsedState.errors) {
+            this.updateLiveRegions(id, parsedState.errors);
+          } else {
+            this.updateLiveRegions(id, parsedState.description);
+          }
           return;
         }
 
