@@ -47,13 +47,10 @@ if (!customElements.get('quantity-popover')) {
         event.preventDefault();
         this.popoverInfo.toggleAttribute('hidden');
 
-        let isOpen = this.infoButtonMobile.getAttribute('aria-expanded') === 'true';
-        this.infoButtonMobile.classList.toggle('variant-item__quantity-info--open');
+        const button = this.mql.matches ? this.infoButtonDesktop : this.infoButtonMobile;
+        const isOpen = button.getAttribute('aria-expanded') === 'true';
 
-        if (this.mql.matches) {
-          isOpen = this.infoButtonDesktop.getAttribute('aria-expanded') === 'true';
-          this.infoButtonDesktop.classList.toggle('variant-item__quantity-info--open');
-        }
+        button.classList.toggle('variant-item__quantity-info--open');
 
         if (isOpen) {
           this.closeButton.focus();
