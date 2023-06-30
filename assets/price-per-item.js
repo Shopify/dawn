@@ -1,8 +1,9 @@
 class PricePerItem extends HTMLElement {
   constructor() {
     super();
-    this.input = this.querySelector('input');
-    this.variantId = this.querySelector('input[name="quantity"]').dataset.variantId;
+    this.input = document.getElementById(`Quantity-${this.dataset.sectionId}`);
+    this.pricePerItem = document.getElementById(`Price-Per-Item-${this.dataset.sectionId}`);
+    this.variantId = this.pricePerItem.dataset.variantId;
     this.input.addEventListener('change', this.onInputChange.bind(this));
   }
 
@@ -16,7 +17,6 @@ class PricePerItem extends HTMLElement {
 
     this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (response) => {
       this.querySelector('.loading-overlay').classList.add('hidden');
-      this.updateInputOnProductPage();
       // Item was added to cart via product page
       if (response.cartData['variant_id'] !== undefined) {
         this.updatePricePerItem(response.cartData.quantity);
@@ -59,22 +59,18 @@ class PricePerItem extends HTMLElement {
     for (let pair of this.qtyPricePairs) {
       if (this.currentQtyForVolumePricing >= pair[0]) {
         let pricePerItem = pair[1];
-        const pricePerItemCurrent = document.querySelector('.price-per-item span:last-child');
+        const pricePerItemCurrent = document.querySelector('.price-per-item .price-per-item--current');
         pricePerItemCurrent.innerHTML = pricePerItem;
         break;
       }
     }
   }
 
-  updateInputOnProductPage() {
-    this.input.value = Number(this.input.min);
-  }
-
   getCartQuantity(updatedCartQuantity) {
     if (updatedCartQuantity || updatedCartQuantity === 0) {
       return updatedCartQuantity;
     } else {
-      const cartQuantity = parseInt(document.querySelector('input[name="quantity"]').dataset.cartQuantity);
+      const cartQuantity = parseInt(this.input.dataset.cartQuantity);
       return cartQuantity;
     }
   }

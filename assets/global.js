@@ -1034,8 +1034,8 @@ class VariantSelects extends HTMLElement {
           `Volume-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`
         );
 
-        const pricePerItemDestination = document.querySelector(`price-per-item .price-per-item`);
-        const pricePerItemSource = html.querySelector(`price-per-item .price-per-item`);
+        const pricePerItemDestination = document.getElementById(`Price-Per-Item-${this.dataset.section}`);
+        const pricePerItemSource = html.getElementById(`Price-Per-Item-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
 
         const volumePricingDestination = document.getElementById(`Volume-${this.dataset.section}`);
 
