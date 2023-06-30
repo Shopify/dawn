@@ -234,23 +234,13 @@ class VariantList extends HTMLElement {
             this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
         }));
 
-        let message = '';
         let hasError = false;
 
-        if (action === this.actions.add) {
-          const updatedValue = parsedState.quantity ? parsedState.quantity : undefined;
-          if (parsedState.quantity !== parseInt(quantityElement.value)) {
-            this.updateError(updatedValue, id, message)
-            hasError = true;
-          }
-        } else {
-          const currentItem = parsedState.items.find((item) => item.variant_id === parseInt(id));
-          const updatedValue = currentItem ? currentItem.quantity : undefined;
-
-          if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
-            this.updateError(updatedValue, id)
-            hasError = true;
-          }
+        const currentItem = parsedState.items.find((item) => item.variant_id === parseInt(id));
+        const updatedValue = currentItem ? currentItem.quantity : undefined;
+        if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
+          this.updateError(updatedValue, id)
+          hasError = true;
         }
 
         const variantItem = document.getElementById(`Variant-${id}`);
@@ -315,8 +305,8 @@ class VariantList extends HTMLElement {
 
   }
 
-
-  updateError(updatedValue, id, message) {
+  updateError(updatedValue, id) {
+    let message = '';
     if (typeof updatedValue === 'undefined') {
       message = window.cartStrings.error;
     } else {
