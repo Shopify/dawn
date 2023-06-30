@@ -2,15 +2,22 @@ class PricePerItem extends HTMLElement {
   constructor() {
     super();
     this.input = document.getElementById(`Quantity-${this.dataset.sectionId}`);
-    this.pricePerItem = document.getElementById(`Price-Per-Item-${this.dataset.sectionId}`);
-    this.variantId = this.pricePerItem.dataset.variantId;
+    this.variantId = document.getElementById(`Price-Per-Item-${this.dataset.sectionId}`).dataset.variantId;
     this.input.addEventListener('change', this.onInputChange.bind(this));
+
+    this.getVolumePricingArray();
   }
 
   updatePricePerItemUnsubscriber = undefined;
   cartUpdateStartedUnsubscriber = undefined;
+  variantIdChangedUnsubscriber = undefined;
 
   connectedCallback() {
+    // Update varinatId if variant is switched on product page
+    this.variantIdChangedUnsubscriber = subscribe(PUB_SUB_EVENTS.variantChange, (event) => {
+      this.variantId = event.data.variant.id.toString();
+      this.getVolumePricingArray();
+    });
     this.cartUpdateStartedUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdateStarted, () => {
       this.querySelector('.loading-overlay').classList.remove('hidden');
     });
@@ -44,6 +51,9 @@ class PricePerItem extends HTMLElement {
     if (this.cartUpdateStartedUnsubscriber) {
       this.cartUpdateStartedUnsubscriber();
     }
+    if (this.variantIdChangedUnsubscriber) {
+      this.variantIdChangedUnsubscriber();
+    }
   }
 
   onInputChange() {
@@ -51,8 +61,6 @@ class PricePerItem extends HTMLElement {
   }
 
   updatePricePerItem(updatedCartQuantity) {
-    this.getVolumePricingArray();
-
     const enteredQty = parseInt(this.input.value);
     this.currentQtyForVolumePricing = this.getCartQuantity(updatedCartQuantity) + enteredQty;
 
