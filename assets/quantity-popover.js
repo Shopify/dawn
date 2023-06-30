@@ -61,17 +61,10 @@ if (!customElements.get('quantity-popover')) {
         event.preventDefault();
         const isChild = this.popoverInfo.contains(event.relatedTarget) || this.variantInfo.contains(event.relatedTarget);
 
-        if (!event.relatedTarget || !isChild) {
-          this.popoverInfo.setAttribute('hidden', true);
-          if (this.mql.matches) {
-            this.infoButtonDesktop.setAttribute('aria-expanded', 'true');
-            this.infoButtonDesktop.classList.remove('variant-item__quantity-info--open');
-          } else {
-            this.infoButtonMobile.setAttribute('aria-expanded', 'true');
-            this.infoButtonMobile.classList.remove('variant-item__quantity-info--open');
-          }
+        const button = this.mql.matches ? this.infoButtonDesktop : this.infoButtonMobile;
 
-        }
+        button.setAttribute('aria-expanded', 'true');
+        button.classList.remove('variant-item__quantity-info--open');
       }
 
     })
