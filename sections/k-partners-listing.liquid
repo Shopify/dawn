@@ -26,6 +26,12 @@
     assign page_country = section.settings.country
     assign page_state = section.settings.state
   
+    if page_state != blank
+        assign active_state = page_state | append: ', ' | append: page_country
+    else
+        assign active_state = page_country
+    endif
+
     for i in metaobject
       if i.country.value.country_name == country
         assign metaobject_size = metaobject_size | plus: 1
@@ -50,11 +56,11 @@
             <div class="grid__item {{ meta_name }}-column">
                 {%- unless block.settings.title == blank -%}
                     <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin">
-                        <h2 class="title main-title inline-richtext h2">
-                            {{ block.settings.title | replace: '[country]', page_country }}
+                        <h2 class="title block-title inline-richtext h2">
+                            {{ block.settings.title | replace: '[country]', active_state }}
                         </h2>
                         {% if block.settings.subtitle != blank %}
-                            <div class="description-column rte"><p>{{ block.settings.subtitle }}</p></div>
+                            <div class="description-column rte"><p>{{ block.settings.subtitle | replace: '[country]', active_state }}</p></div>
                         {% endif %}
                     </div>
                 {%- endunless -%}
@@ -207,10 +213,11 @@
                                                         </div>
                                                     </div>
                                                 {% endif %}
-                                            {% if section.settings.tab_subtitle %}
-                                                <h3 class="title inline-richtext h3">{{ section.settings.tab_subtitle }}</h3>
-                                            {% endif %}
-                                            {% unless services.value.size == 0 %}
+
+                                            {% unless services.value.size == 0 or services.value.size == blank %}
+                                                {% if section.settings.tab_subtitle %}
+                                                    <h3 class="title inline-richtext h3">{{ section.settings.tab_subtitle }}</h3>
+                                                {% endif %}
                                                 <ul class="list-style-type">
                                                     {% for i in services.value %}
                                                         <li>{{ i }}</li>
