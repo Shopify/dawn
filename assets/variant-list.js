@@ -84,6 +84,7 @@ class VariantList extends HTMLElement {
       // If its another section that made the update
       this.onCartUpdate();
     });
+    this.sectionId = this.dataset.id;
   }
 
   disconnectedCallback() {
@@ -274,7 +275,7 @@ class VariantList extends HTMLElement {
   }
 
   setErrorMessage(message = null) {
-    this.errorMessageTemplate = this.errorMessageTemplate ?? document.querySelector('.variant-list-error template').cloneNode(true);
+    this.errorMessageTemplate = this.errorMessageTemplate ?? document.getElementById(`VariantListErrorTemplate-${this.sectionId}`).cloneNode(true);
     const errorElements = document.querySelectorAll('.variant-list-error');
     
     errorElements.forEach((errorElement) => {
