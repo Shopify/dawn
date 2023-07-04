@@ -14,6 +14,10 @@
     }
 {%- endstyle -%}
 
+{% liquid
+    assign meta_name = section.settings.meta_name
+    assign exclude = section.settings.exclude
+%}
 
 <div class="color-{{ section.settings.color_scheme }} isolate gradient">
     <div class="section-{{ section.id }}-padding">
@@ -30,21 +34,12 @@
         <div class="page-width page-width--narrow">
             <div class="meta-table large-up-hide">
                 {% for block in section.blocks %}
-                    
-                    {%- liquid
-                        assign meta_name = block.settings.meta_name
-                        assign countries =  shop.metaobjects[meta_name].values
-                        assign metaobject_size = 0
-                    
-                        for i in countries
-                            assign metaobject_size = metaobject_size | plus: 1
-                        endfor
-                    -%}
+
                     <div class="table-column">
                         <details
-                            id="Details-{{ block.id }}-{{ meta_name }}-{{ forloop.index }}"
+                            id="Details-{{ block.id }}-{{ forloop.index }}"
                           >
-                            <summary id="Summary-{{ block.id }}-{{ meta_name }}-{{ forloop.index }}">
+                            <summary id="Summary-{{ block.id }}-{{ forloop.index }}">
                                 <div class="table-cell heading-column">
                                     <div class="table-title">
                                         {% if block.settings.image != blank %}
@@ -89,29 +84,26 @@
                             </summary>
                             <div
                               class="accordion__content"
-                              id="CollapsibleAccordion-{{ block.id }}-{{ meta_name }}-{{ forloop.index }}"
+                              id="CollapsibleAccordion-{{ block.id }}-{{ forloop.index }}"
                               role="region"
-                              aria-labelledby="Summary-{{ block.id }}-{{ meta_name }}-{{ forloop.index }}"
+                              aria-labelledby="Summary-{{ block.id }}-{{ forloop.index }}"
                             >
                                 <div class="content-drop">
-                                    {%- for object in countries -%}
-                                        {% assign excluded = false %}
-                                        {% assign excluded_countries = block.settings.meta_filter | split: ',' %}
+                                    {% assign dropdown_loop = blank %}
+
+                                    {% if block.settings.states_only == 'true' %}
+                                        {% assign dropdown_loop = shop.metaobjects[meta_name].values | where: 'is_us_state', true %}
+                                    {% else %}
+                                        {% assign dropdown_loop = shop.metaobjects[meta_name].values | where: 'is_us_state', false %}
+                                    {% endif %}
+
+                                    {%- for object in dropdown_loop -%}
+                                        {% assign country_name = object.country_name %}
+                                        {% assign country_link = object.page.value.url %}
+                                        {% assign country_flag = object.country_flag %}
                                         
-                                        {% if meta_name == "united_states" %}
-                                            {% assign name = object.state_name %}
-                                        {% else %}
-                                            {% assign name = object.country_name %}
-                                        {% endif %}
-
-                                        {% for i in excluded_countries %}
-                                            {% if object.country_name == i %}
-                                                {% assign excluded = true %}
-                                            {% endif %}
-                                        {% endfor %}
-
-                                        {% unless excluded == true %}
-                                            <div class="table-cell {% if meta_name == "united_states" %} state-cell{% endif %}">
+                                        {% unless exclude contains country_name %}
+                                            <div class="table-cell {% if block.settings.states_only == 'true' %} state-cell{% endif %}">
                                                 <div class="table-title {% if object.country_flag != blank %} w-icon{% endif %}">
                                                     {% if object.country_flag != blank %}
                                                         <div>
@@ -143,9 +135,9 @@
                                                                 }}
                                                             </div>
                                                         </div>
-                                                    {% endif %}
+                                                    {% endif %} 
                                                     <div>
-                                                        <a href="{{ object.page.value.url }}" class="link full-unstyled-link accent-link {% if meta_name == "united_states" %} center{% endif %}">{{ name }}</a>
+                                                        <a href="{{ object.page.value.url }}" class="link full-unstyled-link accent-link {% if block.settings.states_only == 'true' %} center{% endif %}">{{ country_name }}</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -164,16 +156,6 @@
                         <thead>
                             <tr>
                                 {% for block in section.blocks %}
-                                    
-                                    {%- liquid
-                                        assign meta_name = block.settings.meta_name
-                                        assign countries =  shop.metaobjects[meta_name].values
-                                        assign metaobject_size = 0
-                                    
-                                        for i in countries
-                                            assign metaobject_size = metaobject_size | plus: 1
-                                        endfor
-                                    -%}
                                     <th>
                                         <div class="table-title">
                                             {% if block.settings.image != blank %}
@@ -216,119 +198,77 @@
                             </tr>
                         </thead>
                         <tbody>
-                                {% assign block1 = section.blocks.first %}
-                                {% assign block2 = section.blocks.last %}
+                            {% assign states = shop.metaobjects[meta_name].values | where: 'is_us_state', true %}
+                            {% assign countries = shop.metaobjects[meta_name].values | where: 'is_us_state', false %}
 
-                                {%- liquid
+                            {% liquid
+                                assign loop = 0
 
-                                    assign metaobject_size1 = 0
-                                    assign metaobject_size2 = 0
-          
-                                    for i in shop.metaobjects[block1.settings.meta_name].values
-                                        assign metaobject_size1 = metaobject_size1 | plus: 1
-                                    endfor
+                                if states.size > countries.size
+                                    assign loop = states.size
+                                else
+                                    assign loop = countries.size
+                                endif
+                            %}
 
-                                    for i in shop.metaobjects[block2.settings.meta_name].values
-                                        assign metaobject_size2 = metaobject_size2 | plus: 1
-                                    endfor
+                            {% for i in (0..loop) %}
+                                {% assign index = forloop.index0 %}
+                                {% assign country_name = countries[i].country_name %}
+                                {% assign country_link = countries[i].page.value.url %}
+                                {% assign country_flag = countries[i].country_flag %}
 
-                                    if metaobject_size1 > metaobject_size2
-                                        assign loop = metaobject_size1 | minus: 1
-                                        assign states_meta = block1.settings.meta_name
-                                        assign country_meta = block2.settings.meta_name
-                                        assign activeBlock = block1
-                                        assign altBlock = block2
-                                    else
-                                        assign loop = metaobject_size2 | minus: 1
-                                        assign states_meta = block1.settings.meta_name
-                                        assign country_meta = block2.settings.meta_name
-                                        assign activeBlock = block2
-                                        assign altBlock = block1
-                                    endif
-                                -%}
-
-                                {% assign countries =  shop.metaobjects[meta_name].values %}
-                                
-                                {%- for i in (0..loop) -%}
-                                    {% assign excluded = false %}
-                                    {% assign excluded_countries = block2.settings.meta_filter | default: block1.settings.meta_filter  %}
-                                    {% assign altStates = shop.metaobjects[states_meta].values %}
-                                    {% assign altCountries = shop.metaobjects[country_meta].values %}
-
-                                    {% assign country_name = blank %}
-                                    {% assign country_link = blank %}
-                                    {% assign country_flag = blank %}
-                                    
-                                    {% assign state_name = blank %}
-                                    {% assign state_link = blank %}
-
-                                    {% for o in altCountries %}
-                                        {% if forloop.index0 == i %}
-                                            {% assign country_name = o.country_name %}
-                                            {% assign country_link = o.page.value.url %}
-                                            {% assign country_flag = o.country_flag %}
-                                        {% endif %}
-                                    {% endfor %}
-
- 
-
-                                    {% for o in altStates %}
-                                        {% if forloop.index0 == i %}
-                                            {% assign state_name = o.state_name %}
-                                            {% assign state_link = o.page.value.url %}
-                                        {% endif %}
-                                    {% endfor %}
-                                    
-                                        <tr>
-                                            <td>
-                                                {% if state_name != blank %}
-                                                    <a href="{{ state_link }}" class="link full-unstyled-link accent-link center">{{ state_name }}</a>
-                                                {% endif %} 
-                                            </td>
-
-
-                                            <td>
-                                                {% unless country_name == excluded_countries %}
-                                                    <div class="table-title {% if country_flag != blank %} w-icon{% endif %}">
-                                                        {% if country_flag != blank %}
-                                                            <div>
-                                                                <div
-                                                                    class="media global-media-settings media--transparent media--adapt"
-                                                                    style="padding-bottom: 100%;"
-                                                                >
-                                                                    {%- liquid
-                                                                    assign number_of_columns = 1
-                                                                    assign number_of_columns_mobile = 1
-                                                                    assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
-                                                                    assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
-                                                                    assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
-                                                                    assign image_width = 1
-                                                                    -%}
-                                                                    {% capture sizes %}
-                                                                    (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
-                                                                    (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
-                                                                    (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
-                                                                    calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
-                                                                    {% endcapture %}
-                                                                    {{
-                                                                    country_flag
-                                                                    | image_url: width: 80
-                                                                    | image_tag:
-                                                                        loading: 'lazy',
-                                                                        widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
-                                                                        sizes: sizes
-                                                                    }}
-                                                                </div>
-                                                            </div>
-                                                        {% endif %}
-                                                        <div>
-                                                            <a href="{{ country_link }}" class="link full-unstyled-link accent-link">{{ country_name }}</a>
+                                {% unless exclude contains country_name or countries[i] == blank %}
+                                    <tr>
+                                        <td>
+                                            {% if states[index] %}
+                                                <a href="{{ states[index].page.value.url }}" class="link full-unstyled-link accent-link center">{{ states[index].country_name }}</a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="table-title w-icon">
+                                                {% unless countries[index].is_us_state == true %}
+                                                    {% assign country_name = countries[index].country_name %}
+                                                    {% assign country_link = countries[index].page.value.url %}
+                                                    {% assign country_flag = countries[index].country_flag %}
+                                                    
+                                                    <div>
+                                                        <div
+                                                            class="media global-media-settings media--transparent media--adapt"
+                                                            style="padding-bottom: 100%;"
+                                                        >
+                                                            {%- liquid
+                                                            assign number_of_columns = 1
+                                                            assign number_of_columns_mobile = 1
+                                                            assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                                            assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                                            assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+                                                            assign image_width = 1
+                                                            -%}
+                                                            {% capture sizes %}
+                                                            (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+                                                            (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+                                                            (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+                                                            calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+                                                            {% endcapture %}
+                                                            {{
+                                                            country_flag
+                                                            | image_url: width: 80
+                                                            | image_tag:
+                                                                loading: 'lazy',
+                                                                widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                                                                sizes: sizes
+                                                            }}
                                                         </div>
                                                     </div>
+                                                    <div>
+                                                        <a href="{{ country_link }}" class="link full-unstyled-link accent-link">{{ country_name }}</a>
+                                                    </div>
                                                 {% endunless %}
-                                            </td>
-                                        </tr>
-                                {%- endfor -%}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endunless %}
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -367,6 +307,18 @@
             "templates": ["page"]
         },
         "settings": [
+            {
+                "type": "text",
+                "id": "meta_name",
+                "label": "Metaobject name",
+                "info": "Metaobject type: https://prnt.sc/k5RKwo_v0vaW"
+            },
+            {
+                "type": "text",
+                "id": "exclude",
+                "label": "Object name (ex. USA)",
+                "info": "1 entry only"
+            },
             {
                 "type": "inline_richtext",
                 "id": "title",
@@ -486,16 +438,20 @@
                         "label": "Image Logo"
                     },
                     {
-                        "type": "text",
-                        "id": "meta_name",
-                        "label": "Metaobject name",
-                        "info": "Metaobject type: https://prnt.sc/k5RKwo_v0vaW"
-                    },
-                    {
-                        "type": "text",
-                        "id": "meta_filter",
-                        "label": "Exclude country",
-                        "info": "Country name. (eg. USA)"
+                        "type": "select",
+                        "id": "states_only",
+                        "options": [
+                          {
+                            "value": "true",
+                            "label": "True"
+                          },
+                          {
+                            "value": "false",
+                            "label": "False"
+                          }
+                        ],
+                        "default": "false",
+                        "label": "Render States only"
                     }
                 ]
             }
