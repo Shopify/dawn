@@ -146,6 +146,17 @@ class VariantList extends HTMLElement {
     ];
   }
 
+  renderSections(parsedState) {
+    this.getSectionsToRender().forEach((section => {
+      const sectionElement = document.getElementById(section.id);
+      const elementToReplace = sectionElement && sectionElement.querySelector(section.selector) ? sectionElement.querySelector(section.selector) : sectionElement;
+      if (elementToReplace) {
+        elementToReplace.innerHTML =
+        this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
+      }  
+    }));
+  }
+
   updateMultipleQty(items) {
     this.querySelector('.variant-remove-total .loading-overlay').classList.remove('hidden');
 
@@ -164,12 +175,7 @@ class VariantList extends HTMLElement {
       })
       .then((state) => {
         const parsedState = JSON.parse(state);
-        this.getSectionsToRender().forEach((section => {
-          const elementToReplace =
-            document.getElementById(section.id).querySelector(section.selector) || document.getElementById(section.id);
-          elementToReplace.innerHTML =
-            this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
-        }));
+        this.renderSections(parsedState);
       }).catch(() => {
         this.setErrorMessage(window.cartStrings.error);
       })
@@ -228,18 +234,13 @@ class VariantList extends HTMLElement {
 
         this.classList.toggle('is-empty', parsedState.item_count === 0);
 
-        this.getSectionsToRender().forEach((section => {
-          const elementToReplace =
-            document.getElementById(section.id).querySelector(section.selector) || document.getElementById(section.id);
-          elementToReplace.innerHTML =
-            this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
-        }));
+        this.renderSections(parsedState);
 
         let hasError = false;
 
         const currentItem = parsedState.items.find((item) => item.variant_id === parseInt(id));
         const updatedValue = currentItem ? currentItem.quantity : undefined;
-        if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
+        if (updatedValue && updatedValue !== parseInt(quantityElement.value)) {
           this.updateError(updatedValue, id)
           hasError = true;
         }
