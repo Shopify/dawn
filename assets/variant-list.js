@@ -216,7 +216,7 @@ class VariantList extends HTMLElement {
         const items = document.querySelectorAll('.variant-item');
 
         if (parsedState.description || parsedState.errors) {
-          quantityElement.value = quantityElement.getAttribute('value');
+          this.resetQuantityInput(id, quantityElement);
           if (parsedState.errors) {
             this.updateLiveRegions(id, parsedState.errors);
           } else {
@@ -260,11 +260,17 @@ class VariantList extends HTMLElement {
         }
       }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
+        this.resetQuantityInput(id);
         this.setErrorMessage(window.cartStrings.error);
       })
       .finally(() => {
         this.toggleLoading(id);
       });
+  }
+
+  resetQuantityInput(id, quantityElement) {
+    const input = quantityElement ?? document.getElementById(`Quantity-${id}`);
+    input.value = input.getAttribute('value');
   }
 
   setErrorMessage(message = null) {
