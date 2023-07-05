@@ -84,6 +84,7 @@ class VariantList extends HTMLElement {
       // If its another section that made the update
       this.onCartUpdate();
     });
+    this.sectionId = this.dataset.id;
   }
 
   disconnectedCallback() {
@@ -133,7 +134,7 @@ class VariantList extends HTMLElement {
         selector: '.shopify-section'
       },
       {
-        id: 'cart-live-region-text',
+        id: 'variant-list-live-region-text',
         section: 'cart-live-region-text',
         selector: '.shopify-section'
       },
@@ -145,6 +146,17 @@ class VariantList extends HTMLElement {
     ];
   }
 
+  renderSections(parsedState) {
+    this.getSectionsToRender().forEach((section => {
+      const sectionElement = document.getElementById(section.id);
+      const elementToReplace = sectionElement && sectionElement.querySelector(section.selector) ? sectionElement.querySelector(section.selector) : sectionElement;
+      if (elementToReplace) {
+        elementToReplace.innerHTML =
+        this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
+      }  
+    }));
+  }
+
   updateMultipleQty(items) {
     this.querySelector('.variant-remove-total .loading-overlay').classList.remove('hidden');
 
@@ -154,21 +166,18 @@ class VariantList extends HTMLElement {
       sections_url: window.location.pathname
     });
 
+    this.updateMessage();
+    this.setErrorMessage();
+
     fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } })
       .then((response) => {
         return response.text();
       })
       .then((state) => {
         const parsedState = JSON.parse(state);
-        this.getSectionsToRender().forEach((section => {
-          const elementToReplace =
-            document.getElementById(section.id).querySelector(section.selector) || document.getElementById(section.id);
-          elementToReplace.innerHTML =
-            this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
-        }));
+        this.renderSections(parsedState);
       }).catch(() => {
-        const errors = document.getElementById('variantlist-errors');
-        errors.textContent = window.cartStrings.error;
+        this.setErrorMessage(window.cartStrings.error);
       })
       .finally(() => {
         this.querySelector('.variant-remove-total .loading-overlay').classList.add('hidden');
@@ -201,6 +210,9 @@ class VariantList extends HTMLElement {
       });
     }
 
+    this.updateMessage();
+    this.setErrorMessage();
+
     fetch(`${routeUrl}`, { ...fetchConfig(fetchConfigType), ...{ body } })
       .then((response) => {
         return response.text();
@@ -211,7 +223,7 @@ class VariantList extends HTMLElement {
         const items = document.querySelectorAll('.variant-item');
 
         if (parsedState.description || parsedState.errors) {
-          quantityElement.value = quantityElement.getAttribute('value');
+          this.resetQuantityInput(id, quantityElement);
           if (parsedState.errors) {
             this.updateLiveRegions(id, parsedState.errors);
           } else {
@@ -222,27 +234,15 @@ class VariantList extends HTMLElement {
 
         this.classList.toggle('is-empty', parsedState.item_count === 0);
 
-        this.getSectionsToRender().forEach((section => {
-          const elementToReplace =
-            document.getElementById(section.id).querySelector(section.selector) || document.getElementById(section.id);
-          elementToReplace.innerHTML =
-            this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
-        }));
+        this.renderSections(parsedState);
 
-        let message = '';
+        let hasError = false;
 
-        if (action === this.actions.add) {
-          const updatedValue = parsedState.quantity ? parsedState.quantity : undefined;
-          if (parsedState.quantity !== parseInt(quantityElement.value)) {
-            this.updateError(updatedValue, id, message)
-          }
-        } else {
-          const currentItem = parsedState.items.find((item) => item.variant_id === parseInt(id));
-          const updatedValue = currentItem ? currentItem.quantity : undefined;
-
-          if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
-            this.updateError(updatedValue, id)
-          }
+        const currentItem = parsedState.items.find((item) => item.variant_id === parseInt(id));
+        const updatedValue = currentItem ? currentItem.quantity : undefined;
+        if (updatedValue && updatedValue !== parseInt(quantityElement.value)) {
+          this.updateError(updatedValue, id)
+          hasError = true;
         }
 
         const variantItem = document.getElementById(`Variant-${id}`);
@@ -251,7 +251,9 @@ class VariantList extends HTMLElement {
         }
         publish(PUB_SUB_EVENTS.cartUpdate, { source: this.variantListId });
 
-        if (action === this.actions.add) {
+        if (hasError) {
+          this.updateMessage();
+        } else if (action === this.actions.add) {
           this.updateMessage(parseInt(quantity))
         } else if (action === this.actions.update) {
           this.updateMessage(parseInt(quantity - quantityElement.dataset.cartQuantity))
@@ -260,17 +262,41 @@ class VariantList extends HTMLElement {
         }
       }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
-        const errors = document.getElementById('variantlist-errors');
-        errors.textContent = window.cartStrings.error;
+        this.resetQuantityInput(id);
+        this.setErrorMessage(window.cartStrings.error);
       })
       .finally(() => {
         this.toggleLoading(id);
       });
   }
 
-  updateMessage(quantity) {
+  resetQuantityInput(id, quantityElement) {
+    const input = quantityElement ?? document.getElementById(`Quantity-${id}`);
+    input.value = input.getAttribute('value');
+  }
+
+  setErrorMessage(message = null) {
+    this.errorMessageTemplate = this.errorMessageTemplate ?? document.getElementById(`VariantListErrorTemplate-${this.sectionId}`).cloneNode(true);
+    const errorElements = document.querySelectorAll('.variant-list-error');
+    
+    errorElements.forEach((errorElement) => {
+      errorElement.innerHTML = '';
+      if (!message) return;
+      const updatedMessageElement = this.errorMessageTemplate.cloneNode(true);
+      updatedMessageElement.content.querySelector('.variant-list-error-message').innerText = message;
+      errorElement.appendChild(updatedMessageElement.content);
+    });
+  }
+
+  updateMessage(quantity = null) {
     const messages = this.querySelectorAll('.variant-list__message-text');
     const icons = this.querySelectorAll('.variant-list__message-icon');
+
+    if(quantity === null || isNaN(quantity)) {
+      messages.forEach(message => message.innerHTML = '');
+      icons.forEach(icon => icon.classList.add('hidden'));
+      return;
+    }
 
     const isQuantityNegative = quantity < 0;
     const absQuantity = Math.abs(quantity);
@@ -287,8 +313,8 @@ class VariantList extends HTMLElement {
 
   }
 
-
-  updateError(updatedValue, id, message) {
+  updateError(updatedValue, id) {
+    let message = '';
     if (typeof updatedValue === 'undefined') {
       message = window.cartStrings.error;
     } else {
@@ -298,12 +324,12 @@ class VariantList extends HTMLElement {
   }
 
   updateLiveRegions(id, message) {
-    const variantItemError = document.getElementById(`Variant-item-list-${id}`);
-    if (variantItemError) variantItemError.querySelector('.variant-list__error-text').innerHTML = message;
+    const variantItemError = document.getElementById(`Variant-list-item-error-${id}`);
+    if (variantItemError) variantItemError.querySelector('.variant-item__error-text').innerHTML = message;
 
     this.variantItemStatusElement.setAttribute('aria-hidden', true);
 
-    const cartStatus = document.getElementById('cart-live-region-text');
+    const cartStatus = document.getElementById('variant-list-live-region-text');
     cartStatus.setAttribute('aria-hidden', false);
 
     setTimeout(() => {
