@@ -10,6 +10,8 @@ if (!customElements.get('product-form')) {
         this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
         this.cart = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
         this.submitButton = this.querySelector('[type="submit"]');
+        this.sectionID = this.dataset.sectionId;
+
         if (document.querySelector('cart-drawer')) this.submitButton.setAttribute('aria-haspopup', 'dialog');
 
         this.hideErrors = this.dataset.hideErrors === 'true';
@@ -40,7 +42,7 @@ if (!customElements.get('product-form')) {
         }
         config.body = formData;
 
-        publish(PUB_SUB_EVENTS.cartUpdateStarted);
+        publish(PUB_SUB_EVENTS.cartUpdateStarted, {sectionID: this.sectionID} );
 
         fetch(`${routes.cart_add_url}`, config)
           .then((response) => response.json())
@@ -67,7 +69,7 @@ if (!customElements.get('product-form')) {
             }
 
             if (!this.error)
-              publish(PUB_SUB_EVENTS.cartUpdate, { source: 'product-form', productVariantId: formData.get('id'), cartData: response });
+              publish(PUB_SUB_EVENTS.cartUpdate, { source: 'product-form', productVariantId: formData.get('id'), cartData: response, sectionID: this.sectionID });
             this.error = false;
             const quickAddModal = this.closest('quick-add-modal');
             if (quickAddModal) {
