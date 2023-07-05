@@ -5,11 +5,11 @@ if (!customElements.get('quantity-popover')) {
       constructor() {
         super();
         this.mql = window.matchMedia('(min-width: 750px)');
-        this.infoButtonDesktop = this.querySelector('.variant-item__quantity-info.small-hide');
-        this.infoButtonMobile = this.querySelector('.variant-item__quantity-info.medium-hide');
+        this.infoButtonDesktop = this.querySelector('.quantity-popover__info-button.small-hide');
+        this.infoButtonMobile = this.querySelector('.quantity-popover__info-button.medium-hide');
         this.popoverInfo = this.querySelector('.quantity-popover__info');
         this.closeButton = this.querySelector('.button-close');
-        this.variantInfo = this.querySelector('.variant-item__quantity-wrap');
+        this.variantInfo = this.querySelector('.quantity-popover-container');
 
         if (this.closeButton) {
           this.closeButton.addEventListener('click', this.closePopover.bind(this));
@@ -44,7 +44,7 @@ if (!customElements.get('quantity-popover')) {
 
         const isOpen = button.getAttribute('aria-expanded') === 'true';
 
-        button.classList.toggle('variant-item__quantity-info--open');
+        button.classList.toggle('quantity-popover__info-button--open');
 
         if (isOpen) {
           button.focus();
@@ -59,10 +59,10 @@ if (!customElements.get('quantity-popover')) {
 
         if (!event.relatedTarget || !isChild) {
           button.setAttribute('aria-expanded', 'false');
-          button.classList.remove('variant-item__quantity-info--open');
+          button.classList.remove('quantity-popover__info-button--open');
           this.popoverInfo.setAttribute('hidden', '');
         }
       }
-    })
+    }
+  );
 }
-
