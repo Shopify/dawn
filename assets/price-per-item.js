@@ -83,8 +83,7 @@ if (!customElements.get('price-per-item')) {
         if (updatedCartQuantity || updatedCartQuantity === 0) {
           return updatedCartQuantity;
         } else {
-          const cartQuantity = parseInt(this.input.dataset.cartQuantity);
-          return cartQuantity;
+          return parseInt(this.input.dataset.cartQuantity);
         }
       }
 
