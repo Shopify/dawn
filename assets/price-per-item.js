@@ -5,7 +5,7 @@ if (!customElements.get('price-per-item')) {
       constructor() {
         super();
         this.input = document.getElementById(`Quantity-${this.dataset.sectionId}`);
-        this.variantId = document.getElementById(`Price-Per-Item-${this.dataset.sectionId}`).dataset.variantId;
+        this.variantId = this.dataset.variantId;
         this.input.addEventListener('change', this.onInputChange.bind(this));
 
         this.getVolumePricingArray();
@@ -16,7 +16,7 @@ if (!customElements.get('price-per-item')) {
       variantIdChangedUnsubscriber = undefined;
 
       connectedCallback() {
-        // Update varinatId if variant is switched on product page
+        // Update variantId if variant is switched on product page
         this.variantIdChangedUnsubscriber = subscribe(PUB_SUB_EVENTS.variantChange, (event) => {
           this.variantId = event.data.variant.id.toString();
           this.getVolumePricingArray();
@@ -73,17 +73,15 @@ if (!customElements.get('price-per-item')) {
 
         for (let pair of this.qtyPricePairs) {
           if (this.currentQtyForVolumePricing >= pair[0]) {
-            let pricePerItem = pair[1];
             const pricePerItemCurrent = document.querySelector(`price-per-item[id^="Price-Per-Item-${this.dataset.sectionId}"] .price-per-item`);
-            pricePerItemCurrent.innerHTML = pricePerItem;
+            pricePerItemCurrent.innerHTML = pair[1];
             break;
           }
         }
       }
 
       getCartQuantity(updatedCartQuantity) {
-        const newCartQty = (updatedCartQuantity || updatedCartQuantity === 0) ? updatedCartQuantity : parseInt(this.input.dataset.cartQuantity);
-        return newCartQty
+        return (updatedCartQuantity || updatedCartQuantity === 0) ? updatedCartQuantity : parseInt(this.input.dataset.cartQuantity);
       }
 
       getVolumePricingArray() {
