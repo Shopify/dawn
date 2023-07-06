@@ -3,12 +3,6 @@ window.addEventListener("DOMContentLoaded", (event) => {
         e.addEventListener('click', function() {
             var panel = e.closest('details')
             panel.removeAttribute('open')
-
-            if (!panel.querySelector('.hubspot-form-wrapper').hasAttribute('hidden')) {
-                panel.querySelector('.hubspot-form-wrapper').setAttribute('hidden','')
-                panel.querySelector('.inner-content').removeAttribute('hidden')
-                panel.querySelector('.tab__content').classList.remove('p-0')
-            }
         })
     })
 
@@ -50,16 +44,14 @@ window.addEventListener("DOMContentLoaded", (event) => {
 
             var parent = e.closest('.tab__content')
             var formWrapper = parent.querySelector('.hubspot-form-wrapper')
-            var contentWrapper = parent.querySelector('.inner-content')
             var link = e.href
 
             formWrapper.removeAttribute('hidden')
-            contentWrapper.setAttribute('hidden','')
-            parent.classList.add('p-0')
             
             if ( formWrapper.querySelector('iframe') == null ) {
                 formWrapper.insertAdjacentHTML('afterbegin', `<iframe src="${link}" frameborder="0"></iframe>`)
                 formWrapper.scrollIntoView({ behavior: 'smooth', block: 'center',inline: 'center' });
+                e.style.display = 'none';
             }
         }) 
     })
