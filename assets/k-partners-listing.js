@@ -13,7 +13,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
                     element.removeAttribute('open');
                 }
             });
-        });
+        }); 
     });
 
     document.querySelectorAll('.tab-flex').forEach(e => {
