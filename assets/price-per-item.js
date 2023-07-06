@@ -22,12 +22,11 @@ if (!customElements.get('price-per-item')) {
           this.getVolumePricingArray();
         });
         this.cartUpdateStartedUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdateStarted, (event) => {
-          if (event.sectionID !== this.dataset.sectionId) return;
+          if (event.variantId !== this.variantId) return;
           this.querySelector('.loading-overlay').classList.remove('hidden');
         });
 
         this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (response) => {
-          if (response.sectionID !== this.dataset.sectionId) return;
           this.querySelector('.loading-overlay').classList.add('hidden');
           // Item was added to cart via product page
           if (response.cartData['variant_id'] !== undefined) {
