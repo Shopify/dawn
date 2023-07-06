@@ -65,14 +65,11 @@ if (!customElements.get('price-per-item')) {
       }
 
       updatePricePerItem(updatedCartQuantity) {
+        const enteredQty = parseInt(this.input.value);
+
         // updatedCartQuantity is undefined when qty is updated on product page. We need to sum entered qty and current qty in cart.
-        if (updatedCartQuantity === undefined) {
-          const enteredQty = parseInt(this.input.value);
-          this.currentQtyForVolumePricing = this.getCartQuantity(updatedCartQuantity) + enteredQty;
         // updatedCartQuantity is not undefined when qty is updated in cart. We need to sum qty in cart and min qty for product.
-        } else {
-          this.currentQtyForVolumePricing = this.getCartQuantity(updatedCartQuantity) + parseInt(this.input.min);
-        }
+        this.currentQtyForVolumePricing = updatedCartQuantity === undefined ? this.getCartQuantity(updatedCartQuantity) + enteredQty : this.getCartQuantity(updatedCartQuantity) + parseInt(this.input.min);
 
         for (let pair of this.qtyPricePairs) {
           if (this.currentQtyForVolumePricing >= pair[0]) {
@@ -85,11 +82,8 @@ if (!customElements.get('price-per-item')) {
       }
 
       getCartQuantity(updatedCartQuantity) {
-        if (updatedCartQuantity || updatedCartQuantity === 0) {
-          return updatedCartQuantity;
-        } else {
-          return parseInt(this.input.dataset.cartQuantity);
-        }
+        const newCartQty = (updatedCartQuantity || updatedCartQuantity === 0) ? updatedCartQuantity : parseInt(this.input.dataset.cartQuantity);
+        return newCartQty
       }
 
       getVolumePricingArray() {
