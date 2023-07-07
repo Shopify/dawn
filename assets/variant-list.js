@@ -152,8 +152,8 @@ class VariantList extends HTMLElement {
       const elementToReplace = sectionElement && sectionElement.querySelector(section.selector) ? sectionElement.querySelector(section.selector) : sectionElement;
       if (elementToReplace) {
         elementToReplace.innerHTML =
-        this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
-      }  
+          this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
+      }
     }));
   }
 
@@ -249,7 +249,7 @@ class VariantList extends HTMLElement {
         if (variantItem && variantItem.querySelector(`[name="${name}"]`)) {
           variantItem.querySelector(`[name="${name}"]`).focus();
         }
-        publish(PUB_SUB_EVENTS.cartUpdate, { source: this.variantListId });
+        publish(PUB_SUB_EVENTS.cartUpdate, { source: this.variantListId, cartData: parsedState });
 
         if (hasError) {
           this.updateMessage();
@@ -260,7 +260,8 @@ class VariantList extends HTMLElement {
         } else {
           this.updateMessage(-parseInt(quantityElement.dataset.cartQuantity))
         }
-      }).catch(() => {
+      }).catch((e) => {
+        console.log(e, 'eee')
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         this.resetQuantityInput(id);
         this.setErrorMessage(window.cartStrings.error);
@@ -278,7 +279,7 @@ class VariantList extends HTMLElement {
   setErrorMessage(message = null) {
     this.errorMessageTemplate = this.errorMessageTemplate ?? document.getElementById(`VariantListErrorTemplate-${this.sectionId}`).cloneNode(true);
     const errorElements = document.querySelectorAll('.variant-list-error');
-    
+
     errorElements.forEach((errorElement) => {
       errorElement.innerHTML = '';
       if (!message) return;
@@ -292,7 +293,7 @@ class VariantList extends HTMLElement {
     const messages = this.querySelectorAll('.variant-list__message-text');
     const icons = this.querySelectorAll('.variant-list__message-icon');
 
-    if(quantity === null || isNaN(quantity)) {
+    if (quantity === null || isNaN(quantity)) {
       messages.forEach(message => message.innerHTML = '');
       icons.forEach(icon => icon.classList.add('hidden'));
       return;
