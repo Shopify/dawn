@@ -46,7 +46,7 @@ if (!customElements.get('quantity-popover')) {
 
         button.classList.toggle('quantity-popover__info-button--open');
 
-        if (isOpen) {
+        if (isOpen && event.type !== 'mouseenter') {
           button.focus();
         }
       }
