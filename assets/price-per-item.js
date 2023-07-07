@@ -6,13 +6,9 @@ if (!customElements.get('price-per-item')) {
         super();
         this.variantId = this.dataset.variantId;
         this.input = document.getElementById(`Quantity-${this.dataset.sectionId || this.dataset.variantId}`);
-<<<<<<< HEAD
         if (this.input) {
           this.input.addEventListener('change', this.onInputChange.bind(this));
         }
-=======
-        this.input.addEventListener('change', this.onInputChange.bind(this));
->>>>>>> 59b27933 (Fix price logic)
 
         this.getVolumePricingArray();
       }
