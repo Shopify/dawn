@@ -18,7 +18,7 @@
 {% # theme-check-enable %}
 
 <tr
-  class="variant-item{% unless section.settings.show_image %} variant-item--no-media{% endunless %}"
+  class="variant-item{% unless section.settings.show_image %} variant-item--no-media{% endunless %}{% if item.available and item.unit_price_measurement %} variant-item--unit-price{% endif %}"
   id="Variant-{{ variant.id }}"
   data-variant-id="{{ variant.id }}"
   data-cart-qty="{{ cart_qty }}"
@@ -127,13 +127,22 @@
       if variant.quantity_price_breaks.size > 0
         assign has_vol_pricing = true
       endif
+
+      assign is_available = false
+      assign has_popover = false
+      unless variant.available == false or quantity_rule_soldout
+        assign is_available = true
+      endunless
+      if has_qty_rules or has_vol_pricing
+        assign has_popover = true
+      endif
     -%}
     <quantity-popover>
-      <div class="variant-item__quantity-wrapper quantity-popover-wrapper{% if has_qty_rules == false and  has_vol_pricing == false %} variant-item__quantity-wrapper--no-info{% endif %}">
+      <div class="variant-item__quantity-wrapper quantity-popover-wrapper{% unless has_popover %} variant-item__quantity-wrapper--no-info{% endunless %}">
         <label class="visually-hidden" for="Quantity-{{ variant.id }}">
           {{ 'products.product.quantity.label' | t }}
         </label>
-        <div class="quantity-popover-container{% if has_qty_rules or has_vol_pricing %} quantity-popover-container--hover{% endif %}{% if cart_qty == 0 %} quantity-popover-container--empty{% endif %}">
+        <div class="quantity-popover-container{% if is_available and has_popover %} quantity-popover-container--hover{% endif %}{% if cart_qty == 0 %} quantity-popover-container--empty{% endif %}">
           {%- if has_qty_rules or has_vol_pricing -%}
             <button
               aria-expanded="false"
@@ -149,7 +158,6 @@
             {% # theme-check-disable %}
             {% assign cart_qty = cart | item_count_for_variant: variant.id %}
             {% # theme-check-enable %}
-
             {% render 'quantity-input', variant: variant %}
           {%- endif -%}
         </div>
@@ -168,7 +176,7 @@
           </variant-list-remove-button>
         {%- endif -%}
       </div>
-      {%- if has_qty_rules or has_vol_pricing -%}
+      {%- if has_popover -%}
         <button
           class="quantity-popover__info-button button button--tertiary medium-hide large-up-hide"
           aria-expanded="false"
