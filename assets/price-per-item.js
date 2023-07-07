@@ -30,11 +30,11 @@ if (!customElements.get('price-per-item')) {
 
           // Item was added to cart via product page
           if (response.cartData['variant_id'] !== undefined) {
-            this.updatePricePerItem(response.cartData.quantity);
+            if (response.productVariantId === this.variantId) this.updatePricePerItem(response.cartData.quantity);
             // Qty was updated in cart
           } else if (response.cartData.item_count !== 0) {
             const isVariant = response.cartData.items.find((item) => item.variant_id.toString() === this.variantId);
-            if (isVariant) {
+            if (isVariant && isVariant.id.toString() === this.variantId) {
               // The variant is still in cart
               this.updatePricePerItem(isVariant.quantity);
             } else {
@@ -69,14 +69,15 @@ if (!customElements.get('price-per-item')) {
 
         // updatedCartQuantity is undefined when qty is updated on product page. We need to sum entered qty and current qty in cart.
         // updatedCartQuantity is not undefined when qty is updated in cart. We need to sum qty in cart and min qty for product.
-        this.currentQtyForVolumePricing = updatedCartQuantity === undefined ? this.getCartQuantity(updatedCartQuantity) + enteredQty : this.getCartQuantity(updatedCartQuantity) + parseInt(this.input.min);
-
+        this.currentQtyForVolumePricing = updatedCartQuantity === undefined ? this.getCartQuantity(updatedCartQuantity) + enteredQty : this.getCartQuantity(updatedCartQuantity) + parseInt(this.input.step);
         if (this.classList.contains('variant-item__price-per-item')) {
           this.currentQtyForVolumePricing = this.getCartQuantity(updatedCartQuantity);
         }
 
         for (let pair of this.qtyPricePairs) {
           if (this.currentQtyForVolumePricing >= pair[0]) {
+            console.log(this.currentQtyForVolumePricing);
+            console.log(pair[1]);
             const pricePerItemCurrent = document.querySelector(`price-per-item[id^="Price-Per-Item-${this.dataset.sectionId || this.dataset.variantId}"] .price-per-item span`);
             pricePerItemCurrent.innerHTML = window.variantListStrings.each.replace('[money]', pair[1])
             break;
