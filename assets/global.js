@@ -157,7 +157,6 @@ class QuantityInput extends HTMLElement {
     super();
     this.input = this.querySelector('input');
     this.changeEvent = new Event('change', { bubbles: true });
-
     this.input.addEventListener('change', this.onInputChange.bind(this));
     this.querySelectorAll('button').forEach((button) =>
       button.addEventListener('click', this.onButtonClick.bind(this))
@@ -1111,6 +1110,10 @@ class VariantSelects extends HTMLElement {
         const volumePricingSource = html.getElementById(
           `Volume-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`
         );
+
+        const pricePerItemDestination = document.getElementById(`Price-Per-Item-${this.dataset.section}`);
+        const pricePerItemSource = html.getElementById(`Price-Per-Item-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
+
         const volumePricingDestination = document.getElementById(`Volume-${this.dataset.section}`);
 
         if (source && destination) destination.innerHTML = source.innerHTML;
@@ -1122,6 +1125,10 @@ class VariantSelects extends HTMLElement {
 
         if (volumePricingSource && volumePricingDestination) {
           volumePricingDestination.innerHTML = volumePricingSource.innerHTML;
+        }
+
+        if (pricePerItemSource && pricePerItemDestination) {
+          pricePerItemDestination.innerHTML = pricePerItemSource.innerHTML;
         }
 
         const price = document.getElementById(`price-${this.dataset.section}`);
