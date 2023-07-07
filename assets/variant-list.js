@@ -260,8 +260,7 @@ class VariantList extends HTMLElement {
         } else {
           this.updateMessage(-parseInt(quantityElement.dataset.cartQuantity))
         }
-      }).catch((e) => {
-        console.log(e, 'eee')
+      }).catch(() => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         this.resetQuantityInput(id);
         this.setErrorMessage(window.cartStrings.error);
