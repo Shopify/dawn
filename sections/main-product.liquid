@@ -268,15 +268,25 @@
                     </button>
                   </quantity-input>
                   {%- liquid
-                    assign volume_pricing_array = product.selected_or_first_available_variant.quantity_price_breaks | sort: 'quantity' | reverse
+                    assign volume_pricing_array = product.selected_or_first_available_variant.quantity_price_breaks | sort: 'price'
                     assign current_qty_for_volume_pricing = cart_qty | plus: product.selected_or_first_available_variant.quantity_rule.min
-                    if cart_qty > 0
-                      assign current_qty_for_volume_pricing = cart_qty | plus: product.selected_or_first_available_variant.quantity_rule.increment
-                    endif
 
                   -%}
                   <price-per-item class="no-js-hidden" id="Price-Per-Item-{{ section.id }}" data-section-id="{{ section.id }}" data-variant-id="{{ product.selected_or_first_available_variant.id }}">
                     {%- if product.quantity_price_breaks_configured? -%}
+                      <span class="loading-overlay hidden">
+                        <span class="loading-overlay__spinner">
+                          <svg
+                            aria-hidden="true"
+                            focusable="false"
+                            class="spinner"
+                            viewBox="0 0 66 66"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+                          </svg>
+                        </span>
+                      </span>
                       <div class="price-per-item">
                         {%- if current_qty_for_volume_pricing < volume_pricing_array.last.minimum_quantity -%}
                           {%- assign variant_price = product.selected_or_first_available_variant.price | money_with_currency -%}
@@ -327,14 +337,14 @@
                       <ul class="list-unstyled no-js-hidden">
                         <li>
                           <span>{{ product.selected_or_first_available_variant.quantity_rule.min }}+</span>
-                          {%- assign price = product.selected_or_first_available_variant.price | money_with_currency -%}
-                          <span data-text="{{ 'products.product.volume_pricing.price_at_each' | t: price: variant_price }}">{{ 'sections.quick_order_list.each' | t: money: price }}</span>
+                          {%- assign variant_price = product.selected_or_first_available_variant.price | money_with_currency -%}
+                          <span data-text="{{ 'products.product.volume_pricing.price_at_each' | t: price: variant_price }}">{{ product.selected_or_first_available_variant.price | money_with_currency }}/ea</span>
                         </li>
                         {%- for price_break in product.selected_or_first_available_variant.quantity_price_breaks -%}
                           {%- assign price_break_price = price_break.price | money_with_currency -%}
                           <li class="{%- if forloop.index >= 3 -%}show-more-item hidden{%- endif -%}">
                             <span>{{ price_break.minimum_quantity }}<span aria-hidden="true">+</span></span>
-                            <span data-text="{{ 'products.product.volume_pricing.price_at_each' | t: price: price_break_price }}">{{ 'sections.quick_order_list.each' | t: money: price_break_price }}</span>
+                            <span data-text="{{ 'products.product.volume_pricing.price_at_each' | t: price: price_break_price }}">{{ price_break.price | money_with_currency }}/ea</span>
                           </li>
                         {%- endfor -%}
                       </ul>
