@@ -27,6 +27,8 @@ if (!customElements.get('price-per-item')) {
         });
 
         this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (response) => {
+          if (!response.cartData) return;
+
           this.querySelector('.loading-overlay').classList.add('hidden');
           // Item was added to cart via product page
           if (response.cartData['variant_id'] !== undefined) {
