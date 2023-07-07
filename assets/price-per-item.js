@@ -32,17 +32,17 @@ if (!customElements.get('price-per-item')) {
 
           // Item was added to cart via product page
           if (response.cartData['variant_id'] !== undefined) {
-            this.updatePricePerItem(response.cartData.quantity);
+            if (response.productVariantId === this.variantId) this.updatePricePerItem(response.cartData.quantity);
             // Qty was updated in cart
           } else if (response.cartData.item_count !== 0) {
-            const isVariant = response.cartData.items.find((item) => item.variant_id.toString() === this.variantId);
-            if (isVariant) {
-              // The variant is still in cart
-              this.updatePricePerItem(isVariant.quantity);
-            } else {
-              // The variant was removed from cart, qty is 0
-              this.updatePricePerItem(0);
-            }
+              const isVariant = response.cartData.items.find((item) => item.variant_id.toString() === this.variantId);
+              if (isVariant && isVariant.id.toString() === this.variantId) {
+                // The variant is still in cart
+                this.updatePricePerItem(isVariant.quantity);
+              } else {
+                // The variant was removed from cart, qty is 0
+                this.updatePricePerItem(0);
+              }
             // All items were removed from cart
           } else {
             this.updatePricePerItem(0);
