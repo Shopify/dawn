@@ -4,8 +4,8 @@ if (!customElements.get('price-per-item')) {
     class PricePerItem extends HTMLElement {
       constructor() {
         super();
-        this.input = document.getElementById(`Quantity-${this.dataset.sectionId}`);
         this.variantId = this.dataset.variantId;
+        this.input = document.getElementById(`Quantity-${this.dataset.variantId}`);
         this.input.addEventListener('change', this.onInputChange.bind(this));
 
         this.getVolumePricingArray();
@@ -73,8 +73,9 @@ if (!customElements.get('price-per-item')) {
 
         for (let pair of this.qtyPricePairs) {
           if (this.currentQtyForVolumePricing >= pair[0]) {
-            const pricePerItemCurrent = document.querySelector(`price-per-item[id^="Price-Per-Item-${this.dataset.sectionId}"] .price-per-item`);
-            pricePerItemCurrent.innerHTML = pair[1];
+            const pricePerItemCurrent = document.querySelector(`price-per-item[id^="Price-Per-Item-${this.dataset.variantId}"] .price-per-item span`);
+            console.log(pair[1], 'pair 1', this.dataset.variantId)
+            pricePerItemCurrent.innerText = pair[1];
             break;
           }
         }
@@ -85,7 +86,8 @@ if (!customElements.get('price-per-item')) {
       }
 
       getVolumePricingArray() {
-        const volumePricing = document.getElementById(`Volume-${this.dataset.sectionId}`);
+        const volumePricing = document.getElementById(`Volume-${this.dataset.variantId}`);
+        console.log(volumePricing, 'hehhee')
         this.qtyPricePairs = [];
 
         volumePricing.querySelectorAll('li').forEach(li => {
@@ -93,6 +95,8 @@ if (!customElements.get('price-per-item')) {
           const price = (li.querySelector('span:not(:first-child):last-child').dataset.text);
           this.qtyPricePairs.push([qty, price]);
         });
+
+        console.log(this.qtyPricePairs, 'heyyy')
 
         this.qtyPricePairs.reverse();
       }
