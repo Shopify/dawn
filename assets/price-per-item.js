@@ -23,17 +23,15 @@ if (!customElements.get('price-per-item')) {
         });
         this.cartUpdateStartedUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdateStarted, (event) => {
           if (event.variantId !== this.variantId) return;
-          this.querySelector('.loading-overlay').classList.remove('hidden');
         });
 
         this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (response) => {
           if (!response.cartData) return;
 
-          this.querySelector('.loading-overlay').classList.add('hidden');
           // Item was added to cart via product page
           if (response.cartData['variant_id'] !== undefined) {
             this.updatePricePerItem(response.cartData.quantity);
-          // Qty was updated in cart
+            // Qty was updated in cart
           } else if (response.cartData.item_count !== 0) {
             const isVariant = response.cartData.items.find((item) => item.variant_id.toString() === this.variantId);
             if (isVariant) {
@@ -43,7 +41,7 @@ if (!customElements.get('price-per-item')) {
               // The variant was removed from cart, qty is 0
               this.updatePricePerItem(0);
             }
-          // All items were removed from cart
+            // All items were removed from cart
           } else {
             this.updatePricePerItem(0);
           }
