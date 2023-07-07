@@ -5,7 +5,7 @@ if (!customElements.get('price-per-item')) {
       constructor() {
         super();
         this.variantId = this.dataset.variantId;
-        this.input = document.getElementById(`Quantity-${this.dataset.variantId}`);
+        this.input = document.getElementById(`Quantity-${this.dataset.sectionId || this.dataset.variantId}`);
         this.input.addEventListener('change', this.onInputChange.bind(this));
 
         this.getVolumePricingArray();
@@ -23,11 +23,15 @@ if (!customElements.get('price-per-item')) {
         });
         this.cartUpdateStartedUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdateStarted, (event) => {
           if (event.variantId !== this.variantId) return;
-          this.querySelector('.loading-overlay').classList.remove('hidden');
+          if (this.querySelector('.loading-overlay')) {
+            this.querySelector('.loading-overlay').classList.remove('hidden');
+          }
         });
 
         this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (response) => {
-          this.querySelector('.loading-overlay').classList.add('hidden');
+          if (this.querySelector('.loading-overlay')) {
+            this.querySelector('.loading-overlay').classList.add('hidden');
+          }
           // Item was added to cart via product page
           if (response.cartData['variant_id'] !== undefined) {
             this.updatePricePerItem(response.cartData.quantity);
@@ -71,11 +75,14 @@ if (!customElements.get('price-per-item')) {
         // updatedCartQuantity is not undefined when qty is updated in cart. We need to sum qty in cart and min qty for product.
         this.currentQtyForVolumePricing = updatedCartQuantity === undefined ? this.getCartQuantity(updatedCartQuantity) + enteredQty : this.getCartQuantity(updatedCartQuantity) + parseInt(this.input.min);
 
+        if (this.classList.contains('variant-item__price-per-item')) {
+          this.currentQtyForVolumePricing = this.getCartQuantity(updatedCartQuantity);
+        }
+
         for (let pair of this.qtyPricePairs) {
           if (this.currentQtyForVolumePricing >= pair[0]) {
-            const pricePerItemCurrent = document.querySelector(`price-per-item[id^="Price-Per-Item-${this.dataset.variantId}"] .price-per-item span`);
-            console.log(pair[1], 'pair 1', this.dataset.variantId)
-            pricePerItemCurrent.innerText = pair[1];
+            const pricePerItemCurrent = document.querySelector(`price-per-item[id^="Price-Per-Item-${this.dataset.sectionId || this.dataset.variantId}"] .price-per-item span`);
+            pricePerItemCurrent.innerHTML = window.variantListStrings.each.replace('[money]', pair[1])
             break;
           }
         }
@@ -86,8 +93,7 @@ if (!customElements.get('price-per-item')) {
       }
 
       getVolumePricingArray() {
-        const volumePricing = document.getElementById(`Volume-${this.dataset.variantId}`);
-        console.log(volumePricing, 'hehhee')
+        const volumePricing = document.getElementById(`Volume-${this.dataset.sectionId || this.dataset.variantId}`);
         this.qtyPricePairs = [];
 
         volumePricing.querySelectorAll('li').forEach(li => {
@@ -95,8 +101,6 @@ if (!customElements.get('price-per-item')) {
           const price = (li.querySelector('span:not(:first-child):last-child').dataset.text);
           this.qtyPricePairs.push([qty, price]);
         });
-
-        console.log(this.qtyPricePairs, 'heyyy')
 
         this.qtyPricePairs.reverse();
       }
