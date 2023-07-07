@@ -74,7 +74,7 @@ if (!customElements.get('price-per-item')) {
 
         // updatedCartQuantity is undefined when qty is updated on product page. We need to sum entered qty and current qty in cart.
         // updatedCartQuantity is not undefined when qty is updated in cart. We need to sum qty in cart and min qty for product.
-        this.currentQtyForVolumePricing = updatedCartQuantity === undefined ? this.getCartQuantity(updatedCartQuantity) + this.enteredQty : this.getCartQuantity(updatedCartQuantity) + parseInt(this.min);
+        this.currentQtyForVolumePricing = updatedCartQuantity === undefined ? this.getCartQuantity(updatedCartQuantity) + this.enteredQty : this.getCartQuantity(updatedCartQuantity) + parseInt(this.step);
 
         if (this.classList.contains('variant-item__price-per-item')) {
           this.currentQtyForVolumePricing = this.getCartQuantity(updatedCartQuantity);
