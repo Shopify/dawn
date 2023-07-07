@@ -80,6 +80,10 @@ if (!customElements.get('price-per-item')) {
           this.currentQtyForVolumePricing = this.getCartQuantity(updatedCartQuantity);
         }
 
+        if (this.classList.contains('variant-item__price-per-item')) {
+          this.currentQtyForVolumePricing = this.getCartQuantity(updatedCartQuantity);
+        }
+
         for (let pair of this.qtyPricePairs) {
           if (this.currentQtyForVolumePricing >= pair[0]) {
             const pricePerItemCurrent = document.querySelector(`price-per-item[id^="Price-Per-Item-${this.dataset.sectionId || this.dataset.variantId}"] .price-per-item span`);
@@ -102,8 +106,6 @@ if (!customElements.get('price-per-item')) {
           const price = (li.querySelector('span:not(:first-child):last-child').dataset.text);
           this.qtyPricePairs.push([qty, price]);
         });
-
-        console.log(this.qtyPricePairs, 'heyyy')
 
         this.qtyPricePairs.reverse();
       }
