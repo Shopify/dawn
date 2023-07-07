@@ -4,9 +4,11 @@ if (!customElements.get('price-per-item')) {
     class PricePerItem extends HTMLElement {
       constructor() {
         super();
-        this.input = document.getElementById(`Quantity-${this.dataset.sectionId}`);
         this.variantId = this.dataset.variantId;
-        this.input.addEventListener('change', this.onInputChange.bind(this));
+        this.input = document.getElementById(`Quantity-${this.dataset.sectionId || this.dataset.variantId}`);
+        if (this.input) {
+          this.input.addEventListener('change', this.onInputChange.bind(this));
+        }
 
         this.getVolumePricingArray();
       }
@@ -65,16 +67,24 @@ if (!customElements.get('price-per-item')) {
       }
 
       updatePricePerItem(updatedCartQuantity) {
-        const enteredQty = parseInt(this.input.value);
+        if (this.input) {
+          this.enteredQty = parseInt(this.input.value);
+          this.step = parseInt(this.input.step)
+        }
 
         // updatedCartQuantity is undefined when qty is updated on product page. We need to sum entered qty and current qty in cart.
         // updatedCartQuantity is not undefined when qty is updated in cart. We need to sum qty in cart and min qty for product.
-        this.currentQtyForVolumePricing = updatedCartQuantity === undefined ? this.getCartQuantity(updatedCartQuantity) + enteredQty : this.getCartQuantity(updatedCartQuantity) + parseInt(this.input.min);
+        this.currentQtyForVolumePricing = updatedCartQuantity === undefined ? this.getCartQuantity(updatedCartQuantity) + this.enteredQty : this.getCartQuantity(updatedCartQuantity) + parseInt(this.step);
+
+
+        if (this.classList.contains('variant-item__price-per-item')) {
+          this.currentQtyForVolumePricing = this.getCartQuantity(updatedCartQuantity);
+        }
 
         for (let pair of this.qtyPricePairs) {
           if (this.currentQtyForVolumePricing >= pair[0]) {
-            const pricePerItemCurrent = document.querySelector(`price-per-item[id^="Price-Per-Item-${this.dataset.sectionId}"] .price-per-item`);
-            pricePerItemCurrent.innerHTML = pair[1];
+            const pricePerItemCurrent = document.querySelector(`price-per-item[id^="Price-Per-Item-${this.dataset.sectionId || this.dataset.variantId}"] .price-per-item span`);
+            this.classList.contains('variant-item__price-per-item') ? pricePerItemCurrent.innerHTML = window.variantListStrings.each.replace('[money]', pair[1]) : pricePerItemCurrent.innerHTML = pair[1];
             break;
           }
         }
@@ -85,7 +95,7 @@ if (!customElements.get('price-per-item')) {
       }
 
       getVolumePricingArray() {
-        const volumePricing = document.getElementById(`Volume-${this.dataset.sectionId}`);
+        const volumePricing = document.getElementById(`Volume-${this.dataset.sectionId || this.dataset.variantId}`);
         this.qtyPricePairs = [];
 
         volumePricing.querySelectorAll('li').forEach(li => {
