@@ -69,7 +69,7 @@ if (!customElements.get('price-per-item')) {
       updatePricePerItem(updatedCartQuantity) {
         if (this.input) {
           this.enteredQty = parseInt(this.input.value);
-          this.min = parseInt(this.input.min)
+          this.step = parseInt(this.input.step)
         }
 
         // updatedCartQuantity is undefined when qty is updated on product page. We need to sum entered qty and current qty in cart.
