@@ -1,0 +1,170 @@
+{%- style -%}
+    .section-{{ section.id }}-padding {
+        padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+        padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    }
+    @media screen and (min-width: 750px) {
+        .section-{{ section.id }}-padding {
+        padding-top: {{ section.settings.padding_top }}px;
+        padding-bottom: {{ section.settings.padding_bottom }}px;
+        }
+    }
+{%- endstyle -%}
+
+<div class="page-width section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}" data-cascade>
+    <div class="page-width page-width--narrow">
+        {%- unless section.settings.title == blank -%}
+            <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin justify-center {% if section.settings.logo != blank %}title-with-logo{% endif %}">
+                {% if section.settings.logo != blank %}
+                    <div>
+                        <div
+                            class="media media--transparent media--adapt"
+                              style="padding-bottom: {{ 1 | divided_by: section.settings.logo.aspect_ratio | times: 100 }}%;">
+                            {%- liquid
+                              assign number_of_columns = 1
+                              assign number_of_columns_mobile = 1
+                              assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                              assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                              assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+                              assign image_width = 1
+                            -%}
+                            {% capture sizes %}
+                              (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+                              (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+                              (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+                              calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+                            {% endcapture %}
+                            {{
+                                section.settings.logo
+                              | image_url: width: 300
+                              | image_tag:
+                                loading: 'lazy',
+                                widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                                sizes: sizes
+                            }}
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="title main-title inline-richtext {{ section.settings.heading_size }}">
+                            {{ section.settings.title | replace: '[country]', page_country }}
+                        </h2>
+                    </div>
+                {% else %}
+                    <h2 class="title main-title inline-richtext {{ section.settings.heading_size }}">
+                        {{ section.settings.title | replace: '[country]', page_country }}
+                    </h2>
+                {% endif %}
+            </div>
+            {% if section.settings.content != blank %}
+                <div class="center rte">{{ section.settings.content | replace: '<a', '<a class="accent-link"' }}</div>
+            {% endif %}
+        {%- endunless -%}
+    </div>
+</div>
+
+{% schema %}
+    {
+        "name": "Other Areas",
+        "class": "section k-other-areas",
+        "tag": "section",
+        "enabled_on": {
+            "templates": ["page"]
+        },
+        "settings": [
+            {
+                "type": "inline_richtext",
+                "id": "title",
+                "default": "Multicolumn",
+                "label": "t:sections.multicolumn.settings.title.label",
+                "info": "[country] as Metaobject's country reference"
+            },
+            {
+                "type": "select",
+                "id": "heading_size",
+                "options": [
+                  {
+                    "value": "h2",
+                    "label": "t:sections.all.heading_size.options__1.label"
+                  },
+                  {
+                    "value": "h1",
+                    "label": "t:sections.all.heading_size.options__2.label"
+                  },
+                  {
+                    "value": "h0",
+                    "label": "t:sections.all.heading_size.options__3.label"
+                  }
+                ],
+                "default": "h1",
+                "label": "t:sections.all.heading_size.label"
+            },
+            {
+                "type": "image_picker",
+                "id": "logo",
+                "label": "Logo"
+            },
+            {
+                "type": "richtext",
+                "id": "content",
+                "label": "Content"
+            },
+            {
+                "type": "select",
+                "id": "color_scheme",
+                "options": [
+                  {
+                    "value": "accent-1",
+                    "label": "t:sections.all.colors.accent_1.label"
+                  },
+                  {
+                    "value": "accent-2",
+                    "label": "t:sections.all.colors.accent_2.label"
+                  },
+                  {
+                    "value": "background-1",
+                    "label": "t:sections.all.colors.background_1.label"
+                  },
+                  {
+                    "value": "background-2",
+                    "label": "t:sections.all.colors.background_2.label"
+                  },
+                  {
+                    "value": "inverse",
+                    "label": "t:sections.all.colors.inverse.label"
+                  }
+                ],
+                "default": "background-1",
+                "label": "t:sections.all.colors.label"
+            },
+            {
+                "type": "header",
+                "content": "t:sections.all.padding.section_padding_heading"
+            },
+            {
+                "type": "range",
+                "id": "padding_top",
+                "min": 0,
+                "max": 100,
+                "step": 4,
+                "unit": "px",
+                "label": "t:sections.all.padding.padding_top",
+                "default": 36
+            },
+            {
+                "type": "range",
+                "id": "padding_bottom",
+                "min": 0,
+                "max": 100,
+                "step": 4,
+                "unit": "px",
+                "label": "t:sections.all.padding.padding_bottom",
+                "default": 36
+            }
+        ],
+        "presets": [
+            {
+                "name": "Other Areas"
+            }
+        ]
+    }
+{% endschema %}
