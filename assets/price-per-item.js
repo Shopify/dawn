@@ -104,6 +104,8 @@ if (!customElements.get('price-per-item')) {
           this.qtyPricePairs.push([qty, price]);
         });
 
+        console.log(this.qtyPricePairs, 'heyyy')
+
         this.qtyPricePairs.reverse();
       }
     }
