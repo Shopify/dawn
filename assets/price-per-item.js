@@ -35,14 +35,14 @@ if (!customElements.get('price-per-item')) {
             if (response.productVariantId === this.variantId) this.updatePricePerItem(response.cartData.quantity);
             // Qty was updated in cart
           } else if (response.cartData.item_count !== 0) {
-              const isVariant = response.cartData.items.find((item) => item.variant_id.toString() === this.variantId);
-              if (isVariant && isVariant.id.toString() === this.variantId) {
-                // The variant is still in cart
-                this.updatePricePerItem(isVariant.quantity);
-              } else {
-                // The variant was removed from cart, qty is 0
-                this.updatePricePerItem(0);
-              }
+            const isVariant = response.cartData.items.find((item) => item.variant_id.toString() === this.variantId);
+            if (isVariant && isVariant.id.toString() === this.variantId) {
+              // The variant is still in cart
+              this.updatePricePerItem(isVariant.quantity);
+            } else {
+              // The variant was removed from cart, qty is 0
+              this.updatePricePerItem(0);
+            }
             // All items were removed from cart
           } else {
             this.updatePricePerItem(0);
@@ -98,11 +98,13 @@ if (!customElements.get('price-per-item')) {
         const volumePricing = document.getElementById(`Volume-${this.dataset.sectionId || this.dataset.variantId}`);
         this.qtyPricePairs = [];
 
-        volumePricing.querySelectorAll('li').forEach(li => {
-          const qty = parseInt(li.querySelector('span:first-child').textContent);
-          const price = (li.querySelector('span:not(:first-child):last-child').dataset.text);
-          this.qtyPricePairs.push([qty, price]);
-        });
+        if (volumePricing) {
+          volumePricing.querySelectorAll('li').forEach(li => {
+            const qty = parseInt(li.querySelector('span:first-child').textContent);
+            const price = (li.querySelector('span:not(:first-child):last-child').dataset.text);
+            this.qtyPricePairs.push([qty, price]);
+          });
+        }
 
         this.qtyPricePairs.reverse();
       }
