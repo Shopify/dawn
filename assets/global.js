@@ -895,7 +895,6 @@ class SlideshowComponent extends SliderComponent {
             button.removeAttribute('tabindex');
           });
         item.setAttribute('aria-hidden', 'false');
-        item.classList.remove('slideshow__slide--hidden');
         item.removeAttribute('tabindex');
       } else {
         if (linkElements.length)
@@ -903,7 +902,6 @@ class SlideshowComponent extends SliderComponent {
             button.setAttribute('tabindex', '-1');
           });
         item.setAttribute('aria-hidden', 'true');
-        item.classList.add('slideshow__slide--hidden');
         item.setAttribute('tabindex', '-1');
       }
     });
