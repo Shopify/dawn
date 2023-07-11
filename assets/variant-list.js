@@ -223,6 +223,8 @@ class VariantList extends HTMLElement {
         const items = document.querySelectorAll('.variant-item');
 
         if (parsedState.description || parsedState.errors) {
+          const variantItem = document.querySelector(`[id^="Variant-${id}"] .variant-item__totals.small-hide .loading-overlay`);
+          variantItem.classList.add('loading-overlay--error')
           this.resetQuantityInput(id, quantityElement);
           if (parsedState.errors) {
             this.updateLiveRegions(id, parsedState.errors);
