@@ -5,8 +5,8 @@ if (!customElements.get('quantity-popover')) {
       constructor() {
         super();
         this.mql = window.matchMedia('(min-width: 750px)');
-        this.infoButtonDesktop = this.querySelector('.quantity-popover__info-button.small-hide');
-        this.infoButtonMobile = this.querySelector('.quantity-popover__info-button.medium-hide');
+        this.infoButtonDesktop = this.querySelector('.quantity-popover__info-button--icon-only');
+        this.infoButtonMobile = this.querySelector('.quantity-popover__info-button--icon-with-label');
         this.popoverInfo = this.querySelector('.quantity-popover__info');
         this.closeButton = this.querySelector('.button-close');
         this.variantInfo = this.querySelector('.quantity-popover-container');
@@ -15,14 +15,17 @@ if (!customElements.get('quantity-popover')) {
           this.closeButton.addEventListener('click', this.closePopover.bind(this));
         }
 
-        if (this.popoverInfo) {
+        if (this.popoverInfo && this.infoButtonDesktop && this.mql.matches) {
           this.popoverInfo.addEventListener('mouseenter', this.closePopover.bind(this));
         }
 
-        if (this.infoButtonDesktop && this.infoButtonMobile) {
+        if (this.infoButtonDesktop) {
           this.infoButtonDesktop.addEventListener('click', this.togglePopover.bind(this));
-          this.infoButtonMobile.addEventListener('click', this.togglePopover.bind(this));
           this.infoButtonDesktop.addEventListener('focusout', this.closePopover.bind(this));
+        }
+
+        if (this.infoButtonMobile) {        
+          this.infoButtonMobile.addEventListener('click', this.togglePopover.bind(this));       
           this.infoButtonMobile.addEventListener('focusout', this.closePopover.bind(this));
         }
 
@@ -35,7 +38,7 @@ if (!customElements.get('quantity-popover')) {
       togglePopover(event) {
         event.preventDefault();
 
-        const button = this.mql.matches ? this.infoButtonDesktop : this.infoButtonMobile;
+        const button = this.infoButtonDesktop && this.mql.matches ?  this.infoButtonDesktop : this.infoButtonMobile;
         const isExpanded = button.getAttribute('aria-expanded') === 'true';
 
         button.setAttribute('aria-expanded', !isExpanded);
@@ -55,7 +58,7 @@ if (!customElements.get('quantity-popover')) {
         event.preventDefault();
         const isChild = this.variantInfo.contains(event.relatedTarget);
 
-        const button = this.mql.matches ? this.infoButtonDesktop : this.infoButtonMobile;
+        const button = this.infoButtonDesktop && this.mql.matches ?  this.infoButtonDesktop : this.infoButtonMobile;
 
         if (!event.relatedTarget || !isChild) {
           button.setAttribute('aria-expanded', 'false');
