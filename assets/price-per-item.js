@@ -14,7 +14,6 @@ if (!customElements.get('price-per-item')) {
       }
 
       updatePricePerItemUnsubscriber = undefined;
-      cartUpdateStartedUnsubscriber = undefined;
       variantIdChangedUnsubscriber = undefined;
 
       connectedCallback() {
@@ -22,9 +21,6 @@ if (!customElements.get('price-per-item')) {
         this.variantIdChangedUnsubscriber = subscribe(PUB_SUB_EVENTS.variantChange, (event) => {
           this.variantId = event.data.variant.id.toString();
           this.getVolumePricingArray();
-        });
-        this.cartUpdateStartedUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdateStarted, (event) => {
-          if (event.variantId !== this.variantId) return;
         });
 
         this.updatePricePerItemUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (response) => {
@@ -53,9 +49,6 @@ if (!customElements.get('price-per-item')) {
       disconnectedCallback() {
         if (this.updatePricePerItemUnsubscriber) {
           this.updatePricePerItemUnsubscriber();
-        }
-        if (this.cartUpdateStartedUnsubscriber) {
-          this.cartUpdateStartedUnsubscriber();
         }
         if (this.variantIdChangedUnsubscriber) {
           this.variantIdChangedUnsubscriber();
