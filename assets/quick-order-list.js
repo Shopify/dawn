@@ -326,7 +326,7 @@ class QuickOrderList extends HTMLElement {
   }
 
   updateLiveRegions(id, message) {
-    const variantItemError = document.getElementById(`Variant-list-item-error-${id}`);
+    const variantItemError = document.getElementById(`Quick-order-list-item-error-${id}`);
     if (variantItemError) variantItemError.querySelector('.variant-item__error-text').innerHTML = message;
 
     this.variantItemStatusElement.setAttribute('aria-hidden', true);
