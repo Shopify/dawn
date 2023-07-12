@@ -734,13 +734,9 @@ class SlideshowComponent extends SliderComponent {
     if (this.announcementBarSlider) {
       this.announcementBarArrowButtonWasClicked = false;
 
-      this.desktopLayout = window.matchMedia('(min-width: 750px)');
       this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-      [this.reducedMotion, this.desktopLayout].forEach((mediaQuery) => {
-        mediaQuery.addEventListener('change', () => {
-          if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
-        });
+      this.reducedMotion.addEventListener('change', () => {
+        if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
       });
 
       [this.prevButton, this.nextButton].forEach((button) => {
@@ -770,7 +766,7 @@ class SlideshowComponent extends SliderComponent {
       this.autoplayButtonIsSetToPlay = true;
       this.play();
     } else {
-      this.reducedMotion.matches || this.announcementBarArrowButtonWasClicked || !this.desktopLayout.matches
+      this.reducedMotion.matches || this.announcementBarArrowButtonWasClicked
         ? this.pause()
         : this.play();
     }
@@ -838,8 +834,7 @@ class SlideshowComponent extends SliderComponent {
       this.play();
     } else if (
       !this.reducedMotion.matches &&
-      !this.announcementBarArrowButtonWasClicked &&
-      this.desktopLayout.matches
+      !this.announcementBarArrowButtonWasClicked
     ) {
       this.play();
     }
