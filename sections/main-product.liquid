@@ -28,7 +28,7 @@
 
   <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
 
-  {%- assign first_3d_model = product.media | where: "media_type", "model" | first -%}
+  {%- assign first_3d_model = product.media | where: 'media_type', 'model' | first -%}
   {%- if first_3d_model -%}
     {{ 'component-product-model.css' | asset_url | stylesheet_tag }}
     <link id="ModelViewerStyle" rel="stylesheet" href="https://cdn.shopify.com/shopifycloud/model-viewer-ui/assets/v1.0/model-viewer-ui.css" media="print" onload="this.media='all'">
@@ -79,7 +79,15 @@
                 data-media-id="{{ section.id }}-{{ featured_media.id }}"
               >
                 {%- assign media_position = 1 -%}
-                {% render 'product-thumbnail', media: featured_media, position: media_position, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: true, media_width: media_width, lazy_load: false %}
+                {% render 'product-thumbnail',
+                  media: featured_media,
+                  position: media_position,
+                  loop: section.settings.enable_video_looping,
+                  modal_id: section.id,
+                  xr_button: true,
+                  media_width: media_width,
+                  lazy_load: false
+                %}
               </li>
             {%- endif -%}
             {%- for media in product.media -%}
@@ -90,7 +98,15 @@
                   data-media-id="{{ section.id }}-{{ media.id }}"
                 >
                   {%- assign media_position = media_position | default: 0 | plus: 1 -%}
-                  {% render 'product-thumbnail', media: media, position: media_position, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: true, media_width: media_width, lazy_load: true %}
+                  {% render 'product-thumbnail',
+                    media: media,
+                    position: media_position,
+                    loop: section.settings.enable_video_looping,
+                    modal_id: section.id,
+                    xr_button: true,
+                    media_width: media_width,
+                    lazy_load: true
+                  %}
                 </li>
               {%- endunless -%}
             {%- endfor -%}
@@ -134,7 +150,10 @@
             {{ 'products.product.xr_button' | t }}
           </button>
         {%- endif -%}
-        {%- if media_count > 1 and section.settings.gallery_layout != 'stacked' or section.settings.mobile_thumbnails == 'show' -%}
+        {%- if media_count > 1
+          and section.settings.gallery_layout != 'stacked'
+          or section.settings.mobile_thumbnails == 'show'
+        -%}
           <slider-component
             id="GalleryThumbnails-{{ section.id }}"
             class="thumbnail-slider slider-mobile-gutter quick-add-hidden{% if section.settings.mobile_thumbnails == 'hide' %} small-hide{% endif %}{% if media_count <= 3 %} thumbnail-slider--no-slide{% endif %}"
@@ -233,7 +252,10 @@
                     <button
                       class="thumbnail global-media-settings global-media-settings--no-shadow {% if media.preview_image.aspect_ratio > 1 %}thumbnail--wide{% else %}thumbnail--narrow{% endif %}"
                       aria-label="{%- if media.media_type == 'image' -%}{{ 'products.product.media.load_image' | t: index: media_index }}{%- elsif media.media_type == 'model' -%}{{ 'products.product.media.load_model' | t: index: media_index }}{%- elsif media.media_type == 'video' or media.media_type == 'external_video' -%}{{ 'products.product.media.load_video' | t: index: media_index }}{%- endif -%}"
-                      {% if media == product.selected_or_first_available_variant.featured_media or product.selected_or_first_available_variant.featured_media == null and forloop.index == 1 %}
+                      {% if media == product.selected_or_first_available_variant.featured_media
+                        or product.selected_or_first_available_variant.featured_media == null
+                        and forloop.index == 1
+                      %}
                         aria-current="true"
                       {% endif %}
                       aria-controls="GalleryViewer-{{ section.id }}"
@@ -304,7 +326,12 @@
               </div>
             {%- when 'price' -%}
               <div class="no-js-hidden" id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
-                {%- render 'price', product: product, use_variant: true, show_badges: true, price_class: 'price--large' -%}
+                {%- render 'price',
+                  product: product,
+                  use_variant: true,
+                  show_badges: true,
+                  price_class: 'price--large'
+                -%}
               </div>
               {%- if shop.taxes_included or shop.shipping_policy.body != blank -%}
                 <div class="product__tax caption rte">
@@ -568,7 +595,13 @@
                     <span class="product-form__error-message"></span>
                   </div>
 
-                  {%- form 'product', product, id: product_form_id, class: 'form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+                  {%- form 'product',
+                    product,
+                    id: product_form_id,
+                    class: 'form',
+                    novalidate: 'novalidate',
+                    data-type: 'add-to-cart-form'
+                  -%}
                     <input
                       type="hidden"
                       name="id"
@@ -613,7 +646,9 @@
 
                 {{ 'component-pickup-availability.css' | asset_url | stylesheet_tag }}
 
-                {%- assign pick_up_availabilities = product.selected_or_first_available_variant.store_availabilities | where: 'pick_up_enabled', true -%}
+                {%- assign pick_up_availabilities = product.selected_or_first_available_variant.store_availabilities
+                  | where: 'pick_up_enabled', true
+                -%}
 
                 <pickup-availability
                   class="product__pickup-availabilities no-js-hidden quick-add-hidden"
@@ -643,12 +678,12 @@
               {%- if product.metafields.reviews.rating.value != blank -%}
                 {% liquid
                   assign rating_decimal = 0
-                   assign decimal = product.metafields.reviews.rating.value.rating | modulo: 1
-                   if decimal >= 0.3 and decimal <= 0.7
+                  assign decimal = product.metafields.reviews.rating.value.rating | modulo: 1
+                  if decimal >= 0.3 and decimal <= 0.7
                     assign rating_decimal = 0.5
                   elsif decimal > 0.7
                     assign rating_decimal = 1
-                   endif
+                  endif
                 %}
                 <div
                   class="rating"
@@ -732,7 +767,7 @@
     </div>
   </product-modal>
 
-  {% assign popups = section.blocks | where: "type", "popup" %}
+  {% assign popups = section.blocks | where: 'type', 'popup' %}
   {%- for block in popups -%}
     <modal-dialog id="PopupModal-{{ block.id }}" class="product-popup-modal" {{ block.shopify_attributes }}>
       <div
@@ -771,23 +806,27 @@
   {%- endif -%}
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       function isIE() {
         const ua = window.navigator.userAgent;
         const msie = ua.indexOf('MSIE ');
         const trident = ua.indexOf('Trident/');
 
-        return (msie > 0 || trident > 0);
+        return msie > 0 || trident > 0;
       }
 
       if (!isIE()) return;
       const hiddenInput = document.querySelector('#{{ product_form_id }} input[name="id"]');
       const noScriptInputWrapper = document.createElement('div');
-      const variantSwitcher = document.querySelector('variant-radios[data-section="{{ section.id }}"]') || document.querySelector('variant-selects[data-section="{{ section.id }}"]');
-      noScriptInputWrapper.innerHTML = document.querySelector('.product-form__noscript-wrapper-{{ section.id }}').textContent;
+      const variantSwitcher =
+        document.querySelector('variant-radios[data-section="{{ section.id }}"]') ||
+        document.querySelector('variant-selects[data-section="{{ section.id }}"]');
+      noScriptInputWrapper.innerHTML = document.querySelector(
+        '.product-form__noscript-wrapper-{{ section.id }}'
+      ).textContent;
       variantSwitcher.outerHTML = noScriptInputWrapper.outerHTML;
 
-      document.querySelector('#Variants-{{ section.id }}').addEventListener('change', function(event) {
+      document.querySelector('#Variants-{{ section.id }}').addEventListener('change', function (event) {
         hiddenInput.value = event.currentTarget.value;
       });
     });

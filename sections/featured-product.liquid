@@ -23,7 +23,7 @@
 
 {%- assign product = section.settings.product -%}
 
-{%- assign first_3d_model = product.media | where: "media_type", "model" | first -%}
+{%- assign first_3d_model = product.media | where: 'media_type', 'model' | first -%}
 {%- if first_3d_model -%}
   {{ 'component-product-model.css' | asset_url | stylesheet_tag }}
   <link id="ModelViewerStyle" rel="stylesheet" href="https://cdn.shopify.com/shopifycloud/model-viewer-ui/assets/v1.0/model-viewer-ui.css" media="print" onload="this.media='all'">
@@ -47,7 +47,14 @@
             {%- if product.selected_or_first_available_variant.featured_media != null -%}
               {%- assign media = product.selected_or_first_available_variant.featured_media -%}
               <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                {% render 'product-thumbnail', media: media, position: 'featured', loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: 0.5 %}
+                {% render 'product-thumbnail',
+                  media: media,
+                  position: 'featured',
+                  loop: section.settings.enable_video_looping,
+                  modal_id: section.id,
+                  xr_button: false,
+                  media_width: 0.5
+                %}
               </div>
             {%- endif -%}
             {%- liquid
@@ -57,9 +64,18 @@
               endfor
             -%}
             {%- for media in product.media -%}
-              {%- if media_to_render contains media.id and media.id != product.selected_or_first_available_variant.featured_media.id -%}
+              {%- if media_to_render contains media.id
+                and media.id != product.selected_or_first_available_variant.featured_media.id
+              -%}
                 <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                  {% render 'product-thumbnail', media: media, position: forloop.index, loop: section.settings.enable_video_looping, modal_id: section.id, xr_button: false, media_width: 0.5 %}
+                  {% render 'product-thumbnail',
+                    media: media,
+                    position: forloop.index,
+                    loop: section.settings.enable_video_looping,
+                    modal_id: section.id,
+                    xr_button: false,
+                    media_width: 0.5
+                  %}
                 </div>
               {%- endif -%}
             {%- endfor -%}
@@ -105,7 +121,12 @@
                 </h2>
               {%- when 'price' -%}
                 <div class="no-js-hidden" id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
-                  {%- render 'price', product: product, use_variant: true, show_badges: true, price_class: 'price--large' -%}
+                  {%- render 'price',
+                    product: product,
+                    use_variant: true,
+                    show_badges: true,
+                    price_class: 'price--large'
+                  -%}
                 </div>
                 {%- if shop.taxes_included or shop.shipping_policy.body != blank -%}
                   <div class="product__tax caption rte">
@@ -324,7 +345,13 @@
                         <span class="product-form__error-message"></span>
                       </div>
 
-                      {%- form 'product', product, id: product_form_id, class: 'form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+                      {%- form 'product',
+                        product,
+                        id: product_form_id,
+                        class: 'form',
+                        novalidate: 'novalidate',
+                        data-type: 'add-to-cart-form'
+                      -%}
                         <input
                           type="hidden"
                           name="id"
@@ -387,12 +414,12 @@
                 {%- if product.metafields.reviews.rating.value != blank -%}
                   {% liquid
                     assign rating_decimal = 0
-                      assign decimal = product.metafields.reviews.rating.value.rating | modulo: 1
-                      if decimal >= 0.3 and decimal <= 0.7
+                    assign decimal = product.metafields.reviews.rating.value.rating | modulo: 1
+                    if decimal >= 0.3 and decimal <= 0.7
                       assign rating_decimal = 0.5
                     elsif decimal > 0.7
                       assign rating_decimal = 1
-                      endif
+                    endif
                   %}
                   <div
                     class="rating"
@@ -537,23 +564,27 @@
 </script>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     function isIE() {
       const ua = window.navigator.userAgent;
       const msie = ua.indexOf('MSIE ');
       const trident = ua.indexOf('Trident/');
 
-      return (msie > 0 || trident > 0);
+      return msie > 0 || trident > 0;
     }
 
     if (!isIE()) return;
     const hiddenInput = document.querySelector('#{{ product_form_id }} input[name="id"]');
     const noScriptInputWrapper = document.createElement('div');
-    const variantSwitcher = document.querySelector('variant-radios[data-section="{{ section.id }}"]') || document.querySelector('variant-selects[data-section="{{ section.id }}"]');
-    noScriptInputWrapper.innerHTML = document.querySelector('.product-form__noscript-wrapper-{{ section.id }}').textContent;
+    const variantSwitcher =
+      document.querySelector('variant-radios[data-section="{{ section.id }}"]') ||
+      document.querySelector('variant-selects[data-section="{{ section.id }}"]');
+    noScriptInputWrapper.innerHTML = document.querySelector(
+      '.product-form__noscript-wrapper-{{ section.id }}'
+    ).textContent;
     variantSwitcher.outerHTML = noScriptInputWrapper.outerHTML;
 
-    document.querySelector('#Variants-{{ section.id }}').addEventListener('change', function(event) {
+    document.querySelector('#Variants-{{ section.id }}').addEventListener('change', function (event) {
       hiddenInput.value = event.currentTarget.value;
     });
   });
