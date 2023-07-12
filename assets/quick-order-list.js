@@ -278,7 +278,7 @@ class QuickOrderList extends HTMLElement {
   }
 
   setErrorMessage(message = null) {
-    this.errorMessageTemplate = this.errorMessageTemplate ?? document.getElementById(`VariantListErrorTemplate-${this.sectionId}`).cloneNode(true);
+    this.errorMessageTemplate = this.errorMessageTemplate ?? document.getElementById(`QuickOrderListErrorTemplate-${this.sectionId}`).cloneNode(true);
     const errorElements = document.querySelectorAll('.quick-order-list-error');
 
     errorElements.forEach((errorElement) => {
