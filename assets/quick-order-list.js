@@ -350,12 +350,12 @@ class QuickOrderList extends HTMLElement {
     const quickOrderListItems = this.querySelectorAll(`#Variant-${id} .loading-overlay`);
 
     if (enable) {
-      quickOrderList.classList.add('cart__items--disabled');
+      quickOrderList.classList.add('quick-order-list__container--disabled');
       [...quickOrderListItems].forEach((overlay) => overlay.classList.remove('hidden'));
       document.activeElement.blur();
       this.variantItemStatusElement.setAttribute('aria-hidden', false);
     } else {
-      quickOrderList.classList.remove('cart__items--disabled');
+      quickOrderList.classList.remove('quick-order-list__container--disabled');
       quickOrderListItems.forEach((overlay) => overlay.classList.add('hidden'));
     }
   }
