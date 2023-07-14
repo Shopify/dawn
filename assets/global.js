@@ -157,7 +157,6 @@ class QuantityInput extends HTMLElement {
     super();
     this.input = this.querySelector('input');
     this.changeEvent = new Event('change', { bubbles: true });
-
     this.input.addEventListener('change', this.onInputChange.bind(this));
     this.querySelectorAll('button').forEach((button) =>
       button.addEventListener('click', this.onButtonClick.bind(this))
@@ -735,13 +734,9 @@ class SlideshowComponent extends SliderComponent {
     if (this.announcementBarSlider) {
       this.announcementBarArrowButtonWasClicked = false;
 
-      this.desktopLayout = window.matchMedia('(min-width: 750px)');
       this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-      [this.reducedMotion, this.desktopLayout].forEach((mediaQuery) => {
-        mediaQuery.addEventListener('change', () => {
-          if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
-        });
+      this.reducedMotion.addEventListener('change', () => {
+        if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
       });
 
       [this.prevButton, this.nextButton].forEach((button) => {
@@ -771,7 +766,7 @@ class SlideshowComponent extends SliderComponent {
       this.autoplayButtonIsSetToPlay = true;
       this.play();
     } else {
-      this.reducedMotion.matches || this.announcementBarArrowButtonWasClicked || !this.desktopLayout.matches
+      this.reducedMotion.matches || this.announcementBarArrowButtonWasClicked
         ? this.pause()
         : this.play();
     }
@@ -839,8 +834,7 @@ class SlideshowComponent extends SliderComponent {
       this.play();
     } else if (
       !this.reducedMotion.matches &&
-      !this.announcementBarArrowButtonWasClicked &&
-      this.desktopLayout.matches
+      !this.announcementBarArrowButtonWasClicked
     ) {
       this.play();
     }
@@ -949,7 +943,7 @@ class SlideshowComponent extends SliderComponent {
     const slideScrollPosition =
       this.slider.scrollLeft +
       this.sliderFirstItemNode.clientWidth *
-        (this.sliderControlLinksArray.indexOf(event.currentTarget) + 1 - this.currentPage);
+      (this.sliderControlLinksArray.indexOf(event.currentTarget) + 1 - this.currentPage);
     this.slider.scrollTo({
       left: slideScrollPosition,
     });
@@ -1086,8 +1080,7 @@ class VariantSelects extends HTMLElement {
     const sectionId = this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section;
 
     fetch(
-      `${this.dataset.url}?variant=${requestedVariantId}&section_id=${
-        this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section
+      `${this.dataset.url}?variant=${requestedVariantId}&section_id=${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section
       }`
     )
       .then((response) => response.text())
@@ -1109,11 +1102,28 @@ class VariantSelects extends HTMLElement {
         );
         const inventoryDestination = document.getElementById(`Inventory-${this.dataset.section}`);
 
+        const volumePricingSource = html.getElementById(
+          `Volume-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`
+        );
+
+        const pricePerItemDestination = document.getElementById(`Price-Per-Item-${this.dataset.section}`);
+        const pricePerItemSource = html.getElementById(`Price-Per-Item-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
+
+        const volumePricingDestination = document.getElementById(`Volume-${this.dataset.section}`);
+
         if (source && destination) destination.innerHTML = source.innerHTML;
         if (inventorySource && inventoryDestination) inventoryDestination.innerHTML = inventorySource.innerHTML;
         if (skuSource && skuDestination) {
           skuDestination.innerHTML = skuSource.innerHTML;
           skuDestination.classList.toggle('visibility-hidden', skuSource.classList.contains('visibility-hidden'));
+        }
+
+        if (volumePricingSource && volumePricingDestination) {
+          volumePricingDestination.innerHTML = volumePricingSource.innerHTML;
+        }
+
+        if (pricePerItemSource && pricePerItemDestination) {
+          pricePerItemDestination.innerHTML = pricePerItemSource.innerHTML;
         }
 
         const price = document.getElementById(`price-${this.dataset.section}`);
