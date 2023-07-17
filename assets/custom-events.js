@@ -56,8 +56,21 @@ var main = function () {
                 resellerLink.classList.remove('disabled')
             })
             .catch(error => console.error(error));
+        },
+        amznOr: ()=> {
+            const orSep = document.querySelector('.or-separator')
+            if (orSep == null) return;
+
+            const loadedBws = setInterval( function() {
+
+                if (document.querySelector('.bwp-widget-loaded') != null ) {
+                    orSep.classList.add('empty-or')
+                    clearInterval(loadedBws);
+                }
+            },100)
         }
     };
 }()
 
+main.amznOr()
 main.resellerCTA()
