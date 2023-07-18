@@ -74,7 +74,7 @@
           {{ 'products.product.price.sale_price' | t }}
         </dt>
         <dd class="price">
-          {%- if product.quantity_price_breaks_configured? -%}
+          {%- if variant.quantity_price_breaks.size > 0 -%}
             {%- liquid
               assign volume_pricing_array = variant.quantity_price_breaks | sort: 'quantity' | reverse
             -%}
@@ -85,14 +85,14 @@
             >
               <div class="price-per-item">
                 {%- if cart_qty < volume_pricing_array.last.minimum_quantity -%}
-                  {%- assign variant_price = variant.price | money_with_currency -%}
+                  {%- assign variant_price = variant.price | money -%}
                   <span class="price-per-item--current price">
                     {{- 'sections.quick_order_list.each' | t: money: variant_price -}}
                   </span>
                 {%- else -%}
                   {%- for price_break in volume_pricing_array -%}
                     {%- if cart_qty >= price_break.minimum_quantity -%}
-                      {%- assign price_break_price = price_break.price | money_with_currency -%}
+                      {%- assign price_break_price = price_break.price | money -%}
                       <span class="price-per-item--current price">
                         {{- 'sections.quick_order_list.each' | t: money: price_break_price -}}
                       </span>
@@ -110,7 +110,7 @@
         </dd>
       </dl>
     {%- else -%}
-      {%- if product.quantity_price_breaks_configured? -%}
+      {%- if variant.quantity_price_breaks.size > 0 -%}
         {%- liquid
           assign volume_pricing_array = variant.quantity_price_breaks | sort: 'quantity' | reverse
         -%}
@@ -121,14 +121,14 @@
         >
           <div class="price-per-item">
             {%- if cart_qty < volume_pricing_array.last.minimum_quantity -%}
-              {%- assign variant_price = variant.price | money_with_currency -%}
+              {%- assign variant_price = variant.price | money -%}
               <span class="price-per-item--current price">
                 {{- 'sections.quick_order_list.each' | t: money: variant_price -}}
               </span>
             {%- else -%}
               {%- for price_break in volume_pricing_array -%}
                 {%- if cart_qty >= price_break.minimum_quantity -%}
-                  {%- assign price_break_price = price_break.price | money_with_currency -%}
+                  {%- assign price_break_price = price_break.price | money -%}
                   <span class="price-per-item--current price">
                     {{- 'sections.quick_order_list.each' | t: money: price_break_price -}}
                   </span>
@@ -259,7 +259,7 @@
           hidden
         >
           {%- if has_qty_rules == false -%}
-            <span class="volume-pricing-label caption">Volume pricing</span>
+            <span class="volume-pricing-label caption">{{ 'products.product.volume_pricing.title' | t }}</span>
           {%- endif -%}
           <div class="quantity__rules caption no-js-hidden">
             {%- if variant.quantity_rule.increment > 1 -%}
@@ -340,7 +340,7 @@
           {{ 'products.product.price.sale_price' | t }}
         </dt>
         <dd class="price">
-          {%- if product.quantity_price_breaks_configured? -%}
+          {%- if variant.quantity_price_breaks.size > 0 -%}
             {%- liquid
               assign volume_pricing_array = variant.quantity_price_breaks | sort: 'quantity' | reverse
             -%}
@@ -351,14 +351,14 @@
             >
               <div class="price-per-item">
                 {%- if cart_qty < volume_pricing_array.last.minimum_quantity -%}
-                  {%- assign variant_price = variant.price | money_with_currency -%}
+                  {%- assign variant_price = variant.price | money -%}
                   <span class="price-per-item--current price">
                     {{- 'sections.quick_order_list.each' | t: money: variant_price -}}
                   </span>
                 {%- else -%}
                   {%- for price_break in volume_pricing_array -%}
                     {%- if cart_qty >= price_break.minimum_quantity -%}
-                      {%- assign price_break_price = price_break.price | money_with_currency -%}
+                      {%- assign price_break_price = price_break.price | money -%}
                       <span class="price-per-item--current price">
                         {{- 'sections.quick_order_list.each' | t: money: price_break_price -}}
                       </span>
@@ -376,7 +376,7 @@
         </dd>
       </dl>
     {%- else -%}
-      {%- if product.quantity_price_breaks_configured? -%}
+      {%- if variant.quantity_price_breaks.size > 0 -%}
         {%- liquid
           assign volume_pricing_array = variant.quantity_price_breaks | sort: 'quantity' | reverse
         -%}
@@ -387,14 +387,14 @@
         >
           <div class="price-per-item">
             {%- if cart_qty < volume_pricing_array.last.minimum_quantity -%}
-              {%- assign variant_price = variant.price | money_with_currency -%}
+              {%- assign variant_price = variant.price | money -%}
               <span class="price-per-item--current price">
                 {{- 'sections.quick_order_list.each' | t: money: variant_price -}}
               </span>
             {%- else -%}
               {%- for price_break in volume_pricing_array -%}
                 {%- if cart_qty >= price_break.minimum_quantity -%}
-                  {%- assign price_break_price = price_break.price | money_with_currency -%}
+                  {%- assign price_break_price = price_break.price | money -%}
                   <span class="price-per-item--current price">
                     {{- 'sections.quick_order_list.each' | t: money: price_break_price -}}
                   </span>
@@ -433,16 +433,23 @@
   </td>
 </tr>
 
-<volume-pricing class="hidden" id="Volume-{{ variant.id }}">
-  <ul>
-    {%- for price_break in volume_pricing_array -%}
-      {%- assign price_break_price = price_break.price | money_with_currency -%}
+{%- if product.quantity_price_breaks_configured? -%}
+  <volume-pricing class="hidden" id="Volume-{{ variant.id }}">
+    <ul>
       <li>
-        <span>
-          {{- price_break.minimum_quantity -}}
-        </span>
-        <span data-text="{{ price_break_price }}">{{- price_break.price | money_with_currency }}</span>
+        <span>{{ variant.quantity_rule.min }}</span>
+        {%- assign price = variant.price | money -%}
+        <span data-text="{{ price }}">{{ price }}</span>
       </li>
-    {%- endfor -%}
-  </ul>
-</volume-pricing>
+      {%- for price_break in variant.quantity_price_breaks -%}
+        {%- assign price_break_price = price_break.price | money -%}
+        <li>
+          <span>
+            {{- price_break.minimum_quantity -}}
+          </span>
+          <span data-text="{{ price_break_price }}">{{- price_break.price | money }}</span>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </volume-pricing>
+{%- endif -%}
