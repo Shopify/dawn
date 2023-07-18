@@ -1123,8 +1123,7 @@ class VariantSelects extends HTMLElement {
         }
 
         if (pricePerItemSource && pricePerItemDestination) {
-          pricePerItemDestination.innerHTML = pricePerItemSource.innerHTML;
-          pricePerItemDestination.classList.toggle('visibility-hidden', pricePerItemSource.classList.contains('visibility-hidden'));
+          pricePerItemDestination.replaceWith(pricePerItemSource);
         }
 
         const price = document.getElementById(`price-${this.dataset.section}`);
