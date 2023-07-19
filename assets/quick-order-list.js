@@ -68,6 +68,10 @@ class QuickOrderList extends HTMLElement {
     }
     this.quickOrderListId = 'quick-order-list'
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
+    const form = this.querySelector('form');
+
+    form.addEventListener('submit', this.onSubmit.bind(this));
+
     const debouncedOnChange = debounce((event) => {
       this.onChange(event);
     }, ON_CHANGE_DEBOUNCE_TIMER);
@@ -75,6 +79,10 @@ class QuickOrderList extends HTMLElement {
   }
 
   cartUpdateUnsubscriber = undefined;
+
+  onSubmit(event) {
+    event.preventDefault();
+  }
 
   connectedCallback() {
     this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (event) => {
