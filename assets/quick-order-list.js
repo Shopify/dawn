@@ -70,7 +70,7 @@ class QuickOrderList extends HTMLElement {
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
     const form = this.querySelector('form');
 
-    this.form.addEventListener("submit", this.onSubmit.bind(this));
+    form.addEventListener('submit', this.onSubmit.bind(this));
 
     const debouncedOnChange = debounce((event) => {
       this.onChange(event);
