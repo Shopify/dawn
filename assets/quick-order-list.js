@@ -68,7 +68,7 @@ class QuickOrderList extends HTMLElement {
     }
     this.quickOrderListId = 'quick-order-list'
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
-    this.form = this.querySelector('form');
+    const form = this.querySelector('form');
 
     this.form.addEventListener("submit", this.onSubmit.bind(this));
 
