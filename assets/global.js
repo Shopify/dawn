@@ -1124,6 +1124,7 @@ class VariantSelects extends HTMLElement {
 
         if (pricePerItemSource && pricePerItemDestination) {
           pricePerItemDestination.innerHTML = pricePerItemSource.innerHTML;
+          pricePerItemDestination.classList.toggle('visibility-hidden', pricePerItemSource.classList.contains('visibility-hidden'));
         }
 
         const price = document.getElementById(`price-${this.dataset.section}`);
@@ -1174,12 +1175,14 @@ class VariantSelects extends HTMLElement {
     const price = document.getElementById(`price-${this.dataset.section}`);
     const inventory = document.getElementById(`Inventory-${this.dataset.section}`);
     const sku = document.getElementById(`Sku-${this.dataset.section}`);
+    const pricePerItem = document.getElementById(`Price-Per-Item-${this.dataset.section}`);
 
     if (!addButton) return;
     addButtonText.textContent = window.variantStrings.unavailable;
     if (price) price.classList.add('visibility-hidden');
     if (inventory) inventory.classList.add('visibility-hidden');
     if (sku) sku.classList.add('visibility-hidden');
+    if (pricePerItem) pricePerItem.classList.add('visibility-hidden');
   }
 
   getVariantData() {
