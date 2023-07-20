@@ -62,6 +62,7 @@ customElements.define('quick-order-list-remove-all-button', QuickOrderListRemove
 class QuickOrderList extends HTMLElement {
   constructor() {
     super();
+    this.cart = document.querySelector('cart-drawer');
     this.actions = {
       add: 'ADD',
       update: 'UPDATE'
@@ -164,6 +165,11 @@ class QuickOrderList extends HTMLElement {
       const sectionElement = document.getElementById(section.id);
       if (sectionElement.parentElement.classList.contains('drawer')) {
         parsedState.items.length > 0 ? sectionElement.parentElement.classList.remove('is-empty') : sectionElement.parentElement.classList.add('is-empty');
+
+        setTimeout(() => {
+          document.querySelector('#CartDrawer-Overlay').addEventListener('click', this.cart.close.bind(this.cart));
+          this.cart.open();
+        });
       }
       const elementToReplace = sectionElement && sectionElement.querySelector(section.selector) ? sectionElement.querySelector(section.selector) : sectionElement;
       if (elementToReplace) {
@@ -171,6 +177,7 @@ class QuickOrderList extends HTMLElement {
           this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
       }
     }));
+
   }
 
   updateMultipleQty(items) {
