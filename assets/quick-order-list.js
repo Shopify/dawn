@@ -168,7 +168,6 @@ class QuickOrderList extends HTMLElement {
 
         setTimeout(() => {
           document.querySelector('#CartDrawer-Overlay').addEventListener('click', this.cart.close.bind(this.cart));
-          this.cart.open();
         });
       }
       const elementToReplace = sectionElement && sectionElement.querySelector(section.selector) ? sectionElement.querySelector(section.selector) : sectionElement;
