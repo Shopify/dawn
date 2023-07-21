@@ -334,8 +334,8 @@ class QuickOrderList extends HTMLElement {
   }
 
   updateLiveRegions(id, message) {
-    const variantItemErrorDesktop = document.getElementById(`Quick-order-list-item-error-desktop${id}`);
-    const variantItemErrorMobile = document.getElementById(`Quick-order-list-item-error-mobile${id}`);
+    const variantItemErrorDesktop = document.getElementById(`Quick-order-list-item-error-desktop-${id}`);
+    const variantItemErrorMobile = document.getElementById(`Quick-order-list-item-error-mobile-${id}`);
     if (variantItemErrorDesktop) {
       variantItemErrorDesktop.querySelector('.variant-item__error-text').innerHTML = message;
       variantItemErrorDesktop.closest('tr').classList.remove('hidden');
