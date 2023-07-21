@@ -19,10 +19,16 @@
 
   assign compare_at_price = target.compare_at_price
   assign price = target.price | default: 1999
+  assign price_min = product.price_min
+  assign price_max = product.price_max
   assign available = target.available | default: false
   assign money_price = price | money
+  assign money_price_min = price_min | money
+  assign money_price_max = price_max | money
   if settings.currency_code_enabled
     assign money_price = price | money_with_currency
+    assign money_price_min = price_min | money_with_currency
+    assign money_price_max = price_max | money_with_currency
   endif
 
   if target == product and product.price_varies
@@ -47,10 +53,17 @@
         - div.price__sale: Displayed when a variant is a sale
     {%- endcomment -%}
     <div class="price__regular">
-      <span class="visually-hidden visually-hidden--inline">{{ 'products.product.price.regular_price' | t }}</span>
-      <span class="price-item price-item--regular">
-        {{ money_price }}
-      </span>
+      {%- if product.quantity_price_breaks_configured? -%}
+        <span class="visually-hidden visually-hidden--inline">{{ 'products.product.price.regular_price' | t }}</span>
+        <span class="price-item price-item--regular">
+          {{- 'products.product.volume_pricing.price_range' | t: minimum: money_price_min, maximum: money_price_max -}}
+        </span>
+      {%- else -%}
+        <span class="visually-hidden visually-hidden--inline">{{ 'products.product.price.regular_price' | t }}</span>
+        <span class="price-item price-item--regular">
+          {{ money_price }}
+        </span>
+      {%- endif -%}
     </div>
     <div class="price__sale">
       {%- unless product.price_varies == false and product.compare_at_price_varies %}
