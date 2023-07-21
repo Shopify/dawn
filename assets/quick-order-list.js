@@ -348,8 +348,13 @@ class QuickOrderList extends HTMLElement {
   }
 
   updateLiveRegions(id, message) {
-    const variantItemError = document.getElementById(`Quick-order-list-item-error-${id}`);
-    if (variantItemError) variantItemError.querySelector('.variant-item__error-text').innerHTML = message;
+    const variantItemErrorDesktop = document.getElementById(`Quick-order-list-item-error-desktop-${id}`);
+    const variantItemErrorMobile = document.getElementById(`Quick-order-list-item-error-mobile-${id}`);
+    if (variantItemErrorDesktop) {
+      variantItemErrorDesktop.querySelector('.variant-item__error-text').innerHTML = message;
+      variantItemErrorDesktop.closest('tr').classList.remove('hidden');
+    }
+    if (variantItemErrorMobile) variantItemErrorMobile.querySelector('.variant-item__error-text').innerHTML = message;
 
     this.variantItemStatusElement.setAttribute('aria-hidden', true);
 
