@@ -798,7 +798,7 @@ class SlideshowComponent extends SliderComponent {
 
   setSlidePosition(position) {
     if (this.setPositionTimeout) clearTimeout(this.setPositionTimeout);
-    this.setPositionTimeout = setTimeout (() => {
+    this.setPositionTimeout = setTimeout(() => {
       this.slider.scrollTo({
         left: position,
       });
@@ -1110,6 +1110,12 @@ class VariantSelects extends HTMLElement {
         const pricePerItemSource = html.getElementById(`Price-Per-Item-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
 
         const volumePricingDestination = document.getElementById(`Volume-${this.dataset.section}`);
+        const qtyRules = document.getElementById(`Quantity-Rules-${this.dataset.section}`);
+        const volumeNote = document.getElementById(`Volume-Note-${this.dataset.section}`);
+
+        if (volumeNote) volumeNote.classList.remove('visibility-hidden');
+        if (volumePricingDestination) volumePricingDestination.classList.remove('visibility-hidden');
+        if (qtyRules) qtyRules.classList.remove('visibility-hidden');
 
         if (source && destination) destination.innerHTML = source.innerHTML;
         if (inventorySource && inventoryDestination) inventoryDestination.innerHTML = inventorySource.innerHTML;
@@ -1176,6 +1182,9 @@ class VariantSelects extends HTMLElement {
     const inventory = document.getElementById(`Inventory-${this.dataset.section}`);
     const sku = document.getElementById(`Sku-${this.dataset.section}`);
     const pricePerItem = document.getElementById(`Price-Per-Item-${this.dataset.section}`);
+    const volumeNote = document.getElementById(`Volume-Note-${this.dataset.section}`);
+    const volumeTable = document.getElementById(`Volume-${this.dataset.section}`);
+    const qtyRules = document.getElementById(`Quantity-Rules-${this.dataset.section}`);
 
     if (!addButton) return;
     addButtonText.textContent = window.variantStrings.unavailable;
@@ -1183,6 +1192,9 @@ class VariantSelects extends HTMLElement {
     if (inventory) inventory.classList.add('visibility-hidden');
     if (sku) sku.classList.add('visibility-hidden');
     if (pricePerItem) pricePerItem.classList.add('visibility-hidden');
+    if (volumeNote) volumeNote.classList.add('visibility-hidden');
+    if (volumeTable) volumeTable.classList.add('visibility-hidden');
+    if (qtyRules) qtyRules.classList.add('visibility-hidden');
   }
 
   getVariantData() {
