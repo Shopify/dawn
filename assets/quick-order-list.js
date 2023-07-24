@@ -163,7 +163,7 @@ class QuickOrderList extends HTMLElement {
   renderSections(parsedState) {
     this.getSectionsToRender().forEach((section => {
       const sectionElement = document.getElementById(section.id);
-      if (sectionElement && sectionElement.parentElement.classList.contains('drawer')) {
+      if (sectionElement && sectionElement.parentElement && sectionElement.parentElement.classList.contains('drawer')) {
         parsedState.items.length > 0 ? sectionElement.parentElement.classList.remove('is-empty') : sectionElement.parentElement.classList.add('is-empty');
 
         setTimeout(() => {
