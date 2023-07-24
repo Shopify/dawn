@@ -287,7 +287,7 @@ class QuickOrderList extends HTMLElement {
       }).catch((error) => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         this.resetQuantityInput(id);
-        console.log(error);
+        console.error(error);
         this.setErrorMessage(window.cartStrings.error);
       })
       .finally(() => {
