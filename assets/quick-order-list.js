@@ -62,12 +62,17 @@ customElements.define('quick-order-list-remove-all-button', QuickOrderListRemove
 class QuickOrderList extends HTMLElement {
   constructor() {
     super();
+    this.cart = document.querySelector('cart-drawer');
     this.actions = {
       add: 'ADD',
       update: 'UPDATE'
     }
     this.quickOrderListId = 'quick-order-list'
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
+    const form = this.querySelector('form');
+
+    form.addEventListener('submit', this.onSubmit.bind(this));
+
     const debouncedOnChange = debounce((event) => {
       this.onChange(event);
     }, ON_CHANGE_DEBOUNCE_TIMER);
@@ -75,6 +80,10 @@ class QuickOrderList extends HTMLElement {
   }
 
   cartUpdateUnsubscriber = undefined;
+
+  onSubmit(event) {
+    event.preventDefault();
+  }
 
   connectedCallback() {
     this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (event) => {
@@ -109,7 +118,7 @@ class QuickOrderList extends HTMLElement {
   }
 
   onCartUpdate() {
-    fetch(`${window.location.pathname}?section_id=quick-order-list`)
+    fetch(`${window.location.pathname}?section_id=${this.sectionId}`)
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
@@ -142,6 +151,11 @@ class QuickOrderList extends HTMLElement {
         id: 'quick-order-list-total',
         section: document.getElementById(this.quickOrderListId).dataset.id,
         selector: '.quick-order-list__total'
+      },
+      {
+        id: 'CartDrawer',
+        selector: '#CartDrawer',
+        section: 'cart-drawer'
       }
     ];
   }
@@ -149,12 +163,20 @@ class QuickOrderList extends HTMLElement {
   renderSections(parsedState) {
     this.getSectionsToRender().forEach((section => {
       const sectionElement = document.getElementById(section.id);
+      if (sectionElement && sectionElement.parentElement && sectionElement.parentElement.classList.contains('drawer')) {
+        parsedState.items.length > 0 ? sectionElement.parentElement.classList.remove('is-empty') : sectionElement.parentElement.classList.add('is-empty');
+
+        setTimeout(() => {
+          document.querySelector('#CartDrawer-Overlay').addEventListener('click', this.cart.close.bind(this.cart));
+        });
+      }
       const elementToReplace = sectionElement && sectionElement.querySelector(section.selector) ? sectionElement.querySelector(section.selector) : sectionElement;
       if (elementToReplace) {
         elementToReplace.innerHTML =
           this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
       }
     }));
+
   }
 
   updateMultipleQty(items) {
@@ -262,9 +284,10 @@ class QuickOrderList extends HTMLElement {
         } else {
           this.updateMessage(-parseInt(quantityElement.dataset.cartQuantity))
         }
-      }).catch(() => {
+      }).catch((error) => {
         this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
         this.resetQuantityInput(id);
+        console.error(error);
         this.setErrorMessage(window.cartStrings.error);
       })
       .finally(() => {
@@ -326,8 +349,13 @@ class QuickOrderList extends HTMLElement {
   }
 
   updateLiveRegions(id, message) {
-    const variantItemError = document.getElementById(`Quick-order-list-item-error-${id}`);
-    if (variantItemError) variantItemError.querySelector('.variant-item__error-text').innerHTML = message;
+    const variantItemErrorDesktop = document.getElementById(`Quick-order-list-item-error-desktop-${id}`);
+    const variantItemErrorMobile = document.getElementById(`Quick-order-list-item-error-mobile-${id}`);
+    if (variantItemErrorDesktop) {
+      variantItemErrorDesktop.querySelector('.variant-item__error-text').innerHTML = message;
+      variantItemErrorDesktop.closest('tr').classList.remove('hidden');
+    }
+    if (variantItemErrorMobile) variantItemErrorMobile.querySelector('.variant-item__error-text').innerHTML = message;
 
     this.variantItemStatusElement.setAttribute('aria-hidden', true);
 
