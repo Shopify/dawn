@@ -66,10 +66,9 @@ document.addEventListener('DOMContentLoaded', function() {
 })
 
 document.addEventListener('DOMContentLoaded', function() {
-  const carouselMobile = document.querySelector('')
-  const mobileIndicators = Array.from(document.querySelectorAll('.easel-text-reviews__carousel-indicator-mobile')) 
+  const carouselMobile = document.querySelector('.easel-text-reviews__carousel-mobile')
 
-  var touchsurface = document.getElementById('touchsurface'),
+  var touchsurface = carouselMobile,
   startX,
   startY,
   dist,
@@ -78,16 +77,35 @@ document.addEventListener('DOMContentLoaded', function() {
   elapsedTime,
   startTime
 
+  function toggleActive(collection, activateIndex) {
+    for(const item of collection) {
+      item.classList.remove('active')
+
+      if (activateIndex === parseInt(item.dataset.index)) {
+        item.classList.add('active')
+      }
+    }
+  }
+
   function handleswipe(isrightswipe){
-    if (isrightswipe)
-    touchsurface.innerHTML = 'Congrats, you\'ve made a <span style="color:red">right swipe!</span>'
-    else{
-      touchsurface.innerHTML = 'Condition for right swipe not met yet'
+    let activeIndex = parseInt(carouselMobile.querySelector('.easel-text-reviews__item.active').dataset.index)
+    const carouselItemsMobile = Array.from(carouselMobile.querySelectorAll('.easel-text-reviews__item'))
+    const mobileIndicators = Array.from(document.querySelectorAll('.easel-text-reviews__carousel-indicator-mobile')) 
+
+    if (isrightswipe) {
+      if (activeIndex > 0) {
+        toggleActive(carouselItemsMobile, activeIndex - 1)
+        toggleActive(mobileIndicators, activeIndex - 1)
+      }
+    } else{
+      if (activeIndex < carouselItemsMobile.length - 1) {
+        toggleActive(carouselItemsMobile, activeIndex + 1)
+        toggleActive(mobileIndicators, activeIndex + 1)
+      }
     }
   }
 
   touchsurface.addEventListener('touchstart', function(e){
-    touchsurface.innerHTML = ''
     var touchobj = e.changedTouches[0]
     dist = 0
     startX = touchobj.pageX
