@@ -195,22 +195,29 @@
     <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
 {%- endif -%}
 
-{% capture CFH %}
-    {{ content_for_header }}
-{% endcapture %}
+{%- liquid
+  if customer.id != null
+    assign logged_in = true
+  endif
 
-{% if CFH contains 'admin_bar_iframe' %}
-    {% assign admin = true %}
-{% elsif CFH contains 'preview_bar_injector-' %}
-    {% assign admin = true %}
-{% elsif CFH contains 'Online store editor' %}
-    {% assign admin = true %}
-{% elsif CFH contains 'designMode' %}
-    {% assign admin = true %}
-{% endif %}
-{% if customer.id != null %}
-    {% assign logged_in = true %}
-{% endif %}
+  if logged_in and customer.tags contains "admin"
+    assign admin = true
+  endif
+
+  comment ## ADMIN THEME EDITOR ONLY
+  endcomment
+  if request.design_mode
+    case settings.simulated_user_type
+      when "guest"
+        assign logged_in = false
+      when "buyer"
+        assign logged_in = true
+      when "admin"
+        assign logged_in = true
+        assign admin     = true
+    endcase
+  endif
+-%}
 
 <div class="container">
 </div>
