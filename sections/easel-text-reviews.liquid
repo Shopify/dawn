@@ -1,0 +1,233 @@
+{% style %}
+.easel-text-reviews.section-{{ section.id }} {
+  color: {{ section.settings.color }};
+  background-color: {{ section.settings.bg_color }};
+  padding-top: {{ section.settings.padding_top }}px;
+  padding-bottom: {{ section.settings.padding_bottom }}px;
+}
+
+.easel-text-reviews__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+}
+
+.easel-text-reviews__item {
+  max-width: 327px;
+  min-height: 316px;
+  border-top: 1px solid white;
+  border-bottom: 1px solid white;
+}
+
+.easel-text-reviews__carousel-mobile .easel-text-reviews__item {
+  width: 100%;
+}
+
+.easel-text-reviews__item .big-quote {
+  margin-top: 30px;
+  margin-bottom: 50px;
+}
+
+.easel-text-reviews__item__text {
+  font-weight: bold;
+  height: 150px;
+  line-height: 1;
+}
+
+.easel-text-reviews__item__author {
+  font-weight: bold;
+}
+
+.easel-text-reviews__carousel {
+  display: flex;
+  justify-content: start;
+  width: 100%;
+  overflow: hidden;
+}
+
+.easel-text-reviews__carousel-mobile {
+  display: none;
+}
+
+.easel-text-reviews__carousel-item {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.easel-text-reviews__carousel-item:not(.active) {
+  display: none;
+}
+
+.easel-text-reviews__carousel-mobile .easel-text-reviews__item.mobile {
+  width: 100%;
+}
+
+.easel-text-reviews__carousel-indicators {
+  width: 100%;
+  display: flex;
+  list-style: none;
+  justify-content: center;
+}
+
+.easel-text-reviews__carousel-indicators-mobile {
+  display: none;
+}
+
+.easel-text-reviews__carousel-indicator, .easel-text-reviews__carousel-indicator-mobile {
+  border-radius: 50%;
+  height: 10px;
+  width: 10px;
+  background-color: white;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.easel-text-reviews__carousel-indicator:not(.active), .easel-text-reviews__carousel-indicator-mobile:not(.active) {
+  background-color: rgba(255,255,255,0.25);
+}
+
+@media screen and (max-width: 1200px) {
+  .easel-text-reviews__carousel-indicators {
+    display: none;
+  }
+
+  .easel-text-reviews__carousel-indicators-mobile {
+    display: flex;
+    list-style: none;
+    justify-content: center;
+  }
+
+  .easel-text-reviews__carousel {
+    display: none;
+  }
+
+  .easel-text-reviews__carousel-mobile {
+    display: flex;
+    justify-content: start;
+    width: 90%;
+    margin: 0 auto;
+    flex-direction: column;
+  }
+
+  .easel-text-reviews__item.mobile.active {
+    display: block;
+    max-width: unset;
+  }
+
+  .easel-text-reviews__item.mobile:not(.active) {
+    display: none;
+  }
+}
+
+{% endstyle %}
+<div class="easel-text-reviews section-{{ section.id }}">
+  <div class="easel-text-reviews__container">
+    <div class="easel-text-reviews__carousel">
+    </div>
+    <div class="easel-text-reviews__carousel-item template hidden">
+    </div>
+    <div class="easel-text-reviews__items template hidden">
+      {% for block in section.blocks %}
+        <div class="easel-text-reviews__item">
+          {% render 'quote' %}
+          <p class="easel-text-reviews__item__text">
+            {{ block.settings.text }}
+          </p>
+          <p class="easel-text-reviews__item__author">
+            {{ block.settings.author }}
+          </p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  <ol class="easel-text-reviews__carousel-indicators">
+    <li class="easel-text-reviews__carousel-indicator template hidden"></li>
+  </ol>
+  <div class="easel-text-reviews__carousel-mobile">
+    {% for block in section.blocks %}
+      {% assign activeClass = "" %}
+      {% if forloop.index0 == 0 %}
+        {% assign activeClass = "active" %}
+      {% endif %}
+      <div class="easel-text-reviews__item mobile {{ activeClass }}" data-index="{{ forloop.index0 }}">
+        {% render 'quote' %}
+        <p class="easel-text-reviews__item__text">
+          {{ block.settings.text }}
+        </p>
+        <p class="easel-text-reviews__item__author">
+          {{ block.settings.author }}
+        </p>
+      </div>
+    {% endfor %}
+  </div>
+  <ol class="easel-text-reviews__carousel-indicators-mobile">
+    {% for block in section.blocks %}
+      {% if forloop.index0 == 0 %}
+        <li class="easel-text-reviews__carousel-indicator-mobile active" data-index="{{ forloop.index0 }}"></li>
+      {% else %}
+        <li class="easel-text-reviews__carousel-indicator-mobile" data-index="{{ forloop.index0 }}"></li>
+      {% endif %}
+    {% endfor %}
+  </ol>
+</div>
+
+<script src="{{ 'easel-text-review-carousel.js' | asset_url }}"></script>
+
+{% schema %}
+{
+  "name": "Easel Text Reviews",
+  "presets": [ { "name": "Easel Text Reviews" } ],
+  "settings": [
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background Color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "color",
+      "label": "Color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Padding Top",
+      "min": 0,
+      "max": 100,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Padding Bottom",
+      "min": 0,
+      "max": 100,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "blocks": [
+    {
+      "name": "Item",
+      "type": "item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "author",
+          "label": "Author"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
