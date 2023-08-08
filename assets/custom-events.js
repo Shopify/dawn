@@ -67,9 +67,27 @@ var main = function () {
                     clearInterval(loadedBws);
                 }
             },100)
+        },
+        popoverBtns: ()=> {
+            document.querySelectorAll('.popover-button').forEach(e => {
+                e.addEventListener('click', function() {
+                    var id = e.dataset.id;
+                    var parent = e.closest('.button--popover-wrap');
+            
+                    if (parent.classList.contains('active')) {
+                        parent.classList.remove('active');
+                    } else {
+                        document.querySelectorAll('.button--popover-wrap.active').forEach(activeParent => {
+                            activeParent.classList.remove('active');
+                        });
+                        parent.classList.add('active');
+                    }
+                });
+            });
         }
     };
 }()
 
+main.popoverBtns()
 main.amznOr()
 main.resellerCTA()
