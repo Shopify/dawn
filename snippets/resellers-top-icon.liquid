@@ -1,18 +1,21 @@
-{% assign resellers_block = blocks | where: 'type','reseller' %}
+{% assign resellers = shop.metaobjects['header_country_links'] %}
 
-{% unless resellers_block.size == 0 %}
+{% unless resellers.values_count == 0 %}
     <a href="#" class="header__icon disabled header__icon--reseller link focus-inset">
         <span class="flag-img"></span>
     </a>
-    <noscript class="resellers-data">
+    <noscript class="resellers-data" data-count="{{ resellers.values_count }}">
         {
             "countries": [
-                {% for i in resellers_block %}
+                {% for i in resellers.values %}
+                    {% assign link = null %}
+                    {% assign link_id = i.link | replace: 'gid://shopify/OnlineStorePage/','' | plus: 0 %}
+                    {% assign page_obj = pages | where: 'id', link_id %}
                     {
-                        "country_iso": "{{ i.settings.country_iso }}",
-                        "flag_image":  "{{ i.settings.flag_image | img_url: '50x' }}",
-                        "reseller_page": "{{ i.settings.page }}",
-                        "country_name": "{{ i.settings.cta_text }}"
+                        "country_iso": "{{ i.country_iso }}",
+                        "flag_image":  "{{ i.country_flag | img_url: '50x' }}",
+                        "reseller_page": "{{ page_obj[0].url }}",
+                        "country_name": "{{ i.cta_text }}"
                     }{% unless forloop.last %},{% endunless %}
                 {% endfor %}
             ] 

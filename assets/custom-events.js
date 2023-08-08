@@ -43,7 +43,6 @@ var main = function () {
 
                     flagWrapper.append(flagEl)
                 }
-
                 if (page != null || page != '' ) {
                     const resLink = document.createElement('a');
                     resLink.href = page;
