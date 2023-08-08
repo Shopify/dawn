@@ -798,7 +798,7 @@ class SlideshowComponent extends SliderComponent {
 
   setSlidePosition(position) {
     if (this.setPositionTimeout) clearTimeout(this.setPositionTimeout);
-    this.setPositionTimeout = setTimeout (() => {
+    this.setPositionTimeout = setTimeout(() => {
       this.slider.scrollTo({
         left: position,
       });
@@ -1110,12 +1110,18 @@ class VariantSelects extends HTMLElement {
         const pricePerItemSource = html.getElementById(`Price-Per-Item-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
 
         const volumePricingDestination = document.getElementById(`Volume-${this.dataset.section}`);
+        const qtyRules = document.getElementById(`Quantity-Rules-${this.dataset.section}`);
+        const volumeNote = document.getElementById(`Volume-Note-${this.dataset.section}`);
+
+        if (volumeNote) volumeNote.classList.remove('hidden');
+        if (volumePricingDestination) volumePricingDestination.classList.remove('hidden');
+        if (qtyRules) qtyRules.classList.remove('hidden');
 
         if (source && destination) destination.innerHTML = source.innerHTML;
         if (inventorySource && inventoryDestination) inventoryDestination.innerHTML = inventorySource.innerHTML;
         if (skuSource && skuDestination) {
           skuDestination.innerHTML = skuSource.innerHTML;
-          skuDestination.classList.toggle('visibility-hidden', skuSource.classList.contains('visibility-hidden'));
+          skuDestination.classList.toggle('hidden', skuSource.classList.contains('hidden'));
         }
 
         if (volumePricingSource && volumePricingDestination) {
@@ -1124,15 +1130,15 @@ class VariantSelects extends HTMLElement {
 
         if (pricePerItemSource && pricePerItemDestination) {
           pricePerItemDestination.innerHTML = pricePerItemSource.innerHTML;
-          pricePerItemDestination.classList.toggle('visibility-hidden', pricePerItemSource.classList.contains('visibility-hidden'));
+          pricePerItemDestination.classList.toggle('hidden', pricePerItemSource.classList.contains('hidden'));
         }
 
         const price = document.getElementById(`price-${this.dataset.section}`);
 
-        if (price) price.classList.remove('visibility-hidden');
+        if (price) price.classList.remove('hidden');
 
         if (inventoryDestination)
-          inventoryDestination.classList.toggle('visibility-hidden', inventorySource.innerText === '');
+          inventoryDestination.classList.toggle('hidden', inventorySource.innerText === '');
 
         const addButtonUpdated = html.getElementById(`ProductSubmitButton-${sectionId}`);
         this.toggleAddButton(
@@ -1176,13 +1182,19 @@ class VariantSelects extends HTMLElement {
     const inventory = document.getElementById(`Inventory-${this.dataset.section}`);
     const sku = document.getElementById(`Sku-${this.dataset.section}`);
     const pricePerItem = document.getElementById(`Price-Per-Item-${this.dataset.section}`);
+    const volumeNote = document.getElementById(`Volume-Note-${this.dataset.section}`);
+    const volumeTable = document.getElementById(`Volume-${this.dataset.section}`);
+    const qtyRules = document.getElementById(`Quantity-Rules-${this.dataset.section}`);
 
     if (!addButton) return;
     addButtonText.textContent = window.variantStrings.unavailable;
-    if (price) price.classList.add('visibility-hidden');
-    if (inventory) inventory.classList.add('visibility-hidden');
-    if (sku) sku.classList.add('visibility-hidden');
-    if (pricePerItem) pricePerItem.classList.add('visibility-hidden');
+    if (price) price.classList.add('hidden');
+    if (inventory) inventory.classList.add('hidden');
+    if (sku) sku.classList.add('hidden');
+    if (pricePerItem) pricePerItem.classList.add('hidden');
+    if (volumeNote) volumeNote.classList.add('hidden');
+    if (volumeTable) volumeTable.classList.add('hidden');
+    if (qtyRules) qtyRules.classList.add('hidden');
   }
 
   getVariantData() {
