@@ -1,0 +1,442 @@
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+    .grid-box {
+        background-color: var(--color-bg);
+        padding: 2.5rem;
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+    .grid-box * {
+        color: var(--color-text);
+    }
+    .grid-box h2 {
+        margin: 0 0 1.5rem;
+    }
+    .image-top-grid {
+        max-width: 40px;
+        margin-bottom: 1rem;
+    }
+    .image-top-grid img {
+        object-fit: contain;
+    }
+
+    .grid-box img {
+        border-radius: 0;
+    }
+
+    .grid--heading--inner h2 {
+        margin: 0;
+        margin-bottom: 2rem;
+    }
+
+    .long-arrow svg {
+        display: block;
+    }
+    .grid-box.grid-box--heading {
+        padding: 0;
+    }
+    .image-title-grid {
+        max-width: 75px;
+        margin-bottom: 1rem;
+        margin-top: 2rem;
+    }
+    #shopify-section-{{ section.id }} .page-width {
+        position: relative;
+    }
+    .vector-image-grid {
+        position: absolute;
+    }
+    .vector-image-grid svg {
+        display: block;
+    }
+  @media screen and (min-width: 750px) {
+    #shopify-section-{{ section.id }} .grid {
+        --grid-desktop-horizontal-spacing: 20px;
+        --grid-desktop-vertical-spacing: 20px;
+    }
+
+    .vector-image-grid.vctr-1 {
+        top: 0;
+        left: -15rem;
+    }
+    .vector-image-grid.vctr-2 {
+        bottom: 0;
+        left: -10rem;
+    }
+    .vector-image-grid.vctr-3 {
+        right: -5rem;
+    }
+    .vector-image-grid.vctr-4 {
+        top: 50%;
+        right: -3rem;
+    }
+    .vector-image-grid.vctr-5 {
+        bottom: 0;
+        right: -10rem;
+    }
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+<div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="isolate section-{{ section.id }}-padding">
+      <div class="page-width page-width--med">
+        <div class="vector-image-grid vctr-1">
+            {% render 'circle-vector' %}
+        </div>
+        <div class="vector-image-grid vctr-2">
+            {% render 'plus-vector' %}
+        </div>
+        <div class="vector-image-grid vctr-3">
+            {% render 'plus-vector' %}
+        </div>
+        <div class="vector-image-grid vctr-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 17 17" fill="none">
+                <circle cx="8.5" cy="8.5" r="8.5" fill="#3F75FF"/>
+            </svg>
+        </div>
+        <div class="vector-image-grid vctr-5">
+            {% render 'circle-vector' %}
+        </div>
+
+        <div class="grid grid--1-col grid--3-col-tablet">
+            {%- liquid
+                assign highest_ratio = 0
+                for block in section.blocks
+                  if block.settings.image.height > highest_ratio
+                    assign highest_ratio = block.settings.image.aspect_ratio
+                  endif
+                endfor
+              -%}
+
+            {% for block in section.blocks %}
+                {% case block.type %}
+                    {% when 'box' %}
+                        <div class="grid__item">
+                            <div class="grid-box global-media-settings" style="--color-bg:{{ block.settings.bg_color }}; --color-text: {{ block.settings.text_color }}; --color-dash: {{ block.settings.dash_color }};">
+                                <div class="grid-box--inner">
+                                        {% if block.settings.image %}
+                                            <div class="image-top-grid">
+                                                <div
+                                                    class="media media--transparent media--adapt"
+                                                    style="padding-bottom: {{ 1 | divided_by: highest_ratio | times: 100 }}%;">
+                                                    {%- liquid
+                                                    assign number_of_columns = section.settings.columns_desktop
+                                                    assign number_of_columns_mobile = section.settings.columns_mobile
+                                                    assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                                    assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                                    assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+                                                    assign image_width = 1
+                                                    -%}
+                                                    {% capture sizes %}
+                                                    (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+                                                    (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+                                                    (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+                                                    calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+                                                    {% endcapture %}
+                                                    {{
+                                                    block.settings.image
+                                                    | image_url: width: 3200
+                                                    | image_tag:
+                                                        loading: 'lazy',
+                                                        widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                                                        sizes: sizes
+                                                    }}
+                                                </div>
+                                            </div>
+                                        {% endif %}
+
+                                        {% if block.settings.image_title %}
+                                            <div class="image-title-grid">
+                                                <div
+                                                    class="media media--transparent media--adapt"
+                                                    style="padding-bottom: {{ 1 | divided_by: block.settings.image_title.aspect_ratio | times: 100 }}%;">
+                                                    {%- liquid
+                                                    assign number_of_columns = section.settings.columns_desktop
+                                                    assign number_of_columns_mobile = section.settings.columns_mobile
+                                                    assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                                    assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                                    assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+                                                    assign image_width = 1
+                                                    -%}
+                                                    {% capture sizes %}
+                                                    (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+                                                    (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+                                                    (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+                                                    calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+                                                    {% endcapture %}
+                                                    {{
+                                                    block.settings.image_title
+                                                    | image_url: width: 3200
+                                                    | image_tag:
+                                                        loading: 'lazy',
+                                                        widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                                                        sizes: sizes
+                                                    }}
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            {% if block.settings.heading %}
+                                                <h2 class="inline-richtext {{ block.settings.heading_size }}">{{ block.settings.heading }}</h2>
+                                            {% endif %}
+                                        {% endif %}
+   
+                                        {% if block.settings.text %}
+                                            <div class="grid__text rte {{ block.settings.text_style }}">
+                                                <p>{{ block.settings.text }}</p>
+                                            </div>
+                                        {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% when 'heading' %}
+                        {% if block.settings.heading %}
+                            <div class="grid__item">
+                                <div class="grid-box grid-box--heading">
+                                    <div class="grid--heading--inner">
+                                        <h2 class="inline-richtext {{ block.settings.heading_size }}">{{ block.settings.heading }}</h2>
+                                        <div class="long-arrow">
+                                            {% render 'icon-long-arrow' %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                {% endcase %}
+
+            {% endfor %}
+        </div>
+      </div>
+    </div>
+</div>
+
+{% schema %}
+    {
+        "name": "K Grid Boxes",
+        "class": "k-grid-boxes",
+        "settings": [
+            {
+                "type": "select",
+                "id": "color_scheme",
+                "options": [
+                  {
+                    "value": "accent-1",
+                    "label": "t:sections.all.colors.accent_1.label"
+                  },
+                  {
+                    "value": "accent-2",
+                    "label": "t:sections.all.colors.accent_2.label"
+                  },
+                  {
+                    "value": "background-1",
+                    "label": "t:sections.all.colors.background_1.label"
+                  },
+                  {
+                    "value": "background-2",
+                    "label": "t:sections.all.colors.background_2.label"
+                  },
+                  {
+                    "value": "inverse",
+                    "label": "t:sections.all.colors.inverse.label"
+                  }
+                ],
+                "default": "background-1",
+                "label": "t:sections.all.colors.label",
+                "info": "t:sections.all.colors.has_cards_info"
+            },
+            {
+                "type": "header",
+                "content": "t:sections.all.padding.section_padding_heading"
+            },
+            {
+                "type": "range",
+                "id": "padding_top",
+                "min": 0,
+                "max": 100,
+                "step": 4,
+                "unit": "px",
+                "label": "t:sections.all.padding.padding_top",
+                "default": 36
+            },
+            {
+                "type": "range",
+                "id": "padding_bottom",
+                "min": 0,
+                "max": 100,
+                "step": 4,
+                "unit": "px",
+                "label": "t:sections.all.padding.padding_bottom",
+                "default": 36
+            }
+        ],
+        "blocks": [
+            {
+                "type": "heading",
+                "name": "Heading",
+                "settings": [
+                    {
+                        "type": "inline_richtext",
+                        "id": "heading",
+                        "default": "Image banner",
+                        "label": "t:sections.image-banner.blocks.heading.settings.heading.label"
+                    },
+                    {
+                        "type": "select",
+                        "id": "heading_size",
+                        "options": [
+                          {
+                            "value": "h2",
+                            "label": "t:sections.all.heading_size.options__1.label"
+                          },
+                          {
+                            "value": "h1",
+                            "label": "t:sections.all.heading_size.options__2.label"
+                          },
+                          {
+                            "value": "h0",
+                            "label": "t:sections.all.heading_size.options__3.label"
+                          }
+                        ],
+                        "default": "h1",
+                        "label": "t:sections.all.heading_size.label"
+                    },
+                    {
+                        "type": "inline_richtext",
+                        "id": "text",
+                        "default": "Give customers details about the banner image(s) or content on the template.",
+                        "label": "t:sections.image-banner.blocks.text.settings.text.label"
+                    },
+                    {
+                        "type": "select",
+                        "id": "text_style",
+                        "options": [
+                          {
+                            "value": "body",
+                            "label": "t:sections.image-banner.blocks.text.settings.text_style.options__1.label"
+                          },
+                          {
+                            "value": "subtitle",
+                            "label": "t:sections.image-banner.blocks.text.settings.text_style.options__2.label"
+                          },
+                          {
+                            "value": "caption-with-letter-spacing",
+                            "label": "t:sections.image-banner.blocks.text.settings.text_style.options__3.label"
+                          }
+                        ],
+                        "default": "body",
+                        "label": "t:sections.image-banner.blocks.text.settings.text_style.label"
+                    },
+                    {
+                        "type": "color",
+                        "id": "bg_color",
+                        "label": "Background color"
+                    },
+                    {
+                        "type": "color",
+                        "id": "text_color",
+                        "label": "Text color"
+                    },
+                    {
+                        "type": "color",
+                        "id": "dash_color",
+                        "label": "Dash mobile color"
+                    }
+                ]
+            },
+            {
+                "type": "box",
+                "name": "Box",
+                "settings": [
+                    {
+                        "type": "image_picker",
+                        "id": "image",
+                        "label": "Image"
+                    },
+                    {
+                        "type": "image_picker",
+                        "id": "image_title",
+                        "label": "Image as title"
+                    },
+                    {
+                        "type": "inline_richtext",
+                        "id": "heading",
+                        "default": "Image banner",
+                        "label": "t:sections.image-banner.blocks.heading.settings.heading.label"
+                    },
+                    {
+                        "type": "select",
+                        "id": "heading_size",
+                        "options": [
+                          {
+                            "value": "h2",
+                            "label": "t:sections.all.heading_size.options__1.label"
+                          },
+                          {
+                            "value": "h1",
+                            "label": "t:sections.all.heading_size.options__2.label"
+                          },
+                          {
+                            "value": "h0",
+                            "label": "t:sections.all.heading_size.options__3.label"
+                          }
+                        ],
+                        "default": "h1",
+                        "label": "t:sections.all.heading_size.label"
+                    },
+                    {
+                        "type": "inline_richtext",
+                        "id": "text",
+                        "default": "Give customers details about the banner image(s) or content on the template.",
+                        "label": "t:sections.image-banner.blocks.text.settings.text.label"
+                    },
+                    {
+                        "type": "select",
+                        "id": "text_style",
+                        "options": [
+                          {
+                            "value": "body",
+                            "label": "t:sections.image-banner.blocks.text.settings.text_style.options__1.label"
+                          },
+                          {
+                            "value": "subtitle",
+                            "label": "t:sections.image-banner.blocks.text.settings.text_style.options__2.label"
+                          },
+                          {
+                            "value": "caption-with-letter-spacing",
+                            "label": "t:sections.image-banner.blocks.text.settings.text_style.options__3.label"
+                          }
+                        ],
+                        "default": "body",
+                        "label": "t:sections.image-banner.blocks.text.settings.text_style.label"
+                    },
+                    {
+                        "type": "color",
+                        "id": "bg_color",
+                        "label": "Background color"
+                    },
+                    {
+                        "type": "color",
+                        "id": "text_color",
+                        "label": "Text color"
+                    },
+                    {
+                        "type": "color",
+                        "id": "dash_color",
+                        "label": "Dash mobile color"
+                    }
+                ]
+            }
+        ],
+        "presets": [
+            {
+                "name": "K Grid Boxes"
+            }
+        ]
+    }
+{% endschema %}
