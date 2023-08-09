@@ -1,0 +1,56 @@
+<script>
+  window.Shopify.loadFeatures(
+    [
+      {
+        name: 'consent-tracking-api',
+        version: '0.1',
+      },
+    ],
+    error => {
+      if (error) { /* noop */ }
+
+      const acknowledgeBtn = document.querySelector('.cookie-banner__btn--acknowledge');
+      const cookieBanner = document.querySelector('.cookie-banner');
+
+      const registerPermissionsAndClose = () => {
+        window.Shopify.customerPrivacy.setTrackingConsent({
+          'analytics': true,
+          'marketing': true,
+          'preferences': true
+        },
+        () => {
+          cookieBanner.style.display = 'none';
+        });
+      };
+
+      acknowledgeBtn.addEventListener('click', registerPermissionsAndClose);
+
+      const shouldShowCookieBanner = () => {
+        const { marketing, analytics, preferences } = Shopify.customerPrivacy.currentVisitorConsent();
+        return [marketing, analytics, preferences].some(permission => permission === '');
+      };
+
+      if (shouldShowCookieBanner()) {
+        cookieBanner.style.display = 'block';
+      }
+
+      {%- if request.design_mode -%}
+        {%- if settings.cookie_banner_preview -%}
+          cookieBanner.style.display = 'block';
+        {%- else -%}
+          cookieBanner.style.display = 'none';
+        {%- endif %}
+      {%- endif -%}
+    }
+  );
+</script>
+
+{{ 'cookie-banner.css' | asset_url | stylesheet_tag }}
+
+<section class="cookie-banner" style="display: none;">
+  {{ settings.cookie_banner_html }}
+
+  <div class="cookie-banner__btn-group">
+    <button class="cookie-banner__btn--acknowledge">{{ settings.cookie_banner_button }}</button>
+  </div>
+</section>
