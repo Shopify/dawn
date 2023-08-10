@@ -1,0 +1,172 @@
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+{{ 'quick-order-list.css' | asset_url | stylesheet_tag }}
+{{ 'component-facets.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'main-search.js' | asset_url }}" defer="defer"></script>
+
+<div id="quick-order-form" data-id="{{ section.id }}">
+  <main-search>
+    <form action="{{ routes.search_url }}" method="get" role="search" class="search">
+      <div class="field">
+        <input
+          class="search__input field__input"
+          id="Search-In-Template"
+          type="search"
+          name="q"
+          value="{{ search.terms | escape }}"
+          placeholder="{{ 'general.search.search' | t }}"
+          {%- if settings.predictive_search_enabled -%}
+            role="combobox"
+            aria-expanded="false"
+            aria-owns="predictive-search-results"
+            aria-controls="predictive-search-results"
+            aria-haspopup="listbox"
+            aria-autocomplete="list"
+            autocorrect="off"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+          {%- endif -%}
+        >
+        <label class="field__label" for="Search-In-Template">{{ 'general.search.search' | t }}</label>
+        <input name="options[prefix]" type="hidden" value="last">
+
+        {%- if settings.predictive_search_enabled -%}
+          <div class="predictive-search predictive-search--search-template" tabindex="-1" data-predictive-search>
+            <div class="predictive-search__loading-state">
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                class="spinner"
+                viewBox="0 0 66 66"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+              </svg>
+            </div>
+          </div>
+
+          <span class="predictive-search-status visually-hidden" role="status" aria-hidden="true"></span>
+        {%- endif -%}
+
+        <button
+          type="reset"
+          class="reset__button field__button{% if search.terms == blank %} hidden{% endif %}"
+          aria-label="{{ 'general.search.reset' | t }}"
+        >
+          <svg class="icon icon-close" aria-hidden="true" focusable="false">
+            <use xlink:href="#icon-reset">
+          </svg>
+        </button>
+        <button type="submit" class="search__button field__button" aria-label="{{ 'general.search.search' | t }}">
+          <svg class="icon icon-search" aria-hidden="true" focusable="false">
+            <use xlink:href="#icon-search">
+          </svg>
+        </button>
+      </div>
+    </form>
+  </main-search>
+
+  {%- for item in search.results -%}
+    {% assign lazy_load = false %}
+    {%- if forloop.index > 2 -%}
+      {%- assign lazy_load = true -%}
+    {%- endif -%}
+
+    <li class="grid__item">
+      {%- case item.object_type -%}
+        {%- when 'product' -%}
+          {%- capture product_settings -%}{%- if section.settings.product_show_vendor -%}vendor,{%- endif -%}title,price{%- endcapture -%}
+          {% render 'card-product',
+            card_product: item,
+            media_aspect_ratio: section.settings.image_ratio,
+            image_shape: section.settings.image_shape,
+            show_secondary_image: section.settings.show_secondary_image,
+            show_vendor: section.settings.show_vendor,
+            show_rating: section.settings.show_rating,
+            lazy_load: lazy_load
+          %}
+      {%- endcase -%}
+    </li>
+  {%- endfor -%}
+
+  <form
+    action="{{ routes.cart_update_url }}"
+    class="quick-order-list__contents critical-hidden"
+    method="post"
+    id="QuickOrderList"
+  >
+    <div class="quick-order-list__container" id="main-variant-items">
+      <div class="js-contents">
+        <table class="quick-order-list__table">
+          <caption class="visually-hidden">
+            {{ 'sections.cart.title' | t }}
+          </caption>
+          <thead>
+            <tr>
+              <th class="caption-with-letter-spacing" scope="col">
+                {%- if product.has_only_default_variant -%}
+                  {{ 'sections.quick_order_list.product' | t }}
+                {%- else -%}
+                  {{ 'sections.quick_order_list.variant' | t }}
+                {%- endif -%}
+              </th>
+              <th class="large-up-hide right caption-with-letter-spacing" scope="col">
+                {%- if product.has_only_default_variant -%}
+                  {{ 'sections.quick_order_list.product_total' | t }}
+                {%- else -%}
+                  {{ 'sections.quick_order_list.variant_total' | t }}
+                {%- endif -%}
+              </th>
+              <th
+                class="quick-order-list__table-heading--wide small-hide medium-hide caption-with-letter-spacing"
+                scope="col"
+              >
+                {{ 'products.product.quantity.label' | t }}
+              </th>
+              <th
+                class="quick-order-list__table-heading--wide small-hide medium-hide caption-with-letter-spacing"
+                scope="col"
+              >
+                {{ 'sections.cart.headings.price' | t }}
+              </th>
+              <th class="small-hide medium-hide right caption-with-letter-spacing" scope="col">
+                {%- if product.has_only_default_variant -%}
+                  {{ 'sections.quick_order_list.product_total' | t }}
+                {%- else -%}
+                  {{ 'sections.quick_order_list.variant_total' | t }}
+                {%- endif -%}
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% render 'facets',
+              results: collections.all,
+              enable_filtering: true,
+              enable_sorting: false,
+              filter_type: 'horizontal'
+            %}
+            {%- paginate collections.all.products by 5 -%}
+              {%- for product in collections.all.products -%}
+                <tr>
+                  <td>{{ product.title }}</td>
+                </tr>
+                {%- for variant in product.variants -%}
+                  {%- render 'quick-order-list-row',
+                    item: variant,
+                    image: variant.image,
+                    sku: variant.sku,
+                    variant: variant
+                  -%}
+                {%- endfor -%}
+              {%- endfor -%}
+              <tr>
+                <td>{% render 'pagination', paginate: paginate %}</td>
+              </tr>
+            {%- endpaginate -%}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </form>
+</div>

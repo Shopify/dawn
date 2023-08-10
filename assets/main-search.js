@@ -40,6 +40,17 @@ class MainSearch extends SearchForm {
       }
     });
   }
+
+
+  getSectionsToRender() {
+    return [
+      {
+        id: 'quick-order-form',
+        section: document.getElementById('quick-order-form').dataset.id,
+        selector: '#quick-order-form',
+      },
+    ];
+  }
 }
 
 customElements.define('main-search', MainSearch);

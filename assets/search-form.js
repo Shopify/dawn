@@ -3,6 +3,9 @@ class SearchForm extends HTMLElement {
     super();
     this.input = this.querySelector('input[type="search"]');
     this.resetButton = this.querySelector('button[type="reset"]');
+    this.form = this.querySelector('form');
+
+    this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
 
     if (this.input) {
       this.input.form.addEventListener('reset', this.onFormReset.bind(this));
@@ -22,6 +25,11 @@ class SearchForm extends HTMLElement {
     } else if (this.input.value.length === 0 && !resetIsHidden) {
       this.resetButton.classList.add('hidden');
     }
+  }
+
+  onSubmitHandler(event) {
+    event.preventDefault();
+    console.log('submitted')
   }
 
   onChange() {
