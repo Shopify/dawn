@@ -84,7 +84,6 @@
     margin: 0 auto;
     object-fit: contain;
     height: auto;
-    max-width: 400px;
   }
 }
 {% endstyle %}
@@ -95,9 +94,15 @@
     <div class="easel-aio__items-wrapper">
       {% for block in section.blocks %}
         <div class="easel-aio__item block-{{ block.id }}">
-          {% if block.settings.video %}
-            {% assign poster_url = block.settings.video_poster | image_url: width: 326 %}
-            {{ block.settings.video | video_tag: class: "easel-aio__item__video", poster: poster_url, loop: true, muted: true }}
+          {% if block.settings.video_url %}
+            <video
+              muted
+              loop
+              playsinline
+              class="easel-aio__item__video"
+              poster="{{ block.settings.video_poster | image_url }}">
+              <source src="{{ block.settings.video_url }}" type="video/mp4">
+            </video>
           {% else %}
             {{ block.settings.video_poster | image_url: width: 326 | image_tag: class: "easel-aio__item__video" }}
           {% endif %}
@@ -105,6 +110,48 @@
           <p class="easel-aio__item__text">{{ block.settings.text }}</p>
         </div>
       {% endfor %}
+      <script>
+        function autoplayVideos() {
+          const videos = document.querySelectorAll(".easel-aio__item__video");
+
+          if (window.innerWidth < 960) {
+            videos.forEach(video => {
+              video.autoplay = true;
+              video.play();
+            });
+          } else {
+            videos.forEach(video => {
+              video.addEventListener("mouseenter", function(e) {
+                e.target.play();
+              });
+
+              video.addEventListener("mouseleave", function(e) {
+                e.target.load();
+              });
+            });
+          }
+        }
+
+        function onDocumentReady(callback) {
+          if (document.readyState === "complete" || document.readyState === "interactive") {
+            callback();
+          } else {
+            document.addEventListener("DOMContentLoaded", callback);
+          }
+        }
+
+        function onWindowResize(callback) {
+          window.addEventListener("resize", callback);
+        }
+
+        onDocumentReady(function() {
+          autoplayVideos();
+
+          onWindowResize(function() {
+            autoplayVideos();
+          });
+        });
+      </script>
     </div>
   </div>
 </div>
@@ -179,9 +226,9 @@
           "label": "Title"
         },
         {
-          "type": "video",
-          "id": "video",
-          "label": "Video"
+          "type": "url",
+          "id": "video_url",
+          "label": "Video CDN URL"
         },
         {
           "type": "image_picker",
