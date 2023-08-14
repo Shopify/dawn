@@ -14,16 +14,15 @@ customElements.define('quick-order-list-remove-button', QuickOrderListRemoveButt
 class QuickOrderListRemoveAllButton extends HTMLElement {
   constructor() {
     super();
-    const allVariants = Array.from(document.querySelectorAll('[data-variant-id]'));
+    const allVariants = Array.from(document.querySelectorAll('[data-quantity-variant-id]'));
     const items = {}
     let hasVariantsInCart = false;
     this.quickOrderList = this.closest('quick-order-list');
-
     allVariants.forEach((variant) => {
-      const cartQty = parseInt(variant.dataset.cartQty);
+      const cartQty = parseInt(variant.dataset.cartQuantity);
       if (cartQty > 0) {
         hasVariantsInCart = true;
-        items[parseInt(variant.dataset.variantId)] = 0;
+        items[parseInt(variant.dataset.quantityVariantId)] = 0;
       }
     });
 
@@ -167,19 +166,19 @@ class QuickOrderList extends HTMLElement {
       const sectionElement = document.getElementById(section.id);
       if (sectionElement && sectionElement.parentElement && sectionElement.parentElement.classList.contains('drawer')) {
         parsedState.items.length > 0 ? sectionElement.parentElement.classList.remove('is-empty') : sectionElement.parentElement.classList.add('is-empty');
-
         setTimeout(() => {
           document.querySelector('#CartDrawer-Overlay').addEventListener('click', this.cart.close.bind(this.cart));
         });
       }
       const elementToReplace = sectionElement && sectionElement.querySelector(section.selector) ? sectionElement.querySelector(section.selector) : sectionElement;
       if (elementToReplace) {
-        if (section.selector === '.js-contents') {
+        if (section.selector === '.js-contents' && id !== undefined) {
           elementToReplace.querySelector(`#Variant-${id}`).innerHTML =
           this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${id}`);
         } else {
           elementToReplace.innerHTML = this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
         }
+        // elementToReplace.innerHTML = this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
       }
     }));
     this.allInputs = this.querySelectorAll('input[type="number"]');
