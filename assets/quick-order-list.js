@@ -67,6 +67,8 @@ class QuickOrderList extends HTMLElement {
       add: 'ADD',
       update: 'UPDATE'
     }
+    this.allInputs = this.querySelectorAll('input[type="number"]');
+    this.allInputs.forEach((input) => {input.addEventListener('focus', this.switchVarints.bind(this))});
     this.quickOrderListId = 'quick-order-list'
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
     const form = this.querySelector('form');
@@ -160,7 +162,7 @@ class QuickOrderList extends HTMLElement {
     ];
   }
 
-  renderSections(parsedState) {
+  renderSections(parsedState, id) {
     this.getSectionsToRender().forEach((section => {
       const sectionElement = document.getElementById(section.id);
       if (sectionElement && sectionElement.parentElement && sectionElement.parentElement.classList.contains('drawer')) {
@@ -172,11 +174,44 @@ class QuickOrderList extends HTMLElement {
       }
       const elementToReplace = sectionElement && sectionElement.querySelector(section.selector) ? sectionElement.querySelector(section.selector) : sectionElement;
       if (elementToReplace) {
-        elementToReplace.innerHTML =
-          this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
+        if (section.selector === '.js-contents') {
+          elementToReplace.querySelector(`#Variant-${id}`).innerHTML =
+          this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${id}`);
+        } else {
+          elementToReplace.innerHTML = this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
+        }
       }
     }));
+    this.allInputs = this.querySelectorAll('input[type="number"]');
+    this.allInputs.forEach((input) => {input.addEventListener('focus', this.switchVarints.bind(this))});
+  }
 
+  switchVarints(event) {
+    event.target.addEventListener('keydown', (e) => {
+
+      const currentVariantIndex = Array.from(this.allInputs).findIndex((input) => input === e.target);
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        e.target.blur();
+        const nextVariant = Array.from(this.allInputs)[currentVariantIndex + 1];
+        if (nextVariant) {
+          nextVariant.focus();
+        } else {
+          const firstVariant = Array.from(this.allInputs)[0];
+          firstVariant.focus();
+        }
+      } else if (e.key === 'Enter' && e.shiftKey) {
+        e.preventDefault();
+        e.target.blur();
+        const previousVariant = Array.from(this.allInputs)[currentVariantIndex - 1];
+        if (previousVariant) {
+          previousVariant.focus();
+        } else {
+          const lastVariant = Array.from(this.allInputs)[Array.from(this.allInputs).length - 1];
+          lastVariant.focus();
+        }
+      }
+    });
   }
 
   updateMultipleQty(items) {
@@ -258,7 +293,7 @@ class QuickOrderList extends HTMLElement {
 
         this.classList.toggle('is-empty', parsedState.item_count === 0);
 
-        this.renderSections(parsedState);
+        this.renderSections(parsedState, id);
 
         let hasError = false;
 
@@ -271,7 +306,8 @@ class QuickOrderList extends HTMLElement {
 
         const variantItem = document.getElementById(`Variant-${id}`);
         if (variantItem && variantItem.querySelector(`[name="${name}"]`)) {
-          variantItem.querySelector(`[name="${name}"]`).focus();
+          const currentVariantIndex = Array.from(this.allInputs).findIndex((input) => input === variantItem.querySelector(`[name="${name}"]`));
+          const nextVariant = Array.from(this.allInputs)[currentVariantIndex + 1];
         }
         publish(PUB_SUB_EVENTS.cartUpdate, { source: this.quickOrderListId, cartData: parsedState });
 
@@ -380,7 +416,6 @@ class QuickOrderList extends HTMLElement {
     if (enable) {
       quickOrderList.classList.add('quick-order-list__container--disabled');
       [...quickOrderListItems].forEach((overlay) => overlay.classList.remove('hidden'));
-      document.activeElement.blur();
       this.variantItemStatusElement.setAttribute('aria-hidden', false);
     } else {
       quickOrderList.classList.remove('quick-order-list__container--disabled');
