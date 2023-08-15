@@ -178,7 +178,6 @@ class QuickOrderList extends HTMLElement {
         } else {
           elementToReplace.innerHTML = this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
         }
-        // elementToReplace.innerHTML = this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
       }
     }));
     this.allInputs = this.querySelectorAll('input[type="number"]');
@@ -187,7 +186,6 @@ class QuickOrderList extends HTMLElement {
 
   switchVarints(event) {
     event.target.addEventListener('keydown', (e) => {
-
       const currentVariantIndex = Array.from(this.allInputs).findIndex((input) => input === e.target);
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -303,11 +301,6 @@ class QuickOrderList extends HTMLElement {
           hasError = true;
         }
 
-        const variantItem = document.getElementById(`Variant-${id}`);
-        if (variantItem && variantItem.querySelector(`[name="${name}"]`)) {
-          const currentVariantIndex = Array.from(this.allInputs).findIndex((input) => input === variantItem.querySelector(`[name="${name}"]`));
-          const nextVariant = Array.from(this.allInputs)[currentVariantIndex + 1];
-        }
         publish(PUB_SUB_EVENTS.cartUpdate, { source: this.quickOrderListId, cartData: parsedState });
 
         if (hasError) {
