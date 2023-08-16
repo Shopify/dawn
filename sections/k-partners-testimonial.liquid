@@ -1,0 +1,490 @@
+{{ 'component-slider.css' | asset_url | stylesheet_tag }}
+{{ 'component-slideshow.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+  .test-wrapper {
+      box-shadow: 0px 9px 23px -5px #0000001A;
+      border-radius: 20px;
+      padding: 2rem;
+      height: 100%;
+      margin: 9px 9px 23px;
+  }
+  .test-wrapper .rte {
+    font-size: 1.4rem;
+  }
+  .stars-review {
+    display: flex;
+    justify-content: center;
+    gap: 0.2rem;
+    margin-top: -1rem;
+  }
+  .stars-review svg {
+    display: block;
+  }
+
+  .quote {
+    display: block;
+    max-width: fit-content;
+    margin: 0 auto 1.5rem;
+  }
+  .quote svg {
+    display: block;
+  }
+
+  #shopify-section-{{ section.id }} .grid {
+    --grid-desktop-horizontal-spacing: 20px;
+    --grid-desktop-vertical-spacing: 20px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+
+<div class="color-{{ section.settings.color_scheme }} isolate gradient">
+    <div class="section-{{ section.id }}-padding">
+        <div class="center page-width page-width--med title-wrapper title-wrapper--no-top-margin">
+            {%- if section.settings.title != blank -%}
+                <h2 class="title inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">{{ section.settings.title }}</h2>
+            {%- endif -%}
+            {%- if section.settings.description != blank -%}
+                <div class="{{ section.settings.description_style }} center rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+                    {{ section.settings.description -}}
+                </div>
+            {%- endif -%}
+
+            <div class="stars-review center">
+              {% for i in (1..5) %}
+                <div class="star-icon">
+                  {% render 'icon-star' %}
+                </div>
+              {% endfor %}
+            </div>
+        </div>
+        <slideshow-component
+            class="slider-mobile-gutter page-width autoplay-on-vis"
+            role="region"
+            aria-roledescription="{{ 'sections.slideshow.carousel' | t }}"
+            aria-label="{{ section.settings.accessibility_info | escape }}"
+          >
+            {%- if section.settings.auto_rotate and section.blocks.size > 1 -%}
+              <div class="slideshow__controls show-arrows below-area slideshow__controls--top slider-buttons no-js-hidden{% if section.settings.show_text_below %} slideshow__controls--border-radius-mobile{% endif %}">
+                <button
+                  type="button"
+                  class="slider-button slider-button--prev"
+                  name="previous"
+                  aria-label="{{ 'sections.slideshow.previous_slideshow' | t }}"
+                  aria-controls="Slider-{{ section.id }}"
+                >
+                  {% render 'icon-caret' %}
+                </button>
+                <div class="slider-counter slider-counter--{{ section.settings.slider_visual }}{% if section.settings.slider_visual == 'counter' or section.settings.slider_visual == 'numbers' %} caption{% endif %}">
+                  {%- if section.settings.slider_visual == 'counter' -%}
+                    <span class="slider-counter--current">1</span>
+                    <span aria-hidden="true"> / </span>
+                    <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+                    <span class="slider-counter--total">{{ section.blocks.size }}</span>
+                  {%- else -%}
+                    <div class="slideshow__control-wrapper">
+                      {%- for block in section.blocks -%}
+                        {%- if section.settings.slider_visual == 'dots' -%}
+                          {% assign blocks_count = section.blocks.size | divided_by: 3 %}
+                          {% if section.blocks.size == 5 %}
+                            {% assign blocks_limit = section.blocks.size | minus: 2 %}
+                          {% else %}
+                            {% assign blocks_limit = section.blocks.size | minus: blocks_count %}
+                          {% endif %}
+                        {%- endif -%}
+      
+                        <button
+                          data-adsd="{{ blocks_count }}"
+                          data-assa="{{ blocks_limit }}"
+                          class="slider-counter__link {% if section.settings.slider_visual == 'dots' and forloop.index > blocks_limit %}  medium-hide large-up-hide{% endif %}
+                          slider-counter__link--{{ section.settings.slider_visual }} link"
+                          aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
+                          aria-controls="Slider-{{ section.id }}"
+                        >
+                          {%- if section.settings.slider_visual == 'numbers' -%}
+                            {{ forloop.index -}}
+                          {%- else -%}
+      
+      
+                            <span class="dot"></span>
+                          {%- endif -%}
+                        </button>
+                      {%- endfor -%}
+                    </div>
+                  {%- endif -%}
+                </div>
+                <button
+                  type="button"
+                  class="slider-button slider-button--next"
+                  name="next"
+                  aria-label="{{ 'sections.slideshow.next_slideshow' | t }}"
+                  aria-controls="Slider-{{ section.id }}"
+                >
+                  {% render 'icon-caret' %}
+                </button>
+      
+                {%- if section.settings.auto_rotate -%}
+                  <button
+                    type="button"
+                    class="slideshow__autoplay slider-button no-js-hidden{% if section.settings.auto_rotate == false %} slideshow__autoplay--paused{% endif %}"
+                    aria-label="{{ 'sections.slideshow.pause_slideshow' | t }}"
+                  >
+                    {%- render 'icon-pause' -%}
+                    {%- render 'icon-play' -%}
+                  </button>
+                {%- endif -%}
+              </div>
+              <noscript>
+                <div class="slider-buttons">
+                  <div class="slider-counter">
+                    {%- for block in section.blocks -%}
+                      <a
+                        href="#Slide-{{ section.id }}-{{ forloop.index }}"
+                        class="slider-counter__link link"
+                        aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
+                      >
+                        {{ forloop.index }}
+                      </a>
+                    {%- endfor -%}
+                  </div>
+                </div>
+              </noscript>
+            {%- endif -%}
+      
+            <div
+              class="slideshow banner--adapt_image grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down slider slider--everywhere"
+              id="Slider-{{ section.id }}"
+              aria-live="polite"
+              aria-atomic="true"
+              data-autoplay="{{ section.settings.auto_rotate }}"
+              data-speed="{{ section.settings.change_slides_speed }}"
+            >
+                {%- liquid
+                    assign highest_ratio = 0
+                    for block in section.blocks
+                      if block.settings.image.height > highest_ratio
+                        assign highest_ratio = block.settings.image.aspect_ratio
+                      endif
+                    endfor
+                -%}
+
+              {% for block in section.blocks %}
+                <div
+                    class="slideshow__slide grid__item slider__slide"
+                    id="Slide-{{ section.id }}-{{ forloop.index }}"
+                    {{ block.shopify_attributes }}
+                    role="group"
+                    aria-roledescription="{{ 'sections.slideshow.slide' | t }}"
+                    aria-label="{{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
+                    tabindex="-1"
+                  >
+                    <div class="test-wrapper center">
+                      <div class="quote">
+                        {% render 'icon-quote' %}
+                      </div>
+                      
+                      {%- if block.settings.description != blank -%}
+                          <div class="rte">{{ block.settings.description }}</div>
+                      {%- endif -%}
+                      {% if block.settings.name %}
+                        <h3 class="h3">{{ block.settings.name }}</h3>
+                      {% endif %}
+                    </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            {%- if section.blocks.size > 1 and section.settings.auto_rotate == false -%}
+                <div class="slideshow__controls below-area show-arrows slider-buttons no-js-hidden{% if section.settings.show_text_below %} slideshow__controls--border-radius-mobile{% endif %}">
+                  <button
+                    type="button"
+                    class="slider-button arrow-visible slider-button--prev"
+                    name="previous"
+                    aria-label="{{ 'sections.slideshow.previous_slideshow' | t }}"
+                    aria-controls="Slider-{{ section.id }}"
+                  >
+                    {% render 'icon-caret' %}
+                  </button>
+                  <div class="slider-counter slider-counter--{{ section.settings.slider_visual }}{% if section.settings.slider_visual == 'counter' or section.settings.slider_visual == 'numbers' %} caption{% endif %}">
+                    {%- if section.settings.slider_visual == 'counter' -%}
+                      <span class="slider-counter--current">1</span>
+                      <span aria-hidden="true"> / </span>
+                      <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+                      <span class="slider-counter--total">{{ section.blocks.size }}</span>
+                    {%- else -%}
+                      <div class="slideshow__control-wrapper">
+                        {%- for block in section.blocks -%}
+                          <button
+                            class="slider-counter__link slider-counter__link--{{ section.settings.slider_visual }} link"
+                            aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
+                            aria-controls="Slider-{{ section.id }}"
+                          >
+                            {%- if section.settings.slider_visual == 'numbers' -%}
+                              {{ forloop.index -}}
+                            {%- else -%}
+                              <span class="dot"></span>
+                            {%- endif -%}
+                          </button>
+                        {%- endfor -%}
+                      </div>
+                    {%- endif -%}
+                  </div>
+                  <button
+                    type="button"
+                    class="slider-button arrow-visible slider-button--next"
+                    name="next"
+                    aria-label="{{ 'sections.slideshow.next_slideshow' | t }}"
+                    aria-controls="Slider-{{ section.id }}"
+                  >
+                    {% render 'icon-caret' %}
+                  </button>
+        
+                  {%- if section.settings.auto_rotate -%}
+                    <button
+                      type="button"
+                      class="slideshow__autoplay slider-button no-js-hidden{% if section.settings.auto_rotate == false %} slideshow__autoplay--paused{% endif %}"
+                      aria-label="{{ 'sections.slideshow.pause_slideshow' | t }}"
+                    >
+                      {%- render 'icon-pause' -%}
+                      {%- render 'icon-play' -%}
+                    </button>
+                  {%- endif -%}
+                </div>
+                <noscript>
+                  <div class="slider-buttons">
+                    <div class="slider-counter">
+                      {%- for block in section.blocks -%}
+                        <a
+                          href="#Slide-{{ section.id }}-{{ forloop.index }}"
+                          class="slider-counter__link link"
+                          aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
+                        >
+                          {{ forloop.index }}
+                        </a>
+                      {%- endfor -%}
+                    </div>
+                  </div>
+                </noscript>
+            {%- endif -%}
+        </slideshow-component>
+    </div>
+</div>
+
+{% schema %}
+    {
+        "name": "K Partners Testimonial",
+        "class": "k-hero k-section",
+        "settings": [
+            {
+              "type": "inline_richtext",
+              "id": "title",
+              "default": "Featured collection",
+              "label": "t:sections.featured-collection.settings.title.label"
+            },
+            {
+              "type": "select",
+              "id": "heading_size",
+              "options": [
+                {
+                  "value": "h2",
+                  "label": "t:sections.all.heading_size.options__1.label"
+                },
+                {
+                  "value": "h1",
+                  "label": "t:sections.all.heading_size.options__2.label"
+                },
+                {
+                  "value": "h0",
+                  "label": "t:sections.all.heading_size.options__3.label"
+                }
+              ],
+              "default": "h1",
+              "label": "t:sections.all.heading_size.label"
+            },
+            {
+              "type": "richtext",
+              "id": "description",
+              "label": "t:sections.featured-collection.settings.description.label"
+            },
+            {
+              "type": "select",
+              "id": "description_style",
+              "label": "t:sections.featured-collection.settings.description_style.label",
+              "options": [
+                {
+                  "value": "body",
+                  "label": "t:sections.featured-collection.settings.description_style.options__1.label"
+                },
+                {
+                  "value": "subtitle",
+                  "label": "t:sections.featured-collection.settings.description_style.options__2.label"
+                },
+                {
+                  "value": "uppercase",
+                  "label": "t:sections.featured-collection.settings.description_style.options__3.label"
+                }
+              ],
+              "default": "body"
+            },
+            {
+              "type": "range",
+              "id": "columns_desktop",
+              "min": 1,
+              "max": 6,
+              "step": 1,
+              "default": 3,
+              "label": "t:sections.multicolumn.settings.columns_desktop.label"
+            },
+            {
+              "type": "select",
+              "id": "columns_mobile",
+              "options": [
+                {
+                  "value": "1",
+                  "label": "t:sections.multicolumn.settings.columns_mobile.options__1.label"
+                },
+                {
+                  "value": "2",
+                  "label": "t:sections.multicolumn.settings.columns_mobile.options__2.label"
+                }
+              ],
+              "default": "1",
+              "label": "t:sections.multicolumn.settings.columns_mobile.label"
+            },
+            {
+              "type": "select",
+              "id": "slider_visual",
+              "options": [
+                {
+                  "value": "dots",
+                  "label": "t:sections.slideshow.settings.slider_visual.options__2.label"
+                },
+                {
+                  "value": "counter",
+                  "label": "t:sections.slideshow.settings.slider_visual.options__1.label"
+                },
+                {
+                  "value": "numbers",
+                  "label": "t:sections.slideshow.settings.slider_visual.options__3.label"
+                }
+              ],
+              "default": "counter",
+              "label": "t:sections.slideshow.settings.slider_visual.label"
+            },
+            {
+              "type": "checkbox",
+              "id": "auto_rotate",
+              "label": "t:sections.slideshow.settings.auto_rotate.label",
+              "default": false
+            },
+            {
+              "type": "range",
+              "id": "change_slides_speed",
+              "min": 3,
+              "max": 9,
+              "step": 2,
+              "unit": "s",
+              "label": "t:sections.slideshow.settings.change_slides_speed.label",
+              "default": 5
+            },
+            {
+              "type": "checkbox",
+              "id": "swipe_on_mobile",
+              "default": false,
+              "label": "t:sections.collection-list.settings.swipe_on_mobile.label"
+            },
+            {
+              "type": "text",
+              "id": "button_text",
+              "label": "Button text"
+            },
+            {
+              "type": "select",
+              "id": "color_scheme",
+              "options": [
+                {
+                  "value": "accent-1",
+                  "label": "t:sections.all.colors.accent_1.label"
+                },
+                {
+                  "value": "accent-2",
+                  "label": "t:sections.all.colors.accent_2.label"
+                },
+                {
+                  "value": "background-1",
+                  "label": "t:sections.all.colors.background_1.label"
+                },
+                {
+                  "value": "background-2",
+                  "label": "t:sections.all.colors.background_2.label"
+                },
+                {
+                  "value": "inverse",
+                  "label": "t:sections.all.colors.inverse.label"
+                }
+              ],
+              "default": "background-1",
+              "label": "t:sections.all.colors.label",
+              "info": "t:sections.all.colors.has_cards_info"
+            },
+            {
+              "type": "header",
+              "content": "t:sections.all.padding.section_padding_heading"
+            },
+            {
+              "type": "range",
+              "id": "padding_top",
+              "min": 0,
+              "max": 100,
+              "step": 4,
+              "unit": "px",
+              "label": "t:sections.all.padding.padding_top",
+              "default": 36
+            },
+            {
+              "type": "range",
+              "id": "padding_bottom",
+              "min": 0,
+              "max": 100,
+              "step": 4,
+              "unit": "px",
+              "label": "t:sections.all.padding.padding_bottom",
+              "default": 36
+            }
+        ],
+        "blocks": [
+            {
+                "type": "item",
+                "name": "Item",
+                "settings": [
+                    {
+                        "type": "text",
+                        "id": "name",
+                        "label": "Name"
+                    },
+                    {
+                        "type": "richtext",
+                        "id": "description",
+                        "label": "t:sections.featured-collection.settings.description.label"
+                    }
+                ]
+            }
+        ],
+        "presets": [
+            {
+                "name": "K Partners Testimonial"
+            }
+        ]
+    }
+{% endschema %}

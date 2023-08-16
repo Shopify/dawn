@@ -1,0 +1,322 @@
+{{ 'k-popover.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+  .popover-section .popover-block {
+    left: 0;
+    transform: unset;
+  }
+  .popover-section .grid {
+      --grid-mobile-vertical-spacing: 40px;
+  }
+
+  @media screen and (max-width: 749px) {
+    #Slider-{{ section.id }} .media::before,
+    #Slider-{{ section.id }}:not(.banner--mobile-bottom) .banner__content::before {
+      padding-bottom: {{ 1 | divided_by: section.blocks.first.settings.image.aspect_ratio | times: 100 }}%;
+      content: '';
+      display: block;
+    }
+  }
+
+  @media screen and (min-width: 750px) {
+    .popover-section .grid {
+      --grid-desktop-vertical-spacing: 60px;
+    }
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="color-{{ section.settings.color_scheme }} isolate gradient" style="z-index: 2;">
+    <div class="section-{{ section.id }}-padding">
+        <div class="center page-width page-width--med title-wrapper title-wrapper--no-top-margin">
+            {%- if section.settings.title != blank -%}
+                <h2 class="title inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">{{ section.settings.title }}</h2>
+            {%- endif -%}
+            {%- if section.settings.description != blank -%}
+                <div class="{{ section.settings.description_style }} center rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+                    {{ section.settings.description -}}
+                </div>
+            {%- endif -%}
+        </div>
+        <div class="page-width">
+          <div
+            class="grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down"
+          >
+              {%- liquid
+                  assign highest_ratio = 0
+                  for block in section.blocks
+                    if block.settings.image.height > highest_ratio
+                      assign highest_ratio = block.settings.image.aspect_ratio
+                    endif
+                  endfor
+              -%}
+
+            {% for block in section.blocks %}
+              <div
+                  class="grid__item"
+                >
+                  <div class="popover-item">
+                      {% if block.settings.image %}
+                          <div class="popover-image">
+                              <div
+                                  class="media media--transparent media--adapt"
+                                  style="padding-bottom: {{ 1 | divided_by: highest_ratio | times: 100 }}%;"
+                              >
+                                  {%- liquid
+                                    assign number_of_columns = section.settings.columns_desktop
+                                    assign number_of_columns_mobile = section.settings.columns_mobile
+                                    assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                    assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                    assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+                                    assign image_width = 1
+                                  -%}
+                                  {% capture sizes %}
+                                    (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+                                    (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+                                    (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+                                    calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+                                  {% endcapture %}
+                                  {{
+                                    block.settings.image
+                                    | image_url: width: 3200
+                                    | image_tag:
+                                      loading: 'lazy',
+                                      widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                                      sizes: sizes
+                                  }}
+                              </div>
+                          </div>
+                      {% endif %}
+                      {% if block.settings.title %}
+                          <h3 class="h3">{{ block.settings.title }}</h3>
+                      {% endif %}
+                      {%- if block.settings.description != blank -%}
+                          <div class="rte">{{ block.settings.description }}</div>
+                      {%- endif -%}
+
+                      {% assign checklist = block.settings.checklist | newline_to_br %}
+                      {% assign checklist = checklist | split: '<br />' %}
+
+                      {% if checklist.size > 0 %}
+                          <div class="button--popover-wrap">
+                              <button type="button" class="button popover-button button--primary" data-id="pop-{{ block.settings.title | handleize }}">{{ section.settings.button_text }} <span class="icon-down">{% render 'icon-down' %}</span></button>
+                              <div class="popover-block">
+                                  <ul class="list-unstyled">
+                                      {% for i in checklist %}
+                                          <li><span class="icon-circle-check">{% render 'icon-circle-check' %}</span> {{ i }}</li>
+                                      {% endfor %}
+                                      {% if block.settings.link %}
+                                        <li>
+                                          <a href="{{ block.settings.link }}" class="link learn-more-pop accent-link">{{ block.settings.link_label }} {% render 'icon-tiny-arrow' %}</a>
+                                        </li>
+                                      {% endif %}
+                                  </ul>
+
+                              </div>
+                          </div>
+                      {%- endif -%}
+                  </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+</div>
+
+{% schema %}
+  { 
+    "name": "K Popovers",
+    "tag": "section",
+    "class": "section k-section popover-section k-hero",
+    "disabled_on": {
+      "groups": ["header", "footer"]
+    },
+    "settings": [
+      {
+        "type": "inline_richtext",
+        "id": "title",
+        "default": "Featured collection",
+        "label": "t:sections.featured-collection.settings.title.label"
+      },
+      {
+        "type": "select",
+        "id": "heading_size",
+        "options": [
+          {
+            "value": "h2",
+            "label": "t:sections.all.heading_size.options__1.label"
+          },
+          {
+            "value": "h1",
+            "label": "t:sections.all.heading_size.options__2.label"
+          },
+          {
+            "value": "h0",
+            "label": "t:sections.all.heading_size.options__3.label"
+          }
+        ],
+        "default": "h1",
+        "label": "t:sections.all.heading_size.label"
+      },
+      {
+        "type": "richtext",
+        "id": "description",
+        "label": "t:sections.featured-collection.settings.description.label"
+      },
+      {
+        "type": "select",
+        "id": "description_style",
+        "label": "t:sections.featured-collection.settings.description_style.label",
+        "options": [
+          {
+            "value": "body",
+            "label": "t:sections.featured-collection.settings.description_style.options__1.label"
+          },
+          {
+            "value": "subtitle",
+            "label": "t:sections.featured-collection.settings.description_style.options__2.label"
+          },
+          {
+            "value": "uppercase",
+            "label": "t:sections.featured-collection.settings.description_style.options__3.label"
+          }
+        ],
+        "default": "body"
+      },
+      {
+        "type": "range",
+        "id": "columns_desktop",
+        "min": 1,
+        "max": 6,
+        "step": 1,
+        "default": 3,
+        "label": "t:sections.multicolumn.settings.columns_desktop.label"
+      },
+      {
+        "type": "select",
+        "id": "columns_mobile",
+        "options": [
+          {
+            "value": "1",
+            "label": "t:sections.multicolumn.settings.columns_mobile.options__1.label"
+          },
+          {
+            "value": "2",
+            "label": "t:sections.multicolumn.settings.columns_mobile.options__2.label"
+          }
+        ],
+        "default": "1",
+        "label": "t:sections.multicolumn.settings.columns_mobile.label"
+      },
+      {
+        "type": "text",
+        "id": "button_text",
+        "label": "Button text"
+      },
+      {
+        "type": "select",
+        "id": "color_scheme",
+        "options": [
+          {
+            "value": "accent-1",
+            "label": "t:sections.all.colors.accent_1.label"
+          },
+          {
+            "value": "accent-2",
+            "label": "t:sections.all.colors.accent_2.label"
+          },
+          {
+            "value": "background-1",
+            "label": "t:sections.all.colors.background_1.label"
+          },
+          {
+            "value": "background-2",
+            "label": "t:sections.all.colors.background_2.label"
+          },
+          {
+            "value": "inverse",
+            "label": "t:sections.all.colors.inverse.label"
+          }
+        ],
+        "default": "background-1",
+        "label": "t:sections.all.colors.label",
+        "info": "t:sections.all.colors.has_cards_info"
+      },
+      {
+        "type": "header",
+        "content": "t:sections.all.padding.section_padding_heading"
+      },
+      {
+        "type": "range",
+        "id": "padding_top",
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px",
+        "label": "t:sections.all.padding.padding_top",
+        "default": 36
+      },
+      {
+        "type": "range",
+        "id": "padding_bottom",
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px",
+        "label": "t:sections.all.padding.padding_bottom",
+        "default": 36
+      }
+    ],
+    "blocks": [
+        {
+            "type": "item",
+            "name": "Item",
+            "settings": [
+                {
+                    "type": "image_picker",
+                    "id": "image",
+                    "label": "Image"
+                },
+                {
+                    "type": "text",
+                    "id": "title",
+                    "label": "Title"
+                },
+                {
+                    "type": "richtext",
+                    "id": "description",
+                    "label": "t:sections.featured-collection.settings.description.label"
+                },
+                {
+                    "type": "textarea",
+                    "id": "checklist",
+                    "label": "Checklist",
+                    "info": "Enter into a new line for every items"
+                },
+                {
+                  "type": "text",
+                  "id": "link_label",
+                  "label": "Link label"
+                },
+                {
+                  "type": "url",
+                  "id": "link",
+                  "label": "Link"
+                }
+            ]
+        }
+    ],
+    "presets": [
+      {
+        "name": "K Popovers"
+      }
+    ]
+  }
+{% endschema %}

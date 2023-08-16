@@ -1,0 +1,275 @@
+{{ 'section-image-banner.css' | asset_url | stylesheet_tag }}
+{{ 'k-qualities.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+    .vector-image-quality {
+        position: absolute;
+        z-index: 2;
+    }
+
+    @media screen and (max-width: 749px) {
+        .section-{{ section.id }}-padding {
+            padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+            padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+        }
+        #Qualities-{{ section.id }}::before,
+        #Qualities-{{ section.id }} .banner__media::before,
+        #Qualities-{{ section.id }}:not(.banner--mobile-bottom) .banner__content::before {
+            padding-bottom: {{ 1 | divided_by: section.settings.image_mobile.aspect_ratio | times: 100 }}%;
+            content: '';
+            display: block;
+        }
+    }
+{%- endstyle -%}
+{%- liquid
+    if section.settings.image_behavior == 'ambient'
+      assign half_width = '60vw'
+      assign full_width = '120vw'
+      assign stacked_sizes = '(min-width: 750px) 60vw, 120vw'
+      assign widths = '450, 660, 900, 1320, 1800, 2136, 2400, 3600, 7680'
+    else
+      assign half_width = '50vw'
+      assign full_width = '100vw'
+      assign stacked_sizes = '(min-width: 750px) 50vw, 100vw'
+      assign widths = '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840'
+    endif
+  -%}
+
+<div class="color-{{ section.settings.color_scheme }} isolate gradient">
+    <div class="banner banner--adapt" id="Qualities-{{ section.id }}">
+        {% if section.settings.image_mobile != blank %}
+            <div class="banner__media medium-hide large-up-hide media">
+                {%- liquid
+                assign image_height = section.settings.image_mobile.width | divided_by: section.settings.image.aspect_ratio
+                    assign sizes = full_width
+                -%}
+                {{
+                    section.settings.image_mobile
+                | image_url: width: 3840
+                | image_tag:
+                    loading: 'lazy',
+                    width: section.settings.image_mobile.width,
+                    height: image_height,
+                    class: image_class,
+                    sizes: sizes,
+                    widths: widths
+                }}
+            </div>
+        {% endif %}
+        {%- if section.settings.image != blank -%}
+            <div class="banner__media {% if section.settings.image_mobile != blank %}small-hide{% endif %} media{% if section.settings.image_behavior != 'none' %} animate--{{ section.settings.image_behavior }}{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+            {%- liquid
+                assign image_height = section.settings.image.width | divided_by: section.settings.image.aspect_ratio
+                assign sizes = full_width
+            -%}
+            {{
+                section.settings.image
+                | image_url: width: 3840
+                | image_tag:
+                loading: 'lazy',
+                width: section.settings.image.width,
+                height: image_height,
+                class: image_class,
+                sizes: sizes,
+                widths: widths
+            }}
+            </div>
+        {%- endif -%}
+        <div class="banner__content {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+            <div class="content-container content-container--full-width-mobile">
+                <div class="page-width">
+                    <div class="section-{{ section.id }}-padding">
+                        <div class="grid align-center grid--1-col grid--2-col-tablet">
+                            <div class="grid__item">
+                                {% if section.settings.heading %}
+                                    <h2 class="banner__heading inline-richtext {{ section.settings.heading_size }}">{{ section.settings.heading }}</h2>
+                                {% endif %}
+                                {% if section.settings.text %}
+                                    <div class="banner__text rte {{ section.settings.text_style }}">
+                                        <p>{{ section.settings.text }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="grid__item">
+                                <div class="grid-qualities">
+                                    {% for block in section.blocks %}
+                                        <div class="quality-item" style="--dash-color: {{ block.settings.dash_color }}; --bg-color: {{ block.settings.bg_color | default: 'transparent' }}; --text-color: {{ block.settings.text_color }};--divider-color: {{ block.settings.divider_color }};">
+                                            <div class="quality-inner">
+                                                {% if block.settings.text %}
+                                                    <h3>{{ block.settings.text }}</h3>
+                                                {% endif %}
+                                                <span class="divider-quality"></span>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% schema %}
+    {
+        "name": "K Qualities",
+        "class": "k-qualities",
+        "settings": [
+            {
+                "type": "image_picker",
+                "id": "image",
+                "label": "t:sections.image-banner.settings.image.label"
+            },
+            {
+                  "type": "image_picker",
+                  "id": "image_mobile",
+                  "label": "Mobile Background Image"
+            },
+            {
+                "type": "inline_richtext",
+                "id": "heading",
+                "default": "Image banner",
+                "label": "t:sections.image-banner.blocks.heading.settings.heading.label"
+            },
+            {
+                "type": "select",
+                "id": "heading_size",
+                "options": [
+                  {
+                    "value": "h2",
+                    "label": "t:sections.all.heading_size.options__1.label"
+                  },
+                  {
+                    "value": "h1",
+                    "label": "t:sections.all.heading_size.options__2.label"
+                  },
+                  {
+                    "value": "h0",
+                    "label": "t:sections.all.heading_size.options__3.label"
+                  }
+                ],
+                "default": "h1",
+                "label": "t:sections.all.heading_size.label"
+            },
+            {
+                "type": "inline_richtext",
+                "id": "text",
+                "default": "Give customers details about the banner image(s) or content on the template.",
+                "label": "t:sections.image-banner.blocks.text.settings.text.label"
+            },
+            {
+                "type": "select",
+                "id": "text_style",
+                "options": [
+                  {
+                    "value": "body",
+                    "label": "t:sections.image-banner.blocks.text.settings.text_style.options__1.label"
+                  },
+                  {
+                    "value": "subtitle",
+                    "label": "t:sections.image-banner.blocks.text.settings.text_style.options__2.label"
+                  },
+                  {
+                    "value": "caption-with-letter-spacing",
+                    "label": "t:sections.image-banner.blocks.text.settings.text_style.options__3.label"
+                  }
+                ],
+                "default": "body",
+                "label": "t:sections.image-banner.blocks.text.settings.text_style.label"
+            },
+            {
+                "type": "select",
+                "id": "color_scheme",
+                "options": [
+                  {
+                    "value": "accent-1",
+                    "label": "t:sections.all.colors.accent_1.label"
+                  },
+                  {
+                    "value": "accent-2",
+                    "label": "t:sections.all.colors.accent_2.label"
+                  },
+                  {
+                    "value": "background-1",
+                    "label": "t:sections.all.colors.background_1.label"
+                  },
+                  {
+                    "value": "background-2",
+                    "label": "t:sections.all.colors.background_2.label"
+                  },
+                  {
+                    "value": "inverse",
+                    "label": "t:sections.all.colors.inverse.label"
+                  }
+                ],
+                "default": "background-1",
+                "label": "t:sections.all.colors.label",
+                "info": "t:sections.all.colors.has_cards_info"
+            },
+            {
+                "type": "header",
+                "content": "t:sections.all.padding.section_padding_heading"
+            },
+            {
+                "type": "range",
+                "id": "padding_top",
+                "min": 0,
+                "max": 100,
+                "step": 4,
+                "unit": "px",
+                "label": "t:sections.all.padding.padding_top",
+                "default": 36
+            },
+            {
+                "type": "range",
+                "id": "padding_bottom",
+                "min": 0,
+                "max": 100,
+                "step": 4,
+                "unit": "px",
+                "label": "t:sections.all.padding.padding_bottom",
+                "default": 36
+            }
+        ],
+        "blocks": [
+            {
+                "type": "item",
+                "name": "Item",
+                "settings": [
+                    {
+                        "type": "text",
+                        "id": "text",
+                        "label": "Text"
+                    },
+                    {
+                        "type": "color",
+                        "id": "bg_color",
+                        "label": "Background color"
+                    },
+                    {
+                        "type": "color",
+                        "id": "text_color",
+                        "label": "Text color"
+                    },
+                    {
+                        "type": "color",
+                        "id": "divider_color",
+                        "label": "Divider color"
+                    },
+                    {
+                        "type": "color",
+                        "id": "dash_color",
+                        "label": "Dash mobile color"
+                    }
+                ]
+            }
+        ],
+        "presets": [
+            {
+                "name": "K Qualities"
+            }
+        ]
+    }
+{% endschema %}
