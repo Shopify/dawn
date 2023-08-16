@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="">
     <link rel="canonical" href="{{ canonical_url }}">
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
 
     {%- if settings.favicon != blank -%}
       <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
@@ -239,12 +240,14 @@
 
     {{ 'base.css' | asset_url | stylesheet_tag }}
 
-    {%- unless settings.type_body_font.system? -%}
-      <link rel="preload" as="font" href="{{ settings.type_body_font | font_url }}" type="font/woff2" crossorigin>
-    {%- endunless -%}
-    {%- unless settings.type_header_font.system? -%}
-      <link rel="preload" as="font" href="{{ settings.type_header_font | font_url }}" type="font/woff2" crossorigin>
-    {%- endunless -%}
+    {% comment %}
+      {%- unless settings.type_body_font.system? -%}
+        <link rel="preload" as="font" href="{{ settings.type_body_font | font_url }}" type="font/woff2" crossorigin>
+      {%- endunless -%}
+      {%- unless settings.type_header_font.system? -%}
+        <link rel="preload" as="font" href="{{ settings.type_header_font | font_url }}" type="font/woff2" crossorigin>
+      {%- endunless -%}
+    {% endcomment %}
 
     {%- if localization.available_countries.size > 1 or localization.available_languages.size > 1 -%}
       {{ 'component-localization-form.css' | asset_url | stylesheet_tag: preload: true }}
@@ -266,6 +269,19 @@
         document.documentElement.classList.add('shopify-design-mode');
       }
     </script>
+
+    {%- liquid
+      assign font_files = 'ArminSoft-Black.woff2, ArminSoft-Regular.woff2, ArminSoft-RegularItalic.woff2' | split: ', '
+      assign font_formats = 'normal 400, normal 900, italic 400' | split: ', '
+    -%}
+
+    {%- render 'async-load-font',
+      font_family: 'Armin Soft',
+      font_asset_css: 'armin-soft.css',
+      font_files: font_files,
+      font_formats: font_formats,
+      fallback_font_family: 'Georgia'
+    -%}
   </head>
 
   <body class="gradient{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}">

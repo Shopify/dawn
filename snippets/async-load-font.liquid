@@ -1,0 +1,102 @@
+{%- capture font_loaded_class_name -%}
+    wf-{{ font_family | downcase | split: ' ' | join: '-' }}--loaded
+{%- endcapture -%}
+
+{%- capture font_hidden_class_name -%}
+    wf-{{ font_family | downcase | split: ' ' | join: '-' }}--hidden
+{%- endcapture -%}
+
+{%- for font_file in font_files -%}
+  <link rel="preload" href="{{ font_file | asset_url }}" as="font" type="font/woff2" crossorigin>
+{%- endfor -%}
+
+<link rel="stylesheet" href="{{ font_asset_css | asset_url }}" media="print" onload="this.media='all'">
+
+<noscript>
+  {{ font_asset_css | asset_url | stylesheet_tag }}
+</noscript>
+
+<style>
+  .{{ font_hidden_class_name }} {
+    position: absolute;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    width: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+  }
+
+  .{{ font_loaded_class_name }}, .no-js {
+    font-family: '{{ font_family }}', '{{ fallback_font_family | default: 'serif' }}', 'serif' !important;
+  }
+
+  document:not(.{{ font_loaded_class_name }}):not(.no-js) {
+    font-family: {{ fallback_font_family | default: 'serif' }};
+  }
+</style>
+
+{%- liquid
+  assign default_font_formats = 'normal normal' | split: ''
+  assign font_format = font_format | default: default_font_formats
+-%}
+
+{%- for font_format in font_formats -%}
+  {%- liquid
+    assign font_format_parts = font_format | split: ' '
+    assign font_style = font_format_parts[0]
+    assign font_weight = font_format_parts[1]
+  -%}
+
+  <div
+    aria-visibility="hidden"
+    class="{{ font_hidden_class_name }}"
+    style="
+      font-size: 12px;
+      font-family: '{{ font_family }}';
+      font-style: {{ font_style }};
+      font-weight: {{ font_weight }};
+    "
+  >
+    &nbsp;
+  </div>
+{%- endfor -%}
+
+<script>
+  
+  (function () {
+    let interval = null;
+
+    function fontLoadListener() {
+      var hasLoaded = false;
+      /*
+       * If anything goes wrong with the font loading API,
+       * just change styles to the web font without handling FOUT
+       */
+      try {
+        hasLoaded = document.fonts.check("12px '{{ font_family }}'");
+      } catch (error) {
+        console.error(`document.fonts API error: ${error}`);
+        fontLoadedSuccess();
+        return;
+      }
+
+      if (hasLoaded) {
+        console.log('Font loaded successfully');
+        fontLoadedSuccess();
+      }
+    }
+
+    function fontLoadedSuccess() {
+      if (interval) {
+        clearInterval(interval);
+      }
+
+      document.documentElement.classList.add('{{ font_loaded_class_name }}');
+    }
+
+    interval = setInterval(fontLoadListener, {{ font_load_interval | default: 250 }});
+  })();
+
+</script>
