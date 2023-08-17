@@ -182,7 +182,9 @@ class QuickOrderList extends HTMLElement {
   }
 
   switchVarints(event) {
-    event.target.addEventListener('keydown', (e) => {
+    this.VariantListInput = event.target;
+    this.VariantListInput.select()
+    this.VariantListInput.addEventListener('keydown', (e) => {
       const currentVariantIndex = Array.from(this.allInputs).findIndex((input) => input === e.target);
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
