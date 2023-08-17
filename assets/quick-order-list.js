@@ -74,10 +74,7 @@ class QuickOrderList extends HTMLElement {
 
     form.addEventListener('submit', this.onSubmit.bind(this));
 
-    const debouncedOnChange = debounce((event) => {
-      this.onChange(event);
-    }, ON_CHANGE_DEBOUNCE_TIMER);
-    this.addEventListener('change', debouncedOnChange.bind(this));
+    this.addEventListener('change', this.onChange.bind(this));
   }
 
   cartUpdateUnsubscriber = undefined;
