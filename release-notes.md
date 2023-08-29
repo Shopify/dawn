@@ -22,3 +22,4 @@ Dawn 11.0.0 introduces new customization options to the announcement bar, new an
 - We fixed a bug where text links were not styled properly in the heading of the Related products section.
 - We made light stylistic improvements to link styles, alignment and spacing for both the dropdown and mega menu types in the Header.
 - We fixed a bug where the Footer would display extra white space when the “Show email signup” setting was left unchecked. 
+- Better documentation for developers to contribute to the repo
