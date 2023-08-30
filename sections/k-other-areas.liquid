@@ -12,53 +12,59 @@
 {%- endstyle -%}
 
 <div class="page-width section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}" data-cascade>
-    <div class="page-width page-width--narrow">
-        {%- unless section.settings.title == blank -%}
-            <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin justify-center {% if section.settings.logo != blank %}title-with-logo{% endif %}">
-                {% if section.settings.logo != blank %}
-                    <div>
-                        <div
-                            class="media media--transparent media--adapt"
-                              style="padding-bottom: {{ 1 | divided_by: section.settings.logo.aspect_ratio | times: 100 }}%;">
-                            {%- liquid
-                              assign number_of_columns = 1
-                              assign number_of_columns_mobile = 1
-                              assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
-                              assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
-                              assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
-                              assign image_width = 1
-                            -%}
-                            {% capture sizes %}
-                              (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
-                              (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
-                              (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
-                              calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
-                            {% endcapture %}
-                            {{
-                                section.settings.logo
-                              | image_url: width: 300
-                              | image_tag:
-                                loading: 'lazy',
-                                widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
-                                sizes: sizes
-                            }}
+    <div class="page-width">
+        <div class="grid grid--1-col-tablet-down grid--2-col-desktop">
+            {% for block in section.blocks %}
+                <div class="grid__item">
+                    {%- unless block.settings.title == blank -%}
+                        <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin justify-center {% if block.settings.logo != blank %}title-with-logo{% endif %}">
+                            {% if block.settings.logo != blank %}
+                                <div>
+                                    <div
+                                        class="media media--transparent media--adapt media--auto">
+                                        {%- liquid
+                                          assign number_of_columns = 1
+                                          assign number_of_columns_mobile = 1
+                                          assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                          assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                          assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+                                          assign image_width = 1
+                                        -%}
+                                        {% capture sizes %}
+                                          (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+                                          (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+                                          (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+                                          calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+                                        {% endcapture %}
+                                        {{
+                                            block.settings.logo
+                                          | image_url: width: 300
+                                          | image_tag:
+                                            loading: 'lazy',
+                                            widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                                            sizes: sizes
+                                        }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h2 class="title main-title inline-richtext {{ block.settings.heading_size }}">
+                                        {{ block.settings.title | replace: '[country]', page_country }}
+                                    </h2>
+                                </div>
+                            {% else %}
+                                <h2 class="title main-title inline-richtext {{ block.settings.heading_size }}">
+                                    {{ block.settings.title | replace: '[country]', page_country }}
+                                </h2>
+                            {% endif %}
                         </div>
-                    </div>
-                    <div>
-                        <h2 class="title main-title inline-richtext {{ section.settings.heading_size }}">
-                            {{ section.settings.title | replace: '[country]', page_country }}
-                        </h2>
-                    </div>
-                {% else %}
-                    <h2 class="title main-title inline-richtext {{ section.settings.heading_size }}">
-                        {{ section.settings.title | replace: '[country]', page_country }}
-                    </h2>
-                {% endif %}
-            </div>
-            {% if section.settings.content != blank %}
-                <div class="center rte">{{ section.settings.content | replace: '<a', '<a class="accent-link"' }}</div>
-            {% endif %}
-        {%- endunless -%}
+                        {% if block.settings.content != blank %}
+                            <div class="center rte">{{ block.settings.content | replace: '<a', '<a class="accent-link"' }}</div>
+                        {% endif %}
+                    {%- endunless -%}
+                </div>
+            {% endfor %}
+        </div>
+
     </div>
 </div>
 
@@ -67,47 +73,11 @@
         "name": "Other Areas",
         "class": "section k-other-areas",
         "tag": "section",
+        "max_blocks": 2,
         "enabled_on": {
             "templates": ["page"]
         },
         "settings": [
-            {
-                "type": "inline_richtext",
-                "id": "title",
-                "default": "Multicolumn",
-                "label": "t:sections.multicolumn.settings.title.label",
-                "info": "[country] as Metaobject's country reference"
-            },
-            {
-                "type": "select",
-                "id": "heading_size",
-                "options": [
-                  {
-                    "value": "h2",
-                    "label": "t:sections.all.heading_size.options__1.label"
-                  },
-                  {
-                    "value": "h1",
-                    "label": "t:sections.all.heading_size.options__2.label"
-                  },
-                  {
-                    "value": "h0",
-                    "label": "t:sections.all.heading_size.options__3.label"
-                  }
-                ],
-                "default": "h1",
-                "label": "t:sections.all.heading_size.label"
-            },
-            {
-                "type": "image_picker",
-                "id": "logo",
-                "label": "Logo"
-            },
-            {
-                "type": "richtext",
-                "id": "content",
-                "label": "Content"
-            },
             {
                 "type": "select",
                 "id": "color_scheme",
@@ -159,6 +129,51 @@
                 "unit": "px",
                 "label": "t:sections.all.padding.padding_bottom",
                 "default": 36
+            }
+        ],
+        "blocks": [
+            {
+                "type": "item",
+                "name": "Item",
+                "settings": [
+                    {
+                        "type": "inline_richtext",
+                        "id": "title",
+                        "default": "Multicolumn",
+                        "label": "t:sections.multicolumn.settings.title.label",
+                        "info": "[country] as Metaobject's country reference"
+                    },
+                    {
+                        "type": "select",
+                        "id": "heading_size",
+                        "options": [
+                          {
+                            "value": "h2",
+                            "label": "t:sections.all.heading_size.options__1.label"
+                          },
+                          {
+                            "value": "h1",
+                            "label": "t:sections.all.heading_size.options__2.label"
+                          },
+                          {
+                            "value": "h0",
+                            "label": "t:sections.all.heading_size.options__3.label"
+                          }
+                        ],
+                        "default": "h1",
+                        "label": "t:sections.all.heading_size.label"
+                    },
+                    {
+                        "type": "image_picker",
+                        "id": "logo",
+                        "label": "Logo"
+                    },
+                    {
+                        "type": "richtext",
+                        "id": "content",
+                        "label": "Content"
+                    }
+                ]
             }
         ],
         "presets": [
