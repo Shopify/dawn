@@ -19,10 +19,12 @@
 {%- endstyle -%}
 
 <div class="color-{{ section.settings.color_scheme }} gradient isolate">
-  <div class="page-width{% if section.settings.heading == blank %} no-heading{% endif %} section-{{ section.id }}-padding">
-    <h2 class="collage-wrapper-title inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-      {{ section.settings.heading }}
-    </h2>
+  <div class="page-width section-{{ section.id }}-padding">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="collage-wrapper-title inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+        {{ section.settings.heading }}
+      </h2>
+    {%- endif -%}
     <div class="collage{% if section.settings.mobile_layout == 'collage' %} collage--mobile{% endif %}">
       {%- for block in section.blocks -%}
         <div
@@ -30,11 +32,13 @@
           {{ block.shopify_attributes }}
           {% if settings.animations_reveal_on_scroll %}
             data-cascade
+            style="--animation-order: {{ forloop.index }};"
           {% endif %}
         >
+          {%- assign placeholder_image_index = forloop.index0 | modulo: 4 | plus: 1 -%}
           {%- case block.type -%}
             {%- when 'image' -%}
-              <div class="collage-card {% if section.settings.card_styles == 'none' %}global-media-settings{% else %}card-wrapper {{ section.settings.card_styles }} color-{{ settings.card_color_scheme }}{% endif %}">
+              <div class="collage-card {% if section.settings.card_styles == 'none' %}global-media-settings{% else %}card-wrapper {{ section.settings.card_styles }} color-{{ settings.card_color_scheme }} gradient{% endif %}">
                 <div
                   class="media media--transparent ratio"
                   {% if block.settings.image != blank %}
@@ -84,27 +88,31 @@
                       }}
                     {%- endif -%}
                   {%- else -%}
-                    {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                    {{ 'detailed-apparel-1' | placeholder_svg_tag: 'placeholder-svg' }}
                   {%- endif -%}
                 </div>
               </div>
             {%- when 'product' -%}
+              {%- assign placeholder_image = 'product-apparel-' | append: placeholder_image_index -%}
               {% render 'card-product',
                 card_product: block.settings.product,
                 media_aspect_ratio: 'adapt',
                 show_secondary_image: block.settings.second_image,
-                extend_height: true
+                extend_height: true,
+                placeholder_image: placeholder_image
               %}
             {%- when 'collection' -%}
+              {%- assign placeholder_image = 'collection-apparel-' | append: placeholder_image_index -%}
               {% render 'card-collection',
                 card_collection: block.settings.collection,
                 media_aspect_ratio: 'adapt',
                 columns: 2,
                 extend_height: true,
-                wrapper_class: section.settings.card_styles
+                wrapper_class: section.settings.card_styles,
+                placeholder_image: placeholder_image
               %}
             {%- when 'video' -%}
-              <div class="collage-card {% if section.settings.card_styles == 'none' %}global-media-settings{% else %}{{ section.settings.card_styles }} color-{{ settings.card_color_scheme }}{% endif %}">
+              <div class="collage-card {% if section.settings.card_styles == 'none' %}global-media-settings{% else %}{{ section.settings.card_styles }} color-{{ settings.card_color_scheme }} gradient{% endif %}">
                 <noscript>
                   <a
                     href="{{ block.settings.video_url }}"
@@ -136,7 +144,7 @@
                           | image_tag: loading: 'lazy', sizes: sizes, widths: '550, 720, 990, 1100, 1500, 2200, 3000'
                         }}
                       {%- else -%}
-                        {{ 'collection-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                        {{ 'hero-apparel-3' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
                       {%- endif -%}
                     </div>
                   </a>
@@ -180,13 +188,16 @@
                             | image_tag: loading: 'lazy', sizes: sizes, widths: '550, 720, 990, 1100, 1500, 2200, 3000'
                           }}
                         {%- else -%}
-                          {{ 'collection-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                          {{ 'hero-apparel-3' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
                         {%- endif -%}
                       </div>
                     </button>
                   </div>
                 </modal-opener>
-                <modal-dialog id="PopupModal-{{ block.id }}" class="modal-video media-modal color-background-1">
+                <modal-dialog
+                  id="PopupModal-{{ block.id }}"
+                  class="modal-video media-modal color-{{ settings.color_schemes | first }}"
+                >
                   <div
                     class="modal-video__content"
                     role="dialog"
@@ -320,33 +331,11 @@
       "label": "t:sections.collage.settings.card_styles.label"
     },
     {
-      "type": "select",
+      "type": "color_scheme",
       "id": "color_scheme",
-      "options": [
-        {
-          "value": "accent-1",
-          "label": "t:sections.all.colors.accent_1.label"
-        },
-        {
-          "value": "accent-2",
-          "label": "t:sections.all.colors.accent_2.label"
-        },
-        {
-          "value": "background-1",
-          "label": "t:sections.all.colors.background_1.label"
-        },
-        {
-          "value": "background-2",
-          "label": "t:sections.all.colors.background_2.label"
-        },
-        {
-          "value": "inverse",
-          "label": "t:sections.all.colors.inverse.label"
-        }
-      ],
-      "default": "background-1",
       "label": "t:sections.all.colors.label",
-      "info": "t:sections.all.colors.has_cards_info"
+      "info": "t:sections.all.colors.has_cards_info",
+      "default": "background-1"
     },
     {
       "type": "header",
