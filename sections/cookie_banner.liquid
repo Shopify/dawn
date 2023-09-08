@@ -21,20 +21,26 @@
       return document.cookie.split(';').some(crumb => crumb.trim().startsWith('_inv_read_cookie_policy_at='));
     };
 
-    const setShopifyTrackingConsent = () => {
+    const registerShopifyTrackingConsent = () => {
       window.Shopify.loadFeatures(
         [{ name: 'consent-tracking-api', version: '0.1' }],
         error => {
           if (error) { /* noop */ }
 
-          window.Shopify.customerPrivacy.setTrackingConsent({
-            'analytics': true,
-            'marketing': true,
-            'preferences': true
-          }, () => { /* success */ });
+          const { marketing, analytics, preferences } = window.Shopify.customerPrivacy.currentVisitorConsent();
+
+          if ([marketing, analytics, preferences].some(signal => signal === '')) {
+            window.Shopify.customerPrivacy.setTrackingConsent({
+              'analytics': true,
+              'marketing': true,
+              'preferences': true
+            }, () => { /* success */ });
+          }
         }
       );
     };
+
+    registerShopifyTrackingConsent();
 
     cookieBannerOk.addEventListener('click', () => {
       cookieBanner.style.display = 'none';
@@ -42,7 +48,6 @@
 
     if (!didReadCookiePolicy()) {
       setReadCookiePolicy();
-      setShopifyTrackingConsent();
       cookieBanner.style.display = 'block';
     }
 
