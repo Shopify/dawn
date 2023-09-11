@@ -147,14 +147,43 @@ class FacetFiltersForm extends HTMLElement {
   }
 
   static renderCounts(source, target) {
-    const targetElement = target.querySelector('.facets__selected');
-    const sourceElement = source.querySelector('.facets__selected');
+    const filterIsDrawer = Boolean(document.querySelector('.facets-container-drawer'));
+    const targetElement = filterIsDrawer
+      ? target.querySelector('.mobile-facets__list')
+      : target.querySelector('.facets__selected');
+    const sourceElement = filterIsDrawer
+      ? source.querySelector('.mobile-facets__list')
+      : source.querySelector('.facets__selected');
 
-    const targetElementAccessibility = target.querySelector('.facets__summary');
-    const sourceElementAccessibility = source.querySelector('.facets__summary');
+    const targetElementAccessibility = filterIsDrawer && target.querySelector('.facets__summary');
+    const sourceElementAccessibility = filterIsDrawer && source.querySelector('.facets__summary');
 
     if (sourceElement && targetElement) {
-      target.querySelector('.facets__selected').outerHTML = source.querySelector('.facets__selected').outerHTML;
+      const currentActiveID = document.activeElement.id;
+      const isShowingMore = Boolean(target.querySelector('show-more-button .label-show-more.hidden'));
+
+      if (sourceElement && targetElement) {
+        targetElement.outerHTML = sourceElement.outerHTML;
+      }
+
+      if (!filterIsDrawer) {
+        const targetWrapElement = target.querySelector('.facets-wrap');
+        const sourceWrapElement = source.querySelector('.facets-wrap');
+        if (sourceWrapElement && targetWrapElement) {
+          if (isShowingMore) {
+            sourceWrapElement
+              .querySelectorAll('.facets__item.hidden')
+              .forEach((x) => x.classList.replace('hidden', 'show-more-item'));
+          }
+
+          targetWrapElement.outerHTML = sourceWrapElement.outerHTML;
+        }
+      }
+
+      const newElementToActivate = document.getElementById(`${currentActiveID}`);
+      if (newElementToActivate) {
+        newElementToActivate.focus();
+      }
     }
 
     if (targetElementAccessibility && sourceElementAccessibility) {
