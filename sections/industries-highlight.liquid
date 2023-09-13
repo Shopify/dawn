@@ -1,0 +1,214 @@
+{% style %}
+.industries-highlight.section-{{ section.id }} {
+  background-color: {{ section.settings.bg_color }};
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 3rem;
+}
+
+.industries-highlight {
+  font-family: 'AlrightSans-Regular';
+  overflow-x: clip;
+}
+
+.industries-highlight__container {
+  margin: 0 auto;
+  position: relative;
+  width: 100%;
+  margin: 0 10%;
+}
+
+.industries-highlight__title-wrapper {
+  border-top: solid #FFB762 1px;
+  border-bottom: solid #FFB762 1px;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.industries-highlight__title-wrapper h1 {
+  text-transform: uppercase;
+  font-size: 32px;
+  margin: 11px 0px;
+}
+
+.industries-highlight__title-wrapper h1 b{
+  font-weight: bold;
+  color: #FFB762;
+}
+
+.industries-highlight__subtext-container {
+  margin-top: none;
+  inline-size: {{ section.settings.subtext_max_width | times: 10 }}px;
+  overflow-wrap: break-word;
+}
+
+.industries-highlight__media-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3rem;
+  min-height: 428px;
+}
+
+.industries-highlight__image__wrapper--rel {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  width: 100%;
+  max-width: 840px;
+}
+
+.industries-highlight__image__wrapper--rel iframe {
+  border: 0;
+  width: 100%;
+}
+
+.industries-highlight__cta-button {
+  text-transform: uppercase;
+}
+
+.easel-highlight__cta-btn {
+  margin-right: 10px;
+}
+
+.industries-highlight__cta-btn.btn-primary {
+  border: none;
+  border-radius: 3px;
+  box-shadow: none;
+  width: 190px;
+  color: #fff;
+  display: inline-block;
+  font-size: 14px;
+  padding: 12px 6px;
+  text-shadow: none;
+  text-transform: uppercase;
+  transition: background .5s ease;
+  font-family: 'AlrightSans-Bold';
+  background: var(--gradient-base-accent-2);
+  color: #383838;
+  font-weight: bold;
+  text-decoration: none;
+  text-align: center;
+}
+
+.industries-highlight__cta-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+@media screen and (max-width: 1200px) {
+  .industries-highlight__image {
+    width: 100%;
+    height: auto;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .industries-highlight__media-wrapper {
+    min-height: 290px;
+  }
+}
+@media screen and (max-width: 680px) {
+  .industries-highlight__media-wrapper {
+    min-height: 320px;
+  }
+}
+@media screen and (max-width: 480px) {
+  .industries-highlight__media-wrapper {
+    min-height: auto;
+  }
+}
+
+{% endstyle %}
+{% assign video_id = section.settings.video.id %}
+<div class="industries-highlight section-{{ section.id }}">
+  <div class="industries-highlight__container">
+    <div class="industries-highlight__title-wrapper">
+      <h1>{{ section.settings.title }}</h1>
+    </div>
+    <div class="industries-highlight__media-wrapper">
+      <div class="industries-highlight__image__wrapper--rel">
+          {% if section.settings.image %}
+            {{ section.settings.image | image_url: width: 715 | image_tag: class: 'industries-highlight__image' }}
+          {% else %}  
+            {% if section.settings.video %}
+              {%- if section.settings.video.type == 'youtube' -%}
+                <iframe
+                  src="https://www.youtube.com/embed/{{ video_id }}?enablejsapi=1"
+                  class="js-youtube"
+                  allow="autoplay; encrypted-media"
+                  allowfullscreen
+                  title="{{ section.settings.description | escape }}"></iframe>
+              {%- else -%}
+                {% assign video_url_first_path = section.settings.video | split: ".com/" | last | split: "/" | first %}
+                {% assign video_url_last_path = section.settings.video | split: ".com/" | last | split: "/" | last %}
+                {% assign video_url = "https://player.vimeo.com/video/" | append: video_url_first_path %}
+                {% if video_url_first_path != video_url_last_path %}
+                  {% assign video_url = video_url | append: "?h=" | append: video_url_last_path %}
+                {% endif %}
+                <iframe
+                  src="{{ video_url }}"
+                  sandbox="allow-presentation allow-scripts allow-same-origin"
+                  allow="autoplay; encrypted-media"
+                  allowfullscreen
+                  title="{{ section.settings.description | escape }}"></iframe>
+              {%- endif -%}
+            {% endif %}
+          {% endif %}
+      </div>
+    </div>
+    <div class="industries-highlight__cta-wrapper">
+      {% if section.settings.cta_btn_text %}
+        <a href="{{ section.settings.cta_btn_url }}" class="industries-highlight__cta-btn btn-primary">
+          {{ section.settings.cta_btn_text }}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% schema %}
+{
+  "name": "Industries Highlight",
+  "settings": [
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background Color",
+      "default": "#1D1D1D"
+    },
+    {
+      "type": "html",
+      "id": "title",
+      "label": "Title"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "video_url",
+      "id": "video",
+      "label": "Video",
+      "accept": [
+        "vimeo",
+        "youtube"
+      ]
+    },
+    {
+      "type": "text",
+      "id": "cta_btn_text",
+      "label": "CTA Button Text"
+    },
+    {
+      "type": "url",
+      "id": "cta_btn_url",
+      "label": "CTA Button URL"
+    }
+  ],
+  "presets": [
+    { "name": "Industries Highlight"}
+  ]
+}
+{% endschema %}
