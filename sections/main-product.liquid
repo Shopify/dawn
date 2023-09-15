@@ -10,9 +10,12 @@
   {{ 'component-rating.css' | asset_url | stylesheet_tag }}
   {{ 'component-loading-overlay.css' | asset_url | stylesheet_tag }}
   {{ 'component-deferred-media.css' | asset_url | stylesheet_tag }}
+  {{ 'breadcrumb.css' | asset_url | stylesheet_tag }}
   {%- if product.quantity_price_breaks_configured? -%}
     {{ 'component-volume-pricing.css' | asset_url | stylesheet_tag }}
   {%- endif -%}
+
+  {% render 'breadcrumb' %}
 
   {%- style -%}
     .section-{{ section.id }}-padding {
@@ -78,9 +81,21 @@
 
         {%- for block in section.blocks -%}
           {%- case block.type -%}
+            {%- when 'personalise' -%}
+              {% if block.settings.personalise %}
+                <div>
+                <label for="message" class="form__label">{{block.settings.personalise}}</label>
+                <div class="field">
+                  <textarea style="min-height: 7rem !important;" id="message" class="text-area field__input" placeholder="Message" name="properties[Message]"form="product-form-{{ section.id }}"></textarea>
+                  <label class="form__label field__label">
+                    {{ block.settings.instructions }}
+                  </label>
+                </div>
+              </div>
+              {% endif %}
             {%- when '@app' -%}
               {% render block %}
-            {%- when 'text' -%}
+              {%- when 'text' -%}
               <p
                 class="product__text inline-richtext{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}"
                 {{ block.shopify_attributes }}
@@ -89,9 +104,9 @@
               </p>
             {%- when 'title' -%}
               <div class="product__title" {{ block.shopify_attributes }}>
-                <h1>{{ product.title | escape }}</h1>
+                <h2>{{ product.title | escape }}</h2>
                 <a href="{{ product.url }}" class="product__title">
-                  <h2 class="h1">
+                  <h2 class="h2">
                     {{ product.title | escape }}
                   </h2>
                 </a>
@@ -674,7 +689,8 @@
             "availability" : "http://schema.org/{% if variant.available %}InStock{% else %}OutOfStock{% endif %}",
             "price" : {{ variant.price | divided_by: 100.00 | json }},
             "priceCurrency" : {{ cart.currency.iso_code | json }},
-            "url" : {{ request.origin | append: variant.url | json }}
+            "url" : {{ request.origin | append: variant.url | json }},
+            "priceValidUntil": "{{ 'now' | date: '%s' | plus: 86400 | date: '%Y-%m-%d' }}"
           }{% unless forloop.last %},{% endunless %}
         {%- endfor -%}
       ]
@@ -688,6 +704,24 @@
   "tag": "section",
   "class": "section",
   "blocks": [
+    {
+      "type": "personalise",
+      "name": "Personalisation",
+      "settings": [
+        {
+          "type": "text",
+          "id": "personalise",
+          "label": "Personalise",
+          "default": "Personalisation text"
+        },
+        {
+        "type": "text",
+        "id": "instructions",
+        "label": "Instructions",
+        "default": "Write your text here"
+        }
+      ]
+    },
     {
       "type": "@app"
     },
@@ -1416,6 +1450,12 @@
           ],
           "default": "horizontal",
           "label": "t:sections.main-product.blocks.icon_with_text.settings.layout.label"
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Background color",
+          "default": "#FFFFFF"
         },
         {
           "type": "header",

@@ -1,0 +1,125 @@
+{%- unless template == 'index' or template == 'cart' or template == 'list-collections' or template == '404' -%}
+  {%- assign t = template | split: '.' | first -%}
+
+  <nav class="breadcrumbs" role="navigation" aria-label="breadcrumbs">
+    <ol class="breadcrumbs__list" itemscope itemtype="http://schema.org/BreadcrumbList">
+      <li itemprop="itemListElement" class="breadcrumbs__item" itemscope itemtype="http://schema.org/ListItem">
+        <a itemprop="item" class="breadcrumbs__link" href="{{ routes.root_url }}">
+          <span itemprop="name" class="d-none">{{ 'general.text.home' | t }}</span>
+        </a>
+        <meta itemprop="position" content="1">
+        {%- assign itemprop_positon = 1 -%}
+      </li>
+      {%- case t -%}
+        {%- when 'page' -%}
+          <li itemprop="itemListElement" class="breadcrumbs__item" itemscope itemtype="http://schema.org/ListItem">
+            <a itemprop="item" class="breadcrumbs__link" href="{{ page.url }}" aria-current="page">
+              <span itemprop="name">{{ page.title }}</span>
+            </a>
+            <meta itemprop="position" content="2">
+          </li>
+        {%- when 'product' -%}
+          {%- if collection.url -%}
+            <li itemprop="itemListElement" class="breadcrumbs__item" itemscope itemtype="http://schema.org/ListItem">
+              <a itemprop="item" class="breadcrumbs__link" href="{{ collection.url }}">
+                <span itemprop="name">{{ collection.title }}</span>
+              </a>
+              <meta itemprop="position" content="2">
+              {%- assign itemprop_positon = 2 -%}
+            </li>
+          {%- endif -%}
+          {% assign pro_collection = product.collections.first %}
+          {% if pro_collection %}
+            <li itemprop="itemListElement" class="breadcrumbs__item" itemscope itemtype="http://schema.org/ListItem">
+              <a itemprop="item" class="breadcrumbs__link" href="{{ pro_collection.url }}">
+                <span itemprop="name">{{ pro_collection.title }}</span>
+              </a>
+              <meta itemprop="position" content="{{itemprop_positon | plus: 1}}">
+            </li>
+          {% endif %}
+          <li itemprop="itemListElement" class="breadcrumbs__item" itemscope itemtype="http://schema.org/ListItem">
+            <a itemprop="item" class="breadcrumbs__link" href="{{ product.url }}" aria-current="page">
+              <span itemprop="name">{{- product.title | truncate: 25 -}}</span>
+            </a>
+            <meta itemprop="position" content="{{ itemprop_positon | plus: 2 }}">
+          </li>
+        {%- when 'collection' and collection.handle -%}
+          {%- if current_tags -%}
+            <li itemprop="itemListElement" class="breadcrumbs__item" itemscope itemtype="http://schema.org/ListItem">
+              <a class="breadcrumbs__link" href="{{ collection.url }}" itemprop="item">
+                <span itemprop="name">{{ collection.title }}</span>
+              </a>
+              <meta itemprop="position" content="2">
+              {%- assign itemprop_positon = 2 -%}
+            </li>
+            <li itemprop="itemListElement" class="breadcrumbs__item" itemscope itemtype="http://schema.org/ListItem">
+              {%- capture tag_url -%}{{ collection.url }}/{{ current_tags | join: "+"}}{%- endcapture -%}
+              <a itemprop="item" class="breadcrumbs__link" href="{{ tag_url }}" aria-current="page">
+                {{- current_tags | join: ' + ' -}}
+              </a>
+              <meta itemprop="name" content="{{ collection.title }}">
+              <meta itemprop="position" content="3">
+            </li>
+            {%- assign itemprop_positon = 3 -%}
+          {%- else -%}
+            <li itemprop="itemListElement" class="breadcrumbs__item" itemscope itemtype="http://schema.org/ListItem">
+              <a itemprop="item" class="breadcrumbs__link" href="{{ collection.url }}" aria-current="page">
+                <span itemprop="name">{{ collection.title }}</span>
+              </a>
+              <meta itemprop="position" content="2">
+              {%- assign itemprop_positon = 2 -%}
+            </li>
+          {%- endif -%}
+        {%- when 'blog' -%}
+          {%- if current_tags -%}
+            <li itemprop="itemListElement" class="breadcrumbs__item" itemscope itemtype="http://schema.org/ListItem">
+              <a itemprop="item" class="breadcrumbs__link" href="{{ blog.url }}" aria-current="page">
+                <span itemprop="name">{{ blog.title }}</span>
+              </a>
+              <meta itemprop="position" content="2">
+              {%- assign itemprop_positon = 2 -%}
+            </li>
+            <li itemprop="itemListElement" class="breadcrumbs__item" itemscope itemtype="http://schema.org/ListItem">
+              {%- capture tag_url -%}{{ blog.url }}/tagged/{{ current_tags | join: "+" }}{%- endcapture -%}
+              <a itemprop="item" class="breadcrumbs__link" href="{{ tag_url }}" aria-current="page">
+                {{ current_tags | join: ' + ' }}
+              </a>
+              <meta itemprop="name" content="{{ blog.title }}">
+              <meta itemprop="position" content="3">
+            </li>
+          {%- else -%}
+            <li itemprop="itemListElement" class="breadcrumbs__item" itemscope itemtype="http://schema.org/ListItem">
+              <a itemprop="item" class="breadcrumbs__link" href="{{ blog.url }}" aria-current="page">
+                <span itemprop="name">{{ blog.title }}</span>
+              </a>
+              <meta itemprop="position" content="2">
+              {%- assign itemprop_positon = 2 -%}
+            </li>
+          {%- endif -%}
+        {%- when 'article' -%}
+          <li itemprop="itemListElement" class="breadcrumbs__item" itemscope itemtype="http://schema.org/ListItem">
+            <a itemprop="item" class="breadcrumbs__link" href="{{ blog.url }}">
+              <span itemprop="name">{{ blog.title }}</span>
+            </a>
+            <meta itemprop="position" content="2">
+          </li>
+          <li itemprop="itemListElement" class="breadcrumbs__item" itemscope itemtype="http://schema.org/ListItem">
+            <a itemprop="item" class="breadcrumbs__link" href="{{ article.url }}" aria-current="page">
+              <span itemprop="name">{{ article.title }}</span>
+            </a>
+            <meta itemprop="position" content="3">
+          </li>
+        {%- else -%}
+          <li itemprop="itemListElement" class="breadcrumbs__item" itemscope itemtype="http://schema.org/ListItem">
+            <a itemprop="item" class="breadcrumbs__link" href="{{ request.path }}" aria-current="page">
+              <span itemprop="name">{{ page_title }}</span>
+            </a>
+            <meta itemprop="position" content="2">
+          </li>
+      {%- endcase -%}
+    </ol>
+  </nav>
+  <div class="collection__title">
+    {{ collection.title }}
+  </div>
+{%- endunless -%}

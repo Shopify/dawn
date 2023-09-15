@@ -59,9 +59,63 @@
         {{ 'accessibility.skip_to_product_info' | t }}
       </a>
     {%- endunless -%}
+
+    {% comment %} style start {% endcomment %}
+    <style>
+      .product--thumbnail .product__media-item:not(.is-active),
+      .product--thumbnail_slider .product__media-item:not(.is-active) {
+        display: block !important;
+      }
+      .arrow_desktop_slider--prev, .arrow_desktop_slider--next {
+        position: absolute;
+        transform: translateY(-50%);
+        top: 50%;
+        border: 1px solid #efeeea;
+        background: rgba(255, 255, 255, 0.5);
+        width: 5%;
+        height: 10%;
+        border-radius: 15px;
+      }
+
+      .arrow_desktop_slider--prev:hover {
+        background: rgba(255, 255, 255, 1);
+        border: 1px solid #D9D7CD;
+      }
+      .arrow_desktop_slider--next:hover {
+        background: rgba(255, 255, 255, 1);
+        border: 1px solid #D9D7CD;
+      }
+
+      .arrow_desktop_slider--prev{
+        left:-15px;
+      }
+      .arrow_desktop_slider--next{
+        right:-15px;
+      }
+      .enable_desktop_slider li{
+        width:calc(100%)!important;
+      }
+      {% comment %} disable modal
+      .product__modal-opener--image .product__media-toggle {
+        pointer-events: none;
+      }
+      {% endcomment %}
+      {% comment %} style for mobile {% endcomment %}
+      @media screen and (max-width: 749px) {
+        .enable_desktop_slider li{
+          width:calc(100% - 3rem)!important;
+        }
+
+        .arrow_desktop_slider--prev, .arrow_desktop_slider--next {
+          display: none;
+        }
+      }
+    </style>
+    {% comment %} style end {% endcomment %}
+
     <ul
       id="Slider-Gallery-{{ section.id }}{{ id_append }}"
-      class="product__media-list contains-media grid grid--peek list-unstyled slider slider--mobile"
+      class="product__media-list contains-media grid grid--peek list-unstyled slider slider--mobile {% if section.settings.gallery_layout == 'thumbnail_slider'  %} enable_desktop_slider slider--tablet-up {% endif %}"
       role="list"
     >
       {%- if product.selected_or_first_available_variant.featured_media != null -%}
@@ -120,32 +174,48 @@
         {%- endunless -%}
       {%- endfor -%}
     </ul>
-    {%- unless is_duplicate -%}
-      <div class="slider-buttons no-js-hidden quick-add-hidden{% if hide_mobile_slider %} small-hide{% endif %}">
-        <button
-          type="button"
-          class="slider-button slider-button--prev"
-          name="previous"
-          aria-label="{{ 'general.slider.previous_slide' | t }}"
-        >
+
+    <!-- custom arrow -->
+    {% if section.settings.gallery_layout == 'thumbnail_slider' %}
+      <div class="arrow_desktop_slider">
+        <button type="button" class="arrow_desktop_slider--prev slider-button slider-button--prev" name="previous">
           {% render 'icon-caret' %}
         </button>
-        <div class="slider-counter caption">
-          <span class="slider-counter--current">1</span>
-          <span aria-hidden="true"> / </span>
-          <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
-          <span class="slider-counter--total">{{ media_count }}</span>
-        </div>
-        <button
-          type="button"
-          class="slider-button slider-button--next"
-          name="next"
-          aria-label="{{ 'general.slider.next_slide' | t }}"
-        >
+        <button type="button" class="arrow_desktop_slider--next slider-button slider-button--next" name="next">
           {% render 'icon-caret' %}
         </button>
       </div>
-    {%- endunless -%}
+    {% endif %}
+    <!-- end custom arrow -->
+
+    {% comment %}
+      {%- unless is_duplicate -%}
+        <div class='slider-buttons no-js-hidden quick-add-hidden{% if hide_mobile_slider %} small-hide{% endif %}'>
+          <button
+            type='button'
+            class='slider-button slider-button--prev'
+            name='previous'
+            aria-label='{{ 'general.slider.previous_slide' | t }}'
+          >
+            {% render 'icon-caret' %}
+          </button>
+          <div class='slider-counter caption'>
+            <span class='slider-counter--current'>1</span>
+            <span aria-hidden='true'> / </span>
+            <span class='visually-hidden'>{{ 'general.slider.of' | t }}</span>
+            <span class='slider-counter--total'>{{ media_count }}</span>
+          </div>
+          <button
+            type='button'
+            class='slider-button slider-button--next'
+            name='next'
+            aria-label='{{ 'general.slider.next_slide' | t }}'
+          >
+            {% render 'icon-caret' %}
+          </button>
+        </div>
+      {%- endunless -%}
+    {% endcomment %}
   </slider-component>
   {%- if first_3d_model -%}
     <button
