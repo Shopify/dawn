@@ -52,6 +52,13 @@ if (!customElements.get('product-form')) {
                 message: response.message,
               });
               this.handleErrorMessage(response.description);
+              if (response.status === 'too_many_requests') {
+                this.submitButton.setAttribute('aria-disabled', true);
+                this.submitButton.querySelector('span').classList.add('hidden');
+                this.submitButton.innerHTML = `<span class="sold-out-message">${response.message}</span>`;
+                this.error = true;
+                return;
+              }
 
               const soldOutMessage = this.submitButton.querySelector('.sold-out-message');
               if (!soldOutMessage) return;
@@ -66,7 +73,11 @@ if (!customElements.get('product-form')) {
             }
 
             if (!this.error)
-              publish(PUB_SUB_EVENTS.cartUpdate, { source: 'product-form', productVariantId: formData.get('id'), cartData: response });
+              publish(PUB_SUB_EVENTS.cartUpdate, {
+                source: 'product-form',
+                productVariantId: formData.get('id'),
+                cartData: response,
+              });
             this.error = false;
             const quickAddModal = this.closest('quick-add-modal');
             if (quickAddModal) {
