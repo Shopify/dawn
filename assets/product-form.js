@@ -55,7 +55,7 @@ if (!customElements.get('product-form')) {
               if (response.status === 'too_many_requests') {
                 this.submitButton.setAttribute('aria-disabled', true);
                 this.submitButton.querySelector('span').classList.add('hidden');
-                this.submitButton.innerHTML = `<span class="sold-out-message">${response.message}</span>`;
+                this.submitButton.innerHTML = `<span>${response.message}</span>`;
                 this.error = true;
                 return;
               }
