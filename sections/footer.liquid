@@ -4,9 +4,6 @@
 {{ 'component-list-menu.css' | asset_url | stylesheet_tag }}
 {{ 'component-list-payment.css' | asset_url | stylesheet_tag }}
 {{ 'component-list-social.css' | asset_url | stylesheet_tag }}
-{%- if section.settings.enable_country_selector or section.settings.enable_language_selector -%}
-  {{ 'component-localization-form.css' | asset_url | stylesheet_tag }}
-{%- endif -%}
 
 {%- style -%}
   .footer {
@@ -47,7 +44,7 @@
   -%}
   {%- if section.blocks.size > 0
     or section.settings.newsletter_enable
-    or section.settings.show_social
+    or section.settings.show_social and has_social_icons == true
     or section.settings.enable_follow_on_shop
   -%}
     {%- unless only_empty_brand -%}
@@ -62,11 +59,20 @@
               assign footer_grid_class = 'grid--3-col-tablet'
             endif
           -%}
-          <div class="footer__blocks-wrapper grid grid--1-col grid--2-col grid--4-col-tablet {{ footer_grid_class }}">
+          <div
+            class="footer__blocks-wrapper grid grid--1-col grid--2-col grid--4-col-tablet {{ footer_grid_class }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+            {% if settings.animations_reveal_on_scroll %}
+              data-cascade
+            {% endif %}
+          >
             {%- for block in section.blocks -%}
               <div
-                class="footer-block grid__item{% if block.type == 'link_list' %} footer-block--menu{% endif %}"
+                class="footer-block grid__item{% if block.type == 'link_list' %} footer-block--menu{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
                 {{ block.shopify_attributes }}
+                {% if settings.animations_reveal_on_scroll %}
+                  data-cascade
+                  style="--animation-order: {{ forloop.index }};"
+                {% endif %}
               >
                 {%- if block.settings.heading != blank -%}
                   <h2 class="footer-block__heading inline-richtext">{{- block.settings.heading -}}</h2>
@@ -101,7 +107,7 @@
                           | divided_by: settings.brand_image.aspect_ratio
                         -%}
                         <div
-                          class="footer-block__image-wrapper global-media-settings"
+                          class="footer-block__image-wrapper"
                           style="max-width: min(100%, {{ settings.brand_image_width }}px);"
                         >
                           {{
@@ -122,7 +128,7 @@
                         <div class="rte">{{ settings.brand_description }}</div>
                       {%- endif -%}
                       {%- if block.settings.show_social and has_social_icons -%}
-                        {%- render 'social-icons' -%}
+                        {%- render 'social-icons', class: 'footer__list-social' -%}
                       {%- endif -%}
                     </div>
                   {%- when 'image' -%}
@@ -130,7 +136,7 @@
                       {%- if block.settings.image != blank -%}
                         {%- assign image_size_2x = block.settings.image_width | times: 2 | at_most: 5760 -%}
                         <div
-                          class="footer-block__image-wrapper global-media-settings"
+                          class="footer-block__image-wrapper"
                           style="max-width: min(100%, {{ block.settings.image_width }}px);"
                         >
                           <img
@@ -152,7 +158,12 @@
           </div>
         {%- endif -%}
 
-        <div class="footer-block--newsletter">
+        <div
+          class="footer-block--newsletter{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+          {% if settings.animations_reveal_on_scroll %}
+            data-cascade
+          {% endif %}
+        >
           {%- if section.settings.newsletter_enable -%}
             <div class="footer-block__newsletter">
               {%- if section.settings.newsletter_heading != blank -%}
@@ -228,14 +239,19 @@
           {%- endif -%}
 
           {%- if section.settings.show_social and has_social_icons -%}
-            {%- render 'social-icons' -%}
+            {%- render 'social-icons', class: 'footer__list-social' -%}
           {%- endif -%}
         </div>
       </div>
     {%- endunless -%}
   {%- endif -%}
 
-  <div class="footer__content-bottom">
+  <div
+    class="footer__content-bottom{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+    {% if settings.animations_reveal_on_scroll %}
+      data-cascade
+    {% endif %}
+  >
     <div class="footer__content-bottom-wrapper page-width">
       <div class="footer__column footer__localization isolate">
         {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
@@ -356,10 +372,6 @@
   </div>
 </footer>
 
-{%- if section.settings.enable_country_selector or section.settings.enable_language_selector -%}
-  <script src="{{ 'localization-form.js' | asset_url }}" defer="defer"></script>
-{%- endif -%}
-
 {% schema %}
 {
   "name": "t:sections.footer.name",
@@ -469,32 +481,10 @@
   ],
   "settings": [
     {
-      "type": "select",
+      "type": "color_scheme",
       "id": "color_scheme",
-      "options": [
-        {
-          "value": "accent-1",
-          "label": "t:sections.all.colors.accent_1.label"
-        },
-        {
-          "value": "accent-2",
-          "label": "t:sections.all.colors.accent_2.label"
-        },
-        {
-          "value": "background-1",
-          "label": "t:sections.all.colors.background_1.label"
-        },
-        {
-          "value": "background-2",
-          "label": "t:sections.all.colors.background_2.label"
-        },
-        {
-          "value": "inverse",
-          "label": "t:sections.all.colors.inverse.label"
-        }
-      ],
-      "default": "background-1",
-      "label": "t:sections.all.colors.label"
+      "label": "t:sections.all.colors.label",
+      "default": "background-1"
     },
     {
       "type": "header",
