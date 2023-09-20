@@ -70,17 +70,35 @@
                   </facet-remove>
                 </div>
                 {%- for filter in results.filters -%}
-                  {%- for value in filter.active_values -%}
-                    <facet-remove>
-                      <a href="{{ value.url_to_remove }}" class="active-facets__button active-facets__button--light">
-                        <span class="active-facets__button-inner button button--tertiary">
-                          {{ filter.label }}: {{ value.label | escape }}
-                          {% render 'icon-close-small' %}
-                          <span class="visually-hidden">{{ 'products.facets.clear_filter' | t }}</span>
-                        </span>
-                      </a>
-                    </facet-remove>
-                  {%- endfor -%}
+                  {% comment %} Combine the filter values in a single pill and the operator is AND {% endcomment %}
+                  {% if filter.operator == 'AND' %}
+                    {% unless filter.active_values.size == 0 %}
+                      {%- assign active_filter_values = filter.active_values | map: 'label' | join: ' & ' -%}
+                      <facet-remove class="active-facets-combined">
+                        <a href="{{ filter.url_to_remove }}" class="active-facets__button active-facets__button--light">
+                          <span class="active-facets__button-inner button button--tertiary">
+                            <span class="active-facets__button-inner-label">
+                              {{- filter.label }}: {{ active_filter_values | escape -}}
+                            </span>
+                            {% render 'icon-close-small' %}
+                            <span class="visually-hidden">{{ 'products.facets.clear_filter' | t }}</span>
+                          </span>
+                        </a>
+                      </facet-remove>
+                    {% endunless %}
+                  {% else %}
+                    {%- for value in filter.active_values -%}
+                      <facet-remove>
+                        <a href="{{ value.url_to_remove }}" class="active-facets__button active-facets__button--light">
+                          <span class="active-facets__button-inner button button--tertiary">
+                            {{ filter.label }}: {{ value.label | escape }}
+                            {% render 'icon-close-small' %}
+                            <span class="visually-hidden">{{ 'products.facets.clear_filter' | t }}</span>
+                          </span>
+                        </a>
+                      </facet-remove>
+                    {%- endfor -%}
+                  {% endif %}
                   {% if filter.type == 'price_range' %}
                     {%- if filter.min_value.value != null or filter.max_value.value != null -%}
                       <facet-remove>
@@ -160,7 +178,17 @@
                           class="{% if filter_type != 'vertical' %} facets__list{% endif %} list-unstyled no-js-hidden"
                           role="list"
                         >
-                          {%- for value in filter.values -%}
+                          {%- liquid
+                            assign sorted_values = filter.values
+                            # Keep the selected values grouped together when operator is AND
+                            if filter.operator == 'AND'
+                              assign active_filter_values = filter.values | where: 'active', true
+                              assign inactive_filter_values = filter.values | where: 'active', false
+
+                              assign sorted_values = active_filter_values | concat: inactive_filter_values
+                            endif
+                          -%}
+                          {%- for value in sorted_values -%}
                             <li class="list-menu__item facets__item{% if forloop.index > 10 and filter_type == 'vertical' %} show-more-item hidden{% endif %}">
                               <label
                                 for="Filter-{{ filter.param_name | escape }}-{{ forloop.index }}"
@@ -205,7 +233,16 @@
                                     stroke-linejoin="round" />
                                 </svg>
 
-                                <span aria-hidden="true">{{ value.label | escape }} ({{ value.count }})</span>
+                                <span aria-hidden="true">
+                                  {{- value.label | escape }} ({{ value.count }})
+                                  {%- if value.active == true
+                                    and filter.operator == 'AND'
+                                    and active_filter_values.size > 1
+                                    and forloop.index < active_filter_values.size
+                                  %}
+                                    <span class="facets__item--AND-indicator">&</span>
+                                  {%- endif -%}
+                                </span>
                                 <span class="visually-hidden">
                                   {{- value.label | escape }} (
                                   {%- if value.count == 1 -%}
@@ -269,7 +306,16 @@
                                     stroke-linejoin="round" />
                                 </svg>
 
-                                <span aria-hidden="true">{{ value.label | escape }} ({{ value.count }})</span>
+                                <span aria-hidden="true">
+                                  {{- value.label | escape }} ({{ value.count }})
+                                  {%- if value.active == true
+                                    and filter.operator == 'AND'
+                                    and active_filter_values.size > 1
+                                    and forloop.index < active_filter_values.size
+                                  %}
+                                    <span class="facets__item--AND-indicator">&</span>
+                                  {%- endif -%}
+                                </span>
                                 <span class="visually-hidden">
                                   {{- value.label | escape }} (
                                   {%- if value.count == 1 -%}
@@ -412,17 +458,35 @@
           {%- if filter_type == 'horizontal' -%}
             <div class="active-facets active-facets-desktop">
               {%- for filter in results.filters -%}
-                {%- for value in filter.active_values -%}
-                  <facet-remove>
-                    <a href="{{ value.url_to_remove }}" class="active-facets__button active-facets__button--light">
-                      <span class="active-facets__button-inner button button--tertiary">
-                        {{ filter.label }}: {{ value.label | escape }}
-                        {% render 'icon-close-small' %}
-                        <span class="visually-hidden">{{ 'products.facets.clear_filter' | t }}</span>
-                      </span>
-                    </a>
-                  </facet-remove>
-                {%- endfor -%}
+                {% comment %} Combine the filter values in a single pill and the operator is AND {% endcomment %}
+                {% if filter.operator == 'AND' %}
+                  {% unless filter.active_values.size == 0 %}
+                    {%- assign active_filter_values = filter.active_values | map: 'label' | join: ' & ' -%}
+                    <facet-remove class="active-facets-combined">
+                      <a href="{{ filter.url_to_remove }}" class="active-facets__button active-facets__button--light">
+                        <span class="active-facets__button-inner button button--tertiary">
+                          <span class="active-facets__button-inner-label">
+                            {{- filter.label }}: {{ active_filter_values | escape -}}
+                          </span>
+                          {% render 'icon-close-small' %}
+                          <span class="visually-hidden">{{ 'products.facets.clear_filter' | t }}</span>
+                        </span>
+                      </a>
+                    </facet-remove>
+                  {% endunless %}
+                {% else %}
+                  {%- for value in filter.active_values -%}
+                    <facet-remove>
+                      <a href="{{ value.url_to_remove }}" class="active-facets__button active-facets__button--light">
+                        <span class="active-facets__button-inner button button--tertiary">
+                          {{ filter.label }}: {{ value.label | escape }}
+                          {% render 'icon-close-small' %}
+                          <span class="visually-hidden">{{ 'products.facets.clear_filter' | t }}</span>
+                        </span>
+                      </a>
+                    </facet-remove>
+                  {%- endfor -%}
+                {% endif %}
                 {% if filter.type == 'price_range' %}
                   {%- if filter.min_value.value != null or filter.max_value.value != null -%}
                     <facet-remove>
@@ -668,7 +732,18 @@
                             {{ filter.label | escape }}
                           </button>
                           <ul class="mobile-facets__list list-unstyled" role="list">
-                            {%- for value in filter.values -%}
+                            {%- liquid
+                              assign sorted_values = filter.values
+                              # Keep the selected values grouped together when operator is AND
+                              if filter.operator == 'AND'
+                                assign active_filter_values = filter.values | where: 'active', true
+                                assign inactive_filter_values = filter.values | where: 'active', false
+
+                                assign sorted_values = active_filter_values | concat: inactive_filter_values
+                              endif
+                            -%}
+                            {% comment %} {% value in filter.values %} {% endcomment %}
+                            {%- for value in sorted_values -%}
                               <li class="mobile-facets__item list-menu__item">
                                 <label
                                   for="Filter-{{ filter.param_name | escape }}-mobile-{{ forloop.index }}"
@@ -712,7 +787,16 @@
                                     <path d="M1.5 3.5L2.83333 4.75L4.16667 6L9.5 1" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
                                   </svg>
 
-                                  <span aria-hidden="true">{{ value.label | escape }} ({{ value.count }})</span>
+                                  <span aria-hidden="true">
+                                    {{- value.label | escape }} ({{ value.count }})
+                                    {%- if value.active == true
+                                      and filter.operator == 'AND'
+                                      and active_filter_values.size > 1
+                                      and forloop.index < active_filter_values.size
+                                    %}
+                                      <span class="facets__item--AND-indicator">&</span>
+                                    {%- endif -%}
+                                  </span>
                                   <span class="visually-hidden">
                                     {{- value.label | escape }} (
                                     {%- if value.count == '1' -%}
@@ -1064,17 +1148,35 @@
       <form id="FacetFiltersPillsForm" class="facets__form">
         <div class="active-facets active-facets-desktop">
           {%- for filter in results.filters -%}
-            {%- for value in filter.active_values -%}
-              <facet-remove>
-                <a href="{{ value.url_to_remove }}" class="active-facets__button active-facets__button--light">
-                  <span class="active-facets__button-inner button button--tertiary">
-                    {{ filter.label }}: {{ value.label | escape }}
-                    {% render 'icon-close-small' %}
-                    <span class="visually-hidden">{{ 'products.facets.clear_filter' | t }}</span>
-                  </span>
-                </a>
-              </facet-remove>
-            {%- endfor -%}
+            {% comment %} Combine the filter values in a single pill and the operator is AND {% endcomment %}
+            {% if filter.operator == 'AND' %}
+              {% unless filter.active_values.size == 0 %}
+                {%- assign active_filter_values = filter.active_values | map: 'label' | join: ' & ' -%}
+                <facet-remove class="active-facets-combined">
+                  <a href="{{ filter.url_to_remove }}" class="active-facets__button active-facets__button--light">
+                    <span class="active-facets__button-inner button button--tertiary">
+                      <span class="active-facets__button-inner-label">
+                        {{- filter.label }}: {{ active_filter_values | escape -}}
+                      </span>
+                      {% render 'icon-close-small' %}
+                      <span class="visually-hidden">{{ 'products.facets.clear_filter' | t }}</span>
+                    </span>
+                  </a>
+                </facet-remove>
+              {% endunless %}
+            {% else %}
+              {%- for value in filter.active_values -%}
+                <facet-remove>
+                  <a href="{{ value.url_to_remove }}" class="active-facets__button active-facets__button--light">
+                    <span class="active-facets__button-inner button button--tertiary">
+                      {{ filter.label }}: {{ value.label | escape }}
+                      {% render 'icon-close-small' %}
+                      <span class="visually-hidden">{{ 'products.facets.clear_filter' | t }}</span>
+                    </span>
+                  </a>
+                </facet-remove>
+              {%- endfor -%}
+            {% endif %}
 
             {%- if filter.type == 'price_range' -%}
               {%- if filter.min_value.value != null or filter.max_value.value != null -%}
