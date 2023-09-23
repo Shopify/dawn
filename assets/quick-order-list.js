@@ -246,7 +246,7 @@ class QuickOrderList extends HTMLElement {
 
         if (parsedState.description || parsedState.errors) {
           const variantItem = document.querySelector(`[id^="Variant-${id}"] .variant-item__totals.small-hide .loading__spinner`);
-          variantItem.classList.add('loading-overlay--error');
+          variantItem.classList.add('loading__spinner--error');
           this.resetQuantityInput(id, quantityElement);
           if (parsedState.errors) {
             this.updateLiveRegions(id, parsedState.errors);
