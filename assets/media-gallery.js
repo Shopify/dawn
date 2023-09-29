@@ -83,7 +83,7 @@ if (!customElements.get('media-gallery')) {
             this.elements.liveRegion.setAttribute('aria-hidden', true);
           }, 2000);
         };
-        image.src = image.src;
+        image.src = image.src || image.getAttribute('data-src');
       }
 
       playActiveMedia(activeItem) {

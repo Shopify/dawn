@@ -76,8 +76,9 @@ class FacetFiltersForm extends HTMLElement {
   }
 
   static renderProductGridContainer(html) {
+    const sanitizedHtml = DOMPurify.sanitize(html);
     document.getElementById('ProductGridContainer').innerHTML = new DOMParser()
-      .parseFromString(html, 'text/html')
+      .parseFromString(sanitizedHtml, 'text/html')
       .getElementById('ProductGridContainer').innerHTML;
 
     document
@@ -92,10 +93,10 @@ class FacetFiltersForm extends HTMLElement {
     const count = new DOMParser().parseFromString(html, 'text/html').getElementById('ProductCount').innerHTML;
     const container = document.getElementById('ProductCount');
     const containerDesktop = document.getElementById('ProductCountDesktop');
-    container.innerHTML = count;
+    container.innerHTML = DOMPurify.sanitize(count);
     container.classList.remove('loading');
     if (containerDesktop) {
-      containerDesktop.innerHTML = count;
+      containerDesktop.innerHTML = DOMPurify.sanitize(count);
       containerDesktop.classList.remove('loading');
     }
   }
@@ -114,7 +115,9 @@ class FacetFiltersForm extends HTMLElement {
     const countsToRender = Array.from(facetDetailsElements).find(matchesIndex);
 
     facetsToRender.forEach((element) => {
-      document.querySelector(`.js-filter[data-index="${element.dataset.index}"]`).innerHTML = element.innerHTML;
+      document.querySelector(`.js-filter[data-index="${element.dataset.index}"]`).innerHTML = DOMPurify.sanitize(
+        element.innerHTML
+      );
     });
 
     FacetFiltersForm.renderActiveFacets(parsedHTML);
@@ -129,7 +132,7 @@ class FacetFiltersForm extends HTMLElement {
     activeFacetElementSelectors.forEach((selector) => {
       const activeFacetsElement = html.querySelector(selector);
       if (!activeFacetsElement) return;
-      document.querySelector(selector).innerHTML = activeFacetsElement.innerHTML;
+      document.querySelector(selector).innerHTML = DOMPurify.sanitize(activeFacetsElement.innerHTML);
     });
 
     FacetFiltersForm.toggleActiveFacets(false);
@@ -140,7 +143,7 @@ class FacetFiltersForm extends HTMLElement {
 
     mobileElementSelectors.forEach((selector) => {
       if (!html.querySelector(selector)) return;
-      document.querySelector(selector).innerHTML = html.querySelector(selector).innerHTML;
+      document.querySelector(selector).innerHTML = DOMPurify.sanitize(html.querySelector(selector).innerHTML);
     });
 
     document.getElementById('FacetFiltersFormMobile').closest('menu-drawer').bindEvents();

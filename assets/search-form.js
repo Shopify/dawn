@@ -9,7 +9,8 @@ class SearchForm extends HTMLElement {
       this.input.addEventListener(
         'input',
         debounce((event) => {
-          this.onChange(event);
+          //this.onChange(event);
+          this.onChange();
         }, 300).bind(this)
       );
     }

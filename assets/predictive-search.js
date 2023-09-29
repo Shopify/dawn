@@ -168,7 +168,7 @@ class PredictiveSearch extends SearchForm {
   }
 
   getSearchResults(searchTerm) {
-    const queryKey = searchTerm.replace(' ', '-').toLowerCase();
+    const queryKey = searchTerm.replace(/\s+/g, '-').toLowerCase();
     this.setLiveRegionLoadingState();
 
     if (this.cachedResults[queryKey]) {
@@ -226,7 +226,9 @@ class PredictiveSearch extends SearchForm {
   }
 
   renderSearchResults(resultsMarkup) {
-    this.predictiveSearchResults.innerHTML = resultsMarkup;
+    // Sanitize the HTML before setting it as innerHTML
+    const sanitizedMarkup = DOMPurify.sanitize(resultsMarkup);
+    this.predictiveSearchResults.innerHTML = sanitizedMarkup;
     this.setAttribute('results', true);
 
     this.setLiveRegionResults();
