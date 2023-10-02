@@ -30,13 +30,30 @@
   endif
 -%}
 
+{% assign CustomTags = settings.custom_badges  | newline_to_br | split: '<br />' %}
+{% assign tagLabel = 0 %}
+{% assign hasTag = 0 %}
+
+{% for tag in CustomTags %}
+  {% assign tagSplit = tag | split: ':' %}
+  {% assign pTag = tagSplit.first | strip %}
+  {% assign pLabel = tagSplit.last | strip %}
+
+  {% assign hasTag = product.tags | where: pTag %}
+
+  {% if hasTag.size > 0 %}
+    {% assign tagLabel = pLabel %}
+  {% endif %}
+{% endfor %}
+
 <div class="
     price
     {%- if price_class %} {{ price_class }}{% endif -%}
     {%- if available == false %} price--sold-out {% endif -%}
     {%- if compare_at_price > price %} price--on-sale {% endif -%}
     {%- if product.price_varies == false and product.compare_at_price_varies %} price--no-compare{% endif -%}
-    {%- if show_badges %} price--show-badge{% endif -%}
+    {%- if show_badges or tagLabel != 0 %} price--show-badge{% endif -%}
+    {% if tagLabel != 0 %} has-cbadge{% endif %}
   ">
   <div class="price__container">
     {%- comment -%}
@@ -84,7 +101,7 @@
     </small>
   </div>
   {%- if show_badges -%}
-    <span class="badge price__badge-sale color-{{ settings.sale_badge_color_scheme }}">
+    <span class="badge price__badge-sale color-{{ settings.sale_badge_color_scheme }}" {% if tagLabel != 0 %}style="--color-background: {{ settings.custom_badge_color_bg.red }}, {{ settings.custom_badge_color_bg.green }}, {{ settings.custom_badge_color_bg.blue }};"{% endif %}>
       {{ 'products.product.on_sale' | t }}
     </span>
 
@@ -92,4 +109,9 @@
       {{ 'products.product.sold_out' | t }}
     </span>
   {%- endif -%}
+  {% if tagLabel != 0 %}
+    <span class="badge price__badge-sale custom-badge color-{{ settings.sale_badge_color_scheme }}" {% if tagLabel != 0 %}style="--color-background: {{ settings.custom_badge_color_bg.red }}, {{ settings.custom_badge_color_bg.green }}, {{ settings.custom_badge_color_bg.blue }};"{% endif %}>
+      {{ tagLabel }}
+    </span>
+  {% endif %}
 </div>
