@@ -30,30 +30,13 @@
   endif
 -%}
 
-{% assign CustomTags = settings.custom_badges  | newline_to_br | split: '<br />' %}
-{% assign tagLabel = 0 %}
-{% assign hasTag = 0 %}
-
-{% for tag in CustomTags %}
-  {% assign tagSplit = tag | split: ':' %}
-  {% assign pTag = tagSplit.first | strip %}
-  {% assign pLabel = tagSplit.last | strip %}
-
-  {% assign hasTag = product.tags | where: pTag %}
-
-  {% if hasTag.size > 0 %}
-    {% assign tagLabel = pLabel %}
-  {% endif %}
-{% endfor %}
-
 <div class="
     price
     {%- if price_class %} {{ price_class }}{% endif -%}
     {%- if available == false %} price--sold-out {% endif -%}
     {%- if compare_at_price > price %} price--on-sale {% endif -%}
     {%- if product.price_varies == false and product.compare_at_price_varies %} price--no-compare{% endif -%}
-    {%- if show_badges or tagLabel != 0 %} price--show-badge{% endif -%}
-    {% if tagLabel != 0 and template contains 'product' %} has-cbadge{% endif %}
+    {%- if show_badges %} price--show-badge{% endif -%}
   ">
   <div class="price__container">
     {%- comment -%}
@@ -101,17 +84,16 @@
     </small>
   </div>
   {%- if show_badges -%}
-    <span class="badge price__badge-sale color-{{ settings.sale_badge_color_scheme }}">
-      {{ 'products.product.on_sale' | t }}
+    <span class="badge price__badge-sale color-{{ settings.sale_badge_color_scheme }} {% if product.type == 'Wholesale' %}custom-badge{% endif %}" {% if product.type == 'Wholesale' %}style="--color-background: {{ settings.custom_badge_color_bg.red }}, {{ settings.custom_badge_color_bg.green }}, {{ settings.custom_badge_color_bg.blue }};"{% endif %}>
+      {% if product.type == 'Wholesale' %}
+        {{ 'products.product.partner_label' | t }}
+      {% else %}
+        {{ 'products.product.on_sale' | t }}
+      {% endif %} 
     </span>
 
     <span class="badge price__badge-sold-out color-{{ settings.sold_out_badge_color_scheme }}">
       {{ 'products.product.sold_out' | t }}
     </span>
   {%- endif -%}
-  {% if tagLabel != 0 and template contains 'product'  %}
-    <span class="badge price__badge-sale custom-badge color-{{ settings.sale_badge_color_scheme }}" {% if tagLabel != 0 %}style="--color-background: {{ settings.custom_badge_color_bg.red }}, {{ settings.custom_badge_color_bg.green }}, {{ settings.custom_badge_color_bg.blue }};"{% endif %}>
-      {{ tagLabel }}
-    </span>
-  {% endif %}
 </div>
