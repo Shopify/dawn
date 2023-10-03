@@ -48,7 +48,7 @@
       style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%;"
     >
       <div
-        class="card__inner {% if settings.card_style == 'standard' %}global-media-settings  color-{{ settings.card_color_scheme }} gradient{% endif %}{% if card_product.featured_media or settings.card_style == 'standard' %} ratio{% endif %}"
+        class="card__inner {% if settings.card_style == 'standard' %}global-media-settings color-{{ settings.card_color_scheme }} gradient{% endif %}{% if card_product.featured_media or settings.card_style == 'standard' %} ratio{% endif %}"
         style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%;"
       >
         {%- if card_product.featured_media -%}
@@ -118,33 +118,7 @@
               </a>
             </h3>
           </div>
-
-          {% assign CustomTags = settings.custom_badges  | newline_to_br | split: '<br />' %}
-          {% assign tagLabel = 0 %}
-          {% assign hasTag = 0 %}
-
-          {% for tag in CustomTags %}
-            {% assign tagSplit = tag | split: ':' %}
-            {% assign pTag = tagSplit.first %}
-            {% assign pLabel = tagSplit.last %}
-
-            {% assign hasTag = card_product.tags | where: pTag %}
-
-            {% if hasTag.size > 0 %}
-              {% assign tagLabel = pLabel %}
-            {% endif %}
-          {% endfor %}
-
-          <div class="card__badge {{ settings.badge_position }}" {% if tagLabel != 0 %} data-tag="{{ tagLabel }}"{% endif %}>
-            {% if tagLabel != 0 %}
-              <span
-                class="badge custom-badge badge--bottom-left color-{{ settings.sale_badge_color_scheme }}"
-                style="--color-background: {{ settings.custom_badge_color_bg.red }}, {{ settings.custom_badge_color_bg.green }}, {{ settings.custom_badge_color_bg.blue }};"
-              >
-                {{- tagLabel -}}
-              </span>
-            {% endif %}
-
+          <div class="card__badge {{ settings.badge_position }}">
             {%- if card_product.available == false -%}
               <span
                 id="NoMediaStandardBadge-{{ section_id }}-{{ card_product.id }}"
@@ -155,10 +129,15 @@
             {%- elsif card_product.compare_at_price > card_product.price and card_product.available -%}
               <span
                 id="NoMediaStandardBadge-{{ section_id }}-{{ card_product.id }}"
-                class="badge badge--bottom-left color-{{ settings.sale_badge_color_scheme }}"
+                class="badge {% if card_product.type == 'Wholesale' %}custom-badge{% endif %} badge--bottom-left color-{{ settings.sale_badge_color_scheme }}"
+                {% if card_product.type == 'Wholesale' %}style="--color-background: {{ settings.custom_badge_color_bg.red }}, {{ settings.custom_badge_color_bg.green }}, {{ settings.custom_badge_color_bg.blue }};"{% endif %}
               >
-                {{- 'products.product.on_sale' | t -}}
-              </span>
+                {% if card_product.type == 'Wholesale' %}
+                  {{ 'products.product.partner_label' | t }}
+                {% else %}
+                  {{ 'products.product.on_sale' | t }}
+                {% endif %}
+              </span> 
             {%- endif -%}
           </div>
         </div>
@@ -352,9 +331,14 @@
           {%- elsif card_product.compare_at_price > card_product.price and card_product.available -%}
             <span
               id="Badge-{{ section_id }}-{{ card_product.id }}"
-              class="badge badge--bottom-left color-{{ settings.sale_badge_color_scheme }}"
+              class="badge badge--bottom-left {% if card_product.type == 'Wholesale' %}custom-badge{% endif %} color-{{ settings.sale_badge_color_scheme }}"
+              {% if card_product.type == 'Wholesale' %}style="--color-background: {{ settings.custom_badge_color_bg.red }}, {{ settings.custom_badge_color_bg.green }}, {{ settings.custom_badge_color_bg.blue }};"{% endif %}
             >
-              {{- 'products.product.on_sale' | t -}}
+              {% if card_product.type == 'Wholesale' %}
+                {{ 'products.product.partner_label' | t }}
+              {% else %}
+                {{ 'products.product.on_sale' | t }}
+              {% endif %}
             </span>
           {%- endif -%}
         </div>
