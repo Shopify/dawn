@@ -153,6 +153,107 @@
             {%- for filter in results.filters -%}
               {%- assign total_active_values = total_active_values | plus: filter.active_values.size -%}
               {% case filter.type %}
+                {% when 'category' %}
+                  <details
+                    id="Details-{{ forloop.index }}-{{ section.id }}"
+                    class="facets__disclosure-vertical js-filter"
+                    data-index="{{ forloop.index }}"
+                    open
+                  >
+                    <summary class="facets__summary caption-large focus-offset">
+                      <div>
+                        <span>
+                          {{- filter.label | escape }}
+                        </span>
+                        {% render 'icon-caret' %}
+                      </div>
+                    </summary>
+                    <div
+                      id="Facet-{{ forloop.index }}-{{ section.id }}"
+                      class="parent-display facets__display-vertical"
+                    >
+                      <fieldset class="facets-wrap parent-wrap facets-wrap-vertical">
+                        <ul class="list-unstyled no-js-hidden" role="list">
+                          {%- for breadcrumb in filter.breadcrumbs -%}
+                            <li class="list-menu__item facets__item">
+                              <label
+                                for="Filter-{{ breadcrumb.param_name | escape }}-{{ forloop.index }}"
+                                class="facet-checkbox{% if breadcrumb.count == 0 and breadcrumb.active == false %} facet-checkbox--disabled{% endif %}"
+                              >
+                                {%- unless forloop.last -%}
+                                  <input
+                                    type="checkbox"
+                                    name="{{ breadcrumb.param_name }}"
+                                    value="{{ breadcrumb.value }}"
+                                    id="Filter-{{ filter.param_name | escape }}-{{ forloop.index }}-no-js"
+                                    {% if breadcrumb.active %}
+                                      checked
+                                    {% endif %}
+                                    {% if breadcrumb.count == 0 and breadcrumb.active == false %}
+                                      disabled
+                                    {% endif %}
+                                  >
+                                {%- endunless -%}
+
+                                <span aria-hidden="true">
+                                  {{- breadcrumb.label | escape }} ({{ breadcrumb.count }})
+                                </span>
+                              </label>
+
+                              {%- if forloop.last and filter.children.size > 0 -%}
+                                <ul
+                                  class="list-unstyled no-js-hidden"
+                                  role="list"
+                                >
+                                  {%- for child_value in filter.children -%}
+                                    <li class="list-menu__item facets__item{% if forloop.index > 10 and filter_type == 'vertical' %} show-more-item hidden{% endif %}">
+                                      <label
+                                        for="Filter-{{ filter.param_name | escape }}-{{ forloop.index }}"
+                                        class="facet-checkbox{% if child_value.count == 0 and child_value.active == false %} facet-checkbox--disabled{% endif %}"
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          name="{{ child_value.param_name }}"
+                                          value="{{ child_value.value }}"
+                                          id="Filter-{{ filter.param_name | escape }}-{{ forloop.index }}-no-js"
+                                          {% if child_value.active %}
+                                            checked
+                                          {% endif %}
+                                          {% if child_value.count == 0 and child_value.active == false %}
+                                            disabled
+                                          {% endif %}
+                                        >
+
+                                        <span aria-hidden="true">
+                                          {{- child_value.label | escape }} ({{ child_value.count }})
+                                        </span>
+                                      </label>
+                                    </li>
+                                  {%- endfor -%}
+                                </ul>
+                              {%- endif -%}
+                            </li>
+                          {%- endfor -%}
+                        </ul>
+                      </fieldset>
+                      {%- if filter.values.size > 10 and filter_type == 'vertical' -%}
+                        <show-more-button>
+                          <button
+                            class="button-show-more link underlined-link no-js-hidden"
+                            id="Show-More-{{ forloop.index }}-{{ section.id }}"
+                            type="button"
+                          >
+                            <span class="label-show-more label-text"
+                              ><span aria-hidden="true">+ </span>{{ 'products.facets.show_more' | t -}}
+                            </span>
+                            <span class="label-show-less label-text hidden"
+                              ><span aria-hidden="true">- </span>{{ 'products.facets.show_less' | t -}}
+                            </span>
+                          </button>
+                        </show-more-button>
+                      {%- endif %}
+                    </div>
+                  </details>
                 {% when 'boolean', 'list' %}
                   <details
                     id="Details-{{ forloop.index }}-{{ section.id }}"
