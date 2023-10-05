@@ -162,7 +162,6 @@ class FacetFiltersForm extends HTMLElement {
     const sourceSummary = source.querySelector('.facets__summary');
 
     if (sourceSummary && targetSummary) {
-      sourceSummary.setAttribute('aria-expanded', targetSummary.getAttribute('aria-expanded'));
       targetSummary.outerHTML = sourceSummary.outerHTML;
     }
 
