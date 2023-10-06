@@ -1,0 +1,687 @@
+<script src="{{ 'test.js' | asset_url }}" defer="defer"></script>
+
+
+{% # theme-check-disable %}
+{%- assign items_in_cart = cart | line_items_for: product | sum: 'quantity' -%}
+{% # theme-check-enable %}
+
+
+<div class="color-background-1 gradient">
+  <quick-order-list
+    class="page-width"
+    id="quick-order-list"
+    data-id="{{ section.id }}"
+  >
+    <div class="shop-name" data-name="{{ shop.name }}"></div>
+    <button class="results"> Results </button>
+    <form
+      action="{{ routes.cart_update_url }}"
+      class="quick-order-list__contents critical-hidden"
+      method="post"
+      id="QuickOrderList"
+    >
+      <div class="quick-order-list__container" id="main-variant-items">
+        <div class="js-contents">
+          <table class="quick-order-list__table">
+            <caption class="visually-hidden">
+              Quick Order List
+            </caption>
+            <thead>
+              <tr>
+                <th class="caption-with-letter-spacing" scope="col">
+                  {%- if product.has_only_default_variant -%}
+                    Product
+                  {%- else -%}
+                    Variant
+                  {%- endif -%}
+                </th>
+                <th class="large-up-hide right caption-with-letter-spacing" scope="col">
+                  {%- if product.has_only_default_variant -%}
+                    Product subtotal
+                  {%- else -%}
+                    Variant total
+                  {%- endif -%}
+                </th>
+                <th
+                  class="quick-order-list__table-heading--wide small-hide medium-hide caption-with-letter-spacing"
+                  scope="col"
+                >
+                  Quantity
+                </th>
+                <th
+                  class="quick-order-list__table-heading--wide small-hide medium-hide caption-with-letter-spacing"
+                  scope="col"
+                >
+                  Price
+                </th>
+                <th class="small-hide medium-hide right caption-with-letter-spacing" scope="col">
+                  {%- if product.has_only_default_variant -%}
+                    Product subtotal
+                  {%- else -%}
+                    Variant total
+                  {%- endif -%}
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {%- if product.has_only_default_variant -%}
+                  {% # theme-check-disable %}
+                  {% assign cart_qty = cart | item_count_for_variant: product.selected_or_first_available_variant.id %}
+                  {% # theme-check-enable %}
+                  <tr
+                    class="variant-item"
+                    id="Variant-{{ product.selected_or_first_available_variant.id }}"
+                    data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+                    data-cart-qty="{{ cart_qty }}"
+                  >
+                    <td class="variant-item__inner">
+                        <div class="variant-item__media">
+                          <div class="variant-item__image-container gradient global-media-settings{% unless product.featured_media %} variant-item__image-container--no-img {% endunless %}">
+                            {% if product.featured_media %}
+                              {%- assign img_height = 43 | divided_by: product.featured_media.aspect_ratio | ceil -%}
+                              {{
+                                product.featured_media
+                                | image_url: width: 86
+                                | image_tag:
+                                  loading: 'lazy',
+                                  fetchpriority: 'low',
+                                  decoding: 'async',
+                                  class: 'variant-item__image',
+                                  width: 43,
+                                  height: img_height,
+                                  widths: '86',
+                                  alt: product.featured_media.alt
+                                | escape
+                              }}
+                            {% endif %}
+                          </div>
+                        </div>
+                      <div class="small-hide medium-hide">
+                        <span class="variant-item__name h4 break">{{ product.title | escape }}</span>
+                        {%- if product.sku -%}
+                          <span class="variant-item__sku break">{{ product.selected_or_first_available_variant.sku | escape }}</span>
+                        {%- endif -%}
+                      </div>
+                    </td>
+
+                    <td class="variant-item__details large-up-hide">
+                      <div class="variant-item__info">
+                        <span class="variant-item__name h4 break">{{ variant.title | escape }}</span>
+                        {%- if product.selected_or_first_available_variant.sku -%}
+                          <span class="variant-item__sku break">{{ product.selected_or_first_available_variant.sku | escape }}</span>
+                        {%- endif -%}
+                      </div>
+
+                      {%- assign item_price = product.selected_or_first_available_variant.price | money -%}
+                      {%- if product.selected_or_first_available_variant.compare_at_price -%}
+                        <dl class="variant-item__discounted-prices">
+                          <dt class="visually-hidden">
+                            Regular price
+                          </dt>
+                          <dd>
+                            <s class="variant-item__old-price price price--end">
+                              {{ product.selected_or_first_available_variant.compare_at_price | money }}
+                            </s>
+                          </dd>
+                          <dt class="visually-hidden">
+                            Sale price
+                          </dt>
+                          <dd class="price">
+                             <span class="price">
+                               {{ item_price }}/ea
+                             </span>
+                          </dd>
+                        </dl>
+                      {%- else -%}
+                          <span class="price">
+                            {{ item_price }}/ea
+                          </span>
+                      {%- endif -%}
+
+                      {%- if product.selected_or_first_available_variant.available and product.selected_or_first_available_variant.unit_price_measurement -%}
+                        <div class="unit-price caption">
+                          <span class="visually-hidden">Unit price</span>
+                          {{ product.selected_or_first_available_variant.unit_price | money }}
+                          <span aria-hidden="true">/</span>
+                          <span class="visually-hidden">&nbsp;per&nbsp;</span>
+                          {%- if product.selected_or_first_available_variant.unit_price_measurement.reference_value != 1 -%}
+                            {{- product.selected_or_first_available_variant.unit_price_measurement.reference_value -}}
+                          {%- endif -%}
+                          {{ product.selected_or_first_available_variant.unit_price_measurement.reference_unit }}
+                        </div>
+                      {%- endif -%}
+                    </td>
+
+                    <td class="variant-item__totals right large-up-hide">
+                      {%- render 'loading-overlay' -%}
+                      {% comment %} TODO: enable theme-check once `line_items_for` is accepted as valid filter {% endcomment %}
+                      {% # theme-check-disable %}
+                      <span class="price">{{ cart | line_items_for: product.selected_or_first_available_variant | sum: 'original_line_price' | money }}</span>
+                      {% # theme-check-enable %}
+                    </td>
+
+                    <td class="variant-item__quantity">
+                      <quantity-popover>
+                        <div class="variant-item__quantity-wrapper quantity-popover-wrapper variant-item__quantity-wrapper--no-info">
+                          <label class="visually-hidden" for="Quantity-{{ variant.id }}">
+                            Quantity
+                          </label>
+                          <div class="quantity-popover-container">
+                            {%- if product.selected_or_first_available_variant.available == false -%}
+                              <span class="variant-item__sold-out h4"> Sold out </span>
+                            {%- else -%}
+                              {% comment %} TODO: Remove theme check {% endcomment %}
+                              {% # theme-check-disable %}
+                              {% assign cart_qty = cart | item_count_for_variant: product.selected_or_first_available_variant.id %}
+                              {% # theme-check-enable %}
+                              {% render 'quantity-input', variant: product.selected_or_first_available_variant %}
+                            {%- endif -%}
+                          </div>
+                          {%- if cart_qty > 0 -%}
+                            <quick-order-list-remove-button
+                              id="Remove-{{ product.selected_or_first_available_variant.id }}"
+                              data-index="{{ product.selected_or_first_available_variant.id }}"
+                            >
+                              <a
+                                href="{{ product.selected_or_first_available_variant.url_to_remove }}"
+                                class="button button--tertiary"
+                                aria-label="Remove {{ variant.title }}"
+                              >
+                                {% render 'icon-remove' %}
+                              </a>
+                            </quick-order-list-remove-button>
+                          {%- endif -%}
+                        </div>
+                        <div
+                          class="variant-item__error large-up-hide"
+                          id="Quick-order-list-item-error-mobile-{{ product.selected_or_first_available_variant.id }}"
+                          role="alert"
+                        >
+                          <small class="variant-item__error-text"></small>
+                          <svg
+                            aria-hidden="true"
+                            focusable="false"
+                            class="icon icon-error"
+                            viewBox="0 0 13 13"
+                          >
+                            <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
+                            <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
+                            <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
+                            <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
+                          </svg>
+                        </div>
+                      </quantity-popover>
+                    </td>
+                    {%- assign item_price = product.selected_or_first_available_variant.price | money -%}
+                    <td class="variant-item__price small-hide medium-hide">
+                      {%- if variant.compare_at_price -%}
+                        <dl class="variant-item__discounted-prices">
+                          <dt class="visually-hidden">
+                            Regular price
+                          </dt>
+                          <dd>
+                            <s class="variant-item__old-price price price--end">
+                              {{ product.selected_or_first_available_variant.compare_at_price | money }}
+                            </s>
+                          </dd>
+                          <dt class="visually-hidden">
+                            Sale price
+                          </dt>
+                          <dd class="price">
+                             <span class="price">
+                               {{ item_price }}/ea
+                             </span>
+                          </dd>
+                        </dl>
+                      {%- else -%}
+                         <span class="price">
+                           {{ item_price }}/ea
+                         </span>
+                       {%- endif -%}
+
+                      {%- if product.selected_or_first_available_variant.available and product.selected_or_first_available_variant.unit_price_measurement -%}
+                        <div class="unit-price caption">
+                          <span class="visually-hidden">Unit price</span>
+                          {{ variant.unit_price | money }}
+                          <span aria-hidden="true">/</span>
+                          <span class="visually-hidden">&nbsp;per&nbsp;</span>
+                          {%- if product.selected_or_first_available_variant.unit_price_measurement.reference_value != 1 -%}
+                            {{- product.selected_or_first_available_variant.unit_price_measurement.reference_value -}}
+                          {%- endif -%}
+                          {{ product.selected_or_first_available_variant.unit_price_measurement.reference_unit }}
+                        </div>
+                      {%- endif -%}
+                    </td>
+                    <td class="variant-item__totals right small-hide medium-hide">
+                      {%- render 'loading-overlay' -%}
+                      {% comment %} TODO: enable theme-check once `line_items_for` is accepted as valid filter {% endcomment %}
+                      {% # theme-check-disable %}
+                      <span class="price">{{ cart | line_items_for: variant | sum: 'original_line_price' | money }}</span>
+
+                      {% # theme-check-enable %}
+                    </td>
+                  </tr>
+                  <tr class="small-hide medium-hide hidden desktop-row-error">
+                    <td></td>
+                    <td>
+                      <div class="variant-item__error" id="Quick-order-list-item-error-desktop-{{ variant.id }}" role="alert">
+                        <small class="variant-item__error-text"></small>
+                        <svg
+                          aria-hidden="true"
+                          focusable="false"
+                          class="icon icon-error"
+                          viewBox="0 0 13 13"
+                        >
+                          <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
+                          <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
+                          <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
+                          <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
+                        </svg>
+                      </div>
+                    </td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+              {%- else -%}
+                {%- for variant in product.variants -%}
+                {% # theme-check-disable %}
+                  {% assign cart_qty = cart | item_count_for_variant: variant.id %}
+                 {% # theme-check-enable %}
+                  <tr
+                    class="variant-item"
+                    id="Variant-{{ variant.id }}"
+                    data-variant-id="{{ variant.id }}"
+                    data-cart-qty="{{ cart_qty }}"
+                  >
+                    <td class="variant-item__inner">
+                        <div class="variant-item__media">
+                          <div class="variant-item__image-container gradient global-media-settings{% unless variant.image %} variant-item__image-container--no-img {% endunless %}">
+                            {% if variant.image %}
+                              {%- assign img_height = 43 | divided_by: variant.image.aspect_ratio | ceil -%}
+                              {{
+                                variant.image
+                                | image_url: width: 86
+                                | image_tag:
+                                  loading: 'lazy',
+                                  fetchpriority: 'low',
+                                  decoding: 'async',
+                                  class: 'variant-item__image',
+                                  width: 43,
+                                  height: img_height,
+                                  widths: '86',
+                                  alt: variant.image.alt
+                                | escape
+                              }}
+                            {% endif %}
+                          </div>
+                        </div>
+                      <div class="small-hide medium-hide">
+                        <span class="variant-item__name h4 break">{{ variant.title | escape }}</span>
+                        {%- if variant.sku -%}
+                          <span class="variant-item__sku break">{{ variant.sku | escape }}</span>
+                        {%- endif -%}
+                      </div>
+                    </td>
+
+                    <td class="variant-item__details large-up-hide">
+                      <div class="variant-item__info">
+                        <span class="variant-item__name h4 break">{{ variant.title | escape }}</span>
+                        {%- if variant.sku -%}
+                          <span class="variant-item__sku break">{{ variant.sku | escape }}</span>
+                        {%- endif -%}
+                      </div>
+
+                      {%- assign item_price = variant.price | money -%}
+                      {%- if variant.compare_at_price -%}
+                        <dl class="variant-item__discounted-prices">
+                          <dt class="visually-hidden">
+                            Regular price
+                          </dt>
+                          <dd>
+                            <s class="variant-item__old-price price price--end">
+                              {{ variant.compare_at_price | money }}
+                            </s>
+                          </dd>
+                          <dt class="visually-hidden">
+                            Sale price
+                          </dt>
+                          <dd class="price">
+                             <span class="price">
+                               {{ item_price }}/ea
+                             </span>
+                          </dd>
+                        </dl>
+                      {%- else -%}
+                          <span class="price">
+                            {{ item_price }}/ea
+                          </span>
+                      {%- endif -%}
+
+                      {%- if variant.available and variant.unit_price_measurement -%}
+                        <div class="unit-price caption">
+                          <span class="visually-hidden">Unit price</span>
+                          {{ variant.unit_price | money }}
+                          <span aria-hidden="true">/</span>
+                          <span class="visually-hidden">&nbsp;per&nbsp;</span>
+                          {%- if variant.unit_price_measurement.reference_value != 1 -%}
+                            {{- variant.unit_price_measurement.reference_value -}}
+                          {%- endif -%}
+                          {{ variant.unit_price_measurement.reference_unit }}
+                        </div>
+                      {%- endif -%}
+                    </td>
+
+                    <td class="variant-item__totals right large-up-hide">
+                      {%- render 'loading-overlay' -%}
+                      {% comment %} TODO: enable theme-check once `line_items_for` is accepted as valid filter {% endcomment %}
+                      {% # theme-check-disable %}
+                      <span class="price">{{ cart | line_items_for: variant | sum: 'original_line_price' | money }}</span>
+                      {% # theme-check-enable %}
+                    </td>
+
+                    <td class="variant-item__quantity">
+                      <quantity-popover>
+                        <div class="variant-item__quantity-wrapper quantity-popover-wrapper variant-item__quantity-wrapper--no-info">
+                          <label class="visually-hidden" for="Quantity-{{ variant.id }}">
+                            Quantity
+                          </label>
+                          <div class="quantity-popover-container">
+                            {%- if variant.available == false -%}
+                              <span class="variant-item__sold-out h4">Sold out</span>
+                            {%- else -%}
+                              {% comment %} TODO: Remove theme check {% endcomment %}
+                              {% # theme-check-disable %}
+                              {% assign cart_qty = cart | item_count_for_variant: variant.id %}
+                              {% # theme-check-enable %}
+                              {% render 'quantity-input', variant: variant %}
+                            {%- endif -%}
+                          </div>
+                          {%- if cart_qty > 0 -%}
+                            <quick-order-list-remove-button
+                              id="Remove-{{ variant.id }}"
+                              data-index="{{ variant.id }}"
+                            >
+                              <a
+                                href="{{ variant.url_to_remove }}"
+                                class="button button--tertiary"
+                                aria-label="Remove {{variant.title }}"
+                              >
+                                {% render 'icon-remove' %}
+                              </a>
+                            </quick-order-list-remove-button>
+                          {%- endif -%}
+                        </div>
+                        <div
+                          class="variant-item__error large-up-hide"
+                          id="Quick-order-list-item-error-mobile-{{ variant.id }}"
+                          role="alert"
+                        >
+                          <small class="variant-item__error-text"></small>
+                          <svg
+                            aria-hidden="true"
+                            focusable="false"
+                            class="icon icon-error"
+                            viewBox="0 0 13 13"
+                          >
+                            <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
+                            <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
+                            <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
+                            <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
+                          </svg>
+                        </div>
+                      </quantity-popover>
+                    </td>
+                    {%- assign item_price = variant.price | money -%}
+                    <td class="variant-item__price small-hide medium-hide">
+                      {%- if variant.compare_at_price -%}
+                        <dl class="variant-item__discounted-prices">
+                          <dt class="visually-hidden">
+                            Regular price
+                          </dt>
+                          <dd>
+                            <s class="variant-item__old-price price price--end">
+                              {{ variant.compare_at_price | money }}
+                            </s>
+                          </dd>
+                          <dt class="visually-hidden">
+                            Sale price
+                          </dt>
+                          <dd class="price">
+                             <span class="price">
+                               {{ item_price }}/ea
+                             </span>
+                          </dd>
+                        </dl>
+                      {%- else -%}
+                         <span class="price">
+                           {{ item_price }}/ea
+                         </span>
+                       {%- endif -%}
+
+                      {%- if variant.available and variant.unit_price_measurement -%}
+                        <div class="unit-price caption">
+                          <span class="visually-hidden">Unit price</span>
+                          {{ variant.unit_price | money }}
+                          <span aria-hidden="true">/</span>
+                          <span class="visually-hidden">&nbsp;per&nbsp;</span>
+                          {%- if variant.unit_price_measurement.reference_value != 1 -%}
+                            {{- variant.unit_price_measurement.reference_value -}}
+                          {%- endif -%}
+                          {{ variant.unit_price_measurement.reference_unit }}
+                        </div>
+                      {%- endif -%}
+                    </td>
+                    <td class="variant-item__totals right small-hide medium-hide">
+                      {%- render 'loading-overlay' -%}
+                      {% comment %} TODO: enable theme-check once `line_items_for` is accepted as valid filter {% endcomment %}
+                      {% # theme-check-disable %}
+                      <span class="price">{{ cart | line_items_for: variant | sum: 'original_line_price' | money }}</span>
+                      {% # theme-check-enable %}
+                    </td>
+                  </tr>
+                  <tr class="small-hide medium-hide hidden desktop-row-error">
+                    <td></td>
+                    <td>
+                      <div class="variant-item__error" id="Quick-order-list-item-error-desktop-{{ variant.id }}" role="alert">
+                        <small class="variant-item__error-text"></small>
+                        <svg
+                          aria-hidden="true"
+                          focusable="false"
+                          class="icon icon-error"
+                          viewBox="0 0 13 13"
+                        >
+                          <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
+                          <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
+                          <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
+                          <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
+                        </svg>
+                      </div>
+                    </td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+
+                {%- endfor -%}
+              {%- endif -%}
+            </tbody>
+          </table>
+        </div>
+        <noscript>
+          {%- if product.has_only_default_variant or product.variants.size == 1 -%}
+            <button type="submit" class="button button--secondary right" formnovalidate form="QuickOrderList">
+              Update
+            </button>
+          {%- endif -%}
+        </noscript>
+      </div>
+
+      <p class="visually-hidden" id="quick-order-list-live-region-text" aria-live="polite" role="status"></p>
+      <p
+        class="visually-hidden"
+        id="shopping-cart-variant-item-status"
+        aria-live="polite"
+        aria-hidden="true"
+        role="status"
+      >
+        Loading...
+      </p>
+    </form>
+
+    {%- if product.has_only_default_variant or product.variants.size == 1 -%}
+      <span class="quick-order-list-error">
+        {% comment %} Populated by JS {% endcomment %}
+      </span>
+    {%- else -%}
+      <div class="quick-order-list__total gradient" id="quick-order-list-total">
+        <div class="quick-order-list-total__info">
+          <div class="quick-order-list-total__column small-hide medium-hide">
+            <div class="quick-order-list-buttons">
+              <a
+                href="{{ routes.cart_url }} "
+                class="quick-order-list__button button button--secondary small-hide  medium-hide"
+              >
+                <span class="quick-order-list__button-text">View cart</span>
+              </a>
+              <div class="variant-remove-total">
+                {%- render 'loading-overlay' -%}
+                <quick-order-list-remove-all-button
+                  class="no-js-hidden"
+                  data-action="confirm"
+                >
+                  <button class="button button--tertiary" type="button">
+                    {% render 'icon-remove' %}
+                    <span class="text-body">Remove all</span>
+                  </button>
+                </quick-order-list-remove-all-button>
+              </div>
+            </div>
+            <span class="quick-order-list__message caption-large" role="status">
+              <span class="quick-order-list__message-icon hidden">{%- render 'icon-checkmark' -%}</span>
+              <span class="quick-order-list__message-text"></span>
+            </span>
+            <span class="quick-order-list-error">
+              {% comment %} Populated by JS {% endcomment %}
+            </span>
+          </div>
+          <div class="quick-order-list__total-items">
+            <h3>
+              {{ items_in_cart }}
+            </h3>
+            <p class="h5">Total items</p>
+          </div>
+          <div class="quick-order-list-total__price">
+            <noscript>
+              <button type="submit" class="button button--secondary" formnovalidate form="QuickOrderList">
+                Update
+              </button>
+            </noscript>
+            <div class="totals__product-total">
+              <h3 class="totals__subtotal-value">
+                {% comment %} TODO: enable theme-check once `line_items_for` is accepted as valid filter {% endcomment %}
+                {% # theme-check-disable %}
+                {{ cart | line_items_for: product | sum: 'original_line_price' | money }}
+                {% # theme-check-enable %}
+              </h3>
+              <p class="totals__subtotal h5">Product subtotal</p>
+            </div>
+            <small class="tax-note caption-large rte">
+              Tax included. <a href="{{ shop.shipping_policy.url }}">Shipping</a> and discounts calculated at checkout.
+              {%- if cart.taxes_included and shop.shipping_policy.body != blank -%}
+                Tax included. <a href=\"{{ shop.shipping_policy.url }}\">Shipping</a> and discounts calculated at checkout.
+              {%- elsif cart.taxes_included -%}
+                Tax included and shipping and discounts calculated at checkout
+              {%- elsif shop.shipping_policy.body != blank -%}
+                Taxes, Discounts and <a href=\"{{ shop.shipping_policy.url }}\">shipping</a> calculated at checkout
+              {%- else -%}
+                Taxes, discounts and shipping calculated at checkout
+              {%- endif -%}
+            </small>
+          </div>
+          <div class="quick-order-list-total__column large-up-hide">
+            <div class="quick-order-list-buttons">
+              <a
+                href="{{ routes.cart_url }}"
+                class="quick-order-list__button button button--secondary button--full-width"
+              >
+                <span class="quick-order-list__button-text">View cart</span>
+              </a>
+              <div class="variant-remove-total">
+                {%- render 'loading-overlay' -%}
+                <quick-order-list-remove-all-button
+                  class="no-js-hidden"
+                  data-action="confirm"
+                >
+                  <button class="button button--tertiary" type="button">
+                    {% render 'icon-remove' %}
+
+                    <span class="text-body">Remove all</span>
+                  </button>
+                </quick-order-list-remove-all-button>
+              </div>
+            </div>
+            <span class="quick-order-list__message caption-large" role="status">
+              <span class="quick-order-list__message-icon hidden">{%- render 'icon-checkmark' -%}</span>
+              <span class="quick-order-list__message-text"></span>
+            </span>
+            <span class="quick-order-list-error">
+              {% comment %} Populated by JS {% endcomment %}
+            </span>
+          </div>
+        </div>
+        <div class="quick-order-list-total__confirmation hidden">
+          <span class="text-body">
+            Remove all {{ items_in_cart }} items from your cart?
+          </span>
+          <quick-order-list-remove-all-button
+            data-action="remove"
+          >
+            <button
+              class="quick-order-list__button-confirm button button--secondary"
+              type="button"
+            >
+              Remove all
+            </button>
+          </quick-order-list-remove-all-button>
+          <quick-order-list-remove-all-button
+            data-action="cancel"
+          >
+            <button
+              class="quick-order-list__button-cancel button button--tertiary"
+              type="button"
+            >
+              Cancel
+            </button>
+          </quick-order-list-remove-all-button>
+        </div>
+      </div>
+    {%- endif -%}
+  </quick-order-list>
+  <template id="QuickOrderListErrorTemplate-{{ section.id }}">
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      class="icon icon-error"
+      viewBox="0 0 13 13"
+    >
+      <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
+      <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
+      <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
+      <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
+    </svg>
+    <span class="quick-order-list-error-message caption-large" role="alert"></span>
+  </template>
+</div>
+
+{% schema %}
+{
+  "name": "test",
+  "tag": "section",
+  "class": "section",
+  "presets": [
+    {
+      "name": "t:sections.page.presets.name"
+    }
+  ]
+}
+{% endschema %}

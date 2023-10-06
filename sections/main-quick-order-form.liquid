@@ -2,8 +2,11 @@
 {{ 'quick-order-list.css' | asset_url | stylesheet_tag }}
 {{ 'component-facets.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'main-search.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'quick-order-form.js' | asset_url }}" defer="defer"></script>
 
-<div id="quick-order-form" data-id="{{ section.id }}">
+<quick-order-form id="quick-order-form" data-id="{{ section.id }}">
+  <div class="shop-name" data-name="{{ shop.domain }}"></div>
+  <button class="results">Results</button>
   <main-search>
     <form action="{{ routes.search_url }}" method="get" role="search" class="search">
       <div class="field">
@@ -144,8 +147,14 @@
               results: collections.all,
               enable_filtering: true,
               enable_sorting: false,
-              filter_type: 'horizontal'
+              filter_type: 'drawer'
             %}
+            {%- liquid
+              assign current_count = 5
+              if collections.all.products.size < 5
+                assign current_count = collections.all.products.size
+              endif
+            -%}
             {%- paginate collections.all.products by 5 -%}
               {%- for product in collections.all.products -%}
                 <tr>
@@ -160,13 +169,40 @@
                   -%}
                 {%- endfor -%}
               {%- endfor -%}
-              <tr>
-                <td>{% render 'pagination', paginate: paginate %}</td>
-              </tr>
+              {% comment %}
+                <tr>
+                  <td>{% render 'pagination', paginate: paginate %}</td>
+                </tr>
+              {% endcomment %}
             {%- endpaginate -%}
           </tbody>
         </table>
+        {% assign view_more_url = canonical_url | append: '?&page=[pagination]' %}
+        <div id="view-more-container" class="section-padding page-width no-js-hidden center">
+          <button
+            id="view-more-button"
+            class="button button--secondary button--secondary-light"
+            data-view-more-step="{{ current_count }}"
+            data-view-more-current="{{ current_count }}"
+            data-view-more-max="{{ collections.all.products.size }}"
+            data-view-more-next="{{ view_more_url }}"
+          >
+            View more
+            <div class="loading-overlay__spinner hidden">
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                role="presentation"
+                class="spinner"
+                viewBox="0 0 66 66"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+              </svg>
+            </div>
+          </button>
+        </div>
       </div>
     </div>
   </form>
-</div>
+</quick-order-form>
