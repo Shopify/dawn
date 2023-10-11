@@ -1,0 +1,132 @@
+{% liquid
+    assign image_alt = '#vol_' | append: index
+    assign image = card_product.media | where: 'alt', image_alt
+    
+    if json_item != blank and variant == blank
+        assign saved_base_price = card_product.compare_at_price | default: card_product.price
+        assign qty = json_item.price_name | replace: '+', '' | plus: 0
+        assign jsonPrice = json_item.price_value | times: 100
+        assign product_id = card_product.selected_or_first_available_variant.id
+    else
+        assign saved_base_price = variant.compare_at_price | default: variant.price
+        assign qty = 1
+        assign product_id = variant.id
+    endif
+%}
+
+<div class="quick-product-box center" data-variant-id="{{ product_id }}" data-qty="{{ qty }}">
+    <div class="product-title">
+        {% if card_product.has_only_default_variant %}
+            <h3>{{ 12 | times: qty }} Zones</h3>
+        {% else %}
+            <h3>{{ variant.title }} Zones</h3>
+        {% endif %}
+    </div>
+    {% if image.size > 0 and variant == blank %}
+      <div
+        class="media media--transparent media--adapt"
+        style="padding-bottom: {{ 1 | divided_by: image[0].aspect_ratio | times: 100 }}%;"
+      >
+        {%- liquid
+          assign number_of_columns = 1
+          assign number_of_columns_mobile = 1
+          assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+          assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+          assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+          assign image_width = 1
+        -%}
+        {% capture sizes %}
+          (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+          (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+          (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+          calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+        {% endcapture %}
+        {{
+          image[0]
+          | image_url: width: 3200
+          | image_tag:
+            loading: 'lazy',
+            widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+            sizes: sizes
+        }}
+      </div>
+    {% else %}
+        <div
+            class="media media--transparent media--adapt"
+            style="padding-bottom: {{ 1 | divided_by: variant.featured_image.aspect_ratio | times: 100 }}%;"
+        >
+            {%- liquid
+            assign number_of_columns = 1
+            assign number_of_columns_mobile = 1
+            assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+            assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+            assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+            assign image_width = 1
+            -%}
+            {% capture sizes %}
+            (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+            (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+            (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+            calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+            {% endcapture %}
+            {{
+            variant.featured_image
+            | image_url: width: 3200
+            | image_tag:
+                loading: 'lazy',
+                widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                sizes: sizes
+            }}
+        </div>
+    {% endif %}
+
+            {% if variant != blank %}
+                <div class="price price--large {% if variant.compare_at_price > variant.price %}price--on-sale{% endif %} price--show-badge">
+                    <div class="price__container">
+                        {% if variant.compare_at_price > variant.price %}
+                            <div class="price__sale swap-flex">
+                                <span>
+                                    <s class="price-item price-item--regular">{{ variant.price | money_without_trailing_zeros }}</s>
+                                </span>
+                                <span class="price-item price-item--sale price-item--last">{{ variant.compare_at_price | money_without_trailing_zeros }}</span>
+                            </div>
+                        {% else %}
+                            <div class="price__regular">
+                                <span class="visually-hidden visually-hidden--inline">{{ 'products.product.price.regular_price' | t }}</span>
+                                <span class="price-item price-item--regular">
+                                {{ variant.price | money_without_trailing_zeros }}
+                                </span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% if variant.compare_at_price > variant.price %}
+                        <span class="badge price__badge-sale badge-sale color-accent-2">Save {{ variant.compare_at_price | minus:  variant.price | times: 100 | divided_by: variant.compare_at_price | round }}%</span>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="price price--large {% if saved_base_price > jsonPrice %}price--on-sale{% endif %} price--show-badge">
+                    <div class="price__container">
+                        {% if saved_base_price > jsonPrice %}
+                            <div class="price__sale swap-flex">
+                                <span>
+                                    <s class="price-item price-item--regular">{{ saved_base_price | money_without_trailing_zeros }}</s>
+                                </span>
+                                <span class="price-item price-item--sale price-item--last">{{ jsonPrice | money_without_trailing_zeros }}</span>
+                            </div>
+                        {% else %}
+                            <div class="price__regular">
+                                <span class="visually-hidden visually-hidden--inline">{{ 'products.product.price.regular_price' | t }}</span>
+                                <span class="price-item price-item--regular">
+                                {{ card_product.price | money_without_trailing_zeros }}
+                                </span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% if saved_base_price > jsonPrice %}
+                      <span class="badge price__badge-sale badge-sale color-accent-2">Save {{ saved_base_price | minus: jsonPrice | times: 100 | divided_by: saved_base_price | round }}%</span>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+    {% render 'buy-buttons', section_id: section.id, product: card_product %}
+</div>
