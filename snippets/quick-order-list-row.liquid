@@ -14,13 +14,13 @@
 {% # theme-check-enable %}
 
 <tr
-  class="variant-item{% unless section.settings.show_image %} variant-item--no-media{% endunless %}{% if item.available and item.unit_price_measurement %} variant-item--unit-price{% endif %}"
+  class="variant-item{% if is_variant == nil %} product{% endif %}{% unless section.settings.show_image %} variant-item--no-media{% endunless %}{% if item.available and item.unit_price_measurement %} variant-item--unit-price{% endif %}"
   id="Variant-{{ variant.id }}"
   data-variant-id="{{ variant.id }}"
   data-cart-qty="{{ cart_qty }}"
 >
   <td class="variant-item__inner{% unless sku and section.settings.show_sku %} variant-item__inner--no-sku{% endunless %}">
-    {%- if section.settings.show_image -%}
+    {%- if section.settings.show_image and is_variant != true -%}
       <div class="variant-item__media">
         <div class="variant-item__image-container gradient global-media-settings{% unless image %} variant-item__image-container--no-img {% endunless %}">
           {% if image %}
@@ -45,8 +45,12 @@
     {%- endif -%}
     <div class="small-hide medium-hide">
       <span class="variant-item__name h4 break">{{ item.title | escape }}</span>
-      {%- if section.settings.show_sku -%}
-        <span class="variant-item__sku break">{{ sku | escape }}</span>
+      {%- if is_variant -%}
+        {%- if section.settings.show_sku -%}
+          <span class="variant-item__sku break">{{ sku | escape }}</span>
+        {%- endif -%}
+      {%- else -%}
+        <span class="price">$129.00</span>
       {%- endif -%}
     </div>
   </td>
@@ -163,7 +167,7 @@
 
   {%- if is_variant -%}
     <td class="variant-item__totals right large-up-hide">
-      {%- render 'loading-overlay' -%}
+      {%- render 'loading-spinner' -%}
       {% comment %} TODO: enable theme-check once `line_items_for` is accepted as valid filter {% endcomment %}
       {% # theme-check-disable %}
       <span class="price">{{ cart | line_items_for: item | sum: 'original_line_price' | money }}</span>
