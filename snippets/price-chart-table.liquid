@@ -1,27 +1,38 @@
 {% if product.metafields.custom.price_chart != blank %}
+    {% assign saved_base_price = product.compare_at_price | default: product.price %}
     <div class="table-price-chart center">
         <table>
             <tbody>
                 <tr>
-                    <th>Retail Price</th>
-                    <th>Partner Price</th>
+                    {% if product.type == 'Wholesale' %}
+                        <th>Retail Price</th>
+                        <th>Partner Price</th>
+                    {% else %}
+                        <th>1</th>
+                    {% endif %}
                     {% for i in product.metafields.custom.price_chart.value %}
                         <th>{{ i.price_name }} {% if i.price_subtitle != blank %}<small class="chart-subtitle">{{ i.price_subtitle }}</small>{% endif %}</th>
                     {% endfor %}
                 </tr>
                 <tr>
-                    <td>
-                        <span class="price table--price">{{ product.compare_at_price | money_without_trailing_zeros }}</span>
-                    </td>
-                    <td>
-                        <span class="price partner--price">{{ product.price | money_without_trailing_zeros }}</span>
-                        <span class="badge badge-chart badge-sale">save {{ product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price }}%</span>
-                    </td>
+                    {% if product.type == 'Wholesale' %}
+                        <td>
+                            <span class="price table--price">{{ saved_base_price | money_without_trailing_zeros }}</span>
+                        </td>
+                        <td>
+                            <span class="price partner--price">{{ product.price | money_without_trailing_zeros }}</span>
+                            <span class="badge badge-chart badge-sale">save {{ saved_base_price | minus: product.price | times: 100 | divided_by: saved_base_price }}%</span>
+                        </td>
+                    {% else %}
+                        <td>
+                            <span class="price table--price">{{ product.price | money_without_trailing_zeros }}</span>
+                        </td>
+                    {% endif %}
                     {% for i in product.metafields.custom.price_chart.value %}
                         {% assign custom_price = i.price_value | times: 100.0 %}
                         <td>
                             <span class="price table--price">{{ custom_price | money_without_trailing_zeros }}</span>
-                            <span class="badge badge-chart badge-sale">save {{ product.compare_at_price | minus: custom_price | times: 100 | divided_by: product.compare_at_price | round }}%</span>
+                            <span class="badge badge-chart badge-sale">save {{ saved_base_price | minus: custom_price | times: 100 | divided_by: saved_base_price | round }}%</span>
                         </td>
                     {% endfor %}
                 </tr>
