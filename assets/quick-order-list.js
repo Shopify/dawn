@@ -180,7 +180,7 @@ class QuickOrderList extends HTMLElement {
   }
 
   updateMultipleQty(items) {
-    this.querySelector('.variant-remove-total .loading-overlay').classList.remove('hidden');
+    this.querySelector('.variant-remove-total .loading__spinner').classList.remove('hidden');
 
     const body = JSON.stringify({
       updates: items,
@@ -202,7 +202,7 @@ class QuickOrderList extends HTMLElement {
         this.setErrorMessage(window.cartStrings.error);
       })
       .finally(() => {
-        this.querySelector('.variant-remove-total .loading-overlay').classList.add('hidden');
+        this.querySelector('.variant-remove-total .loading__spinner').classList.add('hidden');
       });
   }
 
@@ -245,8 +245,8 @@ class QuickOrderList extends HTMLElement {
         const items = document.querySelectorAll('.variant-item');
 
         if (parsedState.description || parsedState.errors) {
-          const variantItem = document.querySelector(`[id^="Variant-${id}"] .variant-item__totals.small-hide .loading-overlay`);
-          variantItem.classList.add('loading-overlay--error');
+          const variantItem = document.querySelector(`[id^="Variant-${id}"] .variant-item__totals.small-hide .loading__spinner`);
+          variantItem.classList.add('loading__spinner--error');
           this.resetQuantityInput(id, quantityElement);
           if (parsedState.errors) {
             this.updateLiveRegions(id, parsedState.errors);
@@ -285,7 +285,7 @@ class QuickOrderList extends HTMLElement {
           this.updateMessage(-parseInt(quantityElement.dataset.cartQuantity))
         }
       }).catch((error) => {
-        this.querySelectorAll('.loading-overlay').forEach((overlay) => overlay.classList.add('hidden'));
+        this.querySelectorAll('.loading__spinner').forEach((overlay) => overlay.classList.add('hidden'));
         this.resetQuantityInput(id);
         console.error(error);
         this.setErrorMessage(window.cartStrings.error);
@@ -375,7 +375,7 @@ class QuickOrderList extends HTMLElement {
 
   toggleLoading(id, enable) {
     const quickOrderList = document.getElementById(this.quickOrderListId);
-    const quickOrderListItems = this.querySelectorAll(`#Variant-${id} .loading-overlay`);
+    const quickOrderListItems = this.querySelectorAll(`#Variant-${id} .loading__spinner`);
 
     if (enable) {
       quickOrderList.classList.add('quick-order-list__container--disabled');
