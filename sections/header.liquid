@@ -370,18 +370,24 @@
       this.hideHeaderOnScrollUp = () => this.preventReveal = true;
 
       this.addEventListener('preventHeaderReveal', this.hideHeaderOnScrollUp);
-      window.addEventListener('scroll', this.onScrollHandler, false);
+      window.addEventListener('scroll', this.updateHeaderHeight.bind(this), false);
 
       this.createObserver();
+      this.createMutationObserver();
     }
 
     setHeaderHeight() {
       document.documentElement.style.setProperty('--header-height', `${this.header.offsetHeight}px`);
     }
 
+    updateHeaderHeight() {
+      this.setHeaderHeight();
+      this.onScrollHandler();
+    }
+
     disconnectedCallback() {
       this.removeEventListener('preventHeaderReveal', this.hideHeaderOnScrollUp);
-      window.removeEventListener('scroll', this.onScrollHandler);
+      window.removeEventListener('scroll', this.updateHeaderHeight.bind(this));
     }
 
     createObserver() {
@@ -449,6 +455,26 @@
     closeSearchModal() {
       this.searchModal = this.searchModal || this.header.querySelector('details-modal');
       this.searchModal.close(false);
+    }
+
+    // Adjusts quick order list table headers' position based on header visibility
+    createMutationObserver() {
+      const observer = new MutationObserver((mutationsList, observer) => {
+        for(let mutation of mutationsList) {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            const isHeaderHidden = this.header.classList.contains('shopify-section-header-hidden');
+            const stickyTableHeaders = document.querySelectorAll('.quick-order-list__table--sticky thead th');
+
+            if (stickyTableHeaders.length > 0) {
+              stickyTableHeaders.forEach(header => {
+                header.style.top = isHeaderHidden ? '0' : 'var(--header-height)';
+              });
+            }
+          }
+        }
+      });
+
+      observer.observe(this.header, { attributes: true });
     }
   }
 

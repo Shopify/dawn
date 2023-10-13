@@ -389,4 +389,59 @@ class QuickOrderList extends HTMLElement {
   }
 }
 
+// Temporary for quick order list sticky header rows
+document.addEventListener('DOMContentLoaded', function () {
+  let currentOption1 = null;
+  const variantItemTitle = document.querySelector('.variant-title');
+  const originalTableHeaderTitle = variantItemTitle.textContent; // Store the original title
+
+  // Check if a variant item is at the top of the viewport
+  function isAtTop(element) {
+    const rect = element.getBoundingClientRect();
+    const stickyHeaderHeight =
+      parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height'), 10) || 0;
+    return rect.top <= stickyHeaderHeight;
+  }
+
+  // Update variant title and image
+  function updateHeader(id) {
+    const variantTitle = id ? document.querySelector(`#${id}`).dataset.variantTitle : originalTableHeaderTitle;
+    const variantImage = id ? document.querySelector(`#${id}`).dataset.variantImage : "";
+
+    if (variantTitle !== currentOption1) {
+      variantItemTitle.textContent = variantTitle;
+      const variantTitleContainer = document.querySelector('.variant-title');
+      let variantImageContainer = variantTitleContainer.querySelector('.variant-image__container');
+
+      if (!variantImageContainer) {
+        variantImageContainer = document.createElement('div');
+        variantImageContainer.className = 'variant-image__container';
+        variantTitleContainer.insertBefore(variantImageContainer, variantTitleContainer.firstChild);
+      }
+
+      if (variantImage) {
+        variantImageContainer.innerHTML = ''; // Clear the variantImageContainer
+        const newImageElement = document.createElement('img');
+        newImageElement.src = variantImage;
+        newImageElement.className = 'variant-title__image';
+        variantImageContainer.appendChild(newImageElement); // Append the new img element
+      }
+      currentOption1 = variantTitle;
+    }
+  }
+
+  function checkVariantItems() {
+    const stickyVariantItems = document.querySelectorAll('.quick-order-list__table--sticky .variant-item[id]');
+    let lastVisibleVariantId = null;
+    for (let i = 0; i < stickyVariantItems.length; i++) {
+      if (isAtTop(stickyVariantItems[i])) {
+        lastVisibleVariantId = stickyVariantItems[i].getAttribute('id');
+      }
+    }
+    updateHeader(lastVisibleVariantId);
+  }
+
+  window.addEventListener('scroll', checkVariantItems);
+});
+
 customElements.define('quick-order-list', QuickOrderList);
