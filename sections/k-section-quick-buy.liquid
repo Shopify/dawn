@@ -1,170 +1,157 @@
-<link rel="stylesheet" href="{{ 'k-quick-buy-styles.css' | asset_url }}" media="print" onload="this.media='all'">
+{% unless product.type == 'Wholesale' %}
+  {{ 'k-quick-buy-styles.css' | asset_url | stylesheet_tag }}
+  {{ 'component-card.css' | asset_url | stylesheet_tag }}
 
-{% assign background_color = "bg-" | append: section.settings.background_color %}
-{% assign heading_color = "brand-" | append: section.settings.heading_color %}
-{% assign heading_font_weight = "font-weight-" | append: section.settings.heading_font_weight %}
+  {%- style -%}
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+      padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    }
 
-  <div class="quick-buy {{background_color}}">
-    <div class="quick-buy-box page-width">
+    @media screen and (min-width: 750px) {
+      .section-{{ section.id }}-padding {
+        padding-top: {{ section.settings.padding_top }}px;
+        padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+    }
+  {%- endstyle -%}
 
-      <div class="quick-buy-content page-width">
-          <div class="quick-buy-title">
-            <h2 class="{{heading_color}} {{heading_font_weight}}">{{section.settings.heading}}</h2>
+  <div class="color-{{ section.settings.color_scheme }} isolate gradient">
+    <div class="section-{{ section.id }}-padding">
+      <div class="quick-buy">
+        <div class="page-width">
+          <div class="title-wrapper-with-link justify-center title-wrapper--self-padded-mobile title-wrapper--no-top-margin">
+            {% if section.settings.title != blank %}
+              <h2 class="title inline-richtext {{ section.settings.heading_size }} ">
+                {{ section.settings.title }}
+              </h2>
+            {% endif %}
+            {% if section.settings.description != blank %}
+              <div class="collection__description center rte  {{ section.settings.description_style }}  {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+                {{ section.settings.description }}
+              </div>
+            {%- endif -%}
           </div>
-          <div class="quick-buy-description">
-            <p>
-              {{section.settings.description}}
-            </p>
-          </div>
-      </div>
-
-      <div class="quick-variants page-width">
-        
-        {% if product.has_only_default_variant %}
-          <!-- Pro kits with Quantity Breaks-->
-          {% assign quantity_breaks = "1|0|8,2|1000|9,3|2000|10,5|3000|11" | split: "," %}
-          {% for qty_discount in quantity_breaks %}
-            {% assign qty = qty_discount | split: "|" %}
-            <div class="quick-product-box" data-variant-id="{{ product.selected_or_first_available_variant.id }}" data-qty="{{ qty[0] }}">
-              <div class="product-title">
-                <h3>{{ 12 | times: qty[0] }} Zones</h3>
+            {% if product.has_only_default_variant %}
+              <!-- Pro kits with Quantity Breaks-->
+              {% assign grid_size = product.metafields.custom.price_chart.value.size | plus: 1 %}
+              <div class="grid grid--{{ grid_size }}-col-desktop grid--2-col-tablet-down">
+                <div class="grid__item">
+                  {% render 'card-quick-buy', card_product: product, variant: product.selected_or_first_available_variant, index: forloop.index0 %}
+                </div>
+                {% for i in product.metafields.custom.price_chart.value %}
+                  <div class="grid__item">
+                    {% render 'card-quick-buy', card_product: product, json_item: i, index: forloop.index %}
+                  </div>
+                {% endfor %}
               </div>
-              {% assign img_index = qty[2] | times: 1 %}
-              <img src="{{product.images[img_index] | img_url:'master'}}">
-              <div class="price product-price">
-                <span class="product-price__price">{{ product.price | minus: qty[1] | times: qty[0] | money_without_trailing_zeros }}
-                  </span>
-                  {% assign discount = qty[1] | times: qty[0] %}
-                  {% if discount > 0 %}
-                  <span class="product-price__sale-label">Save
-                    {{ discount | money_without_trailing_zeros }}
-                  </span>
-                  {% endif %}
+            {% else %}
+              <!-- Regular Product Variants / Starter kits -->
+              <div class="grid grid--{{ product.variants.size }}-col-desktop grid--2-col-tablet-down">
+                {% for variant in product.variants %}
+                  <div class="grid__item">
+                      {% render 'card-quick-buy', card_product: product, variant: variant, index: forloop.index0 %}
+                  </div>
+                {% endfor %}
               </div>
-              {% render 'buy-buttons', product: product %}
-            </div>
-          {% endfor %}
-
-        {% else %}
-        <!-- Regular Product Variants / Starter kits -->
-          {% for variant in product.variants %}        
-            <div class="quick-product-box" data-variant-id="{{ variant.id }}">
-              <div class="product-title">
-                <h3>{{ variant.title }}</h3>
-              </div>
-              <img src="{{variant.image | img_url:'master'}}">
-              <div class="price product-price">
-                {% if qb_variant_min > 1 %}
-                  <span class="product-price__price">{{variant.price | times: qb_variant_min | money_without_trailing_zeros }}
-                  </span>
-                  <span class="shipdelay">Save
-                    {{ variant.price | minus: product.selected_or_first_available_variant.compare_at_price | times: qb_variant_min | abs | money_without_trailing_zeros }}
-                  </span>
-                {% else %}
-                  <span class="product-price__price">{{variant.price | money_without_trailing_zeros }}
-                  </span>
-                  {% if variant.compare_at_price > variant.price %}
-                    <span class="product-price__sale-label">{{ 'products.product.on_sale' | t }}</span>                
-                  {% endif %}
-                {% endif %}
-              </div>
-              {% render 'buy-buttons', product: product %}            
-            </div>
-          {% endfor %}
-        {% endif  %}
+            {% endif  %}
+        </div>
       </div>
     </div>
   </div>
+
   <script>
-    $('.quick-product-box', '.quick-variants').each(function(i){
-      let $this = $(this);
-      $('input.product-variant-id', this).val($this.data('variant-id'));
-      if ($this.data('qty')) {
-        $('form', this).append( $('<input></input>').attr('type', 'hidden').attr('name', 'quantity').val($this.data('qty')) );
+    // Get all elements with class 'quick-product-box' within elements with class 'quick-variants'
+    var quickProductBoxes = document.querySelectorAll('.quick-product-box');
+
+    // Loop through each element
+    quickProductBoxes.forEach(function(element, i) {
+      // Get the current element
+      var thisElement = element;
+
+      // Find the input element with class 'product-variant-id' within the current element
+      var variantIdInput = thisElement.querySelector('input.product-variant-id');
+
+      // Set the 'value' of the input element to the 'data-variant-id' attribute value
+      variantIdInput.value = thisElement.dataset.variantId;
+
+      // Check if the element has a 'data-qty' attribute
+      if (thisElement.dataset.qty) {
+        // Create a new hidden input element
+        var quantityInput = document.createElement('input');
+        quantityInput.type = 'hidden';
+        quantityInput.name = 'quantity';
+        quantityInput.value = thisElement.dataset.qty;
+
+        // Find the form element within the current element
+        var formElement = thisElement.querySelector('form');
+
+        // Append the new hidden input element to the form
+        formElement.appendChild(quantityInput);
       }
     });
   </script>
+{% endunless %}
 
 {% schema %}
   {
     "name": "Quick Buy",
     "settings": [
       {
-        "type": "select",
-        "id": "background_color",
-        "label": "Background Color",
-        "default": "white",
-        "options": [
-          {
-            "value": "white",
-            "label": "White"
-          }, {
-            "value": "lighter-blue",
-            "label": "Blue"
-          }
-        ]
-      },
-      {
-        "id": "heading",
-        "type": "text",
-        "label": "Heading",
-        "default": "Title"
+        "type": "inline_richtext",
+        "id": "title",
+        "default": "Featured collection",
+        "label": "t:sections.featured-collection.settings.title.label"
       },
       {
         "type": "select",
-        "id": "heading_color",
-        "label": "Heading Font Color",
-        "default": "blue",
+        "id": "heading_size",
         "options": [
           {
-            "value": "blue",
-            "label": "Blue"
+            "value": "h2",
+            "label": "t:sections.all.heading_size.options__1.label"
           },
           {
-            "value": "dark-blue",
-            "label": "Dark Blue"
+            "value": "h1",
+            "label": "t:sections.all.heading_size.options__2.label"
           },
           {
-            "value": "gray",
-            "label": "Gray"
-          },
-          {
-            "value": "dark-gray",
-            "label": "Dark Gray"
-          }, {
-            "value": "white",
-            "label": "White"
-          }, {
-            "value": "dark",
-            "label": "Dark"
+            "value": "h0",
+            "label": "t:sections.all.heading_size.options__3.label"
           }
-        ]
+        ],
+        "default": "h1",
+        "label": "t:sections.all.heading_size.label"
+      },
+      {
+        "type": "richtext",
+        "id": "description",
+        "label": "t:sections.featured-collection.settings.description.label"
       },
       {
         "type": "select",
-        "id": "heading_font_weight",
-        "label": "Paragraph Heading Font Weight",
-        "default": "bold",
+        "id": "description_style",
+        "label": "t:sections.featured-collection.settings.description_style.label",
         "options": [
           {
-            "value": "light",
-            "label": "Light"
-          }, {
-            "value": "regular",
-            "label": "Regular"
-          }, {
-            "value": "bold",
-            "label": "Bold"
+            "value": "body",
+            "label": "t:sections.featured-collection.settings.description_style.options__1.label"
+          },
+          {
+            "value": "subtitle",
+            "label": "t:sections.featured-collection.settings.description_style.options__2.label"
+          },
+          {
+            "value": "uppercase",
+            "label": "t:sections.featured-collection.settings.description_style.options__3.label"
           }
-        ]
-      },{
+        ],
+        "default": "body"
+      },
+      {
         "id": "image",
         "type": "image_picker",
         "label": "Image"
-      }, {
-        "id": "description",
-        "type": "textarea",
-        "label": "Section Description"
       }
     ],
     "presets": [
