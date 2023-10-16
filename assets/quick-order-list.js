@@ -67,8 +67,7 @@ class QuickOrderList extends HTMLElement {
       add: 'ADD',
       update: 'UPDATE'
     }
-    this.id = this.dataset.id
-    this.quickOrderListId = `${this.id}`
+    this.quickOrderListId = this.dataset.id;
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
     const form = this.querySelector('form');
 
@@ -95,6 +94,7 @@ class QuickOrderList extends HTMLElement {
       this.onCartUpdate();
     });
     this.sectionId = this.dataset.id;
+
   }
 
   disconnectedCallback() {
@@ -123,7 +123,7 @@ class QuickOrderList extends HTMLElement {
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
-        const sourceQty = html.querySelector(this.quickOrderListId);
+        const sourceQty = html.querySelector(`#${this.quickOrderListId}`);
         this.innerHTML = sourceQty.innerHTML;
       })
       .catch(e => {
