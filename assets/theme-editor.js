@@ -1,3 +1,8 @@
+function addCSSClass() {
+  document.querySelector('body').classList.add('theme-editor');
+}
+addCSSClass();
+
 function hideProductModal() {
   const productModal = document.querySelectorAll('product-modal[open]');
   productModal && productModal.forEach((modal) => modal.hide());
