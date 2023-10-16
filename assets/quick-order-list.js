@@ -67,7 +67,8 @@ class QuickOrderList extends HTMLElement {
       add: 'ADD',
       update: 'UPDATE'
     }
-    this.quickOrderListId = 'quick-order-list'
+    this.id = this.dataset.id
+    this.quickOrderListId = `${this.id}`
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
     const form = this.querySelector('form');
 
