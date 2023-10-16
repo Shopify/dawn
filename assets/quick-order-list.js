@@ -94,6 +94,7 @@ class QuickOrderList extends HTMLElement {
       this.onCartUpdate();
     });
     this.sectionId = this.dataset.id;
+
   }
 
   disconnectedCallback() {
