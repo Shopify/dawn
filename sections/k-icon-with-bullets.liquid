@@ -1,117 +1,106 @@
 <link rel="stylesheet" href="{{ 'k-icon-with-bullets-styles.css' | asset_url }}" media="print" onload="this.media='all'">
 
-{% assign background_color = "bg-" | append: section.settings.background_color %}
-{% assign img_placement = section.settings.icon_placement %}
-{% assign alt_heading_color = "brand-" | append: section.settings.alt_heading_color %}
-{% assign alt_heading_font_weight = "font-weight-" | append: section.settings.alt_heading_font_weight %}
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: calc({{ section.settings.padding_top }}px * 0.75);
+    padding-bottom: calc({{ section.settings.padding_bottom }}px  * 0.75);
+  }
 
-<div class="icon-w-bul {{background_color}}">
-  {% if section.settings.heading != blank or section.settings.subheading != blank %}
-    {% render 'headings' %}
-  {% endif %}
-  <div class="icon-w-bul-container page-width">
-    {% if img_placement == "left" %}
-    <div class="icon-main-grid">
-      {% for block in section.blocks %}
-        <div class="icon-w-bul-icon">
-          <div class="block-icon">
-            <img src="{{block.settings.image | img_url:'1920x'}}" alt="">
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <div class="section-{{ section.id }}-padding">
+    <div class="icon-w-bul">
+      <div class="page-width">
+        <div class="grid align-center grid--1-col-tablet-down grid--2-col-desktop">
+          <div class="grid__item">
+            <div class="icon-main-grid">
+              {% for block in section.blocks %}
+                <div class="icon-w-bul-icon">
+                  <div class="block-icon" style="--icon-bg: {{ section.settings.icons_bg }};">
+                    {%- liquid
+                      assign number_of_columns = 1
+                      assign number_of_columns_mobile = 1
+                      assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                      assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                      assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+                      assign image_width = 1
+                    -%}
+                    {% capture sizes %}
+                      (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+                      (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+                      (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+                      calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+                    {% endcapture %}
+                    {{
+                      block.settings.image
+                      | image_url: width: 300
+                      | image_tag:
+                        loading: 'lazy',
+                        widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                        sizes: sizes
+                    }}
+                  </div>
+                  <div class="icon-text text-center">
+                    <small>{{ block.settings.icon-title }}</small>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
           </div>
-          <div class="icon-text text-center">
-            <p>{{ block.settings.icon-title }}</p>
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-
-    <div class="icon-w-bul-content-container">
-      <div class="icon-w-bul-text">
-        <h3 class="{{alt_heading_color}} {{alt_heading_font_weight}}">{{ section.settings.alt_heading }}</h3>
-
-        <p class="">
-          {{ section.settings.text_description }}
-        </p>
-        <ul class="icon-w-bul-list">
-          {% assign paragraphs = section.settings.text_list | newline_to_br | split: '<br />' %}
-          {% for text in paragraphs %}
-            <li class="flex">
-              <div class="checkmark">
-                <span class="brand-blue">
-                  &#10003;
-                </span>
+          <div class="grid__item">
+            <div class="icon-w-bul-content-container">
+              <div class="icon-w-bul-text">
+                {%- unless section.settings.title == blank -%}
+                  <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin">
+                    <h2 class="title inline-richtext {{ section.settings.heading_size }}">
+                      {{ section.settings.title }}
+                    </h2>
+                  </div>
+                {%- endunless -%}
+                {%- if section.settings.description != blank -%}
+                  <div class="{{ section.settings.description_style }} rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+                      {{ section.settings.description -}}
+                  </div>
+                {%- endif -%}
+                <ul class="icon-w-bul-list">
+                  {% assign paragraphs = section.settings.text_list | newline_to_br | split: '<br />' %}
+                  {% for text in paragraphs %}
+                    <li class="flex">
+                      <div class="checkmark">
+                        <span class="brand-blue">
+                          &#10003;
+                        </span>
+                      </div>
+                      <div class="checkmark-text">{{ text }}</div>
+                    </li>
+                  {% endfor %}
+                </ul>
               </div>
-              <div class="checkmark-text">{{ text }}</div>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
-
-      {% comment %} WARNING {% endcomment %}
-      <div class="safety-warning">
-        <div class="warning-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>alert-outline</title><path d="M12,2L1,21H23M12,6L19.53,19H4.47M11,10V14H13V10M11,16V18H13V16" /></svg>
-        </div>
-        <div class="warning-description">
-          <p>{{ section.settings.text_warning }}</p>
-        </div>
-      </div>
-      {% comment %}
-      END OF WARNING
-      {% endcomment %}
-    </div>
-    {% endif %}
-
-    {% if img_placement == "right" %}
-    <div class="icon-w-bul-content-container">
-      <div class="icon-w-bul-text">
-        <h3 class="{{alt_heading_color}} {{alt_heading_font_weight}}">{{ section.settings.alt_heading }}</h3>
-
-        <p class="">
-          {{ section.settings.text_description }}
-        </p>
-        <ul class="icon-w-bul-list">
-          {% assign paragraphs = section.settings.text_list | newline_to_br | split: '<br />' %}
-          {% for text in paragraphs %}
-            <li class="flex">
-              <div class="checkmark">
-                <span class="brand-blue">
-                  &#10003;
-                </span>
-              </div>
-              <div class="checkmark-text">{{ text }}</div>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
-
-      {% comment %} WARNING {% endcomment %}
-      <div class="safety-warning">
-        <div class="warning-icon">
-          <i class="fa fa-regular fa-exclamation-triangle"></i>
-        </div>
-        <div class="warning-description">
-          <p>{{ section.settings.text_warning }}</p>
-        </div>
-      </div>
-      {% comment %}
-      END OF WARNING
-      {% endcomment %}
-    </div>
-
-    <div class="icon-main-grid">
-      {% for block in section.blocks %}
-        <div class="icon-w-bul-icon">
-          <div class="block-icon">
-            <img src="{{block.settings.image | img_url:'1920x'}}" alt="">
-          </div>
-          <div class="icon-text text-center">
-            <p>{{ block.settings.icon-title }}</p>
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-    {% endif %}
     
+              {% comment %} WARNING {% endcomment %}
+              <div class="safety-warning">
+                <div class="warning-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>alert-outline</title><path d="M12,2L1,21H23M12,6L19.53,19H4.47M11,10V14H13V10M11,16V18H13V16" /></svg>
+                </div>
+                <div class="warning-description">
+                  <p>{{ section.settings.text_warning }}</p>
+                </div>
+              </div>
+              {% comment %}
+              END OF WARNING
+              {% endcomment %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -120,104 +109,63 @@
     "name": "Icons With Bullets",
     "settings": [
       {
-        "type": "select",
-        "id": "background_color",
-        "label": "Background Color",
-        "default": "white",
-        "options": [
-          {
-            "value": "white",
-            "label": "White"
-          }, {
-            "value": "lighter-blue",
-            "label": "Blue"
-          }
-        ]
+        "type": "inline_richtext",
+        "id": "title",
+        "default": "Multicolumn",
+        "label": "t:sections.multicolumn.settings.title.label"
       },
       {
         "type": "select",
-        "id": "icon_placement",
-        "label": "Icons Placement",
-        "default": "left",
+        "id": "heading_size",
         "options": [
           {
-            "value": "right",
-            "label": "Right"
-          }, {
-            "value": "left",
-            "label": "Left"
-          }
-        ]
-      },
-      {
-        "id": "image",
-        "type": "image_picker",
-        "label": "Image Left"
-      },{
-        "id": "heading",
-        "type": "text",
-        "label": "Heading",
-        "default": "Title"
-      },
-      {
-        "id": "alt_heading",
-        "type": "text",
-        "label": "Paragraph Heading",
-        "default": "Paragraph Heading"
-      }, 
-      {
-        "type": "select",
-        "id": "alt_heading_color",
-        "label": "Heading Font Color",
-        "default": "blue",
-        "options": [
-          {
-            "value": "blue",
-            "label": "Blue"
+            "value": "h2",
+            "label": "t:sections.all.heading_size.options__1.label"
           },
           {
-            "value": "dark-blue",
-            "label": "Dark Blue"
+            "value": "h1",
+            "label": "t:sections.all.heading_size.options__2.label"
           },
           {
-            "value": "gray",
-            "label": "Gray"
-          },
-          {
-            "value": "dark-gray",
-            "label": "Dark Gray"
-          }, {
-            "value": "white",
-            "label": "White"
-          }, {
-            "value": "dark",
-            "label": "Dark"
+            "value": "h0",
+            "label": "t:sections.all.heading_size.options__3.label"
           }
-        ]
+        ],
+        "default": "h1",
+        "label": "t:sections.all.heading_size.label"
+      },
+      {
+        "type": "richtext",
+        "id": "description",
+        "label": "t:sections.featured-collection.settings.description.label"
       },
       {
         "type": "select",
-        "id": "alt_heading_font_weight",
-        "label": "Paragraph Heading Font Weight",
-        "default": "bold",
+        "id": "description_style",
+        "label": "t:sections.featured-collection.settings.description_style.label",
         "options": [
           {
-            "value": "light",
-            "label": "Light"
-          }, {
-            "value": "regular",
-            "label": "Regular"
-          }, {
-            "value": "bold",
-            "label": "Bold"
+            "value": "body",
+            "label": "t:sections.featured-collection.settings.description_style.options__1.label"
+          },
+          {
+            "value": "subtitle",
+            "label": "t:sections.featured-collection.settings.description_style.options__2.label"
+          },
+          {
+            "value": "uppercase",
+            "label": "t:sections.featured-collection.settings.description_style.options__3.label"
           }
-        ]
+        ],
+        "default": "body"
       },
       {
-        "id": "text_description",
-        "type": "textarea",
-        "label": "Description"
-      }, {
+        "type": "color",
+        "id": "icons_bg",
+        "label": "Icons background",
+        "default": "#E6F7FE"
+      },
+      {
         "id": "text_list",
         "type": "textarea",
         "label": "List"
@@ -229,6 +177,58 @@
         "id": "image1",
         "type": "image_picker",
         "label": "warning Icon"
+      },
+      {
+        "type": "select",
+        "id": "color_scheme",
+        "options": [
+          {
+            "value": "accent-1",
+            "label": "t:sections.all.colors.accent_1.label"
+          },
+          {
+            "value": "accent-2",
+            "label": "t:sections.all.colors.accent_2.label"
+          },
+          {
+            "value": "background-1",
+            "label": "t:sections.all.colors.background_1.label"
+          },
+          {
+            "value": "background-2",
+            "label": "t:sections.all.colors.background_2.label"
+          },
+          {
+            "value": "inverse",
+            "label": "t:sections.all.colors.inverse.label"
+          }
+        ],
+        "default": "background-1",
+        "label": "t:sections.all.colors.label"
+      },
+      {
+        "type": "header",
+        "content": "t:sections.all.padding.section_padding_heading"
+      },
+      {
+        "type": "range",
+        "id": "padding_top",
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px",
+        "label": "t:sections.all.padding.padding_top",
+        "default": 40
+      },
+      {
+        "type": "range",
+        "id": "padding_bottom",
+        "min": 0,
+        "max": 100,
+        "step": 4,
+        "unit": "px",
+        "label": "t:sections.all.padding.padding_bottom",
+        "default": 52
       }
     ],
     "blocks": [
