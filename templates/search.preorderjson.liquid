@@ -1,0 +1,53 @@
+{%- layout none -%}
+{%- paginate search.results by 100 -%}
+[
+  {%- for product in search.results -%}
+    {%- unless forloop.first -%},{%- endunless -%}
+    {
+      "id":{{-product.id-}},
+      "title":{{-product.title | json-}},
+      "handle":"{{-product.handle-}}",
+      "collections":{{-product.collections | map: 'id' | json-}},
+      "images":[{%- for image in product.images -%}{%- unless forloop.first -%},{%- endunless -%}{"id":{{-image.id-}},"src":{{-image.src | json-}}}{%- endfor -%}],
+      "first_available_variant":{"id":{{product.selected_or_first_available_variant.id}}},
+      "available":{{-product.available-}},
+      "selling_plan_groups": {{- product.selling_plan_groups | json -}},
+      "variants": [
+        {%- for variant in product.variants -%}
+          {%- unless forloop.first -%},{%- endunless -%}
+          {
+            "id":{{-variant.id-}}, 
+            "title":{{-variant.title | json}},
+            "price":{{-variant.price-}},
+            "available":{{-variant.available-}},
+            "inventory_quantity":{{-variant.inventory_quantity-}},
+            "inventory_policy":{{-variant.inventory_policy | json-}},
+            "selling_plan_allocations": [
+              {%- for allocation in variant.selling_plan_allocations -%}
+                {%- unless forloop.first -%},{%- endunless -%}
+                {
+                  "price_adjustments": [
+                    {%- for adjustment in allocation.price_adjustments -%}
+                      {%- unless forloop.first -%},{%- endunless -%}
+                      {
+                        "position": {{- adjustment.position -}},
+                        "price": {{- adjustment.price | json -}}
+                      }
+                    {%- endfor -%}
+                  ],
+                  "price": {{- allocation.price | json -}},
+                  "compare_at_price": {{- allocation.compare_at_price | json -}},
+                  "per_delivery_price": {{- allocation.per_delivery_price | json -}},
+                  "selling_plan_id": {{- allocation.selling_plan.id -}},
+                  "selling_plan_group_id": "{{- allocation.selling_plan_group_id -}}"
+                }
+              {%- endfor -%}
+            ]
+          }
+        {%- endfor -%}
+      ],
+      "source": "template"
+    }
+  {%- endfor -%}
+]
+{%- endpaginate -%}
