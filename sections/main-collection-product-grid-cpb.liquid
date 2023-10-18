@@ -1,0 +1,668 @@
+{{ 'template-collection.css' | asset_url | stylesheet_tag }}
+{{ 'component-loading-overlay.css' | asset_url | stylesheet_tag }}
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+
+{% if section.settings.image_shape == 'blob' %}
+  {{ 'mask-blobs.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
+
+{%- if section.settings.enable_quick_add -%}
+  {{ 'quick-add.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'quick-add.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+  padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+  padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+  .section-{{ section.id }}-padding {
+  padding-top: {{ section.settings.padding_top }}px;
+  padding-bottom: {{ section.settings.padding_bottom }}px;
+  }
+  }
+{%- endstyle -%}
+
+{% assign cpb_main_slider = collection.metafields.custom.cpb_main_slider %}
+
+{% if current_tags %}
+  <div class="cpb-category-header page-width tw-my-5">
+    <img
+        src="https://d36vh7pxyzmz4l.cloudfront.net/images/brand/cle-de-peau-beaute/category/{{ current_tags }}.jpg"
+        alt="{{ current_tags }}" width="1400" height="350"
+        class="tw-hidden md:tw-block">
+    <h3 class="tw-text-2xl tw-font-bold tw-my-2">{{ current_tags }}</h3>
+  </div>
+  <div class="section-{{ section.id }}-padding">
+    {%- paginate collection.products by section.settings.products_per_page -%}
+      {% comment %} Sort is the first tabbable element when filter type is vertical {% endcomment %}
+      {%- if section.settings.enable_sorting and section.settings.filter_type == 'vertical' -%}
+        <facet-filters-form class="facets facets-vertical-sort page-width small-hide no-js-hidden">
+          <form class="facets-vertical-form" id="FacetSortForm">
+            <div class="facet-filters sorting caption">
+              <div class="facet-filters__field">
+                <h2 class="facet-filters__label caption-large text-body">
+                  <label for="SortBy">{{ 'products.facets.sort_by_label' | t }}</label>
+                </h2>
+                <div class="select">
+                  {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
+                  <select
+                      name="sort_by"
+                      class="facet-filters__sort select__select caption-large"
+                      id="SortBy"
+                      aria-describedby="a11y-refresh-page-message"
+                  >
+                    {%- for option in collection.sort_options -%}
+                      <option
+                          value="{{ option.value | escape }}"
+                          {% if option.value == sort_by %}
+                            selected="selected"
+                          {% endif %}
+                      >
+                        {{ option.name | escape }}
+                      </option>
+                    {%- endfor -%}
+                  </select>
+                  {% render 'icon-caret' %}
+                </div>
+              </div>
+              <noscript>
+                <button type="submit" class="facets__button-no-js button button--secondary">
+                  {{ 'products.facets.sort_button' | t }}
+                </button>
+              </noscript>
+            </div>
+
+            <div class="product-count-vertical light" role="status">
+              <h2 class="product-count__text text-body">
+              <span id="ProductCountDesktop">
+                {%- if collection.results_count -%}
+                  {{
+                  'templates.search.results_with_count'
+                  | t: terms: collection.terms, count: collection.results_count
+                  }}
+                {%- elsif collection.products_count == collection.all_products_count -%}
+                  {{ 'products.facets.product_count_simple' | t: count: collection.products_count }}
+                {%- else -%}
+                  {{
+                  'products.facets.product_count'
+                  | t: product_count: collection.products_count, count: collection.all_products_count
+                  }}
+                {%- endif -%}
+              </span>
+              </h2>
+              <div class="loading-overlay__spinner">
+                <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    class="spinner"
+                    viewBox="0 0 66 66"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+                </svg>
+              </div>
+            </div>
+          </form>
+        </facet-filters-form>
+      {%- endif -%}
+
+      <div class="{% if section.settings.filter_type == 'vertical' %} facets-vertical page-width{% endif %}">
+        {{ 'component-facets.css' | asset_url | stylesheet_tag }}
+        <script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
+        {%- if section.settings.enable_filtering or section.settings.enable_sorting -%}
+          <aside
+              aria-labelledby="verticalTitle"
+              class="facets-wrapper{% unless section.settings.enable_filtering %} facets-wrapper--no-filters{% endunless %}{% if section.settings.filter_type != 'vertical' %} page-width{% endif %}"
+              id="main-collection-filters"
+              data-id="{{ section.id }}"
+          >
+            {% render 'facets',
+                results: collection,
+                enable_filtering: section.settings.enable_filtering,
+                enable_sorting: section.settings.enable_sorting,
+                filter_type: section.settings.filter_type,
+                paginate: paginate
+            %}
+          </aside>
+        {%- endif -%}
+
+        <div
+            class="product-grid-container{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+            id="ProductGridContainer"
+            {% if settings.animations_reveal_on_scroll %}
+              data-cascade
+            {% endif %}
+        >
+          {%- if collection.products.size == 0 -%}
+            <div class="collection collection--empty page-width" id="product-grid" data-id="{{ section.id }}">
+              <div class="loading-overlay gradient"></div>
+              <div class="title-wrapper center">
+                <h2 class="title title--primary">
+                  {{ 'sections.collection_template.empty' | t -}}
+                  <br>
+                  {{
+                  'sections.collection_template.use_fewer_filters_html'
+                  | t: link: collection.url, class: 'underlined-link link'
+                  }}
+                </h2>
+              </div>
+            </div>
+          {%- else -%}
+            <div class="collection{% if section.settings.filter_type != 'vertical' %} page-width{% endif %}">
+              <div class="loading-overlay gradient"></div>
+
+              <ul
+                  id="product-grid"
+                  data-id="{{ section.id }}"
+                  class="
+                grid product-grid grid--{{ section.settings.columns_mobile }}-col-tablet-down
+                grid--{{ section.settings.columns_desktop }}-col-desktop
+              "
+              >
+                {%- for product in collection.products -%}
+                  {% assign lazy_load = false %}
+                  {%- if forloop.index > 2 -%}
+                    {%- assign lazy_load = true -%}
+                  {%- endif -%}
+                  <li
+                      class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+                      {% if settings.animations_reveal_on_scroll %}
+                        data-cascade
+                        style="--animation-order: {{ forloop.index }};"
+                      {% endif %}
+                  >
+                    {% render 'card-product',
+                        card_product: product,
+                        media_aspect_ratio: section.settings.image_ratio,
+                        image_shape: section.settings.image_shape,
+                        show_secondary_image: section.settings.show_secondary_image,
+                        show_vendor: section.settings.show_vendor,
+                        show_rating: section.settings.show_rating,
+                        lazy_load: lazy_load,
+                        show_quick_add: section.settings.enable_quick_add,
+                        section_id: section.id
+                    %}
+                  </li>
+                {%- endfor -%}
+              </ul>
+
+              {%- if paginate.pages > 1 -%}
+                {% render 'pagination', paginate: paginate, anchor: '' %}
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endpaginate -%}
+    {% if section.settings.image_shape == 'arch' %}
+      {% render 'mask-arch' %}
+    {%- endif -%}
+
+    {% render 'sp-navigation-cpb' %}
+  </div>
+{% else %}
+  <div class="page-width cpb-top mt-4">
+    <div class="cpb-main-visual tw-mb-12">
+      {% if cpb_main_slider %}
+        <swiper-container
+            :space-between="30"
+            effect="fade"
+            :loop="true"
+            :autoplay="true"
+            :pagination="{
+          el: '.swiper-pagination',
+          clickable: true
+        }"
+        >
+          {% for slide in cpb_main_slider.value %}
+            <swiper-slide class="!tw-h-auto tw-bg-white">
+            {% if slide.url.value %}<a href="{{ slide.url.value }}">{% endif %}
+                <div class="cpb-main-visual__item">
+                  <picture>
+                    <source media="(max-width: 768px)"
+                            srcset="{{ slide.img_sp.value.image | image_url: width: 1242, height: 932 }}">
+                    <img src="{{ slide.img.value.image | image_url: width: 1400, height: 500 }}"
+                         alt="{{ slide.alt.value }}">
+                  </picture>
+                  <div class="textarea {% if slide.is_text_right.value %}area-right{% endif %}">
+                    <div class="text_inner">
+                      <div class="text">
+                        <p class="tw-whitespace-pre-wrap {% if slide.is_title_white %}md:tw-text-white{% endif %}">{{ slide.title.value }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% if slide.url %}</a>{% endif %}
+            </swiper-slide>
+          {% endfor %}
+          <div class="swiper-pagination swiper-pagination-white" slot="pagination"></div>
+        </swiper-container>
+      {% endif %}
+    </div>
+    <div class="cpb-detail">
+      <div class="cpb-featured">
+        <picture>
+          <source media="(max-width: 768px)"
+                  srcset="https://d36vh7pxyzmz4l.cloudfront.net/images/brand/cle-de-peau-beaute/campaigns/offer_lacreme_sp.jpg">
+          <img
+              src="https://d36vh7pxyzmz4l.cloudfront.net/images/brand/cle-de-peau-beaute/story/img_main_20ss_pc.jpg"
+              alt="">
+        </picture>
+        <div class="textarea">
+          <div class="text_inner">
+            <div class="text tw-mb-4">
+              <p>肌には知性があるという発見。<br/>
+                独自の最新の肌サイエンス研究から生まれた<br/>
+                スキンケアとメイクアップブランド。</p>
+              <p>これまでの化粧品の次元を超え、<br/>
+                肌の一生を上手にサポートして、<br/>
+                内側から輝くような美しさを放つ肌へと。</p>
+              <p>年齢にかかわらず、今よりも次の美しさを<br/>
+                目指す女性たちに、最高のときめきを届けます。</p>
+            </div>
+            <a href="/pages/cle-de-peau-beaute-story">
+              <div class="btn">詳細はこちらから</div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cpb-connect">
+      <a href="/pages/cpb-connect" class="cpb-connect-button">クレ・ド・ポー ボーテ ID連携</a>
+
+      <div class="cpb-connect-desc" @click="isOpenModal = true">クレ・ド・ポー ボーテ
+        メンバーシッププログラム会員とのID連携について
+      </div>
+      <div
+          class="tw-fixed tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-50 tw-overflow-y-auto tw-h-full"
+          v-show="isOpenModal">
+        <div @click.self="isOpenModal = false"
+             class="tw-fixed tw-inset-0 tw-bg-gray-500 tw-bg-opacity-75 tw-transition-opacity tw-text-transparent">-</div>
+        <div
+            class="tw-relative tw-mx-2 tw-my-6 md:tw-my-0 tw-max-w-3xl tw-w-full tw-h-[90%] tw-overflow-y-scroll tw-bg-white shadow-2xl tw-rounded">
+          <div @click="isOpenModal = false" class="tw-cursor-pointer tw-absolute tw-top-2 tw-right-2 tw-z-10">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                 class="tw-w-6 tw-h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </div>
+
+          <div class="cpb-connect-modal">
+            <h4>クレ・ド・ポー ボーテ<br/>
+              メンバーシッププログラム会員との<br/>
+              連携について</h4>
+
+            <p>Perfumerie Sukiya Online Store会員情報と<br/>
+              クレ・ド・ポー ボーテ メンバーシッププログラム<br/>
+              会員IDを連携いただくことで<br/>
+              パーソナルなブランド体験をお楽しみいただけます。</p>
+
+            <p>クレ・ド・ポー ボーテの会員ポイントがPerfumerie Sukiya Online Storeでの<br/>
+              購入で付与されますので、ぜひご登録ください。</p>
+
+            <a href="/pages/cpb-connect" class="cpb-connect-button">登録手続きへ進む</a>
+            <p class="cpb-connect-small">※ Perfumerie Sukiya Online Store会員登録およびクレ・ド・ポー ボーテ
+              メンバーシッププログラムのどちらも会員登録が必要となります。</p>
+            <p class="cpb-connect-small">※ Perfumerie Sukiya Online Storeにログインが必要です。未ログインの場合には、ログイン後にクレ・ド・ポー
+              ボーテ ブランドトップ（<a
+                  href="/collections/cle-de-peau-beaute">https://online.sukiya.biz/collections/cle-de-peau-beaute</a>）から「クレ・ド・ポー
+              ボーテ 会員連携」ボタンをクリックしてください。</p>
+            <p class="cpb-connect-small">※
+              会員ポイント付与・ご購入履歴の反映には5日程度お時間を頂戴いたします。</p>
+            <h4>会員連携登録の特典</h4>
+            <img src="https://cdn.shopify.com/s/files/1/0496/5436/6365/files/img_modal_230221.jpg?v=1677569794"
+                 alt="ラディアンスギフト">
+            <h5>ラディアンスギフト</h5>
+            <p>1年間のラディアンスポイント数に応じて<br/>
+              感謝を込めた記念品をお送りするプログラムです。</p>
+            <p>会員連携いただくと<br/>
+              ラディアンスポイントの対象となります。</p>
+
+            <h5>Beauty Keyポイント</h5>
+            <p>会員連携いただくとBeauty Keyポイントの<br/>
+              対象となります。</p>
+
+            <img class="tw-mx-auto"
+                 src="https://cdn.shopify.com/s/files/1/0496/5436/6365/files/img_result.jpg?v=1677569794"
+                 alt="パーソナルなカウンセリング">
+            <p class="cpb-connect-small text-center">※画像はイメージです。</p>
+            <h5>パーソナルなカウンセリング</h5>
+            <p>デジタルでカウンセリングがご利用いただけます。<br/>
+              簡単な設問への回答とスマートフォンのカメラで撮影した肌測定で、<br/>
+              あなたの肌を解き明かし、<br/>
+              あなたにおすすめの商品をご紹介します。<br/>
+              <span class="danger">※肌測定はPCではご利用いただけません。</span><br/>
+              また、ご購入商品の履歴にもとづいた<br/>
+              パーソナルなカウンセリングも提供します。</p>
+
+            <p>その他にも特典を用意しておりますので、<br/>
+              ぜひ、会員連携に登録してください！</p>
+
+            <a href="/pages/cpb-connect" class="cpb-connect-button">登録手続きへ進む</a>
+            <p class="cpb-connect-small">※ Perfumerie Sukiya Online Store会員登録およびクレ・ド・ポー ボーテ
+              メンバーシッププログラムのどちらも会員登録が必要となります。</p>
+            <p class="cpb-connect-small">※ Perfumerie Sukiya Online Storeにログインが必要です。未ログインの場合には、ログイン後にクレ・ド・ポー
+              ボーテ ブランドトップ（https://online.sukiya.biz/collections/cle-de-peau-beaute）から「クレ・ド・ポー
+              ボーテ
+              会員連携」ボタンをクリックしてください。</p>
+            <p class="cpb-connect-small">※
+              会員ポイント付与・ご購入履歴の反映には5日程度お時間を頂戴いたします。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cpb-contents-nav tw-mb-9">
+      <div class="pc-only">
+        <ul class="tw-tracking-wide tw-grid tw-grid-cols-2 tw-gap-4">
+          <li class="tw-relative">
+            <a href="/collections/cle-de-peau-beaute/スキンケア">
+              <img
+                  src="https://d36vh7pxyzmz4l.cloudfront.net/images/brand/cle-de-peau-beaute/campaigns/bg_pageheading_20ss_skincare_lotion.jpg"
+                  alt="">
+              <p class="tw-text-center tw-text-black tw-absolute tw-top-1/2 -tw-translate-y-1/2 tw-left-12">
+                スキンケア<br>商品
+              </p>
+            </a>
+          </li>
+          <li class="tw-relative">
+            <a href="/collections/cle-de-peau-beaute/メイクアップ">
+              <img
+                  src="https://d36vh7pxyzmz4l.cloudfront.net/images/brand/cle-de-peau-beaute/campaigns/bg_pageheading_20ss_makeup_lip.jpg"
+                  alt="">
+              <p class="tw-text-center tw-text-black tw-absolute tw-top-1/2 -tw-translate-y-1/2 tw-left-12">メイクアップ<br>商品
+              </p>
+            </a>
+          </li>
+          <li class="tw-bg-black tw-p-6 tw-text-center">
+            <a href="/collections/cle-de-peau-beaute/">
+              <p class="tw-text-white">このブランドの商品はこちら</p>
+            </a>
+          </li>
+          <li class="tw-bg-black tw-p-6 tw-text-center">
+            <a target="_blank" href="{{ cpb_counseling_url }}">
+              <p class="tw-text-white">トータルカウンセリング</p>
+            </a>
+          </li>
+        </ul>
+      </div>
+      {% render 'sp-navigation-cpb' %}
+    </div>
+
+    <div class="cpb-items tw-mb-20">
+      <h3 class="tw-text-2xl tw-font-bold" id="new-arrivals">NEW ARRIVALS <span
+            class="tw-font-medium tw-text-sm tw-ml-2.5">新着</span></h3>
+      <div class="recommend-list tw-grid tw-grid-cols-2 md:tw-grid-cols-3 tw-gap-4">
+        <!--商品リスト▼-->
+        {% for product in collections['cpb-top-new-arrival'].products %}
+          <a href="{{ product.url }}">
+            <img class="tw-aspect-square tw-object-contain" src="{{ product.featured_image | image_url }}" alt="">
+            <div class="tw-tracking-wider">
+              <p class="tw-text-xs tw-leading-6">クレ・ド・ポー ボーテ<br/>
+                {{ product.title }}<br/>
+                <span class="tw-text-sm tw-font-bold">{{ product.price | money }}円</span></p>
+            </div>
+          </a>
+        {% endfor %}
+        <!--商品リスト▲-->
+      </div>
+    </div>
+    <div class="cpb-items tw-mb-20">
+      <h3 class="tw-text-2xl tw-font-bold">RECOMMEND <span
+            class="tw-font-medium tw-text-sm tw-ml-2.5">ブランドからのおすすめ</span></h3>
+      <div class="recommend-list tw-grid tw-grid-cols-2 md:tw-grid-cols-3 tw-gap-4">
+        <!--商品リスト▼-->
+        {% for product in collections['cpb-top-recommend'].products %}
+          <a href="{{ product.url }}" class="recommend-list-item">
+            <img class="tw-aspect-square tw-object-contain" src="{{ product.featured_image | image_url }}"
+                 alt=""/>
+            <div class="tw-tracking-wider">
+              <p class="tw-text-xs tw-leading-6">クレ・ド・ポー ボーテ<br/>
+                {{ product.title }}<br/>
+                <span class="tw-text-sm tw-font-bold">{{ product.price | money }}円</span></p>
+            </div>
+          </a>
+        {% endfor %}
+        <!--商品リスト▲-->
+      </div>
+    </div>
+    <div class="cpb-closeup tw-mb-12">
+      <h3 class="tw-text-2xl tw-font-bold">CLOSE UP <span
+            class="tw-font-medium tw-text-sm tw-ml-2.5">クローズアップ</span></h3>
+      <div class="cpb-featured">
+        <picture>
+          <source media="(max-width: 768px)"
+                  srcset="https://d36vh7pxyzmz4l.cloudfront.net/images/brand/cle-de-peau-beaute/campaigns/offer_concentrated-brightening-serum-n_23ss_sp.jpg">
+          <img
+              src="https://d36vh7pxyzmz4l.cloudfront.net/images/brand/cle-de-peau-beaute/campaigns/offer_concentrated-brightening-serum-n_23ss_sp.jpg"
+              alt="">
+        </picture>
+        <div class="textarea area-right">
+          <div class="text_inner">
+            <div class="text tw-mb-5">
+              <h5 class="tw-font-bold tw-mb-4">澄みわたる肌へ。<br/>
+                新世代ブライトニング、誕生。</h5>
+
+              <p>クレ・ド・ポー ボーテ研究所は、マイクロバイオーム研究に着目※1。美白※2有効成分と先進技術「クリスタチューンコンプレックス」※3
+                が、メラニン生成の過程や肌の乾燥に多角的にアプローチします。心地よい感触で素早く浸透し※4、まばゆいほど明るく澄みわたる肌へ。乾燥によるくすみが気になる肌にうるおいを与え、なめらかに整えます。</p>
+              <p class="text-small-caption">
+                ※1 皮ふに存在する約1000種の常在菌を鍵とする研究。<br/>
+                ※2 美白とはメラニンの生成を抑えてシミ・そばかすを防ぐことです。<br/>
+                ※3 ユーカリ葉エキス、マルトース・ショ糖縮合物、濃グリセリン<br/>
+                ※4 角層まで。</p>
+
+              <a href="/products/cle-de-peau-beaute-serum-concentree-clercissant-n-2023">
+                <div class="btn">詳細はこちらから</div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "商品グリッドCPB",
+  "class": "section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "min": 8,
+      "max": 24,
+      "step": 4,
+      "default": 16,
+      "label": "t:sections.main-collection-product-grid.settings.products_per_page.label"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 4,
+      "label": "t:sections.main-collection-product-grid.settings.columns_desktop.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.main-collection-product-grid.settings.header__3.content"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "t:sections.main-collection-product-grid.settings.image_ratio.options__1.label"
+        },
+        {
+          "value": "portrait",
+          "label": "t:sections.main-collection-product-grid.settings.image_ratio.options__2.label"
+        },
+        {
+          "value": "square",
+          "label": "t:sections.main-collection-product-grid.settings.image_ratio.options__3.label"
+        }
+      ],
+      "default": "adapt",
+      "label": "t:sections.main-collection-product-grid.settings.image_ratio.label"
+    },
+    {
+      "type": "select",
+      "id": "image_shape",
+      "options": [
+        {
+          "value": "default",
+          "label": "t:sections.all.image_shape.options__1.label"
+        },
+        {
+          "value": "arch",
+          "label": "t:sections.all.image_shape.options__2.label"
+        },
+        {
+          "value": "blob",
+          "label": "t:sections.all.image_shape.options__3.label"
+        },
+        {
+          "value": "chevronleft",
+          "label": "t:sections.all.image_shape.options__4.label"
+        },
+        {
+          "value": "chevronright",
+          "label": "t:sections.all.image_shape.options__5.label"
+        },
+        {
+          "value": "diamond",
+          "label": "t:sections.all.image_shape.options__6.label"
+        },
+        {
+          "value": "parallelogram",
+          "label": "t:sections.all.image_shape.options__7.label"
+        },
+        {
+          "value": "round",
+          "label": "t:sections.all.image_shape.options__8.label"
+        }
+      ],
+      "default": "default",
+      "label": "t:sections.all.image_shape.label",
+      "info": "t:sections.all.image_shape.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "default": false,
+      "label": "t:sections.main-collection-product-grid.settings.show_secondary_image.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "default": false,
+      "label": "t:sections.main-collection-product-grid.settings.show_vendor.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "default": false,
+      "label": "t:sections.main-collection-product-grid.settings.show_rating.label",
+      "info": "t:sections.main-collection-product-grid.settings.show_rating.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_quick_add",
+      "default": false,
+      "label": "t:sections.main-collection-product-grid.settings.enable_quick_buy.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.main-collection-product-grid.settings.header__1.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_filtering",
+      "default": true,
+      "label": "t:sections.main-collection-product-grid.settings.enable_filtering.label",
+      "info": "t:sections.main-collection-product-grid.settings.enable_filtering.info"
+    },
+    {
+      "type": "select",
+      "id": "filter_type",
+      "options": [
+        {
+          "value": "horizontal",
+          "label": "t:sections.main-collection-product-grid.settings.filter_type.options__1.label"
+        },
+        {
+          "value": "vertical",
+          "label": "t:sections.main-collection-product-grid.settings.filter_type.options__2.label"
+        },
+        {
+          "value": "drawer",
+          "label": "t:sections.main-collection-product-grid.settings.filter_type.options__3.label"
+        }
+      ],
+      "default": "horizontal",
+      "label": "t:sections.main-collection-product-grid.settings.filter_type.label",
+      "info": "t:sections.main-collection-product-grid.settings.filter_type.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sorting",
+      "default": true,
+      "label": "t:sections.main-collection-product-grid.settings.enable_sorting.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.main-collection-product-grid.settings.header_mobile.content"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "default": "2",
+      "label": "t:sections.main-collection-product-grid.settings.columns_mobile.label",
+      "options": [
+        {
+          "value": "1",
+          "label": "t:sections.main-collection-product-grid.settings.columns_mobile.options__1.label"
+        },
+        {
+          "value": "2",
+          "label": "t:sections.main-collection-product-grid.settings.columns_mobile.options__2.label"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    }
+  ]
+}
+{% endschema %}
