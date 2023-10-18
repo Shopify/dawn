@@ -20,9 +20,14 @@ module.exports = {
     rules: [
       {
         test: /\.css$/,
-        use: ["vue-style-loader", "css-loader", "postcss-loader"],
+        use: [
+          {
+            loader: MiniCssExtractPlugin.loader,
+          },
+          'css-loader',
+          'postcss-loader',
+        ],
       },
-
       {
         test: /\.vue$/,
         loader: "vue-loader",
@@ -30,10 +35,9 @@ module.exports = {
       {
         test: /\.s[ac]ss$/i, // 対象となるファイルの拡張子
         use: [
-          // 'vue-style-loader',
-          // linkタグに出力する機能
-          "style-loader",
-          // CSSをバンドルするための機能
+          {
+            loader: MiniCssExtractPlugin.loader,
+          },
           {
             loader: "css-loader",
             options: {
@@ -43,7 +47,6 @@ module.exports = {
               importLoaders: 3
             }
           },
-          'postcss-loader',
           {
             loader: "sass-loader",
             options: {
