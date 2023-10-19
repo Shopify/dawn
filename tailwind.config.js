@@ -79,6 +79,12 @@ module.exports = {
       }
     },
   },
-  plugins: [],
+  plugins: [
+    function({ addBase, config }) {
+      addBase({
+        'a': { textDecoration: 'underline' },
+      })
+    }
+  ],
 }
 
