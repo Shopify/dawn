@@ -11,6 +11,7 @@ if (!customElements.get('quantity-popover')) {
         this.popoverInfo = this.querySelector('.quantity-popover__info');
         this.closeButton = this.querySelector('.button-close');
         this.variantInfo = this.querySelector('.quantity-popover-container');
+        this.eventMouseEnterHappened = false;
 
         if (this.closeButton) {
           this.closeButton.addEventListener('click', this.closePopover.bind(this));
@@ -29,6 +30,7 @@ if (!customElements.get('quantity-popover')) {
           this.infoButtonMobile.addEventListener('click', this.togglePopover.bind(this));
           this.infoButtonMobile.addEventListener('focusout', this.closePopover.bind(this));
         }
+
         if (this.infoButtonDesktop && this.mqlTablet.matches) {
           this.variantInfo.addEventListener('mouseenter', this.togglePopover.bind(this));
           this.variantInfo.addEventListener('mouseleave', this.closePopover.bind(this));
@@ -37,6 +39,11 @@ if (!customElements.get('quantity-popover')) {
 
       togglePopover(event) {
         event.preventDefault();
+        if (event.type === 'mouseenter') {
+          this.eventMouseEnterHappened = true;
+        }
+
+        if (event.type === 'click' && this.eventMouseEnterHappened) return;
 
         const button = this.infoButtonDesktop && this.mql.matches ? this.infoButtonDesktop : this.infoButtonMobile;
         const isExpanded = button.getAttribute('aria-expanded') === 'true';
@@ -65,6 +72,8 @@ if (!customElements.get('quantity-popover')) {
           button.classList.remove('quantity-popover__info-button--open');
           this.popoverInfo.setAttribute('hidden', '');
         }
+
+        this.eventMouseEnterHappened = false;
       }
     }
   );
