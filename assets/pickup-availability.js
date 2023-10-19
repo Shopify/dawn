@@ -58,6 +58,10 @@ if (!customElements.get('pickup-availability')) {
         this.setAttribute('available', '');
 
         document.body.appendChild(sectionInnerHTML.querySelector('pickup-availability-drawer'));
+        this.classList.forEach((classApplied) => {
+          if (classApplied.startsWith('color-'))
+            document.querySelector('pickup-availability-drawer').classList.add(classApplied);
+        });
 
         const button = this.querySelector('button');
         if (button)
