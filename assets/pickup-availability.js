@@ -58,9 +58,9 @@ if (!customElements.get('pickup-availability')) {
         this.setAttribute('available', '');
 
         document.body.appendChild(sectionInnerHTML.querySelector('pickup-availability-drawer'));
-        this.classList.forEach((classApplied) => {
-          if (classApplied.startsWith('color-'))
-            document.querySelector('pickup-availability-drawer').classList.add(classApplied);
+        const colorClassesToApply = this.dataset.productPageColorScheme.split(' ');
+        colorClassesToApply.forEach((colorClass) => {
+          document.querySelector('pickup-availability-drawer').classList.add(colorClass);
         });
 
         const button = this.querySelector('button');
