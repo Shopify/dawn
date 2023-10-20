@@ -141,7 +141,7 @@
                       aria-label="{{ filter.label }} ({{ 'products.facets.filters_selected.one' | t: count: filter.active_values.size }})"
                     >
                       <div>
-                        <span>
+                        <span class="facets__summary-label">
                           {{- filter.label | escape }}
                           {%- if filter_type == 'vertical' -%}
                             <span class="facets__selected no-js-hidden{% if filter.active_values.size == 0 %} hidden{% endif %}">
@@ -149,6 +149,11 @@
                             >
                           {%- endif -%}
                         </span>
+                        {%- if filter_type == 'vertical' and filter.operator == 'AND' -%}
+                          <span class="facets__and-helptext">
+                            {{ 'products.facets.filter_and_operator_subtitle' | t }}
+                          </span>
+                        {%- endif -%}
                         {% render 'icon-caret' %}
                       </div>
                     </summary>
@@ -158,9 +163,16 @@
                     >
                       {%- if filter_type != 'vertical' -%}
                         <div class="facets__header">
-                          <span class="facets__selected no-js-hidden">
-                            {{- 'products.facets.filters_selected' | t: count: filter.active_values.size -}}
-                          </span>
+                          <div>
+                            <span class="facets__selected no-js-hidden">
+                              {{- 'products.facets.filters_selected' | t: count: filter.active_values.size -}}
+                            </span>
+                            {%- if filter.operator == 'AND' -%}
+                              <span class="facets__and-helptext">
+                                {{ 'products.facets.filter_and_operator_subtitle' | t }}
+                              </span>
+                            {%- endif -%}
+                          </div>
                           <facet-remove>
                             <a href="{{ filter.url_to_remove }}" class="facets__reset link underlined-link">
                               {{ 'products.facets.reset' | t }}
@@ -174,7 +186,16 @@
                           class="{{ visual_layout_class }}{% if filter_type == 'vertical' %} facets__list--vertical{% else %} facets__list{% endif %} list-unstyled no-js-hidden"
                           role="list"
                         >
-                          {%- for value in filter.values -%}
+                          {%- liquid
+                            assign sorted_values = filter.values
+                            # Keep the selected values grouped together when operator is AND
+                            if filter.operator == 'AND'
+                              assign active_filter_values = filter.values | where: 'active', true
+                              assign inactive_filter_values = filter.values | where: 'active', false
+                              assign sorted_values = active_filter_values | concat: inactive_filter_values
+                            endif
+                          -%}
+                          {%- for value in sorted_values -%}
                             {% liquid
                               assign is_disabled = false
                               if value.count == 0 and value.active == false
@@ -699,10 +720,24 @@
                             type="button"
                           >
                             {% render 'icon-arrow' %}
-                            {{ filter.label | escape }}
+                            <span>{{ filter.label | escape }}</span>
+                            {%- if filter.operator == 'AND' -%}
+                              <span class="facets__and-helptext">
+                                {{ 'products.facets.filter_and_operator_subtitle' | t }}
+                              </span>
+                            {%- endif -%}
                           </button>
                           <ul class="{{ visual_layout_class }} mobile-facets__list list-unstyled" role="list">
-                            {%- for value in filter.values -%}
+                            {%- liquid
+                              assign sorted_values = filter.values
+                              # Keep the selected values grouped together when operator is AND
+                              if filter.operator == 'AND'
+                                assign active_filter_values = filter.values | where: 'active', true
+                                assign inactive_filter_values = filter.values | where: 'active', false
+                                assign sorted_values = active_filter_values | concat: inactive_filter_values
+                              endif
+                            -%}
+                            {%- for value in sorted_values -%}
                               {% liquid
                                 assign is_disabled = false
                                 if value.count == 0 and value.active == false
