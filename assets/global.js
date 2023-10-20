@@ -965,6 +965,7 @@ class VariantSelects extends HTMLElement {
     this.updatePickupAvailability();
     this.removeErrorMessage();
     this.updateVariantStatuses();
+    this.filterImgVariant();
 
     if (!this.currentVariant) {
       this.toggleAddButton(true, '', true);
@@ -975,6 +976,18 @@ class VariantSelects extends HTMLElement {
       this.updateVariantInput();
       this.renderProductInfo();
       this.updateShareUrl();
+    }
+  }
+
+  filterImgVariant() {
+    if (this.currentVariant.featured_image && this.currentVariant.featured_image.alt) {
+      // remove 'tw-hidden' class from all elements with 'thumbnail-alt' attribute
+      document.querySelectorAll('[thumbnail-alt]').forEach(img => img.classList.remove('tw-hidden'));
+      // add 'tw-hidden' class to all elements with 'thumbnail-alt' attribute that don't match the current variant's alt
+      document.querySelectorAll(`[thumbnail-alt]:not([thumbnail-alt="${this.currentVariant.featured_image.alt}"])`).forEach(img => img.classList.add('tw-hidden'));
+    } else {
+      // remove 'tw-hidden' class from all elements with 'thumbnail-alt' attribute
+      document.querySelectorAll('[thumbnail-alt]').forEach(img => img.classList.remove('tw-hidden'));
     }
   }
 
