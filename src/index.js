@@ -1027,6 +1027,9 @@ new Vue({
       this.getCpbConnectOtp()
     }
   },
+  mounted() {
+    this.$refs.modal.classList.remove('tw-hidden');
+  },
   watch: {
     isLineLogin(v) {
       localStorage.isLineLogin = v;
