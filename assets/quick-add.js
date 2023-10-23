@@ -26,6 +26,10 @@ if (!customElements.get('quick-add-modal')) {
           .then((responseText) => {
             const responseHTML = new DOMParser().parseFromString(responseText, 'text/html');
             this.productElement = responseHTML.querySelector('section[id^="MainProduct-"]');
+            this.productElement.classList.forEach((classApplied) => {
+              if (classApplied.startsWith('color-') || classApplied === 'gradient')
+                this.modalContent.classList.add(classApplied);
+            });
             this.preventDuplicatedIDs();
             this.removeDOMElements();
             this.setInnerHTML(this.modalContent, this.productElement.innerHTML);
