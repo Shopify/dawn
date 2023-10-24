@@ -4,34 +4,6 @@ import './css/input.css'
 import {register} from 'swiper/element/bundle';
 register();
 
-// swiper
-import Swiper from 'swiper';
-import {Navigation, Pagination, Autoplay, EffectFade} from 'swiper/modules';
-// import Swiper and modules styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/autoplay';
-import 'swiper/css/effect-fade';
-import 'swiper/css/pagination';
-
-// init Swiper:
-const swiper = new Swiper('.swiper', {
-  // configure Swiper to use modules
-  modules: [Navigation, Pagination, Autoplay, EffectFade],
-  spaceBetween: 30,
-  effect: 'fade',
-  autoplay: true,
-  loop: true,
-  pagination: {
-    el: '.swiper-pagination',
-    clickable: true,
-  },
-  navigation: {
-    nextEl: '.swiper-button-next',
-    prevEl: '.swiper-button-prev',
-  },
-});
-
 import './sass/app.scss'
 const parsedUrl = new URL(window.location.href);
 const pathname = parsedUrl.pathname;
@@ -328,736 +300,642 @@ const categories = [
   }
 ]
 
-new Vue({
-  el: '#app',
-  delimiters: ['${', '}'],
-  data() {
-    return {
-      categories: categories,
-      isLineLogin: false,
-      lineUser: null,
-      isLineConnected: false,
-      cpbStory: {
-        top: false,
-        slider_1: false
-      },
-      counselingModal: false,
-      counselingModalStep: 1,
-      counselingStatus: {
-        q1: null,
-        q2: null,
-        q3: null
-      },
-      decorteCounselingStatus: {
-        q1: null,
-        q2: null,
-        q3: null
-      },
-      prediaCounselingStatus: {
-        q1: null,
-        q2: null,
-        q3: null
-      },
-      cpbNavItems: [
-        {
-          text: "スキンケア",
-          href: '/collections/cle-de-peau-beaute/スキンケア',
-          children: [
-            {
-              text: "すべて",
-              href: '/collections/cle-de-peau-beaute/スキンケア'
-            },
-            {
-              text: "フェイス",
-              href: '/collections/cle-de-peau-beaute/スキンケア-フェイス',
-              children: [
-                {
-                  text: "すべて",
-                  href: '/collections/cle-de-peau-beaute/スキンケア-フェイス'
-                },
-                {
-                  text: "化粧水",
-                  href: '/collections/cle-de-peau-beaute/化粧水',
-                },
-                {
-                  text: "乳液",
-                  href: '/collections/cle-de-peau-beaute/乳液',
-                },
-                {
-                  text: "美容液",
-                  href: '/collections/cle-de-peau-beaute/美容液',
-                },
-                {
-                  text: "クリーム",
-                  href: '/collections/cle-de-peau-beaute/クリーム',
-                },
-                {
-                  text: "マスク",
-                  href: '/collections/cle-de-peau-beaute/マスク',
-                },
-                {
-                  text: "メイク落とし・洗顔フォーム",
-                  href: '/collections/cle-de-peau-beaute/メイク落とし・洗顔フォーム',
-                },
-                {
-                  text: "マッサージクリーム",
-                  href: '/collections/cle-de-peau-beaute/マッサージクリーム',
-                }
-              ]
-            },
-            {
-              text: "ボディ",
-              href: '/collections/cle-de-peau-beaute/ボディ'
-            },
-            {
-              text: "サン・スキンケア",
-              href: '/collections/cle-de-peau-beaute/UVケア'
-            },
-            {
-              text: "アクセサリー",
-              href: '/collections/cle-de-peau-beaute/アクセサリー',
-              children: [
-                {
-                  text: "すべて",
-                  href: '/collections/cle-de-peau-beaute/アクセサリー'
-                },
-                {
-                  text: "コットン",
-                  href: '/collections/cle-de-peau-beaute/コットン'
-                }
-              ]
-            }
-          ]
+// #app要素がある場合のみVueを起動する
+if (document.getElementById('app')) {
+  console.log('vue start')
+  new Vue({
+    el: '#app',
+    delimiters: ['${', '}'],
+    data() {
+      return {
+        categories: categories,
+        isLineLogin: false,
+        lineUser: null,
+        isLineConnected: false,
+        cpbStory: {
+          top: false,
+          slider_1: false
         },
-        {
-          text: "メイクアップ",
-          href: '/collections/cle-de-peau-beaute/メイクアップ',
-          children: [
-            {
-              text: "すべて",
-              href: '/collections/cle-de-peau-beaute/メイクアップ'
-            },
-            {
-              text: "フェイス",
-              href: '/collections/cle-de-peau-beaute/メイクアップ-フェイス',
-              children: [
-                {
-                  text: "すべて",
-                  href: '/collections/cle-de-peau-beaute/メイクアップ-フェイス'
-                },
-                {
-                  text: "ファンデーション",
-                  href: '/collections/cle-de-peau-beaute/ファンデーション'
-                },
-                {
-                  text: "プレメイクアップ",
-                  href: '/collections/cle-de-peau-beaute/プレメイクアップ'
-                },
-                {
-                  text: "コンシーラー",
-                  href: '/collections/cle-de-peau-beaute/コンシーラー'
-                },
-                {
-                  text: "フェイスパウダー",
-                  href: '/collections/cle-de-peau-beaute/フェイスパウダー'
-                },
-                {
-                  text: "フェイスカラー",
-                  href: '/collections/cle-de-peau-beaute/フェイスカラー'
-                },
-                {
-                  text: "チークカラー",
-                  href: '/collections/cle-de-peau-beaute/チークカラー'
-                }
-              ]
-            },
-            {
-              text: "リップ",
-              href: '/collections/cle-de-peau-beaute/リップ',
-              children: [
-                {
-                  text: "すべて",
-                  href: '/collections/cle-de-peau-beaute/リップ'
-                },
-                {
-                  text: "リップスティック",
-                  href: '/collections/cle-de-peau-beaute/リップスティック'
-                },
-                {
-                  text: "リップグロス",
-                  href: '/collections/cle-de-peau-beaute/リップグロス'
-                },
-                {
-                  text: "リキッドルージュ",
-                  href: '/collections/cle-de-peau-beaute/リキッドルージュ'
-                },
-                {
-                  text: "リップライナー",
-                  href: '/collections/cle-de-peau-beaute/リップライナー'
-                }
-              ]
-            },
-            {
-              text: "アイ",
-              href: '/collections/cle-de-peau-beaute/アイメイク',
-              children: [
-                {
-                  text: "すべて",
-                  href: '/collections/cle-de-peau-beaute/アイメイク'
-                },
-                {
-                  text: "アイシャドウ",
-                  href: '/collections/cle-de-peau-beaute/アイシャドウ'
-                },
-                {
-                  text: "マスカラ",
-                  href: '/collections/cle-de-peau-beaute/マスカラ'
-                },
-                {
-                  text: "アイライナー",
-                  href: '/collections/cle-de-peau-beaute/アイライナー'
-                },
-                {
-                  text: "アイブロウ",
-                  href: '/collections/cle-de-peau-beaute/アイブロウ'
-                }
-              ]
-            },
-            {
-              text: "アクセサリー",
-              href: '/collections/cle-de-peau-beaute/アクセサリー',
-              children: [
-                {
-                  text: "すべて",
-                  href: '/collections/cle-de-peau-beaute/アクセサリー'
-                },
-                {
-                  text: "ブラシ・パフ・スポンジ・チップ",
-                  href: '/collections/cle-de-peau-beaute/ブラシ・パフ・スポンジ・チップ'
-                },
-                {
-                  text: "ケース・ホルダー",
-                  href: '/collections/cle-de-peau-beaute/ケース・ホルダー'
-                },
-                {
-                  text: "ネイルケア",
-                  href: '/collections/cle-de-peau-beaute/ネイルケア'
-                }
-              ]
-            }
-          ]
-        },
-        {
-          id: "31",
-          text: "トータルカウンセリング",
-          href: cpbCounselingUrl,
-          target: '_blank'
-        },
-        {
-          id: "32",
-          text: "クレ・ド・ポー ボーテのストーリー",
-          href: '/pages/cle-de-peau-beaute-story'
+        cpbNavItems: [
+          {
+            text: "スキンケア",
+            href: '/collections/cle-de-peau-beaute/スキンケア',
+            children: [
+              {
+                text: "すべて",
+                href: '/collections/cle-de-peau-beaute/スキンケア'
+              },
+              {
+                text: "フェイス",
+                href: '/collections/cle-de-peau-beaute/スキンケア-フェイス',
+                children: [
+                  {
+                    text: "すべて",
+                    href: '/collections/cle-de-peau-beaute/スキンケア-フェイス'
+                  },
+                  {
+                    text: "化粧水",
+                    href: '/collections/cle-de-peau-beaute/化粧水',
+                  },
+                  {
+                    text: "乳液",
+                    href: '/collections/cle-de-peau-beaute/乳液',
+                  },
+                  {
+                    text: "美容液",
+                    href: '/collections/cle-de-peau-beaute/美容液',
+                  },
+                  {
+                    text: "クリーム",
+                    href: '/collections/cle-de-peau-beaute/クリーム',
+                  },
+                  {
+                    text: "マスク",
+                    href: '/collections/cle-de-peau-beaute/マスク',
+                  },
+                  {
+                    text: "メイク落とし・洗顔フォーム",
+                    href: '/collections/cle-de-peau-beaute/メイク落とし・洗顔フォーム',
+                  },
+                  {
+                    text: "マッサージクリーム",
+                    href: '/collections/cle-de-peau-beaute/マッサージクリーム',
+                  }
+                ]
+              },
+              {
+                text: "ボディ",
+                href: '/collections/cle-de-peau-beaute/ボディ'
+              },
+              {
+                text: "サン・スキンケア",
+                href: '/collections/cle-de-peau-beaute/UVケア'
+              },
+              {
+                text: "アクセサリー",
+                href: '/collections/cle-de-peau-beaute/アクセサリー',
+                children: [
+                  {
+                    text: "すべて",
+                    href: '/collections/cle-de-peau-beaute/アクセサリー'
+                  },
+                  {
+                    text: "コットン",
+                    href: '/collections/cle-de-peau-beaute/コットン'
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            text: "メイクアップ",
+            href: '/collections/cle-de-peau-beaute/メイクアップ',
+            children: [
+              {
+                text: "すべて",
+                href: '/collections/cle-de-peau-beaute/メイクアップ'
+              },
+              {
+                text: "フェイス",
+                href: '/collections/cle-de-peau-beaute/メイクアップ-フェイス',
+                children: [
+                  {
+                    text: "すべて",
+                    href: '/collections/cle-de-peau-beaute/メイクアップ-フェイス'
+                  },
+                  {
+                    text: "ファンデーション",
+                    href: '/collections/cle-de-peau-beaute/ファンデーション'
+                  },
+                  {
+                    text: "プレメイクアップ",
+                    href: '/collections/cle-de-peau-beaute/プレメイクアップ'
+                  },
+                  {
+                    text: "コンシーラー",
+                    href: '/collections/cle-de-peau-beaute/コンシーラー'
+                  },
+                  {
+                    text: "フェイスパウダー",
+                    href: '/collections/cle-de-peau-beaute/フェイスパウダー'
+                  },
+                  {
+                    text: "フェイスカラー",
+                    href: '/collections/cle-de-peau-beaute/フェイスカラー'
+                  },
+                  {
+                    text: "チークカラー",
+                    href: '/collections/cle-de-peau-beaute/チークカラー'
+                  }
+                ]
+              },
+              {
+                text: "リップ",
+                href: '/collections/cle-de-peau-beaute/リップ',
+                children: [
+                  {
+                    text: "すべて",
+                    href: '/collections/cle-de-peau-beaute/リップ'
+                  },
+                  {
+                    text: "リップスティック",
+                    href: '/collections/cle-de-peau-beaute/リップスティック'
+                  },
+                  {
+                    text: "リップグロス",
+                    href: '/collections/cle-de-peau-beaute/リップグロス'
+                  },
+                  {
+                    text: "リキッドルージュ",
+                    href: '/collections/cle-de-peau-beaute/リキッドルージュ'
+                  },
+                  {
+                    text: "リップライナー",
+                    href: '/collections/cle-de-peau-beaute/リップライナー'
+                  }
+                ]
+              },
+              {
+                text: "アイ",
+                href: '/collections/cle-de-peau-beaute/アイメイク',
+                children: [
+                  {
+                    text: "すべて",
+                    href: '/collections/cle-de-peau-beaute/アイメイク'
+                  },
+                  {
+                    text: "アイシャドウ",
+                    href: '/collections/cle-de-peau-beaute/アイシャドウ'
+                  },
+                  {
+                    text: "マスカラ",
+                    href: '/collections/cle-de-peau-beaute/マスカラ'
+                  },
+                  {
+                    text: "アイライナー",
+                    href: '/collections/cle-de-peau-beaute/アイライナー'
+                  },
+                  {
+                    text: "アイブロウ",
+                    href: '/collections/cle-de-peau-beaute/アイブロウ'
+                  }
+                ]
+              },
+              {
+                text: "アクセサリー",
+                href: '/collections/cle-de-peau-beaute/アクセサリー',
+                children: [
+                  {
+                    text: "すべて",
+                    href: '/collections/cle-de-peau-beaute/アクセサリー'
+                  },
+                  {
+                    text: "ブラシ・パフ・スポンジ・チップ",
+                    href: '/collections/cle-de-peau-beaute/ブラシ・パフ・スポンジ・チップ'
+                  },
+                  {
+                    text: "ケース・ホルダー",
+                    href: '/collections/cle-de-peau-beaute/ケース・ホルダー'
+                  },
+                  {
+                    text: "ネイルケア",
+                    href: '/collections/cle-de-peau-beaute/ネイルケア'
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: "31",
+            text: "トータルカウンセリング",
+            href: cpbCounselingUrl,
+            target: '_blank'
+          },
+          {
+            id: "32",
+            text: "クレ・ド・ポー ボーテのストーリー",
+            href: '/pages/cle-de-peau-beaute-story'
+          }
+        ],
+        decorteNavItems: [
+          {
+            text: "スキンケア",
+            href: '/collections/decorte/スキンケア',
+            children: [
+              {
+                text: "クレンジング",
+                href: '/collections/decorte/クレンジング'
+              },
+              {
+                text: "洗顔料",
+                href: '/collections/decorte/洗顔料'
+              },
+              {
+                text: "乳液",
+                href: '/collections/decorte/乳液'
+              },
+              {
+                text: "化粧水",
+                href: '/collections/decorte/化粧水'
+              },
+              {
+                text: "美容液",
+                href: '/collections/decorte/美容液'
+              },
+              {
+                text: "クリーム",
+                href: '/collections/decorte/美容クリーム'
+              },
+              {
+                text: "マスク",
+                href: '/collections/decorte/マスク'
+              },
+              {
+                text: "マッサージ",
+                href: '/collections/decorte/マッサージ'
+              },
+              {
+                text: "サンプロダクツ・UVケア",
+                href: '/collections/decorte/サンプロダクツ・UVケア'
+              }
+            ]
+          },
+          {
+            text: "ベースメイク",
+            href: '/collections/decorte/ベースメイク',
+            children: [
+              {
+                text: "パウダーファンデーション",
+                href: '/collections/decorte/パウダーファンデーション'
+              },
+              {
+                text: "リキッドファンデーション",
+                href: '/collections/decorte/リキッドファンデーション'
+              },
+              {
+                text: "クッションファンデーション",
+                href: '/collections/decorte/クッションファンデーション'
+              },
+              {
+                text: "クリームファンデーション",
+                href: '/collections/decorte/クリームファンデーション'
+              },
+              {
+                text: "化粧下地",
+                href: '/collections/decorte/化粧下地-プライマー'
+              },
+              {
+                text: "フェイスパウダー",
+                href: '/collections/decorte/フェイスパウダー-セッティングパウダー'
+              },
+              {
+                text: "コンシーラー",
+                href: '/collections/decorte/コンシーラー'
+              },
+              {
+                text: "コントロールカラー",
+                href: '/collections/decorte/コントロールカラー'
+              }
+            ]
+          },
+          {
+            text: "ポイントメイク",
+            href: '/collections/decorte/ポイントメイク',
+            children: [
+              {
+                text: "フェイスカラー",
+                href: '/collections/decorte/チーク・ブラッシュ'
+              },
+              {
+                text: "アイカラー",
+                href: '/collections/decorte/アイメイク'
+              },
+              {
+                text: "アイブロウ",
+                href: '/collections/decorte/アイブロウ'
+              },
+              {
+                text: "アイライナー",
+                href: '/collections/decorte/アイライナー'
+              },
+              {
+                text: "マスカラ",
+                href: '/collections/decorte/マスカラ'
+              },
+              {
+                text: "リップカラー",
+                href: '/collections/decorte/リップメイク'
+              },
+              {
+                text: "ネイルカラー",
+                href: '/collections/decorte/ネイル'
+              },
+              {
+                text: "リムーバー",
+                href: '/collections/decorte/リムーバー'
+              }
+            ]
+          },
+          {
+            text: "オンラインカウンセリング",
+            href: 'https://online.sukiya.biz/pages/decorte-counseling',
+            target: '_blank'
+          },
+          {
+            text: "Our Story",
+            href: '/pages/decorte-our-story'
+          }
+        ],
+        decorteCategories: [
+          {
+            text: "スキンケア",
+            href: '/collections/decorte/スキンケア',
+            children: [
+              {
+                text: "クレンジング",
+                href: '/collections/decorte/クレンジング'
+              },
+              {
+                text: "洗顔料",
+                href: '/collections/decorte/洗顔料'
+              },
+              {
+                text: "乳液",
+                href: '/collections/decorte/乳液'
+              },
+              {
+                text: "化粧水",
+                href: '/collections/decorte/化粧水'
+              },
+              {
+                text: "美容液",
+                href: '/collections/decorte/美容液'
+              },
+              {
+                text: "クリーム",
+                href: '/collections/decorte/美容クリーム'
+              },
+              {
+                text: "マスク",
+                href: '/collections/decorte/マスク'
+              },
+              {
+                text: "マッサージ",
+                href: '/collections/decorte/マッサージ'
+              },
+              {
+                text: "サンプロダクツ・UVケア",
+                href: '/collections/decorte/サンプロダクツ・UVケア'
+              }
+            ]
+          },
+          {
+            text: "ポイントメイク",
+            href: '/collections/decorte/ポイントメイク',
+            children: [
+              {
+                text: "フェイスカラー",
+                href: '/collections/decorte/チーク・ブラッシュ'
+              },
+              {
+                text: "アイカラー",
+                href: '/collections/decorte/アイメイク'
+              },
+              {
+                text: "アイブロウ",
+                href: '/collections/decorte/アイブロウ'
+              },
+              {
+                text: "アイライナー",
+                href: '/collections/decorte/アイライナー'
+              },
+              {
+                text: "マスカラ",
+                href: '/collections/decorte/マスカラ'
+              },
+              {
+                text: "リップカラー",
+                href: '/collections/decorte/リップメイク'
+              },
+              {
+                text: "ネイルカラー",
+                href: '/collections/decorte/ネイル'
+              },
+              {
+                text: "リムーバー",
+                href: '/collections/decorte/リムーバー'
+              }
+            ]
+          },
+          {
+            text: "ベースメイク",
+            href: '/collections/decorte/ベースメイク',
+            children: [
+              {
+                text: "パウダーファンデーション",
+                href: '/collections/decorte/パウダーファンデーション'
+              },
+              {
+                text: "リキッドファンデーション",
+                href: '/collections/decorte/リキッドファンデーション'
+              },
+              {
+                text: "クッションファンデーション",
+                href: '/collections/decorte/クッションファンデーション'
+              },
+              {
+                text: "クリームファンデーション",
+                href: '/collections/decorte/クリームファンデーション'
+              },
+              {
+                text: "化粧下地",
+                href: '/collections/decorte/化粧下地-プライマー'
+              },
+              {
+                text: "フェイスパウダー",
+                href: '/collections/decorte/フェイスパウダー-セッティングパウダー'
+              },
+              {
+                text: "コンシーラー",
+                href: '/collections/decorte/コンシーラー'
+              },
+              {
+                text: "コントロールカラー",
+                href: '/collections/decorte/コントロールカラー'
+              }
+            ]
+          },
+          {
+            text: "フレグランス",
+            href: '/collections/decorte/フレグランス',
+            children: [
+              {
+                text: "オードトワレ",
+                href: '/collections/decorte/decorteフレグランス'
+              }
+            ]
+          },
+          {
+            text: "ボディ＆ヘア",
+            href: '/collections/decorte/ボディ＆ヘア',
+            children: [
+              {
+                text: "ヘアケア",
+                href: '/collections/decorte/ヘアケア'
+              },
+              {
+                text: "スタイリング",
+                href: '/collections/decorte/スタイリング'
+              },
+              {
+                text: "頭皮ケア",
+                href: '/collections/decorte/頭皮ケア'
+              },
+              {
+                text: "ボディケア",
+                href: '/collections/decorte/ボディケア'
+              },
+              {
+                text: "ハンドケア",
+                href: '/collections/decorte/ハンドケア'
+              }
+            ]
+          },
+          {
+            text: "インナービューティ他",
+            href: '',
+            children: [
+              {
+                text: "スキンケア用アクセサリー",
+                href: '/collections/decorte/スキンケア用アクセサリー'
+              },
+              {
+                text: "ベースメイク用アクセサリー",
+                href: '/collections/decorte/ベースメイク用アクセサリー'
+              },
+              {
+                text: "ポイントメイク用アクセサリー",
+                href: '/collections/decorte/ポイントメイク用アクセサリー'
+              },
+              {
+                text: "インナービューティー",
+                href: '/collections/decorte/インナービューティー'
+              }
+            ]
+          }
+        ],
+        modalScrollPosition: 0,
+        customer_id: __st.cid,
+        cpb_connect_token: '',
+        cpb_connect_status: '',
+        isOpenModal: false,
+        activeIndex: null,
+        activeChildIndex: null,
+      }
+    },
+    computed: {
+      hash() {
+        return parsedUrl.hash
+      }
+    },
+    methods: {
+      async verifyLineLogin() {
+        const code = parsedUrl.searchParams.get("code")
+        if (code) {
+          const accessToken = await this.getAccessToken(code)
+          this.lineUser = await this.getUserProfile(accessToken.data.access_token)
+          this.isLineLogin = await this.getConnectStatus(this.lineUser.data.userId, accessToken.data.access_token)
         }
-      ],
-      decorteNavItems: [
-        {
-          text: "スキンケア",
-          href: '/collections/decorte/スキンケア',
-          children: [
-            {
-              text: "クレンジング",
-              href: '/collections/decorte/クレンジング'
-            },
-            {
-              text: "洗顔料",
-              href: '/collections/decorte/洗顔料'
-            },
-            {
-              text: "乳液",
-              href: '/collections/decorte/乳液'
-            },
-            {
-              text: "化粧水",
-              href: '/collections/decorte/化粧水'
-            },
-            {
-              text: "美容液",
-              href: '/collections/decorte/美容液'
-            },
-            {
-              text: "クリーム",
-              href: '/collections/decorte/美容クリーム'
-            },
-            {
-              text: "マスク",
-              href: '/collections/decorte/マスク'
-            },
-            {
-              text: "マッサージ",
-              href: '/collections/decorte/マッサージ'
-            },
-            {
-              text: "サンプロダクツ・UVケア",
-              href: '/collections/decorte/サンプロダクツ・UVケア'
-            }
-          ]
-        },
-        {
-          text: "ベースメイク",
-          href: '/collections/decorte/ベースメイク',
-          children: [
-            {
-              text: "パウダーファンデーション",
-              href: '/collections/decorte/パウダーファンデーション'
-            },
-            {
-              text: "リキッドファンデーション",
-              href: '/collections/decorte/リキッドファンデーション'
-            },
-            {
-              text: "クッションファンデーション",
-              href: '/collections/decorte/クッションファンデーション'
-            },
-            {
-              text: "クリームファンデーション",
-              href: '/collections/decorte/クリームファンデーション'
-            },
-            {
-              text: "化粧下地",
-              href: '/collections/decorte/化粧下地-プライマー'
-            },
-            {
-              text: "フェイスパウダー",
-              href: '/collections/decorte/フェイスパウダー-セッティングパウダー'
-            },
-            {
-              text: "コンシーラー",
-              href: '/collections/decorte/コンシーラー'
-            },
-            {
-              text: "コントロールカラー",
-              href: '/collections/decorte/コントロールカラー'
-            }
-          ]
-        },
-        {
-          text: "ポイントメイク",
-          href: '/collections/decorte/ポイントメイク',
-          children: [
-            {
-              text: "フェイスカラー",
-              href: '/collections/decorte/チーク・ブラッシュ'
-            },
-            {
-              text: "アイカラー",
-              href: '/collections/decorte/アイメイク'
-            },
-            {
-              text: "アイブロウ",
-              href: '/collections/decorte/アイブロウ'
-            },
-            {
-              text: "アイライナー",
-              href: '/collections/decorte/アイライナー'
-            },
-            {
-              text: "マスカラ",
-              href: '/collections/decorte/マスカラ'
-            },
-            {
-              text: "リップカラー",
-              href: '/collections/decorte/リップメイク'
-            },
-            {
-              text: "ネイルカラー",
-              href: '/collections/decorte/ネイル'
-            },
-            {
-              text: "リムーバー",
-              href: '/collections/decorte/リムーバー'
-            }
-          ]
-        },
-        {
-          text: "オンラインカウンセリング",
-          href: 'https://online.sukiya.biz/pages/decorte-counseling',
-          target: '_blank'
-        },
-        {
-          text: "Our Story",
-          href: '/pages/decorte-our-story'
+        return this.isLineLogin
+      },
+      verifyHukubukuro() {
+        if (!!this.isLineLogin) {
+          return true
+        } else {
+          // LINE未ログイン時の処理
+          location.href = 'https://online.sukiya.biz/pages/newyear-2023'
         }
-      ],
-      decorteCategories: [
-        {
-          text: "スキンケア",
-          href: '/collections/decorte/スキンケア',
-          children: [
-            {
-              text: "クレンジング",
-              href: '/collections/decorte/クレンジング'
-            },
-            {
-              text: "洗顔料",
-              href: '/collections/decorte/洗顔料'
-            },
-            {
-              text: "乳液",
-              href: '/collections/decorte/乳液'
-            },
-            {
-              text: "化粧水",
-              href: '/collections/decorte/化粧水'
-            },
-            {
-              text: "美容液",
-              href: '/collections/decorte/美容液'
-            },
-            {
-              text: "クリーム",
-              href: '/collections/decorte/美容クリーム'
-            },
-            {
-              text: "マスク",
-              href: '/collections/decorte/マスク'
-            },
-            {
-              text: "マッサージ",
-              href: '/collections/decorte/マッサージ'
-            },
-            {
-              text: "サンプロダクツ・UVケア",
-              href: '/collections/decorte/サンプロダクツ・UVケア'
-            }
-          ]
-        },
-        {
-          text: "ポイントメイク",
-          href: '/collections/decorte/ポイントメイク',
-          children: [
-            {
-              text: "フェイスカラー",
-              href: '/collections/decorte/チーク・ブラッシュ'
-            },
-            {
-              text: "アイカラー",
-              href: '/collections/decorte/アイメイク'
-            },
-            {
-              text: "アイブロウ",
-              href: '/collections/decorte/アイブロウ'
-            },
-            {
-              text: "アイライナー",
-              href: '/collections/decorte/アイライナー'
-            },
-            {
-              text: "マスカラ",
-              href: '/collections/decorte/マスカラ'
-            },
-            {
-              text: "リップカラー",
-              href: '/collections/decorte/リップメイク'
-            },
-            {
-              text: "ネイルカラー",
-              href: '/collections/decorte/ネイル'
-            },
-            {
-              text: "リムーバー",
-              href: '/collections/decorte/リムーバー'
-            }
-          ]
-        },
-        {
-          text: "ベースメイク",
-          href: '/collections/decorte/ベースメイク',
-          children: [
-            {
-              text: "パウダーファンデーション",
-              href: '/collections/decorte/パウダーファンデーション'
-            },
-            {
-              text: "リキッドファンデーション",
-              href: '/collections/decorte/リキッドファンデーション'
-            },
-            {
-              text: "クッションファンデーション",
-              href: '/collections/decorte/クッションファンデーション'
-            },
-            {
-              text: "クリームファンデーション",
-              href: '/collections/decorte/クリームファンデーション'
-            },
-            {
-              text: "化粧下地",
-              href: '/collections/decorte/化粧下地-プライマー'
-            },
-            {
-              text: "フェイスパウダー",
-              href: '/collections/decorte/フェイスパウダー-セッティングパウダー'
-            },
-            {
-              text: "コンシーラー",
-              href: '/collections/decorte/コンシーラー'
-            },
-            {
-              text: "コントロールカラー",
-              href: '/collections/decorte/コントロールカラー'
-            }
-          ]
-        },
-        {
-          text: "フレグランス",
-          href: '/collections/decorte/フレグランス',
-          children: [
-            {
-              text: "オードトワレ",
-              href: '/collections/decorte/decorteフレグランス'
-            }
-          ]
-        },
-        {
-          text: "ボディ＆ヘア",
-          href: '/collections/decorte/ボディ＆ヘア',
-          children: [
-            {
-              text: "ヘアケア",
-              href: '/collections/decorte/ヘアケア'
-            },
-            {
-              text: "スタイリング",
-              href: '/collections/decorte/スタイリング'
-            },
-            {
-              text: "頭皮ケア",
-              href: '/collections/decorte/頭皮ケア'
-            },
-            {
-              text: "ボディケア",
-              href: '/collections/decorte/ボディケア'
-            },
-            {
-              text: "ハンドケア",
-              href: '/collections/decorte/ハンドケア'
-            }
-          ]
-        },
-        {
-          text: "インナービューティ他",
-          href: '',
-          children: [
-            {
-              text: "スキンケア用アクセサリー",
-              href: '/collections/decorte/スキンケア用アクセサリー'
-            },
-            {
-              text: "ベースメイク用アクセサリー",
-              href: '/collections/decorte/ベースメイク用アクセサリー'
-            },
-            {
-              text: "ポイントメイク用アクセサリー",
-              href: '/collections/decorte/ポイントメイク用アクセサリー'
-            },
-            {
-              text: "インナービューティー",
-              href: '/collections/decorte/インナービューティー'
-            }
-          ]
+      },
+      async getAccessToken(code) {
+        let params = new URLSearchParams()
+        const redirect_uri = 'https://online.sukiya.biz' + pathname
+        params.append('grant_type', 'authorization_code')
+        params.append('code', code)
+        params.append('redirect_uri', redirect_uri)
+        params.append('client_id', '1653973522')
+        params.append('client_secret', '9f414ff957dd68ee18475c82e5b8a20a')
+        return await axios.post('https://api.line.me/oauth2/v2.1/token', params)
+          .catch(error => console.error(error))
+      },
+      async getUserProfile(accessToken) {
+        return await axios.get('https://api.line.me/v2/profile', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        }).catch(error => console.error(error))
+      },
+      async getConnectStatus(userId, accessToken) {
+        const connectedUser = await axios.get(`https://liffapi.sukiya.biz/api/line-user/${userId}?token=${accessToken}`)
+          .catch(error => console.error(error))
+        this.isLineConnected = !!connectedUser
+        return this.isLineConnected
+      },
+      async cpbConnectCheck() {
+        const url = cpbApiBaseUrl + '/check-id-connect'
+        const response = await axios.post(url, {
+          site_serial: cpbApiSiteSerial,
+          tkisk_cd: '606222',
+          tkisk_ec_id: this.customer_id,
+        })
+
+        this.cpb_connect_status = response.data.id_renkei_kbn
+      },
+      async getCpbConnectOtp() {
+        const url = cpbApiBaseUrl + '/get-connect-otp'
+        const response = await axios.post(url, {
+          site_serial: cpbApiSiteSerial,
+          tkisk_cd: '606222',
+          tkisk_ec_id: this.customer_id,
+        })
+
+        this.cpb_connect_token = response.data.onetime_password
+      }
+    },
+    created() {
+      if (localStorage.isLineLogin) {
+        this.isLineLogin = localStorage.isLineLogin === 'true'
+      }
+
+      const pathname = location.pathname
+
+      if (pathname === '/pages/newyear-2023') {
+        this.verifyLineLogin()
+      }
+
+      // CPB連携チェック
+      if (pathname === '/pages/cpb-connect' || pathname === '/cart') {
+        this.cpbConnectCheck()
+      }
+
+      if (pathname === '/pages/cpb-connect') {
+        this.getCpbConnectOtp()
+      }
+    },
+    mounted() {
+      this.$refs.modal.classList.remove('tw-hidden');
+    },
+    watch: {
+      isLineLogin(v) {
+        localStorage.isLineLogin = v;
+      },
+      isOpenModal: function (newValue) {
+        if (newValue) {
+          document.body.classList.add('tw-overflow-hidden');
+        } else {
+          document.body.classList.remove('tw-overflow-hidden');
         }
-      ],
-      modalScrollPosition: 0,
-      cpbConnectDialog: false,
-      cpbMainVisualSwiperOptions: {
-        spaceBetween: 30,
-        effect: 'fade',
-        autoplay: true,
-        loop: true,
-        pagination: {
-          el: '.swiper-pagination',
-          clickable: true,
-        },
-        navigation: {
-          nextEl: '.swiper-button-next',
-          prevEl: '.swiper-button-prev',
-        },
-      },
-      customer_id: __st.cid,
-      cpb_connect_token: '',
-      cpb_connect_status: '',
-      isOpenModal: false,
-      activeIndex: null,
-      activeChildIndex: null,
-    }
-  },
-  computed: {
-    hash() {
-      return parsedUrl.hash
-    },
-    cpbCounselingFirstNotAvailable() {
-      return this.counselingStatus.q1 === null || (this.counselingStatus.q1 === 1 && this.counselingStatus.q2 === null)
-    },
-    decorteCounselingFirstNotAvailable() {
-      return this.decorteCounselingStatus.q1 === null || this.decorteCounselingStatus.q2 === null || this.decorteCounselingStatus.q3 === null
-    },
-    prediaCounselingFirstNotAvailable() {
-      return this.prediaCounselingStatus.q1 === null || this.prediaCounselingStatus.q2 === null || this.prediaCounselingStatus.q3 === null
-    }
-  },
-  methods: {
-    getCategoryFromName(v) {
-      return this.categories.find(category => category.title_ja === v)
-    },
-    closeCounselingModal() {
-      this.counselingModal = false
-      this.retryCounseling()
-    },
-    addCart() {
-      const addCartBtn = document.getElementsByClassName('product-form__cart-submit')[0]
-      addCartBtn.click()
-      this.closeCounselingModal()
-    },
-    retryCounseling() {
-      this.counselingModalStep = 1
-      this.counselingStatus = {
-        q1: null,
-        q2: null,
-        q3: null
-      }
-      this.decorteCounselingStatus = {
-        q1: null,
-        q2: null,
-        q3: null
-      }
-      this.prediaCounselingStatus = {
-        q1: null,
-        q2: null,
-        q3: null
       }
     },
-    async verifyLineLogin() {
-      const code = parsedUrl.searchParams.get("code")
-      if (code) {
-        const accessToken = await this.getAccessToken(code)
-        this.lineUser = await this.getUserProfile(accessToken.data.access_token)
-        this.isLineLogin = await this.getConnectStatus(this.lineUser.data.userId, accessToken.data.access_token)
-      }
-      return this.isLineLogin
-    },
-    verifyHukubukuro() {
-      if (!!this.isLineLogin) {
-        return true
-      } else {
-        // LINE未ログイン時の処理
-        location.href = 'https://online.sukiya.biz/pages/newyear-2023'
-      }
-    },
-    async getAccessToken(code) {
-      let params = new URLSearchParams()
-      const redirect_uri = 'https://online.sukiya.biz' + pathname
-      params.append('grant_type', 'authorization_code')
-      params.append('code', code)
-      params.append('redirect_uri', redirect_uri)
-      params.append('client_id', '1653973522')
-      params.append('client_secret', '9f414ff957dd68ee18475c82e5b8a20a')
-      return await axios.post('https://api.line.me/oauth2/v2.1/token', params)
-        .catch(error => console.error(error))
-    },
-    async getUserProfile(accessToken) {
-      return await axios.get('https://api.line.me/v2/profile', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      }).catch(error => console.error(error))
-    },
-    async getConnectStatus(userId, accessToken) {
-      const connectedUser = await axios.get(`https://liffapi.sukiya.biz/api/line-user/${userId}?token=${accessToken}`)
-        .catch(error => console.error(error))
-      this.isLineConnected = !!connectedUser
-      return this.isLineConnected
-    },
-    openDecorteCounselingModal() {
-      window.open(
-        'https://www.cosmedecorte.com/counseling2/?utm_source=storelist&utm_medium=Sukiya&utm_campaign=counseling',
-        'webカウンセリング',
-        "width=820,height=600,scrollbars=yes,status=no,toolbar=no,location=no,menubar=no,directories=no,resizable=yes"
-      )
-    },
-    async cpbConnectCheck() {
-      const url = cpbApiBaseUrl + '/check-id-connect'
-      const response = await axios.post(url, {
-        site_serial: cpbApiSiteSerial,
-        tkisk_cd: '606222',
-        tkisk_ec_id: this.customer_id,
-      })
+  })
+}
 
-      this.cpb_connect_status = response.data.id_renkei_kbn
-    },
-    async getCpbConnectOtp() {
-      const url = cpbApiBaseUrl + '/get-connect-otp'
-      const response = await axios.post(url, {
-        site_serial: cpbApiSiteSerial,
-        tkisk_cd: '606222',
-        tkisk_ec_id: this.customer_id,
-      })
-
-      this.cpb_connect_token = response.data.onetime_password
-    }
-  },
-  created() {
-    if (localStorage.isLineLogin) {
-      this.isLineLogin = localStorage.isLineLogin === 'true'
-    }
-    if (localStorage.counselingStatus) {
-      this.counselingStatus = JSON.parse(localStorage.counselingStatus)
-    }
-
-    const pathname = location.pathname
-
-    if (pathname === '/pages/newyear-2023') {
-      this.verifyLineLogin()
-    }
-
-    // CPB連携チェック
-    if (pathname === '/pages/cpb-connect' || pathname === '/cart') {
-      this.cpbConnectCheck()
-    }
-
-    if (pathname === '/pages/cpb-connect') {
-      this.getCpbConnectOtp()
-    }
-  },
-  mounted() {
-    this.$refs.modal.classList.remove('tw-hidden');
-  },
-  watch: {
-    isLineLogin(v) {
-      localStorage.isLineLogin = v;
-    },
-    counselingStatus: {
-      handler: function (v, oldVal) {
-        localStorage.counselingStatus = JSON.stringify(v);
-      },
-      deep: true
-    },
-    decorteCounselingStatus: {
-      handler: function (v, oldVal) {
-        localStorage.decorteCounselingStatus = JSON.stringify(v);
-      },
-      deep: true
-    },
-    prediaCounselingStatus: {
-      handler: function (v, oldVal) {
-        localStorage.prediaCounselingStatus = JSON.stringify(v);
-      },
-      deep: true
-    },
-    isOpenModal: function (newValue) {
-      if (newValue) {
-        document.body.classList.add('tw-overflow-hidden');
-      } else {
-        document.body.classList.remove('tw-overflow-hidden');
-      }
-    }
-  },
-})
