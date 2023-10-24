@@ -1,4 +1,6 @@
-Dawn 11.0.0 introduces new customization options to the announcement bar, new animations and hover effects, and a Quick order list section to product pages. 
+Dawn 11.0.0 introduces new customization options to the announcement bar, new animations and hover effects, and a Quick order list section to product pages.
+
+testestest
 
 ### Added
 - You can now add multiple Announcement bar sections to your Header. 
