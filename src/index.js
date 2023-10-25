@@ -3,6 +3,17 @@ import axios from 'axios'
 import './css/input.css'
 import {register} from 'swiper/element/bundle';
 register();
+const swiperEl = document.querySelector('swiper-container');
+if (swiperEl) {
+  const params = {
+    pagination: {
+      clickable: true,
+    }
+  }
+
+  Object.assign(swiperEl, params)
+  swiperEl.initialize()
+}
 
 import './sass/app.scss'
 const parsedUrl = new URL(window.location.href);
@@ -22,284 +33,6 @@ if (host === 'perfumerie-sukiya-online-test.myshopify.com') {
   cpbApiSiteSerial = 'fBiPpaK2L6gqaXWIT87xnhc6RuOApD2XykJTl2jiyR4Ql2nlak'
 }
 
-const categories = [
-  {
-    id: 589,
-    title: 'SKIN CARE',
-    title_ja: 'スキンケア',
-  },
-  {
-    id: 3517,
-    title: 'FACE',
-    title_ja: 'スキンケア フェイス',
-  },
-  {
-    id: 3519,
-    title: 'LOTION',
-    title_ja: '化粧水',
-  },
-  {
-    id: 3521,
-    title: 'EMULSION',
-    title_ja: '乳液',
-  },
-  {
-    id: 3522,
-    title: 'ESSENCE',
-    title_ja: '美容液',
-  },
-  {
-    id: 3523,
-    title: 'CREAM',
-    title_ja: 'クリーム',
-  },
-  {
-    id: 3524,
-    title: 'MASK',
-    title_ja: 'マスク',
-  },
-  {
-    id: 3525,
-    title: 'CLEANSING',
-    title_ja: 'メイク落とし・洗顔フォーム',
-  },
-  {
-    id: 3526,
-    title: 'MASSAGE CREAM',
-    title_ja: 'マッサージクリーム',
-  },
-  {
-    id: 1384,
-    title: 'BODY',
-    title_ja: 'ボディ',
-  },
-  {
-    id: 3543,
-    title: 'COTTON',
-    title_ja: 'コットン',
-  },
-  {
-    id: 593,
-    title: 'HAIR & BODY',
-    title_ja: 'ヘア＆ボディ',
-  },
-  {
-    id: 1519,
-    title: 'UV',
-    title_ja: 'サン・スキンケア',
-  },
-  {
-    id: 3527,
-    title: 'MAKE UP',
-    title_ja: 'メイクアップ',
-  },
-  {
-    id: 3528,
-    title: 'MAKE UP FACE',
-    title_ja: 'メイクアップ フェイス',
-  },
-  {
-    id: 3529,
-    title: 'FOUNDATION',
-    title_ja: 'ファンデーション',
-  },
-  {
-    id: 5021,
-    title: 'POWDER FOUNDATION',
-    title_ja: 'パウダーファンデーション',
-  },
-  {
-    id: 5022,
-    title: 'LIQUID FOUNDATION',
-    title_ja: 'リキッドファンデーション',
-  },
-  {
-    id: 5023,
-    title: 'CUSHION FOUNDATION',
-    title_ja: 'クッションファンデーション',
-  },
-  {
-    id: 5024,
-    title: 'CREAM FOUNDATION',
-    title_ja: 'クリームファンデーション',
-  },
-  {
-    id: 3530,
-    title: 'PRE MAKE UP',
-    title_ja: 'プレメイクアップ',
-  },
-  {
-    id: 3531,
-    title: 'CONCEALER',
-    title_ja: 'コンシーラー',
-  },
-  {
-    id: 3532,
-    title: 'FACE POWDER',
-    title_ja: 'フェイスパウダー',
-  },
-  {
-    id: 3533,
-    title: 'FACE COLOR',
-    title_ja: 'フェイスカラー',
-  },
-  {
-    id: 624,
-    title: 'CHEEK',
-    title_ja: 'チークカラー',
-  },
-  {
-    id: 594,
-    title: 'LIP',
-    title_ja: 'リップ',
-  },
-  {
-    id: 3535,
-    title: 'LIP STICK',
-    title_ja: 'リップスティック',
-  },
-  {
-    id: 3536,
-    title: 'LIP GLOSS',
-    title_ja: 'リップグロス',
-  },
-  {
-    id: 3537,
-    title: 'LIQUID ROUGE',
-    title_ja: 'リキッドルージュ',
-  },
-  {
-    id: 3538,
-    title: 'LIP LINER',
-    title_ja: 'リップライナー',
-  },
-  {
-    id: 587,
-    title: 'EYE',
-    title_ja: 'アイ',
-  },
-  {
-    id: 3539,
-    title: 'EYE SHADOW',
-    title_ja: 'アイシャドウ',
-  },
-  {
-    id: 3540,
-    title: 'MASCARA',
-    title_ja: 'マスカラ',
-  },
-  {
-    id: 3541,
-    title: 'EYE LINER',
-    title_ja: 'アイライナー',
-  },
-  {
-    id: 3542,
-    title: 'EYE BROW',
-    title_ja: 'アイブロウ',
-  },
-  {
-    id: 590,
-    title: 'NAIL',
-    title_ja: 'ネイル',
-  },
-  {
-    id: 592,
-    title: 'BASE MAKE',
-    title_ja: 'ベースメイク',
-  },
-  {
-    id: 591,
-    title: 'FRAGRANCE',
-    title_ja: 'フレグランス',
-  },
-  {
-    id: 588,
-    title: 'ACCESSORY',
-    title_ja: 'アクセサリー',
-  },
-  {
-    id: 3544,
-    title: 'ACCESSORY BRASH',
-    title_ja: 'ブラシ・パフ・スポンジ・チップ',
-  },
-  {
-    id: 3545,
-    title: 'ACCESSORY CASE',
-    title_ja: 'ケース・ホルダー',
-  },
-  {
-    id: 3546,
-    title: 'ACCESSORY NAIL',
-    title_ja: 'ネイルケア',
-  },
-  {
-    id: 1961,
-    title: 'ORAL CARE',
-    title_ja: 'オーラルケア',
-  },
-  {
-    id: 1751,
-    title: 'DECORTÉ POINT MAKEUP',
-    title_ja: 'DECORTÉ POINT MAKEUP',
-  },
-  {
-    id: 1752,
-    title: 'DECORTÉ BASE MAKEUP',
-    title_ja: 'DECORTÉ BASE MAKEUP',
-  },
-  {
-    id: 5007,
-    title: 'PRIMER',
-    title_ja: '化粧下地',
-  },
-  {
-    id: 5008,
-    title: 'CONTROL COLOR',
-    title_ja: 'コントロールカラー',
-  },
-  {
-    id: 5009,
-    title: 'Eau de Toilette',
-    title_ja: 'オードトワレ',
-  },
-  {
-    id: 5010,
-    title: 'HAIR CARE',
-    title_ja: 'ヘアケア',
-  },
-  {
-    id: 5011,
-    title: 'HAIR STYLING',
-    title_ja: 'スタイリング',
-  },
-  {
-    id: 5012,
-    title: 'HEAD SKIN CARE',
-    title_ja: '頭皮ケア',
-  },
-  {
-    id: 5013,
-    title: 'SKIN CARE ACCESSORY',
-    title_ja: 'スキンケア用アクセサリー',
-  },
-  {
-    id: 5014,
-    title: 'BASE MAKE ACCESSORY',
-    title_ja: 'ベースメイク用アクセサリー',
-  },
-  {
-    id: 5015,
-    title: 'MAKE UP ACCESSORY',
-    title_ja: 'ポイントメイク用アクセサリー',
-  },
-  {
-    id: 5016,
-    title: 'INNER BEAUTY',
-    title_ja: 'インナービューティー',
-  }
-]
-
 // #app要素がある場合のみVueを起動する
 if (document.getElementById('app')) {
   console.log('vue start')
@@ -308,139 +41,9 @@ if (document.getElementById('app')) {
     delimiters: ['${', '}'],
     data() {
       return {
-        categories: categories,
         isLineLogin: false,
         lineUser: null,
         isLineConnected: false,
-        decorteNavItems: [
-          {
-            text: "スキンケア",
-            href: '/collections/decorte/スキンケア',
-            children: [
-              {
-                text: "クレンジング",
-                href: '/collections/decorte/クレンジング'
-              },
-              {
-                text: "洗顔料",
-                href: '/collections/decorte/洗顔料'
-              },
-              {
-                text: "乳液",
-                href: '/collections/decorte/乳液'
-              },
-              {
-                text: "化粧水",
-                href: '/collections/decorte/化粧水'
-              },
-              {
-                text: "美容液",
-                href: '/collections/decorte/美容液'
-              },
-              {
-                text: "クリーム",
-                href: '/collections/decorte/美容クリーム'
-              },
-              {
-                text: "マスク",
-                href: '/collections/decorte/マスク'
-              },
-              {
-                text: "マッサージ",
-                href: '/collections/decorte/マッサージ'
-              },
-              {
-                text: "サンプロダクツ・UVケア",
-                href: '/collections/decorte/サンプロダクツ・UVケア'
-              }
-            ]
-          },
-          {
-            text: "ベースメイク",
-            href: '/collections/decorte/ベースメイク',
-            children: [
-              {
-                text: "パウダーファンデーション",
-                href: '/collections/decorte/パウダーファンデーション'
-              },
-              {
-                text: "リキッドファンデーション",
-                href: '/collections/decorte/リキッドファンデーション'
-              },
-              {
-                text: "クッションファンデーション",
-                href: '/collections/decorte/クッションファンデーション'
-              },
-              {
-                text: "クリームファンデーション",
-                href: '/collections/decorte/クリームファンデーション'
-              },
-              {
-                text: "化粧下地",
-                href: '/collections/decorte/化粧下地-プライマー'
-              },
-              {
-                text: "フェイスパウダー",
-                href: '/collections/decorte/フェイスパウダー-セッティングパウダー'
-              },
-              {
-                text: "コンシーラー",
-                href: '/collections/decorte/コンシーラー'
-              },
-              {
-                text: "コントロールカラー",
-                href: '/collections/decorte/コントロールカラー'
-              }
-            ]
-          },
-          {
-            text: "ポイントメイク",
-            href: '/collections/decorte/ポイントメイク',
-            children: [
-              {
-                text: "フェイスカラー",
-                href: '/collections/decorte/チーク・ブラッシュ'
-              },
-              {
-                text: "アイカラー",
-                href: '/collections/decorte/アイメイク'
-              },
-              {
-                text: "アイブロウ",
-                href: '/collections/decorte/アイブロウ'
-              },
-              {
-                text: "アイライナー",
-                href: '/collections/decorte/アイライナー'
-              },
-              {
-                text: "マスカラ",
-                href: '/collections/decorte/マスカラ'
-              },
-              {
-                text: "リップカラー",
-                href: '/collections/decorte/リップメイク'
-              },
-              {
-                text: "ネイルカラー",
-                href: '/collections/decorte/ネイル'
-              },
-              {
-                text: "リムーバー",
-                href: '/collections/decorte/リムーバー'
-              }
-            ]
-          },
-          {
-            text: "オンラインカウンセリング",
-            href: 'https://online.sukiya.biz/pages/decorte-counseling',
-            target: '_blank'
-          },
-          {
-            text: "Our Story",
-            href: '/pages/decorte-our-story'
-          }
-        ],
         decorteCategories: [
           {
             text: "スキンケア",
@@ -619,7 +222,6 @@ if (document.getElementById('app')) {
             ]
           }
         ],
-        modalScrollPosition: 0,
         customer_id: __st.cid,
         cpb_connect_token: '',
         cpb_connect_status: '',
@@ -719,13 +321,6 @@ if (document.getElementById('app')) {
     watch: {
       isLineLogin(v) {
         localStorage.isLineLogin = v;
-      },
-      isOpenModal: function (newValue) {
-        if (newValue) {
-          document.body.classList.add('tw-overflow-hidden');
-        } else {
-          document.body.classList.remove('tw-overflow-hidden');
-        }
       }
     },
   })
