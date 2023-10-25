@@ -1,46 +1,54 @@
+{% comment %}my-accordion.jsの読み込み{% endcomment %}
+<script src="{{ 'my-accordion.js' | asset_url }}" defer="defer"></script>
+
 <!-- SP ナビメニュー -->
 <div class="sp-only">
-  <ul class="tw-bg-gray-900 tw-text-white tw-my-10">
-    <li v-for="(item, index) in cpbNavItems" :key="index" class="tw-w-full tw-border-b tw-border-gray-700">
-      <a :href="item.href" v-if="!item.children" class="tw-flex tw-justify-between tw-items-center tw-p-4">
-        <span v-text="item.text"></span>
-        <i class="mdi mdi-chevron-right"></i>
-      </a>
-
-      <div v-else>
-        <button @click="activeIndex == index ? activeIndex = null : activeIndex = index"
-                class="tw-w-full tw-text-left tw-flex tw-justify-between tw-items-center tw-p-4">
-          <span v-text="item.text"></span>
-          <i :class="activeIndex == index ? 'mdi mdi-chevron-down' : 'mdi mdi-chevron-right'"></i>
-        </button>
-
-        <div v-if="activeIndex == index" class="tw-bg-gray-100 tw-text-black">
-          <div v-for="(child, i) in item.children" :key="`child_${i}`"
-               class="tw-border-b tw-border-gray-700">
-            <a :href="child.href" v-if="!child.children" class="tw-block tw-p-4">
-              <span v-text="child.text"></span>
+  <my-accordion>
+    <ul class="tw-bg-gray-900 tw-text-white tw-my-10 tw-p-0">
+      {% for link in linklists['cpb-nav-menu'].links %}
+        <li class="tw-w-full">
+          {% if link.links == empty %}
+            <a href="{{ link.url }}"
+               class="tw-flex tw-justify-between tw-items-center tw-p-4 tw-bg-black tw-text-white tw-no-underline">
+              <span>{{ link.title }}</span>
               <i class="mdi mdi-chevron-right"></i>
             </a>
-
-            <div v-else>
-              <button @click="activeChildIndex == i ? activeChildIndex = null : activeChildIndex = i"
-                      class="tw-w-full tw-text-left tw-flex tw-justify-between tw-items-center tw-p-4">
-                <span v-text="child.text"></span>
-                <i :class="activeChildIndex == i ? 'mdi mdi-chevron-down' : 'mdi mdi-chevron-right'"></i>
-              </button>
-
-              <div v-if="activeChildIndex == i" class="tw-bg-white tw-grid tw-grid-cols-2">
-                <a :href="grandchild.href" v-for="(grandchild, j) in child.children"
-                   :key="`grandchild_${j}`" class="tw-block tw-p-4 tw-border tw-border-gray-100">
-                  <span v-text="grandchild.text"></span>
-                  <i class="mdi mdi-chevron-right"></i>
-                </a>
-              </div>
+          {% else %}
+            <div
+                class="accordion tw-w-full tw-text-left tw-flex tw-justify-between tw-items-center tw-p-4 tw-bg-black tw-text-white">
+              <span>{{ link.title }}</span>
+              <i class="mdi mdi-chevron-right"></i>
             </div>
-          </div>
-        </div>
-      </div>
-    </li>
-  </ul>
+
+            <div class="panel tw-bg-gray-100 tw-text-black">
+              {% for child_link in link.links %}
+                {% if child_link.links == emplty %}
+                  <a href="{{ child_link.url }}" class="tw-block tw-p-4 tw-bg-gray-100 tw-text-black tw-no-underline">
+                    <span>{{ child_link.title }}</span>
+                    <i class="mdi mdi-chevron-right"></i>
+                  </a>
+                {% else %}
+                  <div
+                      class="accordion tw-w-full tw-text-left tw-flex tw-justify-between tw-items-center tw-p-4 tw-bg-gray-100 tw-text-black">
+                    <span>{{ child_link.title }}</span>
+                    <i class="mdi mdi-chevron-right"></i>
+                  </div>
+
+                  <div class="panel tw-bg-white tw-grid tw-grid-cols-2">
+                    {% for grand_child_link in child_link.links %}
+                      <a href="{{ grand_child_link.url }}" class="tw-block tw-p-4 tw-no-underline tw-text-current">
+                        <span>{{ grand_child_link.title }}</span>
+                        <i class="mdi mdi-chevron-right"></i>
+                      </a>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </my-accordion>
 </div>
 <!-- SP ナビメニュー end -->
