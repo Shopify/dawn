@@ -1,4 +1,3 @@
-const {VueLoaderPlugin} = require("vue-loader");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require('path');
 // 'production' か 'development' を指定
@@ -29,10 +28,6 @@ module.exports = {
         ],
       },
       {
-        test: /\.vue$/,
-        loader: "vue-loader",
-      },
-      {
         test: /\.s[ac]ss$/i, // 対象となるファイルの拡張子
         use: [
           {
@@ -61,15 +56,9 @@ module.exports = {
   },
   // import 文で .ts ファイルを解決するため
   resolve: {
-    // Webpackで利用するときの設定
-    alias: {
-      vue$: "vue/dist/vue.esm.js",
-    },
-    extensions: ["*", ".js", ".vue", ".json"],
+    extensions: ["*", ".js", ".json"],
   },
   plugins: [
-    // Vueを読み込めるようにするため
-    new VueLoaderPlugin(),
     new MiniCssExtractPlugin()
   ],
   // ES5(IE11等)向けの指定
