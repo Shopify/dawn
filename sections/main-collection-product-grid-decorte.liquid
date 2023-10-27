@@ -2,6 +2,7 @@
 {{ 'component-loading-overlay.css' | asset_url | stylesheet_tag }}
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
+{{ 'component-slider.css' | asset_url | stylesheet_tag }}
 
 {% if section.settings.image_shape == 'blob' %}
   {{ 'mask-blobs.css' | asset_url | stylesheet_tag }}
@@ -27,7 +28,19 @@
   }
 {%- endstyle -%}
 
-{% assign decorte_top_slider = collection.metafields.custom.decorte_top_slider %}
+{%- liquid
+  assign products_to_display = section.settings.products_to_show
+  assign more_in_collection = true
+
+  assign columns_mobile_int = section.settings.columns_mobile | plus: 0
+  assign show_mobile_slider = false
+  assign show_mobile_slider = true
+
+  assign show_desktop_slider = false
+  assign show_desktop_slider = true
+
+  assign decorte_top_slider = collection.metafields.custom.decorte_top_slider
+-%}
 
 <!--  Decorte  -->
 <div class="item-list cpb-brand-page">
@@ -214,14 +227,11 @@
       <div class="tw-my-6">
         {% if decorte_top_slider %}
           <swiper-container
-              :space-between="30"
+              space-between="30"
               effect="fade"
-              :loop="true"
-              :autoplay="true"
-              :pagination="{
-          el: '.swiper-pagination',
-          clickable: true
-        }"
+              loop="true"
+              autoplay="true"
+              init="false"
           >
             {% for slide in decorte_top_slider.value %}
               <swiper-slide>
@@ -254,105 +264,197 @@
         >
       </a>
       <div class="cpb-items tw-my-10">
-        <h3 class="text-center tw-text-3xl tw-font-bold tw-mb-6">NEW ARRIVALS</h3>
-        <div class="recommend-list tw-grid tw-grid-cols-2 md:tw-grid-cols-3 tw-gap-2 md:tw-gap-5">
-          <!--商品リスト▼-->
-          {% for product in collections['decorte-top-new-arrival'].products %}
-            <a href="{{ product.url }}" class="recommend-list-item">
-              <img src="{{ product.featured_image | image_url }}" alt="{{ product.title }}" class="tw-aspect-square">
-              <div class="tw-tracking-wider">
-                <p class="tw-text-xs tw-leading-5">DECORTÉ<br/>
-                  {{ product.title }}<br/>
-                  <span class="tw-text-sm tw-font-bold">{{ product.price | money }}円</span></p>
+        <h3 class="tw-text-center tw-text-3xl tw-font-bold tw-mb-6">NEW ARRIVALS</h3>
+        <slider-component class="slider-mobile-gutter{% if section.settings.full_width %} slider-component-full-width{% endif %}{% if show_mobile_slider == false %} page-width{% endif %}{% if show_desktop_slider == false and section.settings.full_width == false %} page-width-desktop{% endif %}{% if show_desktop_slider %} slider-component-desktop{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+          <ul
+              id="Slider-{{ section.id }}"
+              class="grid product-grid contains-card contains-card--product{% if settings.card_style == 'standard' %} contains-card--standard{% endif %} grid--{{ section.settings.columns_desktop }}-col-desktop{% if section.settings.collection == blank %} grid--2-col-tablet-down{% else %} grid--{{ section.settings.columns_mobile }}-col-tablet-down{% endif %}{% if show_mobile_slider or show_desktop_slider %} slider{% if show_desktop_slider %} slider--desktop{% endif %}{% if show_mobile_slider %} slider--tablet grid--peek{% endif %}{% endif %}"
+              role="list"
+              aria-label="{{ 'general.slider.name' | t }}"
+          >
+            {%- for product in collections['decorte-top-new-arrival'].products -%}
+              <li
+                  id="Slide-{{ section.id }}-{{ forloop.index }}"
+                  class="grid__item{% if show_mobile_slider or show_desktop_slider %} slider__slide{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}{% if section.settings.ranking %} ranking-item{% endif %}"
+                  {% if settings.animations_reveal_on_scroll %}
+                    data-cascade
+                    style="--animation-order: {{ forloop.index }};"
+                  {% endif %}
+              >
+                {% if section.settings.ranking %}
+                  <span class="rank">{{ forloop.index }}</span>
+                {% endif %}
+                {% render 'card-product',
+                    card_product: product,
+                    media_aspect_ratio: section.settings.image_ratio,
+                    image_shape: section.settings.image_shape,
+                    show_secondary_image: section.settings.show_secondary_image,
+                    show_vendor: section.settings.show_vendor,
+                    show_rating: section.settings.show_rating,
+                    show_quick_add: section.settings.enable_quick_add,
+                    section_id: section.id
+                %}
+              </li>
+            {%- endfor -%}
+          </ul>
+          {%- if show_mobile_slider or show_desktop_slider -%}
+            <div class="slider-buttons no-js-hidden">
+              <button
+                  type="button"
+                  class="slider-button slider-button--prev"
+                  name="previous"
+                  aria-label="{{ 'general.slider.previous_slide' | t }}"
+                  aria-controls="Slider-{{ section.id }}"
+              >
+                {% render 'icon-caret' %}
+              </button>
+              <div class="slider-counter caption">
+                <span class="slider-counter--current">1</span>
+                <span aria-hidden="true"> / </span>
+                <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+                <span class="slider-counter--total">{{ products_to_display }}</span>
               </div>
-            </a>
-          {% endfor %}
-          <!--商品リスト▲-->
-        </div>
+              <button
+                  type="button"
+                  class="slider-button slider-button--next"
+                  name="next"
+                  aria-label="{{ 'general.slider.next_slide' | t }}"
+                  aria-controls="Slider-{{ section.id }}"
+              >
+                {% render 'icon-caret' %}
+              </button>
+            </div>
+          {%- endif -%}
+        </slider-component>
       </div>
       <div class="cpb-items tw-my-10">
-        <h3 class="text-center tw-text-3xl tw-font-bold tw-mb-6">RANKING</h3>
-        <div class="recommend-list tw-grid tw-grid-cols-2 md:tw-grid-cols-3 tw-gap-2 md:tw-gap-5">
-          <!--商品リスト▼-->
-          {% for product in collections['decorte-top-recommend'].products %}
-            <a href="{{ product.url }}" class="recommend-list-item">
-              <img src="{{ product.featured_image | image_url }}" alt="{{ product.title }}" class="tw-aspect-square">
-              <div class="tw-tracking-wider">
-                <p class="tw-text-xs tw-leading-5">DECORTÉ<br/>
-                  {{ product.title }}<br/>
-                  <span class="tw-text-sm tw-font-bold">{{ product.price | money }}円</span></p>
+        <h3 class="tw-text-center tw-text-3xl tw-font-bold tw-mb-6">RANKING</h3>
+        <slider-component class="slider-mobile-gutter{% if section.settings.full_width %} slider-component-full-width{% endif %}{% if show_mobile_slider == false %} page-width{% endif %}{% if show_desktop_slider == false and section.settings.full_width == false %} page-width-desktop{% endif %}{% if show_desktop_slider %} slider-component-desktop{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+          <ul
+              id="Slider-{{ section.id }}"
+              class="grid product-grid contains-card contains-card--product{% if settings.card_style == 'standard' %} contains-card--standard{% endif %} grid--{{ section.settings.columns_desktop }}-col-desktop{% if section.settings.collection == blank %} grid--2-col-tablet-down{% else %} grid--{{ section.settings.columns_mobile }}-col-tablet-down{% endif %}{% if show_mobile_slider or show_desktop_slider %} slider{% if show_desktop_slider %} slider--desktop{% endif %}{% if show_mobile_slider %} slider--tablet grid--peek{% endif %}{% endif %}"
+              role="list"
+              aria-label="{{ 'general.slider.name' | t }}"
+          >
+            {%- for product in collections['decorte-top-recommend'].products -%}
+              <li
+                  id="Slide-{{ section.id }}-{{ forloop.index }}"
+                  class="grid__item{% if show_mobile_slider or show_desktop_slider %} slider__slide{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}{% if section.settings.ranking %} ranking-item{% endif %}"
+                  {% if settings.animations_reveal_on_scroll %}
+                    data-cascade
+                    style="--animation-order: {{ forloop.index }};"
+                  {% endif %}
+              >
+                {% if section.settings.ranking %}
+                  <span class="rank">{{ forloop.index }}</span>
+                {% endif %}
+                {% render 'card-product',
+                    card_product: product,
+                    media_aspect_ratio: section.settings.image_ratio,
+                    image_shape: section.settings.image_shape,
+                    show_secondary_image: section.settings.show_secondary_image,
+                    show_vendor: section.settings.show_vendor,
+                    show_rating: section.settings.show_rating,
+                    show_quick_add: section.settings.enable_quick_add,
+                    section_id: section.id
+                %}
+              </li>
+            {%- endfor -%}
+          </ul>
+          {%- if show_mobile_slider or show_desktop_slider -%}
+            <div class="slider-buttons no-js-hidden">
+              <button
+                  type="button"
+                  class="slider-button slider-button--prev"
+                  name="previous"
+                  aria-label="{{ 'general.slider.previous_slide' | t }}"
+                  aria-controls="Slider-{{ section.id }}"
+              >
+                {% render 'icon-caret' %}
+              </button>
+              <div class="slider-counter caption">
+                <span class="slider-counter--current">1</span>
+                <span aria-hidden="true"> / </span>
+                <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+                <span class="slider-counter--total">{{ products_to_display }}</span>
               </div>
-            </a>
-          {% endfor %}
-          <!--商品リスト▲-->
-        </div>
+              <button
+                  type="button"
+                  class="slider-button slider-button--next"
+                  name="next"
+                  aria-label="{{ 'general.slider.next_slide' | t }}"
+                  aria-controls="Slider-{{ section.id }}"
+              >
+                {% render 'icon-caret' %}
+              </button>
+            </div>
+          {%- endif -%}
+        </slider-component>
       </div>
 
       <div class="cpb-contents-nav mb-10">
-        <h3 class="text-center tw-text-3xl tw-font-bold tw-mb-6">CATEGORY</h3>
+        <h3 class="tw-text-center tw-text-3xl tw-font-bold tw-mb-6">CATEGORY</h3>
 
         <div class="tw-hidden md:tw-grid md:tw-grid-cols-3 md:tw-gap-1">
-          <div v-for="(item, index) in decorteCategories" :key="'1_' + index">
-            <div
-                class="tw-group tw-relative tw-text-left hover:tw-bg-gray-300 tw-bg-black tw-text-white"
-                v-if="item.children"
-            >
-              <a class="tw-h-10 tw-px-4 tw-py-2 tw-flex tw-items-center tw-justify-center tw-text-sm tw-tracking-widest"
-                 :href="item.href">
-                ${ item.text }
+          {%- for link in linklists['decorte-category-menu'].links -%}
+            {%- if link.links != empty -%}
+            <div class="tw-group tw-relative tw-text-left hover:tw-bg-gray-300 tw-bg-black tw-text-white">
+              <a class="tw-h-10 tw-px-4 tw-py-2 tw-flex tw-items-center tw-justify-center tw-text-sm tw-tracking-widest tw-text-current tw-no-underline"
+                 href="{{ link.url }}">
+                {{ link.title }}
                 <i aria-hidden="true"
                    class="tw-inline-flex tw-text-2xl tw-leading-none notranslate mdi mdi-chevron-right"></i>
               </a>
               <div class="nested-menu group-hover:tw-block tw-hidden tw-bg-black tw-text-white tw-absolute tw-z-10 tw-w-full">
-                <div v-for="(child1, index) in item.children" :key="'2_' + index">
-                  <div
-                      class="tw-group/nest2 tw-h-10 tw-px-4 tw-py-2 tw-relative tw-text-left hover:tw-bg-gray-300"
-                      v-if="child1.children"
-                  >
-                    <a :href="child1.href"
-                       class="tw-flex tw-items-center tw-text-sm tw-tracking-widest"
-                    >
-                      ${child1.text}
+              {%- for child_link in link.links -%}
+                {%- if child_link.links != empty -%}
+                  <div class="tw-group/nest2 tw-h-10 tw-px-4 tw-py-2 tw-relative tw-text-left hover:tw-bg-gray-300">
+                    <a href="{{ child_link.url }}" class="tw-flex tw-items-center tw-text-sm tw-tracking-widest tw-text-current tw-no-underline">
+                      {{ child_link.title }}
                       <i aria-hidden="true"
                          class="tw-inline-flex tw-text-2xl tw-leading-none notranslate mdi mdi-chevron-right"></i>
                     </a>
                     <div class="nested-menu group-hover/nest2:tw-block tw-hidden tw-bg-black tw-text-white">
-                      <div v-for="(child2, index) in child1.children" :key="'3_' + index">
-                        <a :href="child2.href">
+                    {%- for grandchild_link in child_link.links -%}
+                        <a href="{{ grandchild_link.url }}" class="tw-text-current tw-no-underline">
                           <div
                               class="tw-h-10 tw-px-4 tw-py-2 tw-relative tw-text-left hover:tw-bg-gray-300 tw-flex tw-items-center tw-text-sm tw-tracking-widest">
-                            ${child2.text}
+                            {{ grandchild_link.title }}
                           </div>
                         </a>
-                      </div>
+                    {%- endfor -%}
                     </div>
                   </div>
+                {%- else -%}
                   <a
-                      v-else
-                      class="tw-px-4 tw-py-2 tw-relative tw-text-left hover:tw-bg-gray-300 tw-flex tw-items-center tw-text-sm tw-tracking-widest"
-                      :href="child1.href">
-                    ${child1.text}
+                      class="tw-px-4 tw-py-2 tw-relative tw-text-left hover:tw-bg-gray-300 tw-flex tw-items-center tw-text-sm tw-tracking-widest tw-text-current tw-no-underline"
+                      href="{{ child_link.url }}">
+                    {{ child_link.title }}
                   </a>
-                </div>
+                {%- endif -%}
+              {%- endfor -%}
               </div>
             </div>
-
+            {%- else -%}
             <a
-                v-else
-                class="tw-px-4 tw-py-2 tw-relative tw-text-left hover:tw-bg-gray-300 tw-flex tw-items-center tw-text-sm tw-tracking-widest tw-bg-black tw-text-white"
-                :href="item.href"
-                :target="item.target"
-            >${item.text}
+                class="tw-px-4 tw-py-2 tw-relative tw-text-left hover:tw-bg-gray-300 tw-flex tw-items-center tw-text-sm tw-tracking-widest tw-bg-black tw-text-white tw-no-underline"
+                href="{{ link.url }}"
+              {%- unless link.url contains 'https://online.sukiya.biz' -%}
+                target="_blank"
+              {%- endunless -%}
+            >
+              {{ link.title }}
               <i aria-hidden="true"
                  class="tw-inline-flex tw-text-2xl tw-leading-none notranslate mdi mdi-chevron-right"></i>
             </a>
-          </div>
+            {%- endif -%}
+          {%- endfor -%}
         </div>
 
        {% render 'sp-navigation-decorte' %}
       </div>
       <div class="tw-my-3">
-        <a class="tw-text-white tw-bg-black tw-font-bold tw-block tw-text-center tw-p-5" href="/pages/decorte-counseling"
+        <a class="tw-text-white tw-bg-black tw-font-bold tw-block tw-text-center tw-p-5 tw-no-underline" href="/pages/decorte-counseling"
         >オンラインカウンセリング
         </a>
       </div>
@@ -556,6 +658,27 @@
       "unit": "px",
       "label": "t:sections.all.padding.padding_bottom",
       "default": 36
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 25,
+      "step": 1,
+      "default": 4,
+      "label": "t:sections.featured-collection.settings.products_to_show.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_desktop_slider",
+      "label": "t:sections.featured-collection.settings.enable_desktop_slider.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "swipe_on_mobile",
+      "default": true,
+      "label": "t:sections.featured-collection.settings.swipe_on_mobile.label"
     }
   ]
 }
