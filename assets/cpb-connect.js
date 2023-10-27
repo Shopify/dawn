@@ -17,10 +17,14 @@ async function cpbConnectCheck() {
   });
 
   const data = await response.json();
-  console.log(data);
 
-  if (data.id_renkei_kbn === 2) {
+  if (data.id_renkei_kbn === '2') {
     const statusElements = document.querySelectorAll('.cpb-connect-status');
+    statusElements.forEach((element) => {
+      element.classList.remove('tw-hidden');
+    });
+  } else {
+    const statusElements = document.querySelectorAll('.cpb-connect-status-not-connected');
     statusElements.forEach((element) => {
       element.classList.remove('tw-hidden');
     });
@@ -44,7 +48,6 @@ async function getCpbConnectOtp() {
   });
 
   const data = await response.json();
-  console.log(data);
   const aTags = document.querySelectorAll('a.cpb-connect-register');
   aTags.forEach((aTag) => {
     aTag.href += data.onetime_password;
@@ -55,5 +58,3 @@ async function getCpbConnectOtp() {
 
 cpbConnectCheck();
 getCpbConnectOtp();
-
-console.log('cpb-connect.js')
