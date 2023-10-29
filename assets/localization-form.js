@@ -8,9 +8,11 @@ if (!customElements.get('localization-form')) {
           input: this.querySelector('input[name="locale_code"], input[name="country_code"]'),
           button: this.querySelector('button'),
           panel: this.querySelector('.disclosure__list-wrapper'),
+          search: this.querySelector('input[name="country_filter"]'),
         };
         this.elements.button.addEventListener('click', this.openSelector.bind(this));
         this.elements.button.addEventListener('focusout', this.closeSelector.bind(this));
+        this.elements.search.addEventListener('keyup', this.filterCountries.bind(this));
         this.addEventListener('keyup', this.onContainerKeyUp.bind(this));
 
         this.querySelectorAll('a').forEach((item) => item.addEventListener('click', this.onItemClick.bind(this)));
@@ -52,6 +54,18 @@ if (!customElements.get('localization-form')) {
         if (!event.relatedTarget || !isChild) {
           this.hidePanel();
         }
+      }
+
+      filterCountries() {
+        const searchValue = this.elements.search.value.toLowerCase();
+        this.querySelectorAll('a').forEach((item) => {
+          const countryName = item.textContent.toLowerCase();
+          if (countryName.indexOf(searchValue) > -1) {
+            item.parentElement.style.display = "block";
+          } else {
+            item.parentElement.style.display = "none";
+          }
+        });
       }
     }
   );
