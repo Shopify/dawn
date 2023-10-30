@@ -21,8 +21,7 @@ function verifyHukubukuro() {
 }
 
 async function getAccessToken(code) {
-  // const redirect_uri = 'https://online.sukiya.biz' + window.location.pathname;
-  const redirect_uri = 'http://127.0.0.1:9292' + window.location.pathname;
+  const redirect_uri = window.location.href;
   const formData = new FormData();
   formData.append('grant_type', 'authorization_code');
   formData.append('code', code);
