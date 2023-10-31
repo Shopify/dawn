@@ -1,24 +1,23 @@
-Dawn 11.0.0 introduces new customization options to the announcement bar, new animations and hover effects, and a Quick order list section to product pages. 
+Dawn 12.0.0 introduces additional customization options by adding color scheme pickers to new areas, and new ways to visually display product filters. It also introduces some performance improvements related to image loading. 
 
 ### Added
-- You can now add multiple Announcement bar sections to your Header. 
-- You can now display social media icons in the Announcement bar. 
-- You can now add the country/region selector and the language selector to the Announcement bar.
-- You can now set a different color scheme for your navigation menu than for your Header. 
-- We added a new “Zoom in on scroll” animation option to the Image with text and Image banner sections.
-- We added a new “Vertical lift” hover effect option to cards and buttons. 
-- You can now apply the outline button style to the button on Image with text. 
-- You can now adjust the bottom padding on the Subtotal section in the cart.
-- We introduced a new Quick order list section to the product template. This allows you to optimize your product pages for bulk buying. 
-- Customers who qualify for volume pricing will now see the different price breaks on your product pages. 
+- Important: If you use a gradient as a main background, the look of your cart drawer and product modal (quick add) will be affected. 
+- You can now select a color scheme for the Image with text section, Collection template (Product grid section), Product information section, Cart drawer, and Cart page.
 
 ### Changed
-- We reduced the height of the Announcement bar section.
-- You can now choose to auto rotate the Announcement bar slides every 3 seconds. The minimum was previously 5 seconds.
-- Your mobile menu drawer will now appear full-width.
-- The Featured collection section will now display placeholder product images until a collection is selected. 
+- If you are using the Search & Discovery app, you can now change the logical operator for facet filter values between OR and AND.
+- If you are using the Search & Discovery app, you can now choose to apply a swatch visual style for certain filter types (references to metaobjects).
 
 ### Fixes and improvements
-- We fixed a bug where text links were not styled properly in the heading of the Related products section.
-- We made light stylistic improvements to link styles, alignment and spacing for both the dropdown and mega menu types in the Header.
-- We fixed a bug where the Footer would display extra white space when the “Show email signup” setting was left unchecked. 
+- We fixed an issue with facet filters that affected currencies that use comma separators.
+- We fixed a formatting issue with metadata that is used for SEO purposes.
+- We fixed a visual bug that was affecting the collage section.
+- We fixed an issue with the “compare at” price to ensure more predictable behavior.
+- We’ve improved the experience of adding items to cart on slower connections.
+- We fixed a styling issue affecting collections in empty cart drawers.
+- We fixed an issue in the Slideshow section where the next slide flashes before coming into view. 
+- We’ve improved various visual elements on the Quick order list including font consistency, alignment, and spacing. 
+- We fixed an issue affecting Quick order list on iOS, removing the need to double tap the info icon to open it.
+
+### Removed
+- Removed image tag attribute that indicated which images to load first. We will now allow the platform to determine this, which will improve performance.
