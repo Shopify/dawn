@@ -1,20 +1,3 @@
-async function verifyLineLogin() {
-  console.log('verifyLineLogin');
-  const url = new URL(window.location.href);
-  const code = url.searchParams.get("code");
-  let isLineLogin = false;
-  if (code) {
-    const accessToken = await getAccessToken(code);
-    if (accessToken.access_token) {
-      localStorage.setItem('lineAccessToken', accessToken.access_token);
-    }
-    const lineUser = await getUserProfile(accessToken.access_token);
-    isLineLogin = await getConnectStatus(lineUser.userId, accessToken.access_token);
-  }
-
-  return isLineLogin;
-}
-
 async function verifyAccessToken(accessToken) {
   try {
     // fetchをawaitで呼び出し
@@ -25,28 +8,6 @@ async function verifyAccessToken(accessToken) {
   } catch (error) {
     console.error('Error:', error);
     return false;
-  }
-}
-
-async function verifyLineApp(access_token) {
-  // LINE APIでアクセストークンの検証
-  const isAccessTokenVerify = await verifyAccessToken(access_token);
-  // アクセストークンがない場合はLINEログインを促す
-  if (!isAccessTokenVerify) {
-    // .line-login-required のtw-hiddenクラスを削除
-    document.querySelector('.line-login-required').classList.remove('tw-hidden');
-  }
-  // LINE APPでユーザーの検証
-  const lineUser = await getUserProfile(access_token);
-  // ユーザーの存在を返す
-  return await getConnectStatus(lineUser.userId, access_token);
-}
-
-function verifyHukubukuro() {
-  if (isLineLogin) {
-    return true;
-  } else {
-    window.location.href = 'https://online.sukiya.biz/pages/newyear-2023';
   }
 }
 
@@ -97,19 +58,51 @@ async function getConnectStatus(userId, accessToken) {
   return !!connectedUser;
 }
 
+async function verifyLineLogin(code) {
+  console.log('verifyLineLogin');
+  let isLineLogin = false;
+  const accessToken = await getAccessToken(code);
+  if (accessToken.access_token) {
+    localStorage.setItem('lineAccessToken', accessToken.access_token);
+  }
+  const lineUser = await getUserProfile(accessToken.access_token);
+  return await getConnectStatus(lineUser.userId, accessToken.access_token);
+}
+
+async function verifyLineApp(access_token) {
+  // LINE APIでアクセストークンの検証
+  const isAccessTokenVerify = await verifyAccessToken(access_token);
+  // 懸賞を通ったアクセストークンがない場合はLINEログインを促す
+  // TODO::この処理で本当に正しい？
+  if (!isAccessTokenVerify) {
+    // .line-login-required のtw-hiddenクラスを削除
+    document.querySelector('.line-login-required').classList.remove('tw-hidden');
+  }
+  // LINE APPでユーザーの検証
+  const lineUser = await getUserProfile(access_token);
+  // ユーザーの存在を返す
+  return await getConnectStatus(lineUser.userId, access_token);
+}
+
 const lineAccessToken = localStorage.getItem('lineAccessToken');
 if (!lineAccessToken || lineAccessToken === 'undefined') {
   console.log('no token');
-
-  verifyLineLogin().then(r => {
-    console.log('verifyLineLogin === true', r);
-  }).catch(e => {
-    console.error('verifyLineLogin === false', e);
-  });
+  const url = new URL(window.location.href);
+  const code = url.searchParams.get("code");
+  if (code) {
+    verifyLineLogin(code).then(r => {
+      console.log('verifyLineLogin === true', r);
+    }).catch(e => {
+      console.error('verifyLineLogin === false', e);
+    });
+  } else {
+    // .line-login-required のtw-hiddenクラスを削除
+    document.querySelector('.line-login-required').classList.remove('tw-hidden');
+  }
 } else {
   console.log('has token');
   verifyLineApp(lineAccessToken).then(r => {
-    console.log('response is ',r)
+    console.log('response is ', r)
     // ユーザーが存在しない場合はID連携を促す
     if (!r) {
       // .line-connect-required のtw-hiddenクラスを削除
