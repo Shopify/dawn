@@ -21,17 +21,20 @@ function verifyHukubukuro() {
 }
 
 async function getAccessToken(code) {
-  const redirect_uri = window.location.href;
-  const formData = new FormData();
-  formData.append('grant_type', 'authorization_code');
-  formData.append('code', code);
-  formData.append('redirect_uri', redirect_uri);
-  formData.append('client_id', '1653973522');
-  formData.append('client_secret', '9f414ff957dd68ee18475c82e5b8a20a');
+  const redirect_uri = window.location.origin + window.location.pathname
+  const params = new URLSearchParams();
+  params.append('grant_type', 'authorization_code');
+  params.append('code', code);
+  params.append('redirect_uri', redirect_uri);
+  params.append('client_id', '1653973522');
+  params.append('client_secret', '9f414ff957dd68ee18475c82e5b8a20a');
 
   const response = await fetch('https://api.line.me/oauth2/v2.1/token', {
     method: 'POST',
-    body: formData
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: params.toString()
   });
 
   if(!response.ok) {
