@@ -92,6 +92,8 @@ if (!lineAccessToken || lineAccessToken === 'undefined') {
   if (code) {
     verifyLineLogin(code).then(r => {
       console.log('verifyLineLogin === true', r);
+      // .line-login-success のtw-hiddenクラスを削除
+      document.querySelector('.line-login-success').classList.remove('tw-hidden');
     }).catch(e => {
       console.error('verifyLineLogin === false', e);
     });
