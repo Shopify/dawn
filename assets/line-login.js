@@ -29,6 +29,13 @@ async function verifyAccessToken(accessToken) {
 }
 
 async function verifyLineApp(access_token) {
+  // LINE APIでアクセストークンの検証
+  const isAccessTokenVerify = await verifyAccessToken(access_token);
+  // アクセストークンがない場合はLINEログインを促す
+  if (!isAccessTokenVerify) {
+    // .line-login-required のtw-hiddenクラスを削除
+    document.querySelector('.line-login-required').classList.remove('tw-hidden');
+  }
   // LINE APPでユーザーの検証
   const lineUser = await getUserProfile(access_token);
   // ユーザーの存在を返す
@@ -101,13 +108,6 @@ if (!lineAccessToken || lineAccessToken === 'undefined') {
   });
 } else {
   console.log('has token');
-  // LINE APIでアクセストークンの検証
-  const isAccessTokenVerify = await verifyAccessToken(lineAccessToken);
-  // アクセストークンがない場合はLINEログインを促す
-  if (!isAccessTokenVerify) {
-    // .line-login-required のtw-hiddenクラスを削除
-    document.querySelector('.line-login-required').classList.remove('tw-hidden');
-  }
   verifyLineApp(lineAccessToken).then(r => {
     console.log('response is ',r)
     // ユーザーが存在しない場合はID連携を促す
