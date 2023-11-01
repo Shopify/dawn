@@ -1,3 +1,5 @@
+const lineAccessToken = localStorage.getItem('lineAccessToken');
+
 async function verifyAccessToken(accessToken) {
   try {
     // fetchをawaitで呼び出し
@@ -60,7 +62,6 @@ async function getConnectStatus(userId, accessToken) {
 
 async function verifyLineLogin(code) {
   console.log('verifyLineLogin');
-  let isLineLogin = false;
   const accessToken = await getAccessToken(code);
   if (accessToken.access_token) {
     localStorage.setItem('lineAccessToken', accessToken.access_token);
@@ -72,7 +73,7 @@ async function verifyLineLogin(code) {
 async function verifyLineApp(access_token) {
   // LINE APIでアクセストークンの検証
   const isAccessTokenVerify = await verifyAccessToken(access_token);
-  // 懸賞を通ったアクセストークンがない場合はLINEログインを促す
+  // 検証を通ったアクセストークンがない場合はLINEログインを促す
   // TODO::この処理で本当に正しい？
   if (!isAccessTokenVerify) {
     // .line-login-required のtw-hiddenクラスを削除
@@ -84,7 +85,6 @@ async function verifyLineApp(access_token) {
   return await getConnectStatus(lineUser.userId, access_token);
 }
 
-const lineAccessToken = localStorage.getItem('lineAccessToken');
 if (!lineAccessToken || lineAccessToken === 'undefined') {
   console.log('no token');
   const url = new URL(window.location.href);
@@ -92,13 +92,11 @@ if (!lineAccessToken || lineAccessToken === 'undefined') {
   if (code) {
     verifyLineLogin(code).then(r => {
       console.log('verifyLineLogin === true', r);
-      // .line-login-success のtw-hiddenクラスを削除
       document.querySelector('.line-login-success').classList.remove('tw-hidden');
     }).catch(e => {
       console.error('verifyLineLogin === false', e);
     });
   } else {
-    // .line-login-required のtw-hiddenクラスを削除
     document.querySelector('.line-login-required').classList.remove('tw-hidden');
   }
 } else {
@@ -107,10 +105,16 @@ if (!lineAccessToken || lineAccessToken === 'undefined') {
     console.log('response is ', r)
     // ユーザーが存在しない場合はID連携を促す
     if (!r) {
-      // .line-connect-required のtw-hiddenクラスを削除
       document.querySelector('.line-connect-required').classList.remove('tw-hidden');
     }
   }).catch(e => {
     console.error('verifyLineApp === false', e);
   });
 }
+
+// TODO::テスト書きたい
+// assets/line-login.js
+// module.exports = {
+//   // Add other function exports here if necessary...
+//   verifyLineLogin: verifyLineLogin
+// }
