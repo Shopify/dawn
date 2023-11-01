@@ -74,10 +74,10 @@ async function verifyLineApp(access_token) {
   // LINE APIでアクセストークンの検証
   const isAccessTokenVerify = await verifyAccessToken(access_token);
   // 検証を通ったアクセストークンがない場合はLINEログインを促す
-  // TODO::この処理で本当に正しい？
   if (!isAccessTokenVerify) {
-    // .line-login-required のtw-hiddenクラスを削除
     document.querySelector('.line-login-required').classList.remove('tw-hidden');
+  } else {
+    document.querySelector('.line-login-success').classList.remove('tw-hidden');
   }
   // LINE APPでユーザーの検証
   const lineUser = await getUserProfile(access_token);
