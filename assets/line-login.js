@@ -106,11 +106,15 @@ if (!lineAccessToken || lineAccessToken === 'undefined') {
     // ユーザーが存在しない場合はID連携を促す
     if (!r) {
       document.querySelector('.line-connect-required').classList.remove('tw-hidden');
+    } else {
+      document.getElementById('open-modal').classList.add('tw-hidden');
     }
   }).catch(e => {
     console.error('verifyLineApp === false', e);
   });
 }
+
+document.querySelector('.line-login-modal').openDialog();
 
 // TODO::テスト書きたい
 // assets/line-login.js
