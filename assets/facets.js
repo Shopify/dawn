@@ -34,6 +34,8 @@ class FacetFiltersForm extends HTMLElement {
     const sections = FacetFiltersForm.getSections();
     const countContainer = document.getElementById('ProductCount');
     const countContainerDesktop = document.getElementById('ProductCountDesktop');
+    const loadingSpinners = document.querySelectorAll('.facets-container .loading__spinner, facet-filters-form .loading__spinner');
+    loadingSpinners.forEach((spinner) => spinner.classList.remove('hidden'));
     document.getElementById('ProductGridContainer').querySelector('.collection').classList.add('loading');
     if (countContainer) {
       countContainer.classList.add('loading');
@@ -98,6 +100,8 @@ class FacetFiltersForm extends HTMLElement {
       containerDesktop.innerHTML = count;
       containerDesktop.classList.remove('loading');
     }
+    const loadingSpinners = document.querySelectorAll('.facets-container .loading__spinner, facet-filters-form .loading__spinner');
+    loadingSpinners.forEach((spinner) => spinner.classList.add('hidden'));
   }
 
   static renderFilters(html, event) {
@@ -122,13 +126,17 @@ class FacetFiltersForm extends HTMLElement {
 
     if (countsToRender) {
       const closestJSFilterID = event.target.closest('.js-filter').id;
-      const currentActiveID = document.activeElement.id;
 
       if (closestJSFilterID) {
         FacetFiltersForm.renderCounts(countsToRender, event.target.closest('.js-filter'));
         FacetFiltersForm.renderMobileCounts(countsToRender, document.getElementById(closestJSFilterID));
 
-        const newElementToActivate = document.getElementById(currentActiveID);
+        const newElementSelector = document
+          .getElementById(closestJSFilterID)
+          .classList.contains('mobile-facets__details')
+          ? `#${closestJSFilterID} .mobile-facets__close-button`
+          : `#${closestJSFilterID} .facets__summary`;
+        const newElementToActivate = document.querySelector(newElementSelector);
         if (newElementToActivate) newElementToActivate.focus();
       }
     }

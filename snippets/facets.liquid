@@ -13,6 +13,7 @@
 {% endcomment %}
 
 {{ 'component-show-more.css' | asset_url | stylesheet_tag }}
+{{ 'component-visual-display.css' | asset_url | stylesheet_tag }}
 
 {%- liquid
   assign sort_by = results.sort_by | default: results.default_sort_by
@@ -111,7 +112,20 @@
             <script src="{{ 'show-more.js' | asset_url }}" defer="defer"></script>
             {% comment %} Filters for both horizontal and vertical filter {% endcomment %}
             {%- for filter in results.filters -%}
-              {%- assign total_active_values = total_active_values | plus: filter.active_values.size -%}
+              {% liquid
+                assign total_active_values = total_active_values | plus: filter.active_values.size
+                case filter.presentation
+                  when 'swatch'
+                    assign has_visual_display = true
+                    assign show_more_number = 15
+                    assign visual_layout_class = 'facets-layout-grid facets-layout-grid--' | append: filter.presentation
+                  else
+                    assign has_visual_display = false
+                    assign visual_layout_class = 'facets-layout-list'
+                    assign show_more_number = 10
+                endcase
+              %}
+
               {% case filter.type %}
                 {% when 'boolean', 'list' %}
                   <details
@@ -127,7 +141,7 @@
                       aria-label="{{ filter.label }} ({{ 'products.facets.filters_selected.one' | t: count: filter.active_values.size }})"
                     >
                       <div>
-                        <span>
+                        <span class="facets__summary-label">
                           {{- filter.label | escape }}
                           {%- if filter_type == 'vertical' -%}
                             <span class="facets__selected no-js-hidden{% if filter.active_values.size == 0 %} hidden{% endif %}">
@@ -135,6 +149,11 @@
                             >
                           {%- endif -%}
                         </span>
+                        {%- if filter_type == 'vertical' and filter.operator == 'AND' -%}
+                          <span class="facets__and-helptext">
+                            {{ 'products.facets.filter_and_operator_subtitle' | t }}
+                          </span>
+                        {%- endif -%}
                         {% render 'icon-caret' %}
                       </div>
                     </summary>
@@ -144,9 +163,16 @@
                     >
                       {%- if filter_type != 'vertical' -%}
                         <div class="facets__header">
-                          <span class="facets__selected no-js-hidden">
-                            {{- 'products.facets.filters_selected' | t: count: filter.active_values.size -}}
-                          </span>
+                          <div>
+                            <span class="facets__selected no-js-hidden">
+                              {{- 'products.facets.filters_selected' | t: count: filter.active_values.size -}}
+                            </span>
+                            {%- if filter.operator == 'AND' -%}
+                              <span class="facets__and-helptext">
+                                {{ 'products.facets.filter_and_operator_subtitle' | t }}
+                              </span>
+                            {%- endif -%}
+                          </div>
                           <facet-remove>
                             <a href="{{ filter.url_to_remove }}" class="facets__reset link underlined-link">
                               {{ 'products.facets.reset' | t }}
@@ -157,14 +183,30 @@
                       <fieldset class="facets-wrap parent-wrap {% if filter_type == 'vertical' %} facets-wrap-vertical{% endif %}">
                         <legend class="visually-hidden">{{ filter.label | escape }}</legend>
                         <ul
-                          class="{% if filter_type != 'vertical' %} facets__list{% endif %} list-unstyled no-js-hidden"
+                          class="{{ visual_layout_class }}{% if filter_type == 'vertical' %} facets__list--vertical{% else %} facets__list{% endif %} list-unstyled no-js-hidden"
                           role="list"
                         >
-                          {%- for value in filter.values -%}
-                            <li class="list-menu__item facets__item{% if forloop.index > 10 and filter_type == 'vertical' %} show-more-item hidden{% endif %}">
+                          {%- liquid
+                            assign sorted_values = filter.values
+                            # Keep the selected values grouped together when operator is AND
+                            if filter.operator == 'AND'
+                              assign active_filter_values = filter.values | where: 'active', true
+                              assign inactive_filter_values = filter.values | where: 'active', false
+                              assign sorted_values = active_filter_values | concat: inactive_filter_values
+                            endif
+                          -%}
+                          {%- for value in sorted_values -%}
+                            {% liquid
+                              assign is_disabled = false
+                              if value.count == 0 and value.active == false
+                                assign is_disabled = true
+                              endif
+                            %}
+
+                            <li class="list-menu__item facets__item{% if forloop.index > show_more_number and filter_type == 'vertical' %} show-more-item hidden{% endif %}">
                               <label
                                 for="Filter-{{ filter.param_name | escape }}-{{ forloop.index }}"
-                                class="facet-checkbox{% if value.count == 0 and value.active == false %} facet-checkbox--disabled{% endif %}"
+                                class="facets__label facet-checkbox{% if is_disabled %} facet-checkbox--disabled disabled{% endif %}{% if has_visual_display %} visual-display-parent visual-display-parent--{{ filter.presentation }}{% endif %}{% if value.active %} active{% endif %}"
                               >
                                 <input
                                   type="checkbox"
@@ -174,38 +216,50 @@
                                   {% if value.active %}
                                     checked
                                   {% endif %}
-                                  {% if value.count == 0 and value.active == false %}
+                                  {% if is_disabled %}
                                     disabled
                                   {% endif %}
                                 >
 
-                                <svg
-                                  width="1.6rem"
-                                  height="1.6rem"
-                                  viewBox="0 0 16 16"
-                                  aria-hidden="true"
-                                  focusable="false"
-                                >
-                                  <rect width="16" height="16" stroke="currentColor" fill="none" stroke-width="1"></rect>
-                                </svg>
+                                {% if has_visual_display %}
+                                  <div class="facets__visual-display-wrapper">
+                                    {% render 'visual-display',
+                                      type: value.display.type,
+                                      value: value.display.value,
+                                      presentation: filter.presentation
+                                    %}
+                                  </div>
+                                {% else %}
+                                  <svg
+                                    width="1.6rem"
+                                    height="1.6rem"
+                                    viewBox="0 0 16 16"
+                                    aria-hidden="true"
+                                    focusable="false"
+                                  >
+                                    <rect width="16" height="16" stroke="currentColor" fill="none" stroke-width="1"></rect>
+                                  </svg>
 
-                                <svg
-                                  aria-hidden="true"
-                                  class="icon icon-checkmark"
-                                  width="1.1rem"
-                                  height="0.7rem"
-                                  viewBox="0 0 11 7"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path d="M1.5 3.5L2.83333 4.75L4.16667 6L9.5 1"
-                                    stroke="currentColor"
-                                    stroke-width="1.75"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                                </svg>
+                                  <svg
+                                    aria-hidden="true"
+                                    class="icon icon-checkmark"
+                                    width="1.1rem"
+                                    height="0.7rem"
+                                    viewBox="0 0 11 7"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M1.5 3.5L2.83333 4.75L4.16667 6L9.5 1"
+                                      stroke="currentColor"
+                                      stroke-width="1.75"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round" />
+                                  </svg>
+                                {% endif %}
 
-                                <span aria-hidden="true">{{ value.label | escape }} ({{ value.count }})</span>
+                                <span class="facet-checkbox__text" aria-hidden="true">
+                                  {{- value.label | escape }} ({{ value.count }})</span
+                                >
                                 <span class="visually-hidden">
                                   {{- value.label | escape }} (
                                   {%- if value.count == 1 -%}
@@ -284,7 +338,7 @@
                           {%- endfor -%}
                         </ul>
                       </fieldset>
-                      {%- if filter.values.size > 10 and filter_type == 'vertical' -%}
+                      {%- if filter.values.size > show_more_number and filter_type == 'vertical' -%}
                         <show-more-button>
                           <button
                             class="button-show-more link underlined-link no-js-hidden"
@@ -513,17 +567,7 @@
                 {%- endif -%}
               </span>
             </h2>
-            <div class="loading-overlay__spinner">
-              <svg
-                aria-hidden="true"
-                focusable="false"
-                class="spinner"
-                viewBox="0 0 66 66"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
-              </svg>
-            </div>
+            {%- render 'loading-spinner' -%}
           </div>
         {%- endif -%}
       </form>
@@ -641,6 +685,17 @@
             <div class="mobile-facets__main has-submenu gradient">
               {%- if enable_filtering -%}
                 {%- for filter in results.filters -%}
+                  {% liquid
+                    case filter.presentation
+                      when 'swatch'
+                        assign has_visual_display = true
+                        assign visual_layout_class = 'facets-layout-grid facets-layout-grid--' | append: filter.presentation
+                      else
+                        assign has_visual_display = false
+                        assign visual_layout_class = 'facets-layout-list'
+                    endcase
+                  %}
+
                   {% case filter.type %}
                     {% when 'boolean', 'list' %}
                       <details
@@ -665,14 +720,35 @@
                             type="button"
                           >
                             {% render 'icon-arrow' %}
-                            {{ filter.label | escape }}
+                            <span>{{ filter.label | escape }}</span>
+                            {%- if filter.operator == 'AND' -%}
+                              <span class="facets__and-helptext">
+                                {{ 'products.facets.filter_and_operator_subtitle' | t }}
+                              </span>
+                            {%- endif -%}
                           </button>
-                          <ul class="mobile-facets__list list-unstyled" role="list">
-                            {%- for value in filter.values -%}
+                          <ul class="{{ visual_layout_class }} mobile-facets__list list-unstyled" role="list">
+                            {%- liquid
+                              assign sorted_values = filter.values
+                              # Keep the selected values grouped together when operator is AND
+                              if filter.operator == 'AND'
+                                assign active_filter_values = filter.values | where: 'active', true
+                                assign inactive_filter_values = filter.values | where: 'active', false
+                                assign sorted_values = active_filter_values | concat: inactive_filter_values
+                              endif
+                            -%}
+                            {%- for value in sorted_values -%}
+                              {% liquid
+                                assign is_disabled = false
+                                if value.count == 0 and value.active == false
+                                  assign is_disabled = true
+                                endif
+                              %}
+
                               <li class="mobile-facets__item list-menu__item">
                                 <label
                                   for="Filter-{{ filter.param_name | escape }}-mobile-{{ forloop.index }}"
-                                  class="mobile-facets__label{% if value.count == 0 and value.active == false %} mobile-facets__label--disabled{% endif %}"
+                                  class="facets__label mobile-facets__label{% if is_disabled %} mobile-facets__label--disabled disabled{% endif %}{% if has_visual_display %} visual-display-parent visual-display-parent--{{ filter.presentation }}{% endif %}{% if value.active %} active{% endif %}"
                                 >
                                   <input
                                     class="mobile-facets__checkbox"
@@ -683,36 +759,48 @@
                                     {% if value.active %}
                                       checked
                                     {% endif %}
-                                    {% if value.count == 0 and value.active == false %}
+                                    {% if is_disabled %}
                                       disabled
                                     {% endif %}
                                   >
 
-                                  <span class="mobile-facets__highlight"></span>
+                                  {% if has_visual_display %}
+                                    <div class="facets__visual-display-wrapper">
+                                      {% render 'visual-display',
+                                        type: value.display.type,
+                                        value: value.display.value,
+                                        presentation: filter.presentation
+                                      %}
+                                    </div>
+                                  {% else %}
+                                    <span class="mobile-facets__highlight"></span>
 
-                                  <svg
-                                    width="1.6rem"
-                                    height="1.6rem"
-                                    viewBox="0 0 16 16"
-                                    aria-hidden="true"
-                                    focusable="false"
+                                    <svg
+                                      width="1.6rem"
+                                      height="1.6rem"
+                                      viewBox="0 0 16 16"
+                                      aria-hidden="true"
+                                      focusable="false"
+                                    >
+                                      <rect width="16" height="16" stroke="currentColor" fill="none" stroke-width="1"></rect>
+                                    </svg>
+
+                                    <svg
+                                      aria-hidden="true"
+                                      class="icon icon-checkmark"
+                                      width="1.1rem"
+                                      height="0.7rem"
+                                      viewBox="0 0 11 7"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path d="M1.5 3.5L2.83333 4.75L4.16667 6L9.5 1" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                  {% endif %}
+
+                                  <span class="facet-checkbox__text" aria-hidden="true">
+                                    {{- value.label | escape }} ({{ value.count }})</span
                                   >
-                                    <rect width="16" height="16" stroke="currentColor" fill="none" stroke-width="1"></rect>
-                                  </svg>
-
-                                  <svg
-                                    aria-hidden="true"
-                                    class="icon icon-checkmark"
-                                    width="1.1rem"
-                                    height="0.7rem"
-                                    viewBox="0 0 11 7"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path d="M1.5 3.5L2.83333 4.75L4.16667 6L9.5 1" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
-                                  </svg>
-
-                                  <span aria-hidden="true">{{ value.label | escape }} ({{ value.count }})</span>
                                   <span class="visually-hidden">
                                     {{- value.label | escape }} (
                                     {%- if value.count == '1' -%}
@@ -1047,17 +1135,7 @@
         {%- endif -%}
       </span>
     </h2>
-    <div class="loading-overlay__spinner">
-      <svg
-        aria-hidden="true"
-        focusable="false"
-        class="spinner"
-        viewBox="0 0 66 66"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
-      </svg>
-    </div>
+    {%- render 'loading-spinner' -%}
   </div>
   {%- if filter_type == 'drawer' -%}
     <facet-filters-form class="facets facets-pill small-hide">
