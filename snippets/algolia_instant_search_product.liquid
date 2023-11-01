@@ -1,0 +1,73 @@
+<script>
+  (function(algolia) {
+    'use strict';
+
+    algolia.instantSearchProductTemplate = function instantSearchProductTemplate(hit, html, components) {
+      hit = algolia.helpers.localizeHitData(hit);
+      return html `<div 
+        class="ais-hit ais-product" 
+        data-algolia-index="${hit.index}" 
+        data-algolia-position="${hit.productPosition}" 
+        data-algolia-queryid="${hit.queryID}" 
+        data-algolia-objectid="${hit.objectID}" 
+        data-handle="${hit.handle}" 
+        data-variant-id="${hit.objectID}" 
+        data-distinct="${hit._distinct}"
+      >
+        <div class="ais-hit--picture" style="background-image: url('${algolia.helpers.mediumImage(hit)}')"></div>
+
+        <div class="ais-hit--details">
+          <p class="ais-hit--title">
+            <a data-algolia-index="${hit.index}"
+              data-algolia-position="${hit.productPosition}"
+              data-algolia-queryid="${hit.queryID}"
+              data-algolia-objectid="${hit.objectID}"
+              href="${algolia.helpers.instantsearchLink(hit)}"
+              onclick="void(0)"
+              title="${algolia.helpers.fullTitle(hit.title, hit._distinct, hit.variant_title)}"
+            >
+              ${components.Highlight({ attribute: 'title', hit })}
+              ${algolia.helpers.variantTitleAddition (hit, hit._distinct)}
+            </a>
+          </p>
+          <p class="ais-hit--subtitle" title="${hit.product_type}${algolia.translation_helpers.by(hit.vendor)}">
+            ${components.Highlight({ attribute: 'product_type', hit })}
+            ${hit.vendor && html`<span> ${algolia.translations.by} </span>`}
+            ${hit.vendor && components.Highlight({ attribute: 'vendor', hit })}
+          </p>
+          <p class="ais-hit--price">
+            <b>${algolia.helpers.displayPrice(hit, hit._distinct)}</b>
+            ${!hit._distinct && html`<span class="ais-hit--price-striked"><span>${algolia.helpers.displayStrikedPrice(hit.price, hit.compare_at_price, hit.currency)}</span></span>`}
+            ${!hit._distinct && html`<span class="ais-hit--price-discount">${algolia.helpers.displayDiscount(hit.price, hit.compare_at_price, hit.price_ratio)}</span>`}
+          </p>
+          <!-- Extra info examples - Remove the display: none to show them -->
+          <p class="ais-hit--info" style="display: none">
+            ${hit.sku && html`<span class="algolia-sku">${components.Highlight({ attribute: 'sku', hit })}</span>`}
+            ${hit.barcode && html`<span class="algolia-barcode">${components.Highlight({ attribute: 'barcode', hit })}</span>`}
+            ${hit.weight && html`<span class="algolia-weight">${hit.weight}</span>`}
+            ${!hit.taxable && html`<span class="algolia-taxable">${algolia.translations.taxFree}</span>`}
+          </p>
+          <!-- Tags example - Remove the display: none to show them -->
+          <p class="ais-hit--tags" style="display: none">
+            ${hit._highlightResult.tags?.map( tag => html`<span class="ais-hit--tag">${tag.value}</span>`)}
+          </p>
+              ${!hit._distinct && html`
+                <form id="algolia-add-to-cart-${hit.objectID}" style="display: none;" action="/cart/add" method="post" enctype="multipart/form-data">
+                  <input type="hidden" name="id" value="${hit.objectID}" />
+                  <p class="ais-hit--cart">
+                    ${hit.can_order ? html`
+                      <button type="submit" class="ais-hit--cart-button" data-form-id="algolia-add-to-cart-${hit.objectID}">
+                        ${ algolia.translations.addToCart }
+                      </button>`
+                    : html`
+                      <button class="ais-hit--cart-button ais-hit--cart-button__disabled" disabled>
+                        ${ algolia.translations.outOfStock }
+                      </button>`}
+                  </p>
+                </form>
+              `}
+          </div>
+      </div>`
+    };
+  })(window.algoliaShopify);
+</script>
