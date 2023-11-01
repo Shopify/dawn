@@ -1,0 +1,25 @@
+{%- assign shop_currency = shop.currency | upcase -%}
+{%- capture supported_currencies -%}
+  {%- for curr in shop.enabled_currencies -%}
+      {{- curr.iso_code | json -}}:{{- curr.symbol | json -}}
+    {%- unless forloop.last %},{% endunless -%}
+  {%- endfor -%}
+{%- endcapture -%}
+{%- assign supported_currencies = supported_currencies | split: ',' -%}
+{% capture output_value -%}
+  {%- for curr in supported_currencies | split: ',' -%}
+    {%- assign code = curr | split: ':' | first | upcase | replace: '"', '' -%}
+    {%- assign symbol = curr | split: ':' | last | replace: '"', '' -%}
+    {%- if shop_currency == code -%}
+      {{- code -}}:{{- symbol -}}{%- raw -%}{{amount}}{%- endraw -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- if output_value == blank -%}
+  {%- capture fallback -%}
+    {{- cart.currency.iso_code | append: ':' -}}{{- cart.currency.symbol -}}{%- raw -%}{{amount}}{%- endraw -%}
+  {%- endcapture -%}
+  {%- assign output_value = fallback -%}
+{%- endif -%}
+{{- output_value -}}
