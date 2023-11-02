@@ -8,10 +8,9 @@ if (swiperEl) {
   const params = {
     modules: [Navigation, Pagination, EffectFade, Autoplay],
     injectStylesUrls: [
-      './assets/navigation-element.css',
-      './assets/pagination-element.css',
-      './assets/autoplay-element.css',
-      './assets/effect-fade-element.css',
+      'https://cdn.jsdelivr.net/npm/swiper@10.3.1/modules/navigation-element.css',
+      'https://cdn.jsdelivr.net/npm/swiper@10.3.1/modules/pagination-element.css',
+      'https://cdn.jsdelivr.net/npm/swiper@10.3.1/modules/effect-fade-element.css',
     ],
     pagination: {
       clickable: true,
