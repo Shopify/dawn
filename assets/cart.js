@@ -43,7 +43,12 @@ class CartItems extends HTMLElement {
   }
 
   onChange(event) {
-    this.updateQuantity(event.target.dataset.index, event.target.value, document.activeElement.getAttribute('name'), event.target.dataset.quantityVariantId);
+    this.updateQuantity(
+      event.target.dataset.index,
+      event.target.value,
+      document.activeElement.getAttribute('name'),
+      event.target.dataset.quantityVariantId
+    );
   }
 
   onCartUpdate() {
@@ -71,6 +76,18 @@ class CartItems extends HTMLElement {
           const html = new DOMParser().parseFromString(responseText, 'text/html');
           const sourceQty = html.querySelector('cart-items');
           this.innerHTML = sourceQty.innerHTML;
+        })
+        .catch((e) => {
+          console.error(e);
+        });
+    }
+    if (document.querySelector('#main-cart-footer')) {
+      fetch(`${routes.cart_url}`)
+        .then((response) => response.text())
+        .then((responseText) => {
+          const html = new DOMParser().parseFromString(responseText, 'text/html');
+          const sourceFooter = html.querySelector('#main-cart-footer');
+          document.querySelector('#main-cart-footer').innerHTML = sourceFooter.innerHTML;
         })
         .catch((e) => {
           console.error(e);
