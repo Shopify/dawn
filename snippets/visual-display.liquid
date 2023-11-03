@@ -1,0 +1,45 @@
+{% comment %}
+  Renders a visual display element, currently just a swatch. If wrapped in "visual-display-parent" and "visual-display-parent--swatch" classes, this will receive hover and focus states.
+
+  Add a class of "active" or "disabled" to the parent element to change the state of the visual display.
+
+  Accepts:
+  - type: {String} Can be "colors" or "image", or nothing to represent an empty state.
+  - value: {Object} Will be an array of color drops, or image drop, depending on the "type"
+  - presentation: {String} Can only be "swatch"
+
+  Usage:
+  {% render 'visual-display', type: value.display.type, value: value.display.value, presentation: filter.presentation %}
+{% endcomment %}
+<div class="visual-display visual-display--presentation-{{ presentation }}{% unless type == "colors" or type == "image" %} empty{% endunless %}">
+  {%- case type -%}
+    {%- when 'colors' -%}
+      {% liquid
+        assign size_limit = value.size | at_most: 4
+        assign rotation = '0deg'
+        if size_limit == 2
+          assign rotation = '45deg'
+        endif
+
+        assign angle_increment = 360 | divided_by: size_limit
+        assign angle = 0
+      %}
+      {%- capture conic_gradient -%}
+        {%- for color in value limit: size_limit -%}
+          {{ color }} {{ angle }}deg{%- assign angle = angle | plus: angle_increment %} {{ angle }}deg{%- unless forloop.last %}, {%- endunless -%}
+        {%- endfor -%}
+      {%- endcapture -%}
+      <div
+        class="visual-display__child"
+        style="background: conic-gradient({{ conic_gradient }}); transform: rotateZ({{ rotation }});"
+      ></div>
+    {%- when 'image' -%}
+      {{
+        value
+        | image_url: width: 300
+        | image_tag: class: 'visual-display__child visual-display__image', alt: value.alt
+      }}
+    {%- else -%}
+      <div class="visual-display__child"></div>
+  {%- endcase -%}
+</div>
