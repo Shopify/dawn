@@ -42,7 +42,7 @@ if (!customElements.get('localization-form')) {
         this.elements.panel.toggleAttribute('hidden');
         this.elements.button.setAttribute(
           'aria-expanded',
-          (this.elements.button.getAttribute('aria-expanded') === 'false').toString()
+          (this.elements.button.getAttribute('aria-expanded') === 'false').toString(),
         );
       }
 
@@ -53,6 +53,6 @@ if (!customElements.get('localization-form')) {
           this.hidePanel();
         }
       }
-    }
+    },
   );
 }

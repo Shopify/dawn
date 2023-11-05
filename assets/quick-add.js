@@ -119,6 +119,6 @@ if (!customElements.get('quick-add-modal')) {
 
         mediaImages.forEach((img) => img.setAttribute('sizes', mediaImageSizes));
       }
-    }
+    },
   );
 }

@@ -69,7 +69,7 @@ if (!customElements.get('pickup-availability')) {
             document.querySelector('pickup-availability-drawer').show(evt.target);
           });
       }
-    }
+    },
   );
 }
 
@@ -116,6 +116,6 @@ if (!customElements.get('pickup-availability-drawer')) {
         document.body.classList.add('overflow-hidden');
         trapFocus(this);
       }
-    }
+    },
   );
 }
