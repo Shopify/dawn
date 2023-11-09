@@ -1005,6 +1005,13 @@ class VariantSelects extends HTMLElement {
     if (!modalContent) return;
     const newMediaModal = modalContent.querySelector(`[data-media-id="${this.currentVariant.featured_media.id}"]`);
     modalContent.prepend(newMediaModal);
+
+    // Update the ATC box image
+    const atcBoxImage = document.querySelector('#selectedVariantImage');
+    if (newMediaModal && newMediaModal.src && atcBoxImage) {
+        atcBoxImage.src = newMediaModal.src;
+    }
+    
   }
 
   updateURL() {
