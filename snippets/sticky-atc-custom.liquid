@@ -1,0 +1,454 @@
+{% comment %}
+  Renders sticky product add to cart button.
+  Accepts:
+  - product: {Object} product object.
+  - block: {Object} passing the block information.
+  - product_form_id: {String} product form id.
+  - section_id: {String} id of section to which this snippet belongs.
+
+  Usage:
+  {% render 'sticky-atc-custom', block: block, product: product, product_form_id: product_form_id, section_id: section.id %}
+{% endcomment %}
+    
+<product-form
+  class="product-form sticky-atc"
+  data-hide-errors="{{ gift_card_recipient_feature_active }}"
+  data-section-id="{{ section.id }}"
+>
+
+      <div class="product-form__error-message-wrapper" role="alert" hidden>
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          class="icon icon-error"
+          viewBox="0 0 13 13"
+        >
+          <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
+          <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
+          <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
+          <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
+        </svg>
+        <span class="product-form__error-message"></span>
+      </div>
+
+      <div class="content-container">
+          <div class="selected-variant-title mobile-title">{{ product.title }}</div>  
+          <div class="product-details-container">
+              <div class="selected-variant-header-container">
+                  <div class="selected-variant-image-container">
+                    {% if product.selected_or_first_available_variant.image %}
+                      <img src="{{ product.selected_or_first_available_variant.image.src | img_url}}" alt="Selected Variant Image" id="selectedVariantImage">
+                    {% endif %}
+                  </div>
+                  <div class="selected-variant-title desktop-title">{{ product.title }}</div> 
+              </div>
+              <div class="product-info-container">              
+                  <div class="selected-variant-details">
+                      <!-- Dynamically show selected variant details here -->
+                      <div class="options-container">
+                          {% for option in product.options %}
+                              <div class="selected-variant-option" data-option-name="{{ option }}">
+                                  {{ option }}: {{ product.selected_or_first_available_variant.options[forloop.index0] }}
+                              </div>
+                          {% endfor %}
+                      </div>
+                      <div class="price-container">
+                          <span class="compared-price" style="{% unless product.selected_or_first_available_variant.compare_at_price > product.selected_or_first_available_variant.price %}display:none;{% endunless %}">{{ product.selected_or_first_available_variant.compare_at_price | money }}</span>
+                          <span class="selection-price">{{ product.selected_or_first_available_variant.price | money }}</span>
+                          {%- assign difference = product.selected_or_first_available_variant.compare_at_price | minus: product.selected_or_first_available_variant.price -%}
+                          {%- assign float_difference = difference | times: 1.0 -%}
+                          {%- assign discount_fraction = float_difference | divided_by: product.selected_or_first_available_variant.compare_at_price -%}
+                          {%- assign discount_percentage = discount_fraction | times: 100 | round -%}
+                          &nbsp;
+                          <span class="selection-price discount-percentage" style="{% unless product.selected_or_first_available_variant.compare_at_price > product.selected_or_first_available_variant.price %}display:none;{% endunless %}">(Save {{ discount_percentage }}%)</span>
+                      </div>
+                  </div>
+            
+            
+                  <div class="atc-button-container">      
+                      {%- form 'product',
+                        product,
+                        id: product_form_id,
+                        class: 'form',
+                        novalidate: 'novalidate',
+                        data-type: 'add-to-cart-form'
+                      -%}
+                        <input
+                          type="hidden"
+                          name="id"
+                          value="{{ product.selected_or_first_available_variant.id }}"
+                          disabled
+                          class="product-variant-id"
+                        >
+                
+                        {%- if gift_card_recipient_feature_active -%}
+                          {%- render 'gift-card-recipient-form', product: product, form: form, section: section -%}
+                        {%- endif -%}
+                
+                        <div class="product-form__buttons sticky-product-form__buttons">
+                          {%- liquid
+                            assign check_against_inventory = true
+                            if product.selected_or_first_available_variant.inventory_management != 'shopify' or product.selected_or_first_available_variant.inventory_policy == 'continue'
+                              assign check_against_inventory = false
+                            endif
+                            if product.selected_or_first_available_variant.quantity_rule.min > product.selected_or_first_available_variant.inventory_quantity and check_against_inventory
+                              assign quantity_rule_soldout = true
+                            endif
+                          -%}
+                          <button
+                            id="StickyProductSubmitButton-{{ section_id }}"
+                            type="submit"
+                            name="add"
+                            class="product-form__submit button button--full-width button--primary"
+                            {% if product.selected_or_first_available_variant.available == false or quantity_rule_soldout %}
+                              disabled
+                            {% endif %}
+                          >
+                            <span>
+                              {%- if product.selected_or_first_available_variant.available == false or quantity_rule_soldout -%}
+                                {{ 'products.product.sold_out' | t }}
+                              {%- else -%}
+                                {{ 'products.product.add_to_cart' | t }}
+                              {%- endif -%}
+                            </span>
+                            <div class="loading-overlay__spinner hidden">
+                              <svg
+                                aria-hidden="true"
+                                focusable="false"
+                                class="spinner"
+                                viewBox="0 0 66 66"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+                              </svg>
+                            </div>
+                          </button>
+                        </div>
+                      {%- endform -%}
+                  </div>
+              </div>
+
+          </div>
+      </div>
+</product-form>
+
+
+            
+<script>
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var atcElement = document.querySelector(".sticky-atc");
+        var targetElement = document.querySelector('[id^="ProductSubmitButton-"]');
+    
+        function getAbsoluteTop(element) {
+            var top = 0;
+            while (element) {
+                top += element.offsetTop || 0;
+                element = element.offsetParent;
+            }
+            return top;
+        }
+    
+        window.addEventListener("scroll", function() {
+            var targetTopPosition = getAbsoluteTop(targetElement);
+            var targetBottomPosition = targetTopPosition + targetElement.clientHeight;
+    
+            // console.log("Current Scroll Position:", window.scrollY);
+            // console.log("Target Element Bottom Position:", targetBottomPosition);
+    
+            var isTargetElementOutOfView = targetTopPosition < window.scrollY; // Using top position because of sticky menubar
+            //var isTargetElementOutOfView = targetBottomPosition < window.scrollY; //Element is completely out of window
+    
+            // console.log("Is Target Element Out of View:", isTargetElementOutOfView);
+    
+            if (isTargetElementOutOfView) {
+                atcElement.classList.add('show'); // This will make it slide up
+            } else {
+                atcElement.classList.remove('show'); // This will make it slide down
+            }
+        });
+    
+        // Reference to the variant input in the sticky ATC form
+        var stickyAtcVariantInput = document.querySelector('.sticky-atc .product-variant-id');
+    
+    
+        // Function to handle variant change and update the sticky ATC form
+        function updateStickyATCOption(optionName, optionValue) {
+            // Extract option name if it's in the format options[OptionName]
+            var matches = optionName.match(/options\[(.+)\]/);
+            if (matches && matches[1]) {
+                optionName = matches[1];
+            }
+            // console.log("Updating option:", optionName, "with value:", optionValue);  // Debug statement
+          
+            var optionDisplay = document.querySelector('.selected-variant-option[data-option-name="' + optionName + '"]');
+            if (optionDisplay) {
+                optionDisplay.textContent = optionName + ': ' + optionValue;
+            }
+          
+    
+          
+        }
+    
+        function handleVariantChange(event) {
+            var target = event.target;
+            if (target.tagName === 'INPUT' || target.tagName === 'SELECT') {
+                var optionName = target.name;
+                var optionValue = target.tagName === 'INPUT' ? target.value : target.options[target.selectedIndex].textContent;
+                updateStickyATCOption(optionName, optionValue);
+            }
+        }
+    
+        document.body.addEventListener('change', handleVariantChange);
+    
+        // The function to update the variant prices is found in the global.js renderProductInfo function
+        // The function to update the variant image is found in the global.js updateMedia function
+    });
+
+
+</script>
+
+
+            
+<style>
+
+
+    .mobile-title {
+        display: flex;
+        font-size: 13px;
+    }
+    .desktop-title {
+        display: none;
+    }
+      
+    @media (min-width: 750px) {
+        .mobile-title {
+            display: none;
+        }
+        .desktop-title {
+            display: flex;
+            font-size: 15px;
+        } 
+    }
+    
+    
+      
+    .content-container {
+        display: flex;
+        flex-direction: column; /* To stack its children vertically */
+        flex: 1; /* Allow it to take up the remaining space */
+        align-items: stretch; /* Make children take full width */
+    }
+    
+    
+      
+    .product-details-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex: 1; /* Allow it to take up the remaining space */
+    }
+    
+    
+    /* Use flexbox for the product form */
+    .product-form.sticky-atc {
+        display: flex;
+        justify-content: space-between; /* Spread children horizontally */
+        align-items: center; /* Center children vertically */
+    }
+    
+    /* The product info and button container will take up the remaining space */
+    .product-info-container {
+        flex: 1; /* Take up all available space */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    /* The image container will only take up as much space as it needs */
+    .selected-variant-image-container {
+        flex-shrink: 0; /* Prevent shrinking */
+        height: 100px; Adjust as per your requirement
+        overflow: hidden; 
+        margin-left: 0px; /* Add some space between product info and image */
+        margin-right: 10px; /* Space between image and right edge of screen */
+        display: flex; /* Used to center the image both vertically and horizontally */
+        align-items: center; /* Vertically center the image */
+        justify-content: center; /* Horizontally center the image */
+    }
+      
+    #selectedVariantImage {
+        max-height: 100%; /* Ensures image doesn't exceed container height 
+        width: auto;       Auto width to maintain aspect ratio */
+    }
+    
+    #StickyProductSubmitButton-{{ section_id }} {
+        margin-bottom: 0px;  
+    }
+      
+    .sticky-atc {
+        /* display: none; */
+        position: fixed;
+        bottom: -200px;
+        left: 0;
+        z-index: 2;
+        width: 100%;
+        align-items: center;
+         /* Add "background: #000;" to change the color of your ATC button*/
+         /* Add "color: #fff;" to change the color of your ATC text*/
+    
+        background-color: #fff; /* or any desired color */
+        border: 1px solid #e0e0e0; /* optional */
+        border-radius: 4px; /* optional */
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* optional for a subtle shadow */
+        padding: 10px 10px; /* Optional: for some spacing */
+        transition: bottom 0.3s ease-out; /* This adds the smooth slide animation */
+    }
+    
+    .sticky-atc.show {
+        bottom: 0; /* This will make the sticky ATC box slide up */
+    }
+      
+    .selected-variant-title {
+        /* display: block; Makes it take the full width */
+        padding: 0px 0; /* Adds some spacing above and below the title */
+        font-weight: bold;
+        /* font-size: 13px; */
+        text-align: left; /* Centers the text */
+    }
+    
+      
+    .selected-variant-option {
+        color: #666; /* optional for a subtle color */
+        font-size: 12px;
+    }
+    
+      
+    .selected-variant-details {
+        display: flex;
+        flex-direction: column; /* Stack children vertically */
+        justify-content: center; /* Center them vertically */
+        align-items: center; 
+    }
+    
+    
+    
+    .options-container {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 65% 35%;
+        column-gap: 10px;
+        align-items: flex-end;
+    }
+    
+    
+    
+    .selected-variant-option {
+        white-space: nowrap; /* Prevent text from wrapping within the element */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%; /* Ensures that the option doesn't overflow its container */
+        flex-shrink: 0; /* Prevent the option from shrinking */
+        flex-grow: 0; /* Prevent the option from growing */
+        align-items: center;
+    }
+    
+      
+    .price-container {
+        display: flex;
+        justify-content: flex-start; /* Adjust horizontally */
+        align-items: center;
+        width: 100%; /* Take up full width */
+        /* margin-top: 10px;  Add some top margin for spacing */
+    }
+    
+    .selection-price {
+        font-size: 13px; /* Adjust font size as needed */
+        font-weight: bold;
+        color: #d53600; /* Adjust color as needed */
+    }
+      
+    .compared-price {
+        font-size: 14px; /* Adjust font size as needed */
+        text-decoration: line-through;
+        color: #888; /* A lighter color to indicate it's the old price */
+        margin-right: 10px; /* Space between actual price and compared price */
+    }
+    
+    .atc-button-container {
+        align-items: center !important;
+    }
+    
+    
+    /* This media query targets devices with a width of 750px and above (desktops) */   
+      
+    @media (min-width: 750px) {
+    
+        .sticky-atc {
+            bottom: auto; /* Reset the bottom property for desktop */
+            top: -200px; /* Start off-screen */
+            transition: top 0.3s ease-out; /* Transition for desktop */
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+        
+        .sticky-atc.show {
+            bottom: auto; /* Reset the bottom property for desktop */
+            top: 45px; /* Or the height of your sticky menubar if you have one */
+        }
+    
+        .product-details-container {
+            gap: 20px; 
+        }
+        .selected-variant-header-container {
+            display: flex;
+            flex: 0 0 40%;
+            align-items: center;
+            flex: 1; /* Allow it to take up the remaining space */
+        }
+    
+     
+        .selected-variant-image-container {
+            height: 50px;  Adjust as per your requirement */
+        }
+          
+        .product-info-container {
+            flex: 0 0 60%;
+            flex-direction: row; /* On desktop, layout children horizontally */
+        }
+        .selected-variant-details {
+            flex-direction: row;
+            flex: 0 0 70%;  /* 70% of the parent's width */
+            justify-content: space-between;
+            padding: 0px 10px;
+        }
+    
+        .selected-variant-option {
+            justify-content: center; 
+        }
+          
+        .options-container {
+            flex: 0 0 50%;  /* 55% of the parent's width */
+        }
+        
+        .price-container {
+            flex: 0 0 50%;  /* 45% of the parent's width */
+            justify-content: right;
+        }
+      
+        .atc-button-container {
+            flex: 0 0 30%;  /* 30% of the parent's width */
+            max-width: 40rem;
+        }
+      
+    }
+    
+    @media (min-width: 990px) {
+    
+        .sticky-atc.show {
+            top: 45px; /* Or the height of your sticky menubar if you have one */
+        }
+    }
+      
+  
+</style>
