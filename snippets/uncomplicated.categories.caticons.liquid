@@ -1,0 +1,356 @@
+
+{% comment %}All code is (c) 2016-2023 Zoom Buzz Ltd and may not be reused without written permission{% endcomment %}
+{% assign block_version_number = '1.52.0' %}
+
+{%- liquid
+
+    # define variable defaults (used if without TAE schema)
+    unless show_large_up
+        assign show_large_up = "4up"
+    endunless
+
+# render placeholder to show in theme editor -%}
+{%- if request.design_mode -%}
+    <div id="uncomplicated-icons-design_mode-placeholder" class="placeholder-category-icons">
+        <p class="greybox">Category Icons placeholder: if this category had sub-categories, they would appear here as icons, {{ show_large_up }} across the page on wide screens.</p>
+    </div>
+    {{ "category-design_mode.css" | asset_url | stylesheet_tag }}
+{%- endif -%}
+
+{%- # inline critical styles before rendering HTML -%}
+<style id="uncomplicated-icons-styles">
+    /* 'embed' parent container carries offset to cope with padding on contained items */
+    .category-icons.show-embed {
+        margin-left: -30px;
+        margin-bottom: -30px;
+    }
+    /* 'extension' parent container carries offset to cope with padding on contained items, but works with page-width */
+    .category-icons.show-extension {
+        position: relative;
+        left: -30px;
+        margin-bottom: -29px;
+    }
+    /* by default turn off sub-categories, then enable using show-class (or default) */
+    .category-icons.show-styled .subcat-grid-item { display: none; }
+    .category-icons.show-styled .subcat-grid-item {
+        float: left;
+        padding-left: 30px;
+        min-height: 1px;
+        vertical-align: top;
+    }
+    .category-icons.show-styled .subcat-grid-link {
+        position: relative;
+        display: block;
+        line-height: 1.3;
+        padding-bottom: 30px;
+    }
+    .category-icons.show-styled .subcat-grid-link__image {
+        position: relative;
+        display: table;
+        table-layout: fixed;
+        width: 100%;
+    }
+    .category-icons.show-styled .subcat-grid-link__image-centered {
+        display: table-cell;
+        vertical-align: middle;
+        width: 100%;
+        overflow: hidden;
+    }
+    .category-icons.show-styled .subcat-grid-link__image-centered img {
+        display: block;
+        margin: 0 auto;
+        max-width: 100%;
+    }
+    .category-icons.show-styled .subcat-grid-link__title { position: relative; }
+    .category-icons.show-styled .subcat-terminator { clear: both; }
+    /* span across (Xup) - icon size - large width screen (>=990) */
+    @media only screen and (min-width: 990px) {
+        .category-icons.show-styled.show-large-1up .subcat-grid-item { width: 100%; }
+        .category-icons.show-styled.show-large-2up .subcat-grid-item { width: 50%; }
+        .category-icons.show-styled.show-large-3up .subcat-grid-item { width: 33.3%; }
+        .category-icons.show-styled.show-large-4up .subcat-grid-item { width: 25%; }
+        .category-icons.show-styled.show-large-5up .subcat-grid-item { width: 20%; }
+        .category-icons.show-styled.show-large-8up .subcat-grid-item { width: 12.5%; }
+    }
+    /* span across (Xup) - wrap after X - large width screen (>=990) */
+    @media only screen and (min-width: 990px) {
+        :nth-child(1n+1 of .category-icons.show-styled.show-large-1up .subcat-grid-item.subcat-shown),
+        :nth-child(2n+1 of .category-icons.show-styled.show-large-2up .subcat-grid-item.subcat-shown),
+        :nth-child(3n+1 of .category-icons.show-styled.show-large-3up .subcat-grid-item.subcat-shown),
+        :nth-child(4n+1 of .category-icons.show-styled.show-large-4up .subcat-grid-item.subcat-shown),
+        :nth-child(5n+1 of .category-icons.show-styled.show-large-5up .subcat-grid-item.subcat-shown),
+        :nth-child(8n+1 of .category-icons.show-styled.show-large-8up .subcat-grid-item.subcat-shown) { clear: both; }
+    }
+    /* span across (Xup) - icon size - medium width screen (>=750,<990) */
+    @media only screen and (min-width: 750px) and (max-width: 989px) {
+        .category-icons.show-styled.show-medium-1up .subcat-grid-item { width: 100%; }
+        .category-icons.show-styled.show-medium-2up .subcat-grid-item { width: 50%; }
+        .category-icons.show-styled.show-medium-3up .subcat-grid-item { width: 33.3%; }
+        .category-icons.show-styled.show-medium-4up .subcat-grid-item { width: 25%; }
+        .category-icons.show-styled.show-medium-5up .subcat-grid-item { width: 20%; }
+        .category-icons.show-styled.show-medium-8up .subcat-grid-item { width: 12.5%; }
+    }
+    /* span across (Xup) - wrap after X - medium width screen (>=750,<990) */
+    @media only screen and (min-width: 750px) and (max-width: 989px) {
+        :nth-child(1n+1 of .category-icons.show-styled.show-medium-1up .subcat-grid-item.subcat-shown),
+        :nth-child(2n+1 of .category-icons.show-styled.show-medium-2up .subcat-grid-item.subcat-shown),
+        :nth-child(3n+1 of .category-icons.show-styled.show-medium-3up .subcat-grid-item.subcat-shown),
+        :nth-child(4n+1 of .category-icons.show-styled.show-medium-4up .subcat-grid-item.subcat-shown),
+        :nth-child(5n+1 of .category-icons.show-styled.show-medium-5up .subcat-grid-item.subcat-shown),
+        :nth-child(8n+1 of .category-icons.show-styled.show-medium-8up .subcat-grid-item.subcat-shown) { clear: both; }
+    }
+    /* span across (Xup) - icon size - small width screen (<750) */
+    @media only screen and (max-width: 749px) {
+        .category-icons.show-styled.show-small-1up .subcat-grid-item { width: 100%; }
+        .category-icons.show-styled.show-small-2up .subcat-grid-item { width: 50%; }
+        .category-icons.show-styled.show-small-3up .subcat-grid-item { width: 33.3%; }
+        .category-icons.show-styled.show-small-4up .subcat-grid-item { width: 25%; }
+        .category-icons.show-styled.show-small-5up .subcat-grid-item { width: 20%; }
+        .category-icons.show-styled.show-small-8up .subcat-grid-item { width: 12.5%; }
+    }
+    /* span across (Xup) - wrap after X - small width screen (<750) */
+    @media only screen and (max-width: 749px) {
+        :nth-child(1n+1 of .category-icons.show-styled.show-small-1up .subcat-grid-item.subcat-shown),
+        :nth-child(2n+1 of .category-icons.show-styled.show-small-2up .subcat-grid-item.subcat-shown),
+        :nth-child(3n+1 of .category-icons.show-styled.show-small-3up .subcat-grid-item.subcat-shown),
+        :nth-child(4n+1 of .category-icons.show-styled.show-small-4up .subcat-grid-item.subcat-shown),
+        :nth-child(5n+1 of .category-icons.show-styled.show-small-5up .subcat-grid-item.subcat-shown),
+        :nth-child(8n+1 of .category-icons.show-styled.show-small-8up .subcat-grid-item.subcat-shown) { clear: both; }
+    }
+    /* show-downdirect [default], show direct children */
+    .category-icons.show-styled.show-downdirect .subcat-grid-item { display: block; }
+    /* show-onlyifimage, hide whole icon and text if no image uploaded */
+    .category-icons.show-styled.show-onlyifimage .subcat-grid-item.has-no-image { display: none; }
+    /* show-neverimage, hide all images but show text */
+    .category-icons.show-styled.show-neverimage .subcat-grid-link__image { display: none; }
+    /* show-onlyifpc, hide icons with no products */
+    .category-icons.show-styled.show-onlyifpc .subcat-grid-item.has-no-products { display: none; }
+    /* show-nopc, hide product count */
+    .category-icons.show-styled.show-nopc span.pc { display: none; }
+    /* alternative text alignment */
+    .category-icons.show-styled .subcat-grid-link .subcat-txalign-left { text-align: left; }
+    .category-icons.show-styled .subcat-grid-link .subcat-txalign-center { text-align: center; }
+    .category-icons.show-styled .subcat-grid-link .subcat-txalign-right { text-align: right; }
+</style>
+
+{%- liquid
+
+    # define variable defaults (used if without TAE schema)
+    unless show_class
+        assign show_class = 'show-downdirect'
+    endunless
+    unless show_large_up
+        assign show_large_up = "4up"
+    endunless
+    unless show_medium_up
+        assign show_medium_up = "3up"
+    endunless
+    unless show_small_up
+        assign show_small_up = "2up"
+    endunless
+    unless show_product_counts or show_product_counts == false
+        assign show_product_counts = true
+    endunless
+    unless hide_empty_subcategories
+        assign hide_empty_subcategories = false
+    endunless
+    unless show_collection_images
+        assign show_collection_images = "alwaysimage"
+    endunless
+    unless show_only_on_first
+        assign show_only_on_first = false
+    endunless
+
+    # look for parsing instructions if set
+    if shop.metafields.uncomptcat.catidslist.value.summary.id_field
+        assign id_field = shop.metafields.uncomptcat.catidslist.value.summary.id_field
+    else
+        assign id_field = 'id'
+    endif
+
+    # look for metafields if set
+    assign render_status = 0
+    if collection[id_field]
+        # if we match collection, set bit 2
+        assign render_status = render_status | plus: 2
+    endif
+    assign collection_id_string = collection[id_field] | append: ''
+    if shop.metafields.uncomptcat.catidslist.value[collection_id_string]
+        # if we match category (from catidslist), set bit 1
+        assign render_status = render_status | plus: 1
+        assign cat_details = shop.metafields.uncomptcat.catidslist.value[collection_id_string]
+        assign subcat_count = cat_details.child_count | plus: 0
+        if cat_details['linklist_handle']
+            assign linklist_handle = cat_details['linklist_handle']
+            assign linklist_details = linklists[linklist_handle]
+            if linklist_details
+                # if we match menu (from linklists), set bit 4
+                assign render_status = render_status | plus: 4
+            endif
+        endif
+    else
+        assign subcat_count = 0
+    endif
+    if shop.metafields.uncomptcat.catidslist.value.summary.versionint
+        assign meta_version_int = shop.metafields.uncomptcat.catidslist.value.summary.versionint
+    else
+        # old meta version if not set in metafields
+        assign meta_version_int = 1021000
+    endif
+
+    # derive version int
+    assign block_version_components = block_version_number | split: "."
+    assign block_version_int_major = block_version_components[0] | times: 1000000
+    assign block_version_int_minor = block_version_components[1] | times: 1000
+    assign block_version_int = block_version_int_major | plus: block_version_int_minor | plus: block_version_components[2]
+
+    # disable client-side rendering (JS) if we have matched everything
+    if subcat_count > 0 and render_status >= 7
+        # but only for non-default languages (will later disable all CSR)
+        if request.locale.primary == false
+            # disable client-side rendering (JS), by setting bit 20
+            assign render_status = render_status | plus: 1048576
+        endif
+    endif
+-%}
+<!-- Begin uncomplicated category icons v{{ block_version_number }} - PLEASE DO NOT CHANGE as this is auto-generated on category refresh -->
+<!-- Found {{ subcat_count }} direct sub-categories for collection #{{ collection[id_field] }}{% if shop.metafields.uncomptcat.catidslist.value.summary %}, {{ shop.metafields.uncomptcat.catidslist.value.summary.total_elements }} total_elements{% endif %} -->
+<div id="uncomplicated-icons" data-render-status="{{ render_status }}" {% if subcat_count == 0 %}style="display: none;"{% endif %}
+     data-block-version-int="{{ block_version_int }}" data-meta-version-int="{{ meta_version_int }}"
+     class="category-icons show-styled show-extension {{ show_class }} show-large-{{ show_large_up }} show-medium-{{ show_medium_up }} show-small-{{ show_small_up }} {% unless show_product_counts %}show-nopc{% endunless %} {% if hide_empty_subcategories %}show-onlyifpc{% endif %} show-{{ show_collection_images }} {%- if show_only_on_first -%}show-onlyonfirst{%- endif -%}"
+>
+{%- liquid
+
+    # define variable defaults (used if without TAE schema)
+    unless title_text_align
+        assign title_text_align = ""
+    endunless
+
+    # look for parsing instructions if set
+    if shop.metafields.uncomptcat.catidslist.value.summary.id_field
+        assign id_field = shop.metafields.uncomptcat.catidslist.value.summary.id_field
+    else
+        assign id_field = 'id'
+    endif
+
+    # work out how many model icons to render for this collection ID
+    assign collection_id_string = collection[id_field] | append: ''
+    if shop.metafields.uncomptcat.catidslist.value[collection_id_string]
+        assign matched_category = shop.metafields.uncomptcat.catidslist.value[collection_id_string]
+        # all 'icons' pages have children, so will have their own linklist
+        assign cat_children_array = matched_category.enumerated_children | split: ','
+        assign icons_to_render = matched_category.child_count | plus: 0
+        if matched_category['linklist_handle']
+            assign linklist_handle = matched_category['linklist_handle']
+            assign matched_linklist = linklists[linklist_handle]
+            # could also take the number of icons from the menu
+            # assign icons_to_render = matched_linklist.links.size
+        endif
+    else
+        assign icons_to_render = 1
+    endif
+    assign loop_upper_bound = icons_to_render | minus: 1
+-%}
+
+{%- for icon_seq in (0..loop_upper_bound) -%}
+{%- liquid
+    # assume we will not match the category, so assign defaults
+    assign products_count = 0
+    assign child_collection = false
+    # if we matched the category, try to match the collection
+    assign child_collection_matched_by = "unmatched"
+    if cat_children_array and cat_children_array.size > icon_seq
+        assign child_collection_id_string = cat_children_array[icon_seq] | append: ''
+        assign child_exception_array = matched_category.children[child_collection_id_string]
+        if child_exception_array.coll_handle
+            assign child_collection = collections[child_exception_array.coll_handle]
+            assign child_collection_matched_by = "coll_handle"
+        elsif id_field == "handle"
+            assign child_collection = collections[child_collection_id_string]
+            assign child_collection_matched_by = "handle"
+        elsif id_field == "id"
+            assign child_collection_id_int = cat_children_array[icon_seq] | plus: 0
+            for candidate_collection in collections
+                if candidate_collection.id == child_collection_id_int
+                    assign child_collection = candidate_collection
+                    assign child_collection_matched_by = "id"
+                    break
+                endif
+            endfor
+        endif
+        if child_collection.handle
+            assign products_count = child_collection.products_count
+        endif
+    endif
+
+    # assume we will not match the linklist, so set up sensible defaults for the JS to process
+    assign resolved_url = "#"
+    assign resolved_title = "Loading..."
+    # if we matched the linklist, try to get the link
+    if matched_linklist and matched_linklist.links.size > icon_seq
+        assign matched_child_linklist_link = matched_linklist.links[icon_seq]
+        if matched_child_linklist_link
+            assign resolved_title = matched_child_linklist_link.title
+            assign resolved_url = matched_child_linklist_link.url
+        endif
+    endif
+
+    # assume we can show the icon
+    assign show_status = "shown"
+    # if we cannot show the icon, mark as hidden
+    if hide_empty_subcategories and products_count == 0
+        assign show_status = "hidden"
+    elsif show_collection_images == "onlyifimage"
+        unless child_collection.image.width
+            assign show_status = "hidden"
+        endunless
+    endif
+
+-%}
+    <div id="uncomplicated-category-icon-{{ icon_seq }}"
+         data-matched-by="{{ child_collection_matched_by }}" {% if child_collection_id_int %}data-id-int={{ child_collection_id_int }}{% elsif child_collection_id_string %}data-id-string="{{ child_collection_id_string }}"{% endif %} {% if child_collection.handle %}data-handle="{{ child_collection.handle }}" data-products-count="{{ child_collection.products_count }}"{% endif %}
+         class="subcat-grid-item subcat-{{ show_status }}{% if products_count == 0 %} has-no-products{% endif %}{% unless child_collection.image.width %} has-no-image{% endunless -%}
+        ">
+        <a class="subcat-grid-link" href="{{ resolved_url }}">
+            <span class="subcat-grid-link__image">
+                <span class="subcat-grid-link__image-centered">
+                    {%- if child_collection.image.width -%}
+                        {{ child_collection | image_url: width: 480 | image_tag: alt: resolved_title, class: 'subcat-grid-link__image-img', widths: '300, 480', style: 'height: auto' }}
+                    {%- else -%}
+                        {%- # theme-check-disable ImgLazyLoading -%}
+                        <img alt="loading collection image" width="auto" height="auto" data-nocollimage="{{ 'no-image-for-this-collection.png' | asset_url }}" class="subcat-grid-link__image-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAeAAAAHgCAMAAABKCk6nAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAD5SURBVHja7MEBDQAAAMKg909tDwcUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPybAAMAhg0AAcWOt8UAAAAASUVORK5CYII=" />
+                        {%- # theme-check-enable ImgLazyLoading -%}
+                    {%- endif -%}
+                </span>
+            </span>
+            <p class="subcat-grid-link__title {{ title_text_align }}"
+               data-title="{{ resolved_title }}"
+               {% comment %} careful to only show product count (0) if not Loading... {% endcomment %}
+               >{{ resolved_title }}{% if matched_child_linklist_link %} <span class="pc{% if products_count == 0 %} pc-zero-hide{% endif %}" data-count="{{ products_count }}">({{ products_count }})</span>{% endif %}</p>
+        </a>
+    </div>
+{%- endfor -%}
+
+    <div class="subcat-terminator">&nbsp;</div>
+</div>
+<!-- End uncomplicated category icons -->
+
+{%- liquid
+    unless bucket_source
+        assign bucket_source = 'https://themeassets.aws-dns.uncomplicatedapps.com/shopify'
+    endunless
+    if shop.metafields.uncomptcat.cathiter.value
+        assign category_hierarchy_iteration = shop.metafields.uncomptcat.cathiter.value
+    else
+        assign category_hierarchy_iteration = 0
+    endif
+
+    # attach scripts (async) and styles from remote assets folder using shop permanent name
+    # cachebust on iteration number (if set)
+    # disable 'RemoteAsset' theme checks because we cannot use Shopify CDN for dynamic assets
+-%}
+<script src="{{ 'uncomplicated.common.min.js' | asset_url }}" defer></script>
+{% # theme-check-disable RemoteAsset %}
+<script src="{{ bucket_source | append: "/" | append: shop.permanent_domain | append: "-catlist.min.js?cbi=" | append: block_version_number | append: category_hierarchy_iteration }}" defer></script>
+{% # theme-check-enable RemoteAsset %}
+

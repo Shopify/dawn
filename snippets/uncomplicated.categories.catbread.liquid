@@ -1,0 +1,601 @@
+
+{% comment %}All code is (c) 2016-2023 Zoom Buzz Ltd and may not be reused without written permission{% endcomment %}
+{% assign block_version_number = '1.52.0' %}
+{% assign prod_multicat_sel = block.settings.prod_multicat_sel %}
+{%- liquid
+    # define variable defaults (used if without TAE schema)
+    unless prod_multicat_sel
+        assign prod_multicat_sel = "leastprod"
+    endunless
+
+    # look for parsing instructions if set
+    if shop.metafields.uncomptcat.catidslist.value.summary.id_field
+        assign id_field = shop.metafields.uncomptcat.catidslist.value.summary.id_field
+    else
+        assign id_field = 'id'
+    endif
+
+    # try to find collection hint
+    if collection
+        assign hinted_collection = collection
+        assign hinted_method = "collection_page_liquid"
+    # extension: on product pages, use metafield then prod_multicat_sel
+    elsif product.collections[0]
+        if product.metafields.custom.default_collection_reference
+            for loop_collection in product.collections
+                # match on collection object, could also match on any unique attribute like x.field_name
+                if loop_collection == product.metafields.custom.default_collection_reference.value
+                    assign hinted_collection = loop_collection
+                    assign hinted_method = "product_metafield_reference"
+                endif
+            endfor
+        elsif product.metafields.custom.default_collection_handle
+            for loop_collection in product.collections
+                if loop_collection.handle == product.metafields.custom.default_collection_handle
+                    assign hinted_collection = loop_collection
+                    assign hinted_method = "product_metafield"
+                endif
+            endfor
+        elsif product.metafields.my_fields.default_collection_handle
+            for loop_collection in product.collections
+                if loop_collection.handle == product.metafields.my_fields.default_collection_handle
+                    assign hinted_collection = loop_collection
+                    assign hinted_method = "product_metafield"
+                endif
+            endfor
+        elsif prod_multicat_sel == "generic"
+            assign hinted_collection = false
+            assign hinted_method = "product_multicat_generic"
+        endif
+    endif
+
+    # implicit else: try to find in-hierarchy first or in-hierarchy last
+    unless hinted_method
+        if product.collections[0]
+            if prod_multicat_sel == "first" or prod_multicat_sel == "leastprod" or prod_multicat_sel == "mostprod" or prod_multicat_sel == "last"
+                # initialise last_match_prodcount to favour any new matches
+                if prod_multicat_sel == "leastprod"
+                    assign last_match_prodcount = 999999
+                elsif prod_multicat_sel == "mostprod"
+                    assign last_match_prodcount = -1
+                endif
+                # loop through all collections that this product belongs to
+                for loop_collection in product.collections
+                    assign loop_collection_id_string = loop_collection[id_field] | append: ''
+                    if shop.metafields.uncomptcat.catidslist.value[loop_collection_id_string]
+                        assign use_this_match_in_preference = true
+                        if prod_multicat_sel == "leastprod" and last_match_prodcount <= loop_collection.products_count
+                            assign use_this_match_in_preference = false
+                        elsif prod_multicat_sel == "mostprod" and last_match_prodcount >= loop_collection.products_count
+                            assign use_this_match_in_preference = false
+                        endif
+                        if use_this_match_in_preference
+                            assign hinted_collection = loop_collection
+                            assign hinted_method = "product_multicat_inhier_aspar_" | append: prod_multicat_sel
+                            assign last_match_prodcount = loop_collection.products_count
+                            # clear parent_category, in case it has been set in a previous loop iteration
+                            assign parent_category = false
+                            if hinted_method and prod_multicat_sel == "first"
+                                break
+                            endif
+                        endif
+                    else
+                        assign loop_collection_id_comma = loop_collection[id_field] | prepend: ',' | append: ','
+                        # see if this collection is in the hierarchy as a child (of the candidate parent)
+                        assign parent_array = shop.metafields.uncomptcat.catidslist.value.summary.enumerated_elements | split: ','
+                        for loop_parent_category_id_string in parent_array
+                            assign loop_parent_category = shop.metafields.uncomptcat.catidslist.value[loop_parent_category_id_string]
+                            if loop_parent_category.enumerated_children
+                                assign inhier_ids_string = loop_parent_category.enumerated_children | prepend: ',' | append: ','
+                            else
+                                # now deprecated (but still supported) children array of IDs
+                                assign inhier_ids_string = loop_parent_category.children | join: ',' | prepend: ',' | append: ','
+                            endif
+                            # if we have at least 1 child collection, allowing for padding commas
+                            if inhier_ids_string.size > 4
+                                # search child collections to find match, which either overwrites previous match or breaks out
+                                if inhier_ids_string contains loop_collection_id_comma
+                                    assign use_this_match_in_preference = true
+                                    if prod_multicat_sel == "leastprod" and last_match_prodcount <= loop_collection.products_count
+                                        assign use_this_match_in_preference = false
+                                    elsif prod_multicat_sel == "mostprod" and last_match_prodcount >= loop_collection.products_count
+                                        assign use_this_match_in_preference = false
+                                    endif
+                                    if use_this_match_in_preference
+                                        assign hinted_collection = loop_collection
+                                        assign hinted_method = "product_multicat_inhier_aschild_" | append: prod_multicat_sel
+                                        assign last_match_prodcount = loop_collection.products_count
+                                        # capture parent category here, because cannot derive from non-parent hinted_collection
+                                        assign parent_category = loop_parent_category
+                                        # if we want the first match, break out of loop, otherwise allow loop to continue to find more matches
+                                        if prod_multicat_sel == "first"
+                                            break
+                                        endif
+                                    endif
+                                endif
+                            endif
+                        endfor
+                        # double break if match found and we are only interested in first match
+                        if hinted_method and prod_multicat_sel == "first"
+                            break
+                        endif
+                    endif
+                endfor
+            endif
+        endif
+    endunless
+
+    # implicit else: fallback to simple first or last
+    unless hinted_method
+        if product.collections[0]
+            if prod_multicat_sel == "first"
+                assign hinted_collection = product.collections.first
+                assign hinted_method = "product_multicat_first"
+            elsif prod_multicat_sel == "last"
+                assign hinted_collection = product.collections.last
+                assign hinted_method = "product_multicat_last"
+            endif
+        endif
+    endunless
+    # implicit else: fallback to 'none'
+    unless hinted_method
+        assign hinted_collection = false
+        assign hinted_method = "none"
+    endunless
+
+    # generate hinted path based on hinted collection
+    if hinted_collection
+        # use .url which includes locale, instead of .handle which does not and is not URL-encoded
+        assign hinted_path = hinted_collection.url
+        assign hinted_collection_id_string = hinted_collection[id_field] | append: ''
+        if shop.metafields.uncomptcat.catidslist.value[hinted_collection_id_string]
+            # hinted_category is a non-leaf category, so appears in catidslist
+            assign hinted_category = shop.metafields.uncomptcat.catidslist.value[hinted_collection_id_string]
+            # discover parents
+            unless parent_category
+                if hinted_category.enumerated_parents
+                    assign parent_category_id_string = hinted_category.enumerated_parents | split: ',' | last
+                else
+                    # now deprecated (but still supported) parents array of IDs
+                    assign parent_category_id_string = hinted_category.parents.last | append: ''
+                endif
+                if shop.metafields.uncomptcat.catidslist.value[parent_category_id_string]
+                    assign parent_category = shop.metafields.uncomptcat.catidslist.value[parent_category_id_string]
+                endif
+            endunless
+        else
+            # hinted_category is a leaf category, so only appears in catidslist[].children
+            assign nonleaf_catids_array = shop.metafields.uncomptcat.catidslist.value.summary.enumerated_elements | split: ','
+            for nonleaf_cat_id in nonleaf_catids_array
+                assign nonleaf_cat = shop.metafields.uncomptcat.catidslist.value[nonleaf_cat_id]
+                # we already know that hinted_collection_id_string is not in catidslist, so loop over children
+                if nonleaf_cat.enumerated_children contains hinted_collection_id_string
+                    # non-leaf hinted categories are only made of exceptions, potentially empty
+                    assign hinted_category = nonleaf_cat.children[hinted_collection_id_string]
+                    unless parent_category
+                        assign parent_category = nonleaf_cat
+                    endunless
+                    break
+                endif
+            endfor
+        endif
+
+        if hinted_category and hinted_category['parent_linklist_handle']
+            # leaf categories with an identified parent (includes first-level categories parented by top-level)
+            assign hinted_linklist_handle = hinted_category['parent_linklist_handle']
+        elsif parent_category and parent_category['linklist_handle']
+            # non-leaf categories that have a parent category
+            assign hinted_linklist_handle = parent_category['linklist_handle']
+        endif
+        if hinted_linklist_handle
+            assign hinted_linklist = linklists[hinted_linklist_handle]
+            # loop through hinted_linklist to find hinted_link
+            for candidate_link in hinted_linklist.links
+                if candidate_link.object.id == hinted_collection.id
+                    assign hinted_link = candidate_link
+                    break
+                endif
+            endfor
+        endif
+        # work out if we can render this breadcrumb using liquid (SSR)
+        if hinted_link
+            assign use_ssr = true
+            # detect based on presence of parent_linklist_handle in categories
+            if hinted_category.id
+                unless hinted_category['parent_linklist_handle']
+                    assign use_ssr = false
+                endunless
+            endif
+            if parent_category.id
+                unless parent_category['parent_linklist_handle']
+                    assign use_ssr = false
+                endunless
+            endif
+        endif
+    endif
+-%}
+<!-- Begin uncomplicated category breadcrumbs v{{ block_version_number }} - PLEASE DO NOT CHANGE as this is auto-generated on category refresh, resolved{% if hinted_collection.id %} hinted_collection({{ hinted_collection.id }}),{% endif %}{% if hinted_category.id %} hinted_category({{ hinted_category.id }}),{% endif %}{% if parent_category.id %} parent_category({{ parent_category.id }}),{% endif %}{% if hinted_linklist.handle %} hinted_linklist({{ hinted_linklist.handle }}),{% endif %}{% if hinted_link.title %} hinted_link({{ hinted_link.title }}){% endif %} -->
+
+{%-
+    # inline styles before rendering HTML
+
+    # note: .category-breadcrumbs class only added to TAE, not used for legacy embeds
+-%}
+<style id="uncomplicated-breadcrumbs-styles">
+    /* limit content shift as forces repaint */
+    .category-breadcrumbs { width: 100%; }
+    /* force breadcrumbs to display as a trail (a > b > c inline) */
+    .category-breadcrumbs { display: block; }
+    .category-breadcrumbs a, .category-breadcrumbs span { display: inline; }
+    /* optionally widen spacing */
+    .category-breadcrumbs .breadcrumb__sep.breadcrumb__sep_plus3 {
+        margin-left: 0.3em;
+        margin-right: 0.3em;
+    }
+    .category-breadcrumbs .breadcrumb__sep.breadcrumb__sep_plus5 {
+        margin-left: 0.5em;
+        margin-right: 0.5em;
+    }
+    .category-breadcrumbs .breadcrumb__sep.breadcrumb__sep_plus10 {
+        margin-left: 1.0em;
+        margin-right: 1.0em;
+    }
+    .category-breadcrumbs .breadcrumb__sep.breadcrumb__sep_plus15 {
+        margin-left: 1.5em;
+        margin-right: 1.5em;
+    }
+    /* allow specific tagged breadcrumbs to be hidden */
+    .category-breadcrumbs.hide_first_breadcrumb > a:first-of-type, .category-breadcrumbs.hide_first_breadcrumb > span:first-of-type { display: none; }
+</style>
+
+{%- liquid
+
+    # define variable defaults (used if without TAE schema)
+    unless use_ssr
+        assign use_ssr = false
+    endunless
+    unless show_catroot or show_catroot == false
+        assign show_catroot = true
+    endunless
+    unless additional_nav_classes
+        assign additional_nav_classes = ""
+    endunless
+
+    # look for metafields if set
+    if shop.metafields.uncomptcat.catidslist.value.summary.versionint
+        assign meta_version_int = shop.metafields.uncomptcat.catidslist.value.summary.versionint
+    else
+        # old meta version if not set in metafields
+        assign meta_version_int = 1021000
+    endif
+
+    # derive version int
+    assign block_version_components = block_version_number | split: "."
+    assign block_version_int_major = block_version_components[0] | times: 1000000
+    assign block_version_int_minor = block_version_components[1] | times: 1000
+    assign block_version_int = block_version_int_major | plus: block_version_int_minor | plus: block_version_components[2]
+
+    # breadcrumb rendering done in javascript
+    assign render_status = 0
+    if use_ssr
+        # temporary value until we are confident to disable using bit 20 (1048576)
+        assign render_status = 2048
+    endif
+
+-%}
+<nav id="uncomplicated-breadcrumbs" data-render-status="{{ render_status }}"
+     data-hinted-path="{{ hinted_path }}" data-hinted-method="{{ hinted_method }}" data-hinted-collection-pc="{{ hinted_collection.products_count }}"
+     data-block-version-int="{{ block_version_int }}" data-meta-version-int="{{ meta_version_int }}"
+     class="breadcrumb {{ additional_nav_classes }} {% unless show_catroot %}hide_first_breadcrumb{% endunless %}"
+     role="navigation" aria-label="breadcrumbs"
+>
+
+
+{% if use_ssr %}<!-- SSR -->
+{%- liquid
+
+    # define variable defaults (used if without TAE schema)
+    unless sep_plus_class
+        assign sep_plus_class = "breadcrumb__sep_plus5"
+    endunless
+    unless separator_char_code
+        assign separator_char_code = "rsaquo;"
+    endunless
+    unless show_finalbread_as_textonly
+        assign show_finalbread_as_textonly = false
+    endunless
+    unless text_catall
+        assign text_catall = "All Products"
+    endunless
+    unless link_catall
+        assign link_catall = "/collections/all"
+    endunless
+    unless link_catroot
+        assign link_catroot = "/"
+    endunless
+    unless text_catroot
+        assign text_catroot = "Home"
+    endunless
+    unless insert_shortlinkfix
+        assign insert_shortlinkfix = false
+    endunless
+    unless insert_jsonld or insert_jsonld == false or disable_jsonld == true
+        assign insert_jsonld = true
+    endunless
+
+    # look for parsing instructions if set
+    if shop.metafields.uncomptcat.catidslist.value.summary.id_field
+        assign id_field = shop.metafields.uncomptcat.catidslist.value.summary.id_field
+    else
+        assign id_field = 'id'
+    endif
+
+    # create non-slash-terminated root including locale/county code
+    if request.locale.root_url == "/"
+        assign country_prepend = ""
+    else
+        assign country_prepend = request.locale.root_url
+    endif
+
+    # have to work with parent_category, because hinted_category might be a leaf
+    if parent_category
+        if parent_category['enumerated_parents']
+            assign parent_generations_string = parent_category['enumerated_parents']
+            if parent_category['enumerated_parents'].size > 0
+                assign parent_generations_string = parent_generations_string | append: ','
+            endif
+        else
+            assign parent_generations_string = ""
+        endif
+        assign parent_generations_string = parent_generations_string | append: parent_category[id_field]
+        assign parent_generations_array = parent_generations_string | split: ','
+    endif
+
+    assign item_seq = 0
+    assign breadcrumb_item_list_json = ""
+
+    # write out category root ('Home') item
+-%}
+{% comment %}<p>Debugging: {{ parent_generations_string }} from {{ parent_category }}</p>{% endcomment %}
+<a id="uncomplicated-category-breadcrumb-item-{{ item_seq }}" href="{{ country_prepend }}{{ link_catroot }}" title="{{ text_catroot }}">{{ text_catroot }}</a>
+
+{% comment %} Show all parent breadcrumbs, apart from the direct collection or product's collection {% endcomment %}
+{%- for parent_generation_id_string in parent_generations_array -%}
+{%- liquid
+    assign parent_generation_seq = forloop.index0
+    # use id_field here, because we are doing a lookup in the catidslist using it, based on enumerated_parents
+    assign current_category = shop.metafields.uncomptcat.catidslist.value[parent_generation_id_string]
+    # use ID explicitly here, not necessarily the id_field, because we need to cross reference against object ID
+    assign current_category_id_int = current_category.id | plus: 0
+    assign current_link = false
+    if current_category['parent_linklist_handle']
+        assign current_linklist_handle = current_category['parent_linklist_handle']
+        assign current_linklist = linklists[current_linklist_handle]
+        # loop through current_linklist to find current_link
+        for candidate_link in current_linklist.links
+            if candidate_link.object.id == current_category_id_int
+                assign current_link = candidate_link
+                break
+            endif
+        endfor
+    endif
+-%}
+{%- if current_link -%}
+    {%- assign item_seq = item_seq | plus: 1 -%}<!-- item-{{ item_seq }}-parentgen -->
+    {%- capture breadcrumb_item_json %}{% if breadcrumb_item_list_json != "" %},{% endif %}{"@type": "ListItem", "position": {{ item_seq }}, "item": {"@id":"{{ current_link.url }}","name":"{{ current_link.title }}"}}{% endcapture -%}
+    {%- assign breadcrumb_item_list_json = breadcrumb_item_list_json | append: breadcrumb_item_json -%}
+    <span id="uncomplicated-category-breadcrumb-separator-{{ item_seq }}" data-source-generation="{{ parent_generation_seq }}" data-source-category="{{ current_category[id_field] }}" aria-hidden="true" class="breadcrumb__sep {{ sep_plus_class }}">{{ "&" | append: separator_char_code }}</span>
+    <a id="uncomplicated-category-breadcrumb-item-{{ item_seq }}" data-source-generation="{{ parent_generation_seq }}" data-source-category="{{ current_category[id_field] }}" href="{{ current_link.url }}" title="{{ current_link.title }}">{{ current_link.title }}</a>
+{%- endif -%}
+{%- endfor -%}
+
+{% comment %} Show final breadcrumb, either the collection or the product's collection {% endcomment %}
+{%- if hinted_link -%}
+    {%- assign current_link = hinted_link -%}
+    {%- assign item_seq = item_seq | plus: 1 -%}<!-- item-{{ item_seq }}-hinted -->
+    {%- capture breadcrumb_item_json %}{% if breadcrumb_item_list_json != "" %},{% endif %}{"@type": "ListItem", "position": {{ item_seq }}, "item": {"@id":"{{ current_link.url }}","name":"{{ current_link.title }}"}}{% endcapture -%}
+    {%- assign breadcrumb_item_list_json = breadcrumb_item_list_json | append: breadcrumb_item_json -%}
+    <span id="uncomplicated-category-breadcrumb-separator-{{ item_seq }}" data-source-generation="{{ parent_generation_seq | plus: 1 }}" data-source-link-object-id="{{ current_link.object.id }}" aria-hidden="true" class="breadcrumb__sep {{ sep_plus_class }}">{{ "&" | append: separator_char_code }}</span>
+    {%- if product == null and show_finalbread_as_textonly -%}
+        <span class="breadcrumb__leaf" id="uncomplicated-category-breadcrumb-item-{{ item_seq }}" data-source-generation="{{ parent_generation_seq | plus: 1 }}" data-source-link-object-id="{{ current_link.object.id }}" title="{{ current_link.title }}">{{ current_link.title }}</span>
+    {%- else -%}
+        <a id="uncomplicated-category-breadcrumb-item-{{ item_seq }}" data-source-generation="{{ parent_generation_seq | plus: 1 }}" data-source-link-object-id="{{ current_link.object.id }}" href="{{ current_link.url }}" title="{{ current_link.title }}">{{ current_link.title }}</a>
+    {%- endif -%}
+{%- endif -%}
+
+{% comment %} Insert inline JSON-LD {% endcomment %}
+{%- if insert_jsonld -%}
+    <script type="application/ld+json"> {
+    "@context": "http://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [{{ breadcrumb_item_list_json }}]
+    } </script>
+{%- endif -%}
+
+{% else %}<!-- CSR -->
+{%- liquid
+
+    # define variable defaults (used if without TAE schema)
+    unless link_catroot
+        assign link_catroot = "/"
+    endunless
+    unless text_catroot
+        assign text_catroot = "Home"
+    endunless
+
+    # create slash-terminated root including locale/county code
+    if request.locale.root_url == "/"
+        assign country_prepend = ""
+    else
+        assign country_prepend = request.locale.root_url
+    endif
+
+-%}
+<a id="uncomplicated-category-breadcrumb-model-item" href="{{ country_prepend }}{{ link_catroot }}" title="{{ text_catroot }}">{{ text_catroot }}</a>
+
+{%- liquid
+
+    # define variable defaults (used if without TAE schema)
+    unless prod_multicat_sel
+        assign prod_multicat_sel = "first"
+    endunless
+    unless sep_plus_class
+        assign sep_plus_class = "breadcrumb__sep_plus5"
+    endunless
+    unless separator_char_code
+        assign separator_char_code = "rsaquo;"
+    endunless
+    unless show_finalbread_as_textonly
+        assign show_finalbread_as_textonly = false
+    endunless
+    unless text_catall
+        assign text_catall = "All Products"
+    endunless
+    unless link_catall
+        assign link_catall = "/collections/all"
+    endunless
+
+    # look for parsing instructions if set
+    if shop.metafields.uncomptcat.catidslist.value.summary.id_field
+        assign id_field = shop.metafields.uncomptcat.catidslist.value.summary.id_field
+    else
+        assign id_field = 'id'
+    endif
+
+-%}
+
+{%- if hinted_collection -%}
+    <!-- csr hinted_collection({{ hinted_collection[id_field] }}){% if parent_category.url %}, parent_category({{ parent_category[id_field] }}){% if parent_category.enumerated_parents %}, grandparents({{ parent_category.enumerated_parents | split: ',' | reverse | join: ' > ' }}){% endif %}{% endif -%} -->
+    {%- comment -%} on collection pages or product pages with an identifiable collection {%- endcomment -%}
+    <span id="uncomplicated-category-breadcrumb-top-separator" aria-hidden="true" class="breadcrumb__sep {{ sep_plus_class }}">{{ "&" | append: separator_char_code }}</span>
+    {%- if product == null and show_finalbread_as_textonly -%}
+        {%- comment -%} render collection as text-only leaf {%- endcomment -%}
+        <span class="breadcrumb__leaf">{{ hinted_collection.title }}</span>
+    {%- else -%}
+        {%- comment -%} render collection as linked branch {%- endcomment -%}
+        <a href="{{ hinted_path }}" class="breadcrumb__branch" id="uncomplicated-category-breadcrumb-final-item" >{{ hinted_collection.title }}</a>
+    {%- endif -%}
+    <span id="uncomplicated-meta-hintedpath" data-hintedpath="{{ hinted_path }}" data-hintedmethod="{{ hinted_method }}" aria-hidden="true" style="display: none;"></span>
+{%- else -%}
+    {%- comment -%} product pages with no identifiable collection {%- endcomment -%}
+    <span id="uncomplicated-category-breadcrumb-top-separator" aria-hidden="true" class="breadcrumb__sep breadcrumb__allproducts {{ sep_plus_class }}">{{ "&" | append: separator_char_code }}</span>
+    <a href="{{ link_catall }}" title="{{ text_catall }}">{{ text_catall }}</a>
+{%- endif -%}
+
+{%- liquid
+
+    # define variable defaults (used if without TAE schema)
+    unless insert_jsonld or insert_jsonld == false
+        assign insert_jsonld = true
+    endunless
+    unless disable_jsonld
+        assign disable_jsonld = false
+    endunless
+    unless prod_ignore_referrer
+        assign prod_ignore_referrer = false
+    endunless
+
+    # render metadata spans for JS processing
+-%}
+<span id="{% if insert_jsonld != true or disable_jsonld %}uncomplicated-meta-disablejsonld{% else %}uncomplicated-meta-addjsonld{% endif %}" aria-hidden="true" style="display: none;"></span>
+{%- if prod_ignore_referrer -%}<span id="uncomplicated-meta-ignorereferrer" aria-hidden="true" style="display: none;"></span>{%- endif -%}
+
+{% endif %}
+
+{%- liquid
+
+    unless bucket_source
+        assign bucket_source = 'https://themeassets.aws-dns.uncomplicatedapps.com/shopify'
+    endunless
+    if shop.metafields.uncomptcat.cathiter.value
+        assign category_hierarchy_iteration = shop.metafields.uncomptcat.cathiter.value
+    else
+        assign category_hierarchy_iteration = 0
+    endif
+
+    # attach scripts (async) and styles from remote assets folder using shop permanent name
+    # cachebust on iteration number (if set)
+    # disable 'RemoteAsset' theme checks because we cannot use Shopify CDN for dynamic assets
+-%}
+<script src="{{ 'uncomplicated.common.min.js' | asset_url }}" defer></script>
+{% # theme-check-disable RemoteAsset %}
+<script src="{{ bucket_source | append: "/" | append: shop.permanent_domain | append: "-catlist.min.js?cbi=" | append: block_version_number | append: category_hierarchy_iteration }}" defer></script>
+{% # theme-check-enable RemoteAsset %}
+
+{%- liquid
+
+    # define variable defaults (used if without TAE schema)
+    unless show_tags or show_tags == false
+        assign show_tags = true
+    endunless
+    unless show_product_title or show_product_title == false
+        assign show_product_title = true
+    endunless
+    unless sep_plus_class
+        assign sep_plus_class = "breadcrumb__sep_plus5"
+    endunless
+    unless separator_char_code
+        assign separator_char_code = "rsaquo;"
+    endunless
+    unless truncate_limit
+        assign truncate_limit = 0
+    endunless
+
+    # render appends (tags, product title etc.)
+-%}
+{%- if current_tags and show_tags -%}
+    <span aria-hidden="true" class="breadcrumb__sep {{ sep_plus_class }}">{{ "&" | append: separator_char_code }}</span><span class="breadcrumb__tags">{{ current_tags | join: " + " }}</span>
+{%- endif -%}
+{%- if product and show_product_title -%}
+    <span aria-hidden="true" class="breadcrumb__sep {{ sep_plus_class }}">{{ "&" | append: separator_char_code }}</span><span class="breadcrumb__product_title"><strong>{% if truncate_limit > 0 %}{{ product.title | truncate: truncate_limit }}{% else %}{{ product.title }}{% endif %}</strong></span>
+{%- endif -%}
+
+{%- liquid
+
+    # define variable defaults (used if without TAE schema)
+    unless use_ssr
+        assign use_ssr = false
+    endunless
+    unless insert_shortlinkfix
+        assign insert_shortlinkfix = false
+    endunless
+
+    # create non-slash-terminated root including locale/county code
+    if request.locale.root_url == "/"
+        assign country_prepend = ""
+    else
+        assign country_prepend = request.locale.root_url
+    endif
+
+-%}
+{%- if insert_shortlinkfix -%}
+{%- if use_ssr -%}
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            // find collection links on page (grid items nested in at least two divs)
+            const atags = document.querySelectorAll( 'body div div a' );
+            const current_collection_path = "{{ hinted_link.url }}";
+            // ensure slash terminated
+            if (current_collection_path[current_collection_path.length-1] !== '/') {
+                current_collection_path[current_collection_path.length] = '/';
+            }
+            const match_string = '{{ country_prepend }}/products/'
+            for (let i=0 ; i<atags.length ; ++i) {
+                const elem = atags[i];
+                // cautiously identify links that begin with match_string
+                if (elem.pathname && (elem.pathname.length > match_string.length) && (elem.pathname.substring(0, match_string.length) === match_string)) {
+                    // current_collection_path includes country prepend, so strip from '/cc/products/product_name' part
+                    const products_url_part = ("{{ country_prepend }}" === "" ? elem.pathname : elem.pathname.replace("{{ country_prepend }}", ""));
+                    // redirect to long-form URL by prepending collection path
+                    elem.pathname = current_collection_path + products_url_part;
+                }
+            }
+        });
+    </script>
+{%- else -%}
+    <span id="uncomplicated-meta-shortlinkfix" aria-hidden="true" style="display: none;"></span>
+{%- endif -%}
+{%- endif -%}
+
+</nav>
+
