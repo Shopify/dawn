@@ -49,9 +49,10 @@ if (!customElements.get('media-gallery')) {
           if (this.elements.thumbnails) {
             activeMedia.parentElement.scrollTo({ left: activeMedia.offsetLeft });
           }
-          if (!this.elements.thumbnails || this.dataset.desktopLayout === 'stacked') {
-            activeMedia.scrollIntoView({ behavior: 'smooth' });
-          }
+          // TODO: Re-enable this when we have a better solution for stacked layout
+          // if (!this.elements.thumbnails || this.dataset.desktopLayout === 'stacked') {
+          //   activeMedia.scrollIntoView({ behavior: 'smooth' });
+          // }
         });
         this.playActiveMedia(activeMedia);
 
