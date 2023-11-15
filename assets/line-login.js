@@ -1,4 +1,5 @@
 const lineAccessToken = localStorage.getItem('lineAccessToken');
+const isLineLogin = localStorage.getItem('isLineLogin');
 
 async function verifyAccessToken(accessToken) {
   try {
@@ -109,13 +110,16 @@ if (!lineAccessToken || lineAccessToken === 'undefined') {
     } else {
       document.querySelector('.line-connect-success').classList.remove('tw-hidden');
       document.getElementById('open-modal').classList.add('tw-hidden');
+      localStorage.setItem('lineAccessToken', 'true');
     }
   }).catch(e => {
     console.error('verifyLineApp === false', e);
   });
 }
 
-document.querySelector('.line-login-modal').openDialog();
+if (isLineLogin !== 'true') {
+  document.querySelector('.line-login-modal').openDialog();
+}
 
 // TODO::テスト書きたい
 // assets/line-login.js
