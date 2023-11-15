@@ -1,6 +1,8 @@
 const lineAccessToken = localStorage.getItem('lineAccessToken');
 const isLineLogin = localStorage.getItem('isLineLogin');
 
+//
+
 async function verifyAccessToken(accessToken) {
   try {
     // fetchをawaitで呼び出し
