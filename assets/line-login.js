@@ -1,8 +1,6 @@
 const lineAccessToken = localStorage.getItem('lineAccessToken');
 const isLineLogin = localStorage.getItem('isLineLogin');
 
-//
-
 async function verifyAccessToken(accessToken) {
   try {
     // fetchをawaitで呼び出し
@@ -90,6 +88,7 @@ async function verifyLineApp(access_token) {
 
 if (!lineAccessToken || lineAccessToken === 'undefined') {
   console.log('no token');
+  changeToDummyImage();
   const url = new URL(window.location.href);
   const code = url.searchParams.get("code");
   if (code) {
@@ -108,6 +107,7 @@ if (!lineAccessToken || lineAccessToken === 'undefined') {
     console.log('response is ', r)
     // ユーザーが存在しない場合はID連携を促す
     if (!r) {
+      changeToDummyImage();
       document.querySelector('.line-connect-required').classList.remove('tw-hidden');
     } else {
       document.querySelector('.line-connect-success').classList.remove('tw-hidden');
@@ -115,12 +115,22 @@ if (!lineAccessToken || lineAccessToken === 'undefined') {
       localStorage.setItem('lineAccessToken', 'true');
     }
   }).catch(e => {
+    changeToDummyImage();
     console.error('verifyLineApp === false', e);
   });
 }
 
 if (isLineLogin !== 'true') {
   document.querySelector('.line-login-modal').openDialog();
+}
+
+function changeToDummyImage() {
+  // lineLoginRequiredクラスを思つimg要素のsrc属性を'https://via.placeholder.com/600x600?text=Secret'に変更する
+  document.querySelectorAll('.line-login-required').forEach((element) => {
+    // srcset属性を削除
+    element.removeAttribute('srcset');
+    element.src = 'https://via.placeholder.com/600x600?text=Secret';
+  });
 }
 
 // TODO::テスト書きたい
