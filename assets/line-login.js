@@ -86,7 +86,7 @@ async function verifyLineApp(access_token) {
   return await getConnectStatus(lineUser.userId, access_token);
 }
 
-if (!lineAccessToken || lineAccessToken === 'undefined') {
+if (!lineAccessToken || lineAccessToken === 'undefined' || lineAccessToken === 'true') {
   console.log('no token');
   changeToDummyImage();
   const url = new URL(window.location.href);
