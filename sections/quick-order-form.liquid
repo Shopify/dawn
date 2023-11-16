@@ -21,17 +21,51 @@
   }
 {%- endstyle -%}
 
-{% comment %} TODO: enable theme-check once `line_items_for` is accepted as valid filter {% endcomment %}
-{% # theme-check-disable %}
-{%- assign items_in_cart = cart | line_items_for: product | sum: 'quantity' -%}
-{% # theme-check-enable %}
-
 <div class="color-{{ section.settings.color_scheme }} gradient">
   <quick-order-list
     id="{{ section.id }}"
     class="quick-order-form page-width section-{{ section.id }}-padding"
     data-id="{{ section.id }}"
   >
+    <div class="quick-order-form__search--wrapper">
+      <div class="field">
+        <input
+          class="search__input field__input"
+          id="Quick-Order-Form-Search-{{ section.id }}"
+          type="search"
+          name="q"
+          value="{{ search.terms | escape }}"
+          placeholder="{{ 'sections.quick_order_form.search' | t }}"
+        >
+        <label class="field__label" for="Quick-Order-Form-Search-{{ section.id }}">
+          {{- 'sections.quick_order_form.search' | t -}}
+        </label>
+        <input name="options[prefix]" type="hidden" value="last">
+
+        <button
+          type="reset"
+          class="reset__button field__button{% if search.terms == blank %} hidden{% endif %}"
+          aria-label="{{ 'general.search.reset' | t }}"
+        >
+          <svg class="icon icon-close" aria-hidden="true" focusable="false">
+            <use xlink:href="#icon-reset">
+          </svg>
+        </button>
+        <button type="submit" class="search__button field__button" aria-label="{{ 'general.search.search' | t }}">
+          <svg class="icon icon-search" aria-hidden="true" focusable="false">
+            <use xlink:href="#icon-search">
+          </svg>
+        </button>
+      </div>
+      <div class="total-items">
+        <span>
+          {{-
+            'sections.quick_order_form.search_number_items'
+            | t: count: collections['shop-all'].products.first.variants.size
+          -}}
+        </span>
+      </div>
+    </div>
     <form
       action="{{ routes.cart_update_url }}"
       class="quick-order-list__contents critical-hidden"
@@ -49,7 +83,9 @@
                 <th class="caption-with-letter-spacing" scope="col">
                   {{ 'sections.quick_order_list.product' | t }}
                 </th>
-                <th class="large-up-hide right caption-with-letter-spacing" scope="col">Line total</th>
+                <th class="large-up-hide right caption-with-letter-spacing" scope="col">
+                  {{ 'sections.quick_order_form.line_total' | t }}
+                </th>
                 <th
                   class="quick-order-list__table-heading--wide small-hide medium-hide caption-with-letter-spacing"
                   scope="col"
@@ -62,24 +98,25 @@
                 >
                   {{ 'sections.cart.headings.price' | t }}
                 </th>
-                <th class="small-hide medium-hide right caption-with-letter-spacing" scope="col">Line total</th>
+                <th class="small-hide medium-hide right caption-with-letter-spacing" scope="col">
+                  {{ 'sections.quick_order_form.line_total' | t }}
+                </th>
               </tr>
             </thead>
 
             <tbody>
-              {%- render 'quick-order-list-row',
-                item: section.settings.collection.products.first,
-                image: section.settings.collection.products.first.featured_media,
-                sku: section.settings.collection.products.first.selected_or_first_available_variant.sku,
-                variant: section.settings.collection.products.first.selected_or_first_available_variant
+              {%-
+                render 'quick-order-product-row',
+                item: collections['shop-all'].products.first,
+                image: collections['shop-all']products.first.featured_media,
               -%}
-              {%- for variant in section.settings.collection.products.first.variants -%}
-                {%- render 'quick-order-list-row',
+              {%- for variant in collections['shop-all'].products.first.variants -%}
+                {%-
+                  render 'quick-order-list-row',
                   item: variant,
                   image: variant.image,
                   sku: variant.sku,
                   variant: variant,
-                  is_variant: true
                 -%}
               {%- endfor -%}
             </tbody>
@@ -128,19 +165,16 @@
           </div>
           <div class="quick-order-list__total-items">
             <span>
-              {{ items_in_cart }}
+              {{ cart.item_count }}
             </span>
             <p class="h5">{{ 'sections.quick_order_list.total_items' | t }}</p>
           </div>
           <div class="quick-order-list-total__price">
             <div class="totals__product-total">
               <span class="totals__subtotal-value">
-                {% comment %} TODO: enable theme-check once `line_items_for` is accepted as valid filter {% endcomment %}
-                {% # theme-check-disable %}
-                {{ cart | line_items_for: product | sum: 'original_line_price' | money }}
-                {% # theme-check-enable %}
+                {{ cart.original_total_price | money_with_currency }}
               </span>
-              <p class="totals__subtotal h5">{{ 'sections.quick_order_list.product_total' | t }}</p>
+              <p class="totals__subtotal h5">{{ 'sections.quick_order_form.total' | t }}</p>
             </div>
             <small class="tax-note caption-large rte">
               {%- if cart.taxes_included and shop.shipping_policy.body != blank -%}
@@ -193,12 +227,29 @@
 
 {% schema %}
 {
-  "name": "Quick Order form",
+  "name": "t:sections.quick-order-form.name",
+  "limit": 1,
+  "enabled_on": {
+    "templates": ["article", "blog", "index", "list-collections", "page"]
+  },
   "settings": [
     {
-      "type": "collection",
-      "id": "collection",
-      "label": "Select collection"
+      "type": "checkbox",
+      "id": "show_image",
+      "default": false,
+      "label": "t:sections.quick-order-form.settings.show_variant_image.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sku",
+      "default": false,
+      "label": "t:sections.quick-order-form.settings.show_sku.label"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "background-1"
     },
     {
       "type": "header",
