@@ -112,7 +112,7 @@ if (!lineAccessToken || lineAccessToken === 'undefined') {
     } else {
       document.querySelector('.line-connect-success').classList.remove('tw-hidden');
       document.getElementById('open-modal').classList.add('tw-hidden');
-      localStorage.setItem('lineAccessToken', 'true');
+      localStorage.setItem('isLineLogin', 'true');
     }
   }).catch(e => {
     changeToDummyImage();
