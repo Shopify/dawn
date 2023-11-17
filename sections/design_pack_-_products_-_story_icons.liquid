@@ -1,0 +1,469 @@
+{%- comment -%}
+{
+  "pack_name": "Products - story icons",
+  "pack_author": "Design Packs"
+}
+{%- endcomment -%}
+
+{% comment %} Security Code - hides section when app uninstalled {% endcomment %}
+{%- unless content_for_header contains 'design_packs_file.js' -%}
+  {%- if request.design_mode -%}
+    <div class="dsgn-pck__no-app-warning">
+      <div class="dsgn-pck__no-app-warning-background">
+      </div>
+      <div class="dsgn-pck__no-app-warning-text dsgn-pck__rte">
+        <p><strong>WARNING!</strong> This premium section will not display properly without an active subscription for <a href="https://apps.shopify.com/design-packs" target="_blank" rel="nofollow">Design Packs</a>. If you need any support please email <a href="mailto:info@design-packs.com" target="_blank">info@design-packs.com</a> with your questions.</p>
+      </div>
+    </div>
+  {%- endif -%}
+  {%- break -%}
+{%- endunless -%}
+
+{% comment %} Collection: determine which products to use {% endcomment %}
+{%- assign collection = section.settings.product_list | default: section.settings.collection.products -%}
+
+{% comment %} Content: set template type {% endcomment %}
+{%- assign current_url = product.url -%}
+
+{% comment %} Images: responsive image widths {% endcomment %}
+{%- assign widths = '180, 360, 540, 720, 900, 1080, 1296, 1512, 1728, 1950, 2100, 2260, 2450, 2700, 3000, 3350, 3750, 4100' -%}
+
+{%- comment -%} Text: custom font_picker values {%- endcomment -%}
+{%- capture font_settings_list -%}
+{{ section.settings.main_font | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'style', 'italic' | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}
+{%- endcapture -%}
+{%- assign font_array = font_settings_list | split: '~' -%}
+
+{%- capture minify -%}
+{%- comment -%} CSS {%- endcomment -%}
+<style>
+{%- if section.settings.override_theme_font != blank -%}
+  {%- for font in font_array -%}
+    {%- unless font contains 'error' -%}{{ font }}{%- endunless -%}
+  {%- endfor -%}
+  #DP--{{ section.id }} {
+    --main-font: {{ section.settings.main_font.family }}, {{ section.settings.main_font.fallback_families }};
+    --main-font-weight: var(--main-font-weight);
+    --main-font-style: var(--main-font-style);
+  }
+{%- endif -%}
+
+#DP--{{ section.id }} {
+  background: {{ section.settings.background_color }};
+  color: {{ section.settings.text_color }};
+  margin-top: {{ section.settings.outer_margin }}px;
+  margin-bottom: {{ section.settings.outer_margin }}px;
+}
+
+#DP--{{ section.id }} .dsgn-pck__sizer {
+  padding-top: {{ section.settings.inner_padding }}px;
+  padding-bottom: {{ section.settings.inner_padding }}px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-left: 28px;
+  padding-right: 28px;
+}
+
+#DP--{{ section.id }} .dsgn-pck__list {
+  display: flex;
+  flex-wrap: nowrap;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: calc(25px * {{ section.settings.text_size | times: 0.01 }});
+}
+
+#DP--{{ section.id }} .dsgn-pck__list-item {
+  max-width: 15%;
+  flex: 1 0 15%;
+}
+
+#DP--{{ section.id }} .dsgn-pck__list a {
+  white-space: normal;
+  text-decoration: none;
+  display: block;
+  transition: 0.3s;
+}
+
+#DP--{{ section.id }} .dsgn-pck__text {
+  text-align: center;
+  line-height: calc(2px + 3ex + 2px);
+  font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--main-font);
+  font-weight: var(--main-font-weight);
+  font-style: var(--main-font-style);
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__image__wrapper {
+  overflow: hidden;
+  width: {{ section.settings.image_size }}%;
+  margin: 0 auto 14px auto;
+  border: 4px solid transparent;
+  transition: 0.3s;
+  box-shadow: 0 0 0 2px {{ section.settings.image_border_color }};
+  margin-top: 5px;
+}
+
+#DP--{{ section.id }} .dsgn-pck__list-item:hover .dsgn-pck__image__wrapper {
+  box-shadow: 0 0 0 4px {{ section.settings.image_border_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__list-item.dsgn-pck__list-item--active .dsgn-pck__image__wrapper {
+  box-shadow: 0 0 0 4px {{ section.settings.image_border_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__image--circle .dsgn-pck__image__wrapper {
+  border-radius: 50%;
+}
+
+#DP--{{ section.id }} .dsgn-pck__image--rounded .dsgn-pck__image__wrapper {
+  border-radius: 5px;
+}
+
+#DP--{{ section.id }} .dsgn-pck__image--circle svg,
+#DP--{{ section.id }} .dsgn-pck__image--rounded svg,
+#DP--{{ section.id }} .dsgn-pck__image--square svg {
+  width: 100%;
+}
+
+#DP--{{ section.id }} .dsgn-pck__image--none img {
+  object-fit: contain;
+}
+
+#DP--{{ section.id }} .dsgn-pck__image--none svg {
+  margin: auto;
+}
+
+#DP--{{ section.id }} .dsgn-pck__text {
+  color: {{ section.settings.text_color }};
+}
+
+/* Add scrollbar when there are more than 6 items */
+{%- if collection.size > 6 or collection.count > 6 and section.settings.products_per_page > 6 -%}
+  #DP--{{ section.id }} .dsgn-pck__sizer::-webkit-scrollbar {
+    -webkit-appearance: none;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__sizer::-webkit-scrollbar:vertical {
+    width: 50%;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__sizer::-webkit-scrollbar:horizontal {
+    height: 4px;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__sizer::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+{%- endif -%}
+
+{%- if section.settings.custom_css != blank -%}
+  {%- assign custom_section_declarations = section.settings.custom_css | split: '}' -%}
+  {%- for declaration in custom_section_declarations -%}
+    {%- if declaration contains '{' -%}
+      #DP--{{ section.id }} {{ declaration }} }
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+
+/* Landscape phones and down */
+@media (max-width: 480px) {
+
+  #DP--{{ section.id }} {
+    margin-top: {{ section.settings.outer_margin | divided_by: 2 }}px;
+    margin-bottom: {{ section.settings.outer_margin | divided_by: 2 }}px;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__sizer {
+    min-width: 70%;
+    padding-top: {{ section.settings.inner_padding | divided_by: 2 }}px;
+    padding-bottom: {{ section.settings.inner_padding | divided_by: 2 }}px;
+    width: 100%;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__list {
+    text-align: left;
+    justify-content: left;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__list-item {
+    max-width: 33.333%;
+    flex: 1 0 33.333%;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__list-item:first-child {
+    padding-left: 10px;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__list-item:last-child {
+    padding-right: 10px;
+  }
+
+  {%- if section.settings.mobile_display == 'grid' -%}
+    #DP--{{ section.id }} .dsgn-pck__list {
+      flex-wrap: wrap;
+      -webkit-overflow-scrolling: none;
+      overflow-x: hidden;
+      justify-content: flex-start;
+      scroll-snap-type: x mandatory;
+    }
+
+    #DP--{{ section.id }} .dsgn-pck__list-item {
+      max-width: 45%;
+      padding: 0;
+    }
+
+    #DP--{{ section.id }} .dsgn-pck__list-item:first-child,
+    #DP--{{ section.id }} .dsgn-pck__list-item:last-child {
+      padding: 0;
+    }
+  {%- endif -%}
+
+  {%- if section.settings.mobile_custom_css != blank -%}
+    {%- assign mobile_custom_declarations = section.settings.mobile_custom_css | split: '}' -%}
+    {%- for declaration in mobile_custom_declarations -%}
+      {%- if declaration contains '{' -%}
+        #DP--{{ section.id }} {{ declaration }} }
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+}
+</style>
+
+{%- if collection == blank -%}
+  <div class="dsgn-pck__justify-center">
+    <p>Please choose collection or product list to display content.</p>
+  </div>
+  {%- break -%}
+{%- endif -%}
+
+{%- comment -%} HTML {%- endcomment -%}
+<section id="DP--{{ section.id }}" class="DP--{{ section.id }} dsgn-pck__section dsgn-pck__link-menu-icons">
+  <div class="dsgn-pck__sizer">
+    {%- if collection.products.size > 6 or collection.count > 6 and section.settings.products_per_page > 6 -%}
+      {%- assign text_alignment = 'left' -%}
+    {%- else -%}
+      {%- assign text_alignment = section.settings.text_alignment -%}
+    {%- endif -%}
+    <ul class="dsgn-pck__list dsgn-pck__justify-{{ text_alignment }}">
+      {%- for product in collection limit: section.settings.products_per_page -%}
+        <li id="DP--{{ product.id }}" class="dsgn-pck__list-item dsgn-pck__{{ product.id }} {% if current_url == product.url %} dsgn-pck__list-item--active {% endif %} dsgn-pck__image--{{ section.settings.image_crop }}" {{ product.shopify_attributes }}>
+          <a {% if product.url != blank %}href="{{ product.url }}" {% endif %} {% if product.external_link %}target="_blank"{% endif %}>
+          {%- if product.featured_image != blank -%}
+            <div class="dsgn-pck__list-image dsgn-pck__image__wrapper">
+              <svg viewBox="0 0 1000 1000"></svg>
+              {{ product.featured_image | image_url: width: 1000 | image_tag:  widths: widths, sizes: '100px' }}
+            </div>
+          {%- endif -%}
+            <p class="dsgn-pck__text">{{ product.title }}</p>
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+{%- endcapture -%}
+{{ minify | strip_newlines }}
+
+{% schema %}
+{
+  "name": "Products - story icons",
+  "class": "DP__link-menu-horizontal",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "product_list",
+      "id": "product_list",
+      "label": "Product list",
+      "info": "Choose specific products (will override collection selection)"
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "Visible products",
+      "min": 1,
+      "max": 50,
+      "step": 1,
+      "default": 7
+    },
+    {
+      "type": "select",
+      "id": "image_crop",
+      "label": "Image crop",
+      "default": "circle",
+      "options": [
+        {
+          "value": "circle",
+          "label": "Circle"
+        },
+        {
+          "value": "rounded",
+          "label": "Rounded"
+        },
+        {
+          "value": "square",
+          "label": "Square"
+        },
+        {
+          "value": "none",
+          "label": "Original"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "image_size",
+      "label": "Image size",
+      "default": 60,
+      "min": 40,
+      "max": 90,
+      "unit": "%"
+    },
+    {
+      "type": "header",
+      "content": "📱 Mobile"
+    },
+    {
+      "type": "select",
+      "id": "mobile_display",
+      "label": "Display",
+      "default": "scroll",
+      "options": [
+        {
+          "value": "scroll",
+          "label": "Scroll"
+        },
+        {
+          "value": "grid",
+          "label": "Grid"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "✏️ Text appearance"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Text size",
+      "min": 60,
+      "max": 120,
+      "step": 5,
+      "default": 100,
+      "unit": "%"
+    },
+    {
+      "type": "header",
+      "content": "🎨 Design"
+    },
+    {
+      "type": "color",
+      "id": "image_border_color",
+      "label": "Image border",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#121212"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Background",
+      "default": "linear-gradient(46deg, rgba(255, 255, 255, 1) 6%, rgba(255, 255, 255, 1) 79%)"
+    },
+    {
+      "type": "header",
+      "content": "🖼 Layout"
+    },
+    {
+      "type": "range",
+      "id": "inner_padding",
+      "label": "Inner padding",
+      "info": "Only applies to top and bottom.",
+      "min": 0,
+      "max": 100,
+      "default": 40,
+      "step": 5,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "outer_margin",
+      "label": "Outer margin",
+      "info": "Only applies to top and bottom.",
+      "min": 0,
+      "max": 100,
+      "default": 40,
+      "step": 5,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "🚨 Advanced"
+    },
+    {
+      "type": "html",
+      "id": "custom_css",
+      "label": "CSS"
+    },
+    {
+      "type": "html",
+      "id": "mobile_custom_css",
+      "label": "Mobile CSS",
+      "info": "Applied on screens less than 480px."
+    },
+    {
+      "type": "checkbox",
+      "id": "override_theme_font",
+      "label": "Override default theme font",
+      "default": false
+    },
+    {
+      "type": "font_picker",
+      "id": "main_font",
+      "label": "Text",
+      "default": "sans-serif"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Products - story icons 🎒"
+    }
+  ]
+}
+{% endschema %}
