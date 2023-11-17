@@ -1,0 +1,539 @@
+{%- comment -%}
+{
+  "pack_name": "Article product highlight",
+  "pack_author": "Design Packs"
+}
+{%- endcomment -%}
+
+{% comment %} Security Code - hides section when app uninstalled {% endcomment %}
+{%- unless content_for_header contains 'design_packs_file.js' -%}
+  {%- if request.design_mode -%}
+    <div class="dsgn-pck__no-app-warning">
+      <div class="dsgn-pck__no-app-warning-background">
+      </div>
+      <div class="dsgn-pck__no-app-warning-text dsgn-pck__rte">
+        <p><strong>WARNING!</strong> This premium section will not display properly without an active subscription for <a href="https://apps.shopify.com/design-packs" target="_blank" rel="nofollow">Design Packs</a>. If you need any support please email <a href="mailto:info@design-packs.com" target="_blank">info@design-packs.com</a> with your questions.</p>
+      </div>
+    </div>
+  {%- endif -%}
+  {%- break -%}
+{%- endunless -%}
+
+{% comment %} Content: pull links from editor {% endcomment %}
+{%liquid
+
+  assign productsArray = null | sort
+  assign hrefs = article.content | downcase | split: 'href='
+
+  for hrefStarterPart in hrefs
+
+    if hrefStarterPart contains '/products/'
+
+      assign anchorWithAttributes = hrefStarterPart | split: '>' | first | replace: '"', '' | replace: "'", ""
+
+      assign htmlAttributes = anchorWithAttributes | split: ' '
+      for attribute in htmlAttributes
+        if attribute contains '/products/'
+          assign hrefUrlOnly = attribute
+          break
+        endif
+      endfor
+
+      assign productHandle = hrefUrlOnly | split: '/products/' | last
+      assign productHandleOnly = productHandle | split: '?' | first
+      if all_products[productHandleOnly].title == blank
+        continue
+      endif
+
+      assign productHandle = productHandle | sort
+      assign productsArray = productsArray | concat: productHandle
+    endif
+  endfor
+
+  assign productsArray = productsArray | uniq
+
+  capture productsArray
+    for productHandle in productsArray
+      if all_products[productHandle].url != blank
+        echo productHandle
+        if forloop.last == false
+          echo '~'
+        endif
+      endif
+    endfor
+  endcapture
+
+  assign productsArray = productsArray | split: '~'
+
+  if productsArray.size == 0
+    break
+  endif
+%}
+
+{% comment %} Images: responsive image widths {% endcomment %}
+{%- assign widths = '180, 360, 540, 720, 900, 1080, 1296, 1512, 1728, 1950, 2100, 2260, 2450, 2700, 3000, 3350, 3750, 4100' -%}
+
+{%- comment -%} Layout: has user entered measurement value into max-width field? {%- endcomment -%}
+{%- if section.settings.max_width contains 'px' or section.settings.max_width contains '%' -%}
+  {%- assign max_width = section.settings.max_width -%}
+{%- else -%}
+  {%- assign max_width = section.settings.max_width | append: 'px' -%}
+{%- endif -%}
+
+{%- comment -%} Text: custom font_picker values {%- endcomment -%}
+{%- capture font_settings_list -%}
+{{ section.settings.main_font | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'style', 'italic' | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'style', 'italic' | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}
+{%- endcapture -%}
+{%- assign font_array = font_settings_list | split: '~' -%}
+
+{%- capture minify -%}
+{%- comment -%} CSS {%- endcomment -%}
+<style>
+{%- if section.settings.override_theme_font != blank -%}
+  {%- for font in font_array -%}
+    {%- unless font contains 'error' -%}{{ font }}{%- endunless -%}
+  {%- endfor -%}
+  #DP--{{ section.id }} {
+    --main-font: {{ section.settings.main_font.family }}, {{ section.settings.main_font.fallback_families }};
+    --main-font-weight: {{ section.settings.main_font.weight }};
+    --main-font-style: {{ section.settings.main_font.style }};
+    --heading-font: {{ section.settings.heading_font.family }}, {{ section.settings.heading_font.fallback_families }};
+    --heading-font-weight: {{ section.settings.heading_font.weight }};
+    --heading-font-style: {{ section.settings.heading_font.style }};
+  }
+{%- endif -%}
+
+#DP--{{ section.id }} {
+  --dash-height: 25px;
+  background: {{ section.settings.background_color }};
+  margin-bottom: {{ section.settings.outer_margin }}px;
+  margin-top: {{ section.settings.outer_margin }}px;
+}
+
+#DP--{{ section.id }} .dsgn-pck__sizer {
+  padding-top: {{ section.settings.inner_padding }}px;
+  padding-bottom: {{ section.settings.inner_padding }}px;
+  width: 100%;
+  max-width: {{ max_width }};
+  flex-wrap: wrap;
+}
+
+#DP--{{ section.id }} .dsgn-pck__heading {
+  margin: 0;
+  margin-bottom: calc(3px + 2ex + 3px);
+  color: {{ section.settings.heading_color }};
+  line-height: calc(3px + 2ex + 3px);
+  font-size: calc(var(--dp-g-heading-size, var(--dp-heading-size, 35px)) * {{ section.settings.text_size | times: 0.01 }});
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--heading-font);
+  font-weight: var(--heading-font-weight);
+  font-style: var(--heading-font-style);
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__product {
+  position: relative;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product::before {
+  content: '';
+  height: var(--dash-height);
+  width: 1px;
+  position: absolute;
+  display: block;
+  left: 50%;
+  top: calc(var(--dash-height) * -1);
+  transform: translateX(-50%);
+  background: {{ section.settings.border_color }};
+}
+
+:root {
+  --dp-linked-product-size: {{ productsArray.size | at_most: 4 | at_most: section.settings.limit }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__linked-products-container {
+  position: relative;
+  flex-wrap: wrap;
+  align-items: stretch;
+  width: calc((100% / var(--dp-linked-product-size)) * calc(var(--dp-linked-product-size) - 1));
+  min-width: 50%;
+  margin: 0 auto;
+}
+
+#DP--{{ section.id }} .dsgn-pck__linked-products-container::before {
+  content: '';
+  width: calc((100% / var(--dp-linked-product-size)) * calc(var(--dp-linked-product-size) - 1));
+  position: absolute;
+  top: calc(var(--dash-height) * -1);
+  height: 1px;
+  display: block;
+  background: {{ section.settings.border_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__product {
+  padding: 5px 10px;
+  width: calc(100% / var(--dp-linked-product-size));
+}
+
+#DP--{{ section.id }} .dsgn-pck__product a {
+  text-decoration: none;
+  color: {{ section.settings.text_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__product:nth-child(n+5) {
+  margin-top: 1.2em;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product:nth-child(n+5)::before {
+  display: none;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-image {
+  {%- capture thumbnail_height -%}
+  {%- case section.settings.image_size -%}
+    {%- when 'small' -%}
+      100px
+    {%- when 'medium' -%}
+      200px
+    {%- when 'large' -%}
+      300px
+  {%- endcase -%}
+  {%- endcapture -%}
+  height: {{ thumbnail_height }};
+  object-fit: contain;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-title {
+  margin: 0;
+  color: {{ section.settings.text_color }};
+  line-height: calc(2px + 2ex + 2px);
+  font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--main-font);
+  font-weight: var(--main-font-weight);
+  font-style: var(--main-font-style);
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-link {
+  margin-top: 10px;
+  color: {{ section.settings.text_color }};
+  border-bottom: 1px solid {{ section.settings.text_color }};
+  display: inline-block;
+  font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.008 }});
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--main-font);
+  font-weight: var(--main-font-weight);
+  font-style: var(--main-font-style);
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__additional {
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-top: var(--dash-height);
+  border-top: 1px solid {{ section.settings.border_color }};
+}
+
+{%- if section.settings.custom_css != blank -%}
+  {%- assign custom_section_declarations = section.settings.custom_css | split: '}' -%}
+  {%- for declaration in custom_section_declarations -%}
+    {%- if declaration contains '{' -%}
+      #DP--{{ section.id }} {{ declaration }} }
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+
+/* Landscape phone to portrait tablet */
+@media (max-width: 767px) {
+
+  #DP--{{ section.id }} .dsgn-pck__linked-products-container {
+    width: 80%;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__linked-products-container::before,
+  #DP--{{ section.id }} .dsgn-pck__product::before {
+    display: none;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__product {
+    flex-basis: 50%;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__product-image {
+    height: auto;
+  }
+}
+
+/* Landscape phones and down */
+@media (max-width: 480px) {
+  #DP--{{ section.id }} .dsgn-pck__sizer {
+    padding-top: {{ section.settings.inner_padding | divided_by: 2 }}px;
+    padding-bottom: {{ section.settings.inner_padding | divided_by: 2 }}px;
+  }
+
+  {%- if section.settings.mobile_custom_css != blank -%}
+    {%- assign mobile_custom_declarations = section.settings.mobile_custom_css | split: '}' -%}
+    {%- for declaration in mobile_custom_declarations -%}
+      {%- if declaration contains '{' -%}
+        #DP--{{ section.id }} {{ declaration }} }
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+}
+</style>
+
+{%- comment -%} HTML {%- endcomment -%}
+<section id="DP--{{ section.id }}"
+        class="DP--{{ section.id }} dsgn-pck__article-product-links dsgn-pck__section">
+  <div class="dsgn-pck__sizer">
+    <aside class="dsgn-pck__linked-products">
+      {%- if section.settings.linked_product_title != blank -%}
+      <h2 class="dsgn-pck__heading dsgn-pck__justify-center">{{ section.settings.linked_product_title
+        }}</h2>
+      {%- endif -%}
+      <div
+        class="dsgn-pck__linked-products-container dsgn-pck__flex dsgn-pck__justify-center">
+          {% for productHandle in productsArray limit: section.settings.limit %}
+            {% liquid
+              if productHandle contains '?variant'
+                assign variantId = productHandle | split: '?variant=' | last | plus: 0
+                assign productHandleNew = productHandle | split: '?' | first
+                assign variants = all_products[productHandleNew].variants
+                for variant in variants
+                  if variant.id == variantId
+                    assign productFoundInPage = all_products[productHandleNew]
+                    assign productImage = variant.image | default: productFoundInPage.featured_image
+                    assign productTitle = productFoundInPage.title | append: ' • ' | append: variant.title
+                    assign productUrl = variant.url
+                  endif
+                endfor
+              else
+                assign productHandleNew = productHandle | split: '?' | first
+                assign productFoundInPage = all_products[productHandleNew]
+                assign productImage = productFoundInPage.featured_image
+                assign productTitle = productFoundInPage.title
+                assign productUrl = productFoundInPage.url
+              endif
+            %}
+            <div class="dsgn-pck__product dsgn-pck__flex-item">
+              <a href="{{ productUrl }}">
+                {%- if productImage != blank -%}
+                  {%- capture sizes -%}
+                    (max-width: 480px) 50vw,(max-width: 767px) 50vw, 25vw
+                  {%- endcapture -%}
+                  {{ productImage | image_url: width: 800 | image_tag:  class: 'dsgn-pck__product-image', widths: widths, sizes: sizes }}
+                {%- endif -%}
+              </a>
+              <p class="dsgn-pck__product-title">
+                <a href="{{ productUrl }}">
+                  {{ productTitle }}
+                </a>
+              </p>
+              <a class="dsgn-pck__product-link" href="{{ productUrl }}">
+                {{ section.settings.featured_product_link_label }}
+              </a>
+            </div>
+          {% endfor %}
+      </div>
+
+    </aside>
+  </div>
+</section>
+{%- endcapture -%}
+{{ minify | strip_newlines }}
+
+{% schema %}
+{
+  "name": "Linked product highlights",
+  "class": "DP__article-linked-products DP__shift",
+  "templates": [
+    "article"
+  ],
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "All of the products shown here are pulled from product links in your blog post. [Edit your blog content](/admin/articles) to show product images."
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "label": "Maximum amount of products",
+      "min": 1,
+      "max": 12,
+      "default": 4
+    },
+    {
+      "type": "text",
+      "id": "linked_product_title",
+      "label": "Heading",
+      "default": "Shop the article"
+    },
+    {
+      "type": "text",
+      "id": "featured_product_link_label",
+      "label": "Product link label",
+      "default": "View"
+    },
+    {
+      "type": "select",
+      "id": "image_size",
+      "label": "Image size",
+      "default": "medium",
+      "options": [
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "✏️ Text appearance"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Text size",
+      "min": 80,
+      "max": 150,
+      "step": 5,
+      "default": 100,
+      "unit": "%"
+    },
+    {
+      "type": "header",
+      "content": "🎨 Design"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Borders",
+      "default": "#121212"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Background"
+    },
+    {
+      "type": "header",
+      "content": "🖼 Layout"
+    },
+    {
+      "type": "text",
+      "id": "max_width",
+      "label": "Maximum width",
+      "placeholder": "eg. 1200px",
+      "info": "Sets width constraint for content."
+    },
+    {
+      "type": "range",
+      "id": "inner_padding",
+      "label": "Inner padding",
+      "info": "Only applies to top and bottom.",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "step": 5,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "outer_margin",
+      "label": "Outer margin",
+      "info": "Only applies to top and bottom.",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "step": 5,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "🚨 Advanced"
+    },
+    {
+      "type": "html",
+      "id": "custom_css",
+      "label": "CSS"
+    },
+    {
+      "type": "html",
+      "id": "mobile_custom_css",
+      "label": "Mobile CSS",
+      "info": "Applied on screens less than 480px."
+    },
+    {
+      "type": "checkbox",
+      "id": "override_theme_font",
+      "label": "Override default theme font",
+      "default": false
+    },
+    {
+      "type": "font_picker",
+      "id": "heading_font",
+      "label": "Heading",
+      "default": "serif"
+    },
+    {
+      "type": "font_picker",
+      "id": "main_font",
+      "label": "Text",
+      "default": "sans-serif"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Article linked product highlights 🎒",
+      "settings": {
+        "limit": 4,
+        "linked_product_title": "Shop the article",
+        "featured_product_link_label": "View",
+        "image_size": "medium",
+        "text_size": 100,
+        "heading_color": "#121212",
+        "text_color": "#121212",
+        "border_color": "#121212",
+        "background_color": "",
+        "max_width": "",
+        "inner_padding": 0,
+        "outer_margin": 0,
+        "custom_css": "",
+        "mobile_custom_css": "",
+        "override_theme_font": false,
+        "heading_font": "serif",
+        "main_font": "sans-serif"
+      }
+    }
+  ]
+}
+{% endschema %}
