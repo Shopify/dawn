@@ -1,0 +1,309 @@
+{%- comment -%}
+{
+  "pack_name": "Badge - image",
+  "pack_author": "Design Packs"
+}
+{%- endcomment -%}
+
+{% comment %} Security Code - hides section when app uninstalled {% endcomment %}
+{%- unless content_for_header contains 'design_packs_file.js' -%}
+  {%- if request.design_mode -%}
+    <div class="dsgn-pck__no-app-warning">
+      <div class="dsgn-pck__no-app-warning-background">
+      </div>
+      <div class="dsgn-pck__no-app-warning-text dsgn-pck__rte">
+        <p><strong>WARNING!</strong> This premium section will not display properly without an active subscription for <a href="https://apps.shopify.com/design-packs" target="_blank" rel="nofollow">Design Packs</a>. If you need any support please email <a href="mailto:info@design-packs.com" target="_blank">info@design-packs.com</a> with your questions.</p>
+      </div>
+    </div>
+  {%- endif -%}
+  {%- break -%}
+{%- endunless -%}
+
+{%- comment -%} Images: all placeholders {%- endcomment -%}
+{%- assign placeholder_image_id = 'Rc1mMjR6bbo' -%}
+
+{%- comment -%} Images: check image crop aspect ratio {%- endcomment -%}
+{%- if section.settings.image_crop == 'none' -%}
+  {%- assign image_crop_width = section.settings.image.width | default: '1000' -%}
+  {%- assign image_crop_height = section.settings.image.height | default: '1200' -%}
+{%- else -%}
+  {%- assign image_crop_width = section.settings.image_crop | split: ':' | first | times: 1000 -%}
+  {%- assign image_crop_height = section.settings.image_crop | split: ':' | last | times: 1000 -%}
+{%- endif -%}
+
+{% comment %} Images: responsive image widths {% endcomment %}
+{%- assign widths = '180, 360, 540, 720, 900, 1080, 1296, 1512, 1728, 1950, 2100, 2260, 2450, 2700, 3000, 3350, 3750, 4100' -%}
+
+{%- comment -%} CSS {%- endcomment -%}
+<style>
+#DP--{{ section.id }} {
+  height: 0 !important;
+  padding: 0 !important;
+  z-index: 10;
+}
+
+#DP--{{ section.id }} .dsgn-pck__badge {
+  margin: 0;
+}
+
+#DP--{{ section.id }} .dsgn-pck__badge img {
+  overflow: hidden;
+  opacity: {{ section.settings.opacity | times: 0.01 }};
+  border-radius: {{ section.settings.border_radius }}%;
+}
+
+#DP--{{ section.id }} .dsgn-pck__badge-position {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  transform: translateX(-50%) translateY({{ section.settings.badge_vertical_position | times: -1 }}%);
+  left: {{ section.settings.badge_horizontal_position }}%;
+}
+
+#DP--{{ section.id }} .dsgn-pck__badge-rotate {
+  position: relative;
+  transform-origin: center;
+  transform: rotate({{ section.settings.angle }}deg);
+  width: {{ section.settings.badge_size }}px;
+  {%- if section.settings.rotation_speed > 0 -%}
+  -webkit-animation:spin {{ section.settings.rotation_speed }}s linear infinite;
+  -moz-animation:spin {{ section.settings.rotation_speed }}s linear infinite;
+  animation:spin {{ section.settings.rotation_speed }}s linear infinite;
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__sizer {
+  position: relative;
+  width: calc(100% - {{ section.settings.badge_size }}px);
+}
+
+@-moz-keyframes spin {
+  100% { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+  100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+  100% {
+      -webkit-transform: rotate(360deg);
+      transform:rotate(360deg);
+  }
+}
+
+{%- if section.settings.custom_css != blank -%}
+  {%- assign custom_section_declarations = section.settings.custom_css | split: '}' -%}
+  {%- for declaration in custom_section_declarations -%}
+    {%- if declaration contains '{' -%}
+      #DP--{{ section.id }} {{ declaration }} }
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+
+/* Landscape phone to portrait tablet */
+@media (max-width: 767px) {
+  {%- if section.settings.hide_on_mobile != blank -%}
+    #DP--{{ section.id }} {
+      display: none;
+    }
+  {%- endif -%}
+
+  #DP--{{ section.id }} .dsgn-pck__badge-rotate {
+    width: {{ section.settings.mobile_badge_size }}px;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__sizer {
+    position: relative;
+    width: calc(100% - {{ section.settings.mobile_badge_size }}px);
+  }
+}
+
+/* Landscape phones and down */
+@media (max-width: 480px) {
+  {%- if section.settings.mobile_custom_css != blank -%}
+    {%- assign mobile_custom_declarations = section.settings.mobile_custom_css | split: '}' -%}
+    {%- for declaration in mobile_custom_declarations -%}
+      {%- if declaration contains '{' -%}
+        #DP--{{ section.id }} {{ declaration }} }
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+}
+</style>
+
+{%- comment -%} HTML {%- endcomment -%}
+<section id="DP--{{ section.id }}"
+          class="DP--{{ section.id }} dsgn-pck__image-badge dsgn-pck__section">
+  <div class="dsgn-pck__sizer">
+    <div class="dsgn-pck__badge-position">
+      <div class="dsgn-pck__badge-rotate">
+        <div class="dsgn-pck__badge">
+          <div class="dsgn-pck__image__wrapper">
+            <svg class="dsgn-pck__svg-sizer" viewBox="0 0 {{ image_crop_width }} {{ image_crop_height }}"></svg>
+            {%- if section.settings.image != blank -%}
+              {%- capture sizes -%}
+                {{ section.settings.badge_size }}px
+              {%- endcapture -%}
+              {{ section.settings.image | image_url: width: 1000 | image_tag:  widths: widths, sizes: sizes }}
+            {%- else -%}
+              <img src="https://cdn.shopify.com/s/files/1/0577/7673/4361/files/{{ placeholder_image_id }}_800x.jpg"
+                  alt=""
+                  loading="lazy"
+                  width="800"
+                  height="800">
+            {%- endif -%}
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Badge - image",
+  "class": "DP__image-badge",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "select",
+      "id": "image_crop",
+      "label": "Image aspect ratio",
+      "default": "none",
+      "options": [
+        {
+          "value": "4:3",
+          "label": "Landscape (4:3)"
+        },
+        {
+          "value": "2:3",
+          "label": "Portrait (2:3)"
+        },
+        {
+          "value": "1:1",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "none",
+          "label": "Original"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "badge_size",
+      "label": "Size",
+      "default": 200,
+      "min": 50,
+      "max": 400,
+      "step": 10,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "opacity",
+      "label": "Opacity",
+      "default": 100,
+      "min": 10,
+      "max": 100,
+      "step": 5,
+      "unit": "%"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Image rounded corners",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "default": 50,
+      "unit": "%"
+    },
+    {
+      "type": "header",
+      "content": "📱 Mobile"
+    },
+    {
+      "type": "range",
+      "id": "mobile_badge_size",
+      "label": "Size on mobile",
+      "min": 50,
+      "max": 250,
+      "step": 2,
+      "default": 100,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_on_mobile",
+      "label": "Hide on smaller screens",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "🖼 Layout"
+    },
+    {
+      "type": "range",
+      "id": "rotation_speed",
+      "label": "Rotation",
+      "min": 0,
+      "max": 40,
+      "default": 0,
+      "unit": "sec",
+      "info": "Set to '0' to disable rotation"
+    },
+    {
+      "type": "range",
+      "id": "angle",
+      "label": "Badge angle",
+      "default": -15,
+      "min": -45,
+      "max": 45,
+      "unit": "deg"
+    },
+    {
+      "type": "range",
+      "id": "badge_horizontal_position",
+      "label": "Badge horizontal position",
+      "default": 2,
+      "min": 0,
+      "max": 100
+    },
+    {
+      "type": "range",
+      "id": "badge_vertical_position",
+      "label": "Badge vertical position",
+      "default": 75,
+      "min": -100,
+      "max": 200,
+      "step": 5
+    },
+    {
+      "type": "header",
+      "content": "🚨 Advanced"
+    },
+    {
+      "type": "html",
+      "id": "custom_css",
+      "label": "CSS"
+    },
+    {
+      "type": "html",
+      "id": "mobile_custom_css",
+      "label": "Mobile CSS",
+      "info": "Applied on screens less than 480px."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Badge - image 🎒",
+      "settings": {
+      }
+    }
+  ]
+}
+{% endschema %}
