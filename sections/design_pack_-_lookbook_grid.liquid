@@ -1,0 +1,900 @@
+{%- comment -%}
+{
+  "pack_name": "Lookbook - grid",
+  "pack_author": "Design Packs"
+}
+{%- endcomment -%}
+
+{% comment %} Security Code - hides section when app uninstalled {% endcomment %}
+{%- unless content_for_header contains 'design_packs_file.js' -%}
+  {%- if request.design_mode -%}
+    <div class="dsgn-pck__no-app-warning">
+      <div class="dsgn-pck__no-app-warning-background">
+      </div>
+      <div class="dsgn-pck__no-app-warning-text dsgn-pck__rte">
+        <p><strong>WARNING!</strong> This premium section will not display properly without an active subscription for <a href="https://apps.shopify.com/design-packs" target="_blank" rel="nofollow">Design Packs</a>. If you need any support please email <a href="mailto:info@design-packs.com" target="_blank">info@design-packs.com</a> with your questions.</p>
+      </div>
+    </div>
+  {%- endif -%}
+  {%- break -%}
+{%- endunless -%}
+
+{%- comment -%} Color: check if color is set to transparent {%- endcomment -%}
+{%- assign button_alpha = section.settings.button_background_color | color_extract: 'alpha' -%}
+
+{% comment %} Color: check for gradient picker {% endcomment %}
+{%- capture text_background_color -%}
+  {%- if section.settings.text_background_color contains 'gradient' -%}
+    {{ section.settings.text_background_color }}
+  {%- else -%}
+    {% unless section.settings.text_background_color contains 'rgba' %}
+      {{ section.settings.text_background_color | color_modify: 'alpha', 0.4 }}
+    {% endunless %}
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- comment -%} Images: all placeholders {%- endcomment -%}
+{%- assign placeholder_image_id_1 = 'n268Z4TSd6M' -%}
+{%- assign placeholder_image_id_2 = 'PJRabkuH3_Q' -%}
+{%- assign placeholder_image_id_3 = '3FoSvueTVCk' -%}
+{%- assign placeholder_image_id_4 = 'S6xhmSe7RdA' -%}
+{%- assign placeholder_image_id_5 = 'KFz7sRs0ddI' -%}
+{%- assign placeholder_image_id_default = '9Y5Wk7favpE' -%}
+{%- assign placeholder_dimensions_1 = '1000x1000' -%}
+{%- assign placeholder_dimensions_2 = '2000x3000' -%}
+{%- assign placeholder_dimensions_3 = '1000x1000' -%}
+{%- assign placeholder_dimensions_4 = '1000x1000' -%}
+{%- assign placeholder_dimensions_5 = '1000x1000' -%}
+{%- assign placeholder_dimensions_default = '1000x1000' -%}
+
+{% comment %} Images: responsive image widths {% endcomment %}
+{%- assign widths = '180, 360, 540, 720, 900, 1080, 1296, 1512, 1728, 1950, 2100, 2260, 2450, 2700, 3000, 3350, 3750, 4100' -%}
+
+{%- comment -%} Layout: has user entered measurement value into max-width field? {%- endcomment -%}
+{%- if section.settings.max_width contains 'px' or section.settings.max_width contains '%' -%}
+  {%- assign max_width = section.settings.max_width -%}
+{%- else -%}
+  {%- assign max_width = section.settings.max_width | append: 'px' -%}
+{%- endif -%}
+
+{%- comment -%} Text: custom font_picker values {%- endcomment -%}
+{%- capture font_settings_list -%}
+{{ section.settings.main_font | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'style', 'italic' | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'style', 'italic' | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}
+{%- endcapture -%}
+{%- assign font_array = font_settings_list | split: '~' -%}
+
+{%- capture minify -%}
+{%- comment -%} CSS {%- endcomment -%}
+<style>
+{%- if section.settings.override_theme_font != blank -%}
+  {%- for font in font_array -%}
+    {%- unless font contains 'error' -%}{{ font }}{%- endunless -%}
+  {%- endfor -%}
+  #DP--{{ section.id }} {
+    --main-font: {{ section.settings.main_font.family }}, {{ section.settings.main_font.fallback_families }};
+    --main-font-weight: {{ section.settings.main_font.weight }};
+    --main-font-style: {{ section.settings.main_font.style }};
+    --heading-font: {{ section.settings.heading_font.family }}, {{ section.settings.heading_font.fallback_families }};
+    --heading-font-weight: {{ section.settings.heading_font.weight }};
+    --heading-font-style: {{ section.settings.heading_font.style }};
+  }
+{%- endif -%}
+
+#DP--{{ section.id }} {
+  --gutter: {{ section.settings.gap }}px;
+  --column-width: calc(33.333% - var(--gutter));
+  background: {{ section.settings.background_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__grid {
+  gap: var(--gutter);
+  grid-template-columns: repeat(auto-fit, minmax(var(--column-width), 1fr));
+  grid-auto-rows: minmax(250px, auto);
+  grid-auto-flow: dense;
+}
+
+#DP--{{ section.id }} .dsgn-pck__grid-item--horizontal {
+  grid-column: span 2;
+}
+
+#DP--{{ section.id }}  .dsgn-pck__grid-item--vertical {
+  grid-row: span 2;
+}
+
+#DP--{{ section.id }}  .dsgn-pck__grid-item--big {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+#DP--{{ section.id }} .dsgn-pck__grid-item {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+#DP--{{ section.id }} .dsgn-pck__item img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  transition: 2s cubic-bezier(.25, .46, .45, .94);
+}
+
+#DP--{{ section.id }} .dsgn-pck__item .dsgn-pck__full-link {
+  display: block;
+}
+
+#DP--{{ section.id }} .dsgn-pck__item:hover img {
+  transform: scale(1.1);
+}
+
+#DP--{{ section.id }} .dsgn-pck__content {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  opacity: 0;
+  transition: 0.3s;
+  padding: 1em;
+  position: absolute;
+  color: {{ section.settings.text_color }};
+  background: {{ text_background_color }};
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--main-font);
+  font-weight: var(--main-font-weight);
+  font-style: var(--main-font-style);
+  {%- endif -%}
+}
+
+{%- if section.settings.enable_hover == true -%}
+  #DP--{{ section.id }} .dsgn-pck__item:hover .dsgn-pck__content {
+    opacity: 1;
+  }
+{%- else -%}
+  #DP--{{ section.id }} .dsgn-pck__content {
+    opacity: 1;
+  }
+{%- endif -%}
+
+#DP--{{ section.id }} .dsgn-pck__small-heading {
+  margin-bottom: 0.3em;
+  line-height: calc(3px + 2ex + 3px);
+  font-size: calc(var(--dp-g-small-heading-size, var(--dp-small-heading-size, 24px)) * {{ section.settings.text_size | times: 0.01 }});
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--heading-font);
+  font-weight: var(--heading-font-weight);
+  font-style: var(--heading-font-style);
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__small-heading + .dsgn-pck__text {
+  margin-top: calc(10px * {{ section.settings.text_size | times: 0.01 }});
+}
+
+#DP--{{ section.id }} .dsgn-pck__text {
+  line-height: calc(1px + 3ex + 1px);
+  font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.008 }});
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--main-font);
+  font-weight: var(--main-font-weight);
+  font-style: var(--main-font-style);
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__full-link {
+  color: {{ section.settings.text_color }};
+  text-decoration: none;
+}
+
+#DP--{{ section.id }} .dsgn-pck__button {
+  margin-top: 1.2em;
+  display: inline-block;
+  width: auto;
+  text-decoration: none;
+  padding: 0.5em 0.8em;
+  border: thin solid;
+  transition: all 0.3s ease-in-out;
+  border-radius: {{ section.settings.button_radius }}px;
+  border-color: {%- if button_alpha != 0 -%}{{ section.settings.button_background_color }}{%- else -%}{{ section.settings.button_label_color }}{%- endif -%};
+  font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+  color: {{ section.settings.button_label_color }};
+  background-color: {{ section.settings.button_background_color }};
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--main-font);
+  font-weight: var(--main-font-weight);
+  font-style: var(--main-font-style);
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__button:hover {
+  opacity: 1;
+  {%- if button_alpha != 0 -%}
+  background-color: {{ section.settings.button_background_color | color_darken: 10 }};
+  border-color: transparent;
+  {%- else -%}
+  background-color: {{ section.settings.button_label_color | color_modify: 'alpha', 0.1 }}
+  {%- endif -%};
+}
+
+/* Animation */
+{%- if section.settings.animation != 'none' -%}
+  #DP--{{ section.id }}.dsgn-pck__animation-applied [style*="--dsgn-pck-animate"] {
+    /* animation-duration: 0.5s; */
+    /* --dsgn-pck-animation-multiplier: 1s; */
+    animation-name: dsgn-pck__animation--{{ section.settings.animation }};
+  }
+{%- else -%}
+  #DP--{{ section.id }} [style*="--dsgn-pck-animate"] {
+    opacity: 1;
+  }
+{% endif %}
+
+/* Layout */
+#DP--{{ section.id }} {
+  margin-top: {{ section.settings.outer_margin }}px;
+  margin-bottom: {{ section.settings.outer_margin }}px;
+}
+
+#DP--{{ section.id }} .dsgn-pck__sizer {
+  padding-top: {{ section.settings.inner_padding }}px;
+  padding-bottom: {{ section.settings.inner_padding }}px;
+  width: {{ section.settings.base_width }}%;
+  max-width: {{ max_width }};
+}
+
+{%- if section.settings.custom_css != blank -%}
+  {%- assign custom_section_declarations = section.settings.custom_css | split: '}' -%}
+  {%- for declaration in custom_section_declarations -%}
+    {%- if declaration contains '{' -%}
+      #DP--{{ section.id }} {{ declaration }} }
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+
+
+/* Landscape phones and down */
+@media (max-width: 480px) {
+  {%- if section.settings.mobile_per_row == "2" -%}
+    #DP--{{ section.id }} .dsgn-pck__grid {
+      grid-template-columns: repeat(auto-fit, minmax(calc(50% - var(--gutter)), 1fr));
+    }
+  {%- endif -%}
+
+  {%- if section.settings.mobile_per_row == "1" -%}
+    #DP--{{ section.id }} .dsgn-pck__grid {
+      grid-template-columns: 1fr 1fr;
+      grid-auto-rows: minmax(100px, auto);
+    }
+
+
+    #DP--{{ section.id }} .dsgn-pck__grid-item--vertical {
+      grid-column: span 2;
+      grid-row: span 4;
+    }
+    #DP--{{ section.id }} .dsgn-pck__grid-item--horizontal {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+    #DP--{{ section.id }} .dsgn-pck__grid-item--big {
+      grid-column: span 2;
+      grid-row: span 3;
+    }
+    #DP--{{ section.id }} .dsgn-pck__grid-item--small {
+      grid-column: span 2;
+      grid-row: span 3;
+    }
+  {%- endif -%}
+
+  #DP--{{ section.id }} {
+    margin-top: {{ section.settings.outer_margin | divided_by: 2 }}px;
+    margin-bottom: {{ section.settings.outer_margin | divided_by: 2 }}px;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__sizer {
+    min-width: 70%;
+    padding-top: {{ section.settings.inner_padding | divided_by: 2 }}px;
+    padding-bottom: {{ section.settings.inner_padding | divided_by: 2 }}px;
+  }
+
+  {%- if section.settings.mobile_custom_css != blank -%}
+    {%- assign mobile_custom_declarations = section.settings.mobile_custom_css | split: '}' -%}
+    {%- for declaration in mobile_custom_declarations -%}
+      {%- if declaration contains '{' -%}
+        #DP--{{ section.id }} {{ declaration }} }
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+}
+</style>
+
+{%- comment -%} HTML {%- endcomment -%}
+<section id="DP--{{ section.id }}" class="DP--{{ section.id }} dsgn-pck__lookbook-grid dsgn-pck__section" {%- if section.settings.animation != 'none' -%}data-animated-section="{{ section.settings.animation }}"{%- endif -%}>
+  <div class="dsgn-pck__sizer
+              dsgn-pck__sizer--lookbook-grid">
+    <div class="dsgn-pck__grid">
+      {%- for block in section.blocks -%}
+        {%- comment -%} Text: check text position {%- endcomment -%}
+        {%- assign horizontal_text_position = block.settings.text_position | split: ' ' | first -%}
+        {%- assign vertical_text_position = block.settings.text_position | split: ' ' | last -%}
+        {%- comment -%} CSS {%- endcomment -%}
+        <style>
+          .dsgn-pck__block-{{ block.id }} img {
+            object-position: {{ block.settings.focal_point }};
+          }
+        </style>
+        {%- capture placeholder_image_id -%}
+          {%- case forloop.index -%}
+            {%- when 1 -%}
+              {{ placeholder_image_id_1 }}
+            {%- when 2 -%}
+              {{ placeholder_image_id_2 }}
+            {%- when 3 -%}
+              {{ placeholder_image_id_3 }}
+            {%- when 4 -%}
+              {{ placeholder_image_id_4 }}
+            {%- when 5 -%}
+              {{ placeholder_image_id_5 }}
+            {%- else -%}
+              {{ placeholder_image_id_default }}
+          {%- endcase -%}
+        {%- endcapture -%}
+        {%- capture placeholder_dimensions -%}
+          {%- case forloop.index -%}
+            {%- when 1 -%}
+              {{ placeholder_dimensions_1 }}
+            {%- when 2 -%}
+              {{ placeholder_dimensions_2 }}
+            {%- when 3 -%}
+              {{ placeholder_dimensions_3 }}
+            {%- when 4 -%}
+              {{ placeholder_dimensions_4 }}
+            {%- when 5 -%}
+              {{ placeholder_dimensions_5 }}
+            {%- else -%}
+              {{ placeholder_dimensions_default }}
+          {%- endcase -%}
+        {%- endcapture -%}
+
+        <div class="dsgn-pck__grid-item--{{ block.settings.block_size }} dsgn-pck__grid-item dsgn-pck__item dsgn-pck__block-{{ block.id }}" {{ block.shopify_attributes }} style="--dsgn-pck-animate: {{ forloop.index }};">
+          {%- if block.settings.link != blank -%}
+            <a class="dsgn-pck__full-link" href="{{ block.settings.link }}">
+          {%- endif -%}
+          {%- if block.settings.image != blank -%}
+            {%- capture image_width -%}
+              {%- case block.settings.block_size -%}
+                {%- when 'horizontal' -%}
+                  1.5
+                {%- when 'vertical' -%}
+                  3
+                {%- when 'small' -%}
+                  3
+                {%- when 'big' -%}
+                  1.5
+              {%- endcase -%}
+            {%- endcapture -%}
+            {%- capture sizes -%}
+              (max-width: 480px) 100vw,{{ section.settings.base_width | divided_by: image_width | round | append: 'vw' | default: '33vw' }}
+            {%- endcapture -%}
+            {{ block.settings.image | image_url: width: 2800 | image_tag:  widths: widths, sizes: sizes }}
+          {%- else -%}
+            <picture>
+              <img src="https://cdn.shopify.com/s/files/1/0577/7673/4361/files/{{ placeholder_image_id }}_1200x.jpg"
+                  alt=""
+                  loading="lazy"
+                  height="1000"
+                  width="1200">
+            </picture>
+          {%- endif -%}
+          <div class="dsgn-pck__content dsgn-pck__flex dsgn-pck__justify-{{ horizontal_text_position }} dsgn-pck__align-{{ vertical_text_position }}">
+            <div class="dsgn-pck__grid-item__inner-content dsgn-pck__relative">
+              {%- if block.settings.title != blank -%}
+                <h3 class="dsgn-pck__small-heading">{{ block.settings.title }}</h3>
+              {%- endif -%}
+              {%- if block.settings.text != blank -%}
+                <div class="dsgn-pck__text dsgn-pck__rte">{{ block.settings.text }}</div>
+              {%- endif -%}
+              {%- if block.settings.button_label != blank -%}
+                <a class="dsgn-pck__button" {%- if block.settings.link != blank -%}href="{{ block.settings.link }}"{%- endif -%}>{{ block.settings.button_label }}</a>
+              {%- endif -%}
+            </div>
+          </div>
+          {%- if block.settings.link != blank -%}
+            </a>
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+{%- endcapture -%}
+{{ minify | strip_newlines }}
+
+{% schema %}
+{
+  "name": "Lookbook - grid",
+  "class": "DP__lookbook-grid",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Images will be cropped to fit into the grid."
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "min": 0,
+      "max": 40,
+      "label": "Spacing gap",
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_hover",
+      "label": "Show information on hover",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "✏️ Text appearance"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Text size",
+      "min": 80,
+      "max": 150,
+      "step": 5,
+      "default": 100,
+      "unit": "%"
+    },
+    {
+      "type": "header",
+      "content": "📱 Mobile"
+    },
+    {
+      "type": "select",
+      "id": "mobile_per_row",
+      "label": "Blocks per row",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "🎨 Design"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color_background",
+      "id": "text_background_color",
+      "label": "Text background",
+      "default": "linear-gradient(180deg, rgba(223, 145, 190, 0.4), rgba(127, 72, 176, 0.4) 50%, rgba(54, 65, 72, 0.4) 100%)"
+    },
+    {
+      "type": "color",
+      "id": "button_label_color",
+      "label": "Button label",
+      "default": "#FAFAFA"
+    },
+    {
+      "type": "color",
+      "id": "button_background_color",
+      "label": "Button background",
+      "default": "#283144"
+    },
+    {
+      "type": "range",
+      "id": "button_radius",
+      "label": "Button border radius",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Background",
+      "default": "linear-gradient(180deg, rgba(233, 233, 233, 1), rgba(166, 186, 186, 1) 100%)"
+    },
+    {
+      "type": "select",
+      "id": "animation",
+      "label": "Animation",
+      "default": "none",
+      "options": [
+        {
+          "value": "fade-in",
+          "label": "Fade-in"
+        },
+        {
+          "value": "fade-in-left",
+          "label": "Fade-in left"
+        },
+        {
+          "value": "fade-in-right",
+          "label": "Fade-in right"
+        },
+        {
+          "value": "fade-in-up",
+          "label": "Fade-in up"
+        },
+        {
+          "value": "fade-in-down",
+          "label": "Fade-in down"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "🖼 Layout"
+    },
+    {
+      "type": "range",
+      "id": "base_width",
+      "label": "Size",
+      "min": 60,
+      "max": 100,
+      "step": 5,
+      "default": 95,
+      "unit": "%"
+    },
+    {
+      "type": "text",
+      "id": "max_width",
+      "label": "Maximum width",
+      "placeholder": "eg. 1200px",
+      "info": "Sets width constraint for content.",
+      "default": "1000"
+    },
+    {
+      "type": "range",
+      "id": "inner_padding",
+      "label": "Inner padding",
+      "info": "Only applies to top and bottom.",
+      "min": 0,
+      "max": 100,
+      "default": 20,
+      "step": 5,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "outer_margin",
+      "label": "Outer margin",
+      "info": "Only applies to top and bottom.",
+      "min": 0,
+      "max": 100,
+      "default": 40,
+      "step": 5,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "🚨 Advanced"
+    },
+    {
+      "type": "html",
+      "id": "custom_css",
+      "label": "CSS"
+    },
+    {
+      "type": "html",
+      "id": "mobile_custom_css",
+      "label": "Mobile CSS",
+      "info": "Applied on screens less than 480px."
+    },
+    {
+      "type": "checkbox",
+      "id": "override_theme_font",
+      "label": "Override default theme font",
+      "default": false
+    },
+    {
+      "type": "font_picker",
+      "id": "heading_font",
+      "label": "Headings",
+      "default": "serif"
+    },
+    {
+      "type": "font_picker",
+      "id": "main_font",
+      "label": "Text",
+      "default": "sans-serif"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Image",
+      "settings": [
+        {
+          "type": "select",
+          "id": "block_size",
+          "label": "Size",
+          "default": "small",
+          "options": [
+            {
+              "value": "horizontal",
+              "label": "Horizontal block"
+            },
+            {
+              "value": "vertical",
+              "label": "Vertical block"
+            },
+            {
+              "value": "big",
+              "label": "Big block"
+            },
+            {
+              "value": "small",
+              "label": "Small block"
+            }
+          ]
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "select",
+          "id": "focal_point",
+          "label": "Image focal point",
+          "info": "Used to keep the subject of your photo in view.",
+          "default": "center center",
+          "options": [
+            {
+              "value": "20% 0",
+              "label": "Top left"
+            },
+            {
+              "value": "top center",
+              "label": "Top center"
+            },
+            {
+              "value": "80% 0",
+              "label": "Top right"
+            },
+            {
+              "value": "20% 50%",
+              "label": "Left"
+            },
+            {
+              "value": "center center",
+              "label": "Center"
+            },
+            {
+              "value": "80% 50%",
+              "label": "Right"
+            },
+            {
+              "value": "20% 100%",
+              "label": "Bottom left"
+            },
+            {
+              "value": "bottom center",
+              "label": "Bottom center"
+            },
+            {
+              "value": "80% 100%",
+              "label": "Bottom right"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Product title"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris nibh enim, ornare at consequat sed, placerat quis libero. Curabitur id nulla ut nunc aliquam sodales.</p>"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button",
+          "default": "View more"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "text_position",
+          "label": "Text position",
+          "default": "center center",
+          "options": [
+            {
+              "value": "left top",
+              "label": "Top left"
+            },
+            {
+              "value": "center top",
+              "label": "Top center"
+            },
+            {
+              "value": "right top",
+              "label": "Top right"
+            },
+            {
+              "value": "left center",
+              "label": "Left"
+            },
+            {
+              "value": "center center",
+              "label": "Center"
+            },
+            {
+              "value": "right center",
+              "label": "Right"
+            },
+            {
+              "value": "left bottom",
+              "label": "Bottom left"
+            },
+            {
+              "value": "center bottom",
+              "label": "Bottom center"
+            },
+            {
+              "value": "right bottom",
+              "label": "Bottom right"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Lookbook - grid 🎒",
+      "blocks": [
+        {
+          "type": "image",
+          "settings": {
+            "title": "Comfortable",
+            "text": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris nibh enim, ornare at consequat sed, placerat quis libero.</p>",
+            "focal_point": "top center",
+            "block_size": "small",
+            "text_position": "left top"
+          }
+        },
+        {
+          "type": "image",
+          "settings": {
+            "title": "Stylish",
+            "text": "<p>Curabitur id nulla ut nunc aliquam sodales.</p>",
+            "focal_point": "top center",
+            "block_size": "vertical",
+            "text_position": "center center"
+          }
+        },
+        {
+          "type": "image",
+          "settings": {
+            "title": "Trendy",
+            "text": "<p>Mauris nibh enim, ornare at consequat sed, placerat quis libero. Curabitur id nulla ut nunc aliquam sodales.</p>",
+            "focal_point": "top center",
+            "block_size": "small",
+            "text_position": "left bottom"
+          }
+        },
+        {
+          "type": "image",
+          "settings": {
+            "title": "Classic",
+            "text": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur id nulla ut nunc aliquam sodales.</p>",
+            "focal_point": "top center",
+            "block_size": "small",
+            "text_position": "right bottom"
+          }
+        },
+        {
+          "type": "image",
+          "settings": {
+            "title": "Sustainable",
+            "text": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris nibh enim, ornare at consequat sed, placerat quis libero.</p>",
+            "focal_point": "top center",
+            "block_size": "small",
+            "text_position": "right bottom"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+{%- comment -%} JSON Settings {%- endcomment -%}
+<script type="application/json" data-dsgn-pck="{{ section.id }}">
+  {
+    "id": {{ section.id | json }},
+    "animation": {{ section.settings.animation | json }}
+  }
+</script>
+{%- comment -%} JavaScript {%- endcomment -%}
+<script data-dsgn-pck-js="{{ section.id }}" type="module" defer>
+(function(){
+
+  const designPack = {
+    settings: {},
+    animateSection: function(entries, observer){
+      // Target the first entry available.
+      let observedSection = entries[0];
+      if (observedSection.isIntersecting) {
+        observedSection.target.classList.add('dsgn-pck__animation-applied');
+      }
+    },
+    load: function(section){
+      if (this.settings.animation !== 'none'){
+        const options = {
+          root: null,
+          rootMargin: '0px',
+          threshold: 0.3
+        };
+        // Construct Intersection Observer.
+        const observer = new IntersectionObserver( this.animateSection, options );
+        // Observe if element is present.
+        if (section) {
+          observer.observe(section);
+        }
+      }
+    },
+    unload: function(section){
+      section.classList.remove('dsgn-pck__animation-applied')
+    }
+  }
+
+  window.addEventListener('shopify:section:unload', function (e) {
+    const settings = document.querySelector(`[data-dsgn-pck="${e.detail.sectionId}"]`);
+    const sectionId = e.detail.sectionId;
+    const section = document.querySelector(`#DP--${e.detail.sectionId}`);
+    if (sectionId == designPack.settings.id){
+      designPack.unload(section);
+    }
+  });
+
+  designPack.settings = JSON.parse(document.querySelector('[data-dsgn-pck="{{ section.id }}"]').innerHTML);
+  const sectionId = {{ section.id | json }};
+  const section = document.querySelector(`#DP--${sectionId}`);
+
+  if (sectionId == designPack.settings.id){
+    designPack.load(section);
+  }
+})()
+</script>
