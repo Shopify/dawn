@@ -1,0 +1,1975 @@
+{%- comment -%}
+{
+  "pack_name": "Blog sidebar",
+  "pack_author": "Design Packs"
+}
+{%- endcomment -%}
+
+{% comment %} Security Code - hides section when app uninstalled {% endcomment %}
+{%- unless content_for_header contains 'design_packs_file.js' -%}
+  {%- if request.design_mode -%}
+    <div class="dsgn-pck__no-app-warning">
+      <div class="dsgn-pck__no-app-warning-background"></div>
+      <div class="dsgn-pck__no-app-warning-text dsgn-pck__rte">
+        <p>
+          <strong>WARNING!</strong> This section or template will not display properly without the
+          <a href="https://apps.shopify.com/design-packs" target="_blank" rel="nofollow">Design Packs</a> app installed.
+          Please email <a href="mailto:info@design-packs.com" target="_blank">info@design-packs.com</a> with any
+          questions.
+        </p>
+      </div>
+    </div>
+  {%- endif -%}
+  {%- break -%}
+{%- endunless -%}
+
+{%- comment -%} Images: all placeholders {%- endcomment -%}
+{%- assign placeholder_image_id = 'mU88MlEFcoU' -%}
+
+{% comment %} Images: responsive image widths {% endcomment %}
+{%- assign widths = '180, 360, 540, 720, 900, 1080, 1296, 1512, 1728, 1950, 2100, 2260, 2450, 2700, 3000, 3350, 3750, 4100' -%}
+
+{% comment %} Layout: position all sections next to sidebar? {% endcomment %}
+{%- capture target_class -%}
+  {%- if section.settings.section_shift == 'all_sections' -%}
+    shopify-section
+  {%- elsif section.settings.section_shift == 'blog_sections' -%}
+    DP__shift
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- comment -%} Text: custom font_picker values {%- endcomment -%}
+{%- capture font_settings_list -%}
+{{ section.settings.main_font | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'style', 'italic' | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'style', 'italic' | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}
+{%- endcapture -%}
+{%- assign font_array = font_settings_list | split: '~' -%}
+
+{%- capture minify -%}
+  {%- comment -%} CSS {%- endcomment -%}
+  <style>
+    {%- if section.settings.override_theme_font != blank -%}
+      {%- for font in font_array -%}
+        {%- unless font contains 'error' -%}{{ font }}{%- endunless -%}
+      {%- endfor -%}
+      #DP--{{ section.id }} {
+        --main-font: {{ section.settings.main_font.family }}, {{ section.settings.main_font.fallback_families }};
+        --main-font-weight: {{ section.settings.main_font.weight }};
+        --main-font-style: {{ section.settings.main_font.style }};
+        --heading-font: {{ section.settings.heading_font.family }}, {{ section.settings.heading_font.fallback_families }};
+        --heading-font-weight: {{ section.settings.heading_font.weight }};
+        --heading-font-style: {{ section.settings.heading_font.style }};
+      }
+    {%- endif -%}
+
+    #DP__sidebar-optional::after {
+      content: "";
+      clear: both;
+      display: table;
+    }
+
+    /* Fix for other themes to adjust for floats */
+    #MainContent::after,
+    main::after {
+      content: "";
+      clear: both;
+      display: table;
+    }
+
+    #MainContent .blog-layout {
+      display: unset;
+    }
+
+    .DP__sidebar {
+      float: {{ section.settings.sidebar_position }};
+      width: 30%;
+      min-width: 300px;
+      {%- if section.settings.enable_sticky and section.settings.section_shift == 'all_sections' -%}
+        position: sticky;
+        top: 0;
+      {%- endif -%}
+    }
+
+    .DP__sidebar ~ [class*="{{ target_class }}"] {
+      {%- if section.settings.sidebar_position == 'right' -%}
+        float: left;
+      {%- else -%}
+        float: right;
+      {%- endif -%}
+      width: 70%;
+      max-width: calc(100% - 300px);
+    }
+
+    .DP__sidebar ~ [class*="shopify-section"].DP__widths {
+      width: 70% !important;
+    }
+
+    {%- if section.settings.section_shift == 'blog_sections' -%}
+      .DP__sidebar ~ .shopify-section:not([class*="DP__shift"]) {
+        clear: both;
+      }
+    {%- endif -%}
+
+    #DP--{{ section.id }} .dsgn-pck__block + .dsgn-pck__block {
+      margin-top: 20px;
+      margin_bottom: 0;
+    }
+
+    #DP--{{ section.id }} .dsgn-pck__sizer {
+      flex-wrap: wrap;
+      padding: 20px;
+      max-width: 400px;
+      margin-right: 0;
+    }
+
+    #DP--{{ section.id }} .dsgn-pck__small-heading {
+      margin: 0;
+      font-size: calc(var(--dp-g-small-heading-size, var(--dp-small-heading-size, 24px)) * {{ section.settings.text_size | times: 0.012 }});
+      {%- if section.settings.override_theme_font != blank -%}
+      font-family: var(--heading-font);
+      font-weight: var(--heading-font-weight);
+      font-style: var(--heading-font-style);
+      {%- endif -%}
+    }
+
+    #DP--{{ section.id }} .dsgn-pck__text p {
+      line-height: calc(2px + 3ex + 2px);
+      font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+      {%- if section.settings.override_theme_font != blank -%}
+      font-family: var(--main-font);
+      font-weight: var(--main-font-weight);
+      font-style: var(--main-font-style);
+      {%- endif -%}
+    }
+
+    {%- if section.settings.custom_css != blank -%}
+      {%- assign custom_section_declarations = section.settings.custom_css | split: '}' -%}
+      {%- for declaration in custom_section_declarations -%}
+        {%- if declaration contains '{' -%}
+          #DP--{{ section.id }} {{ declaration }} }
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+
+    @media (max-width: 767px) {
+      #DP__sidebar-optional {
+        display: flex;
+        flex-direction: column;
+      }
+
+      #MainContent {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .DP__sidebar {
+        order: 2;
+        width: 100%;
+        position: relative;
+        top: auto;
+      }
+
+      .DP__sidebar ~ [class*="{{ target_class }}"] {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .DP__sidebar ~ [class*="shopify-section"].DP__widths {
+        width: 100% !important;
+      }
+
+      #DP--{{ section.id }} .dsgn-pck__sizer {
+        max-width: 100%;
+      }
+    }
+
+    /* Landscape phones and down */
+    @media (max-width: 480px) {
+      #DP--{{ section.id }} .dsgn-pck__sizer {
+        min-width: 100%;
+      }
+
+      {%- if section.settings.mobile_custom_css != blank -%}
+        {%- assign mobile_custom_declarations = section.settings.mobile_custom_css | split: '}' -%}
+        {%- for declaration in mobile_custom_declarations -%}
+          {%- if declaration contains '{' -%}
+            #DP--{{ section.id }} {{ declaration }} }
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+    }
+  </style>
+
+  {%- comment -%} HTML {%- endcomment -%}
+  <section
+    id="DP--{{ section.id }}"
+    class="DP--{{ section.id }} dsgn-pck__blog-sidebar dsgn-pck__section"
+  >
+    <div class="dsgn-pck__sizer">
+      <div class="dsgn-pck__blog-sidebar-wrapper">
+        {%- for block in section.blocks -%}
+          <div id="DP--{{ block.id }}" class="dsgn-pck__block dsgn-pck__block-id-{{ block.id }} dsgn-pck__block--{{ block.type }} dsgn-pck__block--{{ forloop.index }}" {{ block.shopify_attributes }}>
+            {%- case block.type -%}
+              {%- when '@app' -%}
+                {% render block %}
+              {%- when 'search' -%}
+                <style>
+                  {%- assign button_alpha = block.settings.button_background_color | color_extract: 'alpha' -%}
+
+                  .dsgn-pck__block-id-{{ block.id }} {
+                    background: {{ block.settings.background_color }};
+                    color: {{ block.settings.text_color }};
+                    display: flex;
+                    flex-direction: column;
+                    gap: 15px;
+                    {%- if block.settings.background_color != blank -%}
+                      padding: 20px;
+                    {%- endif -%}
+                    {%- if section.settings.override_theme_font != blank -%}
+                      font-family: var(--main-font);
+                      font-weight: var(--main-font-weight);
+                      font-style: var(--main-font-style);
+                    {%- endif -%}
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} form {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 15px;
+                    position: relative;
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__form-text {
+                    color: inherit;
+                    font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__submit {
+                    position: absolute;
+                    right: 0;
+                    height: 100%;
+                    aspect-ratio: 1 / 1;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__submit svg {
+                    fill: {{ block.settings.text_color }};
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} input[type="submit"] {
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    opacity: 0;
+                    cursor: pointer;
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} input:not([type="submit"]) {
+                    width: 100%;
+                    margin: unset;
+                    padding: 0.5em 1.2em;
+                    font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} input[type="text"] {
+                    padding: 0.5em 2em 0.5em 1.2em;
+                    background: transparent;
+                    border: thin solid {{ block.settings.text_color }};
+                    color: {{ block.settings.text_color }};
+                    font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+                    {%- if section.settings.override_theme_font != blank -%}
+                    font-family: var(--main-font);
+                    font-weight: var(--main-font-weight);
+                    font-style: var(--main-font-style);
+                    {%- endif -%}
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} input::placeholder {
+                    opacity: 0.6;
+                    color: {{ block.settings.text_color }};
+                    {%- if section.settings.override_theme_font != blank -%}
+                    font-family: var(--main-font);
+                    font-weight: var(--main-font-weight);
+                    font-style: var(--main-font-style);
+                    {%- endif -%}
+                  }
+                </style>
+                {%- if block.settings.title != blank -%}
+                  <h3 class="dsgn-pck__small-heading dsgn-pck__justify-{{ section.settings.text_alignment }}">{{ block.settings.title }}</h3>
+                {%- endif -%}
+                {%- if block.settings.text != blank -%}
+                  <div class="dsgn-pck__text dsgn-pck__rte dsgn-pck__justify-{{ section.settings.text_alignment }}">
+                    {{ block.settings.text }}
+                  </div>
+                {%- endif -%}
+                <form method="get" action="/search">
+                  <input type="hidden" name="type" value="article" />
+                  <input type="text" name="q" placeholder="{{ block.settings.placeholder }}" />
+                  <div class="dsgn-pck__submit">
+                    <input type="submit" value="Submit" />
+                    <svg viewBox="0 0 20 20" style="width: 20px; height: 20px;"><path d="M2 8c0-3.309 2.691-6 6-6s6 2.691 6 6-2.691 6-6 6-6-2.691-6-6zm17.707 10.293-5.395-5.396a7.946 7.946 0 0 0 1.688-4.897c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8a7.954 7.954 0 0 0 4.897-1.688l5.396 5.395a.998.998 0 0 0 1.707-.707 1 1 0 0 0-.293-.707z"></path></svg>
+                  </div>
+                </form>
+              {%- when 'links' -%}
+                <style>
+                  .dsgn-pck__block-id-{{ block.id }} {
+                    background: {{ block.settings.background_color }};
+                    color: {{ block.settings.text_color }};
+                    display: flex;
+                    flex-direction: column;
+                    gap: 15px;
+                    {%- if block.settings.background_color != blank -%}
+                      padding: 20px;
+                    {%- endif -%}
+                    {%- if section.settings.override_theme_font != blank -%}
+                      font-family: var(--main-font);
+                      font-weight: var(--main-font-weight);
+                      font-style: var(--main-font-style);
+                    {%- endif -%}
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__link-list {
+                    margin: 0;
+                    list-style: none;
+                    padding: 0;
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__link-list-item {
+                    text-decoration: none;
+                    color: {{ block.settings.text_color }};
+                    font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__link {
+                    text-decoration: none;
+                    color: inherit;
+                    display: block;
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__link:hover {
+                    text-decoration: underline;
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__link.dsgn-pck__link-active {
+                    font-weight: bold;
+                  }
+                </style>
+                {% if block.settings.menu != blank %}
+                  {%- if block.settings.title != blank -%}
+                    <h3 class="dsgn-pck__small-heading dsgn-pck__justify-{{ section.settings.text_alignment }}">{{ block.settings.title }}</h3>
+                  {%- endif -%}
+                  <ul class="dsgn-pck__link-list dsgn-pck__justify-{{ section.settings.text_alignment }}">
+                    {% for link in linklists[block.settings.menu].links %}
+                      <li class="dsgn-pck__link-list-item">
+                        <a class="dsgn-pck__link {% if link.active %}dsgn-pck__link-active{% endif %}" href="{{ link.url }}" title="{{ link.title | escape }}">
+                          {{ link.title }}
+                        </a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  <p>Select menu to show linklist</p>
+                {% endif %}
+              {%- when 'featured_articles' -%}
+                  <style>
+                    .dsgn-pck__block-id-{{ block.id }} {
+                      background: {{ block.settings.background_color }};
+                      color: {{ block.settings.text_color }};
+                      display: flex;
+                      flex-direction: column;
+                      gap: 15px;
+                      {%- if block.settings.background_color != blank -%}
+                        padding: 20px;
+                      {%- endif -%}
+                      {%- if section.settings.override_theme_font != blank -%}
+                        font-family: var(--main-font);
+                        font-weight: var(--main-font-weight);
+                        font-style: var(--main-font-style);
+                      {%- endif -%}
+                    }
+
+                    .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__article-list {
+                      margin: 0;
+                      padding: 0;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 30px;
+                    }
+
+                    .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__article-content ul {
+                      list-style-type: none;
+                      padding: 0;
+                    }
+
+                    .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__article-content li {
+                      text-decoration: none;
+                      line-height: 1;
+                      color: {{ block.settings.text_color }};
+                      text-transform: uppercase;
+                      font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.008 }});
+                    }
+
+                    .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__meta {
+                      line-height: 1;
+                      font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.008 }});
+                    }
+
+                    .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__article-content li a {
+                      text-decoration: none;
+                      color: inherit;
+                    }
+
+                    .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__article-list-item {
+                      display: flex;
+                      list-style: none;
+                      padding: 0;
+                      gap: 20px;
+                    }
+
+                    .dsgn-pck__block-id-{{ block.id }} a.dsgn-pck__article-title {
+                      line-height: 1.2;
+                      margin-bottom: 5px;
+                      display: inline-block;
+                      color: {{ block.settings.text_color }};
+                      text-decoration: none;
+                      font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+                    }
+
+                    .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__image-link {
+                      flex: 1 0 80px;
+                      max-width: 80px;
+                    }
+
+                    .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__image-link img {
+                      height: auto;
+                      aspect-ratio: 1 / 1;
+                      object-fit: cover;
+                    }
+                  </style>
+                  {%- if block.settings.title != blank -%}
+                    <h3 class="dsgn-pck__small-heading dsgn-pck__justify-{{ section.settings.text_alignment }}">{{ block.settings.title }}</h3>
+                  {%- endif -%}
+                  <ul class="dsgn-pck__article-list">
+                    {%- assign article_id = article.id -%}
+                    {%- for index in (1..4) -%}
+                      {%- capture article_index -%}article_{{ forloop.index }}{%- endcapture -%}
+                      {% capture article_handle %}{{ block.settings[article_index] }}{% endcapture %}
+                      {%- assign article = articles[article_handle] -%}
+                      {%- if article != blank -%}
+                        <li class="dsgn-pck__article-list-item">
+                          {%- if article.image -%}
+                            <a href="{{ article.url }}" class="dsgn-pck__image-link">
+                              {{ article | image_url: width: 200 | image_tag:  class: 'dsgn-pck__image' }}
+                            </a>
+                          {%- endif -%}
+
+                          <div class="dsgn-pck__article-content">
+                            {%- if article.tags.size > 0 and block.settings.show_tag == true -%}
+                              <ul aria-label="{{ 'blogs.article.tags' }}">
+                              {%- for tag in article.tags limit: 1 -%}
+                                <li>
+                                  <a href="{{ blog.url }}/tagged/{{ tag | handle }}">{{ tag }}</a>
+                                </li>
+                              {%- endfor -%}
+                              </ul>
+                            {%- endif -%}
+
+                            <a href="{{ article.url }}" class="dsgn-pck__article-title">{{ article.title }}</a>
+
+                            {%- if block.settings.show_author or block.settings.show_date -%}
+                              <div class="dsgn-pck__meta">
+                                {%- if block.settings.show_author -%}
+                                  <div class="dsgn-pck__article-author">
+                                    By {{ article.author }}
+                                  </div>
+                                {%- endif -%}
+
+                                {%- if block.settings.show_date -%}
+                                  <div class="dsgn-pck__article-date">
+                                    {{ article.published_at | date: format: 'date' }}
+                                  </div>
+                                {%- endif -%}
+                              </div>
+                            {%- endif -%}
+                          </div>
+                        </li>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </ul>
+
+              {%- when 'image_grid' -%}
+                <style>
+                  .dsgn-pck__block-id-{{ block.id }} {
+                    background: {{ block.settings.background_color }};
+                    color: {{ block.settings.text_color }};
+                    display: flex;
+                    flex-direction: column;
+                    gap: 15px;
+                    {%- if block.settings.background_color != blank -%}
+                      padding: 20px;
+                    {%- endif -%}
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__icons {
+                    gap: {{ block.settings.gap }}px;
+                    grid-template-columns: repeat({{ block.settings.per_row }}, 1fr);
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__icon img {
+                    position: relative;
+                    width: 100%;
+                    height: auto;
+                    object-fit: cover;
+                    aspect-ratio: 1 / 1;
+                    display: block;
+                  }
+
+                  @media (max-width: 480px) {
+                    .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__icon {
+                      flex-basis: calc(50% - {{ block.settings.gap | divided_by: 2.0 }}px);
+                    }
+                  }
+                </style>
+                {%- if block.settings.title != blank -%}
+                  <h3 class="dsgn-pck__small-heading dsgn-pck__justify-{{ section.settings.text_alignment }}">{{ block.settings.title }}</h3>
+                {%- endif -%}
+                <div class="dsgn-pck__grid dsgn-pck__icons">
+                  {%- for index in (1..9) -%}
+                    {%- capture image -%}image_{{ forloop.index }}{%- endcapture -%}
+                    {%- capture link -%}link_{{ forloop.index }}{%- endcapture -%}
+                    {%- if block.settings[image] != blank -%}
+                      <div class="dsgn-pck__flex-item dsgn-pck__icon">
+                        {%- if block.settings[link] != blank -%}
+                          <a href="{{ block.settings[link] }}">
+                        {%- endif -%}
+                          {{ block.settings[image] | image_url: width: 800 | image_tag: loading: 'lazy' }}
+                        {%- if block.settings[link] != blank -%}
+                          </a>
+                        {%- endif -%}
+                      </div>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </div>
+
+              {%- when 'newsletter' -%}
+                <style>
+                  {%- assign button_alpha = block.settings.button_background_color | color_extract: 'alpha' -%}
+
+                  .dsgn-pck__block-id-{{ block.id }} {
+                    background: {{ block.settings.background_color }};
+                    color: {{ block.settings.text_color }};
+                    {%- if block.settings.background_color != blank -%}
+                      padding: 20px;
+                    {%- endif -%}
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} form {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 15px;
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__form {
+                    --form-gap: 5px;
+                    width: 100%;
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: calc(var(--form-gap) * 2);
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__form-text {
+                    color: inherit;
+                    font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__form input {
+                    margin: unset;
+                    padding: 0.5em 1.2em;
+                    font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__form input[type="text"],
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__form input[type="email"] {
+                    padding: 0.5em 1.2em;
+                    background: transparent;
+                    border: thin solid {{ block.settings.text_color }};
+                    color: {{ block.settings.text_color }};
+                    font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+                    {%- if section.settings.override_theme_font != blank -%}
+                    font-family: var(--main-font);
+                    font-weight: var(--main-font-weight);
+                    font-style: var(--main-font-style);
+                    {%- endif -%}
+                  }
+
+                  .dsgn-pck__form--{{ block.id }} input {
+                    width: 100%;
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} input::placeholder {
+                    opacity: 0.6;
+                    color: {{ block.settings.text_color }};
+                    {%- if section.settings.override_theme_font != blank -%}
+                    font-family: var(--main-font);
+                    font-weight: var(--main-font-weight);
+                    font-style: var(--main-font-style);
+                    {%- endif -%}
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__button {
+                    justify-content: center;
+                    text-align: center;
+                    transition: all 0.3s ease-in-out;
+                    border: thin solid;
+                    border-radius: {{ block.settings.button_radius }}px;
+                    color: {{ block.settings.button_label_color }};
+                    font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+                    border-color: {%- if button_alpha != 0 -%}{{ block.settings.button_background_color }}{%- else -%}{{ block.settings.button_label_color }}{%- endif -%};
+                    background-color: {{ block.settings.button_background_color }};
+                    {%- if section.settings.override_theme_font != blank -%}
+                    font-family: var(--main-font);
+                    font-weight: var(--main-font-weight);
+                    font-style: var(--main-font-style);
+                    {%- endif -%}
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__button:hover {
+                    opacity: 1;
+                    {%- if button_alpha != 0 -%}
+                    background-color: {{ block.settings.button_background_color | color_darken: 10 }};
+                    border-color: transparent;
+                    {%- else -%}
+                    background-color: {{ block.settings.button_label_color | color_modify: 'alpha', 0.1 }}
+                    {%- endif -%};
+                  }
+                </style>
+                {%- capture form_id -%}dsgn-pck__form-{{ section.id }}{%- endcapture -%}
+                {%- capture form_class -%}dsgn-pck__justify-{{ section.settings.text_alignment }}{%- endcapture -%}
+                {%- form 'customer', id: form_id, class: form_class -%}
+
+                  {%- if block.settings.title != blank -%}
+                    <h3 class="dsgn-pck__small-heading">{{ block.settings.title }}</h3>
+                  {%- endif -%}
+                  {%- if block.settings.text != blank -%}
+                    <div class="dsgn-pck__text dsgn-pck__rte">
+                      {{ block.settings.text }}
+                    </div>
+                  {%- endif -%}
+
+                  {%- comment -%} Error and success messages for submitted form {%- endcomment -%}
+                  <div class="dsgn-pck__form-response dsgn-pck__text">
+                    {%- if form.posted_successfully? -%}
+                      <p class="dsgn-pck__form-reply--success">{{ 'success' | t }}</p>
+                    {%- elsif form.errors -%}
+                      {%- for field in form.errors -%}
+                        <p class="dsgn-pck__form-reply--error">{{ field }} - {{ form.errors.messages[field] }}</p>
+                      {%- endfor -%}
+                    {%- endif -%}
+                  </div>
+
+                  {%- comment -%} Hidden newsletter fields {%- endcomment -%}
+                  <input type="hidden" name="contact[tags]" value="newsletter"/>
+                  <input type="hidden" name="challenge" value="false" />
+
+                  <div class="dsgn-pck__form dsgn-pck__form--{{ block.id }} dsgn-pck__form--{{ block.id }}-{{ block.settings.layout }}">
+                    {%- if block.settings.show_first_name -%}
+                      <label class="dsgn-pck__visually-hidden" for="first-name-{{ block.id }}">{{ block.settings.first_name_label }}</label>
+                      <input class="dsgn-pck__newsletter_first-name" type="text" name="contact[first_name]" id="first-name-{{ block.id }}" placeholder="{{ block.settings.first_name_label }}" />
+                    {%- endif -%}
+                    {%- if block.settings.show_last_name -%}
+                      <label class="dsgn-pck__visually-hidden" for="last-name-{{ block.id }}">{{ block.settings.last_name_label }}</label>
+                      <input class="dsgn-pck__newsletter_last-name" type="text" name="contact[last_name]" id="last-name-{{ block.id }}" placeholder="{{ block.settings.last_name_label }}" />
+                    {%- endif -%}
+                    <label class="dsgn-pck__visually-hidden" for="email-{{ block.id }}">{{ block.settings.email_label }}</label>
+                    <input class="dsgn-pck__newsletter_email" type="email" name="contact[email]" required id="email-{{ block.id }}" placeholder="{{ block.settings.email_label }}" />
+                    <input class="dsgn-pck__button" type="submit" value="{{ block.settings.submit_label }}" />
+                  </div>
+
+                {%- endform -%}
+
+                {%- when 'text_content' -%}
+                  <style>
+                    {%- assign button_alpha = block.settings.button_background_color | color_extract: 'alpha' -%}
+
+                    .dsgn-pck__block-id-{{ block.id }} {
+                      background: {{ block.settings.background_color }};
+                      color: {{ block.settings.text_color }};
+                      {%- if block.settings.background_color != blank -%}
+                        padding: 20px;
+                      {%- endif -%}
+                    }
+
+                    .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__text-content {
+                      display: flex;
+                      flex-direction: column;
+                      gap: 15px;
+                    }
+
+                    .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__button {
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
+                      text-align: center;
+                      text-decoration: none;
+                      padding: 0.5em 1.2em;
+                      margin-top: 0;
+                      border: thin solid;
+                      transition: all 0.3s ease-in-out;
+                      border-radius: {{ block.settings.button_radius }}px;
+                      line-height: calc(3px + 2ex + 3px);
+                      font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+                      {%- if section.settings.override_theme_font != blank -%}
+                      font-family: var(--main-font);
+                      font-weight: var(--main-font-weight);
+                      font-style: var(--main-font-style);
+                      {%- endif -%}
+                      color: {{ block.settings.button_label_color }};
+                      border-color: {%- if button_alpha != 0 -%}{{ block.settings.button_background_color }}{%- else -%}{{ block.settings.button_label_color }}{%- endif -%};
+                      background-color: {{ block.settings.button_background_color }};
+                    }
+
+                    .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__list {
+                      margin: 0;
+                      {%- case block.settings.list_style -%}
+                        {%- when 'decimal' -%}
+                          list-style: decimal;
+                        {%- when 'square' -%}
+                          list-style: square;
+                        {%- when 'circle' -%}
+                          list-style: circle;
+                        {%- else -%}
+                          list-style: inherit;
+                      {%- endcase -%}
+                    }
+                  </style>
+                  <div class="dsgn-pck__text-content dsgn-pck__justify-{{ section.settings.text_alignment }}">
+                    {%- if block.settings.title != blank -%}
+                      <h3 class="dsgn-pck__small-heading">{{ block.settings.title }}</h3>
+                    {%- endif -%}
+                    {%- if block.settings.text != blank -%}
+                      <div class="dsgn-pck__text dsgn-pck__rte">
+                        {{ block.settings.text }}
+                      </div>
+                    {%- endif -%}
+                    {%- if block.settings.list != blank -%}
+                      {%- assign list = block.settings.list | split: '**' -%}
+                      <div class="dsgn-pck__list-wrapper dsgn-pck__rte">
+                        <ul class="dsgn-pck__list dsgn-pck__text-alignment-left">
+                          {%- for list_item in list -%}
+                            {%- if forloop.first == false -%}
+                              <li>{{ list_item }}</li>
+                            {%- endif -%}
+                          {%- endfor -%}
+                        </ul>
+                      </div>
+                    {%- endif -%}
+                    {%- if block.settings.button_label != blank -%}
+                      <a class="dsgn-pck__button" {%- if block.settings.button_link != blank -%} href="{{ block.settings.button_link }}" {%- endif -%} {% if block.settings.external_link %}target="_blank"{% endif %}>{{ block.settings.button_label }}</a>
+                    {%- endif -%}
+                  </div>
+
+              {%- when 'image_with_text' -%}
+                <style>
+                  {%- assign button_alpha = block.settings.button_background_color | color_extract: 'alpha' -%}
+
+                  .dsgn-pck__block-id-{{ block.id }} {
+                    background: {{ block.settings.background_color }};
+                    color: {{ block.settings.text_color }};
+                    {%- if block.settings.background_color != blank -%}
+                      padding: 20px;
+                    {%- endif -%}
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__image-with-text {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 15px;
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__image {
+                    width: {{ block.settings.image_size }}%;
+                    height: auto;
+                    display: inline-block;
+                    margin: auto;
+                    text-align: center;
+                    {%- if block.settings.image_crop != 'none' -%}
+                      aspect-ratio: 1 / 1;
+                      object-fit: cover;
+                    {%- endif -%}
+                    {%- if block.settings.image_crop == 'circle' -%}
+                      border-radius: 50%;
+                    {%- elsif block.settings.image_crop == 'rounded' -%}
+                      border-radius: 5px;
+                    {%- endif -%}
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__logo {
+                    width: 60%;
+                    height: auto;
+                    display: inline-block;
+                    margin: auto;
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__button {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    text-align: center;
+                    text-decoration: none;
+                    padding: 0.5em 1.2em;
+                    margin-top: 0;
+                    border: thin solid;
+                    transition: all 0.3s ease-in-out;
+                    border-radius: {{ block.settings.button_radius }}px;
+                    line-height: calc(3px + 2ex + 3px);
+                    font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+                    {%- if section.settings.override_theme_font != blank -%}
+                    font-family: var(--main-font);
+                    font-weight: var(--main-font-weight);
+                    font-style: var(--main-font-style);
+                    {%- endif -%}
+                    color: {{ block.settings.button_label_color }};
+                    border-color: {%- if button_alpha != 0 -%}{{ block.settings.button_background_color }}{%- else -%}{{ block.settings.button_label_color }}{%- endif -%};
+                    background-color: {{ block.settings.button_background_color }};
+                  }
+                </style>
+                <div class="dsgn-pck__image-with-text dsgn-pck__justify-{{ section.settings.text_alignment }}">
+                  {%- if block.settings.image != blank -%}
+                    {{ block.settings.image | image_url: width: 1000 | image_tag:  class: 'dsgn-pck__image' }}
+                  {%- else -%}
+                    <img src="https://cdn.shopify.com/s/files/1/0577/7673/4361/files/{{ placeholder_image_id }}_800x.jpg"
+                        class="dsgn-pck__image"
+                        alt=""
+                        loading="lazy"
+                        width="800"
+                        height="800">
+                  {%- endif -%}
+                  {%- if block.settings.title != blank -%}
+                    <h3 class="dsgn-pck__small-heading">{{ block.settings.title }}</h3>
+                  {%- endif -%}
+                  {%- if block.settings.text != blank -%}
+                    <div class="dsgn-pck__text dsgn-pck__rte">
+                      {{ block.settings.text }}
+                    </div>
+                  {%- endif -%}
+                  {%- if block.settings.logo != blank -%}
+                    {{ block.settings.logo | image_url: width: 1000 | image_tag:  class: 'dsgn-pck__logo' }}
+                  {%- endif -%}
+                  {%- if block.settings.button_label != blank -%}
+                    <a class="dsgn-pck__button" {%- if block.settings.button_link != blank -%} href="{{ block.settings.button_link }}" {%- endif -%} {% if block.settings.external_link %}target="_blank"{% endif %}>{{ block.settings.button_label }}</a>
+                  {%- endif -%}
+                </div>
+
+              {%- when 'buttons' -%}
+                <style>
+                  {%- assign button_alpha_primary = block.settings.button_background_color_primary | color_extract: 'alpha' -%}
+                  {%- assign button_alpha_secondary = block.settings.button_background_color_secondary | color_extract: 'alpha' -%}
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__button-area {
+                    display: grid;
+                    gap: 10px;
+                    grid-template-columns: 1fr;
+                    width: 100%;
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__button {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    text-align: center;
+                    text-decoration: none;
+                    padding: 0.5em 1.2em;
+                    margin-top: 0;
+                    border: thin solid;
+                    transition: all 0.3s ease-in-out;
+                    border-radius: {{ block.settings.button_radius }}px;
+                    line-height: calc(3px + 2ex + 3px);
+                    font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+                    {%- if section.settings.override_theme_font != blank -%}
+                    font-family: var(--main-font);
+                    font-weight: var(--main-font-weight);
+                    font-style: var(--main-font-style);
+                    {%- endif -%}
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__button-primary {
+                    color: {{ block.settings.button_label_color_primary }};
+                    border-color: {%- if button_alpha_primary != 0 -%}{{ block.settings.button_background_color_primary }}{%- else -%}{{ block.settings.button_label_color_primary }}{%- endif -%};
+                    background-color: {{ block.settings.button_background_color_primary }};
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__button-secondary {
+                    color: {{ block.settings.button_label_color_secondary }};
+                    border-color: {%- if button_alpha_secondary != 0 -%}{{ block.settings.button_background_color_secondary }}{%- else -%}{{ block.settings.button_label_color_secondary }}{%- endif -%};
+                    background-color: {{ block.settings.button_background_color_secondary }};
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__button-primary:hover {
+                    opacity: 1;
+                    {%- if button_alpha_primary != 0 -%}
+                    background-color: {{ block.settings.button_background_color_primary | color_darken: 10 }};
+                    border-color: transparent;
+                    {%- else -%}
+                    background-color: {{ block.settings.button_label_color_primary | color_modify: 'alpha', 0.1 }}
+                    {%- endif -%};
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__button-secondary:hover {
+                    opacity: 1;
+                    {%- if button_alpha_secondary != 0 -%}
+                    background-color: {{ block.settings.button_background_color_secondary | color_darken: 10 }};
+                    border-color: transparent;
+                    {%- else -%}
+                    background-color: {{ block.settings.button_label_color_secondary | color_modify: 'alpha', 0.1 }}
+                    {%- endif -%};
+                  }
+                </style>
+                <div class="dsgn-pck__button-area">
+                  {%- if block.settings.button_label_primary != blank -%}
+                    <a class="dsgn-pck__button dsgn-pck__button-primary" {%- if block.settings.link_primary != blank -%} href="{{ block.settings.link_primary }}" {%- endif -%} {% if block.settings.external_link_primary %}target="_blank"{% endif %}>{{ block.settings.button_label_primary }}</a>
+                  {%- endif -%}
+                  {%- if block.settings.button_label_secondary != blank -%}
+                    <a class="dsgn-pck__button dsgn-pck__button-secondary" {%- if block.settings.link_secondary != blank -%}href="{{ block.settings.link_secondary }}"{%- endif -%} {% if block.settings.external_link_secondary %}target="_blank"{% endif %}>{{ block.settings.button_label_secondary }}</a>
+                  {%- endif -%}
+                </div>
+
+              {%- when 'image' -%}
+                <style>
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__inset-image a {
+                    line-height: 0;
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__image__wrapper {
+                    width: {{ block.settings.inset_image_size }}%;
+                    display: inline-block;
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__image__wrapper svg {
+                    width: 100%;
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__image__wrapper path {
+                    fill: {{ section.settings.text_color }};
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__item img {
+                    width: 100%;
+                    object-fit: contain;
+                    display: block;
+                  }
+                </style>
+                {%- capture placeholder_image -%}
+                  <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M15.651 12.851c-2.13 1.94-5.17 2.91-9.07 2.91-.91 0-1.87-.04-2.88-.17-.38.86-.6 1.71-.6 2.51 0 .55-.45 1-1 1s-1-.45-1-1c0-.24.01-.48.04-.72.02-.13.03-.26.06-.39.18-1.13.64-2.27 1.29-3.39 2.32-4.02 9.3-8.68 12.61-9.5-4.76-.03-12 3-13.91 6.93 0-2.89 2.3-6.42 5.46-8.38 4.54-2.82 10.47-1.14 12.06 0 .23.16.37.42.38.7.08 2.31-.25 6.62-3.44 9.5z" fill="#5C5F62"/></svg>
+                {%- endcapture -%}
+                <div class="dsgn-pck__inset-image dsgn-pck__flex dsgn-pck__justify-{{ section.settings.text_alignment }}">
+                  {%- if block.settings.link != blank -%}
+                    <a href="{{ block.settings.link }}" {% if block.settings.external_link %}
+                      target="_blank"
+                    {% endif %}>
+                  {%- endif -%}
+                  {%- if block.settings.inset_image != blank -%}
+                    <div class="dsgn-pck__image__wrapper">
+                      <svg viewBox="0 0 {{ block.settings.inset_image.width }} {{ block.settings.inset_image.height }}"></svg>
+                      {{ block.settings.inset_image | image_url: width: 1000 | image_tag: loading: 'lazy' }}
+                    </div>
+                  {%- else -%}
+                    <div class="dsgn-pck__image__wrapper">
+                      {{ placeholder_image | strip }}
+                    </div>
+                  {%- endif -%}
+                  {%- if block.settings.link != blank -%}
+                    </a>
+                  {%- endif -%}
+                </div>
+
+              {%- when 'divider' -%}
+                <style>
+                  .dsgn-pck__block-id-{{ block.id }} {
+                    padding-top: {{ block.settings.padding_top }}px;
+                    padding-bottom: {{ block.settings.padding_bottom }}px;
+                  }
+
+                  .dsgn-pck__block-id-{{ block.id }} .dsgn-pck__divider {
+                    height: 0;
+                    border: none;
+                    background: transparent;
+                    {%- if section.settings.text_alignment == 'left' -%}
+                      margin: 0;
+                    {%- elsif section.settings.text_alignment == 'right' -%}
+                      margin: 0 0 0 auto;
+                    {%- else -%}
+                      margin: 0 auto;
+                    {%- endif -%}
+                    width: {{ block.settings.base_width }}%;
+                    border-top: {{ block.settings.thickness }}px {{ block.settings.style }} {{ block.settings.divider_color }};
+                  }
+                </style>
+                <hr class="dsgn-pck__divider" aria-hidden="true">
+
+              {%- when 'liquid' -%}
+                {{ block.settings.liquid }}
+
+            {%- endcase -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  </section>
+{%- endcapture -%}
+{{ minify | strip_newlines }}
+
+{% schema %}
+{
+  "name": "Blog sidebar",
+  "limit": 1,
+  "templates": ["blog"],
+  "class": "DP__blog-sidebar DP__sidebar",
+  "settings": [
+    {
+      "type": "select",
+      "id": "sidebar_position",
+      "label": "Sidebar position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "section_shift",
+      "label": "Section shift",
+      "options": [
+        {
+          "value": "all_sections",
+          "label": "All sections"
+        },
+        {
+          "value": "blog_sections",
+          "label": "Blog sections"
+        }
+      ],
+      "default": "all_sections"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sticky",
+      "label": "Enable sticky sidebar",
+      "default": true,
+      "info": "Only available when Section shift is set to 'All sections'"
+    },
+    {
+      "type": "header",
+      "content": "✏️ Text appearance"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Text size",
+      "min": 60,
+      "max": 120,
+      "step": 5,
+      "default": 85,
+      "unit": "%"
+    },
+    {
+      "type": "header",
+      "content": "🚨 Advanced"
+    },
+    {
+      "type": "textarea",
+      "id": "custom_css",
+      "label": "CSS"
+    },
+    {
+      "type": "textarea",
+      "id": "mobile_custom_css",
+      "label": "Mobile CSS",
+      "info": "Applied on screens less than 480px."
+    },
+    {
+      "type": "checkbox",
+      "id": "override_theme_font",
+      "label": "Override default theme font",
+      "default": false
+    },
+    {
+      "type": "font_picker",
+      "id": "heading_font",
+      "label": "Heading",
+      "default": "serif"
+    },
+    {
+      "type": "font_picker",
+      "id": "main_font",
+      "label": "Text",
+      "default": "sans-serif"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "divider",
+      "name": "Divider",
+      "settings": [
+        {
+          "type": "range",
+          "id": "base_width",
+          "label": "Width",
+          "min": 20,
+          "max": 100,
+          "step": 5,
+          "default": 50,
+          "unit": "%"
+        },
+        {
+          "type": "range",
+          "id": "thickness",
+          "label": "Thickness",
+          "min": 0,
+          "max": 10,
+          "default": 1,
+          "unit": "px"
+        },
+        {
+          "type": "select",
+          "id": "style",
+          "label": "Style",
+          "default": "solid",
+          "options": [
+            {
+              "value": "solid",
+              "label": "Solid line"
+            },
+            {
+              "value": "dotted",
+              "label": "Dotted line"
+            },
+            {
+              "value": "dashed",
+              "label": "Dashed line"
+            },
+            {
+              "value": "double",
+              "label": "Double line"
+            }
+          ]
+        },
+        {
+          "type": "header",
+          "content": "🎨 Design"
+        },
+        {
+          "type": "color",
+          "id": "divider_color",
+          "label": "Color",
+          "default": "#121212"
+        },
+        {
+          "type": "header",
+          "content": "🖼 Layout"
+        },
+        {
+          "type": "range",
+          "id": "padding_top",
+          "label": "Padding - top",
+          "min": 0,
+          "max": 100,
+          "default": 40,
+          "step": 5,
+          "unit": "px"
+        },
+        {
+          "type": "range",
+          "id": "padding_bottom",
+          "label": "Padding - bottom",
+          "min": 0,
+          "max": 100,
+          "default": 40,
+          "step": 5,
+          "unit": "px"
+        }
+      ]
+    },
+    {
+      "type": "text_content",
+      "name": "Text content",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Our Guarantee"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>We promise to always go above and beyond for our customers.</p>"
+        },
+        {
+          "type": "richtext",
+          "id": "list",
+          "label": "List items",
+          "info": "Use two asterisks (**) to create a new list item"
+        },
+        {
+          "type": "select",
+          "id": "list_style",
+          "label": "List style",
+          "options": [
+            {
+              "value": "decimal",
+              "label": "Numbered"
+            },
+            {
+              "value": "square",
+              "label": "Square"
+            },
+            {
+              "value": "circle",
+              "label": "Circle outline"
+            },
+            {
+              "value": "inherit",
+              "label": "Disc (default)"
+            }
+          ],
+          "default": "inherit"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link"
+        },
+        {
+          "type": "checkbox",
+          "id": "external_link",
+          "label": "Open this link in a new window"
+        },
+        {
+          "type": "header",
+          "content": "🎨 Design"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text",
+          "default": "#121212"
+        },
+        {
+          "type": "color_background",
+          "id": "background_color",
+          "label": "Background",
+          "default": "linear-gradient(180deg, rgba(247, 247, 247, 1), rgba(247, 247, 247, 1) 100%)"
+        },
+        {
+          "type": "color",
+          "id": "button_label_color",
+          "label": "Button label",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "color",
+          "id": "button_background_color",
+          "label": "Button background",
+          "default": "#121212"
+        },
+        {
+          "type": "range",
+          "id": "button_radius",
+          "label": "Button border radius",
+          "min": 0,
+          "max": 50,
+          "default": 0,
+          "unit": "px"
+        }
+      ]
+    },
+    {
+      "type": "image_with_text",
+      "name": "Image with text",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "range",
+          "id": "image_size",
+          "min": 10,
+          "max": 100,
+          "label": "Image size",
+          "default": 80,
+          "unit": "%"
+        },
+        {
+          "type": "select",
+          "id": "image_crop",
+          "label": "Image crop",
+          "default": "circle",
+          "options": [
+            {
+              "value": "circle",
+              "label": "Circle"
+            },
+            {
+              "value": "rounded",
+              "label": "Rounded"
+            },
+            {
+              "value": "square",
+              "label": "Square"
+            },
+            {
+              "value": "none",
+              "label": "Original"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Hello!"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>We love sharing helpful info on our blog. Follow along for all our adventures.</p>"
+        },
+        {
+          "type": "image_picker",
+          "id": "logo",
+          "label": "Logo or signature"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button",
+          "default": "Read our story"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link"
+        },
+        {
+          "type": "checkbox",
+          "id": "external_link",
+          "label": "Open this link in a new window"
+        },
+        {
+          "type": "header",
+          "content": "🎨 Design"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text",
+          "default": "#121212"
+        },
+        {
+          "type": "color_background",
+          "id": "background_color",
+          "label": "Background",
+          "default": "linear-gradient(180deg, rgba(247, 247, 247, 1), rgba(247, 247, 247, 1) 100%)"
+        },
+        {
+          "type": "color",
+          "id": "button_label_color",
+          "label": "Button label",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "color",
+          "id": "button_background_color",
+          "label": "Button background",
+          "default": "#121212"
+        },
+        {
+          "type": "range",
+          "id": "button_radius",
+          "label": "Button border radius",
+          "min": 0,
+          "max": 50,
+          "default": 0,
+          "unit": "px"
+        }
+      ]
+    },
+    {
+      "type": "buttons",
+      "name": "Buttons",
+      "settings": [
+        {
+          "type": "range",
+          "id": "button_radius",
+          "label": "Button border radius",
+          "min": 0,
+          "max": 50,
+          "default": 0,
+          "unit": "px"
+        },
+        {
+          "type": "header",
+          "content": "Primary button"
+        },
+        {
+          "type": "text",
+          "id": "button_label_primary",
+          "label": "Primary button",
+          "default": "Learn more"
+        },
+        {
+          "type": "url",
+          "id": "link_primary",
+          "label": "Primary link"
+        },
+        {
+          "type": "checkbox",
+          "id": "external_link_primary",
+          "label": "Open primary link in a new window"
+        },
+        {
+          "type": "color",
+          "id": "button_label_color_primary",
+          "label": "Primary button label",
+          "default": "#121212"
+        },
+        {
+          "type": "color",
+          "id": "button_background_color_primary",
+          "label": "Primary button background",
+          "default": "rgba(0,0,0,0)"
+        },
+        {
+          "type": "header",
+          "content": "Secondary button"
+        },
+        {
+          "type": "text",
+          "id": "button_label_secondary",
+          "label": "Secondary button",
+          "default": "Shop now"
+        },
+        {
+          "type": "url",
+          "id": "link_secondary",
+          "label": "Secondary link"
+        },
+        {
+          "type": "checkbox",
+          "id": "external_link_secondary",
+          "label": "Open secondary link in a new window"
+        },
+        {
+          "type": "color",
+          "id": "button_label_color_secondary",
+          "label": "Secondary button label",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "color",
+          "id": "button_background_color_secondary",
+          "label": "Secondary button background",
+          "default": "#121212"
+        }
+      ]
+    },
+    {
+      "type": "links",
+      "name": "Link menu",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Featured Links"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Link menu",
+          "info": "Create a link list in Online Store > Navigation"
+        },
+        {
+          "type": "header",
+          "content": "🎨 Design"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text",
+          "default": "#121212"
+        },
+        {
+          "type": "color_background",
+          "id": "background_color",
+          "label": "Background",
+          "default": "linear-gradient(180deg, rgba(247, 247, 247, 1), rgba(247, 247, 247, 1) 100%)"
+        }
+      ]
+    },
+    {
+      "type": "image_grid",
+      "name": "Image grid",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Image grid",
+          "default": "Instagram highlights"
+        },
+        {
+          "type": "range",
+          "id": "per_row",
+          "label": "Images per row",
+          "default": 3,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "type": "range",
+          "id": "gap",
+          "min": 0,
+          "max": 40,
+          "label": "Spacing gap",
+          "unit": "px",
+          "default": 10
+        },
+        {
+          "type": "image_picker",
+          "id": "image_1",
+          "label": "Image 1"
+        },
+        {
+          "type": "url",
+          "id": "link_1",
+          "label": "Link 1"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_2",
+          "label": "Image 2"
+        },
+        {
+          "type": "url",
+          "id": "link_2",
+          "label": "Link 2"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_3",
+          "label": "Image 3"
+        },
+        {
+          "type": "url",
+          "id": "link_3",
+          "label": "Link 3"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_4",
+          "label": "Image 4"
+        },
+        {
+          "type": "url",
+          "id": "link_4",
+          "label": "Link 4"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_5",
+          "label": "Image 5"
+        },
+        {
+          "type": "url",
+          "id": "link_5",
+          "label": "Link 5"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_6",
+          "label": "Image 6"
+        },
+        {
+          "type": "url",
+          "id": "link_6",
+          "label": "Link 6"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_7",
+          "label": "Image 7"
+        },
+        {
+          "type": "url",
+          "id": "link_7",
+          "label": "Link 7"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_8",
+          "label": "Image 8"
+        },
+        {
+          "type": "url",
+          "id": "link_8",
+          "label": "Link 8"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_9",
+          "label": "Image 9"
+        },
+        {
+          "type": "url",
+          "id": "link_9",
+          "label": "Link 9"
+        },
+        {
+          "type": "header",
+          "content": "🎨 Design"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text",
+          "default": "#121212"
+        },
+        {
+          "type": "color_background",
+          "id": "background_color",
+          "label": "Background",
+          "default": "linear-gradient(180deg, rgba(247, 247, 247, 1), rgba(247, 247, 247, 1) 100%)"
+        }
+      ]
+    },
+    {
+      "type": "search",
+      "name": "Search",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Search"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Looking for something specific?</p>"
+        },
+        {
+          "type": "text",
+          "id": "placeholder",
+          "label": "Placeholder",
+          "default": "Search in articles"
+        },
+        {
+          "type": "header",
+          "content": "🎨 Design"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text",
+          "default": "#121212"
+        },
+        {
+          "type": "color_background",
+          "id": "background_color",
+          "label": "Background",
+          "default": "linear-gradient(180deg, rgba(247, 247, 247, 1), rgba(247, 247, 247, 1) 100%)"
+        }
+      ]
+    },
+    {
+      "type": "newsletter",
+      "name": "Newsletter form",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Any customers who sign up will have an account created for them in Shopify. [View customers](/admin/customers?query=&accepts_marketing=1)"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Newsletter"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Sign up to receive exclusive content updates, and more.</p>"
+        },
+        {
+          "type": "text",
+          "id": "email_label",
+          "label": "Email label",
+          "default": "Email address"
+        },
+        {
+          "type": "text",
+          "id": "submit_label",
+          "label": "Submit label",
+          "default": "Submit"
+        },
+        {
+          "type": "header",
+          "content": "First name"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_first_name",
+          "label": "Show first name",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "first_name_label",
+          "label": "First name label",
+          "default": "First name"
+        },
+        {
+          "type": "header",
+          "content": "Last name"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_last_name",
+          "label": "Show last name",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "last_name_label",
+          "label": "Last name label",
+          "default": "Last name"
+        },
+        {
+          "type": "header",
+          "content": "🎨 Design"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text",
+          "default": "#121212"
+        },
+        {
+          "type": "color_background",
+          "id": "background_color",
+          "label": "Background",
+          "default": "linear-gradient(180deg, rgba(247, 247, 247, 1), rgba(247, 247, 247, 1) 100%)"
+        },
+        {
+          "type": "color",
+          "id": "button_label_color",
+          "label": "Button label",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "color",
+          "id": "button_background_color",
+          "label": "Button background",
+          "default": "#121212"
+        },
+        {
+          "type": "range",
+          "id": "button_radius",
+          "label": "Button border radius",
+          "min": 0,
+          "max": 50,
+          "default": 0,
+          "unit": "px"
+        }
+      ]
+    },
+    {
+      "type": "liquid",
+      "name": "Liquid/HTML",
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Copy and paste your custom code."
+        },
+        {
+          "type": "liquid",
+          "id": "liquid",
+          "label": "Liquid and/or HTML"
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "name": "Image",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "inset_image",
+          "label": "Image"
+        },
+        {
+          "type": "range",
+          "id": "inset_image_size",
+          "label": "Image size",
+          "default": 10,
+          "min": 5,
+          "max": 100,
+          "step": 5,
+          "unit": "%"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link (optional)"
+        },
+        {
+          "type": "checkbox",
+          "id": "external_link",
+          "label": "Open this link in a new window"
+        }
+      ]
+    },
+    {
+      "type": "featured_articles",
+      "name": "Featured articles",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Featured articles"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_tag",
+          "label": "Show tag",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "show_author",
+          "label": "Show author",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "show_date",
+          "label": "Show date",
+          "default": true
+        },
+        {
+          "type": "article",
+          "id": "article_1",
+          "label": "Article 1"
+        },
+        {
+          "type": "article",
+          "id": "article_2",
+          "label": "Article 2"
+        },
+        {
+          "type": "article",
+          "id": "article_3",
+          "label": "Article 3"
+        },
+        {
+          "type": "article",
+          "id": "article_4",
+          "label": "Article 4"
+        },
+        {
+          "type": "header",
+          "content": "🎨 Design"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text",
+          "default": "#121212"
+        },
+        {
+          "type": "color_background",
+          "id": "background_color",
+          "label": "Background",
+          "default": "linear-gradient(180deg, rgba(247, 247, 247, 1), rgba(247, 247, 247, 1) 100%)"
+        }
+      ]
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Blog sidebar 🎒",
+      "blocks": [
+        {
+          "type": "image_with_text"
+        },
+        {
+          "type": "newsletter"
+        },
+        {
+          "type": "text_content"
+        }
+      ]
+    }
+  ],
+  "locales": {
+    "en": {
+      "success": "Thanks for contacting us. We'll get back to you as soon as possible."
+    }
+  }
+}
+{% endschema %}
