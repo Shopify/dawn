@@ -1,0 +1,956 @@
+{%- comment -%}
+{
+  "pack_name": "Shop the look - slider",
+  "pack_author": "Design Packs"
+}
+{%- endcomment -%}
+
+{% comment %} Security Code - hides section when app uninstalled {% endcomment %}
+{%- unless content_for_header contains 'design_packs_file.js' -%}
+  {%- if request.design_mode -%}
+    <div class="dsgn-pck__no-app-warning">
+      <div class="dsgn-pck__no-app-warning-background">
+      </div>
+      <div class="dsgn-pck__no-app-warning-text dsgn-pck__rte">
+        <p><strong>WARNING!</strong> This premium section will not display properly without an active subscription for <a href="https://apps.shopify.com/design-packs" target="_blank" rel="nofollow">Design Packs</a>. If you need any support please email <a href="mailto:info@design-packs.com" target="_blank">info@design-packs.com</a> with your questions.</p>
+      </div>
+    </div>
+  {%- endif -%}
+  {%- break -%}
+{%- endunless -%}
+
+{%- comment -%} Color: check if color is set to transparent {%- endcomment -%}
+{%- assign button_alpha = section.settings.button_background_color | color_extract: 'alpha' -%}
+
+{% comment %} Images: responsive image widths {% endcomment %}
+{%- assign widths = '180, 360, 540, 720, 900, 1080, 1296, 1512, 1728, 1950, 2100, 2260, 2450, 2700, 3000, 3350, 3750, 4100' -%}
+
+{%- comment -%} Layout: has user entered measurement value into max-width field? {%- endcomment -%}
+{%- if section.settings.max_width contains 'px' or section.settings.max_width contains '%' -%}
+  {%- assign max_width = section.settings.max_width -%}
+{%- else -%}
+  {%- assign max_width = section.settings.max_width | append: 'px' -%}
+{%- endif -%}
+
+{%- comment -%} Text: custom font_picker values {%- endcomment -%}
+{%- capture font_settings_list -%}
+{{ section.settings.main_font | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'style', 'italic' | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'style', 'italic' | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}
+{%- endcapture -%}
+{%- assign font_array = font_settings_list | split: '~' -%}
+
+
+{%- capture minify -%}
+{%- comment -%} CSS {%- endcomment -%}
+<style>
+  /*! Flickity v2.2.2
+https://flickity.metafizzy.co
+---------------------------------------------- */
+.flickity-enabled{position:relative}.flickity-enabled:focus{outline:0;box-shadow: none;}.flickity-viewport{overflow:hidden;position:relative;height:100%}.flickity-slider{position:absolute;width:100%;height:100%}.flickity-enabled.is-draggable{-webkit-tap-highlight-color:transparent;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.flickity-enabled.is-draggable .flickity-viewport{cursor:move;cursor:-webkit-grab;cursor:grab}.flickity-enabled.is-draggable .flickity-viewport.is-pointer-down{cursor:-webkit-grabbing;cursor:grabbing}.flickity-button{position:absolute;background:hsla(0,0%,100%,.75);border:none;color:#333}.flickity-button:hover{background:#fff;cursor:pointer}.flickity-button:focus{outline:0;box-shadow:0 0 0 5px #19f}.flickity-button:active{opacity:.6}.flickity-button:disabled{opacity:.3;cursor:auto;pointer-events:none}.flickity-button-icon{fill:currentColor}.flickity-prev-next-button{top:50%;width:44px;height:44px;border-radius:50%;transform:translateY(-50%)}.flickity-prev-next-button.previous{left:10px}.flickity-prev-next-button.next{right:10px}.flickity-rtl .flickity-prev-next-button.previous{left:auto;right:10px}.flickity-rtl .flickity-prev-next-button.next{right:auto;left:10px}.flickity-prev-next-button .flickity-button-icon{position:absolute;left:20%;top:20%;width:60%;height:60%}.flickity-page-dots{position:absolute;width:100%;bottom:-25px;padding:0;margin:0;list-style:none;text-align:center;line-height:1}.flickity-rtl .flickity-page-dots{direction:rtl}.flickity-page-dots .dot{display:inline-block;width:10px;height:10px;margin:0 8px;background:#333;border-radius:50%;opacity:.25;cursor:pointer}.flickity-page-dots .dot.is-selected{opacity:1}
+
+{%- if section.settings.override_theme_font != blank -%}
+{%- for font in font_array -%}
+  {%- unless font contains 'error' -%}{{ font }}{%- endunless -%}
+{%- endfor -%}
+  #DP--{{ section.id }} {
+    --main-font: {{ section.settings.main_font.family }}, {{ section.settings.main_font.fallback_families }};
+    --main-font-weight: {{ section.settings.main_font.weight }};
+    --main-font-style: {{ section.settings.main_font.style }};
+    --heading-font: {{ section.settings.heading_font.family }}, {{ section.settings.heading_font.fallback_families }};
+    --heading-font-weight: {{ section.settings.heading_font.weight }};
+    --heading-font-style: {{ section.settings.heading_font.style }};
+  }
+{%- endif -%}
+
+#DP--{{ section.id }} {
+  --dot-size: 18px;
+  background: {{ section.settings.background_color }};
+  margin-bottom: {{ section.settings.outer_margin }}px;
+  margin-top: {{ section.settings.outer_margin }}px;
+  padding-top: {{ section.settings.inner_padding }}px;
+  padding-bottom: {{ section.settings.inner_padding }}px;
+}
+
+#DP--{{ section.id }} .dsgn-pck__sizer {
+  width: {{ section.settings.base_width }}%;
+  max-width: {{ max_width }};
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#DP--{{ section.id }} .dsgn-pck__slideshow__wrapper {
+  width: 100%;
+  margin: 0 auto;
+}
+
+#DP--{{ section.id }} .dsgn-pck__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+#DP--{{ section.id }} .dsgn-pck__image-wrapper {
+  position: relative;
+  max-height: 40%;
+}
+
+#DP--{{ section.id }} .dsgn-pck__image picture {
+  position: relative;
+  display: block;
+}
+
+#DP--{{ section.id }} .dsgn-pck__image img {
+  display: block;
+  height: auto;
+}
+
+#DP--{{ section.id }} .dsgn-pck__dot-area {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 30px;
+  bottom: 30px;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-dot {
+  position: absolute;
+  width: var(--dot-size);
+  height: var(--dot-size);
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  cursor: pointer;
+  display: block;
+  transition: transform 0.5s cubic-bezier(0.15,0.99,0.18,0.99);
+  box-shadow: 2px 2px 15px {{ section.settings.pin_highlight_color | color_darken: 30 }};
+  background: {{ section.settings.pin_highlight_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-dot::after {
+  position: absolute;
+  top: -55%;
+  left: -55%;
+  width: 211%;
+  height: 211%;
+  content: "";
+  border: thin solid {{ section.settings.pin_highlight_color | color_modify: 'alpha', 0.5 }};
+  border-radius: 50%;
+  transform-origin: 50% 50%;
+  transition: background .5s linear,transform .5s cubic-bezier(.15,.99,.18,.99),border-color .2s linear;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-dot.dsgn-pck__product-dot--active {
+  transform: scale(1.5);
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-dot.dsgn-pck__product-dot--active::after {
+  transform: scale(1.1);
+  background: {{ section.settings.pin_highlight_color | color_modify: 'alpha', 0.35 }};
+  border-color: transparent;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-dot:hover:after {
+  transform: scale(1.1);
+  background: {{ section.settings.pin_highlight_color | color_modify: 'alpha', 0.35 }};
+  border-color: hsla(0,0%,97.6%,0);
+}
+
+#DP--{{ section.id }} .dsgn-pck__content {
+  width: 100%;
+  margin: 0 auto;
+  color: {{ section.settings.text_color }};
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--main-font);
+  font-weight: var(--main-font-weight);
+  font-style: var(--main-font-style);
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__inner-content {
+  padding: 20px;
+  display: grid;
+  width: 100%;
+  color: {{ section.settings.text_color }};
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--main-font);
+  font-weight: var(--main-font-weight);
+  font-style: var(--main-font-style);
+  {%- endif -%}
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  text-align: center;
+  background: {{ section.settings.product_text_background_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__inner-content > * {
+  grid-area: 1 / 1 / 2 / 2;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-info {
+  opacity: 0;
+  transition: opacity .5s linear,transform .5s cubic-bezier(.15,.99,.18,.99);
+  pointer-events: none;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-info--active {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: all;
+}
+
+#DP--{{ section.id }} .dsgn-pck__image__wrapper {
+  display: block;
+}
+
+#DP--{{ section.id }} .dsgn-pck__image__wrapper img {
+  object-fit: contain;
+}
+
+#DP--{{ section.id }} .dsgn-pck__image__wrapper svg {
+  width: 100%;
+}
+
+#DP--{{ section.id }} .dsgn-pck__placeholder {
+  background-color: {{ section.settings.background_color | color_darken: 10 }};
+  fill: {{ section.settings.background_color | color_lighten: 10 }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-info__text-wrapper {
+  flex: 1 0 60%;
+  padding-top: 20px;
+  align-self: flex-end;
+}
+
+#DP--{{ section.id }} .dsgn-pck__small-heading {
+  margin: 0;
+  line-height: calc(3px + 2ex + 3px);
+  font-size: calc(var(--dp-g-small-heading-size, var(--dp-small-heading-size, 24px)) * {{ section.settings.text_size | times: 0.01 }});
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--heading-font);
+  font-weight: var(--heading-font-weight);
+  font-style: var(--heading-font-style);
+  {%- endif -%}
+  color: {{ section.settings.text_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__price {
+  margin: 0;
+  margin-top: 10px;
+  color: {{ section.settings.text_color }};
+  line-height: calc(3px + 2ex + 3px);
+  font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+}
+
+#DP--{{ section.id }} .dsgn-pck__button {
+  margin-top: 20px;
+  padding: 0.5em 1.2em;
+  transition: all 0.3s ease-in-out;
+  display: inline-block;
+  text-decoration: none;
+  border-radius: {{ section.settings.button_radius }}px;
+  font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--main-font);
+  font-weight: var(--main-font-weight);
+  font-style: var(--main-font-style);
+  {%- endif -%}
+  background: {{ section.settings.button_background_color }};
+  color: {{ section.settings.button_label_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__button:hover {
+  opacity: 1;
+  {%- if button_alpha != 0 -%}
+  background-color: {{ section.settings.button_background_color | color_darken: 10 }};
+  border-color: transparent;
+  {%- else -%}
+  background-color: {{ section.settings.button_label_color | color_modify: 'alpha', 0.1 }}
+  {%- endif -%};
+}
+
+#DP--{{ section.id }} .dsgn-pck__button:hover:after {
+  width: 100%;
+}
+
+/* Slideshow styles */
+
+#DP--{{ section.id }} .flickity-slider {
+  width: 100%;
+  height: 100%;
+}
+
+#DP--{{ section.id }} .flickity-button {
+  background: transparent;
+  color: {{ section.settings.text_color }};
+  transition: all 0.3s ease-in-out;
+}
+
+{%- if section.settings.slider_animation == 'fade' -%}
+  #DP--{{ section.id }} .flickity-enabled.is-fade .flickity-slider > * {
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #DP--{{ section.id }} .flickity-enabled.is-fade .flickity-slider > .is-selected {
+    pointer-events: auto;
+    z-index: 1;
+  }
+{%- endif -%}
+
+{%- if section.settings.custom_css != blank -%}
+  {%- assign custom_section_declarations = section.settings.custom_css | split: '}' -%}
+  {%- for declaration in custom_section_declarations -%}
+    {%- if declaration contains '{' -%}
+      #DP--{{ section.id }} {{ declaration }} }
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+
+
+/* Landscape phone to portrait tablet */
+@media (max-width: 767px) {
+
+  #DP--{{ section.id }} .dsgn-pck__grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__product-info {
+    gap: 20px;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__image__wrapper {
+    max-width: 100%;
+    height: auto;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__product-info__text-wrapper {
+    padding: 10px 0;
+  }
+}
+
+/* Landscape phones and down */
+@media (max-width: 480px) {
+  #DP--{{ section.id }} {
+    margin-top: {{ section.settings.outer_margin | divided_by: 2 }}px;
+    margin-bottom: {{ section.settings.outer_margin | divided_by: 2 }}px;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__sizer {
+    min-width: 70%;
+    padding-top: {{ section.settings.inner_padding | divided_by: 2 }}px;
+    padding-bottom: {{ section.settings.inner_padding | divided_by: 2 }}px;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__product-info {
+    padding: 1.5em 40px 1.5em;
+  }
+
+  {%- if section.settings.mobile_custom_css != blank -%}
+    {%- assign mobile_custom_declarations = section.settings.mobile_custom_css | split: '}' -%}
+    {%- for declaration in mobile_custom_declarations -%}
+      {%- if declaration contains '{' -%}
+        #DP--{{ section.id }} {{ declaration }} }
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+
+}
+</style>
+
+{%- comment -%} HTML {%- endcomment -%}
+<section id="DP--{{ section.id }}" class="DP--{{ section.id }} dsgn-pck__shop-the-look dsgn-pck__section">
+    <div id="slideshow-{{ section.id }}" class="dsgn-pck__slideshow__wrapper">
+      {% for block in section.blocks %}
+        <div style="width: 100%" data-dsgn-pck-product-block="{{ block.id }}">
+          <div class="dsgn-pck__sizer">
+            <div class="dsgn-pck__grid dsgn-pck__flex">
+              <div class="dsgn-pck__image">
+                <picture>
+                  {%- if block.settings.image != blank -%}
+                    {%- capture sizes -%}
+                      (max-width: 480px) 90vw, {{ section.settings.base_width | divided_by: 2 | append: 'vw' | default: '33vw' }}
+                    {%- endcapture -%}
+                    {{ block.settings.image | image_url: width: 2800 | image_tag:  widths: widths, sizes: sizes }}
+                  {%- else -%}
+                    {{ 'collection-1' | placeholder_svg_tag: 'dsgn-pck__placeholder' }}
+                  {%- endif -%}
+                  <div class="dsgn-pck__dot-area">
+                    {%- if block.settings.product_1 != blank -%}
+                      {%- assign product_id = all_products[block.settings.product_1].id -%}
+                      <div id="dsgn-pck__product-dot-id-{{ product_id }}" class="dsgn-pck__product-dot dsgn-pck__product-dot--active"
+                      data-dsgn-pck-product-dot="{{ block.settings.product_1 }}" data-dsgn-pck-block-id="{{ block.id }}" style="top:{{ block.settings.vertical_1 }}%; left:{{ block.settings.horizontal_1 }}%;"></div>
+                    {% endif %}
+                    {%- if block.settings.product_2 != blank -%}
+                      {%- assign product_id = all_products[block.settings.product_2].id -%}
+                      <div id="dsgn-pck__product-dot-id-{{ product_id }}" class="dsgn-pck__product-dot"
+                      data-dsgn-pck-product-dot="{{ block.settings.product_2 }}" data-dsgn-pck-block-id="{{ block.id }}" style="top:{{ block.settings.vertical_2 }}%; left:{{ block.settings.horizontal_2 }}%;"></div>
+                    {% endif %}
+                    {%- if block.settings.product_3 != blank -%}
+                      {%- assign product_id = all_products[block.settings.product_3].id -%}
+                      <div id="dsgn-pck__product-dot-id-{{ product_id }}" class="dsgn-pck__product-dot"
+                      data-dsgn-pck-product-dot="{{ block.settings.product_3 }}" data-dsgn-pck-block-id="{{ block.id }}"  style="top:{{ block.settings.vertical_3 }}%; left:{{ block.settings.horizontal_3 }}%;"></div>
+                    {% endif %}
+                  </div>
+                </picture>
+              </div>
+              <div class="dsgn-pck__content">
+                <div class="dsgn-pck__inner-content">
+                  {%- if block.settings.product_1 != blank -%}
+                    {%- assign product_handle = block.settings.product_1 -%}
+                    <div id="dsgn-pck__product-id-{{ all_products[product_handle].id }}" data-dsgn-pck-product-info="{{ product_handle }}" class="dsgn-pck__product-info dsgn-pck__product-info--active" >
+                      <div class="dsgn-pck__image__wrapper">
+                        <a class="dsgn-pck__absolute-link" href="{{ all_products[product_handle].url }}">{{ all_products[product_handle].title }}</a>
+                        <svg viewBox="0 0 {{ all_products[product_handle].featured_image.width | default: '1000' }} {{ all_products[product_handle].featured_image.height | default: '1000' }}"></svg>
+                        {%- if all_products[product_handle] != empty -%}
+                          {%- capture sizes -%}
+                            (max-width: 767px) 40vw, {{ section.settings.base_width | divided_by: 4.5 | append: 'vw' | default: '33vw' }}
+                          {%- endcapture -%}
+                          {{ all_products[product_handle].featured_image | image_url: width: 2800 | image_tag:  class: 'dsgn-pck__product-image__first', widths: widths, sizes: sizes }}
+                        {%- endif -%}
+                      </div>
+                      <div class="dsgn-pck__product-info__text-wrapper">
+                        {%- if section.settings.show_title != blank -%}
+                          <h3 class="dsgn-pck__small-heading">{{ all_products[product_handle].title }}</h3>
+                        {%- endif -%}
+                        {%- if section.settings.show_price != blank -%}
+                          <p class="dsgn-pck__price">
+                            <span lass="dsgn-pck__price-regular">{{ all_products[product_handle].price | money }}</span>
+                          </p>
+                        {%- endif -%}
+                        {%- if section.settings.button_label != blank -%}
+                          <a class="dsgn-pck__product-info__button dsgn-pck__button" href="{{ all_products[product_handle].url }}">{{ section.settings.button_label }}</a>
+                        {%- endif -%}
+                      </div>
+                    </div>
+                  {%- endif -%}
+                  {%- if block.settings.product_2 != blank -%}
+                    {%- assign product_handle = block.settings.product_2 -%}
+                    <div id="dsgn-pck__product-id-{{ block.id }}" data-dsgn-pck-product-info="{{ product_handle }}" class="dsgn-pck__product-info" >
+                      <div class="dsgn-pck__image__wrapper">
+                        <a class="dsgn-pck__absolute-link" href="{{ all_products[product_handle].url }}">{{ all_products[product_handle].title }}</a>
+                        <svg viewBox="0 0 {{ all_products[product_handle].featured_image.width | default: '1000' }} {{ all_products[product_handle].featured_image.height | default: '1000' }}"></svg>
+                        {%- if all_products[product_handle] != empty -%}
+                          {%- capture sizes -%}
+                            (max-width: 767px) 40vw, {{ section.settings.base_width | divided_by: 4.5 | append: 'vw' | default: '33vw' }}
+                          {%- endcapture -%}
+                          {{ all_products[product_handle].featured_image | image_url: width: 2800 | image_tag:  class: 'dsgn-pck__product-image__first', widths: widths, sizes: sizes }}
+                        {%- endif -%}
+                      </div>
+                      <div class="dsgn-pck__product-info__text-wrapper">
+                        {%- if section.settings.show_title != blank -%}
+                          <h3 class="dsgn-pck__small-heading">{{ all_products[product_handle].title }}</h3>
+                        {%- endif -%}
+                        {%- if section.settings.show_price != blank -%}
+                          <p class="dsgn-pck__price">
+                            <span lass="dsgn-pck__price-regular">{{ all_products[product_handle].price | money }}</span>
+                          </p>
+                        {%- endif -%}
+                        {%- if section.settings.button_label != blank -%}
+                          <a class="dsgn-pck__product-info__button dsgn-pck__button" href="{{ all_products[product_handle].url }}">{{ section.settings.button_label }}</a>
+                        {%- endif -%}
+                      </div>
+                    </div>
+                  {%- endif -%}
+                  {%- if block.settings.product_3 != blank -%}
+                    {%- assign product_handle = block.settings.product_3 -%}
+                    <div id="dsgn-pck__product-id-{{ block.id }}" data-dsgn-pck-product-info="{{ product_handle }}" class="dsgn-pck__product-info" >
+                      <div class="dsgn-pck__image__wrapper">
+                        <a class="dsgn-pck__absolute-link" href="{{ all_products[product_handle].url }}">{{ all_products[product_handle].title }}</a>
+                        <svg viewBox="0 0 {{ all_products[product_handle].featured_image.width | default: '1000' }} {{ all_products[product_handle].featured_image.height | default: '1000' }}"></svg>
+                        {%- if all_products[product_handle] != empty -%}
+                          {%- capture sizes -%}
+                            (max-width: 767px) 40vw, {{ section.settings.base_width | divided_by: 4.5 | append: 'vw' | default: '33vw' }}
+                          {%- endcapture -%}
+                          {{ all_products[product_handle].featured_image | image_url: width: 2800 | image_tag:  class: 'dsgn-pck__product-image__first', widths: widths, sizes: sizes }}
+                        {%- endif -%}
+                      </div>
+                      <div class="dsgn-pck__product-info__text-wrapper">
+                        {%- if section.settings.show_title != blank -%}
+                          <h3 class="dsgn-pck__small-heading">{{ all_products[product_handle].title }}</h3>
+                        {%- endif -%}
+                        {%- if section.settings.show_price != blank -%}
+                          <p class="dsgn-pck__price">
+                            <span lass="dsgn-pck__price-regular">{{ all_products[product_handle].price | money }}</span>
+                          </p>
+                        {%- endif -%}
+                        {%- if section.settings.button_label != blank -%}
+                          <a class="dsgn-pck__product-info__button dsgn-pck__button" href="{{ all_products[product_handle].url }}">{{ section.settings.button_label }}</a>
+                        {%- endif -%}
+                      </div>
+                    </div>
+                  {%- endif -%}
+                  {%- if block.settings.product_1 == blank and block.settings.product_2 == blank and block.settings.product_3 == blank -%}
+                    {%- assign product_handle = block.settings.product_1 -%}
+                    <div id="dsgn-pck__product-id-{{ all_products[product_handle].id }}" data-dsgn-pck-product-info="{{ product_handle }}" class="dsgn-pck__product-info dsgn-pck__product-info--active" >
+                      <div class="dsgn-pck__image__wrapper">
+                        <svg viewBox="0 0 {{ all_products[product_handle].featured_image.width | default: '1000' }} {{ all_products[product_handle].featured_image.height | default: '1000' }}"></svg>
+                        {%- if all_products[product_handle] != empty -%}
+                          {%- capture sizes -%}
+                            (max-width: 767px) 40vw, {{ section.settings.base_width | divided_by: 4.5 | append: 'vw' | default: '33vw' }}
+                          {%- endcapture -%}
+                          {{ all_products[product_handle].featured_image | image_url: width: 2800 | image_tag:  class: 'dsgn-pck__product-image__first', widths: widths, sizes: sizes }}
+                        {%- else -%}
+                          {{ 'product-1' | placeholder_svg_tag: 'dsgn-pck__placeholder' }}
+                        {%- endif -%}
+                      </div>
+                      <div class="dsgn-pck__product-info__text-wrapper">
+                        {%- if section.settings.show_title != blank -%}
+                          <h3 class="dsgn-pck__small-heading">{{ all_products[product_handle].title | default: 'Red backpack' }}</h3>
+                        {%- endif -%}
+                        {%- if section.settings.show_price != blank -%}
+                          <p class="dsgn-pck__price">
+                            <span lass="dsgn-pck__price-regular">{{ all_products[product_handle].price | default: '2499' | money }}</span>
+                          </p>
+                        {%- endif -%}
+                        {%- if section.settings.button_label != blank -%}
+                          <a class="dsgn-pck__product-info__button dsgn-pck__button" href="{{ all_products[product_handle].url }}">{{ section.settings.button_label }}</a>
+                        {%- endif -%}
+                      </div>
+                    </div>
+                  {%- endif -%}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% comment %} </div> {% endcomment %}
+</section>
+{%- endcapture -%}
+{{ minify | strip_newlines }}
+
+{% schema %}
+{
+  "name": "Shop the look - slider",
+  "class": "DP__shop-the-look-slider",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay",
+      "label": "Change slide every",
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "default": 8,
+      "unit": "sec",
+      "info": "Set to '0' to disable autoplay"
+    },
+    {
+      "type": "header",
+      "content": "🛍 Products"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Show product title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price",
+      "label": "Show product price",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "View product"
+    },
+    {
+      "type": "header",
+      "content": "✏️ Text appearance"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Text size",
+      "min": 80,
+      "max": 150,
+      "step": 5,
+      "default": 120,
+      "unit": "%"
+    },
+    {
+      "type": "header",
+      "content": "🎨 Design"
+    },
+    {
+      "type": "color",
+      "id": "pin_highlight_color",
+      "label": "Pin highlight",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#121212"
+    },
+    {
+      "type": "color_background",
+      "id": "product_text_background_color",
+      "label": "Text background"
+    },
+    {
+      "type": "color",
+      "id": "button_label_color",
+      "label": "Button label",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_background_color",
+      "label": "Button background",
+      "default": "#121212"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Background",
+      "default": "linear-gradient(54deg, rgba(255, 255, 255, 1) 14%, rgba(255, 255, 255, 1) 85%)"
+    },
+    {
+      "type": "range",
+      "id": "button_radius",
+      "label": "Button border radius",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "🖼 Layout"
+    },
+    {
+      "type": "range",
+      "id": "base_width",
+      "label": "Size",
+      "min": 70,
+      "max": 100,
+      "step": 5,
+      "default": 80,
+      "unit": "%"
+    },
+    {
+      "type": "text",
+      "id": "max_width",
+      "label": "Maximum width",
+      "placeholder": "eg. 1200px",
+      "info": "Sets width constraint for content."
+    },
+    {
+      "type": "range",
+      "id": "inner_padding",
+      "label": "Inner padding",
+      "info": "Only applies to top and bottom.",
+      "min": 0,
+      "max": 100,
+      "default": 40,
+      "step": 5,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "outer_margin",
+      "label": "Outer margin",
+      "info": "Only applies to top and bottom.",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "step": 5,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "🚨 Advanced"
+    },
+    {
+      "type": "html",
+      "id": "custom_css",
+      "label": "CSS"
+    },
+    {
+      "type": "html",
+      "id": "mobile_custom_css",
+      "label": "Mobile CSS",
+      "info": "Applied on screens less than 480px."
+    },
+    {
+      "type": "checkbox",
+      "id": "override_theme_font",
+      "label": "Override default theme font",
+      "default": false
+    },
+    {
+      "type": "font_picker",
+      "id": "heading_font",
+      "label": "Heading",
+      "default": "serif"
+    },
+    {
+      "type": "font_picker",
+      "id": "main_font",
+      "label": "Text",
+      "default": "sans-serif"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "header",
+          "content": "🛍 Products"
+        },
+        {
+          "type": "product",
+          "id": "product_1",
+          "label": "Product 1"
+        },
+        {
+          "type": "range",
+          "id": "horizontal_1",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Horizontal position 1",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "vertical_1",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Vertical position 1",
+          "default": 50
+        },
+        {
+          "type": "product",
+          "id": "product_2",
+          "label": "Product 2"
+        },
+        {
+          "type": "range",
+          "id": "horizontal_2",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Horizontal position 2",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "vertical_2",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Vertical position 2",
+          "default": 50
+        },
+        {
+          "type": "product",
+          "id": "product_3",
+          "label": "Product 3"
+        },
+        {
+          "type": "range",
+          "id": "horizontal_3",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Horizontal position 3",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "vertical_3",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Vertical position 3",
+          "default": 50
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shop the look - slider 🎒",
+      "settings": {
+      },
+      "blocks": [
+        {
+          "type": "slide"
+        },
+        {
+          "type": "slide"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+
+
+<script type="application/json" data-dsgn-pck="{{ section.id }}">
+  {
+    "id": {{ section.id | json }},
+    "animation": {{ section.settings.animation | json }},
+    "button_label": {{ 'button_label' | t | json }},
+    "show_arrows": {{ section.settings.show_arrows | json }},
+    "show_dots": {{ section.settings.show_dots | json }},
+    "autoplay": {{ section.settings.autoplay | times: 1000 | json }},
+    "slider_animation": {%- if section.settings.slider_animation == 'fade' -%}true{%- else -%}false{%- endif -%}
+  }
+</script>
+{%- comment -%} External scripts {%- endcomment -%}
+<script data-dsgn-pck-external-js="{{ section.id }}" src="https://cdn.shopify.com/s/files/1/0577/7673/4361/files/flickity-2.3.0.pkgd.min.js?v=1671485005" defer></script>
+
+{%- comment -%} JavaScript {%- endcomment -%}
+<script data-dsgn-pck-js="{{ section.id }}" type="module" defer>
+(function(){
+
+  const designPack = {
+    settings: {},
+    goToSlide: function(index){
+      designPack.flkty.select( index, true, true )
+    },
+    animateSection: function(entries, observer){
+      // Target the first entry available.
+      let observedSection = entries[0];
+      if (observedSection.isIntersecting) {
+        observedSection.target.classList.add('dsgn-pck__animation-applied');
+      }
+    },
+    selectProduct: function(product_handle, product_dots, section, block_id){
+      const block = section.querySelector(`[data-dsgn-pck-product-block="${block_id}"]`)
+      const active_product = block.querySelector(`[data-dsgn-pck-product-info="${product_handle}"]`);
+      const active_dot = block.querySelector(`[data-dsgn-pck-product-dot="${product_handle}"]`);
+      const product_infos = block.querySelectorAll(`[data-dsgn-pck-product-info]`);
+      const this_product_dots = block.querySelectorAll(`[data-dsgn-pck-block-id]`);
+
+      // Remove all dot classes and add active selection
+      this_product_dots.forEach((product_dot) => {
+        product_dot.classList.remove('dsgn-pck__product-dot--active');
+      })
+      active_dot.classList.add('dsgn-pck__product-dot--active');
+
+      // Remove previous active product class and add active selection
+      product_infos.forEach((product_info) => {
+        product_info.classList.remove('dsgn-pck__product-info--active');
+      })
+      active_product.classList.add('dsgn-pck__product-info--active');
+
+    },
+    load: function(section){
+      if (this.settings.animation !== 'none'){
+        const options = {
+          root: null,
+          rootMargin: '0px',
+          threshold: 0
+        };
+        // Construct Intersection Observer.
+        const observer = new IntersectionObserver( this.animateSection, options );
+        // Observe if element is present.
+        if (section) {
+          observer.observe(section);
+        }
+      }
+
+      // Grab all the product dots
+      const product_dots = section.querySelectorAll('[data-dsgn-pck-product-dot]');
+      // Setup Dot Event Listener
+      product_dots.forEach((product_dot) => {
+        product_dot.addEventListener('click', (e) => {
+          const product_handle = e.target.dataset.dsgnPckProductDot;
+          const block_id = e.target.dataset.dsgnPckBlockId
+          this.selectProduct(product_handle, product_dots, section, block_id);
+        });
+      });
+
+      const elem = section.querySelector(`#slideshow-${designPack.settings.id}`);
+      designPack.flkty = new Flickity( elem, {
+        cellAlign: 'left',
+        autoPlay: this.settings.autoplay,
+        contain: false,
+        wrapAround: true,
+        adaptiveHeight: true,
+        imagesLoaded: true,
+        fade: false,
+        prevNextButtons: this.settings.show_arrows,
+        pageDots: false,
+        draggable: true,
+        freeScrollFriction: 0.03
+      });
+
+    },
+    unload: function(section){
+      // Grab all the product dots
+      const product_dots = section.querySelectorAll('[data-dsgn-pck-product-dot]');
+      // Remove Dot Event Listener
+      product_dots.forEach((product_dot) => {
+        const product_handle = product_dot.dataset.dsgnPckProductDot;
+        product_dot.removeEventListener('click', (e) => designPack.selectProduct(product_handle, product_dots, section));
+      });
+
+      designPack.flkty.destroy();
+    }
+  }
+
+  window.addEventListener('shopify:block:select', function (e) {
+    const section = document.querySelector(`#DP--${e.detail.sectionId}`);
+    const product_dots = section.querySelectorAll('[data-dsgn-pck-product-dot]');
+    const product_handle = e.target.dataset.dsgnPckProductInfo;
+
+    designPack.selectProduct(product_handle, product_dots, section);
+
+    designPack.goToSlide(e.target.dataset.slideshowIndex);
+  });
+
+  window.addEventListener('shopify:section:unload', function (e) {
+    const settings = document.querySelector(`[data-dsgn-pck="${e.detail.sectionId}"]`);
+    const sectionId = e.detail.sectionId;
+    const section = document.querySelector(`#DP--${e.detail.sectionId}`);
+    if (sectionId == designPack.settings.id){
+      designPack.unload(section);
+    }
+  });
+
+  designPack.settings = JSON.parse(document.querySelector('[data-dsgn-pck="{{ section.id }}"]').innerHTML);
+  const sectionId = {{ section.id | json }};
+  const section = document.querySelector(`#DP--${sectionId}`);
+
+  if (sectionId == designPack.settings.id){
+    designPack.load(section);
+  }
+})()
+</script>
