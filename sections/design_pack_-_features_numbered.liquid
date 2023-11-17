@@ -1,0 +1,722 @@
+{%- comment -%}
+{
+  "pack_name": "Features - numbered",
+  "pack_author": "Design Packs"
+}
+{%- endcomment -%}
+
+
+{%- comment -%} Images: all placeholders {%- endcomment -%}
+{%- assign placeholder_image_id = 'car-details' -%}
+
+{%- comment -%} Images: check image crop aspect ratio {%- endcomment -%}
+{%- if section.settings.image_crop == 'none' or section.settings.image_crop == 'match_text_box' -%}
+  {%- assign image_crop_width = section.settings.image.width | default: '853' -%}
+  {%- assign image_crop_height = section.settings.image.height | default: '611' -%}
+{%- else -%}
+  {%- assign image_crop_width = section.settings.image_crop | split: ':' | first | times: 1000 -%}
+  {%- assign image_crop_height = section.settings.image_crop | split: ':' | last | times: 1000 -%}
+{%- endif -%}
+
+{% comment %} Images: responsive image widths {% endcomment %}
+{%- assign widths = '180, 360, 540, 720, 900, 1080, 1296, 1512, 1728, 1950, 2100, 2260, 2450, 2700, 3000, 3350, 3750, 4100' -%}
+
+{%- comment -%} Layout: has user entered measurement value into max-width field? {%- endcomment -%}
+{%- if section.settings.max_width contains 'px' or section.settings.max_width contains '%' -%}
+  {%- assign max_width = section.settings.max_width -%}
+{%- else -%}
+  {%- assign max_width = section.settings.max_width | append: 'px' -%}
+{%- endif -%}
+
+{%- comment -%} Text: custom font_picker values {%- endcomment -%}
+{%- capture font_settings_list -%}
+{{ section.settings.main_font | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'style', 'italic' | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'style', 'italic' | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}
+{%- endcapture -%}
+{%- assign font_array = font_settings_list | split: '~' -%}
+
+
+{%- capture minify -%}
+{%- comment -%} CSS {%- endcomment -%}
+<style>
+  {%- if section.settings.override_theme_font != blank -%}
+  {%- for font in font_array -%}
+    {%- unless font contains 'error' -%}{{ font }}{%- endunless -%}
+  {%- endfor -%}
+  #DP--{{ section.id }} {
+    --main-font: {{ section.settings.main_font.family }}, {{ section.settings.main_font.fallback_families }};
+    --main-font-weight: {{ section.settings.main_font.weight }};
+    --main-font-style: {{ section.settings.main_font.style }};
+    --heading-font: {{ section.settings.heading_font.family }}, {{ section.settings.heading_font.fallback_families }};
+    --heading-font-weight: {{ section.settings.heading_font.weight }};
+    --heading-font-style: {{ section.settings.heading_font.style }};
+  }
+{%- endif -%}
+
+#DP--{{ section.id }} {
+  margin-top: {{ section.settings.outer_margin }}px;
+  margin-bottom: {{ section.settings.outer_margin }}px;
+}
+
+#DP--{{ section.id }} .dsgn-pck__sizer {
+  padding-top: {{ section.settings.inner_padding }}px;
+  padding-bottom: {{ section.settings.inner_padding }}px;
+  width: {{ section.settings.base_width }}%;
+  max-width: {{ max_width }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__background {
+  background: {{ section.settings.background_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__grid--main {
+  grid-template-columns: 1fr minmax(250px, {{ section.settings.text_width }}%);
+}
+
+{%- if section.settings.image_crop == 'match_text_box' -%}
+  #DP--{{ section.id }} .dsgn-pck__image__wrapper--main {
+    height: 100%;
+  }
+{%- endif -%}
+
+#DP--{{ section.id }} .dsgn-pck__content {
+  padding: 1rem 2.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--main-font);
+  font-weight: var(--main-font-weight);
+  font-style: var(--main-font-style);
+  {%- endif -%}
+  background: {{ section.settings.text_background_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__text-reverse.dsgn-pck__inner-content {
+  direction: rtl;
+}
+
+#DP--{{ section.id }} .dsgn-pck__text-reverse.dsgn-pck__inner-content > * {
+  direction: ltr;
+}
+
+#DP--{{ section.id }} .dsgn-pck__inner-content {
+  width: min(800px, 100%);
+  margin: auto;
+  display: grid;
+  grid-template-columns: 1fr 40px;
+  grid-gap: 40px;
+  align-items: center;
+}
+
+#DP--{{ section.id }} .dsgn-pck__slide {
+  display: none;
+  overflow: auto;
+}
+
+#DP--{{ section.id }} .dsgn-pck__heading {
+  color: {{ section.settings.text_color }};
+  line-height: calc(3px + 2.5ex + 3px);
+  font-size: calc(var(--dp-g-heading-size, var(--dp-heading-size, 35px)) * {{ section.settings.text_size | times: 0.01 }});
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--heading-font);
+  font-weight: var(--heading-font-weight);
+  font-style: var(--heading-font-style);
+  {%- endif -%}
+  margin-bottom: 15px;
+}
+
+#DP--{{ section.id }} .dsgn-pck__text p {
+  color: {{ section.settings.text_color }};
+  line-height: calc(3px + 2.5ex + 3px);
+  font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--main-font);
+  font-weight: var(--main-font-weight);
+  font-style: var(--main-font-style);
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__slide.dsgn-pck__active {
+  display: block;
+}
+
+#DP--{{ section.id }} .dsgn-pck__number-selectors {
+  display: flex;
+  flex-direction: column;
+  {%- if section.settings.text_position == 'left' -%}
+    align-items: flex-end;
+  {%- else -%}
+    align-items: flex-start;
+  {%- endif -%}
+}
+
+{% comment %} Pin styling {% endcomment %}
+#DP--{{ section.id }} .dsgn-pck__image {
+  position: relative;
+}
+
+#DP--{{ section.id }} .dsgn-pck__info-pin__wrapper {
+  position: absolute;
+  inset: 0;
+}
+
+#DP--{{ section.id }} .dsgn-pck__info-pin.dsgn-pck__active {
+  background: {{ section.settings.pin_text }};
+  color: {{ section.settings.pin_background_color }};
+  border: 2px solid {{ section.settings.pin_background_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__info-pin {
+  cursor: pointer;
+  font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+  background: {{ section.settings.pin_background_color }};
+  border-radius: {{ section.settings.pin_radius }}%;
+  color: {{ section.settings.pin_text }};
+  border: 2px solid {{ section.settings.pin_background_color }};
+  height: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.02 }});
+  width: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.02 }});
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--main-font);
+  font-weight: var(--main-font-weight);
+  font-style: var(--main-font-style);
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__info-pin--image {
+  position: absolute;
+}
+
+#DP--{{ section.id }} .dsgn-pck__info-pin--text {
+  margin-bottom: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+}
+
+{%- if section.settings.custom_css != blank -%}
+  {%- assign custom_section_declarations = section.settings.custom_css | split: '}' -%}
+  {%- for declaration in custom_section_declarations -%}
+    {%- if declaration contains '{' -%}
+      #DP--{{ section.id }} {{ declaration }} }
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+
+/* Landscape phone to portrait tablet */
+@media (max-width: 768px) {
+  #DP--{{ section.id }} .dsgn-pck__grid--main {
+    grid-template-columns: repeat(1, minmax(250px, 1fr));
+  }
+}
+
+/* Landscape phones and down */
+@media (max-width: 480px) {
+  #DP--{{ section.id }} {
+    margin-top: {{ section.settings.outer_margin | times: 0.75 | round: 0 }}px;
+    margin-bottom: {{ section.settings.outer_margin | times: 0.75 | round: 0 }}px;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__sizer {
+    min-width: 70%;
+    padding-top: {{ section.settings.inner_padding | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.inner_padding | times: 0.75 | round: 0 }}px;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__inner-content {
+    width: min(400px, 100%);
+    grid-template-columns: 1fr;
+    grid-gap: 0;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__image {
+    order: 0;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__content {
+    order: 1;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__number-selectors {
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  {%- if section.settings.mobile_custom_css != blank -%}
+    {%- assign mobile_custom_declarations = section.settings.mobile_custom_css | split: '}' -%}
+    {%- for declaration in mobile_custom_declarations -%}
+      {%- if declaration contains '{' -%}
+        #DP--{{ section.id }} {{ declaration }} }
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+
+}
+</style>
+
+{%- comment -%} HTML {%- endcomment -%}
+<section id="DP--{{ section.id }}" class="DP--{{ section.id }} dsgn-pck__main dsgn-pck__section">
+  <div class="dsgn-pck__background">
+    <div class="dsgn-pck__sizer">
+      <div class="dsgn-pck__grid
+                  dsgn-pck__grid--main
+                  {% if section.settings.image_position == 'right' -%}
+                    dsgn-pck__grid-reverse
+                  {%- endif -%}">
+        <div class="dsgn-pck__image">
+          <div class="dsgn-pck__image__wrapper dsgn-pck__image__wrapper--main">
+            <svg class="dsgn-pck__svg-sizer" viewBox="0 0 {{ image_crop_width }} {{ image_crop_height }}"></svg>
+            {%- if section.settings.image != blank -%}
+              {%- capture sizes -%}
+                (max-width: 480px) {{ section.settings.base_width | at_least: 70 | append: 'vw' | default: '100vw' }},(max-width: 767px) {{ section.settings.base_width | append: 'vw' | default: '100vw' }},{{ section.settings.text_width | default: 50 | append: 'vw' }}
+              {%- endcapture -%}
+              {{ section.settings.image | image_url: width: 2800 | image_tag:  widths: widths, sizes: sizes }}
+            {%- else -%}
+              <img src="https://cdn.shopify.com/s/files/1/0577/7673/4361/files/{{ placeholder_image_id }}_1000x.jpg"
+                  alt=""
+                  loading="lazy"
+                  width="853"
+                  height="611">
+            {%- endif -%}
+            <div class="dsgn-pck__info-pin__wrapper">
+              {% liquid
+                assign feature_blocks = section.blocks | where: "type", "feature"
+              %}
+              {% for block in feature_blocks %}
+                <div data-pin-order="{{ forloop.index0 }}" class="dsgn-pck__info-pin dsgn-pck__info-pin--image {% if forloop.first %} dsgn-pck__active {% endif %}" style="top: {{ block.settings.vertical }}%; left: {{ block.settings.horizontal }}%;">
+                  {{ forloop.index }}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        <div class="dsgn-pck__content dsgn-pck__flex dsgn-pck__justify-{{ section.settings.text_alignment }}">
+          <div class="dsgn-pck__inner-content {% if section.settings.text_position == 'right' %}dsgn-pck__text-reverse{% endif %}">
+            <div class="dsgn-pck__slider-wrapper">
+              {% liquid
+                assign feature_blocks = section.blocks | where: "type", "feature"
+              %}
+              {%- for block in feature_blocks -%}
+                <div data-slide-order="{{ forloop.index0 }}" class="dsgn-pck__slide {% if forloop.first %} dsgn-pck__active {% endif %}">
+                  {%- if block.settings.title != blank -%}
+                    <h3 class="dsgn-pck__heading">{{ block.settings.title }}</h3>
+                  {%- endif -%}
+                  {%- if block.settings.text != blank -%}
+                    <div class="dsgn-pck__text dsgn-pck__rte">
+                      {{ block.settings.text }}
+                    </div>
+                  {%- endif -%}
+                </div>
+              {%- endfor -%}
+            </div>
+            <div class="dsgn-pck__number-selectors">
+              {% for block in feature_blocks %}
+                <div data-number-order="{{ forloop.index0 }}" class="dsgn-pck__info-pin dsgn-pck__info-pin--text{% if forloop.first %} dsgn-pck__active {% endif %}" >
+                  {{ forloop.index }}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{%- endcapture -%}
+{{ minify | strip_newlines }}
+
+{% schema %}
+{
+  "name": "Features - numbered",
+  "class": "dsgn-pck__features-numbered",
+  "max_blocks": 10,
+  "blocks": [
+    {
+      "type": "feature",
+      "name": "Feature",
+      "settings": [
+        {
+          "type": "range",
+          "id": "vertical",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Vertical position",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "horizontal",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Horizontal position",
+          "default": 40
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "select",
+      "id": "image_crop",
+      "label": "Image aspect ratio",
+      "info": "[How to set focal point of image](https://design-packs.gitbook.io/docs/guides/general-settings#how-to-set-a-focal-point-on-an-image-in-the-theme-editor)",
+      "default": "none",
+      "options": [
+        {
+          "value": "4:3",
+          "label": "Landscape (4:3)"
+        },
+        {
+          "value": "2:3",
+          "label": "Portrait (2:3)"
+        },
+        {
+          "value": "1:1",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "none",
+          "label": "Original"
+        },
+        {
+          "value": "match_text_box",
+          "label": "Match text box height"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image position",
+      "default": "left",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "✏️ Text appearance"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "default": "right",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        },
+        {
+          "value": "justify",
+          "label": "Justify"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Text size",
+      "min": 60,
+      "max": 120,
+      "step": 5,
+      "default": 90,
+      "unit": "%"
+    },
+    {
+      "type": "select",
+      "id": "text_position",
+      "label": "Text position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "text_width",
+      "label": "Text box width",
+      "min": 30,
+      "max": 70,
+      "default": 45,
+      "unit": "%"
+    },
+    {
+      "type": "header",
+      "content": "🎨 Design"
+    },
+    {
+      "type": "color",
+      "id": "pin_text",
+      "label": "Pin text",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "pin_background_color",
+      "label": "Pin background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "pin_radius",
+      "label": "Pin border radius",
+      "min": 0,
+      "max": 50,
+      "step": 10,
+      "default": 50,
+      "unit": "%"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#121212"
+    },
+    {
+      "type": "color_background",
+      "id": "text_background_color",
+      "label": "Text background",
+      "default": "linear-gradient(180deg, rgba(245, 245, 245, 1), rgba(245, 245, 245, 1) 100%)"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Background"
+    },
+    {
+      "type": "header",
+      "content": "🖼 Layout"
+    },
+    {
+      "type": "range",
+      "id": "base_width",
+      "label": "Size",
+      "min": 60,
+      "max": 100,
+      "step": 5,
+      "default": 90,
+      "unit": "%"
+    },
+    {
+      "type": "text",
+      "id": "max_width",
+      "label": "Maximum width",
+      "placeholder": "eg. 1200px",
+      "info": "Sets width constraint for content."
+    },
+    {
+      "type": "range",
+      "id": "inner_padding",
+      "label": "Inner padding",
+      "info": "Only applies to top and bottom.",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "step": 5,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "outer_margin",
+      "label": "Outer margin",
+      "info": "Only applies to top and bottom.",
+      "min": 0,
+      "max": 100,
+      "default": 40,
+      "step": 5,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "🚨 Advanced"
+    },
+    {
+      "type": "html",
+      "id": "custom_css",
+      "label": "CSS"
+    },
+    {
+      "type": "html",
+      "id": "mobile_custom_css",
+      "label": "Mobile CSS",
+      "info": "Applied on screens less than 480px."
+    },
+    {
+      "type": "checkbox",
+      "id": "override_theme_font",
+      "label": "Override default theme font",
+      "default": false
+    },
+    {
+      "type": "font_picker",
+      "id": "heading_font",
+      "label": "Heading",
+      "default": "serif"
+    },
+    {
+      "type": "font_picker",
+      "id": "main_font",
+      "label": "Text",
+      "default": "sans-serif"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Features - numbered 🎒",
+      "settings": {
+      },
+      "blocks": [
+        {
+          "type": "feature",
+          "settings": {
+            "horizontal": 23,
+            "vertical": 38,
+            "title": "First Info Point",
+            "text": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed in vestibulum lectus, placerat convallis ante. Vivamus id vestibulum magna. Nam nec placerat felis.</p>"
+          }
+        },
+        {
+          "type": "feature",
+          "settings": {
+            "horizontal": 32,
+            "vertical": 62,
+            "title": "Second Info Point",
+            "text": "<p>Sed in vestibulum lectus, placerat convallis ante. Vivamus id vestibulum magna. Nam nec placerat felis. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>"
+          }
+        },
+        {
+          "type": "feature",
+          "settings": {
+            "horizontal": 60,
+            "vertical": 30,
+            "title": "Third Info Point",
+            "text": "<p>Vivamus id vestibulum magna. Nam nec placerat felis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed in vestibulum lectus, placerat convallis ante.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+
+{%- comment -%} JSON Settings {%- endcomment -%}
+<script type="application/json" data-dsgn-pck="{{ section.id }}">
+  {
+    "id": {{ section.id | json }}
+  }
+</script>
+
+{%- comment -%} JavaScript {%- endcomment -%}
+<script data-dsgn-pck-js="{{ section.id }}" type="module" defer>
+(function(){
+
+  const designPack = {
+    settings: {},
+    selectInfoPoint: function(pinNumber, slides, infoPins, sideNumbers){
+      slides.forEach((slide) => {
+        slide.classList.remove('dsgn-pck__active');
+        const this_slide = document.querySelector(`#DP--{{ section.id }} [data-slide-order="${pinNumber}"]`);
+        this_slide.classList.add('dsgn-pck__active')
+      });
+
+      infoPins.forEach((feature) => {
+        feature.classList.remove('dsgn-pck__active');
+        const this_layer = document.querySelector(`#DP--{{ section.id }} [data-pin-order="${pinNumber}"]`);
+        this_layer.classList.add('dsgn-pck__active');
+      });
+
+      sideNumbers.forEach((sideNumber) => {
+        sideNumber.classList.remove('dsgn-pck__active');
+        const this_number = document.querySelector(`#DP--{{ section.id }} [data-number-order="${pinNumber}"]`);
+        this_number.classList.add('dsgn-pck__active');
+      });
+    },
+    load: function(section){
+
+      const slides = section.querySelectorAll('.dsgn-pck__slide');
+      const infoPins = section.querySelectorAll('.dsgn-pck__info-pin');
+      const pinNumbers = section.querySelectorAll('[data-pin-order]');
+      const sideNumbers = section.querySelectorAll('[data-number-order]');
+
+      pinNumbers.forEach((pinNumber) => {
+        pinNumber.addEventListener('click', (e) => this.selectInfoPoint(e.target.dataset.pinOrder, slides, infoPins, sideNumbers ))
+      });
+
+      sideNumbers.forEach((sideNumber) => {
+        sideNumber.addEventListener('click', (e) => this.selectInfoPoint(e.target.dataset.numberOrder, slides, infoPins, sideNumbers))
+      });
+
+    },
+    unload: function(section){
+    }
+  }
+
+  window.addEventListener('shopify:section:unload', function (e) {
+    const settings = document.querySelector(`[data-dsgn-pck="${e.detail.sectionId}"]`);
+    const sectionId = e.detail.sectionId;
+    const section = document.querySelector(`#DP--${e.detail.sectionId}`);
+    if (sectionId == designPack.settings.id){
+      designPack.unload(section);
+    }
+  });
+
+  designPack.settings = JSON.parse(document.querySelector('[data-dsgn-pck="{{ section.id }}"]').innerHTML);
+  const sectionId = {{ section.id | json }};
+  const section = document.querySelector(`#DP--${sectionId}`);
+
+  if (sectionId == designPack.settings.id){
+    designPack.load(section);
+  }
+})()
+</script>
