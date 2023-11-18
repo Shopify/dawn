@@ -77,6 +77,150 @@
 
         {%- for block in section.blocks -%}
           {%- case block.type -%}
+            
+{% comment %} Ed related {% endcomment %}
+            {%- when 'related_products' -%}
+  {% assign metafield_namespace = block.settings.metafield_namespace %}
+  {% assign metafield_key = block.settings.metafield_key %}
+  {% if product.metafields[metafield_namespace][metafield_key] %}
+    {% assign relatedProducts = product.metafields[metafield_namespace][metafield_key].value %}
+    <!-- check at least one recommended product is available --> 
+    {%- liquid 
+      assign has1product = false
+      for prod in relatedProducts
+        if prod.available == true
+          assign has1product = true
+        endif
+      endfor
+    -%}
+    {% if has1product %}
+      <div id="RP--{{ block.id }}" class="RP--{{ block.id }} rp__block {{ block.settings.css_classes }}">
+        <p class="related-products-heading" style="font-size: {{block.settings.heading_font_size}}px; color: {{block.settings.heading_color}};">{{ block.settings.heading }}</p>
+        <div class="related-products">
+          {% for prod in relatedProducts %}
+            {% if prod.available == true %}
+              <a href="{{ prod.url }}" class="related-product" aria-label="{{prod.title}}" role="tooltip">
+                <img class="related-product__image {% if prod.images.size > 1 and block.settings.show_secondary_image %} has-secondary {% endif %}" src="{{ prod.images[0] | img_url: '500x' }}" alt="{{ prod.title }}">
+                {% if prod.images.size > 1 and block.settings.show_secondary_image %}
+                  <img src="{{ prod.images[1] | img_url: '500x' }}" alt="" class="related-product__image--secondary">
+                {% endif %}
+              </a>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <div class="related-products-paragraph">{{ block.settings.paragraph }}</div>
+      </div>
+      <style>
+        #RP--{{ block.id }} .related-products {
+          text-align: left;
+          display: flex;
+          flex-wrap: wrap;
+        }
+        #RP--{{ block.id }} .related-product {
+          display: inline-block;
+          width: calc({{block.settings.column_width}}% - 0.4rem);
+          margin: 0px 0.4rem 0.8rem 0px;
+          position: relative;
+          border: 1px solid transparent;
+          text-align: center;
+        }
+        #RP--{{ block.id }} .related-product:last-child {
+          margin-right: 0;
+        }
+        #RP--{{ block.id }} .related-product__image,
+        #RP--{{ block.id }} .related-product__image--secondary {
+          width: 100%;
+          max-width: 100%;
+          height: 100%;
+          object-fit: cover;
+          {% if block.settings.image_object_fit == 'contain' %}
+            object-fit: contain;
+          {% endif %}
+        }
+        #RP--{{ block.id }} .related-product__image--secondary {
+          display: none;
+          position: absolute;
+          top: 0;
+          left: 0;
+        }
+        #RP--{{ block.id }} .related-product:hover .related-product__image--secondary {
+          display: inline-block;
+        }
+        #RP--{{ block.id }} .related-product:hover .related-product__image.has-secondary {
+          visibility: hidden;
+        }
+        #RP--{{ block.id }} .related-product:hover {
+          border-color: {{ block.settings.hover_border_color }};
+        }
+        #RP--{{ block.id }} .related-products-paragraph {
+          font-size: {{ block.settings.info_font_size }}px;
+          color: {{ block.settings.info_color }};
+        }
+        
+        {{ block.settings.custom_css }}
+        
+        {% if block.settings.show_tooltip %}
+          /* tooltip styles */
+          @media (min-width: 768px) {
+            #RP--{{ block.id }} [aria-label][role~="tooltip"] {
+              position: relative;
+            }
+            #RP--{{ block.id }} [aria-label][role~="tooltip"]::before,
+            #RP--{{ block.id }} [aria-label][role~="tooltip"]::after {
+              transform: translate3d(0, 0, 0);
+              -webkit-backface-visibility: hidden;
+              backface-visibility: hidden;
+              will-change: transform;
+              opacity: 0;
+              pointer-events: none;
+              transition: all var(--microtip-transition-duration, .18s) var(--microtip-transition-easing, ease-in-out) var(--microtip-transition-delay, 0s);
+              position: absolute;
+              box-sizing: border-box;
+              z-index: 10;
+              transform-origin: top;
+            }
+            #RP--{{ block.id }} [aria-label][role~="tooltip"]::before {
+              background-size: 100% auto !important;
+              content: "";
+              background: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2236px%22%20height%3D%2212px%22%3E%3Cpath%20fill%3D%22{{ block.settings.tooltip_bg_color | url_encode }}%22%20transform%3D%22rotate%280%29%22%20d%3D%22M2.658,0.000%20C-13.615,0.000%2050.938,0.000%2034.662,0.000%20C28.662,0.000%2023.035,12.002%2018.660,12.002%20C14.285,12.002%208.594,0.000%202.658,0.000%20Z%22/%3E%3C/svg%3E") no-repeat;
+              height: 6px;
+              width: 18px;
+              margin-bottom: 5px;
+              transform: translate3d(-50%, 0, 0);
+              bottom: 100%;
+              left: 50%;
+            }
+            #RP--{{ block.id }} [aria-label][role~="tooltip"]::after {
+              background: {{ block.settings.tooltip_bg_color }};
+              border-radius: 4px;
+              color: {{block.settings.tooltip_text_color}};
+              content: attr(aria-label);
+              font-size: var(--microtip-font-size, 13px);
+              font-weight: var(--microtip-font-weight, normal);
+              text-transform: var(--microtip-text-transform, none);
+              padding: .5em 1em;
+              max-width: 150px;
+              width: 100%;
+              box-sizing: content-box;
+              margin-bottom: 11px;
+              transform: translate3d(-50%, 0, 0);
+              bottom: 100%;
+              left: 50%;
+            }
+            #RP--{{ block.id }} [aria-label][role~="tooltip"]:hover::before,
+            #RP--{{ block.id }} [aria-label][role~="tooltip"]:hover::after,
+            #RP--{{ block.id }} [aria-label][role~="tooltip"]:focus::before,
+            #RP--{{ block.id }} [aria-label][role~="tooltip"]:focus::after {
+              opacity: 1;
+              pointer-events: auto;
+              transform: translate3d(-50%, -5px, 0);
+            }
+          }
+        {% endif %}
+      </style>
+    {% endif %}
+  {% endif %}
+{% comment %} Ed related End {% endcomment %}            
             {%- when '@app' -%}
               {% render block %}
             {%- when 'text' -%}
@@ -750,6 +894,154 @@
   "tag": "section",
   "class": "section",
   "blocks": [
+{
+  "type": "related_products",
+  "name": "⚡️ Related Products",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Metafield",
+      "info": "This allows you to use the block multiple times for different metafields."
+    },
+    {
+      "type": "text",
+      "id": "metafield_namespace",
+      "label": "Metafield namespace",
+      "default": "product_info",
+      "info": "The namespace of the metafield you defined in Setting > Metafields."
+    },
+    {
+      "type": "text",
+      "id": "metafield_key",
+      "label": "Metafield key",
+      "default": "related_products",
+      "info": "The key of the metafield you defined in Setting > Metafields."
+    },
+    {
+      "type": "header",
+      "content": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Related Products"
+    },
+    {
+      "type": "number",
+      "id": "heading_font_size",
+      "label": "Heading font size (px)",
+      "default": 18
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#121212"
+    },
+    {
+      "type": "header",
+      "content": "Products"
+    },
+    {
+      "type": "range",
+      "id": "column_width",
+      "label": "Column width (each product)",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 25,
+      "info": "20 for 5 products, 25 for 4 products, 33 for 3 products etc..."
+    },
+    {
+      "type": "select",
+      "id": "image_object_fit",
+      "label": "Image fit",
+      "info": "Cover will fill the available space with the image (standardizes images, looks better as a grid) but might crop the top or sides. Contain will keep the actual image height, but your images might have different heights.",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover"
+        },
+        {
+          "value": "contain",
+          "label": "Contain"
+        }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "label": "Show second product image on hover",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "hover_border_color",
+      "label": "Border color (hover)",
+      "default": "#000",
+      "info": "Make color field blank (transparent) if you don't want a border"
+    },
+    {
+      "type": "header",
+      "content": "Other"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tooltip",
+      "label": "Show product title on hover (tooltip)",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "tooltip_bg_color",
+      "label": "Tooltip background color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "tooltip_text_color",
+      "label": "Tooltip text color",
+      "default": "#fff"
+    },
+    {
+      "type": "richtext",
+      "id": "paragraph",
+      "label": "Info"
+    },
+    {
+      "type": "number",
+      "id": "info_font_size",
+      "label": "Info text font size (px)",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "info_color",
+      "label": "Info text color",
+      "default": "#121212"
+    },
+    {
+      "type": "header",
+      "content": "Advanced"
+    },
+    {
+      "type": "text",
+      "id": "css_classes",
+      "label": "CSS Classes (no dots, separate with spaces)",
+      "info": "Give this block a unique class (or multiple)."
+    },
+    {
+      "type": "liquid",
+      "id": "custom_css",
+      "label": "Custom CSS",
+      "info": "Target your class here. Warning: If your above class isn't unique, this CSS will affect other blocks."
+    }
+  ]
+},
+    
     {
       "type": "@app"
     },
