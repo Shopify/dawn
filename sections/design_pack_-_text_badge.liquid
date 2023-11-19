@@ -1,0 +1,337 @@
+{%- comment -%}
+{
+  "pack_name": "Badge - text",
+  "pack_author": "Design Packs"
+}
+{%- endcomment -%}
+
+{% comment %} Security Code - hides section when app uninstalled {% endcomment %}
+{%- unless content_for_header contains 'design_packs_file.js' -%}
+  {%- if request.design_mode -%}
+    <div class="dsgn-pck__no-app-warning">
+      <div class="dsgn-pck__no-app-warning-background">
+      </div>
+      <div class="dsgn-pck__no-app-warning-text dsgn-pck__rte">
+        <p><strong>WARNING!</strong> This premium section will not display properly without an active subscription for <a href="https://apps.shopify.com/design-packs" target="_blank" rel="nofollow">Design Packs</a>. If you need any support please email <a href="mailto:info@design-packs.com" target="_blank">info@design-packs.com</a> with your questions.</p>
+      </div>
+    </div>
+  {%- endif -%}
+  {%- break -%}
+{%- endunless -%}
+
+{%- comment -%} Text: custom font_picker values {%- endcomment -%}
+{%- capture font_settings_list -%}
+/* Normal */
+{{ section.settings.outer_font | font_face: font_display: 'swap' }}~
+{{ section.settings.center_font | font_face: font_display: 'swap' }}~
+/* Bold */
+{{ section.settings.outer_font | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.center_font | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+/* Italic */
+{{ section.settings.outer_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}~
+{{ section.settings.center_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}~
+/* Italic & Bold */
+{{ section.settings.outer_font | font_modify: 'style', 'italic' | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}
+{{ section.settings.center_font | font_modify: 'style', 'italic' | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}
+{%- endcapture -%}
+{%- assign font_array = font_settings_list | split: '~' -%}
+
+{%- comment -%} Text: center text size based on word length {%- endcomment -%}
+{%- assign center_text_value = 1.00 | divided_by: section.settings.center_text.size | times: 230.00 -%}
+{%- if center_text_value < 55 -%}
+  {%- assign center_font_size = center_text_value -%}
+{%- else -%}
+  {%- assign center_font_size = 55 -%}
+{%- endif -%}
+
+{%- comment -%} Text: outer text size based on word length {%- endcomment -%}
+{%- assign upper_text_value = 1.00 | divided_by: section.settings.upper_text.size | times: 240.00 -%}
+{%- assign lower_text_value = 1.00 | divided_by: section.settings.lower_text.size | times: 240.00 -%}
+{%- if upper_text_value < 30 and upper_text_value < lower_text_value -%}
+  {%- assign font_size = upper_text_value -%}
+{%- elsif lower_text_value < 30 and lower_text_value < upper_text_value -%}
+  {%- assign font_size = lower_text_value -%}
+{%- else -%}
+  {%- assign font_size = 30 -%}
+{%- endif -%}
+
+{%- comment -%} CSS {%- endcomment -%}
+<style>
+{%- for font in font_array -%}
+  {%- unless font contains 'error' -%}{{ font }}{%- endunless -%}
+{%- endfor -%}
+
+#DP--{{ section.id }} {
+  height: 0 !important;
+  padding: 0 !important;
+  z-index: 10;
+}
+
+#DP--{{ section.id }} .dsgn-pck__badge {
+  width: 200px;
+  height: 200px;
+}
+
+#DP--{{ section.id }} .dsgn-pck__badge-position {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  transform: translateX(-50%) translateY({{ section.settings.badge_vertical_position | times: -1 }}%);
+  left: {{ section.settings.badge_horizontal_position }}%;
+}
+
+#DP--{{ section.id }} .dsgn-pck__badge-rotate {
+  position: relative;
+  transform-origin: center;
+  transform: rotate({{ section.settings.angle }}deg);
+  {%- if section.settings.rotation_speed > 0 -%}
+  -webkit-animation:spin {{ section.settings.rotation_speed }}s linear infinite;
+  -moz-animation:spin {{ section.settings.rotation_speed }}s linear infinite;
+  animation:spin {{ section.settings.rotation_speed }}s linear infinite;
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__badge__upper-text,
+#DP--{{ section.id }} .dsgn-pck__badge__lower-text {
+  font-size: {{ font_size }}px;
+  fill: {{ section.settings.text_color }};
+  font-family: {{ section.settings.outer_font.family }}, {{ section.settings.outer_font.fallback_families }};
+  {%- if section.settings.show_text_shadow != blank -%}
+    text-shadow: 1px 1px 10px #847d7da8;
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__badge__lower-text {
+  letter-spacing: 2px;
+}
+
+#DP--{{ section.id }} .dsgn-pck__badge__center-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: {{ section.settings.text_color }};
+  font-family: {{ section.settings.center_font.family }}, {{ section.settings.center_font.fallback_families }};
+  font-size: {{ center_font_size }}px;
+  {%- if section.settings.show_text_shadow != blank -%}
+    text-shadow: 1px 1px 10px #847d7da8;
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__sizer {
+  position: relative;
+  width: calc(100% - 200px);
+}
+
+@-moz-keyframes spin {
+  100% { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+  100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+  100% {
+      -webkit-transform: rotate(360deg);
+      transform:rotate(360deg);
+  }
+}
+
+{%- if section.settings.custom_css != blank -%}
+  {%- assign custom_section_declarations = section.settings.custom_css | split: '}' -%}
+  {%- for declaration in custom_section_declarations -%}
+    {%- if declaration contains '{' -%}
+      #DP--{{ section.id }} {{ declaration }} }
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+
+
+
+/* Landscape phone to portrait tablet */
+@media (max-width: 767px) {
+  {%- if section.settings.hide_on_mobile != blank -%}
+    #DP--{{ section.id }} {
+      display: none;
+    }
+  {%- endif -%}
+}
+
+/* Landscape phones and down */
+@media (max-width: 480px) {
+  {%- if section.settings.mobile_custom_css != blank -%}
+    {%- assign mobile_custom_declarations = section.settings.mobile_custom_css | split: '}' -%}
+    {%- for declaration in mobile_custom_declarations -%}
+      {%- if declaration contains '{' -%}
+        #DP--{{ section.id }} {{ declaration }} }
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+}
+</style>
+
+{%- comment -%} HTML {%- endcomment -%}
+<section id="DP--{{ section.id }}"
+          class="DP--{{ section.id }} dsgn-pck__text-badge dsgn-pck__section"
+
+          data-section-type="dsgn-pck__text-badge">
+  <div class="dsgn-pck__sizer
+              dsgn-pck__sizer--badge">
+    <div class="dsgn-pck__badge-position">
+      <div class="dsgn-pck__badge-rotate">
+        <svg class="dsgn-pck__badge" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 200 200">
+          <defs>
+              <path id="badge-upper-{{ section.id }}" d="M49.78,100c0-27.74,22.49-50.22,50.22-50.22s50.22,22.49,50.22,50.22"/>
+          </defs>
+          <text class="dsgn-pck__badge__upper-text">
+              <textPath xlink:href="#badge-upper-{{ section.id }}" startOffset="50%" text-anchor="middle">
+                {{ section.settings.upper_text }}
+              </textPath>
+          </text>
+          <defs>
+            <path id="badge-lower-{{ section.id }}" d="M33.26,100c0,36.86,29.88,66.74,66.74,66.74s66.74-29.88,66.74-66.74"/>
+          </defs>
+          <text class="dsgn-pck__badge__lower-text">
+              <textPath xlink:href="#badge-lower-{{ section.id }}" startOffset="50%" text-anchor="middle">
+                {{ section.settings.lower_text }}
+              </textPath>
+          </text>
+        </svg>
+        <div class="dsgn-pck__badge__center-text">
+          {{ section.settings.center_text }}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Badge - text",
+  "class": "DP__badge-text",
+  "settings": [
+    {
+      "type": "text",
+      "id": "upper_text",
+      "label": "Upper text",
+      "default": "All Natural"
+    },
+    {
+      "type": "text",
+      "id": "lower_text",
+      "label": "Lower text",
+      "default": "Est. in 2020"
+    },
+    {
+      "type": "font_picker",
+      "id": "outer_font",
+      "label": "Outer font",
+      "default": "sans-serif"
+    },
+    {
+      "type": "text",
+      "id": "center_text",
+      "label": "Center text",
+      "default": "All Design Packs"
+    },
+    {
+      "type": "font_picker",
+      "id": "center_font",
+      "label": "Center font",
+      "default": "cooper_bt_n5"
+    },
+    {
+      "type": "header",
+      "content": "🎨 Design"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_text_shadow",
+      "label": "Show text shadow",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "📱 Mobile"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_on_mobile",
+      "label": "Hide on smaller screens",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "🖼 Layout"
+    },
+    {
+      "type": "range",
+      "id": "rotation_speed",
+      "label": "Rotation",
+      "min": 0,
+      "max": 40,
+      "default": 0,
+      "unit": "sec",
+      "info": "Set to '0' to disable rotation"
+    },
+    {
+      "type": "range",
+      "id": "angle",
+      "label": "Badge angle",
+      "default": -15,
+      "min": -45,
+      "max": 45,
+      "unit": "deg"
+    },
+    {
+      "type": "range",
+      "id": "badge_horizontal_position",
+      "label": "Badge horizontal position",
+      "default": 0,
+      "min": 0,
+      "max": 100
+    },
+    {
+      "type": "range",
+      "id": "badge_vertical_position",
+      "label": "Badge vertical position",
+      "default": 75,
+      "min": -100,
+      "max": 200,
+      "step": 5
+    },
+    {
+      "type": "header",
+      "content": "🚨 Advanced"
+    },
+    {
+      "type": "html",
+      "id": "custom_css",
+      "label": "CSS"
+    },
+    {
+      "type": "html",
+      "id": "mobile_custom_css",
+      "label": "Mobile CSS",
+      "info": "Applied on screens less than 480px."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Badge - text 🎒",
+      "settings": {
+      }
+    }
+  ]
+}
+{% endschema %}
