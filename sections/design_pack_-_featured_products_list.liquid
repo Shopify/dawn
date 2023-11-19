@@ -1,0 +1,657 @@
+{%- comment -%}
+{
+  "pack_name": "Product list - featured",
+  "pack_author": "Design Packs"
+}
+{%- endcomment -%}
+
+{% comment %} Security Code - hides section when app uninstalled {% endcomment %}
+{%- unless content_for_header contains 'design_packs_file.js' -%}
+  {%- if request.design_mode -%}
+    <div class="dsgn-pck__no-app-warning">
+      <div class="dsgn-pck__no-app-warning-background">
+      </div>
+      <div class="dsgn-pck__no-app-warning-text dsgn-pck__rte">
+        <p><strong>WARNING!</strong> This premium section will not display properly without an active subscription for <a href="https://apps.shopify.com/design-packs" target="_blank" rel="nofollow">Design Packs</a>. If you need any support please email <a href="mailto:info@design-packs.com" target="_blank">info@design-packs.com</a> with your questions.</p>
+      </div>
+    </div>
+  {%- endif -%}
+  {%- break -%}
+{%- endunless -%}
+
+{%- comment -%} Images: capture height and width values for images {%- endcomment -%}
+{%- capture image_size_height -%}
+{%- if section.settings.image_size == 'small' -%}
+  200px
+{%- elsif section.settings.image_size == 'medium' -%}
+  300px
+{%- elsif section.settings.image_size == 'large' -%}
+  400px
+{%- endif -%}
+{%- endcapture -%}
+
+{%- capture image_size_width -%}
+{%- if section.settings.image_size == 'small' -%}
+  30%
+{%- elsif section.settings.image_size == 'medium' -%}
+  40%
+{%- elsif section.settings.image_size == 'large' -%}
+  50%
+{%- endif -%}
+{%- endcapture -%}
+
+{% comment %} Images: responsive image widths {% endcomment %}
+{%- assign widths = '180, 360, 540, 720, 900, 1080, 1296, 1512, 1728, 1950, 2100, 2260, 2450, 2700, 3000, 3350, 3750, 4100' -%}
+
+{%- comment -%} Text: custom font_picker values {%- endcomment -%}
+{%- capture font_settings_list -%}
+{{ section.settings.main_font | font_face: font_display: 'block' }}~
+{{ section.settings.main_font | font_modify: 'weight', 'bolder' | font_face: font_display: 'block' }}~
+{{ section.settings.main_font | font_modify: 'style', 'italic' | font_face: font_display: 'block' }}~
+{{ section.settings.main_font | font_modify: 'style', 'italic' | font_modify: 'weight', 'bolder' | font_face: font_display: 'block' }}~
+{{ section.settings.heading_font | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'weight', 'normal' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}~
+{{ section.settings.heading_font | font_modify: 'style', 'italic' | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}
+{%- endcapture -%}
+{%- assign font_array = font_settings_list | split: '~' -%}
+
+{%- comment -%} CSS {%- endcomment -%}
+<style>
+{%- if section.settings.override_theme_font != blank -%}
+  {%- for font in font_array -%}
+    {%- unless font contains 'error' -%}{{ font }}{%- endunless -%}
+  {%- endfor -%}
+  #DP--{{ section.id }} {
+    --main-font: {{ section.settings.main_font.family }}, {{ section.settings.main_font.fallback_families }};
+    --main-font-weight: {{ section.settings.main_font.weight }};
+    --main-font-style: {{ section.settings.main_font.style }};
+    --heading-font: {{ section.settings.heading_font.family }}, {{ section.settings.heading_font.fallback_families }};
+    --heading-font-weight: {{ section.settings.heading_font.weight }};
+    --heading-font-style: {{ section.settings.heading_font.style }};
+  }
+{%- endif -%}
+
+/*** Width ***/
+
+#shopify-section-{{ section.id }}.DP__widths {
+  {%- if section.settings.section_width == 'half' -%}
+    width: 50%;
+  {%- else -%}
+    width: 100%
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} {
+  --image_size_height: {{ image_size_height }};
+  --image_size_width: {{ image_size_width }};
+  background: {{ section.settings.background_color }};
+  margin-top: {{ section.settings.outer_margin }}px;
+  margin-bottom: {{ section.settings.outer_margin }}px;
+}
+
+#DP--{{ section.id }} .dsgn-pck__sizer {
+  padding-top: {{ section.settings.inner_padding }}px;
+  padding-bottom: {{ section.settings.inner_padding }}px;
+  width: 90%;
+  max-width: 1500px;
+}
+
+#DP--{{ section.id }} a {
+  cursor: pointer;
+  text-decoration: none;
+  color: {{ section.settings.text_color }};
+}
+
+#DP--{{ section.id }} ul {
+  margin: 0;
+  padding: 0;
+}
+
+#DP--{{ section.id }} .dsgn-pck__featured-products-list-grid {
+  display:  grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  gap:  40px;
+  padding: 0;
+  margin-top: 0;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product {
+  list-style: none;
+  border-bottom: 1px solid;
+  padding: 40px 0;
+  width: 100%;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product:last-child {
+  border-bottom: none;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-card {
+  display: block;
+  width: 100%;
+  position: relative;
+  display: flex;
+  gap: 40px;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-card__image {
+  position: relative;
+  display: block;
+  flex: 1 0 var(--image_size_width, 50%);
+  max-width: var(--image_size_height, 500px);
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-card__image img {
+  height: var(--image_size_height, auto);
+  width: 100%;
+  object-fit: contain;
+  transition: opacity .2s ease-in-out;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-image__first {
+  position: relative;
+}
+
+#DP--{{ section.id }} .dsgn-pack__secondary-image--true:hover .dsgn-pck__product-image__first {
+  opacity: 0;
+}
+
+#DP--{{ section.id }} .dsgn-pack__secondary-image--true:hover .dsgn-pck__product-image__second {
+  opacity: 1;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-image__second {
+  opacity: 0;
+  z-index: 1;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-card__info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--main-font);
+  font-weight: var(--main-font-weight);
+  font-style: var(--main-font-style);
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__small-heading {
+  margin-top: 0;
+  margin-bottom: 10px;
+  line-height: calc(3px + 2ex + 3px);
+  color: {{ section.settings.text_color }};
+  font-size: calc(var(--dp-g-small-heading-size, var(--dp-small-heading-size, 24px)) * {{ section.settings.text_size | times: 0.01 }});
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--heading-font);
+  font-weight: var(--heading-font-weight);
+  font-style: var(--heading-font-style);
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-money {
+  margin: 0;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-money__wrapper {
+  font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.012 }});
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-money__was-price {
+  position: relative;
+  opacity: 0.8;
+}
+
+#DP--{{ section.id }} .dsgn-pck__product-money__was-price::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 1px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) rotate(-15deg);
+  background-color: {{ section.settings.text_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__text {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  color: {{ section.settings.text_color }};
+  font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+}
+
+#DP--{{ section.id }} .dsgn-pck__view-more {
+  display: flex;
+  margin-top: 10px;
+  font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+}
+
+#DP--{{ section.id }} .dsgn-pck__arrow {
+  margin-left: 3px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 1, 1);
+}
+
+#DP--{{ section.id }} .dsgn-pck__view-more:hover .dsgn-pck__arrow {
+  transform: translateX(3px);
+}
+
+/* Animation */
+{%- if section.settings.animation != 'none' -%}
+  #DP--{{ section.id }}.dsgn-pck__animation-applied [style*="--dsgn-pck-animate"] {
+    animation-name: dsgn-pck__animation--{{ section.settings.animation }};
+  }
+{%- else -%}
+  #DP--{{ section.id }} [style*="--dsgn-pck-animate"] {
+    opacity: 1;
+  }
+{% endif %}
+
+{%- if section.settings.custom_css != blank -%}
+  {%- assign custom_section_declarations = section.settings.custom_css | split: '}' -%}
+  {%- for declaration in custom_section_declarations -%}
+    {%- if declaration contains '{' -%}
+      #DP--{{ section.id }} {{ declaration }} }
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+
+
+
+/* Landscape phone to portrait tablet */
+@media (max-width: 767px) {
+
+  #DP--{{ section.id }} .dsgn-pck__product-card__image {
+    flex: 1 0 30%;
+    max-width: 200px;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__product-card__image img {
+    height: auto;
+  }
+}
+
+/* Landscape phones and down */
+@media (max-width: 480px) {
+
+  #DP--{{ section.id }} .dsgn-pck__sizer {
+    min-width: 70%;
+    padding-top: {{ section.settings.inner_padding | divided_by: 2 }}px;
+    padding-bottom: {{ section.settings.inner_padding | divided_by: 2 }}px;
+  }
+
+  {%- if section.settings.mobile_custom_css != blank -%}
+    {%- assign mobile_custom_declarations = section.settings.mobile_custom_css | split: '}' -%}
+    {%- for declaration in mobile_custom_declarations -%}
+      {%- if declaration contains '{' -%}
+        #DP--{{ section.id }} {{ declaration }} }
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+}
+
+</style>
+
+{%- comment -%} HTML {%- endcomment -%}
+<section id="DP--{{ section.id }}" class="DP--{{ section.id }} dsgn-pck__featured-products-list dsgn-pck__section">
+  <div class="dsgn-pck__sizer">
+    <ul class="dsgn-pck__featured-products-list dsgn-pck__flex dsgn-pck__flex-wrap">
+      {% for block in section.blocks %}
+        {% assign product = all_products[block.settings.product] %}
+        <li class="dsgn-pck__product"
+            style="--dsgn-pck-animate: {{ forloop.index0 }};"
+            {{ block.shopify_attributes }}>
+          <div class="dsgn-pck__product-card">
+
+            <a class="dsgn-pck__product-card__image {% if product.images[1] != blank %}dsgn-pack__secondary-image--true{% endif %}" href="{{ product.url }}">
+              {%- if product.featured_image != blank -%}
+                {%- capture sizes -%}
+                  {%- if section.settings.section_width == 'full' -%}
+                    {{ image_size_width | remove: '%' | append: 'vw' | default: '50vw' }}
+                  {%- else -%}
+                    {{ image_size_width | remove: '%' | divided_by: 2 | append: 'vw' | default: '25vw' }}
+                  {%- endif -%}
+                {%- endcapture -%}
+                {{ product.featured_image | image_url: width: 2800 | image_tag:  class: 'dsgn-pck__product-image__first', widths: widths, sizes: sizes }}
+              {%- else -%}
+                {{ 'product-1' | placeholder_svg_tag: 'dsgn-pck__placeholder' }}
+              {%- endif -%}
+              {%- if product.images[1] != blank -%}
+                {%- capture sizes -%}
+                  {%- if section.settings.section_width == 'full' -%}
+                    {{ image_size_width | remove: '%' | append: 'vw' | default: '50vw' }}
+                  {%- else -%}
+                    {{ image_size_width | remove: '%' | divided_by: 2 | append: 'vw' | default: '25vw' }}
+                  {%- endif -%}
+                {%- endcapture -%}
+                {{ product.images[1] | image_url: width: 2800 | image_tag:  class: 'dsgn-pck__product-image__second', widths: widths, sizes: sizes }}
+              {%- endif -%}
+            </a>
+            <div class="dsgn-pck__product-card__info">
+              <h3 class="dsgn-pck__small-heading">{{ product.title | default: 'Product title' }}</h3>
+              {%- if section.settings.show_product_price -%}
+                <div class="dsgn-pck__product-money__wrapper">
+                  <p class="dsgn-pck__product-money">
+                    {{ product.price | money | default: '$18.15' }}
+                    {% if product.compare_at_price_max > product.price %}
+                      <span class="dsgn-pck__product-money__was-price">
+                        {{ product.compare_at_price_max | money }}
+                      </span>
+                    {% endif %}
+                  </p>
+                </div>
+              {%- endif -%}
+              {%- if section.settings.show_description -%}
+                <div class="dsgn-pck__text dsgn-pck__rte">
+                  {%- if block.settings.custom_description != blank -%}
+                    {{ block.settings.custom_description }}
+                  {%- else -%}
+                    {{ product.description | truncatewords: 40 | default: 'The product description should be used to describe details and tell a story about the benfits and features.' }}
+                  {%- endif -%}
+                </div>
+              {%- endif -%}
+              {%- if section.settings.view_more != blank -%}
+                <a href="{{ product.url }}" class="dsgn-pck__view-more">
+                  <span class="dsgn-pck__view-more-text">{{ section.settings.view_more }}</span>
+                  <span class="dsgn-pck__arrow">&rarr;</span>
+                </a>
+              {%- endif -%}
+            </div>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product list - featured",
+  "class": "DP__featured-products-list DP__widths",
+  "settings": [
+    {
+      "type": "select",
+      "id": "image_size",
+      "label": "Image size",
+      "default": "medium",
+      "options": [
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_price",
+      "label": "Show price",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show description",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "view_more",
+      "label": "Button label",
+      "default": "View product"
+    },
+    {
+      "type": "header",
+      "content": "✏️ Text appearance"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Text size",
+      "min": 80,
+      "max": 120,
+      "step": 5,
+      "default": 100,
+      "unit": "%"
+    },
+    {
+      "type": "header",
+      "content": "🎨 Design"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#3A3A3A"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Background"
+    },
+    {
+      "type": "select",
+      "id": "animation",
+      "label": "Animation",
+      "default": "none",
+      "options": [
+        {
+          "value": "fade-in",
+          "label": "Fade-in"
+        },
+        {
+          "value": "fade-in-left",
+          "label": "Fade-in left"
+        },
+        {
+          "value": "fade-in-right",
+          "label": "Fade-in right"
+        },
+        {
+          "value": "fade-in-up",
+          "label": "Fade-in up"
+        },
+        {
+          "value": "fade-in-down",
+          "label": "Fade-in down"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "🖼 Layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Size",
+      "default": "full",
+      "info": "Allows two sections to sit side-by-side.",
+      "options": [
+        {
+          "value": "full",
+          "label": "Full"
+        },
+        {
+          "value": "half",
+          "label": "Half"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "inner_padding",
+      "label": "Inner padding",
+      "info": "Only applies to top and bottom.",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "step": 5,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "outer_margin",
+      "label": "Outer margin",
+      "info": "Only applies to top and bottom.",
+      "min": 0,
+      "max": 100,
+      "default": 40,
+      "step": 5,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "🚨 Advanced"
+    },
+    {
+      "type": "html",
+      "id": "custom_css",
+      "label": "CSS"
+    },
+    {
+      "type": "html",
+      "id": "mobile_custom_css",
+      "label": "Mobile CSS",
+      "info": "Applied on screens less than 480px."
+    },
+    {
+      "type": "checkbox",
+      "id": "override_theme_font",
+      "label": "Override default theme font",
+      "default": false
+    },
+    {
+      "type": "font_picker",
+      "id": "heading_font",
+      "label": "Product title",
+      "default": "serif"
+    },
+    {
+      "type": "font_picker",
+      "id": "main_font",
+      "label": "Description",
+      "default": "sans-serif"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "richtext",
+          "id": "custom_description",
+          "label": "Custom product description"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product list - featured 🎒",
+      "blocks": [
+        {
+          "type": "product"
+        },
+        {
+          "type": "product"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+
+
+{%- comment -%} JSON Settings {%- endcomment -%}
+<script type="application/json" data-dsgn-pck="{{ section.id }}">
+  {
+    "id": {{ section.id | json }},
+    "section_width": {{ section.settings.section_width | json }},
+    "animation": {{ section.settings.animation | json }}
+  }
+</script>
+{%- comment -%} JavaScript {%- endcomment -%}
+<script data-dsgn-pck-js="{{ section.id }}" type="module" defer>
+(function(){
+  'use strict';
+
+  const designPack = {
+    settings: {
+    },
+    animateSection: function(entries, observer){
+      // Target the first entry available.
+      let observedSection = entries[0];
+      if (observedSection.isIntersecting) {
+        observedSection.target.classList.add('dsgn-pck__animation-applied');
+      }
+    },
+    load: function (section) {
+      if (this.settings.animation !== 'none'){
+        const options = {
+          root: null,
+          rootMargin: '0px',
+          threshold: 0
+        };
+        // Construct Intersection Observer.
+        const observer = new IntersectionObserver( this.animateSection, options );
+
+        // Observe if element is present.
+        if (section) {
+          observer.observe(section);
+        }
+      }
+
+      // Add extra class for width setting
+      const widthSection = section.closest('.DP__widths');
+      if (typeof widthSection !== 'undefined' && widthSection !== null) {
+        section.closest('.DP__widths').classList.add(`DP__width--${this.settings.section_width}`);
+      }
+    },
+    unload: function (section) {
+      section.classList.remove('dsgn-pck__animation-applied')
+    }
+  }
+
+  window.addEventListener('shopify:section:unload', function (e) {
+    const settings = document.querySelector(`[data-dsgn-pck="${e.detail.sectionId}"]`);
+    const sectionId = e.detail.sectionId;
+    const section = document.querySelector(`#DP--${e.detail.sectionId}`);
+    if (sectionId == designPack.settings.id){
+      designPack.unload(section);
+    }
+  });
+
+  designPack.settings = JSON.parse(document.querySelector('[data-dsgn-pck="{{ section.id }}"]').innerHTML);
+  const sectionId = {{ section.id | json }};
+  const section = document.querySelector(`#DP--${sectionId}`);
+  if (sectionId == designPack.settings.id){
+    designPack.load(section);
+  }
+
+})();
+</script>
