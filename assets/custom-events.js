@@ -84,6 +84,32 @@ var main = function () {
                     }
                 });
             });
+        },
+        sliderHeight: () => {
+            
+            document.querySelectorAll('.adaptive-height').forEach(e => {
+                e.addEventListener('slideChanged', function(event) {
+                    if (event.detail.currentElement != undefined) {
+                        const parent = event.detail.currentElement.closest('.slideshow');
+                        
+                        setTimeout( function() {
+
+                            if (parent) { // Check if parent is not null or undefined
+                                parent.removeAttribute('style')
+
+                                const active = event.detail.currentElement;
+                                const banner = active.querySelector('.banner');
+                                
+                                console.log(banner.clientHeight)
+                
+                                if (banner) { // Check if banner is not null or undefined
+                                        parent.style.height = banner.clientHeight + 'px';
+                                }
+                            }
+                        },1000)
+                    }
+                });
+            });
         }
     };
 }()
@@ -91,3 +117,4 @@ var main = function () {
 main.popoverBtns()
 main.amznOr()
 main.resellerCTA()
+main.sliderHeight()
