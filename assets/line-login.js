@@ -88,15 +88,23 @@ async function verifyLineApp(access_token) {
 
 if (!lineAccessToken || lineAccessToken === 'undefined' || lineAccessToken === 'true') {
   console.log('no token');
-  changeToDummyImage();
   const url = new URL(window.location.href);
   const code = url.searchParams.get("code");
   if (code) {
     verifyLineLogin(code).then(r => {
       console.log('verifyLineLogin === true', r);
       document.querySelector('.line-login-success').classList.remove('tw-hidden');
+      if (r) {
+        document.querySelector('.line-connect-success').classList.remove('tw-hidden');
+        document.getElementById('open-modal').classList.add('tw-hidden');
+        localStorage.setItem('isLineLogin', 'true');
+      } else {
+        document.querySelector('.line-connect-required').classList.remove('tw-hidden');
+        changeToDummyImage();
+      }
     }).catch(e => {
       console.error('verifyLineLogin === false', e);
+      changeToDummyImage();
     });
   } else {
     document.querySelector('.line-login-required').classList.remove('tw-hidden');
