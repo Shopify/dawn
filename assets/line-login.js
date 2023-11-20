@@ -108,6 +108,7 @@ if (!lineAccessToken || lineAccessToken === 'undefined' || lineAccessToken === '
     });
   } else {
     document.querySelector('.line-login-required').classList.remove('tw-hidden');
+    changeToDummyImage();
   }
 } else {
   console.log('has token');
