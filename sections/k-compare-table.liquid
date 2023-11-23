@@ -1,0 +1,393 @@
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: calc({{ section.settings.padding_top }}px * 0.75);
+    padding-bottom: calc({{ section.settings.padding_bottom }}px  * 0.75);
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{{ 'quick-add.css' | asset_url | stylesheet_tag }}
+<link rel="stylesheet" href="{{ 'k-compare-table.css' | asset_url }}" media="print" onload="this.media='all'">
+<script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'quick-add.js' | asset_url }}" defer="defer"></script>
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <div class="section-{{ section.id }}-padding">
+    <div class="page-width">
+        <div class="table-overflow">
+            <table>
+                <thead>
+                    <tr>
+                        {% unless section.settings.title == blank %}
+                            <th class="small-hide">
+                                <h2 class="h2">{{ section.settings.title }}</h2>
+                            </th>
+                        {% endunless %}
+                        {% for item in section.settings.featured_products %}
+                            <th>
+                                {% if item.metafields.custom.compare_table_image != blank %}
+                                    <a href="" class="">
+                                    </a>
+                                    <div
+                                        class="media media--transparent media--adapt"
+                                        style="padding-bottom: 50%;"
+                                    >
+                                        {%- liquid
+                                            assign number_of_columns = 1
+                                            assign number_of_columns_mobile = 1
+                                            assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                            assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                            assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+                                            assign image_width = 1
+                                        -%}
+                                        {% capture sizes %}
+                                        (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+                                        (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+                                        (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+                                        calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+                                        {% endcapture %}
+                                        {{
+                                        item.metafields.custom.compare_table_image
+                                        | image_url: width: 300
+                                        | image_tag:
+                                            loading: 'lazy',
+                                            widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                                            sizes: sizes
+                                        }}
+                                    </div>
+                                {% endif %}
+                            </th>
+                        {% endfor %}
+                    </tr>
+                    <tbody>
+                        <tr class="heading-row">
+                            <td class="small-hide">&nbsp;</td>
+                            {% assign headings = section.settings.first_row_headings | newline_to_br | split: '<br />' %}
+                            {% for heading in headings %}
+                                <td>
+                                    <span class="column-heading center">{{ heading }}</span>
+                                </td>
+                            {% endfor %}
+                        </tr>
+                        <tr class="starting-row">
+                            <td class="small-hide">
+                                {% if section.settings.first_row_label %}
+                                    {{ section.settings.first_row_label }}
+                                {% endif %}
+                            </td>
+                            {% for item in section.settings.featured_products %}
+                                <td {% if item == product %}class="active-product"{% endif %}>
+                                    <h3 class="center h2">{{ item.price | money_without_trailing_zeros }}</h3>
+                                </td>
+                            {% endfor %}
+                        </tr>
+
+                        {% for item in section.settings.featured_products %}
+                            {% if item == product %}
+                                {% assign active_loop = forloop.index %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% for block in section.blocks %}
+                            <tr>
+                                <td class="small-hide">{{ block.settings.text }}</td>
+                                {% for i in (1..4) %}
+                                    {% assign icon_name = 'icon_' %}
+                                    {% assign icon = 'icon_' | append: i %}
+                                    <td class="center {% if forloop.index == active_loop %}active-product{% endif %}">
+                                        {% if block.settings[icon] == 'check' %}
+                                            <span class="accent-link icon-compare">&#10003;</span>
+                                        {% else %}
+                                            <span class="icon-compare">&ndash;</span>
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                            <tr class="medium-hide large-up-hide center">
+                                <td colspan="4">{{ block.settings.text }}</td>
+                            </tr>
+                        {% endfor %}
+                        <tr>
+                            <td class="small-hide">
+                                {% if section.settings.last_row_label %}
+                                    {{ section.settings.last_row_label }}
+                                {% endif %}
+                            </td>
+                            {% for item in section.settings.featured_products %}
+                                {%- liquid
+                                    assign product_form_id = 'quick-add-' | append: section.id | append: item.id
+                                    assign qty_rules = false
+                                    if item.selected_or_first_available_variant.quantity_rule.min > 1 or item.selected_or_first_available_variant.quantity_rule.max != null or item.selected_or_first_available_variant.quantity_rule.increment > 1
+                                      assign qty_rules = true
+                                    endif
+                                -%}
+
+                                <td {% if forloop.index == active_loop %}class="active-product"{% endif %}>
+                                    <product-form>
+                                        {%- form 'product',
+                                        item,
+                                        id: product_form_id,
+                                        class: 'form',
+                                        novalidate: 'novalidate',
+                                        data-type: 'add-to-cart-form'
+                                        -%}
+                                        <input
+                                            type="hidden"
+                                            name="id"
+                                            value="{{ item.selected_or_first_available_variant.id }}"
+                                            disabled
+                                        >
+                                        <button
+                                            id="{{ product_form_id }}-submit"
+                                            type="submit"
+                                            name="add"
+                                            class="quick-add__submit button button--small button--primary"
+                                            aria-haspopup="dialog"
+                                            aria-labelledby="{{ product_form_id }}-submit title-{{ section.id }}-{{ item.id }}"
+                                            aria-live="polite"
+                                            data-sold-out-message="true"
+                                            {% if item.selected_or_first_available_variant.available == false %}
+                                            disabled
+                                            {% endif %}
+                                        >
+                                            <span>
+                                            {%- if item.selected_or_first_available_variant.available -%}
+                                                {{ 'products.product.add_to_cart' | t }}
+                                            {%- else -%}
+                                                {{ 'products.product.sold_out' | t }}
+                                            {%- endif -%}
+                                            </span>
+                                            <span class="sold-out-message hidden">
+                                            {{ 'products.product.sold_out' | t }}
+                                            </span>
+                                            <div class="loading-overlay__spinner hidden">
+                                            <svg
+                                                aria-hidden="true"
+                                                focusable="false"
+                                                class="spinner"
+                                                viewBox="0 0 66 66"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+                                            </svg>
+                                            </div>
+                                        </button>
+                                        {%- endform -%}
+                                    </product-form>
+                                </td>
+                            {% endfor %}
+                        </tr>
+                        <tr class="last-row">
+                            <td class="small-hide">&nbsp;</td>
+                            {% for item in section.settings.featured_products %}
+                                <td {% if forloop.index == active_loop %}class="active-product"{% endif %}>
+                                    <div class="center">
+                                        <a href="{{ item.url }}" class="accent-link h4">{{ section.settings.bottom_buttons_label }}</a>
+                                    </div>
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </thead>
+            </table>
+        </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "K Compare Table",
+  "tag": "section",
+  "class": "section k-compare-table",
+  "settings": [
+    {
+        "type": "product_list",
+        "id": "featured_products",
+        "label": "Featured Products"
+    },
+    {
+        "type": "inline_richtext",
+        "id": "title",
+        "default": "Featured collection",
+        "label": "t:sections.featured-collection.settings.title.label"
+    },
+    {
+        "type": "richtext",
+        "id": "first_row_label",
+        "label": "First row label"
+    },
+    {
+        "type": "textarea",
+        "id": "first_row_headings",
+        "label": "First row headings"
+    },
+    {
+        "type": "richtext",
+        "id": "last_row_label",
+        "label": "Last row label"
+    },
+    {
+        "type": "text",
+        "id": "bottom_buttons_label",
+        "label": "Bottom Buttons label"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.all.colors.accent_1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.all.colors.accent_2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.all.colors.background_1.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.all.colors.background_2.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.all.colors.inverse.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.all.colors.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 52
+    }
+  ],
+  "blocks": [
+    {
+        "type": "item",
+        "name": "Item",
+        "settings": [
+            {
+                "type": "richtext",
+                "id": "text",
+                "label": "Text"
+            },
+            {
+                "type": "header",
+                "content": "First column"
+            },
+            {
+                "type": "select",
+                "id": "icon_1",
+                "options": [
+                  {
+                    "value": "check",
+                    "label": "True"
+                  },
+                  {
+                    "value": "false",
+                    "label": "False"
+                  }
+                ],
+                "default": "check",
+                "label": "True/False"
+            },
+            {
+                "type": "header",
+                "content": "Second column"
+            },
+            {
+                "type": "select",
+                "id": "icon_2",
+                "options": [
+                  {
+                    "value": "check",
+                    "label": "True"
+                  },
+                  {
+                    "value": "false",
+                    "label": "False"
+                  }
+                ],
+                "default": "check",
+                "label": "True/False"
+            },
+            {
+                "type": "header",
+                "content": "Third column"
+            },
+            {
+                "type": "select",
+                "id": "icon_3",
+                "options": [
+                  {
+                    "value": "check",
+                    "label": "True"
+                  },
+                  {
+                    "value": "false",
+                    "label": "False"
+                  }
+                ],
+                "default": "check",
+                "label": "True/False"
+            },
+            {
+                "type": "header",
+                "content": "Fourth column"
+            },
+            {
+                "type": "select",
+                "id": "icon_4",
+                "options": [
+                  {
+                    "value": "check",
+                    "label": "True"
+                  },
+                  {
+                    "value": "false",
+                    "label": "False"
+                  }
+                ],
+                "default": "check",
+                "label": "True/False"
+            }
+        ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "K Compare Table"
+    }
+  ]
+}
+{% endschema %}
