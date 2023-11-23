@@ -32,7 +32,7 @@ class DetailsModal extends HTMLElement {
 
     trapFocus(
       this.detailsContainer.querySelector('[tabindex="-1"]'),
-      this.detailsContainer.querySelector('input:not([type="hidden"])')
+      this.detailsContainer.querySelector('input:not([type="hidden"])'),
     );
   }
 
