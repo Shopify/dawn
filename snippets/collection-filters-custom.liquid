@@ -1,0 +1,278 @@
+{%- style -%}
+
+.filter-buttons-container {
+    position: -webkit-sticky; /* For Safari */
+    position: sticky;
+    top: 65px;
+    z-index: 2; /* To ensure it stays on top of other elements */
+    background-color: #ffffff; /* Optional: Use this if you want the background of the sticky bar to be white (or any other color) */
+    padding-top: 9px;
+    padding-bottom: 5px;
+    border-bottom: 0.1rem solid rgba(var(--color-foreground),.08); /* Adding the bottom border */
+}
+
+.button-and-value {
+    display: flex;
+    flex-direction: column; /* stack children vertically */
+    align-items: flex-start; /* align items to the start */
+}
+  
+#themesButton, .productTypeButton {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 20px;
+    color: inherit;
+    outline: none;
+}
+  
+.dropdown-container {
+    display: inline-block; /* Makes the container act like an inline element */
+    position: relative;   /* Establishes a positioning context for the dropdown */
+}
+
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;       /* Positions the dropdown right below the button */
+    left: 0;         /* Aligns the dropdown to the left of the button */
+    background-color: #f9f9f9;
+    min-width: 160px;
+    max-width: 90vw; /* Set to 80% of the viewport width. Adjust as needed */
+    max-height: 400px; /* Set this to your desired maximum height */
+    overflow-y: auto;  /* This makes it scrollable when the content exceeds max-height */
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    white-space: nowrap
+}
+
+.dropdown-content a {
+    padding: 10px 14px; /* Adjust the padding values as needed */
+    text-decoration: none;
+    display: block;
+    color: black;
+    font-size: 14px; /* Adjust font size as needed */
+    line-height: 1.4; /* Adjusts the height of each line. Useful if font size is increased */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+  
+.filterButton::before {
+    display: inline-block;
+    content: ''; /* Empty content */
+    background-image: url('YOUR-IMAGE-HERE.png');
+    background-size: 20px 20px; /* This controls the size of the background image */
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+  
+.selected-value {
+    font-size: 11px; /* Adjust the size as needed */
+    color: #777; /* Adjust the color as needed */
+    /* margin-top: 5px;  Add some spacing between the button and the text */
+}
+
+.truncate {
+    max-width: 160px; /* you can adjust this as needed */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+  
+  
+/* Default styles for mobile */
+.product-type-container {
+    float: right;
+}
+
+.product-type-container .dropdown-content {
+    right: 0;
+    left: auto; /* override any previously set 'left' value */
+}
+
+/* Styles for desktop (screen width 750px and above) */
+@media (min-width: 750px) {
+
+    .filter-buttons-container {
+        top: 85px; /* Adjust this value as needed for desktop */
+    }
+  
+    .product-type-container {
+        float: none; /* Reset the float so it's positioned beside the Themes button */
+        margin-left: 40px; /* Optional: Add some space between the two containers */
+    }
+    
+    .product-type-container .dropdown-content {
+        left: 0;
+        right: auto; /* Reset the positioning */
+    }
+}
+
+{%- endstyle -%}
+
+<!-- Accessing the metaobject directly using the handle "themes" -->
+{% assign themes_metaobject = shop.metaobjects.collection_filter_list.themes %}
+{% assign themes_collections_list = themes_metaobject.list %}
+
+<!-- Splitting the list into individual GIDs and extracting IDs -->
+{% assign gid_list = themes_collections_list | split: '","' %}
+{% assign custom_collection_ids = "" %}
+{% for collection_gid in gid_list %}
+    {% assign cleaned_gid = collection_gid | remove: '[' | remove: ']' | remove: '"' %}
+    {% assign collection_id = cleaned_gid | split: '/' | last %}
+    {% assign custom_collection_ids = custom_collection_ids | append: collection_id | append: "," %}
+{% endfor %}
+{% assign custom_collection_ids = custom_collection_ids | split: "," %}
+
+{% assign found_collections = "" %}
+{% assign found_collection_urls = "" %}
+
+{% for custom_id in custom_collection_ids %}
+    {% for collection in collections %}
+        {% capture collection_id_string %}{{ collection.id }}{% endcapture %}
+        {% if collection_id_string == custom_id %}
+            {% assign found_collections = found_collections | append: collection.title | append: ", " %}
+            {% assign found_collection_urls = found_collection_urls | append: collection.url | append: "," %}
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+
+
+{% assign current_collection_id_string = collection.id | capture %}
+{% assign current_collection_product_types = "" %}
+
+{% for coll in collections %}
+    {% if coll.id == current_collection_id_string %}
+        {% for product in coll.products %}
+            {% unless current_collection_product_types contains product.type %}
+                {% assign current_collection_product_types = current_collection_product_types | append: product.type | append: "," %}
+            {% endunless %}
+        {% endfor %}
+    {% endif %}
+{% endfor %}
+
+<div class="filter-buttons-container">
+    <div class="page-width">
+        <div class="dropdown-container themes-container">
+            <div class="button-and-value">
+                <button id="themesButton" class="filterButton">Themes</button>
+                <div id="selectedTheme" class="selected-value truncate"></div>
+            </div>
+            <div id="themesDropdown" class="dropdown-content">
+                {% assign split_found_collection_titles = found_collections | split: ", " %}
+                {% assign split_found_collection_urls = found_collection_urls | split: "," %}
+                {% for i in (0..split_found_collection_titles.size) %}
+                    {% if split_found_collection_titles[i] %}
+                        <a href="{{ split_found_collection_urls[i] }}">{{ split_found_collection_titles[i] }}</a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        <div class="dropdown-container product-type-container">
+            <div class="button-and-value">
+                <button id="productTypeButton" class="filterButton productTypeButton">Product Types</button>
+                <div id="selectedProductType" class="selected-value truncate"></div>
+            </div>
+            <div id="productTypeDropdown" class="dropdown-content">
+                <a href="{{ collection.url }}">All Types</a>
+    
+                {% assign split_product_types = current_collection_product_types | split: "," %}
+                {% for type in split_product_types %}
+                    <a href="{{ collection.url }}?filter.p.product_type={{ type }}">{{ type }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+var collectionTitleMapping = {
+    {% for coll in collections %}
+        "{{ coll.handle }}": "{{ coll.title }}",
+    {% endfor %}
+};
+</script>  
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var themesDropdown = document.getElementById("themesDropdown");
+    var productTypeDropdown = document.getElementById("productTypeDropdown");
+
+    document.getElementById("themesButton").addEventListener("click", function(event) {
+        if (themesDropdown.style.display === "none" || themesDropdown.style.display === "") {
+            themesDropdown.style.display = "block";
+            productTypeDropdown.style.display = "none"; // Close the other dropdown
+        } else {
+            themesDropdown.style.display = "none";
+        }
+        event.stopPropagation();
+    });
+    
+    document.getElementById("productTypeButton").addEventListener("click", function(event) {
+        if (productTypeDropdown.style.display === "none" || productTypeDropdown.style.display === "") {
+            productTypeDropdown.style.display = "block";
+            themesDropdown.style.display = "none"; // Close the other dropdown
+        } else {
+            productTypeDropdown.style.display = "none";
+        }
+        event.stopPropagation();
+    });
+
+
+    // Detect selected theme from the URL path
+    var pathSegments = window.location.pathname.split('/');
+    var selectedTheme;
+    for (var i = 0; i < pathSegments.length; i++) {
+        if (pathSegments[i] === "collections" && i + 1 < pathSegments.length) {
+            selectedTheme = pathSegments[i + 1];  // Get the segment right after "collections"
+            break;
+        }
+    }
+
+    // Detect selected product type from the URL parameters
+    var urlParams = new URLSearchParams(window.location.search);
+    var selectedProductType = urlParams.get('filter.p.product_type'); // Adjust if needed
+
+    console.log("Selected theme from URL:", selectedTheme);  // Log the detected theme
+    console.log("Selected product type from URL:", selectedProductType);  // Log the detected product type
+
+    // Get the title from the handle using the mapping
+    var selectedThemeTitle = collectionTitleMapping[selectedTheme] || selectedTheme;
+    
+    // Display selected values (if they exist)
+    if (selectedThemeTitle) {
+        document.getElementById("selectedTheme").textContent = selectedThemeTitle;
+    }
+    if (!selectedProductType) {
+        selectedProductType = "All Types";
+    }
+    document.getElementById("selectedProductType").textContent = "Selected: " + selectedProductType;
+    
+
+    // Introduce a delay before attaching the outside click event listener
+    setTimeout(function() {
+        document.addEventListener('click', function(event) {
+            if (!themesButton.contains(event.target) && !themesDropdown.contains(event.target)) {
+                themesDropdown.style.display = "none";
+            }
+        
+            if (!productTypeButton.contains(event.target) && !productTypeDropdown.contains(event.target)) {
+                productTypeDropdown.style.display = "none";
+            }
+        });
+    }, 500); // delay in ms
+
+});
+</script>
