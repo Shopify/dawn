@@ -86,29 +86,48 @@ var main = function () {
             });
         },
         sliderHeight: () => {
-            
+
             document.querySelectorAll('.adaptive-height').forEach(e => {
-                e.addEventListener('slideChanged', function(event) {
-                    if (event.detail.currentElement != undefined) {
-                        const parent = event.detail.currentElement.closest('.slideshow');
-                        
-                        setTimeout( function() {
-
-                            if (parent) { // Check if parent is not null or undefined
-                                parent.removeAttribute('style')
-
-                                const active = event.detail.currentElement;
-                                const banner = active.querySelector('.banner');
-                                
-                                console.log(banner.clientHeight)
+                const slider = e.querySelector('.slideshow');
+                let startX = 0;
+                let endX = 0;
                 
-                                if (banner) { // Check if banner is not null or undefined
-                                        parent.style.height = banner.clientHeight + 'px';
-                                }
-                            }
-                        },1000)
+                if (slider.querySelector('.slider__slide[aria-hidden="false"]')) {
+                    document.documentElement.style.setProperty('--slide-height', `${e.querySelector('.slider__slide[aria-hidden="false"]')?.clientHeight}px`);
+                }
+
+                function handleTouchStart(event) {
+                    startX = event.touches[0].clientX;
+                }
+                
+                function handleTouchMove(event) {
+                    endX = event.touches[0].clientX;
+                }
+                slider.addEventListener('touchstart', handleTouchStart, false);
+                slider.addEventListener('touchmove', handleTouchMove, false);
+
+
+                slider.addEventListener('touchend', handleTouchEnd, false);
+
+                function handleTouchEnd() {
+                    const deltaX = endX - startX;
+                
+                    if (deltaX > 0) {
+                      // Swiped to the right
+                      console.log('Swiped left');
+                    } else if (deltaX < 0) {
+                      // Swiped to the left
+                      console.log('Swiped right');
                     }
-                });
+
+                    setTimeout( function() {
+                        const banner = slider.querySelector('.slider__slide:not([tabindex]) .banner__content');
+                        console.log(banner.clientHeight)
+                        console.log(slider.querySelector('.slider__slide:not([tabindex])'))
+
+                        slider.style.setProperty('--slide-height', `${banner.clientHeight}px`);
+                    },1100) 
+                }
             });
         }
     };
