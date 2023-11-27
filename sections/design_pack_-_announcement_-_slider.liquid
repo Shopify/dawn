@@ -1,0 +1,768 @@
+{%- comment -%}
+{
+  "pack_name": "Announcement - slider",
+  "pack_author": "Design Packs"
+}
+{%- endcomment -%}
+
+{% comment %} Security Code - hides section when app uninstalled {% endcomment %}
+{%- unless content_for_header contains 'design_packs_file.js' -%}
+  {%- if request.design_mode -%}
+    <div class="dsgn-pck__no-app-warning">
+      <div class="dsgn-pck__no-app-warning-background">
+      </div>
+      <div class="dsgn-pck__no-app-warning-text dsgn-pck__rte">
+        <p><strong>WARNING!</strong> This premium section will not display properly without an active subscription for <a href="https://apps.shopify.com/design-packs" target="_blank" rel="nofollow">Design Packs</a>. If you need any support please email <a href="mailto:info@design-packs.com" target="_blank">info@design-packs.com</a> with your questions.</p>
+      </div>
+    </div>
+  {%- endif -%}
+  {%- break -%}
+{%- endunless -%}
+
+{% comment %} Blocks: check specific block types {% endcomment %}
+{% assign announcements = section.blocks | where: 'type', 'announcement' %}
+
+{% comment %} Images: responsive image widths {% endcomment %}
+{%- assign widths = '180, 360, 540, 720, 900, 1080, 1296, 1512, 1728, 1950, 2100, 2260, 2450, 2700, 3000, 3350, 3750, 4100' -%}
+
+{%- comment -%} Layout: has user entered measurement value into max-width field? {%- endcomment -%}
+{%- if section.settings.max_width contains 'px' or section.settings.max_width contains '%' -%}
+  {%- assign max_width = section.settings.max_width -%}
+{%- else -%}
+  {%- assign max_width = section.settings.max_width | append: 'px' -%}
+{%- endif -%}
+
+{%- comment -%} Layout: slider logic {%- endcomment -%}
+{% liquid
+  assign per_row = section.settings.per_row | plus: 0
+  assign announcements_size = announcements.size | plus: 0
+%}
+
+{%- comment -%} Text: custom font_picker values {%- endcomment -%}
+{%- capture font_settings_list -%}
+{{ section.settings.main_font | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}~
+{{ section.settings.main_font | font_modify: 'style', 'italic' | font_modify: 'weight', 'bolder' | font_face: font_display: 'swap' }}~
+{%- endcapture -%}
+{%- assign font_array = font_settings_list | split: '~' -%}
+
+{%- capture minify -%}
+{%- comment -%} CSS {%- endcomment -%}
+<style>
+/*! Flickity v2.2.2
+https://flickity.metafizzy.co
+---------------------------------------------- */
+.flickity-enabled{position:relative}.flickity-enabled:focus{outline:0;box-shadow: none;}.flickity-viewport{overflow:hidden;position:relative;height:100%}.flickity-slider{position:absolute;width:100%;height:100%}.flickity-enabled.is-draggable{-webkit-tap-highlight-color:transparent;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.flickity-enabled.is-draggable .flickity-viewport{cursor:move;cursor:-webkit-grab;cursor:grab}.flickity-enabled.is-draggable .flickity-viewport.is-pointer-down{cursor:-webkit-grabbing;cursor:grabbing}.flickity-button{position:absolute;background:hsla(0,0%,100%,.75);border:none;color:#333}.flickity-button:hover{background:#fff;cursor:pointer}.flickity-button:focus{outline:0;box-shadow:0 0 0 5px #19f}.flickity-button:active{opacity:.6}.flickity-button:disabled{opacity:.3;cursor:auto;pointer-events:none}.flickity-button-icon{fill:currentColor}.flickity-prev-next-button{top:50%;width:44px;height:44px;border-radius:50%;transform:translateY(-50%)}.flickity-prev-next-button.previous{left:10px}.flickity-prev-next-button.next{right:10px}.flickity-rtl .flickity-prev-next-button.previous{left:auto;right:10px}.flickity-rtl .flickity-prev-next-button.next{right:auto;left:10px}.flickity-prev-next-button .flickity-button-icon{position:absolute;left:20%;top:20%;width:60%;height:60%}.flickity-page-dots{position:absolute;width:100%;bottom:-25px;padding:0;margin:0;list-style:none;text-align:center;line-height:1}.flickity-rtl .flickity-page-dots{direction:rtl}.flickity-page-dots .dot{display:inline-block;width:10px;height:10px;margin:0 8px;background:#333;border-radius:50%;opacity:.25;cursor:pointer}.flickity-page-dots .dot.is-selected{opacity:1}
+
+{%- if section.settings.override_theme_font != blank -%}
+  {%- for font in font_array -%}
+    {%- unless font contains 'error' -%}{{ font }}{%- endunless -%}
+  {%- endfor -%}
+  #DP--{{ section.id }} {
+    --main-font: {{ section.settings.main_font.family }}, {{ section.settings.main_font.fallback_families }};
+    --main-font-weight: {{ section.settings.main_font.weight }};
+    --main-font-style: {{ section.settings.main_font.style }};
+  }
+{%- endif -%}
+
+#DP--{{ section.id }} {
+  --arrow-color: {{ section.settings.arrow_color }};
+  background: {{ section.settings.background_color }};
+  margin-top: {{ section.settings.outer_margin }}px;
+  margin-bottom: {{ section.settings.outer_margin }}px;
+  overflow-x: hidden;
+  {%- if per_row >= announcements_size -%}
+    --draggable: false;
+    --show-arrows: false;
+    --autoplay: 0;
+  {%- else -%}
+    --draggable: true;
+    --show-arrows: {{ section.settings.show_arrows }};
+    --autoplay: {{ section.settings.autoplay | times: 1000 }};
+  {%- endif -%}
+}
+
+#DP--{{ section.id }} .dsgn-pck__sizer {
+  padding-top: {{ section.settings.inner_padding }}px;
+  padding-bottom: {{ section.settings.inner_padding }}px;
+  width: {{ section.settings.base_width }}%;
+  max-width: {{ max_width }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__flex--main {
+  position: relative;
+  align-items: center;
+  grid-template-columns: repeat(auto-fill, minmax(50%, 1fr));
+  grid-auto-rows: 50%;
+  grid-auto-columns: minmax(0, auto);
+}
+
+#DP--{{ section.id }} .dsgn-pck__content {
+  flex: 1 0 40%;
+  padding: 20px;
+}
+
+#DP--{{ section.id }} .dsgn-pck__inner-content {
+  width: min(400px, 80%);
+  margin: auto;
+}
+
+/* Announcements */
+#DP--{{ section.id }} .dsgn-pck__announcements {
+  flex: 1 0 60%;
+}
+
+#DP--{{ section.id }} .dsgn-pck__slider {
+  max-width: 90%;
+  margin: auto;
+  overflow: visible;
+}
+
+#DP--{{ section.id }} .dsgn-pck__flex-item {
+  height: auto;
+  width: 100%;
+  {% if section.settings.per_row == '2' %}
+    width: calc(100% / {{ section.settings.per_row }} - {{ section.settings.gap }}px);
+    margin-right: calc( ({{ section.settings.per_row }} * {{ section.settings.gap }}px) / ({{ section.settings.per_row }} - 1));
+  {% else %}
+    margin: 0;
+  {% endif %}
+}
+
+#DP--{{ section.id }} .dsgn-pck__flex-item > a {
+  text-decoration: none;
+}
+
+{%- if section.settings.match_height != blank -%}
+  #DP--{{ section.id }} .dsgn-pck__stretch-height .dsgn-pck__flex-item {
+    height: 100%;
+  }
+{%- endif -%}
+
+#DP--{{ section.id }} .dsgn-pck__announcement {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  background: {{ section.settings.announcement_background_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__image-aspect {
+  aspect-ratio: 3 / 2;
+  width: 100%;
+}
+
+#DP--{{ section.id }} .dsgn-pck__image-aspect img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+}
+
+#DP--{{ section.id }} .dsgn-pck__announcement-content {
+  max-width: 95%;
+  margin: 0 auto;
+  grid-gap: 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  color: {{ section.settings.text_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__flex--2-per-row .dsgn-pck__announcement-content {
+  grid-gap: 0.8em;
+}
+
+#DP--{{ section.id }} .dsgn-pck__announcement .dsgn-pck__rte p,
+#DP--{{ section.id }} .dsgn-pck__announcement .dsgn-pck__rte ul {
+  color: {{ section.settings.text_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__announcement .dsgn-pck__small-heading {
+  color: {{ section.settings.text_color }};
+}
+
+#DP--{{ section.id }} .dsgn-pck__image {
+  overflow: hidden;
+  /* align-self: flex-start; */
+}
+
+#DP--{{ section.id }} .dsgn-pck__image--circle {
+  border-radius: 50%;
+}
+
+#DP--{{ section.id }} .dsgn-pck__image--rounded {
+  border-radius: 5px;
+}
+
+#DP--{{ section.id }} .dsgn-pck__link {
+  text-align: center;
+  font-weight: normal;
+  text-decoration: underline;
+  color: {{ section.settings.text_color }};
+  line-height: calc(3px + 3ex + 3px);
+  font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--main-font);
+  font-weight: var(--main-font-weight);
+  font-style: var(--main-font-style);
+  {%- endif -%}
+}
+
+{% comment %} Block styling {% endcomment %}
+#DP--{{ section.id }} .dsgn-pck__rte p,
+#DP--{{ section.id }} .dsgn-pck__rte ul {
+  line-height: calc(3px + 2.5ex + 3px);
+  font-size: calc(var(--dp-g-body-size, var(--dp-body-size, 18px)) * {{ section.settings.text_size | times: 0.01 }});
+  {%- if section.settings.override_theme_font != blank -%}
+  font-family: var(--main-font);
+  font-weight: var(--main-font-weight);
+  font-style: var(--main-font-style);
+  {%- endif -%}
+}
+
+{%- if section.settings.text_alignment == 'center' -%}
+  #DP--{{ section.id }} .dsgn-pck__rte ul {
+    display: table;
+    margin: 0 auto;
+    text-align: left;
+  }
+{%- elsif section.settings.text_alignment == 'right' -%}
+  #DP--{{ section.id }} .dsgn-pck__rte ul {
+    display: table;
+    margin-left: auto;
+    text-align: left;
+  }
+{%- endif -%}
+
+
+#DP--{{ section.id }} .dsgn-pck__block + .dsgn-pck__block {
+  margin-top: 15px;
+}
+{% comment %} End block styling {% endcomment %}
+
+/* Slideshow styles */
+
+#DP--{{ section.id }} .dsgn-pck__slider:not(.flickity-enabled) .dsgn-pck__flex-item:nth-child(n+{{ section.settings.per_row | plus: 1 }}){
+  display: none;
+}
+
+#DP--{{ section.id }} .dsgn-pck__link:not([href]) {
+  text-decoration: none;
+}
+
+#DP--{{ section.id }} .dsgn-pck__slider:after {
+  content: 'flickity';
+  display: none;
+}
+
+#DP--{{ section.id }} .flickity-slider {
+  top: 0;
+}
+
+#DP--{{ section.id }} .flickity-enabled {
+  position: relative;
+}
+
+#DP--{{ section.id }} .flickity-button {
+  background: transparent;
+  opacity: 1;
+}
+
+#DP--{{ section.id }} .flickity-button-icon {
+  padding: 0;
+  transform: none;
+  color: var(--arrow-color);
+}
+
+#DP--{{ section.id }} .arrow {
+  opacity: 1;
+}
+
+#DP--{{ section.id }} button svg.flickity-button-icon path {
+  fill: var(--arrow-color);
+}
+
+#DP--{{ section.id }} .flickity-prev-next-button {
+  width: 24px;
+  height: 24px;
+}
+
+#DP--{{ section.id }} .flickity-prev-next-button.next {
+  right: -28px;
+}
+
+#DP--{{ section.id }} .flickity-prev-next-button.previous {
+  left: -28px;
+}
+
+{%- if section.settings.custom_css != blank -%}
+  {%- assign custom_section_declarations = section.settings.custom_css | split: '}' -%}
+  {%- for declaration in custom_section_declarations -%}
+    {%- if declaration contains '{' -%}
+      #DP--{{ section.id }} {{ declaration }} }
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+
+/* Landscape phones and down */
+@media (max-width: 480px) {
+  #DP--{{ section.id }} {
+    margin-top: {{ section.settings.outer_margin | divided_by: 2 }}px;
+    margin-bottom: {{ section.settings.outer_margin | divided_by: 2 }}px;
+    {%- assign mobile_per_row = 1 -%}
+    {%- if mobile_per_row >= section.blocks.size -%}
+      --draggable: false;
+      --show-arrows: false;
+    {%- else -%}
+      --draggable: true;
+      --show-arrows: {{ section.settings.show_arrows }};
+    {%- endif -%}
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__sizer {
+    min-width: 90%;
+    max-width: 90%;
+    margin: 0 auto;
+    padding-top: {{ section.settings.inner_padding | divided_by: 2 }}px;
+    padding-bottom: {{ section.settings.inner_padding | divided_by: 2 }}px;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__announcement-content {
+    grid-gap: 1em;
+  }
+
+  #DP--{{ section.id }} .flickity-prev-next-button.previous {
+    left: -1.8em;
+  }
+
+  #DP--{{ section.id }} .flickity-prev-next-button.next {
+    right: -1.8em;
+  }
+
+  #DP--{{ section.id }} .dsgn-pck__slider {
+    max-width: 95%;
+    margin: auto;
+  }
+
+  {%- if section.settings.mobile_custom_css != blank -%}
+    {%- assign mobile_custom_declarations = section.settings.mobile_custom_css | split: '}' -%}
+    {%- for declaration in mobile_custom_declarations -%}
+      {%- if declaration contains '{' -%}
+        #DP--{{ section.id }} {{ declaration }} }
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+
+}
+</style>
+
+{%- liquid
+  if announcements.size == 0
+    break
+  endif
+-%}
+
+{%- comment -%} HTML {%- endcomment -%}
+<section id="DP--{{ section.id }}" class="DP--{{ section.id }} dsgn-pck__announcements-slider dsgn-pck__section">
+  <div class="dsgn-pck__sizer">
+    <div class="dsgn-pck__flex dsgn-pck__flex--main">
+      <div class="dsgn-pck__announcements">
+        <div id="slider-{{ section.id }}" class="dsgn-pck__slider dsgn-pck__flex--{{ section.settings.per_row }}-per-row">
+          {%- for block in announcements -%}
+            {%- if block.settings.title != blank or block.settings.image != blank or block.settings.link_label != blank %}
+              <div class="dsgn-pck__flex-item dsgn-pck__item dsgn-pck__block-{{ block.id }}" {{ block.shopify_attributes }}>
+                <style>
+                  .dsgn-pck__block-{{ block.id }} .dsgn-pck__image {
+                    width: {{ block.settings.image_size }}px;
+                    flex: 1 0 min(30%, {{ block.settings.image_size }}px);
+                  }
+                </style>
+                <div class="dsgn-pck__announcement">
+                  <div class="dsgn-pck__announcement-content dsgn-pck__justify-{{ section.settings.text_alignment}}">
+                    {%- if block.settings.image != blank -%}
+                      {%- comment -%} Crop based on initial image width and height{%- endcomment -%}
+                      {%- if block.settings.image_crop == 'none' -%}
+                        {%- assign image_crop_width = block.settings.image.width -%}
+                        {%- assign image_crop_height = block.settings.image.height -%}
+                      {%- endif -%}
+                      <div class="dsgn-pck__image dsgn-pck__image--{{ block.settings.image_crop }}">
+                        <div class="dsgn-pck__image__wrapper">
+                          <svg class="dsgn-pck__svg-sizer" viewBox="0 0 {{ image_crop_width | default: 1000 }} {{ image_crop_height | default: 1000 }}"></svg>
+                          {%- capture sizes -%}
+                            (max-width: 480px) {{ section.settings.base_width | append: 'vw' | default: '90vw' }}, {{ section.settings.base_width | divided_by: section.settings.per_row | divided_by: 2 | append: 'vw' | default: '33vw' }}
+                          {%- endcapture -%}
+                          {{ block.settings.image | image_url: width: 1000 | image_tag: loading: 'lazy', widths: widths, sizes: sizes }}
+                        </div>
+                      </div>
+                    {%- endif -%}
+                    {%- if block.settings.title != blank -%}
+                      <div class="dsgn-pck__text dsgn-pck__rte">
+                        {{ block.settings.title }}
+                      </div>
+                    {%- endif -%}
+                    {%- if block.settings.link_label != blank -%}
+                      <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %} {% if block.settings.external_link %}target="_blank"{% endif %} class="dsgn-pck__link">
+                        {{ block.settings.link_label }}
+                      </a>
+                    {%- endif -%}
+                  </div>
+                </div>
+              </div>
+          {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{%- endcapture -%}
+{{ minify | strip_newlines }}
+
+{% schema %}
+{
+  "name": "Announcement - slider",
+  "class": "DP__announcements-slider",
+  "settings": [
+    {
+      "type": "select",
+      "id": "per_row",
+      "label": "Announcements per slide",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "match_height",
+      "label": "Match announcement height",
+      "default": true,
+      "info": "All announcement blocks will stretch to height of largest block."
+    },
+    {
+      "type": "range",
+      "id": "autoplay",
+      "label": "Change slide every",
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "default": 8,
+      "unit": "sec",
+      "info": "Set to '0' to disable autoplay"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "min": 0,
+      "max": 40,
+      "label": "Spacing gap",
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "✏️ Text appearance"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Text size",
+      "min": 60,
+      "max": 120,
+      "step": 5,
+      "default": 100,
+      "unit": "%"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "default": "center",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "🎨 Design"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#4D4D4D"
+    },
+    {
+      "type": "color",
+      "id": "arrow_color",
+      "label": "Arrow color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "announcement_background_color",
+      "label": "Announcement background"
+    },
+    {
+      "type": "color_background",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#f6f6f6"
+    },
+    {
+      "type": "header",
+      "content": "🖼 Layout"
+    },
+    {
+      "type": "range",
+      "id": "base_width",
+      "label": "Size",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "default": 90,
+      "unit": "%"
+    },
+    {
+      "type": "text",
+      "id": "max_width",
+      "label": "Maximum width",
+      "placeholder": "eg. 1200px",
+      "info": "Sets width constraint for content."
+    },
+    {
+      "type": "range",
+      "id": "inner_padding",
+      "label": "Inner padding",
+      "info": "Only applies to top and bottom.",
+      "min": 0,
+      "max": 100,
+      "default": 5,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "outer_margin",
+      "label": "Outer margin",
+      "info": "Only applies to top and bottom.",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "🚨 Advanced"
+    },
+    {
+      "type": "html",
+      "id": "custom_css",
+      "label": "CSS"
+    },
+    {
+      "type": "html",
+      "id": "mobile_custom_css",
+      "label": "Mobile CSS",
+      "info": "Applied on screens less than 480px."
+    },
+    {
+      "type": "checkbox",
+      "id": "override_theme_font",
+      "label": "Override default theme font",
+      "default": false
+    },
+    {
+      "type": "font_picker",
+      "id": "main_font",
+      "label": "Text",
+      "default": "sans-serif"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "announcement",
+      "name": "Announcement",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "title",
+          "label": "Message",
+          "default": "<p>Welcome to our store</p>"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "select",
+          "id": "image_crop",
+          "label": "Image crop",
+          "default": "circle",
+          "options": [
+            {
+              "value": "circle",
+              "label": "Circle"
+            },
+            {
+              "value": "rounded",
+              "label": "Rounded"
+            },
+            {
+              "value": "square",
+              "label": "Square"
+            },
+            {
+              "value": "none",
+              "label": "Original"
+            }
+          ]
+        },
+        {
+          "type": "range",
+          "id": "image_size",
+          "label": "Image size",
+          "min": 30,
+          "max": 150,
+          "step": 2,
+          "default": 40,
+          "unit": "px"
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Link label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "checkbox",
+          "id": "external_link",
+          "label": "Open this link in a new window"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Announcement - slider 🎒",
+      "blocks": [
+        {
+          "type": "announcement",
+          "settings": {
+            "title": "<p>Welcome to our store</p>"
+          }
+        },
+        {
+          "type": "announcement",
+          "settings": {
+            "title": "<p>Check out our new product</p>"
+          }
+        },
+        {
+          "type": "announcement",
+          "settings": {
+            "title": "<p>Fall collection out now</p>"
+          }
+        },
+        {
+          "type": "announcement",
+          "settings": {
+            "title": "<p>Free shipping over $50</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+{%- comment -%} JSON Settings {%- endcomment -%}
+<script type="application/json" data-dsgn-pck="{{ section.id }}">
+  {
+    "id": {{ section.id | json }}
+  }
+</script>
+
+{%- comment -%} External scripts {%- endcomment -%}
+<script data-dsgn-pck-external-js="{{ section.id }}" src="https://cdn.shopify.com/s/files/1/0577/7673/4361/files/flickity-2.3.0.pkgd.min.js?v=1671485005" defer></script>
+{%- comment -%} JavaScript {%- endcomment -%}
+<script data-dsgn-pck-js="{{ section.id }}" type="module" defer>
+(function(){
+
+  const designPack = {
+    settings: {},
+    load: function(section){
+      const elem = section.querySelector(`#slider-${designPack.settings.id}`);
+      designPack.flkty = new Flickity( elem, {
+        cellAlign: 'left',
+        autoPlay: JSON.parse(getComputedStyle(section).getPropertyValue('--autoplay')),
+        draggable: JSON.parse(getComputedStyle(section).getPropertyValue('--draggable')),
+        contain: true,
+        wrapAround: true,
+        adaptiveHeight: false,
+        watchCSS: true,
+        imagesLoaded: true,
+        prevNextButtons: JSON.parse(getComputedStyle(section).getPropertyValue('--show-arrows')),
+        pageDots: false,
+        on: {
+          ready: () => {
+            elem.classList.add('dsgn-pck__stretch-height');
+          }
+        }
+      });
+    },
+    unload: function(section){
+    }
+  }
+
+  window.addEventListener('shopify:section:unload', function (e) {
+    const settings = document.querySelector(`[data-dsgn-pck="${e.detail.sectionId}"]`);
+    const sectionId = e.detail.sectionId;
+    const section = document.querySelector(`#DP--${e.detail.sectionId}`);
+    if (sectionId == designPack.settings.id){
+      designPack.unload(section);
+    }
+  });
+
+  designPack.settings = JSON.parse(document.querySelector('[data-dsgn-pck="{{ section.id }}"]').innerHTML);
+  const sectionId = {{ section.id | json }};
+  const section = document.querySelector(`#DP--${sectionId}`);
+
+  if (sectionId == designPack.settings.id){
+    designPack.load(section);
+  }
+})()
+</script>
