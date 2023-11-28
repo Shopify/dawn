@@ -91,12 +91,15 @@ var main = function () {
                 const slider = e.querySelector('.slideshow');
                 let startX = 0;
                 let endX = 0;
-                
+
                 if (slider.querySelector('.slider__slide[aria-hidden="false"]')) {
-                    document.documentElement.style.setProperty('--slide-height', `${e.querySelector('.slider__slide[aria-hidden="false"]')?.clientHeight}px`);
+                    console.log(slider.querySelector('.slider__slide[aria-hidden="false"]'))
+                    slider.style.setProperty('--slide-height', `${e.querySelector('.slider__slide[aria-hidden="false"] .banner__content')?.clientHeight}px`);
                 }
 
                 function handleTouchStart(event) {
+                    console.log('touchstart')
+                    slider.classList.add('opacity-min')
                     startX = event.touches[0].clientX;
                 }
                 
@@ -106,11 +109,12 @@ var main = function () {
                 slider.addEventListener('touchstart', handleTouchStart, false);
                 slider.addEventListener('touchmove', handleTouchMove, false);
 
-
                 slider.addEventListener('touchend', handleTouchEnd, false);
 
+                
                 function handleTouchEnd() {
                     const deltaX = endX - startX;
+                    console.log('touchend')
                 
                     if (deltaX > 0) {
                       // Swiped to the right
@@ -122,11 +126,13 @@ var main = function () {
 
                     setTimeout( function() {
                         const banner = slider.querySelector('.slider__slide:not([tabindex]) .banner__content');
-                        console.log(banner.clientHeight)
-                        console.log(slider.querySelector('.slider__slide:not([tabindex])'))
-
                         slider.style.setProperty('--slide-height', `${banner.clientHeight}px`);
+                        slider.classList.remove('opacity-min')
                     },1100) 
+
+                    slider.addEventListener('transitionend', function () {
+                        console.log('transitionend')
+                    })
                 }
             });
         }
