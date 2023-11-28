@@ -84,6 +84,57 @@ var main = function () {
                     }
                 });
             });
+        },
+        sliderHeight: () => {
+
+            document.querySelectorAll('.adaptive-height').forEach(e => {
+                const slider = e.querySelector('.slideshow');
+                let startX = 0;
+                let endX = 0;
+
+                if (slider.querySelector('.slider__slide[aria-hidden="false"]')) {
+                    console.log(slider.querySelector('.slider__slide[aria-hidden="false"]'))
+                    slider.style.setProperty('--slide-height', `${e.querySelector('.slider__slide[aria-hidden="false"] .banner__content')?.clientHeight}px`);
+                }
+
+                function handleTouchStart(event) {
+                    console.log('touchstart')
+                    slider.classList.add('opacity-min')
+                    startX = event.touches[0].clientX;
+                }
+                
+                function handleTouchMove(event) {
+                    endX = event.touches[0].clientX;
+                }
+                slider.addEventListener('touchstart', handleTouchStart, false);
+                slider.addEventListener('touchmove', handleTouchMove, false);
+
+                slider.addEventListener('touchend', handleTouchEnd, false);
+
+                
+                function handleTouchEnd() {
+                    const deltaX = endX - startX;
+                    console.log('touchend')
+                
+                    if (deltaX > 0) {
+                      // Swiped to the right
+                      console.log('Swiped left');
+                    } else if (deltaX < 0) {
+                      // Swiped to the left
+                      console.log('Swiped right');
+                    }
+
+                    setTimeout( function() {
+                        const banner = slider.querySelector('.slider__slide:not([tabindex]) .banner__content');
+                        slider.style.setProperty('--slide-height', `${banner.clientHeight}px`);
+                        slider.classList.remove('opacity-min')
+                    },1100) 
+
+                    slider.addEventListener('transitionend', function () {
+                        console.log('transitionend')
+                    })
+                }
+            });
         }
     };
 }()
@@ -91,3 +142,4 @@ var main = function () {
 main.popoverBtns()
 main.amznOr()
 main.resellerCTA()
+main.sliderHeight()
