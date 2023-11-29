@@ -951,7 +951,6 @@ class VariantSelects extends HTMLElement {
     super();
     console.error('initializing variant selects');
     this.addEventListener('change', this.onVariantChange);
-    // this.currentVariant = this.getCurrentVariant();
   }
 
   onVariantChange(e) {
@@ -959,25 +958,24 @@ class VariantSelects extends HTMLElement {
     const variantId = e.target.dataset.contextualVariantId;
     const url = this.getUrlForVariantId(variantId);
     // const url = e.target.dataset.contextualProductHandle || this.dataset.url; // todo needs this.dataset.url? look for other usages
+    this.updateCurrentVariant(variantId);
 
-    this.updateOptions(); // this sets this.options array to be the options of the newly selected variant
-    // this.initCurrentVariant(); // not possible unless we also surface the "next" variants in the data model somewhere. this sets this.currentVariant to be the newly selected variant.
-    this.toggleAddButton(true, '', false); // this disables the add button
-    // this.updatePickupAvailability(); // not possible unless we also surface the "next" variants in the data model somewhere. pickup-availability.js.
-    this.removeErrorMessage(); // no impact
+    this.updateOptions(); // this sets this.options array to be the options of the newly selected variant. May not be needed
+    this.toggleAddButton(true, '', false); // works, this disables the add button
+    this.updatePickupAvailability(); // works, pickup-availability.js handles updating pickup availability
+    this.removeErrorMessage(); // works, removes err msgs
     // this.updateVariantStatuses(); // Not possible. The availability change needs to come back _after_ the Section API response comes back.
 
-    // is this conditional change legit?
-    if (!variantId) {
+    if (!this.currentVariant) {
       // We don't need to update anything for this conditional
       this.toggleAddButton(true, '', true);
       this.setUnavailable();
     } else {
-      // this.updateMedia(); // Not possible, unless next variant is surfaced in the data model. Otherwise must be after the fetch.
-      this.updateURL(variantId, url); // needs tweaks but is possible pre-fetch
-      this.updateVariantInput(variantId); // needs tweaks but is possible pre-fetch
+      this.dataset.url === url && this.updateMedia(); // Updates the featured media. We need to decide whether this should ONLY occur for in-product variant changes or not.
+      this.updateURL(variantId, url); // works
+      this.updateVariantInput(variantId); // works
       this.renderProductInfo(variantId, url); // this is the fetch, needs tweaks
-      this.updateShareUrl(variantId, url); // needs tweaks but is possible pre-fetch
+      this.updateShareUrl(variantId, url); // works
     }
   }
 
@@ -1019,15 +1017,12 @@ class VariantSelects extends HTMLElement {
     this.options = Array.from(this.querySelectorAll('select'), (select) => select.value);
   }
 
-  initCurrentVariant() {
-    // this.currentVariant = this.getCurrentVariant();
-    // this.currentVariant = this.getVariantData().find((variant) => {
-    //   return !variant.options
-    //     .map((option, index) => {
-    //       return this.options[index] === option;
-    //     })
-    //     .includes(false);
-    // });
+  updateCurrentVariant(variantId) {
+    this.currentVariant = this.getVariantData().find((variant) => variant.id === variantId);
+  }
+
+  updateVariantData() {
+    this.variantData = JSON.parse(this.querySelector('[type="application/json"]').textContent);
   }
 
   updateMedia() {
@@ -1109,6 +1104,10 @@ class VariantSelects extends HTMLElement {
     }
   }
 
+  updateOptionValueAvailability() {
+    this.updateVariantData();
+  }
+
   removeErrorMessage() {
     const section = this.closest('section');
     if (!section) return;
@@ -1117,44 +1116,32 @@ class VariantSelects extends HTMLElement {
     if (productForm) productForm.handleErrorMessage();
   }
 
-  replaceContentInDom;
-
   renderProductInfo(requestedVariantId, url) {
-    const sectionId = this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section;
+    const sectionId = this.dataset.originalSection || this.dataset.section;
 
-    debugger;
-    // TODO this needs to be updated
     fetch(`${url}?variant=${requestedVariantId}&section_id=${sectionId}`)
       .then((response) => response.text())
       .then((responseText) => {
         // prevent unnecessary ui changes from abandoned selections
-        // TODO this needs to be updated...
-        // if (this.currentVariant.id !== requestedVariantId) return;
+        if (this.currentVariant.id !== requestedVariantId) return;
 
         const shouldUpdateAllInfo = this.dataset.url !== url;
-
         const html = new DOMParser().parseFromString(responseText, 'text/html');
-        this.currentVariant = JSON.parse(html.querySelector('[type="application/json"]').textContent);
-
-        // NEW!
-        this.updatePickupAvailability();
 
         debugger;
 
         if (shouldUpdateAllInfo) {
           // TODO can we add a spinner if it's a full replacement, and do piecemeal replacement if it's a minimal change?
-
-          //   const newDiv = document.createElement('div');
-          // newDiv.style.display = 'none';
-          // newDiv.appendChild(html.getElementById(`shopify-section-${sectionId}`));
-          // document.body.appendChild(newDiv);
-
           document.getElementById(`shopify-section-${sectionId}`).innerHTML = html.getElementById(
             `shopify-section-${sectionId}`
           ).innerHTML;
 
+          // TODO retrigger buy-it-now evaluation
+
           return;
         }
+
+        this.updateOptionValueAvailability();
 
         const destination = document.getElementById(`price-${this.dataset.section}`);
         const source = html.getElementById(`price-${sectionId}`);
@@ -1197,38 +1184,6 @@ class VariantSelects extends HTMLElement {
         if (price) price.classList.remove('hidden');
 
         if (inventoryDestination) inventoryDestination.classList.toggle('hidden', inventorySource.innerText === '');
-
-        // // NEW NEW NEW NEW -----------------------
-        // const titleDestination = document.getElementById(`Title-${this.dataset.section}`);
-        // const titleSource = html.getElementById(`Title-${sectionId}`);
-        // if (titleDestination) {
-        //   // TODO a11y concerns if focus is on title?
-        //   titleDestination.innerHTML = titleSource.innerHTML;
-        // }
-
-        // const descriptionDestination = document.getElementById(`Description-${this.dataset.section}`);
-        // const descriptionSource = html.getElementById(`Description-${sectionId}`);
-        // if (descriptionDestination) {
-        //   descriptionDestination.innerHTML = descriptionSource.innerHTML;
-        // }
-
-        // // TODO what happens if there's no images on the before or after?
-        // const mediaDestination = document.querySelectorAll('variant-radios, variant-selects')[0];
-        // const mediaSource = html.querySelectorAll('variant-radios, variant-selects')[0];
-        // if (selectorsDestination) {
-        //   selectorsDestination.innerHTML = selectorsSource.innerHTML;
-        //   // TODO re-attach focused element?
-        // }
-
-        // const selectorsDestination = document.querySelectorAll('variant-radios, variant-selects')[0];
-        // const selectorsSource = html.querySelectorAll('variant-radios, variant-selects')[0];
-        // if (selectorsDestination) {
-        //   selectorsDestination.innerHTML = selectorsSource.innerHTML;
-        //   // TODO re-attach focused element?
-        // }
-
-        // // TODO anything else to update?
-        // // END NEW NEW NEW NEW -----------------------
 
         const addButtonUpdated = html.getElementById(`ProductSubmitButton-${sectionId}`);
         this.toggleAddButton(
@@ -1288,14 +1243,8 @@ class VariantSelects extends HTMLElement {
     if (qtyRules) qtyRules.classList.add('hidden');
   }
 
-  getCurrentVariant() {
-    this.currentVariant =
-      this.currentVariant || JSON.parse(this.querySelector('[type="application/json"]').textContent);
-    return this.currentVariant;
-  }
-
   getVariantData() {
-    this.variantData = this.variantData || JSON.parse(this.querySelector('[type="application/json"]').textContent);
+    !this.variantData && updateVariantData();
     return this.variantData;
   }
 }
