@@ -247,6 +247,7 @@ Shopify.bind = function (fn, scope) {
 };
 
 Shopify.setSelectorByValue = function (selector, value) {
+  // TODO is this referring to the .options in the ValueSelector class or something else? If not, we could remove the this.options from that class.
   for (var i = 0, count = selector.options.length; i < count; i++) {
     var option = selector.options[i];
     if (value == option.value || value == option.innerHTML) {
@@ -766,9 +767,7 @@ class SlideshowComponent extends SliderComponent {
       this.autoplayButtonIsSetToPlay = true;
       this.play();
     } else {
-      this.reducedMotion.matches || this.announcementBarArrowButtonWasClicked
-        ? this.pause()
-        : this.play();
+      this.reducedMotion.matches || this.announcementBarArrowButtonWasClicked ? this.pause() : this.play();
     }
   }
 
@@ -832,10 +831,7 @@ class SlideshowComponent extends SliderComponent {
         event.target === this.sliderAutoplayButton || this.sliderAutoplayButton.contains(event.target);
       if (!this.autoplayButtonIsSetToPlay || focusedOnAutoplayButton) return;
       this.play();
-    } else if (
-      !this.reducedMotion.matches &&
-      !this.announcementBarArrowButtonWasClicked
-    ) {
+    } else if (!this.reducedMotion.matches && !this.announcementBarArrowButtonWasClicked) {
       this.play();
     }
   }
@@ -877,9 +873,7 @@ class SlideshowComponent extends SliderComponent {
 
   autoRotateSlides() {
     const slideScrollPosition =
-      this.currentPage === this.sliderItems.length
-        ? 0
-        : this.slider.scrollLeft + this.sliderItemOffset;
+      this.currentPage === this.sliderItems.length ? 0 : this.slider.scrollLeft + this.sliderItemOffset;
 
     this.setSlidePosition(slideScrollPosition);
     this.applyAnimationToAnnouncementBar();
@@ -943,7 +937,7 @@ class SlideshowComponent extends SliderComponent {
     const slideScrollPosition =
       this.slider.scrollLeft +
       this.sliderFirstItemNode.clientWidth *
-      (this.sliderControlLinksArray.indexOf(event.currentTarget) + 1 - this.currentPage);
+        (this.sliderControlLinksArray.indexOf(event.currentTarget) + 1 - this.currentPage);
     this.slider.scrollTo({
       left: slideScrollPosition,
     });
@@ -955,41 +949,85 @@ customElements.define('slideshow-component', SlideshowComponent);
 class VariantSelects extends HTMLElement {
   constructor() {
     super();
+    console.error('initializing variant selects');
     this.addEventListener('change', this.onVariantChange);
+    // this.currentVariant = this.getCurrentVariant();
   }
 
-  onVariantChange() {
-    this.updateOptions();
-    this.updateMasterId();
-    this.toggleAddButton(true, '', false);
-    this.updatePickupAvailability();
-    this.removeErrorMessage();
-    this.updateVariantStatuses();
+  onVariantChange(e) {
+    debugger;
+    const variantId = e.target.dataset.contextualVariantId;
+    const url = this.getUrlForVariantId(variantId);
+    // const url = e.target.dataset.contextualProductHandle || this.dataset.url; // todo needs this.dataset.url? look for other usages
 
-    if (!this.currentVariant) {
+    this.updateOptions(); // this sets this.options array to be the options of the newly selected variant
+    // this.initCurrentVariant(); // not possible unless we also surface the "next" variants in the data model somewhere. this sets this.currentVariant to be the newly selected variant.
+    this.toggleAddButton(true, '', false); // this disables the add button
+    // this.updatePickupAvailability(); // not possible unless we also surface the "next" variants in the data model somewhere. pickup-availability.js.
+    this.removeErrorMessage(); // no impact
+    // this.updateVariantStatuses(); // Not possible. The availability change needs to come back _after_ the Section API response comes back.
+
+    // is this conditional change legit?
+    if (!variantId) {
+      // We don't need to update anything for this conditional
       this.toggleAddButton(true, '', true);
       this.setUnavailable();
     } else {
-      this.updateMedia();
-      this.updateURL();
-      this.updateVariantInput();
-      this.renderProductInfo();
-      this.updateShareUrl();
+      // this.updateMedia(); // Not possible, unless next variant is surfaced in the data model. Otherwise must be after the fetch.
+      this.updateURL(variantId, url); // needs tweaks but is possible pre-fetch
+      this.updateVariantInput(variantId); // needs tweaks but is possible pre-fetch
+      this.renderProductInfo(variantId, url); // this is the fetch, needs tweaks
+      this.updateShareUrl(variantId, url); // needs tweaks but is possible pre-fetch
     }
   }
 
+  urlVariantMap = {
+    1827: '/products/chinos-black',
+    1829: '/products/chinos-black',
+    1830: '/products/chinos-black',
+    1831: '/products/chinos-black',
+    1832: '/products/chinos-black',
+    1833: '/products/chinos-black',
+    1834: '/products/chinos-black',
+    1835: '/products/chinos-black',
+    1836: '/products/chinos-black',
+    1837: '/products/chinos-black',
+    1838: '/products/chinos-black',
+    1839: '/products/chinos-black',
+    1840: '/products/chinos-black',
+    1828: '/products/chinos-orange',
+    1841: '/products/chinos-orange',
+    1842: '/products/chinos-orange',
+    1843: '/products/chinos-orange',
+    1844: '/products/chinos-orange',
+    1845: '/products/chinos-orange',
+    1846: '/products/chinos-orange',
+    1847: '/products/chinos-orange',
+    1848: '/products/chinos-orange',
+    1849: '/products/chinos-orange',
+    1850: '/products/chinos-orange',
+    1851: '/products/chinos-orange',
+    1852: '/products/chinos-orange',
+  };
+  // TODO remove me
+  getUrlForVariantId(variantId) {
+    return this.urlVariantMap[variantId];
+  }
+
+  // TODO can this be removed?
   updateOptions() {
     this.options = Array.from(this.querySelectorAll('select'), (select) => select.value);
   }
 
-  updateMasterId() {
-    this.currentVariant = this.getVariantData().find((variant) => {
-      return !variant.options
-        .map((option, index) => {
-          return this.options[index] === option;
-        })
-        .includes(false);
-    });
+  initCurrentVariant() {
+    // this.currentVariant = this.getCurrentVariant();
+    // this.currentVariant = this.getVariantData().find((variant) => {
+    //   return !variant.options
+    //     .map((option, index) => {
+    //       return this.options[index] === option;
+    //     })
+    //     .includes(false);
+    // });
   }
 
   updateMedia() {
@@ -1007,28 +1045,31 @@ class VariantSelects extends HTMLElement {
     modalContent.prepend(newMediaModal);
   }
 
-  updateURL() {
-    if (!this.currentVariant || this.dataset.updateUrl === 'false') return;
-    window.history.replaceState({}, '', `${this.dataset.url}?variant=${this.currentVariant.id}`);
+  updateURL(variantId, url) {
+    if (!variantId || this.dataset.updateUrl === 'false') return;
+    window.history.replaceState({}, '', `${url}?variant=${variantId}`);
   }
 
-  updateShareUrl() {
+  updateShareUrl(variantId, url) {
     const shareButton = document.getElementById(`Share-${this.dataset.section}`);
     if (!shareButton || !shareButton.updateUrl) return;
-    shareButton.updateUrl(`${window.shopUrl}${this.dataset.url}?variant=${this.currentVariant.id}`);
+    shareButton.updateUrl(`${window.shopUrl}${url}?variant=${variantId}`);
   }
 
-  updateVariantInput() {
+  updateVariantInput(variantId) {
     const productForms = document.querySelectorAll(
       `#product-form-${this.dataset.section}, #product-form-installment-${this.dataset.section}`
     );
     productForms.forEach((productForm) => {
       const input = productForm.querySelector('input[name="id"]');
-      input.value = this.currentVariant.id;
+      input.value = variantId;
       input.dispatchEvent(new Event('change', { bubbles: true }));
     });
   }
 
+  // TODO
+  // This uses all product variant data to set whether or not a variant is available for the next set of selected options
+  // There will be a timing impact here with our changes because we will need to wait until the data comes back to set the new availability
   updateVariantStatuses() {
     const selectedOptionOneVariants = this.variantData.filter(
       (variant) => this.querySelector(':checked').value === variant.option1
@@ -1045,6 +1086,7 @@ class VariantSelects extends HTMLElement {
     });
   }
 
+  // TODO needs to be updated
   setInputAvailability(listOfOptions, listOfAvailableOptions) {
     listOfOptions.forEach((input) => {
       if (listOfAvailableOptions.includes(input.getAttribute('value'))) {
@@ -1075,39 +1117,56 @@ class VariantSelects extends HTMLElement {
     if (productForm) productForm.handleErrorMessage();
   }
 
-  renderProductInfo() {
-    const requestedVariantId = this.currentVariant.id;
+  replaceContentInDom;
+
+  renderProductInfo(requestedVariantId, url) {
     const sectionId = this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section;
 
-    fetch(
-      `${this.dataset.url}?variant=${requestedVariantId}&section_id=${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section
-      }`
-    )
+    debugger;
+    // TODO this needs to be updated
+    fetch(`${url}?variant=${requestedVariantId}&section_id=${sectionId}`)
       .then((response) => response.text())
       .then((responseText) => {
         // prevent unnecessary ui changes from abandoned selections
-        if (this.currentVariant.id !== requestedVariantId) return;
+        // TODO this needs to be updated...
+        // if (this.currentVariant.id !== requestedVariantId) return;
+
+        const shouldUpdateAllInfo = this.dataset.url !== url;
 
         const html = new DOMParser().parseFromString(responseText, 'text/html');
+        this.currentVariant = JSON.parse(html.querySelector('[type="application/json"]').textContent);
+
+        // NEW!
+        this.updatePickupAvailability();
+
+        debugger;
+
+        if (shouldUpdateAllInfo) {
+          // TODO can we add a spinner if it's a full replacement, and do piecemeal replacement if it's a minimal change?
+
+          //   const newDiv = document.createElement('div');
+          // newDiv.style.display = 'none';
+          // newDiv.appendChild(html.getElementById(`shopify-section-${sectionId}`));
+          // document.body.appendChild(newDiv);
+
+          document.getElementById(`shopify-section-${sectionId}`).innerHTML = html.getElementById(
+            `shopify-section-${sectionId}`
+          ).innerHTML;
+
+          return;
+        }
+
         const destination = document.getElementById(`price-${this.dataset.section}`);
-        const source = html.getElementById(
-          `price-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`
-        );
-        const skuSource = html.getElementById(
-          `Sku-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`
-        );
+        const source = html.getElementById(`price-${sectionId}`);
+        const skuSource = html.getElementById(`Sku-${sectionId}`);
         const skuDestination = document.getElementById(`Sku-${this.dataset.section}`);
-        const inventorySource = html.getElementById(
-          `Inventory-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`
-        );
+        const inventorySource = html.getElementById(`Inventory-${sectionId}`);
         const inventoryDestination = document.getElementById(`Inventory-${this.dataset.section}`);
 
-        const volumePricingSource = html.getElementById(
-          `Volume-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`
-        );
+        const volumePricingSource = html.getElementById(`Volume-${sectionId}`);
 
         const pricePerItemDestination = document.getElementById(`Price-Per-Item-${this.dataset.section}`);
-        const pricePerItemSource = html.getElementById(`Price-Per-Item-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
+        const pricePerItemSource = html.getElementById(`Price-Per-Item-${sectionId}`);
 
         const volumePricingDestination = document.getElementById(`Volume-${this.dataset.section}`);
         const qtyRules = document.getElementById(`Quantity-Rules-${this.dataset.section}`);
@@ -1137,8 +1196,39 @@ class VariantSelects extends HTMLElement {
 
         if (price) price.classList.remove('hidden');
 
-        if (inventoryDestination)
-          inventoryDestination.classList.toggle('hidden', inventorySource.innerText === '');
+        if (inventoryDestination) inventoryDestination.classList.toggle('hidden', inventorySource.innerText === '');
+
+        // // NEW NEW NEW NEW -----------------------
+        // const titleDestination = document.getElementById(`Title-${this.dataset.section}`);
+        // const titleSource = html.getElementById(`Title-${sectionId}`);
+        // if (titleDestination) {
+        //   // TODO a11y concerns if focus is on title?
+        //   titleDestination.innerHTML = titleSource.innerHTML;
+        // }
+
+        // const descriptionDestination = document.getElementById(`Description-${this.dataset.section}`);
+        // const descriptionSource = html.getElementById(`Description-${sectionId}`);
+        // if (descriptionDestination) {
+        //   descriptionDestination.innerHTML = descriptionSource.innerHTML;
+        // }
+
+        // // TODO what happens if there's no images on the before or after?
+        // const mediaDestination = document.querySelectorAll('variant-radios, variant-selects')[0];
+        // const mediaSource = html.querySelectorAll('variant-radios, variant-selects')[0];
+        // if (selectorsDestination) {
+        //   selectorsDestination.innerHTML = selectorsSource.innerHTML;
+        //   // TODO re-attach focused element?
+        // }
+
+        // const selectorsDestination = document.querySelectorAll('variant-radios, variant-selects')[0];
+        // const selectorsSource = html.querySelectorAll('variant-radios, variant-selects')[0];
+        // if (selectorsDestination) {
+        //   selectorsDestination.innerHTML = selectorsSource.innerHTML;
+        //   // TODO re-attach focused element?
+        // }
+
+        // // TODO anything else to update?
+        // // END NEW NEW NEW NEW -----------------------
 
         const addButtonUpdated = html.getElementById(`ProductSubmitButton-${sectionId}`);
         this.toggleAddButton(
@@ -1156,6 +1246,7 @@ class VariantSelects extends HTMLElement {
       });
   }
 
+  // TODO modifyClass doesn't do anything here...
   toggleAddButton(disable = true, text, modifyClass = true) {
     const productForm = document.getElementById(`product-form-${this.dataset.section}`);
     if (!productForm) return;
@@ -1197,6 +1288,12 @@ class VariantSelects extends HTMLElement {
     if (qtyRules) qtyRules.classList.add('hidden');
   }
 
+  getCurrentVariant() {
+    this.currentVariant =
+      this.currentVariant || JSON.parse(this.querySelector('[type="application/json"]').textContent);
+    return this.currentVariant;
+  }
+
   getVariantData() {
     this.variantData = this.variantData || JSON.parse(this.querySelector('[type="application/json"]').textContent);
     return this.variantData;
@@ -1210,6 +1307,7 @@ class VariantRadios extends VariantSelects {
     super();
   }
 
+  // TODO needs to be updated
   setInputAvailability(listOfOptions, listOfAvailableOptions) {
     listOfOptions.forEach((input) => {
       if (listOfAvailableOptions.includes(input.getAttribute('value'))) {
@@ -1220,6 +1318,7 @@ class VariantRadios extends VariantSelects {
     });
   }
 
+  // tODO can this be removed?
   updateOptions() {
     const fieldsets = Array.from(this.querySelectorAll('fieldset'));
     this.options = fieldsets.map((fieldset) => {
