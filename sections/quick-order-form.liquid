@@ -74,13 +74,16 @@
     >
       <div class="quick-order-list__container" id="main-variant-items-{{ section.id }}">
         <div class="js-contents">
-          <table class="quick-order-list__table">
+          <table class="quick-order-list__table{% if section.settings.enable_sticky_header %} quick-order-list__table--sticky{% endif %}">
             <caption class="visually-hidden">
               {{ 'sections.cart.title' | t }}
             </caption>
             <thead>
               <tr>
-                <th class="caption-with-letter-spacing" scope="col">
+                <th
+                  class="caption-with-letter-spacing product-title"
+                  scope="col"
+                >
                   {{ 'sections.quick_order_list.product' | t }}
                 </th>
                 <th class="large-up-hide right caption-with-letter-spacing" scope="col">
@@ -105,19 +108,22 @@
             </thead>
 
             <tbody>
-              {%-
-                render 'quick-order-product-row',
-                item: collections['shop-all'].products.first,
-                image: collections['shop-all']products.first.featured_media,
-              -%}
-              {%- for variant in collections['shop-all'].products.first.variants -%}
-                {%-
-                  render 'quick-order-list-row',
-                  item: variant,
-                  image: variant.image,
-                  sku: variant.sku,
-                  variant: variant,
-                -%}
+              {% comment %} Temporary: show first 5 products {% endcomment %}
+              {%- for i in (0..4) -%}
+                {%- assign product = collections['shop-all'].products[i] -%}
+                {%- assign image = product.featured_media -%}
+
+                {%- render 'quick-order-product-row', item: product, image: image -%}
+
+                {%- for variant in product.variants -%}
+                  {%-
+                    render 'quick-order-list-row',
+                    item: variant,
+                    image: variant.image,
+                    sku: variant.sku,
+                    variant: variant,
+                  -%}
+                {%- endfor -%}
               {%- endfor -%}
             </tbody>
           </table>
@@ -233,6 +239,12 @@
     "templates": ["article", "blog", "index", "list-collections", "page"]
   },
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_sticky_header",
+      "default": false,
+      "label": "t:sections.quick-order-form.settings.enable_sticky_header.label"
+    },
     {
       "type": "checkbox",
       "id": "show_image",
