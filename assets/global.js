@@ -955,7 +955,7 @@ class VariantSelects extends HTMLElement {
 
   onVariantChange(e) {
     debugger;
-    const variantId = e.target.dataset.contextualVariantId;
+    const variantId = +e.target.dataset.contextualVariantId;
     const url = this.getUrlForVariantId(variantId);
     // const url = e.target.dataset.contextualProductHandle || this.dataset.url; // todo needs this.dataset.url? look for other usages
     this.updateCurrentVariant(variantId);
@@ -1062,34 +1062,15 @@ class VariantSelects extends HTMLElement {
     });
   }
 
-  // TODO
-  // This uses all product variant data to set whether or not a variant is available for the next set of selected options
-  // There will be a timing impact here with our changes because we will need to wait until the data comes back to set the new availability
-  updateVariantStatuses() {
-    const selectedOptionOneVariants = this.variantData.filter(
-      (variant) => this.querySelector(':checked').value === variant.option1
-    );
-    const inputWrappers = [...this.querySelectorAll('.product-form__input')];
-    inputWrappers.forEach((option, index) => {
-      if (index === 0) return;
-      const optionInputs = [...option.querySelectorAll('input[type="radio"], option')];
-      const previousOptionSelected = inputWrappers[index - 1].querySelector(':checked').value;
-      const availableOptionInputsValue = selectedOptionOneVariants
-        .filter((variant) => variant.available && variant[`option${index}`] === previousOptionSelected)
-        .map((variantOption) => variantOption[`option${index + 1}`]);
-      this.setInputAvailability(optionInputs, availableOptionInputsValue);
-    });
-  }
-
-  // TODO needs to be updated
-  setInputAvailability(listOfOptions, listOfAvailableOptions) {
-    listOfOptions.forEach((input) => {
-      if (listOfAvailableOptions.includes(input.getAttribute('value'))) {
-        input.innerText = input.getAttribute('value');
-      } else {
-        input.innerText = window.variantStrings.unavailable_with_option.replace('[value]', input.getAttribute('value'));
-      }
-    });
+  setInputAvailability(optionInput, isAvailable) {
+    if (isAvailable) {
+      optionInput.innerText = optionInput.getAttribute('value');
+    } else {
+      optionInput.innerText = window.variantStrings.unavailable_with_option.replace(
+        '[value]',
+        optionInput.getAttribute('value')
+      );
+    }
   }
 
   updatePickupAvailability() {
@@ -1104,8 +1085,35 @@ class VariantSelects extends HTMLElement {
     }
   }
 
-  updateOptionValueAvailability() {
+  // Alternatively, we could just replace the options section like it used to be done here: https://github.com/Shopify/dawn/pull/2031/files#diff-47a8b2f1172e03da15783b379f0e007d8e3dfd27cbd9142adf9e32c4b9591079L860-L867
+  // Need to determine why the change was made to use this function instead of swapping in the first place. This maybe? https://github.com/Shopify/dawn/pull/2030#discussion_r998300327
+
+  updateOptionValueAvailability(responseHtml) {
     this.updateVariantData();
+
+    debugger;
+
+    const newInputData = [...responseHtml.querySelectorAll(this.getInputSelector())].reduce(
+      (acc, curr) => ({ ...acc, [curr.id]: curr }),
+      {}
+    );
+
+    // update existing inputs with new information
+    this.querySelectorAll(this.getInputSelector()).forEach((input) => {
+      const newInput = newInputData[input.id];
+      if (!newInput) return;
+
+      input.dataset.contextualVariantId = newInput.dataset.contextualVariantId;
+      input.dataset.contextualProductHandle = newInput.dataset.contextualProductHandle;
+
+      const isDisabled = newInput.classList.contains('disabled');
+      this.setInputAvailability(input, !isDisabled);
+    });
+
+    // update all input data attributes with new variantIDs (handles too? or no?)
+    // update all input availabilities
+
+    // this.setInputAvailability(optionInputs, availableOptionInputsValue);
   }
 
   removeErrorMessage() {
@@ -1137,14 +1145,18 @@ class VariantSelects extends HTMLElement {
           ).innerHTML;
 
           // TODO retrigger buy-it-now evaluation
+          // TODO set focus
 
           return;
         }
 
-        this.updateOptionValueAvailability();
+        // is there a better spot for this?
+        this.querySelector('[type="application/json"]').innerHTML =
+          html.querySelector('[type="application/json"]').innerHTML;
+        this.updateOptionValueAvailability(html);
 
-        const destination = document.getElementById(`price-${this.dataset.section}`);
-        const source = html.getElementById(`price-${sectionId}`);
+        const priceDestination = document.getElementById(`price-${this.dataset.section}`);
+        const priceSource = html.getElementById(`price-${sectionId}`);
         const skuSource = html.getElementById(`Sku-${sectionId}`);
         const skuDestination = document.getElementById(`Sku-${this.dataset.section}`);
         const inventorySource = html.getElementById(`Inventory-${sectionId}`);
@@ -1163,7 +1175,7 @@ class VariantSelects extends HTMLElement {
         if (volumePricingDestination) volumePricingDestination.classList.remove('hidden');
         if (qtyRules) qtyRules.classList.remove('hidden');
 
-        if (source && destination) destination.innerHTML = source.innerHTML;
+        if (priceSource && priceDestination) priceDestination.innerHTML = priceSource.innerHTML;
         if (inventorySource && inventoryDestination) inventoryDestination.innerHTML = inventorySource.innerHTML;
         if (skuSource && skuDestination) {
           skuDestination.innerHTML = skuSource.innerHTML;
@@ -1244,8 +1256,12 @@ class VariantSelects extends HTMLElement {
   }
 
   getVariantData() {
-    !this.variantData && updateVariantData();
+    !this.variantData && this.updateVariantData();
     return this.variantData;
+  }
+
+  getInputSelector() {
+    return 'fieldset option';
   }
 }
 
@@ -1256,23 +1272,24 @@ class VariantRadios extends VariantSelects {
     super();
   }
 
-  // TODO needs to be updated
-  setInputAvailability(listOfOptions, listOfAvailableOptions) {
-    listOfOptions.forEach((input) => {
-      if (listOfAvailableOptions.includes(input.getAttribute('value'))) {
-        input.classList.remove('disabled');
-      } else {
-        input.classList.add('disabled');
-      }
-    });
+  setInputAvailability(input, isAvailable) {
+    if (isAvailable) {
+      input.classList.remove('disabled');
+    } else {
+      input.classList.add('disabled');
+    }
   }
 
-  // tODO can this be removed?
+  // TODO can this be removed?
   updateOptions() {
-    const fieldsets = Array.from(this.querySelectorAll('fieldset'));
-    this.options = fieldsets.map((fieldset) => {
-      return Array.from(fieldset.querySelectorAll('input')).find((radio) => radio.checked).value;
-    });
+    return [...this.querySelectorAll(this.getInputSelector())].reduce((acc, radio) => {
+      if (radio.checked) return [...acc, radio.value];
+      return acc;
+    }, []);
+  }
+
+  getInputSelector() {
+    return 'fieldset input[type="radio"]';
   }
 }
 
