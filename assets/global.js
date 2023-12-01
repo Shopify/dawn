@@ -980,7 +980,14 @@ class VariantSelects extends HTMLElement {
   }
 
   updateOptions() {
-    this.options = Array.from(this.querySelectorAll('select'), (select) => select.value);
+    this.options = Array.from(this.querySelectorAll('select, fieldset'), (element) => {
+      if (element.tagName === 'SELECT') {
+        return element.value;
+      }
+      if (element.tagName === 'FIELDSET') {
+        return Array.from(element.querySelectorAll('input')).find((radio) => radio.checked)?.value;
+      }
+    });
   }
 
   updateMasterId() {
@@ -1046,12 +1053,17 @@ class VariantSelects extends HTMLElement {
     });
   }
 
-  setInputAvailability(listOfOptions, listOfAvailableOptions) {
-    listOfOptions.forEach((input) => {
-      if (listOfAvailableOptions.includes(input.getAttribute('value'))) {
-        input.innerText = input.getAttribute('value');
-      } else {
-        input.innerText = window.variantStrings.unavailable_with_option.replace('[value]', input.getAttribute('value'));
+  setInputAvailability(elementList, availableValuesList) {
+    elementList.forEach((element) => {
+      const value = element.getAttribute('value');
+      const availableElement = availableValuesList.includes(value);
+
+      if (element.tagName === 'INPUT') {
+        element.classList.toggle('disabled', !availableElement);
+      } else if (element.tagName === 'OPTION') {
+        element.innerText = availableElement
+          ? value
+          : window.variantStrings.unavailable_with_option.replace('[value]', value);
       }
     });
   }
@@ -1205,31 +1217,6 @@ class VariantSelects extends HTMLElement {
 }
 
 customElements.define('variant-selects', VariantSelects);
-
-class VariantRadios extends VariantSelects {
-  constructor() {
-    super();
-  }
-
-  setInputAvailability(listOfOptions, listOfAvailableOptions) {
-    listOfOptions.forEach((input) => {
-      if (listOfAvailableOptions.includes(input.getAttribute('value'))) {
-        input.classList.remove('disabled');
-      } else {
-        input.classList.add('disabled');
-      }
-    });
-  }
-
-  updateOptions() {
-    const fieldsets = Array.from(this.querySelectorAll('fieldset'));
-    this.options = fieldsets.map((fieldset) => {
-      return Array.from(fieldset.querySelectorAll('input')).find((radio) => radio.checked).value;
-    });
-  }
-}
-
-customElements.define('variant-radios', VariantRadios);
 
 class ProductRecommendations extends HTMLElement {
   constructor() {
