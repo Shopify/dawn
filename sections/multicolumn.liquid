@@ -13,6 +13,11 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+  {%- if request.page_type == 'index' -%}
+    .title-wrapper-with-link {
+      gap: 0;
+  }
+  {%- endif -%}
 {%- endstyle -%}
 
 {%- liquid
@@ -23,20 +28,43 @@
   endif
 -%}
 
-<div class="multicolumn color-{{ section.settings.color_scheme }} gradient{% unless section.settings.background_style == 'none' and settings.text_boxes_border_thickness > 0 or settings.text_boxes_shadow_opacity > 0 %} background-{{ section.settings.background_style }}{% endunless %}{% if section.settings.title == blank %} no-heading{% endif %}">
+<div
+  class="multicolumn color-{{ section.settings.color_scheme }} gradient{% unless section.settings.background_style == 'none' and settings.text_boxes_border_thickness > 0 or settings.text_boxes_shadow_opacity > 0 %} background-{{ section.settings.background_style }}{% endunless %}{% if section.settings.title == blank %} no-heading{% endif %}"
+  style="background-color: {{ section.settings.multi-col-color-bg }}"
+>
   <div
     class="page-width section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
     {% if settings.animations_reveal_on_scroll %}
       data-cascade
     {% endif %}
   >
+    {%- if section.settings['multi-col-image'] != blank -%}
+      <div class="{{ section.settings.multi-col-image-align }} multi-col-image-bottom-padding">
+        {{ section.settings['multi-col-image'] | image_url: width: section.settings['multi-col_width'] | image_tag }}
+      </div>
+    {%- endif -%}
     {%- unless section.settings.title == blank -%}
       <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin">
-        <h2 class="title inline-richtext {{ section.settings.heading_size }}">
+        {%- if section.settings['line-accent'] != blank -%}
+          <div>
+            <hr class="accent-line">
+          </div>
+        {%- endif -%}
+        <h2 class="title inline-richtext {{ section.settings.heading_size }} {{ section.settings.multi-header-align }}">
           {{ section.settings.title }}
         </h2>
+        {%- if section.settings.description != blank -%}
+          {% comment %} Font style is set to body by default instead of having a changable font type like the featured products section. {% endcomment %}
+          <div class="body rte scroll-trigger animate--slide-in">
+            {%- if section.settings.show_description -%}
+              {{ section.settings.collection.description }}
+            {%- else -%}
+              {{ section.settings.description -}}
+            {%- endif %}
+          </div>
+        {%- endif -%}
         {%- if section.settings.button_label != blank and show_mobile_slider -%}
-          <a href="{{ section.settings.button_link }}" class="link underlined-link large-up-hide">
+          <a href="{{ section.settings.button_link }}" class="link underlined-link">
             {{- section.settings.button_label | escape -}}
           </a>
         {%- endif -%}
@@ -68,14 +96,23 @@
 
           <li
             id="Slide-{{ section.id }}-{{ forloop.index }}"
-            class="multicolumn-list__item grid__item{% if section.settings.swipe_on_mobile %} slider__slide{% endif %}{% if section.settings.column_alignment == 'center' %} center{% endif %}{{ empty_column }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+            class="multicolumn-list__item grid__item{% if section.settings.swipe_on_mobile %} slider__slide{% endif %}{% if section.settings.column_alignment == 'center' %} center{% endif %}{{ empty_column }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %} {% if block.settings['white-card'] != blank and block.settings.link_label != blank %} multi-col-white-card-wrapper{% endif %}"
             {{ block.shopify_attributes }}
             {% if settings.animations_reveal_on_scroll %}
               data-cascade
               style="--animation-order: {{ forloop.index }};"
             {% endif %}
           >
-            <div class="multicolumn-card content-container">
+            {%- if block.settings['white-card'] != blank and block.settings.link_label != blank -%}
+              <a
+                {% if block.settings.link == blank %}
+                  role="link" aria-disabled="true"
+                {% else %}
+                  href="{{ block.settings.link }}"
+                {% endif %}
+              >
+            {%- endif -%}
+            <div class="multicolumn-card content-container {% if block.settings.white-card != blank %} multi-col-white-card{% endif %}">
               {%- if block.settings.image != blank -%}
                 {% if section.settings.image_ratio == 'adapt' or section.settings.image_ratio == 'circle' %}
                   {% assign spaced_image = true %}
@@ -102,23 +139,23 @@
                       endif
                     -%}
                     {% capture sizes %}
-                      (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
-                      (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
-                      (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
-                      calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
-                    {% endcapture %}
+                          (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+                          (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+                          (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+                          calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+                        {% endcapture %}
                     {{
                       block.settings.image
                       | image_url: width: 3200
                       | image_tag:
                         widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
                         sizes: sizes,
-                        class: 'multicolumn-card__image'
+                        class: 'multicolumn-card__image multi-col-floating-img'
                     }}
                   </div>
                 </div>
               {%- endif -%}
-              <div class="multicolumn-card__info">
+              <div class="multicolumn-card__info {% if block.settings.center-col != blank %} center{% endif %}">
                 {%- if block.settings.title != blank -%}
                   <h3 class="inline-richtext">{{ block.settings.title }}</h3>
                 {%- endif -%}
@@ -127,19 +164,27 @@
                 {%- endif -%}
                 {%- if block.settings.link_label != blank -%}
                   <a
-                    class="link animate-arrow"
+                    class="link animate-arrow {% if block.settings.solid-btn != blank %}solid-btn button button--primary{% endif %}"
                     {% if block.settings.link == blank %}
                       role="link" aria-disabled="true"
                     {% else %}
                       href="{{ block.settings.link }}"
                     {% endif %}
                   >
-                    {{- block.settings.link_label | escape -}}
-                    <span class="icon-wrap">&nbsp;{% render 'icon-arrow' %}</span></a
-                  >
+                    <span class="white-card-btn-label">
+                      {{- block.settings.link_label | escape -}}
+                    </span>
+                    <span class="icon-wrap">
+                      {%- if block.settings['white-card'] != blank -%}<div class="arrow-btn">{% endif %}
+                      {% render 'icon-arrow' %}
+                      {%- if block.settings['white-card'] != blank -%}</div>{% endif %} </span
+                  ></a>
                 {%- endif -%}
               </div>
             </div>
+            {%- if block.settings['white-card'] != blank and block.settings.link_label != blank -%}
+              </a>
+            {%- endif -%}
           </li>
         {%- endfor -%}
       </ul>
@@ -171,20 +216,22 @@
         </div>
       {%- endif -%}
     </slider-component>
-    <div class="center{% if show_mobile_slider %} small-hide medium-hide{% endif %}">
-      {%- if section.settings.button_label != blank -%}
-        <a
-          class="button button--primary"
-          {% if section.settings.button_link == blank %}
-            role="link" aria-disabled="true"
-          {% else %}
-            href="{{ section.settings.button_link }}"
-          {% endif %}
-        >
-          {{ section.settings.button_label | escape }}
-        </a>
-      {%- endif -%}
-    </div>
+    {% comment %}
+      <div class="center{% if show_mobile_slider %} small-hide medium-hide{% endif %}" style="margin-top: 4rem;">
+        {%- if section.settings.button_label != blank -%}
+          <a
+            class="button button--primary"
+            {% if section.settings.button_link == blank %}
+              role="link" aria-disabled="true"
+            {% else %}
+              href="{{ section.settings.button_link }}"
+            {% endif %}
+          >
+            {{ section.settings.button_label | escape }}
+          </a>
+        {%- endif -%}
+      </div>
+    {% endcomment %}
   </div>
 </div>
 
@@ -202,6 +249,52 @@
       "id": "title",
       "default": "Multicolumn",
       "label": "t:sections.multicolumn.settings.title.label"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "t:sections.multicolumn.settings.description.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "line-accent",
+      "label": "Line accent",
+      "default": false
+    },
+    {
+      "type": "image_picker",
+      "id": "multi-col-image",
+      "label": "t:sections.multicolumn.settings.multi-col-image.label"
+    },
+    {
+      "type": "range",
+      "id": "multi-col_width",
+      "min": 50,
+      "max": 400,
+      "step": 5,
+      "default": 100,
+      "unit": "px",
+      "label": "t:sections.multicolumn.settings.multi-col_width.label"
+    },
+    {
+      "type": "select",
+      "id": "multi-col-image-align",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.multicolumn.settings.multi-col-image-align.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.multicolumn.settings.multi-col-image-align.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.multicolumn.settings.multi-col-image-align.options__3.label"
+        }
+      ],
+      "default": "left",
+      "label": "t:sections.multicolumn.settings.multi-col-image-align.label"
     },
     {
       "type": "select",
@@ -222,6 +315,32 @@
       ],
       "default": "h1",
       "label": "t:sections.all.heading_size.label"
+    },
+    {
+      "type": "select",
+      "id": "multi-header-align",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.multicolumn.settings.multi-header-align.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.multicolumn.settings.multi-header-align.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.multicolumn.settings.multi-header-align.options__3.label"
+        }
+      ],
+      "default": "left",
+      "label": "t:sections.multicolumn.settings.multi-header-align.label"
+    },
+    {
+      "type": "color",
+      "id": "multi-col-color-bg",
+      "label": "Background color",
+      "default": "#FFFFFF"
     },
     {
       "type": "select",
@@ -369,7 +488,7 @@
       "type": "range",
       "id": "padding_bottom",
       "min": 0,
-      "max": 100,
+      "max": 120,
       "step": 4,
       "unit": "px",
       "label": "t:sections.all.padding.padding_bottom",
@@ -387,6 +506,12 @@
           "label": "t:sections.multicolumn.blocks.column.settings.image.label"
         },
         {
+          "type": "checkbox",
+          "id": "white-card",
+          "label": "White card styling",
+          "default": false
+        },
+        {
           "type": "inline_richtext",
           "id": "title",
           "default": "Column",
@@ -399,6 +524,12 @@
           "label": "t:sections.multicolumn.blocks.column.settings.text.label"
         },
         {
+          "type": "checkbox",
+          "id": "center-col",
+          "label": "Center content",
+          "default": false
+        },
+        {
           "type": "text",
           "id": "link_label",
           "label": "t:sections.multicolumn.blocks.column.settings.link_label.label"
@@ -407,6 +538,12 @@
           "type": "url",
           "id": "link",
           "label": "t:sections.multicolumn.blocks.column.settings.link.label"
+        },
+        {
+          "type": "checkbox",
+          "id": "solid-btn",
+          "label": "Solid Button",
+          "default": false
         }
       ]
     }
