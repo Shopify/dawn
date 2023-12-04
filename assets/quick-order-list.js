@@ -80,7 +80,7 @@ class QuickOrderList extends HTMLElement {
 
     // Check if sticky header is enabled
     if (this.isStickyHeaderEnabled()) {
-      this.stickyHeader();
+      this.initializeStickyHeader();
     }
   }
 
@@ -252,7 +252,7 @@ class QuickOrderList extends HTMLElement {
     this.adjustStickyHeaderPosition();
   }
   
-  stickyHeader() {
+  initializeStickyHeader() {
     const activateStickyHeader = () => {
       this.checkProducts();
       window.removeEventListener('load', activateStickyHeader);
