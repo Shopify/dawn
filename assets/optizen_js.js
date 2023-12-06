@@ -49,8 +49,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Store the selected values in sessionStorage
     sessionStorage.setItem('selectedCheckboxes', JSON.stringify(selectedValues));
-
-    // Reload the page
-    location.reload();
   }
 });
