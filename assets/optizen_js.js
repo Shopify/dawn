@@ -38,14 +38,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // Fetch the current URL
     var currentUrl = window.location.href;
 
-    // Extract the current collection and collection name from the URL
-    var parts = currentUrl.split('/').filter(Boolean);
-    var domain = parts[2];
-    var collection = parts[3];
-    var collectionName = parts[4];
+    // Extract the current collection name from the URL
+    var collectionName = currentUrl.split('/').filter(Boolean)[2];
+
+    // Remove any existing values after the last '/'
+    var baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
 
     // Construct the updated URL dynamically
-    var redirectUrl = `https://${domain}/${collection}/${collectionName}/${selectedValues.join('+')}`;
+    var redirectUrl = baseUrl + collectionName + '/' + selectedValues.join('+');
 
     // Update the URL without triggering the redirect
     history.replaceState(null, null, redirectUrl);
@@ -54,6 +54,6 @@ document.addEventListener('DOMContentLoaded', function () {
     sessionStorage.setItem('selectedCheckboxes', JSON.stringify(selectedValues));
 
     // Reload the page
-    window.location.reload(true); // true forces a reload from the server
+    location.reload();
   }
 });
