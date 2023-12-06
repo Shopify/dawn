@@ -1,9 +1,8 @@
-
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   var checkboxes = document.querySelectorAll('.checkbox-trigger-link');
 
-  checkboxes.forEach(function(checkbox) {
-    checkbox.addEventListener('change', function() {
+  checkboxes.forEach(function (checkbox) {
+    checkbox.addEventListener('change', function () {
       updateURLFromCheckboxes();
     });
 
@@ -14,26 +13,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Clear sessionStorage when on the default URL
-  var defaultUrl = 'https://goodwatch.com/collections/all';
-  if (window.location.href === defaultUrl) {
-    sessionStorage.removeItem('selectedCheckboxes');
-    checkboxes.forEach(function(checkbox) {
-      checkbox.checked = false; // Uncheck all checkboxes
-    });
-  } else {
-    // Update checkboxes based on the URL
-    updateCheckboxesFromURL();
-  }
+  // Update checkboxes based on the URL
+  updateCheckboxesFromURL();
 
   function updateCheckboxesFromURL() {
     var url = window.location.href;
-    var parts = url.split('/');
-    var lastPart = parts[parts.length - 1];
-    var values = lastPart.split('+');
+    var parts = url.split('/').filter(Boolean);
 
-    checkboxes.forEach(function(checkbox) {
-      checkbox.checked = values.includes(checkbox.value);
+    checkboxes.forEach(function (checkbox) {
+      // Check if the checkbox value is in the URL values array
+      checkbox.checked = parts.includes(checkbox.value);
     });
   }
 
@@ -42,14 +31,29 @@ document.addEventListener('DOMContentLoaded', function() {
     var checkedCheckboxes = document.querySelectorAll('.checkbox-trigger-link:checked');
 
     // Get an array of values from the checked checkboxes
-    var selectedValues = Array.from(checkedCheckboxes).map(function(checkedCheckbox) {
+    var selectedValues = Array.from(checkedCheckboxes).map(function (checkedCheckbox) {
       return checkedCheckbox.value;
     });
 
-    // Construct the URL with all selected values
-    var redirectUrl = 'https://goodwatch.com/collections/all/' + selectedValues.join('+');
+    // Fetch the current URL
+    var currentUrl = window.location.href;
 
-    // Update the URL and trigger the redirect
-    window.location.href = redirectUrl;
+    // Extract the current collection and collection name from the URL
+    var parts = currentUrl.split('/').filter(Boolean);
+    var domain = parts[2];
+    var collection = parts[3];
+    var collectionName = parts[4];
+
+    // Construct the updated URL dynamically
+    var redirectUrl = `https://${domain}/${collection}/${collectionName}/${selectedValues.join('+')}`;
+
+    // Update the URL without triggering the redirect
+    history.replaceState(null, null, redirectUrl);
+
+    // Store the selected values in sessionStorage
+    sessionStorage.setItem('selectedCheckboxes', JSON.stringify(selectedValues));
+
+    // Reload the page
+    location.reload();
   }
 });
