@@ -78,12 +78,12 @@ class QuickOrderList extends HTMLElement {
     }, ON_CHANGE_DEBOUNCE_TIMER);
     this.addEventListener('change', debouncedOnChange.bind(this));
 
-    this.productHeader = document.querySelector('.quick-order-form .quick-order-list__table--sticky .product-title');
-    this.defaultProductHeader = this.productHeader.innerHTML;
-    this.mainHeader = document.querySelector('.section-header');
-
-    // Check if sticky header is enabled
     if (this.isStickyHeaderEnabled()) {
+      this.productHeader = document.querySelector('.quick-order-form .quick-order-list__table--sticky .product-title');
+      this.defaultProductHeader = this.productHeader.innerHTML;
+      this.mainHeader = document.querySelector('.section-header');
+  
+      this.initializeMainHeaderObserver();
       this.initializeStickyHeader();
     }
   }
@@ -108,6 +108,10 @@ class QuickOrderList extends HTMLElement {
   disconnectedCallback() {
     if (this.cartUpdateUnsubscriber) {
       this.cartUpdateUnsubscriber();
+    }
+
+    if (this.isStickyHeaderEnabled()) {
+      this.mainHeaderObserver.disconnect();
     }
   }
 
@@ -215,6 +219,18 @@ class QuickOrderList extends HTMLElement {
       });
   }
 
+  initializeMainHeaderObserver() {
+    this.mainHeaderObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          this.adjustStickyHeaderPosition();
+        }
+      });
+    });
+
+    this.mainHeaderObserver.observe(this.mainHeader, { attributes: true });
+  }
+
   isAtTop(element) {
     const rect = element.getBoundingClientRect();
     const stickyHeaderHeight = this.mainHeader.offsetHeight;
@@ -233,7 +249,7 @@ class QuickOrderList extends HTMLElement {
 
   adjustStickyHeaderPosition() {
     const stickyTableHeader = document.querySelector('.quick-order-list__table--sticky thead');
-    const isHeaderHidden = this.mainHeader.getBoundingClientRect().top < 0;
+    const isHeaderHidden = this.mainHeader.classList.contains('shopify-section-header-hidden');
     const mainStickyHeaderType = document.querySelector('sticky-header')?.getAttribute('data-sticky-type') ?? null;
 
     if (stickyTableHeader && mainStickyHeaderType) {
