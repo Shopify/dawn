@@ -54,6 +54,6 @@ document.addEventListener('DOMContentLoaded', function () {
     sessionStorage.setItem('selectedCheckboxes', JSON.stringify(selectedValues));
 
     // Reload the page
-    location.reload();
+    window.location.reload(true); // true forces a reload from the server
   }
 });
