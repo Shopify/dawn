@@ -18,11 +18,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function updateCheckboxesFromURL() {
     var url = window.location.href;
-    var values = url.split('/').filter(Boolean);
+    var parts = url.split('/').filter(Boolean);
 
     checkboxes.forEach(function (checkbox) {
       // Check if the checkbox value is in the URL values array
-      checkbox.checked = values.includes(checkbox.value);
+      checkbox.checked = parts.includes(checkbox.value);
     });
   }
 
@@ -38,16 +38,22 @@ document.addEventListener('DOMContentLoaded', function () {
     // Fetch the current URL
     var currentUrl = window.location.href;
 
+    // Extract the current collection name from the URL
+    var collectionName = currentUrl.split('/').filter(Boolean)[2];
+
     // Remove any existing values after the last '/'
     var baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
 
     // Construct the updated URL dynamically
-    var redirectUrl = baseUrl + selectedValues.join('+');
+    var redirectUrl = baseUrl + collectionName + '/' + selectedValues.join('+');
 
     // Update the URL without triggering the redirect
     history.replaceState(null, null, redirectUrl);
 
     // Store the selected values in sessionStorage
     sessionStorage.setItem('selectedCheckboxes', JSON.stringify(selectedValues));
+
+    // Reload the page
+    location.reload();
   }
 });
