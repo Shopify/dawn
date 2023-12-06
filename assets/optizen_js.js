@@ -49,10 +49,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Extract the current collection name from the URL
     var parts = currentUrl.split('/');
-    var collectionName = parts[parts.length - 2];
+    var currentCollectionName = parts[parts.length - 2];
 
     // Construct the updated URL dynamically
-    var redirectUrl = `https://goodwatch.com/collections/${collectionName}/${selectedValues.join('+')}`;
+    var redirectUrl = `https://goodwatch.com/collections/${currentCollectionName}/${selectedValues.join('+')}`;
 
     // Update the URL and trigger the redirect
     window.location.href = redirectUrl;
