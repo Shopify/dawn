@@ -36,6 +36,9 @@
   endif
 -%}
 
+{% comment %} Temporary for restrict buying to B2B customers only {% endcomment %}
+{%- assign shop_restricted_b2b_buying_enabled = true %}
+
 {% comment %} TODO: assign `product.selected_or_first_available_variant` to variable and replace usage to reduce verbosity {% endcomment %}
 
 {%- assign first_3d_model = product.media | where: 'media_type', 'model' | first -%}
@@ -209,7 +212,7 @@
                   {{- product.selected_or_first_available_variant.sku -}}
                 </p>
               {%- when 'quantity_selector' -%}
-                {%- if shop.b2b_customers_enabled != blank -%}
+                {%- if shop_restricted_b2b_buying_enabled == false or shop_restricted_b2b_buying_enabled and customer.b2b? -%}
                   <div
                     id="Quantity-Form-{{ section.id }}"
                     class="product-form__input product-form__quantity{% if settings.inputs_shadow_vertical_offset != 0 and settings.inputs_shadow_vertical_offset < 0 %} product-form__quantity-top{% endif %}"
@@ -453,7 +456,7 @@
                   update_url: false
                 %}
               {%- when 'buy_buttons' -%}
-                {%- if shop.b2b_customers_enabled != blank -%}
+                {%- if shop_restricted_b2b_buying_enabled == false or shop_restricted_b2b_buying_enabled and customer.b2b? -%}
                   {%- render 'buy-buttons',
                     block: block,
                     product: product,
@@ -654,7 +657,7 @@
             "gtin14": {{ variant.barcode | json }},
           {%- endif -%}
           "availability" : "http://schema.org/{% if variant.available %}InStock{% else %}OutOfStock{% endif %}",
-          {%- if shop.b2b_customers_enabled != blank -%}
+          {%- if shop_restricted_b2b_buying_enabled == false or shop_restricted_b2b_buying_enabled and customer.b2b? -%}
             "price" : {{ variant.price | divided_by: 100.00 | json }},
           {%- endif -%}
           "priceCurrency" : {{ cart.currency.iso_code | json }},
