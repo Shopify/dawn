@@ -12,7 +12,7 @@ checkbox.checked = true;
 }
 });
 // Clear sessionStorage when on the default URL
-var defaultUrl = 'https://goodwatch.com/collections/all';
+var defaultUrl = window.location.href;
 if (window.location.href === defaultUrl) {
 sessionStorage.removeItem('selectedCheckboxes');
 checkboxes.forEach(function(checkbox) {
@@ -23,6 +23,7 @@ updateCheckboxesFromURL();
 }
 function updateCheckboxesFromURL() {
 var url = window.location.href;
+  console.log("Form Url; "+url);
 var parts = url.split('/');
 var lastPart = parts[parts.length - 1];
 var values = lastPart.split('+');
