@@ -39,7 +39,7 @@ var selectedValues = Array.from(checkedCheckboxes).map(function(checkedCheckbox)
 return checkedCheckbox.value;
 });
 // Construct the URL with all selected values
-var redirectUrl = 'https://goodwatch.com/collections/all/' + selectedValues.join('+');
+var redirectUrl = window.location.href + selectedValues.join('+');
 // Update the URL and trigger the redirect
 window.location.href = redirectUrl;
 }
