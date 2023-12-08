@@ -238,8 +238,9 @@ class QuickOrderList extends HTMLElement {
   }
 
   replaceHeader(productItemElement) {
-    const newHeaderContent = productItemElement.innerHTML;
+    const newHeaderContent = productItemElement.querySelector('.product-item__inner').innerHTML;
     this.productHeader = document.querySelector('.quick-order-form .quick-order-list__table--sticky .product-title');
+    if (this.productHeader.innerHTML === newHeaderContent) return;
     this.productHeader.innerHTML = newHeaderContent;
   }
 
