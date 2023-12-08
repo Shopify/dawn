@@ -245,6 +245,7 @@ class QuickOrderList extends HTMLElement {
   }
 
   restoreHeader() {
+    if (this.productHeader.innerHTML === this.defaultProductHeader) return;
     this.productHeader.innerHTML = this.defaultProductHeader;
   }
 
