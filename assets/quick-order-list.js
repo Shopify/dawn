@@ -233,8 +233,7 @@ class QuickOrderList extends HTMLElement {
 
   isAtTop(element) {
     const rect = element.getBoundingClientRect();
-    const stickyHeaderHeight = this.mainHeader.offsetHeight;
-    return rect.top <= stickyHeaderHeight;
+    return rect.bottom <= this.productHeader.getBoundingClientRect().bottom;
   }
 
   replaceHeader(productItemElement) {
