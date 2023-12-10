@@ -1,0 +1,528 @@
+{{ 'section-k-timeline.css' | asset_url | stylesheet_tag }}
+{{ 'component-slider.css' | asset_url | stylesheet_tag }}
+{{ 'component-slideshow.css' | asset_url | stylesheet_tag }}
+{{ 'video-section.css' | asset_url | stylesheet_tag }}
+{{ 'component-deferred-media.css' | asset_url | stylesheet_tag }}
+
+<script src="{{ 'k-timeline.js' | asset_url }}" defer></script>
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: calc({{ section.settings.padding_top }}px * 0.75);
+    padding-bottom: calc({{ section.settings.padding_bottom }}px  * 0.75);
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div id="timeline-section">
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="section-{{ section.id }}-padding">
+      <div class="page-width page-width--narrow">
+          {%- unless section.settings.heading == blank -%}
+              <div class="title-wrapper title-wrapper--no-top-margin{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+                <h2 class="title inline-richtext center {{ section.settings.heading_size }}">{{ section.settings.heading }}</h2>
+                  <div class="title-divider"></div>
+              </div>
+          {%- endunless -%}
+          {% if section.settings.text %}
+              <div class="rte center {{ section.settings.text_style }}">
+                  <p>{{ section.settings.text }}</p>
+              </div>
+          {% endif %}
+      </div>
+      <div class="page-width">
+          <div class="year-grid">
+              <div>
+                  {% assign years = section.blocks | where: 'type', 'year' %}
+
+                  <div class="year-sticky">
+                      <ul class="list-unstyled year--display">
+                          {% for block in years %}
+                              <li data-year="{{ block.settings.year | handleize }}"{% if forloop.first %}class="active"{% endif %}>
+                                  <h3 class="year-title small-hide medium-hide {% if forloop.first %}h1{% endif %}">{{ block.settings.year | strip }}</h3>
+                                  <span class="dot-year"></span>
+                              </li>
+                          {% endfor %}
+                      </ul>
+                  </div>
+              </div>
+              <div>
+                  <div class="year-mobile-title large-up-hide">
+                      <h3 class="year-title h1">2016</h3>
+                  </div>
+                  {% assign slides = section.blocks | where: 'type', 'slide_item' %}
+
+                  <slideshow-component
+                      class="slider-mobile-gutter timeline-slider"
+                      role="region"
+                      aria-roledescription="{{ 'sections.slideshow.carousel' | t }}"
+                      aria-label="{{ section.settings.accessibility_info | escape }}"
+                    >
+                      <div
+                          class="slideshow grid grid--1-col slider slider--everywhere"
+                          id="Slider-{{ section.id }}"
+                          aria-live="polite"
+                          aria-atomic="true"
+                          data-autoplay="false"
+                          data-speed="0"
+                        >
+                          {% for block in slides %}
+                              {%- liquid
+                                  assign highest_ratio = 0
+                                  for block in section.blocks
+                                    if block.settings.image.height > highest_ratio
+                                      assign highest_ratio = block.settings.image.aspect_ratio
+                                    endif
+                                  endfor
+                              -%}
+
+                              <div
+                                  class="slideshow__slide grid__item slider__slide"
+                                  id="Slide-{{ section.id }}-{{ forloop.index }}"
+                                  {{ block.shopify_attributes }}
+                                  role="group"
+                                  aria-roledescription="{{ 'sections.slideshow.slide' | t }}"
+                                  aria-label="{{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
+                                  tabindex="-1"
+                                  data-year="{{ block.settings.assigned_to | strip }}"
+                              >
+                                  <div class="media-item--inner">
+                                      {%- liquid
+                                          assign video_id = block.settings.video.id | default: block.settings.video_url.id
+                                          assign video_alt = block.settings.video.alt | default: block.settings.description
+                                          assign alt = 'sections.video.load_video' | t: description: video_alt | escape
+                                          assign poster = block.settings.video.preview_image | default: block.settings.cover_image
+                                      
+                                          if block.settings.video != null
+                                          assign ratio_diff = block.settings.video.aspect_ratio | minus: poster.aspect_ratio | abs
+                                          if ratio_diff < 0.01 and ratio_diff > 0
+                                              assign fix_ratio = true
+                                          endif
+                                          endif
+                                      -%}
+                                      
+                                      {%- capture sizes -%}
+                                          (min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 }}px, (min-width: 750px)
+                                          calc(100vw - 10rem), 100vw
+                                      {%- endcapture -%}
+
+                                      {% unless block.settings.image != blank %}
+                                          <noscript>
+                                              <div
+                                              class="video-section__media"
+                                              {% if poster != null %}
+                                                  style="--ratio-percent: {{ 1 | divided_by: poster.aspect_ratio | times: 100 }}%;"
+                                              {% endif %}
+                                              >
+                                              {%- if block.settings.video == null and block.settings.video_url != null -%}
+                                                  <a
+                                                  href="{{ block.settings.video_url }}"
+                                                  class="video-section__poster media media--transparent{% if poster == null %} video-section__placeholder{% endif %}"
+                                                  >
+                                                  {%- if poster != null -%}
+                                                      {{ poster
+                                                      | image_url: width: 3840
+                                                      | image_tag: loading: 'lazy', sizes: sizes, widths: '375, 750, 1100, 1500, 1780, 2000, 3000, 3840', alt: alt
+                                                      }}
+                                                  {%- else -%}
+                                                      {{ 'collection-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                                                  {%- endif -%}
+                                                  </a>
+                                              {%- else -%}
+                                                  {{ block.settings.video
+                                                  | video_tag:
+                                                      image_size: "1100x",
+                                                      loop: section.settings.enable_video_looping,
+                                                      controls: true,
+                                                      muted: false
+                                                  }}
+                                              {%- endif -%}
+                                              </div>
+                                          </noscript>
+                                          <deferred-media
+                                          class="video-section__media deferred-media no-js-hidden gradient  accent-shadow global-media-settings {% if fix_ratio %} media-fit-cover{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+                                          data-media-id="{{ video_id }}"
+                                          {% if poster != null %}
+                                              style="--ratio-percent: {{ 1 | divided_by: poster.aspect_ratio | times: 100 }}%;"
+                                          {% endif %}
+                                          >
+                                              <button
+                                              id="Deferred-Poster-Modal-{{ video_id }}"
+                                              class="video-section__poster media deferred-media__poster media--landscape"
+                                              type="button"
+                                              aria-label="{{ alt }}"
+                                              >
+                                              {%- if poster != null -%}
+                                                  {{ poster
+                                                  | image_url: width: 3840
+                                                  | image_tag: loading: 'lazy', sizes: sizes, widths: '375, 750, 1100, 1500, 1780, 2000, 3000, 3840', alt: alt
+                                                  }}
+                                              {%- else -%}
+                                                  {{ 'collection-2' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                                              {%- endif -%}
+                                              <span class="deferred-media__poster-button motion-reduce">
+                                                  {%- render 'icon-play' -%}
+                                              </span>
+                                              </button>
+                                              <template>
+                                              {%- if block.settings.video == null and block.settings.video_url != null -%}
+                                                  {%- liquid
+                                                  assign loop = ''
+                                                  if block.settings.enable_video_looping
+                                                      assign loop = '&loop=1&playlist=' | append: video_id
+                                                  endif
+                                                  -%}
+                                                  {%- if block.settings.video_url.type == 'youtube' -%}
+                                                  <iframe
+                                                      src="https://www.youtube.com/embed/{{ video_id }}?enablejsapi=1&autoplay=1{{ loop }}"
+                                                      class="js-youtube"
+                                                      allow="autoplay; encrypted-media"
+                                                      allowfullscreen
+                                                      title="{{ block.settings.description | escape }}"
+                                                  ></iframe>
+                                                  {%- else -%}
+                                                  <iframe
+                                                      src="https://player.vimeo.com/video/{{ video_id }}?autoplay=1{{ loop }}"
+                                                      class="js-vimeo"
+                                                      allow="autoplay; encrypted-media"
+                                                      allowfullscreen
+                                                      title="{{ block.settings.description | escape }}"
+                                                  ></iframe>
+                                                  {%- endif -%}
+                                              {%- else -%}
+                                                  {{ block.settings.video
+                                                  | video_tag:
+                                                      image_size: "1100x",
+                                                      autoplay: true,
+                                                      loop: false,
+                                                      controls: true,
+                                                      muted: false
+                                                  }}
+                                              {%- endif -%}
+                                              </template>
+                                          </deferred-media>
+                                      {% else %}
+                                          <div
+                                              class="media media--transparent media--adapt global-media-settings accent-shadow"
+                                              style="padding-bottom: {{ 1 | divided_by: highest_ratio | times: 100 }}%;"
+                                          >
+                                              {%- liquid
+                                              assign number_of_columns = 1
+                                              assign number_of_columns_mobile = 1
+                                              assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                              assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                              assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+                                              assign image_width = 1
+                                              -%}
+                                              {% capture sizes %}
+                                              (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+                                              (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+                                              (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+                                              calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+                                              {% endcapture %}
+                                              {{
+                                              block.settings.image
+                                              | image_url: width: 3200
+                                              | image_tag:
+                                                  loading: 'lazy',
+                                                  widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                                                  sizes: sizes
+                                              }}
+                                          </div>
+                                      {% endunless %}
+                                  </div>
+                                  <div class="content-media">
+                                      <h3 class="h2">{{ block.settings.title }}</h3>
+                                      {% if block.settings.content %}
+                                          <div class="rte">
+                                              {{ block.settings.content }}
+                                          </div>
+                                      {% endif %}
+                                  </div>
+                              </div>
+                          {% endfor %}
+                      </div>
+
+                      {%- if slides.size > 1 -%}
+                          <div class="slideshow__controls slider-buttons visible-components no-js-hidden">
+                            <button
+                              type="button"
+                              class="slider-button slider-button--prev"
+                              name="previous"
+                              aria-label="{{ 'sections.slideshow.previous_slideshow' | t }}"
+                              aria-controls="Slider-{{ section.id }}"
+                            >
+                              {% render 'icon-slide-arrow' %}
+                            </button>
+                            <div class="slider-counter slider-counter--{{ section.settings.slider_visual }}">
+                              {%- if section.settings.slider_visual == 'counter' -%}
+                                <span class="slider-counter--current">1</span>
+                                <span aria-hidden="true"> / </span>
+                                <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+                                <span class="slider-counter--total">{{ slides.size }}</span>
+                              {%- else -%}
+                                <div class="slideshow__control-wrapper">
+                                  {%- for block in slides -%}
+                                    <button
+                                      class="slider-counter__link slider-counter__link--{{ section.settings.slider_visual }} link"
+                                      aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
+                                      aria-controls="Slider-{{ section.id }}"
+                                    >
+                                      {%- if section.settings.slider_visual == 'numbers' -%}
+                                        {{ forloop.index -}}
+                                      {%- else -%}
+                                        <span class="dot"></span>
+                                      {%- endif -%}
+                                    </button>
+                                  {%- endfor -%}
+                                </div>
+                              {%- endif -%}
+                            </div>
+                            <button
+                              type="button"
+                              class="slider-button slider-button--next"
+                              name="next"
+                              aria-label="{{ 'sections.slideshow.next_slideshow' | t }}"
+                              aria-controls="Slider-{{ section.id }}"
+                            >
+                              {% render 'icon-slide-arrow' %}
+                            </button>
+                          </div>
+                          <noscript>
+                            <div class="slider-buttons">
+                              <div class="slider-counter">
+                                {%- for block in slides -%}
+                                  <a
+                                    href="#Slide-{{ section.id }}-{{ forloop.index }}"
+                                    class="slider-counter__link link"
+                                    aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
+                                  >
+                                    {{ forloop.index }}
+                                  </a>
+                                {%- endfor -%}
+                              </div>
+                            </div>
+                          </noscript>
+                      {%- endif -%}
+                  </slideshow-component>
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "K Timeline",
+  "tag": "section",
+  "class": "section k-timeline",
+  "settings": [
+    {
+        "type": "inline_richtext",
+        "id": "heading",
+        "default": "Video",
+        "label": "t:sections.video.settings.heading.label"
+    },
+    {
+        "type": "select",
+        "id": "heading_size",
+        "options": [
+            {
+                "value": "h2",
+                "label": "t:sections.all.heading_size.options__1.label"
+            },
+            {
+                "value": "h1",
+                "label": "t:sections.all.heading_size.options__2.label"
+            },
+            {
+                "value": "h0",
+                "label": "t:sections.all.heading_size.options__3.label"
+            }
+        ],
+        "default": "h1",
+        "label": "t:sections.all.heading_size.label"
+    },
+    {
+        "type": "inline_richtext",
+        "id": "text",
+        "default": "Give customers details about the banner image(s) or content on the template.",
+        "label": "t:sections.image-banner.blocks.text.settings.text.label"
+    },
+    {
+        "type": "select",
+        "id": "text_style",
+        "options": [
+        {
+            "value": "body",
+            "label": "t:sections.image-banner.blocks.text.settings.text_style.options__1.label"
+        },
+        {
+            "value": "subtitle",
+            "label": "t:sections.image-banner.blocks.text.settings.text_style.options__2.label"
+        },
+        {
+            "value": "caption-with-letter-spacing",
+            "label": "t:sections.image-banner.blocks.text.settings.text_style.options__3.label"
+        }
+        ],
+        "default": "body",
+        "label": "t:sections.image-banner.blocks.text.settings.text_style.label"
+    },
+    {
+        "type": "select",
+        "id": "slider_visual",
+        "options": [
+          {
+            "value": "dots",
+            "label": "t:sections.slideshow.settings.slider_visual.options__2.label"
+          },
+          {
+            "value": "counter",
+            "label": "t:sections.slideshow.settings.slider_visual.options__1.label"
+          },
+          {
+            "value": "numbers",
+            "label": "t:sections.slideshow.settings.slider_visual.options__3.label"
+          }
+        ],
+        "default": "counter",
+        "label": "t:sections.slideshow.settings.slider_visual.label"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.all.colors.accent_1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.all.colors.accent_2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.all.colors.background_1.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.all.colors.background_2.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.all.colors.inverse.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.all.colors.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 52
+    }
+  ],
+  "blocks": [
+    {
+        "type": "year",
+        "name": "Year",
+        "settings": [
+            {
+                "type": "text",
+                "id": "year",
+                "label": "Year",
+                "info": "eg. 2017"
+            }
+        ]
+    },
+    {
+        "type": "slide_item",
+        "name": "Slide Item",
+        "settings": [
+            {
+                "type": "text",
+                "id": "assigned_to",
+                "label": "Assigned to"
+            },
+            {
+                "type": "image_picker",
+                "id": "image",
+                "label": "Image"
+            },
+            {
+                "type": "header",
+                "content": "t:sections.video.settings.header__1.content"
+            },
+            {
+                "type": "paragraph",
+                "content": "won't show unless image is blank"
+            },
+            {
+                "type": "video",
+                "id": "video",
+                "label": "t:sections.video.settings.video.label"
+            },
+            {
+                "type": "header",
+                "content": "t:sections.video.settings.header__2.content"
+            },
+            {
+                "type": "video_url",
+                "id": "video_url",
+                "accept": ["youtube", "vimeo"],
+                "default": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+                "label": "t:sections.video.settings.video_url.label",
+                "info": "t:sections.video.settings.video_url.info"
+            },
+            {
+                "type": "image_picker",
+                "id": "cover_image",
+                "label": "t:sections.video.settings.cover_image.label"
+            },
+            {
+                "type": "text",
+                "id": "title",
+                "label": "Title"
+            },
+            {
+                "type": "richtext",
+                "id": "content",
+                "label": "Content"
+            }
+        ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "K Timeline"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,487 @@
+{%- style -%}
+    .section-{{ section.id }}-padding {
+        padding-top: calc({{ section.settings.padding_top }}px * 0.75);
+        padding-bottom: calc({{ section.settings.padding_bottom }}px  * 0.75);
+    }
+
+    .k-team-members {
+        --grid-desktop-vertical-spacing: 64px;
+        --grid-desktop-horizontal-spacing: 64px;
+        --media-radius: 0;
+    }
+
+    .k-team-members .global-media-settings {
+    border: 0;
+    }
+
+    .member-media {
+        padding-left: 2.5rem;
+        padding-right: 2.5rem;
+    }
+    .member-content h3 {
+        margin: 0;
+    }
+
+    .member-content {
+        margin-top: -3rem;
+        padding: 4.5rem 3.5rem 3.5rem;
+    }
+    .member-content .rte {
+        font-size: 1.2rem;
+    }
+    .member-flex {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+    .social-member {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .social-member .icon {
+        display: block;
+    }
+
+    @media screen and (min-width: 750px) {
+        .section-{{ section.id }}-padding {
+            padding-top: {{ section.settings.padding_top }}px;
+            padding-bottom: {{ section.settings.padding_bottom }}px;
+        }
+
+        .k-team-members .grid--3-col .grid__item:first-child,.k-team-members .grid--3-col .grid__item:nth-child(2) {
+            flex: 0 calc(50% var(--grid-desktop-horizontal-spacing) * 2/3);
+        }
+
+        .k-team-members .grid--3-col .grid__item {
+            max-width: calc(33.33% - var(--grid-desktop-horizontal-spacing) * 2 / 3);
+        }
+    }
+{%- endstyle -%}
+
+{% liquid
+    assign columns_mobile_int = section.settings.columns_mobile | plus: 0
+  
+    assign show_mobile_slider = false
+    if section.settings.swipe_on_mobile and section.blocks.size > columns_mobile_int
+      assign show_mobile_slider = true
+    endif
+  %}
+  
+
+<div id="team-members">
+    <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="section-{{ section.id }}-padding">
+        <slideshow-component
+            class="slider-mobile-gutter page-width"
+            role="region"
+            aria-roledescription="{{ 'sections.slideshow.carousel' | t }}"
+            aria-label="{{ section.settings.accessibility_info | escape }}"
+        >
+                <div
+                    class="slideshow grid grid--{{ section.settings.columns_mobile }}-col-tablet-down grid--{{ section.settings.columns_desktop }}-col slider slider--mobile grid--peek"
+                    id="Slider-{{ section.id }}"
+                    aria-live="polite"
+                    aria-atomic="true"
+                    data-autoplay="false"
+                    data-speed="0"
+                >
+                    {% for block in section.blocks %}
+                        {%- liquid
+                            assign highest_ratio = 0
+                            for block in section.blocks
+                            if block.settings.image.height > highest_ratio
+                                assign highest_ratio = block.settings.image.aspect_ratio
+                            endif
+                            endfor
+                        -%}
+
+                        <div
+                            class="slideshow__slide grid__item slider__slide"
+                            id="Slide-{{ section.id }}-{{ forloop.index }}"
+                            {{ block.shopify_attributes }}
+                            role="group"
+                            aria-roledescription="{{ 'sections.slideshow.slide' | t }}"
+                            aria-label="{{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
+                            tabindex="-1"
+                        >
+                            <div class="member-wrapper">
+                                <div class="member-media">
+                                    <div
+                                        class="media media--transparent media--adapt global-media-settings"
+                                        style="padding-bottom: {{ 1 | divided_by: highest_ratio | times: 100 }}%;"
+                                    >
+                                        {%- liquid
+                                        assign number_of_columns = 1
+                                        assign number_of_columns_mobile = 1
+                                        assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                        assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                        assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+                                        assign image_width = 1
+                                        -%}
+                                        {% capture sizes %}
+                                        (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+                                        (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+                                        (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+                                        calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+                                        {% endcapture %}
+                                        {{
+                                        block.settings.image
+                                        | image_url: width: 3200
+                                        | image_tag:
+                                            loading: 'lazy',
+                                            widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                                            sizes: sizes
+                                        }}
+                                    </div>
+                                </div>
+                                <div class="color-{{ section.settings.card_color_scheme }} gradient member-content">
+                                    <div class="member-flex">
+                                        <div>
+                                            {% if block.settings.name != blank %}
+                                                <h3 class="h3">{{ block.settings.name }}</h3>
+                                            {% endif %}
+                                            {% if block.settings.position != blank %}
+                                                <div class="rte">{{ block.settings.position }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            {% if block.settings.linkedin != blank or block.settings.github != blank %}
+                                                <ul class="list-unstyled social-member">
+                                                    {% if block.settings.linkedin != blank %}
+                                                        <li>
+                                                            <a href="{{ block.settings.linkedin }}" class="full-unstyled-link">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-linkedin" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                                    <g clip-path="url(#clip0_71_288)">
+                                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M2.22222 19.1667H17.7778C19.0051 19.1667 20 18.2132 20 17.037V2.12963C20 0.953468 19.0051 0 17.7778 0H2.22222C0.994923 0 0 0.953468 0 2.12963V17.037C0 18.2132 0.994923 19.1667 2.22222 19.1667Z" fill="white"/>
+                                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M17.2223 16.5047H14.2544V11.6604C14.2544 10.3322 13.7278 9.58994 12.6308 9.58994C11.4374 9.58994 10.814 10.3623 10.814 11.6604V16.5047H7.95376V7.27631H10.814V8.51937C10.814 8.51937 11.674 6.99437 13.7174 6.99437C15.76 6.99437 17.2223 8.18969 17.2223 10.6619V16.5047ZM4.54154 6.06792C3.56729 6.06792 2.77783 5.30542 2.77783 4.36502C2.77783 3.42461 3.56729 2.66211 4.54154 2.66211C5.51579 2.66211 6.30478 3.42461 6.30478 4.36502C6.30478 5.30542 5.51579 6.06792 4.54154 6.06792ZM3.06465 16.5047H6.04711V7.27631H3.06465V16.5047Z" fill="#3F75FF"/>
+                                                                    </g>
+                                                                    <defs>
+                                                                    <clipPath id="clip0_71_288">
+                                                                        <rect width="20" height="19.1667" fill="white"/>
+                                                                    </clipPath>
+                                                                    </defs>
+                                                                </svg>
+                                                            </a>
+                                                        </li>
+                                                    {% endif %}
+                                                    {% if block.settings.github != blank %}
+                                                        <li>
+                                                            <a href="{{ block.settings.github }}" class="full-unstyled-link">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-github" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                                                    <g clip-path="url(#clip0_71_286)">
+                                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M9.9702 0C4.45694 0 0 4.58333 0 10.2535C0 14.786 2.85571 18.6227 6.81735 19.9806C7.31265 20.0827 7.49408 19.76 7.49408 19.4885C7.49408 19.2508 7.47775 18.436 7.47775 17.5871C4.70429 18.1983 4.12673 16.3648 4.12673 16.3648C3.68102 15.1765 3.02061 14.871 3.02061 14.871C2.11286 14.2429 3.08673 14.2429 3.08673 14.2429C4.09367 14.3108 4.62204 15.2954 4.62204 15.2954C5.51327 16.8571 6.94939 16.4158 7.52714 16.1442C7.60959 15.4821 7.87388 15.0238 8.15449 14.7692C5.94245 14.5315 3.6151 13.6488 3.6151 9.71021C3.6151 8.58979 4.01102 7.67313 4.63837 6.96021C4.53939 6.70563 4.19265 5.65292 4.73755 4.24396C4.73755 4.24396 5.57939 3.97229 7.47755 5.29646C8.29022 5.07201 9.12832 4.95784 9.9702 4.95687C10.812 4.95687 11.6702 5.07583 12.4627 5.29646C14.361 3.97229 15.2029 4.24396 15.2029 4.24396C15.7478 5.65292 15.4008 6.70563 15.3018 6.96021C15.9457 7.67313 16.3253 8.58979 16.3253 9.71021C16.3253 13.6488 13.998 14.5144 11.7694 14.7692C12.1327 15.0917 12.4461 15.7027 12.4461 16.6704C12.4461 18.0454 12.4298 19.149 12.4298 19.4883C12.4298 19.76 12.6114 20.0827 13.1065 19.9808C17.0682 18.6225 19.9239 14.786 19.9239 10.2535C19.9402 4.58333 15.4669 0 9.9702 0Z" fill="white"/>
+                                                                    </g>
+                                                                    <defs>
+                                                                    <clipPath id="clip0_71_286">
+                                                                        <rect width="20" height="20" fill="white"/>
+                                                                    </clipPath>
+                                                                    </defs>
+                                                                </svg>
+                                                            </a>
+                                                        </li>
+                                                    {% endif %}
+                                                </ul>
+                                            {% endif %}
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                {%- if show_mobile_slider -%}
+                    <div class="slideshow__controls below-area slideshow__controls--top slider-buttons no-js-hidden{% if section.settings.show_text_below %} slideshow__controls--border-radius-mobile{% endif %}">
+                        <button
+                        type="button"
+                        class="slider-button slider-button--prev"
+                        name="previous"
+                        aria-label="{{ 'sections.slideshow.previous_slideshow' | t }}"
+                        aria-controls="Slider-{{ section.id }}"
+                        >
+                        {% render 'icon-caret' %}
+                        </button>
+                        <div class="slider-counter slider-counter--{{ section.settings.slider_visual }}{% if section.settings.slider_visual == 'counter' or section.settings.slider_visual == 'numbers' %} caption{% endif %}">
+                        {%- if section.settings.slider_visual == 'counter' -%}
+                            <span class="slider-counter--current">1</span>
+                            <span aria-hidden="true"> / </span>
+                            <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+                            <span class="slider-counter--total">{{ section.blocks.size }}</span>
+                        {%- else -%}
+                            <div class="slideshow__control-wrapper">
+                            {%- for block in section.blocks -%}
+                                {%- if section.settings.slider_visual == 'dots' -%}
+                                {% assign blocks_count = section.blocks.size | divided_by: 3 %}
+                                {% if section.blocks.size == 5 %}
+                                    {% assign blocks_limit = section.blocks.size | minus: 2 %}
+                                {% else %}
+                                    {% assign blocks_limit = section.blocks.size | minus: blocks_count %}
+                                {% endif %}
+                                {%- endif -%}
+                
+                                <button
+                                data-adsd="{{ blocks_count }}"
+                                data-assa="{{ blocks_limit }}"
+                                class="slider-counter__link {% if section.settings.slider_visual == 'dots' and forloop.index > blocks_limit %}  medium-hide large-up-hide{% endif %}
+                                slider-counter__link--{{ section.settings.slider_visual }} link"
+                                aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
+                                aria-controls="Slider-{{ section.id }}"
+                                >
+                                {%- if section.settings.slider_visual == 'numbers' -%}
+                                    {{ forloop.index -}}
+                                {%- else -%}
+                                    <span class="dot"></span>
+                                {%- endif -%}
+                                </button>
+                            {%- endfor -%}
+                            </div>
+                        {%- endif -%}
+                        </div>
+                        <button
+                        type="button"
+                        class="slider-button slider-button--next"
+                        name="next"
+                        aria-label="{{ 'sections.slideshow.next_slideshow' | t }}"
+                        aria-controls="Slider-{{ section.id }}"
+                        >
+                        {% render 'icon-caret' %}
+                        </button>
+                
+                        {%- if section.settings.auto_rotate -%}
+                        <button
+                            type="button"
+                            class="slideshow__autoplay slider-button no-js-hidden{% if section.settings.auto_rotate == false %} slideshow__autoplay--paused{% endif %}"
+                            aria-label="{{ 'sections.slideshow.pause_slideshow' | t }}"
+                        >
+                            {%- render 'icon-pause' -%}
+                            {%- render 'icon-play' -%}
+                        </button>
+                        {%- endif -%}
+                    </div>
+                    <noscript>
+                        <div class="slider-buttons">
+                        <div class="slider-counter">
+                            {%- for block in section.blocks -%}
+                            <a
+                                href="#Slide-{{ section.id }}-{{ forloop.index }}"
+                                class="slider-counter__link link"
+                                aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
+                            >
+                                {{ forloop.index }}
+                            </a>
+                            {%- endfor -%}
+                        </div>
+                        </div>
+                    </noscript>
+                {%- endif -%}
+            </slideshow-component>
+    </div>
+    </div>
+</div>
+
+{% schema %}
+{
+  "name": "K Team Members",
+  "tag": "section",
+  "class": "section k-team-members",
+  "settings": [
+    {
+        "type": "range",
+        "id": "columns_desktop",
+        "min": 1,
+        "max": 6,
+        "step": 1,
+        "default": 3,
+        "label": "t:sections.multicolumn.settings.columns_desktop.label"
+    },
+    {
+        "type": "checkbox",
+        "id": "auto_rotate",
+        "label": "t:sections.slideshow.settings.auto_rotate.label",
+        "default": false
+    },
+    {
+        "type": "range",
+        "id": "change_slides_speed",
+        "min": 3,
+        "max": 9,
+        "step": 2,
+        "unit": "s",
+        "label": "t:sections.slideshow.settings.change_slides_speed.label",
+        "default": 5
+    },
+    {
+        "type": "select",
+        "id": "slider_visual",
+        "options": [
+          {
+            "value": "dots",
+            "label": "t:sections.slideshow.settings.slider_visual.options__2.label"
+          },
+          {
+            "value": "counter",
+            "label": "t:sections.slideshow.settings.slider_visual.options__1.label"
+          },
+          {
+            "value": "numbers",
+            "label": "t:sections.slideshow.settings.slider_visual.options__3.label"
+          }
+        ],
+        "default": "counter",
+        "label": "t:sections.slideshow.settings.slider_visual.label"
+    },
+    {
+        "type": "header",
+        "content": "t:sections.multicolumn.settings.header_mobile.content"
+    },
+    {
+        "type": "select",
+        "id": "columns_mobile",
+        "options": [
+          {
+            "value": "1",
+            "label": "t:sections.multicolumn.settings.columns_mobile.options__1.label"
+          },
+          {
+            "value": "2",
+            "label": "t:sections.multicolumn.settings.columns_mobile.options__2.label"
+          }
+        ],
+        "default": "1",
+        "label": "t:sections.multicolumn.settings.columns_mobile.label"
+    },
+    {
+        "type": "checkbox",
+        "id": "swipe_on_mobile",
+        "default": false,
+        "label": "t:sections.multicolumn.settings.swipe_on_mobile.label"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.all.colors.accent_1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.all.colors.accent_2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.all.colors.background_1.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.all.colors.background_2.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.all.colors.inverse.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.all.colors.label"
+    },
+    {
+        "type": "select",
+        "id": "card_color_scheme",
+        "options": [
+          {
+            "value": "accent-1",
+            "label": "t:sections.all.colors.accent_1.label"
+          },
+          {
+            "value": "accent-2",
+            "label": "t:sections.all.colors.accent_2.label"
+          },
+          {
+            "value": "background-1",
+            "label": "t:sections.all.colors.background_1.label"
+          },
+          {
+            "value": "background-2",
+            "label": "t:sections.all.colors.background_2.label"
+          },
+          {
+            "value": "inverse",
+            "label": "t:sections.all.colors.inverse.label"
+          }
+        ],
+        "default": "background-1",
+        "label": "Cards background"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 52
+    }
+  ],
+  "blocks": [
+    {
+        "type": "item",
+        "name": "Item",
+        "settings": [
+            {
+                "type": "image_picker",
+                "id": "image",
+                "label": "Image"
+            },
+            {
+                "type": "text",
+                "id": "name",
+                "label": "Name"
+            },
+            {
+                "type": "text",
+                "id": "position",
+                "label": "Position"
+            },
+            {
+                "type": "header",
+                "content": "Social Icons"
+            },
+            {
+                "type": "url",
+                "id": "linkedin",
+                "label": "Linkedin",
+                "info": "optional"
+            },
+            {
+                "type": "url",
+                "id": "github",
+                "label": "Github",
+                "info": "optional"
+            }
+        ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "K Team Members"
+    }
+  ]
+}
+{% endschema %}
