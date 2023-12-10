@@ -135,6 +135,37 @@ var main = function () {
                     })
                 }
             });
+        },
+        preventDefaultForHashLinks: function() {
+            // Get all anchor elements
+            var anchorElements = document.querySelectorAll('a');
+        
+            // Loop through the anchor elements
+            anchorElements.forEach(function(anchor) {
+                // Check if the href attribute contains #
+                if (anchor.getAttribute('href') && anchor.getAttribute('href').includes('#')) {
+                    anchor.addEventListener('click', function(event) {
+                        event.preventDefault();
+        
+                        // Get the target ID from the href
+                        var targetId = anchor.getAttribute('href').substring(1); // Remove the #
+        
+                        // Check if an element with the target ID exists in the DOM
+                        var targetElement = document.getElementById(targetId);
+        
+                        if (targetElement) {
+                            // Define an offset (adjust this value as needed)
+                            var offsetTop = 50; // Change this to your desired offset
+        
+                            // Scroll to the target element with the specified offset
+                            window.scrollTo({
+                                top: targetElement.offsetTop - offsetTop,
+                                behavior: 'smooth' // You can change this to 'auto' for an instant scroll
+                            });
+                        }
+                    });
+                }
+            });
         }
     };
 }()
@@ -143,3 +174,4 @@ main.popoverBtns()
 main.amznOr()
 main.resellerCTA()
 main.sliderHeight()
+main.preventDefaultForHashLinks()
