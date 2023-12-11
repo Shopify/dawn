@@ -959,9 +959,10 @@ class VariantSelects extends HTMLElement {
     this.addEventListener('change', this.onVariantChange);
   }
 
-  onVariantChange() {
+  onVariantChange(event) {
     this.updateOptions();
     this.updateMasterId();
+    this.updateSelectedSwatchValue(event);
     this.toggleAddButton(true, '', false);
     this.updatePickupAvailability();
     this.removeErrorMessage();
@@ -998,6 +999,12 @@ class VariantSelects extends HTMLElement {
         })
         .includes(false);
     });
+  }
+
+  updateSelectedSwatchValue(event) {
+    const { name, value } = event.target;
+    const selectedSwatchValue = this.querySelector(`[data-selected-swatch-value="${name}"]`);
+    if (selectedSwatchValue) selectedSwatchValue.innerHTML = value;
   }
 
   updateMedia() {

@@ -5,6 +5,7 @@
   - product: {Object} product object.
   - option: {Object} current product_option object.
   - block: {Object} block object.
+  - picker_type: {String} type of picker to dispay
 
 
   Usage:
@@ -12,6 +13,7 @@
     product: product,
     option: option,
     block: block
+    picker_type: picker_type
   %}
 {% endcomment %}
 {%- liquid
@@ -44,8 +46,7 @@
       endcase
     endfor
   -%}
-
-  {%- if block.settings.picker_type == 'button' -%}
+  {%- capture radio_input -%}
     <input
       type="radio"
       id="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
@@ -59,11 +60,34 @@
         class="disabled"
       {% endif %}
     >
+  {%- endcapture %}
+  {%- if picker_type == 'swatch' -%}
+    {{ radio_input }}
+    <label
+      for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
+      title="{{ value }}"
+      {% if value.swatch.image %}
+        style="--variant-options-bg: url({{ value.swatch.image | image_url: width: 50 }})"
+      {% elsif value.swatch.color %}
+        style="--variant-options-bg: rgb({{ value.swatch.color.rgb }})"
+      {% else %}
+        style="border-style: dashed"
+      {% endif %}
+    >
+      <span class="visually-hidden">{{ value -}}</span>
+      <span class="visually-hidden label-unavailable">
+        {{- 'products.product.variant_sold_out_or_unavailable' | t -}}
+      </span>
+    </label>
+  {%- elsif picker_type == 'button' -%}
+    {{ radio_input }}
     <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}">
       {{ value -}}
-      <span class="visually-hidden">{{ 'products.product.variant_sold_out_or_unavailable' | t }}</span>
+      <span class="visually-hidden label-unavailable">
+        {{- 'products.product.variant_sold_out_or_unavailable' | t -}}
+      </span>
     </label>
-  {%- elsif block.settings.picker_type == 'dropdown' -%}
+  {%- elsif picker_type == 'dropdown' or picker_type == 'swatch_dropdown' -%}
     <option
       value="{{ value | escape }}"
       {% if option.selected_value == value %}

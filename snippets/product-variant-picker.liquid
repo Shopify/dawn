@@ -21,10 +21,38 @@
     {{ block.shopify_attributes }}
   >
     {%- for option in product.options_with_values -%}
-      {%- if block.settings.picker_type == 'button' -%}
+      {%- liquid
+        assign swatch_count = option.values | map: 'swatch' | compact | size
+        assign picker_type = block.settings.picker_type
+
+        if swatch_count > 0
+          assign picker_type = block.settings.swatch_picker_type
+        endif
+      -%}
+      {%- if picker_type == 'swatch' -%}
+        <fieldset class="js product-form__input product-form__input--swatch{% if block.settings.swatch_shape == 'square' %} product-form__input--swatch-square{% endif %}">
+          <legend class="form__label">
+            {{ option.name }}:
+            <span data-selected-swatch-value="{{ option.name }}">
+              {{- option.selected_value -}}
+            </span>
+          </legend>
+          {% render 'product-variant-options',
+            product: product,
+            option: option,
+            block: block,
+            picker_type: picker_type
+          %}
+        </fieldset>
+      {%- elsif picker_type == 'button' -%}
         <fieldset class="js product-form__input product-form__input--pill">
           <legend class="form__label">{{ option.name }}</legend>
-          {% render 'product-variant-options', product: product, option: option, block: block %}
+          {% render 'product-variant-options',
+            product: product,
+            option: option,
+            block: block,
+            picker_type: picker_type
+          %}
         </fieldset>
       {%- else -%}
         <div class="product-form__input product-form__input--dropdown">
@@ -38,7 +66,12 @@
               name="options[{{ option.name | escape }}]"
               form="{{ product_form_id }}"
             >
-              {% render 'product-variant-options', product: product, option: option, block: block %}
+              {% render 'product-variant-options',
+                product: product,
+                option: option,
+                block: block,
+                picker_type: picker_type
+              %}
             </select>
             {% render 'icon-caret' %}
           </div>
