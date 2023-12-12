@@ -234,7 +234,7 @@ if (!customElements.get('cart-note')) {
         super();
 
         this.addEventListener(
-          'change',
+          'input',
           debounce((event) => {
             const body = JSON.stringify({ note: event.target.value });
             fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } });
