@@ -358,7 +358,7 @@ class QuickOrderList extends HTMLElement {
         }
 
         // Manually update product details in the sticky header
-        this.checkProducts();
+        this.isStickyHeaderEnabled() && this.checkProducts();
       }).catch((error) => {
         this.querySelectorAll('.loading__spinner').forEach((overlay) => overlay.classList.add('hidden'));
         this.resetQuantityInput(id);
