@@ -118,9 +118,9 @@ class FacetFiltersForm extends HTMLElement {
     );
 
     // Remove facets that are no longer returned from the server
-    Array.from(currentFacetDetailsElements).forEach((currElement) => {
-      if (Array.from(sfrFacetDetailsElements).some(({ id }) => currElement.id === id) === false) {
-        currElement.remove();
+    Array.from(currentFacetDetailsElements).forEach((currentElement) => {
+      if (!Array.from(sfrFacetDetailsElements).some(({ id }) => currentElement.id === id)) {
+        currentElement.remove();
       }
     });
 
@@ -132,16 +132,16 @@ class FacetFiltersForm extends HTMLElement {
     const countsToRender = Array.from(sfrFacetDetailsElements).find(matchesId);
 
     facetsToRender.forEach((elementToRender, index) => {
-      const currentEl = document.getElementById(elementToRender.id);
+      const currentElement = document.getElementById(elementToRender.id);
       // Element already rendered in the DOM so just update the innerHTML
-      if (currentEl) {
+      if (currentElement) {
         document.getElementById(elementToRender.id).innerHTML = elementToRender.innerHTML;
       } else {
         if (index > 0) {
-          const { className: previousElClassName, id: previouesElId } = facetsToRender[index - 1];
+          const { className: previousElementClassName, id: previousElementId } = facetsToRender[index - 1];
           // Same facet type (eg horizontal/vertical or drawer/mobile)
-          if (elementToRender.className === previousElClassName) {
-            document.getElementById(previouesElId).after(elementToRender);
+          if (elementToRender.className === previousElementClassName) {
+            document.getElementById(previousElementId).after(elementToRender);
             return;
           }
         }
@@ -162,11 +162,11 @@ class FacetFiltersForm extends HTMLElement {
         FacetFiltersForm.renderCounts(countsToRender, event.target.closest('.js-filter'));
         FacetFiltersForm.renderMobileCounts(countsToRender, document.getElementById(closestJSFilterID));
 
-        const newFacetDetailsEl = document.getElementById(closestJSFilterID);
-        const newElementSelector = newFacetDetailsEl.classList.contains('mobile-facets__details')
+        const newFacetDetailsElement = document.getElementById(closestJSFilterID);
+        const newElementSelector = newFacetDetailsElement.classList.contains('mobile-facets__details')
           ? `.mobile-facets__close-button`
           : `.facets__summary`;
-        const newElementToActivate = newFacetDetailsEl.querySelector(newElementSelector);
+        const newElementToActivate = newFacetDetailsElement.querySelector(newElementSelector);
         if (newElementToActivate) newElementToActivate.focus();
       }
     }
