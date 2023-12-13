@@ -99,7 +99,6 @@ var main = function () {
 
                 function handleTouchStart(event) {
                     console.log('touchstart')
-                    slider.classList.add('opacity-min')
                     startX = event.touches[0].clientX;
                 }
                 
@@ -116,12 +115,14 @@ var main = function () {
                     const deltaX = endX - startX;
                     console.log('touchend')
                 
-                    if (deltaX > 0) {
-                      // Swiped to the right
-                      console.log('Swiped left');
-                    } else if (deltaX < 0) {
-                      // Swiped to the left
-                      console.log('Swiped right');
+                    if (deltaX > 100) {
+                        // Swiped to the right
+                        console.log('Swiped left');
+                        slider.classList.add('opacity-min')
+                    } else if (deltaX < -100) {
+                        // Swiped to the left
+                        console.log('Swiped right');
+                        slider.classList.add('opacity-min')
                     }
 
                     setTimeout( function() {
