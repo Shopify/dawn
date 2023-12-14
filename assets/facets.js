@@ -34,7 +34,9 @@ class FacetFiltersForm extends HTMLElement {
     const sections = FacetFiltersForm.getSections();
     const countContainer = document.getElementById('ProductCount');
     const countContainerDesktop = document.getElementById('ProductCountDesktop');
-    const loadingSpinners = document.querySelectorAll('.facets-container .loading__spinner, facet-filters-form .loading__spinner');
+    const loadingSpinners = document.querySelectorAll(
+      '.facets-container .loading__spinner, facet-filters-form .loading__spinner'
+    );
     loadingSpinners.forEach((spinner) => spinner.classList.remove('hidden'));
     document.getElementById('ProductGridContainer').querySelector('.collection').classList.add('loading');
     if (countContainer) {
@@ -100,25 +102,54 @@ class FacetFiltersForm extends HTMLElement {
       containerDesktop.innerHTML = count;
       containerDesktop.classList.remove('loading');
     }
-    const loadingSpinners = document.querySelectorAll('.facets-container .loading__spinner, facet-filters-form .loading__spinner');
+    const loadingSpinners = document.querySelectorAll(
+      '.facets-container .loading__spinner, facet-filters-form .loading__spinner'
+    );
     loadingSpinners.forEach((spinner) => spinner.classList.add('hidden'));
   }
 
   static renderFilters(html, event) {
     const parsedHTML = new DOMParser().parseFromString(html, 'text/html');
-
-    const facetDetailsElements = parsedHTML.querySelectorAll(
+    const facetDetailsElementsFromFetch = parsedHTML.querySelectorAll(
       '#FacetFiltersForm .js-filter, #FacetFiltersFormMobile .js-filter, #FacetFiltersPillsForm .js-filter'
     );
-    const matchesIndex = (element) => {
-      const jsFilter = event ? event.target.closest('.js-filter') : undefined;
-      return jsFilter ? element.dataset.index === jsFilter.dataset.index : false;
-    };
-    const facetsToRender = Array.from(facetDetailsElements).filter((element) => !matchesIndex(element));
-    const countsToRender = Array.from(facetDetailsElements).find(matchesIndex);
+    const facetDetailsElementsFromDom = document.querySelectorAll(
+      '#FacetFiltersForm .js-filter, #FacetFiltersFormMobile .js-filter, #FacetFiltersPillsForm .js-filter'
+    );
 
-    facetsToRender.forEach((element) => {
-      document.querySelector(`.js-filter[data-index="${element.dataset.index}"]`).innerHTML = element.innerHTML;
+    // Remove facets that are no longer returned from the server
+    Array.from(facetDetailsElementsFromDom).forEach((currentElement) => {
+      if (!Array.from(facetDetailsElementsFromFetch).some(({ id }) => currentElement.id === id)) {
+        currentElement.remove();
+      }
+    });
+
+    const matchesId = (element) => {
+      const jsFilter = event ? event.target.closest('.js-filter') : undefined;
+      return jsFilter ? element.id === jsFilter.id : false;
+    };
+    const facetsToRender = Array.from(facetDetailsElementsFromFetch).filter((element) => !matchesId(element));
+    const countsToRender = Array.from(facetDetailsElementsFromFetch).find(matchesId);
+
+    facetsToRender.forEach((elementToRender, index) => {
+      const currentElement = document.getElementById(elementToRender.id);
+      // Element already rendered in the DOM so just update the innerHTML
+      if (currentElement) {
+        document.getElementById(elementToRender.id).innerHTML = elementToRender.innerHTML;
+      } else {
+        if (index > 0) {
+          const { className: previousElementClassName, id: previousElementId } = facetsToRender[index - 1];
+          // Same facet type (eg horizontal/vertical or drawer/mobile)
+          if (elementToRender.className === previousElementClassName) {
+            document.getElementById(previousElementId).after(elementToRender);
+            return;
+          }
+        }
+
+        if (elementToRender.parentElement) {
+          document.querySelector(`#${elementToRender.parentElement.id} .js-filter`).before(elementToRender);
+        }
+      }
     });
 
     FacetFiltersForm.renderActiveFacets(parsedHTML);
@@ -131,12 +162,11 @@ class FacetFiltersForm extends HTMLElement {
         FacetFiltersForm.renderCounts(countsToRender, event.target.closest('.js-filter'));
         FacetFiltersForm.renderMobileCounts(countsToRender, document.getElementById(closestJSFilterID));
 
-        const newElementSelector = document
-          .getElementById(closestJSFilterID)
-          .classList.contains('mobile-facets__details')
-          ? `#${closestJSFilterID} .mobile-facets__close-button`
-          : `#${closestJSFilterID} .facets__summary`;
-        const newElementToActivate = document.querySelector(newElementSelector);
+        const newFacetDetailsElement = document.getElementById(closestJSFilterID);
+        const newElementSelector = newFacetDetailsElement.classList.contains('mobile-facets__details')
+          ? `.mobile-facets__close-button`
+          : `.facets__summary`;
+        const newElementToActivate = newFacetDetailsElement.querySelector(newElementSelector);
         if (newElementToActivate) newElementToActivate.focus();
       }
     }
