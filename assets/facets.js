@@ -110,16 +110,16 @@ class FacetFiltersForm extends HTMLElement {
 
   static renderFilters(html, event) {
     const parsedHTML = new DOMParser().parseFromString(html, 'text/html');
-    const sfrFacetDetailsElements = parsedHTML.querySelectorAll(
+    const facetDetailsElementsFromFetch = parsedHTML.querySelectorAll(
       '#FacetFiltersForm .js-filter, #FacetFiltersFormMobile .js-filter, #FacetFiltersPillsForm .js-filter'
     );
-    const currentFacetDetailsElements = document.querySelectorAll(
+    const facetDetailsElementsFromDom = document.querySelectorAll(
       '#FacetFiltersForm .js-filter, #FacetFiltersFormMobile .js-filter, #FacetFiltersPillsForm .js-filter'
     );
 
     // Remove facets that are no longer returned from the server
-    Array.from(currentFacetDetailsElements).forEach((currentElement) => {
-      if (!Array.from(sfrFacetDetailsElements).some(({ id }) => currentElement.id === id)) {
+    Array.from(facetDetailsElementsFromDom).forEach((currentElement) => {
+      if (!Array.from(facetDetailsElementsFromFetch).some(({ id }) => currentElement.id === id)) {
         currentElement.remove();
       }
     });
@@ -128,8 +128,8 @@ class FacetFiltersForm extends HTMLElement {
       const jsFilter = event ? event.target.closest('.js-filter') : undefined;
       return jsFilter ? element.id === jsFilter.id : false;
     };
-    const facetsToRender = Array.from(sfrFacetDetailsElements).filter((element) => !matchesId(element));
-    const countsToRender = Array.from(sfrFacetDetailsElements).find(matchesId);
+    const facetsToRender = Array.from(facetDetailsElementsFromFetch).filter((element) => !matchesId(element));
+    const countsToRender = Array.from(facetDetailsElementsFromFetch).find(matchesId);
 
     facetsToRender.forEach((elementToRender, index) => {
       const currentElement = document.getElementById(elementToRender.id);
