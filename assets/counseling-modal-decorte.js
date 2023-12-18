@@ -89,6 +89,7 @@ customElements.define('my-dialog', MyDialog);
 const allButtons = Array.from(document.querySelectorAll('button[type="button"]'));
 allButtons.filter(button => button.id.includes('ProductSubmitButton')).forEach(targetedButton => {
   targetedButton.addEventListener('click', () => {
+    console.log('clicked');
     document.querySelector('my-dialog').openDialog();
   });
 });
