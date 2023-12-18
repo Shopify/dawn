@@ -86,9 +86,28 @@ class MyDialog extends HTMLElement {
 
 customElements.define('my-dialog', MyDialog);
 
-const allButtons = Array.from(document.querySelectorAll('button[type="button"]'));
-allButtons.filter(button => button.id.includes('ProductSubmitButton')).forEach(targetedButton => {
-  targetedButton.addEventListener('click', () => {
-    document.querySelector('my-dialog').openDialog();
+// TODO:: 以下の処理を適切な形にリファクタリング
+let counter = 0;
+const maxIterations = 10;
+const interval = setInterval(() => {
+  console.log(counter)
+  const allButtons = Array.from(document.querySelectorAll('button[type="button"]'));
+  allButtons.filter(button => button.id.includes('ProductSubmitButton')).forEach(targetedButton => {
+    targetedButton.addEventListener('click', () => {
+      document.querySelector('my-dialog').openDialog();
+    });
   });
-});
+  if (allButtons.filter(button => button.id.includes('ProductSubmitButton')).length >= 2) {
+    clearInterval(interval);
+  }
+  if (counter >= maxIterations) {
+    clearInterval(interval);
+  }
+  counter++;
+}, 500);
+// allButtons.filter(button => button.id.includes('ProductSubmitButton')).forEach(targetedButton => {
+//   console.log(targetedButton);
+//   targetedButton.addEventListener('click', () => {
+//     document.querySelector('my-dialog').openDialog();
+//   });
+// });
