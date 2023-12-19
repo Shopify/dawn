@@ -46,6 +46,18 @@
       endcase
     endfor
   -%}
+
+  {%- liquid
+    if value.swatch.image
+      assign image_url = value.swatch.image | image_url: width: 50
+      assign swatch_value = 'url(' | append: image_url | append: ')'
+    elsif value.swatch.color
+      assign swatch_value = 'rgb(' | append: value.swatch.color.rgb | append: ')'
+    else
+      assign swatch_value = nil
+    endif
+  -%}
+
   {%- capture radio_input -%}
     <input
       type="radio"
@@ -66,10 +78,8 @@
     <label
       for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
       title="{{ value }}"
-      {% if value.swatch.image %}
-        style="--variant-options-bg: url({{ value.swatch.image | image_url: width: 50 }})"
-      {% elsif value.swatch.color %}
-        style="--variant-options-bg: rgb({{ value.swatch.color.rgb }})"
+      {% if swatch_value %}
+        style="--variant-options-bg: {{ swatch_value }}"
       {% else %}
         style="border-style: dashed"
       {% endif %}
@@ -92,6 +102,9 @@
       value="{{ value | escape }}"
       {% if option.selected_value == value %}
         selected="selected"
+      {% endif %}
+      {% if swatch_value and picker_type == 'swatch_dropdown' %}
+        data-option-swatch-value="{{ swatch_value }}"
       {% endif %}
     >
       {% if option_disabled -%}

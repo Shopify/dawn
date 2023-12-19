@@ -27,6 +27,15 @@
 
         if swatch_count > 0
           assign picker_type = block.settings.swatch_picker_type
+
+          if option.selected_value.swatch.image
+            assign image_url = option.selected_value.swatch.image | image_url: width: 50
+            assign swatch_value = 'url(' | append: image_url | append: ')'
+          elsif option.selected_value.swatch.color
+            assign swatch_value = 'rgb(' | append: option.selected_value.swatch.color.rgb | append: ')'
+          else
+            assign swatch_value = nil
+          endif
         endif
       -%}
       {%- if picker_type == 'swatch' -%}
@@ -60,6 +69,17 @@
             {{ option.name }}
           </label>
           <div class="select">
+            {%- if picker_type == 'swatch_dropdown' -%}
+              <span
+                data-selected-dropdown-swatch="options[{{ option.name | escape }}]"
+                class="dropdown-swatch{% if block.settings.swatch_shape == 'square' %} dropdown-swatch--square{% endif %}"
+                {%- if swatch_value -%}
+                  style="--variant-options-bg: {{ swatch_value }}"
+                {%- else -%}
+                  style="border-style: dashed"
+                {%- endif -%}
+              ></span>
+            {%- endif -%}
             <select
               id="Option-{{ section.id }}-{{ forloop.index0 }}"
               class="select__select"
