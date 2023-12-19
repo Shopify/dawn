@@ -136,7 +136,12 @@ class QuickOrderList extends HTMLElement {
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
         const sourceQty = html.querySelector(`#${this.quickOrderListId}`);
-        this.innerHTML = sourceQty.innerHTML;
+        const updatedTbody = sourceQty.querySelector('tbody');
+        const updatedTotal = sourceQty.querySelector('.quick-order-list__total');
+
+        // Temporary: replace only specific elements
+        this.querySelector('tbody').innerHTML = updatedTbody.innerHTML;
+        this.querySelector('.quick-order-list__total').innerHTML = updatedTotal.innerHTML;
       })
       .catch(e => {
         console.error(e);
