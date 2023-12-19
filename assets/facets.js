@@ -79,6 +79,7 @@ class FacetFiltersForm extends HTMLElement {
     document.getElementById('ProductGridContainer').innerHTML = new DOMParser()
       .parseFromString(html, 'text/html')
       .getElementById('ProductGridContainer').innerHTML;
+      window.dispatchEvent(new CustomEvent("filteredCollection"));
       StampedFn?.reloadUGC();
   }
 
