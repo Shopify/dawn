@@ -246,11 +246,17 @@ class QuickOrderList extends HTMLElement {
     this.productHeader = document.querySelector('.quick-order-form .quick-order-list__table--sticky .product-title');
     if (this.productHeader.innerHTML === newHeaderContent) return;
     this.productHeader.innerHTML = newHeaderContent;
+
+    const theadElement = document.querySelector('.quick-order-list__table--sticky thead');
+    theadElement.classList.add('sticky-active');
   }
 
   restoreHeader() {
     if (this.productHeader.innerHTML === this.defaultProductHeader) return;
     this.productHeader.innerHTML = this.defaultProductHeader;
+
+    const theadElement = document.querySelector('.quick-order-list__table--sticky thead');
+    theadElement.classList.remove('sticky-active');
   }
 
   adjustStickyHeaderPosition() {
