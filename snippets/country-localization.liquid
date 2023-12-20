@@ -3,6 +3,7 @@
 
   Accepts:
     - localPosition: pass in the position in which the form is coming up to create specific IDs
+    - countryChoice: pass in the choice of currency symbol or country flag for currency/region selector
 {%- endcomment -%}
 
 <div class="disclosure">
@@ -13,12 +14,22 @@
     aria-controls="{{ localPosition }}List"
     aria-describedby="{{ localPosition }}Label"
   >
-    
-    <span  class="localization-form__country-wrapper">
-      {{ localization.country | image_url: width: 14 | image_tag }} 
-      <span class="localization-form__currency"> {{- localization.country.currency.iso_code }} <span>
-    </span> 
-   
+    <span class="localization-form__country-wrapper">
+      {% if countryChoice == 'flag' %}
+        {{ localization.country | image_url: width: 14 | image_tag }}
+        <span class="localization-form__currency">
+          {{- localization.country.currency.iso_code }}
+          <span>
+      {%- else -%}
+        {{- localization.country.currency.iso_code }}
+        {{ localization.country.currency.symbol }} | {{ localization.country.name -}}
+        {% comment %}
+          {{ localization.country.currency.symbol }} |
+          <span class="localization-form__currency-symbol"> {{- localization.country.currency.iso_code }} <span>
+        {% endcomment %}
+      {% endif %}
+    </span>
+
     {% render 'icon-caret' %}
   </button>
   <div class="disclosure__list-wrapper" hidden>
@@ -33,8 +44,17 @@
             {% endif %}
             data-value="{{ country.iso_code }}"
           >
-            {{ country | image_url: width: 14 | image_tag }}
-            <span class="localization-form__currency"> {{- localization.country.currency.iso_code }} | {{ country.name }}</span>
+            {% if countryChoice == 'flag' %}
+              {{ country | image_url: width: 14 | image_tag }}
+              <span class="localization-form__currency">
+                {{ country.name }}
+                <span>
+            {%- else -%}
+              {{ country.currency.symbol }} |
+              <span class="localization-form__currency-symbol">
+                {{ country.name }}
+                <span>
+            {% endif %}
           </a>
         </li>
       {%- endfor -%}
