@@ -613,7 +613,7 @@ customElements.define('deferred-media', DeferredMedia);
 class SliderComponent extends HTMLElement {
   constructor() {
     super();
-    tthis.sliderId = this.querySelectorAll('[id^="Slider-"]')[0].id.split('-')[1];
+    this.sliderId = this.querySelectorAll('[id^="Slider-"]')[0].id.split('-')[1];
     this.slider = this.querySelector(`[id^="Slider-${this.sliderId}"]`);
     this.sliderItems = this.querySelectorAll(`[id^="Slide-${this.sliderId}"]`);
     this.enableSliderLooping = false;
