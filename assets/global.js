@@ -1001,7 +1001,7 @@ class VariantSelects extends HTMLElement {
     });
   }
 
-  updateSelectedSwatchValue(event) {
+  updateSelectedSwatchValue({ target }) {
     const { name, value, tagName } = target;
 
     if (tagName === 'SELECT' && target.selectedOptions.length) {
