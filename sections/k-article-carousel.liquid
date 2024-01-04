@@ -12,6 +12,10 @@
     max-width: 80%;
     margin: auto;
   }
+  
+  #shopify-section-{{ section.id }} .title-wrapper--no-top-margin > .title p {
+    margin: 0;
+  }
 
   @media screen and (min-width: 750px) {
     .section-{{ section.id }}-padding {
@@ -40,154 +44,201 @@
   <script src="{{ 'k-component-slider-extras.js' | asset_url }}" defer></script>
 {% endif %}
 
-<div class="color-{{ section.settings.color_scheme }} isolate gradient">
-  <div class="section-{{ section.id }}-padding">
-    <div class="collection__title title-wrapper title-wrapper--no-top-margin page-width {% if show_mobile_slider %} title-wrapper--self-padded-tablet-down{% endif %}{% if show_desktop_slider %} collection__title--desktop-slider{% endif %}">
-      {%- if section.settings.title != blank -%}
-        <h2 class="title inline-richtext center {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">{{ section.settings.title }}</h2>
-      {%- endif -%}
-      {%- if section.settings.description != blank -%}
-        <div class="collection__description center rte  {{ section.settings.text_style }}  {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-            {{ section.settings.description }}
-        </div>
-      {%- endif -%}
-    </div>
-    <slider-component class="slider-container-adapt slider-mobile-gutter {% if show_mobile_slider == true %} page-width{% endif %} page-width-desktop{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-      <ul
-        id="Slider-{{ section.id }}"
-        class="grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down{% if show_mobile_slider or show_desktop_slider %} slider {% if section.blocks.size < section.settings.columns_desktop %} justify-md-center{% endif %} {% if show_desktop_slider %} {% if section.settings.aligned_center %} aligned-vertical{% endif %} slider--desktop{% endif %}{% if show_mobile_slider %} slider--tablet grid--peek{% endif %}{% endif %}"
-        role="list"
-        aria-label="{{ 'general.slider.name' | t }}"
-        data-autoplay="{{ section.settings.auto_rotate }}"
-        data-speed="{{ section.settings.change_slides_speed }}"
-      >
+<div id="article-carousel-section">
+  <div class="color-{{ section.settings.color_scheme }} isolate gradient">
+    <div class="section-{{ section.id }}-padding">
+      <div class="collection__title title-wrapper title-wrapper--no-top-margin page-width{% if show_desktop_slider %} collection__title--desktop-slider{% endif %}">
+        {%- if section.settings.title != blank -%}
+          <h2 class="title inline-richtext center {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">{{ section.settings.title }}</h2>
+        {%- endif -%}
+        {%- if section.settings.description != blank -%}
+          <div class="collection__description center rte  {{ section.settings.text_style }}  {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+              {{ section.settings.description }}
+          </div>
+        {%- endif -%}
+      </div>
+      <slider-component class="slider-container-adapt slider-mobile-gutter {% if show_mobile_slider == true %} page-width{% endif %} page-width-desktop{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+        <ul
+          id="Slider-{{ section.id }}"
+          class="grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down{% if show_mobile_slider or show_desktop_slider %} slider {% if section.blocks.size < section.settings.columns_desktop %} justify-md-center{% endif %} {% if show_desktop_slider %} {% if section.settings.aligned_center %} aligned-vertical{% endif %} slider--desktop{% endif %}{% if show_mobile_slider %} slider--tablet grid--peek{% endif %}{% endif %}"
+          role="list"
+          aria-label="{{ 'general.slider.name' | t }}"
+          data-autoplay="{{ section.settings.auto_rotate }}"
+          data-speed="{{ section.settings.change_slides_speed }}"
+        >
+          {%- liquid
+            assign highest_ratio = 0
+            for block in section.blocks
+              if block.settings.image.aspect_ratio > highest_ratio
+                assign highest_ratio = block.settings.image.aspect_ratio
+              endif
+            endfor
+          -%}
 
-        {% for block in section.blocks %}
-          <li
-            id="Slide-{{ section.id }}-{{ forloop.index }}"
-            class="grid__item {% if show_mobile_slider or show_desktop_slider %} slider__slide{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-          >
-            <div class="article-card-wrapper card-wrapper">
-              {% comment %} <article aria-labelledby="Article-{{ article.id }}"> {% endcomment %}
-              <div
-                class="
-                  card article-card
-                  card--{{ settings.blog_card_style }}
-                  {% if  section.settings.media_height != 'adapt' %} article-card__image--{{ media_height }}{% endif %}
-                  {% if block.settings.image %} card--media{% else %} card--text{% endif %}
-                  {% if settings.blog_card_style == 'card' %} color-{{ settings.blog_card_color_scheme }} gradient{% endif %}
-                  {% if settings.blog_card_style == 'card' and media_height == nil and block.settings.image == blank %} ratio{% endif %}
-                "
-                style="--ratio-percent: {{ 1 | divided_by: block.settings.image.aspect_ratio | times: 100 }}%;"
-              >
+          {% for block in section.blocks %}
+            <li
+              id="Slide-{{ section.id }}-{{ forloop.index }}"
+              class="grid__item {% if show_mobile_slider or show_desktop_slider %} slider__slide{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+            >
+              <div class="article-card-wrapper card-wrapper {% if section.settings.enable_shadow %} shadow-gap{% endif %}">
+                {% comment %} <article aria-labelledby="Article-{{ article.id }}"> {% endcomment %}
                 <div
-                  class="card__inner {% if block.settings.image or settings.blog_card_style == 'standard' %} ratio{% endif %}"
-                  style="--ratio-percent: {{ 1 | divided_by: block.settings.image.aspect_ratio | times: 100 }}%;"
+                  class="
+                    card article-card
+                    card--{{ settings.blog_card_style }}
+                    {% if  section.settings.media_height != 'adapt' %} article-card__image--{{ media_height }}{% endif %}
+                    {% if block.settings.image %} card--media{% else %} card--text{% endif %}
+                    {% if settings.blog_card_style == 'card' %} color-{{ settings.blog_card_color_scheme }} gradient{% endif %}
+                    {% if settings.blog_card_style == 'card' and media_height == nil and block.settings.image == blank %} ratio{% endif %}
+                  "
+                  style="--ratio-percent: {{ 1 | divided_by: highest_ratio | times: 100 }}%;"
                 >
-                  {%- if block.settings.image -%}
-                    <div class="article-card__image-wrapper card__media">
-                      <div
-                        class="article-card__image media global-media-settings media--hover-effect"
-                        {% if section.settings.media_height == 'adapt' %}
-                          style="padding-bottom: {{ 1 | divided_by: block.settings.image.aspect_ratio | times: 100 }}%;"
-                        {% endif %}
-                      >
-                        {% comment %}theme-check-disable ImgLazyLoading{% endcomment %}
-                        <img
-                          srcset="
-                            {%- if block.settings.image.width >= 165 -%}{{ block.settings.image | image_url: width: 165 }} 165w,{%- endif -%}
-                            {%- if block.settings.image.width >= 360 -%}{{ block.settings.image | image_url: width: 360 }} 360w,{%- endif -%}
-                            {%- if block.settings.image.width >= 533 -%}{{ block.settings.image | image_url: width: 533 }} 533w,{%- endif -%}
-                            {%- if block.settings.image.width >= 720 -%}{{ block.settings.image | image_url: width: 720 }} 720w,{%- endif -%}
-                            {%- if block.settings.image.width >= 1000 -%}{{ block.settings.image | image_url: width: 1000 }} 1000w,{%- endif -%}
-                            {%- if block.settings.image.width >= 1500 -%}{{ block.settings.image | image_url: width: 1500 }} 1500w,{%- endif -%}
-                            {{ block.settings.image | image_url }} {{ block.settings.image.width }}w
-                          "
-                          src="{{ block.settings.image | image_url: width: 533 }}"
-                          sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 2 }}px, (min-width: 750px) calc((100vw - 130px) / 2), calc((100vw - 50px) / 2)"
-                          alt="{{ block.settings.image.alt | escape }}"
-                          class="motion-reduce"
-                          {% unless lazy_load == false %}
-                            loading="lazy"
-                          {% endunless %}
-                          width="{{ block.settings.image.width }}"
-                          height="{{ block.settings.image.height }}"
+                  <div
+                    class="card__inner {% if block.settings.image or settings.blog_card_style == 'standard' %} ratio{% endif %}"
+                    style="--ratio-percent: {{ 1 | divided_by:highest_ratio | times: 100 }}%;"
+                  >
+                    {%- if block.settings.image -%}
+                      <div class="article-card__image-wrapper card__media {% if section.settings.enable_shadow %} accent-shadow{% endif %}">
+                        <div
+                          class="article-card__image media global-media-settings media--hover-effect"
+                          {% if section.settings.media_height == 'adapt' %}
+                            style="padding-bottom: {{ 1 | divided_by: highest_ratio | times: 100 }}%;"
+                          {% endif %}
                         >
-                        {% comment %}theme-check-enable ImgLazyLoading{% endcomment %}
+                          {% comment %}theme-check-disable ImgLazyLoading{% endcomment %}
+                          <img
+                            srcset="
+                              {%- if block.settings.image.width >= 165 -%}{{ block.settings.image | image_url: width: 165 }} 165w,{%- endif -%}
+                              {%- if block.settings.image.width >= 360 -%}{{ block.settings.image | image_url: width: 360 }} 360w,{%- endif -%}
+                              {%- if block.settings.image.width >= 533 -%}{{ block.settings.image | image_url: width: 533 }} 533w,{%- endif -%}
+                              {%- if block.settings.image.width >= 720 -%}{{ block.settings.image | image_url: width: 720 }} 720w,{%- endif -%}
+                              {%- if block.settings.image.width >= 1000 -%}{{ block.settings.image | image_url: width: 1000 }} 1000w,{%- endif -%}
+                              {%- if block.settings.image.width >= 1500 -%}{{ block.settings.image | image_url: width: 1500 }} 1500w,{%- endif -%}
+                              {{ block.settings.image | image_url }} {{ block.settings.image.width }}w
+                            "
+                            src="{{ block.settings.image | image_url: width: 533 }}"
+                            sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 2 }}px, (min-width: 750px) calc((100vw - 130px) / 2), calc((100vw - 50px) / 2)"
+                            alt="{{ block.settings.image.alt | escape }}"
+                            class="motion-reduce"
+                            {% unless lazy_load == false %}
+                              loading="lazy"
+                            {% endunless %}
+                            width="{{ block.settings.image.width }}"
+                            height="{{ block.settings.image.height }}"
+                          >
+                          {% comment %}theme-check-enable ImgLazyLoading{% endcomment %}
+                        </div>
+                      </div>
+                    {%- endif -%}
+                    <div class="card__content center">
+                      <div class="card__information">
+                        <h3 class="{% if block.settings.content %} h3{% endif %}">
+                          <a href="{{ block.settings.article_link }}" class="full-unstyled-link">
+                            {{ block.settings.title }}
+                          </a>
+                        </h3>
+                        <div class="article-card__info caption-with-letter-spacing h5">
+                          {%- if show_date -%}
+                            <span class="circle-divider">{{ article.published_at | time_tag: format: 'date' }}</span>
+                          {%- endif -%}
+                          {%- if show_author -%}
+                            <span>{{ article.author }}</span>
+                          {%- endif -%}
+                        </div>
+                        {% if block.settings.content %}
+                            <p class="article-card__excerpt rte-width">
+                              {{ block.settings.content | strip_html }}
+                            </p>
+                        {%- endif -%}
+                        {% if block.settings.link_text != blank %}
+                          <a href="{{ block.settings.article_link }}" class="link underlined-link accent-link">{{ block.settings.link_text }} <span class="icon-tiny">{% render 'icon-tiny-arrow' %}</span></a>
+                        {% endif %}
                       </div>
                     </div>
-                  {%- endif -%}
+                  </div>
                   <div class="card__content center">
                     <div class="card__information">
-                      <h3 class="card__heading{% if block.settings.content %} h2{% endif %}">
+                      <h3 class="{% if block.settings.content %} h3{% endif %}">
                         <a href="{{ block.settings.article_link }}" class="full-unstyled-link">
                           {{ block.settings.title }}
                         </a>
                       </h3>
-                      <div class="article-card__info caption-with-letter-spacing h5">
-                        {%- if show_date -%}
-                          <span class="circle-divider">{{ article.published_at | time_tag: format: 'date' }}</span>
-                        {%- endif -%}
-                        {%- if show_author -%}
-                          <span>{{ article.author }}</span>
-                        {%- endif -%}
-                      </div>
                       {% if block.settings.content %}
                           <p class="article-card__excerpt rte-width">
                             {{ block.settings.content | strip_html }}
                           </p>
                       {%- endif -%}
+                      {% if block.settings.link_text != blank %}
+                        <a href="{{ block.settings.article_link }}" class="link underlined-link accent-link">{{ block.settings.link_text }} <span class="icon-tiny">{% render 'icon-tiny-arrow' %}</span></a>
+                      {% endif %}
                     </div>
                   </div>
                 </div>
-                <div class="card__content center">
-                  <div class="card__information">
-                    <h3 class="card__heading{% if block.settings.content %} h2{% endif %}">
-                      <a href="{{ block.settings.article_link }}" class="full-unstyled-link">
-                        {{ block.settings.title }}
-                      </a>
-                    </h3>
-                    {% if block.settings.content %}
-                        <p class="article-card__excerpt rte-width">
-                          {{ block.settings.content | strip_html }}
-                        </p>
-                    {%- endif -%}
-                  </div>
-                </div>
               </div>
+            </li>
+          {% endfor %}
+        </ul>
+        {%- if show_mobile_slider or show_desktop_slider -%}
+          <div class="slider-buttons no-js-hidden" style="--blocks-ratio:{{ 1 | divided_by: highest_ratio | times: 100 | divided_by: 2.4 }}%;">
+            <button
+              type="button"
+              class="slider-button slider-button--prev"
+              name="previous"
+              aria-label="{{ 'general.slider.previous_slide' | t }}"
+              aria-controls="Slider-{{ section.id }}"
+            >
+              {% render 'icon-caret' %}
+            </button>
+            <div class="slider-counter caption">
+              <span class="slider-counter--current">1</span>
+              <span aria-hidden="true"> / </span>
+              <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+              <span class="slider-counter--total">{{ section.blocks.size }}</span>
             </div>
-          </li>
-        {% endfor %}
-      </ul>
-      {%- if show_mobile_slider or show_desktop_slider -%}
-        <div class="slider-buttons  no-js-hidden">
-          <button
-            type="button"
-            class="slider-button slider-button--prev"
-            name="previous"
-            aria-label="{{ 'general.slider.previous_slide' | t }}"
-            aria-controls="Slider-{{ section.id }}"
-          >
-            {% render 'icon-caret' %}
-          </button>
-          <div class="slider-counter caption">
-            <span class="slider-counter--current">1</span>
-            <span aria-hidden="true"> / </span>
-            <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
-            <span class="slider-counter--total">{{ section.blocks.size }}</span>
+            <button
+              type="button"
+              class="slider-button slider-button--next"
+              name="next"
+              aria-label="{{ 'general.slider.next_slide' | t }}"
+              aria-controls="Slider-{{ section.id }}"
+            >
+              {% render 'icon-caret' %}
+            </button>
           </div>
-          <button
-            type="button"
-            class="slider-button slider-button--next"
-            name="next"
-            aria-label="{{ 'general.slider.next_slide' | t }}"
-            aria-controls="Slider-{{ section.id }}"
-          >
-            {% render 'icon-caret' %}
-          </button>
+        {%- endif -%}
+      </slider-component>
+    </div>
+    {% if section.settings.ellipse_bottom %}
+      <div class="ellipse-element ellipse-bottom">
+        <div
+          class="media media--transparent media--adapt"
+            style="padding-bottom: {{ 1 | divided_by: section.settings.ellipse_bottom.aspect_ratio | times: 100 }}%;"
+        >
+          {%- liquid
+            assign number_of_columns = 1
+            assign number_of_columns_mobile = 1
+            assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+            assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+            assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+            assign image_width = 1
+          -%}
+          {% capture sizes %}
+            (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+            (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+            (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+            calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+          {% endcapture %}
+          {{
+            section.settings.ellipse_bottom
+            | image_url: width: 600
+            | image_tag:
+              loading: 'lazy',
+              widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+              sizes: sizes
+          }}
         </div>
-      {%- endif -%}
-    </slider-component>
+      </div>
+    {% endif %}
   </div>
 </div>
 
@@ -197,9 +248,8 @@
     "class": "k-section k-article-carousel",
     "settings": [
       {
-        "type": "inline_richtext",
+        "type": "richtext",
         "id": "title",
-        "default": "Featured collection",
         "label": "t:sections.featured-collection.settings.title.label"
       },
       {
@@ -267,6 +317,12 @@
         "default": "medium",
         "label": "t:sections.main-blog.settings.image_height.label",
         "info": "t:sections.main-blog.settings.image_height.info"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_shadow",
+        "label": "Enable shadow",
+        "default": false
       },
       {
         "type": "range",
@@ -354,6 +410,11 @@
         "label": "t:sections.multicolumn.settings.swipe_on_mobile.label"
       },
       {
+        "type": "image_picker",
+        "id": "ellipse_bottom",
+        "label": "Ellipse Bottom"
+      },
+      {
         "type": "header",
         "content": "t:sections.all.padding.section_padding_heading"
       },
@@ -386,7 +447,8 @@
           {
             "type": "image_picker",
             "id": "image",
-            "label": "Image"
+            "label": "Image",
+            "info": "Images per slider should be at same dimension"
           },
           {
             "type": "text",
@@ -402,6 +464,11 @@
             "type": "url",
             "id": "article_link",
             "label": "Article link"
+          },
+          {
+            "type": "text",
+            "id": "link_text",
+            "label": "Link label"
           }
         ]
       }
