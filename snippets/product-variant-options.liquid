@@ -58,10 +58,14 @@
     endif
   -%}
 
+  {%- capture input_id -%}
+    {{ section.id }}-{{ option.position }}-{{ forloop.index0 }}
+  {%- endcapture -%}
+
   {%- capture radio_input -%}
     <input
       type="radio"
-      id="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
+      id="{{ input_id }}"
       name="{{ option.name }}"
       value="{{ value | escape }}"
       form="{{ product_form_id }}"
@@ -73,25 +77,34 @@
       {% endif %}
     >
   {%- endcapture %}
+
+  {%- capture label_unavailable %}
+    <span class="visually-hidden label-unavailable">
+      {{- 'products.product.variant_sold_out_or_unavailable' | t -}}
+    </span>
+  {%- endcapture %}
+
   {%- if picker_type == 'swatch' -%}
-    {{ radio_input }}
-    <label
-      for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
-      title="{{ value }}"
-    >
-      {% render 'swatch', swatch: value.swatch, shape: block.settings.swatch_shape %}
-      <span class="visually-hidden">{{ value -}}</span>
-      <span class="visually-hidden label-unavailable">
-        {{- 'products.product.variant_sold_out_or_unavailable' | t -}}
-      </span>
-    </label>
+    {% assign checked = false %}
+    {% if option.selected_value == value %}
+      {% assign checked = true %}
+    {% endif %}
+    {%
+      render 'swatch-input',
+      id: input_id,
+      name: option.name,
+      value: value | escape,
+      product_form_id: product_form_id,
+      checked: checked,
+      disabled: option_disabled,
+      shape: block.settings.swatch_shape,
+      help_text: label_unavailable
+    %}
   {%- elsif picker_type == 'button' -%}
     {{ radio_input }}
-    <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}">
+    <label for="{{ input_id }}">
       {{ value -}}
-      <span class="visually-hidden label-unavailable">
-        {{- 'products.product.variant_sold_out_or_unavailable' | t -}}
-      </span>
+      {{ label_unavailable }}
     </label>
   {%- elsif picker_type == 'dropdown' or picker_type == 'swatch_dropdown' -%}
     <option
