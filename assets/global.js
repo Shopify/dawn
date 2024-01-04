@@ -1006,12 +1006,14 @@ class VariantSelects extends HTMLElement {
 
     if (tagName === 'SELECT' && target.selectedOptions.length) {
       const swatchValue = target.selectedOptions[0].dataset.optionSwatchValue;
-      const selectedDropdownSwatchValue = this.querySelector(`[data-selected-dropdown-swatch="${name}"]`);
+      const selectedDropdownSwatchValue = this.querySelector(`[data-selected-dropdown-swatch="${name}"] > .swatch`);
       if (!selectedDropdownSwatchValue) return;
       if (swatchValue) {
-        selectedDropdownSwatchValue.style = `--variant-options-bg: ${swatchValue}`;
+        selectedDropdownSwatchValue.style.setProperty('--swatch--background', swatchValue);
+        selectedDropdownSwatchValue.classList.remove('swatch--unavailable');
       } else {
-        selectedDropdownSwatchValue.style = 'border-style: dashed';
+        selectedDropdownSwatchValue.style.setProperty('--swatch--background', 'unset');
+        selectedDropdownSwatchValue.classList.add('swatch--unavailable');
       }
     } else if (tagName === 'INPUT' && target.type === 'radio') {
       const selectedSwatchValue = this.querySelector(`[data-selected-swatch-value="${name}"]`);
