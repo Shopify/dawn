@@ -359,8 +359,9 @@ class MenuDrawer extends HTMLElement {
     this.querySelectorAll('summary').forEach((summary) =>
       summary.addEventListener('click', this.onSummaryClick.bind(this))
     );
-    this.querySelectorAll('button:not(.localization-selector)').forEach((button) =>
-      button.addEventListener('click', this.onCloseButtonClick.bind(this))
+    this.querySelectorAll(
+      'button:not(.localization-selector):not(.country-selector__close-button):not(.country-filter__reset-button)'
+    ).forEach((button) => button.addEventListener('click', this.onCloseButtonClick.bind(this))
     );
   }
 
