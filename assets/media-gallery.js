@@ -50,9 +50,9 @@ if (!customElements.get('media-gallery')) {
             || !this.mql.matches
             || (this.dataset.enableStickyInfo === 'true' && this.dataset.desktopLayout === 'stacked')
           ) {
-            const gallery = document.querySelector('[id^="GalleryViewer"]');
-            const galleryRect = gallery.getBoundingClientRect();
-            const top = galleryRect.top + window.scrollY;
+            const section = document.querySelector('[data-section]');
+            const sectionRect = section.getBoundingClientRect();
+            const top = sectionRect.top + window.scrollY;
             window.scrollTo({ top: top, behavior: 'smooth' });
           }
           if (this.elements.thumbnails) activeMedia.parentElement.scrollTo({ left: activeMedia.offsetLeft });
