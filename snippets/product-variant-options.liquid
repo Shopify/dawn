@@ -5,6 +5,7 @@
   - product: {Object} product object.
   - option: {Object} current product_option object.
   - block: {Object} block object.
+  - picker_type: {String} type of picker to dispay
 
 
   Usage:
@@ -12,6 +13,7 @@
     product: product,
     option: option,
     block: block
+    picker_type: picker_type
   %}
 {% endcomment %}
 {%- liquid
@@ -43,12 +45,47 @@
           endif
       endcase
     endfor
+
+    if value.swatch.image
+      assign image_url = value.swatch.image | image_url: width: 50
+      assign swatch_value = 'url(' | append: image_url | append: ')'
+    elsif value.swatch.color
+      assign swatch_value = 'rgb(' | append: value.swatch.color.rgb | append: ')'
+    else
+      assign swatch_value = nil
+    endif
   -%}
 
-  {%- if block.settings.picker_type == 'button' -%}
+  {%- capture input_id -%}
+    {{ section.id }}-{{ option.position }}-{{ forloop.index0 -}}
+  {%- endcapture -%}
+
+  {%- capture label_unavailable %}
+    <span class="visually-hidden label-unavailable">
+      {{- 'products.product.variant_sold_out_or_unavailable' | t -}}
+    </span>
+  {%- endcapture %}
+
+  {%- if picker_type == 'swatch' -%}
+    {% assign checked = false %}
+    {% if option.selected_value == value %}
+      {% assign checked = true %}
+    {% endif %}
+    {%
+      render 'swatch-input',
+      id: input_id,
+      name: option.name,
+      value: value | escape,
+      product_form_id: product_form_id,
+      checked: checked,
+      disabled: option_disabled,
+      shape: block.settings.swatch_shape,
+      help_text: label_unavailable
+    %}
+  {%- elsif picker_type == 'button' -%}
     <input
       type="radio"
-      id="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
+      id="{{ input_id }}"
       name="{{ option.name }}"
       value="{{ value | escape }}"
       form="{{ product_form_id }}"
@@ -59,15 +96,18 @@
         class="disabled"
       {% endif %}
     >
-    <label for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}">
+    <label for="{{ input_id }}">
       {{ value -}}
-      <span class="visually-hidden">{{ 'products.product.variant_sold_out_or_unavailable' | t }}</span>
+      {{ label_unavailable }}
     </label>
-  {%- elsif block.settings.picker_type == 'dropdown' -%}
+  {%- elsif picker_type == 'dropdown' or picker_type == 'swatch_dropdown' -%}
     <option
       value="{{ value | escape }}"
       {% if option.selected_value == value %}
         selected="selected"
+      {% endif %}
+      {% if swatch_value and picker_type == 'swatch_dropdown' %}
+        data-option-swatch-value="{{ swatch_value }}"
       {% endif %}
     >
       {% if option_disabled -%}
