@@ -117,7 +117,7 @@ if (!customElements.get('localization-form')) {
         if (!document.body.classList.contains('overflow-hidden-tablet')) {
           document.body.classList.add('overflow-hidden-mobile');
         }
-        if (this.mql.matches) {
+        if (this.elements.search && this.mql.matches) {
           this.elements.search.focus();
         }
         document.querySelector('.menu-drawer').classList.add('country-selector-open');
