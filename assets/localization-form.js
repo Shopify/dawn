@@ -4,6 +4,7 @@ if (!customElements.get('localization-form')) {
     class LocalizationForm extends HTMLElement {
       constructor() {
         super();
+        this.mql = window.matchMedia('(min-width: 750px)');
         this.elements = {
           input: this.querySelector('input[name="locale_code"], input[name="country_code"]'),
           button: this.querySelector('button.localization-form__select'),
@@ -115,6 +116,9 @@ if (!customElements.get('localization-form')) {
         );
         if (!document.body.classList.contains('overflow-hidden-tablet')) {
           document.body.classList.add('overflow-hidden-mobile');
+        }
+        if (this.elements.search && this.mql.matches) {
+          this.elements.search.focus();
         }
         document.querySelector('.menu-drawer').classList.add('country-selector-open');
       }
