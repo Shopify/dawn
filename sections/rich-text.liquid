@@ -12,10 +12,24 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  {% if section.settings.text_block_custom_width %}
+    @media screen and (min-width: 750px) {
+      .section-{{ section.id }} .rich-text__blocks {
+        max-width: {{ section.settings.text_block_custom_width_tablet | divided_by: 10 }}rem;
+      }
+    }
+
+    @media screen and (min-width: 990px) {
+      .section-{{ section.id }} .rich-text__blocks {
+        max-width: {{ section.settings.text_block_custom_width_desktop | divided_by: 10 }}rem;
+      }
+    }
+  {% endif %}
 {%- endstyle -%}
 
 <div class="isolate{% unless section.settings.full_width %} page-width{% endunless %}">
-  <div class="rich-text content-container color-{{ section.settings.color_scheme }} gradient{% if section.settings.full_width %} rich-text--full-width content-container--full-width{% endif %} section-{{ section.id }}-padding">
+  <div class="rich-text content-container color-{{ section.settings.color_scheme }} gradient{% if section.settings.full_width %} rich-text--full-width content-container--full-width{% endif %} section-{{ section.id }}-padding section-{{ section.id }}">
     <div class="rich-text__wrapper rich-text__wrapper--{{ section.settings.desktop_content_position }}{% if section.settings.full_width %} page-width{% endif %}">
       <div class="rich-text__blocks {{ section.settings.content_alignment }}">
         {%- for block in section.blocks -%}
@@ -61,8 +75,15 @@
                 {{ block.settings.caption | escape }}
               </p>
             {%- when 'text' -%}
+              {% if block.settings.text_size != '--s0' %}
+                <style>
+                  .block-{{ block.id }}.rich-text__text {
+                    font-size: var({{ block.settings.text_size }});
+                  }
+                </style>
+              {% endif %}
               <div
-                class="rich-text__text rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+                class="block-{{ block.id }} rich-text__text rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
                 {{ block.shopify_attributes }}
                 {% if settings.animations_reveal_on_scroll %}
                   data-cascade
@@ -173,6 +194,37 @@
       "id": "full_width",
       "default": true,
       "label": "t:sections.rich-text.settings.full_width.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.rich-text.settings.text_block_width.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "text_block_custom_width",
+      "default": false,
+      "label": "t:sections.rich-text.settings.text_block_custom_width.label",
+      "info": "t:sections.rich-text.settings.text_block_custom_width.info"
+    },
+    {
+      "type": "range",
+      "id": "text_block_custom_width_desktop",
+      "label": "t:sections.rich-text.settings.text_block_custom_width_desktop.label",
+      "unit": "px",
+      "default": 780,
+      "min": 500,
+      "max": 1200,
+      "step": 10
+    },
+    {
+      "type": "range",
+      "id": "text_block_custom_width_tablet",
+      "label": "t:sections.rich-text.settings.text_block_custom_width_tablet.label",
+      "unit": "px",
+      "default": 500,
+      "min": 300,
+      "max": 700,
+      "step": 10
     },
     {
       "type": "header",
@@ -376,6 +428,38 @@
           "id": "text",
           "default": "<p>Share information about your brand with your customers. Describe a product, make announcements, or welcome customers to your store.</p>",
           "label": "t:sections.rich-text.blocks.text.settings.text.label"
+        },
+        {
+          "type": "select",
+          "id": "text_size",
+          "default": "--s0",
+          "label": "t:sections.all.text_size.label",
+          "options": [
+            {
+              "label": "t:sections.all.text_size.options__extra_small.label",
+              "value": "--s-2"
+            },
+            {
+              "label": "t:sections.all.text_size.options__small.label",
+              "value": "--s-1"
+            },
+            {
+              "label": "t:sections.all.text_size.options__base.label",
+              "value": "--s0"
+            },
+            {
+              "label": "t:sections.all.text_size.options__medium_large.label",
+              "value": "--s1"
+            },
+            {
+              "label": "t:sections.all.text_size.options__large.label",
+              "value": "--s2"
+            },
+            {
+              "label": "t:sections.all.text_size.options__extra_large.label",
+              "value": "--s3"
+            }
+          ]
         }
       ]
     },
