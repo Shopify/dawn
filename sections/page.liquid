@@ -12,10 +12,27 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  {% if section.settings.page_width == 'full_width' %}
+    .section-{{ section.id }}-padding {
+      padding-inline: 1.5rem;
+    }
+  {% endif %}
 {%- endstyle -%}
 
+{% liquid
+  assign section_width_class = ''
+  if section.settings.page_width == 'narrow_width'
+    assign section_width_class = 'page-width page-width--narrow'
+  elsif section.settings.page_width == 'standard_width'
+    assign section_width_class = 'page-width'
+  elsif section.settings.page_width == 'full_width'
+    assign section_width_class = ''
+  endif
+%}
+
 <div class="color-{{ section.settings.color_scheme }} gradient">
-  <div class="page-width page-width--narrow section-{{ section.id }}-padding">
+  <div class="{{ section_width_class }} section-{{ section.id }}-padding">
     {% liquid
       if section.settings.page.title != blank
         assign title = section.settings.page.title | escape
@@ -24,7 +41,7 @@
       endif
     %}
     {% unless section.settings.heading_element_custom %}
-      <h2 class="page-title {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+      <h2 class="page-title {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %} {% if section.settings.page_width == 'full_width' %} title-width {% endif %}">
         {{ title }}
       </h2>
     {% else %}
@@ -32,6 +49,9 @@
         assign class = 'page-title '
         if settings.animations_reveal_on_scroll
           assign class = class | append: ' scroll-trigger animate--slide-in'
+        endif
+        if section.settings.page_width == 'full_width'
+          assign class = class | append: ' title-width'
         endif
       %}
       {%
@@ -64,6 +84,26 @@
     "groups": ["header", "footer"]
   },
   "settings": [
+    {
+      "type": "select",
+      "id": "page_width",
+      "label": "t:sections.all.page_width.label",
+      "options": [
+        {
+          "label": "t:sections.all.page_width.options__1.label",
+          "value": "narrow_width"
+        },
+        {
+          "label": "t:sections.all.page_width.options__2.label",
+          "value": "standard_width"
+        },
+        {
+          "label": "t:sections.all.page_width.options__3.label",
+          "value": "full_width"
+        }
+      ],
+      "default": "standard_width"
+    },
     {
       "type": "page",
       "id": "page",
