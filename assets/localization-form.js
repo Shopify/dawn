@@ -5,6 +5,7 @@ if (!customElements.get('localization-form')) {
       constructor() {
         super();
         this.mql = window.matchMedia('(min-width: 750px)');
+        this.header = document.querySelector('.header-wrapper');
         this.elements = {
           input: this.querySelector('input[name="locale_code"], input[name="country_code"]'),
           button: this.querySelector('button.localization-form__select'),
@@ -47,6 +48,7 @@ if (!customElements.get('localization-form')) {
         }
         document.body.classList.remove('overflow-hidden-mobile');
         document.querySelector('.menu-drawer').classList.remove('country-selector-open');
+        this.header.preventHide = false;
       }
 
       onContainerKeyDown(event) {
@@ -119,6 +121,9 @@ if (!customElements.get('localization-form')) {
         }
         if (this.elements.search && this.mql.matches) {
           this.elements.search.focus();
+        }
+        if (this.hasAttribute('data-prevent-hide')) {
+          this.header.preventHide = true;
         }
         document.querySelector('.menu-drawer').classList.add('country-selector-open');
       }
