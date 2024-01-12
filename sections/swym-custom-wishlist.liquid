@@ -1,0 +1,1841 @@
+{% comment %} Swym Custom wishlist Base container {% endcomment %}
+<swymcs-custom-wishlist
+  id="swymcs-custom-wishlist-{{ section.id }}"
+  data-section-id="{{ section.id }}"
+  class="swymcs-custom-wishlist"
+  data-sectionId="{{ section.id }}"
+  data-settings="{{ section.settings | json | escape }}"
+>
+  <div class="swymcs-wishlist-title">{{ section.settings.swym_wishlist_title }}</div>
+  <div class="swymcs-wishlist-body">
+    <div id="swymcs-wishlist-loader" class="swymcs-hide-container">
+      <svg
+        width="100"
+        height="100"
+        enable-background="new 0 0 0 0"
+        version="1.1"
+        viewBox="0 0 100 100"
+        xml:space="preserve"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle cx="20" cy="50" r="6">
+          <animate attributeName="opacity" begin="0.1" dur="1s" repeatCount="indefinite" values="0;1;0" />
+        </circle>
+        <circle cx="50" cy="50" r="6">
+          <animate attributeName="opacity" begin="0.2" dur="1s" repeatCount="indefinite" values="0;1;0" />
+        </circle>
+        <circle cx="80" cy="50" r="6">
+          <animate attributeName="opacity" begin="0.3" dur="1s" repeatCount="indefinite" values="0;1;0" />
+        </circle>
+      </svg>
+    </div>
+    <div id="wishlist-container" class="swymcs-hide-container">
+      {%- if section.settings.swym_wishlist_show_login_banner -%}
+        <swym-custom-wishlist-login-to-save></swym-custom-wishlist-login-to-save>
+      {%- endif -%}
+      {%- if section.settings.swym_wishlist_show_share_button -%}
+        <swym-custom-share-wishlist-button data-listid></swym-custom-share-wishlist-button>
+      {%- endif -%}
+      <div id="swymcs-wishlist-list-container"></div>
+      <div id="swymcs-wishlist-items-container"></div>
+    </div>
+    <div id="empty-wishlist-container" class="swymcs-hide-container">
+      <div id="empty-wishlist-container-description">{{ settings.swym_wishlist_empty_description }}</div>
+      <a href="/collections/all" id="swymcs-custom-continue-shopping">
+        {{- settings.swym_wishlist_empty_action_button_cta -}}
+      </a>
+    </div>
+  </div>
+</swymcs-custom-wishlist>
+
+{% comment %} Variant selection Modal {% endcomment %}
+{%- if section.settings.variant_select_type == 'modal' -%}
+  <swymcs-variant-select
+    class="swymcs-variant-select"
+    id="swymcs-variant-select-{{ section.id }}"
+    data-sectionid="{{ section.id }}"
+  >
+  </swymcs-variant-select>
+{%- elsif section.settings.variant_select_type == 'drawer' -%}
+  <swymcs-drawer
+    id="swym-wishlist-product--drawer"
+    class="swym-drawer swym-drawer--{{ settings.swym_drawer_layout }} swym-options-drawer-container"
+    data-trigger-id
+    data-shopify-product
+    data-wishlist-product
+  >
+    <div class="swym-drawer-content">
+      <div class="swym-drawer-header swym-drawer-width">
+        <p class="swym-drawer-header-title">{{ settings.swym_drawer_title }}</p>
+        <button id="swym-close-drawer">
+          {{ settings.swym_close_btn_icon }}
+        </button>
+      </div>
+      <div class="swym-drawer-body swym-drawer-width">
+        <div class="swym-product-wrapper">
+          <div class="swym-product--info">
+            <img loading="lazy">
+            <div class="swym-product-details">
+              <div class="swym-product-vendor"></div>
+              <div class="swym-product-title">
+                <a
+                  {% if settings.swym_drawer_open_in_new_tab %}
+                    target="_blank"
+                  {% endif %}
+                  href
+                ></a>
+              </div>
+              <div class="swym-price-detils-wrapper">
+                <div class="swym-product-price"></div>
+                <a
+                  {% if settings.swym_drawer_open_in_new_tab %}
+                    target="_blank"
+                  {% endif %}
+                  href
+                  aria-label="More Details Button"
+                >
+                  {{- settings.swym_drawer_product_details_btn_text -}}
+                </a>
+              </div>
+            </div>
+          </div>
+          <div id="swym-product-options" class="swym-product-options"></div>
+          <div class="swym-quantity-selector">
+            <button class="swym-qty-btn" data-action="minus" aria-label="Minus">-</button>
+            <input class="swym-qty-input" type="text" value="1" aria-label="Quanity Input">
+            <button class="swym-qty-btn" data-action="plus" aria-label="Plus">+</button>
+          </div>
+        </div>
+        <div class="swym-action-ctas">
+          <button
+            id="swym-drawer-add-to-cart"
+            class="swym-drawer-add-to-cart btn button button--primary"
+            data-product-url
+            data-product-id
+            data-variant-id
+            aria-label="Add To Cart"
+          >
+            <span class="swym-loader-button__loader">
+              <div class="swym-spinner">
+                <svg focusable="false" width="24" height="24" class="swym-icon icon--spinner" viewBox="25 25 50 50">
+                  <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" stroke-width="5"></circle>
+                </svg>
+              </div>
+            </span>
+            <span class="swym-loader-btn-text">{{ settings.swym_wishlist_item_cta_addtocart }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </swymcs-drawer>
+{%- endif -%}
+
+<script>
+  // Script for swym custom wishlist
+
+  if (!customElements.get('swymcs-custom-wishlist')) {
+    class SwymCustomWishlist extends HTMLElement {
+      constructor() {
+        super();
+        if (!window.SwymCallbacks) {
+          window.SwymCallbacks = [];
+        }
+        window.SwymCallbacks.push(this.swymWishlistRender.bind(this));
+      }
+
+      swymWishlistRender(swat) {
+        let wishlistedProducts = [];
+        let timeout = null;
+
+        const swymWishlistElem = this;
+        const swymShareWishlistButton = swymWishlistElem.querySelector('swym-custom-share-wishlist-button');
+        const wishlistLoaderContainer = swymWishlistElem.querySelector('#swymcs-wishlist-loader');
+        const wishlistContainer = swymWishlistElem.querySelector('#wishlist-container');
+        const wishlistListsContainer = swymWishlistElem.querySelector('#swymcs-wishlist-list-container');
+        let wishlistItemContainer = swymWishlistElem.querySelector('#swymcs-wishlist-items-container');
+        const wishlistEmptyContainer = swymWishlistElem.querySelector('#empty-wishlist-container');
+
+        let settings = JSON.parse(this.dataset.settings);
+        const sectionId = this.dataset.sectionid;
+
+        showLoader();
+        renderWishlist(swat);
+
+        swat.evtLayer.addEventListener(_swat.JSEvents.addedToWishlist, () => {
+          setTimeout(() => renderWishlist(swat), 1000);
+        });
+
+        function showLoader() {
+          wishlistLoaderContainer.classList.remove('swymcs-hide-container');
+        }
+
+        function renderWishlist(swat) {
+          let isMultipleWishlist = swat.isCollectionsEnabled();
+          let currentWishlist = [];
+          console.log('render multiple wishlist', isMultipleWishlist);
+          if (isMultipleWishlist) {
+            swat.fetchLists({
+              callbackFn: (lists) => {
+                swat.swymCustomWishlistLists = lists;
+                let currentListId = lists && lists[0] && lists[0].lid;
+                swat.swymCustomWishlistSelectedListId = currentListId;
+                swymWishlistElem.dataset.listid = currentListId;
+                if (swymShareWishlistButton) {
+                  swymShareWishlistButton.dataset.listid = currentListId;
+                }
+                currentWishlist = (lists && lists[0] && lists[0].listcontents) || [];
+                wishlistListsContainer.innerHTML = `
+                              <select class="swymcs-wishlist-list" id="swym-mutliple-list" onchange="_swat.swymWishlistFunctions.onListChange(event, '${sectionId}')">
+                                  ${lists
+                                    .map((list) => {
+                                      return `
+                                      <option class="swymcs-wishlist-list-option" id="product-${list.lid}-${sectionId}" data-listid="${list.lid}" value="${list.lid}">${list.lname} (${list.listcontents.length} items) </option>
+                                  `;
+                                    })
+                                    .join('')}
+                              </select>
+                          `;
+                renderList(currentWishlist, sectionId);
+              },
+              errorFn: (error) => {
+                console.log('Error while fetching all Lists', error);
+              },
+            });
+          } else {
+            swat.fetch((wishlist) => {
+              renderList(wishlist, sectionId);
+            });
+          }
+
+          const swymWishlistFunctions = {
+            onListChange: (event, sectionId) => {
+              let currentListId = event.target.value;
+              swat.swymCustomWishlistSelectedListId = currentListId;
+              swymWishlistElem.dataset.listid = currentListId;
+              if (swymShareWishlistButton) {
+                swymShareWishlistButton.dataset.listid = currentListId;
+              }
+              let currentSelectedWishlist = swat.swymCustomWishlistLists.find((list) => list.lid == currentListId);
+              renderList(currentSelectedWishlist.listcontents, sectionId);
+            },
+          };
+          swat.swymWishlistFunctions = {
+            ...swat.swymWishlistFunctions,
+            ...swymWishlistFunctions,
+          };
+        }
+
+        async function renderList(list, sectionId) {
+          let wishlist = document.querySelector(`#swymcs-custom-wishlist-${sectionId}`);
+          wishlistItemContainer = wishlist.querySelector('#swymcs-wishlist-items-container');
+          let settings = JSON.parse(wishlist.dataset.settings);
+          if (list && list.length > 0) {
+            wishlistedProducts = await fetchProductData(list);
+            wishlistItemContainer.innerHTML = '';
+            wishlistedProducts.forEach((listItem) => {
+              swat.swymWishlistFunctions &&
+                swat.swymWishlistFunctions.renderWishlistItem(sectionId, wishlistItemContainer, listItem, settings);
+            });
+          } else {
+            wishlistedProducts = [];
+          }
+          updateUIState();
+        }
+
+        async function fetchProductData(wishlist) {
+          let fetchedProducts = await Promise.all(
+            wishlist.map(async (listItem) => {
+              let response = await fetch(listItem.du.split('?')[0] + '.js');
+              let productData = await response.json();
+              listItem.productData = productData;
+              return listItem;
+            })
+          );
+          return fetchedProducts;
+        }
+
+        function updateUIState() {
+          hideLoader();
+          if (wishlistedProducts.length > 0) {
+            wishlistContainer.classList.remove('swymcs-hide-container');
+            wishlistEmptyContainer.classList.add('swymcs-hide-container');
+          } else if (wishlistedProducts.length === 0) {
+            wishlistEmptyContainer.classList.remove('swymcs-hide-container');
+            wishlistContainer.classList.add('swymcs-hide-container');
+          }
+        }
+
+        function hideLoader() {
+          wishlistLoaderContainer.classList.add('swymcs-hide-container');
+        }
+      }
+    }
+    customElements.define('swymcs-custom-wishlist', SwymCustomWishlist);
+  }
+</script>
+
+<style id="swymcs-drawer-style">
+  /* Style for custom variant drawer */
+  @keyframes swymSpinnerRotate {
+      100% { transform: rotate(360deg) }
+  }
+  @keyframes swymSpinnerDash {
+      0% { stroke-dasharray: 1,200; stroke-dashoffset: 0 }
+      50% { stroke-dasharray: 89,200; stroke-dashoffset: -35 }
+      100% { stroke-dasharray: 89,200; stroke-dashoffset: -124 }
+  }
+  @keyframes swymSpinnerColor {
+      0% { stroke: currentColor }
+      40% { stroke: currentColor }
+      66% { stroke: currentColor }
+      80%, 90% { stroke: currentColor}
+  }
+
+  #swym-wishlist-product--drawer {
+      position: fixed;
+      max-width: 500px;
+      width: 90%;
+      background: {{ settings.swym_drawer_bg_color }};
+      z-index: 1030;
+      height: 100%;
+      visibility: hidden;
+      transition: transform .6s cubic-bezier(.75,0,.175,1),visibility .6s cubic-bezier(.75,0,.175,1);
+  }
+
+  @media only screen and (min-width: 767px){
+      #swym-wishlist-product--drawer.swym-drawer--left{ transform: translateX(-500px); left: 0; top: 0 }
+      #swym-wishlist-product--drawer.swym-drawer--left #swym-close-drawer::after{ left: 100%; top: 0}
+      #swym-wishlist-product--drawer.swym-drawer--right { transform: translateX(500px); right: 0; top: 0 }
+      #swym-wishlist-product--drawer.swym-drawer--right #swym-close-drawer::after{ right: 100%; top: 0 }
+  }
+
+  #swym-wishlist-product--drawer .swym-drawer-width{ padding-inline: 40px; padding-block: 15px }
+  #swym-wishlist-product--drawer .swym-drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-align: center;
+      text-transform: uppercase;
+      border-bottom: 1px solid #514f4f70;
+  }
+
+  #swym-wishlist-product--drawer .swym-drawer-header-title { margin-block: 0; font-size: 18px}
+  #swym-wishlist-product--drawer #swym-close-drawer { background: transparent; border: none; padding: 10px; cursor: pointer}
+  #swym-wishlist-product--drawer #swym-close-drawer::after {
+      content: '';
+      position: absolute;
+      height: 100vh;
+      width: 100vw;
+      background: #0000004f;
+  }
+
+  #swym-wishlist-product--drawer .swym-product-wrapper{ max-height: 500px; overflow-y: auto }
+  #swym-wishlist-product--drawer .swym-product--info {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100%;
+      margin: 24px 0;
+      object-fit: contain;
+  }
+  #swym-wishlist-product--drawer .swym-product--info img{ height: 115px; width: 115px; margin-right: 30px }
+  #swym-wishlist-product--drawer .swym-product-details { font-size: 14px; color: #1e1e1e }
+  #swym-wishlist-product--drawer .swym-product-details div:not(.price-detils-wrapper) { margin-bottom: 5px}
+  #swym-wishlist-product--drawer .swym-swym-product-details .swym-product-title { font-weight: 600; line-height: 1.5 }
+  #swym-wishlist-product--drawer .swym-product-details a{text-decoration: none; color: inherit }
+  #swym-wishlist-product--drawer .swym-product-details .swym-price-detils-wrapper { display: flex; gap: 20px }
+  #swym-wishlist-product--drawer .swym-product-details .swym-price-detils-wrapper a{ text-decoration: underline; color: #7c7878}
+
+  #swym-wishlist-product--drawer .swym-product-vendor { color: #a3a3a3; font-size: 12px; line-height: 1.23; text-transform: uppercase}
+  #swym-wishlist-product--drawer .swym-product-details .swym-price-detils-wrapper a:hover{ color: #1b1b1b}
+  #swym-wishlist-product--drawer .swym-quantity-selector {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      border: 1px solid #71707097;
+      border-radius: 4px;
+      vertical-align: middle;
+      margin-bottom: 10px;
+  }
+  #swym-wishlist-product--drawer .swym-quantity-selector *{ height: 46px; width: 46px; text-align: center; border: none; background: transparent}
+  #swym-wishlist-product--drawer .swym-quantity-selector *:focus-visible { outline: none; outline-offset: 0; box-shadow: none }
+  #swym-wishlist-product--drawer .swym-quantity-selector button{ font-size: 20px}
+
+  #swym-wishlist-product--drawer .swym-action-ctas .swym-loader-btn-text{ opacity: 1}
+  #swym-wishlist-product--drawer .swym-action-ctas #swym-drawer-add-to-cart {
+      display: block; margin-block: 10px; height: 40px; width: 100%; cursor: pointer;
+      background-color: {{ settings.swym_wishlist_primary_button_color }};
+      color: {{ settings.swym_wishlist_primary_button_text_color }}
+  }
+  #swym-wishlist-product--drawer .swym-action-ctas #swym-drawer-add-to-cart[is-disabled]{ pointer-events: none; opacity: 0.5}
+  #swym-wishlist-product--drawer .swym-action-ctas #swym-drawer-add-to-cart[disabled] .swym-loader-button__loader{ opacity: 1 }
+  #swym-wishlist-product--drawer .swym-action-ctas #swym-drawer-add-to-cart[disabled] .swym-loader-btn-text{ opacity: 0}
+
+  #swym-wishlist-product--drawer .swym-loader-button__loader {opacity: 0; position: absolute; top: 25%; left: 50% }
+  #swym-wishlist-product--drawer .swym-spinner svg { margin: auto; animation: swymSpinnerRotate 2s linear infinite; transform-origin: center center }
+  #swym-wishlist-product--drawer .swym-spinner svg circle { animation: swymSpinnerDash 1.5s ease-in-out infinite,swymSpinnerColor 6s ease-in-out infinite }
+
+  #swym-wishlist-product--drawer .swym-product-options .swym-options--container { margin-bottom: 15px }
+  #swym-wishlist-product--drawer .swym-product-options .swym-option--title { font-size: 18px; font-weight: 600; padding-block-end: 5px}
+  #swym-wishlist-product--drawer .swym-product-options .swym-option-values { display: flex; gap: 10px; flex-wrap: wrap; font-size: 14px }
+  #swym-wishlist-product--drawer .swym-product-options .swym-option--value { padding-inline: 10px; border: 0.5px solid #1e1e1e; border-radius: 5px; cursor: pointer}
+  #swym-wishlist-product--drawer .swym-product-options .swym-option--value:hover, .swym-option--value.active{ color: {{ settings.swym_wishlist_primary_button_text_color }}; background-color: {{ settings.swym_wishlist_primary_button_color }}}
+
+  #swym-wishlist-product--drawer[open]{ transform: translateX(0); visibility: visible }
+  body.no-scroll{ overflow: hidden}
+  .swym-hide-container{ display: none !important}
+  @media only screen and (max-width: 767px){
+      #swym-wishlist-product--drawer {
+          width: 100%;
+          border-radius: 10px;
+          border: 1px solid #514f4f70;
+          overflow-y: auto;
+          max-width: unset;
+          transform: translateY(100%);
+          top: 0;
+          justify-content: flex-end;
+          display: flex;
+          flex-direction: column;
+          background: transparent;
+      }
+      #swym-wishlist-product--drawer .swym-drawer-header-title { display: none}
+      #swym-wishlist-product--drawer .swym-drawer-header { border-bottom: 0}
+      #swym-wishlist-product--drawer .swym-drawer-content { border-radius: 5px 5px 0 0; position: relative;
+          border: 1px solid #514f4f70;
+          background: {{ settings.swym_drawer_bg_color }}
+      }
+      #swym-wishlist-product--drawer #swym-close-drawer  { position: absolute; top: 10px; right: 10px}
+      #swym-wishlist-product--drawer #swym-close-drawer::after {
+          content: '';
+          position: absolute;
+          bottom: calc(100% + 11px);
+          height: 100vh;
+          width: 100vw;
+          background: #0000004f;
+          right: -12px;
+      }
+      #swym-wishlist-product--drawer .swym-drawer-width  { padding-inline: 24px; padding-block: 10px}
+      #swym-wishlist-product--drawer .swym-product--info { font-size: 12px; position: relative; margin-top: 0 }
+      #swym-wishlist-product--drawer .swym-product--info img{ width: 65px; height: 65px; margin-right: 20px }
+      #swym-wishlist-product--drawer .swym-product--info::after {
+          position: absolute;
+          width: calc(100% + 48px);
+          bottom: -10px;
+          content: '';
+          left: -24px;
+          background: #514f4f70;
+          height: 1px;
+      }
+      #swym-wishlist-product--drawer .swym-product-wrapper { max-height: unset; overflow: visible }
+      #swym-wishlist-product--drawer .swym-product-options .swym-options--container{ margin-bottom: 7.5px }
+      #swym-wishlist-product--drawer .swym-product-options .swym-option--title { font-size: 14px !important}
+      #swym-wishlist-product--drawer .swym-product-options .swym-option-values { gap: 5px !important}
+      #swym-wishlist-product--drawer .swym-quantity-selector{ margin-block: 10px}
+  }
+</style>
+
+<style>
+  /* Style for swym custom wishlist */
+  .swymcs-title {
+    font-weight: 700;
+    font-size: 20px;
+  }
+
+  .swymcs-button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 3rem;
+    cursor: pointer;
+    width: 100%;
+    border: none;
+    height: 45px;
+    border-radius: 5px;
+    text-decoration: none;
+  }
+
+  select#swym-mutliple-list {
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 5px;
+  }
+
+  #shopify-section-{{ section.id }}{
+    font-family: {{ settings.swym_wishlist_font.family }},{{ settings.swym_wishlist_font.fallback_families }};
+    font-weight: 	{{ settings.swym_wishlist_font.weight }};
+       font-style: 	{{ settings.swym_wishlist_font.style }};
+  }
+  #shopify-section-{{ section.id }} button{
+    font-family: {{ settings.swym_wishlist_font.family }},{{ settings.swym_wishlist_font.fallback_families }};
+    font-weight: 	{{ settings.swym_wishlist_font.weight }};
+       font-style: 	{{ settings.swym_wishlist_font.style }};
+  }
+  #swymcs-custom-wishlist-{{ section.id }}{
+
+    max-width: 1200px;
+    margin: auto;
+
+    font-size: 14px;
+    line-height: 20px;
+
+    padding: 5px 20px;
+    display: block;
+
+  }
+
+  #swymcs-custom-wishlist-{{ section.id }} .swymcs-wishlist-title{
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  #swymcs-custom-wishlist-{{ section.id }} .swymcs-hide-container{
+    display: none !important;
+  }
+
+  #swymcs-custom-wishlist-{{ section.id }} .swymcs-wishlist-body{
+    margin-bottom: 20px;
+    min-height: 300px;
+    position: relative;
+  }
+
+  #swymcs-custom-wishlist-{{ section.id }} #swymcs-wishlist-loader{
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+  }
+
+  #swymcs-custom-wishlist-{{ section.id }} #empty-wishlist-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 15px;
+    margin-top: 300px;
+    color: rgba(0, 0, 0, 0.90);
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  #swymcs-custom-wishlist-{{ section.id }} #swymcs-custom-continue-shopping {
+    display: flex;
+    padding: 5px 60px;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    border: 0.5px solid {{ settings.swym_wishlist_primary_button_color }};
+    background: #FFF;
+    color: #0D0D0D;
+    text-transform: uppercase;
+    margin-top: 15px;
+    text-decoration: unset;
+  }
+
+  #swymcs-custom-wishlist-{{ section.id }} #swymcs-custom-continue-shopping:hover {
+    background: black;
+    color: white;
+  }
+
+  #swymcs-custom-wishlist-{{ section.id }} #swymcs-wishlist-items-container{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+  }
+</style>
+
+<script defer>
+  // script for swym wishlist items
+  if (!customElements.get('swymcs-custom-wishlist-item')) {
+    class SwymCustomWishlistItem extends HTMLElement {
+      constructor() {
+        super();
+        this.productData = {};
+        this.settings = {};
+      }
+
+      get data() {
+        return this.productData;
+      }
+
+      set data(val) {
+        this.productData = val;
+      }
+
+      get themesetting() {
+        return this.settings;
+      }
+
+      set themesetting(value) {
+        this.settings = value;
+      }
+
+      render() {
+        const epi = +this.dataset.epi;
+        const empi = +this.dataset.empi;
+        const du = this.dataset.du;
+
+        let item = this.productData;
+
+        const settings = this.settings;
+        const sectionId = this.dataset.sectionid;
+
+        let productImage = (item.productData && item.productData.featured_image) || item.iu;
+        let selectedVariant = item.productData.variants.find((variant) => variant.id == item.epi);
+        let isInCart = _swat.platform.isInDeviceCart(selectedVariant.id);
+
+        this.innerHTML = `
+                  <a href="${item.du}" class="swymcs-wishlist-image-container">
+                    <img src="${productImage}" class="swymcs-wishlist-item-image" />
+                  </a>
+                  <div class="swymcs-wishlist-item-content">
+                      <a href="${item.du}" class="swymcs-wishlist-item-title">
+                          <div class="swymcs-wishlist-item-title-content">${item.dt}</div>
+                      </a>
+                      ${
+                        settings.swym_wishlist_show_vendor
+                          ? `
+                        <div class="swymcs-wishlist-item-vendor-type">${item.productData.vendor}</div>
+                      `
+                          : ''
+                      }
+                      ${
+                        settings.swym_wishlist_show_price
+                          ? `
+                        <div class="swymcs-product-final-price">
+                          ${_swat.currency}${item.pr}
+                        </div>
+                      `
+                          : ''
+                      }
+                      <div class="swymcs-wishlist-action-container">
+  
+                        ${
+                          settings.swym_wishlist_show_variant
+                            ? `
+                            <div class="swymcs-wishlist-variant-select ${!item.vi ? 'swym-variant-hide' : ''}" >
+                              <span>${item.vi}</span>
+                               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M8.625 5.25L15.375 12L8.625 18.75" stroke="black" stroke-linecap="round" stroke-linejoin="round"/>
+                              </svg>
+                            </div>
+                          `
+                            : ''
+                        }
+                          ${
+                            settings.swym_wishlist_show_addtocart
+                              ? `<button class="swymcs-wishlist-add-to-cart-button" data-action="add-to-cart" ${
+                                  !(selectedVariant && selectedVariant.available) ? 'disabled' : ''
+                                } onClick="_swat.swymWishlistFunctions.AddItemToCart(this, ${empi}, ${epi}, '${du}')" >${
+                                  selectedVariant
+                                    ? selectedVariant.available
+                                      ? isInCart
+                                        ? `{{ settings.swym_wishlist_item_cta_addedtocart }}`
+                                        : `{{ settings.swym_wishlist_item_cta_addtocart }}`
+                                      : `{{ settings.swym_wishlist_item_cta_soldout }}`
+                                    : `{{ settings.swym_wishlist_item_cta_unavailable }}`
+                                }</button>`
+                              : ''
+                          }
+                      </div>
+                  </div>
+                  ${
+                    settings.swym_wishlist_show_delete_item
+                      ? `
+                    <button id="swymcs-remove-productBtn" aria-label="Delete" class="swymcs-wishlist-item-remove">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M5.43742 17.5C5.10409 17.5 4.81242 17.375 4.56242 17.125C4.31242 16.875 4.18742 16.5833 4.18742 16.25V4.375H3.95825C3.78117 4.375 3.63273 4.31476 3.51294 4.19427C3.39315 4.07377 3.33325 3.92447 3.33325 3.74635C3.33325 3.56823 3.39315 3.42014 3.51294 3.30208C3.63273 3.18403 3.78117 3.125 3.95825 3.125H7.24992C7.24992 2.94444 7.30981 2.79514 7.42961 2.67708C7.5494 2.55903 7.69783 2.5 7.87492 2.5H12.1249C12.302 2.5 12.4504 2.5599 12.5702 2.67969C12.69 2.79948 12.7499 2.94792 12.7499 3.125H16.0416C16.2187 3.125 16.3671 3.18524 16.4869 3.30573C16.6067 3.42623 16.6666 3.57553 16.6666 3.75365C16.6666 3.93177 16.6067 4.07986 16.4869 4.19792C16.3671 4.31597 16.2187 4.375 16.0416 4.375H15.8124V16.25C15.8124 16.5833 15.6874 16.875 15.4374 17.125C15.1874 17.375 14.8958 17.5 14.5624 17.5H5.43742ZM5.43742 4.375V16.25H14.5624V4.375H5.43742ZM7.64575 13.8333C7.64575 14.0104 7.70599 14.1589 7.82648 14.2786C7.94698 14.3984 8.09629 14.4583 8.2744 14.4583C8.45252 14.4583 8.60061 14.3984 8.71867 14.2786C8.83672 14.1589 8.89575 14.0104 8.89575 13.8333V6.77083C8.89575 6.59375 8.83551 6.44531 8.71502 6.32552C8.59452 6.20573 8.44522 6.14583 8.26711 6.14583C8.08898 6.14583 7.94089 6.20573 7.82283 6.32552C7.70478 6.44531 7.64575 6.59375 7.64575 6.77083V13.8333ZM11.1041 13.8333C11.1041 14.0104 11.1643 14.1589 11.2848 14.2786C11.4053 14.3984 11.5546 14.4583 11.7327 14.4583C11.9109 14.4583 12.0589 14.3984 12.177 14.2786C12.2951 14.1589 12.3541 14.0104 12.3541 13.8333V6.77083C12.3541 6.59375 12.2938 6.44531 12.1734 6.32552C12.0529 6.20573 11.9036 6.14583 11.7254 6.14583C11.5473 6.14583 11.3992 6.20573 11.2812 6.32552C11.1631 6.44531 11.1041 6.59375 11.1041 6.77083V13.8333Z" fill="#5C5F62"/>
+                      </svg>
+                    </button>
+                    `
+                      : ''
+                  }
+                  `;
+
+        this.attachListner();
+      }
+
+      attachListner() {
+        const ProductItem = this;
+        const epi = +this.dataset.epi;
+        const empi = +this.dataset.empi;
+        const du = this.dataset.du;
+        const sectionId = this.dataset.sectionid;
+
+        let item = this.productData;
+
+        const ItemRemoveButton = this.querySelector('#swymcs-remove-productBtn');
+        const VariantSelect = this.querySelector('.swymcs-wishlist-variant-select');
+
+        ItemRemoveButton &&
+          ItemRemoveButton.addEventListener('click', () => {
+            ProductItem.remove();
+            _swat.removeFromWishList({ epi, empi, du }, (data) => {});
+          });
+
+        VariantSelect &&
+          VariantSelect.addEventListener('click', () => {
+            console.log('current item', item);
+
+            if (this.settings.variant_select_type == 'modal') {
+              const variantSelectModal = document.querySelector(`#swymcs-variant-select-${sectionId}`);
+              _swat.swymWishlistFunctions &&
+                _swat.swymWishlistFunctions.openVariantSelect(variantSelectModal, item, this.settings);
+            } else if (this.settings.variant_select_type == 'drawer') {
+              const drawer = document.getElementById('swym-wishlist-product--drawer');
+
+              drawer._trigger(item);
+            }
+          });
+      }
+    }
+    customElements.define('swymcs-custom-wishlist-item', SwymCustomWishlistItem);
+  }
+
+  function swymCallbackFunction(swat) {
+    const swymWishlistFunctions = {
+      renderWishlistItem: (sectionId, container, item, settings) => {
+        container.insertAdjacentHTML(
+          'beforeend',
+          `<swymcs-custom-wishlist-item class="swymcs-custom-wishlist-item" id="product-${item.empi}-${item.epi}-${sectionId}" data-empi="${item.empi}" data-epi="${item.epi}" data-du="${item.du}" data-sectionid="${sectionId}"></swymcs-custom-wishlist-item>`
+        );
+        let currentWishlistItem = container.querySelector(`#product-${item.empi}-${item.epi}-${sectionId}`);
+        currentWishlistItem.data = item;
+        currentWishlistItem.themesetting = settings;
+        currentWishlistItem.render();
+      },
+      AddItemToCart: (button, empi, epi, du, qty) => {
+        let originalButtonState = button.innerHTML;
+        button.innerHTML = 'Adding..';
+        swat.replayAddToCart(
+          {
+            empi,
+            du,
+            qty: qty ? qty : 1,
+          },
+          epi,
+          (c) => {
+            button.innerHTML = 'Added to Cart';
+            swat.ui.uiRef.showSuccessNotification({
+              message: '{{ settings.swym_wishlist_item_addtocart_success_message }}',
+            });
+          },
+          (error) => {
+            button.innerHTML = originalButtonState;
+            swat.ui.uiRef.showErrorNotification({ message: error.description });
+          }
+        );
+      },
+    };
+
+    if (!swat.swymWishlistFunctions) {
+      swat.swymWishlistFunctions = {};
+    }
+
+    swat.swymWishlistFunctions = {
+      ...swat.swymWishlistFunctions,
+      ...swymWishlistFunctions,
+    };
+  }
+  if (!window.SwymCallbacks) {
+    window.SwymCallbacks = [];
+  }
+  window.SwymCallbacks.push(swymCallbackFunction);
+</script>
+
+<style>
+  /* style for swym wishlist items */
+  .swymcs-custom-wishlist-item{
+    position: relative;
+    width: 24%;
+    max-width: 257px;
+    margin-bottom: 15px;
+    border: 1px solid #D8D8D8;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .swymcs-wishlist-item-remove{
+    cursor: pointer;
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    border: none;
+    background: transparent;
+    z-index: 1;
+  }
+
+  .swymcs-wishlist-image-container{
+    height: 200px;
+    display: block;
+  }
+
+  .swymcs-wishlist-image-container .swymcs-wishlist-item-image{
+    width: 100%;
+    height: -webkit-fill-available;
+    display: flex;
+    margin: auto;
+    object-fit: contain;
+  }
+
+  .swymcs-wishlist-item-content{
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  .swymcs-wishlist-item-content .swymcs-wishlist-item-title{
+    text-decoration: none;
+    color: black;
+    font-size: 12px;
+    font-weight: 500px;
+  }
+
+  .swymcs-wishlist-item-content .swymcs-wishlist-item-title .swymcs-wishlist-item-title-content{
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .swymcs-wishlist-item-content .swymcs-wishlist-item-vendor-type{
+    font-size: 10px;
+    color: #626260;
+  }
+
+  .swymcs-wishlist-item-content .swymcs-product-final-price{
+    font-size: 14px;
+    font-weight: 500;
+    color: black;
+    margin: 10px 0px;
+  }
+
+
+  .swymcs-wishlist-item-content .swymcs-wishlist-action-container .swymcs-wishlist-variant-select{
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 5px;
+    border: 1px solid #999ca0;
+    border-radius: 5px;
+    margin: 5px 0;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .swymcs-wishlist-item-content .swymcs-wishlist-action-container .swymcs-wishlist-variant-select.swym-variant-hide{
+    visibility: hidden;
+  }
+
+  .swymcs-wishlist-item-content .swymcs-wishlist-action-container .swymcs-wishlist-add-to-cart-button{
+    width: 100%;
+    border: 0px solid transparent;
+    padding: 8px;
+    text-align: center;
+    text-transform: uppercase;
+    color: {{ settings.swym_wishlist_primary_button_text_color }};
+    background: {{ settings.swym_wishlist_primary_button_color }};
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+
+    &[disabled]{
+        color: white;
+        background: #bebebe;
+        border: none;
+    }
+  }
+
+  @media only screen and (max-width: 767px) {
+    .swymcs-custom-wishlist-item{
+        width: 48% !important;
+    }
+  }
+
+  @media only screen and (min-width: 768px) and (max-width: 1023px) {
+    .swymcs-custom-wishlist-item{
+        width: 32% !important;
+    }
+  }
+
+  @media only screen and (min-width: 1024px) {
+    .swymcs-custom-wishlist-item{
+        width: 24% !important;
+    }
+  }
+</style>
+
+<script>
+  // script for variant select modal
+  if (!customElements.get('swymcs-variant-select')) {
+    class SwymCustomVariantSelect extends HTMLElement {
+      constructor() {
+        super();
+        this.productData = {};
+        this.settings = {};
+        this.showModal = false;
+        this.selectedVariantId = null;
+        this.selectedVariant = {};
+        this.selectedVariantOptions = {};
+        this.selectedPreviewImage = null;
+      }
+
+      get data() {
+        return this.productData;
+      }
+
+      set data(val) {
+        this.productData = val;
+        this.selectedVariantId = val.epi;
+        this.selectedVariant = val.productData.variants.find((variant) => variant.id == this.selectedVariantId);
+        let { option1, option2, option3 } = this.selectedVariant || {};
+        this.selectedVariantOptions = { option1, option2, option3 };
+      }
+
+      get themesetting() {
+        return this.settings;
+      }
+
+      set themesetting(value) {
+        this.settings = value;
+      }
+
+      open() {
+        this.showModal = true;
+        this.render();
+      }
+
+      close() {
+        this.showModal = false;
+        this.render();
+      }
+
+      render() {
+        const settings = this.settings;
+        const VariantSelect = this;
+        const epi = +this.selectedVariantId;
+        const empi = +this.data.empi;
+        const du = this.data.du;
+
+        let item = this.productData;
+        let selectedVariant = this.selectedVariant;
+        let currentVariantPrice =
+          (selectedVariant && _swat.platform.formatMoney(selectedVariant.price, `${_swat.currency}\{\{amount}}`)) || '';
+        let productImage =
+          this.selectedPreviewImage ||
+          (selectedVariant && selectedVariant.featured_image && selectedVariant.featured_image.src) ||
+          (item.productData && item.productData.featured_image) ||
+          item.iu;
+
+        let isInCart = _swat.platform.isInDeviceCart(epi);
+
+        let productImages = item.productData.images.length > 1 ? item.productData.images : [];
+
+        this.innerHTML = `
+                    <div id="swymcs-variant-modal" class="${
+                      !this.showModal ? 'swymcs-hide-variant-modal' : 'swymcs-show-variant-modal'
+                    }">
+                      <div class="swymcs-variant-modal-backdrop" onClick="_swat.swymWishlistFunctions.closeVariantSelectModal()"></div>
+                      <div class="swymcs-variant-modal-body">
+                        <div class="swymcs-variant-modal-close" onClick="_swat.swymWishlistFunctions.closeVariantSelectModal()">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M5.25 5.25L12 12M12 12L5.25 18.75M12 12L18.75 18.75M12 12L18.75 5.25" stroke="#999CA0" stroke-linecap="round" stroke-linejoin="round"/>
+                          </svg>
+                        </div>
+                        <div class="swymcs-variant-modal-title">${item.dt}</div>
+                        <div class="swymcs-variant-modal-content">
+                          <div class="swymcs-variant-details-container">
+                          <div class="swymcs-variant-details">
+                            <div class="swymcs-variant-modal-image-container">
+                              <img src="${productImage}">
+                            </div>
+                            <div class="swymcs-variant-modal-image-preview-container">
+                              ${
+                                productImages &&
+                                productImages
+                                  .map(
+                                    (image) => `
+                                  <img src="${image}" class="swymcs-item-image-preview ${
+                                      image == productImage || image == this.selectedPreviewImage ? 'selected' : ''
+                                    }"  onClick="_swat.swymWishlistFunctions.onImagePreviewChange('${image}')" >
+                                `
+                                  )
+                                  .join('')
+                              }
+                            </div>
+                          </div>
+                          <div class="swymcs-variant-options-container">
+                          ${item.productData.options
+                            .map(
+                              (option) => `
+                            <div class="swymcs-variant-option-title">${option.name}</div>
+                            <div class="swymcs-variant-option-values">
+                              ${option.values
+                                .map(
+                                  (optionValue) => `
+                                <div class="swymcs-variant-option-value ${
+                                  this.selectedVariantOptions[`option${option.position}`] == optionValue
+                                    ? 'swymcs-variant-option-selected'
+                                    : ''
+                                }" data-option-index="${
+                                    option.position
+                                  }" onClick="_swat.swymWishlistFunctions.onVariantOptionChange(${
+                                    option.position
+                                  }, '${escape(optionValue)}')">${optionValue}</div>
+                              `
+                                )
+                                .join('')}
+                            </div>
+                          `
+                            )
+                            .join('')}
+                          </div>
+                          </div>
+                          ${
+                            settings.swym_wishlist_show_price
+                              ? `<div class="swymcs-variant-modal-product-price">${currentVariantPrice}</div>`
+                              : ''
+                          }
+                          <div class="swymcs-wishlist-variant-action-container">
+                            <button class="swymcs-wishlist-add-to-cart-button" data-action="add-to-cart" ${
+                              !(selectedVariant && selectedVariant.available) ? 'disabled' : ''
+                            } onClick="_swat.swymWishlistFunctions.AddItemToCart(this, ${empi}, ${epi}, '${du}')">
+                              ${
+                                selectedVariant
+                                  ? selectedVariant.available
+                                    ? isInCart
+                                      ? '{{ settings.swym_wishlist_item_cta_addedtocart }}'
+                                      : '{{ settings.swym_wishlist_item_cta_addtocart }}'
+                                    : '{{ settings.swym_wishlist_item_cta_soldout }}'
+                                  : '{{ settings.swym_wishlist_item_cta_unavailable }}'
+                              }
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+      }
+    }
+    customElements.define('swymcs-variant-select', SwymCustomVariantSelect);
+  }
+
+  function swymCallbackFunction(swat) {
+    let currentVariantSelect = document.querySelector(`#swymcs-variant-select-{{ section.id }}`);
+
+    const swymWishlistFunctions = {
+      openVariantSelect: (VariantSelect, item, settings) => {
+        currentVariantSelect = VariantSelect;
+        if (currentVariantSelect) {
+          currentVariantSelect.data = item;
+          currentVariantSelect.themesetting = settings;
+          currentVariantSelect.open();
+        } else {
+          console.warn('variant select modal unavailable');
+        }
+      },
+      closeVariantSelectModal: () => {
+        currentVariantSelect.selectedPreviewImage = null;
+        currentVariantSelect.close();
+      },
+      onVariantOptionChange: (optionIndex, option) => {
+        currentVariantSelect.selectedVariantOptions[`option${optionIndex}`] = unescape(option);
+        let selectedVariant = currentVariantSelect.data.productData.variants.find(
+          (item) =>
+            item.option1 == currentVariantSelect.selectedVariantOptions.option1 &&
+            item.option2 == currentVariantSelect.selectedVariantOptions.option2 &&
+            item.option3 == currentVariantSelect.selectedVariantOptions.option3
+        );
+        currentVariantSelect.selectedVariant = selectedVariant;
+        console.log('selected variant', selectedVariant);
+        currentVariantSelect.selectedVariantId = selectedVariant && selectedVariant.id;
+        currentVariantSelect.render();
+      },
+      onImagePreviewChange: (image) => {
+        currentVariantSelect.selectedPreviewImage = image;
+        currentVariantSelect.render();
+      },
+    };
+
+    if (!swat.swymWishlistFunctions) {
+      swat.swymWishlistFunctions = {};
+    }
+
+    swat.swymWishlistFunctions = {
+      ...swat.swymWishlistFunctions,
+      ...swymWishlistFunctions,
+    };
+  }
+  if (!window.SwymCallbacks) {
+    window.SwymCallbacks = [];
+  }
+  window.SwymCallbacks.push(swymCallbackFunction);
+</script>
+
+<style>
+  /* style for variant select modal */
+  @media only screen and (max-width: 600px) {
+    .swymcs-variant-details {
+      width: 100%;
+    }
+
+    .swymcs-variant-details-container {
+      flex-wrap: wrap;
+    }
+  }
+
+  @media only screen and (min-width: 600px) {
+    .swymcs-variant-modal-body{
+      min-width: 600px;
+    }
+
+    .swymcs-wishlist-variant-action-container button.swymcs-wishlist-add-to-cart-button {
+      width: max-content !important;
+      padding: 8px 20px !important;
+    }
+
+    .swymcs-variant-options-container {
+      padding-left: 10px;
+    }
+
+  }
+
+  #swymcs-variant-modal{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+  }
+
+  .swymcs-variant-modal-backdrop{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    display: block !important;
+    background: #00000091;
+  }
+
+  .swymcs-variant-modal-body{
+    max-width: 600px;
+    width: auto;
+    height: auto;
+    background: white;
+    margin: auto;
+    position: relative;
+    border-radius: 10px;
+    max-height: 100%;
+    overflow: scroll;
+  }
+
+  .swymcs-variant-modal-close{
+    position: absolute;
+    padding: 5px;
+    right: 8px;
+    top: 8px;
+    cursor: pointer;
+  }
+
+  .swymcs-hide-variant-modal{
+    display: none;
+  }
+  .swymcs-show-variant-modal{
+    display: flex;
+  }
+
+  .swymcs-variant-modal-content{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 80%;
+  }
+
+  .swymcs-variant-details-container {
+    display: flex;
+    padding: 10px;
+  }
+
+  .swymcs-wishlist-variant-action-container {
+    padding: 5px 10px;
+    border-top: 1px solid #aaa7a747;
+    display: flex;
+    justify-content: end;
+  }
+
+  .swymcs-variant-modal-image-container{
+    max-width: 300px;
+    width: auto;
+    margin: auto;
+    display: flex;
+  }
+
+  .swymcs-variant-modal-image-container img {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    margin: auto;
+  }
+
+  .swymcs-variant-modal-image-preview-container{
+    display: flex;
+    overflow-x: scroll;
+    gap: 8px;
+    max-width: 250px;
+    margin: auto;
+    justify-content: center;
+  }
+
+  img.swymcs-item-image-preview {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border: 1px solid #aaa7a747;
+    cursor: pointer;
+  }
+
+  img.swymcs-item-image-preview:hover, img.swymcs-item-image-preview.selected {
+    border: 1px solid {{ settings.swym_wishlist_primary_button_color }};
+  }
+
+  .swymcs-variant-modal-product-title{
+    font-weight: bold;
+  }
+
+  .swymcs-variant-modal-product-price{
+    padding: 5px 0;
+    font-weight: bold;
+    padding: 10px;
+  }
+
+  .swymcs-variant-modal-title{
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    width: 100%;
+    border-bottom: 1px solid #aaa7a747;
+  }
+
+
+  .swymcs-variant-option-title{
+    padding-top: 10px;
+    padding-bottom: 5px;
+    color: #6D7175;
+  }
+
+  .swymcs-variant-option-values{
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .swymcs-variant-option-value{
+    padding: 5px;
+    border: 1px solid gray;
+    border-radius: 8px;
+    min-width: 75px;
+    min-height: 40px;
+    text-align: center;
+    margin: 5px 3px;
+    cursor: pointer;
+    line-height: 20px;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+  }
+
+  #swymcs-variant-select-{{ section.id }} .swymcs-variant-option-value:hover, #swymcs-variant-select-{{ section.id }} .swymcs-variant-option-value.swymcs-variant-option-selected {
+    border-color: {{ settings.swym_wishlist_primary_button_color }};
+    color: {{ settings.swym_wishlist_primary_button_color }};
+    background-color: {{ settings.swym_wishlist_primary_button_color }}25;
+    border-width: 1.5px;
+  }
+
+  #swymcs-variant-select-{{ section.id }} .swymcs-variant-modal-content .swymcs-wishlist-add-to-cart-button{
+    width: 100%;
+    border: 0px solid transparent;
+    padding: 8px;
+    margin-top: 5px;
+    text-align: center;
+    text-transform: uppercase;
+    color: {{ settings.swym_wishlist_primary_button_text_color }};
+    background: {{ settings.swym_wishlist_primary_button_color }};
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    min-height: 40px;
+
+    &[disabled]{
+        color: white;
+        background: #bebebe;
+        border: none;
+    }
+  }
+</style>
+
+<script>
+  
+  
+  
+    // script for variant select as drawer 
+    if(!customElements.get('swymcs-drawer')){
+        class SwymcsDrawer extends HTMLElement{
+            constructor(){
+                super();
+  
+                if (!window.SwymCallbacks) window.SwymCallbacks = [];
+                window.SwymCallbacks.push(this._init.bind(this));
+            }
+  
+            _init(swat){
+                this.swymHideClass = 'swym-hide-container';
+                this.closeDrawerBtn = this.querySelector('#swym-close-drawer');
+                this.inputQty = this.querySelector('.swym-qty-input');
+                this.qtyButtons = this.querySelectorAll('.swym-qty-btn');
+                this.productOptions = this.querySelector('#swym-product-options');
+                this.addToCartBtn = this.querySelector('#swym-drawer-add-to-cart');
+                this.swymGiftRegistryContainer = document.querySelector('.swym-registry-add-btn-parent');
+  
+                if(this.swymGiftRegistryContainer) this.swymGiftRegistryContainer.classList.add(this.swymHideClass);
+  
+                this.closeDrawerBtn.addEventListener('click', this._close.bind(this));
+                this.productOptions.addEventListener('change', this._variantChange.bind(this));
+                this.inputQty.addEventListener('keyup', this._manageQtyInput);
+                this.qtyButtons.forEach(btn => {
+                    btn.addEventListener('click', this._manageQtyBtn.bind(this));
+                })
+                this.addToCartBtn.addEventListener('click', this._addToCart.bind(this));
+  
+                _swat.SwymcsDrawerSettings = {
+                    "addToCartText": "{{ settings.swym_wishlist_item_cta_addtocart }}",
+                    "soldOutText": "{{ settings.swym_wishlist_item_cta_soldout }}",
+                    "addedToCartText": "{{ settings.swym_wishlist_item_cta_addedtocart }}",
+                    "unavailableVariantText": "{{ settings.swym_wishlist_item_cta_unavailable }}",
+                    "swymTooltipText" : "{{ settings.swym_wishlist_item_addtocart_success_message }}",
+                }
+            }
+  
+            _trigger(product){
+                window.currentShopifyProduct = product.productData;
+                window.currentWishlistProduct = product;
+                let shopifyProduct = window.currentShopifyProduct;
+                let selectedVariant = shopifyProduct.variants.find(variant => variant.id === product.epi);
+                if(selectedVariant){
+                    this._populateDrawerContent(selectedVariant, true);
+                    this._open();
+                } else console.warn('No variant Found! Drawer Not Triggered.')
+            }
+  
+            _open(){
+                document.body.classList.add('no-scroll');
+                this.setAttribute('open', '');
+            }
+  
+            _close(){
+                this.removeAttribute('open');
+                document.body.classList.remove('no-scroll');    
+            }
+  
+            _populateDrawerContent(variant, changeOptionsHtml){
+                const shopifyProduct = window.currentShopifyProduct;
+                const wishlistProduct = window.currentWishlistProduct;
+                window.swymRegistryProductData = {'epi': variant.id, 'empi': wishlistProduct.empi, 'du': wishlistProduct.du};
+                let atcBtnText = variant.available ? (_swat.platform.isInDeviceCart(variant.id) ? _swat.SwymcsDrawerSettings.addedToCartText : _swat.SwymcsDrawerSettings.addToCartText) : _swat.SwymcsDrawerSettings.soldOutText;
+                this.querySelector('img').src = variant?.featured_image?.src || shopifyProduct?.featured_image || wishlistProduct.iu;
+                this.querySelector('.swym-product-vendor').textContent = shopifyProduct.vendor;
+                this.querySelector('.swym-product-title a').textContent = shopifyProduct.title;
+                this.querySelector('.swym-product-title a').href = `${shopifyProduct.url}?variant=${variant.id}`;
+                this.querySelector('.swym-product-price').textContent = `${(variant.price/100.00)} ${_swat.currency}`;
+                this.querySelector('.swym-product-price + a').href = `${shopifyProduct.url}?variant=${variant.id}`;
+                this.addToCartBtn.setAttribute('data-variant-id', variant.id);
+                this.addToCartBtn.setAttribute('data-product-id', shopifyProduct.id);
+                this.addToCartBtn.setAttribute('data-product-url', shopifyProduct.url);
+                this.addToCartBtn.querySelector('.swym-loader-btn-text').textContent = atcBtnText;
+                variant.available ? this.addToCartBtn.removeAttribute('is-disabled') : this.addToCartBtn.setAttribute('is-disabled', '');
+                
+                let isOnlyVariant = (shopifyProduct.variants.length == 1 && shopifyProduct.options[0].values.length == 1 && shopifyProduct.options[0].values[0] == 'Default Title') ? true : false;
+                if(isOnlyVariant)
+                    this.productOptions.innerHTML = ''
+                else{
+                    if(changeOptionsHtml){
+                        let selectedVariantTitle = variant.title.split(' / ');
+                        let optionsHtml = '';
+                        shopifyProduct.options.forEach((option, optionIndex) => {
+                            optionsHtml += `<div class="option--${option.name} swym-options--container">
+                                <div class="swym-option--title">${option.name}</div>
+                                <div class="swym-option-values">`;
+                                    option.values.forEach(val => {
+                                        let activeClass = selectedVariantTitle[optionIndex].trim() == val ? ' active' : '';
+                                        let checkedAttribute = selectedVariantTitle[optionIndex].trim() == val ? ' checked' : '';
+                                        optionsHtml += `
+                                        <label class="swym-option--value ${activeClass}" for="${option.name}--${val}" data-option-value="${val}">${val}</label>
+                                        <input type="radio" class="${this.swymHideClass}" name="${option.name}" id="${option.name}--${val}" ${checkedAttribute} data-option-value="${val}" value="${val}"/>
+                                        `;
+                                    })
+                            optionsHtml += '</div></div>';
+                        }); 
+                        this.productOptions.innerHTML = optionsHtml;
+                    }
+                }     
+  
+                if(this.swymGiftRegistryContainer) this.swymGiftRegistryContainer.classList.remove(this.swymHideClass);
+            }
+  
+            _variantChange(evt){
+                const shopifyProduct = window.currentShopifyProduct;
+                let parentElement = evt.target.closest('.swym-option-values');
+                let currentVariant = parentElement.querySelector(`[for="${evt.target.id}"]`);
+                parentElement.querySelector('.swym-option--value.active').classList.remove('active');
+                currentVariant.classList.add('active');
+                let title = '';
+                document.querySelectorAll('.swym-option-values [name]:checked').forEach((option, index) => {
+                    title += option.value;
+                    title +=(index+1 < shopifyProduct.options.length) ? ' / ' : '';
+                });
+                let newvariant = shopifyProduct.variants.find(variant => variant.title == title);
+                if(newvariant){
+                    this._populateDrawerContent(newvariant, false);
+                    {% comment %} swat.CustomPageSettings.update_details_on_grid && SwymWishlistFunctions.updateGridProduct(newvariant, shopifyProduct); {% endcomment %}
+                }
+                else {
+                    this.addToCartBtn.querySelector('.swym-loader-btn-text').textContent = _swat.SwymcsDrawerSettings.unavailableVariantText;
+                    this.addToCartBtn.setAttribute('is-disabled', '');
+                }
+            }
+  
+  
+            _manageQtyBtn(e){
+                let action = e.target.dataset.action;
+                let quantity = +this.inputQty.value;
+                if(action == 'minus'){
+                    if(quantity == 1) return;
+                    this.inputQty.value = quantity - 1;
+                }
+                else this.inputQty.value = quantity + 1;
+            }
+  
+            _manageQtyInput(){
+                let value = +this.value;
+                this.value = isNaN(value) ? 1 : (value == 0 ? 1 : value); 
+            }
+  
+            _addToCart(evt){
+                const button = evt.target;
+                button.setAttribute('disabled', '');
+                const epi = +button.getAttribute('data-variant-id');
+                const empi = +button.getAttribute('data-product-id');
+                const du = button.getAttribute('data-product-url');
+                const qty = +this.inputQty.value;
+                _swat.replayAddToCart({
+                    empi,
+                    du,
+                    qty: qty
+                }, epi, (c) => {
+                    button.querySelector('.swym-loader-btn-text').textContent = _swat.SwymcsDrawerSettings.addedToCartText;
+                    button.removeAttribute('disabled');
+                    _swat.ui.uiRef.showSuccessNotification({ message: _swat.SwymcsDrawerSettings.swymTooltipText });
+                }, (error) => {
+                    button.querySelector('.swym-loader-btn-text').textContent = _swat.SwymcsDrawerSettings.addToCartText;
+                    button.removeAttribute('disabled')
+                    _swat.ui.uiRef.showErrorNotification({ message: error.description });
+                }); 
+            }
+  
+        }
+        customElements.define('swymcs-drawer', SwymcsDrawer);
+    }
+  
+  
+
+
+</script>
+
+<script>
+  // script for login banner
+  if (!customElements.get('swym-custom-wishlist-login-to-save')) {
+    class SwymCustomWishlistLoginToSave extends HTMLElement {
+      constructor() {
+        super();
+        console.log('on render wishlist button');
+        if (!window.SwymCallbacks) {
+          window.SwymCallbacks = [];
+        }
+        window.SwymCallbacks.push(this.swymCallbackFn.bind(this));
+      }
+
+      render() {
+        this.innerHTML = `
+              {% unless customer and settings.show_save_list_notification %}
+                <div id="swym-save-list">
+                  <div class="swym-save-list-text-container">
+                    <div class="swym-save-list-text-title swymcs-title">{{ settings.save_list_title }}</div>
+                    <div class="swym-save-list-text-text swymcs-description">{{ settings.save_list_text }}</div>
+                  </div>
+                  <button id="swym-save-list-button" data-redirection-url="{{ request.path }}" class="swymcs-button">{{ settings.save_list_btn_text }}</button>
+                </div>
+              {% endunless %}
+              `;
+      }
+
+      swymCallbackFn(swat) {
+        this.render();
+
+        const swymShareButton = this.querySelector('#swym-save-list-button');
+
+        swymShareButton.addEventListener('click', onClickloginToSave.bind(this));
+
+        function onClickloginToSave(evt) {
+          const redirectionUrl = evt.target.getAttribute('data-redirection-url');
+          localStorage.setItem('SWYM_REDIRECT_URL', redirectionUrl);
+          location.href = '/account/login';
+        }
+      }
+    }
+    customElements.define('swym-custom-wishlist-login-to-save', SwymCustomWishlistLoginToSave);
+  }
+</script>
+
+<script>
+  // script for redirect to wishlist after login
+  if(!window.SwymCallbacks){
+    window.SwymCallbacks = [];
+  }
+  window.SwymCallbacks.push(swymCallbackFn);
+
+  function swymCallbackFn(swat){
+    {% if customer %}
+      if(localStorage.getItem('SWYM_REDIRECT_URL')){
+        let url = localStorage.getItem('SWYM_REDIRECT_URL');
+        localStorage.removeItem('SWYM_REDIRECT_URL');
+        window.location = url;
+      }
+    {% endif %}
+  }
+</script>
+
+<style>
+  /* style for login banner */
+  #swym-save-list {
+    margin-block: 20px; padding-inline: 2.5rem; padding-block: 1rem; border-radius: 5px;
+    display: flex; justify-content: space-between; align-items: center;
+    color: {{ settings.swym_wishlist_primary_button_text_color }};
+    background: {{ settings.swym_wishlist_primary_button_color }};
+    flex-wrap: wrap;
+  }
+
+  .swym-save-list-text-title.swymcs-title {
+    margin-top: 10px;
+  }
+
+  .swym-save-list-text-text.swymcs-description {
+    margin: 10px 0px;
+  }
+
+  #swym-save-list-button{
+    color: {{ settings.swym_wishlist_primary_button_color }};
+    background: {{ settings.swym_wishlist_primary_button_text_color }};
+    width: max-content;
+    margin: 5px;
+  }
+</style>
+
+<script>
+  // script for share wishlist modal
+  if (!customElements.get('swym-custom-share-wishlist-button')) {
+    class SwymCustomShareWishlistButton extends HTMLElement {
+      constructor() {
+        super();
+        console.log('on render wishlist button');
+        if (!window.SwymCallbacks) {
+          window.SwymCallbacks = [];
+        }
+        window.SwymCallbacks.push(this.swymCallbackFn.bind(this));
+      }
+
+      render() {
+        this.innerHTML = `
+                <button class="swym-share-wishlist-button">{{ settings.swym_share_wishlist_btn_text }}</button>
+                <div id="swym-custom-share-container" class="swym-hide-container swym-modal">
+                  <div class="swym-modal-content" onClick="event.stopPropagation();">
+                  <span class="swym-close">&times;</span>
+                  <form id="swym-custom-share-form">
+                      <h2 id="swym-custom-share-header-message">{{ settings.swym_share_wishlist_modal_title }}</h2>
+                      <div id="swym-share-label-and-input-wrapper">
+                      <input id="swym-sender-name" placeholder="{{ settings.swym_share_wishlist_modal_lable_sender_name }}" type="text">
+                      <input id="swym-recepient-email" placeholder="{{ settings.swym_share_wishlist_modal_lable_recipent_email }}*" type="email" required="required">
+                      <textarea id="swym-share-message" placeholder="{{ settings.swym_share_wishlist_modal_lable_message }}" type="email"></textarea>
+                      <div class="swym-form-help-text">{{ settings.swym_share_wishlist_modal_required_help_text }}</div>
+                      </div>
+                      <button id="swym-custom-share-submit-button" type="submit">{{ settings.swym_share_wishlist_modal_share_list_button_text }}</button>
+                  </form>
+                  </div>
+                </div>
+              `;
+      }
+
+      swymCallbackFn(swat) {
+        this.render();
+        const swymShareButton = this.querySelector('.swym-share-wishlist-button');
+        const swymShareModalContainer = this.querySelector('#swym-custom-share-container');
+        const swymShareCloseButton = this.querySelector('.swym-close');
+        const swymShareModalform = this.querySelector('#swym-custom-share-form');
+
+        swymShareButton.addEventListener('click', showShareWishlist.bind(this));
+        swymShareModalContainer.addEventListener('click', closeShareModal.bind(this));
+        swymShareCloseButton.addEventListener('click', closeShareModal.bind(this));
+        swymShareModalform.addEventListener('submit', onShareWishlist.bind(this));
+
+        function showShareWishlist() {
+          swymShareModalContainer.classList.remove('swym-hide-container');
+        }
+
+        function closeShareModal() {
+          swymShareModalContainer.classList.add('swym-hide-container');
+        }
+
+        function onShareWishlist(event) {
+          event.preventDefault();
+
+          const shareFromName = this.querySelector('#swym-sender-name');
+          const shareToEmail = this.querySelector('#swym-recepient-email');
+          const shareMessage = this.querySelector('#swym-share-message');
+
+          let listid = this.dataset.listid;
+
+          let params = {
+            toEmailId: shareToEmail.value,
+            fromName: shareFromName.value,
+            note: shareMessage.value,
+            lid: listid || null,
+            cprops: {},
+          };
+
+          swat.sendListViaEmail(
+            params,
+            (response) => {
+              let receiver = params.toEmailId;
+              swat.ui.uiRef.showSuccessNotification({ message: `Successfully shared wishlist with  ${receiver}` });
+              closeShareModal();
+            },
+            (error) => {
+              swat.ui.uiRef.showErrorNotification({ message: error });
+            }
+          );
+        }
+      }
+    }
+    customElements.define('swym-custom-share-wishlist-button', SwymCustomShareWishlistButton);
+  }
+</script>
+
+<style>
+  /* style for share wishlist modal */
+
+  swym-custom-share-wishlist-button {
+    display: flex;
+    justify-content: end;
+  }
+
+  .swym-share-wishlist-button{
+      border: 0px solid transparent;
+      padding: 8px;
+      cursor: pointer;
+      border: 1px solid {{ settings.swym_wishlist_primary_button_color }};
+      color: {{ settings.swym_wishlist_primary_button_color }};
+      background: {{ settings.swym_wishlist_primary_button_text_color }};
+  }
+
+  #swym-custom-share-submit-button {
+      justify-content: center;
+      display: flex;
+      width: 100%;
+      border: 1px solid {{ settings.swym_wishlist_primary_button_color }};
+      padding: 10px;
+      text-align: center;
+      text-transform: uppercase;
+      margin-top: 33px;
+      color: {{ settings.swym_wishlist_primary_button_color }};
+  }
+
+  #swym-custom-share-submit-button:hover{
+      background: {{ settings.swym_wishlist_primary_button_color }};
+      color: {{ settings.swym_wishlist_primary_button_text_color }};
+  }
+
+  .swym-hide-container{
+    display: none !important;
+  }
+
+  .swym-modal {
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .swym-modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 40px;
+    width: 80%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .swym-modal .swym-close {
+    color: #aaa;
+    font-size: 25px;
+    cursor: pointer;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 15px;
+
+    &:hover,:focus{
+      color: #000;
+      text-decoration: none;
+      cursor: pointer;
+    }
+  }
+
+  .swym-modal #swym-custom-share-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  #swym-custom-share-form #swym-custom-share-header-message{
+    color: rgba(0, 0, 0, 0.90);
+    text-align: center;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+  }
+
+  #swym-share-label-and-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  #swym-sender-name, #swym-recepient-email, #swym-share-message{
+    padding: 10px;
+    border: 1px solid #D9D9D9;
+    margin-bottom:16px;
+  }
+
+  .swym-modal #swym-custom-share-form #swym-share-label-and-input-wrapper #swym-share-message{
+    min-height: 200px;
+  }
+
+  @media only screen and (max-width: 900px){
+    .swym-modal-content {
+      width: 95vw !important;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "swym custom wishlist",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Wishlist"
+    },
+    {
+      "type": "text",
+      "id": "swym_wishlist_title",
+      "label": "Wishlist Title",
+      "default": "My Wishlist"
+    },
+    {
+      "type": "checkbox",
+      "id": "swym_wishlist_show_share_button",
+      "label": "Show Share button",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "swym_wishlist_show_login_banner",
+      "label": "Show login to save banner",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Wishlist Item"
+    },
+    {
+      "type": "checkbox",
+      "id": "swym_wishlist_show_vendor",
+      "label": "Show vendor",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "swym_wishlist_show_price",
+      "label": "Show price",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "swym_wishlist_show_variant",
+      "label": "Show Variant Selection",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "swym_wishlist_show_addtocart",
+      "label": "Show Add To Cart Button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "swym_wishlist_show_delete_item",
+      "label": "Show Remove wishlist",
+      "default": true
+    },
+    {
+      "type": "radio",
+      "id": "variant_select_type",
+      "label": "Variant Selector type",
+      "options": [
+        {
+          "value": "modal",
+          "label": "modal"
+        },
+        {
+          "value": "drawer",
+          "label": "side drawer"
+        }
+      ],
+      "default": "modal"
+    }
+  ],
+  "presets": [
+    {
+      "name": "swym custom wishlist"
+    }
+  ]
+}
+{% endschema %}
