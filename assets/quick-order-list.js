@@ -67,7 +67,8 @@ class QuickOrderList extends HTMLElement {
       add: 'ADD',
       update: 'UPDATE'
     }
-    this.quickOrderListId = 'quick-order-list'
+
+    this.quickOrderListId = `quick-order-list-${this.dataset.productId}`
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
     const form = this.querySelector('form');
 
@@ -122,7 +123,7 @@ class QuickOrderList extends HTMLElement {
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
-        const sourceQty = html.querySelector(this.quickOrderListId);
+        const sourceQty = html.querySelector(`#${this.quickOrderListId}`);
         this.innerHTML = sourceQty.innerHTML;
       })
       .catch(e => {
@@ -135,7 +136,7 @@ class QuickOrderList extends HTMLElement {
       {
         id: this.quickOrderListId,
         section: document.getElementById(this.quickOrderListId).dataset.id,
-        selector: '.js-contents'
+        selector: `#${this.quickOrderListId} .js-contents`
       },
       {
         id: 'cart-icon-bubble',
@@ -143,14 +144,14 @@ class QuickOrderList extends HTMLElement {
         selector: '.shopify-section'
       },
       {
-        id: 'quick-order-list-live-region-text',
+        id: `quick-order-list-live-region-text-${this.dataset.productId}`,
         section: 'cart-live-region-text',
         selector: '.shopify-section'
       },
       {
-        id: 'quick-order-list-total',
+        id: `quick-order-list-total-${this.dataset.productId}`,
         section: document.getElementById(this.quickOrderListId).dataset.id,
-        selector: '.quick-order-list__total'
+        selector: `#${this.quickOrderListId} .quick-order-list__total`
       },
       {
         id: 'CartDrawer',
@@ -301,7 +302,7 @@ class QuickOrderList extends HTMLElement {
   }
 
   setErrorMessage(message = null) {
-    this.errorMessageTemplate = this.errorMessageTemplate ?? document.getElementById(`QuickOrderListErrorTemplate-${this.sectionId}`).cloneNode(true);
+    this.errorMessageTemplate = this.errorMessageTemplate ?? document.getElementById(`QuickOrderListErrorTemplate-${this.dataset.productId}`).cloneNode(true);
     const errorElements = document.querySelectorAll('.quick-order-list-error');
 
     errorElements.forEach((errorElement) => {
