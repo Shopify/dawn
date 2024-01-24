@@ -97,7 +97,6 @@ class QuickOrderList extends HTMLElement {
   }
 
   cartUpdateUnsubscriber = undefined;
-  sectionRefreshUnsubscriber = undefined;
 
   onSubmit(event) {
     event.preventDefault();
@@ -112,21 +111,11 @@ class QuickOrderList extends HTMLElement {
       this.refresh();
     });
 
-    this.sectionRefreshUnsubscriber = subscribe(PUB_SUB_EVENTS.sectionRefreshed, (event) => {
-      const isParentSectionUpdated =
-        this.sectionId && (event.data?.sectionId ?? '') === `${this.sectionId.split('__')[0]}__main`;
-
-      if (isParentSectionUpdated) {
-        this.refresh();
-      }
-    });
-
     this.sectionId = this.dataset.id;
   }
 
   disconnectedCallback() {
     this.cartUpdateUnsubscriber?.();
-    this.sectionRefreshUnsubscriber?.();
   }
 
   defineInputsAndQuickOrderTable() {
