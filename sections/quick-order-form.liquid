@@ -4,6 +4,7 @@
 {{ 'quantity-popover.css' | asset_url | stylesheet_tag }}
 
 <script src="{{ 'quick-order-list.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'quick-order-form.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'quantity-popover.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'price-per-item.js' | asset_url }}" defer="defer"></script>
 
@@ -27,45 +28,65 @@
     class="quick-order-form page-width section-{{ section.id }}-padding"
     data-id="{{ section.id }}"
   >
-    <div class="quick-order-form__search--wrapper">
-      <div class="field">
-        <input
-          class="search__input field__input"
-          id="Quick-Order-Form-Search-{{ section.id }}"
-          type="search"
-          name="q"
-          value="{{ search.terms | escape }}"
-          placeholder="{{ 'sections.quick_order_form.search' | t }}"
-        >
-        <label class="field__label" for="Quick-Order-Form-Search-{{ section.id }}">
-          {{- 'sections.quick_order_form.search' | t -}}
-        </label>
-        <input name="options[prefix]" type="hidden" value="last">
+    <quick-order-form>
+      <form>
+        <div class="quick-order-form__search--wrapper">
+          <div class="field">
+            <input
+              class="search__input field__input"
+              id="Quick-Order-Form-Search-{{ section.id }}"
+              type="search"
+              name="q"
+              value="{{ search.terms | escape }}"
+              placeholder="{{ 'sections.quick_order_form.search' | t }}"
+            >
+            <label class="field__label" for="Quick-Order-Form-Search-{{ section.id }}">
+              {{- 'sections.quick_order_form.search' | t -}}
+            </label>
+            <input name="options[prefix]" type="hidden" value="last">
 
-        <button
-          type="reset"
-          class="reset__button field__button{% if search.terms == blank %} hidden{% endif %}"
-          aria-label="{{ 'general.search.reset' | t }}"
-        >
-          <svg class="icon icon-close" aria-hidden="true" focusable="false">
-            <use xlink:href="#icon-reset">
-          </svg>
-        </button>
-        <button type="submit" class="search__button field__button" aria-label="{{ 'general.search.search' | t }}">
-          <svg class="icon icon-search" aria-hidden="true" focusable="false">
-            <use xlink:href="#icon-search">
-          </svg>
-        </button>
-      </div>
-      <div class="total-items">
-        <span>
-          {{-
-            'sections.quick_order_form.search_number_items'
-            | t: count: collections['shop-all'].products.first.variants.size
-          -}}
-        </span>
-      </div>
-    </div>
+            <button
+              type="reset"
+              class="reset__button field__button{% if search.terms == blank %} hidden{% endif %}"
+              aria-label="{{ 'general.search.reset' | t }}"
+            >
+              <svg class="icon icon-close" aria-hidden="true" focusable="false">
+                <use xlink:href="#icon-reset">
+              </svg>
+            </button>
+            <button type="submit" class="search__button field__button" aria-label="{{ 'general.search.search' | t }}">
+              <svg class="icon icon-search" aria-hidden="true" focusable="false">
+                <use xlink:href="#icon-search">
+              </svg>
+            </button>
+          </div>
+          <div class="total-items">
+            {% assign total_variants = 0 %}
+
+            {% if search.performed %}
+              {% paginate search.results by 5 %}
+                {% for product in search.results %}
+                  {% for variant in product.variants %}
+                    {% if variant.matched %}
+                      {% assign total_variants = total_variants | plus: 1 %}
+                    {% endif %}
+                  {% endfor %}
+                {% endfor %}
+              {% endpaginate %}
+            {% else %}
+              {% paginate collections.all.products by 5 %}
+                {% for product in collections.all.products %}
+                  {% assign total_variants = total_variants | plus: product.variants.size %}
+                {% endfor %}
+              {% endpaginate %}
+            {% endif %}
+            <span>
+              {{- 'sections.quick_order_form.search_number_items' | t: count: total_variants -}}
+            </span>
+          </div>
+        </div>
+      </form>
+    </quick-order-form>
     <form
       action="{{ routes.cart_update_url }}"
       class="quick-order-list__contents critical-hidden"
@@ -105,20 +126,57 @@
             </thead>
 
             <tbody>
-              {%-
-                render 'quick-order-product-row',
-                item: collections['shop-all'].products[0],
-                image: collections['shop-all']products[0].featured_media,
-              -%}
-              {%- for variant in collections['shop-all'].products[0].variants -%}
-                {%-
-                  render 'quick-order-list-row',
-                  item: variant,
-                  image: variant.image,
-                  sku: variant.sku,
-                  variant: variant,
-                -%}
-              {%- endfor -%}
+              {% if search.performed %}
+                {% paginate search.results by 5 %}
+                  {% for product in search.results %}
+                    {%-
+                      render 'quick-order-product-row',
+                      item: product,
+                      image: product.featured_media,
+                    -%}
+                    {%- for variant in product.variants -%}
+                      {% if variant.matched %}
+                        {%-
+                          render 'quick-order-list-row',
+                          item: variant,
+                          image: variant.image,
+                          sku: variant.sku,
+                          variant: variant,
+                        -%}
+                      {% endif %}
+                    {% endfor %}
+                  {% endfor %}
+                  <tr>
+                    <td>
+                      {% render 'quick-order-pagination', paginate: paginate, anchor: '' %}
+                    </td>
+                  </tr>
+                {% endpaginate %}
+              {% else %}
+                {% paginate collections.all.products by 5 %}
+                  {% for product in collections.all.products %}
+                    {%-
+                      render 'quick-order-product-row',
+                      item: product,
+                      image: product.featured_media,
+                    -%}
+                    {%- for variant in product.variants -%}
+                      {%-
+                        render 'quick-order-list-row',
+                        item: variant,
+                        image: variant.image,
+                        sku: variant.sku,
+                        variant: variant,
+                      -%}
+                    {% endfor %}
+                  {% endfor %}
+                  <tr>
+                    <td>
+                      {% render 'quick-order-pagination', paginate: paginate, anchor: '' %}
+                    </td>
+                  </tr>
+                {% endpaginate %}
+              {% endif %}
             </tbody>
           </table>
         </div>
