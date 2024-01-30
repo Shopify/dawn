@@ -42,6 +42,9 @@ class DynamicAddButton extends HTMLElement {
         const parsedState = JSON.parse(state);
 
         if (parsedState.description || parsedState.errors) {
+          const errorElement = document.querySelector(`#Quick-add-bulk-item-error-desktop-${event.target.getAttribute('data-index')}`)
+          errorElement.classList.remove('hidden')
+          errorElement.querySelector('.variant-bulk__error-text').innerHTML = parsedState.description
          // Update errors 
           return;
         }
@@ -65,7 +68,6 @@ class DynamicAddButton extends HTMLElement {
   }
 
   addToCart() {
-    console.log('test')
     this.button.classList.add('loading');
     this.querySelector('.loading__spinner').classList.remove('hidden');
     const body = JSON.stringify({
@@ -86,6 +88,7 @@ class DynamicAddButton extends HTMLElement {
         const parsedState = JSON.parse(state);
 
         if (parsedState.description || parsedState.errors) {
+          console.log('error', parsedState)
           // Error handling
           return;
         }
