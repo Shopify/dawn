@@ -155,6 +155,7 @@ function onKeyUpEscape(event) {
 class QuantityInput extends HTMLElement {
   constructor() {
     super();
+    this.loader = this.dataset.loader
     this.input = this.querySelector('input');
     this.changeEvent = new Event('change', { bubbles: true });
     this.input.addEventListener('change', this.onInputChange.bind(this));
@@ -177,6 +178,9 @@ class QuantityInput extends HTMLElement {
   }
 
   onInputChange(event) {
+    if (this.loader) {
+      this.classList.add('loading')
+    }
     this.validateQtyRules();
   }
 
@@ -190,11 +194,11 @@ class QuantityInput extends HTMLElement {
 
   validateQtyRules() {
     const value = parseInt(this.input.value);
-    if (this.input.min) {
-      const min = parseInt(this.input.min);
-      const buttonMinus = this.querySelector(".quantity__button[name='minus']");
-      buttonMinus.classList.toggle('disabled', value <= min);
-    }
+    // if (this.input.min) {
+    //   const min = parseInt(this.input.min);
+    //   const buttonMinus = this.querySelector(".quantity__button[name='minus']");
+    //   buttonMinus.classList.toggle('disabled', value <= min);
+    // }
     if (this.input.max) {
       const max = parseInt(this.input.max);
       const buttonPlus = this.querySelector(".quantity__button[name='plus']");
