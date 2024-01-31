@@ -179,7 +179,7 @@ class QuantityInput extends HTMLElement {
 
   onInputChange(event) {
     if (this.loader) {
-      this.classList.add('loading')
+      // this.classList.add('loading')
     }
     this.validateQtyRules();
   }
