@@ -60,6 +60,7 @@ class DynamicAddButton extends HTMLElement {
   }
 
   addToCart() {
+    this.querySelector('.loading__spinner').classList.remove('hidden');
     const body = JSON.stringify({
       items: [
         {
