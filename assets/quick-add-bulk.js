@@ -1,5 +1,5 @@
 
-class DynamicAddButton extends HTMLElement {
+class QuickAddBulk extends HTMLElement {
   constructor() {
     super();
     const debouncedOnChange = debounce((event) => {
@@ -26,8 +26,8 @@ class DynamicAddButton extends HTMLElement {
 
   updateCart(event) {
     this.quantity = this.querySelector('quantity-input')
-    this.quantity.classList.add('loading');
-    this.querySelector('.loading__spinner').classList.remove('hidden');
+    // this.quantity.classList.add('loading');
+    this.querySelector('.demo-container').classList.remove('hidden');
     const body = JSON.stringify({
       quantity: event.target.value,
       id: event.target.getAttribute('data-index'),
@@ -60,7 +60,7 @@ class DynamicAddButton extends HTMLElement {
   }
 
   addToCart() {
-    this.querySelector('.loading__spinner').classList.remove('hidden');
+    this.querySelector('.demo-container').classList.remove('hidden');
     const body = JSON.stringify({
       items: [
         {
@@ -96,9 +96,9 @@ class DynamicAddButton extends HTMLElement {
   getSectionsToRender() {
     return [
       {
-        id: `dynamic-button-${this.dataset.id}`,
+        id: `quick-add-bulk-${this.dataset.id}`,
         section: 'main-collection-product-grid',
-        selector: `#dynamic-button-${this.dataset.id}:not(.hidden)`
+        selector: `#quick-add-bulk-${this.dataset.id}:not(.hidden)`
       },
       {
         id: 'cart-icon-bubble',
@@ -132,4 +132,4 @@ class DynamicAddButton extends HTMLElement {
   }
 
 }
-customElements.define('dynamic-add-button', DynamicAddButton);
+customElements.define('quick-add-bulk', QuickAddBulk);
