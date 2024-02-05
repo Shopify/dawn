@@ -3,9 +3,7 @@ class QuickAddBulk extends HTMLElement {
   constructor() {
     super();
     const debouncedOnChange = debounce((event) => {
-      console.log(event.target.value,'event', event.target.dataset.cartQuantity)
       if (parseInt(event.target.dataset.cartQuantity) === 0) {
-        console.log('add to cart')
         this.addToCart();
       } else {
         this.updateCart(event);
@@ -14,14 +12,34 @@ class QuickAddBulk extends HTMLElement {
     this.addEventListener('change', debouncedOnChange.bind(this));
   }
 
+
   connectedCallback() {
-   // Update if it's another section
+    this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (event) => {
+      if (event.source === "quick-add") {
+        return;
+      }
+      // If its another section that made the update
+      this.onCartUpdate();
+    });
   }
 
   disconnectedCallback() {
-    // if (this.cartUpdateUnsubscriber) {
-    //   this.cartUpdateUnsubscriber();
-    // }
+    if (this.cartUpdateUnsubscriber) {
+      this.cartUpdateUnsubscriber();
+    }
+  }
+
+  onCartUpdate() {
+    fetch(`${window.location.pathname}?section_id=main-collection-product-grid`)
+      .then((response) => response.text())
+      .then((responseText) => {
+        const html = new DOMParser().parseFromString(responseText, 'text/html');
+        const sourceQty = html.querySelector(`#quick-add-bulk-${this.dataset.id}:not(.hidden)`);
+        this.innerHTML = sourceQty.innerHTML;
+      })
+      .catch(e => {
+        console.error(e);
+      });
   }
 
   updateCart(event) {
@@ -52,7 +70,7 @@ class QuickAddBulk extends HTMLElement {
 
         this.renderSections(parsedState);
 
-        publish(PUB_SUB_EVENTS.cartUpdate, { source: `quick-change-${event.target.getAttribute('data-index')}`, cartData: parsedState });
+        publish(PUB_SUB_EVENTS.cartUpdate, { source: "quick-add", cartData: parsedState });
 
       }).catch((error) => {
         console.log(error, 'error')
