@@ -45,7 +45,7 @@ class QuickAddBulk extends HTMLElement {
   updateCart(event) {
     this.quantity = this.querySelector('quantity-input')
     // this.quantity.classList.add('loading');
-    this.querySelector('.demo-container').classList.remove('hidden');
+    this.querySelector('.progress-bar-container').classList.remove('hidden');
     const body = JSON.stringify({
       quantity: event.target.value,
       id: event.target.getAttribute('data-index'),
@@ -78,7 +78,7 @@ class QuickAddBulk extends HTMLElement {
   }
 
   addToCart() {
-    this.querySelector('.demo-container').classList.remove('hidden');
+    this.querySelector('.progress-bar-container').classList.remove('hidden');
     const body = JSON.stringify({
       items: [
         {
