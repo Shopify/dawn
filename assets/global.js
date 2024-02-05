@@ -155,7 +155,6 @@ function onKeyUpEscape(event) {
 class QuantityInput extends HTMLElement {
   constructor() {
     super();
-    this.loader = this.dataset.loader
     this.input = this.querySelector('input');
     this.changeEvent = new Event('change', { bubbles: true });
     this.input.addEventListener('change', this.onInputChange.bind(this));
@@ -178,9 +177,6 @@ class QuantityInput extends HTMLElement {
   }
 
   onInputChange(event) {
-    if (this.loader) {
-      // this.classList.add('loading')
-    }
     this.validateQtyRules();
   }
 
