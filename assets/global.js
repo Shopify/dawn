@@ -972,7 +972,6 @@ class VariantSelects extends HTMLElement {
       this.toggleAddButton(true, '', true);
       this.setUnavailable();
     } else {
-      this.updateMedia();
       this.updateURL();
       this.updateVariantInput();
       this.renderProductInfo();
@@ -1024,21 +1023,6 @@ class VariantSelects extends HTMLElement {
       const selectedSwatchValue = this.querySelector(`[data-selected-swatch-value="${name}"]`);
       if (selectedSwatchValue) selectedSwatchValue.innerHTML = value;
     }
-  }
-
-  updateMedia() {
-    if (!this.currentVariant) return;
-    if (!this.currentVariant.featured_media) return;
-
-    const mediaGalleries = document.querySelectorAll(`[id^="MediaGallery-${this.dataset.section}"]`);
-    mediaGalleries.forEach((mediaGallery) =>
-      mediaGallery.setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media.id}`, true)
-    );
-
-    const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
-    if (!modalContent) return;
-    const newMediaModal = modalContent.querySelector(`[data-media-id="${this.currentVariant.featured_media.id}"]`);
-    modalContent.prepend(newMediaModal);
   }
 
   updateURL() {
@@ -1144,6 +1128,20 @@ class VariantSelects extends HTMLElement {
         const volumePricingSource = html.getElementById(
           `Volume-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`
         );
+
+        // update media gallery
+        const mediaGallerySource = document.querySelector(`[id^="MediaGallery-${this.dataset.section}"]`);
+        const mediaGalleryDestination = html.querySelector(`[id^="MediaGallery-${this.dataset.section}"]`);
+        if (mediaGallerySource && mediaGalleryDestination) {
+          mediaGallerySource.innerHTML = mediaGalleryDestination.innerHTML;
+        }
+
+        // update media modal
+        const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
+        if (modalContent) {
+          const newMediaModal = modalContent.querySelector(`[data-media-id="${this.currentVariant.featured_media.id}"]`);
+          modalContent.prepend(newMediaModal);
+        }
 
         const pricePerItemDestination = document.getElementById(`Price-Per-Item-${this.dataset.section}`);
         const pricePerItemSource = html.getElementById(`Price-Per-Item-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
