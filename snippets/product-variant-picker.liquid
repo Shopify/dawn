@@ -12,7 +12,6 @@
 {%- unless product.has_only_default_variant -%}
   <variant-selects
     id="variant-selects-{{ section.id }}"
-    class="no-js-hidden"
     data-section="{{ section.id }}"
     data-url="{{ product.url }}"
     {% if update_url == false %}
@@ -95,56 +94,3 @@
     </script>
   </variant-selects>
 {%- endunless -%}
-
-<noscript class="product-form__noscript-wrapper-{{ section.id }}">
-  <div class="product-form__input{% if product.has_only_default_variant %} hidden{% endif %}">
-    <label class="form__label" for="Variants-{{ section.id }}">
-      {{- 'products.product.product_variants' | t -}}
-    </label>
-    <div class="select">
-      <select
-        name="id"
-        id="Variants-{{ section.id }}"
-        class="select__select"
-        form="{{ product_form_id }}"
-      >
-        {%- for variant in product.variants -%}
-          <option
-            {% if variant == product.selected_or_first_available_variant %}
-              selected="selected"
-            {% endif %}
-            {% if variant.available == false %}
-              disabled
-            {% endif %}
-            value="{{ variant.id }}"
-          >
-            {%- liquid
-              echo variant.title
-              echo variant.price | money | strip_html | prepend: ' - '
-              if variant.available == false
-                echo 'products.product.sold_out' | t | prepend: ' - '
-              endif
-              if variant.quantity_rule.increment > 1
-                echo 'products.product.quantity.multiples_of' | t: quantity: variant.quantity_rule.increment | prepend: ' - '
-              endif
-              if variant.quantity_rule.min > 1
-                echo 'products.product.quantity.minimum_of' | t: quantity: variant.quantity_rule.min | prepend: ' - '
-              endif
-              if variant.quantity_rule.max != null
-                echo 'products.product.quantity.maximum_of' | t: quantity: variant.quantity_rule.max | prepend: ' - '
-              endif
-              # TODO: enable theme-check once `item_count_for_variant` is accepted as valid filter
-              # theme-check-disable
-              assign cart_quantity = cart | item_count_for_variant: variant.id
-              # theme-check-enable
-              if cart_quantity > 0
-                echo 'products.product.quantity.in_cart_html' | t: quantity: cart_quantity | prepend: ' - '
-              endif
-            -%}
-          </option>
-        {%- endfor -%}
-      </select>
-      {% render 'icon-caret' %}
-    </div>
-  </div>
-</noscript>
