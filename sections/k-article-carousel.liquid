@@ -17,6 +17,14 @@
     margin: 0;
   }
 
+  .article-card__excerpt ul li {
+    list-style: disc;
+    text-align: left;
+  }
+  .article-card__excerpt ul li:not(:last-child) {
+    margin-bottom: 1rem;
+  }
+  
   @media screen and (min-width: 750px) {
     .section-{{ section.id }}-padding {
       padding-top: {{ section.settings.padding_top }}px;
@@ -146,9 +154,9 @@
                           {%- endif -%}
                         </div>
                         {% if block.settings.content %}
-                            <p class="article-card__excerpt rte-width">
-                              {{ block.settings.content | strip_html }}
-                            </p>
+                            <div class="article-card__excerpt rte-width">
+                              {{ block.settings.content }}
+                            </div>
                         {%- endif -%}
                         {% if block.settings.link_text != blank %}
                           <a href="{{ block.settings.article_link }}" class="link underlined-link accent-link">{{ block.settings.link_text }} <span class="icon-tiny">{% render 'icon-tiny-arrow' %}</span></a>
@@ -164,9 +172,9 @@
                         </a>
                       </h3>
                       {% if block.settings.content %}
-                          <p class="article-card__excerpt rte-width">
-                            {{ block.settings.content | strip_html }}
-                          </p>
+                          <div class="article-card__excerpt rte-width">
+                            {{ block.settings.content }}
+                          </div>
                       {%- endif -%}
                       {% if block.settings.link_text != blank %}
                         <a href="{{ block.settings.article_link }}" class="link underlined-link accent-link">{{ block.settings.link_text }} <span class="icon-tiny">{% render 'icon-tiny-arrow' %}</span></a>
@@ -208,6 +216,37 @@
         {%- endif -%}
       </slider-component>
     </div>
+    {% if section.settings.ellipse_top %}
+      <div class="ellipse-element ellipse-top">
+        <div
+          class="media media--transparent media--adapt"
+            style="padding-bottom: {{ 1 | divided_by: section.settings.ellipse_top.aspect_ratio | times: 100 }}%;"
+        >
+          {%- liquid
+            assign number_of_columns = 1
+            assign number_of_columns_mobile = 1
+            assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+            assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+            assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+            assign image_width = 1
+          -%}
+          {% capture sizes %}
+            (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+            (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+            (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+            calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+          {% endcapture %}
+          {{
+            section.settings.ellipse_top
+            | image_url: width: 600
+            | image_tag:
+              loading: 'lazy',
+              widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+              sizes: sizes
+          }}
+        </div>
+      </div>
+    {% endif %}
     {% if section.settings.ellipse_bottom %}
       <div class="ellipse-element ellipse-bottom">
         <div
@@ -408,6 +447,11 @@
         "id": "swipe_on_mobile",
         "default": false,
         "label": "t:sections.multicolumn.settings.swipe_on_mobile.label"
+      },
+      {
+        "type": "image_picker",
+        "id": "ellipse_top",
+        "label": "Ellipse Top"
       },
       {
         "type": "image_picker",
