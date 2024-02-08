@@ -167,6 +167,15 @@ var main = function () {
                     });
                 }
             });
+        },
+        klaviyoFnc: () => {
+            document.querySelectorAll('[data-klaviyo').forEach(e=> {
+                e.addEventListener('click', function(event) {
+                    event.preventDefault()
+                    window._klOnsite = window._klOnsite || [];
+                    window._klOnsite.push(['openForm', e.dataset.klaviyo]);
+                })
+            })
         }
     };
 }()
@@ -176,3 +185,4 @@ main.amznOr()
 main.resellerCTA()
 main.sliderHeight()
 main.preventDefaultForHashLinks()
+main.klaviyoFnc()
