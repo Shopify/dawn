@@ -1037,9 +1037,9 @@ class VariantSelects extends HTMLElement {
       callback = this.handleSwapProduct(sectionId);
     } else if (!this.currentVariant) {
       this.setUnavailable();
-      callback = () => {
+      callback = (html) => {
         this.updatePickupAvailability();
-        this.updateOptionValues();
+        this.updateOptionValues(html);
       };
     } else {
       this.updateMedia();
