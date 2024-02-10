@@ -74,8 +74,10 @@ class QuickOrderList extends HTMLElement {
     const form = this.querySelector('form');
 
     form.addEventListener('submit', this.onSubmit.bind(this));
-
-    this.addEventListener('change', this.onChange.bind(this));
+    const debouncedOnChange = debounce((event) => {
+      this.onChange(event);
+    }, ON_CHANGE_DEBOUNCE_TIMER);
+    this.addEventListener('change', debouncedOnChange.bind(this));
   }
 
   cartUpdateUnsubscriber = undefined;
@@ -179,6 +181,7 @@ class QuickOrderList extends HTMLElement {
       }
     }));
     this.allInputs = this.querySelectorAll('input[type="number"]');
+    this.quickOrderListTable = this.querySelector('.quick-order-list__table');
     this.quickOrderListTable.addEventListener('focusin', this.switchVarints.bind(this));
   }
 
