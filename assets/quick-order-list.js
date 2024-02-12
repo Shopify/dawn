@@ -66,7 +66,7 @@ class QuickOrderList extends HTMLElement {
       add: 'ADD',
       update: 'UPDATE'
     }
-    this.allInputs = this.querySelectorAll('input[type="number"]');
+    this.allInputsArray = Array.from(this.querySelectorAll('input[type="number"]'));
     this.quickOrderListTable = this.querySelector('.quick-order-list__table');
     this.quickOrderListTable.addEventListener('focusin', this.switchVarints.bind(this));
     this.quickOrderListId = 'quick-order-list'
@@ -180,7 +180,7 @@ class QuickOrderList extends HTMLElement {
         }
       }
     }));
-    this.allInputs = this.querySelectorAll('input[type="number"]');
+    this.allInputsArray = Array.from(this.querySelectorAll('input[type="number"]'));
     this.quickOrderListTable = this.querySelector('.quick-order-list__table');
     this.quickOrderListTable.addEventListener('focusin', this.switchVarints.bind(this));
   }
@@ -192,20 +192,18 @@ class QuickOrderList extends HTMLElement {
     this.VariantListInput = event.target;
     this.VariantListInput.select()
     this.VariantListInput.addEventListener('keydown', (e) => {
-      const currentVariantIndex = Array.from(this.allInputs).findIndex((input) => input === e.target);
       if (e.key === 'Enter') {
         e.preventDefault();
         e.target.blur();
-        const inputs = Array.from(this.allInputs);
-        const currentIndex = inputs.indexOf(e.target);
+        const currentIndex = this.allInputsArray.indexOf(e.target);
 
         if (!e.shiftKey) {
           const nextIndex = currentIndex + 1;
-          const nextVariant = inputs[nextIndex] || inputs[0];
+          const nextVariant = this.allInputsArray[nextIndex] || this.allInputsArray[0];
           nextVariant.focus();
         } else {
           const previousIndex = currentIndex - 1;
-          const previousVariant = inputs[previousIndex] || inputs[inputs.length - 1];
+          const previousVariant = this.allInputsArray[previousIndex] || this.allInputsArray[this.allInputsArray.length - 1];
           previousVariant.focus();
         }
       }
