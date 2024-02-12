@@ -193,25 +193,20 @@ class QuickOrderList extends HTMLElement {
     this.VariantListInput.select()
     this.VariantListInput.addEventListener('keydown', (e) => {
       const currentVariantIndex = Array.from(this.allInputs).findIndex((input) => input === e.target);
-      if (e.key === 'Enter' && !e.shiftKey) {
+      if (e.key === 'Enter') {
         e.preventDefault();
         e.target.blur();
-        const nextVariant = Array.from(this.allInputs)[currentVariantIndex + 1];
-        if (nextVariant) {
+        const inputs = Array.from(this.allInputs);
+        const currentIndex = inputs.indexOf(e.target);
+
+        if (!e.shiftKey) {
+          const nextIndex = currentIndex + 1;
+          const nextVariant = inputs[nextIndex] || inputs[0];
           nextVariant.focus();
         } else {
-          const firstVariant = Array.from(this.allInputs)[0];
-          firstVariant.focus();
-        }
-      } else if (e.key === 'Enter' && e.shiftKey) {
-        e.preventDefault();
-        e.target.blur();
-        const previousVariant = Array.from(this.allInputs)[currentVariantIndex - 1];
-        if (previousVariant) {
+          const previousIndex = currentIndex - 1;
+          const previousVariant = inputs[previousIndex] || inputs[inputs.length - 1];
           previousVariant.focus();
-        } else {
-          const lastVariant = Array.from(this.allInputs)[Array.from(this.allInputs).length - 1];
-          lastVariant.focus();
         }
       }
     });
