@@ -126,7 +126,7 @@ class QuickOrderList extends HTMLElement {
     }
   }
 
-  onCartUpdate() {
+  refresh() {
     fetch(`${window.location.pathname}?section_id=${this.sectionId}`)
       .then((response) => response.text())
       .then((responseText) => {
