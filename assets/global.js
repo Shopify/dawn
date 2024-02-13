@@ -981,12 +981,19 @@ class VariantSelects extends HTMLElement {
 
   filterImgVariant() {
     if (this.currentVariant.featured_image && this.currentVariant.featured_image.alt) {
-      // remove 'tw-hidden' class from all elements with 'thumbnail-alt' attribute
+      // 特殊文字をエスケープする関数
+      const escapeCSS = (str) => str.replace(/([^\x20-\x7E])/g, '\\$1').replace(/\n/g, '');
+
+      // エスケープされたalt属性値
+      const escapedAlt = escapeCSS(this.currentVariant.featured_image.alt);
+
+      // 'tw-hidden'クラスを全ての要素から削除
       document.querySelectorAll('[thumbnail-alt]').forEach(img => img.classList.remove('tw-hidden'));
-      // add 'tw-hidden' class to all elements with 'thumbnail-alt' attribute that don't match the current variant's alt
-      document.querySelectorAll(`[thumbnail-alt]:not([thumbnail-alt="${this.currentVariant.featured_image.alt}"])`).forEach(img => img.classList.add('tw-hidden'));
+
+      // 現在のバリアントのalt属性と一致しない要素に'tw-hidden'クラスを追加
+      document.querySelectorAll(`[thumbnail-alt]:not([thumbnail-alt="${escapedAlt}"])`).forEach(img => img.classList.add('tw-hidden'));
     } else {
-      // remove 'tw-hidden' class from all elements with 'thumbnail-alt' attribute
+      // 'tw-hidden'クラスを全ての要素から削除
       document.querySelectorAll('[thumbnail-alt]').forEach(img => img.classList.remove('tw-hidden'));
     }
   }
