@@ -1098,6 +1098,65 @@ class VariantSelects extends HTMLElement {
     if (productForm) productForm.handleErrorMessage();
   }
 
+
+  updateMedia(html) {
+    const mediaGallerySource = document.querySelector(`[id^="MediaGallery-${this.dataset.section}"] ul`);
+    const mediaGalleryDestination = html.querySelector(`[id^="MediaGallery-${this.dataset.section}"] ul`);
+
+    const refreshSourceData = () => {
+      const mediaGallerySourceItems = Array.from(mediaGallerySource.querySelectorAll('li[data-media-id]'));
+      const sourceSet = new Set(mediaGallerySourceItems.map(item => item.dataset.mediaId));
+      const sourceMap = new Map(mediaGallerySourceItems.map((item, index) => [item.dataset.mediaId, {item, index}]));
+      return [mediaGallerySourceItems, sourceSet, sourceMap];
+    };
+
+    if (mediaGallerySource && mediaGalleryDestination) {
+      let [mediaGallerySourceItems, sourceSet, sourceMap] = refreshSourceData();
+      const mediaGalleryDestinationItems = Array.from(mediaGalleryDestination.querySelectorAll('li[data-media-id]'));
+      const destinationSet = new Set(mediaGalleryDestinationItems.map(({dataset}) => dataset.mediaId));
+      let shouldRefresh = false;
+
+      // add items from new data not present in DOM
+      for (let i = mediaGalleryDestinationItems.length - 1; i >= 0; i--) {
+        if (!sourceSet.has(mediaGalleryDestinationItems[i].dataset.mediaId)) {
+          mediaGallerySource.prepend(mediaGalleryDestinationItems[i]);
+          shouldRefresh = true;
+        }
+      }
+
+      // remove items from DOM not present in new data
+      for (let i = 0; i < mediaGallerySourceItems.length; i++) {
+        if (!destinationSet.has(mediaGallerySourceItems[i].dataset.mediaId)) {
+          mediaGallerySourceItems[i].remove();
+          shouldRefresh = true;
+        }
+      }
+
+      // refresh
+      if (shouldRefresh) [mediaGallerySourceItems, sourceSet, sourceMap] = refreshSourceData();
+
+      // if media galleries don't match, sort to match new data order
+      mediaGalleryDestinationItems.forEach((destinationItem, destinationIndex) => {
+        const sourceData = sourceMap.get(destinationItem.dataset.mediaId);
+
+        if (sourceData && sourceData.index !== destinationIndex) {
+          mediaGallerySource.insertBefore(sourceData.item, mediaGallerySource.querySelector(`li:nth-of-type(${destinationIndex + 1})`));
+
+          // refresh source now that it has been modified
+          [mediaGallerySourceItems, sourceSet, sourceMap] = refreshSourceData();
+        }
+      });
+    }
+
+    document.querySelector(`[id^="MediaGallery-${this.dataset.section}"]`).setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media.id}`, false);
+
+    // update media modal
+    const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
+    if (modalContent && this.currentVariant.featured_media) {
+      modalContent.prepend(modalContent.querySelector(`[data-media-id="${this.currentVariant.featured_media.id}"]`));
+    }
+  }
+
   renderProductInfo() {
     const requestedVariantId = this.currentVariant.id;
     const sectionId = this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section;
@@ -1129,19 +1188,7 @@ class VariantSelects extends HTMLElement {
           `Volume-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`
         );
 
-        // update media gallery
-        const mediaGallerySource = document.querySelector(`[id^="MediaGallery-${this.dataset.section}"]`);
-        const mediaGalleryDestination = html.querySelector(`[id^="MediaGallery-${this.dataset.section}"]`);
-        if (mediaGallerySource && mediaGalleryDestination) {
-          mediaGallerySource.innerHTML = mediaGalleryDestination.innerHTML;
-        }
-
-        // update media modal
-        const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
-        if (modalContent) {
-          const newMediaModal = modalContent.querySelector(`[data-media-id="${this.currentVariant.featured_media.id}"]`);
-          modalContent.prepend(newMediaModal);
-        }
+        this.updateMedia(html);
 
         const pricePerItemDestination = document.getElementById(`Price-Per-Item-${this.dataset.section}`);
         const pricePerItemSource = html.getElementById(`Price-Per-Item-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
