@@ -46,19 +46,20 @@ if (!customElements.get('media-gallery')) {
 
         this.preventStickyHeader();
         window.setTimeout(() => {
+          if (this.elements.thumbnails) {
+            activeMedia.parentElement.scrollTo({ left: activeMedia.offsetLeft });
+          }
           if (
-            this.dataset.enableStickyInfo === 'false' ||
-            !this.mql.matches ||
-            (this.dataset.enableStickyInfo === 'true' && this.dataset.desktopLayout === 'stacked')
+            !this.elements.thumbnails ||
+            this.dataset.desktopLayout === 'stacked' ||
+            this.dataset.desktopLayout === 'columns'
           ) {
-            const section = this.closest('[data-section]');
-            const sectionRect = section.getBoundingClientRect();
+            const activeMediaRect = activeMedia.getBoundingClientRect();
             // Don't scroll if the image is already in view
-            if (sectionRect.top > -0.5) return;
-            const top = sectionRect.top + window.scrollY;
+            if (activeMediaRect.top > -0.5) return;
+            const top = activeMediaRect.top + window.scrollY;
             window.scrollTo({ top: top, behavior: 'smooth' });
           }
-          if (this.elements.thumbnails) activeMedia.parentElement.scrollTo({ left: activeMedia.offsetLeft });
         });
         this.playActiveMedia(activeMedia);
 
