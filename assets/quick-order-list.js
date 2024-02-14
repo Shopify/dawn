@@ -226,11 +226,15 @@ class QuickOrderList extends HTMLElement {
       }
     });
 
-    const { bottom, top } = this.VariantListInput.getBoundingClientRect();
-    if (bottom > this.totalBarPosition ||
-      bottom < this.inputFieldHeight ||
-      (this.stickyHeaderElement && (this.stickyHeader.type !== 'on-scroll-up' && this.stickyHeader.height > top) ||
-      (this.stickyHeaderElement && this.stickyHeader.type === 'on-scroll-up' && this.stickyHeader.height > top && this.stickyHeaderElement.getBoundingClientRect().bottom > 0))) {
+    const inputTopBorder = this.VariantListInput.getBoundingClientRect().top;
+    const inputBottomBorder = this.VariantListInput.getBoundingClientRect().bottom;
+    const stickyHeaderBottomBorder = this.stickyHeaderElement && this.stickyHeaderElement.getBoundingClientRect().bottom;
+    const totalBarCrossesInput = inputBottomBorder > this.totalBarPosition;
+    const inputOutsideOfViewPort = inputBottomBorder < this.inputFieldHeight;
+    const stickyHeaderCrossesInput = this.stickyHeaderElement && this.stickyHeader.type !== 'on-scroll-up' && this.stickyHeader.height > inputTopBorder;
+    const stickyHeaderScrollupCrossesInput = this.stickyHeaderElement && this.stickyHeader.type === 'on-scroll-up' && this.stickyHeader.height > inputTopBorder && stickyHeaderBottomBorder > 0;
+
+    if (totalBarCrossesInput || inputOutsideOfViewPort || stickyHeaderCrossesInput || stickyHeaderScrollupCrossesInput) {
       this.VariantListInput.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
   }
