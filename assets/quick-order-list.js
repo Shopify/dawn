@@ -72,7 +72,7 @@ class QuickOrderList extends HTMLElement {
     this.quickOrderListId = 'quick-order-list'
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
     const form = this.querySelector('form');
-    this.inputFiledHeight = this.querySelector('.variant-item__quantity-wrapper').offsetHeight;
+    this.inputFieldHeight = this.querySelector('.variant-item__quantity-wrapper').offsetHeight;
     this.stickyHeaderElement = document.querySelector('sticky-header');
 
     if (this.stickyHeaderElement) {
@@ -228,7 +228,7 @@ class QuickOrderList extends HTMLElement {
 
     const { bottom, top } = this.VariantListInput.getBoundingClientRect();
     if (bottom > this.totalBarPosition ||
-      bottom < this.inputFiledHeight ||
+      bottom < this.inputFieldHeight ||
       (this.stickyHeaderElement && (this.stickyHeader.type !== 'on-scroll-up' && this.stickyHeader.height > top) ||
       (this.stickyHeaderElement && this.stickyHeader.type === 'on-scroll-up' && this.stickyHeader.height > top && this.stickyHeaderElement.getBoundingClientRect().bottom > 0))) {
       this.VariantListInput.scrollIntoView({ block: 'center', behavior: 'smooth' });
