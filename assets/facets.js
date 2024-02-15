@@ -303,7 +303,6 @@ class PriceRange extends HTMLElement {
     this.querySelectorAll('input').forEach((element) => {
       element.addEventListener('change', this.onRangeChange.bind(this));
       element.addEventListener('keydown', this.onKeyDown.bind(this));
-      element.addEventListener('keydown', this.onKeyUp.bind(this));
     });
     this.setMinAndMaxValues();
   }
@@ -314,21 +313,10 @@ class PriceRange extends HTMLElement {
   }
 
   onKeyDown(event) {
+    if (event.metaKey) return;
+
     const pattern = /[0-9]|\.|,| |Tab|Backspace|Enter|ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Delete/;
     if (!event.key.match(pattern)) event.preventDefault();
-  }
-
-  onKeyUp(event) {
-    const key = event.key
-    if (key !== 'ArrowUp' && key !== 'ArrowDown') return;
-
-    const value = Number(event.target.value);
-    event.preventDefault();
-    if (key === 'ArrowUp') {
-      event.target.value = value + 1;
-    } else {
-      event.target.value = value - 1;
-    }
   }
 
   setMinAndMaxValues() {
