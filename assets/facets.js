@@ -300,9 +300,11 @@ FacetFiltersForm.setListeners();
 class PriceRange extends HTMLElement {
   constructor() {
     super();
-    this.querySelectorAll('input').forEach((element) =>
-      element.addEventListener('change', this.onRangeChange.bind(this))
-    );
+    this.querySelectorAll('input').forEach((element) => {
+      element.addEventListener('change', this.onRangeChange.bind(this));
+      element.addEventListener('keydown', this.onKeyDown.bind(this));
+      element.addEventListener('keydown', this.onKeyUp.bind(this));
+    });
     this.setMinAndMaxValues();
   }
 
@@ -311,20 +313,38 @@ class PriceRange extends HTMLElement {
     this.setMinAndMaxValues();
   }
 
+  onKeyDown(event) {
+    const pattern = /[0-9]|\.|,| |Tab|Backspace|Enter|ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Delete/;
+    if (!event.key.match(pattern)) event.preventDefault();
+  }
+
+  onKeyUp(event) {
+    const key = event.key
+    if (key !== 'ArrowUp' && key !== 'ArrowDown') return;
+
+    const value = Number(event.target.value);
+    event.preventDefault();
+    if (key === 'ArrowUp') {
+      event.target.value = value + 1;
+    } else {
+      event.target.value = value - 1;
+    }
+  }
+
   setMinAndMaxValues() {
     const inputs = this.querySelectorAll('input');
     const minInput = inputs[0];
     const maxInput = inputs[1];
-    if (maxInput.value) minInput.setAttribute('max', maxInput.value);
-    if (minInput.value) maxInput.setAttribute('min', minInput.value);
-    if (minInput.value === '') maxInput.setAttribute('min', 0);
-    if (maxInput.value === '') minInput.setAttribute('max', maxInput.getAttribute('max'));
+    if (maxInput.value) minInput.setAttribute('data-max', maxInput.value);
+    if (minInput.value) maxInput.setAttribute('data-min', minInput.value);
+    if (minInput.value === '') maxInput.setAttribute('data-min', 0);
+    if (maxInput.value === '') minInput.setAttribute('data-max', maxInput.getAttribute('data-max'));
   }
 
   adjustToValidValues(input) {
     const value = Number(input.value);
-    const min = Number(input.getAttribute('min'));
-    const max = Number(input.getAttribute('max'));
+    const min = Number(input.getAttribute('data-min'));
+    const max = Number(input.getAttribute('data-max'));
 
     if (value < min) input.value = min;
     if (value > max) input.value = max;
