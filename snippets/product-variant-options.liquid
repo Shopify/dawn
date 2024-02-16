@@ -67,21 +67,35 @@
   {%- endcapture %}
 
   {%- if picker_type == 'swatch' -%}
-    {% assign checked = false %}
-    {% if option.selected_value == value %}
-      {% assign checked = true %}
-    {% endif %}
-    {%
-      render 'swatch-input',
-      id: input_id,
-      name: option.name,
-      value: value | escape,
-      product_form_id: product_form_id,
-      checked: checked,
-      disabled: option_disabled,
-      shape: block.settings.swatch_shape,
-      help_text: label_unavailable
+    {% liquid
+      assign checked = false
+
+      if option.selected_value == value
+        assign checked = true
+      endif
+
+      assign value_text = value | escape
     %}
+    <input
+      type="radio"
+      id="{{ input_id }}"
+      name="{{ option.name }}"
+      value="{{ value_text }}"
+      form="{{ product_form_id }}"
+      class="swatch-input__input{% if option_disabled %} disabled{% endif %}"
+      {% if checked %}
+        checked
+      {% endif %}
+    >
+    <label
+      for="{{ input_id }}"
+      title="{{ value_text }}"
+      class="swatch-input__label{% if block.settings.swatch_shape == 'square' %} swatch-input__label--square{% endif %}"
+    >
+      {% render 'swatch', swatch: value.swatch, shape: block.settings.swatch_shape %}
+      <span class="visually-hidden">{{ value_text }}</span>
+      {{ label_unavailable }}
+    </label>
   {%- elsif picker_type == 'button' -%}
     <input
       type="radio"
