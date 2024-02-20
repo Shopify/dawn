@@ -4,7 +4,7 @@ class QuickAddBulk extends HTMLElement {
     super();
     const debouncedOnChange = debounce((event) => {
       if (parseInt(event.target.dataset.cartQuantity) === 0) {
-        this.addToCart();
+        this.addToCart(event);
       } else {
         this.updateCart(event);
       }
@@ -77,12 +77,12 @@ class QuickAddBulk extends HTMLElement {
       })
   }
 
-  addToCart() {
+  addToCart(event) {
     this.querySelector('.progress-bar-container').classList.remove('hidden');
     const body = JSON.stringify({
       items: [
         {
-          quantity: parseInt(this.dataset.min),
+          quantity: parseInt(event.target.value),
           id: parseInt(this.dataset.id)
         }
       ],
@@ -95,7 +95,6 @@ class QuickAddBulk extends HTMLElement {
       })
       .then((state) => {
         const parsedState = JSON.parse(state);
-
         if (parsedState.description || parsedState.errors) {
           console.log('error add to cart', parsedState)
           // Error handling
