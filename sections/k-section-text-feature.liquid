@@ -1,0 +1,278 @@
+{%- style -%}
+    .section-{{ section.id }}-padding {
+        padding-top: calc({{ section.settings.padding_top }}px * 0.75);
+        padding-bottom: calc({{ section.settings.padding_bottom }}px  * 0.75);
+    }
+
+    .text-feature-wrapper {
+        background-color: #fafafa;
+        border-radius: var(--media-radius);
+        padding: 3rem 1.5rem;
+    }
+
+    .feature-text-slider-controls {
+        display: flex;
+        gap: 1.5rem;
+        position: relative;
+        z-index: 2;
+        margin-top: 4rem;
+        margin-bottom: 4rem;
+    }
+
+    .feature-dot {
+        cursor: pointer;
+        border: 0;
+        background: #EEF8FE;
+        width: 55px;
+        height: 6px;
+        border-radius: 20px;
+    }
+
+    .feature-dot.active {
+        background: rgb(var(--color-base-background-3));
+    }
+    
+    .feature-text-item h3 {
+        margin-top: 0;
+    }
+
+    .feature-text-slider {
+        position: relative;
+        width: 100%;
+        margin-top: 4rem;
+    }
+
+    .feature-text-item {
+        transition: all ease .3s;
+    }
+
+    .feature-text-item:not(.active) {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        opacity: 0;
+    }
+
+    .feature-text-item.active {
+        opacity: 1;
+    }
+
+    .feature-text-grid {
+        --grid-desktop-horizontal-spacing: 50px;
+        --grid-desktop-vertical-spacing: 50px;
+    }
+
+    .feature-text-column {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+    }
+
+    @media screen and (min-width: 750px) {
+        .section-{{ section.id }}-padding {
+            padding-top: {{ section.settings.padding_top }}px;
+            padding-bottom: {{ section.settings.padding_bottom }}px;
+        }
+
+
+        .text-feature-wrapper {
+            padding: 6rem 5rem;
+        }
+        .feature-text-item h3 {
+            font-size: calc(var(--font-heading-scale) * 2.4rem);
+        }
+
+    }
+{%- endstyle -%}
+
+<script src="{{ 'k-feature-text.js' | asset_url }}" defer></script>
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width">
+        <div class="section-{{ section.id }}-padding">
+            <div class="text-feature-wrapper">
+                {%- unless section.settings.title == blank -%}
+                    <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin">
+                        <h2 class="title center inline-richtext {{ section.settings.heading_size }}">
+                            {{ section.settings.title }}
+                        </h2>
+                    </div>
+                {%- endunless -%}
+                <div class="grid feature-text-grid grid--1-col-tablet-down grid--2-col-desktop">
+                    <div class="grid__item">
+                        {% if section.settings.image != blank %}
+                            <div
+                                class="media media--transparent media--{{ section.settings.image_ratio }}"
+                                style="padding-bottom: {{ 1 | divided_by: section.settings.image.aspect_ratio | times: 100 }}%;"
+                            >
+                                {%- liquid
+                                assign number_of_columns = 1
+                                assign number_of_columns_mobile = 1
+                                assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+                                assign image_width = 1
+                                -%}
+                                {% capture sizes %}
+                                (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+                                (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+                                (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+                                calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+                                {% endcapture %}
+                                {{
+                                    section.settings.image
+                                | image_url: width: 3200
+                                | image_tag:
+                                    loading: 'lazy',
+                                    widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                                    sizes: sizes
+                                }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="grid__item">
+                        <div class="feature-text-column">
+                            <div id="Feature-text-{{ section.id }}" class="feature-text-slider">
+                                {% for block in section.blocks %}
+                                    <div class="feature-text-item" id="feature-{{ block.id }}">
+                                        {%- if block.settings.title != blank -%}
+                                            <h3 class="inline-richtext">{{ block.settings.title }}</h3>
+                                        {%- endif -%}
+                                        {%- if block.settings.content != blank -%}
+                                            <div class="rte">{{ block.settings.content }}</div>
+                                        {%- endif -%}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div data-control="Feature-text-{{ section.id }}" class="feature-text-slider-controls">
+                                {% for block in section.blocks %}
+                                    <div class="feature-text-control">
+                                        <button class="feature-dot" data-id="feature-{{ block.id }}"></button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% schema %}
+{
+  "name": "Text Features",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+        "type": "inline_richtext",
+        "id": "title",
+        "default": "Multicolumn",
+        "label": "t:sections.multicolumn.settings.title.label"
+    },
+    {
+        "type": "select",
+        "id": "heading_size",
+        "options": [
+          {
+            "value": "h2",
+            "label": "t:sections.all.heading_size.options__1.label"
+          },
+          {
+            "value": "h1",
+            "label": "t:sections.all.heading_size.options__2.label"
+          },
+          {
+            "value": "h0",
+            "label": "t:sections.all.heading_size.options__3.label"
+          }
+        ],
+        "default": "h1",
+        "label": "t:sections.all.heading_size.label"
+    },
+    {
+        "type": "image_picker",
+        "id": "image",
+        "label": "Image"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.all.colors.accent_1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.all.colors.accent_2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.all.colors.background_1.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.all.colors.background_2.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.all.colors.inverse.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.all.colors.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 52
+    }
+  ],
+  "blocks": [
+    {
+        "type": "item",
+        "name": "Item",
+        "settings": [
+            {
+                "type": "text",
+                "id": "title",
+                "label": "Title"
+            },
+            {
+                "type": "richtext",
+                "id": "content",
+                "label": "Content"
+            }
+        ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Text Features"
+    }
+  ]
+}
+{% endschema %}
