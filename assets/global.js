@@ -1046,8 +1046,8 @@ class VariantSelects extends HTMLElement {
 
     // const sectionId = this.dataset.originalSection || this.dataset.section;
     // this.updateSelectedSwatchValue(event);
-    this.toggleAddButton(true, '', false);
-    this.removeErrorMessage();
+    // this.toggleAddButton(true, '', false);
+    // this.removeErrorMessage();
 
     let callback = () => {};
     if (this.dataset.url !== targetUrl) {
@@ -1114,18 +1114,18 @@ class VariantSelects extends HTMLElement {
     modalContent.prepend(newMediaModal);
   }
 
-  updateURL(url) {
-    if (this.dataset.updateUrl === 'false') return;
-    window.history.replaceState({}, '', `${url}${this.currentVariant?.id ? `?variant=${this.currentVariant.id}` : ''}`);
-  }
+  // updateURL(url) {
+  //   if (this.dataset.updateUrl === 'false') return;
+  //   window.history.replaceState({}, '', `${url}${this.currentVariant?.id ? `?variant=${this.currentVariant.id}` : ''}`);
+  // }
 
-  updateShareUrl(url) {
-    const shareButton = document.getElementById(`Share-${this.dataset.section}`);
-    if (!shareButton || !shareButton.updateUrl) return;
-    shareButton.updateUrl(
-      `${window.shopUrl}${url}${this.currentVariant?.id ? `?variant=${this.currentVariant.id}` : ''}`
-    );
-  }
+  // updateShareUrl(url) {
+  //   const shareButton = document.getElementById(`Share-${this.dataset.section}`);
+  //   if (!shareButton || !shareButton.updateUrl) return;
+  //   shareButton.updateUrl(
+  //     `${window.shopUrl}${url}${this.currentVariant?.id ? `?variant=${this.currentVariant.id}` : ''}`
+  //   );
+  // }
 
   updateVariantInput() {
     const productForms = document.querySelectorAll(

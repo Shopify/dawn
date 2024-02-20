@@ -62,30 +62,42 @@ if (!customElements.get('product-wrapper')) {
         const productForm = this.productForm;
         productForm?.toggleSubmitButton(true);
         productForm?.handleErrorMessage();
-        // this.removeErrorMessage();
 
-        // let callback = () => {};
-        // if (this.dataset.url !== targetUrl) {
-        //   this.updateURL(targetUrl);
-        //   this.updateShareUrl(targetUrl);
-        //   callback = this.handleSwapProduct(sectionId);
-        // } else if (!this.currentVariant) {
-        //   this.setUnavailable();
-        //   callback = (html) => {
-        //     this.updatePickupAvailability();
-        //     this.updateOptionValues(html);
-        //   };
-        // } else {
-        //   this.updateMedia();
-        //   this.updateURL(targetUrl);
-        //   this.updateVariantInput();
-        //   this.updateShareUrl(targetUrl);
-        //   callback = this.handleUpdateProductInfo(sectionId);
-        // }
+        let callback = () => {};
+        if (this.dataset.url !== targetUrl) {
+          this.updateURL(targetUrl, variant?.id);
+          this.updateShareUrl(targetUrl, variant?.id);
+          // callback = this.handleSwapProduct(sectionId);
+        } else if (!this.currentVariant) {
+          // this.setUnavailable();
+          // callback = (html) => {
+          //   this.updatePickupAvailability();
+          //   this.updateOptionValues(html);
+          // };
+        } else {
+          // this.updateMedia();
+          this.updateURL(targetUrl, variant?.id);
+          this.updateShareUrl(targetUrl, variant?.id);
+          // this.updateVariantInput();
+          // callback = this.handleUpdateProductInfo(sectionId);
+        }
 
         // this.renderProductInfo(sectionId, targetUrl, targetId, callback);
 
         debugger;
+      }
+
+      updateURL(url, variantId) {
+        if (this.dataset.updateUrl === 'false') return;
+        window.history.replaceState({}, '', `${url}${variantId ? `?variant=${variantId}` : ''}`);
+      }
+
+      updateShareUrl(url, variantId) {
+        // this queries without the section ID now
+        const shareButton = this.querySelector('share-url');
+        debugger;
+        if (!shareButton || !shareButton.updateUrl) return;
+        shareButton.updateUrl(`${window.shopUrl}${url}${variantId ? `?variant=${variantId}` : ''}`);
       }
 
       // TODO should this live on productform

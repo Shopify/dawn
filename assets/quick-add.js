@@ -68,6 +68,7 @@ if (!customElements.get('quick-add-modal')) {
         this.preventVariantURLSwitching(productElement);
       }
 
+      // TODO this needs to be updated to set this value on the product-wrapper instead of the variant-selects
       preventVariantURLSwitching(productElement) {
         const variantPicker = productElement.querySelector('variant-selects');
         if (!variantPicker) return;
