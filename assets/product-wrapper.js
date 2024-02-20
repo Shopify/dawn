@@ -1,7 +1,8 @@
-if (!customElements.get('product')) {
+// Name must contain a dash
+if (!customElements.get('product-wrapper')) {
   customElements.define(
-    'product',
-    class Product extends HTMLElement {
+    'product-wrapper',
+    class ProductWrapper extends HTMLElement {
       constructor() {
         super();
       }
