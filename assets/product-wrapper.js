@@ -10,7 +10,10 @@ if (!customElements.get('product-wrapper')) {
       onVariantChangeUnsubscriber = undefined;
 
       connectedCallback() {
-        this.onVariantChangeUnsubscriber = subscribe(PUB_SUB_EVENTS.variantChangeStart);
+        this.onVariantChangeUnsubscriber = subscribe(
+          PUB_SUB_EVENTS.variantChangeStart,
+          this.handleOptionValueChange.bind(this)
+        );
       }
 
       disconnectedCallback() {}
