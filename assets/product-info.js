@@ -1,3 +1,5 @@
+// TODO anything from here that should be pulled up?
+
 if (!customElements.get('product-info')) {
   customElements.define(
     'product-info',
