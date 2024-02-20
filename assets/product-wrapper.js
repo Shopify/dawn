@@ -48,7 +48,7 @@ if (!customElements.get('product-wrapper')) {
       }
 
       handleOptionValueChange({ data: { event, targetId, targetUrl, variant } }) {
-        if (!this.contains(event.data.event.target)) return;
+        if (!this.contains(event.target)) return;
 
         // const input = this.getInputForEventTarget(event.target);
         // const targetId = input.id;
