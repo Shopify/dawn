@@ -94,10 +94,9 @@ if (!customElements.get('product-wrapper')) {
 
       updateShareUrl(url, variantId) {
         // this queries without the section ID now
-        const shareButton = this.querySelector('share-url');
-        debugger;
-        if (!shareButton || !shareButton.updateUrl) return;
-        shareButton.updateUrl(`${window.shopUrl}${url}${variantId ? `?variant=${variantId}` : ''}`);
+        this.querySelector('share-url')?.updateUrl(
+          `${window.shopUrl}${url}${variantId ? `?variant=${variantId}` : ''}`
+        );
       }
 
       // TODO should this live on productform
