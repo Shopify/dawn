@@ -69,7 +69,7 @@ if (!customElements.get('product-wrapper')) {
           this.updateShareUrl(targetUrl, variant?.id);
           // callback = this.handleSwapProduct(sectionId);
         } else if (!this.currentVariant) {
-          // this.setUnavailable();
+          this.setUnavailable();
           // callback = (html) => {
           //   this.updatePickupAvailability();
           //   this.updateOptionValues(html);
@@ -97,6 +97,16 @@ if (!customElements.get('product-wrapper')) {
         this.querySelector('share-url')?.updateUrl(
           `${window.shopUrl}${url}${variantId ? `?variant=${variantId}` : ''}`
         );
+      }
+
+      setUnavailable() {
+        this.toggleAddButton(true, window.variantStrings.unavailable);
+
+        // should this be delegated to product-info? should product-info be promoted to here?
+        const selectors = ['price', 'Inventory', 'Sku', 'Price-Per-Item', 'Volume-Note', 'Volume', 'Quantity-Rules']
+          .map((id) => `#${id}-${this.dataset.section}`)
+          .join(', ');
+        document.querySelectorAll(selectors).forEach(({ classList }) => classList.add('hidden'));
       }
 
       // TODO should this live on productform
