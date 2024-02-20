@@ -995,30 +995,38 @@ customElements.define('slideshow-component', SlideshowComponent);
 class VariantSelects extends HTMLElement {
   constructor() {
     super();
-    this.addEventListener('change', this.handleProductUpdate);
-    this.initializeProductSwapUtility();
   }
-  P;
-  initializeProductSwapUtility() {
-    this.swapProductUtility = new HTMLUpdateUtility();
-    this.swapProductUtility.addPreProcessCallback((html) => {
-      html.querySelectorAll('.scroll-trigger').forEach((element) => element.classList.add('scroll-trigger--cancel'));
-      return html;
-    });
-    this.swapProductUtility.addPostProcessCallback((newNode) => {
-      window?.Shopify?.PaymentButton?.init();
-      window?.ProductModel?.loadShopifyXR();
-      publish(PUB_SUB_EVENTS.sectionRefreshed, {
-        data: {
-          sectionId: this.dataset.section,
-          resource: {
-            type: SECTION_REFRESH_RESOURCE_TYPE.product,
-            id: newNode.querySelector('variant-selects').dataset.productId,
-          },
-        },
-      });
-    });
+
+  handleProductUpdateUnsubscriber = undefined;
+
+  connectedCallback() {
+    this.handleProductUpdateUnsubscriber = this.addEventListener('change', this.handleProductUpdate);
   }
+
+  disconnectedCallback() {
+    this.handleProductUpdateUnsubscriber();
+  }
+
+  // initializeProductSwapUtility() {
+  //   this.swapProductUtility = new HTMLUpdateUtility();
+  //   this.swapProductUtility.addPreProcessCallback((html) => {
+  //     html.querySelectorAll('.scroll-trigger').forEach((element) => element.classList.add('scroll-trigger--cancel'));
+  //     return html;
+  //   });
+  //   this.swapProductUtility.addPostProcessCallback((newNode) => {
+  //     window?.Shopify?.PaymentButton?.init();
+  //     window?.ProductModel?.loadShopifyXR();
+  //     publish(PUB_SUB_EVENTS.sectionRefreshed, {
+  //       data: {
+  //         sectionId: this.dataset.section,
+  //         resource: {
+  //           type: SECTION_REFRESH_RESOURCE_TYPE.product,
+  //           id: newNode.querySelector('variant-selects').dataset.productId,
+  //         },
+  //       },
+  //     });
+  //   });
+  // }
 
   handleProductUpdate(event) {
     publish(PUB_SUB_EVENTS.variantChangeStart, {
