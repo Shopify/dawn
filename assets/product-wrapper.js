@@ -110,8 +110,9 @@ if (!customElements.get('product-wrapper')) {
       // }
 
       // should this be memoized? or no because the content can be changed?
+      // NOTE this now queries for the product-form directly instead of this.querySelector(`#product-form-${this.dataset.section}`). does it still need to be namespaced?
       get productForm() {
-        return this.querySelector(`#product-form-${this.dataset.section}`);
+        return this.querySelector(`product-form`);
       }
     }
   );
