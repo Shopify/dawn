@@ -1162,13 +1162,13 @@ class VariantSelects extends HTMLElement {
     return this.querySelector(`script[type="application/json"][data-resource="${inputId}"]`);
   }
 
-  removeErrorMessage() {
-    const section = this.closest('section');
-    if (!section) return;
+  // removeErrorMessage() {
+  //   const section = this.closest('section');
+  //   if (!section) return;
 
-    const productForm = section.querySelector('product-form');
-    if (productForm) productForm.handleErrorMessage();
-  }
+  //   const productForm = section.querySelector('product-form');
+  //   if (productForm) productForm.handleErrorMessage();
+  // }
 
   getWrappingSection(sectionId) {
     return (

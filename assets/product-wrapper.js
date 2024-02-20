@@ -59,8 +59,9 @@ if (!customElements.get('product-wrapper')) {
         // const sectionId = this.dataset.originalSection || this.dataset.section;
         // this.updateSelectedSwatchValue(event);
 
-        this.productForm?.toggleSubmitButton(true, '');
-        // this.toggleAddButton(true, '', false);
+        const productForm = this.productForm;
+        productForm?.toggleSubmitButton(true);
+        productForm?.handleErrorMessage();
         // this.removeErrorMessage();
 
         // let callback = () => {};
@@ -111,6 +112,7 @@ if (!customElements.get('product-wrapper')) {
 
       // should this be memoized? or no because the content can be changed?
       // NOTE this now queries for the product-form directly instead of this.querySelector(`#product-form-${this.dataset.section}`). does it still need to be namespaced?
+      // although the removeErrorMessage did exactly this so I think we're okay
       get productForm() {
         return this.querySelector(`product-form`);
       }
