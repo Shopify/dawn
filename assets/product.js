@@ -6,9 +6,17 @@ if (!customElements.get('product')) {
         super();
       }
 
-      connectedCallback() {}
+      onVariantChangeUnsubscriber = undefined;
+
+      connectedCallback() {
+        this.onVariantChangeUnsubscriber = subscribe(PUB_SUB_EVENTS.variantChangeStart);
+      }
 
       disconnectedCallback() {}
+
+      handleOptionValueChange(event) {
+        debugger;
+      }
     }
   );
 }

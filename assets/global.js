@@ -998,7 +998,7 @@ class VariantSelects extends HTMLElement {
     this.addEventListener('change', this.handleProductUpdate);
     this.initializeProductSwapUtility();
   }
-
+  P;
   initializeProductSwapUtility() {
     this.swapProductUtility = new HTMLUpdateUtility();
     this.swapProductUtility.addPreProcessCallback((html) => {
@@ -1021,6 +1021,12 @@ class VariantSelects extends HTMLElement {
   }
 
   handleProductUpdate(event) {
+    publish(PUB_SUB_EVENTS.variantChangeStart, {
+      data: {
+        event,
+      },
+    });
+
     const input = this.getInputForEventTarget(event.target);
     const targetId = input.id;
     const targetUrl = input.dataset.productUrl;
@@ -1063,7 +1069,9 @@ class VariantSelects extends HTMLElement {
 
     if (tagName === 'SELECT' && target.selectedOptions.length) {
       const swatchValue = target.selectedOptions[0].dataset.optionSwatchValue;
-      const selectedDropdownSwatchValue = target.closest('.product-form__input').querySelector('[data-selected-value] > .swatch');
+      const selectedDropdownSwatchValue = target
+        .closest('.product-form__input')
+        .querySelector('[data-selected-value] > .swatch');
       if (!selectedDropdownSwatchValue) return;
       if (swatchValue) {
         selectedDropdownSwatchValue.style.setProperty('--swatch--background', swatchValue);
