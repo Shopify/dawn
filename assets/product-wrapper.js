@@ -8,6 +8,7 @@ if (!customElements.get('product-wrapper')) {
       }
 
       onVariantChangeUnsubscriber = undefined;
+      swapProductUtility = undefined;
 
       connectedCallback() {
         this.initializeProductSwapUtility();
@@ -46,10 +47,60 @@ if (!customElements.get('product-wrapper')) {
         });
       }
 
-      handleOptionValueChange({ data: { event } }) {
+      handleOptionValueChange({ data: { event, targetId, targetUrl, variant } }) {
         if (!this.contains(event.data.event.target)) return;
 
+        // const input = this.getInputForEventTarget(event.target);
+        // const targetId = input.id;
+        // const targetUrl = input.dataset.productUrl;
+        // this.currentVariant = this.getVariantData(targetId);
+
+        // TODO how do we want to handle this?
+        // const sectionId = this.dataset.originalSection || this.dataset.section;
+        // this.updateSelectedSwatchValue(event);
+        this.toggleAddButton(true, '', false);
+        // this.removeErrorMessage();
+
+        // let callback = () => {};
+        // if (this.dataset.url !== targetUrl) {
+        //   this.updateURL(targetUrl);
+        //   this.updateShareUrl(targetUrl);
+        //   callback = this.handleSwapProduct(sectionId);
+        // } else if (!this.currentVariant) {
+        //   this.setUnavailable();
+        //   callback = (html) => {
+        //     this.updatePickupAvailability();
+        //     this.updateOptionValues(html);
+        //   };
+        // } else {
+        //   this.updateMedia();
+        //   this.updateURL(targetUrl);
+        //   this.updateVariantInput();
+        //   this.updateShareUrl(targetUrl);
+        //   callback = this.handleUpdateProductInfo(sectionId);
+        // }
+
+        // this.renderProductInfo(sectionId, targetUrl, targetId, callback);
+
         debugger;
+      }
+
+      toggleAddButton(disable = true, text, modifyClass = true) {
+        // TODO worth it to replace this with a static instance of this.productform?
+        debugger;
+        const productForm = document.getElementById(`product-form-${this.dataset.section}`);
+        if (!productForm) return;
+        const addButton = productForm.querySelector('[name="add"]');
+        const addButtonText = productForm.querySelector('[name="add"] > span');
+        if (!addButton) return;
+
+        if (disable) {
+          addButton.setAttribute('disabled', 'disabled');
+          if (text) addButtonText.textContent = text;
+        } else {
+          addButton.removeAttribute('disabled');
+          addButtonText.textContent = window.variantStrings.addToCart;
+        }
       }
     }
   );

@@ -1029,18 +1029,23 @@ class VariantSelects extends HTMLElement {
   // }
 
   handleProductUpdate(event) {
-    publish(PUB_SUB_EVENTS.variantChangeStart, {
-      data: {
-        event,
-      },
-    });
-
     const input = this.getInputForEventTarget(event.target);
     const targetId = input.id;
     const targetUrl = input.dataset.productUrl;
     this.currentVariant = this.getVariantData(targetId);
-    const sectionId = this.dataset.originalSection || this.dataset.section;
     this.updateSelectedSwatchValue(event);
+
+    publish(PUB_SUB_EVENTS.variantChangeStart, {
+      data: {
+        event,
+        targetId,
+        targetUrl,
+        variant: this.currentVariant,
+      },
+    });
+
+    // const sectionId = this.dataset.originalSection || this.dataset.section;
+    // this.updateSelectedSwatchValue(event);
     this.toggleAddButton(true, '', false);
     this.removeErrorMessage();
 
@@ -1277,6 +1282,7 @@ class VariantSelects extends HTMLElement {
       });
   }
 
+  // TODO remove me
   toggleAddButton(disable = true, text, modifyClass = true) {
     const productForm = document.getElementById(`product-form-${this.dataset.section}`);
     if (!productForm) return;
