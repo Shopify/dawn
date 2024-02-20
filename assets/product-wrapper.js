@@ -58,7 +58,9 @@ if (!customElements.get('product-wrapper')) {
         // TODO how do we want to handle this?
         // const sectionId = this.dataset.originalSection || this.dataset.section;
         // this.updateSelectedSwatchValue(event);
-        this.toggleAddButton(true, '', false);
+
+        this.productForm?.toggleSubmitButton(true, '');
+        // this.toggleAddButton(true, '', false);
         // this.removeErrorMessage();
 
         // let callback = () => {};
@@ -85,22 +87,31 @@ if (!customElements.get('product-wrapper')) {
         debugger;
       }
 
-      toggleAddButton(disable = true, text, modifyClass = true) {
-        // TODO worth it to replace this with a static instance of this.productform?
-        debugger;
-        const productForm = document.getElementById(`product-form-${this.dataset.section}`);
-        if (!productForm) return;
-        const addButton = productForm.querySelector('[name="add"]');
-        const addButtonText = productForm.querySelector('[name="add"] > span');
-        if (!addButton) return;
+      // TODO should this live on productform
+      // toggleAddButton(disable = true, text, modifyClass = true) {
+      //   // TODO worth it to replace this with a static instance of this.productform? or no because you have to refresh it?
+      //   debugger;
+      //   const productForm = this.querySelector(`#product-form-${this.dataset.section}`);
 
-        if (disable) {
-          addButton.setAttribute('disabled', 'disabled');
-          if (text) addButtonText.textContent = text;
-        } else {
-          addButton.removeAttribute('disabled');
-          addButtonText.textContent = window.variantStrings.addToCart;
-        }
+      //   productForm?.toggleSubmitButton(disable, text);
+      //   // if (!productForm) return;
+
+      //   const addButton = productForm.querySelector('[name="add"]');
+      //   const addButtonText = productForm.querySelector('[name="add"] > span');
+      //   if (!addButton) return;
+
+      //   if (disable) {
+      //     addButton.setAttribute('disabled', 'disabled');
+      //     if (text) addButtonText.textContent = text;
+      //   } else {
+      //     addButton.removeAttribute('disabled');
+      //     addButtonText.textContent = window.variantStrings.addToCart;
+      //   }
+      // }
+
+      // should this be memoized? or no because the content can be changed?
+      get productForm() {
+        return this.querySelector(`#product-form-${this.dataset.section}`);
       }
     }
   );
