@@ -60,12 +60,16 @@ if (!customElements.get('quantity-popover')) {
 
       closePopover(event) {
         event.preventDefault();
+        const isChild = this.variantInfo.contains(event.relatedTarget);
         const button = this.infoButtonDesktop && this.mql.matches ? this.infoButtonDesktop : this.infoButtonMobile;
-        button.setAttribute('aria-expanded', 'false');
-        this.variantInfo.classList.remove('quantity-popover-container--focus');
-        button.classList.remove('quantity-popover__info-button--open');
-        this.popoverInfo.setAttribute('hidden', '');
-        this.eventClickHappened = false;
+
+        if (!isChild || !event.relatedTarget) {
+          button.setAttribute('aria-expanded', 'false');
+          this.variantInfo.classList.remove('quantity-popover-container--focus');
+          button.classList.remove('quantity-popover__info-button--open');
+          this.popoverInfo.setAttribute('hidden', '');
+          this.eventClickHappened = false;
+        }
       }
     }
   );
