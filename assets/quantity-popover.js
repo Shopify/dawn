@@ -11,6 +11,8 @@ if (!customElements.get('quantity-popover')) {
         this.popoverInfo = this.querySelector('.quantity-popover__info');
         this.closeButton = this.querySelector('.button-close');
         this.variantInfo = this.querySelector('.quantity-popover-container');
+        this.isVariantSoldout = this.querySelector('.quantity-popover-container .variant-item__sold-out');
+        this.eventClickHappened = false;
 
         if (this.closeButton) {
           this.closeButton.addEventListener('click', this.closePopover.bind(this));
@@ -29,12 +31,23 @@ if (!customElements.get('quantity-popover')) {
 
       togglePopover(event) {
         event.preventDefault();
+        if (event.type === 'click' && this.eventClickHappened) {
+          this.closePopover(event);
+          return;
+        }
+
+        if (event.type === 'click') {
+          this.eventClickHappened = true;
+        }
+
         const button = this.infoButtonDesktop && this.mql.matches ? this.infoButtonDesktop : this.infoButtonMobile;
         const isExpanded = button.getAttribute('aria-expanded') === 'true';
 
         button.setAttribute('aria-expanded', !isExpanded);
 
         this.popoverInfo.toggleAttribute('hidden');
+
+        this.isVariantSoldout ?? this.variantInfo.classList.add('quantity-popover-container--focus');
 
         const isOpen = button.getAttribute('aria-expanded') === 'true';
 
@@ -49,8 +62,10 @@ if (!customElements.get('quantity-popover')) {
         event.preventDefault();
         const button = this.infoButtonDesktop && this.mql.matches ? this.infoButtonDesktop : this.infoButtonMobile;
         button.setAttribute('aria-expanded', 'false');
+        this.variantInfo.classList.remove('quantity-popover-container--focus');
         button.classList.remove('quantity-popover__info-button--open');
         this.popoverInfo.setAttribute('hidden', '');
+        this.eventClickHappened = false;
       }
     }
   );
