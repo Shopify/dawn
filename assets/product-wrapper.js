@@ -96,13 +96,10 @@ if (!customElements.get('product-wrapper')) {
       }
 
       renderProductInfo(url, variantId, targetId, callback) {
-        const sectionId = this.dataset.originalSection || this.dataset.section;
-        const params = variantId ? `variant=${variantId}` : `option_values=${this.getSelectedOptionValues().join(',')}`;
-
         this.abortController?.abort();
         this.abortController = new AbortController();
 
-        fetch(`${url}?section_id=${sectionId}&${params}`, {
+        fetch(this.getProductInfoUrl(url, variantId), {
           signal: this.abortController.signal,
         })
           .then((response) => response.text())
@@ -114,6 +111,22 @@ if (!customElements.get('product-wrapper')) {
             // set focus to last clicked option value
             this.querySelector(`#${targetId}`).focus();
           });
+      }
+
+      getProductInfoUrl(url, variantId) {
+        const sectionId = this.dataset.originalSection || this.dataset.section;
+
+        let params;
+        if (variantId) {
+          params = `variant=${variantId}`;
+        } else {
+          const optionValues = this.querySelector('variant-selects').selectedOptionValues;
+          if (optionValues.length) {
+            params = `option_values=${optionValues.join(',')}`;
+          }
+        }
+
+        return `${url}?section_id=${sectionId}&${params}`;
       }
 
       updatePickupAvailability(variant) {
