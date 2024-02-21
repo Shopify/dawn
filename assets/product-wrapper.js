@@ -75,7 +75,7 @@ if (!customElements.get('product-wrapper')) {
         } else if (!variant) {
           this.setUnavailable();
           callback = (html) => {
-            this.updatePickupAvailability(variant);
+            this.pickupAvailability.update(variant);
             this.updateOptionValues(html);
           };
         } else {
@@ -313,6 +313,10 @@ if (!customElements.get('product-wrapper')) {
 
       get productModal() {
         return document.querySelector(`#ProductModal-${this.dataset.section}`);
+      }
+
+      get pickupAvailability() {
+        return this.querySelector(`pickup-availability`);
       }
     }
   );
