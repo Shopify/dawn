@@ -1132,17 +1132,17 @@ class VariantSelects extends HTMLElement {
   //   });
   // }
 
-  updatePickupAvailability() {
-    const pickUpAvailability = document.querySelector('pickup-availability');
-    if (!pickUpAvailability) return;
+  // updatePickupAvailability() {
+  //   const pickUpAvailability = document.querySelector('pickup-availability');
+  //   if (!pickUpAvailability) return;
 
-    if (this.currentVariant && this.currentVariant.available) {
-      pickUpAvailability.fetchAvailability(this.currentVariant.id);
-    } else {
-      pickUpAvailability.removeAttribute('available');
-      pickUpAvailability.innerHTML = '';
-    }
-  }
+  //   if (this.currentVariant && this.currentVariant.available) {
+  //     pickUpAvailability.fetchAvailability(this.currentVariant.id);
+  //   } else {
+  //     pickUpAvailability.removeAttribute('available');
+  //     pickUpAvailability.innerHTML = '';
+  //   }
+  // }
 
   getInputForEventTarget(target) {
     return target.tagName === 'SELECT' ? target.selectedOptions[0] : target;
@@ -1251,10 +1251,10 @@ class VariantSelects extends HTMLElement {
     };
   }
 
-  updateOptionValues(html) {
-    const variantSelects = html.querySelector('variant-selects');
-    if (variantSelects) this.innerHTML = variantSelects.innerHTML;
-  }
+  // updateOptionValues(html) {
+  //   const variantSelects = html.querySelector('variant-selects');
+  //   if (variantSelects) this.innerHTML = variantSelects.innerHTML;
+  // }
 
   renderProductInfo(sectionId, url, targetId, callback) {
     const params = this.currentVariant

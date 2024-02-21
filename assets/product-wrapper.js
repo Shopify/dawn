@@ -74,10 +74,10 @@ if (!customElements.get('product-wrapper')) {
           callback = this.handleSwapProduct();
         } else if (!variant) {
           this.setUnavailable();
-          // callback = (html) => {
-          //   this.updatePickupAvailability();
-          //   this.updateOptionValues(html);
-          // };
+          callback = (html) => {
+            this.updatePickupAvailability(variant);
+            this.updateOptionValues(html);
+          };
         } else {
           this.updateURL(targetUrl, variant.id);
           this.updateShareUrl(targetUrl, variant.id);
@@ -88,23 +88,10 @@ if (!customElements.get('product-wrapper')) {
         this.renderProductInfo(targetUrl, variant?.id, targetId, callback);
       }
 
-      // TODO test this for main, featured, quick-add
       handleSwapProduct() {
         return (html) => {
-          // const oldContent = this.getWrappingSection(sectionId);
-          // if (!oldContent) {
-          //   return;
-          // }
-
           this.productModal?.remove();
-
-          // const response =
-          //   html.querySelector(`section[data-section="${sectionId}"]`) /* main/quick-add */ ||
-          //   html.getElementById(`shopify-section-${sectionId}`); /* featured product*/
-
-          debugger;
-          const response = html.querySelector('product-wrapper');
-          this.swapProductUtility.viewTransition(this, response);
+          this.swapProductUtility.viewTransition(this, html.querySelector('product-wrapper'));
         };
       }
 
@@ -127,6 +114,24 @@ if (!customElements.get('product-wrapper')) {
             // set focus to last clicked option value
             this.querySelector(`#${targetId}`).focus();
           });
+      }
+
+      updatePickupAvailability(variant) {
+        const pickUpAvailability = this.querySelector('pickup-availability');
+        if (!pickUpAvailability) return;
+
+        if (variant?.available) {
+          pickUpAvailability.fetchAvailability(variant.id);
+        } else {
+          pickUpAvailability.removeAttribute('available');
+          pickUpAvailability.innerHTML = '';
+        }
+      }
+
+      // TODO test this
+      updateOptionValues(html) {
+        const variantSelects = html.querySelector('variant-selects');
+        if (variantSelects) this.querySelector('variant-selects').innerHTML = variantSelects.innerHTML;
       }
 
       // updateVariantInput() {
