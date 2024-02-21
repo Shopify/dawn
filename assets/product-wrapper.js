@@ -109,7 +109,6 @@ if (!customElements.get('product-wrapper')) {
       }
 
       renderProductInfo(url, variantId, targetId, callback) {
-        // TODO how do we want to handle this?
         const sectionId = this.dataset.originalSection || this.dataset.section;
         const params = variantId ? `variant=${variantId}` : `option_values=${this.getSelectedOptionValues().join(',')}`;
 

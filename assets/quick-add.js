@@ -86,7 +86,7 @@ if (!customElements.get('quick-add-modal')) {
       preventDuplicatedIDs(productElement) {
         const sectionId = productElement.dataset.section;
         productElement.innerHTML = productElement.innerHTML.replaceAll(sectionId, `quickadd-${sectionId}`);
-        productElement.querySelectorAll('variant-selects, product-info').forEach((element) => {
+        productElement.querySelectorAll('product-wrapper, product-info').forEach((element) => {
           element.dataset.originalSection = sectionId;
         });
       }
