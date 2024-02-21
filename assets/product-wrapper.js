@@ -9,6 +9,7 @@ if (!customElements.get('product-wrapper')) {
 
       onVariantChangeUnsubscriber = undefined;
       swapProductUtility = undefined;
+      abortController = undefined;
 
       connectedCallback() {
         this.initializeProductSwapUtility();
@@ -70,7 +71,7 @@ if (!customElements.get('product-wrapper')) {
         if (this.dataset.url !== targetUrl) {
           this.updateURL(targetUrl, variant?.id);
           this.updateShareUrl(targetUrl, variant?.id);
-          callback = this.handleSwapProduct(sectionId);
+          callback = this.handleSwapProduct();
         } else if (!variant) {
           this.setUnavailable();
           // callback = (html) => {
@@ -84,7 +85,7 @@ if (!customElements.get('product-wrapper')) {
           // callback = this.handleUpdateProductInfo(sectionId);
         }
 
-        // this.renderProductInfo(sectionId, targetUrl, targetId, callback);
+        this.renderProductInfo(targetUrl, variant?.id, targetId, callback);
       }
 
       // getWrappingSection(sectionId) {
@@ -97,21 +98,47 @@ if (!customElements.get('product-wrapper')) {
       // }
 
       // TODO test this for main, featured, quick-add
-      handleSwapProduct(sectionId) {
+      handleSwapProduct() {
         return (html) => {
           // const oldContent = this.getWrappingSection(sectionId);
           // if (!oldContent) {
           //   return;
           // }
 
-          document.getElementById(`ProductModal-${sectionId}`)?.remove();
+          // TODO does work?
+          this.productModal?.remove();
+          // document.getElementById(`ProductModal-${sectionId}`)?.remove();
 
-          const response =
-            html.querySelector(`section[data-section="${sectionId}"]`) /* main/quick-add */ ||
-            html.getElementById(`shopify-section-${sectionId}`); /* featured product*/
+          // const response =
+          //   html.querySelector(`section[data-section="${sectionId}"]`) /* main/quick-add */ ||
+          //   html.getElementById(`shopify-section-${sectionId}`); /* featured product*/
 
+          debugger;
+          const response = html.querySelector('product-wrapper');
           this.swapProductUtility.viewTransition(this, response);
         };
+      }
+
+      renderProductInfo(url, variantId, targetId, callback) {
+        // TODO how do we want to handle this?
+        const sectionId = this.dataset.originalSection || this.dataset.section;
+        const params = variantId ? `variant=${variantId}` : `option_values=${this.getSelectedOptionValues().join(',')}`;
+
+        this.abortController?.abort();
+        this.abortController = new AbortController();
+
+        fetch(`${url}?section_id=${sectionId}&${params}`, {
+          signal: this.abortController.signal,
+        })
+          .then((response) => response.text())
+          .then((responseText) => {
+            const html = new DOMParser().parseFromString(responseText, 'text/html');
+            callback(html);
+          })
+          .then(() => {
+            // set focus to last clicked option value
+            this.querySelector(`#${targetId}`).focus();
+          });
       }
 
       // updateVariantInput() {
@@ -228,9 +255,7 @@ if (!customElements.get('product-wrapper')) {
         this.querySelector(`media-gallery`).setActiveMedia(`${this.dataset.section}-${variantFeaturedMediaId}`, false);
 
         // update media modal
-        const modalContent = document.querySelector(
-          `#ProductModal-${this.dataset.section} .product-media-modal__content`
-        );
+        const modalContent = this.productModal.querySelector(`.product-media-modal__content`);
         if (modalContent && variantFeaturedMediaId) {
           modalContent.prepend(modalContent.querySelector(`[data-media-id="${variantFeaturedMediaId}"]`));
         }
@@ -278,6 +303,10 @@ if (!customElements.get('product-wrapper')) {
       // although the removeErrorMessage did exactly this so I think we're okay
       get productForm() {
         return this.querySelector(`product-form`);
+      }
+
+      get productModal() {
+        return document.querySelector(`#ProductModal-${this.dataset.section}`);
       }
     }
   );
