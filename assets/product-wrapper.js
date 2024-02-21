@@ -178,7 +178,7 @@ if (!customElements.get('product-wrapper')) {
       }
 
       setUnavailable() {
-        this.toggleAddButton(true, window.variantStrings.unavailable);
+        this.productForm.toggleSubmitButton(true, window.variantStrings.unavailable);
 
         // should this be delegated to product-info? should product-info be promoted to here?
         const selectors = ['price', 'Inventory', 'Sku', 'Price-Per-Item', 'Volume-Note', 'Volume', 'Quantity-Rules']
