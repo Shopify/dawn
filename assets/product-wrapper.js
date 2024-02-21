@@ -88,15 +88,6 @@ if (!customElements.get('product-wrapper')) {
         this.renderProductInfo(targetUrl, variant?.id, targetId, callback);
       }
 
-      // getWrappingSection(sectionId) {
-      //   return (
-      //     this.closest(`section[data-section="${sectionId}"]`) || // main-product
-      //     this.closest(`quick-add-modal`)?.modalContent || // quick-add
-      //     this.closest(`#shopify-section-${sectionId}`) || // featured-product
-      //     null
-      //   );
-      // }
-
       // TODO test this for main, featured, quick-add
       handleSwapProduct() {
         return (html) => {

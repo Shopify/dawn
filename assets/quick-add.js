@@ -68,12 +68,8 @@ if (!customElements.get('quick-add-modal')) {
         this.preventVariantURLSwitching(productElement);
       }
 
-      // TODO this needs to be updated to set this value on the product-wrapper instead of the variant-selects
       preventVariantURLSwitching(productElement) {
-        const variantPicker = productElement.querySelector('variant-selects');
-        if (!variantPicker) return;
-
-        variantPicker.setAttribute('data-update-url', 'false');
+        productElement.querySelector('product-wrapper')?.setAttribute('data-update-url', 'false');
       }
 
       removeDOMElements(productElement) {
