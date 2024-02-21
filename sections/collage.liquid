@@ -16,10 +16,34 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  .section-{{ section.id }} .collage {
+    --row-height: {{ section.settings.collage_items_height_mobile }}px;
+    grid: auto-flow dense var(--row-height) / repeat(2, minmax(0, 1fr));
+  }
+
+  @media screen and (min-width: 990px) {
+    .section-{{ section.id }} .collage {
+      --row-height: {{ section.settings.collage_items_height }}px;
+      grid: auto-flow dense var(--row-height) / repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .section-{{ section.id }} .collage-card .product-card-wrapper .card, .section-{{ section.id }} .collage-card .collection-card-wrapper .card, .section-{{ section.id }} .image-card-wrapper {
+    --border-radius: {{ section.settings.card_corner_radius }}px;
+    --border-width: {{ section.settings.card_border_thickness }}px;
+    --border-opacity: {{ section.settings.card_border_opacity | divided_by: 100.0 }};
+    border-radius: {{ section.settings.card_corner_radius }}px;
+    border:  var(--border-width) solid rgba(var(--color-foreground), var(--border-opacity));
+  }
+
+  .section-{{ section.id }} .product-card-wrapper .card__information {
+    padding: 0;
+  }
 {%- endstyle -%}
 
 <div class="color-{{ section.settings.color_scheme }} gradient isolate">
-  <div class="{% unless section.settings.full_width %} page-width {% endunless %} section-{{ section.id }}-padding">
+  <div class="{% unless section.settings.full_width %} page-width {% endunless %} section-{{ section.id }}-padding section-{{ section.id }}">
     {%- if section.settings.heading != blank -%}
       {% unless section.settings.heading_element_custom %}
         <h2 class="collage-wrapper-title inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %} {% if section.settings.full_width %}title-width{% endif %}">
@@ -48,8 +72,24 @@
     {%- endif -%}
     <div class="collage{% if section.settings.mobile_layout == 'collage' %} collage--mobile{% endif %}">
       {%- for block in section.blocks -%}
+        {% liquid
+          assign media_type = block.settings.media_type
+          assign column_span = block.settings.column_span
+          if column_span == 2
+            assign mobile_column_span = 1
+          elsif column_span == 3 or column_span == 4
+            assign mobile_column_span = 2
+          endif
+        %}
+        <style>
+          .block-{{ block.id }} {
+            --collage-item-grid-column-span: {{ block.settings.column_span }};
+            --collage-item-grid-row-span: {{ block.settings.row_span }};
+            --collage-item-grid-column-span-mobile: {{ mobile_column_span }};
+          }
+        </style>
         <div
-          class="collage__item collage__item--{{ block.type }} collage__item--{{ section.settings.desktop_layout }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+          class="collage__item collage__item--{{ block.type }} block-{{ block.id }} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
           {{ block.shopify_attributes }}
           {% if settings.animations_reveal_on_scroll %}
             data-cascade
@@ -59,9 +99,9 @@
           {%- assign placeholder_image_index = forloop.index0 | modulo: 4 | plus: 1 -%}
           {%- case block.type -%}
             {%- when 'image' -%}
-              <div class="collage-card {% if section.settings.card_styles == 'none' %}global-media-settings{% else %}card-wrapper {{ section.settings.card_styles }} color-{{ settings.card_color_scheme }} gradient{% endif %}">
+              <div class="collage-card">
                 <div
-                  class="media media--transparent ratio"
+                  class="media media--transparent ratio image-card-wrapper"
                   {% if block.settings.image != blank %}
                     style="--ratio-percent: {{ 1 | divided_by: block.settings.image.aspect_ratio | times: 100 }}%"
                   {% else %}
@@ -112,151 +152,105 @@
                 </div>
               </div>
             {%- when 'product' -%}
+              {% unless block.settings.show_product_info %}
+                <style>
+                  .block-{{ block.id }} .card__content {
+                    display: none;
+                  }
+                  .block-{{ block.id }} .card--card .card__inner .card__media {
+                    border-radius: {{ section.settings.card_corner_radius }}px;
+                  }
+                </style>
+              {% endunless %}
               {%- assign placeholder_image = 'product-apparel-' | append: placeholder_image_index -%}
-              {% render 'card-product',
-                card_product: block.settings.product,
-                media_aspect_ratio: 'adapt',
-                show_secondary_image: block.settings.second_image,
-                extend_height: true,
-                placeholder_image: placeholder_image
-              %}
+              <div class="collage-card ">
+                {% render 'card-product',
+                  card_product: block.settings.product,
+                  media_aspect_ratio: 'adapt',
+                  show_secondary_image: block.settings.second_image,
+                  extend_height: true,
+                  placeholder_image: placeholder_image,
+                  card_style: 'card'
+                %}
+              </div>
             {%- when 'collection' -%}
-              {%- assign placeholder_image = 'collection-apparel-' | append: placeholder_image_index -%}
-              {% render 'card-collection',
-                card_collection: block.settings.collection,
-                media_aspect_ratio: 'adapt',
-                columns: 2,
-                extend_height: true,
-                wrapper_class: section.settings.card_styles,
-                placeholder_image: placeholder_image
-              %}
-            {%- when 'video' -%}
-              <div class="collage-card {% if section.settings.card_styles == 'none' %}global-media-settings{% else %}{{ section.settings.card_styles }} color-{{ settings.card_color_scheme }} gradient{% endif %}">
-                <noscript>
-                  <a
-                    href="{{ block.settings.video_url }}"
-                    class="collage-card__link"
-                  >
-                    <div
-                      class="media media--transparent ratio"
-                      {% if block.settings.cover_image != blank %}
-                        style="--ratio-percent: {{ 1 | divided_by: block.settings.cover_image.aspect_ratio | times: 100 }}%"
-                      {% else %}
-                        style="--ratio-percent: 100%"
-                      {% endif %}
-                    >
-                      {%- if block.settings.cover_image != blank -%}
-                        {%- capture sizes -%}
-                          (min-width: {{ settings.page_width }}px)
-                          {% if section.blocks.size == 1 -%}
-                            calc({{ settings.page_width }}px - 100px)
-                          {%- else -%}
-                            {{- settings.page_width | minus: 100 | times: 0.67 | round }}px
-                          {%- endif -%}
-                          , (min-width: 750px)
-                          {%- if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif -%}
-                          , calc(100vw - 30px)
-                        {%- endcapture -%}
-                        {{
-                          block.settings.cover_image
-                          | image_url: width: 3000
-                          | image_tag: sizes: sizes, widths: '550, 720, 990, 1100, 1500, 2200, 3000'
-                        }}
-                      {%- else -%}
-                        {{ 'hero-apparel-3' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
-                      {%- endif -%}
-                    </div>
-                  </a>
-                </noscript>
-                <modal-opener class="no-js-hidden" data-modal="#PopupModal-{{ block.id }}">
-                  <div class="deferred-media">
-                    <button
-                      class="deferred-media__poster full-unstyled-link"
-                      type="button"
-                      aria-label="{{ 'sections.video.load_video' | t: description: block.settings.description | escape }}"
-                      aria-haspopup="dialog"
-                      data-media-id="{{ block.settings.video_url.id }}"
-                    >
-                      <div
-                        class="media media--transparent ratio"
-                        {% if block.settings.cover_image != blank %}
-                          style="--ratio-percent: {{ 1 | divided_by: block.settings.cover_image.aspect_ratio | times: 100 }}%"
-                        {% else %}
-                          style="--ratio-percent: 100%"
-                        {% endif %}
-                      >
-                        <span class="deferred-media__poster-button motion-reduce">
-                          {%- render 'icon-play' -%}
-                        </span>
+              <style>
+                .block-{{ block.id }} .card__information {
+                  background-color: {{ block.settings.collection_info_background_color }};
+                }
 
-                        {%- if block.settings.cover_image != blank -%}
-                          {%- capture sizes -%}
-                            (min-width: {{ settings.page_width }}px)
-                            {% if section.blocks.size == 1 -%}
-                              calc({{ settings.page_width }}px - 100px)
-                            {%- else -%}
-                              {{- settings.page_width | minus: 100 | times: 0.67 | round }}px
-                            {%- endif -%}
-                            , (min-width: 750px)
-                            {%- if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif -%}
-                            , calc(100vw - 30px)
-                          {%- endcapture -%}
-                          {{
-                            block.settings.cover_image
-                            | image_url: width: 3000
-                            | image_tag: sizes: sizes, widths: '550, 720, 990, 1100, 1500, 2200, 3000'
-                          }}
-                        {%- else -%}
-                          {{ 'hero-apparel-3' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
-                        {%- endif -%}
-                      </div>
-                    </button>
-                  </div>
-                </modal-opener>
-                <modal-dialog
-                  id="PopupModal-{{ block.id }}"
-                  class="modal-video media-modal color-{{ settings.color_schemes | first }}"
-                >
-                  <div
-                    class="modal-video__content"
-                    role="dialog"
-                    aria-label="{{ block.settings.description | escape }}"
-                    aria-modal="true"
-                    tabindex="-1"
+                .block-{{ block.id }} .card__information * {
+                  color: {{ block.settings.collection_info_text_color }};
+                }
+              </style>
+              {%- assign placeholder_image = 'collection-apparel-' | append: placeholder_image_index -%}
+              <div class="collage-card ">
+                {% render 'card-collection',
+                  card_collection: block.settings.collection,
+                  media_aspect_ratio: 'adapt',
+                  columns: 2,
+                  extend_height: true,
+                  placeholder_image: placeholder_image,
+                  card_style: 'card',
+                  wrapper_class: 'collection-card-wrapper'
+                %}
+              </div>
+            {%- when 'video' -%}
+              {% liquid
+                assign video = block.settings.video
+                assign video_source_url = ''
+                for source in video.sources
+                  if source.format == 'mp4'
+                    assign video_source_url = source.url
+                  endif
+                endfor
+              %}
+              <div class="collage-card">
+                {% if block.settings.video != blank %}
+                  <style>
+                    .block-{{ block.id }} video {
+                      border-radius: {{ section.settings.card_corner_radius }}px;
+                      --border-width: {{ section.settings.card_border_thickness }}px;
+                      --border-opacity: {{ section.settings.card_border_opacity | divided_by: 100.0 }};
+                      border:  var(--border-width) solid rgba(var(--color-foreground), var(--border-opacity));
+                    }
+                  </style>
+                  <video
+                    playsinline="true"
+                    {% if block.settings.autoplay %}
+                      autoplay="autoplay"
+                      loop="loop"
+                    {% else %}
+                      controls="controls"
+                    {% endif %}
+                    {% if block.settings.muted %}
+                      muted="muted"
+                    {% endif %}
+
+                    preload="metadata"
+                    poster="{{ block.settings.video.preview_image | image_url: width: block.settings.video.preview_image.width }}"
                   >
-                    <button
-                      id="ModalClose-{{ block.id }}"
-                      type="button"
-                      class="modal-video__toggle"
-                      aria-label="{{ 'accessibility.close' | t }}"
-                    >
-                      {% render 'icon-close' %}
-                    </button>
-                    <div class="modal-video__content-info">
-                      <deferred-media class="modal-video__video template-popup">
-                        <template>
-                          {%- if block.settings.video_url.type == 'youtube' -%}
-                            <iframe
-                              src="https://www.youtube.com/embed/{{ block.settings.video_url.id }}?enablejsapi=1"
-                              class="js-youtube"
-                              allow="autoplay; encrypted-media"
-                              allowfullscreen
-                              title="{{ block.settings.description | escape }}"
-                            ></iframe>
-                          {%- else -%}
-                            <iframe
-                              src="https://player.vimeo.com/video/{{ block.settings.video_url.id }}"
-                              class="js-vimeo"
-                              allow="autoplay; encrypted-media"
-                              allowfullscreen
-                              title="{{ block.settings.description | escape }}"
-                            ></iframe>
-                          {%- endif -%}
-                        </template>
-                      </deferred-media>
-                    </div>
-                  </div>
-                </modal-dialog>
+                    <source src="{{ video_source_url }}" type="video/mp4">
+                    {{
+                      block.settings.video.preview_image
+                      | image_url: width: 3840
+                      | image_tag: widths: '375, 750, 1100, 1500, 1780, 2000, 3000, 3840', alt: 'Video preview image'
+                    }}
+                  </video>
+                {% else %}
+                  <style>
+                    .block-{{ block.id }}.collage__item--video {
+                      border-radius: {{ section.settings.card_corner_radius }}px;
+                      --border-width: {{ section.settings.card_border_thickness }}px;
+                      --border-opacity: {{ section.settings.card_border_opacity | divided_by: 100.0 }};
+                      border:  var(--border-width) solid rgba(var(--color-foreground), var(--border-opacity));
+                    }
+                    .block-{{ block.id }} modal-opener, .block-{{ block.id }} .deferred-media__poster {
+                      border-radius: {{ section.settings.card_corner_radius }}px;
+                    }
+                  </style>
+                  {% render 'external-video', section: section, block: block %}
+                {% endif %}
               </div>
           {%- endcase -%}
         </div>
@@ -323,53 +317,24 @@
       "label": "t:sections.all.heading_size.label"
     },
     {
-      "type": "select",
-      "id": "desktop_layout",
-      "options": [
-        {
-          "value": "left",
-          "label": "t:sections.collage.settings.desktop_layout.options__1.label"
-        },
-        {
-          "value": "right",
-          "label": "t:sections.collage.settings.desktop_layout.options__2.label"
-        }
-      ],
-      "default": "left",
-      "label": "t:sections.collage.settings.desktop_layout.label"
+      "type": "range",
+      "id": "collage_items_height",
+      "label": "t:sections.collage.settings.collage_items_height.label",
+      "default": 170,
+      "max": 250,
+      "min": 100,
+      "unit": "px",
+      "step": 5
     },
     {
-      "type": "select",
-      "id": "mobile_layout",
-      "options": [
-        {
-          "value": "collage",
-          "label": "t:sections.collage.settings.mobile_layout.options__1.label"
-        },
-        {
-          "value": "column",
-          "label": "t:sections.collage.settings.mobile_layout.options__2.label"
-        }
-      ],
-      "default": "column",
-      "label": "t:sections.collage.settings.mobile_layout.label"
-    },
-    {
-      "type": "select",
-      "id": "card_styles",
-      "options": [
-        {
-          "value": "none",
-          "label": "t:sections.collage.settings.card_styles.options__1.label"
-        },
-        {
-          "value": "product-card-wrapper",
-          "label": "t:sections.collage.settings.card_styles.options__2.label"
-        }
-      ],
-      "default": "product-card-wrapper",
-      "info": "t:sections.collage.settings.card_styles.info",
-      "label": "t:sections.collage.settings.card_styles.label"
+      "type": "range",
+      "id": "collage_items_height_mobile",
+      "label": "t:sections.collage.settings.collage_items_height_mobile.label",
+      "default": 120,
+      "max": 180,
+      "min": 80,
+      "unit": "px",
+      "step": 5
     },
     {
       "type": "color_scheme",
@@ -377,6 +342,71 @@
       "label": "t:sections.all.colors.label",
       "info": "t:sections.all.colors.has_cards_info",
       "default": "scheme-1"
+    },
+    // {
+    //   "type": "select",
+    //   "id": "card_styles",
+    //   "options": [
+    //     {
+    //       "value": "none",
+    //       "label": "t:sections.collage.settings.card_styles.options__1.label"
+    //     },
+    //     {
+    //       "value": "product-card-wrapper",
+    //       "label": "t:sections.collage.settings.card_styles.options__2.label"
+    //     }
+    //   ],
+    //   "default": "product-card-wrapper",
+    //   "info": "t:sections.collage.settings.card_styles.info",
+    //   "label": "t:sections.collage.settings.card_styles.label"
+    // },
+    {
+      "type": "header",
+      "content": "t:sections.collage.settings.header_border_styles.content"
+    },
+    // {
+    //   "type": "range",
+    //   "id": "border_radius",
+    //   "label": "Corner radius",
+    //   "min": 0,
+    //   "max": 24,
+    //   "default": 0,
+    //   "step": 2,
+    //   "unit": "px"
+    // },
+    {
+      "type": "range",
+      "id": "card_border_thickness",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "t:settings_schema.global.settings.thickness.label",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "card_border_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "t:settings_schema.global.settings.opacity.label",
+      "default": 5
+    },
+    {
+      "type": "header",
+      "content": "t:sections.collage.settings.header_corner_styles.content"
+    },
+    {
+      "type": "range",
+      "id": "card_corner_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "t:settings_schema.global.settings.corner_radius.label",
+      "default": 0
     },
     {
       "type": "header",
@@ -477,6 +507,26 @@
       "name": "t:sections.collage.blocks.image.name",
       "settings": [
         {
+          "type": "header",
+          "content": "t:sections.collage.blocks.all.header.content"
+        },
+        {
+          "type": "range",
+          "id": "column_span",
+          "label": "t:sections.collage.blocks.all.column_span.label",
+          "min": 1,
+          "max": 4,
+          "default": 1
+        },
+        {
+          "type": "range",
+          "id": "row_span",
+          "label": "t:sections.collage.blocks.all.row_span.label",
+          "min": 1,
+          "max": 4,
+          "default": 1
+        },
+        {
           "type": "image_picker",
           "id": "image",
           "label": "t:sections.collage.blocks.image.settings.image.label"
@@ -488,6 +538,26 @@
       "name": "t:sections.collage.blocks.product.name",
       "settings": [
         {
+          "type": "header",
+          "content": "t:sections.collage.blocks.all.header.content"
+        },
+        {
+          "type": "range",
+          "id": "column_span",
+          "label": "t:sections.collage.blocks.all.column_span.label",
+          "min": 1,
+          "max": 4,
+          "default": 1
+        },
+        {
+          "type": "range",
+          "id": "row_span",
+          "label": "t:sections.collage.blocks.all.row_span.label",
+          "min": 1,
+          "max": 4,
+          "default": 1
+        },
+        {
           "type": "product",
           "id": "product",
           "label": "t:sections.collage.blocks.product.settings.product.label"
@@ -497,6 +567,12 @@
           "id": "second_image",
           "default": false,
           "label": "t:sections.collage.blocks.product.settings.second_image.label"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_product_info",
+          "label": "Show product info",
+          "default": false
         }
       ]
     },
@@ -505,9 +581,39 @@
       "name": "t:sections.collage.blocks.collection.name",
       "settings": [
         {
+          "type": "header",
+          "content": "t:sections.collage.blocks.all.header.content"
+        },
+        {
+          "type": "range",
+          "id": "column_span",
+          "label": "t:sections.collage.blocks.all.column_span.label",
+          "min": 1,
+          "max": 4,
+          "default": 1
+        },
+        {
+          "type": "range",
+          "id": "row_span",
+          "label": "t:sections.collage.blocks.all.row_span.label",
+          "min": 1,
+          "max": 4,
+          "default": 1
+        },
+        {
           "type": "collection",
           "id": "collection",
           "label": "t:sections.collage.blocks.collection.settings.collection.label"
+        },
+        {
+          "type": "color",
+          "id": "collection_info_background_color",
+          "label": "t:sections.collage.blocks.collection.settings.collection_info_background_color.label"
+        },
+        {
+          "type": "color",
+          "id": "collection_info_text_color",
+          "label": "t:sections.collage.blocks.collection.settings.collection_info_text_color.label"
         }
       ]
     },
@@ -515,6 +621,52 @@
       "type": "video",
       "name": "t:sections.collage.blocks.video.name",
       "settings": [
+        {
+          "type": "header",
+          "content": "t:sections.collage.blocks.all.header.content"
+        },
+        {
+          "type": "range",
+          "id": "column_span",
+          "label": "t:sections.collage.blocks.all.column_span.label",
+          "min": 1,
+          "max": 4,
+          "default": 1
+        },
+        {
+          "type": "range",
+          "id": "row_span",
+          "label": "t:sections.collage.blocks.all.row_span.label",
+          "min": 1,
+          "max": 4,
+          "default": 1
+        },
+        {
+          "type": "header",
+          "content": "t:sections.collage.blocks.video.settings.header_shopify_video.content"
+        },
+        {
+          "type": "video",
+          "id": "video",
+          "label": "t:sections.collage.blocks.video.settings.video.label"
+        },
+        {
+          "type": "checkbox",
+          "id": "muted",
+          "label": "t:sections.collage.blocks.video.settings.muted.label",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "autoplay",
+          "label": "t:sections.collage.blocks.video.settings.autoplay.label",
+          "info": "t:sections.collage.blocks.video.settings.autoplay.info",
+          "default": true
+        },
+        {
+          "type": "header",
+          "content": "t:sections.collage.blocks.video.settings.header_external_video.content"
+        },
         {
           "type": "image_picker",
           "id": "cover_image",
@@ -539,19 +691,52 @@
       ]
     }
   ],
-  "max_blocks": 3,
   "presets": [
     {
       "name": "t:sections.collage.presets.name",
       "blocks": [
         {
-          "type": "image"
+          "type": "image",
+          "settings": {
+            "column_span": 2,
+            "row_span": 2
+          }
         },
         {
-          "type": "product"
+          "type": "product",
+          "settings": {
+            "column_span": 1,
+            "row_span": 2,
+            "second_image": true,
+            "show_product_info": true
+          }
         },
         {
-          "type": "collection"
+          "type": "product",
+          "settings": {
+            "column_span": 1,
+            "row_span": 2,
+            "product": "",
+            "second_image": false,
+            "show_product_info": false
+          }
+        },
+        {
+          "type": "collection",
+          "settings": {
+            "column_span": 1,
+            "row_span": 2,
+            "collection": "",
+            "collection_info_background_color": "",
+            "collection_info_text_color": ""
+          }
+        },
+        {
+          "type": "video",
+          "settings": {
+            "column_span": 3,
+            "row_span": 2
+          }
         }
       ]
     }
