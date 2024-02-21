@@ -6,7 +6,8 @@ if (!customElements.get('product-form')) {
         super();
 
         this.form = this.querySelector('form');
-        this.form.querySelector('[name=id]').disabled = false;
+        this.variantIdInput = this.form.querySelector('[name=id]');
+        this.variantIdInput.disabled = false;
         this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
         this.cart = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
         this.submitButton = this.querySelector('[type="submit"]');
@@ -121,6 +122,11 @@ if (!customElements.get('product-form')) {
           this.submitButton.removeAttribute('disabled');
           this.submitButtonText.textContent = window.variantStrings.addToCart;
         }
+      }
+
+      updateVariantId(variantId) {
+        this.variantIdInput.value = variantId;
+        this.variantIdInput.dispatchEvent(new Event('change', { bubbles: true }));
       }
     }
   );

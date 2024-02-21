@@ -1099,20 +1099,20 @@ class VariantSelects extends HTMLElement {
     }
   }
 
-  updateMedia() {
-    if (!this.currentVariant) return;
-    if (!this.currentVariant.featured_media) return;
+  // updateMedia() {
+  //   if (!this.currentVariant) return;
+  //   if (!this.currentVariant.featured_media) return;
 
-    const mediaGalleries = document.querySelectorAll(`[id^="MediaGallery-${this.dataset.section}"]`);
-    mediaGalleries.forEach((mediaGallery) =>
-      mediaGallery.setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media.id}`, true)
-    );
+  //   const mediaGalleries = document.querySelectorAll(`[id^="MediaGallery-${this.dataset.section}"]`);
+  //   mediaGalleries.forEach((mediaGallery) =>
+  //     mediaGallery.setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media.id}`, true)
+  //   );
 
-    const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
-    if (!modalContent) return;
-    const newMediaModal = modalContent.querySelector(`[data-media-id="${this.currentVariant.featured_media.id}"]`);
-    modalContent.prepend(newMediaModal);
-  }
+  //   const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
+  //   if (!modalContent) return;
+  //   const newMediaModal = modalContent.querySelector(`[data-media-id="${this.currentVariant.featured_media.id}"]`);
+  //   modalContent.prepend(newMediaModal);
+  // }
 
   // updateURL(url) {
   //   if (this.dataset.updateUrl === 'false') return;
@@ -1127,16 +1127,16 @@ class VariantSelects extends HTMLElement {
   //   );
   // }
 
-  updateVariantInput() {
-    const productForms = document.querySelectorAll(
-      `#product-form-${this.dataset.section}, #product-form-installment-${this.dataset.section}`
-    );
-    productForms.forEach((productForm) => {
-      const input = productForm.querySelector('input[name="id"]');
-      input.value = this.currentVariant.id;
-      input.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-  }
+  // updateVariantInput() {
+  //   const productForms = document.querySelectorAll(
+  //     `#product-form-${this.dataset.section}, #product-form-installment-${this.dataset.section}`
+  //   );
+  //   productForms.forEach((productForm) => {
+  //     const input = productForm.querySelector('input[name="id"]');
+  //     input.value = this.currentVariant.id;
+  //     input.dispatchEvent(new Event('change', { bubbles: true }));
+  //   });
+  // }
 
   updatePickupAvailability() {
     const pickUpAvailability = document.querySelector('pickup-availability');
@@ -1207,6 +1207,8 @@ class VariantSelects extends HTMLElement {
       const inventoryDestination = document.getElementById(`Inventory-${this.dataset.section}`);
 
       const volumePricingSource = html.getElementById(`Volume-${sectionId}`);
+
+      // this.updateMedia(variant?.featured_media?.id);
 
       const pricePerItemDestination = document.getElementById(`Price-Per-Item-${this.dataset.section}`);
       const pricePerItemSource = html.getElementById(`Price-Per-Item-${sectionId}`);

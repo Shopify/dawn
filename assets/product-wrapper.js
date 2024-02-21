@@ -68,23 +68,39 @@ if (!customElements.get('product-wrapper')) {
           this.updateURL(targetUrl, variant?.id);
           this.updateShareUrl(targetUrl, variant?.id);
           // callback = this.handleSwapProduct(sectionId);
-        } else if (!this.currentVariant) {
+        } else if (!variant) {
           this.setUnavailable();
           // callback = (html) => {
           //   this.updatePickupAvailability();
           //   this.updateOptionValues(html);
           // };
         } else {
-          // this.updateMedia();
-          this.updateURL(targetUrl, variant?.id);
-          this.updateShareUrl(targetUrl, variant?.id);
-          // this.updateVariantInput();
+          this.updateURL(targetUrl, variant.id);
+          this.updateShareUrl(targetUrl, variant.id);
+          this.updateVariantInput(variant.id);
           // callback = this.handleUpdateProductInfo(sectionId);
         }
 
         // this.renderProductInfo(sectionId, targetUrl, targetId, callback);
 
         debugger;
+      }
+
+      updateVariantInput(variantId) {
+        // TODO this query selector was updated, does it still work?
+        document
+          .querySelectorAll(
+            'product-form'
+            // `#product-form-${this.dataset.section}, #product-form-installment-${this.dataset.section}`
+          )
+          .forEach((form) => {
+            form.updateVariantInput(variantId);
+
+            // TODO this was updated to use a new method on product-form instead
+            // const input = productForm.querySelector('input[name="id"]');
+            // input.value = variantId;
+            // input.dispatchEvent(new Event('change', { bubbles: true }));
+          });
       }
 
       updateURL(url, variantId) {
@@ -108,6 +124,90 @@ if (!customElements.get('product-wrapper')) {
           .join(', ');
         document.querySelectorAll(selectors).forEach(({ classList }) => classList.add('hidden'));
       }
+
+      updateMedia(html, variantFeaturedMediaId) {
+        // TODO are these selectors okay?
+        const mediaGallerySource = this.querySelector('media-gallery ul');
+        const mediaGalleryDestination = html.querySelector(`media-gallery ul`);
+
+        const refreshSourceData = () => {
+          const mediaGallerySourceItems = Array.from(mediaGallerySource.querySelectorAll('li[data-media-id]'));
+          const sourceSet = new Set(mediaGallerySourceItems.map((item) => item.dataset.mediaId));
+          const sourceMap = new Map(
+            mediaGallerySourceItems.map((item, index) => [item.dataset.mediaId, { item, index }])
+          );
+          return [mediaGallerySourceItems, sourceSet, sourceMap];
+        };
+
+        if (mediaGallerySource && mediaGalleryDestination) {
+          let [mediaGallerySourceItems, sourceSet, sourceMap] = refreshSourceData();
+          const mediaGalleryDestinationItems = Array.from(
+            mediaGalleryDestination.querySelectorAll('li[data-media-id]')
+          );
+          const destinationSet = new Set(mediaGalleryDestinationItems.map(({ dataset }) => dataset.mediaId));
+          let shouldRefresh = false;
+
+          // add items from new data not present in DOM
+          for (let i = mediaGalleryDestinationItems.length - 1; i >= 0; i--) {
+            if (!sourceSet.has(mediaGalleryDestinationItems[i].dataset.mediaId)) {
+              mediaGallerySource.prepend(mediaGalleryDestinationItems[i]);
+              shouldRefresh = true;
+            }
+          }
+
+          // remove items from DOM not present in new data
+          for (let i = 0; i < mediaGallerySourceItems.length; i++) {
+            if (!destinationSet.has(mediaGallerySourceItems[i].dataset.mediaId)) {
+              mediaGallerySourceItems[i].remove();
+              shouldRefresh = true;
+            }
+          }
+
+          // refresh
+          if (shouldRefresh) [mediaGallerySourceItems, sourceSet, sourceMap] = refreshSourceData();
+
+          // if media galleries don't match, sort to match new data order
+          mediaGalleryDestinationItems.forEach((destinationItem, destinationIndex) => {
+            const sourceData = sourceMap.get(destinationItem.dataset.mediaId);
+
+            if (sourceData && sourceData.index !== destinationIndex) {
+              mediaGallerySource.insertBefore(
+                sourceData.item,
+                mediaGallerySource.querySelector(`li:nth-of-type(${destinationIndex + 1})`)
+              );
+
+              // refresh source now that it has been modified
+              [mediaGallerySourceItems, sourceSet, sourceMap] = refreshSourceData();
+            }
+          });
+        }
+
+        // todo is this query selector okay? is it fine if variantFeaturedMediaId is nil?
+        this.querySelector(`media-gallery`).setActiveMedia(`${this.dataset.section}-${variantFeaturedMediaId}`, false);
+
+        // update media modal
+        const modalContent = document.querySelector(
+          `#ProductModal-${this.dataset.section} .product-media-modal__content`
+        );
+        if (modalContent && variantFeaturedMediaId) {
+          modalContent.prepend(modalContent.querySelector(`[data-media-id="${variantFeaturedMediaId}"]`));
+        }
+      }
+      // updateMedia(featuredMediaId) {
+      //   if (!featuredMediaId) return;
+
+      //   const mediaGalleries = document.querySelectorAll('media-gallery');
+      //   mediaGalleries.forEach((mediaGallery) =>
+      //     mediaGallery.setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media.id}`, true)
+      //   );
+
+      //   const modalContent = document.querySelector(
+      //     `#ProductModal-${this.dataset.section} .product-media-modal__content`
+      //   );
+      //   if (!modalContent) return;
+      //   const newMediaModal = modalContent.querySelector(`[data-media-id="${this.currentVariant.featured_media.id}"]`);
+      //   modalContent.prepend(newMediaModal);
+      // }
 
       // TODO should this live on productform
       // toggleAddButton(disable = true, text, modifyClass = true) {
