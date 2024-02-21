@@ -48,6 +48,8 @@ if (!customElements.get('product-wrapper')) {
       }
 
       handleOptionValueChange({ data: { event, targetId, targetUrl, variant } }) {
+        debugger;
+
         if (!this.contains(event.target)) return;
 
         // const input = this.getInputForEventTarget(event.target);
@@ -82,25 +84,37 @@ if (!customElements.get('product-wrapper')) {
         }
 
         // this.renderProductInfo(sectionId, targetUrl, targetId, callback);
-
-        debugger;
       }
+
+      // updateVariantInput() {
+      //   const productForms = document.querySelectorAll(
+      //     `#product-form-${this.dataset.section}, #product-form-installment-${this.dataset.section}`
+      //   );
+      //   productForms.forEach((productForm) => {
+      //     const input = productForm.querySelector('input[name="id"]');
+      //     input.value = this.currentVariant.id;
+      //     input.dispatchEvent(new Event('change', { bubbles: true }));
+      //   });
+      // }
 
       updateVariantInput(variantId) {
         // TODO this query selector was updated, does it still work?
-        document
-          .querySelectorAll(
-            'product-form'
-            // `#product-form-${this.dataset.section}, #product-form-installment-${this.dataset.section}`
-          )
-          .forEach((form) => {
-            form.updateVariantInput(variantId);
+        this.querySelectorAll('product-form').forEach((form) => form.updateVariantIdInput(variantId));
 
-            // TODO this was updated to use a new method on product-form instead
-            // const input = productForm.querySelector('input[name="id"]');
-            // input.value = variantId;
-            // input.dispatchEvent(new Event('change', { bubbles: true }));
-          });
+        // // TODO this query selector was updated, does it still work?
+        // this
+        //   .querySelectorAll(
+        //     'product-form'
+        //     // `#product-form-${this.dataset.section}, #product-form-installment-${this.dataset.section}`
+        //   )
+        //   .forEach((form) => {
+        //     form.updateVariantIdInput(variantId);
+
+        //     // TODO this was updated to use a new method on product-form instead
+        //     // const input = productForm.querySelector('input[name="id"]');
+        //     // input.value = variantId;
+        //     // input.dispatchEvent(new Event('change', { bubbles: true }));
+        //   });
       }
 
       updateURL(url, variantId) {

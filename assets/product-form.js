@@ -124,7 +124,7 @@ if (!customElements.get('product-form')) {
         }
       }
 
-      updateVariantId(variantId) {
+      updateVariantIdInput(variantId) {
         this.variantIdInput.value = variantId;
         this.variantIdInput.dispatchEvent(new Event('change', { bubbles: true }));
       }
