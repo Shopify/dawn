@@ -1004,6 +1004,7 @@ class VariantSelects extends HTMLElement {
   }
 
   disconnectedCallback() {
+    debugger;
     this.handleProductUpdateUnsubscriber();
   }
 

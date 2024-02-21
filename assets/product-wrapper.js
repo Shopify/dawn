@@ -105,9 +105,7 @@ if (!customElements.get('product-wrapper')) {
           //   return;
           // }
 
-          // TODO does work?
           this.productModal?.remove();
-          // document.getElementById(`ProductModal-${sectionId}`)?.remove();
 
           // const response =
           //   html.querySelector(`section[data-section="${sectionId}"]`) /* main/quick-add */ ||
