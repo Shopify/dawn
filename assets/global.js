@@ -997,15 +997,8 @@ class VariantSelects extends HTMLElement {
     super();
   }
 
-  handleProductUpdateUnsubscriber = undefined;
-
   connectedCallback() {
-    this.handleProductUpdateUnsubscriber = this.addEventListener('change', this.handleProductUpdate);
-  }
-
-  disconnectedCallback() {
-    debugger;
-    this.handleProductUpdateUnsubscriber();
+    this.addEventListener('change', this.handleProductUpdate);
   }
 
   // initializeProductSwapUtility() {
@@ -1050,26 +1043,26 @@ class VariantSelects extends HTMLElement {
     // this.toggleAddButton(true, '', false);
     // this.removeErrorMessage();
 
-    let callback = () => {};
-    if (this.dataset.url !== targetUrl) {
-      this.updateURL(targetUrl);
-      this.updateShareUrl(targetUrl);
-      callback = this.handleSwapProduct(sectionId);
-    } else if (!this.currentVariant) {
-      // this.setUnavailable();
-      callback = (html) => {
-        this.updatePickupAvailability();
-        this.updateOptionValues(html);
-      };
-    } else {
-      this.updateMedia();
-      this.updateURL(targetUrl);
-      this.updateVariantInput();
-      this.updateShareUrl(targetUrl);
-      callback = this.handleUpdateProductInfo(sectionId);
-    }
+    // let callback = () => {};
+    // if (this.dataset.url !== targetUrl) {
+    //   this.updateURL(targetUrl);
+    //   this.updateShareUrl(targetUrl);
+    //   callback = this.handleSwapProduct(sectionId);
+    // } else if (!this.currentVariant) {
+    //   // this.setUnavailable();
+    //   callback = (html) => {
+    //     this.updatePickupAvailability();
+    //     this.updateOptionValues(html);
+    //   };
+    // } else {
+    //   this.updateMedia();
+    //   this.updateURL(targetUrl);
+    //   this.updateVariantInput();
+    //   this.updateShareUrl(targetUrl);
+    //   callback = this.handleUpdateProductInfo(sectionId);
+    // }
 
-    this.renderProductInfo(sectionId, targetUrl, targetId, callback);
+    // this.renderProductInfo(sectionId, targetUrl, targetId, callback);
   }
 
   getSelectedOptionValues() {
