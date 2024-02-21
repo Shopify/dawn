@@ -1,4 +1,3 @@
-// Name must contain a dash
 if (!customElements.get('product-wrapper')) {
   customElements.define(
     'product-wrapper',
@@ -12,11 +11,11 @@ if (!customElements.get('product-wrapper')) {
       abortController = undefined;
 
       connectedCallback() {
-        this.initializeProductSwapUtility();
+        this.#initializeProductSwapUtility();
 
         this.onVariantChangeUnsubscriber = subscribe(
           PUB_SUB_EVENTS.variantChangeStart,
-          this.handleOptionValueChange.bind(this)
+          this.#handleOptionValueChange.bind(this)
         );
       }
 
@@ -24,14 +23,11 @@ if (!customElements.get('product-wrapper')) {
         this.onVariantChangeUnsubscriber();
       }
 
-      initializeProductSwapUtility() {
+      #initializeProductSwapUtility() {
         this.swapProductUtility = new HTMLUpdateUtility();
-        this.swapProductUtility.addPreProcessCallback((html) => {
-          html
-            .querySelectorAll('.scroll-trigger')
-            .forEach((element) => element.classList.add('scroll-trigger--cancel'));
-          return html;
-        });
+        this.swapProductUtility.addPreProcessCallback((html) =>
+          html.querySelectorAll('.scroll-trigger').forEach((element) => element.classList.add('scroll-trigger--cancel'))
+        );
         this.swapProductUtility.addPostProcessCallback((newNode) => {
           window?.Shopify?.PaymentButton?.init();
           window?.ProductModel?.loadShopifyXR();
@@ -40,27 +36,15 @@ if (!customElements.get('product-wrapper')) {
               sectionId: this.dataset.section,
               resource: {
                 type: SECTION_REFRESH_RESOURCE_TYPE.product,
-                id: this.dataset.productId,
-                // TODO need to update dataset productID after swap happens
+                id: newNode.dataset.productId,
               },
             },
           });
         });
       }
 
-      handleOptionValueChange({ data: { event, targetId, targetUrl, variant } }) {
-        debugger;
-
+      #handleOptionValueChange({ data: { event, targetId, targetUrl, variant } }) {
         if (!this.contains(event.target)) return;
-
-        // const input = this.getInputForEventTarget(event.target);
-        // const targetId = input.id;
-        // const targetUrl = input.dataset.productUrl;
-        // this.currentVariant = this.getVariantData(targetId);
-
-        // TODO how do we want to handle this?
-        // const sectionId = this.dataset.originalSection || this.dataset.section;
-        // this.updateSelectedSwatchValue(event);
 
         // TODO should this be doing this for all forms in the section like we do for updateVariantInput? this is the current theme behavior.
         const productForm = this.productForm;
@@ -69,37 +53,37 @@ if (!customElements.get('product-wrapper')) {
 
         let callback = () => {};
         if (this.dataset.url !== targetUrl) {
-          this.updateURL(targetUrl, variant?.id);
-          this.updateShareUrl(targetUrl, variant?.id);
-          callback = this.handleSwapProduct();
+          this.#updateURL(targetUrl, variant?.id);
+          this.#updateShareUrl(targetUrl, variant?.id);
+          callback = this.#handleSwapProduct();
         } else if (!variant) {
-          this.setUnavailable();
+          this.#setUnavailable();
           callback = (html) => {
-            this.pickupAvailability.update(variant);
-            this.updateOptionValues(html);
+            this.pickupAvailability?.update(variant);
+            this.#updateOptionValues(html);
           };
         } else {
-          this.updateURL(targetUrl, variant.id);
-          this.updateShareUrl(targetUrl, variant.id);
-          this.updateVariantInput(variant.id);
-          // callback = this.handleUpdateProductInfo(sectionId);
+          this.#updateURL(targetUrl, variant.id);
+          this.#updateShareUrl(targetUrl, variant.id);
+          this.#updateVariantInputs(variant.id);
+          callback = this.#handleUpdateProductInfo(variant);
         }
 
-        this.renderProductInfo(targetUrl, variant?.id, targetId, callback);
+        this.#renderProductInfo(targetUrl, variant?.id, targetId, callback);
       }
 
-      handleSwapProduct() {
+      #handleSwapProduct() {
         return (html) => {
           this.productModal?.remove();
           this.swapProductUtility.viewTransition(this, html.querySelector('product-wrapper'));
         };
       }
 
-      renderProductInfo(url, variantId, targetId, callback) {
+      #renderProductInfo(url, variantId, targetId, callback) {
         this.abortController?.abort();
         this.abortController = new AbortController();
 
-        fetch(this.getProductInfoUrl(url, variantId), {
+        fetch(this.#getProductInfoUrl(url, variantId), {
           signal: this.abortController.signal,
         })
           .then((response) => response.text())
@@ -113,14 +97,14 @@ if (!customElements.get('product-wrapper')) {
           });
       }
 
-      getProductInfoUrl(url, variantId) {
+      #getProductInfoUrl(url, variantId) {
         const sectionId = this.dataset.originalSection || this.dataset.section;
 
         let params;
         if (variantId) {
           params = `variant=${variantId}`;
         } else {
-          const optionValues = this.querySelector('variant-selects').selectedOptionValues;
+          const optionValues = this.variantSelectors.selectedOptionValues;
           if (optionValues.length) {
             params = `option_values=${optionValues.join(',')}`;
           }
@@ -129,22 +113,54 @@ if (!customElements.get('product-wrapper')) {
         return `${url}?section_id=${sectionId}&${params}`;
       }
 
-      updatePickupAvailability(variant) {
-        const pickUpAvailability = this.querySelector('pickup-availability');
-        if (!pickUpAvailability) return;
-
-        if (variant?.available) {
-          pickUpAvailability.fetchAvailability(variant.id);
-        } else {
-          pickUpAvailability.removeAttribute('available');
-          pickUpAvailability.innerHTML = '';
-        }
+      #updateOptionValues(html) {
+        const variantSelects = html.querySelector('variant-selects');
+        if (variantSelects) this.variantSelectors.innerHTML = variantSelects.innerHTML;
       }
 
-      // TODO test this
-      updateOptionValues(html) {
-        const variantSelects = html.querySelector('variant-selects');
-        if (variantSelects) this.querySelector('variant-selects').innerHTML = variantSelects.innerHTML;
+      #handleUpdateProductInfo(variant) {
+        const sectionId = this.dataset.originalSection || this.dataset.section;
+
+        return (html) => {
+          this.pickupAvailability?.update(variant);
+          this.updateMedia(variant?.featured_media?.id);
+          this.#updateOptionValues(html);
+
+          const updateSourceFromDestination = (id, shouldHide = (source) => false) => {
+            const source = html.getElementById(`${id}-${sectionId}`);
+            const destination = this.querySelector(`#${id}-${this.dataset.section}`);
+            if (source && destination) destination.innerHTML = source.innerHTML;
+            destination.classList.toggle('hidden', shouldHide(source));
+          };
+
+          updateSourceFromDestination('price');
+          updateSourceFromDestination('Sku', (source) => source.classList.contains('hidden'));
+          updateSourceFromDestination('Inventory', (source) => source.innerText === '');
+          updateSourceFromDestination('Volume');
+          updateSourceFromDestination('Price-Per-Item', (source) => source.classList.contains('hidden'));
+
+          this.querySelector(`#Quantity-Rules-${this.dataset.section}`)?.classList.remove('hidden');
+          this.querySelector(`#Volume-Note-${this.dataset.section}`)?.classList.remove('hidden');
+
+          // TODO check this logic
+          this.productForm?.toggleSubmitButton(
+            html.getElementById(`ProductSubmitButton-${sectionId}`)?.hasAttribute('disabled') ?? true,
+            window.variantStrings.soldOut
+          );
+          // const addButtonUpdated = html.getElementById(`ProductSubmitButton-${sectionId}`);
+          // this.toggleAddButton(
+          //   addButtonUpdated ? addButtonUpdated.hasAttribute('disabled') : true,
+          //   window.variantStrings.soldOut
+          // );
+
+          publish(PUB_SUB_EVENTS.variantChange, {
+            data: {
+              sectionId,
+              html,
+              variant: this.currentVariant,
+            },
+          });
+        };
       }
 
       // updateVariantInput() {
@@ -158,7 +174,7 @@ if (!customElements.get('product-wrapper')) {
       //   });
       // }
 
-      updateVariantInput(variantId) {
+      #updateVariantInputs(variantId) {
         // TODO this query selector was updated, does it still work?
         this.querySelectorAll('product-form').forEach((form) => form.updateVariantIdInput(variantId));
 
@@ -178,20 +194,20 @@ if (!customElements.get('product-wrapper')) {
         //   });
       }
 
-      updateURL(url, variantId) {
+      #updateURL(url, variantId) {
         if (this.dataset.updateUrl === 'false') return;
         window.history.replaceState({}, '', `${url}${variantId ? `?variant=${variantId}` : ''}`);
       }
 
-      updateShareUrl(url, variantId) {
+      #updateShareUrl(url, variantId) {
         // this queries without the section ID now
         this.querySelector('share-url')?.updateUrl(
           `${window.shopUrl}${url}${variantId ? `?variant=${variantId}` : ''}`
         );
       }
 
-      setUnavailable() {
-        this.productForm.toggleSubmitButton(true, window.variantStrings.unavailable);
+      #setUnavailable() {
+        this.productForm?.toggleSubmitButton(true, window.variantStrings.unavailable);
 
         // should this be delegated to product-info? should product-info be promoted to here?
         const selectors = ['price', 'Inventory', 'Sku', 'Price-Per-Item', 'Volume-Note', 'Volume', 'Quantity-Rules']
@@ -200,6 +216,7 @@ if (!customElements.get('product-wrapper')) {
         document.querySelectorAll(selectors).forEach(({ classList }) => classList.add('hidden'));
       }
 
+      // TODO should this live in media-gallery??????
       updateMedia(html, variantFeaturedMediaId) {
         // TODO are these selectors okay?
         const mediaGallerySource = this.querySelector('media-gallery ul');
@@ -266,43 +283,6 @@ if (!customElements.get('product-wrapper')) {
           modalContent.prepend(modalContent.querySelector(`[data-media-id="${variantFeaturedMediaId}"]`));
         }
       }
-      // updateMedia(featuredMediaId) {
-      //   if (!featuredMediaId) return;
-
-      //   const mediaGalleries = document.querySelectorAll('media-gallery');
-      //   mediaGalleries.forEach((mediaGallery) =>
-      //     mediaGallery.setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media.id}`, true)
-      //   );
-
-      //   const modalContent = document.querySelector(
-      //     `#ProductModal-${this.dataset.section} .product-media-modal__content`
-      //   );
-      //   if (!modalContent) return;
-      //   const newMediaModal = modalContent.querySelector(`[data-media-id="${this.currentVariant.featured_media.id}"]`);
-      //   modalContent.prepend(newMediaModal);
-      // }
-
-      // TODO should this live on productform
-      // toggleAddButton(disable = true, text, modifyClass = true) {
-      //   // TODO worth it to replace this with a static instance of this.productform? or no because you have to refresh it?
-      //   debugger;
-      //   const productForm = this.querySelector(`#product-form-${this.dataset.section}`);
-
-      //   productForm?.toggleSubmitButton(disable, text);
-      //   // if (!productForm) return;
-
-      //   const addButton = productForm.querySelector('[name="add"]');
-      //   const addButtonText = productForm.querySelector('[name="add"] > span');
-      //   if (!addButton) return;
-
-      //   if (disable) {
-      //     addButton.setAttribute('disabled', 'disabled');
-      //     if (text) addButtonText.textContent = text;
-      //   } else {
-      //     addButton.removeAttribute('disabled');
-      //     addButtonText.textContent = window.variantStrings.addToCart;
-      //   }
-      // }
 
       // should this be memoized? or no because the content can be changed?
       // NOTE this now queries for the product-form directly instead of this.querySelector(`#product-form-${this.dataset.section}`). does it still need to be namespaced?
@@ -317,6 +297,10 @@ if (!customElements.get('product-wrapper')) {
 
       get pickupAvailability() {
         return this.querySelector(`pickup-availability`);
+      }
+
+      get variantSelectors() {
+        return this.querySelector('variant-selects');
       }
     }
   );
