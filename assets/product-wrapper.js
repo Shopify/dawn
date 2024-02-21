@@ -61,6 +61,7 @@ if (!customElements.get('product-wrapper')) {
         // const sectionId = this.dataset.originalSection || this.dataset.section;
         // this.updateSelectedSwatchValue(event);
 
+        // TODO should this be doing this for all forms in the section like we do for updateVariantInput? this is the current theme behavior.
         const productForm = this.productForm;
         productForm?.toggleSubmitButton(true);
         productForm?.handleErrorMessage();
@@ -69,7 +70,7 @@ if (!customElements.get('product-wrapper')) {
         if (this.dataset.url !== targetUrl) {
           this.updateURL(targetUrl, variant?.id);
           this.updateShareUrl(targetUrl, variant?.id);
-          // callback = this.handleSwapProduct(sectionId);
+          callback = this.handleSwapProduct(sectionId);
         } else if (!variant) {
           this.setUnavailable();
           // callback = (html) => {
@@ -84,6 +85,33 @@ if (!customElements.get('product-wrapper')) {
         }
 
         // this.renderProductInfo(sectionId, targetUrl, targetId, callback);
+      }
+
+      // getWrappingSection(sectionId) {
+      //   return (
+      //     this.closest(`section[data-section="${sectionId}"]`) || // main-product
+      //     this.closest(`quick-add-modal`)?.modalContent || // quick-add
+      //     this.closest(`#shopify-section-${sectionId}`) || // featured-product
+      //     null
+      //   );
+      // }
+
+      // TODO test this for main, featured, quick-add
+      handleSwapProduct(sectionId) {
+        return (html) => {
+          // const oldContent = this.getWrappingSection(sectionId);
+          // if (!oldContent) {
+          //   return;
+          // }
+
+          document.getElementById(`ProductModal-${sectionId}`)?.remove();
+
+          const response =
+            html.querySelector(`section[data-section="${sectionId}"]`) /* main/quick-add */ ||
+            html.getElementById(`shopify-section-${sectionId}`); /* featured product*/
+
+          this.swapProductUtility.viewTransition(this, response);
+        };
       }
 
       // updateVariantInput() {

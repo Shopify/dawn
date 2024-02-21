@@ -1170,31 +1170,31 @@ class VariantSelects extends HTMLElement {
   //   if (productForm) productForm.handleErrorMessage();
   // }
 
-  getWrappingSection(sectionId) {
-    return (
-      this.closest(`section[data-section="${sectionId}"]`) || // main-product
-      this.closest(`quick-add-modal`)?.modalContent || // quick-add
-      this.closest(`#shopify-section-${sectionId}`) || // featured-product
-      null
-    );
-  }
+  // getWrappingSection(sectionId) {
+  //   return (
+  //     this.closest(`section[data-section="${sectionId}"]`) || // main-product
+  //     this.closest(`quick-add-modal`)?.modalContent || // quick-add
+  //     this.closest(`#shopify-section-${sectionId}`) || // featured-product
+  //     null
+  //   );
+  // }
 
-  handleSwapProduct(sectionId) {
-    return (html) => {
-      const oldContent = this.getWrappingSection(sectionId);
-      if (!oldContent) {
-        return;
-      }
+  // handleSwapProduct(sectionId) {
+  //   return (html) => {
+  //     const oldContent = this.getWrappingSection(sectionId);
+  //     if (!oldContent) {
+  //       return;
+  //     }
 
-      document.getElementById(`ProductModal-${sectionId}`)?.remove();
+  //     document.getElementById(`ProductModal-${sectionId}`)?.remove();
 
-      const response =
-        html.querySelector(`section[data-section="${sectionId}"]`) /* main/quick-add */ ||
-        html.getElementById(`shopify-section-${sectionId}`); /* featured product*/
+  //     const response =
+  //       html.querySelector(`section[data-section="${sectionId}"]`) /* main/quick-add */ ||
+  //       html.getElementById(`shopify-section-${sectionId}`); /* featured product*/
 
-      this.swapProductUtility.viewTransition(oldContent, response);
-    };
-  }
+  //     this.swapProductUtility.viewTransition(oldContent, response);
+  //   };
+  // }
 
   handleUpdateProductInfo(sectionId) {
     return (html) => {
