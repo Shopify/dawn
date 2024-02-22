@@ -122,8 +122,8 @@ if (!customElements.get('product-wrapper')) {
         const sectionId = this.dataset.originalSection || this.dataset.section;
 
         return (html) => {
-          this.pickupAvailability?.update(variant);
-          this.updateMedia(variant?.featured_media?.id);
+          this.pickupAvailability?.update(variant); // yes
+          this.updateMedia(html, variant?.featured_media?.id);
           this.#updateOptionValues(html);
 
           const updateSourceFromDestination = (id, shouldHide = (source) => false) => {
@@ -216,9 +216,7 @@ if (!customElements.get('product-wrapper')) {
         document.querySelectorAll(selectors).forEach(({ classList }) => classList.add('hidden'));
       }
 
-      // TODO should this live in media-gallery??????
       updateMedia(html, variantFeaturedMediaId) {
-        // TODO are these selectors okay?
         const mediaGallerySource = this.querySelector('media-gallery ul');
         const mediaGalleryDestination = html.querySelector(`media-gallery ul`);
 
