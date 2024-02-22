@@ -265,16 +265,11 @@ class QuantityForm extends HTMLElement {
 
   connectedCallback() {
     this.setQuantityBoundries();
-
-    debugger;
-    // TODO what to do about this?
-    if (!this.dataset.originalSection) {
-      this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, this.fetchQuantityRules.bind(this));
-    }
+    this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, this.fetchQuantityRules.bind(this));
   }
 
   disconnectedCallback() {
-    this.cartUpdateUnsubscriber?.();
+    this.cartUpdateUnsubscriber();
   }
 
   setQuantityBoundries() {
@@ -297,6 +292,7 @@ class QuantityForm extends HTMLElement {
   }
 
   fetchQuantityRules() {
+    if (this.dataset.refreshDisabled === 'true') return;
     const currentVariantId = this.closest('product-info')?.currentVariantId;
     if (!currentVariantId) return;
 

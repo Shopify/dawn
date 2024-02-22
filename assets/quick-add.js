@@ -66,10 +66,15 @@ if (!customElements.get('quick-add-modal')) {
         this.removeGalleryListSemantic(productElement);
         this.updateImageSizes(productElement);
         this.preventVariantURLSwitching(productElement);
+        this.preventQuantityFormRefresh(productElement);
       }
 
       preventVariantURLSwitching(productElement) {
         productElement.querySelector('product-info')?.setAttribute('data-update-url', 'false');
+      }
+
+      preventQuantityFormRefresh(productElement) {
+        productElement.querySelector('quantity-form')?.setAttribute('data-refresh-disabled', 'true');
       }
 
       removeDOMElements(productElement) {
