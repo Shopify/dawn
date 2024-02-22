@@ -2,17 +2,12 @@ if (!customElements.get('product-info')) {
   customElements.define(
     'product-info',
     class ProductInfo extends HTMLElement {
-      quantityInput = undefined;
-      quantityForm = undefined;
       onVariantChangeUnsubscriber = undefined;
-      cartUpdateUnsubscriber = undefined;
       swapProductUtility = undefined;
       abortController = undefined;
 
       constructor() {
         super();
-
-        this.quantityInput = this.querySelector('.quantity__input');
       }
 
       connectedCallback() {
@@ -22,26 +17,10 @@ if (!customElements.get('product-info')) {
           PUB_SUB_EVENTS.variantChangeStart,
           this.#handleOptionValueChange.bind(this)
         );
-
-        this.#initQuantityHandlers();
-      }
-
-      #initQuantityHandlers() {
-        if (!this.quantityInput) return;
-
-        this.quantityForm = this.querySelector('.product-form__quantity');
-        if (!this.quantityForm) return;
-
-        this.#setQuantityBoundries();
-        if (!this.dataset.originalSection) {
-          // TODO need to check this works
-          this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, this.#fetchQuantityRules.bind(this));
-        }
       }
 
       disconnectedCallback() {
         this.onVariantChangeUnsubscriber();
-        this.cartUpdateUnsubscriber?.();
       }
 
       #initializeProductSwapUtility() {
@@ -143,7 +122,7 @@ if (!customElements.get('product-info')) {
 
         return (html) => {
           this.pickupAvailability?.update(variant);
-          this.updateMedia(html, variant?.featured_media?.id);
+          this.#updateMedia(html, variant?.featured_media?.id);
           this.#updateOptionValues(html);
 
           const updateSourceFromDestination = (id, shouldHide = (source) => false) => {
@@ -161,7 +140,7 @@ if (!customElements.get('product-info')) {
           updateSourceFromDestination('Volume');
           updateSourceFromDestination('Price-Per-Item', ({ classList }) => classList.contains('hidden'));
 
-          this.#updateQuantityRules(sectionId, html);
+          this.quantityForm?.updateQuantityRules(sectionId, html);
           this.querySelector(`#Quantity-Rules-${this.dataset.section}`)?.classList.remove('hidden');
           this.querySelector(`#Volume-Note-${this.dataset.section}`)?.classList.remove('hidden');
 
@@ -210,7 +189,7 @@ if (!customElements.get('product-info')) {
         document.querySelectorAll(selectors).forEach(({ classList }) => classList.add('hidden'));
       }
 
-      updateMedia(html, variantFeaturedMediaId) {
+      #updateMedia(html, variantFeaturedMediaId) {
         const mediaGallerySource = this.querySelector('media-gallery ul');
         const mediaGalleryDestination = html.querySelector(`media-gallery ul`);
 
@@ -279,65 +258,6 @@ if (!customElements.get('product-info')) {
         }
       }
 
-      #setQuantityBoundries() {
-        const data = {
-          cartQuantity: this.quantityInput.dataset.cartQuantity ? parseInt(this.quantityInput.dataset.cartQuantity) : 0,
-          min: this.quantityInput.dataset.min ? parseInt(this.quantityInput.dataset.min) : 1,
-          max: this.quantityInput.dataset.max ? parseInt(this.quantityInput.dataset.max) : null,
-          step: this.quantityInput.step ? parseInt(this.quantityInput.step) : 1,
-        };
-
-        let min = data.min;
-        const max = data.max === null ? data.max : data.max - data.cartQuantity;
-        if (max !== null) min = Math.min(min, max);
-        if (data.cartQuantity >= data.min) min = Math.min(min, data.step);
-
-        this.quantityInput.min = min;
-        this.quantityInput.max = max;
-        this.quantityInput.value = min;
-        publish(PUB_SUB_EVENTS.quantityUpdate, undefined);
-      }
-
-      #fetchQuantityRules() {
-        const currentVariantId = this.productForm?.variantIdInput?.value;
-        if (!currentVariantId) return;
-
-        this.querySelector('.quantity__rules-cart .loading__spinner').classList.remove('hidden');
-        fetch(`${this.dataset.url}?variant=${currentVariantId}&section_id=${this.dataset.section}`)
-          .then((response) => {
-            return response.text();
-          })
-          .then((responseText) => {
-            const html = new DOMParser().parseFromString(responseText, 'text/html');
-            this.#updateQuantityRules(this.dataset.section, html);
-          })
-          .catch((e) => {
-            console.error(e);
-          })
-          .finally(() => this.querySelector('.quantity__rules-cart .loading__spinner').classList.add('hidden'));
-      }
-
-      #updateQuantityRules(sectionId, html) {
-        this.#setQuantityBoundries();
-
-        const quantityFormUpdated = html.getElementById(`Quantity-Form-${sectionId}`);
-        const selectors = ['.quantity__input', '.quantity__rules', '.quantity__label'];
-        for (let selector of selectors) {
-          const current = this.quantityForm.querySelector(selector);
-          const updated = quantityFormUpdated.querySelector(selector);
-          if (!current || !updated) continue;
-          if (selector === '.quantity__input') {
-            const attributes = ['data-cart-quantity', 'data-min', 'data-max', 'step'];
-            for (let attribute of attributes) {
-              const valueUpdated = updated.getAttribute(attribute);
-              if (valueUpdated !== null) current.setAttribute(attribute, valueUpdated);
-            }
-          } else {
-            current.innerHTML = updated.innerHTML;
-          }
-        }
-      }
-
       get productForm() {
         return this.querySelector(`product-form`);
       }
@@ -352,6 +272,14 @@ if (!customElements.get('product-info')) {
 
       get variantSelectors() {
         return this.querySelector('variant-selects');
+      }
+
+      get quantityForm() {
+        return this.querySelector('quantity-form');
+      }
+
+      get currentVariantId() {
+        return this.productForm?.variantIdInput?.value;
       }
     }
   );

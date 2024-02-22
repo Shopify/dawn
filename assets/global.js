@@ -252,6 +252,93 @@ class QuantityInput extends HTMLElement {
 
 customElements.define('quantity-input', QuantityInput);
 
+class QuantityForm extends HTMLElement {
+  constructor() {
+    super();
+
+    this.quantityInput = this.querySelector('quantity-input input');
+    this.currentVariant = this.querySelector('.product-variant-id');
+  }
+
+  cartUpdateUnsubscriber = undefined;
+  variantChangeUnsubscriber = undefined;
+
+  connectedCallback() {
+    this.setQuantityBoundries();
+
+    debugger;
+    // TODO what to do about this?
+    if (!this.dataset.originalSection) {
+      this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, this.fetchQuantityRules.bind(this));
+    }
+  }
+
+  disconnectedCallback() {
+    this.cartUpdateUnsubscriber?.();
+  }
+
+  setQuantityBoundries() {
+    const data = {
+      cartQuantity: this.quantityInput.dataset.cartQuantity ? parseInt(this.quantityInput.dataset.cartQuantity) : 0,
+      min: this.quantityInput.dataset.min ? parseInt(this.quantityInput.dataset.min) : 1,
+      max: this.quantityInput.dataset.max ? parseInt(this.quantityInput.dataset.max) : null,
+      step: this.quantityInput.step ? parseInt(this.quantityInput.step) : 1,
+    };
+
+    let min = data.min;
+    const max = data.max === null ? data.max : data.max - data.cartQuantity;
+    if (max !== null) min = Math.min(min, max);
+    if (data.cartQuantity >= data.min) min = Math.min(min, data.step);
+
+    this.quantityInput.min = min;
+    this.quantityInput.max = max;
+    this.quantityInput.value = min;
+    publish(PUB_SUB_EVENTS.quantityUpdate, undefined);
+  }
+
+  fetchQuantityRules() {
+    const currentVariantId = this.closest('product-info')?.currentVariantId;
+    if (!currentVariantId) return;
+
+    this.loadingSpinner.classList.remove('hidden');
+    fetch(`${this.dataset.url}?variant=${currentVariantId}&section_id=${this.dataset.section}`)
+      .then((response) => response.text())
+      .then((responseText) => {
+        const html = new DOMParser().parseFromString(responseText, 'text/html');
+        this.updateQuantityRules(this.dataset.section, html);
+      })
+      .catch((e) => console.error(e))
+      .finally(() => this.loadingSpinner.classList.add('hidden'));
+  }
+
+  updateQuantityRules(sectionId, html) {
+    const quantityFormUpdated = html.getElementById(`Quantity-Form-${sectionId}`);
+    const selectors = ['.quantity__input', '.quantity__rules', '.quantity__label'];
+    for (let selector of selectors) {
+      const current = this.querySelector(selector);
+      const updated = quantityFormUpdated.querySelector(selector);
+      if (!current || !updated) continue;
+      if (selector === '.quantity__input') {
+        const attributes = ['data-cart-quantity', 'data-min', 'data-max', 'step'];
+        for (let attribute of attributes) {
+          const valueUpdated = updated.getAttribute(attribute);
+          if (valueUpdated !== null) current.setAttribute(attribute, valueUpdated);
+        }
+      } else {
+        current.innerHTML = updated.innerHTML;
+      }
+
+      this.setQuantityBoundries();
+    }
+  }
+
+  get loadingSpinner() {
+    return this.querySelector('.quantity__rules-cart .loading__spinner');
+  }
+}
+
+customElements.define('quantity-form', QuantityForm);
+
 function debounce(fn, wait) {
   let t;
   return (...args) => {
