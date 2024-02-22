@@ -130,7 +130,7 @@ if (!customElements.get('product-wrapper')) {
             const source = html.getElementById(`${id}-${sectionId}`);
             const destination = this.querySelector(`#${id}-${this.dataset.section}`);
             if (source && destination) destination.innerHTML = source.innerHTML;
-            destination.classList.toggle('hidden', shouldHide(source));
+            destination?.classList.toggle('hidden', shouldHide(source));
           };
 
           updateSourceFromDestination('price');
