@@ -93,7 +93,7 @@ if (!customElements.get('product-wrapper')) {
           })
           .then(() => {
             // set focus to last clicked option value
-            this.querySelector(`#${targetId}`).focus();
+            this.querySelector(`#${targetId}`)?.focus();
           });
       }
 
@@ -122,76 +122,51 @@ if (!customElements.get('product-wrapper')) {
         const sectionId = this.dataset.originalSection || this.dataset.section;
 
         return (html) => {
-          this.pickupAvailability?.update(variant); // yes
+          this.pickupAvailability?.update(variant);
           this.updateMedia(html, variant?.featured_media?.id);
           this.#updateOptionValues(html);
 
           const updateSourceFromDestination = (id, shouldHide = (source) => false) => {
             const source = html.getElementById(`${id}-${sectionId}`);
             const destination = this.querySelector(`#${id}-${this.dataset.section}`);
-            if (source && destination) destination.innerHTML = source.innerHTML;
-            destination?.classList.toggle('hidden', shouldHide(source));
+            if (source && destination) {
+              destination.innerHTML = source.innerHTML;
+              destination.classList.toggle('hidden', shouldHide(source));
+            }
           };
 
           updateSourceFromDestination('price');
-          updateSourceFromDestination('Sku', (source) => source.classList.contains('hidden'));
-          updateSourceFromDestination('Inventory', (source) => source.innerText === '');
+          updateSourceFromDestination('Sku', ({ classList }) => classList.contains('hidden'));
+          updateSourceFromDestination('Inventory', ({ innerText }) => innerText === '');
           updateSourceFromDestination('Volume');
-          updateSourceFromDestination('Price-Per-Item', (source) => source.classList.contains('hidden'));
+          updateSourceFromDestination('Price-Per-Item', ({ classList }) => classList.contains('hidden'));
 
           this.querySelector(`#Quantity-Rules-${this.dataset.section}`)?.classList.remove('hidden');
           this.querySelector(`#Volume-Note-${this.dataset.section}`)?.classList.remove('hidden');
 
-          // TODO check this logic
           this.productForm?.toggleSubmitButton(
             html.getElementById(`ProductSubmitButton-${sectionId}`)?.hasAttribute('disabled') ?? true,
             window.variantStrings.soldOut
           );
-          // const addButtonUpdated = html.getElementById(`ProductSubmitButton-${sectionId}`);
-          // this.toggleAddButton(
-          //   addButtonUpdated ? addButtonUpdated.hasAttribute('disabled') : true,
-          //   window.variantStrings.soldOut
-          // );
 
           publish(PUB_SUB_EVENTS.variantChange, {
             data: {
               sectionId,
               html,
-              variant: this.currentVariant,
+              variant,
             },
           });
         };
       }
 
-      // updateVariantInput() {
-      //   const productForms = document.querySelectorAll(
-      //     `#product-form-${this.dataset.section}, #product-form-installment-${this.dataset.section}`
-      //   );
-      //   productForms.forEach((productForm) => {
-      //     const input = productForm.querySelector('input[name="id"]');
-      //     input.value = this.currentVariant.id;
-      //     input.dispatchEvent(new Event('change', { bubbles: true }));
-      //   });
-      // }
-
       #updateVariantInputs(variantId) {
-        // TODO this query selector was updated, does it still work?
-        this.querySelectorAll('product-form').forEach((form) => form.updateVariantIdInput(variantId));
-
-        // // TODO this query selector was updated, does it still work?
-        // this
-        //   .querySelectorAll(
-        //     'product-form'
-        //     // `#product-form-${this.dataset.section}, #product-form-installment-${this.dataset.section}`
-        //   )
-        //   .forEach((form) => {
-        //     form.updateVariantIdInput(variantId);
-
-        //     // TODO this was updated to use a new method on product-form instead
-        //     // const input = productForm.querySelector('input[name="id"]');
-        //     // input.value = variantId;
-        //     // input.dispatchEvent(new Event('change', { bubbles: true }));
-        //   });
+        document
+          .querySelectorAll(`#product-form-${this.dataset.section}, #product-form-installment-${this.dataset.section}`)
+          .forEach((productForm) => {
+            const input = productForm.querySelector('input[name="id"]');
+            input.value = variantId;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          });
       }
 
       #updateURL(url, variantId) {
@@ -209,7 +184,7 @@ if (!customElements.get('product-wrapper')) {
       #setUnavailable() {
         this.productForm?.toggleSubmitButton(true, window.variantStrings.unavailable);
 
-        // should this be delegated to product-info? should product-info be promoted to here?
+        // TODO should this be delegated to product-info? should product-info be promoted to here?
         const selectors = ['price', 'Inventory', 'Sku', 'Price-Per-Item', 'Volume-Note', 'Volume', 'Quantity-Rules']
           .map((id) => `#${id}-${this.dataset.section}`)
           .join(', ');

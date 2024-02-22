@@ -123,11 +123,6 @@ if (!customElements.get('product-form')) {
           this.submitButtonText.textContent = window.variantStrings.addToCart;
         }
       }
-
-      updateVariantIdInput(variantId) {
-        this.variantIdInput.value = variantId;
-        this.variantIdInput.dispatchEvent(new Event('change', { bubbles: true }));
-      }
     }
   );
 }
