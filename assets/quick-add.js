@@ -69,7 +69,7 @@ if (!customElements.get('quick-add-modal')) {
       }
 
       preventVariantURLSwitching(productElement) {
-        productElement.querySelector('product-wrapper')?.setAttribute('data-update-url', 'false');
+        productElement.querySelector('product-info')?.setAttribute('data-update-url', 'false');
       }
 
       removeDOMElements(productElement) {
@@ -86,9 +86,8 @@ if (!customElements.get('quick-add-modal')) {
       preventDuplicatedIDs(productElement) {
         const sectionId = productElement.dataset.section;
         productElement.innerHTML = productElement.innerHTML.replaceAll(sectionId, `quickadd-${sectionId}`);
-        productElement.querySelectorAll('product-wrapper, product-info').forEach((element) => {
-          element.dataset.originalSection = sectionId;
-        });
+        // TODO double check this works
+        productElement.querySelector('product-info').dataset.originalSection = sectionId;
       }
 
       removeGalleryListSemantic(productElement) {
