@@ -214,6 +214,26 @@ var main = function () {
                 })
     
             }
+        },
+        quizBtn: function() {
+            var quizBtn = document.querySelectorAll('quiz-btn');
+            var quizRendered = document.querySelector('div[class*="octane-ai-quiz"]');
+            
+            quizBtn.forEach(e=> {
+              e.addEventListener('click', function(e) {
+                if (quizRendered.style.display === 'none') {
+                  e.target.textContent = e.target.dataset.closeText;
+                  quizRendered.style.display = 'block';
+                  window.scrollTo({
+                    top: quizRendered.offsetTop,
+                    behavior: 'smooth'
+                  });
+                } else {
+                  quizRendered.style.display = 'none';
+                  e.target.textContent = e.target.dataset.openText;
+                }
+              });
+            })
         }
     };
 }()
@@ -225,3 +245,4 @@ main.sliderHeight()
 main.preventDefaultForHashLinks()
 main.klaviyoFnc()
 main.swipeSlider()
+main.quizBtn()
