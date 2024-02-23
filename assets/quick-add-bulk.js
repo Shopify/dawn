@@ -114,7 +114,7 @@ class QuickAddBulk extends HTMLElement {
     return [
       {
         id: `quick-add-bulk-${this.dataset.id}`,
-        section: 'main-collection-product-grid',
+        section: document.getElementById('product-grid').dataset.id,
         selector: `#quick-add-bulk-${this.dataset.id}`
       },
       {
@@ -131,7 +131,6 @@ class QuickAddBulk extends HTMLElement {
   }
 
   getSectionInnerHTML(html, selector) {
-    console.log(html, 'html')
     return new DOMParser()
       .parseFromString(html, 'text/html')
       .querySelector(selector).innerHTML;
