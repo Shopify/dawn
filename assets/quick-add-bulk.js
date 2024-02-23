@@ -30,7 +30,7 @@ class QuickAddBulk extends HTMLElement {
   }
 
   onCartUpdate() {
-    fetch(`${window.location.pathname}?section_id=main-collection-product-grid`)
+    fetch(`${window.location.pathname}?section_id=${document.getElementById('product-grid').dataset.id}`)
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
