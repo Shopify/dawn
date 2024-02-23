@@ -120,7 +120,7 @@ class QuickAddBulk extends HTMLElement {
       {
         id: 'cart-icon-bubble',
         section: 'cart-icon-bubble',
-        selector: '.cart-count-bubble'
+        selector: '.shopify-section'
       },
       {
         id: 'CartDrawer',
@@ -138,7 +138,14 @@ class QuickAddBulk extends HTMLElement {
 
   renderSections(parsedState) {
     this.getSectionsToRender().forEach((section => {
-      const sectionElement = document.querySelector(section.selector);
+      const sectionElement = document.getElementById(section.id);
+      if (sectionElement && sectionElement.parentElement && sectionElement.parentElement.classList.contains('drawer')) {
+        parsedState.items.length > 0 ? sectionElement.parentElement.classList.remove('is-empty') : sectionElement.parentElement.classList.add('is-empty');
+
+        setTimeout(() => {
+          document.querySelector('#CartDrawer-Overlay').addEventListener('click', this.cart.close.bind(this.cart));
+        });
+      }
       const elementToReplace = sectionElement && sectionElement.querySelector(section.selector) ? sectionElement.querySelector(section.selector) : sectionElement;
       if (elementToReplace) {
         elementToReplace.innerHTML =
