@@ -189,9 +189,9 @@ class QuickOrderList extends HTMLElement {
     if (event.target.tagName !== 'INPUT') {
       return;
     }
-    this.VariantListInput = event.target;
-    this.VariantListInput.select()
-    this.VariantListInput.addEventListener('keydown', (e) => {
+    this.variantListInput = event.target;
+    this.variantListInput.select()
+    this.variantListInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
         e.target.blur();
