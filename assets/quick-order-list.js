@@ -68,7 +68,7 @@ class QuickOrderList extends HTMLElement {
     }
     this.allInputsArray = Array.from(this.querySelectorAll('input[type="number"]'));
     this.quickOrderListTable = this.querySelector('.quick-order-list__table');
-    this.quickOrderListTable.addEventListener('focusin', this.switchVarints.bind(this));
+    this.quickOrderListTable.addEventListener('focusin', this.switchVariants.bind(this));
     this.quickOrderListId = 'quick-order-list'
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
     const form = this.querySelector('form');
@@ -182,10 +182,10 @@ class QuickOrderList extends HTMLElement {
     }));
     this.allInputsArray = Array.from(this.querySelectorAll('input[type="number"]'));
     this.quickOrderListTable = this.querySelector('.quick-order-list__table');
-    this.quickOrderListTable.addEventListener('focusin', this.switchVarints.bind(this));
+    this.quickOrderListTable.addEventListener('focusin', this.switchVariants.bind(this));
   }
 
-  switchVarints(event) {
+  switchVariants(event) {
     if (event.target.tagName !== 'INPUT') {
       return;
     }
