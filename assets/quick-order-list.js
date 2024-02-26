@@ -108,7 +108,7 @@ class QuickOrderList extends HTMLElement {
 
   disconnectedCallback() {
     this.cartUpdateUnsubscriber?.();
-    this.unsubscribeFromSectionRefresh?.();
+    this.sectionRefreshUnsubscriber?.();
   }
 
   onChange(event) {
