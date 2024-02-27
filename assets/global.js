@@ -197,7 +197,7 @@ class QuantityInput extends HTMLElement {
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
 
     if ((this.input.dataset.min === previousValue) &&  event.target.name === 'minus') {
-      this.input.value = 0;
+      this.input.value = parseInt(this.input.min);
     }
   }
 
