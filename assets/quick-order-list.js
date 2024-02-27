@@ -237,7 +237,7 @@ class QuickOrderList extends HTMLElement {
       });
   }
 
-  updateQuantity(id, quantity, name, action) {
+  updateQuantity(id, quantity, action) {
     this.toggleLoading(id, true);
 
     let routeUrl = routes.cart_change_url;
