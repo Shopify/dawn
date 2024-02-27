@@ -186,7 +186,7 @@ class QuantityInput extends HTMLElement {
 
     if (event.target.name === 'plus') {
       if ((parseInt(this.input.dataset.min) > parseInt(this.input.step)) && this.input.value == 0) {
-        this.input.value = 10;
+        this.input.value = this.input.dataset.min;
       } else {
         this.input.stepUp()
       } 
