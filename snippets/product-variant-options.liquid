@@ -52,7 +52,7 @@
     elsif value.swatch.color
       assign swatch_value = 'rgb(' | append: value.swatch.color.rgb | append: ')'
     else
-      assign swatch_value = nil
+      assign swatch_value = null
     endif
   -%}
 
@@ -60,42 +60,35 @@
     {{ section.id }}-{{ option.position }}-{{ forloop.index0 -}}
   {%- endcapture -%}
 
-  {%- capture label_unavailable %}
+  {%- capture label_unavailable -%}
     <span class="visually-hidden label-unavailable">
       {{- 'products.product.variant_sold_out_or_unavailable' | t -}}
     </span>
-  {%- endcapture %}
+  {%- endcapture -%}
 
   {%- if picker_type == 'swatch' -%}
     {% liquid
       assign checked = false
-
       if option.selected_value == value
         assign checked = true
       endif
-
-      assign value_text = value | escape
     %}
-    <input
-      type="radio"
-      id="{{ input_id }}"
-      name="{{ option.name }}"
-      value="{{ value_text }}"
-      form="{{ product_form_id }}"
-      class="swatch-input__input{% if option_disabled %} disabled{% endif %}"
-      {% if checked %}
-        checked
-      {% endif %}
-    >
-    <label
-      for="{{ input_id }}"
-      title="{{ value_text }}"
-      class="swatch-input__label{% if block.settings.swatch_shape == 'square' %} swatch-input__label--square{% endif %}"
-    >
-      {% render 'swatch', swatch: value.swatch, shape: block.settings.swatch_shape %}
-      <span class="visually-hidden">{{ value_text }}</span>
+    {%- capture help_text -%}
+      <span class="visually-hidden">{{ value | escape }}</span>
       {{ label_unavailable }}
-    </label>
+    {%- endcapture -%}
+    {%
+      render 'swatch-input',
+      id: input_id,
+      name: option.name,
+      value: value | escape,
+      swatch: value.swatch,
+      product_form_id: product_form_id,
+      checked: checked,
+      visually_disabled: option_disabled,
+      shape: block.settings.swatch_shape,
+      help_text: help_text
+    %}
   {%- elsif picker_type == 'button' -%}
     <input
       type="radio"
