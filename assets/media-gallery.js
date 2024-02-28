@@ -16,7 +16,7 @@ if (!customElements.get('media-gallery')) {
         this.elements.thumbnails.querySelectorAll('[data-target]').forEach((mediaToSwitch) => {
           mediaToSwitch
             .querySelector('button')
-            .addEventListener('click', this.setActiveMedia.bind(this, mediaToSwitch.dataset.target, false));
+            .addEventListener('click', this.setActiveMedia.bind(this, mediaToSwitch.dataset.target));
         });
         if (this.dataset.desktopLayout.includes('thumbnail') && this.mql.matches) this.removeListSemantic();
       }
@@ -28,21 +28,21 @@ if (!customElements.get('media-gallery')) {
         this.setActiveThumbnail(thumbnail);
       }
 
-      setActiveMedia(mediaId, prepend) {
-        const activeMedia = this.elements.viewer.querySelector(`[data-media-id="${mediaId}"]`);
+      setActiveMedia(mediaId) {
+        const activeMedia = this.elements.viewer.querySelector(`[data-media-id="${mediaId}"],[data-media-id]`);
         this.elements.viewer.querySelectorAll('[data-media-id]').forEach((element) => {
           element.classList.remove('is-active');
         });
         activeMedia.classList.add('is-active');
 
-        if (prepend) {
-          activeMedia.parentElement.prepend(activeMedia);
-          if (this.elements.thumbnails) {
-            const activeThumbnail = this.elements.thumbnails.querySelector(`[data-target="${mediaId}"]`);
-            activeThumbnail.parentElement.prepend(activeThumbnail);
-          }
-          if (this.elements.viewer.slider) this.elements.viewer.resetPages();
-        }
+        // if (prepend) {
+        //   activeMedia.parentElement.prepend(activeMedia);
+        //   if (this.elements.thumbnails) {
+        //     const activeThumbnail = this.elements.thumbnails.querySelector(`[data-target="${mediaId}"]`);
+        //     activeThumbnail.parentElement.prepend(activeThumbnail);
+        //   }
+        //   if (this.elements.viewer.slider) this.elements.viewer.resetPages();
+        // }
 
         this.preventStickyHeader();
         window.setTimeout(() => {
