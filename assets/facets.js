@@ -5,7 +5,7 @@ class FacetFiltersForm extends HTMLElement {
 
     this.debouncedOnSubmit = debounce((event) => {
       this.onSubmitHandler(event);
-    }, 500);
+    }, 800);
 
     const facetForm = this.querySelector('form');
     facetForm.addEventListener('input', this.debouncedOnSubmit.bind(this));
@@ -315,7 +315,7 @@ class PriceRange extends HTMLElement {
   onKeyDown(event) {
     if (event.metaKey) return;
 
-    const pattern = /[0-9]|\.|,| |Tab|Backspace|Enter|ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Delete/;
+    const pattern = /[0-9]|\.|,|'| |Tab|Backspace|Enter|ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Delete|Escape/;
     if (!event.key.match(pattern)) event.preventDefault();
   }
 
