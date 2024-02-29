@@ -227,8 +227,8 @@ class QuickOrderList extends HTMLElement {
       }
     });
 
-    const inputTopBorder = this.VariantListInput.getBoundingClientRect().top;
-    const inputBottomBorder = this.VariantListInput.getBoundingClientRect().bottom;
+    const inputTopBorder = this.variantListInput.getBoundingClientRect().top;
+    const inputBottomBorder = this.variantListInput.getBoundingClientRect().bottom;
     const stickyHeaderBottomBorder = this.stickyHeaderElement && this.stickyHeaderElement.getBoundingClientRect().bottom;
     const totalBarCrossesInput = inputBottomBorder > this.totalBarPosition;
     const inputOutsideOfViewPort = inputBottomBorder < this.inputFieldHeight;
@@ -236,7 +236,7 @@ class QuickOrderList extends HTMLElement {
     const stickyHeaderScrollupCrossesInput = this.stickyHeaderElement && this.stickyHeader.type === 'on-scroll-up' && this.stickyHeader.height > inputTopBorder && stickyHeaderBottomBorder > 0;
 
     if (totalBarCrossesInput || inputOutsideOfViewPort || stickyHeaderCrossesInput || stickyHeaderScrollupCrossesInput) {
-      this.VariantListInput.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      this.variantListInput.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
   }
 
