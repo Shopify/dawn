@@ -1015,6 +1015,11 @@ class VariantSelects extends HTMLElement {
         selectedDropdownSwatchValue.style.setProperty('--swatch--background', 'unset');
         selectedDropdownSwatchValue.classList.add('swatch--unavailable');
       }
+
+      selectedDropdownSwatchValue.style.setProperty(
+        '--swatch-focal-point',
+        target.selectedOptions[0].dataset.optionSwatchFocalPoint || 'unset'
+      );
     } else if (tagName === 'INPUT' && target.type === 'radio') {
       const selectedSwatchValue = this.querySelector(`[data-selected-swatch-value="${name}"]`);
       if (selectedSwatchValue) selectedSwatchValue.innerHTML = value;
