@@ -70,6 +70,22 @@ class QuickOrderList extends HTMLElement {
     this.quickOrderListId = 'quick-order-list'
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
     const form = this.querySelector('form');
+    this.inputFieldHeight = this.querySelector('.variant-item__quantity-wrapper').offsetHeight;
+    this.stickyHeaderElement = document.querySelector('sticky-header');
+
+    if (this.stickyHeaderElement) {
+      this.stickyHeader = {
+        height: this.stickyHeaderElement.offsetHeight,
+        type: `${this.stickyHeaderElement.getAttribute('data-sticky-type')}`
+      };
+    }
+
+    this.totalBarPosition = window.innerHeight - this.querySelector('.quick-order-list__total').offsetHeight;
+
+    window.addEventListener('resize', () => {
+      this.totalBarPosition = window.innerHeight - this.querySelector('.quick-order-list__total').offsetHeight;
+      this.stickyHeader.height = this.stickyHeaderElement ? this.stickyHeaderElement.offsetHeight: null;
+    });
 
     form.addEventListener('submit', this.onSubmit.bind(this));
     const debouncedOnChange = debounce((event) => {
@@ -202,14 +218,26 @@ class QuickOrderList extends HTMLElement {
         if (!e.shiftKey) {
           const nextIndex = currentIndex + 1;
           const nextVariant = this.allInputsArray[nextIndex] || this.allInputsArray[0];
-          nextVariant.focus();
+          nextVariant.select();
         } else {
           const previousIndex = currentIndex - 1;
           const previousVariant = this.allInputsArray[previousIndex] || this.allInputsArray[this.allInputsArray.length - 1];
-          previousVariant.focus();
+          previousVariant.select();
         }
       }
     });
+
+    const inputTopBorder = this.VariantListInput.getBoundingClientRect().top;
+    const inputBottomBorder = this.VariantListInput.getBoundingClientRect().bottom;
+    const stickyHeaderBottomBorder = this.stickyHeaderElement && this.stickyHeaderElement.getBoundingClientRect().bottom;
+    const totalBarCrossesInput = inputBottomBorder > this.totalBarPosition;
+    const inputOutsideOfViewPort = inputBottomBorder < this.inputFieldHeight;
+    const stickyHeaderCrossesInput = this.stickyHeaderElement && this.stickyHeader.type !== 'on-scroll-up' && this.stickyHeader.height > inputTopBorder;
+    const stickyHeaderScrollupCrossesInput = this.stickyHeaderElement && this.stickyHeader.type === 'on-scroll-up' && this.stickyHeader.height > inputTopBorder && stickyHeaderBottomBorder > 0;
+
+    if (totalBarCrossesInput || inputOutsideOfViewPort || stickyHeaderCrossesInput || stickyHeaderScrollupCrossesInput) {
+      this.VariantListInput.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
   }
 
   updateMultipleQty(items) {
