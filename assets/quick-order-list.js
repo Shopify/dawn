@@ -14,10 +14,10 @@ customElements.define('quick-order-list-remove-button', QuickOrderListRemoveButt
 class QuickOrderListRemoveAllButton extends HTMLElement {
   constructor() {
     super();
-    const allVariants = Array.from(document.querySelectorAll('[data-quantity-variant-id]'));
+    this.quickOrderList = this.closest('quick-order-list');
+    const allVariants = this.quickOrderList.querySelectorAll('[data-quantity-variant-id]');
     const items = {}
     let hasVariantsInCart = false;
-    this.quickOrderList = this.closest('quick-order-list');
     allVariants.forEach((variant) => {
       const cartQty = parseInt(variant.dataset.cartQuantity);
       if (cartQty > 0) {
