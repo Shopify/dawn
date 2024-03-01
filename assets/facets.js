@@ -128,6 +128,7 @@ class FacetFiltersForm extends HTMLElement {
       const jsFilter = event ? event.target.closest('.js-filter') : undefined;
       return jsFilter ? element.id === jsFilter.id : false;
     };
+
     const facetsToRender = Array.from(facetDetailsElementsFromFetch).filter((element) => !matchesId(element));
     const countsToRender = Array.from(facetDetailsElementsFromFetch).find(matchesId);
 
@@ -167,7 +168,10 @@ class FacetFiltersForm extends HTMLElement {
           ? `.mobile-facets__close-button`
           : `.facets__summary`;
         const newElementToActivate = newFacetDetailsElement.querySelector(newElementSelector);
-        if (newElementToActivate) newElementToActivate.focus();
+
+        const isTextInput = event.target.getAttribute('type') === 'text';
+
+        if (newElementToActivate && !isTextInput) newElementToActivate.focus();
       }
     }
   }
