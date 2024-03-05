@@ -49,7 +49,7 @@ class QuickAddBulk extends HTMLElement {
   }
 
   onCartUpdate() {
-    fetch(`${window.location.pathname}?section_id=main-collection-product-grid`)
+    fetch(`${window.location.pathname}?section_id=${document.getElementById('product-grid').dataset.id}`)
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
@@ -134,13 +134,13 @@ class QuickAddBulk extends HTMLElement {
     return [
       {
         id: `quick-add-bulk-${this.dataset.id}`,
-        section: 'main-collection-product-grid',
+        section: document.getElementById('product-grid').dataset.id,
         selector: `#quick-add-bulk-${this.dataset.id}`
       },
       {
         id: 'cart-icon-bubble',
         section: 'cart-icon-bubble',
-        selector: '.cart-count-bubble'
+        selector: '.shopify-section'
       },
       {
         id: 'CartDrawer',
@@ -158,7 +158,14 @@ class QuickAddBulk extends HTMLElement {
 
   renderSections(parsedState) {
     this.getSectionsToRender().forEach((section => {
-      const sectionElement = document.querySelector(section.selector);
+      const sectionElement = document.getElementById(section.id);
+      if (sectionElement && sectionElement.parentElement && sectionElement.parentElement.classList.contains('drawer')) {
+        parsedState.items.length > 0 ? sectionElement.parentElement.classList.remove('is-empty') : sectionElement.parentElement.classList.add('is-empty');
+
+        setTimeout(() => {
+          document.querySelector('#CartDrawer-Overlay').addEventListener('click', this.cart.close.bind(this.cart));
+        });
+      }
       const elementToReplace = sectionElement && sectionElement.querySelector(section.selector) ? sectionElement.querySelector(section.selector) : sectionElement;
       if (elementToReplace) {
         elementToReplace.innerHTML =
