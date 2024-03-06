@@ -80,9 +80,11 @@ class QuickAddBulk extends HTMLElement {
         const parsedState = JSON.parse(state);
 
         if (parsedState.description || parsedState.errors) {
+          this.resetQuantityInput(event.target.id);
           const errorElement = document.querySelector(`#quick-add-bulk-${event.target.getAttribute('data-index')} .quick-add-bulk-no-variants__error`);
-          errorElement.classList.remove('hidden')
-          errorElement.querySelector('.quick-add-bulk-no-variants__error-message').innerHTML = parsedState.description
+          errorElement.classList.remove('hidden');
+          this.querySelector('.progress-bar-container').classList.add('hidden');
+          errorElement.querySelector('.quick-add-bulk-no-variants__error-message').innerHTML = parsedState.description;
           return;
         }
 
@@ -93,6 +95,11 @@ class QuickAddBulk extends HTMLElement {
       }).catch((error) => {
         console.log(error, 'error')
       })
+  }
+
+  resetQuantityInput(id) {
+    const input = document.getElementById(id);
+    input.value = input.getAttribute('value');
   }
 
   addToCart(event) {
@@ -115,9 +122,11 @@ class QuickAddBulk extends HTMLElement {
       .then((state) => {
         const parsedState = JSON.parse(state);
         if (parsedState.description || parsedState.errors) {
+          this.resetQuantityInput(event.target.id);
           const errorElement = document.querySelector(`#quick-add-bulk-${event.target.getAttribute('data-index')} .quick-add-bulk-no-variants__error`);
-          errorElement.classList.remove('hidden')
-          errorElement.querySelector('.quick-add-bulk-no-variants__error-message').innerHTML = parsedState.description
+          errorElement.classList.remove('hidden');
+          this.querySelector('.progress-bar-container').classList.add('hidden');
+          errorElement.querySelector('.quick-add-bulk-no-variants__error-message').innerHTML = parsedState.description;
           return;
         }
 
