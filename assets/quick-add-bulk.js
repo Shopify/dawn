@@ -10,6 +10,9 @@ class QuickAddBulk extends HTMLElement {
       }
     }, ON_CHANGE_DEBOUNCE_TIMER);
     this.addEventListener('change', debouncedOnChange.bind(this));
+    this.listenForActiveInput();
+    this.listenForKeydown();
+    this.lastActiveInputId = null;
   }
 
 
@@ -29,6 +32,22 @@ class QuickAddBulk extends HTMLElement {
     }
   }
 
+  listenForActiveInput() {
+    if (!this.classList.contains('hidden')) {
+      this.querySelector('quantity-input input').addEventListener('focusin', (event) => event.target.select());
+    }
+    this.isEnterPressed = false;
+  }
+
+  listenForKeydown() {
+    this.querySelector('quantity-input input').addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        this.querySelector('quantity-input input').blur();
+        this.isEnterPressed = true;
+      }
+    });
+  }
+
   onCartUpdate() {
     fetch(`${window.location.pathname}?section_id=${document.getElementById('product-grid').dataset.id}`)
       .then((response) => response.text())
@@ -43,6 +62,7 @@ class QuickAddBulk extends HTMLElement {
   }
 
   updateCart(event) {
+    this.lastActiveInputId = event.target.getAttribute('data-index');
     this.quantity = this.querySelector('quantity-input')
     // this.quantity.classList.add('loading');
     this.querySelector('.progress-bar-container').classList.remove('hidden');
@@ -66,7 +86,6 @@ class QuickAddBulk extends HTMLElement {
           return;
         }
 
-
         this.renderSections(parsedState);
 
         publish(PUB_SUB_EVENTS.cartUpdate, { source: "quick-add", cartData: parsedState });
@@ -78,6 +97,7 @@ class QuickAddBulk extends HTMLElement {
 
   addToCart(event) {
     this.querySelector('.progress-bar-container').classList.remove('hidden');
+    this.lastActiveInputId = event.target.getAttribute('data-index');
     const body = JSON.stringify({
       items: [
         {
@@ -153,7 +173,12 @@ class QuickAddBulk extends HTMLElement {
       }
     }));
 
-  }
+    if (this.isEnterPressed) {
+      this.querySelector(`#Quantity-${this.lastActiveInputId}`).select();
+    }
 
+    this.listenForActiveInput();
+    this.listenForKeydown();
+  }
 }
 customElements.define('quick-add-bulk', QuickAddBulk);
