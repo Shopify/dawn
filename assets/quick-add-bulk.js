@@ -60,10 +60,9 @@ class QuickAddBulk extends HTMLElement {
         const parsedState = JSON.parse(state);
 
         if (parsedState.description || parsedState.errors) {
-          // const errorElement = document.querySelector(`#Quick-add-bulk-item-error-desktop-${event.target.getAttribute('data-index')}`)
-          // errorElement.classList.remove('hidden')
-          // errorElement.querySelector('.variant-bulk__error-text').innerHTML = parsedState.description
-         // Update errors 
+          const errorElement = document.querySelector(`#quick-add-bulk-${event.target.getAttribute('data-index')} .quick-add-bulk-no-variants__error`);
+          errorElement.classList.remove('hidden')
+          errorElement.querySelector('.quick-add-bulk-no-variants__error-message').innerHTML = parsedState.description
           return;
         }
 
@@ -96,8 +95,9 @@ class QuickAddBulk extends HTMLElement {
       .then((state) => {
         const parsedState = JSON.parse(state);
         if (parsedState.description || parsedState.errors) {
-          console.log('error add to cart', parsedState)
-          // Error handling
+          const errorElement = document.querySelector(`#quick-add-bulk-${event.target.getAttribute('data-index')} .quick-add-bulk-no-variants__error`);
+          errorElement.classList.remove('hidden')
+          errorElement.querySelector('.quick-add-bulk-no-variants__error-message').innerHTML = parsedState.description
           return;
         }
 
