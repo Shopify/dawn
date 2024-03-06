@@ -182,6 +182,8 @@ class QuickOrderList extends HTMLElement {
   }
 
   renderSections(parsedState, id) {
+    this.cleanErrors();
+
     this.getSectionsToRender().forEach((section => {
       const sectionElement = document.getElementById(section.id);
       if (sectionElement && sectionElement.parentElement && sectionElement.parentElement.classList.contains('drawer')) {
@@ -403,6 +405,11 @@ class QuickOrderList extends HTMLElement {
       message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
     }
     this.updateLiveRegions(id, message);
+  }
+
+  cleanErrors() {
+    this.querySelectorAll('.desktop-row-error').forEach((error) => error.classList.add('hidden'));
+    this.querySelectorAll(`.variant-item__error-text`).forEach((error) => error.innerHTML = '');
   }
 
   updateLiveRegions(id, message) {
