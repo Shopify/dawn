@@ -10,6 +10,7 @@ class QuickAddBulk extends HTMLElement {
         this.updateCart(event);
       }
     }, ON_CHANGE_DEBOUNCE_TIMER);
+    this.progressBar = this.querySelector('.progress-bar-container');
     this.addEventListener('change', debouncedOnChange.bind(this));
     this.listenForActiveInput();
     this.listenForKeydown();
@@ -74,7 +75,7 @@ class QuickAddBulk extends HTMLElement {
     this.lastActiveInputId = event.target.getAttribute('data-index');
     this.quantity = this.querySelector('quantity-input')
     // this.quantity.classList.add('loading');
-    this.querySelector('.progress-bar-container').classList.remove('hidden');
+    this.progressBar.classList.remove('hidden');
     const body = JSON.stringify({
       quantity: event.target.value,
       id: event.target.getAttribute('data-index'),
@@ -92,7 +93,7 @@ class QuickAddBulk extends HTMLElement {
           const errorElement = document.querySelector(`#quick-add-bulk-${event.target.getAttribute('data-index')} .quick-add-bulk-no-variants__error`);
           errorElement.classList.remove('hidden');
           this.resetQuantityInput(event.target.id);
-          this.querySelector('.progress-bar-container').classList.add('hidden');
+          this.progressBar.classList.add('hidden');
           errorElement.querySelector('.quick-add-bulk-no-variants__error-message').innerHTML = parsedState.description;
           return;
         }
@@ -113,7 +114,7 @@ class QuickAddBulk extends HTMLElement {
   }
 
   addToCart(event) {
-    this.querySelector('.progress-bar-container').classList.remove('hidden');
+    this.progressBar.classList.remove('hidden');
     this.lastActiveInputId = event.target.getAttribute('data-index');
     const body = JSON.stringify({
       items: [
@@ -135,7 +136,7 @@ class QuickAddBulk extends HTMLElement {
           const errorElement = document.querySelector(`#quick-add-bulk-${event.target.getAttribute('data-index')} .quick-add-bulk-no-variants__error`);
           errorElement.classList.remove('hidden');
           this.resetQuantityInput(event.target.id);
-          this.querySelector('.progress-bar-container').classList.add('hidden');
+          this.progressBar.classList.add('hidden');
           errorElement.querySelector('.quick-add-bulk-no-variants__error-message').innerHTML = parsedState.description;
           return;
         }
