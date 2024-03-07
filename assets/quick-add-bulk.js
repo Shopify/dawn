@@ -3,6 +3,7 @@ class QuickAddBulk extends HTMLElement {
   constructor() {
     super();
     const debouncedOnChange = debounce((event) => {
+      this.cleanErrors();
       if (parseInt(event.target.dataset.cartQuantity) === 0) {
         this.addToCart(event);
       } else {
@@ -15,6 +16,12 @@ class QuickAddBulk extends HTMLElement {
     this.lastActiveInputId = null;
   }
 
+  cleanErrors() {
+    document.querySelectorAll('.quick-add-bulk-no-variants__error').forEach((error) => {
+      error.classList.add('hidden');
+    });
+    document.querySelectorAll(`.quick-add-bulk-no-variants__error-message`).forEach((error) => error.innerHTML = '');
+  }
 
   connectedCallback() {
     this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (event) => {
@@ -34,7 +41,9 @@ class QuickAddBulk extends HTMLElement {
 
   listenForActiveInput() {
     if (!this.classList.contains('hidden')) {
-      this.querySelector('quantity-input input').addEventListener('focusin', (event) => event.target.select());
+      this.querySelector('quantity-input input').addEventListener('focusin', (event) => {
+        event.target.select()
+      });
     }
     this.isEnterPressed = false;
   }
@@ -80,9 +89,9 @@ class QuickAddBulk extends HTMLElement {
         const parsedState = JSON.parse(state);
 
         if (parsedState.description || parsedState.errors) {
-          this.resetQuantityInput(event.target.id);
           const errorElement = document.querySelector(`#quick-add-bulk-${event.target.getAttribute('data-index')} .quick-add-bulk-no-variants__error`);
           errorElement.classList.remove('hidden');
+          this.resetQuantityInput(event.target.id);
           this.querySelector('.progress-bar-container').classList.add('hidden');
           errorElement.querySelector('.quick-add-bulk-no-variants__error-message').innerHTML = parsedState.description;
           return;
@@ -100,6 +109,7 @@ class QuickAddBulk extends HTMLElement {
   resetQuantityInput(id) {
     const input = document.getElementById(id);
     input.value = input.getAttribute('value');
+    this.isEnterPressed = false;
   }
 
   addToCart(event) {
@@ -122,9 +132,9 @@ class QuickAddBulk extends HTMLElement {
       .then((state) => {
         const parsedState = JSON.parse(state);
         if (parsedState.description || parsedState.errors) {
-          this.resetQuantityInput(event.target.id);
           const errorElement = document.querySelector(`#quick-add-bulk-${event.target.getAttribute('data-index')} .quick-add-bulk-no-variants__error`);
           errorElement.classList.remove('hidden');
+          this.resetQuantityInput(event.target.id);
           this.querySelector('.progress-bar-container').classList.add('hidden');
           errorElement.querySelector('.quick-add-bulk-no-variants__error-message').innerHTML = parsedState.description;
           return;
