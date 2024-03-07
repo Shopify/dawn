@@ -131,6 +131,8 @@ class QuickOrderList extends HTMLElement {
 
     const quantity = inputValue - cartQuantity;
 
+    this.cleanErrors();
+
     if (cartQuantity > 0) {
       this.updateQuantity(index, inputValue, name, this.actions.update);
     } else {
@@ -182,8 +184,6 @@ class QuickOrderList extends HTMLElement {
   }
 
   renderSections(parsedState, id) {
-    this.cleanErrors();
-
     this.getSectionsToRender().forEach((section => {
       const sectionElement = document.getElementById(section.id);
       if (sectionElement && sectionElement.parentElement && sectionElement.parentElement.classList.contains('drawer')) {
