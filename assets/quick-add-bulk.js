@@ -12,6 +12,7 @@ class QuickAddBulk extends HTMLElement {
     }, ON_CHANGE_DEBOUNCE_TIMER);
     this.progressBar = this.querySelector('.progress-bar-container');
     this.addEventListener('change', debouncedOnChange.bind(this));
+    this.input = this.querySelector('quantity-input input');
     this.listenForActiveInput();
     this.listenForKeydown();
     this.lastActiveInputId = null;
@@ -42,17 +43,15 @@ class QuickAddBulk extends HTMLElement {
 
   listenForActiveInput() {
     if (!this.classList.contains('hidden')) {
-      this.querySelector('quantity-input input').addEventListener('focusin', (event) => {
-        event.target.select()
-      });
+      this.input.addEventListener('focusin', (event) => event.target.select());
     }
     this.isEnterPressed = false;
   }
 
   listenForKeydown() {
-    this.querySelector('quantity-input input').addEventListener('keydown', (event) => {
+    this.input.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
-        this.querySelector('quantity-input input').blur();
+        this.input.blur();
         this.isEnterPressed = true;
       }
     });
