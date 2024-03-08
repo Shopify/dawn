@@ -131,8 +131,6 @@ class QuickOrderList extends HTMLElement {
 
     const quantity = inputValue - cartQuantity;
 
-    this.cleanErrors();
-
     if (cartQuantity > 0) {
       this.updateQuantity(index, inputValue, name, this.actions.update);
     } else {
@@ -271,6 +269,7 @@ class QuickOrderList extends HTMLElement {
 
   updateQuantity(id, quantity, name, action) {
     this.toggleLoading(id, true);
+    this.cleanErrors();
 
     let routeUrl = routes.cart_change_url;
     let body = JSON.stringify({
