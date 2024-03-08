@@ -208,7 +208,7 @@ class QuickOrderList extends HTMLElement {
       }
       const elementToReplace = sectionElement && sectionElement.querySelector(section.selector) ? sectionElement.querySelector(section.selector) : sectionElement;
       if (elementToReplace) {
-        if (section.selector === '.js-contents' && id !== undefined) {
+        if (section.selector === `#${this.quickOrderListId} .js-contents` && id !== undefined) {
           elementToReplace.querySelector(`#Variant-${id}`).innerHTML =
           this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${id}`);
         } else {
