@@ -46,12 +46,14 @@ if (!customElements.get('media-gallery')) {
 
         this.preventStickyHeader();
         window.setTimeout(() => {
-          if (this.elements.thumbnails) {
+          if (!this.mql.matches || this.elements.thumbnails) {
             activeMedia.parentElement.scrollTo({ left: activeMedia.offsetLeft });
           }
-          if (!this.elements.thumbnails || this.dataset.desktopLayout === 'stacked') {
-            activeMedia.scrollIntoView({ behavior: 'smooth' });
-          }
+          const activeMediaRect = activeMedia.getBoundingClientRect();
+          // Don't scroll if the image is already in view
+          if (activeMediaRect.top > -0.5) return;
+          const top = activeMediaRect.top + window.scrollY;
+          window.scrollTo({ top: top, behavior: 'smooth' });
         });
         this.playActiveMedia(activeMedia);
 
