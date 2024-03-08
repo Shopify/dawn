@@ -45,14 +45,19 @@ if (!customElements.get('quantity-popover')) {
         const button = this.infoButtonDesktop && this.mql.matches ? this.infoButtonDesktop : this.infoButtonMobile;
         const isExpanded = button.getAttribute('aria-expanded') === 'true';
 
-        button.setAttribute('aria-expanded', !isExpanded);
+        if ((this.mql.matches && !isExpanded) || event.type === 'click') {
+          console.log('test')
+          button.setAttribute('aria-expanded', !isExpanded);
+  
+          this.popoverInfo.toggleAttribute('hidden');
+  
+          button.classList.toggle('quantity-popover__info-button--open');
 
-        this.popoverInfo.toggleAttribute('hidden');
+          this.infoButtonDesktop.classList.add('quantity-popover__info-button--icon-only--animation')
+        }
 
         const isOpen = button.getAttribute('aria-expanded') === 'true';
 
-        button.classList.toggle('quantity-popover__info-button--open');
-      
         if (isOpen && event.type !== 'mouseenter') {
           button.focus();
           button.addEventListener('keyup', (e) => {
@@ -64,6 +69,7 @@ if (!customElements.get('quantity-popover')) {
       }
 
       closePopover(event) {
+        console.log('close')
         event.preventDefault();
         const isButtonChild = this.infoButtonDesktop.contains(event.relatedTarget);
         const isPopoverChild = this.popoverInfo.contains(event.relatedTarget)
@@ -74,9 +80,12 @@ if (!customElements.get('quantity-popover')) {
           button.setAttribute('aria-expanded', 'false');
           button.classList.remove('quantity-popover__info-button--open');
           this.popoverInfo.setAttribute('hidden', '');
+          this.infoButtonDesktop.classList.remove('quantity-popover__info-button--icon-only--animation')
         }
 
         this.eventMouseEnterHappened = false;
+
+        
       }
     }
   );
