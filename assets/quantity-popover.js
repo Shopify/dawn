@@ -69,7 +69,6 @@ if (!customElements.get('quantity-popover')) {
       }
 
       closePopover(event) {
-        console.log('close')
         event.preventDefault();
         const isButtonChild = this.infoButtonDesktop.contains(event.relatedTarget);
         const isPopoverChild = this.popoverInfo.contains(event.relatedTarget)
