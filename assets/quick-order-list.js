@@ -80,12 +80,14 @@ class QuickOrderList extends HTMLElement {
       };
     }
     this.totalBar = this.querySelector('.quick-order-list__total');
-    this.totalBarPosition = this.totalBar ? window.innerHeight - this.totalBar.offsetHeight: null;
+    if (this.totalBar) {
+      this.totalBarPosition = window.innerHeight - this.totalBar.offsetHeight;
 
-    window.addEventListener('resize', () => {
-      this.totalBarPosition = this.totalBar ? window.innerHeight - this.totalBar.offsetHeight: null;
-      this.stickyHeader.height = this.stickyHeaderElement ? this.stickyHeaderElement.offsetHeight: null;
-    });
+      window.addEventListener('resize', () => {
+        this.totalBarPosition = window.innerHeight - this.totalBar.offsetHeight;
+        this.stickyHeader.height = this.stickyHeaderElement ? this.stickyHeaderElement.offsetHeight: 0;
+      });
+    }
 
     form.addEventListener('submit', this.onSubmit.bind(this));
     const debouncedOnChange = debounce((event) => {
