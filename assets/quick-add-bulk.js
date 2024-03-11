@@ -10,7 +10,7 @@ class QuickAddBulk extends HTMLElement {
       }
     }, ON_CHANGE_DEBOUNCE_TIMER);
     this.addEventListener('change', debouncedOnChange.bind(this));
-    this.input = this.querySelector('quantity-input input');
+    this.setInput();
     this.listenForActiveInput();
     this.listenForKeydown();
     this.lastActiveInputId = null;
@@ -31,6 +31,11 @@ class QuickAddBulk extends HTMLElement {
     if (this.cartUpdateUnsubscriber) {
       this.cartUpdateUnsubscriber();
     }
+  }
+
+  setInput() {
+    this.input = this.querySelector('quantity-input input');
+    return this.input;
   }
 
   listenForActiveInput() {
@@ -177,7 +182,7 @@ class QuickAddBulk extends HTMLElement {
     if (this.isEnterPressed) {
       this.querySelector(`#Quantity-${this.lastActiveInputId}`).select();
     }
-
+    this.setInput();
     this.listenForActiveInput();
     this.listenForKeydown();
   }
