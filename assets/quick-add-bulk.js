@@ -3,6 +3,7 @@ class QuickAddBulk extends HTMLElement {
   constructor() {
     super();
     const debouncedOnChange = debounce((event) => {
+      this.cleanErrors();
       if (parseInt(event.target.dataset.cartQuantity) === 0) {
         this.addToCart(event);
       } else {
@@ -33,6 +34,13 @@ class QuickAddBulk extends HTMLElement {
     }
   }
 
+  cleanErrors() {
+    document.querySelectorAll('.quick-add-bulk-no-variants__error').forEach((error) => {
+      error.classList.add('hidden');
+    });
+    document.querySelectorAll(`.quick-add-bulk-no-variants__error-message`).forEach((error) => error.innerHTML = '');
+  }
+
   setInput() {
     this.input = this.querySelector('quantity-input input');
   }
@@ -51,6 +59,12 @@ class QuickAddBulk extends HTMLElement {
         this.isEnterPressed = true;
       }
     });
+  }
+
+  resetQuantityInput(id) {
+    const input = document.getElementById(id);
+    input.value = input.getAttribute('value');
+    this.isEnterPressed = false;
   }
 
   onCartUpdate() {
@@ -85,10 +99,11 @@ class QuickAddBulk extends HTMLElement {
         const parsedState = JSON.parse(state);
 
         if (parsedState.description || parsedState.errors) {
-          // const errorElement = document.querySelector(`#Quick-add-bulk-item-error-desktop-${event.target.getAttribute('data-index')}`)
-          // errorElement.classList.remove('hidden')
-          // errorElement.querySelector('.variant-bulk__error-text').innerHTML = parsedState.description
-         // Update errors
+          event.target.setCustomValidity(parsedState.description);
+          event.target.reportValidity();
+          this.resetQuantityInput(event.target.id);
+          this.querySelector('.progress-bar-container').classList.add('hidden');
+          event.target.select();
           return;
         }
 
@@ -121,7 +136,11 @@ class QuickAddBulk extends HTMLElement {
       .then((state) => {
         const parsedState = JSON.parse(state);
         if (parsedState.description || parsedState.errors) {
-          console.log('error add to cart', parsedState)
+          event.target.setCustomValidity(parsedState.description);
+          event.target.reportValidity();
+          this.resetQuantityInput(event.target.id);
+          this.querySelector('.progress-bar-container').classList.add('hidden');
+          event.target.select();
           // Error handling
           return;
         }
@@ -162,6 +181,7 @@ class QuickAddBulk extends HTMLElement {
   }
 
   renderSections(parsedState) {
+    console.log('test');
     this.getSectionsToRender().forEach((section => {
       const sectionElement = document.getElementById(section.id);
       if (sectionElement && sectionElement.parentElement && sectionElement.parentElement.classList.contains('drawer')) {
