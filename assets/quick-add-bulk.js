@@ -35,7 +35,6 @@ class QuickAddBulk extends HTMLElement {
 
   setInput() {
     this.input = this.querySelector('quantity-input input');
-    return this.input;
   }
 
   listenForActiveInput() {
