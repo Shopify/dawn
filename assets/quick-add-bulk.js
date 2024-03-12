@@ -10,7 +10,6 @@ class QuickAddBulk extends HTMLElement {
       }
     }, ON_CHANGE_DEBOUNCE_TIMER);
     this.addEventListener('change', debouncedOnChange.bind(this));
-    this.input = this.querySelector('quantity-input input');
     this.listenForActiveInput();
     this.listenForKeydown();
     this.lastActiveInputId = null;
@@ -33,17 +32,21 @@ class QuickAddBulk extends HTMLElement {
     }
   }
 
+  getInput() {
+    return this.querySelector('quantity-input input');
+  }
+
   listenForActiveInput() {
     if (!this.classList.contains('hidden')) {
-      this.input.addEventListener('focusin', (event) => event.target.select());
+      this.getInput().addEventListener('focusin', (event) => event.target.select());
     }
     this.isEnterPressed = false;
   }
 
   listenForKeydown() {
-    this.input.addEventListener('keydown', (event) => {
+    this.getInput().addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
-        this.input.blur();
+        this.getInput().blur();
         this.isEnterPressed = true;
       }
     });
@@ -177,7 +180,6 @@ class QuickAddBulk extends HTMLElement {
     if (this.isEnterPressed) {
       this.querySelector(`#Quantity-${this.lastActiveInputId}`).select();
     }
-
     this.listenForActiveInput();
     this.listenForKeydown();
   }
