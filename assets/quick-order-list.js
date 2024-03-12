@@ -14,16 +14,15 @@ customElements.define('quick-order-list-remove-button', QuickOrderListRemoveButt
 class QuickOrderListRemoveAllButton extends HTMLElement {
   constructor() {
     super();
-    const allVariants = Array.from(document.querySelectorAll('[data-variant-id]'));
+    const allVariants = Array.from(document.querySelectorAll('[data-quantity-variant-id]'));
     const items = {}
     let hasVariantsInCart = false;
     this.quickOrderList = this.closest('quick-order-list');
-
     allVariants.forEach((variant) => {
-      const cartQty = parseInt(variant.dataset.cartQty);
+      const cartQty = parseInt(variant.dataset.cartQuantity);
       if (cartQty > 0) {
         hasVariantsInCart = true;
-        items[parseInt(variant.dataset.variantId)] = 0;
+        items[parseInt(variant.dataset.quantityVariantId)] = 0;
       }
     });
 
@@ -67,12 +66,28 @@ class QuickOrderList extends HTMLElement {
       add: 'ADD',
       update: 'UPDATE'
     }
+    this.defineInputsAndQuickOrderTable();
     this.quickOrderListId = 'quick-order-list'
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
     const form = this.querySelector('form');
+    this.inputFieldHeight = this.querySelector('.variant-item__quantity-wrapper').offsetHeight;
+    this.stickyHeaderElement = document.querySelector('sticky-header');
+
+    if (this.stickyHeaderElement) {
+      this.stickyHeader = {
+        height: this.stickyHeaderElement.offsetHeight,
+        type: `${this.stickyHeaderElement.getAttribute('data-sticky-type')}`
+      };
+    }
+
+    this.totalBarPosition = window.innerHeight - this.querySelector('.quick-order-list__total').offsetHeight;
+
+    window.addEventListener('resize', () => {
+      this.totalBarPosition = window.innerHeight - this.querySelector('.quick-order-list__total').offsetHeight;
+      this.stickyHeader.height = this.stickyHeaderElement ? this.stickyHeaderElement.offsetHeight: null;
+    });
 
     form.addEventListener('submit', this.onSubmit.bind(this));
-
     const debouncedOnChange = debounce((event) => {
       this.onChange(event);
     }, ON_CHANGE_DEBOUNCE_TIMER);
@@ -100,6 +115,12 @@ class QuickOrderList extends HTMLElement {
     if (this.cartUpdateUnsubscriber) {
       this.cartUpdateUnsubscriber();
     }
+  }
+
+  defineInputsAndQuickOrderTable() {
+    this.allInputsArray = Array.from(this.querySelectorAll('input[type="number"]'));
+    this.quickOrderListTable = this.querySelector('.quick-order-list__table');
+    this.quickOrderListTable.addEventListener('focusin', this.switchVariants.bind(this));
   }
 
   onChange(event) {
@@ -160,23 +181,63 @@ class QuickOrderList extends HTMLElement {
     ];
   }
 
-  renderSections(parsedState) {
+  renderSections(parsedState, id) {
     this.getSectionsToRender().forEach((section => {
       const sectionElement = document.getElementById(section.id);
       if (sectionElement && sectionElement.parentElement && sectionElement.parentElement.classList.contains('drawer')) {
         parsedState.items.length > 0 ? sectionElement.parentElement.classList.remove('is-empty') : sectionElement.parentElement.classList.add('is-empty');
-
         setTimeout(() => {
           document.querySelector('#CartDrawer-Overlay').addEventListener('click', this.cart.close.bind(this.cart));
         });
       }
       const elementToReplace = sectionElement && sectionElement.querySelector(section.selector) ? sectionElement.querySelector(section.selector) : sectionElement;
       if (elementToReplace) {
-        elementToReplace.innerHTML =
-          this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
+        if (section.selector === '.js-contents' && id !== undefined) {
+          elementToReplace.querySelector(`#Variant-${id}`).innerHTML =
+          this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${id}`);
+        } else {
+          elementToReplace.innerHTML = this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
+        }
       }
     }));
+    this.defineInputsAndQuickOrderTable();
+  }
 
+  switchVariants(event) {
+    if (event.target.tagName !== 'INPUT') {
+      return;
+    }
+    this.variantListInput = event.target;
+    this.variantListInput.select()
+    this.variantListInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.target.blur();
+        const currentIndex = this.allInputsArray.indexOf(e.target);
+
+        if (!e.shiftKey) {
+          const nextIndex = currentIndex + 1;
+          const nextVariant = this.allInputsArray[nextIndex] || this.allInputsArray[0];
+          nextVariant.select();
+        } else {
+          const previousIndex = currentIndex - 1;
+          const previousVariant = this.allInputsArray[previousIndex] || this.allInputsArray[this.allInputsArray.length - 1];
+          previousVariant.select();
+        }
+      }
+    });
+
+    const inputTopBorder = this.variantListInput.getBoundingClientRect().top;
+    const inputBottomBorder = this.variantListInput.getBoundingClientRect().bottom;
+    const stickyHeaderBottomBorder = this.stickyHeaderElement && this.stickyHeaderElement.getBoundingClientRect().bottom;
+    const totalBarCrossesInput = inputBottomBorder > this.totalBarPosition;
+    const inputOutsideOfViewPort = inputBottomBorder < this.inputFieldHeight;
+    const stickyHeaderCrossesInput = this.stickyHeaderElement && this.stickyHeader.type !== 'on-scroll-up' && this.stickyHeader.height > inputTopBorder;
+    const stickyHeaderScrollupCrossesInput = this.stickyHeaderElement && this.stickyHeader.type === 'on-scroll-up' && this.stickyHeader.height > inputTopBorder && stickyHeaderBottomBorder > 0;
+
+    if (totalBarCrossesInput || inputOutsideOfViewPort || stickyHeaderCrossesInput || stickyHeaderScrollupCrossesInput) {
+      this.variantListInput.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
   }
 
   updateMultipleQty(items) {
@@ -258,7 +319,7 @@ class QuickOrderList extends HTMLElement {
 
         this.classList.toggle('is-empty', parsedState.item_count === 0);
 
-        this.renderSections(parsedState);
+        this.renderSections(parsedState, id);
 
         let hasError = false;
 
@@ -269,10 +330,6 @@ class QuickOrderList extends HTMLElement {
           hasError = true;
         }
 
-        const variantItem = document.getElementById(`Variant-${id}`);
-        if (variantItem && variantItem.querySelector(`[name="${name}"]`)) {
-          variantItem.querySelector(`[name="${name}"]`).focus();
-        }
         publish(PUB_SUB_EVENTS.cartUpdate, { source: this.quickOrderListId, cartData: parsedState });
 
         if (hasError) {
@@ -380,7 +437,6 @@ class QuickOrderList extends HTMLElement {
     if (enable) {
       quickOrderList.classList.add('quick-order-list__container--disabled');
       [...quickOrderListItems].forEach((overlay) => overlay.classList.remove('hidden'));
-      document.activeElement.blur();
       this.variantItemStatusElement.setAttribute('aria-hidden', false);
     } else {
       quickOrderList.classList.remove('quick-order-list__container--disabled');
