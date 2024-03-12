@@ -279,6 +279,7 @@ class QuickOrderList extends HTMLElement {
 
   updateQuantity(id, quantity, name, action) {
     this.toggleLoading(id, true);
+    this.cleanErrors();
 
     let routeUrl = routes.cart_change_url;
     let body = JSON.stringify({
@@ -413,6 +414,11 @@ class QuickOrderList extends HTMLElement {
       message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
     }
     this.updateLiveRegions(id, message);
+  }
+
+  cleanErrors() {
+    this.querySelectorAll('.desktop-row-error').forEach((error) => error.classList.add('hidden'));
+    this.querySelectorAll(`.variant-item__error-text`).forEach((error) => error.innerHTML = '');
   }
 
   updateLiveRegions(id, message) {
