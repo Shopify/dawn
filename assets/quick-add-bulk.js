@@ -3,7 +3,6 @@ class QuickAddBulk extends HTMLElement {
   constructor() {
     super();
     const debouncedOnChange = debounce((event) => {
-      this.cleanErrors();
       if (parseInt(event.target.dataset.cartQuantity) === 0) {
         this.addToCart(event);
       } else {
@@ -32,13 +31,6 @@ class QuickAddBulk extends HTMLElement {
     if (this.cartUpdateUnsubscriber) {
       this.cartUpdateUnsubscriber();
     }
-  }
-
-  cleanErrors() {
-    document.querySelectorAll('.quick-add-bulk-no-variants__error').forEach((error) => {
-      error.classList.add('hidden');
-    });
-    document.querySelectorAll(`.quick-add-bulk-no-variants__error-message`).forEach((error) => error.innerHTML = '');
   }
 
   getInput() {
