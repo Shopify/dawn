@@ -79,13 +79,15 @@ class QuickOrderList extends HTMLElement {
         type: `${this.stickyHeaderElement.getAttribute('data-sticky-type')}`
       };
     }
+    this.totalBar = this.querySelector('.quick-order-list__total');
+    if (this.totalBar) {
+      this.totalBarPosition = window.innerHeight - this.totalBar.offsetHeight;
 
-    this.totalBarPosition = window.innerHeight - this.querySelector('.quick-order-list__total').offsetHeight;
-
-    window.addEventListener('resize', () => {
-      this.totalBarPosition = window.innerHeight - this.querySelector('.quick-order-list__total').offsetHeight;
-      this.stickyHeader.height = this.stickyHeaderElement ? this.stickyHeaderElement.offsetHeight: null;
-    });
+      window.addEventListener('resize', () => {
+        this.totalBarPosition = window.innerHeight - this.totalBar.offsetHeight;
+        this.stickyHeader.height = this.stickyHeaderElement ? this.stickyHeaderElement.offsetHeight: 0;
+      });
+    }
 
     form.addEventListener('submit', this.onSubmit.bind(this));
     const debouncedOnChange = debounce((event) => {
@@ -209,34 +211,42 @@ class QuickOrderList extends HTMLElement {
     }
     this.variantListInput = event.target;
     this.variantListInput.select()
-    this.variantListInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        e.target.blur();
-        const currentIndex = this.allInputsArray.indexOf(e.target);
-
-        if (!e.shiftKey) {
-          const nextIndex = currentIndex + 1;
-          const nextVariant = this.allInputsArray[nextIndex] || this.allInputsArray[0];
-          nextVariant.select();
-        } else {
-          const previousIndex = currentIndex - 1;
-          const previousVariant = this.allInputsArray[previousIndex] || this.allInputsArray[this.allInputsArray.length - 1];
-          previousVariant.select();
+    if (this.allInputsArray.length !== 1) {
+      this.variantListInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          e.target.blur();
+          const currentIndex = this.allInputsArray.indexOf(e.target);
+          if (!e.shiftKey) {
+            const nextIndex = currentIndex + 1;
+            const nextVariant = this.allInputsArray[nextIndex] || this.allInputsArray[0];
+            nextVariant.select();
+          } else {
+            const previousIndex = currentIndex - 1;
+            const previousVariant = this.allInputsArray[previousIndex] || this.allInputsArray[this.allInputsArray.length - 1];
+            previousVariant.select();
+          }
         }
+      });
+
+      const inputTopBorder = this.variantListInput.getBoundingClientRect().top;
+      const inputBottomBorder = this.variantListInput.getBoundingClientRect().bottom;
+      const stickyHeaderBottomBorder = this.stickyHeaderElement && this.stickyHeaderElement.getBoundingClientRect().bottom;
+      const totalBarCrossesInput = inputBottomBorder > this.totalBarPosition;
+      const inputOutsideOfViewPort = inputBottomBorder < this.inputFieldHeight;
+      const stickyHeaderCrossesInput = this.stickyHeaderElement && this.stickyHeader.type !== 'on-scroll-up' && this.stickyHeader.height > inputTopBorder;
+      const stickyHeaderScrollupCrossesInput = this.stickyHeaderElement && this.stickyHeader.type === 'on-scroll-up' && this.stickyHeader.height > inputTopBorder && stickyHeaderBottomBorder > 0;
+
+      if (totalBarCrossesInput || inputOutsideOfViewPort || stickyHeaderCrossesInput || stickyHeaderScrollupCrossesInput) {
+        this.variantListInput.scrollIntoView({ block: 'center', behavior: 'smooth' });
       }
-    });
-
-    const inputTopBorder = this.variantListInput.getBoundingClientRect().top;
-    const inputBottomBorder = this.variantListInput.getBoundingClientRect().bottom;
-    const stickyHeaderBottomBorder = this.stickyHeaderElement && this.stickyHeaderElement.getBoundingClientRect().bottom;
-    const totalBarCrossesInput = inputBottomBorder > this.totalBarPosition;
-    const inputOutsideOfViewPort = inputBottomBorder < this.inputFieldHeight;
-    const stickyHeaderCrossesInput = this.stickyHeaderElement && this.stickyHeader.type !== 'on-scroll-up' && this.stickyHeader.height > inputTopBorder;
-    const stickyHeaderScrollupCrossesInput = this.stickyHeaderElement && this.stickyHeader.type === 'on-scroll-up' && this.stickyHeader.height > inputTopBorder && stickyHeaderBottomBorder > 0;
-
-    if (totalBarCrossesInput || inputOutsideOfViewPort || stickyHeaderCrossesInput || stickyHeaderScrollupCrossesInput) {
-      this.variantListInput.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    } else {
+      this.variantListInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          e.target.blur();
+        }
+      });
     }
   }
 
