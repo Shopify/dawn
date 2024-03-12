@@ -46,7 +46,6 @@ if (!customElements.get('quantity-popover')) {
         const isExpanded = button.getAttribute('aria-expanded') === 'true';
 
         if ((this.mql.matches && !isExpanded) || event.type === 'click') {
-          console.log('test')
           button.setAttribute('aria-expanded', !isExpanded);
   
           this.popoverInfo.toggleAttribute('hidden');
