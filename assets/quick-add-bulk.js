@@ -45,6 +45,10 @@ class QuickAddBulk extends HTMLElement {
     this.input = this.querySelector('quantity-input input');
   }
 
+  selectProgressBar() {
+    return this.querySelector('.progress-bar-container');
+  }
+
   listenForActiveInput() {
     if (!this.classList.contains('hidden')) {
       this.input.addEventListener('focusin', (event) => event.target.select());
@@ -84,7 +88,7 @@ class QuickAddBulk extends HTMLElement {
     this.lastActiveInputId = event.target.getAttribute('data-index');
     this.quantity = this.querySelector('quantity-input')
     // this.quantity.classList.add('loading');
-    this.querySelector('.progress-bar-container').classList.remove('hidden');
+    this.selectProgressBar().classList.remove('hidden');
     const body = JSON.stringify({
       quantity: event.target.value,
       id: event.target.getAttribute('data-index'),
@@ -102,7 +106,7 @@ class QuickAddBulk extends HTMLElement {
           event.target.setCustomValidity(parsedState.description);
           event.target.reportValidity();
           this.resetQuantityInput(event.target.id);
-          this.querySelector('.progress-bar-container').classList.add('hidden');
+          this.selectProgressBar().classList.add('hidden');
           event.target.select();
           return;
         }
@@ -117,7 +121,7 @@ class QuickAddBulk extends HTMLElement {
   }
 
   addToCart(event) {
-    this.querySelector('.progress-bar-container').classList.remove('hidden');
+    this.selectProgressBar().classList.remove('hidden');
     this.lastActiveInputId = event.target.getAttribute('data-index');
     const body = JSON.stringify({
       items: [
@@ -139,7 +143,7 @@ class QuickAddBulk extends HTMLElement {
           event.target.setCustomValidity(parsedState.description);
           event.target.reportValidity();
           this.resetQuantityInput(event.target.id);
-          this.querySelector('.progress-bar-container').classList.add('hidden');
+          this.selectProgressBar().classList.add('hidden');
           event.target.select();
           // Error handling
           return;
@@ -181,7 +185,6 @@ class QuickAddBulk extends HTMLElement {
   }
 
   renderSections(parsedState) {
-    console.log('test');
     this.getSectionsToRender().forEach((section => {
       const sectionElement = document.getElementById(section.id);
       if (sectionElement && sectionElement.parentElement && sectionElement.parentElement.classList.contains('drawer')) {
