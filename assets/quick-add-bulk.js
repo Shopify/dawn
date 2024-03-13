@@ -63,6 +63,12 @@ class QuickAddBulk extends HTMLElement {
     this.isEnterPressed = false;
   }
 
+  cleanErrorMessageOnType(event) {
+    event.target.addEventListener('keypress', () => {
+      event.target.setCustomValidity('');
+    }, { once: true });
+  }
+
   onCartUpdate() {
     fetch(`${window.location.pathname}?section_id=${document.getElementById('product-grid').dataset.id}`)
       .then((response) => response.text())
@@ -100,6 +106,7 @@ class QuickAddBulk extends HTMLElement {
           this.resetQuantityInput(event.target.id);
           this.selectProgressBar().classList.add('hidden');
           event.target.select();
+          this.cleanErrorMessageOnType(event);
           return;
         }
 
@@ -137,6 +144,7 @@ class QuickAddBulk extends HTMLElement {
           this.resetQuantityInput(event.target.id);
           this.selectProgressBar().classList.add('hidden');
           event.target.select();
+          this.cleanErrorMessageOnType(event);
           // Error handling
           return;
         }
