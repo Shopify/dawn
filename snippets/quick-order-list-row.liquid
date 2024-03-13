@@ -205,10 +205,73 @@
             <button
               type="button"
               aria-expanded="false"
+              aria-controls="quantity-popover-info-{{ variant.id }}"
+              aria-label="
+                {%- if has_vol_pricing -%}
+                  {{ 'products.product.volume_pricing.note' | t }}
+                {%- elsif has_qty_rules -%}
+                  {{ 'products.product.quantity.note' | t }}
+                {%- endif -%}
+              "
               class="quantity-popover__info-button quantity-popover__info-button--icon-only button button--tertiary small-hide medium-hide no-js-hidden"
             >
               {% render 'icon-info' %}
             </button>
+            <div
+              class="global-settings-popup quantity-popover__info"
+              tabindex="-1"
+              hidden
+              id="quantity-popover-info-{{ variant.id }}"
+            >
+              {%- if has_qty_rules == false -%}
+                <span class="volume-pricing-label caption">{{ 'products.product.volume_pricing.title' | t }}</span>
+              {%- endif -%}
+              <div class="quantity__rules caption no-js-hidden">
+                {%- if variant.quantity_rule.increment > 1 -%}
+                  <span class="divider">
+                    {{- 'products.product.quantity.multiples_of' | t: quantity: variant.quantity_rule.increment -}}
+                  </span>
+                {%- endif -%}
+                {%- if variant.quantity_rule.min > 1 -%}
+                  <span class="divider">
+                    {{- 'products.product.quantity.min_of' | t: quantity: variant.quantity_rule.min -}}
+                  </span>
+                {%- endif -%}
+                {%- if variant.quantity_rule.max != null -%}
+                  <span class="divider">
+                    {{- 'products.product.quantity.max_of' | t: quantity: variant.quantity_rule.max -}}
+                  </span>
+                {%- endif -%}
+              </div>
+              <button
+                class="button-close button button--tertiary large-up-hide"
+                type="button"
+                aria-label="{{ 'accessibility.close' | t }}"
+              >
+                {%- render 'icon-close' -%}
+              </button>
+              {%- if variant.quantity_price_breaks.size > 0 -%}
+                <volume-pricing class="parent-display">
+                  <ul class="list-unstyled">
+                    <li>
+                      <span>{{ variant.quantity_rule.min }}+</span>
+                      {%- assign price = variant.price | money_with_currency -%}
+                      <span>{{ 'sections.quick_order_list.each' | t: money: price }}</span>
+                    </li>
+                    {%- for price_break in variant.quantity_price_breaks -%}
+                      <li>
+                        <span>
+                          {{- price_break.minimum_quantity -}}
+                          <span aria-hidden="true">+</span></span
+                        >
+                        {%- assign price = price_break.price | money_with_currency -%}
+                        <span> {{ 'sections.quick_order_list.each' | t: money: price }}</span>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </volume-pricing>
+              {%- endif -%}
+            </div>
           {%- endif -%}
           {%- if variant.available == false or quantity_rule_soldout -%}
             <span class="variant-item__sold-out"> {{ 'products.product.sold_out' | t }} </span>
@@ -250,62 +313,6 @@
             {%- endif -%}
           </span>
         </button>
-      {%- endif -%}
-      {%- if has_vol_pricing or has_qty_rules -%}
-        <div
-          class="global-settings-popup quantity-popover__info"
-          tabindex="-1"
-          hidden
-        >
-          {%- if has_qty_rules == false -%}
-            <span class="volume-pricing-label caption">{{ 'products.product.volume_pricing.title' | t }}</span>
-          {%- endif -%}
-          <div class="quantity__rules caption no-js-hidden">
-            {%- if variant.quantity_rule.increment > 1 -%}
-              <span class="divider">
-                {{- 'products.product.quantity.multiples_of' | t: quantity: variant.quantity_rule.increment -}}
-              </span>
-            {%- endif -%}
-            {%- if variant.quantity_rule.min > 1 -%}
-              <span class="divider">
-                {{- 'products.product.quantity.minimum_of' | t: quantity: variant.quantity_rule.min -}}
-              </span>
-            {%- endif -%}
-            {%- if variant.quantity_rule.max != null -%}
-              <span class="divider">
-                {{- 'products.product.quantity.maximum_of' | t: quantity: variant.quantity_rule.max -}}
-              </span>
-            {%- endif -%}
-          </div>
-          <button
-            class="button-close button button--tertiary large-up-hide"
-            type="button"
-            aria-label="{{ 'accessibility.close' | t }}"
-          >
-            {%- render 'icon-close' -%}
-          </button>
-          {%- if variant.quantity_price_breaks.size > 0 -%}
-            <volume-pricing class="parent-display">
-              <ul class="list-unstyled">
-                <li>
-                  <span>{{ variant.quantity_rule.min }}+</span>
-                  {%- assign price = variant.price | money_with_currency -%}
-                  <span>{{ 'sections.quick_order_list.each' | t: money: price }}</span>
-                </li>
-                {%- for price_break in variant.quantity_price_breaks -%}
-                  <li>
-                    <span>
-                      {{- price_break.minimum_quantity -}}
-                      <span aria-hidden="true">+</span></span
-                    >
-                    {%- assign price = price_break.price | money_with_currency -%}
-                    <span> {{ 'sections.quick_order_list.each' | t: money: price }}</span>
-                  </li>
-                {%- endfor -%}
-              </ul>
-            </volume-pricing>
-          {%- endif -%}
-        </div>
       {%- endif -%}
       <div
         class="variant-item__error large-up-hide"
