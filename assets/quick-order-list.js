@@ -75,8 +75,8 @@ class QuickOrderList extends HTMLElement {
     const form = this.querySelector('form');
     this.inputFieldHeight = this.querySelector('.variant-item__quantity-wrapper').offsetHeight;
     this.isListInsideModal = document.querySelector('.quick-add-bulk');
-    this.tableHead = document.querySelector('.quick-order-list__table thead');
     this.stickyHeaderElement = document.querySelector('sticky-header');
+    this.getTableHead();
 
     if (this.stickyHeaderElement) {
       this.stickyHeader = {
@@ -212,13 +212,17 @@ class QuickOrderList extends HTMLElement {
     this.defineInputsAndQuickOrderTable();
   }
 
+  getTableHead() {
+    return this.tableHead = document.querySelector('.quick-order-list__table thead');
+  }
+
   scrollQuickOrderListTable() {
     const inputTopBorder = this.variantListInput.getBoundingClientRect().top;
     const inputBottomBorder = this.variantListInput.getBoundingClientRect().bottom;
 
     if (this.isListInsideModal) {
       const totalBarCrossesInput = inputBottomBorder > this.totalBar.getBoundingClientRect().top;
-      const tableHeadCrossesInput = inputTopBorder < this.tableHead.getBoundingClientRect().bottom;
+      const tableHeadCrossesInput = inputTopBorder < this.getTableHead().getBoundingClientRect().bottom;
 
       if (totalBarCrossesInput || tableHeadCrossesInput) {
         this.scrollToCenter();
