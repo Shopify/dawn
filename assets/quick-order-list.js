@@ -74,7 +74,7 @@ class QuickOrderList extends HTMLElement {
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
     const form = this.querySelector('form');
     this.inputFieldHeight = this.querySelector('.variant-item__quantity-wrapper').offsetHeight;
-    this.isListInsideModal = document.querySelector('.quick-add-bulk') ? true : false;
+    this.isListInsideModal = document.querySelector('.quick-add-bulk');
     this.tableHead = document.querySelector('.quick-order-list__table thead');
     this.stickyHeaderElement = document.querySelector('sticky-header');
 
