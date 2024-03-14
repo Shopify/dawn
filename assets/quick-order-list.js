@@ -221,7 +221,7 @@ class QuickOrderList extends HTMLElement {
       const tableHeadCrossesInput = inputTopBorder < this.tableHead.getBoundingClientRect().bottom;
 
       if (totalBarCrossesInput || tableHeadCrossesInput) {
-        this.variantListInput.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        this.scrollToCenter();
       }
     } else {
       const stickyHeaderBottomBorder = this.stickyHeaderElement && this.stickyHeaderElement.getBoundingClientRect().bottom;
@@ -231,9 +231,13 @@ class QuickOrderList extends HTMLElement {
       const stickyHeaderScrollupCrossesInput = this.stickyHeaderElement && this.stickyHeader.type === 'on-scroll-up' && this.stickyHeader.height > inputTopBorder && stickyHeaderBottomBorder > 0;
 
       if (totalBarCrossesInput || inputOutsideOfViewPort || stickyHeaderCrossesInput || stickyHeaderScrollupCrossesInput) {
-        this.variantListInput.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        this.scrollToCenter();
       }
     }
+  }
+
+  scrollToCenter() {
+    this.variantListInput.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
 
   switchVariants(event) {
