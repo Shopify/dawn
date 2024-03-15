@@ -144,7 +144,6 @@ class QuickOrderList extends HTMLElement {
   }
   
   validateQuantity(event, quantity, name) {
-    console.log(event.target.step, quantity, 'hey')
     if (quantity < event.target.dataset.min) {
       event.target.setCustomValidity('The min is wrong');
       event.target.reportValidity();
