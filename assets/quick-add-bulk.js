@@ -9,6 +9,7 @@ class QuickAddBulk extends HTMLElement {
         this.updateCart(event);
       }
     }, ON_CHANGE_DEBOUNCE_TIMER);
+
     this.addEventListener('change', debouncedOnChange.bind(this));
     this.listenForActiveInput();
     this.listenForKeydown();
@@ -36,6 +37,10 @@ class QuickAddBulk extends HTMLElement {
     return this.querySelector('quantity-input input');
   }
 
+  selectProgressBar() {
+    return this.querySelector('.progress-bar-container');
+  }
+
   listenForActiveInput() {
     if (!this.classList.contains('hidden')) {
       this.getInput().addEventListener('focusin', (event) => event.target.select());
@@ -50,6 +55,18 @@ class QuickAddBulk extends HTMLElement {
         this.isEnterPressed = true;
       }
     });
+  }
+
+  resetQuantityInput(id) {
+    const input = document.getElementById(id);
+    input.value = input.getAttribute('value');
+    this.isEnterPressed = false;
+  }
+
+  cleanErrorMessageOnType(event) {
+    event.target.addEventListener('keypress', () => {
+      event.target.setCustomValidity('');
+    }, { once: true });
   }
 
   onCartUpdate() {
@@ -69,7 +86,7 @@ class QuickAddBulk extends HTMLElement {
     this.lastActiveInputId = event.target.getAttribute('data-index');
     this.quantity = this.querySelector('quantity-input')
     // this.quantity.classList.add('loading');
-    this.querySelector('.progress-bar-container').classList.remove('hidden');
+    this.selectProgressBar().classList.remove('hidden');
     const body = JSON.stringify({
       quantity: event.target.value,
       id: event.target.getAttribute('data-index'),
@@ -84,10 +101,12 @@ class QuickAddBulk extends HTMLElement {
         const parsedState = JSON.parse(state);
 
         if (parsedState.description || parsedState.errors) {
-          // const errorElement = document.querySelector(`#Quick-add-bulk-item-error-desktop-${event.target.getAttribute('data-index')}`)
-          // errorElement.classList.remove('hidden')
-          // errorElement.querySelector('.variant-bulk__error-text').innerHTML = parsedState.description
-         // Update errors
+          event.target.setCustomValidity(parsedState.description);
+          event.target.reportValidity();
+          this.resetQuantityInput(event.target.id);
+          this.selectProgressBar().classList.add('hidden');
+          event.target.select();
+          this.cleanErrorMessageOnType(event);
           return;
         }
 
@@ -101,7 +120,7 @@ class QuickAddBulk extends HTMLElement {
   }
 
   addToCart(event) {
-    this.querySelector('.progress-bar-container').classList.remove('hidden');
+    this.selectProgressBar().classList.remove('hidden');
     this.lastActiveInputId = event.target.getAttribute('data-index');
     const body = JSON.stringify({
       items: [
@@ -120,7 +139,12 @@ class QuickAddBulk extends HTMLElement {
       .then((state) => {
         const parsedState = JSON.parse(state);
         if (parsedState.description || parsedState.errors) {
-          console.log('error add to cart', parsedState)
+          event.target.setCustomValidity(parsedState.description);
+          event.target.reportValidity();
+          this.resetQuantityInput(event.target.id);
+          this.selectProgressBar().classList.add('hidden');
+          event.target.select();
+          this.cleanErrorMessageOnType(event);
           // Error handling
           return;
         }
@@ -180,6 +204,7 @@ class QuickAddBulk extends HTMLElement {
     if (this.isEnterPressed) {
       this.querySelector(`#Quantity-${this.lastActiveInputId}`).select();
     }
+
     this.listenForActiveInput();
     this.listenForKeydown();
   }
