@@ -63,16 +63,6 @@ We relentlessly and continuously optimize code within the constraint of being We
 
 Themes must be built with purpose. They shouldn’t support each and every feature in Shopify.
 
-### JavaScript not required, fails gracefully
-
-_NoJS is our baseline._
-
-We extract every bit of speed and functionality out of HTTP, semantic HTML, and CSS before writing our first line of JavaScript.
-
-JavaScript can only be used to progressively enhance features. JavaScript cannot be required to find or purchase products. And the little JavaScript that we use must always fail gracefully, such that every browser gets the most “enhanced” experience that it can within the capabilities that it has.
-
->:information_source: We do so not because we expect buyers to experience our storefronts with JavaScript disabled, but because it keeps us aligned with the other principles: writing fast, server-rendered, Web-native code.
-
 ### Server-rendered
 
 _Our main constraint._
