@@ -71,7 +71,9 @@ class QuickOrderList extends HTMLElement {
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
     const form = this.querySelector('form');
     this.inputFieldHeight = this.querySelector('.variant-item__quantity-wrapper').offsetHeight;
+    this.isListInsideModal = document.querySelector('.quick-add-bulk');
     this.stickyHeaderElement = document.querySelector('sticky-header');
+    this.getTableHead();
 
     if (this.stickyHeaderElement) {
       this.stickyHeader = {
@@ -79,7 +81,9 @@ class QuickOrderList extends HTMLElement {
         type: `${this.stickyHeaderElement.getAttribute('data-sticky-type')}`
       };
     }
+
     this.totalBar = this.querySelector('.quick-order-list__total');
+
     if (this.totalBar) {
       this.totalBarPosition = window.innerHeight - this.totalBar.offsetHeight;
 
@@ -219,12 +223,46 @@ class QuickOrderList extends HTMLElement {
     this.defineInputsAndQuickOrderTable();
   }
 
+  getTableHead() {
+    return this.tableHead = document.querySelector('.quick-order-list__table thead');
+  }
+
+  scrollQuickOrderListTable() {
+    const inputTopBorder = this.variantListInput.getBoundingClientRect().top;
+    const inputBottomBorder = this.variantListInput.getBoundingClientRect().bottom;
+
+    if (this.isListInsideModal) {
+      const totalBarCrossesInput = inputBottomBorder > this.totalBar.getBoundingClientRect().top;
+      const tableHeadCrossesInput = inputTopBorder < this.getTableHead().getBoundingClientRect().bottom;
+
+      if (totalBarCrossesInput || tableHeadCrossesInput) {
+        this.scrollToCenter();
+      }
+    } else {
+      const stickyHeaderBottomBorder = this.stickyHeaderElement && this.stickyHeaderElement.getBoundingClientRect().bottom;
+      const totalBarCrossesInput = inputBottomBorder > this.totalBarPosition;
+      const inputOutsideOfViewPort = inputBottomBorder < this.inputFieldHeight;
+      const stickyHeaderCrossesInput = this.stickyHeaderElement && this.stickyHeader.type !== 'on-scroll-up' && this.stickyHeader.height > inputTopBorder;
+      const stickyHeaderScrollupCrossesInput = this.stickyHeaderElement && this.stickyHeader.type === 'on-scroll-up' && this.stickyHeader.height > inputTopBorder && stickyHeaderBottomBorder > 0;
+
+      if (totalBarCrossesInput || inputOutsideOfViewPort || stickyHeaderCrossesInput || stickyHeaderScrollupCrossesInput) {
+        this.scrollToCenter();
+      }
+    }
+  }
+
+  scrollToCenter() {
+    this.variantListInput.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
   switchVariants(event) {
     if (event.target.tagName !== 'INPUT') {
       return;
     }
+
     this.variantListInput = event.target;
     this.variantListInput.select()
+
     if (this.allInputsArray.length !== 1) {
       this.variantListInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -243,17 +281,8 @@ class QuickOrderList extends HTMLElement {
         }
       });
 
-      const inputTopBorder = this.variantListInput.getBoundingClientRect().top;
-      const inputBottomBorder = this.variantListInput.getBoundingClientRect().bottom;
-      const stickyHeaderBottomBorder = this.stickyHeaderElement && this.stickyHeaderElement.getBoundingClientRect().bottom;
-      const totalBarCrossesInput = inputBottomBorder > this.totalBarPosition;
-      const inputOutsideOfViewPort = inputBottomBorder < this.inputFieldHeight;
-      const stickyHeaderCrossesInput = this.stickyHeaderElement && this.stickyHeader.type !== 'on-scroll-up' && this.stickyHeader.height > inputTopBorder;
-      const stickyHeaderScrollupCrossesInput = this.stickyHeaderElement && this.stickyHeader.type === 'on-scroll-up' && this.stickyHeader.height > inputTopBorder && stickyHeaderBottomBorder > 0;
+      this.scrollQuickOrderListTable();
 
-      if (totalBarCrossesInput || inputOutsideOfViewPort || stickyHeaderCrossesInput || stickyHeaderScrollupCrossesInput) {
-        this.variantListInput.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      }
     } else {
       this.variantListInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
