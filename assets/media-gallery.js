@@ -29,11 +29,16 @@ if (!customElements.get('media-gallery')) {
       }
 
       setActiveMedia(mediaId) {
-        const activeMedia = this.elements.viewer.querySelector(`[data-media-id="${mediaId}"],[data-media-id]`);
+        const activeMedia =
+          this.elements.viewer.querySelector(`[data-media-id="${mediaId}"]`) ||
+          this.elements.viewer.querySelector('[data-media-id]');
+        if (!activeMedia) {
+          return;
+        }
         this.elements.viewer.querySelectorAll('[data-media-id]').forEach((element) => {
           element.classList.remove('is-active');
         });
-        activeMedia.classList.add('is-active');
+        activeMedia?.classList?.add('is-active');
 
         this.preventStickyHeader();
         window.setTimeout(() => {
