@@ -140,10 +140,26 @@ class QuickOrderList extends HTMLElement {
 
     const quantity = inputValue - cartQuantity;
 
+    this.validateQuantity(event, quantity, name);
+  }
+  
+  validateQuantity(event, quantity, name) {
+    console.log(event.target.step, quantity, 'hey')
+    if (quantity < event.target.dataset.min) {
+      event.target.setCustomValidity('The min is wrong');
+      event.target.reportValidity();
+    } else if (quantity > parseInt(event.target.max)) {
+      event.target.setCustomValidity('The max is wrong');
+      event.target.reportValidity();
+    } else if (quantity % parseInt(event.target.step) != 0) {
+      event.target.setCustomValidity('The increment is wrong');
+      event.target.reportValidity();
+    } else {
     if (cartQuantity > 0) {
       this.updateQuantity(index, inputValue, name, this.actions.update);
     } else {
       this.updateQuantity(index, quantity, name, this.actions.add);
+    }
     }
   }
 
