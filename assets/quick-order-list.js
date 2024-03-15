@@ -154,12 +154,12 @@ class QuickOrderList extends HTMLElement {
       event.target.setCustomValidity(`This item has an increment of ${event.target.step}`);
       event.target.reportValidity();
     } else {
-    if (cartQuantity > 0) {
-      this.updateQuantity(index, inputValue, name, this.actions.update);
-    } else {
-      this.updateQuantity(index, quantity, name, this.actions.add);
-    }
-    }
+      if (cartQuantity > 0) {
+        this.updateQuantity(index, inputValue, name, this.actions.update);
+      } else {
+        this.updateQuantity(index, quantity, name, this.actions.add);
+      }
+   }
   }
 
   onCartUpdate() {
