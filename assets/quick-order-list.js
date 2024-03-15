@@ -145,13 +145,13 @@ class QuickOrderList extends HTMLElement {
   
   validateQuantity(event, quantity, name) {
     if (quantity < event.target.dataset.min) {
-      event.target.setCustomValidity('The min is wrong');
+      event.target.setCustomValidity(`This item has a min of ${event.target.dataset.min}`);
       event.target.reportValidity();
     } else if (quantity > parseInt(event.target.max)) {
-      event.target.setCustomValidity('The max is wrong');
+      event.target.setCustomValidity(`This item has a max of ${event.target.max}`);
       event.target.reportValidity();
     } else if (quantity % parseInt(event.target.step) != 0) {
-      event.target.setCustomValidity('The increment is wrong');
+      event.target.setCustomValidity(`This item has an increment of ${event.target.step}`);
       event.target.reportValidity();
     } else {
     if (cartQuantity > 0) {
