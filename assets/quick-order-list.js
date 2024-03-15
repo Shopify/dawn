@@ -140,20 +140,25 @@ class QuickOrderList extends HTMLElement {
 
     const quantity = inputValue - cartQuantity;
 
-    this.validateQuantity(event, quantity, name, index, cartQuantity, inputValue);
+    if (inputValue == 0) {
+      this.updateQuantity(index, inputValue, name, this.actions.update);
+    } else {
+      this.validateQuantity(event, name, index, inputValue, cartQuantity, quantity);
+    }
   }
   
-  validateQuantity(event, quantity, name, index, cartQuantity, inputValue) {
-    if (quantity < event.target.dataset.min) {
+  validateQuantity(event, name, index, inputValue, cartQuantity) {
+    if (inputValue < event.target.dataset.min) {
       event.target.setCustomValidity(`This item has a min of ${event.target.dataset.min}`);
       event.target.reportValidity();
-    } else if (quantity > parseInt(event.target.max)) {
+    } else if (inputValue > parseInt(event.target.max)) {
       event.target.setCustomValidity(`This item has a max of ${event.target.max}`);
       event.target.reportValidity();
-    } else if (quantity % parseInt(event.target.step) != 0) {
+    } else if (inputValue % parseInt(event.target.step) != 0) {
       event.target.setCustomValidity(`This item has an increment of ${event.target.step}`);
       event.target.reportValidity();
     } else {
+      event.target.setCustomValidity('');
       if (cartQuantity > 0) {
         this.updateQuantity(index, inputValue, name, this.actions.update);
       } else {
