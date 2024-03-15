@@ -140,10 +140,10 @@ class QuickOrderList extends HTMLElement {
 
     const quantity = inputValue - cartQuantity;
 
-    this.validateQuantity(event, quantity, name);
+    this.validateQuantity(event, quantity, name, index, cartQuantity, inputValue);
   }
   
-  validateQuantity(event, quantity, name) {
+  validateQuantity(event, quantity, name, index, cartQuantity, inputValue) {
     if (quantity < event.target.dataset.min) {
       event.target.setCustomValidity(`This item has a min of ${event.target.dataset.min}`);
       event.target.reportValidity();
