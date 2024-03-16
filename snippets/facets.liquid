@@ -19,6 +19,7 @@
 {%- liquid
   assign sort_by = results.sort_by | default: results.default_sort_by
   assign total_active_values = 0
+  assign default_presentation = 'text'
   if results.url
     assign results_url = results.url
   else
@@ -84,21 +85,13 @@
                     </facet-remove>
                   {%- endfor -%}
                   {% if filter.type == 'price_range' %}
-                    {%- if filter.min_value.value != null or filter.max_value.value != null -%}
+                    {% assign min = filter.min_value.value %}
+                    {% assign max = filter.max_value.value %}
+                    {%- if min != null or max != null -%}
                       <facet-remove>
                         <a href="{{ filter.url_to_remove }}" class="active-facets__button active-facets__button--light">
                           <span class="active-facets__button-inner button button--tertiary">
-                            {%- if filter.min_value.value -%}
-                              {{ filter.min_value.value | money }}
-                            {%- else -%}
-                              {{ 0 | money }}
-                            {%- endif -%}
-                            -
-                            {%- if filter.max_value.value -%}
-                              {{ filter.max_value.value | money }}
-                            {%- else -%}
-                              {{ filter.range_max | money }}
-                            {%- endif -%}
+                            {{ min | default: 0 | money }} - {{ max | default: filter.range_max | money }}
                             {% render 'icon-close-small' %}
                             <span class="visually-hidden">{{ 'products.facets.clear_filter' | t }}</span>
                           </span>
@@ -115,14 +108,15 @@
             {%- for filter in results.filters -%}
               {% liquid
                 assign total_active_values = total_active_values | plus: filter.active_values.size
-                case filter.presentation
-                  when 'swatch'
-                    assign show_more_number = 15
-                    assign visual_layout_class = 'facets-layout-grid facets-layout-grid--' | append: filter.presentation
-                  else
-                    assign show_more_number = 10
-                    assign visual_layout_class = 'facets-layout-list'
-                endcase
+                assign presentation = filter.presentation | default: default_presentation
+
+                if presentation == 'image'
+                  assign show_more_number = 12
+                  assign visual_layout_class = 'facets-layout facets-layout-grid facets-layout-grid--' | append: presentation
+                else
+                  assign show_more_number = 10
+                  assign visual_layout_class = 'facets-layout facets-layout-list facets-layout-list--' | append: presentation
+                endif
               %}
 
               {% case filter.type %}
@@ -143,7 +137,7 @@
                         <span class="facets__summary-label">
                           {{- filter.label | escape }}
                           {%- if filter_type == 'vertical' -%}
-                            <span class="facets__selected no-js-hidden{% if filter.active_values.size == 0 %} hidden{% endif %}">
+                            <span class="facets__selected{% if filter.active_values.size == 0 %} hidden{% endif %}">
                               ({{ filter.active_values.size }})</span
                             >
                           {%- endif -%}
@@ -163,7 +157,7 @@
                       {%- if filter_type != 'vertical' -%}
                         <div class="facets__header">
                           <div>
-                            <span class="facets__selected no-js-hidden">
+                            <span class="facets__selected">
                               {{- 'products.facets.filters_selected' | t: count: filter.active_values.size -}}
                             </span>
                             {%- if filter.operator == 'AND' -%}
@@ -191,7 +185,7 @@
                           endif
                         -%}
                         <ul
-                          class="{{ visual_layout_class }}{% if filter_type == 'vertical' %} facets__list--vertical{% else %} facets__list{% endif %} list-unstyled no-js-hidden"
+                          class="{{ visual_layout_class }}{% if filter_type == 'vertical' %} facets__list--vertical{% else %} facets__list{% endif %} list-unstyled"
                           role="list"
                         >
                           {%- for value in sorted_values -%}
@@ -208,7 +202,7 @@
 
                             {%- capture text_value -%}
                               <span class="facet-checkbox__text" aria-hidden="true">
-                                {{- value.label | escape }} ({{- value.count -}})
+                                <span class="facet-checkbox__text-label">{{- value.label | escape }}</span> ({{- value.count -}})
                               </span>
                               <span class="visually-hidden">
                                 {{- value.label | escape }} (
@@ -222,9 +216,9 @@
                             {%- endcapture -%}
 
                             <li class="list-menu__item facets__item{% if forloop.index > show_more_number and filter_type == 'vertical' %} show-more-item hidden{% endif %}">
-                              {%- if filter.presentation == 'swatch' -%}
+                              {%- if presentation == 'swatch' -%}
                                 <div class="{{ label_class }}">
-                                  <div>
+                                  <div class="swatch-input-wrapper">
                                     {% render 'swatch-input',
                                       id: input_id,
                                       type: 'checkbox',
@@ -254,129 +248,43 @@
                                     {% endif %}
                                   >
 
-                                  <svg
-                                    width="1.6rem"
-                                    height="1.6rem"
-                                    viewBox="0 0 16 16"
-                                    aria-hidden="true"
-                                    focusable="false"
-                                  >
-                                    <rect width="16" height="16" stroke="currentColor" fill="none" stroke-width="1"></rect>
-                                  </svg>
+                                  {%- if presentation == 'image' -%}
+                                    <div class="facets__image-wrapper">
+                                      {%- if value.image -%}
+                                        {{
+                                          value.image
+                                          | image_url: width: 300
+                                          | image_tag: class: 'facets__image', alt: value.alt
+                                        }}
+                                      {%- endif -%}
+                                    </div>
+                                  {%- else -%}
+                                    <svg
+                                      width="1.6rem"
+                                      height="1.6rem"
+                                      viewBox="0 0 16 16"
+                                      aria-hidden="true"
+                                      focusable="false"
+                                    >
+                                      <rect width="16" height="16" stroke="currentColor" fill="none" stroke-width="1"></rect>
+                                    </svg>
 
-                                  <svg
-                                    aria-hidden="true"
-                                    class="icon icon-checkmark"
-                                    width="1.1rem"
-                                    height="0.7rem"
-                                    viewBox="0 0 11 7"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path d="M1.5 3.5L2.83333 4.75L4.16667 6L9.5 1"
-                                      stroke="currentColor"
-                                      stroke-width="1.75"
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round" />
-                                  </svg>
-
-                                  {{ text_value }}
-                                </label>
-                              {%- endif -%}
-                            </li>
-                          {%- endfor -%}
-                        </ul>
-                        {% comment %} No show more for no JS {% endcomment %}
-                        <ul
-                          class="{{ visual_layout_class }}{% if filter_type == 'vertical' %} facets__list--vertical{% else %} facets__list{% endif %} no-js-list list-unstyled no-js"
-                          role="list"
-                        >
-                          {%- for value in sorted_values -%}
-                            {% liquid
-                              assign input_id = 'Filter-' | append: filter.param_name | escape | append: '-' | append: forloop.index | append: 'no-js'
-                              assign is_disabled = false
-                              if value.count == 0 and value.active == false
-                                assign is_disabled = true
-                              endif
-                            %}
-
-                            {%- capture label_class -%}
-                            facets__label facet-checkbox{% if is_disabled %} disabled{% endif %}{% if value.active %} active{% endif %}
-                            {%- endcapture -%}
-
-                            {%- capture text_value -%}
-                              <span class="facet-checkbox__text" aria-hidden="true">
-                                {{- value.label | escape }} ({{- value.count -}})
-                              </span>
-                              <span class="visually-hidden">
-                                {{- value.label | escape }} (
-                                {%- if value.count == 1 -%}
-                                  {{- 'products.facets.product_count_simple.one' | t: count: value.count -}}
-                                {%- else -%}
-                                  {{- 'products.facets.product_count_simple.other' | t: count: value.count -}}
-                                {%- endif -%}
-                                )
-                              </span>
-                            {%- endcapture -%}
-
-                            <li class="list-menu__item facets__item">
-                              {%- if filter.presentation == 'swatch' -%}
-                                <div class="{{ label_class }}">
-                                  <div>
-                                    {% render 'swatch-input',
-                                      id: input_id,
-                                      type: 'checkbox',
-                                      name: value.param_name,
-                                      value: value.value,
-                                      product_form_id: 'FacetFiltersForm',
-                                      swatch: value.swatch,
-                                      checked: value.active,
-                                      disabled: is_disabled
-                                    %}
-                                  </div>
-
-                                  {{ text_value }}
-                                </div>
-                              {%- else -%}
-                                <label for="{{ input_id }}" class="{{ label_class }}">
-                                  <input
-                                    type="checkbox"
-                                    name="{{ value.param_name }}"
-                                    value="{{ value.value }}"
-                                    id="{{ input_id }}"
-                                    {% if value.active %}
-                                      checked
-                                    {% endif %}
-                                    {% if is_disabled %}
-                                      disabled
-                                    {% endif %}
-                                  >
-
-                                  <svg
-                                    width="1.6rem"
-                                    height="1.6rem"
-                                    viewBox="0 0 16 16"
-                                    aria-hidden="true"
-                                    focusable="false"
-                                  >
-                                    <rect width="16" height="16" stroke="currentColor" fill="none" stroke-width="1"></rect>
-                                  </svg>
-
-                                  <svg
-                                    aria-hidden="true"
-                                    class="icon icon-checkmark"
-                                    width="1.1rem"
-                                    height="0.7rem"
-                                    viewBox="0 0 11 7"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path d="M1.5 3.5L2.83333 4.75L4.16667 6L9.5 1"
-                                      stroke="currentColor"
-                                      stroke-width="1.75"
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round" />
-                                  </svg>
+                                    <svg
+                                      aria-hidden="true"
+                                      class="icon icon-checkmark"
+                                      width="1.1rem"
+                                      height="0.7rem"
+                                      viewBox="0 0 11 7"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path d="M1.5 3.5L2.83333 4.75L4.16667 6L9.5 1"
+                                        stroke="currentColor"
+                                        stroke-width="1.75"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                    </svg>
+                                  {%- endif -%}
 
                                   {{ text_value }}
                                 </label>
@@ -388,7 +296,7 @@
                       {%- if filter.values.size > show_more_number and filter_type == 'vertical' -%}
                         <show-more-button>
                           <button
-                            class="button-show-more link underlined-link no-js-hidden"
+                            class="button-show-more link underlined-link"
                             id="Show-More-{{ forloop.index }}-{{ section.id }}"
                             type="button"
                           >
@@ -404,13 +312,6 @@
                     </div>
                   </details>
                 {% when 'price_range' %}
-                  {% liquid
-                    assign currencies_using_comma_decimals = 'ANG,ARS,BRL,BYN,BYR,CLF,CLP,COP,CRC,CZK,DKK,EUR,HRK,HUF,IDR,ISK,MZN,NOK,PLN,RON,RUB,SEK,UYU,VES,VND' | split: ','
-                    assign uses_comma_decimals = false
-                    if currencies_using_comma_decimals contains cart.currency.iso_code
-                      assign uses_comma_decimals = true
-                    endif
-                  %}
                   <details
                     id="Details-{{ filter.param_name | escape }}-{{ section.id }}"
                     class="{% if filter_type == 'horizontal' %}disclosure-has-popup facets__disclosure{% else %} facets__disclosure-vertical{% endif %} js-filter"
@@ -443,71 +344,12 @@
                         {%- endif -%}
                       </div>
                       <price-range class="facets__price">
-                        <span class="field-currency">{{ cart.currency.symbol }}</span>
-                        <div class="field">
-                          <input
-                            class="field__input"
-                            name="{{ filter.min_value.param_name }}"
-                            id="Filter-{{ filter.label | escape }}-GTE"
-                            {%- if filter.min_value.value -%}
-                              {%- if uses_comma_decimals -%}
-                                value="{{ filter.min_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
-                              {%- else -%}
-                                value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"
-                              {%- endif %}
-                            {%- endif -%}
-                            type="number"
-                            placeholder="0"
-                            min="0"
-                            {%- if uses_comma_decimals -%}
-                              max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
-                            {%- else -%}
-                              max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
-                            {% endif %}
-                          >
-                          <label class="field__label" for="Filter-{{ filter.label | escape }}-GTE">
-                            {{- 'products.facets.from' | t -}}
-                          </label>
-                        </div>
-                        {%- if filter_type != 'vertical' -%}
-                          <span class="field-currency">{{ cart.currency.symbol }}</span>
-                        {%- endif -%}
-                        <div class="field">
-                          <input
-                            class="field__input"
-                            name="{{ filter.max_value.param_name }}"
-                            id="Filter-{{ filter.label | escape }}-LTE"
-                            {%- if filter.max_value.value -%}
-                              {%- if uses_comma_decimals -%}
-                                value="{{ filter.max_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
-                              {%- else -%}
-                                value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"
-                              {%- endif %}
-                            {%- endif -%}
-                            type="number"
-                            min="0"
-                            {%- if uses_comma_decimals -%}
-                              placeholder="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
-                              max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
-                            {%- else -%}
-                              placeholder="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
-                              max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
-                            {% endif %}
-                          >
-                          <label class="field__label" for="Filter-{{ filter.label | escape }}-LTE">
-                            {{- 'products.facets.to' | t -}}
-                          </label>
-                        </div>
+                        {% render 'price-facet', filter: filter, id_prefix: 'Filter-', filter_type: filter_type %}
                       </price-range>
                     </div>
                   </details>
               {% endcase %}
             {%- endfor -%}
-            <noscript>
-              <button type="submit" class="facets__button-no-js button button--secondary">
-                {{ 'products.facets.filter_button' | t }}
-              </button>
-            </noscript>
           </div>
           {% comment %} Pills after filtes on filter type horizontal {% endcomment %}
           {%- if filter_type == 'horizontal' -%}
@@ -525,21 +367,13 @@
                   </facet-remove>
                 {%- endfor -%}
                 {% if filter.type == 'price_range' %}
-                  {%- if filter.min_value.value != null or filter.max_value.value != null -%}
+                  {% assign min = filter.min_value.value %}
+                  {% assign max = filter.max_value.value %}
+                  {%- if min != null or max != null -%}
                     <facet-remove>
                       <a href="{{ filter.url_to_remove }}" class="active-facets__button active-facets__button--light">
                         <span class="active-facets__button-inner button button--tertiary">
-                          {%- if filter.min_value.value -%}
-                            {{ filter.min_value.value | money }}
-                          {%- else -%}
-                            {{ 0 | money }}
-                          {%- endif -%}
-                          -
-                          {%- if filter.max_value.value -%}
-                            {{ filter.max_value.value | money }}
-                          {%- else -%}
-                            {{ filter.range_max | money }}
-                          {%- endif -%}
+                          {{ min | default: 0 | money }} - {{ max | default: filter.range_max | money }}
                           {% render 'icon-close-small' %}
                           <span class="visually-hidden">{{ 'products.facets.clear_filter' | t }}</span>
                         </span>
@@ -591,12 +425,6 @@
                   {% render 'icon-caret' %}
                 </div>
               </div>
-
-              <noscript>
-                <button type="submit" class="facets__button-no-js button button--secondary">
-                  {{ 'products.facets.sort_button' | t }}
-                </button>
-              </noscript>
             </div>
           {%- endif -%}
           <div class="product-count light" role="status">
@@ -619,56 +447,6 @@
         {%- endif -%}
       </form>
     </facet-filters-form>
-    {% comment %} Sorting for vertical filter are grouped with filter when no JS{% endcomment %}
-    {%- if enable_sorting and filter_type == 'vertical' -%}
-      <facet-filters-form class="small-hide">
-        <form class="no-js">
-          <div class="facet-filters sorting caption">
-            <div class="facet-filters__field">
-              <h2 class="facet-filters__label caption-large text-body">
-                <label for="SortBy">{{ 'products.facets.sort_by_label' | t }}</label>
-              </h2>
-              <div class="select">
-                {%- assign sort_by = results.sort_by | default: results.default_sort_by -%}
-                <select
-                  name="sort_by"
-                  class="facet-filters__sort select__select caption-large"
-                  id="SortBy"
-                  aria-describedby="a11y-refresh-page-message"
-                >
-                  {%- for option in results.sort_options -%}
-                    <option
-                      value="{{ option.value | escape }}"
-                      {% if option.value == sort_by %}
-                        selected="selected"
-                      {% endif %}
-                    >
-                      {{ option.name | escape }}
-                    </option>
-                  {%- endfor -%}
-                </select>
-                {% render 'icon-caret' %}
-              </div>
-            </div>
-
-            <noscript>
-              <button type="submit" class="facets__button-no-js button button--secondary">
-                {{ 'products.facets.sort_button' | t }}
-              </button>
-            </noscript>
-          </div>
-
-          {% if results.current_vendor or results.current_type %}
-            <input type="hidden" name="q" value="{{ results.current_vendor }}{{ results.current_type }}">
-          {% endif %}
-
-          {%- if results.terms -%}
-            <input type="hidden" name="q" value="{{ results.terms | escape }}">
-            <input name="options[prefix]" type="hidden" value="last">
-          {%- endif -%}
-        </form>
-      </facet-filters-form>
-    {%- endif -%}
   {%- endif -%}
   {% comment %}  Drawer and mobile filter {% endcomment %}
   <menu-drawer
@@ -694,7 +472,7 @@
             {%- endif -%}
           </span>
         </span>
-        <span tabindex="0" class="mobile-facets__close mobile-facets__close--no-js">{%- render 'icon-close' -%}</span>
+        <span tabindex="0" class="mobile-facets__close">{%- render 'icon-close' -%}</span>
       </summary>
       <facet-filters-form>
         <form id="FacetFiltersFormMobile" class="mobile-facets">
@@ -736,12 +514,12 @@
               {%- if enable_filtering -%}
                 {%- for filter in results.filters -%}
                   {% liquid
-                    case filter.presentation
-                      when 'swatch'
-                        assign visual_layout_class = 'facets-layout-grid facets-layout-grid--' | append: filter.presentation
-                      else
-                        assign visual_layout_class = 'facets-layout-list'
-                    endcase
+                    assign presentation = filter.presentation | default: default_presentation
+                    if presentation == 'image'
+                      assign visual_layout_class = 'facets-layout facets-layout-grid facets-layout-grid--' | append: presentation
+                    else
+                      assign visual_layout_class = 'facets-layout facets-layout-list facets-layout-list--' | append: presentation
+                    endif
                   %}
 
                   {% case filter.type %}
@@ -754,8 +532,7 @@
                         <summary class="mobile-facets__summary focus-inset">
                           <div>
                             <span>{{ filter.label | escape }}</span>
-                            <span class="mobile-facets__arrow no-js-hidden">{% render 'icon-arrow' %}</span>
-                            <noscript>{% render 'icon-caret' %}</noscript>
+                            <span class="mobile-facets__arrow">{% render 'icon-arrow' %}</span>
                           </div>
                         </summary>
                         <div
@@ -800,7 +577,7 @@
 
                               {%- capture text_value -%}
                                 <span class="facet-checkbox__text" aria-hidden="true">
-                                  {{- value.label | escape }} ({{- value.count -}})
+                                  <span class="facet-checkbox__text-label">{{- value.label | escape }}</span> ({{- value.count -}})
                                 </span>
                                 <span class="visually-hidden">
                                   {{- value.label | escape }} (
@@ -814,9 +591,9 @@
                               {%- endcapture -%}
 
                               <li class="mobile-facets__item list-menu__item">
-                                {% if filter.presentation == 'swatch' %}
+                                {% if presentation == 'swatch' %}
                                   <div class="{{ label_class }}">
-                                    <div>
+                                    <div class="swatch-input-wrapper">
                                       {% render 'swatch-input',
                                         id: input_id,
                                         type: 'checkbox',
@@ -847,29 +624,41 @@
                                       {% endif %}
                                     >
 
-                                    <span class="mobile-facets__highlight"></span>
+                                    {%- if presentation == 'image' -%}
+                                      <div class="facets__image-wrapper">
+                                        {%- if value.image -%}
+                                          {{
+                                            value.image
+                                            | image_url: width: 300
+                                            | image_tag: class: 'facets__image', alt: value.alt
+                                          }}
+                                        {%- endif -%}
+                                      </div>
+                                    {%- else -%}
+                                      <span class="mobile-facets__highlight"></span>
 
-                                    <svg
-                                      width="1.6rem"
-                                      height="1.6rem"
-                                      viewBox="0 0 16 16"
-                                      aria-hidden="true"
-                                      focusable="false"
-                                    >
-                                      <rect width="16" height="16" stroke="currentColor" fill="none" stroke-width="1"></rect>
-                                    </svg>
+                                      <svg
+                                        width="1.6rem"
+                                        height="1.6rem"
+                                        viewBox="0 0 16 16"
+                                        aria-hidden="true"
+                                        focusable="false"
+                                      >
+                                        <rect width="16" height="16" stroke="currentColor" fill="none" stroke-width="1"></rect>
+                                      </svg>
 
-                                    <svg
-                                      aria-hidden="true"
-                                      class="icon icon-checkmark"
-                                      width="1.1rem"
-                                      height="0.7rem"
-                                      viewBox="0 0 11 7"
-                                      fill="none"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                      <path d="M1.5 3.5L2.83333 4.75L4.16667 6L9.5 1" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
+                                      <svg
+                                        aria-hidden="true"
+                                        class="icon icon-checkmark"
+                                        width="1.1rem"
+                                        height="0.7rem"
+                                        viewBox="0 0 11 7"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path d="M1.5 3.5L2.83333 4.75L4.16667 6L9.5 1" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+                                      </svg>
+                                    {%- endif %}
 
                                     {{ text_value }}
                                   </label>
@@ -878,7 +667,7 @@
                             {%- endfor -%}
                           </ul>
 
-                          <div class="no-js-hidden mobile-facets__footer gradient">
+                          <div class="mobile-facets__footer gradient">
                             <facet-remove class="mobile-facets__clear-wrapper">
                               <a href="{{ filter.url_to_remove }}" class="mobile-facets__clear underlined-link">
                                 {{- 'products.facets.clear' | t -}}
@@ -886,27 +675,15 @@
                             </facet-remove>
                             <button
                               type="button"
-                              class="no-js-hidden button button--primary"
+                              class="button button--primary"
                               onclick="this.closest('.mobile-facets__wrapper').querySelector('summary').click()"
                             >
                               {{ 'products.facets.apply' | t }}
                             </button>
-                            <noscript
-                              ><button class="button button--primary">
-                                {{ 'products.facets.apply' | t }}
-                              </button></noscript
-                            >
                           </div>
                         </div>
                       </details>
                     {% when 'price_range' %}
-                      {% liquid
-                        assign currencies_using_comma_decimals = 'ANG,ARS,BRL,BYN,BYR,CLF,CLP,COP,CRC,CZK,DKK,EUR,HRK,HUF,IDR,ISK,MZN,NOK,PLN,RON,RUB,SEK,UYU,VES,VND' | split: ','
-                        assign uses_comma_decimals = false
-                        if currencies_using_comma_decimals contains cart.currency.iso_code
-                          assign uses_comma_decimals = true
-                        endif
-                      %}
                       <details
                         id="Details-Mobile-{{ filter.param_name | escape }}-{{ section.id }}"
                         class="mobile-facets__details js-filter"
@@ -915,8 +692,7 @@
                         <summary class="mobile-facets__summary focus-inset">
                           <div>
                             <span>{{ filter.label | escape }}</span>
-                            <span class="mobile-facets__arrow no-js-hidden">{% render 'icon-arrow' %}</span>
-                            <noscript>{% render 'icon-caret' %}</noscript>
+                            <span class="mobile-facets__arrow">{% render 'icon-arrow' %}</span>
                           </div>
                         </summary>
                         <div
@@ -938,64 +714,9 @@
                           </p>
 
                           <price-range class="facets__price">
-                            <span class="field-currency">{{ cart.currency.symbol }}</span>
-                            <div class="field">
-                              <input
-                                class="field__input"
-                                name="{{ filter.min_value.param_name }}"
-                                id="Mobile-Filter-{{ filter.label | escape }}-GTE"
-                                {%- if filter.min_value.value -%}
-                                  {%- if uses_comma_decimals -%}
-                                    value="{{ filter.min_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
-                                  {%- else -%}
-                                    value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"
-                                  {%- endif %}
-                                {%- endif -%}
-                                type="number"
-                                placeholder="0"
-                                min="0"
-                                inputmode="decimal"
-                                {%- if uses_comma_decimals -%}
-                                  max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
-                                {%- else -%}
-                                  max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
-                                {% endif %}
-                              >
-                              <label class="field__label" for="Mobile-Filter-{{ filter.label | escape }}-GTE">
-                                {{- 'products.facets.from' | t -}}
-                              </label>
-                            </div>
-
-                            <span class="field-currency">{{ cart.currency.symbol }}</span>
-                            <div class="field">
-                              <input
-                                class="field__input"
-                                name="{{ filter.max_value.param_name }}"
-                                id="Mobile-Filter-{{ filter.label | escape }}-LTE"
-                                {%- if filter.max_value.value -%}
-                                  {%- if uses_comma_decimals -%}
-                                    value="{{ filter.max_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
-                                  {%- else -%}
-                                    value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"
-                                  {%- endif %}
-                                {%- endif -%}
-                                type="number"
-                                min="0"
-                                inputmode="decimal"
-                                {%- if uses_comma_decimals -%}
-                                  placeholder="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
-                                  max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' }}"
-                                {%- else -%}
-                                  placeholder="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
-                                  max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"
-                                {% endif %}
-                              >
-                              <label class="field__label" for="Mobile-Filter-{{ filter.label | escape }}-LTE">
-                                {{- 'products.facets.to' | t -}}
-                              </label>
-                            </div>
+                            {% render 'price-facet', filter: filter, id_prefix: 'Mobile-Filter-' %}
                           </price-range>
-                          <div class="no-js-hidden mobile-facets__footer">
+                          <div class="mobile-facets__footer">
                             <facet-remove class="mobile-facets__clear-wrapper">
                               <a href="{{ filter.url_to_remove }}" class="mobile-facets__clear underlined-link">
                                 {{- 'products.facets.clear' | t -}}
@@ -1003,16 +724,11 @@
                             </facet-remove>
                             <button
                               type="button"
-                              class="no-js-hidden button button--primary"
+                              class="button button--primary"
                               onclick="this.closest('.mobile-facets__wrapper').querySelector('summary').click()"
                             >
                               {{ 'products.facets.apply' | t }}
                             </button>
-                            <noscript
-                              ><button class="button button--primary">
-                                {{ 'products.facets.apply' | t }}
-                              </button></noscript
-                            >
                           </div>
                         </div>
                       </details>
@@ -1062,14 +778,11 @@
                 </facet-remove>
                 <button
                   type="button"
-                  class="no-js-hidden button button--primary"
+                  class="button button--primary"
                   onclick="this.closest('.mobile-facets__wrapper').querySelector('summary').click()"
                 >
                   {{ 'products.facets.apply' | t }}
                 </button>
-                <noscript
-                  ><button class="button button--primary">{{ 'products.facets.apply' | t }}</button></noscript
-                >
               </div>
             </div>
 
@@ -1102,21 +815,13 @@
       {%- endfor -%}
 
       {%- if filter.type == 'price_range' -%}
-        {%- if filter.min_value.value != null or filter.max_value.value != null -%}
+        {% assign min = filter.min_value.value %}
+        {% assign max = filter.max_value.value %}
+        {%- if min != null or max != null -%}
           <facet-remove>
             <a href="{{ filter.url_to_remove }}" class="active-facets__button active-facets__button--light">
               <span class="active-facets__button-inner button button--tertiary">
-                {%- if filter.min_value.value -%}
-                  {{ filter.min_value.value | money }}
-                {%- else -%}
-                  {{ 0 | money }}
-                {%- endif -%}
-                -
-                {%- if filter.max_value.value -%}
-                  {{ filter.max_value.value | money }}
-                {%- else -%}
-                  {{ filter.range_max | money }}
-                {%- endif -%}
+                {{ min | default: 0 | money }} - {{ max | default: filter.range_max | money }}
                 {% render 'icon-close-small' %}
                 <span class="visually-hidden">{{ 'products.facets.clear_filter' | t }}</span>
               </span>
@@ -1162,12 +867,6 @@
               {% render 'icon-caret' %}
             </div>
           </div>
-
-          <noscript>
-            <button type="submit" class="facets__button-no-js button button--secondary">
-              {{ 'products.facets.sort_button' | t }}
-            </button>
-          </noscript>
         </div>
 
         {% if results.current_vendor or results.current_type %}
@@ -1219,21 +918,13 @@
             {%- endfor -%}
 
             {%- if filter.type == 'price_range' -%}
-              {%- if filter.min_value.value != null or filter.max_value.value != null -%}
+              {% assign min = filter.min_value.value %}
+              {% assign max = filter.max_value.value %}
+              {%- if min != null or max != null -%}
                 <facet-remove>
                   <a href="{{ filter.url_to_remove }}" class="active-facets__button active-facets__button--light">
                     <span class="active-facets__button-inner button button--tertiary">
-                      {%- if filter.min_value.value -%}
-                        {{ filter.min_value.value | money }}
-                      {%- else -%}
-                        {{ 0 | money }}
-                      {%- endif -%}
-                      -
-                      {%- if filter.max_value.value -%}
-                        {{ filter.max_value.value | money }}
-                      {%- else -%}
-                        {{ filter.range_max | money }}
-                      {%- endif -%}
+                      {{ min | default: 0 | money }} - {{ max | default: filter.range_max | money }}
                       {% render 'icon-close-small' %}
                       <span class="visually-hidden">{{ 'products.facets.clear_filter' | t }}</span>
                     </span>
