@@ -84,10 +84,14 @@ if (!customElements.get('product-info')) {
           const updated = quantityFormUpdated.querySelector(selector);
           if (!current || !updated) continue;
           if (selector === '.quantity__input') {
-            const attributes = ['data-cart-quantity', 'data-min', 'data-max', 'step'];
+            const attributes = ['data-cart-quantity', 'data-min', 'data-max', 'step', 'max'];
             for (let attribute of attributes) {
               const valueUpdated = updated.getAttribute(attribute);
-              if (valueUpdated !== null) current.setAttribute(attribute, valueUpdated);
+              if (valueUpdated !== null) { 
+                current.setAttribute(attribute, valueUpdated)
+              } else {
+                current.removeAttribute(attribute)
+              }
             }
           } else {
             current.innerHTML = updated.innerHTML;
