@@ -66,7 +66,7 @@ class QuickOrderList extends HTMLElement {
       add: 'ADD',
       update: 'UPDATE'
     }
-    this.mql = window.matchMedia('(min-width: 750px)');
+    this.mqlTablet = window.matchMedia('(min-width: 750px)');
     this.defineInputsAndQuickOrderTable();
     this.quickOrderListId = 'quick-order-list'
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
