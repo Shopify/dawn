@@ -14,7 +14,6 @@ class QuickAddBulk extends HTMLElement {
     this.listenForActiveInput();
     this.listenForKeydown();
     this.lastActiveInputId = null;
-    // this.sectionId = this.dataset.sectionId
   }
 
 
