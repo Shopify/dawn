@@ -66,6 +66,7 @@ class QuickOrderList extends HTMLElement {
       add: 'ADD',
       update: 'UPDATE'
     }
+    this.mql = window.matchMedia('(min-width: 750px)');
     this.defineInputsAndQuickOrderTable();
     this.quickOrderListId = 'quick-order-list'
     this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
@@ -122,7 +123,11 @@ class QuickOrderList extends HTMLElement {
   defineInputsAndQuickOrderTable() {
     this.allInputsArray = Array.from(this.querySelectorAll('input[type="number"]'));
     this.quickOrderListTable = this.querySelector('.quick-order-list__table');
-    this.quickOrderListTable.addEventListener('focusin', this.switchVariants.bind(this));
+    this.quickOrderListTable.addEventListener('focusin', (event)=> {
+      if (this.mql.matches) {
+        this.switchVariants(event);
+      };
+    });
   }
 
   onChange(event) {
