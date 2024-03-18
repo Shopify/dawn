@@ -14,6 +14,7 @@ class QuickAddBulk extends HTMLElement {
     this.listenForActiveInput();
     this.listenForKeydown();
     this.lastActiveInputId = null;
+    // this.sectionId = this.dataset.sectionId
   }
 
 
@@ -70,7 +71,7 @@ class QuickAddBulk extends HTMLElement {
   }
 
   onCartUpdate() {
-    fetch(`${window.location.pathname}?section_id=${document.getElementById('product-grid').dataset.id}`)
+    fetch(`${window.location.pathname}?section_id=${this.closest('.collection').dataset.id}`)
       .then((response) => response.text())
       .then((responseText) => {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
@@ -162,7 +163,7 @@ class QuickAddBulk extends HTMLElement {
     return [
       {
         id: `quick-add-bulk-${this.dataset.id}`,
-        section: document.getElementById('product-grid').dataset.id,
+        section: this.closest('.collection').dataset.id,
         selector: `#quick-add-bulk-${this.dataset.id}`
       },
       {
