@@ -154,6 +154,7 @@ class QuickOrderList extends HTMLElement {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
         const sourceQty = html.querySelector(`#${this.quickOrderListId}`);
         this.innerHTML = sourceQty.innerHTML;
+        this.defineInputsAndQuickOrderTable();
       })
       .catch(e => {
         console.error(e);
