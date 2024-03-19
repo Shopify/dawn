@@ -76,6 +76,8 @@ class QuickAddBulk extends HTMLElement {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
         const sourceQty = html.querySelector(`#quick-add-bulk-${this.dataset.id}`);
         this.innerHTML = sourceQty.innerHTML;
+        this.listenForActiveInput();
+        this.listenForKeydown();
       })
       .catch(e => {
         console.error(e);
