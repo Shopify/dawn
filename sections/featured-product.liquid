@@ -31,14 +31,6 @@
 
 {%- liquid
   assign product = section.settings.product
-
-  if section.settings.media_size == 'large'
-    assign media_width = 0.65
-  elsif section.settings.media_size == 'medium'
-    assign media_width = 0.55
-  elsif section.settings.media_size == 'small'
-    assign media_width = 0.45
-  endif
 -%}
 
 {% comment %} TODO: assign `product.selected_or_first_available_variant` to variable and replace usage to reduce verbosity {% endcomment %}
@@ -62,86 +54,24 @@
   >
 {%- endif -%}
 
+{% assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src' %}
+
 <section class="color-{{ section.settings.color_scheme }} {% if section.settings.secondary_background %}background-secondary{% else %}gradient{% endif %}">
   <div class="page-width section-{{ section.id }}-padding{% if section.settings.secondary_background %} isolate{% endif %}">
     <div class="featured-product product product--{{ section.settings.media_size }} grid grid--1-col gradient color-{{ section.settings.color_scheme }} product--{{ section.settings.media_position }}{% if section.settings.secondary_background == false %} isolate{% endif %} {% if product.media.size > 0 or section.settings.product == blank %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
-      <div class="grid__item product__media-wrapper{% if section.settings.media_position == 'right' %} medium-hide large-up-hide{% endif %}">
-        <media-gallery
-          id="MediaGallery-{{ section.id }}"
-          role="region"
-          aria-label="{{ 'products.product.media.gallery_viewer' | t }}"
-          data-desktop-layout="stacked"
-        >
-          <div
-            id="GalleryViewer-{{ section.id }}"
-            class="product__media-list{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
-          >
-            {%- if section.settings.product != blank -%}
-              {%- if product.selected_or_first_available_variant.featured_media != null -%}
-                {%- assign media = product.selected_or_first_available_variant.featured_media -%}
-                <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                  {% render 'product-thumbnail',
-                    media: media,
-                    position: 'featured',
-                    loop: section.settings.enable_video_looping,
-                    modal_id: section.id,
-                    xr_button: false,
-                    media_width: media_width,
-                    media_fit: section.settings.media_fit,
-                    constrain_to_viewport: section.settings.constrain_to_viewport
-                  %}
-                </div>
-              {%- endif -%}
-              {%- liquid
-                assign media_to_render = product.featured_media.id
-                for variant in product.variants
-                  assign media_to_render = media_to_render | append: variant.featured_media.id | append: ' '
-                endfor
-              -%}
-              {%- for media in product.media -%}
-                {%- if media_to_render contains media.id
-                  and media.id != product.selected_or_first_available_variant.featured_media.id
-                -%}
-                  <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                    {% render 'product-thumbnail',
-                      media: media,
-                      position: forloop.index,
-                      loop: section.settings.enable_video_looping,
-                      modal_id: section.id,
-                      xr_button: false,
-                      media_width: media_width,
-                      media_fit: section.settings.media_fit,
-                      constrain_to_viewport: section.settings.constrain_to_viewport
-                    %}
-                  </div>
-                {%- endif -%}
-              {%- endfor -%}
-            {%- else -%}
-              <div class="product__media-item">
-                <div
-                  class="product-media-container global-media-settings gradient{% if section.settings.constrain_to_viewport %} constrain-height{% endif %}"
-                  style="--ratio: 1.0; --preview-ratio: 1.0;"
-                >
-                  {{ 'product-apparel-1' | placeholder_svg_tag: 'placeholder-svg' }}
-                </div>
-              </div>
-            {%- endif -%}
-          </div>
-          {%- if first_3d_model -%}
-            <button
-              class="button button--full-width product__xr-button"
-              type="button"
-              aria-label="{{ 'products.product.xr_button_label' | t }}"
-              data-shopify-xr
-              data-shopify-model3d-id="{{ first_3d_model.id }}"
-              data-shopify-title="{{ product.title | escape }}"
-              data-shopify-xr-hidden
+      <div class="grid__item product__media-wrapper">
+        {%- if section.settings.product != blank -%}
+          {% render 'product-media-gallery', product: product, variant_images: variant_images, limit: 1 %}
+        {%- else -%}
+          <div class="product__media-item">
+            <div
+              class="product-media-container global-media-settings gradient{% if section.settings.constrain_to_viewport %} constrain-height{% endif %}"
+              style="--ratio: 1.0; --preview-ratio: 1.0;"
             >
-              {% render 'icon-3d-model' %}
-              {{ 'products.product.xr_button' | t }}
-            </button>
-          {%- endif -%}
-        </media-gallery>
+              {{ 'product-apparel-1' | placeholder_svg_tag: 'placeholder-svg' }}
+            </div>
+          </div>
+        {%- endif -%}
       </div>
       <div class="product__info-wrapper grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
         <product-info
@@ -499,82 +429,8 @@
           </a>
         </product-info>
       </div>
-      {%- if section.settings.media_position == 'right' -%}
-        <div class="grid__item product__media-wrapper small-hide">
-          {%- if section.settings.product != blank -%}
-            <media-gallery
-              id="MediaGallery-{{ section.id }}-right"
-              role="region"
-              aria-label="{{ 'products.product.media.gallery_viewer' | t }}"
-              data-desktop-layout="stacked"
-            >
-              <div
-                id="GalleryViewer-{{ section.id }}-right"
-                class="product__media-list{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
-              >
-                {%- if product.selected_or_first_available_variant.featured_media != null -%}
-                  {%- assign media = product.selected_or_first_available_variant.featured_media -%}
-                  <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                    {% render 'product-thumbnail',
-                      media: media,
-                      position: 'featured',
-                      loop: section.settings.enable_video_looping,
-                      modal_id: section.id,
-                      xr_button: false,
-                      media_width: media_width,
-                      media_fit: section.settings.media_fit,
-                      constrain_to_viewport: section.settings.constrain_to_viewport
-                    %}
-                  </div>
-                {%- endif -%}
-                {%- for media in product.media -%}
-                  {%- if media_to_render contains media.id
-                    and media.id != product.selected_or_first_available_variant.featured_media.id
-                  -%}
-                    <div class="product__media-item" data-media-id="{{ section.id }}-{{ media.id }}">
-                      {% render 'product-thumbnail',
-                        media: media,
-                        position: forloop.index,
-                        loop: section.settings.enable_video_looping,
-                        modal_id: section.id,
-                        xr_button: false,
-                        media_width: media_width,
-                        media_fit: section.settings.media_fit,
-                        constrain_to_viewport: section.settings.constrain_to_viewport
-                      %}
-                    </div>
-                  {%- endif -%}
-                {%- endfor -%}
-              </div>
-              {%- if first_3d_model -%}
-                <button
-                  class="button button--full-width product__xr-button"
-                  type="button"
-                  aria-label="{{ 'products.product.xr_button_label' | t }}"
-                  data-shopify-xr
-                  data-shopify-model3d-id="{{ first_3d_model.id }}"
-                  data-shopify-title="{{ product.title | escape }}"
-                  data-shopify-xr-hidden
-                >
-                  {% render 'icon-3d-model' %}
-                  {{ 'products.product.xr_button' | t }}
-                </button>
-              {%- endif -%}
-            </media-gallery>
-          {%- else -%}
-            <div class="product__media-item">
-              <div
-                class="product-media-container global-media-settings gradient{% if section.settings.constrain_to_viewport %} constrain-height{% endif %}"
-                style="--ratio: 1.0; --preview-ratio: 1.0;"
-              >
-                {{ 'product-apparel-1' | placeholder_svg_tag: 'placeholder-svg' }}
-              </div>
-            </div>
-          {%- endif -%}
-        </div>
-      {%- endif -%}
     </div>
-    {% render 'product-media-modal', product: product, variant_images: media_to_render %}
+    {% render 'product-media-modal', product: product, variant_images: variant_images %}
   </div>
 </section>
 

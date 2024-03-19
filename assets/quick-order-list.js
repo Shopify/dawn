@@ -57,7 +57,6 @@ class QuickOrderListRemoveAllButton extends HTMLElement {
 
 customElements.define('quick-order-list-remove-all-button', QuickOrderListRemoveAllButton);
 
-
 class QuickOrderList extends HTMLElement {
   constructor() {
     super();
@@ -98,6 +97,7 @@ class QuickOrderList extends HTMLElement {
   }
 
   cartUpdateUnsubscriber = undefined;
+  sectionRefreshUnsubscriber = undefined;
 
   onSubmit(event) {
     event.preventDefault();
@@ -109,15 +109,24 @@ class QuickOrderList extends HTMLElement {
         return;
       }
       // If its another section that made the update
-      this.onCartUpdate();
+      this.refresh();
     });
+
+    this.sectionRefreshUnsubscriber = subscribe(PUB_SUB_EVENTS.sectionRefreshed, (event) => {
+      const isParentSectionUpdated =
+        this.sectionId && (event.data?.sectionId ?? '') === `${this.sectionId.split('__')[0]}__main`;
+
+      if (isParentSectionUpdated) {
+        this.refresh();
+      }
+    });
+
     this.sectionId = this.dataset.id;
   }
 
   disconnectedCallback() {
-    if (this.cartUpdateUnsubscriber) {
-      this.cartUpdateUnsubscriber();
-    }
+    this.cartUpdateUnsubscriber?.();
+    this.sectionRefreshUnsubscriber?.();
   }
 
   defineInputsAndQuickOrderTable() {
@@ -145,7 +154,7 @@ class QuickOrderList extends HTMLElement {
     }
   }
 
-  onCartUpdate() {
+  refresh() {
     fetch(`${window.location.pathname}?section_id=${this.sectionId}`)
       .then((response) => response.text())
       .then((responseText) => {
