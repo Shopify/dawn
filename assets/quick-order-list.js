@@ -157,15 +157,15 @@ class QuickOrderList extends HTMLElement {
   validateQuantity(event, name, index, inputValue, cartQuantity, quantity) {
     this.validateError = true
     if (inputValue < event.target.dataset.min) {
-      event.target.setCustomValidity(`This item has a min of ${event.target.dataset.min}`);
+      event.target.setCustomValidity(window.quickOrderListStrings.min_error.replace('[min]', event.target.dataset.min));
       event.target.reportValidity();
       this.resetQuantityInput(index);
     } else if (inputValue > parseInt(event.target.max)) {
-      event.target.setCustomValidity(`This item has a max of ${event.target.max}`);
+      event.target.setCustomValidity(window.quickOrderListStrings.max_error.replace('[max]', event.target.max));
       event.target.reportValidity();
       this.resetQuantityInput(index);
     } else if (inputValue % parseInt(event.target.step) != 0) {
-      event.target.setCustomValidity(`This item has an increment of ${event.target.step}`);
+      event.target.setCustomValidity(window.quickOrderListStrings.step_error.replace('[step]', event.target.step));
       event.target.reportValidity();
       this.resetQuantityInput(index);
     } else {
