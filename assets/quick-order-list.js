@@ -281,21 +281,22 @@ class QuickOrderList extends HTMLElement {
     }
 
   this.variantListInput = event.target;
-  this.variantListInput.select()
     if (this.allInputsArray.length !== 1) {
       this.variantListInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
           e.target.blur();
-          const currentIndex = this.allInputsArray.indexOf(e.target);
-          if (!e.shiftKey) {
-            const nextIndex = currentIndex + 1;
-            const nextVariant = this.allInputsArray[nextIndex] || this.allInputsArray[0];
-            nextVariant.select();
-          } else {
-            const previousIndex = currentIndex - 1;
-            const previousVariant = this.allInputsArray[previousIndex] || this.allInputsArray[this.allInputsArray.length - 1];
-            previousVariant.select();
+          if (e.target.checkValidity()) {
+            const currentIndex = this.allInputsArray.indexOf(e.target);
+            if (!e.shiftKey) {
+              const nextIndex = currentIndex + 1;
+              const nextVariant = this.allInputsArray[nextIndex] || this.allInputsArray[0];
+              nextVariant.select();
+            } else {
+              const previousIndex = currentIndex - 1;
+              const previousVariant = this.allInputsArray[previousIndex] || this.allInputsArray[this.allInputsArray.length - 1];
+              previousVariant.select();
+            }
           }
         }
       });
