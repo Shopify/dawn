@@ -147,7 +147,7 @@ class QuickOrderList extends HTMLElement {
     }
   }
   
-  validateQuantity(event, name, index, inputValue, cartQuantity) {
+  validateQuantity(event, name, index, inputValue, cartQuantity, quantity) {
     if (inputValue < event.target.dataset.min) {
       event.target.setCustomValidity(`This item has a min of ${event.target.dataset.min}`);
       event.target.reportValidity();
