@@ -155,6 +155,7 @@ class QuickOrderList extends HTMLElement {
   }
   
   validateQuantity(event, name, index, inputValue, cartQuantity, quantity) {
+    this.validateError = true
     if (inputValue < event.target.dataset.min) {
       event.target.setCustomValidity(`This item has a min of ${event.target.dataset.min}`);
       event.target.reportValidity();
@@ -170,6 +171,7 @@ class QuickOrderList extends HTMLElement {
     } else {
       event.target.setCustomValidity('');
       event.target.reportValidity();
+      this.validateError = false
       if (cartQuantity > 0) {
         this.updateQuantity(index, inputValue, name, this.actions.update);
       } else {
@@ -280,36 +282,37 @@ class QuickOrderList extends HTMLElement {
       return;
     }
 
+    if (this.validateError == false) {
     this.variantListInput = event.target;
     this.variantListInput.select()
-
-    if (this.allInputsArray.length !== 1) {
-      this.variantListInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          e.target.blur();
-          const currentIndex = this.allInputsArray.indexOf(e.target);
-          if (!e.shiftKey) {
-            const nextIndex = currentIndex + 1;
-            const nextVariant = this.allInputsArray[nextIndex] || this.allInputsArray[0];
-            nextVariant.select();
-          } else {
-            const previousIndex = currentIndex - 1;
-            const previousVariant = this.allInputsArray[previousIndex] || this.allInputsArray[this.allInputsArray.length - 1];
-            previousVariant.select();
+      if (this.allInputsArray.length !== 1) {
+        this.variantListInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            e.target.blur();
+            const currentIndex = this.allInputsArray.indexOf(e.target);
+            if (!e.shiftKey) {
+              const nextIndex = currentIndex + 1;
+              const nextVariant = this.allInputsArray[nextIndex] || this.allInputsArray[0];
+              nextVariant.select();
+            } else {
+              const previousIndex = currentIndex - 1;
+              const previousVariant = this.allInputsArray[previousIndex] || this.allInputsArray[this.allInputsArray.length - 1];
+              previousVariant.select();
+            }
           }
-        }
-      });
+        });
 
-      this.scrollQuickOrderListTable();
+        this.scrollQuickOrderListTable();
 
-    } else {
-      this.variantListInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          e.target.blur();
-        }
-      });
+      } else {
+        this.variantListInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            e.target.blur();
+          }
+        });
+      }
     }
   }
 
