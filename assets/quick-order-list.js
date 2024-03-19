@@ -133,7 +133,7 @@ class QuickOrderList extends HTMLElement {
     this.allInputsArray = Array.from(this.querySelectorAll('input[type="number"]'));
     this.quickOrderListTable = this.querySelector('.quick-order-list__table');
     this.quickOrderListTable.addEventListener('focusin', (event)=> {
-      if (this.mql.matches) {
+      if (this.mqlTablet.matches) {
         this.switchVariants(event);
       };
     });
