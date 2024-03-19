@@ -139,26 +139,37 @@ class QuickOrderList extends HTMLElement {
     const name = document.activeElement.getAttribute('name');
 
     const quantity = inputValue - cartQuantity;
-
+    this.cleanErrorMessageOnType(event);
     if (inputValue == 0) {
       this.updateQuantity(index, inputValue, name, this.actions.update);
     } else {
       this.validateQuantity(event, name, index, inputValue, cartQuantity, quantity);
     }
   }
+
+  cleanErrorMessageOnType(event) {
+    event.target.addEventListener('keypress', () => {
+      event.target.setCustomValidity('');
+      event.target.reportValidity();
+    });
+  }
   
   validateQuantity(event, name, index, inputValue, cartQuantity, quantity) {
     if (inputValue < event.target.dataset.min) {
       event.target.setCustomValidity(`This item has a min of ${event.target.dataset.min}`);
       event.target.reportValidity();
+      this.resetQuantityInput(index);
     } else if (inputValue > parseInt(event.target.max)) {
       event.target.setCustomValidity(`This item has a max of ${event.target.max}`);
       event.target.reportValidity();
+      this.resetQuantityInput(index);
     } else if (inputValue % parseInt(event.target.step) != 0) {
       event.target.setCustomValidity(`This item has an increment of ${event.target.step}`);
       event.target.reportValidity();
+      this.resetQuantityInput(index);
     } else {
       event.target.setCustomValidity('');
+      event.target.reportValidity();
       if (cartQuantity > 0) {
         this.updateQuantity(index, inputValue, name, this.actions.update);
       } else {
