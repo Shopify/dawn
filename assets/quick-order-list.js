@@ -178,6 +178,23 @@ class QuickOrderList extends HTMLElement {
    }
   }
 
+  validateInput(target) {
+    if (parseInt(target.value) == 0) {
+      return true
+    } else if (parseInt(target.value) < parseInt(target.dataset.min)) {
+      console.log('min error', target.dataset.min, target.value)
+      return false
+    } else if (parseInt(target.value) > parseInt(target.max)) {
+      console.log('max error')
+      return false
+    } else if (parseInt(target.value) % parseInt(target.step) != 0) {
+      console.log('step error')
+      return false
+    } else {
+      return true
+   }
+  }
+
   onCartUpdate() {
     fetch(`${window.location.pathname}?section_id=${this.sectionId}`)
       .then((response) => response.text())
@@ -286,7 +303,7 @@ class QuickOrderList extends HTMLElement {
         if (e.key === 'Enter') {
           e.preventDefault();
           e.target.blur();
-          if (e.target.checkValidity()) {
+          if (this.validateInput(e.target)) {
             const currentIndex = this.allInputsArray.indexOf(e.target);
             if (!e.shiftKey) {
               const nextIndex = currentIndex + 1;
