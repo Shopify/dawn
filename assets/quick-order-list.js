@@ -77,6 +77,7 @@ class QuickOrderList extends HTMLElement {
     this.isListInsideModal = document.querySelector('.quick-add-bulk');
     this.stickyHeaderElement = document.querySelector('sticky-header');
     this.getTableHead();
+    this.getTotalBar();
 
     if (this.stickyHeaderElement) {
       this.stickyHeader = {
@@ -85,13 +86,11 @@ class QuickOrderList extends HTMLElement {
       };
     }
 
-    this.totalBar = this.querySelector('.quick-order-list__total');
-
-    if (this.totalBar) {
-      this.totalBarPosition = window.innerHeight - this.totalBar.offsetHeight;
+    if (this.getTotalBar()) {
+      this.totalBarPosition = window.innerHeight - this.getTotalBar().offsetHeight;
 
       window.addEventListener('resize', () => {
-        this.totalBarPosition = window.innerHeight - this.totalBar.offsetHeight;
+        this.totalBarPosition = window.innerHeight - this.getTotalBar().offsetHeight;
         this.stickyHeader.height = this.stickyHeaderElement ? this.stickyHeaderElement.offsetHeight: 0;
       });
     }
@@ -214,7 +213,11 @@ class QuickOrderList extends HTMLElement {
   }
 
   getTableHead() {
-    return this.tableHead = document.querySelector('.quick-order-list__table thead');
+    return document.querySelector('.quick-order-list__table thead');
+  }
+
+  getTotalBar() {
+    return this.querySelector('.quick-order-list__total');
   }
 
   scrollQuickOrderListTable() {
@@ -222,7 +225,7 @@ class QuickOrderList extends HTMLElement {
     const inputBottomBorder = this.variantListInput.getBoundingClientRect().bottom;
 
     if (this.isListInsideModal) {
-      const totalBarCrossesInput = inputBottomBorder > this.totalBar.getBoundingClientRect().top;
+      const totalBarCrossesInput = inputBottomBorder > this.getTotalBar().getBoundingClientRect().top;
       const tableHeadCrossesInput = inputTopBorder < this.getTableHead().getBoundingClientRect().bottom;
 
       if (totalBarCrossesInput || tableHeadCrossesInput) {
