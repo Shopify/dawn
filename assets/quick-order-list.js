@@ -148,8 +148,8 @@ class QuickOrderList extends HTMLElement {
   }
 
   cleanErrorMessageOnType(event) {
-    event.target.addEventListener('keypress', () => {
-      event.target.setCustomValidity('');
+    event.target.addEventListener('keydown', () => {
+      event.target.setCustomValidity(' ');
       event.target.reportValidity();
     });
   }
@@ -182,13 +182,10 @@ class QuickOrderList extends HTMLElement {
     if (parseInt(target.value) == 0) {
       return true
     } else if (parseInt(target.value) < parseInt(target.dataset.min)) {
-      console.log('min error', target.dataset.min, target.value)
       return false
     } else if (parseInt(target.value) > parseInt(target.max)) {
-      console.log('max error')
       return false
     } else if (parseInt(target.value) % parseInt(target.step) != 0) {
-      console.log('step error')
       return false
     } else {
       return true
