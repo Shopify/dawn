@@ -156,20 +156,11 @@ class QuickOrderList extends HTMLElement {
   
   validateQuantity(event, name, index, inputValue, cartQuantity, quantity) {
     if (inputValue < event.target.dataset.min) {
-      event.target.setCustomValidity(window.quickOrderListStrings.min_error.replace('[min]', event.target.dataset.min));
-      event.target.reportValidity();
-      this.resetQuantityInput(index);
-      event.target.select()
+      this.setValidity(event, index, window.quickOrderListStrings.min_error.replace('[min]', event.target.dataset.min))
     } else if (inputValue > parseInt(event.target.max)) {
-      event.target.setCustomValidity(window.quickOrderListStrings.max_error.replace('[max]', event.target.max));
-      event.target.reportValidity();
-      event.target.select()
-      this.resetQuantityInput(index);
+      this.setValidity(event, index, window.quickOrderListStrings.max_error.replace('[max]', event.target.max))
     } else if (inputValue % parseInt(event.target.step) != 0) {
-      event.target.setCustomValidity(window.quickOrderListStrings.step_error.replace('[step]', event.target.step));
-      event.target.reportValidity();
-      this.resetQuantityInput(index);
-      event.target.select()
+      this.setValidity(event, index, window.quickOrderListStrings.step_error.replace('[step]', event.target.step))
     } else {
       event.target.setCustomValidity('');
       event.target.reportValidity();
@@ -179,6 +170,13 @@ class QuickOrderList extends HTMLElement {
         this.updateQuantity(index, quantity, name, this.actions.add);
       }
    }
+  }
+
+  setValidity(event, index, message) {
+    event.target.setCustomValidity(message);
+    event.target.reportValidity();
+    this.resetQuantityInput(index);
+    event.target.select()
   }
 
   validateInput(target) {
