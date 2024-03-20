@@ -114,7 +114,9 @@ class QuickOrderList extends HTMLElement {
         return;
       }
       // If its another section that made the update
-      this.onCartUpdate();
+      this.onCartUpdate().then(()=> {
+        this.defineInputsAndQuickOrderTable();
+      });
     });
     this.sectionId = this.dataset.id;
   }
@@ -147,17 +149,21 @@ class QuickOrderList extends HTMLElement {
   }
 
   onCartUpdate() {
-    fetch(`${window.location.pathname}?section_id=${this.sectionId}`)
-      .then((response) => response.text())
-      .then((responseText) => {
-        const html = new DOMParser().parseFromString(responseText, 'text/html');
-        const sourceQty = html.querySelector(`#${this.quickOrderListId}`);
-        this.innerHTML = sourceQty.innerHTML;
-        this.defineInputsAndQuickOrderTable();
-      })
-      .catch(e => {
-        console.error(e);
-      });
+    return new Promise((resolve, reject) => {
+      fetch(`${window.location.pathname}?section_id=${this.sectionId}`)
+        .then((response) => response.text())
+        .then((responseText) => {
+          const html = new DOMParser().parseFromString(responseText, 'text/html');
+          const sourceQty = html.querySelector(`#${this.quickOrderListId}`);
+          this.innerHTML = sourceQty.innerHTML;
+          resolve();
+        })
+        .catch(e => {
+          console.error(e);
+          reject(e);
+        });
+    });
+
   }
 
   getSectionsToRender() {
