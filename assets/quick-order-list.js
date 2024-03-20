@@ -159,14 +159,17 @@ class QuickOrderList extends HTMLElement {
       event.target.setCustomValidity(window.quickOrderListStrings.min_error.replace('[min]', event.target.dataset.min));
       event.target.reportValidity();
       this.resetQuantityInput(index);
+      event.target.select()
     } else if (inputValue > parseInt(event.target.max)) {
       event.target.setCustomValidity(window.quickOrderListStrings.max_error.replace('[max]', event.target.max));
       event.target.reportValidity();
+      event.target.select()
       this.resetQuantityInput(index);
     } else if (inputValue % parseInt(event.target.step) != 0) {
       event.target.setCustomValidity(window.quickOrderListStrings.step_error.replace('[step]', event.target.step));
       event.target.reportValidity();
       this.resetQuantityInput(index);
+      event.target.select()
     } else {
       event.target.setCustomValidity('');
       event.target.reportValidity();
