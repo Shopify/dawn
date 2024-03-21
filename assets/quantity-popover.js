@@ -22,6 +22,7 @@ if (!customElements.get('quantity-popover')) {
 
         if (this.infoButtonDesktop) {
           this.infoButtonDesktop.addEventListener('click', this.togglePopover.bind(this));
+          this.infoButtonDesktop.addEventListener('focusout', this.closePopover.bind(this));
         }
 
         if (this.infoButtonMobile) {
