@@ -180,17 +180,7 @@ class QuickOrderList extends HTMLElement {
   }
 
   validateInput(target) {
-    if (parseInt(target.value) == 0) {
-      return true
-    } else if (parseInt(target.value) < parseInt(target.dataset.min)) {
-      return false
-    } else if (parseInt(target.value) > parseInt(target.max)) {
-      return false
-    } else if (parseInt(target.value) % parseInt(target.step) != 0) {
-      return false
-    } else {
-      return true
-   }
+    return parseInt(target.value) == 0 || (parseInt(target.value) >= parseInt(target.dataset.min) && parseInt(target.value) <= parseInt(target.max) && parseInt(target.value) % parseInt(target.step) == 0);
   }
 
   onCartUpdate() {
