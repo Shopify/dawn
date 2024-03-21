@@ -139,12 +139,48 @@ class QuickOrderList extends HTMLElement {
     const name = document.activeElement.getAttribute('name');
 
     const quantity = inputValue - cartQuantity;
-
-    if (cartQuantity > 0) {
+    this.cleanErrorMessageOnType(event);
+    if (inputValue == 0) {
       this.updateQuantity(index, inputValue, name, this.actions.update);
     } else {
-      this.updateQuantity(index, quantity, name, this.actions.add);
+      this.validateQuantity(event, name, index, inputValue, cartQuantity, quantity);
     }
+  }
+
+  cleanErrorMessageOnType(event) {
+    event.target.addEventListener('keydown', () => {
+      event.target.setCustomValidity(' ');
+      event.target.reportValidity();
+    });
+  }
+  
+  validateQuantity(event, name, index, inputValue, cartQuantity, quantity) {
+    if (inputValue < event.target.dataset.min) {
+      this.setValidity(event, index, window.quickOrderListStrings.min_error.replace('[min]', event.target.dataset.min))
+    } else if (inputValue > parseInt(event.target.max)) {
+      this.setValidity(event, index, window.quickOrderListStrings.max_error.replace('[max]', event.target.max))
+    } else if (inputValue % parseInt(event.target.step) != 0) {
+      this.setValidity(event, index, window.quickOrderListStrings.step_error.replace('[step]', event.target.step))
+    } else {
+      event.target.setCustomValidity('');
+      event.target.reportValidity();
+      if (cartQuantity > 0) {
+        this.updateQuantity(index, inputValue, name, this.actions.update);
+      } else {
+        this.updateQuantity(index, quantity, name, this.actions.add);
+      }
+   }
+  }
+
+  setValidity(event, index, message) {
+    event.target.setCustomValidity(message);
+    event.target.reportValidity();
+    this.resetQuantityInput(index);
+    event.target.select()
+  }
+
+  validateInput(target) {
+    return parseInt(target.value) == 0 || (parseInt(target.value) >= parseInt(target.dataset.min) && parseInt(target.value) <= parseInt(target.max) && parseInt(target.value) % parseInt(target.step) == 0);
   }
 
   onCartUpdate() {
@@ -251,21 +287,22 @@ class QuickOrderList extends HTMLElement {
 
     this.variantListInput = event.target;
     this.variantListInput.select()
-
     if (this.allInputsArray.length !== 1) {
       this.variantListInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
           e.target.blur();
-          const currentIndex = this.allInputsArray.indexOf(e.target);
-          if (!e.shiftKey) {
-            const nextIndex = currentIndex + 1;
-            const nextVariant = this.allInputsArray[nextIndex] || this.allInputsArray[0];
-            nextVariant.select();
-          } else {
-            const previousIndex = currentIndex - 1;
-            const previousVariant = this.allInputsArray[previousIndex] || this.allInputsArray[this.allInputsArray.length - 1];
-            previousVariant.select();
+          if (this.validateInput(e.target)) {
+            const currentIndex = this.allInputsArray.indexOf(e.target);
+            if (!e.shiftKey) {
+              const nextIndex = currentIndex + 1;
+              const nextVariant = this.allInputsArray[nextIndex] || this.allInputsArray[0];
+              nextVariant.select();
+            } else {
+              const previousIndex = currentIndex - 1;
+              const previousVariant = this.allInputsArray[previousIndex] || this.allInputsArray[this.allInputsArray.length - 1];
+              previousVariant.select();
+            }
           }
         }
       });
