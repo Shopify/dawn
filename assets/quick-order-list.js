@@ -189,7 +189,11 @@ if (!customElements.get('quick-order-list')) {
       }
 
       validateInput(target) {
-        return parseInt(target.value) == 0 || (parseInt(target.value) >= parseInt(target.dataset.min) && parseInt(target.value) <= parseInt(target.max) && parseInt(target.value) % parseInt(target.step) == 0);
+        if (target.max) {
+          return parseInt(target.value) == 0 || (parseInt(target.value) >= parseInt(target.dataset.min) && parseInt(target.value) <= parseInt(target.max) && parseInt(target.value) % parseInt(target.step) == 0);
+        } else {
+          return parseInt(target.value) == 0 || (parseInt(target.value) >= parseInt(target.dataset.min) && parseInt(target.value) % parseInt(target.step) == 0);
+        }
       }
 
       onCartUpdate() {
