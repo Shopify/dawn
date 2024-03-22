@@ -77,11 +77,11 @@ if (!customElements.get('quick-add-bulk')) {
 
       onCartUpdate() {
         return new Promise((resolve, reject) => {
-          fetch(`${window.location.pathname}?section_id=${document.getElementById('product-grid').dataset.id}`)
+          fetch(`${window.location.pathname}?section_id=${this.closest('.collection').dataset.id}`)
             .then((response) => response.text())
             .then((responseText) => {
               const html = new DOMParser().parseFromString(responseText, 'text/html');
-              const sourceQty = html.querySelector(`#quick-add-bulk-${this.dataset.id}`);
+              const sourceQty = html.querySelector(`#quick-add-bulk-${this.dataset.id}-${this.closest('.collection').dataset.id}`);
               this.innerHTML = sourceQty.innerHTML;
               resolve();
             })
