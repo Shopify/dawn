@@ -111,6 +111,7 @@ if (!customElements.get('quick-order-list')) {
       }
 
       cartUpdateUnsubscriber = undefined;
+      sectionRefreshUnsubscriber = undefined;
 
       onSubmit(event) {
         event.preventDefault();
@@ -122,17 +123,24 @@ if (!customElements.get('quick-order-list')) {
             return;
           }
           // If its another section that made the update
-          this.onCartUpdate().then(()=> {
+          this.refresh().then(()=> {
             this.defineInputsAndQuickOrderTable();
           });
+        });
+        this.sectionRefreshUnsubscriber = subscribe(PUB_SUB_EVENTS.sectionRefreshed, (event) => {
+          const isParentSectionUpdated =
+            this.sectionId && (event.data?.sectionId ?? '') === `${this.sectionId.split('__')[0]}__main`;
+    
+          if (isParentSectionUpdated) {
+            this.refresh();
+          }
         });
         this.sectionId = this.dataset.id;
       }
 
       disconnectedCallback() {
-        if (this.cartUpdateUnsubscriber) {
-          this.cartUpdateUnsubscriber();
-        }
+        this.cartUpdateUnsubscriber?.();
+        this.sectionRefreshUnsubscriber?.();
       }
 
       defineInputsAndQuickOrderTable() {
@@ -196,7 +204,7 @@ if (!customElements.get('quick-order-list')) {
         }
       }
 
-      onCartUpdate() {
+      refresh() {
         return new Promise((resolve, reject) => {
           fetch(`${window.location.pathname}?section_id=${this.sectionId}`)
             .then((response) => response.text())
