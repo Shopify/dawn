@@ -26,7 +26,10 @@ if (!customElements.get('quick-add-bulk')) {
             return;
           }
           // If its another section that made the update
-          this.onCartUpdate();
+          this.onCartUpdate().then(() => {
+            this.listenForActiveInput();
+            this.listenForKeydown();
+          });
         });
       }
 
@@ -73,16 +76,20 @@ if (!customElements.get('quick-add-bulk')) {
       }
 
       onCartUpdate() {
-        fetch(`${window.location.pathname}?section_id=${this.closest('.collection').dataset.id}`)
-          .then((response) => response.text())
-          .then((responseText) => {
-            const html = new DOMParser().parseFromString(responseText, 'text/html');
-            const sourceQty = html.querySelector(`#quick-add-bulk-${this.dataset.id}-${this.closest('.collection').dataset.id}`);
-            this.innerHTML = sourceQty.innerHTML;
-          })
-          .catch(e => {
-            console.error(e);
-          });
+        return new Promise((resolve, reject) => {
+          fetch(`${window.location.pathname}?section_id=${this.closest('.collection').dataset.id}`)
+            .then((response) => response.text())
+            .then((responseText) => {
+              const html = new DOMParser().parseFromString(responseText, 'text/html');
+              const sourceQty = html.querySelector(`#quick-add-bulk-${this.dataset.id}-${this.closest('.collection').dataset.id}`);
+              this.innerHTML = sourceQty.innerHTML;
+              resolve();
+            })
+            .catch(e => {
+              console.error(e);
+              reject(e);
+            });
+        });
       }
 
       updateCart(event) {
