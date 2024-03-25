@@ -8,6 +8,7 @@ if (!customElements.get('product-info')) {
       cartUpdateUnsubscriber = undefined;
       swapProductUtility = undefined;
       abortController = undefined;
+      sectionRefreshAbortController = undefined;
 
       constructor() {
         super();
@@ -77,6 +78,7 @@ if (!customElements.get('product-info')) {
           this.#updateURL(targetUrl, variant?.id);
           this.#updateShareUrl(targetUrl, variant?.id);
           callback = this.#handleSwapProduct();
+          this.dataset.updateRelatedSections === 'true' && this.#updateProductSections(targetUrl, variant?.id);
         } else if (!variant) {
           this.#setUnavailable();
           callback = (html) => {
@@ -93,13 +95,34 @@ if (!customElements.get('product-info')) {
         this.#renderProductInfo(targetUrl, variant?.id, target.id, callback);
       }
 
+      // Load the product page and update sections
+      #updateProductSections(url, variantId) {
+        this.sectionRefreshAbortController?.abort();
+        this.sectionRefreshAbortController = new AbortController();
+        fetch(this.#getProductInfoUrl(url, variantId, true), {
+          signal: this.sectionRefreshAbortController.signal,
+        })
+          .then((response) => response.text())
+          .then((responseText) => {
+            const html = new DOMParser().parseFromString(responseText, 'text/html');
+            const updatedSections = Array.from(html.querySelectorAll('main > .shopify-section')).reduce(
+              (sectionsById, section) => ({ ...sectionsById, [section.id]: section }),
+              {}
+            );
+
+            document.querySelectorAll('main > .shopify-section').forEach((section) => {
+              if (!section.id.includes('__main') && updatedSections[section.id]) {
+                this.swapProductUtility.viewTransition(section, updatedSections[section.id]);
+              }
+            });
+          });
+      }
+
       #handleSwapProduct() {
         return (html) => {
           this.productModal?.remove();
           const newProduct = html.querySelector('product-info');
           this.swapProductUtility.viewTransition(this, newProduct);
-          this.relatedProducts?.initializeRecommendations(newProduct.dataset.productId);
-          this.quickOrderList?.refresh();
         };
       }
 
@@ -121,18 +144,21 @@ if (!customElements.get('product-info')) {
           });
       }
 
-      #getProductInfoUrl(url, variantId) {
-        let params;
+      #getProductInfoUrl(url, variantId, isLoadFullPage) {
+        const params = [];
+
+        !isLoadFullPage && params.push(`section_id=${this.sectionId}`);
+
         if (variantId) {
-          params = `variant=${variantId}`;
+          params.push(`variant=${variantId}`);
         } else {
           const optionValues = this.variantSelectors.selectedOptionValues;
           if (optionValues.length) {
-            params = `option_values=${optionValues.join(',')}`;
+            params.push(`option_values=${optionValues.join(',')}`);
           }
         }
 
-        return `${url}?section_id=${this.sectionId}&${params}`;
+        return `${url}?${params.join('&')}`;
       }
 
       #updateOptionValues(html) {
