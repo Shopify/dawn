@@ -2,9 +2,7 @@
   Variant List Row
 
   Accepts:
-  - item: {Object} Variant or Product object
-  - sku: {String} Sku of Product or Variant (optional)
-  - image: {Object} Product or Variant image (optional)
+  - variant: {Object} Variant object
   Usage:
   {% render 'quick-order-list-row' variant: variant %}
 {% endcomment %}
@@ -14,25 +12,30 @@
 {% # theme-check-enable %}
 
 {%- capture escaped_options -%}
-  {% for option in variant.options -%}
-    {{ option | escape }}{%- unless forloop.last -%}{{ ' / ' }}{%- endunless -%}
+  {% for product_option in variant.product.options -%}
+    {% assign variant_option = variant.options[forloop.index0] %}
+    {% if variant.title == "Default Title" and variant_option == "Default Title" %}
+      {{ variant.product.title | escape }}
+    {% else %}
+      {{ variant_option | escape }}{%- unless forloop.last -%}{{ ' / ' }}{%- endunless -%}
+    {% endif %}
   {%- endfor %}
 {%- endcapture -%}
 
 <tr
-  class="variant-item{% unless section.settings.show_image %} variant-item--no-media{% endunless %}{% if item.available and item.unit_price_measurement %} variant-item--unit-price{% endif %}"
+  class="variant-item{% unless section.settings.show_image %} variant-item--no-media{% endunless %}{% if variant.available and variant.unit_price_measurement %} variant-item--unit-price{% endif %}"
   id="Variant-{{ variant.id }}"
   data-variant-id="{{ variant.id }}"
   data-cart-qty="{{ cart_qty }}"
 >
-  <td class="variant-item__inner{% unless sku and section.settings.show_sku %} variant-item__inner--no-sku{% endunless %}">
+  <td class="variant-item__inner{% unless variant.sku and section.settings.show_sku %} variant-item__inner--no-sku{% endunless %}">
     {%- if section.settings.show_image -%}
       <div class="variant-item__media">
-        <div class="variant-item__image-container gradient global-media-settings{% unless image %} variant-item__image-container--no-img {% endunless %}">
-          {% if image %}
-            {%- assign img_height = 43 | divided_by: image.aspect_ratio | ceil -%}
+        <div class="variant-item__image-container gradient global-media-settings{% unless variant.image %} variant-item__image-container--no-img {% endunless %}">
+          {% if variant.image %}
+            {%- assign img_height = 43 | divided_by: variant.image.aspect_ratio | ceil -%}
             {{
-              image
+              variant.image
               | image_url: width: 86
               | image_tag:
                 loading: 'lazy',
@@ -42,7 +45,7 @@
                 width: 43,
                 height: img_height,
                 widths: '86',
-                alt: image.alt
+                alt: variant.image.alt
               | escape
             }}
           {% endif %}
@@ -52,7 +55,7 @@
     <div class="small-hide medium-hide">
       <span class="variant-item__name h4 break">{{ escaped_options }}</span>
       {%- if section.settings.show_sku -%}
-        <span class="variant-item__sku break">{{ sku | escape }}</span>
+        <span class="variant-item__sku break">{{ variant.sku | escape }}</span>
       {%- endif -%}
     </div>
   </td>
@@ -61,19 +64,19 @@
     <div class="variant-item__info">
       <span class="variant-item__name h4 break">{{ escaped_options }}</span>
       {%- if section.settings.show_sku -%}
-        <span class="variant-item__sku break">{{ sku | escape }}</span>
+        <span class="variant-item__sku break">{{ variant.sku | escape }}</span>
       {%- endif -%}
     </div>
 
-    {%- assign item_price = item.price | money -%}
-    {%- if item.compare_at_price -%}
+    {%- assign item_price = variant.price | money -%}
+    {%- if variant.compare_at_price -%}
       <dl class="variant-item__discounted-prices">
         <dt class="visually-hidden">
           {{ 'products.product.price.regular_price' | t }}
         </dt>
         <dd>
           <s class="variant-item__old-price price price--end">
-            {{ item.compare_at_price | money }}
+            {{ variant.compare_at_price | money }}
           </s>
         </dd>
         <dt class="visually-hidden">
@@ -151,16 +154,16 @@
       {%- endif -%}
     {%- endif -%}
 
-    {%- if item.available and item.unit_price_measurement -%}
+    {%- if variant.available and variant.unit_price_measurement -%}
       <div class="unit-price caption">
         <span class="visually-hidden">{{ 'products.product.price.unit_price' | t }}</span>
-        {{ item.unit_price | money }}
+        {{ variant.unit_price | money }}
         <span aria-hidden="true">/</span>
         <span class="visually-hidden">&nbsp;{{ 'accessibility.unit_price_separator' | t }}&nbsp;</span>
-        {%- if item.unit_price_measurement.reference_value != 1 -%}
-          {{- item.unit_price_measurement.reference_value -}}
+        {%- if variant.unit_price_measurement.reference_value != 1 -%}
+          {{- variant.unit_price_measurement.reference_value -}}
         {%- endif -%}
-        {{ item.unit_price_measurement.reference_unit }}
+        {{ variant.unit_price_measurement.reference_unit }}
       </div>
     {%- endif -%}
   </td>
@@ -233,7 +236,7 @@
             data-index="{{ variant.id }}"
           >
             <a
-              href="{{ item.url_to_remove }}"
+              href="{{ variant.url_to_remove }}"
               class="button button--tertiary"
               aria-label="{{ 'sections.cart.remove_title' | t: title: escaped_options }}"
             >
@@ -334,16 +337,16 @@
       </div>
     </quantity-popover>
   </td>
-  {%- assign item_price = item.price | money -%}
+  {%- assign item_price = variant.price | money -%}
   <td class="variant-item__price small-hide medium-hide">
-    {%- if item.compare_at_price -%}
+    {%- if variant.compare_at_price -%}
       <dl class="variant-item__discounted-prices">
         <dt class="visually-hidden">
           {{ 'products.product.price.regular_price' | t }}
         </dt>
         <dd>
           <s class="variant-item__old-price price price--end">
-            {{ item.compare_at_price | money }}
+            {{ variant.compare_at_price | money }}
           </s>
         </dd>
         <dt class="visually-hidden">
@@ -421,16 +424,16 @@
       {%- endif -%}
     {%- endif -%}
 
-    {%- if item.available and item.unit_price_measurement -%}
+    {%- if variant.available and variant.unit_price_measurement -%}
       <div class="unit-price caption">
         <span class="visually-hidden">{{ 'products.product.price.unit_price' | t }}</span>
-        {{ item.unit_price | money }}
+        {{ variant.unit_price | money }}
         <span aria-hidden="true">/</span>
         <span class="visually-hidden">&nbsp;{{ 'accessibility.unit_price_separator' | t }}&nbsp;</span>
-        {%- if item.unit_price_measurement.reference_value != 1 -%}
-          {{- item.unit_price_measurement.reference_value -}}
+        {%- if variant.unit_price_measurement.reference_value != 1 -%}
+          {{- variant.unit_price_measurement.reference_value -}}
         {%- endif -%}
-        {{ item.unit_price_measurement.reference_unit }}
+        {{ variant.unit_price_measurement.reference_unit }}
       </div>
     {%- endif -%}
   </td>
