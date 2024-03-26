@@ -83,8 +83,6 @@ if (!customElements.get('quantity-popover')) {
         }
 
         this.eventMouseEnterHappened = false;
-
-        
       }
     }
   );
