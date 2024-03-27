@@ -331,6 +331,7 @@ if (!customElements.get('quick-order-list')) {
                 } else {
                   const previousIndex = currentIndex - 1;
                   const previousVariant = this.allInputsArray[previousIndex] || this.allInputsArray[this.allInputsArray.length - 1];
+                  this.lastElement = previousVariant.dataset.index
                   previousVariant.select();
                 }
               }
@@ -459,7 +460,7 @@ if (!customElements.get('quick-order-list')) {
           })
           .finally(() => {
             this.toggleLoading(id);
-            if (this.lastKey) {
+            if (this.lastKey && (this.lastElement === id)) {
               this.querySelector(`#Variant-${id} input`).select()
             }
           });
