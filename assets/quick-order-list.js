@@ -104,7 +104,12 @@ if (!customElements.get('quick-order-list')) {
         }
 
         form.addEventListener('submit', this.onSubmit.bind(this));
-        this.addDebounce();
+        this.querySelectorAll('quantity-input').forEach((qty) => {
+          const debouncedOnChange = debounce((event) => {
+            this.onChange(event);
+          }, ON_CHANGE_DEBOUNCE_TIMER);
+          qty.addEventListener('change', debouncedOnChange.bind(this));
+        })
       }
 
       cartUpdateUnsubscriber = undefined;
@@ -248,13 +253,12 @@ if (!customElements.get('quick-order-list')) {
         ];
       }
 
-      addDebounce() {
-        this.querySelectorAll('quantity-input').forEach((qty) => {
-          const debouncedOnChange = debounce((event) => {
-            this.onChange(event);
-          }, ON_CHANGE_DEBOUNCE_TIMER);
-          qty.addEventListener('change', debouncedOnChange.bind(this));
-        })
+      addDebounce(id) {
+        const element = this.querySelector(`#Variant-${id} quantity-input`)
+        const debouncedOnChange = debounce((event) => {
+          this.onChange(event);
+        }, ON_CHANGE_DEBOUNCE_TIMER);
+        element.addEventListener('change', debouncedOnChange.bind(this));
       }
 
       renderSections(parsedState, id) {
@@ -277,7 +281,7 @@ if (!customElements.get('quick-order-list')) {
           }
         }));
         this.defineInputsAndQuickOrderTable();
-        this.addDebounce();
+        this.addDebounce(id);
       }
 
       getTableHead() {
