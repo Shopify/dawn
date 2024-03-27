@@ -5,7 +5,7 @@ class CartRemoveButton extends HTMLElement {
     this.addEventListener('click', (event) => {
       event.preventDefault();
       const cartItems = this.closest('cart-items') || this.closest('cart-drawer-items');
-      cartItems.updateQuantity(this.dataset.index, 0);
+      cartItems.updateQuantity(this.dataset.key, this.dataset.handleizedKey, 0);
     });
   }
 }
@@ -43,7 +43,7 @@ class CartItems extends HTMLElement {
   }
 
   onChange(event) {
-    this.updateQuantity(event.target.dataset.index, event.target.value, document.activeElement.getAttribute('name'), event.target.dataset.quantityVariantId);
+    this.updateQuantity(event.target.dataset.key, event.target.dataset.handleizedKey, event.target.value, document.activeElement.getAttribute('name'), event.target.dataset.quantityVariantId);
   }
 
   onCartUpdate() {
@@ -103,29 +103,29 @@ class CartItems extends HTMLElement {
     ];
   }
 
-  updateQuantity(line, quantity, name, variantId) {
-    this.enableLoading(line);
+  updateQuantity(key, handleizedKey, quantity, name, variantId) {
+    this.enableLoading(handleizedKey);
 
     const body = JSON.stringify({
-      line,
+      id: key,
       quantity,
       sections: this.getSectionsToRender().map((section) => section.section),
       sections_url: window.location.pathname,
     });
 
-    fetch(`${routes.cart_change_url}`, { ...fetchConfig(), ...{ body } })
+    fetch(`${routes.cart_change_url}.js`, { ...fetchConfig(), ...{ body } })
       .then((response) => {
         return response.text();
       })
       .then((state) => {
         const parsedState = JSON.parse(state);
         const quantityElement =
-          document.getElementById(`Quantity-${line}`) || document.getElementById(`Drawer-quantity-${line}`);
+          document.getElementById(`Quantity-${handleizedKey}`) || document.getElementById(`Drawer-quantity-${handleizedKey}`);
         const items = document.querySelectorAll('.cart-item');
 
         if (parsedState.errors) {
           quantityElement.value = quantityElement.getAttribute('value');
-          this.updateLiveRegions(line, parsedState.errors);
+          this.updateLiveRegions(handleizedKey, parsedState.errors);
           return;
         }
 
@@ -144,7 +144,8 @@ class CartItems extends HTMLElement {
             section.selector
           );
         });
-        const updatedValue = parsedState.items[line - 1] ? parsedState.items[line - 1].quantity : undefined;
+        const updatedItem = parsedState.items.find((item) => item['key'] === key);
+        const updatedValue = updatedItem ? updatedItem.quantity : undefined;
         let message = '';
         if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
           if (typeof updatedValue === 'undefined') {
@@ -153,10 +154,10 @@ class CartItems extends HTMLElement {
             message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
           }
         }
-        this.updateLiveRegions(line, message);
+        this.updateLiveRegions(handleizedKey, message);
 
         const lineItem =
-          document.getElementById(`CartItem-${line}`) || document.getElementById(`CartDrawer-Item-${line}`);
+          document.getElementById(`CartItem-${handleizedKey}`) || document.getElementById(`CartDrawer-Item-${handleizedKey}`);
         if (lineItem && lineItem.querySelector(`[name="${name}"]`)) {
           cartDrawerWrapper
             ? trapFocus(cartDrawerWrapper, lineItem.querySelector(`[name="${name}"]`))
@@ -175,13 +176,13 @@ class CartItems extends HTMLElement {
         errors.textContent = window.cartStrings.error;
       })
       .finally(() => {
-        this.disableLoading(line);
+        this.disableLoading(handleizedKey);
       });
   }
 
-  updateLiveRegions(line, message) {
+  updateLiveRegions(handleizedKey, message) {
     const lineItemError =
-      document.getElementById(`Line-item-error-${line}`) || document.getElementById(`CartDrawer-LineItemError-${line}`);
+      document.getElementById(`Line-item-error-${handleizedKey}`) || document.getElementById(`CartDrawer-LineItemError-${handleizedKey}`);
     if (lineItemError) lineItemError.querySelector('.cart-item__error-text').innerHTML = message;
 
     this.lineItemStatusElement.setAttribute('aria-hidden', true);
@@ -199,12 +200,12 @@ class CartItems extends HTMLElement {
     return new DOMParser().parseFromString(html, 'text/html').querySelector(selector).innerHTML;
   }
 
-  enableLoading(line) {
+  enableLoading(handleizedKey) {
     const mainCartItems = document.getElementById('main-cart-items') || document.getElementById('CartDrawer-CartItems');
     mainCartItems.classList.add('cart__items--disabled');
 
-    const cartItemElements = this.querySelectorAll(`#CartItem-${line} .loading__spinner`);
-    const cartDrawerItemElements = this.querySelectorAll(`#CartDrawer-Item-${line} .loading__spinner`);
+    const cartItemElements = this.querySelectorAll(`#CartItem-${handleizedKey} .loading__spinner`);
+    const cartDrawerItemElements = this.querySelectorAll(`#CartDrawer-Item-${handleizedKey} .loading__spinner`);
 
     [...cartItemElements, ...cartDrawerItemElements].forEach((overlay) => overlay.classList.remove('hidden'));
 
@@ -212,12 +213,12 @@ class CartItems extends HTMLElement {
     this.lineItemStatusElement.setAttribute('aria-hidden', false);
   }
 
-  disableLoading(line) {
+  disableLoading(handleizedKey) {
     const mainCartItems = document.getElementById('main-cart-items') || document.getElementById('CartDrawer-CartItems');
     mainCartItems.classList.remove('cart__items--disabled');
 
-    const cartItemElements = this.querySelectorAll(`#CartItem-${line} .loading__spinner`);
-    const cartDrawerItemElements = this.querySelectorAll(`#CartDrawer-Item-${line} .loading__spinner`);
+    const cartItemElements = this.querySelectorAll(`#CartItem-${handleizedKey} .loading__spinner`);
+    const cartDrawerItemElements = this.querySelectorAll(`#CartDrawer-Item-${handleizedKey} .loading__spinner`);
 
     cartItemElements.forEach((overlay) => overlay.classList.add('hidden'));
     cartDrawerItemElements.forEach((overlay) => overlay.classList.add('hidden'));
