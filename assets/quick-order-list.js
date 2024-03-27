@@ -104,10 +104,7 @@ if (!customElements.get('quick-order-list')) {
         }
 
         form.addEventListener('submit', this.onSubmit.bind(this));
-        const debouncedOnChange = debounce((event) => {
-          this.onChange(event);
-        }, ON_CHANGE_DEBOUNCE_TIMER);
-        this.addEventListener('change', debouncedOnChange.bind(this));
+        this.addDebounce();
       }
 
       cartUpdateUnsubscriber = undefined;
@@ -251,6 +248,15 @@ if (!customElements.get('quick-order-list')) {
         ];
       }
 
+      addDebounce() {
+        this.querySelectorAll('quantity-input').forEach((qty) => {
+          const debouncedOnChange = debounce((event) => {
+            this.onChange(event);
+          }, ON_CHANGE_DEBOUNCE_TIMER);
+          qty.addEventListener('change', debouncedOnChange.bind(this));
+        })
+      }
+
       renderSections(parsedState, id) {
         this.getSectionsToRender().forEach((section => {
           const sectionElement = document.getElementById(section.id);
@@ -271,6 +277,7 @@ if (!customElements.get('quick-order-list')) {
           }
         }));
         this.defineInputsAndQuickOrderTable();
+        this.addDebounce();
       }
 
       getTableHead() {
