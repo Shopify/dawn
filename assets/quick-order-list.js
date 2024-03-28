@@ -122,6 +122,7 @@ if (!customElements.get('quick-order-list')) {
           // If its another section that made the update
           this.refresh().then(()=> {
             this.defineInputsAndQuickOrderTable();
+            this.addMultipleDebounce() 
           });
         });
         this.sectionRefreshUnsubscriber = subscribe(PUB_SUB_EVENTS.sectionRefreshed, (event) => {
