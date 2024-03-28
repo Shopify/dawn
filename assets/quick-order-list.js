@@ -104,10 +104,7 @@ if (!customElements.get('quick-order-list')) {
         }
 
         form.addEventListener('submit', this.onSubmit.bind(this));
-        const debouncedOnChange = debounce((event) => {
-          this.onChange(event);
-        }, ON_CHANGE_DEBOUNCE_TIMER);
-        this.addEventListener('change', debouncedOnChange.bind(this));
+        this.addMultipleDebounce()
       }
 
       cartUpdateUnsubscriber = undefined;
@@ -125,6 +122,7 @@ if (!customElements.get('quick-order-list')) {
           // If its another section that made the update
           this.refresh().then(()=> {
             this.defineInputsAndQuickOrderTable();
+            this.addMultipleDebounce() 
           });
         });
         this.sectionRefreshUnsubscriber = subscribe(PUB_SUB_EVENTS.sectionRefreshed, (event) => {
@@ -251,6 +249,23 @@ if (!customElements.get('quick-order-list')) {
         ];
       }
 
+      addMultipleDebounce() {
+        this.querySelectorAll('quantity-input').forEach((qty) => {
+          const debouncedOnChange = debounce((event) => {
+            this.onChange(event);
+          }, ON_CHANGE_DEBOUNCE_TIMER);
+          qty.addEventListener('change', debouncedOnChange.bind(this));
+        })
+      }
+
+      addDebounce(id) {
+        const element = this.querySelector(`#Variant-${id} quantity-input`)
+        const debouncedOnChange = debounce((event) => {
+          this.onChange(event);
+        }, ON_CHANGE_DEBOUNCE_TIMER);
+        element.addEventListener('change', debouncedOnChange.bind(this));
+      }
+
       renderSections(parsedState, id) {
         this.getSectionsToRender().forEach((section => {
           const sectionElement = document.getElementById(section.id);
@@ -271,6 +286,11 @@ if (!customElements.get('quick-order-list')) {
           }
         }));
         this.defineInputsAndQuickOrderTable();
+        if (id) {
+          this.addDebounce(id);
+        } else {
+          this.addMultipleDebounce() 
+        }
       }
 
       getTableHead() {
@@ -323,6 +343,7 @@ if (!customElements.get('quick-order-list')) {
               e.target.blur();
               if (this.validateInput(e.target)) {
                 const currentIndex = this.allInputsArray.indexOf(e.target);
+                this.lastKey = e.shiftKey
                 if (!e.shiftKey) {
                   const nextIndex = currentIndex + 1;
                   const nextVariant = this.allInputsArray[nextIndex] || this.allInputsArray[0];
@@ -330,6 +351,7 @@ if (!customElements.get('quick-order-list')) {
                 } else {
                   const previousIndex = currentIndex - 1;
                   const previousVariant = this.allInputsArray[previousIndex] || this.allInputsArray[this.allInputsArray.length - 1];
+                  this.lastElement = previousVariant.dataset.index
                   previousVariant.select();
                 }
               }
@@ -458,6 +480,9 @@ if (!customElements.get('quick-order-list')) {
           })
           .finally(() => {
             this.toggleLoading(id);
+            if (this.lastKey && (this.lastElement === id)) {
+              this.querySelector(`#Variant-${id} input`).select()
+            }
           });
       }
 
@@ -545,15 +570,15 @@ if (!customElements.get('quick-order-list')) {
       }
 
       toggleLoading(id, enable) {
-        const quickOrderList = document.getElementById(this.quickOrderListId);
         const quickOrderListItems = this.querySelectorAll(`#Variant-${id} .loading__spinner`);
+        const quickOrderListItem = this.querySelector(`#Variant-${id}`);
 
         if (enable) {
-          quickOrderList.classList.add('quick-order-list__container--disabled');
+          quickOrderListItem.classList.add('quick-order-list__container--disabled');
           [...quickOrderListItems].forEach((overlay) => overlay.classList.remove('hidden'));
           this.variantItemStatusElement.setAttribute('aria-hidden', false);
         } else {
-          quickOrderList.classList.remove('quick-order-list__container--disabled');
+           quickOrderListItem.classList.remove('quick-order-list__container--disabled');
           quickOrderListItems.forEach((overlay) => overlay.classList.add('hidden'));
         }
       }
