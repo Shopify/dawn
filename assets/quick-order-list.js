@@ -261,7 +261,7 @@ if (!customElements.get('quick-order-list')) {
         element.addEventListener('change', debouncedOnChange.bind(this));
       }
 
-      renderSections(parsedState, id) {
+      renderSections(parsedState, id, items) {
         this.getSectionsToRender().forEach((section => {
           const sectionElement = document.getElementById(section.id);
           if (sectionElement && sectionElement.parentElement && sectionElement.parentElement.classList.contains('drawer')) {
@@ -281,7 +281,11 @@ if (!customElements.get('quick-order-list')) {
           }
         }));
         this.defineInputsAndQuickOrderTable();
-        this.addDebounce(id);
+        if (id) {
+          this.addDebounce(id);
+        } else {
+          items.forEach((i) => this.addDebounce(i))
+        }
       }
 
       getTableHead() {
@@ -379,7 +383,7 @@ if (!customElements.get('quick-order-list')) {
           })
           .then((state) => {
             const parsedState = JSON.parse(state);
-            this.renderSections(parsedState);
+            this.renderSections(parsedState, undefined, [...Object.keys(items)]);
           }).catch(() => {
             this.setErrorMessage(window.cartStrings.error);
           })
