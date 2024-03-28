@@ -104,12 +104,7 @@ if (!customElements.get('quick-order-list')) {
         }
 
         form.addEventListener('submit', this.onSubmit.bind(this));
-        this.querySelectorAll('quantity-input').forEach((qty) => {
-          const debouncedOnChange = debounce((event) => {
-            this.onChange(event);
-          }, ON_CHANGE_DEBOUNCE_TIMER);
-          qty.addEventListener('change', debouncedOnChange.bind(this));
-        })
+        this.addMultipleDebounce()
       }
 
       cartUpdateUnsubscriber = undefined;
@@ -253,6 +248,15 @@ if (!customElements.get('quick-order-list')) {
         ];
       }
 
+      addMultipleDebounce() {
+        this.querySelectorAll('quantity-input').forEach((qty) => {
+          const debouncedOnChange = debounce((event) => {
+            this.onChange(event);
+          }, ON_CHANGE_DEBOUNCE_TIMER);
+          qty.addEventListener('change', debouncedOnChange.bind(this));
+        })
+      }
+
       addDebounce(id) {
         const element = this.querySelector(`#Variant-${id} quantity-input`)
         const debouncedOnChange = debounce((event) => {
@@ -261,7 +265,7 @@ if (!customElements.get('quick-order-list')) {
         element.addEventListener('change', debouncedOnChange.bind(this));
       }
 
-      renderSections(parsedState, id, items) {
+      renderSections(parsedState, id) {
         this.getSectionsToRender().forEach((section => {
           const sectionElement = document.getElementById(section.id);
           if (sectionElement && sectionElement.parentElement && sectionElement.parentElement.classList.contains('drawer')) {
@@ -284,7 +288,7 @@ if (!customElements.get('quick-order-list')) {
         if (id) {
           this.addDebounce(id);
         } else {
-          items.forEach((i) => this.addDebounce(i))
+          this.addMultipleDebounce() 
         }
       }
 
@@ -383,7 +387,7 @@ if (!customElements.get('quick-order-list')) {
           })
           .then((state) => {
             const parsedState = JSON.parse(state);
-            this.renderSections(parsedState, undefined, [...Object.keys(items)]);
+            this.renderSections(parsedState);
           }).catch(() => {
             this.setErrorMessage(window.cartStrings.error);
           })
