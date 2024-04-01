@@ -146,7 +146,9 @@ if (!customElements.get('quick-order-list')) {
         const quantity = inputValue - cartQuantity;
         this.cleanErrorMessageOnType(event);
         if (inputValue == 0) {
-          this.updateQuantity(index, inputValue, name, this.actions.update);
+          this.getQty(index).then(() => {
+            this.updateQuantity(index, inputValue, name, this.actions.update);
+          });
         } else {
           this.validateQuantity(event, name, index, inputValue, cartQuantity, quantity);
         }
@@ -170,11 +172,15 @@ if (!customElements.get('quick-order-list')) {
           event.target.setCustomValidity('');
           event.target.reportValidity();
           if (cartQuantity > 0) {
-            this.updateQuantity(index, inputValue, name, this.actions.update);
+            this.getQty(index).then(() => {
+              this.updateQuantity(index, inputValue, name, this.actions.update);
+            });
           } else {
-            this.updateQuantity(index, quantity, name, this.actions.add);
+            this.getQty(index).then(() => {
+              this.updateQuantity(index, quantity, name, this.actions.add);
+            });
           }
-      }
+        }
       }
 
       setValidity(event, index, message) {
@@ -387,13 +393,39 @@ if (!customElements.get('quick-order-list')) {
           });
       }
 
+      getQty(id) {
+        return new Promise((resolve, reject) => {
+          fetch(`${routes.cart_url}.js`)
+          .then((response) => response.text())
+          .then((responseText) => {
+            const parsedState = JSON.parse(responseText);
+            const currentItems = parsedState.items.filter((item) => item.variant_id === parseInt(id));
+            if (currentItems.length > 0) {
+              const totalQty = currentItems.reduce((total, item) => {
+                return total += item.quantity;
+              }, 0)
+              this.cartQuantity = totalQty
+              this.firstLineItem = currentItems[0].quantity
+            } else {
+              this.cartQuantity = 0
+            }
+            resolve();
+          })
+          .catch((e) => {
+            console.error(e);
+            reject(e);
+          });
+       });
+      }
+
       updateQuantity(id, quantity, name, action) {
         this.toggleLoading(id, true);
         this.cleanErrors();
 
         let routeUrl = routes.cart_change_url;
+
         let body = JSON.stringify({
-          quantity,
+          quantity: (quantity - this.cartQuantity) + this.firstLineItem,
           id,
           sections: this.getSectionsToRender().map((section) => section.section),
           sections_url: window.location.pathname
@@ -444,11 +476,16 @@ if (!customElements.get('quick-order-list')) {
 
             let hasError = false;
 
-            const currentItem = parsedState.items.find((item) => item.variant_id === parseInt(id));
-            const updatedValue = currentItem ? currentItem.quantity : undefined;
-            if (updatedValue && updatedValue !== quantity) {
-              this.updateError(updatedValue, id);
-              hasError = true;
+            const currentItems = parsedState.items.filter((item) => item.variant_id === parseInt(id));
+            console.log(currentItems, 'heyyyy', parsedState)
+            const totalQty = currentItems.reduce((total ,item) => {
+              return total += item.quantity;
+            }, 0)
+            console.log(currentItems, 'current item', totalQty, quantity)
+            // const updatedValue = currentItems ? currentItems.quantity : undefined;
+            if (totalQty && totalQty !== quantity) {
+              // this.updateError(totalQty, id);
+              // hasError = true;
             }
 
             publish(PUB_SUB_EVENTS.cartUpdate, { source: this.quickOrderListId, cartData: parsedState });

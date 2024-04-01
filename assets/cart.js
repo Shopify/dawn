@@ -5,7 +5,7 @@ class CartRemoveButton extends HTMLElement {
     this.addEventListener('click', (event) => {
       event.preventDefault();
       const cartItems = this.closest('cart-items') || this.closest('cart-drawer-items');
-      cartItems.updateQuantity(this.dataset.index, 0);
+      cartItems.updateQuantity(this.dataset.key, this.dataset.index, 0);
     });
   }
 }
@@ -43,7 +43,7 @@ class CartItems extends HTMLElement {
   }
 
   onChange(event) {
-    this.updateQuantity(event.target.dataset.index, event.target.value, document.activeElement.getAttribute('name'), event.target.dataset.quantityVariantId);
+    this.updateQuantity(event.target.dataset.key, event.target.dataset.index, event.target.value, document.activeElement.getAttribute('name'), event.target.dataset.quantityVariantId);
   }
 
   onCartUpdate() {
@@ -103,11 +103,12 @@ class CartItems extends HTMLElement {
     ];
   }
 
-  updateQuantity(line, quantity, name, variantId) {
+  updateQuantity(variantKey, line, quantity, name, variantId) {
+    console.log(variantKey, 'hey', line)
     this.enableLoading(line);
 
     const body = JSON.stringify({
-      line,
+      id: variantKey,
       quantity,
       sections: this.getSectionsToRender().map((section) => section.section),
       sections_url: window.location.pathname,
@@ -144,15 +145,23 @@ class CartItems extends HTMLElement {
             section.selector
           );
         });
-        const updatedValue = parsedState.items[line - 1] ? parsedState.items[line - 1].quantity : undefined;
+        // const updatedValue = parsedState.items[line - 1] ? parsedState.items[line - 1].quantity : undefined;
+        const currentItems = parsedState.items.filter((item) => item.key === variantKey);
+        console.log(currentItems, 'heyyyy', quantityElement.value, parsedState.items)
+        const totalQty = currentItems.reduce((total, item) => {
+          return total += item.quantity;
+        }, 0)
         let message = '';
-        if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
-          if (typeof updatedValue === 'undefined') {
-            message = window.cartStrings.error;
-          } else {
-            message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
-          }
-        }
+        console.log(totalQty, 'test123', parseInt(quantityElement.value), currentItems)
+        // if (parsedState.items && totalQty !== parseInt(quantityElement.value)) {
+        if (typeof totalQty === 'undefined') {
+          message = window.cartStrings.error;
+        } 
+        // else {
+        //     console.log('hereee')
+        //     // message = window.cartStrings.quantityError.replace('[quantity]', totalQty);
+        //   }
+        // }
         this.updateLiveRegions(line, message);
 
         const lineItem =
