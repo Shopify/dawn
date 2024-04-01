@@ -392,7 +392,11 @@ if (!customElements.get('quick-order-list')) {
       }
 
       getSectionsUrl() {
-        return `${window.location.pathname}?page=${window.pageNumber}`
+        if (window.pageNumber) {
+          return `${window.location.pathname}?page=${window.pageNumber}`
+        } else {
+          return `${window.location.pathname}`
+        }
       }
 
       updateQuantity(id, quantity, name, action) {

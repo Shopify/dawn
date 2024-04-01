@@ -194,7 +194,11 @@ if (!customElements.get('quick-add-bulk')) {
       }
 
       getSectionsUrl() {
-        return `${window.location.pathname}?page=${window.pageNumber}`
+        if (window.pageNumber) {
+          return `${window.location.pathname}?page=${window.pageNumber}`
+        } else {
+          return `${window.location.pathname}`
+        }      
       }
 
       getSectionInnerHTML(html, selector) {
