@@ -103,6 +103,8 @@ if (!customElements.get('quick-order-list')) {
           });
         }
 
+        const pageParams = new URLSearchParams(window.location.search);
+        window.pageNumber = decodeURIComponent(pageParams.get('page') || '');
         form.addEventListener('submit', this.onSubmit.bind(this));
         this.addMultipleDebounce()
       }
@@ -194,12 +196,14 @@ if (!customElements.get('quick-order-list')) {
 
       refresh() {
         return new Promise((resolve, reject) => {
-          fetch(`${window.location.pathname}?section_id=${this.sectionId}`)
+          fetch(`${this.getSectionsUrl()}?section_id=${this.sectionId}`)
             .then((response) => response.text())
             .then((responseText) => {
               const html = new DOMParser().parseFromString(responseText, 'text/html');
               const sourceQty = html.querySelector(`#${this.quickOrderListId}`);
-              this.innerHTML = sourceQty.innerHTML;
+              if (sourceQty) {
+                this.innerHTML = sourceQty.innerHTML;
+              }
               resolve();
             })
             .catch(e => {
@@ -366,7 +370,7 @@ if (!customElements.get('quick-order-list')) {
         const body = JSON.stringify({
           updates: items,
           sections: this.getSectionsToRender().map((section) => section.section),
-          sections_url: window.location.pathname
+          sections_url: this.getSectionsUrl()
         });
 
         this.updateMessage();
@@ -387,6 +391,14 @@ if (!customElements.get('quick-order-list')) {
           });
       }
 
+      getSectionsUrl() {
+        if (window.pageNumber) {
+          return `${window.location.pathname}?page=${window.pageNumber}`
+        } else {
+          return `${window.location.pathname}`
+        }
+      }
+
       updateQuantity(id, quantity, name, action) {
         this.toggleLoading(id, true);
         this.cleanErrors();
@@ -396,7 +408,7 @@ if (!customElements.get('quick-order-list')) {
           quantity,
           id,
           sections: this.getSectionsToRender().map((section) => section.section),
-          sections_url: window.location.pathname
+          sections_url: this.getSectionsUrl()
         });
         let fetchConfigType;
         if (action === this.actions.add) {
@@ -410,7 +422,7 @@ if (!customElements.get('quick-order-list')) {
               }
             ],
             sections: this.getSectionsToRender().map((section) => section.section),
-            sections_url: window.location.pathname
+            sections_url: this.getSectionsUrl()
           });
         }
 
