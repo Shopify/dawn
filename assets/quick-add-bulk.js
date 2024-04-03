@@ -99,7 +99,7 @@ if (!customElements.get('quick-add-bulk')) {
       updateCart(event) {
         this.lastActiveInputId = event.target.getAttribute('data-index');
         this.quantity = this.querySelector('quantity-input')
-        // this.quantity.classList.add('loading');
+        this.quantity.classList.add('quantity__input-disabled');
         this.selectProgressBar().classList.remove('hidden');
         const body = JSON.stringify({
           quantity: event.target.value,
@@ -158,6 +158,7 @@ if (!customElements.get('quick-add-bulk')) {
               event.target.reportValidity();
               this.resetQuantityInput(event.target.id);
               this.selectProgressBar().classList.add('hidden');
+              this.quantity.classList.remove('quantity__input-disabled');
               event.target.select();
               this.cleanErrorMessageOnType(event);
               // Error handling
