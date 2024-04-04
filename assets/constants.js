@@ -5,9 +5,4 @@ const PUB_SUB_EVENTS = {
   quantityUpdate: 'quantity-update',
   variantChange: 'variant-change',
   cartError: 'cart-error',
-  sectionRefreshed: 'section-refreshed',
-};
-
-const SECTION_REFRESH_RESOURCE_TYPE = {
-  product: 'product',
 };
