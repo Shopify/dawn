@@ -80,6 +80,7 @@ if (!customElements.get('quick-order-list')) {
         this.defineInputsAndQuickOrderTable();
 
         this.queue = []
+        this.queueFinished = true;
         this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
         const form = this.querySelector('form');
         this.inputFieldHeight = this.querySelector('.variant-item__quantity-wrapper').offsetHeight;
@@ -149,7 +150,7 @@ if (!customElements.get('quick-order-list')) {
         const quantity = inputValue - cartQuantity;
         this.cleanErrorMessageOnType(event);
         if (inputValue == 0) {
-          this.queue.push({id: index, quantity: inputValue, name, action: this.actions.update})
+          // this.queue.push({id: index, quantity: inputValue, name, action: this.actions.update})
           this.sendRequest();
         } else {
           this.validateQuantity(event, name, index, inputValue, cartQuantity, quantity);
@@ -175,12 +176,36 @@ if (!customElements.get('quick-order-list')) {
           event.target.reportValidity();
           if (cartQuantity > 0) {
             this.queue.push({id: index, quantity: inputValue, name, action: this.actions.update})
-            this.sendRequest();
+            const int = setInterval(() => {
+              if (this.queue.length > 0 && this.queueFinished) {
+                this.sendRequest().then((queue)=> {
+                  this.updateQueue(queue)
+                })
+              } 
+              else {
+                clearInterval(int)
+              }
+            }, 500)
           } else {
             this.queue.push({id: index, quantity, name, action:this.actions.add})
-            this.sendRequest();
+            if (this.queue.length > 0 && this.queueFinished) {
+              const int = setInterval(() => {
+                if (this.queue.length > 0) {
+                  this.sendRequest().then((queue)=> {
+                    this.updateQueue(queue)
+                  })
+                } else {
+                  clearInterval(int)
+                }
+              }, 500)
+            }
           }
+        }
       }
+
+      updateQueue(queue) {
+        this.queue = this.queue.filter(q => !queue.includes(q));
+        this.queueFinished = true
       }
 
       setValidity(event, index, message) {
@@ -292,22 +317,17 @@ if (!customElements.get('quick-order-list')) {
       }
 
       sendRequest() {
+        this.queueFinished = false
         return new Promise((resolve) => {
-          if (this.queue.length > 0 || !this.queueRunning) {
             this.queue.forEach((q, i) => {
               const int = setTimeout(() => {
-                this.queue = this.queue.filter(item => item !== q)
-                if (this.queue.length === 0) {
-                  this.queueRunning = false
+                this.updateQuantity(q.id, q.quantity, q.name, q.action)
+                if ((this.queue.length + 1) === i) {
                   clearTimeout(int);
                 }
-                // Create list of updates here
-                this.updateQuantity(q.id, q.quantity, q.name, q.action)
-                resolve()
-                this.queueRunning = true
               }, 500 * (i + 1))
-           })
-          }
+            })
+          resolve(this.queue)
         })
       }
 
@@ -424,7 +444,6 @@ if (!customElements.get('quick-order-list')) {
       }
 
       updateQuantity(id, quantity, name, action) {
-        console.log(id, quantity, action, '---')
         this.toggleLoading(id, true);
         // this.cleanErrors(id);
 
