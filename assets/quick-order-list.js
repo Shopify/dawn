@@ -178,7 +178,7 @@ if (!customElements.get('quick-order-list')) {
             this.queue.push({id: index, quantity: inputValue, name, action: this.actions.update})
             const int = setInterval(() => {
               if (this.queue.length > 0 && this.queueFinished) {
-                this.sendRequest().then((queue)=> {
+                this.sendRequest(this.queue).then((queue)=> {
                   this.updateQueue(queue)
                 })
               } 
@@ -191,7 +191,7 @@ if (!customElements.get('quick-order-list')) {
             if (this.queue.length > 0 && this.queueFinished) {
               const int = setInterval(() => {
                 if (this.queue.length > 0) {
-                  this.sendRequest().then((queue)=> {
+                  this.sendRequest(this.queue).then((queue)=> {
                     this.updateQueue(queue)
                   })
                 } else {
@@ -316,18 +316,14 @@ if (!customElements.get('quick-order-list')) {
         }
       }
 
-      sendRequest() {
-        this.queueFinished = false
+      sendRequest(queue) {
+        const items = {}
+        queue.forEach((q) => {
+          items[parseInt(q.id)] = q.quantity;
+        });
         return new Promise((resolve) => {
-            this.queue.forEach((q, i) => {
-              const int = setTimeout(() => {
-                this.updateQuantity(q.id, q.quantity, q.name, q.action)
-                if ((this.queue.length + 1) === i) {
-                  clearTimeout(int);
-                }
-              }, 500 * (i + 1))
-            })
-          resolve(this.queue)
+          this.updateMultipleQty(items)
+          resolve(queue)
         })
       }
 
@@ -427,7 +423,8 @@ if (!customElements.get('quick-order-list')) {
           .then((state) => {
             const parsedState = JSON.parse(state);
             this.renderSections(parsedState);
-          }).catch(() => {
+          }).catch((e) => {
+            console.log(e, 'eeeee')
             this.setErrorMessage(window.cartStrings.error);
           })
           .finally(() => {
