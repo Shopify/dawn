@@ -1,0 +1,81 @@
+{% comment %}
+  Use example:
+  {%- render 'image-element',
+  image: section.settings.image,
+  lazy: true,
+  class: "img-class",
+  -%}
+{% endcomment %}
+
+{%- assign width = image.width -%}
+{%- if max_width != blank and max_width <= image.width -%}
+  {%- assign width = max_width -%}
+{%- endif -%}
+{%- assign imageAlt = imageAlt | default: image.alt | default: shop.name -%}
+
+<picture class="{{ pictureClassName }}">
+  {%- if fixed_width == blank -%}
+    {%- capture srcset -%}
+      {%- if custom_lazy -%}
+        data-srcset
+      {%- else -%}
+        srcset
+      {%- endif -%}
+    {%- endcapture -%}
+    {%- assign srcset = srcset | strip | strip_newlines | strip_html -%}
+
+    {%- if width > 1500 -%}
+      <source {{ srcset }}="{{ image | image_url: width: 1920 }}" media="(min-width: 1500px)" />
+    {%- endif -%}
+
+    {%- if width > 1200 -%}
+      <source {{ srcset }}="{{ image | image_url: width: 1500 }}" media="(min-width: 1200px)" />
+    {%- endif -%}
+
+    {%- if width > 900 -%}
+      <source {{ srcset }}="{{ image | image_url: width: 1200 }}" media="(min-width: 900px)" />
+    {%- endif -%}
+
+    {%- if width > 700 -%}
+      <source {{ srcset }}="{{ image | image_url: width: 900 }}" media="(min-width: 700px)" />
+    {%- endif -%}
+
+    {%- if width > 550 -%}
+      <source {{ srcset }}="{{ image | image_url: width: 700 }}" media="(min-width: 550px)" />
+    {%- endif -%}
+
+    {%- if width > 400 -%}
+      <source {{ srcset }}="{{ image | image_url: width: 550 }}" media="(min-width: 400px)" />
+    {%- endif -%}
+
+    {%- if width > 200 -%}
+      <source {{ srcset }}="{{ image | image_url: width: 400 }}" media="(min-width: 200px)" />
+    {%- endif -%}
+  {%- endif -%}
+
+  <img
+    {% if priority %}
+    fetchpriority="high"
+    {% endif %}
+    data-src="
+      {%- if fixed_width == blank -%}
+        {{- image | image_url: width: 500 -}}
+      {%- else -%}
+        {{- image | image_url: width: fixed_width -}}
+      {%- endif -%}"
+    src="
+      {%- if fixed_width == blank -%}
+        {{- image | image_url: width: 500 -}}
+      {%- else -%}
+        {{- image | image_url: width: fixed_width -}}
+      {%- endif -%}"
+    {%- if lazy != false -%}
+    loading="lazy"
+    {%- endif -%}
+    alt="{{ imageAlt }}"
+    width="{{ image.width }}"
+    height="{{ image.height }}"
+    {% if class != blank %}
+    class="{{ class }}{% if custom_lazy == true %} custom_lazy_load{% endif %}"
+    {% endif %} />
+</picture>
