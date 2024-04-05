@@ -286,7 +286,7 @@ if (!customElements.get('quick-order-list')) {
         element.addEventListener('change', debouncedOnChange.bind(this));
       }
 
-      renderSections(parsedState, id) {
+      renderSections(parsedState, id, ids) {
         this.getSectionsToRender().forEach((section => {
           const sectionElement = document.getElementById(section.id);
           if (sectionElement && sectionElement.parentElement && sectionElement.parentElement.classList.contains('drawer')) {
@@ -300,6 +300,12 @@ if (!customElements.get('quick-order-list')) {
             if (section.selector === `#${this.quickOrderListId} .js-contents` && id !== undefined) {
               elementToReplace.querySelector(`#Variant-${id}`).innerHTML =
               this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${id}`);
+            } else if (section.selector === `#${this.quickOrderListId} .js-contents` && ids !== undefined) { 
+              ids.forEach((i) => {
+                elementToReplace.querySelector(`#Variant-${i}`).innerHTML =
+                this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${i}`);
+              })
+
             } else {
               elementToReplace.innerHTML = this.getSectionInnerHTML(parsedState.sections[section.section], section.selector);
             }
@@ -316,12 +322,16 @@ if (!customElements.get('quick-order-list')) {
       sendRequest(queue) {
         this.requestStarted = true;
         const items = {}
+        const ids = []
         queue.forEach((q) => {
           items[parseInt(q.id)] = q.quantity;
         });
+        queue.forEach((q) => {
+          ids.push(q.id)
+        })
         this.queue = this.queue.filter(q => !queue.includes(q));
         return new Promise((resolve) => {
-          this.updateMultipleQty(items)
+          this.updateMultipleQty(items, ids)
           resolve(queue)
         })
       }
@@ -403,7 +413,7 @@ if (!customElements.get('quick-order-list')) {
         }
       }
 
-      updateMultipleQty(items) {
+      updateMultipleQty(items, ids) {
         this.querySelector('.variant-remove-total .loading__spinner').classList.remove('hidden');
 
         const body = JSON.stringify({
@@ -421,7 +431,7 @@ if (!customElements.get('quick-order-list')) {
           })
           .then((state) => {
             const parsedState = JSON.parse(state);
-            this.renderSections(parsedState);
+            this.renderSections(parsedState, undefined, ids);
           }).catch((e) => {
             console.log(e, 'eeeee')
             this.setErrorMessage(window.cartStrings.error);
