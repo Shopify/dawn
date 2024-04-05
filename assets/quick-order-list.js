@@ -80,7 +80,7 @@ if (!customElements.get('quick-order-list')) {
         this.defineInputsAndQuickOrderTable();
 
         this.queue = []
-        this.queueFinished = true;
+        this.requestStarted = false;
         this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
         const form = this.querySelector('form');
         this.inputFieldHeight = this.querySelector('.variant-item__quantity-wrapper').offsetHeight;
@@ -177,23 +177,25 @@ if (!customElements.get('quick-order-list')) {
           if (cartQuantity > 0) {
             this.queue.push({id: index, quantity: inputValue, name, action: this.actions.update})
             const int = setInterval(() => {
-              if (this.queue.length > 0 && this.queueFinished) {
-                this.sendRequest(this.queue).then((queue)=> {
-                  this.updateQueue(queue)
-                })
+              if (this.queue.length > 0) {
+                if (!this.requestStarted)  {
+                  this.sendRequest(this.queue).then(()=> {
+                  })
+                }
               } 
               else {
                 clearInterval(int)
               }
-            }, 500)
+            }, 100)
           } else {
             this.queue.push({id: index, quantity, name, action:this.actions.add})
-            if (this.queue.length > 0 && this.queueFinished) {
+            if (this.queue.length > 0) {
               const int = setInterval(() => {
                 if (this.queue.length > 0) {
-                  this.sendRequest(this.queue).then((queue)=> {
-                    this.updateQueue(queue)
-                  })
+                  if (!this.requestStarted)  {
+                    this.sendRequest(this.queue).then(()=> {
+                    })
+                  }
                 } else {
                   clearInterval(int)
                 }
@@ -201,11 +203,6 @@ if (!customElements.get('quick-order-list')) {
             }
           }
         }
-      }
-
-      updateQueue(queue) {
-        this.queue = this.queue.filter(q => !queue.includes(q));
-        this.queueFinished = true
       }
 
       setValidity(event, index, message) {
@@ -317,10 +314,12 @@ if (!customElements.get('quick-order-list')) {
       }
 
       sendRequest(queue) {
+        this.requestStarted = true;
         const items = {}
         queue.forEach((q) => {
           items[parseInt(q.id)] = q.quantity;
         });
+        this.queue = this.queue.filter(q => !queue.includes(q));
         return new Promise((resolve) => {
           this.updateMultipleQty(items)
           resolve(queue)
@@ -429,6 +428,7 @@ if (!customElements.get('quick-order-list')) {
           })
           .finally(() => {
             this.querySelector('.variant-remove-total .loading__spinner').classList.add('hidden');
+            this.requestStarted = false;
           });
       }
 
