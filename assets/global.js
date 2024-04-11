@@ -184,16 +184,28 @@ class QuantityInput extends HTMLElement {
     event.preventDefault();
     const previousValue = this.input.value;
 
-    event.target.name === 'plus' ? this.input.stepUp() : this.input.stepDown();
+    if (event.target.name === 'plus') {
+      if ((parseInt(this.input.dataset.min) > parseInt(this.input.step)) && this.input.value == 0) {
+        this.input.value = this.input.dataset.min;
+      } else {
+        this.input.stepUp()
+      } 
+    } else {
+      this.input.stepDown();
+    }
+    
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
+
+    if ((this.input.dataset.min === previousValue) &&  event.target.name === 'minus') {
+      this.input.value = parseInt(this.input.min);
+    }
   }
 
   validateQtyRules() {
     const value = parseInt(this.input.value);
     if (this.input.min) {
-      const min = parseInt(this.input.min);
       const buttonMinus = this.querySelector(".quantity__button[name='minus']");
-      buttonMinus.classList.toggle('disabled', value <= min);
+      buttonMinus.classList.toggle('disabled', parseInt(value) <= parseInt(this.input.min));
     }
     if (this.input.max) {
       const max = parseInt(this.input.max);
@@ -972,7 +984,6 @@ class VariantSelects extends HTMLElement {
       this.toggleAddButton(true, '', true);
       this.setUnavailable();
     } else {
-      this.updateMedia();
       this.updateURL();
       this.updateVariantInput();
       this.renderProductInfo();
@@ -1024,21 +1035,6 @@ class VariantSelects extends HTMLElement {
       const selectedSwatchValue = this.querySelector(`[data-selected-swatch-value="${name}"]`);
       if (selectedSwatchValue) selectedSwatchValue.innerHTML = value;
     }
-  }
-
-  updateMedia() {
-    if (!this.currentVariant) return;
-    if (!this.currentVariant.featured_media) return;
-
-    const mediaGalleries = document.querySelectorAll(`[id^="MediaGallery-${this.dataset.section}"]`);
-    mediaGalleries.forEach((mediaGallery) =>
-      mediaGallery.setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media.id}`, true)
-    );
-
-    const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
-    if (!modalContent) return;
-    const newMediaModal = modalContent.querySelector(`[data-media-id="${this.currentVariant.featured_media.id}"]`);
-    modalContent.prepend(newMediaModal);
   }
 
   updateURL() {
@@ -1114,6 +1110,64 @@ class VariantSelects extends HTMLElement {
     if (productForm) productForm.handleErrorMessage();
   }
 
+
+  updateMedia(html) {
+    const mediaGallerySource = document.querySelector(`[id^="MediaGallery-${this.dataset.section}"] ul`);
+    const mediaGalleryDestination = html.querySelector(`[id^="MediaGallery-${this.dataset.section}"] ul`);
+
+    const refreshSourceData = () => {
+      const mediaGallerySourceItems = Array.from(mediaGallerySource.querySelectorAll('li[data-media-id]'));
+      const sourceSet = new Set(mediaGallerySourceItems.map(item => item.dataset.mediaId));
+      const sourceMap = new Map(mediaGallerySourceItems.map((item, index) => [item.dataset.mediaId, {item, index}]));
+      return [mediaGallerySourceItems, sourceSet, sourceMap];
+    };
+
+    if (mediaGallerySource && mediaGalleryDestination) {
+      let [mediaGallerySourceItems, sourceSet, sourceMap] = refreshSourceData();
+      const mediaGalleryDestinationItems = Array.from(mediaGalleryDestination.querySelectorAll('li[data-media-id]'));
+      const destinationSet = new Set(mediaGalleryDestinationItems.map(({dataset}) => dataset.mediaId));
+      let shouldRefresh = false;
+
+      // add items from new data not present in DOM
+      for (let i = mediaGalleryDestinationItems.length - 1; i >= 0; i--) {
+        if (!sourceSet.has(mediaGalleryDestinationItems[i].dataset.mediaId)) {
+          mediaGallerySource.prepend(mediaGalleryDestinationItems[i]);
+          shouldRefresh = true;
+        }
+      }
+
+      // remove items from DOM not present in new data
+      for (let i = 0; i < mediaGallerySourceItems.length; i++) {
+        if (!destinationSet.has(mediaGallerySourceItems[i].dataset.mediaId)) {
+          mediaGallerySourceItems[i].remove();
+          shouldRefresh = true;
+        }
+      }
+
+      // refresh
+      if (shouldRefresh) [mediaGallerySourceItems, sourceSet, sourceMap] = refreshSourceData();
+
+      // if media galleries don't match, sort to match new data order
+      mediaGalleryDestinationItems.forEach((destinationItem, destinationIndex) => {
+        const sourceData = sourceMap.get(destinationItem.dataset.mediaId);
+
+        if (sourceData && sourceData.index !== destinationIndex) {
+          mediaGallerySource.insertBefore(sourceData.item, mediaGallerySource.querySelector(`li:nth-of-type(${destinationIndex + 1})`));
+
+          // refresh source now that it has been modified
+          [mediaGallerySourceItems, sourceSet, sourceMap] = refreshSourceData();
+        }
+      });
+    }
+
+    document.querySelector(`[id^="MediaGallery-${this.dataset.section}"]`).setActiveMedia(`${this.dataset.section}-${this.currentVariant.featured_media?.id}`);
+
+    // update media modal
+    const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
+    const newModalContent = html.querySelector(`product-modal`);
+    if (modalContent && newModalContent) modalContent.innerHTML = newModalContent.innerHTML;
+  }
+
   renderProductInfo() {
     const requestedVariantId = this.currentVariant.id;
     const sectionId = this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section;
@@ -1144,6 +1198,8 @@ class VariantSelects extends HTMLElement {
         const volumePricingSource = html.getElementById(
           `Volume-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`
         );
+
+        this.updateMedia(html);
 
         const pricePerItemDestination = document.getElementById(`Price-Per-Item-${this.dataset.section}`);
         const pricePerItemSource = html.getElementById(`Price-Per-Item-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`);
@@ -1283,3 +1339,23 @@ class ProductRecommendations extends HTMLElement {
 }
 
 customElements.define('product-recommendations', ProductRecommendations);
+
+class AccountIcon extends HTMLElement {
+  constructor() {
+    super();
+
+    this.icon = this.querySelector('.icon');
+  }
+
+  connectedCallback() {
+    document.addEventListener('storefront:signincompleted', this.handleStorefrontSignInCompleted.bind(this));
+  }
+
+  handleStorefrontSignInCompleted(event) {
+    if (event?.detail?.avatar) {
+      this.icon?.replaceWith(event.detail.avatar.cloneNode());
+    }
+  }
+}
+
+customElements.define('account-icon', AccountIcon);

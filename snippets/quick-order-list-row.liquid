@@ -14,15 +14,15 @@
 {% # theme-check-enable %}
 
 <tr
-  class="variant-item{% unless section.settings.show_image %} variant-item--no-media{% endunless %}{% if item.available and item.unit_price_measurement %} variant-item--unit-price{% endif %}"
+  class="variant-item{% unless show_image %} variant-item--no-media{% endunless %}{% if item.available and item.unit_price_measurement %} variant-item--unit-price{% endif %}"
   id="Variant-{{ variant.id }}"
   data-variant-id="{{ variant.id }}"
   data-cart-qty="{{ cart_qty }}"
 >
-  <td class="variant-item__inner{% unless sku and section.settings.show_sku %} variant-item__inner--no-sku{% endunless %}">
-    {%- if section.settings.show_image -%}
+  <td class="variant-item__inner{% unless sku and show_sku %} variant-item__inner--no-sku{% endunless %}">
+    {%- if show_image -%}
       <div class="variant-item__media">
-        <div class="variant-item__image-container gradient global-media-settings{% unless image %} variant-item__image-container--no-img {% endunless %}">
+        <div class="variant-item__image-container global-media-settings{% unless is_modal %} gradient{% endunless %}{% unless image %} variant-item__image-container--no-img{% endunless %}">
           {% if image %}
             {%- assign img_height = 43 | divided_by: image.aspect_ratio | ceil -%}
             {{
@@ -45,7 +45,7 @@
     {%- endif -%}
     <div class="small-hide medium-hide">
       <span class="variant-item__name h4 break">{{ item.title | escape }}</span>
-      {%- if section.settings.show_sku -%}
+      {%- if show_sku -%}
         <span class="variant-item__sku break">{{ sku | escape }}</span>
       {%- endif -%}
     </div>
@@ -54,7 +54,7 @@
   <td class="variant-item__details large-up-hide">
     <div class="variant-item__info">
       <span class="variant-item__name h4 break">{{ item.title | escape }}</span>
-      {%- if section.settings.show_sku -%}
+      {%- if show_sku -%}
         <span class="variant-item__sku break">{{ sku | escape }}</span>
       {%- endif -%}
     </div>
@@ -79,7 +79,7 @@
               assign volume_pricing_array = variant.quantity_price_breaks | sort: 'quantity' | reverse
             -%}
             <price-per-item
-              class="variant-item__price-per-item no-js-hidden"
+              class="variant-item__price-per-item"
               id="Price-Per-Item-{{ variant.id }}"
               data-variant-id="{{ variant.id }}"
             >
@@ -115,7 +115,7 @@
           assign volume_pricing_array = variant.quantity_price_breaks | sort: 'quantity' | reverse
         -%}
         <price-per-item
-          class="variant-item__price-per-item no-js-hidden"
+          class="variant-item__price-per-item"
           id="Price-Per-Item-{{ variant.id }}"
           data-variant-id="{{ variant.id }}"
         >
@@ -206,10 +206,73 @@
             <button
               type="button"
               aria-expanded="false"
+              aria-controls="quantity-popover-info-{{ variant.id }}"
+              aria-label="
+                {%- if has_vol_pricing -%}
+                  {{ 'products.product.volume_pricing.note' | t }}
+                {%- elsif has_qty_rules -%}
+                  {{ 'products.product.quantity.note' | t }}
+                {%- endif -%}
+              "
               class="quantity-popover__info-button quantity-popover__info-button--icon-only button button--tertiary small-hide medium-hide no-js-hidden"
             >
               {% render 'icon-info' %}
             </button>
+            <div
+              class="global-settings-popup quantity-popover__info"
+              tabindex="-1"
+              hidden
+              id="quantity-popover-info-{{ variant.id }}"
+            >
+              {%- if has_qty_rules == false -%}
+                <span class="volume-pricing-label caption">{{ 'products.product.volume_pricing.title' | t }}</span>
+              {%- endif -%}
+              <div class="quantity__rules caption no-js-hidden">
+                {%- if variant.quantity_rule.increment > 1 -%}
+                  <span class="divider">
+                    {{- 'products.product.quantity.multiples_of' | t: quantity: variant.quantity_rule.increment -}}
+                  </span>
+                {%- endif -%}
+                {%- if variant.quantity_rule.min > 1 -%}
+                  <span class="divider">
+                    {{- 'products.product.quantity.min_of' | t: quantity: variant.quantity_rule.min -}}
+                  </span>
+                {%- endif -%}
+                {%- if variant.quantity_rule.max != null -%}
+                  <span class="divider">
+                    {{- 'products.product.quantity.max_of' | t: quantity: variant.quantity_rule.max -}}
+                  </span>
+                {%- endif -%}
+              </div>
+              <button
+                class="button-close button button--tertiary large-up-hide"
+                type="button"
+                aria-label="{{ 'accessibility.close' | t }}"
+              >
+                {%- render 'icon-close' -%}
+              </button>
+              {%- if variant.quantity_price_breaks.size > 0 -%}
+                <volume-pricing class="parent-display">
+                  <ul class="list-unstyled">
+                    <li>
+                      <span>{{ variant.quantity_rule.min }}+</span>
+                      {%- assign price = variant.price | money_with_currency -%}
+                      <span>{{ 'sections.quick_order_list.each' | t: money: price }}</span>
+                    </li>
+                    {%- for price_break in variant.quantity_price_breaks -%}
+                      <li>
+                        <span>
+                          {{- price_break.minimum_quantity -}}
+                          <span aria-hidden="true">+</span></span
+                        >
+                        {%- assign price = price_break.price | money_with_currency -%}
+                        <span> {{ 'sections.quick_order_list.each' | t: money: price }}</span>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </volume-pricing>
+              {%- endif -%}
+            </div>
           {%- endif -%}
           {%- if variant.available == false or quantity_rule_soldout -%}
             <span class="variant-item__sold-out"> {{ 'products.product.sold_out' | t }} </span>
@@ -218,7 +281,7 @@
             {% # theme-check-disable %}
             {% assign cart_qty = cart | item_count_for_variant: variant.id %}
             {% # theme-check-enable %}
-            {% render 'quantity-input', variant: variant %}
+            {% render 'quantity-input', variant: variant, min: 0 %}
           {%- endif -%}
         </div>
         {%- if cart_qty > 0 -%}
@@ -251,62 +314,6 @@
             {%- endif -%}
           </span>
         </button>
-      {%- endif -%}
-      {%- if has_vol_pricing or has_qty_rules -%}
-        <div
-          class="global-settings-popup quantity-popover__info"
-          tabindex="-1"
-          hidden
-        >
-          {%- if has_qty_rules == false -%}
-            <span class="volume-pricing-label caption">{{ 'products.product.volume_pricing.title' | t }}</span>
-          {%- endif -%}
-          <div class="quantity__rules caption no-js-hidden">
-            {%- if variant.quantity_rule.increment > 1 -%}
-              <span class="divider">
-                {{- 'products.product.quantity.multiples_of' | t: quantity: variant.quantity_rule.increment -}}
-              </span>
-            {%- endif -%}
-            {%- if variant.quantity_rule.min > 1 -%}
-              <span class="divider">
-                {{- 'products.product.quantity.minimum_of' | t: quantity: variant.quantity_rule.min -}}
-              </span>
-            {%- endif -%}
-            {%- if variant.quantity_rule.max != null -%}
-              <span class="divider">
-                {{- 'products.product.quantity.maximum_of' | t: quantity: variant.quantity_rule.max -}}
-              </span>
-            {%- endif -%}
-          </div>
-          <button
-            class="button-close button button--tertiary large-up-hide"
-            type="button"
-            aria-label="{{ 'accessibility.close' | t }}"
-          >
-            {%- render 'icon-close' -%}
-          </button>
-          {%- if variant.quantity_price_breaks.size > 0 -%}
-            <volume-pricing class="parent-display">
-              <ul class="list-unstyled">
-                <li>
-                  <span>{{ variant.quantity_rule.min }}+</span>
-                  {%- assign price = variant.price | money_with_currency -%}
-                  <span>{{ 'sections.quick_order_list.each' | t: money: price }}</span>
-                </li>
-                {%- for price_break in variant.quantity_price_breaks -%}
-                  <li>
-                    <span>
-                      {{- price_break.minimum_quantity -}}
-                      <span aria-hidden="true">+</span></span
-                    >
-                    {%- assign price = price_break.price | money_with_currency -%}
-                    <span> {{ 'sections.quick_order_list.each' | t: money: price }}</span>
-                  </li>
-                {%- endfor -%}
-              </ul>
-            </volume-pricing>
-          {%- endif -%}
-        </div>
       {%- endif -%}
       <div
         class="variant-item__error large-up-hide"
@@ -349,7 +356,7 @@
               assign volume_pricing_array = variant.quantity_price_breaks | sort: 'quantity' | reverse
             -%}
             <price-per-item
-              class="variant-item__price-per-item no-js-hidden"
+              class="variant-item__price-per-item"
               id="Price-Per-Item-{{ variant.id }}"
               data-variant-id="{{ variant.id }}"
             >
@@ -385,7 +392,7 @@
           assign volume_pricing_array = variant.quantity_price_breaks | sort: 'quantity' | reverse
         -%}
         <price-per-item
-          class="variant-item__price-per-item no-js-hidden"
+          class="variant-item__price-per-item"
           id="Price-Per-Item-{{ variant.id }}"
           data-variant-id="{{ variant.id }}"
         >

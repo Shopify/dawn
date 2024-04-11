@@ -49,9 +49,13 @@ if (!customElements.get('product-info')) {
         const max = data.max === null ? data.max : data.max - data.cartQuantity;
         if (max !== null) min = Math.min(min, max);
         if (data.cartQuantity >= data.min) min = Math.min(min, data.step);
-
         this.input.min = min;
-        this.input.max = max;
+
+        if (max) {
+          this.input.max = max;
+        } else {
+          this.input.removeAttribute('max')
+        }
         this.input.value = min;
         publish(PUB_SUB_EVENTS.quantityUpdate, undefined);
       }
@@ -87,7 +91,11 @@ if (!customElements.get('product-info')) {
             const attributes = ['data-cart-quantity', 'data-min', 'data-max', 'step'];
             for (let attribute of attributes) {
               const valueUpdated = updated.getAttribute(attribute);
-              if (valueUpdated !== null) current.setAttribute(attribute, valueUpdated);
+              if (valueUpdated !== null) { 
+                current.setAttribute(attribute, valueUpdated)
+              } else {
+                current.removeAttribute(attribute)
+              }
             }
           } else {
             current.innerHTML = updated.innerHTML;
