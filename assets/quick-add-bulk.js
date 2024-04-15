@@ -177,9 +177,9 @@ if (!customElements.get('quick-add-bulk')) {
       getSectionsToRender() {
         return [
           {
-            id: `quick-add-bulk-${this.dataset.id}-${this.closest('.collection').dataset.id}`,
-            section: this.closest('.collection').dataset.id,
-            selector: `#quick-add-bulk-${this.dataset.id}-${this.closest('.collection').dataset.id}`
+            id: `quick-add-bulk-${this.dataset.id}-${this.closest('.collection-quick-add-bulk').dataset.id}`,
+            section: this.closest('.collection-quick-add-bulk').dataset.id,
+            selector: `#quick-add-bulk-${this.dataset.id}-${this.closest('.collection-quick-add-bulk').dataset.id}`
           },
           {
             id: 'cart-icon-bubble',
