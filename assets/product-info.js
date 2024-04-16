@@ -54,7 +54,7 @@ if (!customElements.get('product-info')) {
         if (max) {
           this.input.max = max;
         } else {
-          this.input.removeAttribute('max')
+          this.input.removeAttribute('max');
         }
         this.input.value = min;
         publish(PUB_SUB_EVENTS.quantityUpdate, undefined);
@@ -91,10 +91,10 @@ if (!customElements.get('product-info')) {
             const attributes = ['data-cart-quantity', 'data-min', 'data-max', 'step'];
             for (let attribute of attributes) {
               const valueUpdated = updated.getAttribute(attribute);
-              if (valueUpdated !== null) { 
-                current.setAttribute(attribute, valueUpdated)
+              if (valueUpdated !== null) {
+                current.setAttribute(attribute, valueUpdated);
               } else {
-                current.removeAttribute(attribute)
+                current.removeAttribute(attribute);
               }
             }
           } else {
