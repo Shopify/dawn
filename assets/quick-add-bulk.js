@@ -4,6 +4,8 @@ if (!customElements.get('quick-add-bulk')) {
     class QuickAddBulk extends HTMLElement {
       constructor() {
         super();
+        this.quantity = this.querySelector('quantity-input');
+
         const debouncedOnChange = debounce((event) => {
           if (parseInt(event.target.dataset.cartQuantity) === 0) {
             this.addToCart(event);
@@ -102,7 +104,6 @@ if (!customElements.get('quick-add-bulk')) {
 
       updateCart(event) {
         this.lastActiveInputId = event.target.getAttribute('data-index');
-        this.quantity = this.querySelector('quantity-input');
         this.quantity.classList.add('quantity__input-disabled');
         this.selectProgressBar().classList.remove('hidden');
         const body = JSON.stringify({
@@ -118,7 +119,7 @@ if (!customElements.get('quick-add-bulk')) {
           })
           .then((state) => {
             const parsedState = JSON.parse(state);
-
+            this.quantity.classList.remove('quantity__input-disabled');
             if (parsedState.description || parsedState.errors) {
               event.target.setCustomValidity(parsedState.description);
               event.target.reportValidity();
@@ -139,6 +140,7 @@ if (!customElements.get('quick-add-bulk')) {
       }
 
       addToCart(event) {
+        this.quantity.classList.add('quantity__input-disabled');
         this.selectProgressBar().classList.remove('hidden');
         this.lastActiveInputId = event.target.getAttribute('data-index');
         const body = JSON.stringify({
@@ -157,12 +159,12 @@ if (!customElements.get('quick-add-bulk')) {
           })
           .then((state) => {
             const parsedState = JSON.parse(state);
+            this.quantity.classList.remove('quantity__input-disabled');
             if (parsedState.description || parsedState.errors) {
               event.target.setCustomValidity(parsedState.description);
               event.target.reportValidity();
               this.resetQuantityInput(event.target.id);
               this.selectProgressBar().classList.add('hidden');
-              this.quantity.classList.remove('quantity__input-disabled');
               event.target.select();
               this.cleanErrorMessageOnType(event);
               // Error handling
