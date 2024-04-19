@@ -1271,99 +1271,23 @@ class HotSpots extends HTMLElement {
     this.el = this;
     this.buttons = this.querySelectorAll('[data-button]');
     this.hotspotBlocks = this.querySelectorAll('[data-hotspot-block]');
-    this.blockContainer = this.querySelector('[data-block-container]');
-    this.colorImages = this.querySelectorAll('.grid-product__color-image');
-    this.colorSwatches = this.querySelectorAll('.color-swatch--with-image');
 
-    this.bindEvents();
-
-    if (this.colorImages.length) {
-      this.colorSwatchHovering();
+    if (this.buttons.length > 0 && this.hotspotBlocks.length > 0) {
+      this.bindEvents();
     }
   }
 
-  colorSwatchHovering() {
-    this.colorSwatches.forEach((swatch) => {
-      swatch.addEventListener(
-        'mouseenter',
-        function () {
-          this.setActiveColorImage(swatch);
-        }.bind(this)
-      );
-
-      swatch.addEventListener(
-        'touchstart',
-        function (evt) {
-          evt.preventDefault();
-          this.setActiveColorImage(swatch);
-        }.bind(this),
-        { passive: true }
-      );
-
-      swatch.addEventListener(
-        'mouseleave',
-        function () {
-          this.removeActiveColorImage(swatch);
-        }.bind(this)
-      );
-    });
-  }
-
-  setActiveColorImage(swatch) {
-    var id = swatch.dataset.variantId;
-    var image = swatch.dataset.variantImage;
-
-    // Unset all active swatch images
-    this.colorImages.forEach((el) => {
-      el.classList.remove('is-active');
-    });
-
-    // Unset all active swatches
-    this.colorSwatches.forEach((el) => {
-      el.classList.remove('is-active');
-    });
-
-    // Set active image and swatch
-    var imageEl = this.el.querySelector('.grid-product__color-image--' + id);
-    imageEl.style.backgroundImage = 'url(' + image + ')';
-    imageEl.classList.add('is-active');
-    swatch.classList.add('is-active');
-
-    // Update product grid item href with variant URL
-    var variantUrl = swatch.dataset.url;
-    var gridItem = swatch.closest('.grid-item__link');
-
-    if (gridItem) gridItem.setAttribute('href', variantUrl);
-  }
-
-  removeActiveColorImage(swatch) {
-    const id = swatch.dataset.variantId;
-    this.querySelector(`.grid-product__color-image--${id}`).classList.remove('is-active');
-  }
-
-  /* Setup event listeners */
   bindEvents() {
     this.buttons.forEach((button) => {
-      const id = button.dataset.button;
-
-      button.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        const id = button.dataset.button;
         this.showContent(id);
       });
     });
-
-    // Display active hotspot block on theme editor select
-    document.addEventListener('shopify:block:select', (e) => {
-      const blockId = e.detail.blockId;
-      this.showContent(`${blockId}`);
-    });
   }
 
-  /* Toggle sidebar content */
   showContent(id) {
-    // Hide all hotspotBlock
-    // Show the hotspotBlock with the id
     this.hotspotBlocks.forEach((block) => {
       if (block.dataset.hotspotBlock === id) {
         block.classList.add('is-active');
@@ -1375,6 +1299,7 @@ class HotSpots extends HTMLElement {
 }
 
 customElements.define('hot-spots', HotSpots);
+
 // Prevent section from constant switching to 1st tab on re-render
 if (Shopify.designMode) {
   tabSectionsInit();
