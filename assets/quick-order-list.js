@@ -144,12 +144,11 @@ if (!customElements.get('quick-order-list')) {
         const inputValue = parseInt(event.target.value);
         const cartQuantity = parseInt(event.target.dataset.cartQuantity);
         const index = event.target.dataset.index;
-        const name = document.activeElement.getAttribute('name');
 
         const quantity = inputValue - cartQuantity;
         this.cleanErrorMessageOnType(event);
         if (inputValue == 0) {
-          this.queue.push({id: index, quantity: inputValue, name})
+          this.queue.push({id: index, quantity: inputValue})
           const int = setInterval(() => {
             if (this.queue.length > 0) {
               if (!this.requestStarted)  {
@@ -162,7 +161,7 @@ if (!customElements.get('quick-order-list')) {
             }
           }, 100)
         } else {
-          this.validateQuantity(event, name, index, inputValue, cartQuantity, quantity);
+          this.validateQuantity(event, index, inputValue, cartQuantity, quantity);
         }
       }
 
@@ -173,7 +172,7 @@ if (!customElements.get('quick-order-list')) {
         });
       }
 
-      validateQuantity(event, name, index, inputValue, cartQuantity, quantity) {
+      validateQuantity(event, index, inputValue, cartQuantity, quantity) {
         if (inputValue < event.target.dataset.min) {
           this.setValidity(
             event,
@@ -188,7 +187,7 @@ if (!customElements.get('quick-order-list')) {
           event.target.setCustomValidity('');
           event.target.reportValidity();
           if (cartQuantity > 0) {
-            this.queue.push({id: index, quantity: inputValue, name})
+            this.queue.push({id: index, quantity: inputValue})
             const int = setInterval(() => {
               if (this.queue.length > 0) {
                 if (!this.requestStarted)  {
@@ -201,7 +200,7 @@ if (!customElements.get('quick-order-list')) {
               }
             }, 100)
           } else {
-            this.queue.push({id: index, quantity, name})
+            this.queue.push({id: index, quantity})
             if (this.queue.length > 0) {
               const int = setInterval(() => {
                 if (this.queue.length > 0) {
