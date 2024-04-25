@@ -75,11 +75,6 @@ if (!customElements.get('quick-order-list')) {
       constructor() {
         super();
         this.cart = document.querySelector('cart-drawer');
-        this.actions = {
-          add: 'ADD',
-          update: 'UPDATE',
-        };
-
         this.quickOrderListId = `quick-order-list-${this.dataset.productId}`;
         this.defineInputsAndQuickOrderTable();
 
@@ -154,7 +149,7 @@ if (!customElements.get('quick-order-list')) {
         const quantity = inputValue - cartQuantity;
         this.cleanErrorMessageOnType(event);
         if (inputValue == 0) {
-          this.queue.push({id: index, quantity: inputValue, name, action: this.actions.update})
+          this.queue.push({id: index, quantity: inputValue, name})
           const int = setInterval(() => {
             if (this.queue.length > 0) {
               if (!this.requestStarted)  {
@@ -193,7 +188,7 @@ if (!customElements.get('quick-order-list')) {
           event.target.setCustomValidity('');
           event.target.reportValidity();
           if (cartQuantity > 0) {
-            this.queue.push({id: index, quantity: inputValue, name, action: this.actions.update})
+            this.queue.push({id: index, quantity: inputValue, name})
             const int = setInterval(() => {
               if (this.queue.length > 0) {
                 if (!this.requestStarted)  {
@@ -206,7 +201,7 @@ if (!customElements.get('quick-order-list')) {
               }
             }, 100)
           } else {
-            this.queue.push({id: index, quantity, name, action:this.actions.add})
+            this.queue.push({id: index, quantity, name})
             if (this.queue.length > 0) {
               const int = setInterval(() => {
                 if (this.queue.length > 0) {
