@@ -444,12 +444,11 @@ if (!customElements.get('quick-order-list')) {
           .then((state) => {
             const parsedState = JSON.parse(state);
             this.renderSections(parsedState, ids);
-          }).catch((e) => {
-            console.log(e, 'eeeee')
+          }).catch(() => {
             this.setErrorMessage(window.cartStrings.error);
           })
           .finally(() => {
-            this.querySelector('.variant-remove-total .loading__spinner').classList.add('hidden');
+            this.querySelector('.variant-remove-total .loading__spinner')?.classList.add('hidden');
             this.requestStarted = false;
           });
       }
