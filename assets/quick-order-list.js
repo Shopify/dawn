@@ -299,14 +299,6 @@ if (!customElements.get('quick-order-list')) {
         });
       }
 
-      addDebounce(id) {
-        const element = this.querySelector(`#Variant-${id} quantity-input`);
-        const debouncedOnChange = debounce((event) => {
-          this.onChange(event);
-        }, ON_CHANGE_DEBOUNCE_TIMER);
-        element.addEventListener('change', debouncedOnChange.bind(this));
-      }
-
       renderSections(parsedState, ids) {
         this.getSectionsToRender().forEach((section) => {
           const sectionElement = document.getElementById(section.id);
@@ -341,11 +333,7 @@ if (!customElements.get('quick-order-list')) {
           }
         });
         this.defineInputsAndQuickOrderTable();
-        if (id) {
-          this.addDebounce(id);
-        } else {
-          this.addMultipleDebounce();
-        }
+        this.addMultipleDebounce();
       }
 
       sendRequest(queue) {
