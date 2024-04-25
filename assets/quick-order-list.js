@@ -148,18 +148,7 @@ if (!customElements.get('quick-order-list')) {
         const quantity = inputValue - cartQuantity;
         this.cleanErrorMessageOnType(event);
         if (inputValue == 0) {
-          this.queue.push({id: index, quantity: inputValue})
-          const int = setInterval(() => {
-            if (this.queue.length > 0) {
-              if (!this.requestStarted)  {
-                this.sendRequest(this.queue).then(()=> {
-                })
-              }
-            } 
-            else {
-              clearInterval(int)
-            }
-          }, 100)
+          this.startQueue(index, inputValue);
         } else {
           this.validateQuantity(event, index, inputValue, cartQuantity, quantity);
         }
@@ -187,33 +176,26 @@ if (!customElements.get('quick-order-list')) {
           event.target.setCustomValidity('');
           event.target.reportValidity();
           if (cartQuantity > 0) {
-            this.queue.push({id: index, quantity: inputValue})
-            const int = setInterval(() => {
-              if (this.queue.length > 0) {
-                if (!this.requestStarted)  {
-                  this.sendRequest(this.queue).then(()=> {
-                  })
-                }
-              } 
-              else {
-                clearInterval(int)
-              }
-            }, 100)
+            this.startQueue(index, inputValue);
           } else {
-            this.queue.push({id: index, quantity})
-            if (this.queue.length > 0) {
-              const int = setInterval(() => {
-                if (this.queue.length > 0) {
-                  if (!this.requestStarted)  {
-                    this.sendRequest(this.queue).then(()=> {
-                    })
-                  }
-                } else {
-                  clearInterval(int)
-                }
-              }, 500)
-            }
+            this.startQueue(index, quantity);
           }
+        }
+      }
+
+      startQueue(id, quantity) {
+        this.queue.push({id, quantity})
+        if (this.queue.length > 0) {
+          const int = setInterval(() => {
+            if (this.queue.length > 0) {
+              if (!this.requestStarted)  {
+                this.sendRequest(this.queue).then(()=> {
+                })
+              }
+            } else {
+              clearInterval(int)
+            }
+          }, 500)
         }
       }
 
