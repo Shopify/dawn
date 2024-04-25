@@ -207,16 +207,17 @@
             {%- if card_product.quantity_price_breaks_configured? -%}
               {% if card_product.variants.size == 1 and quick_add == 'bulk' %}
                 {% liquid
+                  assign quantity_rule = card_product.selected_or_first_available_variant.quantity_rule
                   assign has_qty_rules = false
-                  if variant.quantity_rule.increment > 1 or variant.quantity_rule.min > 1 or variant.quantity_rule.max != null
+                  if quantity_rule.increment > 1 or quantity_rule.min > 1 or quantity_rule.max != null
                     assign has_qty_rules = true
                   endif
                 %}
                 <quantity-popover>
-                  <button class="card__information-volume-pricing-note card__information-volume-pricing-note--button quantity-popover__info-button--icon-only button button button--tertiary medium-hide small-hide">
+                  <button class="card__information-volume-pricing-note card__information-volume-pricing-note--button card__information-volume-pricing-note--button-{{ settings.card_text_alignment }} quantity-popover__info-button--icon-only button button button--tertiary medium-hide small-hide">
                     <span class="caption">{{ 'products.product.volume_pricing.note' | t }}</span>
                   </button>
-                  <button class="card__information-volume-pricing-note card__information-volume-pricing-note--button quantity-popover__info-button--icon-with-label button button--tertiary large-up-hide">
+                  <button class="card__information-volume-pricing-note card__information-volume-pricing-note--button card__information-volume-pricing-note--button-{{ settings.card_text_alignment }} quantity-popover__info-button--icon-with-label button button--tertiary large-up-hide">
                     <span class="caption">{{ 'products.product.volume_pricing.note' | t }}</span>
                   </button>
               {% else %}
@@ -233,28 +234,19 @@
                 >
                   {%- if has_qty_rules -%}
                     <div class="quantity__rules caption no-js-hidden">
-                      {%- if card_product.selected_or_first_available_variant.quantity_rule.increment > 1 -%}
+                      {%- if quantity_rule.increment > 1 -%}
                         <span class="divider">
-                          {{-
-                            'products.product.quantity.multiples_of'
-                            | t: quantity: card_product.selected_or_first_available_variant.quantity_rule.increment
-                          -}}
+                          {{- 'products.product.quantity.multiples_of' | t: quantity: quantity_rule.increment -}}
                         </span>
                       {%- endif -%}
-                      {%- if variant.quantity_rule.min > 1 -%}
+                      {%- if quantity_rule.min > 1 -%}
                         <span class="divider">
-                          {{-
-                            'products.product.quantity.min_of'
-                            | t: quantity: card_product.selected_or_first_available_variant.quantity_rule.min
-                          -}}
+                          {{- 'products.product.quantity.min_of' | t: quantity: quantity_rule.min -}}
                         </span>
                       {%- endif -%}
-                      {%- if variant.quantity_rule.max != null -%}
+                      {%- if quantity_rule.max != null -%}
                         <span class="divider">
-                          {{-
-                            'products.product.quantity.max_of'
-                            | t: quantity: card_product.selected_or_first_available_variant.quantity_rule.max
-                          -}}
+                          {{- 'products.product.quantity.max_of' | t: quantity: quantity_rule.max -}}
                         </span>
                       {%- endif -%}
                     </div>
@@ -424,7 +416,7 @@
                   {%- render 'loading-spinner' -%}
                 </button>
               </modal-opener>
-              <modal-dialog id="QuickAddBulk-{{ card_product.id }}" class="quick-add-modal">
+              <modal-dialog id="QuickAddBulk-{{ card_product.id }}" class="quick-add-modal color-{{ section.settings.color_scheme }}">
                 <div
                   role="dialog"
                   aria-label="{{ 'products.product.choose_product_options' | t: product_name: card_product.title | escape }}"
