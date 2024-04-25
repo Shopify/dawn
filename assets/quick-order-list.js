@@ -7,7 +7,9 @@ if (!customElements.get('quick-order-list-remove-button')) {
         this.addEventListener('click', (event) => {
           event.preventDefault();
           const quickOrderList = this.closest('quick-order-list');
-          quickOrderList.updateQuantity(this.dataset.index, 0);
+          const items = {}
+          items[this.dataset.index] = 0;
+          quickOrderList.updateMultipleQty(items);
         });
       }
     }
@@ -152,8 +154,18 @@ if (!customElements.get('quick-order-list')) {
         const quantity = inputValue - cartQuantity;
         this.cleanErrorMessageOnType(event);
         if (inputValue == 0) {
-          // this.queue.push({id: index, quantity: inputValue, name, action: this.actions.update})
-          this.sendRequest();
+          this.queue.push({id: index, quantity: inputValue, name, action: this.actions.update})
+          const int = setInterval(() => {
+            if (this.queue.length > 0) {
+              if (!this.requestStarted)  {
+                this.sendRequest(this.queue).then(()=> {
+                })
+              }
+            } 
+            else {
+              clearInterval(int)
+            }
+          }, 100)
         } else {
           this.validateQuantity(event, name, index, inputValue, cartQuantity, quantity);
         }
@@ -487,98 +499,6 @@ if (!customElements.get('quick-order-list')) {
         } else {
           return `${window.location.pathname}`;
         }
-      }
-
-      updateQuantity(id, quantity, name, action) {
-        this.toggleLoading(id, true);
-        // this.cleanErrors(id);
-
-        let routeUrl = routes.cart_change_url;
-        let body = JSON.stringify({
-          quantity,
-          id,
-          sections: this.getSectionsToRender().map((section) => section.section),
-          sections_url: this.getSectionsUrl(),
-        });
-        let fetchConfigType;
-        if (action === this.actions.add) {
-          fetchConfigType = 'javascript';
-          routeUrl = routes.cart_add_url;
-          body = JSON.stringify({
-            items: [
-              {
-                quantity: parseInt(quantity),
-                id: parseInt(id),
-              },
-            ],
-            sections: this.getSectionsToRender().map((section) => section.section),
-            sections_url: this.getSectionsUrl(),
-          });
-        }
-
-        this.updateMessage();
-        this.setErrorMessage();
-
-        fetch(`${routeUrl}`, { ...fetchConfig(fetchConfigType), ...{ body } })
-          .then((response) => {
-            return response.text();
-          })
-          .then((state) => {
-            const parsedState = JSON.parse(state);
-            const quantityElement = document.getElementById(`Quantity-${id}`);
-            const items = document.querySelectorAll('.variant-item');
-
-            if (parsedState.description || parsedState.errors) {
-              const variantItem = document.querySelector(
-                `[id^="Variant-${id}"] .variant-item__totals.small-hide .loading__spinner`
-              );
-              variantItem.classList.add('loading__spinner--error');
-              this.resetQuantityInput(id, quantityElement);
-              if (parsedState.errors) {
-                this.updateLiveRegions(id, parsedState.errors);
-              } else {
-                this.updateLiveRegions(id, parsedState.description);
-              }
-              return;
-            }
-
-            this.classList.toggle('is-empty', parsedState.item_count === 0);
-
-            this.renderSections(parsedState, id);
-
-            let hasError = false;
-
-            const currentItem = parsedState.items.find((item) => item.variant_id === parseInt(id));
-            const updatedValue = currentItem ? currentItem.quantity : undefined;
-            if (updatedValue && updatedValue !== quantity) {
-              this.updateError(updatedValue, id);
-              hasError = true;
-            }
-
-            publish(PUB_SUB_EVENTS.cartUpdate, { source: this.quickOrderListId, cartData: parsedState });
-
-            if (hasError) {
-              this.updateMessage();
-            } else if (action === this.actions.add) {
-              this.updateMessage(parseInt(quantity));
-            } else if (action === this.actions.update) {
-              this.updateMessage(parseInt(quantity - quantityElement.dataset.cartQuantity));
-            } else {
-              this.updateMessage(-parseInt(quantityElement.dataset.cartQuantity));
-            }
-          })
-          .catch((error) => {
-            this.querySelectorAll('.loading__spinner').forEach((overlay) => overlay.classList.add('hidden'));
-            this.resetQuantityInput(id);
-            console.error(error);
-            this.setErrorMessage(window.cartStrings.error);
-          })
-          .finally(() => {
-            this.toggleLoading(id);
-            if (this.lastKey && this.lastElement === id) {
-              this.querySelector(`#Variant-${id} input`).select();
-            }
-          });
       }
 
       resetQuantityInput(id, quantityElement) {
