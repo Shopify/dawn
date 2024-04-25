@@ -307,7 +307,7 @@ if (!customElements.get('quick-order-list')) {
         element.addEventListener('change', debouncedOnChange.bind(this));
       }
 
-      renderSections(parsedState, id, ids) {
+      renderSections(parsedState, ids) {
         this.getSectionsToRender().forEach((section) => {
           const sectionElement = document.getElementById(section.id);
           if (
@@ -327,10 +327,7 @@ if (!customElements.get('quick-order-list')) {
               ? sectionElement.querySelector(section.selector)
               : sectionElement;
           if (elementToReplace) {
-            if (section.selector === `#${this.quickOrderListId} .js-contents` && id !== undefined) {
-              elementToReplace.querySelector(`#Variant-${id}`).innerHTML =
-              this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${id}`);
-            } else if (section.selector === `#${this.quickOrderListId} .js-contents` && ids !== undefined) { 
+             if (section.selector === `#${this.quickOrderListId} .js-contents` && ids !== undefined) { 
               ids.forEach((i) => {
                 elementToReplace.querySelector(`#Variant-${i}`).innerHTML =
                 this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${i}`);
@@ -476,7 +473,7 @@ if (!customElements.get('quick-order-list')) {
           })
           .then((state) => {
             const parsedState = JSON.parse(state);
-            this.renderSections(parsedState, undefined, ids);
+            this.renderSections(parsedState, ids);
           }).catch((e) => {
             console.log(e, 'eeeee')
             this.setErrorMessage(window.cartStrings.error);
