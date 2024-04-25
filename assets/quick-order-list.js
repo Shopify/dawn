@@ -282,40 +282,43 @@ if (!customElements.get('quick-order-list')) {
       }
 
       renderSections(parsedState, ids) {
-        this.getSectionsToRender().forEach((section) => {
-          const sectionElement = document.getElementById(section.id);
-          if (
-            sectionElement &&
-            sectionElement.parentElement &&
-            sectionElement.parentElement.classList.contains('drawer')
-          ) {
-            parsedState.items.length > 0
-              ? sectionElement.parentElement.classList.remove('is-empty')
-              : sectionElement.parentElement.classList.add('is-empty');
-            setTimeout(() => {
-              document.querySelector('#CartDrawer-Overlay').addEventListener('click', this.cart.close.bind(this.cart));
-            });
-          }
-          const elementToReplace =
-            sectionElement && sectionElement.querySelector(section.selector)
-              ? sectionElement.querySelector(section.selector)
-              : sectionElement;
-          if (elementToReplace) {
-             if (section.selector === `#${this.quickOrderListId} .js-contents` && ids !== undefined) { 
-              ids.forEach((i) => {
-                elementToReplace.querySelector(`#Variant-${i}`).innerHTML =
-                this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${i}`);
+        const intersection = this.queue.filter(element => ids.includes(element.id));
+        if (intersection.length === 0) {
+          this.getSectionsToRender().forEach((section) => {
+            const sectionElement = document.getElementById(section.id);
+            if (
+              sectionElement &&
+              sectionElement.parentElement &&
+              sectionElement.parentElement.classList.contains('drawer')
+            ) {
+              parsedState.items.length > 0
+                ? sectionElement.parentElement.classList.remove('is-empty')
+                : sectionElement.parentElement.classList.add('is-empty');
+              setTimeout(() => {
+                document.querySelector('#CartDrawer-Overlay').addEventListener('click', this.cart.close.bind(this.cart));
               });
-            } else {
-              elementToReplace.innerHTML = this.getSectionInnerHTML(
-                parsedState.sections[section.section],
-                section.selector
-              );
             }
-          }
-        });
-        this.defineInputsAndQuickOrderTable();
-        this.addMultipleDebounce();
+            const elementToReplace =
+              sectionElement && sectionElement.querySelector(section.selector)
+                ? sectionElement.querySelector(section.selector)
+                : sectionElement;
+            if (elementToReplace) {
+                if (section.selector === `#${this.quickOrderListId} .js-contents` && ids !== undefined) { 
+                ids.forEach((i) => {
+                  elementToReplace.querySelector(`#Variant-${i}`).innerHTML =
+                  this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${i}`);
+                });
+              } else {
+                elementToReplace.innerHTML = this.getSectionInnerHTML(
+                  parsedState.sections[section.section],
+                  section.selector
+                );
+              }
+            }
+          });
+          this.defineInputsAndQuickOrderTable();
+          this.addMultipleDebounce();
+        }
       }
 
       sendRequest(queue) {
