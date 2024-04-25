@@ -302,7 +302,7 @@ if (!customElements.get('quick-order-list')) {
       }
 
       renderSections(parsedState, id, ids) {
-        this.getSectionsToRender().forEach((section => {
+        this.getSectionsToRender().forEach((section) => {
           const sectionElement = document.getElementById(section.id);
           if (
             sectionElement &&
@@ -328,7 +328,7 @@ if (!customElements.get('quick-order-list')) {
               ids.forEach((i) => {
                 elementToReplace.querySelector(`#Variant-${i}`).innerHTML =
                 this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${i}`);
-              })
+              });
             } else {
               elementToReplace.innerHTML = this.getSectionInnerHTML(
                 parsedState.sections[section.section],
