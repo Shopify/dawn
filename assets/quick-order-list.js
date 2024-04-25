@@ -426,7 +426,7 @@ if (!customElements.get('quick-order-list')) {
       }
 
       updateMultipleQty(items, ids) {
-        this.querySelector('.variant-remove-total .loading__spinner').classList.remove('hidden');
+        this.querySelector('.variant-remove-total .loading__spinner')?.classList.remove('hidden');
 
         const body = JSON.stringify({
           updates: items,
