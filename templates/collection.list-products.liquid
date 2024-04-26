@@ -1,0 +1,66 @@
+{% layout none %}
+
+{%- liquid
+  assign params = canonical_url | split: 'all?type=' | last | split: '+'
+  for param in params
+    if param contains 'handle_'
+      assign product_handle = param | split: 'handle_' | last
+    elsif param contains 'sectionid_'
+      assign section_id = param | split: 'sectionid_' | last
+    elsif param contains 'index_'
+      assign index = param | split: 'index_' | last
+    elsif param contains 'imageratio_'
+      assign image_ratio = param | split: 'imageratio_' | last
+    elsif param contains 'imageshape_'
+      assign image_shape = param | split: 'imageshape_' | last
+    elsif param contains 'showsecondaryimage_'
+      assign show_secondary_image = param | split: 'showsecondaryimage_' | last
+      if show_secondary_image == 'true'
+        assign show_secondary_image = true
+      else
+        assign show_secondary_image = false
+      endif
+    elsif param contains 'showvendor_'
+      assign show_vendor = param | split: 'showvendor_' | last
+      if show_vendor == 'true'
+        assign show_vendor = true
+      else
+        assign show_vendor = false
+      endif
+    elsif param contains 'showrating_'
+      assign show_rating = param | split: 'showrating_' | last
+      if show_rating == 'true'
+        assign show_rating = true
+      else
+        assign show_rating = false
+      endif
+    elsif param contains 'showquickadd_'
+      assign enable_quick_add = param | split: 'showquickadd_' | last
+      if enable_quick_add == 'true'
+        assign enable_quick_add = true
+      else
+        assign enable_quick_add = false
+      endif
+    endif
+  endfor
+
+  assign found_product = all_products[product_handle]
+-%}
+
+{%- if found_product and found_product != blank -%}
+  <li
+    id="Slide-{{ section_id }}-{{ index }}"
+    class="grid__item slider__slide{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+  >
+    {% render 'card-product',
+      card_product: found_product,
+      media_aspect_ratio: image_ratio,
+      image_shape: image_shape,
+      show_secondary_image: show_secondary_image,
+      show_vendor: show_vendor,
+      show_rating: show_rating,
+      show_quick_add: enable_quick_add,
+      section_id: section_id
+    %}
+  </li>
+{%- endif -%}

@@ -627,6 +627,9 @@ class SliderComponent extends HTMLElement {
     const resizeObserver = new ResizeObserver((entries) => this.initPages());
     resizeObserver.observe(this.slider);
 
+    // Execute function on resize triggered in recently-viewed.liquid
+    window.addEventListener('resize', this.resetPages.bind(this));
+
     this.slider.addEventListener('scroll', this.update.bind(this));
     this.prevButton.addEventListener('click', this.onButtonClick.bind(this));
     this.nextButton.addEventListener('click', this.onButtonClick.bind(this));
