@@ -189,13 +189,12 @@ if (!customElements.get('quick-order-list')) {
           const int = setInterval(() => {
             if (this.queue.length > 0) {
               if (!this.requestStarted)  {
-                this.sendRequest(this.queue).then(()=> {
-                })
+                this.sendRequest(this.queue)
               }
             } else {
               clearInterval(int)
             }
-          }, 500)
+          }, 250)
         }
       }
 
@@ -332,10 +331,7 @@ if (!customElements.get('quick-order-list')) {
           ids.push(q.id)
         })
         this.queue = this.queue.filter(q => !queue.includes(q));
-        return new Promise((resolve) => {
-          this.updateMultipleQty(items, ids)
-          resolve(queue)
-        })
+        this.updateMultipleQty(items, ids)
       }
 
       getTableHead() {
