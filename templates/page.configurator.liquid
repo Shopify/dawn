@@ -1,0 +1,77 @@
+{% form 'product', product, class: 'product-configurator' %}
+  <!-- Configuration steps will go here -->
+
+  <div>
+    <button type="submit" name="add" class="add-to-cart">Add to Cart</button>
+  </div>
+{% endform %}
+
+<div class="step step-1">
+  <h2>Step 1: Choose Size</h2>
+  {% for option in product.options_with_values %}
+    {% if option.name == 'Size' %}
+      <div>
+        <label>{{ option.name }}</label>
+        <select name="options[{{ option.name | handleize }}]">
+          {% for value in option.values %}
+            <option value="{{ value | escape }}">{{ value }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+
+<div class="step step-2">
+  <h2>Step 2: Add Engraving</h2>
+  <div>
+    <label for="engraving">Engraving Text</label>
+    <input type="text" name="properties[Engraving]" id="engraving">
+  </div>
+</div>
+
+<script>
+  document.querySelector('.product-configurator').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    let formData = {
+      'items': [{
+        'id': {{ product.selected_or_first_available_variant.id }},
+        'quantity': 1,
+        'properties': {}
+      }]
+    };
+
+    // Get selected options
+    let optionInputs = event.target.querySelectorAll('select[name^="options"]');
+    optionInputs.forEach(function(input) {
+      formData.items[0].options = formData.items[0].options || {};
+      formData.items[0].options[input.name.replace('options[', '').replace(']', '')] = input.value;
+    });
+
+    // Get custom properties
+    let propertyInputs = event.target.querySelectorAll('input[name^="properties"]');
+    propertyInputs.forEach(function(input) {
+      formData.items[0].properties[input.name.replace('properties[', '').replace(']', '')] = input.value;
+    });
+
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    })
+    .then(response => {
+      return response.json();
+    })
+    .then(data => {
+      // Handle successful add to cart
+      console.log('Product added to cart:', data);
+      // Optionally, you can redirect to the cart page or show a success message
+    })
+    .catch(error => {
+      console.error('Error adding product to cart:', error);
+    });
+  });
+</script>
