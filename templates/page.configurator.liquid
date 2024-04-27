@@ -1,77 +1,72 @@
-{% form 'product', product, class: 'product-configurator' %}
-  <!-- Configuration steps will go here -->
+<!-- Step 1: Select Option 1 -->
+<select id="option1">
+  <option value="option1-value1">Option 1 Value 1</option>
+  <option value="option1-value2">Option 1 Value 2</option>
+  <!-- Add more options as needed -->
+</select>
 
-  <div>
-    <button type="submit" name="add" class="add-to-cart">Add to Cart</button>
-  </div>
-{% endform %}
+<button onclick="nextStep(1)">Next</button>
 
-<div class="step step-1">
-  <h2>Step 1: Choose Size</h2>
-  {% for option in product.options_with_values %}
-    {% if option.name == 'Size' %}
-      <div>
-        <label>{{ option.name }}</label>
-        <select name="options[{{ option.name | handleize }}]">
-          {% for value in option.values %}
-            <option value="{{ value | escape }}">{{ value }}</option>
-          {% endfor %}
-        </select>
-      </div>
-    {% endif %}
-  {% endfor %}
-</div>
+<!-- Step 2: Select Option 2 -->
+<select id="option2">
+  <option value="option2-value1">Option 2 Value 1</option>
+  <option value="option2-value2">Option 2 Value 2</option>
+  <!-- Add more options as needed -->
+</select>
 
-<div class="step step-2">
-  <h2>Step 2: Add Engraving</h2>
-  <div>
-    <label for="engraving">Engraving Text</label>
-    <input type="text" name="properties[Engraving]" id="engraving">
-  </div>
-</div>
+<button onclick="nextStep(2)">Next</button>
+
+<!-- Step 3: Select Option 3 -->
+<select id="option3">
+  <option value="option3-value1">Option 3 Value 1</option>
+  <option value="option3-value2">Option 3 Value 2</option>
+  <!-- Add more options as needed -->
+</select>
+
+<button onclick="addToCart()">Add to Cart</button>
 
 <script>
-  document.querySelector('.product-configurator').addEventListener('submit', function(event) {
-    event.preventDefault();
+  // JavaScript for Step 1
+  function nextStep(step) {
+    // Get selected value for Option 1
+    var option1Value = document.getElementById('option1').value;
 
-    let formData = {
-      'items': [{
-        'id': {{ product.selected_or_first_available_variant.id }},
-        'quantity': 1,
-        'properties': {}
-      }]
-    };
+    // Show Step 2 (Replace this with your logic to show Step 2)
+    // For example, you could hide Step 1 and show Step 2
+    document.getElementById('step1').style.display = 'none';
+    document.getElementById('step2').style.display = 'block';
 
-    // Get selected options
-    let optionInputs = event.target.querySelectorAll('select[name^="options"]');
-    optionInputs.forEach(function(input) {
-      formData.items[0].options = formData.items[0].options || {};
-      formData.items[0].options[input.name.replace('options[', '').replace(']', '')] = input.value;
-    });
+    // Store selected option for Step 1 (you may need to pass this value to the next step)
+    sessionStorage.setItem('option1', option1Value);
+  }
 
-    // Get custom properties
-    let propertyInputs = event.target.querySelectorAll('input[name^="properties"]');
-    propertyInputs.forEach(function(input) {
-      formData.items[0].properties[input.name.replace('properties[', '').replace(']', '')] = input.value;
-    });
+  // JavaScript for Step 2
+  function nextStep(step) {
+    // Get selected value for Option 2
+    var option2Value = document.getElementById('option2').value;
 
-    fetch('/cart/add.js', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(formData)
-    })
-    .then(response => {
-      return response.json();
-    })
-    .then(data => {
-      // Handle successful add to cart
-      console.log('Product added to cart:', data);
-      // Optionally, you can redirect to the cart page or show a success message
-    })
-    .catch(error => {
-      console.error('Error adding product to cart:', error);
-    });
-  });
+    // Show Step 3 (Replace this with your logic to show Step 3)
+    // For example, you could hide Step 2 and show Step 3
+    document.getElementById('step2').style.display = 'none';
+    document.getElementById('step3').style.display = 'block';
+
+    // Store selected option for Step 2 (you may need to pass this value to the next step)
+    sessionStorage.setItem('option2', option2Value);
+  }
+
+  // JavaScript for Step 3
+  function addToCart() {
+    // Get selected value for Option 3
+    var option3Value = document.getElementById('option3').value;
+
+    // Retrieve selected options from previous steps
+    var option1Value = sessionStorage.getItem('option1');
+    var option2Value = sessionStorage.getItem('option2');
+
+    // Construct the variant ID based on selected options
+    var variantId = option1Value + '-' + option2Value + '-' + option3Value;
+
+    // Redirect to Shopify's built-in cart URL with the variant ID
+    window.location.href = '/cart/add?id=' + variantId;
+  }
 </script>
