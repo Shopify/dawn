@@ -275,7 +275,7 @@ if (!customElements.get('quick-order-list')) {
         this.querySelectorAll('quantity-input').forEach((qty) => {
           const debouncedOnChange = debounce((event) => {
             this.onChange(event);
-          }, ON_CHANGE_DEBOUNCE_TIMER);
+          }, 100);
           qty.addEventListener('change', debouncedOnChange.bind(this));
         });
       }
