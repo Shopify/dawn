@@ -185,17 +185,15 @@ if (!customElements.get('quick-order-list')) {
 
       startQueue(id, quantity) {
         this.queue.push({id, quantity})
-        if (this.queue.length > 0) {
-          const int = setInterval(() => {
-            if (this.queue.length > 0) {
-              if (!this.requestStarted)  {
-                this.sendRequest(this.queue)
-              }
-            } else {
-              clearInterval(int)
+        const int = setInterval(() => {
+          if (this.queue.length > 0) {
+            if (!this.requestStarted)  {
+              this.sendRequest(this.queue)
             }
-          }, 250)
-        }
+          } else {
+            clearInterval(int)
+          }
+        }, 250)
       }
 
       setValidity(event, index, message) {
