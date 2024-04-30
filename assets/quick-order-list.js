@@ -71,15 +71,15 @@ if (!customElements.get('quick-order-list-remove-all-button')) {
 if (!customElements.get('quick-order-list')) {
   customElements.define(
     'quick-order-list',
-    class QuickOrderList extends HTMLElement {
+    class QuickOrderList extends BulkAdd {
       constructor() {
         super();
         this.cart = document.querySelector('cart-drawer');
         this.quickOrderListId = `quick-order-list-${this.dataset.productId}`;
         this.defineInputsAndQuickOrderTable();
 
-        this.queue = []
-        this.requestStarted = false;
+        // this.queue = []
+        // this.requestStarted = false;
         this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
         const form = this.querySelector('form');
         this.inputFieldHeight = this.querySelector('.variant-item__quantity-wrapper').offsetHeight;
@@ -183,18 +183,18 @@ if (!customElements.get('quick-order-list')) {
         }
       }
 
-      startQueue(id, quantity) {
-        this.queue.push({id, quantity})
-        const int = setInterval(() => {
-          if (this.queue.length > 0) {
-            if (!this.requestStarted)  {
-              this.sendRequest(this.queue)
-            }
-          } else {
-            clearInterval(int)
-          }
-        }, 250)
-      }
+      // startQueue(id, quantity) {
+      //   this.queue.push({id, quantity})
+      //   const int = setInterval(() => {
+      //     if (this.queue.length > 0) {
+      //       if (!this.requestStarted)  {
+      //         this.sendRequest(this.queue)
+      //       }
+      //     } else {
+      //       clearInterval(int)
+      //     }
+      //   }, 250)
+      // }
 
       setValidity(event, index, message) {
         event.target.setCustomValidity(message);
@@ -318,19 +318,19 @@ if (!customElements.get('quick-order-list')) {
         }
       }
 
-      sendRequest(queue) {
-        this.requestStarted = true;
-        const items = {}
-        const ids = []
-        queue.forEach((q) => {
-          items[parseInt(q.id)] = q.quantity;
-        });
-        queue.forEach((q) => {
-          ids.push(q.id)
-        })
-        this.queue = this.queue.filter(q => !queue.includes(q));
-        this.updateMultipleQty(items, ids)
-      }
+      // sendRequest(queue) {
+      //   this.requestStarted = true;
+      //   const items = {}
+      //   const ids = []
+      //   queue.forEach((q) => {
+      //     items[parseInt(q.id)] = q.quantity;
+      //   });
+      //   queue.forEach((q) => {
+      //     ids.push(q.id)
+      //   })
+      //   this.queue = this.queue.filter(q => !queue.includes(q));
+      //   this.updateMultipleQty(items, ids)
+      // }
 
       getTableHead() {
         return document.querySelector('.quick-order-list__table thead');
