@@ -183,19 +183,6 @@ if (!customElements.get('quick-order-list')) {
         }
       }
 
-      // startQueue(id, quantity) {
-      //   this.queue.push({id, quantity})
-      //   const int = setInterval(() => {
-      //     if (this.queue.length > 0) {
-      //       if (!this.requestStarted)  {
-      //         this.sendRequest(this.queue)
-      //       }
-      //     } else {
-      //       clearInterval(int)
-      //     }
-      //   }, 250)
-      // }
-
       setValidity(event, index, message) {
         event.target.setCustomValidity(message);
         event.target.reportValidity();
@@ -317,20 +304,6 @@ if (!customElements.get('quick-order-list')) {
           this.addMultipleDebounce();
         }
       }
-
-      // sendRequest(queue) {
-      //   this.requestStarted = true;
-      //   const items = {}
-      //   const ids = []
-      //   queue.forEach((q) => {
-      //     items[parseInt(q.id)] = q.quantity;
-      //   });
-      //   queue.forEach((q) => {
-      //     ids.push(q.id)
-      //   })
-      //   this.queue = this.queue.filter(q => !queue.includes(q));
-      //   this.updateMultipleQty(items, ids)
-      // }
 
       getTableHead() {
         return document.querySelector('.quick-order-list__table thead');

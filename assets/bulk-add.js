@@ -25,10 +25,8 @@ class BulkAdd extends HTMLElement {
     const ids = []
     queue.forEach((q) => {
       items[parseInt(q.id)] = q.quantity;
-    });
-    queue.forEach((q) => {
       ids.push(q.id)
-    })
+    });
     this.queue = this.queue.filter(q => !queue.includes(q));
     this.updateMultipleQty(items, ids)
   }
