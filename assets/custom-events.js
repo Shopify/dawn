@@ -115,7 +115,7 @@ var main = function () {
                     const deltaX = endX - startX;
                     console.log('touchend')
                 
-                    if (deltaX > 100) {
+                    if (deltaX > 200) {
                         // Swiped to the right
                         console.log('Swiped left');
                         slider.classList.add('opacity-min')
@@ -129,7 +129,7 @@ var main = function () {
                         const banner = slider.querySelector('.slider__slide:not([tabindex]) .banner__content');
                         slider.style.setProperty('--slide-height', `${banner.clientHeight}px`);
                         slider.classList.remove('opacity-min')
-                    },1100) 
+                    },1100)
 
                     slider.addEventListener('transitionend', function () {
                         console.log('transitionend')
