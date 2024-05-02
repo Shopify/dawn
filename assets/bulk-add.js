@@ -28,7 +28,8 @@ class BulkAdd extends HTMLElement {
       ids.push(q.id)
     });
     this.queue = this.queue.filter(q => !queue.includes(q));
-    this.updateMultipleQty(items, ids)
+    const quickOrderList = this.closest('quick-order-list');
+    quickOrderList.updateMultipleQty(items, ids)
   }
 }
 

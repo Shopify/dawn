@@ -1,15 +1,12 @@
 if (!customElements.get('quick-order-list-remove-button')) {
   customElements.define(
     'quick-order-list-remove-button',
-    class QuickOrderListRemoveButton extends HTMLElement {
+    class QuickOrderListRemoveButton extends BulkAdd {
       constructor() {
         super();
         this.addEventListener('click', (event) => {
           event.preventDefault();
-          const quickOrderList = this.closest('quick-order-list');
-          const items = {}
-          items[this.dataset.index] = 0;
-          quickOrderList.updateMultipleQty(items);
+          this.startQueue(this.dataset.index, 0);
         });
       }
     }
@@ -78,8 +75,6 @@ if (!customElements.get('quick-order-list')) {
         this.quickOrderListId = `quick-order-list-${this.dataset.productId}`;
         this.defineInputsAndQuickOrderTable();
 
-        // this.queue = []
-        // this.requestStarted = false;
         this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
         const form = this.querySelector('form');
         this.inputFieldHeight = this.querySelector('.variant-item__quantity-wrapper').offsetHeight;
