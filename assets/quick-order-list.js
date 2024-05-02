@@ -287,7 +287,7 @@ if (!customElements.get('quick-order-list')) {
                 ? sectionElement.querySelector(section.selector)
                 : sectionElement;
             if (elementToReplace) {
-                if (section.selector === `#${this.quickOrderListId} .js-contents` && ids !== undefined) { 
+                if (section.selector === `#${this.quickOrderListId} .js-contents` && ids !== undefined) {
                 ids.forEach((i) => {
                   elementToReplace.querySelector(`#Variant-${i}`).innerHTML =
                   this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${i}`);
