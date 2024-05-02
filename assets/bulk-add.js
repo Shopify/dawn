@@ -1,35 +1,38 @@
-class BulkAdd extends HTMLElement {
-  constructor() {
-    super();
-    this.queue = []
-    this.requestStarted = false;
-  }
-
-  startQueue(id, quantity) {
-    this.queue.push({id, quantity})
-    const int = setInterval(() => {
-      if (this.queue.length > 0) {
-        if (!this.requestStarted)  {
-          this.sendRequest(this.queue)
-        }
-      } else {
-        clearInterval(int)
+if (!customElements.get('bulk-add')) {
+  customElements.define(
+    'bulk-add',
+    class BulkAdd extends HTMLElement {
+      constructor() {
+        super();
+        this.queue = []
+        this.requestStarted = false;
       }
-    }, 250)
-  }
 
+      startQueue(id, quantity) {
+        this.queue.push({id, quantity})
+        const interval = setInterval(() => {
+          if (this.queue.length > 0) {
+            if (!this.requestStarted)  {
+              this.sendRequest(this.queue)
+            }
+          } else {
+            clearInterval(interval)
+          }
+        }, 250)
+      }
 
-  sendRequest(queue) {
-    this.requestStarted = true;
-    const items = {}
-    const ids = []
-    queue.forEach((q) => {
-      items[parseInt(q.id)] = q.quantity;
-      ids.push(q.id)
-    });
-    this.queue = this.queue.filter(q => !queue.includes(q));
-    this.updateMultipleQty(items, ids)
-  }
+    sendRequest(queue) {
+      this.requestStarted = true;
+      const items = {}
+      const ids = []
+      queue.forEach((queueItem) => {
+        items[parseInt(queueItem.id)] = queueItem.quantity;
+        ids.push(queueItem.id)
+      });
+      this.queue = this.queue.filter(queueItem => !queue.includes(queueItem));
+      this.updateMultipleQty(items, ids)
+    }
+  });
 }
 
-customElements.define('bulk-add', BulkAdd);
+
