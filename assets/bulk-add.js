@@ -7,13 +7,13 @@ class BulkAdd extends HTMLElement {
 
   startQueue(id, quantity) {
     this.queue.push({id, quantity})
-    const int = setInterval(() => {
+    const interval = setInterval(() => {
       if (this.queue.length > 0) {
         if (!this.requestStarted)  {
           this.sendRequest(this.queue)
         }
       } else {
-        clearInterval(int)
+        clearInterval(interval)
       }
     }, 250)
   }
@@ -23,11 +23,11 @@ class BulkAdd extends HTMLElement {
     this.requestStarted = true;
     const items = {}
     const ids = []
-    queue.forEach((q) => {
-      items[parseInt(q.id)] = q.quantity;
-      ids.push(q.id)
+    queue.forEach((queueItem) => {
+      items[parseInt(queueItem.id)] = queueItem.quantity;
+      ids.push(queueItem.id)
     });
-    this.queue = this.queue.filter(q => !queue.includes(q));
+    this.queue = this.queue.filter(queueElement => !queue.includes(queueElement));
     const quickOrderList = this.closest('quick-order-list');
     quickOrderList.updateMultipleQty(items, ids)
   }
