@@ -33,6 +33,8 @@ class BulkAdd extends HTMLElement {
   }
 }
 
-customElements.define('bulk-add', BulkAdd);
+if (!customElements.get('bulk-add')) {
+  customElements.define('bulk-add', BulkAdd)
+};
 
 
