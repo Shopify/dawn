@@ -287,8 +287,9 @@ if (!customElements.get('quick-order-list')) {
                   elementToReplace.querySelector(`#Variant-${i}`).innerHTML =
                   this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${i}`);
                 } else {
-                  elementToReplace.querySelector(`#Variant-${i} .variant-item__remove`).innerHTML =
-                  this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${i} .variant-item__remove`);
+                  elementToReplace.querySelector(`#Variant-${i} quick-order-list-remove-button`).innerHTML =
+                  this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${i} quick-order-list-remove-button`);
+                  this.querySelector(`#Variant-${i} quick-order-list-remove-button`).classList.remove('hidden')
                 }
 
               });
