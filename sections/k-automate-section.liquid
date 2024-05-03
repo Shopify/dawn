@@ -1,0 +1,281 @@
+{{ 'k-automate.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: calc({{ section.settings.padding_top }}px * 0.75);
+    padding-bottom: calc({{ section.settings.padding_bottom }}px  * 0.75);
+  }
+
+    #shopify-section-{{ section.id }} {
+        --grid-desktop-vertical-spacing: 3.5rem;
+        --grid-desktop-horizontal-spacing: 3.5rem;
+    }
+    #shopify-section-{{ section.id }} .gradient {
+        background: rgb(34,190,255);
+        background: radial-gradient(circle, rgba(34,190,255,0.1966036414565826) 34%, rgba(255,255,255,0.18) 57%);
+    }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <div class="section-{{ section.id }}-padding">
+    <div class="collection__title title-wrapper title-wrapper--no-top-margin page-width page-width--narrow {% if show_mobile_slider %} title-wrapper--self-padded-tablet-down{% endif %}{% if show_desktop_slider %} collection__title--desktop-slider{% endif %}">
+      {%- if section.settings.title != blank -%}
+        <h2 class="title inline-richtext center {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">{{ section.settings.title }}</h2>
+      {%- endif -%}
+    </div>
+    <div class="page-width">
+        <div class="grid grid--{{ section.settings.columns_mobile }}-col-tablet-down grid--{{ section.settings.columns_desktop }}-col-desktop">
+            {%- for block in section.blocks -%}
+                <div class="grid__item">
+                    <div class="automate-item global-media-settings">
+                        {% if block.settings.title %}
+                            <h3 class="h2">{{ block.settings.title }}</h3>
+                        {% endif %}
+                        <div class="automate-image">
+                          {% if block.settings.image != blank %}
+                            <div
+                              class="media media--transparent media--adapt"
+                                style="padding-bottom: 75%;"
+                            >
+                              {%- liquid
+                                assign number_of_columns = section.settings.columns_desktop
+                                assign number_of_columns_mobile = section.settings.columns_mobile
+                                assign grid_space_desktop = number_of_columns | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                assign grid_space_tablet = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | plus: 100 | append: 'px'
+                                assign grid_space_mobile = number_of_columns_mobile | minus: 1 | times: settings.spacing_grid_horizontal | divided_by: 2 | plus: 30 | append: 'px'
+                                assign image_width = 1
+                              -%}
+                              {% capture sizes %}
+                                (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ grid_space_desktop }}) * {{ image_width }} /  {{ number_of_columns }}),
+                                (min-width: 990px) calc((100vw - {{ grid_space_desktop }}) * {{ image_width }} / {{ number_of_columns }}),
+                                (min-width: 750px) calc((100vw - {{ grid_space_tablet }}) * {{ image_width }} / {{ number_of_columns_mobile }}),
+                                calc((100vw - {{ grid_space_mobile }}) * {{ image_width }} / {{ number_of_columns_mobile }})
+                              {% endcapture %}
+                              {{
+                                block.settings.image
+                                | image_url: width: 3200
+                                | image_tag:
+                                  loading: 'lazy',
+                                  widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200',
+                                  sizes: sizes
+                              }}
+                            </div>
+                          {% endif %}
+                        </div>
+                        <div class="automate-content">
+                            {% if block.settings.content != blank %}
+                                <div class="rte content-automate body">
+                                    {{ block.settings.content }}
+                                </div>
+                            {% endif %}
+
+                            {% if block.settings.url != blank %}
+                                <div class="opener-side">
+                                    {% if block.settings.set_as_popup == true %}
+                                        <modal-opener class="page-opener page-opener-item no-js-hidden" data-link="{{ block.settings.url }}" data-modal="#PageModal-{{ block.id }}">
+                                            <button type="button">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44" fill="none">
+                                                    <circle cx="22" cy="22" r="22" fill="#F0F7FF"/>
+                                                    <path d="M23 13V31" stroke="#3F75FF" stroke-width="3" stroke-linecap="round"/>
+                                                    <path d="M32 22L13 22" stroke="#3F75FF" stroke-width="3" stroke-linecap="round"/>
+                                                </svg>
+                                            </button>
+                                        </modal-opener>
+                                        <modal-dialog id="PageModal-{{ block.id }}" class="modal-page media-modal color-background-1">
+                                            <div
+                                              class="modal-page__content"
+                                              role="dialog"
+                                              aria-label="{{ block.settings.description | escape }}"
+                                              aria-modal="true"
+                                              tabindex="-1"
+                                            >
+                                              <button
+                                                id="ModalClose-{{ block.id }}"
+                                                type="button"
+                                                class="modal-page__toggle"
+                                                aria-label="{{ 'accessibility.close' | t }}"
+                                              >
+                                                {% render 'icon-modal-close' %}
+                                              </button>
+                                              <div class="modal-page__content-info">
+                                                sdsd
+                                              </div>
+                                            </div>
+                                        </modal-dialog>
+                                    {% else %}
+                                        <a href="{{ block.settings.url }}" class="page-opener-item unstyled-link">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44" fill="none">
+                                                <circle cx="22" cy="22" r="22" fill="#F0F7FF"/>
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M30.7671 13C31.448 13 32 13.552 32 14.2329V25.3288C32 26.0097 31.448 26.5616 30.7671 26.5616C30.0862 26.5616 29.5342 26.0097 29.5342 25.3288V17.2093L16.1047 30.6389C15.6232 31.1204 14.8426 31.1204 14.3611 30.6389C13.8796 30.1574 13.8796 29.3768 14.3611 28.8953L27.7907 15.4658H19.6712C18.9903 15.4658 18.4384 14.9138 18.4384 14.2329C18.4384 13.552 18.9903 13 19.6712 13H30.7671Z" fill="#3F75FF"/>
+                                            </svg>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+    "name": "Automate",
+  "tag": "section",
+  "class": "section k-automate",
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "title",
+      "default": "Featured collection",
+      "label": "t:sections.featured-collection.settings.title.label"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_size.options__2.label"
+        },
+        {
+          "value": "h0",
+          "label": "t:sections.all.heading_size.options__3.label"
+        }
+      ],
+      "default": "h1",
+      "label": "t:sections.all.heading_size.label"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 3,
+      "label": "t:sections.multicolumn.settings.columns_desktop.label"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "options": [
+        {
+          "value": "1",
+          "label": "t:sections.multicolumn.settings.columns_mobile.options__1.label"
+        },
+        {
+          "value": "2",
+          "label": "t:sections.multicolumn.settings.columns_mobile.options__2.label"
+        }
+      ],
+      "default": "1",
+      "label": "t:sections.multicolumn.settings.columns_mobile.label"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.all.colors.accent_1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.all.colors.accent_2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.all.colors.background_1.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.all.colors.background_2.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.all.colors.inverse.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.all.colors.label",
+      "info": "t:sections.all.colors.has_cards_info"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Item",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "URL"
+        },
+        {
+            "type": "checkbox",
+            "id": "set_as_popup",
+            "label": "Set as Popup"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Automate"
+    }
+  ]
+}
+{% endschema %}
