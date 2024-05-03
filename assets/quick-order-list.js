@@ -289,7 +289,6 @@ if (!customElements.get('quick-order-list')) {
                 } else {
                   elementToReplace.querySelector(`#Variant-${i} quick-order-list-remove-button`).innerHTML =
                   this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${i} quick-order-list-remove-button`);
-                  this.querySelector(`#Variant-${i} quick-order-list-remove-button`).classList.remove('hidden')
                 }
 
               });
