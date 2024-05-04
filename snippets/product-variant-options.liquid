@@ -58,15 +58,7 @@
     endif
   -%}
 
-  {%- capture input_id -%}
-    {{ section.id }}-{{ option.position }}-{{ forloop.index0 -}}
-  {%- endcapture -%}
-
-  {%- capture label_unavailable -%}
-    <span class="visually-hidden label-unavailable">
-      {{- 'products.product.variant_sold_out_or_unavailable' | t -}}
-    </span>
-  {%- endcapture -%}
+  {%- capture input_id -%}{{ section.id }}-{{ option.position }}-{{ forloop.index0 -}}{%- endcapture -%}
 
   {%- if picker_type == 'swatch' -%}
     {% liquid
@@ -75,22 +67,28 @@
         assign checked = true
       endif
     %}
-    {%- capture help_text -%}
+    <input
+      type="radio"
+      id="{{ input_id }}"
+      name="{{ option.name }}"
+      value="{{ value | escape }}"
+      form="{{ product_form_id }}"
+      class="swatch-input__input{% if option_disabled %} visually-disabled{% endif %}"
+      {% if checked %} checked{% endif %}
+    >
+    <label
+      for="{{ input_id }}"
+      title="{{ value }}"
+      class="swatch-input__label{% if block.settings.swatch_shape == 'square' %} swatch-input__label--square{% endif %}"
+    >
+    {%- render 'swatch', swatch: value.swatch, shape: block.settings.swatch_shape -%}
+
       <span class="visually-hidden">{{ value | escape }}</span>
-      {{ label_unavailable }}
-    {%- endcapture -%}
-    {%
-      render 'swatch-input',
-      id: input_id,
-      name: option.name,
-      value: value | escape,
-      swatch: value.swatch,
-      product_form_id: product_form_id,
-      checked: checked,
-      visually_disabled: option_disabled,
-      shape: block.settings.swatch_shape,
-      help_text: help_text
-    %}
+      <span class="visually-hidden label-unavailable">
+        {{- 'products.product.variant_sold_out_or_unavailable' | t -}}
+      </span>
+    </label>
+
   {%- elsif picker_type == 'button' -%}
     <input
       type="radio"
@@ -107,7 +105,9 @@
     >
     <label for="{{ input_id }}">
       {{ value -}}
-      {{ label_unavailable }}
+      <span class="visually-hidden label-unavailable">
+        {{- 'products.product.variant_sold_out_or_unavailable' | t -}}
+      </span>
     </label>
   {%- elsif picker_type == 'dropdown' or picker_type == 'swatch_dropdown' -%}
     <option

@@ -105,16 +105,15 @@
           </h2>
           {% paginate article.comments by 5 %}
             <div class="article-template__comments">
-              {%- if comment.status == 'pending' and comment.content -%}
+              {%- for comment in article.comments -%}
+                {%- if comment.status == 'pending' and comment.content -%}
                 <article id="{{ comment.id }}" class="article-template__comments-comment">
                   {{ comment.content }}
                   <footer class="right">
                     <span class="circle-divider caption-with-letter-spacing">{{ comment.author }}</span>
                   </footer>
                 </article>
-              {%- endif -%}
-
-              {%- for comment in article.comments -%}
+                {%- else -%}
                 <article id="{{ comment.id }}" class="article-template__comments-comment">
                   {{ comment.content }}
                   <footer class="right">
@@ -124,6 +123,7 @@
                     </span>
                   </footer>
                 </article>
+                {%- endif -%}
               {%- endfor -%}
               {% render 'pagination', paginate: paginate, anchor: anchorId %}
             </div>
@@ -132,7 +132,7 @@
         {% form 'new_comment', article %}
           {%- liquid
             assign post_message = 'blogs.article.success'
-            if blog.moderated? and comment.status == 'unapproved'
+            if article.moderated?
               assign post_message = 'blogs.article.success_moderated'
             endif
           -%}
@@ -170,7 +170,7 @@
           {%- endif -%}
 
           <div
-            {% if blog.moderated? == false %}
+            {% if article.moderated? == false %}
               class="article-template__comments-fields"
             {% endif %}
           >
@@ -267,7 +267,7 @@
               </small>
             {%- endif -%}
           </div>
-          {%- if blog.moderated? -%}
+          {%- if article.moderated? -%}
             <p class="article-template__comment-warning caption">{{ 'blogs.article.moderated' | t }}</p>
           {%- endif -%}
           <input type="submit" class="button" value="{{ 'blogs.article.post' | t }}">
