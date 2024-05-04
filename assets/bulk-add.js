@@ -3,6 +3,7 @@ class BulkAdd extends HTMLElement {
     super();
     this.queue = []
     this.requestStarted = false;
+    this.ids = []
   }
 
   startQueue(id, quantity) {
