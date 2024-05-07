@@ -61,12 +61,6 @@ if (!customElements.get('quick-add-bulk')) {
         });
       }
 
-      resetQuantityInput(id) {
-        const input = document.getElementById(`Quantity-${id}`);
-        input.value = input.getAttribute('value');
-        this.isEnterPressed = false;
-      }
-
       cleanErrorMessageOnType(event) {
         event.target.addEventListener(
           'keypress',
@@ -99,7 +93,6 @@ if (!customElements.get('quick-add-bulk')) {
       }
 
       updateMultipleQty(items, ids, events) {
-        // this.checkValidity(events)
         this.selectProgressBar().classList.remove('hidden');
 
         const body = JSON.stringify({
@@ -153,14 +146,6 @@ if (!customElements.get('quick-add-bulk')) {
       }
 
 
-      setValidity(event, index, message) {
-        event.target.setCustomValidity(message);
-        event.target.reportValidity();
-        this.resetQuantityInput(index);
-        event.target.select();
-      }
-
-
       getSectionsToRender() {
         return [
           {
@@ -179,18 +164,6 @@ if (!customElements.get('quick-add-bulk')) {
             section: 'cart-drawer',
           },
         ];
-      }
-
-      getSectionsUrl() {
-        if (window.pageNumber) {
-          return `${window.location.pathname}?page=${window.pageNumber}`;
-        } else {
-          return `${window.location.pathname}`;
-        }
-      }
-
-      getSectionInnerHTML(html, selector) {
-        return new DOMParser().parseFromString(html, 'text/html').querySelector(selector).innerHTML;
       }
 
       renderSections(parsedState, ids) {

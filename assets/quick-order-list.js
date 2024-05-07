@@ -178,13 +178,6 @@ if (!customElements.get('quick-order-list')) {
         }
       }
 
-      setValidity(event, index, message) {
-        event.target.setCustomValidity(message);
-        event.target.reportValidity();
-        this.resetQuantityInput(index);
-        event.target.select();
-      }
-
       validateInput(target) {
         if (target.max) {
           return (
@@ -422,19 +415,6 @@ if (!customElements.get('quick-order-list')) {
           });
       }
 
-      getSectionsUrl() {
-        if (window.pageNumber) {
-          return `${window.location.pathname}?page=${window.pageNumber}`;
-        } else {
-          return `${window.location.pathname}`;
-        }
-      }
-
-      resetQuantityInput(id, quantityElement) {
-        const input = quantityElement ?? document.getElementById(`Quantity-${id}`);
-        input.value = input.getAttribute('value');
-      }
-
       setErrorMessage(message = null) {
         this.errorMessageTemplate =
           this.errorMessageTemplate ??
@@ -511,10 +491,6 @@ if (!customElements.get('quick-order-list')) {
         setTimeout(() => {
           cartStatus.setAttribute('aria-hidden', true);
         }, 1000);
-      }
-
-      getSectionInnerHTML(html, selector) {
-        return new DOMParser().parseFromString(html, 'text/html').querySelector(selector).innerHTML;
       }
 
       toggleLoading(id, enable) {
