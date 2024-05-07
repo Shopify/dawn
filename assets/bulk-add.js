@@ -6,8 +6,8 @@ class BulkAdd extends HTMLElement {
     this.ids = []
   }
 
-  startQueue(id, quantity) {
-    this.queue.push({id, quantity})
+  startQueue(id, quantity, event) {
+    this.queue.push({id, quantity, event})
     const interval = setInterval(() => {
       if (this.queue.length > 0) {
         if (!this.requestStarted)  {
@@ -24,13 +24,15 @@ class BulkAdd extends HTMLElement {
     this.requestStarted = true;
     const items = {}
     const ids = []
+    const events = []
     queue.forEach((queueItem) => {
       items[parseInt(queueItem.id)] = queueItem.quantity;
       ids.push(queueItem.id)
+      events.push(queueItem.event)
     });
     this.queue = this.queue.filter(queueElement => !queue.includes(queueElement));
-    const quickOrderList = this.closest('quick-order-list');
-    quickOrderList.updateMultipleQty(items, ids)
+    const element = this.closest('quick-order-list') || this.closest('quick-add-bulk');
+    element.updateMultipleQty(items, ids, events)
   }
 }
 
