@@ -48,6 +48,28 @@ class BulkAdd extends HTMLElement {
     event.target.select();
   }
 
+
+  validateQuantity(event) {
+    const inputValue = parseInt(event.target.value);
+    const index = event.target.dataset.index;
+
+    if (inputValue < event.target.dataset.min) {
+      this.setValidity(
+        event,
+        index,
+        window.quickOrderListStrings.min_error.replace('[min]', event.target.dataset.min)
+      );
+    } else if (inputValue > parseInt(event.target.max)) {
+      this.setValidity(event, index, window.quickOrderListStrings.max_error.replace('[max]', event.target.max));
+    } else if (inputValue % parseInt(event.target.step) != 0) {
+      this.setValidity(event, index, window.quickOrderListStrings.step_error.replace('[step]', event.target.step));
+    } else {
+      event.target.setCustomValidity('');
+      event.target.reportValidity();
+      this.startQueue(index, inputValue, event);
+    }
+  }
+
   getSectionsUrl() {
     if (window.pageNumber) {
       return `${window.location.pathname}?page=${window.pageNumber}`;

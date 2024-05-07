@@ -7,7 +7,7 @@ if (!customElements.get('quick-add-bulk')) {
         this.quantity = this.querySelector('quantity-input');
 
         const debouncedOnChange = debounce((event) => {
-          this.checkValidity(event)
+          this.validateQuantity(event)
         }, ON_CHANGE_DEBOUNCE_TIMER);
 
         this.addEventListener('change', debouncedOnChange.bind(this));
@@ -125,26 +125,6 @@ if (!customElements.get('quick-add-bulk')) {
             this.requestStarted = false;
           });
       }
-
-      checkValidity(event) {
-        if (parseInt(event.target.value) < parseInt(event.target.dataset.min)) {
-          this.setValidity(
-            event,
-            parseInt(this.dataset.id),
-            window.quickOrderListStrings.min_error.replace('[min]', event.target.dataset.min)
-          );
-        } else if (parseInt(event.target.value) > parseInt(event.target.max)) {
-          this.setValidity(event, parseInt(this.dataset.id), window.quickOrderListStrings.max_error.replace('[max]', event.target.max));
-        } else if (parseInt(event.target.value) % parseInt(event.target.step) != 0) {
-          this.setValidity(event, parseInt(this.dataset.id), window.quickOrderListStrings.step_error.replace('[step]', event.target.step));
-        } else {
-          event.target.setCustomValidity('');
-          event.target.reportValidity();
-          this.startQueue(parseInt(this.dataset.id),  parseInt(event.target.value), event);
-        }
-
-      }
-
 
       getSectionsToRender() {
         return [

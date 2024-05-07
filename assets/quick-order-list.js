@@ -137,15 +137,15 @@ if (!customElements.get('quick-order-list')) {
 
       onChange(event) {
         const inputValue = parseInt(event.target.value);
-        const cartQuantity = parseInt(event.target.dataset.cartQuantity);
-        const index = event.target.dataset.index;
+        // const cartQuantity = parseInt(event.target.dataset.cartQuantity);
+        // const index = event.target.dataset.index;
 
-        const quantity = inputValue - cartQuantity;
+        // const quantity = inputValue - cartQuantity;
         this.cleanErrorMessageOnType(event);
         if (inputValue == 0) {
-          this.startQueue(index, inputValue);
+          this.startQueue(event.target.dataset.index, inputValue);
         } else {
-          this.validateQuantity(event, index, inputValue, cartQuantity, quantity);
+          this.validateQuantity(event);
         }
       }
 
@@ -154,28 +154,6 @@ if (!customElements.get('quick-order-list')) {
           event.target.setCustomValidity(' ');
           event.target.reportValidity();
         });
-      }
-
-      validateQuantity(event, index, inputValue, cartQuantity, quantity) {
-        if (inputValue < event.target.dataset.min) {
-          this.setValidity(
-            event,
-            index,
-            window.quickOrderListStrings.min_error.replace('[min]', event.target.dataset.min)
-          );
-        } else if (inputValue > parseInt(event.target.max)) {
-          this.setValidity(event, index, window.quickOrderListStrings.max_error.replace('[max]', event.target.max));
-        } else if (inputValue % parseInt(event.target.step) != 0) {
-          this.setValidity(event, index, window.quickOrderListStrings.step_error.replace('[step]', event.target.step));
-        } else {
-          event.target.setCustomValidity('');
-          event.target.reportValidity();
-          if (cartQuantity > 0) {
-            this.startQueue(index, inputValue);
-          } else {
-            this.startQueue(index, quantity);
-          }
-        }
       }
 
       validateInput(target) {
