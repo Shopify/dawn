@@ -6,8 +6,8 @@ class BulkAdd extends HTMLElement {
     this.ids = []
   }
 
-  startQueue(id, quantity, event) {
-    this.queue.push({id, quantity, event})
+  startQueue(id, quantity) {
+    this.queue.push({id, quantity})
     const interval = setInterval(() => {
       if (this.queue.length > 0) {
         if (!this.requestStarted)  {
