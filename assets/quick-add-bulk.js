@@ -126,6 +126,7 @@ if (!customElements.get('quick-add-bulk')) {
           });
       }
 
+
       getSectionsToRender() {
         return [
           {

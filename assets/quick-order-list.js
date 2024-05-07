@@ -137,10 +137,6 @@ if (!customElements.get('quick-order-list')) {
 
       onChange(event) {
         const inputValue = parseInt(event.target.value);
-        // const cartQuantity = parseInt(event.target.dataset.cartQuantity);
-        // const index = event.target.dataset.index;
-
-        // const quantity = inputValue - cartQuantity;
         this.cleanErrorMessageOnType(event);
         if (inputValue == 0) {
           this.startQueue(event.target.dataset.index, inputValue);
