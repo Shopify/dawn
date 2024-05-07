@@ -62,7 +62,7 @@ if (!customElements.get('quick-add-bulk')) {
       }
 
       resetQuantityInput(id) {
-        const input = document.getElementById(id);
+        const input = document.getElementById(`Quantity-${id}`);
         input.value = input.getAttribute('value');
         this.isEnterPressed = false;
       }
