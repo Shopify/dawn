@@ -99,7 +99,7 @@ if (!customElements.get('quick-add-bulk')) {
       }
 
       updateMultipleQty(items, ids, events) {
-        this.checkValidity(events)
+        // this.checkValidity(events)
         this.selectProgressBar().classList.remove('hidden');
 
         const body = JSON.stringify({
@@ -134,15 +134,15 @@ if (!customElements.get('quick-add-bulk')) {
       }
 
       checkValidity(event) {
-        if (event.target.value < event.target.dataset.min) {
+        if (parseInt(event.target.value) < parseInt(event.target.dataset.min)) {
           this.setValidity(
             event,
             parseInt(this.dataset.id),
             window.quickOrderListStrings.min_error.replace('[min]', event.target.dataset.min)
           );
-        } else if (event.target.value > parseInt(event.target.max)) {
+        } else if (parseInt(event.target.value) > parseInt(event.target.max)) {
           this.setValidity(event, parseInt(this.dataset.id), window.quickOrderListStrings.max_error.replace('[max]', event.target.max));
-        } else if (event.target.value % parseInt(event.target.step) != 0) {
+        } else if (parseInt(event.target.value) % parseInt(event.target.step) != 0) {
           this.setValidity(event, parseInt(this.dataset.id), window.quickOrderListStrings.step_error.replace('[step]', event.target.step));
         } else {
           event.target.setCustomValidity('');
