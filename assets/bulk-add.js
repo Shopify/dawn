@@ -24,15 +24,13 @@ class BulkAdd extends HTMLElement {
     this.requestStarted = true;
     const items = {}
     const ids = []
-    const events = []
     queue.forEach((queueItem) => {
       items[parseInt(queueItem.id)] = queueItem.quantity;
-      ids.push(queueItem.id)
-      events.push(queueItem.event)
+      ids.push(queueItem.id);
     });
     this.queue = this.queue.filter(queueElement => !queue.includes(queueElement));
     const element = this.closest('quick-order-list') || this.closest('quick-add-bulk');
-    element.updateMultipleQty(items, ids, events)
+    element.updateMultipleQty(items, ids)
   }
 
   resetQuantityInput(id) {
@@ -66,7 +64,7 @@ class BulkAdd extends HTMLElement {
     } else {
       event.target.setCustomValidity('');
       event.target.reportValidity();
-      this.startQueue(index, inputValue, event);
+      this.startQueue(index, inputValue);
     }
   }
 

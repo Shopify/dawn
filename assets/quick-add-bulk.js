@@ -92,7 +92,7 @@ if (!customElements.get('quick-add-bulk')) {
         });
       }
 
-      updateMultipleQty(items, ids, events) {
+      updateMultipleQty(items, ids) {
         this.selectProgressBar().classList.remove('hidden');
 
         const body = JSON.stringify({
@@ -109,16 +109,13 @@ if (!customElements.get('quick-add-bulk')) {
             const parsedState = JSON.parse(state);
             this.renderSections(parsedState, ids);
             publish(PUB_SUB_EVENTS.cartUpdate, { source: 'quick-add', cartData: parsedState });
-          }).catch((error) => {
-            events.forEach((e, index) => {
-              // e.target.setCustomValidity(error);
-              // e.target.reportValidity();
-              // this.resetQuantityInput(ids[index]);
-              // this.selectProgressBar().classList.add('hidden');
-              // e.target.select();
-              // this.cleanErrorMessageOnType(e);
-            })
-
+          }).catch(() => {
+            // e.target.setCustomValidity(error);
+            // e.target.reportValidity();
+            // this.resetQuantityInput(ids[index]);
+            // this.selectProgressBar().classList.add('hidden');
+            // e.target.select();
+            // this.cleanErrorMessageOnType(e);
           })
           .finally(() => {
             this.selectProgressBar().classList.add('hidden');
