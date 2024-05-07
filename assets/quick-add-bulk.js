@@ -7,7 +7,7 @@ if (!customElements.get('quick-add-bulk')) {
         this.quantity = this.querySelector('quantity-input');
 
         const debouncedOnChange = debounce((event) => {
-          this.startQueue(parseInt(this.dataset.id),  parseInt(event.target.value), event);
+          this.checkValidity(event)
         }, ON_CHANGE_DEBOUNCE_TIMER);
 
         this.addEventListener('change', debouncedOnChange.bind(this));
@@ -99,7 +99,6 @@ if (!customElements.get('quick-add-bulk')) {
       }
 
       updateMultipleQty(items, ids, events) {
-        console.log(ids, 'ids', events, items)
         this.checkValidity(events)
         this.selectProgressBar().classList.remove('hidden');
 
@@ -119,7 +118,7 @@ if (!customElements.get('quick-add-bulk')) {
             publish(PUB_SUB_EVENTS.cartUpdate, { source: 'quick-add', cartData: parsedState });
           }).catch((error) => {
             events.forEach((e, index) => {
-              e.target.setCustomValidity(error);
+              // e.target.setCustomValidity(error);
               // e.target.reportValidity();
               // this.resetQuantityInput(ids[index]);
               // this.selectProgressBar().classList.add('hidden');
@@ -134,11 +133,33 @@ if (!customElements.get('quick-add-bulk')) {
           });
       }
 
-      checkValidity(events) {
-        events.forEach((e, index) => {
-          e.target.setCustomValidity('test');
-        })
+      checkValidity(event) {
+        if (event.target.value < event.target.dataset.min) {
+          this.setValidity(
+            event,
+            parseInt(this.dataset.id),
+            window.quickOrderListStrings.min_error.replace('[min]', event.target.dataset.min)
+          );
+        } else if (event.target.value > parseInt(event.target.max)) {
+          this.setValidity(event, parseInt(this.dataset.id), window.quickOrderListStrings.max_error.replace('[max]', event.target.max));
+        } else if (event.target.value % parseInt(event.target.step) != 0) {
+          this.setValidity(event, parseInt(this.dataset.id), window.quickOrderListStrings.step_error.replace('[step]', event.target.step));
+        } else {
+          event.target.setCustomValidity('');
+          event.target.reportValidity();
+          this.startQueue(parseInt(this.dataset.id),  parseInt(event.target.value), event);
+        }
+
       }
+
+
+      setValidity(event, index, message) {
+        event.target.setCustomValidity(message);
+        event.target.reportValidity();
+        this.resetQuantityInput(index);
+        event.target.select();
+      }
+
 
       getSectionsToRender() {
         return [
@@ -174,7 +195,6 @@ if (!customElements.get('quick-add-bulk')) {
 
       renderSections(parsedState, ids) {
         const intersection = this.queue.filter(element => ids.includes(element.id));
-        console.log(this.queue, 'this queue', intersection)
         if (intersection.length === 0) {
           this.getSectionsToRender().forEach((section) => {
             const sectionElement = document.getElementById(section.id);
