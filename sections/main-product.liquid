@@ -66,7 +66,14 @@
     >
   {%- endif -%}
 
-  {% assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src' %}
+  {% liquid
+    assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src'
+    assign selected_variant = product.selected_variant
+    if section.settings.auto_select_variant or product.variants.size == 1
+      assign selected_variant = product.selected_or_first_available_variant
+    endif
+  %}
+
   <div class="page-width">
     <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} product--mobile-{{ section.settings.mobile_thumbnails }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
       <div class="grid__item product__media-wrapper">
@@ -191,7 +198,7 @@
                     {{ product.description }}
                   </div>
                 {%- endif -%}
-              {%- when 'sku' -%}
+              {%- when 'sku' and selected_variant -%}
                 <p
                   class="product__sku{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}{% if product.selected_or_first_available_variant.sku.size == 0 %} visibility-hidden{% endif %}"
                   id="Sku-{{ section.id }}"
@@ -199,7 +206,7 @@
                   {{ block.shopify_attributes }}
                 >
                   <span class="visually-hidden">{{ 'products.product.sku' | t }}:</span>
-                  {{- product.selected_or_first_available_variant.sku -}}
+                  {{- selected_variant.sku -}}
                 </p>
               {%- when 'custom_liquid' -%}
                 {{ block.settings.custom_liquid }}
@@ -2246,6 +2253,13 @@
       "id": "hide_variants",
       "default": false,
       "label": "t:sections.main-product.settings.hide_variants.label"
+    },
+    {
+      "id": "auto_select_variant",
+      "label": "t:sections.main-product.settings.auto_select_variant.label",
+      "type": "checkbox",
+      "default": true,
+      "info": "t:sections.main-product.settings.auto_select_variant.info"
     },
     {
       "type": "checkbox",
