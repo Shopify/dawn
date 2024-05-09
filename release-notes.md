@@ -1,10 +1,17 @@
-Dawn 13.0.1 introduces a few fixes.
+Dawn 14.0.0 adds a new Quick Add Bulk setting, two improvements for “Sign in with Shop”, and a host of performance and interaction improvements.
+### Added
+- The new Quick Add Bulk functionality can be added to the product grid and featured collection sections, offering buyers an efficient, keyboard-optimized bulk buying flow.
+- Buyers who “Sign in with Shop” will now see the avatar associated with their Shop account in the header in place of the generic customer account icon.
+- The Classic Customer Accounts Login Page now includes a “Sign in with Shop” button for merchants with “Sign in with Shop” enabled.
 ### Changed
-- The cart drawer header (Product, Total) is not sticky anymore when the content is scrollable
+- Filters can now include images.
+- The Quick Order List section has greatly improved support for keyboard navigation.
+- The maximum number of products per page has been increased to 36.
+- Multicolumn, Collection list, Product grids, and Related products have an increased maximum of 6 columns.
 ### Fixes and improvements
-- Fix product rating alignment when the product doesn't have a media
-- Fix scroll issue on variant change
-- Limit width of country selector when the currency is the same for all the countries
-- Fix missing alt tags for the collection image on the collection page as well as for collection cards
-- Fix cart drawer's cart note to prevent overlapping of the text and caret icon
-- Fix cart drawer's header to prevent an overlap with the items in the cart
+- General UX improvements to swatches and other areas of the filter experience.
+- Padding improvements for Collections at various column sizes.
+- Fixed a bug where switching variants on a product without a media attached to it could disable the add to cart button.
+- Fixed a similar bug related to products without variant images.
+- Updated branding and copy to change references from Twitter to X.
+- Updated price filter to work with currency formats that use commas.
