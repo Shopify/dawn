@@ -7,7 +7,11 @@ if (!customElements.get('quick-add-bulk')) {
         this.quantity = this.querySelector('quantity-input');
 
         const debouncedOnChange = debounce((event) => {
-          this.validateQuantity(event);
+          if (parseInt(event.target.value) === 0) {
+            this.startQueue(event.target.dataset.index, parseInt(event.target.value));
+          } else {
+            this.validateQuantity(event);
+          }
         }, ON_CHANGE_DEBOUNCE_TIMER);
 
         this.addEventListener('change', debouncedOnChange.bind(this));
