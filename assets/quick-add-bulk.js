@@ -7,7 +7,7 @@ if (!customElements.get('quick-add-bulk')) {
         this.quantity = this.querySelector('quantity-input');
 
         const debouncedOnChange = debounce((event) => {
-          this.validateQuantity(event)
+          this.validateQuantity(event);
         }, ON_CHANGE_DEBOUNCE_TIMER);
 
         this.addEventListener('change', debouncedOnChange.bind(this));
@@ -109,7 +109,8 @@ if (!customElements.get('quick-add-bulk')) {
             const parsedState = JSON.parse(state);
             this.renderSections(parsedState, ids);
             publish(PUB_SUB_EVENTS.cartUpdate, { source: 'quick-add', cartData: parsedState });
-          }).catch(() => {
+          })
+          .catch(() => {
             // e.target.setCustomValidity(error);
             // e.target.reportValidity();
             // this.resetQuantityInput(ids[index]);
@@ -122,7 +123,6 @@ if (!customElements.get('quick-add-bulk')) {
             this.requestStarted = false;
           });
       }
-
 
       getSectionsToRender() {
         return [
@@ -145,7 +145,7 @@ if (!customElements.get('quick-add-bulk')) {
       }
 
       renderSections(parsedState, ids) {
-        const intersection = this.queue.filter(element => ids.includes(element.id));
+        const intersection = this.queue.filter((element) => ids.includes(element.id));
         if (intersection.length === 0) {
           this.getSectionsToRender().forEach((section) => {
             const sectionElement = document.getElementById(section.id);
@@ -159,7 +159,9 @@ if (!customElements.get('quick-add-bulk')) {
                 : sectionElement.parentElement.classList.add('is-empty');
 
               setTimeout(() => {
-                document.querySelector('#CartDrawer-Overlay').addEventListener('click', this.cart.close.bind(this.cart));
+                document
+                  .querySelector('#CartDrawer-Overlay')
+                  .addEventListener('click', this.cart.close.bind(this.cart));
               });
             }
             const elementToReplace =
@@ -173,7 +175,6 @@ if (!customElements.get('quick-add-bulk')) {
               );
             }
           });
-          
 
           if (this.isEnterPressed) {
             this.querySelector(`#Quantity-${this.lastActiveInputId}`).select();
