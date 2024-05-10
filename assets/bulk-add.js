@@ -22,14 +22,12 @@ class BulkAdd extends HTMLElement {
   sendRequest(queue) {
     this.requestStarted = true;
     const items = {};
-    const ids = [];
     queue.forEach((queueItem) => {
       items[parseInt(queueItem.id)] = queueItem.quantity;
-      ids.push(queueItem.id);
     });
     this.queue = this.queue.filter((queueElement) => !queue.includes(queueElement));
     const quickBulkElement = this.closest('quick-order-list') || this.closest('quick-add-bulk');
-    quickBulkElement.updateMultipleQty(items, ids);
+    quickBulkElement.updateMultipleQty(items);
   }
 
   resetQuantityInput(id) {
