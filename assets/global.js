@@ -156,27 +156,36 @@ class QuantityInput extends HTMLElement {
   constructor() {
     super();
     this.input = this.querySelector('input');
+    this.variantId = this.input.dataset.variantId;
     this.changeEvent = new Event('change', { bubbles: true });
     this.input.addEventListener('change', this.onInputChange.bind(this));
     this.querySelectorAll('button').forEach((button) =>
       button.addEventListener('click', this.onButtonClick.bind(this))
     );
+
+    this.buttonMinus = this.querySelector('.quantity__button[name="minus"]') || undefined;
+    this.buttonPlus = this.querySelector('.quantity__button[name="plus"]') || undefined;
   }
 
   quantityUpdateUnsubscriber = undefined;
+  variantUpdateUnsubscriber = undefined;
 
   connectedCallback() {
     this.validateQtyRules();
+    this.validateVariantSelection(this.variantId);
     this.quantityUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.quantityUpdate, this.validateQtyRules.bind(this));
+    this.variantUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.variantChange, (event) => {
+      this.variantId = event.data.variant.id.toString();
+      this.validateVariantSelection(this.variantId);
+    });
   }
 
   disconnectedCallback() {
-    if (this.quantityUpdateUnsubscriber) {
-      this.quantityUpdateUnsubscriber();
-    }
+    this.quantityUpdateUnsubscriber?.();
+    this.variantUpdateUnsubscriber?.();
   }
 
-  onInputChange(event) {
+  onInputChange() {
     this.validateQtyRules();
   }
 
@@ -201,16 +210,28 @@ class QuantityInput extends HTMLElement {
     }
   }
 
+  validateVariantSelection(variantId) {
+    if (!variantId?.length) {
+      this.input.disabled = true;
+      this.buttonMinus?.classList.add('disabled');
+      this.buttonPlus?.classList.add('disabled');
+    } else {
+      this.validateQtyRules();
+      if (!this.input.max) {
+        this.buttonPlus?.classList.remove('disabled');
+      }
+      this.input.removeAttribute('disabled');
+    }
+  }
+
   validateQtyRules() {
     const value = parseInt(this.input.value);
     if (this.input.min) {
-      const buttonMinus = this.querySelector(".quantity__button[name='minus']");
-      buttonMinus.classList.toggle('disabled', parseInt(value) <= parseInt(this.input.min));
+      this.buttonMinus?.classList.toggle('disabled', parseInt(value) <= parseInt(this.input.min));
     }
     if (this.input.max) {
       const max = parseInt(this.input.max);
-      const buttonPlus = this.querySelector(".quantity__button[name='plus']");
-      buttonPlus.classList.toggle('disabled', value >= max);
+      this.buttonPlus?.classList.toggle('disabled', value >= max);
     }
   }
 }
@@ -948,7 +969,7 @@ class SlideshowComponent extends SliderComponent {
     const slideScrollPosition =
       this.slider.scrollLeft +
       this.sliderFirstItemNode.clientWidth *
-        (this.sliderControlLinksArray.indexOf(event.currentTarget) + 1 - this.currentPage);
+      (this.sliderControlLinksArray.indexOf(event.currentTarget) + 1 - this.currentPage);
     this.slider.scrollTo({
       left: slideScrollPosition,
     });
@@ -1172,8 +1193,7 @@ class VariantSelects extends HTMLElement {
     const sectionId = this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section;
 
     fetch(
-      `${this.dataset.url}?variant=${requestedVariantId}&section_id=${
-        this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section
+      `${this.dataset.url}?variant=${requestedVariantId}&section_id=${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section
       }`
     )
       .then((response) => response.text())
