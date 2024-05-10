@@ -115,6 +115,7 @@ if (!customElements.get('quick-add-bulk')) {
             publish(PUB_SUB_EVENTS.cartUpdate, { source: 'quick-add', cartData: parsedState });
           })
           .catch(() => {
+            // Commented out for now and will be fixed when BE issue is done https://github.com/Shopify/shopify/issues/440605
             // e.target.setCustomValidity(error);
             // e.target.reportValidity();
             // this.resetQuantityInput(ids[index]);

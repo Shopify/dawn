@@ -28,12 +28,12 @@ class BulkAdd extends HTMLElement {
       ids.push(queueItem.id);
     });
     this.queue = this.queue.filter((queueElement) => !queue.includes(queueElement));
-    const element = this.closest('quick-order-list') || this.closest('quick-add-bulk');
-    element.updateMultipleQty(items, ids);
+    const quickBulkElement = this.closest('quick-order-list') || this.closest('quick-add-bulk');
+    quickBulkElement.updateMultipleQty(items, ids);
   }
 
   resetQuantityInput(id) {
-    const input = document.getElementById(`Quantity-${id}`);
+    const input = this.querySelector(`#Quantity-${id}`);
     input.value = input.getAttribute('value');
     this.isEnterPressed = false;
   }
