@@ -521,6 +521,8 @@ class ModalDialog extends HTMLElement {
       if (event.code.toUpperCase() === 'ESCAPE') this.hide();
     });
     if (this.classList.contains('media-modal')) {
+      if (this.classList.contains('modal-page')) return;
+      
       this.addEventListener('pointerup', (event) => {
         if (event.pointerType === 'mouse' && !event.target.closest('deferred-media, product-model')) this.hide();
       });
