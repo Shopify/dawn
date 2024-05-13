@@ -137,15 +137,11 @@ if (!customElements.get('quick-order-list')) {
 
       onChange(event) {
         const inputValue = parseInt(event.target.value);
-        const cartQuantity = parseInt(event.target.dataset.cartQuantity);
-        const index = event.target.dataset.index;
-
-        const quantity = inputValue - cartQuantity;
         this.cleanErrorMessageOnType(event);
         if (inputValue == 0) {
-          this.startQueue(index, inputValue);
+          this.startQueue(event.target.dataset.index, inputValue);
         } else {
-          this.validateQuantity(event, index, inputValue, cartQuantity, quantity);
+          this.validateQuantity(event);
         }
       }
 
@@ -154,35 +150,6 @@ if (!customElements.get('quick-order-list')) {
           event.target.setCustomValidity(' ');
           event.target.reportValidity();
         });
-      }
-
-      validateQuantity(event, index, inputValue, cartQuantity, quantity) {
-        if (inputValue < event.target.dataset.min) {
-          this.setValidity(
-            event,
-            index,
-            window.quickOrderListStrings.min_error.replace('[min]', event.target.dataset.min)
-          );
-        } else if (inputValue > parseInt(event.target.max)) {
-          this.setValidity(event, index, window.quickOrderListStrings.max_error.replace('[max]', event.target.max));
-        } else if (inputValue % parseInt(event.target.step) != 0) {
-          this.setValidity(event, index, window.quickOrderListStrings.step_error.replace('[step]', event.target.step));
-        } else {
-          event.target.setCustomValidity('');
-          event.target.reportValidity();
-          if (cartQuantity > 0) {
-            this.startQueue(index, inputValue);
-          } else {
-            this.startQueue(index, quantity);
-          }
-        }
-      }
-
-      setValidity(event, index, message) {
-        event.target.setCustomValidity(message);
-        event.target.reportValidity();
-        this.resetQuantityInput(index);
-        event.target.select();
       }
 
       validateInput(target) {
@@ -261,47 +228,47 @@ if (!customElements.get('quick-order-list')) {
       }
 
       renderSections(parsedState, ids) {
-        if (ids) {
-          this.ids.push(ids)
-        }
-        const intersection = this.queue.filter(element => ids.includes(element.id));
-        if (intersection.length === 0) {
-            this.getSectionsToRender().forEach((section) => {
-              const sectionElement = document.getElementById(section.id);
-              if (
-                sectionElement &&
-                sectionElement.parentElement &&
-                sectionElement.parentElement.classList.contains('drawer')
-              ) {
-                parsedState.items.length > 0
-                  ? sectionElement.parentElement.classList.remove('is-empty')
-                  : sectionElement.parentElement.classList.add('is-empty');
-                setTimeout(() => {
-                  document.querySelector('#CartDrawer-Overlay').addEventListener('click', this.cart.close.bind(this.cart));
-                });
-              }
-              const elementToReplace =
-                sectionElement && sectionElement.querySelector(section.selector)
-                  ? sectionElement.querySelector(section.selector)
-                  : sectionElement;
-              if (elementToReplace) {
-                  if (section.selector === `#${this.quickOrderListId} .js-contents` && this.ids.length > 0) {
-                  this.ids.flat().forEach((i) => {
-                    elementToReplace.querySelector(`#Variant-${i}`).innerHTML =
-                    this.getSectionInnerHTML(parsedState.sections[section.section], `#Variant-${i}`);
-                  });
-                } else {
-                  elementToReplace.innerHTML = this.getSectionInnerHTML(
-                    parsedState.sections[section.section],
-                    section.selector
-                  );
-                }
-              }
+        this.ids.push(ids);
+        const intersection = this.queue.filter((element) => ids.includes(element.id));
+        if (intersection.length !== 0) return;
+
+        this.getSectionsToRender().forEach((section) => {
+          const sectionElement = document.getElementById(section.id);
+          if (
+            sectionElement &&
+            sectionElement.parentElement &&
+            sectionElement.parentElement.classList.contains('drawer')
+          ) {
+            parsedState.items.length > 0
+              ? sectionElement.parentElement.classList.remove('is-empty')
+              : sectionElement.parentElement.classList.add('is-empty');
+            setTimeout(() => {
+              document.querySelector('#CartDrawer-Overlay').addEventListener('click', this.cart.close.bind(this.cart));
             });
-          this.defineInputsAndQuickOrderTable();
-          this.addMultipleDebounce();
-          this.ids = []
-        }
+          }
+          const elementToReplace =
+            sectionElement && sectionElement.querySelector(section.selector)
+              ? sectionElement.querySelector(section.selector)
+              : sectionElement;
+          if (elementToReplace) {
+            if (section.selector === `#${this.quickOrderListId} .js-contents` && this.ids.length > 0) {
+              this.ids.flat().forEach((i) => {
+                elementToReplace.querySelector(`#Variant-${i}`).innerHTML = this.getSectionInnerHTML(
+                  parsedState.sections[section.section],
+                  `#Variant-${i}`
+                );
+              });
+            } else {
+              elementToReplace.innerHTML = this.getSectionInnerHTML(
+                parsedState.sections[section.section],
+                section.selector
+              );
+            }
+          }
+        });
+        this.defineInputsAndQuickOrderTable();
+        this.addMultipleDebounce();
+        this.ids = [];
       }
 
       getTableHead() {
@@ -394,8 +361,10 @@ if (!customElements.get('quick-order-list')) {
         }
       }
 
-      updateMultipleQty(items, ids) {
+      updateMultipleQty(items) {
         this.querySelector('.variant-remove-total .loading__spinner')?.classList.remove('hidden');
+
+        const ids = Object.keys(items);
 
         const body = JSON.stringify({
           updates: items,
@@ -413,26 +382,14 @@ if (!customElements.get('quick-order-list')) {
           .then((state) => {
             const parsedState = JSON.parse(state);
             this.renderSections(parsedState, ids);
-          }).catch(() => {
+          })
+          .catch(() => {
             this.setErrorMessage(window.cartStrings.error);
           })
           .finally(() => {
             this.querySelector('.variant-remove-total .loading__spinner')?.classList.add('hidden');
             this.requestStarted = false;
           });
-      }
-
-      getSectionsUrl() {
-        if (window.pageNumber) {
-          return `${window.location.pathname}?page=${window.pageNumber}`;
-        } else {
-          return `${window.location.pathname}`;
-        }
-      }
-
-      resetQuantityInput(id, quantityElement) {
-        const input = quantityElement ?? document.getElementById(`Quantity-${id}`);
-        input.value = input.getAttribute('value');
       }
 
       setErrorMessage(message = null) {
@@ -511,10 +468,6 @@ if (!customElements.get('quick-order-list')) {
         setTimeout(() => {
           cartStatus.setAttribute('aria-hidden', true);
         }, 1000);
-      }
-
-      getSectionInnerHTML(html, selector) {
-        return new DOMParser().parseFromString(html, 'text/html').querySelector(selector).innerHTML;
       }
 
       toggleLoading(id, enable) {
