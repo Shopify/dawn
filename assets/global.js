@@ -1377,9 +1377,10 @@ class VariantSelects extends HTMLElement {
 customElements.define('variant-selects', VariantSelects);
 
 class ProductRecommendations extends HTMLElement {
+  observer = undefined;
+
   constructor() {
     super();
-    this.observer = null;
   }
 
   connectedCallback() {
