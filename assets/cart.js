@@ -58,13 +58,17 @@ class CartItems extends HTMLElement {
   validateQuantity(event) {
     const inputValue = parseInt(event.target.value);
     const index = event.target.dataset.index;
+    let message;
 
     if (inputValue < event.target.dataset.min) {
-      this.setValidity(event, index, window.quickOrderListStrings.min_error.replace('[min]', event.target.dataset.min));
+      message = window.quickOrderListStrings.min_error.replace('[min]', event.target.dataset.min);
+      this.setValidity(event, index, message);
     } else if (inputValue > parseInt(event.target.max)) {
-      this.setValidity(event, index, window.quickOrderListStrings.max_error.replace('[max]', event.target.max));
+      message = window.quickOrderListStrings.max_error.replace('[max]', event.target.max);
+      this.setValidity(event, index, message);
     } else if (inputValue % parseInt(event.target.step) != 0) {
-      this.setValidity(event, index, window.quickOrderListStrings.step_error.replace('[step]', event.target.step));
+      message = window.quickOrderListStrings.step_error.replace('[step]', event.target.step);
+      this.setValidity(event, index, message);
     } else {
       event.target.setCustomValidity('');
       event.target.reportValidity();
