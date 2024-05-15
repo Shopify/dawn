@@ -184,9 +184,10 @@ class CartItems extends HTMLElement {
             section.selector
           );
         });
-        const updatedValue = parsedState.items[line - 1] ? parsedState.items[line - 1].quantity : undefined;
+        const updatedLine = parsedState.items.find((item) => item.variant_id === parseInt(variantId));
+        const updatedValue = updatedLine ? updatedLine.quantity : undefined;
         let message = '';
-        if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
+        if (items.length === parsedState.items.length && updatedLine && updatedValue !== parseInt(quantityElement.value)) {
           if (typeof updatedValue === 'undefined') {
             message = window.cartStrings.error;
           } else {
