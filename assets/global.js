@@ -1470,7 +1470,6 @@ class BulkAdd extends HTMLElement {
   }
 
   getSectionsUrl() {
-    console.log(window.location.pathname, '---');
     if (window.pageNumber) {
       return `${window.location.pathname}?page=${window.pageNumber}`;
     } else {
