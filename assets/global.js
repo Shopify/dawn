@@ -598,7 +598,7 @@ class BulkModal extends HTMLElement {
       observer.unobserve(this);
 
       if (!this.modal) {
-        fetch(`${this.getSectionsUrl()}?section_id=quick-order-list`)
+        fetch(`${this.getSectionsUrl()}?section_id=bulk-quick-order-list`)
           .then((response) => response.text())
           .then((responseText) => {
             const html = new DOMParser().parseFromString(responseText, 'text/html');
