@@ -580,6 +580,52 @@ class ModalDialog extends HTMLElement {
 }
 customElements.define('modal-dialog', ModalDialog);
 
+class BulkModal extends HTMLElement {
+  constructor() {
+    super();
+    this.modals;
+  }
+
+  getSectionsUrl() {
+    return `${this.dataset.url}`;
+  }
+
+  cartUpdateUnsubscriber = undefined;
+
+  connectedCallback() {
+    const handleIntersection = (entries, observer) => {
+      if (!entries[0].isIntersecting) return;
+      observer.unobserve(this);
+
+      if (!this.modal) {
+        fetch(`${this.getSectionsUrl()}?section_id=quick-order-list`)
+          .then((response) => response.text())
+          .then((responseText) => {
+            const html = new DOMParser().parseFromString(responseText, 'text/html');
+            const sourceQty = html.querySelector('.gradient');
+            this.innerHTML = sourceQty.innerHTML;
+            this.modal = sourceQty.innerHTML;
+          })
+          .catch((e) => {
+            console.error(e);
+          });
+      }
+    };
+
+    new IntersectionObserver(handleIntersection.bind(this)).observe(
+      document.querySelector(`#QuickBulk-${this.dataset.productId}-${this.dataset.sectionId}`)
+    );
+  }
+
+  disconnectedCallback() {
+    if (this.cartUpdateUnsubscriber) {
+      this.cartUpdateUnsubscriber();
+    }
+  }
+}
+
+customElements.define('bulk-modal', BulkModal);
+
 class ModalOpener extends HTMLElement {
   constructor() {
     super();
@@ -1424,6 +1470,7 @@ class BulkAdd extends HTMLElement {
   }
 
   getSectionsUrl() {
+    console.log(window.location.pathname, '---');
     if (window.pageNumber) {
       return `${window.location.pathname}?page=${window.pageNumber}`;
     } else {
