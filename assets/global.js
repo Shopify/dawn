@@ -601,7 +601,7 @@ class BulkModal extends HTMLElement {
           .then((response) => response.text())
           .then((responseText) => {
             const html = new DOMParser().parseFromString(responseText, 'text/html');
-            const sourceQty = html.querySelector('.quick-order-list-container');
+            const sourceQty = html.querySelector('.quick-order-list-container').parentNode;
             this.innerHTML = sourceQty.innerHTML;
             this.modal = sourceQty.innerHTML;
           })
@@ -614,12 +614,6 @@ class BulkModal extends HTMLElement {
     new IntersectionObserver(handleIntersection.bind(this)).observe(
       document.querySelector(`#QuickBulk-${this.dataset.productId}-${this.dataset.sectionId}`)
     );
-  }
-
-  disconnectedCallback() {
-    if (this.cartUpdateUnsubscriber) {
-      this.cartUpdateUnsubscriber();
-    }
   }
 }
 
