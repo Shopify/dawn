@@ -583,27 +583,19 @@ customElements.define('modal-dialog', ModalDialog);
 class BulkModal extends HTMLElement {
   constructor() {
     super();
-    this.modal;
   }
-
-  getSectionsUrl() {
-    return `${this.dataset.url}`;
-  }
-
-  cartUpdateUnsubscriber = undefined;
 
   connectedCallback() {
     const handleIntersection = (entries, observer) => {
       if (!entries[0].isIntersecting) return;
       observer.unobserve(this);
-      if (!this.modal) {
-        fetch(`${this.getSectionsUrl()}?section_id=bulk-quick-order-list`)
+      if (this.innerHTML.trim() === '') {
+        fetch(`${this.dataset.url}?section_id=bulk-quick-order-list`)
           .then((response) => response.text())
           .then((responseText) => {
             const html = new DOMParser().parseFromString(responseText, 'text/html');
             const sourceQty = html.querySelector('.quick-order-list-container').parentNode;
             this.innerHTML = sourceQty.innerHTML;
-            this.modal = sourceQty.innerHTML;
           })
           .catch((e) => {
             console.error(e);

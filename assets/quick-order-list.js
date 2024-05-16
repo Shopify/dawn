@@ -72,7 +72,7 @@ if (!customElements.get('quick-order-list')) {
       constructor() {
         super();
         this.cart = document.querySelector('cart-drawer');
-        this.quickOrderListId = `${this.dataset.snippetId}-${this.dataset.productId}-${this.sectionId}`;
+        this.quickOrderListId = `${this.dataset.snippetId}-${this.dataset.productId}-${this.dataset.id}`;
         this.defineInputsAndQuickOrderTable();
 
         this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
