@@ -361,10 +361,6 @@ if (!customElements.get('quick-order-list')) {
         }
       }
 
-      getNewUrl() {
-        return `${this.dataset.url}`;
-      }
-
       updateMultipleQty(items) {
         this.querySelector('.variant-remove-total .loading__spinner')?.classList.remove('hidden');
 
@@ -373,7 +369,7 @@ if (!customElements.get('quick-order-list')) {
         const body = JSON.stringify({
           updates: items,
           sections: this.getSectionsToRender().map((section) => section.section),
-          sections_url: this.getNewUrl(),
+          sections_url: this.dataset.url,
         });
 
         this.updateMessage();
