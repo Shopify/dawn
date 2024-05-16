@@ -596,13 +596,12 @@ class BulkModal extends HTMLElement {
     const handleIntersection = (entries, observer) => {
       if (!entries[0].isIntersecting) return;
       observer.unobserve(this);
-
       if (!this.modal) {
         fetch(`${this.getSectionsUrl()}?section_id=bulk-quick-order-list`)
           .then((response) => response.text())
           .then((responseText) => {
             const html = new DOMParser().parseFromString(responseText, 'text/html');
-            const sourceQty = html.querySelector('.gradient');
+            const sourceQty = html.querySelector('.quick-order-list-container');
             this.innerHTML = sourceQty.innerHTML;
             this.modal = sourceQty.innerHTML;
           })

@@ -382,6 +382,7 @@ if (!customElements.get('quick-order-list')) {
           .then((state) => {
             const parsedState = JSON.parse(state);
             this.renderSections(parsedState, ids);
+            publish(PUB_SUB_EVENTS.cartUpdate, { source: 'quick-order-list', cartData: parsedState });
           })
           .catch(() => {
             this.setErrorMessage(window.cartStrings.error);
