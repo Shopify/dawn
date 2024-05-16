@@ -583,7 +583,7 @@ customElements.define('modal-dialog', ModalDialog);
 class BulkModal extends HTMLElement {
   constructor() {
     super();
-    this.modals;
+    this.modal;
   }
 
   getSectionsUrl() {
