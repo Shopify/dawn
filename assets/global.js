@@ -590,7 +590,8 @@ class BulkModal extends HTMLElement {
       if (!entries[0].isIntersecting) return;
       observer.unobserve(this);
       if (this.innerHTML.trim() === '') {
-        fetch(`${this.dataset.url}?section_id=bulk-quick-order-list`)
+        const searchParam = this.dataset.url.includes('?') ? '&' : '?';
+        fetch(`${this.dataset.url}${searchParam}section_id=bulk-quick-order-list`)
           .then((response) => response.text())
           .then((responseText) => {
             const html = new DOMParser().parseFromString(responseText, 'text/html');
