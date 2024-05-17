@@ -1035,7 +1035,7 @@ class VariantSelects extends HTMLElement {
   handleProductUpdate(event) {
     const input = this.getInputForEventTarget(event.target);
     const targetId = input.id;
-    const targetUrl = input.dataset.productUrl;
+    const targetUrl = input.dataset.productUrl || this.dataset.url;
     this.currentVariant = this.getVariantData(targetId);
     const sectionId = this.dataset.originalSection || this.dataset.section;
     this.updateSelectedSwatchValue(event);
