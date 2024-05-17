@@ -115,7 +115,7 @@ if (!customElements.get('quick-order-list')) {
         this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (event) => {
           if (
             event.source === this.quickOrderListId ||
-            event.cartData.items.find((item) => item.id === this.dataset.id) === undefined
+            (event.cartData.items && event.cartData.items.find((item) => item.id === this.dataset.id) === undefined)
           ) {
             return;
           }

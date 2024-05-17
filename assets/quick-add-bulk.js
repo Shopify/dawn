@@ -26,7 +26,7 @@ if (!customElements.get('quick-add-bulk')) {
         this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (event) => {
           if (
             event.source === 'quick-add' ||
-            event.cartData.items.find((item) => item.id === this.dataset.index) === undefined
+            (event.cartData.items && event.cartData.items.find((item) => item.id === this.dataset.index) === undefined)
           ) {
             return;
           }
