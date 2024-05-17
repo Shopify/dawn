@@ -596,10 +596,8 @@ class BulkModal extends HTMLElement {
             const html = new DOMParser().parseFromString(responseText, 'text/html');
             const sourceQty = html.querySelector('.quick-order-list-container').parentNode;
             this.innerHTML = sourceQty.innerHTML;
-            console.log('----', this);
           })
           .catch((e) => {
-            console.log(e, 'eeee');
             console.error(e);
           });
       }
