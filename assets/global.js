@@ -29,8 +29,9 @@ class HTMLUpdateUtility {
   viewTransition(oldNode, newContent) {
     this.#preProcessCallbacks.forEach((callback) => callback(newContent));
 
-    const newNode = oldNode.cloneNode();
-    HTMLUpdateUtility.setInnerHTML(newNode, newContent.innerHTML);
+    const newNodeWrapper = document.createElement('div');
+    HTMLUpdateUtility.setInnerHTML(newNodeWrapper, newContent.outerHTML);
+    const newNode = newNodeWrapper.firstChild;
     oldNode.parentNode.insertBefore(newNode, oldNode);
     oldNode.style.display = 'none';
 
