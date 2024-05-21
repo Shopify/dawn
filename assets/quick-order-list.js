@@ -113,9 +113,15 @@ if (!customElements.get('quick-order-list')) {
 
       connectedCallback() {
         this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (event) => {
+          const variantIds = [];
+          this.querySelectorAll('.variant-item').forEach((item) => {
+            variantIds.push(item.dataset.variantId);
+          });
+
           if (
             event.source === this.quickOrderListId ||
-            (event.cartData.items && event.cartData.items.find((item) => item.id === this.dataset.id) === undefined)
+            (event.cartData.items &&
+              variantIds.filter((element) => event.cartData.items.includes(element)).length === 0)
           ) {
             return;
           }
