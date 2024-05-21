@@ -5,7 +5,7 @@ quizBtns.forEach(e=> {
     el.preventDefault()
     var id = e.dataset.quiz
     var quizRendered = document.querySelector(`div[data-quiz-id="${id}"]`);
-debugger
+    
     quizBtns.forEach(b=> {
         if ( b != e && b.classList.contains('active')) {
             const id = b.dataset.quiz
