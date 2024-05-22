@@ -17,35 +17,11 @@
   %}
 {% endcomment %}
 {%- liquid
-  assign variants_available_arr = product.variants | map: 'available'
-  assign variants_option1_arr = product.variants | map: 'option1'
-  assign variants_option2_arr = product.variants | map: 'option2'
-  assign variants_option3_arr = product.variants | map: 'option3'
-
   assign product_form_id = 'product-form-' | append: section.id
 -%}
 
 {%- for value in option.values -%}
   {%- liquid
-    assign option_disabled = true
-
-    for option1_name in variants_option1_arr
-      case option.position
-        when 1
-          if variants_option1_arr[forloop.index0] == value and variants_available_arr[forloop.index0]
-            assign option_disabled = false
-          endif
-        when 2
-          if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == value and variants_available_arr[forloop.index0]
-            assign option_disabled = false
-          endif
-        when 3
-          if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == product.selected_or_first_available_variant.option2 and variants_option3_arr[forloop.index0] == value and variants_available_arr[forloop.index0]
-            assign option_disabled = false
-          endif
-      endcase
-    endfor
-
     assign swatch_focal_point = null
     if value.swatch.image
       assign image_url = value.swatch.image | image_url: width: 50
@@ -56,10 +32,24 @@
     else
       assign swatch_value = null
     endif
+
+    assign option_disabled = true
+    if value.available
+      assign option_disabled = false
+    endif
   -%}
 
   {%- capture input_id -%}
     {{ section.id }}-{{ option.position }}-{{ forloop.index0 -}}
+  {%- endcapture -%}
+
+  {%- capture input_name -%}
+    {{ option.name }}-{{ option.position }}
+  {%- endcapture -%}
+
+  {%- capture input_dataset -%}
+    data-product-url="{{ value.product_url }}"
+    data-option-value-id="{{ value.id }}"
   {%- endcapture -%}
 
   {%- capture label_unavailable -%}
@@ -69,12 +59,6 @@
   {%- endcapture -%}
 
   {%- if picker_type == 'swatch' -%}
-    {% liquid
-      assign checked = false
-      if option.selected_value == value
-        assign checked = true
-      endif
-    %}
     {%- capture help_text -%}
       <span class="visually-hidden">{{ value | escape }}</span>
       {{ label_unavailable }}
@@ -82,28 +66,30 @@
     {%
       render 'swatch-input',
       id: input_id,
-      name: option.name,
+      name: input_name,
       value: value | escape,
       swatch: value.swatch,
       product_form_id: product_form_id,
-      checked: checked,
+      checked: value.selected,
       visually_disabled: option_disabled,
       shape: block.settings.swatch_shape,
-      help_text: help_text
+      help_text: help_text,
+      additional_props: input_dataset
     %}
   {%- elsif picker_type == 'button' -%}
     <input
       type="radio"
       id="{{ input_id }}"
-      name="{{ option.name }}"
+      name="{{ input_name }}"
       value="{{ value | escape }}"
       form="{{ product_form_id }}"
-      {% if option.selected_value == value %}
+      {% if value.selected %}
         checked
       {% endif %}
       {% if option_disabled %}
         class="disabled"
       {% endif %}
+      {{ input_dataset }}
     >
     <label for="{{ input_id }}">
       {{ value -}}
@@ -111,8 +97,9 @@
     </label>
   {%- elsif picker_type == 'dropdown' or picker_type == 'swatch_dropdown' -%}
     <option
+      id="{{ input_id }}"
       value="{{ value | escape }}"
-      {% if option.selected_value == value %}
+      {% if value.selected %}
         selected="selected"
       {% endif %}
       {% if swatch_value and picker_type == 'swatch_dropdown' %}
@@ -121,6 +108,7 @@
           data-option-swatch-focal-point="{{ swatch_focal_point }}"
         {% endif %}
       {% endif %}
+      {{ input_dataset }}
     >
       {% if option_disabled -%}
         {{- 'products.product.value_unavailable' | t: option_value: value -}}
@@ -129,4 +117,8 @@
       {%- endif %}
     </option>
   {%- endif -%}
+
+  <script type="application/json" data-resource="{{ input_id }}">
+    {{ value.variant | json }}
+  </script>
 {%- endfor -%}
