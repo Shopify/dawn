@@ -392,8 +392,7 @@ if (!customElements.get('quick-order-list')) {
             this.renderSections(parsedState, ids);
             publish(PUB_SUB_EVENTS.cartUpdate, { source: this.quickOrderListId, cartData: parsedState });
           })
-          .catch((e) => {
-            console.log(e, 'eee');
+          .catch(() => {
             this.setErrorMessage(window.cartStrings.error);
           })
           .finally(() => {
