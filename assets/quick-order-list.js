@@ -106,6 +106,7 @@ if (!customElements.get('quick-order-list')) {
       }
 
       cartUpdateUnsubscriber = undefined;
+      sectionRefreshUnsubscriber = undefined;
 
       onSubmit(event) {
         event.preventDefault();
@@ -131,11 +132,21 @@ if (!customElements.get('quick-order-list')) {
             this.addMultipleDebounce();
           });
         });
+        
+        this.sectionRefreshUnsubscriber = subscribe(PUB_SUB_EVENTS.sectionRefreshed, (event) => {
+          const isParentSectionUpdated =
+            this.sectionId && (event.data?.sectionId ?? '') === `${this.sectionId.split('__')[0]}__main`;
+    
+          if (isParentSectionUpdated) {
+            this.refresh();
+          }
+        });
         this.sectionId = this.dataset.section;
       }
 
       disconnectedCallback() {
         this.cartUpdateUnsubscriber?.();
+        this.sectionRefreshUnsubscriber?.();
       }
 
       defineInputsAndQuickOrderTable() {
