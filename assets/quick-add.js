@@ -69,10 +69,7 @@ if (!customElements.get('quick-add-modal')) {
       }
 
       preventVariantURLSwitching(productElement) {
-        const variantPicker = productElement.querySelector('variant-selects');
-        if (!variantPicker) return;
-
-        variantPicker.setAttribute('data-update-url', 'false');
+        productElement.querySelector('product-info')?.setAttribute('data-update-url', 'false');
       }
 
       removeDOMElements(productElement) {
@@ -89,9 +86,7 @@ if (!customElements.get('quick-add-modal')) {
       preventDuplicatedIDs(productElement) {
         const sectionId = productElement.dataset.section;
         productElement.innerHTML = productElement.innerHTML.replaceAll(sectionId, `quickadd-${sectionId}`);
-        productElement.querySelectorAll('variant-selects, product-info').forEach((element) => {
-          element.dataset.originalSection = sectionId;
-        });
+        productElement.querySelector('product-info').dataset.originalSection = sectionId;
       }
 
       removeGalleryListSemantic(productElement) {
