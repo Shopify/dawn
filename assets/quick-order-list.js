@@ -72,7 +72,7 @@ if (!customElements.get('quick-order-list')) {
       constructor() {
         super();
         this.cart = document.querySelector('cart-drawer');
-        this.quickOrderListId = `${this.dataset.snippetId}-${this.dataset.productId}-${this.dataset.id}`;
+        this.quickOrderListId = `${this.dataset.section}-${this.dataset.productId}`;
         this.defineInputsAndQuickOrderTable();
 
         this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
@@ -131,7 +131,7 @@ if (!customElements.get('quick-order-list')) {
             this.addMultipleDebounce();
           });
         });
-        this.sectionId = this.dataset.id;
+        this.sectionId = this.dataset.section;
       }
 
       disconnectedCallback() {
@@ -201,7 +201,7 @@ if (!customElements.get('quick-order-list')) {
         return [
           {
             id: this.quickOrderListId,
-            section: document.getElementById(this.quickOrderListId).dataset.id,
+            section: document.getElementById(this.quickOrderListId).dataset.section,
             selector: `#${this.quickOrderListId} .js-contents`,
           },
           {
@@ -215,8 +215,8 @@ if (!customElements.get('quick-order-list')) {
             selector: '.shopify-section',
           },
           {
-            id: `quick-order-list-total-${this.dataset.productId}-${this.dataset.id}`,
-            section: document.getElementById(this.quickOrderListId).dataset.id,
+            id: `quick-order-list-total-${this.dataset.productId}-${this.dataset.section}`,
+            section: document.getElementById(this.quickOrderListId).dataset.section,
             selector: `#${this.quickOrderListId} .quick-order-list__total`,
           },
           {
@@ -392,7 +392,8 @@ if (!customElements.get('quick-order-list')) {
             this.renderSections(parsedState, ids);
             publish(PUB_SUB_EVENTS.cartUpdate, { source: this.quickOrderListId, cartData: parsedState });
           })
-          .catch(() => {
+          .catch((e) => {
+            console.log(e, 'eee');
             this.setErrorMessage(window.cartStrings.error);
           })
           .finally(() => {
