@@ -121,7 +121,7 @@ if (!customElements.get('quick-order-list')) {
 
           if (
             event.source === this.quickOrderListId ||
-            (event.cartData.items && variantIds.filter((element) => !event.cartData.items.some(element)))
+            (event.cartData.items && variantIds.some((element) => event.cartData.items.includes(element)))
           ) {
             return;
           }
