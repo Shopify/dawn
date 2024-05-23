@@ -1162,8 +1162,8 @@ class VariantSelects extends HTMLElement {
     }
 
     // update media modal
-    const modalContent = document.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
-    const newModalContent = html.querySelector(`#ProductModal-${this.dataset.section} .product-media-modal__content`);
+    const modalContent = document.querySelector(`#ProductModal-${sectionId} .product-media-modal__content`);
+    const newModalContent = html.querySelector(`#ProductModal-${sectionId} .product-media-modal__content`);
     if (modalContent && newModalContent) modalContent.innerHTML = newModalContent.innerHTML;
   }
 
