@@ -115,7 +115,7 @@ if (!customElements.get('quick-order-list')) {
       connectedCallback() {
         this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (event) => {
           const variantIds = [];
-          this.querySelectorAll('.variant-item').forEach((item) => {
+          this.querySelectorAll('[data-variant-id]').forEach((item) => {
             variantIds.push(item.dataset.variantId);
           });
 
@@ -132,11 +132,11 @@ if (!customElements.get('quick-order-list')) {
             this.addMultipleDebounce();
           });
         });
-        
+
         this.sectionRefreshUnsubscriber = subscribe(PUB_SUB_EVENTS.sectionRefreshed, (event) => {
           const isParentSectionUpdated =
             this.sectionId && (event.data?.sectionId ?? '') === `${this.sectionId.split('__')[0]}__main`;
-    
+
           if (isParentSectionUpdated) {
             this.refresh();
           }
