@@ -543,7 +543,7 @@ class ModalDialog extends HTMLElement {
   }
 
   connectedCallback() {
-    if (this.moved) return;
+    if (this.moved || this.classList.contains('global-popup-modal')) return;
     this.moved = true;
     document.body.appendChild(this);
   }
@@ -1344,3 +1344,37 @@ if (Shopify.designMode) {
     }
   });
 }
+
+// Welcome popup script
+const popup = document.getElementById('popup');
+const closedButton = document.getElementById(window.globalPopup.modalCloseId);
+const ageOfCookie = window.globalPopup.ageOfPopupCookie;
+const clearCookieCheckmark = window.globalPopup.clearCookieCheckmark;
+const popupModal = document.getElementById(window.globalPopup.popupModalId);
+const popupDelay = window.globalPopup.popupDelay;
+
+function setupPopupCookies() {
+  if (document.cookie.indexOf('_global_popup=0') > -1) return;
+
+  setTimeout(function () {
+    popupModal.setAttribute('open', '');
+  }, popupDelay);
+
+  // function set up the key and value in cookies based on section settings
+  function setupCookies() {
+    if (clearCookieCheckmark == true) {
+      document.cookie = '_global_popup=0; path=/';
+    } else {
+      document.cookie = '_global_popup=0' + ';max-age=' + ageOfCookie;
+    }
+  }
+
+  document.addEventListener('click', function (event) {
+    const elementClicked = event.target;
+    if (elementClicked == closedButton || elementClicked != popup) {
+      setupCookies();
+    }
+  });
+}
+
+setupPopupCookies();
