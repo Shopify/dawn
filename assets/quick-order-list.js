@@ -116,7 +116,7 @@ if (!customElements.get('quick-order-list')) {
         this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (event) => {
           const variantIds = [];
           this.querySelectorAll('.variant-item').forEach((item) => {
-            variantIds.push(item.dataset.variantId);
+            variantIds.push(parseInt(item.dataset.variantId));
           });
 
           if (
