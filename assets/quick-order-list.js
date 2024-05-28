@@ -72,7 +72,7 @@ if (!customElements.get('quick-order-list')) {
       constructor() {
         super();
         this.cart = document.querySelector('cart-drawer');
-        this.quickOrderListId = `quick-order-list-${this.dataset.productId}`;
+        this.quickOrderListId = `${this.dataset.section}-${this.dataset.productId}`;
         this.defineInputsAndQuickOrderTable();
 
         this.variantItemStatusElement = document.getElementById('shopping-cart-variant-item-status');
@@ -114,7 +114,15 @@ if (!customElements.get('quick-order-list')) {
 
       connectedCallback() {
         this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (event) => {
-          if (event.source === this.quickOrderListId) {
+          const variantIds = [];
+          this.querySelectorAll('.variant-item').forEach((item) => {
+            variantIds.push(item.dataset.variantId);
+          });
+
+          if (
+            event.source === this.quickOrderListId ||
+            (event.cartData.items && variantIds.some((element) => !event.cartData.items.includes(element)))
+          ) {
             return;
           }
           // If its another section that made the update
@@ -123,15 +131,16 @@ if (!customElements.get('quick-order-list')) {
             this.addMultipleDebounce();
           });
         });
+
         this.sectionRefreshUnsubscriber = subscribe(PUB_SUB_EVENTS.sectionRefreshed, (event) => {
           const isParentSectionUpdated =
             this.sectionId && (event.data?.sectionId ?? '') === `${this.sectionId.split('__')[0]}__main`;
-    
+
           if (isParentSectionUpdated) {
             this.refresh();
           }
         });
-        this.sectionId = this.dataset.id;
+        this.sectionId = this.dataset.section;
       }
 
       disconnectedCallback() {
@@ -202,7 +211,7 @@ if (!customElements.get('quick-order-list')) {
         return [
           {
             id: this.quickOrderListId,
-            section: document.getElementById(this.quickOrderListId).dataset.id,
+            section: document.getElementById(this.quickOrderListId).dataset.section,
             selector: `#${this.quickOrderListId} .js-contents`,
           },
           {
@@ -216,8 +225,8 @@ if (!customElements.get('quick-order-list')) {
             selector: '.shopify-section',
           },
           {
-            id: `quick-order-list-total-${this.dataset.productId}`,
-            section: document.getElementById(this.quickOrderListId).dataset.id,
+            id: `quick-order-list-total-${this.dataset.productId}-${this.dataset.section}`,
+            section: document.getElementById(this.quickOrderListId).dataset.section,
             selector: `#${this.quickOrderListId} .quick-order-list__total`,
           },
           {
@@ -373,13 +382,12 @@ if (!customElements.get('quick-order-list')) {
 
       updateMultipleQty(items) {
         this.querySelector('.variant-remove-total .loading__spinner')?.classList.remove('hidden');
-
         const ids = Object.keys(items);
 
         const body = JSON.stringify({
           updates: items,
           sections: this.getSectionsToRender().map((section) => section.section),
-          sections_url: this.getSectionsUrl(),
+          sections_url: this.dataset.url,
         });
 
         this.updateMessage();
@@ -392,6 +400,7 @@ if (!customElements.get('quick-order-list')) {
           .then((state) => {
             const parsedState = JSON.parse(state);
             this.renderSections(parsedState, ids);
+            publish(PUB_SUB_EVENTS.cartUpdate, { source: this.quickOrderListId, cartData: parsedState });
           })
           .catch(() => {
             this.setErrorMessage(window.cartStrings.error);
