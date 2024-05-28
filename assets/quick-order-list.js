@@ -120,8 +120,9 @@ if (!customElements.get('quick-order-list')) {
           });
           if (
             event.source === this.quickOrderListId ||
-            (event.cartData.items && event.cartData.items.some((element) => !variantIds.includes(element.variant_id)))
+            !event.cartData.items?.some((element) => variantIds.includes(element.variant_id))
           ) {
+            console.log('should be mostly true');
             return;
           }
           // If its another section that made the update
