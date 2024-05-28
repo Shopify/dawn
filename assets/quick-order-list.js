@@ -122,7 +122,6 @@ if (!customElements.get('quick-order-list')) {
             event.source === this.quickOrderListId ||
             !event.cartData.items?.some((element) => variantIds.includes(element.variant_id))
           ) {
-            console.log('should be mostly true');
             return;
           }
           // If its another section that made the update
