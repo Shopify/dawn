@@ -1075,11 +1075,11 @@ class VariantSelects extends HTMLElement {
       this.currentVariant = this.getVariantData(target.id);
       this.updateSelectedSwatchValue(event);
 
-      publish(PUB_SUB_EVENTS.variantChangeStart, {
+      publish(PUB_SUB_EVENTS.optionValueSelectionChange, {
         data: {
           event,
           target,
-          variant: this.currentVariant,
+          selectedOptionValues: this.selectedOptionValues,
         },
       });
     });
