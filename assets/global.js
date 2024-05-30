@@ -54,9 +54,16 @@ class HTMLUpdateUtility {
     oldNode.parentNode.insertBefore(newNode, oldNode);
     oldNode.style.display = 'none';
 
+    // dedupe IDs
+    const uniqueKey = Date.now();
+    oldNode.querySelectorAll('[id], [form]').forEach((element) => {
+      element.id && (element.id = `${element.id}-${uniqueKey}`);
+      element.form && element.setAttribute('form', `${element.form.getAttribute('id')}-${uniqueKey}`);
+    });
+
     this.#postProcessCallbacks.forEach((callback) => callback(newNode));
 
-    setTimeout(() => oldNode.remove(), 1000);
+    setTimeout(() => oldNode.remove(), 500);
   }
 
   // Sets inner HTML and reinjects the script tags to allow execution. By default, scripts are disabled when using element.innerHTML.
