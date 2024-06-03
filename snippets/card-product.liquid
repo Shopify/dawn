@@ -287,10 +287,10 @@
             {%- endif -%}
           </div>
         </div>
+        {% assign product_form_id = 'quick-add-' | append: section_id | append: card_product.id %}
         {% if quick_add == 'standard' %}
           <div class="quick-add no-js-hidden">
             {%- liquid
-              assign product_form_id = 'quick-add-' | append: section_id | append: card_product.id
               assign qty_rules = false
               if card_product.selected_or_first_available_variant.quantity_rule.min > 1 or card_product.selected_or_first_available_variant.quantity_rule.max != null or card_product.selected_or_first_available_variant.quantity_rule.increment > 1
                 assign qty_rules = true
@@ -391,7 +391,24 @@
               class="quick-add-bulk"
               data-index="{{ card_product.selected_or_first_available_variant.id }}"
             >
-              {% render 'quantity-input', variant: card_product.selected_or_first_available_variant, min: 0 %}
+              {% if card_product.selected_or_first_available_variant.available == false %}
+                <button
+                  id="{{ product_form_id }}-submit"
+                  type="submit"
+                  name="add"
+                  class="quick-add__submit button button--full-width button--secondary"
+                  aria-labelledby="{{ product_form_id }}-submit title-{{ section_id }}-{{ card_product.id }}"
+                  data-sold-out-message="true"
+                  disabled
+                >
+                  <span>{{ 'products.product.sold_out' | t }}</span>
+                  <span class="sold-out-message hidden">
+                    {{ 'products.product.sold_out' | t }}
+                  </span>
+                </button>
+              {% else %}
+                {% render 'quantity-input', variant: card_product.selected_or_first_available_variant, min: 0 %}
+              {% endif %}
             </quick-add-bulk>
           {% else %}
             <div class="quick-add no-js-hidden">
