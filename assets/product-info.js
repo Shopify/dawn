@@ -80,9 +80,7 @@ if (!customElements.get('product-info')) {
         let callback = () => {};
         let productUrl = this.getProductInfoUrl(targetUrl, variant?.id);
         if (this.dataset.url !== targetUrl) {
-          this.updateURL(targetUrl, variant?.id);
-          this.updateShareUrl(targetUrl, variant?.id);
-          callback = this.handleSwapProduct();
+          callback = this.handleSwapProduct(targetUrl, variant);
           productUrl = this.getProductInfoUrl(targetUrl, variant?.id, true);
         } else if (!variant) {
           this.setUnavailable();
@@ -91,24 +89,24 @@ if (!customElements.get('product-info')) {
             this.updateOptionValues(html);
           };
         } else {
-          this.updateURL(targetUrl, variant.id);
-          this.updateShareUrl(targetUrl, variant.id);
           this.updateVariantInputs(variant.id);
-          callback = this.handleUpdateProductInfo(variant);
+          callback = this.handleUpdateProductInfo(targetUrl, variant);
         }
 
         this.renderProductInfo(productUrl, target.id, callback);
       }
 
-      handleSwapProduct() {
+      handleSwapProduct(baseUrl, variant) {
         return (html) => {
           this.productModal?.remove();
+          this.updateURL(baseUrl, variant?.id);
 
           // If we are in an embedded context (quick add, featured product, etc), only swap product info.
           // Otherwise, refresh the entire page content and sibling sections.
           if (this.dataset.updateUrl === 'false') {
             this.swapProductUtility.viewTransition(this, html.querySelector('product-info'));
           } else {
+            document.querySelector('head title').innerHTML = html.querySelector('head title').innerHTML;
             this.swapProductUtility.viewTransition(document.querySelector('main'), html.querySelector('main'));
           }
         };
@@ -127,6 +125,13 @@ if (!customElements.get('product-info')) {
           .then(() => {
             // set focus to last clicked option value
             document.querySelector(`#${targetId}`)?.focus();
+          })
+          .catch((error) => {
+            if (error.name === 'AbortError') {
+              console.log('Fetch aborted by user');
+            } else {
+              console.error(error);
+            }
           });
       }
 
@@ -152,11 +157,12 @@ if (!customElements.get('product-info')) {
         if (variantSelects) this.variantSelectors.innerHTML = variantSelects.innerHTML;
       }
 
-      handleUpdateProductInfo(variant) {
+      handleUpdateProductInfo(baseUrl, variant) {
         return (html) => {
           this.pickupAvailability?.update(variant);
           this.updateMedia(html, variant?.featured_media?.id);
           this.updateOptionValues(html);
+          this.updateURL(baseUrl, variant?.id);
 
           const updateSourceFromDestination = (id, shouldHide = (source) => false) => {
             const source = html.getElementById(`${id}-${this.sectionId}`);
@@ -203,14 +209,12 @@ if (!customElements.get('product-info')) {
       }
 
       updateURL(url, variantId) {
-        if (this.dataset.updateUrl === 'false') return;
-        window.history.replaceState({}, '', `${url}${variantId ? `?variant=${variantId}` : ''}`);
-      }
-
-      updateShareUrl(url, variantId) {
         this.querySelector('share-url')?.updateUrl(
           `${window.shopUrl}${url}${variantId ? `?variant=${variantId}` : ''}`
         );
+
+        if (this.dataset.updateUrl === 'false') return;
+        window.history.replaceState({}, '', `${url}${variantId ? `?variant=${variantId}` : ''}`);
       }
 
       setUnavailable() {

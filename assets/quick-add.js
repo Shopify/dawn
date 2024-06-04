@@ -77,7 +77,16 @@ if (!customElements.get('quick-add-modal')) {
 
       preventDuplicatedIDs(productElement) {
         const sectionId = productElement.dataset.section;
-        productElement.outerHTML = productElement.outerHTML.replaceAll(sectionId, `quickadd-${sectionId}`);
+
+        const oldId = sectionId;
+        const newId = `quickadd-${sectionId}`;
+        productElement.innerHTML = productElement.innerHTML.replaceAll(oldId, newId);
+        Array.from(productElement.attributes).forEach((attribute) => {
+          if (attribute.value.includes(oldId)) {
+            productElement.setAttribute(attribute.name, attribute.value.replace(oldId, newId));
+          }
+        });
+
         productElement.dataset.originalSection = sectionId;
       }
 
