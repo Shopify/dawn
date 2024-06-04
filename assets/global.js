@@ -51,8 +51,6 @@ class HTMLUpdateUtility {
     const newNodeWrapper = document.createElement('div');
     HTMLUpdateUtility.setInnerHTML(newNodeWrapper, newContent.outerHTML);
     const newNode = newNodeWrapper.firstChild;
-    oldNode.parentNode.insertBefore(newNode, oldNode);
-    oldNode.style.display = 'none';
 
     // dedupe IDs
     const uniqueKey = Date.now();
@@ -60,6 +58,9 @@ class HTMLUpdateUtility {
       element.id && (element.id = `${element.id}-${uniqueKey}`);
       element.form && element.setAttribute('form', `${element.form.getAttribute('id')}-${uniqueKey}`);
     });
+
+    oldNode.parentNode.insertBefore(newNode, oldNode);
+    oldNode.style.display = 'none';
 
     this.#postProcessCallbacks.forEach((callback) => callback(newNode));
 
