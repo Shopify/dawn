@@ -6,9 +6,11 @@ if (!customElements.get('product-info')) {
       quantityForm = undefined;
       onVariantChangeUnsubscriber = undefined;
       cartUpdateUnsubscriber = undefined;
-      swapProductUtility = undefined;
+      htmlUpdateUtility = undefined;
       abortController = undefined;
       pendingRequestUrl = null;
+      preProcessHtmlCallbacks = [];
+      postProcessHtmlCallbacks = [];
 
       constructor() {
         super();
@@ -29,7 +31,7 @@ if (!customElements.get('product-info')) {
       }
 
       addPreProcessCallback(callback) {
-        this.swapProductUtility.addPreProcessCallback(callback);
+        this.preProcessHtmlCallbacks.push(callback);
       }
 
       initQuantityHandlers() {
@@ -50,11 +52,11 @@ if (!customElements.get('product-info')) {
       }
 
       initializeProductSwapUtility() {
-        this.swapProductUtility = new HTMLUpdateUtility();
-        this.swapProductUtility.addPreProcessCallback((html) =>
+        this.htmlUpdateUtility = new HTMLUpdateUtility();
+        this.preProcessHtmlCallbacks.push((html) =>
           html.querySelectorAll('.scroll-trigger').forEach((element) => element.classList.add('scroll-trigger--cancel'))
         );
-        this.swapProductUtility.addPostProcessCallback((newNode) => {
+        this.postProcessHtmlCallbacks.push((newNode) => {
           window?.Shopify?.PaymentButton?.init();
           window?.ProductModel?.loadShopifyXR();
           publish(PUB_SUB_EVENTS.sectionRefreshed, {
@@ -106,11 +108,21 @@ if (!customElements.get('product-info')) {
           // If we are in an embedded context (quick add, featured product, etc), only swap product info.
           // Otherwise, refresh the entire page content and sibling sections.
           if (this.dataset.updateUrl === 'false') {
-            this.swapProductUtility.viewTransition(this, html.querySelector('product-info'));
+            this.htmlUpdateUtility.viewTransition(
+              this,
+              html.querySelector('product-info'),
+              this.preProcessHtmlCallbacks,
+              this.postProcessHtmlCallbacks
+            );
           } else {
             document.querySelector('head title').innerHTML = html.querySelector('head title').innerHTML;
 
-            this.swapProductUtility.viewTransition(document.querySelector('main'), html.querySelector('main'));
+            this.htmlUpdateUtility.viewTransition(
+              document.querySelector('main'),
+              html.querySelector('main'),
+              this.preProcessHtmlCallbacks,
+              this.postProcessHtmlCallbacks
+            );
           }
         };
       }
@@ -159,7 +171,13 @@ if (!customElements.get('product-info')) {
 
       updateOptionValues(html) {
         const variantSelects = html.querySelector('variant-selects');
-        if (variantSelects) this.variantSelectors.innerHTML = variantSelects.innerHTML;
+        if (variantSelects) {
+          this.htmlUpdateUtility.viewTransition(
+            this.variantSelectors,
+            variantSelects,
+            this.preProcessHtmlCallbacks,
+          );
+        }
       }
 
       handleUpdateProductInfo(productUrl) {
@@ -180,6 +198,7 @@ if (!customElements.get('product-info')) {
 
           const updateSourceFromDestination = (id, shouldHide = (source) => false) => {
             const source = html.getElementById(`${id}-${this.sectionId}`);
+            debugger;
             const destination = this.querySelector(`#${id}-${this.dataset.section}`);
             if (source && destination) {
               destination.innerHTML = source.innerHTML;

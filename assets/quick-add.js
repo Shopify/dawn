@@ -100,7 +100,7 @@ if (!customElements.get('quick-add-modal')) {
 
       updateImageSizes(productElement) {
         const product = productElement.querySelector('.product');
-        const desktopColumns = product.classList.contains('product--columns');
+        const desktopColumns = product?.classList.contains('product--columns');
         if (!desktopColumns) return;
 
         const mediaImages = product.querySelectorAll('.product__media img');
