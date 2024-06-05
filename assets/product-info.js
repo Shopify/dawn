@@ -6,7 +6,6 @@ if (!customElements.get('product-info')) {
       quantityForm = undefined;
       onVariantChangeUnsubscriber = undefined;
       cartUpdateUnsubscriber = undefined;
-      htmlUpdateUtility = undefined;
       abortController = undefined;
       pendingRequestUrl = null;
       preProcessHtmlCallbacks = [];
@@ -52,7 +51,6 @@ if (!customElements.get('product-info')) {
       }
 
       initializeProductSwapUtility() {
-        this.htmlUpdateUtility = new HTMLUpdateUtility();
         this.preProcessHtmlCallbacks.push((html) =>
           html.querySelectorAll('.scroll-trigger').forEach((element) => element.classList.add('scroll-trigger--cancel'))
         );
@@ -108,7 +106,7 @@ if (!customElements.get('product-info')) {
           // If we are in an embedded context (quick add, featured product, etc), only swap product info.
           // Otherwise, refresh the entire page content and sibling sections.
           if (this.dataset.updateUrl === 'false') {
-            this.htmlUpdateUtility.viewTransition(
+            HTMLUpdateUtility.viewTransition(
               this,
               html.querySelector('product-info'),
               this.preProcessHtmlCallbacks,
@@ -117,7 +115,7 @@ if (!customElements.get('product-info')) {
           } else {
             document.querySelector('head title').innerHTML = html.querySelector('head title').innerHTML;
 
-            this.htmlUpdateUtility.viewTransition(
+            HTMLUpdateUtility.viewTransition(
               document.querySelector('main'),
               html.querySelector('main'),
               this.preProcessHtmlCallbacks,
@@ -172,7 +170,7 @@ if (!customElements.get('product-info')) {
       updateOptionValues(html) {
         const variantSelects = html.querySelector('variant-selects');
         if (variantSelects) {
-          this.htmlUpdateUtility.viewTransition(
+          HTMLUpdateUtility.viewTransition(
             this.variantSelectors,
             variantSelects,
             this.preProcessHtmlCallbacks,
@@ -198,7 +196,6 @@ if (!customElements.get('product-info')) {
 
           const updateSourceFromDestination = (id, shouldHide = (source) => false) => {
             const source = html.getElementById(`${id}-${this.sectionId}`);
-            debugger;
             const destination = this.querySelector(`#${id}-${this.dataset.section}`);
             if (source && destination) {
               destination.innerHTML = source.innerHTML;
