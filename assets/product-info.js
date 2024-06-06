@@ -8,7 +8,7 @@ if (!customElements.get('product-info')) {
       cartUpdateUnsubscriber = undefined;
       swapProductUtility = undefined;
       abortController = undefined;
-      inflightRequestProductUrl = null;
+      pendingRequestUrl = null;
 
       constructor() {
         super();
@@ -72,28 +72,36 @@ if (!customElements.get('product-info')) {
       handleOptionValueChange({ data: { event, target, selectedOptionValues } }) {
         if (!this.contains(event.target)) return;
 
-        const baseUrl = target.dataset.productUrl || this.inflightRequestProductUrl || this.dataset.url;
-        this.inflightRequestProductUrl = baseUrl;
+        this.resetProductFormState();
 
-        const productForm = this.productForm;
-        productForm?.toggleSubmitButton(true);
-        productForm?.handleErrorMessage();
+        const productUrl = target.dataset.productUrl || this.pendingRequestUrl || this.dataset.url;
+        const shouldSwapProduct = this.dataset.url !== productUrl;
+        const shouldFetchFullPage = !this.isFeaturedProduct && shouldSwapProduct;
 
-        const shouldSwapProduct = this.dataset.url !== baseUrl;
         this.renderProductInfo({
-          productUrl: this.getProductInfoUrl(baseUrl, selectedOptionValues, shouldSwapProduct),
+          requestUrl: this.buildRequestUrlWithParams(productUrl, selectedOptionValues, shouldFetchFullPage),
           targetId: target.id,
-          callback: shouldSwapProduct ? this.handleSwapProduct(baseUrl) : this.handleUpdateProductInfo(baseUrl),
+          callback: shouldSwapProduct ? this.handleSwapProduct(productUrl) : this.handleUpdateProductInfo(productUrl),
         });
       }
 
-      handleSwapProduct(baseUrl) {
+      resetProductFormState() {
+        const productForm = this.productForm;
+        productForm?.toggleSubmitButton(true);
+        productForm?.handleErrorMessage();
+      }
+
+      get isFeaturedProduct() {
+        return this.dataset.section.includes('featured_product');
+      }
+
+      handleSwapProduct(productUrl) {
         return (html) => {
           this.productModal?.remove();
 
           // Grab the selected variant from the new product info
           const variant = this.getSelectedVariant(html.querySelector(`product-info[data-section=${this.sectionId}]`));
-          this.updateURL(baseUrl, variant?.id);
+          this.updateURL(productUrl, variant?.id);
 
           // If we are in an embedded context (quick add, featured product, etc), only swap product info.
           // Otherwise, refresh the entire page content and sibling sections.
@@ -107,14 +115,15 @@ if (!customElements.get('product-info')) {
         };
       }
 
-      renderProductInfo({ productUrl, targetId, callback }) {
+      renderProductInfo({ requestUrl, targetId, callback }) {
         this.abortController?.abort();
         this.abortController = new AbortController();
 
-        fetch(productUrl, { signal: this.abortController.signal })
+        this.pendingRequestUrl = requestUrl;
+        fetch(requestUrl, { signal: this.abortController.signal })
           .then((response) => response.text())
           .then((responseText) => {
-            this.inflightRequestProductUrl = null;
+            this.pendingRequestUrl = null;
             const html = new DOMParser().parseFromString(responseText, 'text/html');
             callback(html);
           })
@@ -136,7 +145,7 @@ if (!customElements.get('product-info')) {
         return !!selectedVariant ? JSON.parse(selectedVariant) : null;
       }
 
-      getProductInfoUrl(url, optionValues, shouldFetchFullPage = false) {
+      buildRequestUrlWithParams(url, optionValues, shouldFetchFullPage = false) {
         const params = [];
 
         !shouldFetchFullPage && params.push(`section_id=${this.sectionId}`);
@@ -153,13 +162,13 @@ if (!customElements.get('product-info')) {
         if (variantSelects) this.variantSelectors.innerHTML = variantSelects.innerHTML;
       }
 
-      handleUpdateProductInfo(baseUrl) {
+      handleUpdateProductInfo(productUrl) {
         return (html) => {
           const variant = this.getSelectedVariant(html);
 
           this.pickupAvailability?.update(variant);
           this.updateOptionValues(html);
-          this.updateURL(baseUrl, variant?.id);
+          this.updateURL(productUrl, variant?.id);
           this.updateVariantInputs(variant?.id);
 
           if (!variant) {
@@ -214,7 +223,7 @@ if (!customElements.get('product-info')) {
       }
 
       updateURL(url, variantId) {
-        this.querySelector('share-url')?.updateUrl(
+        this.querySelector('share-button')?.updateUrl(
           `${window.shopUrl}${url}${variantId ? `?variant=${variantId}` : ''}`
         );
 
