@@ -8,6 +8,7 @@ if (!customElements.get('product-info')) {
       cartUpdateUnsubscriber = undefined;
       swapProductUtility = undefined;
       abortController = undefined;
+      inflightRequestProductUrl = null;
 
       constructor() {
         super();
@@ -19,7 +20,7 @@ if (!customElements.get('product-info')) {
         this.initializeProductSwapUtility();
 
         this.onVariantChangeUnsubscriber = subscribe(
-          PUB_SUB_EVENTS.variantChangeStart,
+          PUB_SUB_EVENTS.optionValueSelectionChange,
           this.handleOptionValueChange.bind(this)
         );
 
@@ -68,37 +69,30 @@ if (!customElements.get('product-info')) {
         });
       }
 
-      handleOptionValueChange({ data: { event, target, variant } }) {
+      handleOptionValueChange({ data: { event, target, selectedOptionValues } }) {
         if (!this.contains(event.target)) return;
 
-        const targetUrl = target.dataset.productUrl || this.dataset.url;
+        const baseUrl = target.dataset.productUrl || this.inflightRequestProductUrl || this.dataset.url;
+        this.inflightRequestProductUrl = baseUrl;
 
         const productForm = this.productForm;
         productForm?.toggleSubmitButton(true);
         productForm?.handleErrorMessage();
 
-        let callback = () => {};
-        let productUrl = this.getProductInfoUrl(targetUrl, variant?.id);
-        if (this.dataset.url !== targetUrl) {
-          callback = this.handleSwapProduct(targetUrl, variant);
-          productUrl = this.getProductInfoUrl(targetUrl, variant?.id, true);
-        } else if (!variant) {
-          this.setUnavailable();
-          callback = (html) => {
-            this.pickupAvailability?.update(variant);
-            this.updateOptionValues(html);
-          };
-        } else {
-          this.updateVariantInputs(variant.id);
-          callback = this.handleUpdateProductInfo(targetUrl, variant);
-        }
-
-        this.renderProductInfo(productUrl, target.id, callback);
+        const shouldSwapProduct = this.dataset.url !== baseUrl;
+        this.renderProductInfo({
+          productUrl: this.getProductInfoUrl(baseUrl, selectedOptionValues, shouldSwapProduct),
+          targetId: target.id,
+          callback: shouldSwapProduct ? this.handleSwapProduct(baseUrl) : this.handleUpdateProductInfo(baseUrl),
+        });
       }
 
-      handleSwapProduct(baseUrl, variant) {
+      handleSwapProduct(baseUrl) {
         return (html) => {
           this.productModal?.remove();
+
+          // Grab the selected variant from the new product info
+          const variant = this.getSelectedVariant(html.querySelector(`product-info[data-section=${this.sectionId}]`));
           this.updateURL(baseUrl, variant?.id);
 
           // If we are in an embedded context (quick add, featured product, etc), only swap product info.
@@ -107,18 +101,20 @@ if (!customElements.get('product-info')) {
             this.swapProductUtility.viewTransition(this, html.querySelector('product-info'));
           } else {
             document.querySelector('head title').innerHTML = html.querySelector('head title').innerHTML;
+
             this.swapProductUtility.viewTransition(document.querySelector('main'), html.querySelector('main'));
           }
         };
       }
 
-      renderProductInfo(productUrl, targetId, callback) {
+      renderProductInfo({ productUrl, targetId, callback }) {
         this.abortController?.abort();
         this.abortController = new AbortController();
 
         fetch(productUrl, { signal: this.abortController.signal })
           .then((response) => response.text())
           .then((responseText) => {
+            this.inflightRequestProductUrl = null;
             const html = new DOMParser().parseFromString(responseText, 'text/html');
             callback(html);
           })
@@ -135,18 +131,18 @@ if (!customElements.get('product-info')) {
           });
       }
 
-      getProductInfoUrl(url, variantId, shouldFetchFullPage = false) {
+      getSelectedVariant(productInfoNode) {
+        const selectedVariant = productInfoNode.querySelector('variant-selects [data-selected-variant]')?.innerHTML;
+        return !!selectedVariant ? JSON.parse(selectedVariant) : null;
+      }
+
+      getProductInfoUrl(url, optionValues, shouldFetchFullPage = false) {
         const params = [];
 
         !shouldFetchFullPage && params.push(`section_id=${this.sectionId}`);
 
-        if (variantId) {
-          params.push(`variant=${variantId}`);
-        } else {
-          const optionValues = this.variantSelectors.selectedOptionValues;
-          if (optionValues.length) {
-            params.push(`option_values=${optionValues.join(',')}`);
-          }
+        if (optionValues.length) {
+          params.push(`option_values=${optionValues.join(',')}`);
         }
 
         return `${url}?${params.join('&')}`;
@@ -157,12 +153,21 @@ if (!customElements.get('product-info')) {
         if (variantSelects) this.variantSelectors.innerHTML = variantSelects.innerHTML;
       }
 
-      handleUpdateProductInfo(baseUrl, variant) {
+      handleUpdateProductInfo(baseUrl) {
         return (html) => {
+          const variant = this.getSelectedVariant(html);
+
           this.pickupAvailability?.update(variant);
-          this.updateMedia(html, variant?.featured_media?.id);
           this.updateOptionValues(html);
           this.updateURL(baseUrl, variant?.id);
+          this.updateVariantInputs(variant?.id);
+
+          if (!variant) {
+            this.setUnavailable();
+            return;
+          }
+
+          this.updateMedia(html, variant?.featured_media?.id);
 
           const updateSourceFromDestination = (id, shouldHide = (source) => false) => {
             const source = html.getElementById(`${id}-${this.sectionId}`);
@@ -203,7 +208,7 @@ if (!customElements.get('product-info')) {
           `#product-form-${this.dataset.section}, #product-form-installment-${this.dataset.section}`
         ).forEach((productForm) => {
           const input = productForm.querySelector('input[name="id"]');
-          input.value = variantId;
+          input.value = variantId ?? '';
           input.dispatchEvent(new Event('change', { bubbles: true }));
         });
       }
