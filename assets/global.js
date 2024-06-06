@@ -26,27 +26,14 @@ class SectionId {
 }
 
 class HTMLUpdateUtility {
-  #preProcessCallbacks = [];
-  #postProcessCallbacks = [];
-
-  constructor() {}
-
-  addPreProcessCallback(callback) {
-    this.#preProcessCallbacks.push(callback);
-  }
-
-  addPostProcessCallback(callback) {
-    this.#postProcessCallbacks.push(callback);
-  }
-
   /**
    * Used to swap an HTML node with a new node.
    * The new node is inserted as a previous sibling to the old node, the old node is hidden, and then the old node is removed.
    *
    * The function currently uses a double buffer approach, but this should be replaced by a view transition once it is more widely supported https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API
    */
-  viewTransition(oldNode, newContent) {
-    this.#preProcessCallbacks.forEach((callback) => callback(newContent));
+  static viewTransition(oldNode, newContent, preProcessCallbacks = [], postProcessCallbacks = []) {
+    preProcessCallbacks?.forEach((callback) => callback(newContent));
 
     const newNodeWrapper = document.createElement('div');
     HTMLUpdateUtility.setInnerHTML(newNodeWrapper, newContent.outerHTML);
@@ -62,7 +49,7 @@ class HTMLUpdateUtility {
     oldNode.parentNode.insertBefore(newNode, oldNode);
     oldNode.style.display = 'none';
 
-    this.#postProcessCallbacks.forEach((callback) => callback(newNode));
+    postProcessCallbacks?.forEach((callback) => callback(newNode));
 
     setTimeout(() => oldNode.remove(), 500);
   }
