@@ -37,9 +37,12 @@ module.exports = {
       micro: 2,
       mini: 4,
       small: 8,
+      md: 12,
       base: 16,
+      normal: 20,
       large: 24,
       huge: 48,
+      xl: 60,
       mega: 80,
     },
     fontSize: {
@@ -68,10 +71,17 @@ module.exports = {
       // '2xl': '40px',
       // '3xl': '80px',
     },
-    extend: {},
+    extend: {
+      borderRadius: {
+        '4xl': '32px',
+      },
+      backgroundImage: {
+        btnGradient: 'linear-gradient(0deg, rgba(0, 0, 0, 0.10) 0%, rgba(0, 0, 0, 0.10) 100%)',
+      },
+    },
   },
   plugins: [
-    plugin(function ({ addComponents, config }) {
+    plugin(function ({ addComponents, config, addUtilities }) {
       const typography = {
         '.link-sm': {
           ...config('theme.fontSize["body-sm"]'),
@@ -92,6 +102,11 @@ module.exports = {
         },
       };
       addComponents(typography);
+      addUtilities({
+        '.no-bg': {
+          backgroundColor: 'unset',
+        },
+      });
     }),
   ],
 };
