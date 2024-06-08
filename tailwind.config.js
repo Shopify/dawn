@@ -106,6 +106,9 @@ module.exports = {
         '.no-bg': {
           backgroundColor: 'unset',
         },
+        '.no-outline': {
+          outline: 'none',
+        },
       });
     }),
   ],
