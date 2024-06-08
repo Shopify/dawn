@@ -1,0 +1,64 @@
+{% comment %}
+  Renders a list of product's price (regular, sale)
+
+  Accepts:
+  - value: {Number}
+  - sales_price: {Number}
+  -discount: {String}
+
+  - use_variant: {Boolean} Renders selected or first variant price instead of overall product pricing (optional)
+  - show_badges: {Boolean} Renders 'Sale' and 'Sold Out' tags if the product matches the condition (optional)
+  - price_class: {String} Adds a price class to the price element (optional)
+  - show_compare_at_price: {Boolean} Renders the compare at price if the product matches the condition (optional)
+
+  Usage:
+  {% render 'price', product: product %}
+{% endcomment %}
+
+{%- liquid
+  if use_variant
+    assign target = product.selected_or_first_available_variant
+  else
+    assign target = product
+  endif
+
+  assign discount = '-25%'
+  assign compare_at_price = target.compare_at_price | default: 14999
+  assign price = target.price | default: 1999
+  assign price_min = product.price_min
+  assign price_max = product.price_max
+  assign available = target.available | default: false
+  assign money_price = price | money
+  assign money_price_min = price_min | money
+  assign money_price_max = price_max | money
+  if settings.currency_code_enabled
+    assign money_price = price | money_with_currency
+    assign money_price_min = price_min | money_with_currency
+    assign money_price_max = price_max | money_with_currency
+  endif
+
+  if target == product and product.price_varies
+    assign money_price = 'products.product.price.from_price_html' | t: price: money_price
+  endif
+-%}
+
+<div class="tw-flex tw-gap-mini tw-items-baseline">
+  <div>
+    <span class="visually-hidden visually-hidden--inline">{{ 'products.product.price.regular_price' | t }}</span>
+    <span class="tw-text-h-md tw-text-black">
+      {{ compare_at_price | money }}
+    </span>
+  </div>
+
+  <div>
+    <span class="visually-hidden visually-hidden--inline">{{ 'products.product.price.regular_price' | t }}</span>
+
+    <span>
+      <s class="tw-text-h-sm tw-text-grey500">
+        {{ price | money }}
+      </s>
+    </span>
+  </div>
+
+  {% render 'pill', variant: 'discount', text: discount %}
+</div>
