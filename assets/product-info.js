@@ -257,7 +257,7 @@ if (!customElements.get('product-info')) {
         const mediaGalleryDestination = html.querySelector(`media-gallery ul`);
 
         const refreshSourceData = () => {
-          enableZoomOnHover(2);
+          if (this.hasAttribute('data-zoom-on-hover')) enableZoomOnHover(2);
           const mediaGallerySourceItems = Array.from(mediaGallerySource.querySelectorAll('li[data-media-id]'));
           const sourceSet = new Set(mediaGallerySourceItems.map((item) => item.dataset.mediaId));
           const sourceMap = new Map(
