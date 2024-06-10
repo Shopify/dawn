@@ -170,11 +170,7 @@ if (!customElements.get('product-info')) {
       updateOptionValues(html) {
         const variantSelects = html.querySelector('variant-selects');
         if (variantSelects) {
-          HTMLUpdateUtility.viewTransition(
-            this.variantSelectors,
-            variantSelects,
-            this.preProcessHtmlCallbacks,
-          );
+          HTMLUpdateUtility.viewTransition(this.variantSelectors, variantSelects, this.preProcessHtmlCallbacks);
         }
       }
 
@@ -261,6 +257,7 @@ if (!customElements.get('product-info')) {
         const mediaGalleryDestination = html.querySelector(`media-gallery ul`);
 
         const refreshSourceData = () => {
+          if (this.hasAttribute('data-zoom-on-hover')) enableZoomOnHover(2);
           const mediaGallerySourceItems = Array.from(mediaGallerySource.querySelectorAll('li[data-media-id]'));
           const sourceSet = new Set(mediaGallerySourceItems.map((item) => item.dataset.mediaId));
           const sourceMap = new Map(
