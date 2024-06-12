@@ -75,6 +75,7 @@ if (!customElements.get('product-info')) {
         this.resetProductFormState();
 
         const productUrl = target.dataset.productUrl || this.pendingRequestUrl || this.dataset.url;
+        this.pendingRequestUrl = productUrl;
         const shouldSwapProduct = this.dataset.url !== productUrl;
         const shouldFetchFullPage = !this.isFeaturedProduct && shouldSwapProduct;
 
@@ -129,7 +130,6 @@ if (!customElements.get('product-info')) {
         this.abortController?.abort();
         this.abortController = new AbortController();
 
-        this.pendingRequestUrl = requestUrl;
         fetch(requestUrl, { signal: this.abortController.signal })
           .then((response) => response.text())
           .then((responseText) => {
