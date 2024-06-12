@@ -253,6 +253,8 @@ if (!customElements.get('product-info')) {
       }
 
       updateMedia(html, variantFeaturedMediaId) {
+        if (!variantFeaturedMediaId) return;
+
         const mediaGallerySource = this.querySelector('media-gallery ul');
         const mediaGalleryDestination = html.querySelector(`media-gallery ul`);
 
@@ -309,18 +311,16 @@ if (!customElements.get('product-info')) {
           });
         }
 
-        if (variantFeaturedMediaId) {
-          // set featured media as active in the media gallery
-          this.querySelector(`media-gallery`)?.setActiveMedia?.(
-            `${this.dataset.section}-${variantFeaturedMediaId}`,
-            true
-          );
+        // set featured media as active in the media gallery
+        this.querySelector(`media-gallery`)?.setActiveMedia?.(
+          `${this.dataset.section}-${variantFeaturedMediaId}`,
+          true
+        );
 
-          // update media modal
-          const modalContent = this.productModal?.querySelector(`.product-media-modal__content`);
-          const newModalContent = html.querySelector(`product-modal .product-media-modal__content`);
-          if (modalContent && newModalContent) modalContent.innerHTML = newModalContent.innerHTML;
-        }
+        // update media modal
+        const modalContent = this.productModal?.querySelector(`.product-media-modal__content`);
+        const newModalContent = html.querySelector(`product-modal .product-media-modal__content`);
+        if (modalContent && newModalContent) modalContent.innerHTML = newModalContent.innerHTML;
       }
 
       setQuantityBoundries() {
