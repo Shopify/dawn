@@ -1,0 +1,123 @@
+{{ 'blend-it.css' | asset_url | stylesheet_tag }}
+
+<div class="blend-container">
+    {% render 'blend-header', label: "Step 1", title: "Blend It", colorBg: "#f4e6f2" %}
+
+    <p class="blend-description">
+        Cycle through the whisky options below and start adding the ones you like the sound of until your bottle is full.
+    </p>
+
+    <div class="blend-container-dots">
+        <div class="control-button" onclick="stepFlavour('-')">
+            <img src="{{ 'previous.svg' | asset_url }}" alt="previous" >
+        </div>
+
+        <div class="blend-dots">
+
+        </div>    
+
+        <div class="control-button"  onclick="stepFlavour('+')">
+            <img src="{{ 'next.svg' | asset_url }}" alt="next">
+        </div>
+    </div>
+
+    <div class="flavours">
+        
+    </div>
+
+    <script>
+        let blendDots = document.querySelector('.blend-dots');
+        let flavours = document.querySelector('.flavours');
+        let first = true;
+        Window.data = null;
+        fetch('https://sea-turtle-app-cr2ki.ondigitalocean.app/blend/get-all')
+        .then(response => response.json()).then(data => {
+            Window.data = data;
+            data.forEach(whisky => {
+                blendDots.innerHTML += `
+                    <div class="blend-dot ${first == true ? "active" : ""}" style="background-color: ${whisky.circleColour};" onClick="changeFlavour(${whisky.uid})">
+                    </div>
+                `;
+
+                flavours.innerHTML += `
+
+                    <div class="flavour-container flavour-container-${whisky.uid}" style="${first == true ? 'display: block;' : 'display: none;'}">
+                        <div class="flavour-image-container">
+                            <img src="" style="background-image: url('${whisky.image}')" >
+                            <div class="flavour-orb" style="background-color: ${whisky.circleColour};"></div>
+                            <div class="flavour-detials">
+                                <div class="flavour-detials-container">
+                                    <p class="flavour-name">${whisky.title}</p>
+                                    <p class="flavour-description">${whisky.description}</p>
+                                    <div class="flavour-controls">
+                                        <div class="flavour-control valid">
+                                            +
+                                        </div>
+                                        <div class="mobile-control-set"> 
+                                            <span class="flavour-control-value">0cl</span>
+                                            <div class="flavour-control">
+                                                -
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                `
+
+                if (first) {
+                    first = false;
+                }
+            });
+        });
+
+    </script>
+
+    {% render 'blend-header', label: "Step 2", title: "Brand it", colorBg: "#c9e1f2" %}
+    <p class="blend-description blend-bold">
+        What's it called?
+    </p>
+
+    <div class="blend-input">
+        <p class="blend-description blend-description-mobile" style="max-width: 22ch; margin-bottom: 0;">
+            This is the fun part! Give your creation a name, or let us <span class="blend-span">generate one</span> for you.
+        </p>
+        <input type="text" class="blend-input" placeholder="DAM GOOOOOOD!">
+    </div>
+
+    {% render 'blend-header', label: "Step 3", title: "Bottle it", colorBg: "#dccfbb" %}
+    <p class="blend-description blend-bold">
+        Who made it?
+    </p>
+
+    <div class="blend-input" style="margin-bottom: 60px;">
+        <p class="blend-description blend-description-mobile" style="max-width: 22ch; margin-bottom: 0;">
+            This will also be written on the label. So everyone will know the genius behind it.
+        </p>
+        <input type="text" class="blend-input" placeholder="ANDY & DREW">
+    </div>
+
+    <div class="blend-button">
+        <button class="blend-button-text" disabled>Fill bottle to proceed</button>
+    </div>
+
+</div>
+
+{{ 'blend.js' | asset_url | script_tag }}
+
+{% schema %}
+{
+    "name": "Blend It",
+    "settings": [
+        
+    ],
+    "presets": [
+        {
+            "name": "Blend It",
+            "category": "Blender-Step"
+        }
+    ]
+}
+{% endschema %}
