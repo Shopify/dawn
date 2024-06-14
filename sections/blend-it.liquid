@@ -1,109 +1,198 @@
 {{ 'blend-it.css' | asset_url | stylesheet_tag }}
 
 <div class="blend-container">
-    {% render 'blend-header', label: "Step 1", title: "Blend It", colorBg: "#f4e6f2" %}
+    <div>
+        {% render 'blend-header', label: "Step 1", title: "Blend It", colorBg: "#f4e6f2" %}
 
-    <p class="blend-description">
-        Cycle through the whisky options below and start adding the ones you like the sound of until your bottle is full.
-    </p>
+        <p class="blend-description">
+            Cycle through the whisky options below and start adding the ones you like the sound of until your bottle is full.
+        </p>
 
-    <div class="blend-container-dots">
-        <div class="control-button" onclick="stepFlavour('-')">
-            <img src="{{ 'previous.svg' | asset_url }}" alt="previous" >
+        <div class="blend-container-dots">
+            <div class="control-button" onclick="stepFlavour('-')">
+                <img src="{{ 'previous.svg' | asset_url }}" alt="previous" >
+            </div>
+
+            <div class="blend-dots">
+
+            </div>    
+
+            <div class="control-button"  onclick="stepFlavour('+')">
+                <img src="{{ 'next.svg' | asset_url }}" alt="next">
+            </div>
         </div>
 
-        <div class="blend-dots">
-
-        </div>    
-
-        <div class="control-button"  onclick="stepFlavour('+')">
-            <img src="{{ 'next.svg' | asset_url }}" alt="next">
+        <div class="flavours">
+            
         </div>
-    </div>
 
-    <div class="flavours">
-        
-    </div>
+        <script>
+            let blendDots = document.querySelector('.blend-dots');
+            let flavours = document.querySelector('.flavours');
+            let first = true;
+            Window.data = null;
+            fetch('https://sea-turtle-app-cr2ki.ondigitalocean.app/blend/get-all')
+            .then(response => response.json()).then(data => {
+                Window.data = data;
+                data.forEach(whisky => {
+                    blendDots.innerHTML += `
+                        <div class="blend-dot ${first == true ? "active" : ""}" style="background-color: ${whisky.circleColour};" onClick="changeFlavour(${whisky.uid})">
+                        </div>
+                    `;
 
-    <script>
-        let blendDots = document.querySelector('.blend-dots');
-        let flavours = document.querySelector('.flavours');
-        let first = true;
-        Window.data = null;
-        fetch('https://sea-turtle-app-cr2ki.ondigitalocean.app/blend/get-all')
-        .then(response => response.json()).then(data => {
-            Window.data = data;
-            data.forEach(whisky => {
-                blendDots.innerHTML += `
-                    <div class="blend-dot ${first == true ? "active" : ""}" style="background-color: ${whisky.circleColour};" onClick="changeFlavour(${whisky.uid})">
-                    </div>
-                `;
+                    flavours.innerHTML += `
 
-                flavours.innerHTML += `
-
-                    <div class="flavour-container flavour-container-${whisky.uid}" style="${first == true ? 'display: block;' : 'display: none;'}">
-                        <div class="flavour-image-container">
-                            <img src="" style="background-image: url('${whisky.image}')" >
-                            <div class="flavour-orb" style="background-color: ${whisky.circleColour};"></div>
-                            <div class="flavour-detials">
-                                <div class="flavour-detials-container">
-                                    <p class="flavour-name">${whisky.title}</p>
-                                    <p class="flavour-description">${whisky.description}</p>
-                                    <div class="flavour-controls">
-                                        <div class="flavour-control valid">
-                                            +
-                                        </div>
-                                        <div class="mobile-control-set"> 
-                                            <span class="flavour-control-value">0cl</span>
-                                            <div class="flavour-control">
-                                                -
+                        <div class="flavour-container flavour-container-${whisky.uid}" style="${first == true ? 'display: block;' : 'display: none;'}">
+                            <div class="flavour-image-container">
+                                <img src="" style="background-image: url('${whisky.image}');" >
+                                <div class="flavour-orb" style="background-color: ${whisky.circleColour};"></div>
+                                <div class="flavour-detials">
+                                    <div class="flavour-detials-container">
+                                        <p class="flavour-name">${whisky.title}</p>
+                                        <p class="flavour-description">${whisky.description}</p>
+                                        <div class="flavour-controls">
+                                            <div class="flavour-control valid">
+                                                +
+                                            </div>
+                                            <div class="mobile-control-set"> 
+                                                <span class="flavour-control-value">0cl</span>
+                                                <div class="flavour-control">
+                                                    -
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                `
+                    `
 
-                if (first) {
-                    first = false;
-                }
+                    if (first) {
+                        first = false;
+                    }
+                });
             });
-        });
 
-    </script>
+        </script>
 
-    {% render 'blend-header', label: "Step 2", title: "Brand it", colorBg: "#c9e1f2" %}
-    <p class="blend-description blend-bold">
-        What's it called?
-    </p>
-
-    <div class="blend-input">
-        <p class="blend-description blend-description-mobile" style="max-width: 22ch; margin-bottom: 0;">
-            This is the fun part! Give your creation a name, or let us <span class="blend-span">generate one</span> for you.
+        {% render 'blend-header', label: "Step 2", title: "Brand it", colorBg: "#c9e1f2" %}
+        <p class="blend-description blend-bold">
+            What's it called?
         </p>
-        <input type="text" class="blend-input" placeholder="DAM GOOOOOOD!">
+
+        <div class="blend-input">
+            <p class="blend-description blend-description-mobile" style="max-width: 22ch; margin-bottom: 0;">
+                This is the fun part! Give your creation a name, or let us <span class="blend-span">generate one</span> for you.
+            </p>
+            <input type="text" class="blend-input" placeholder="DAM GOOOOOOD!">
+        </div>
+
+        {% render 'blend-header', label: "Step 3", title: "Bottle it", colorBg: "#dccfbb" %}
+        <p class="blend-description blend-bold">
+            Who made it?
+        </p>
+
+        <div class="blend-input" style="margin-bottom: 60px;">
+            <p class="blend-description blend-description-mobile" style="max-width: 22ch; margin-bottom: 0;">
+                This will also be written on the label. So everyone will know the genius behind it.
+            </p>
+            <input type="text" class="blend-input" placeholder="ANDY & DREW">
+        </div>
+
+        <div class="blend-button">
+            <button class="blend-button-text" disabled>Fill bottle to proceed</button>
+        </div>
+
     </div>
 
-    {% render 'blend-header', label: "Step 3", title: "Bottle it", colorBg: "#dccfbb" %}
-    <p class="blend-description blend-bold">
-        Who made it?
-    </p>
-
-    <div class="blend-input" style="margin-bottom: 60px;">
-        <p class="blend-description blend-description-mobile" style="max-width: 22ch; margin-bottom: 0;">
-            This will also be written on the label. So everyone will know the genius behind it.
-        </p>
-        <input type="text" class="blend-input" placeholder="ANDY & DREW">
-    </div>
-
-    <div class="blend-button">
-        <button class="blend-button-text" disabled>Fill bottle to proceed</button>
+    <div id="lab-bottle" class="blend-bottle">
+        <div class="cap-layer"></div>
+        <div class="label-layer"></div>
+        <div class="mask-layer"></div>
+        <div class="top-layer"></div>
+        <div class="bottom-layer" style="background: rgb(143 107 25);"></div>
     </div>
 
 </div>
+
+<style>
+
+    #lab-bottle .mask-layer, #lab-bottle .top-layer, #lab-bottle .base-layer, #lab-bottle .middle-layer, #lab-bottle .cap-layer, #lab-bottle .bag-layer, #lab-bottle .label-layer {
+        width: 100%;    
+        height: 100%;
+        display: block;
+        background-position: right;
+        background-size: cover;
+        background-repeat: no-repeat;
+        position: absolute;
+        top: 0;
+        left: 0;
+        transition: opacity 0.3s ease-in-out;
+        background-position: 75%;
+    }
+
+    .label-layer #outer {
+        position: absolute;
+        top: 37%;
+        right: 41%;
+        width: 115px;
+        height: 55px;
+        font-weight: 800;
+        text-transform: uppercase;
+        transform: 
+            perspective(999px)
+            rotateX(-2deg)
+            rotateY(-36deg)
+            rotateZ(0deg)
+            ;
+        place-content: center;
+        display: grid;
+    }
+
+    #lab-bottle .mask-layer {
+        background-image: url("{{ 'bottle-mask.png' | asset_url }}");
+        z-index: 5;
+    }
+
+    #lab-bottle .top-layer {
+        background-image: url("{{ 'bottle-empty.png' | asset_url }}");
+        z-index: 3;
+        mix-blend-mode: color-burn;
+    }
+
+    #lab-bottle .base-layer {
+        z-index: 4;
+        mix-blend-mode: darken;
+    }
+
+    #lab-bottle .middle-layer {
+        z-index: 2;
+        mix-blend-mode: overlay;
+    }
+
+    #lab-bottle .cap-layer {
+        background-image: url("{{ 'bottle-cap.png' | asset_url }}");
+        z-index: 6;
+    }
+
+    #lab-bottle .label-layer {
+        background-image: url("{{ 'bottle-label.png' | asset_url }}");
+        z-index: 7;
+    }
+
+    #lab-bottle .bottom-layer {
+        width: 90%;
+        height: 310px;
+        display: block;
+        position: absolute;
+        bottom: 0px;
+        right: 5%;
+        /* z-index: 5; */
+    }
+
+
+</style>
 
 {{ 'blend.js' | asset_url | script_tag }}
 
