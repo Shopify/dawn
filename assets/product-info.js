@@ -57,15 +57,6 @@ if (!customElements.get('product-info')) {
         this.postProcessHtmlCallbacks.push((newNode) => {
           window?.Shopify?.PaymentButton?.init();
           window?.ProductModel?.loadShopifyXR();
-          publish(PUB_SUB_EVENTS.sectionRefreshed, {
-            data: {
-              sectionId: this.sectionId,
-              resource: {
-                type: SECTION_REFRESH_RESOURCE_TYPE.product,
-                id: newNode.dataset.productId,
-              },
-            },
-          });
         });
       }
 
@@ -77,12 +68,14 @@ if (!customElements.get('product-info')) {
         const productUrl = target.dataset.productUrl || this.pendingRequestUrl || this.dataset.url;
         this.pendingRequestUrl = productUrl;
         const shouldSwapProduct = this.dataset.url !== productUrl;
-        const shouldFetchFullPage = !this.isFeaturedProduct && shouldSwapProduct;
+        const shouldFetchFullPage = this.dataset.updateUrl === 'true' && shouldSwapProduct;
 
         this.renderProductInfo({
           requestUrl: this.buildRequestUrlWithParams(productUrl, selectedOptionValues, shouldFetchFullPage),
           targetId: target.id,
-          callback: shouldSwapProduct ? this.handleSwapProduct(productUrl) : this.handleUpdateProductInfo(productUrl),
+          callback: shouldSwapProduct
+            ? this.handleSwapProduct(productUrl, shouldFetchFullPage)
+            : this.handleUpdateProductInfo(productUrl),
         });
       }
 
@@ -92,33 +85,27 @@ if (!customElements.get('product-info')) {
         productForm?.handleErrorMessage();
       }
 
-      get isFeaturedProduct() {
-        return this.dataset.section.includes('featured_product');
-      }
-
-      handleSwapProduct(productUrl) {
+      handleSwapProduct(productUrl, updateFullPage) {
         return (html) => {
           this.productModal?.remove();
 
-          // Grab the selected variant from the new product info
-          const variant = this.getSelectedVariant(html.querySelector(`product-info[data-section=${this.sectionId}]`));
+          const selector = updateFullPage ? "product-info[id^='MainProduct']" : 'product-info';
+          const variant = this.getSelectedVariant(html.querySelector(selector));
           this.updateURL(productUrl, variant?.id);
 
-          // If we are in an embedded context (quick add, featured product, etc), only swap product info.
-          // Otherwise, refresh the entire page content and sibling sections.
-          if (this.dataset.updateUrl === 'false') {
-            HTMLUpdateUtility.viewTransition(
-              this,
-              html.querySelector('product-info'),
-              this.preProcessHtmlCallbacks,
-              this.postProcessHtmlCallbacks
-            );
-          } else {
+          if (updateFullPage) {
             document.querySelector('head title').innerHTML = html.querySelector('head title').innerHTML;
 
             HTMLUpdateUtility.viewTransition(
               document.querySelector('main'),
               html.querySelector('main'),
+              this.preProcessHtmlCallbacks,
+              this.postProcessHtmlCallbacks
+            );
+          } else {
+            HTMLUpdateUtility.viewTransition(
+              this,
+              html.querySelector('product-info'),
               this.preProcessHtmlCallbacks,
               this.postProcessHtmlCallbacks
             );
