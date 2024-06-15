@@ -78,6 +78,10 @@ module.exports = {
         xl: 60,
         mega: 80,
       },
+      screens: {
+        tabletUp: '400px',
+        desktopUp: '800px',
+      },
     },
   },
   plugins: [
