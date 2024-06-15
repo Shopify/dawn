@@ -2,10 +2,13 @@ const splide = new Splide('#main-carousel', {
   heightRatio: 1,
   cover: true,
   pagination: false,
+  width: '640px',
+  heightRatio: 1,
   loop: true,
   breakpoints: {
-    600: {
+    800: {
       pagination: true,
+      width: '100vw',
     },
   },
 });
