@@ -4,7 +4,6 @@ const styles = require('./tw-config/typography');
 const plugin = require('tailwindcss/plugin');
 
 module.exports = {
-  prefix: 'tw-',
   content: [
     './layout/*.liquid',
     './templates/*.liquid',
@@ -33,18 +32,7 @@ module.exports = {
       green: '#0aa122',
       red: '#f30f0f',
     },
-    spacing: {
-      micro: 2,
-      mini: 4,
-      small: 8,
-      md: 12,
-      base: 16,
-      normal: 20,
-      large: 24,
-      huge: 48,
-      xl: 60,
-      mega: 80,
-    },
+
     fontSize: {
       'h-lg': ['80px', styles.headingStyles],
       'h-md': ['40px', styles.headingStyles],
@@ -77,6 +65,18 @@ module.exports = {
       },
       backgroundImage: {
         btnGradient: 'linear-gradient(0deg, rgba(0, 0, 0, 0.10) 0%, rgba(0, 0, 0, 0.10) 100%)',
+      },
+      spacing: {
+        micro: 2,
+        mini: 4,
+        small: 8,
+        md: 12,
+        base: 16,
+        normal: 20,
+        large: 24,
+        huge: 48,
+        xl: 60,
+        mega: 80,
       },
     },
   },

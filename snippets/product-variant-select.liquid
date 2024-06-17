@@ -1,0 +1,68 @@
+{% comment %}
+  Renders product variant-picker
+
+  Accepts:
+  - product: {Object} product object.
+  - product_form_id: {String} Id of the product form to which the variant picker is associated.
+  - update_url: {Boolean} whether or not to update url when changing variants. If false, the url isn't updated. Default: true (optional).
+  Usage:
+  {% render 'product-variant-select', product: product, %}
+{% endcomment %}
+
+{%- unless product.has_only_default_variant -%}
+  <variant-selects
+    id="variant-selects-{{ section.id }}"
+    data-section="{{ section.id }}"
+    data-url="{{ product.url }}"
+    {% if update_url == false %}
+      data-update-url="false"
+    {% endif %}
+    {{ block.shopify_attributes }}
+  >
+    <div
+      class="my-large w-full flex flex-col gap-large"
+    >
+      {%- for option in product.options_with_values -%}
+        {%- liquid
+          assign option_name = option.name | downcase
+          assign label = option.name | append: '*' | capitalize
+        -%}
+
+        <div class="flex flex-col gap-small w-full">
+          <legend class="text-t-sm capitalize">{{ label }}</legend>
+
+          <div>
+            {%- if option_name == 'farbe' or option_name == 'color' -%}
+              {% render 'product-color-option', product: product, option: option, product_form_id: product_form_id %}
+            {%- elsif option_name == 'shape' or option_name == 'shape' -%}
+              {% render 'product-shape-select',
+                product: product,
+                option: option,
+                select_id: 'Option-{{ section.id }}-{{ forloop.index0 }}',
+                select_name: 'options[{{ option.name | escape }}]',
+                product_form_id: product_form_id
+              %}
+            {%- else -%}
+              {% render 'product-size-select', product: product, option: option %}
+            {%- endif -%}
+          </div>
+        </div>
+      {% endfor %}
+
+      <script type="application/json">
+        {{ product.variants | json }}
+      </script>
+    </div>
+  </variant-selects>
+{% endunless %}
+
+{% comment %}
+  if swatch_count > 0 and block.settings.swatch_shape != 'none'
+    if block.settings.picker_type == 'dropdown'
+      assign picker_type = 'swatch_dropdown'
+    else
+      assign picker_type = 'swatch'
+    endif
+  endif
+  assign swatch_count = option.values | map: 'swatch' | compact | size
+{% endcomment %}
