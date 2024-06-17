@@ -1,0 +1,35 @@
+{% assign products_json = '' %}
+{% paginate collections['custom-blends'].products by 50 %}
+  {% for product in collections['custom-blends'].products %}
+    {% assign product_data = product | json %}
+    {% if forloop.first %}
+      {% assign products_json = product_data %}
+    {% else %}
+      {% assign products_json = products_json | append: ',' | append: product_data %}
+    {% endif %}
+  {% endfor %}
+{% endpaginate %}
+
+<script type="text/javascript">
+  window.collectionJson = {
+    "products": [
+      {{ products_json }}
+    ]
+  };
+
+
+  const findBlendViaVariantSkus = (sku) => {
+    const product = window.collectionJson.products.find((product) => {
+      return product.variants.some((variant) => {
+        return variant.sku === sku;
+      });
+    });
+
+    if (product) {
+      window.location.href = `/products/${product.handle}`;
+    } else {
+      alert('No blend found with that SKU');
+    }
+  };
+
+</script>
