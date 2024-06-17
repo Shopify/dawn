@@ -20,6 +20,7 @@ function initThumbnail(thumbnail, index) {
 }
 
 const thumbnails = document?.getElementsByClassName('thumbnail');
+const thumbnailContainer = document?.getElementsById('thumbnails');
 let current;
 
 for (let i = 0; i < thumbnails.length; i++) {
@@ -37,6 +38,7 @@ splide.on('mounted move', function () {
     thumbnail.classList.add('is-active');
     thumbnail.setAttribute('aria-current', 'true');
     current = thumbnail;
+    thumbnailContainer.scrollLeft = thumbnail.offsetLeft;
   }
 });
 
