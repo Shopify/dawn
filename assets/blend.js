@@ -280,8 +280,6 @@ async function createWhiskeyProduct() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    changeFlavour(1);
-
     document.querySelector(`.blend-button`).addEventListener('click', async () => {
         Window.bottleData.units = convertUnits(Window.values);
         await createWhiskeyProduct();
