@@ -2,6 +2,32 @@
 {{ 'component-slider.css' | asset_url | stylesheet_tag }}
 {{ 'component-slideshow.css' | asset_url | stylesheet_tag }}
 
+{%- style -%}
+  .swiper-slider-{{ section.id }} .swiper-pagination-bullet-active circle {
+    fill: {{ section.settings.color_scheme.settings['button'] }};
+  }
+  .swiper-slider-{{ section.id }} .swiper-pagination-progressbar .swiper-pagination-progressbar-fill {
+    background-color: {{ section.settings.color_scheme.settings['button'] }};
+  }
+{%- endstyle -%}
+
+{%- if section.settings.enable_custom_aspect_ratio -%}
+  {% style %}
+  @media screen and (min-width: 750px) {
+    #Slider-{{ section.id }} {
+      aspect-ratio: {{ section.settings.custom_aspect_ratio }};
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    #Slider-{{ section.id }} {% if section.settings.show_text_below %}.banner__media{% endif %} {
+      aspect-ratio: {{ section.settings.custom_aspect_ratio }};
+      position: relative;
+    }
+  }
+  {% endstyle %}
+{%- endif -%}
+
 {%- if section.settings.slide_height == 'adapt_image' and section.blocks.first.settings.image != blank -%}
   {%- style -%}
     @media screen and (max-width: 749px) {
@@ -22,105 +48,49 @@
         display: block;
       }
     }
-  {%- endstyle -%}
-{%- endif -%}
 
-<slideshow-component
-  class="slider-mobile-gutter{% if section.settings.layout == 'grid' %} page-width{% endif %}{% if section.settings.show_text_below %} mobile-text-below{% endif %}"
-  role="region"
-  aria-roledescription="{{ 'sections.slideshow.carousel' | t }}"
-  aria-label="{{ section.settings.accessibility_info | escape }}"
->
-  {%- if section.settings.auto_rotate and section.blocks.size > 1 -%}
-    <div class="slideshow__controls slideshow__controls--top slider-buttons no-js-hidden{% if section.settings.show_text_below %} slideshow__controls--border-radius-mobile{% endif %}">
-      <button
-        type="button"
-        class="slider-button slider-button--prev"
-        name="previous"
-        aria-label="{{ 'sections.slideshow.previous_slideshow' | t }}"
-        aria-controls="Slider-{{ section.id }}"
-      >
-        {% render 'icon-caret' %}
-      </button>
-      <div class="slider-counter slider-counter--{{ section.settings.slider_visual }}{% if section.settings.slider_visual == 'counter' or section.settings.slider_visual == 'numbers' %} caption{% endif %}">
-        {%- if section.settings.slider_visual == 'counter' -%}
-          <span class="slider-counter--current">1</span>
-          <span aria-hidden="true"> / </span>
-          <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
-          <span class="slider-counter--total">{{ section.blocks.size }}</span>
-        {%- else -%}
-          <div class="slideshow__control-wrapper">
-            {%- for block in section.blocks -%}
-              <button
-                class="slider-counter__link slider-counter__link--{{ section.settings.slider_visual }} link"
-                aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
-                aria-controls="Slider-{{ section.id }}"
-              >
-                {%- if section.settings.slider_visual == 'numbers' -%}
-                  {{ forloop.index -}}
-                {%- else -%}
-                  <span class="dot"></span>
-                {%- endif -%}
-              </button>
-            {%- endfor -%}
-          </div>
-        {%- endif -%}
-      </div>
-      <button
-        type="button"
-        class="slider-button slider-button--next"
-        name="next"
-        aria-label="{{ 'sections.slideshow.next_slideshow' | t }}"
-        aria-controls="Slider-{{ section.id }}"
-      >
-        {% render 'icon-caret' %}
-      </button>
-
-      {%- if section.settings.auto_rotate -%}
-        <button
-          type="button"
-          class="slideshow__autoplay slider-button no-js-hidden{% if section.settings.auto_rotate == false %} slideshow__autoplay--paused{% endif %}"
-          aria-label="{{ 'sections.slideshow.pause_slideshow' | t }}"
-        >
-          {%- render 'icon-pause' -%}
-          {%- render 'icon-play' -%}
-        </button>
-      {%- endif -%}
-    </div>
-    <noscript>
-      <div class="slider-buttons">
-        <div class="slider-counter">
-          {%- for block in section.blocks -%}
-            <a
-              href="#Slide-{{ section.id }}-{{ forloop.index }}"
-              class="slider-counter__link link"
-              aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
-            >
-              {{ forloop.index }}
-            </a>
-          {%- endfor -%}
-        </div>
-      </div>
-    </noscript>
-  {%- endif -%}
-
-  <div
-    class="slideshow banner banner--{{ section.settings.slide_height }} grid grid--1-col slider slider--everywhere{% if section.settings.show_text_below %} banner--mobile-bottom{% endif %}{% if section.blocks.first.settings.image == blank %} slideshow--placeholder{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
-    id="Slider-{{ section.id }}"
-    aria-live="polite"
-    aria-atomic="true"
-    data-autoplay="{{ section.settings.auto_rotate }}"
-    data-speed="{{ section.settings.change_slides_speed }}"
-  >
-    {%- for block in section.blocks -%}
-      <style>
+    {% for block in section.blocks %}
         #Slide-{{ section.id }}-{{ forloop.index }} .banner__media::after {
           opacity: {{ block.settings.image_overlay_opacity | divided_by: 100.0 }};
         }
-      </style>
+    {% endfor %}
+  {%- endstyle -%}
+{%- endif -%}
+
+{% liquid 
+    assign is_collection = false
+    if template.name == 'collection'
+      assign is_collection = true
+    endif
+
+    for block in section.blocks
+      assign without_image = false
+      if block.settings.image == blank
+        assign without_image = true
+      endif
+    endfor
+%}
+
+<slider-component
+  class="swiper swiper-slider-{{ section.id }} {% if section.settings.show_text_below %} mobile-text-below{% endif %} banner--wrapper slideshow__wrapper"
+  id="slider-{{ section.id }}"
+  data-slider="true"
+  data-direction="horizontal"
+  data-loop="true"
+  data-slides-per-view-desktop="1"
+  data-slides-per-view-mobile="1"
+  data-autoplay="{{ section.settings.auto_rotate }}"
+  data-autoplay-speed="{{ section.settings.change_slides_speed }}000"
+  data-pagination-type="{{ section.settings.pagination_type }}"
+>
+  <div
+    class="swiper-wrapper slideshow banner {% unless section.settings.enable_custom_aspect_ratio %}banner--{{ section.settings.slide_height }}{% else %}banner--aspect-ratio{% endunless %} {% if section.settings.show_text_below %} banner--mobile-bottom{% endif %}{% if section.blocks.first.settings.image == blank %} slideshow--placeholder{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %} {% if without_image and is_collection %}collection__empty_data{% endif %}"
+    id="Slider-{{ section.id }}"
+  >
+    {%- for block in section.blocks -%}
       <div
-        class="slideshow__slide grid__item grid--1-col slider__slide"
-        id="Slide-{{ section.id }}-{{ forloop.index }}"
+        class="swiper-slide"
+        id=""
         {{ block.shopify_attributes }}
         role="group"
         aria-roledescription="{{ 'sections.slideshow.slide' | t }}"
@@ -142,20 +112,39 @@
               if section.index == 1
                 assign fetch_priority = 'high'
               endif
+              if block.settings.image_mobile != blank
+                assign desktop_class = 'desktop_image'
+              endif
             -%}
             {%- if forloop.first %}
               {{
                 block.settings.image
                 | image_url: width: 3840
-                | image_tag: height: height, sizes: sizes, widths: widths, fetchpriority: fetch_priority
+                | image_tag: height: height, sizes: sizes, widths: widths, fetchpriority: fetch_priority, class: desktop_class
               }}
+              {% if block.settings.image_mobile != blank %}  
+                {{
+                  block.settings.image_mobile
+                  | image_url: width: 3840
+                  | image_tag: height: height, sizes: sizes, widths: widths, fetchpriority: fetch_priority, class: 'mobile_image'
+                }}
+              {% endif %}
             {%- else -%}
               {{
                 block.settings.image
                 | image_url: width: 3840
-                | image_tag: loading: 'lazy', height: height, sizes: sizes, widths: widths
+                | image_tag: loading: 'lazy', height: height, sizes: sizes, widths: widths, class: desktop_class
               }}
-            {%- endif -%}
+              {% if block.settings.image_mobile != blank %}  
+                {{
+                  block.settings.image_mobile
+                  | image_url: width: 3840
+                  | image_tag: loading: 'lazy', height: height, sizes: sizes, widths: widths, class: 'mobile_image'
+                }}
+              {% endif %}
+              {%- endif -%}
+          {%- elsif is_collection -%}
+            
           {%- else -%}
             {%- assign placeholder_slide = forloop.index | modulo: 2 -%}
             {%- if placeholder_slide == 1 -%}
@@ -167,6 +156,15 @@
         </div>
         <div class="slideshow__text-wrapper banner__content banner__content--{{ block.settings.box_align }} page-width{% if block.settings.show_text_box == false %} banner--desktop-transparent{% endif %}{% if settings.animations_reveal_on_scroll and forloop.index == 1 %} scroll-trigger animate--slide-in{% endif %}">
           <div class="slideshow__text banner__box content-container content-container--full-width-mobile color-{{ block.settings.color_scheme }} gradient slideshow__text--{{ block.settings.text_alignment }} slideshow__text-mobile--{{ block.settings.text_alignment_mobile }}">
+            {%- if block.settings.subheading != blank -%}
+              <div class="banner__text text-bold rte" {{ block.shopify_attributes }}>
+                <p>{{ block.settings.subheading }}</p>
+              </div>
+            {% elsif is_collection and collection.description != blank %}
+              <div class="banner__text text-bold rte" {{ block.shopify_attributes }}>
+                <p>{{ collection.title }}</p>
+              </div>
+            {%- endif -%}
             {%- if block.settings.heading != blank -%}
               {% unless block.settings.heading_element_custom %}
                 <h2 class="banner__heading inline-richtext {{ block.settings.heading_size }}">
@@ -181,11 +179,24 @@
                   class: 'banner__heading inline-richtext',
                 %}
               {% endunless %}
-            {%- endif -%}
-            {%- if block.settings.subheading != blank -%}
-              <div class="banner__text rte" {{ block.shopify_attributes }}>
-                <p>{{ block.settings.subheading }}</p>
-              </div>
+            {% elsif is_collection %}
+              {% unless block.settings.heading_element_custom %}
+                <h2 class="banner__heading inline-richtext {{ block.settings.heading_size }}">
+                  {% if collection.description != blank %}
+                    {{ collection.description | strip_html | truncatewords: 5 }}
+                  {% else %}
+                    {{ collection.title }}
+                  {% endif %}
+                </h2>
+              {% else %}
+                {%
+                  render 'headings',
+                  heading_size: block.settings.heading_size,
+                  heading_element: block.settings.heading_element,
+                  title: collection.description ,
+                  class: 'banner__heading inline-richtext',
+                %}
+              {% endunless %}
             {%- endif -%}
             {%- if block.settings.button_label != blank -%}
               <div class="banner__buttons">
@@ -207,79 +218,12 @@
     {%- endfor -%}
   </div>
 
-  {%- if section.blocks.size > 1 and section.settings.auto_rotate == false -%}
-    <div class="slideshow__controls slider-buttons no-js-hidden{% if section.settings.show_text_below %} slideshow__controls--border-radius-mobile{% endif %}">
-      <button
-        type="button"
-        class="slider-button slider-button--prev"
-        name="previous"
-        aria-label="{{ 'sections.slideshow.previous_slideshow' | t }}"
-        aria-controls="Slider-{{ section.id }}"
-      >
-        {% render 'icon-caret' %}
-      </button>
-      <div class="slider-counter slider-counter--{{ section.settings.slider_visual }}{% if section.settings.slider_visual == 'counter' or section.settings.slider_visual == 'numbers' %} caption{% endif %}">
-        {%- if section.settings.slider_visual == 'counter' -%}
-          <span class="slider-counter--current">1</span>
-          <span aria-hidden="true"> / </span>
-          <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
-          <span class="slider-counter--total">{{ section.blocks.size }}</span>
-        {%- else -%}
-          <div class="slideshow__control-wrapper">
-            {%- for block in section.blocks -%}
-              <button
-                class="slider-counter__link slider-counter__link--{{ section.settings.slider_visual }} link"
-                aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
-                aria-controls="Slider-{{ section.id }}"
-              >
-                {%- if section.settings.slider_visual == 'numbers' -%}
-                  {{ forloop.index -}}
-                {%- else -%}
-                  <span class="dot"></span>
-                {%- endif -%}
-              </button>
-            {%- endfor -%}
-          </div>
-        {%- endif -%}
-      </div>
-      <button
-        type="button"
-        class="slider-button slider-button--next"
-        name="next"
-        aria-label="{{ 'sections.slideshow.next_slideshow' | t }}"
-        aria-controls="Slider-{{ section.id }}"
-      >
-        {% render 'icon-caret' %}
-      </button>
-
-      {%- if section.settings.auto_rotate -%}
-        <button
-          type="button"
-          class="slideshow__autoplay slider-button no-js-hidden{% if section.settings.auto_rotate == false %} slideshow__autoplay--paused{% endif %}"
-          aria-label="{{ 'sections.slideshow.pause_slideshow' | t }}"
-        >
-          {%- render 'icon-pause' -%}
-          {%- render 'icon-play' -%}
-        </button>
-      {%- endif -%}
-    </div>
-    <noscript>
-      <div class="slider-buttons">
-        <div class="slider-counter">
-          {%- for block in section.blocks -%}
-            <a
-              href="#Slide-{{ section.id }}-{{ forloop.index }}"
-              class="slider-counter__link link"
-              aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
-            >
-              {{ forloop.index }}
-            </a>
-          {%- endfor -%}
-        </div>
-      </div>
-    </noscript>
-  {%- endif -%}
-</slideshow-component>
+  <div class="swiper-pagination__group">
+    <div class="swiper-button swiper-button-prev swiper-prev-button-slider-{{ section.id }}">{% render 'icon-caret' %}</div>
+    <div class="swiper-pagination swiper-pagination-slider-{{ section.id }}"></div>
+    <div class="swiper-button swiper-button-next swiper-next-button-slider-{{ section.id }}">{% render 'icon-caret' %}</div>
+  </div>
+</slider-component>
 
 {%- if request.design_mode -%}
   <script src="{{ 'theme-editor.js' | asset_url }}" defer="defer"></script>
@@ -294,22 +238,6 @@
     "groups": ["header", "footer"]
   },
   "settings": [
-    {
-      "type": "select",
-      "id": "layout",
-      "options": [
-        {
-          "value": "full_bleed",
-          "label": "t:sections.slideshow.settings.layout.options__1.label"
-        },
-        {
-          "value": "grid",
-          "label": "t:sections.slideshow.settings.layout.options__2.label"
-        }
-      ],
-      "default": "full_bleed",
-      "label": "t:sections.slideshow.settings.layout.label"
-    },
     {
       "type": "select",
       "id": "slide_height",
@@ -335,24 +263,23 @@
       "label": "t:sections.slideshow.settings.slide_height.label"
     },
     {
-      "type": "select",
-      "id": "slider_visual",
-      "options": [
-        {
-          "value": "dots",
-          "label": "t:sections.slideshow.settings.slider_visual.options__2.label"
-        },
-        {
-          "value": "counter",
-          "label": "t:sections.slideshow.settings.slider_visual.options__1.label"
-        },
-        {
-          "value": "numbers",
-          "label": "t:sections.slideshow.settings.slider_visual.options__3.label"
-        }
-      ],
-      "default": "counter",
-      "label": "t:sections.slideshow.settings.slider_visual.label"
+      "type": "checkbox",
+      "id": "enable_custom_aspect_ratio",
+      "label": "t:sections.slideshow.settings.slide_aspect_ratio.enable_custom_aspect_ratio.label",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "custom_aspect_ratio",
+      "label": "t:sections.slideshow.settings.slide_aspect_ratio.custom_aspect_ratio.label",
+      "default": "2/1",
+      "info": "t:sections.slideshow.settings.slide_aspect_ratio.custom_aspect_ratio.info"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.navigation_label",
+      "default": "scheme-1"
     },
     {
       "type": "checkbox",
@@ -364,11 +291,27 @@
       "type": "range",
       "id": "change_slides_speed",
       "min": 3,
-      "max": 9,
-      "step": 2,
+      "max": 10,
+      "step": 1,
       "unit": "s",
       "label": "t:sections.slideshow.settings.change_slides_speed.label",
       "default": 5
+    },
+    {
+      "type": "select",
+      "id": "pagination_type",
+      "options": [
+        {
+          "value": "bullets",
+          "label": "t:sections.slideshow.settings.pagination_type.options__1.label"
+        },
+        {
+          "value": "fraction",
+          "label": "t:sections.slideshow.settings.pagination_type.options__2.label"
+        }
+      ],
+      "default": "bullets",
+      "label": "t:sections.slideshow.settings.pagination_type.label"
     },
     {
       "type": "header",
@@ -422,6 +365,11 @@
           "type": "image_picker",
           "id": "image",
           "label": "t:sections.slideshow.blocks.slide.settings.image.label"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_mobile",
+          "label": "t:sections.slideshow.blocks.slide.settings.image_mobile.label"
         },
         {
           "type": "inline_richtext",
