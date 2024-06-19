@@ -38,3 +38,28 @@ splide.on('mounted move', function () {
 });
 
 splide.mount();
+
+const related_carousel = new Splide('#related-products-carousel', {
+  heightRatio: 1,
+  cover: true,
+  pagination: false,
+  // loop: true,
+  perPage: 4,
+  perMove: 1,
+  focus: 0,
+  omitEnd: true,
+  drag: 'free',
+  // type: 'loop',
+  snap: true,
+  autoWidth: true,
+  breakpoints: {
+    800: {
+      perPage: 4,
+    },
+    400: {
+      perPage: 2,
+    },
+  },
+});
+
+related_carousel.mount();
