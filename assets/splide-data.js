@@ -3,7 +3,6 @@ const splide = new Splide('#main-carousel', {
   cover: true,
   pagination: false,
   width: '640px',
-  heightRatio: 1,
   loop: true,
   breakpoints: {
     800: {
@@ -28,6 +27,7 @@ for (let i = 0; i < thumbnails.length; i++) {
 }
 
 splide.on('mounted move', function () {
+  console.log('Mounted');
   const thumbnail = thumbnails[splide.index];
 
   if (thumbnail) {
@@ -43,3 +43,25 @@ splide.on('mounted move', function () {
 });
 
 splide.mount();
+
+// const related_carousel = new Splide('#related-products-carousel', {
+//   heightRatio: 1,
+//   cover: true,
+//   pagination: false,
+//   width: '320px',
+//   height: '444px',
+//   loop: true,
+//   breakpoints: {
+//     800: {
+//       width: '197px',
+//       height: '294px',
+//       // perPage:2
+//     },
+//   },
+// });
+
+// related_carousel.mount();
+
+// related_carousel.on('mount', () => {
+//   console.log('Mounted carousel');
+// });
