@@ -1179,3 +1179,71 @@ function setupPopupCookies() {
 }
 
 setupPopupCookies();
+
+class WishlistHandler extends HTMLElement {
+  constructor() {
+    super();
+    this.addButton = this.querySelector('[data-add-to-wishlist]');
+    this.removeButton = this.querySelector('[data-remove-from-wishlist]');
+    this.shopUrl = window.Shopify.shop;
+    this.customerId = this.dataset.customerId;
+    this.variantReference = this.dataset.variantReference;
+    this.itemsCount = document.getElementById('wishlist-items-count');
+
+    if (!this.shopUrl || !this.customerId || !this.variantReference) return;
+
+    this.bindEvents();
+  }
+
+  bindEvents() {
+    this.addButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      this.updateWishlist('add');
+    });
+
+    this.removeButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      this.updateWishlist('remove');
+    });
+  }
+
+  updateWishlist(action) {
+    const url = 'https://shopify-wishlist-app.fly.dev/update_wishlist/';
+    const data = {
+      shop_url: this.shopUrl,
+      customer_id: this.customerId,
+      variant_reference: this.variantReference,
+      action: action,
+    };
+
+    console.log(data, this.productCard);
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        alert(data.message);
+        if (action === 'add') {
+          this.addButton.classList.add('hidden');
+          this.removeButton.classList.remove('hidden');
+        } else {
+          this.removeButton.classList.add('hidden');
+          this.addButton.classList.remove('hidden');
+        }
+        if (window.location.pathname === '/pages/wishlist' && this.closest('.wishlist-item')) {
+          this.closest('.wishlist-item').remove();
+        }
+        this.itemsCount.innerText = data.items_count;
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  }
+}
+
+customElements.define('wishlist-handler', WishlistHandler);
