@@ -12,6 +12,10 @@ module.exports = {
     './snippets/*.liquid',
   ],
   theme: {
+    fontFamily: {
+      sans: ['"National 2"', 'Arial', 'Helvetica', 'sans-serif'],
+      sub: ['"National 2 Compressed"', 'Arial', 'Helvetica', 'sans-serif'],
+    },
     colors: {
       inherit: 'inherit',
       transparent: 'transparent',
@@ -48,16 +52,6 @@ module.exports = {
       'body-sm': ['16px', styles.bodyStyles],
       'body-xs': ['14px', styles.bodyStyles],
       'btn-xs': ['12px', styles.titleStyles],
-
-      // xxs: '12px',
-      // xs: '14px',
-      // base: '16px',
-      // sm: '18px',
-      // md: '20px',
-      // lg: '24px',
-      // xl: '36px',
-      // '2xl': '40px',
-      // '3xl': '80px',
     },
     extend: {
       borderRadius: {
