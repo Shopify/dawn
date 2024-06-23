@@ -42,7 +42,6 @@ splide.on('arrows:updated', disableCarouselArrows('main-carousel'));
 splide.mount();
 
 const related_carousel = new Splide('#related-products-carousel', {
-  heightRatio: 1,
   cover: true,
   pagination: false,
   // loop: true,
