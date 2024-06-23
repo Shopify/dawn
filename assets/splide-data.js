@@ -37,6 +37,8 @@ splide.on('mounted move', function () {
   }
 });
 
+splide.on('arrows:updated', disableCarouselArrows('main-carousel'));
+
 splide.mount();
 
 const related_carousel = new Splide('#related-products-carousel', {
@@ -62,4 +64,27 @@ const related_carousel = new Splide('#related-products-carousel', {
   },
 });
 
+related_carousel.on('arrows:updated', disableCarouselArrows('related-products-carousel'));
+
 related_carousel.mount();
+
+function disableCarouselArrows(carousel_id) {
+  const items = document?.querySelectorAll(`#${carousel_id} li.splide__slide`);
+  const firstElement = items?.[0];
+  const lastElement = items?.[items?.length - 1];
+
+  const prevBtn = document?.querySelector(`#${carousel_id} .splide__arrow--prev`);
+  const nextBtn = document?.querySelector(`#${carousel_id} .splide__arrow--next`);
+
+  return function () {
+    if (firstElement?.classList.contains('is-active')) {
+      console.log('disable prev');
+      prevBtn.setAttribute('disabled', true);
+    }
+
+    if (lastElement?.classList.contains('is-active')) {
+      console.log('disable next');
+      nextBtn.setAttribute('disabled', true);
+    }
+  };
+}
