@@ -1,7 +1,7 @@
 # Dawn
 
-[![Build status](https://github.com/shopify/dawn/actions/workflows/lighthouse-ci.yml/badge.svg?branch=main)](https://github.com/Shopify/dawn/actions/workflows/lighthouse-ci.yml?query=branch%3Amain)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?color=informational)](/CONTRIBUTING.md)
+[![Build status](https://github.com/shopify/dawn/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Shopify/dawn/actions/workflows/ci.yml?query=branch%3Amain)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?color=informational)](/.github/CONTRIBUTING.md)
 
 [Getting started](#getting-started) |
 [Staying up to date with Dawn changes](#staying-up-to-date-with-dawn-changes) |
@@ -15,26 +15,17 @@ Dawn represents a HTML-first, JavaScript-only-as-needed approach to theme develo
 
 * **Web-native in its purest form:** Themes run on the [evergreen web](https://www.w3.org/2001/tag/doc/evergreen-web/). We leverage the latest web browsers to their fullest, while maintaining support for the older ones through progressive enhancement—not polyfills.
 * **Lean, fast, and reliable:** Functionality and design defaults to “no” until it meets this requirement. Code ships on quality. Themes must be built with purpose. They shouldn’t support each and every feature in Shopify.
-* **JavaScript not required, fails gracefully:** We extract every bit of speed and functionality out of HTTP, semantic HTML, and CSS before writing our first line of JavaScript. JavaScript can only be used to progressively enhance features.
 * **Server-rendered:** HTML must be rendered by Shopify servers using Liquid. Business logic and platform primitives such as translations and money formatting don’t belong on the client. Async and on-demand rendering of parts of the page is OK, but we do it sparingly as a progressive enhancement.
 * **Functional, not pixel-perfect:** The Web doesn’t require each page to be rendered pixel-perfect by each browser engine. Using semantic markup, progressive enhancement, and clever design, we ensure that themes remain functional regardless of the browser.
 
 You can find a more detailed version of our theme code principles in the [contribution guide](https://github.com/Shopify/dawn/blob/main/.github/CONTRIBUTING.md#theme-code-principles).
 
 ## Getting started
+We recommend using Dawn as a starting point for theme development. [Learn more on Shopify.dev](https://shopify.dev/themes/getting-started/create).
 
-1. Fork the repository and clone it:
-```sh
-git clone git@github.com:your-username/dawn.git
-cd dawn
-```
-2. Install the [Shopify CLI](https://github.com/Shopify/shopify-cli) by following [these steps](https://shopify.dev/themes/tools/cli/installation).
-3. Launch a development server in the `dawn/` folder:
-```sh
-shopify theme serve
-```
+> If you're building a theme for the Shopify Theme Store, then you can use Dawn as a starting point. However, the theme that you submit needs to be [substantively different from Dawn](https://shopify.dev/themes/store/requirements#uniqueness) so that it provides added value for merchants. Learn about the [ways that you can use Dawn](https://shopify.dev/themes/tools/dawn#ways-to-use-dawn).
 
->:information_source: You'll need access to a Shopify store in order to get started with theme development. If you don't already have one, you can set up a [development store](https://shopify.dev/themes/tools/development-stores).
+Please note that the main branch may include code for features not yet released. The "stable" version of Dawn is available in the theme store.
 
 ## Staying up to date with Dawn changes
 
@@ -63,21 +54,31 @@ There are a number of really useful tools that the Shopify Themes team uses duri
 
 [Shopify CLI](https://github.com/Shopify/shopify-cli) helps you build Shopify themes faster and is used to automate and enhance your local development workflow. It comes bundled with a suite of commands for developing Shopify themes—everything from working with themes on a Shopify store (e.g. creating, publishing, deleting themes) or launching a development server for local theme development.
 
-You can follow this [quick start guide for theme developers](https://github.com/Shopify/shopify-cli#quick-start-guide-for-theme-developers) to get started.
+You can follow this [quick start guide for theme developers](https://shopify.dev/docs/themes/tools/cli) to get started.
 
 ### Theme Check
 
 We recommend using [Theme Check](https://github.com/shopify/theme-check) as a way to validate and lint your Shopify themes.
 
-We've added Theme Check to Dawn's [list of VS Code extensions](https://github.com/Shopify/dawn/blob/update-README/.vscode/extensions.json) so if you're using Visual Studio Code as your code editor of choice, you'll be prompted to install the [Theme Check VS Code](https://marketplace.visualstudio.com/items?itemName=Shopify.theme-check-vscode) extension upon opening VS Code after you've forked and cloned Dawn.
+We've added Theme Check to Dawn's [list of VS Code extensions](/.vscode/extensions.json) so if you're using Visual Studio Code as your code editor of choice, you'll be prompted to install the [Theme Check VS Code](https://marketplace.visualstudio.com/items?itemName=Shopify.theme-check-vscode) extension upon opening VS Code after you've forked and cloned Dawn.
 
-Theme Check is included as part of [Dawn's GitHub Actions](https://github.com/Shopify/dawn/tree/main/.github/workflows) and can also be run via Shopify CLI's `shopify theme check` command.
+You can also run it from a terminal with the following Shopify CLI command:
 
-### Shopify/lighthouse-ci-action
+```bash
+shopify theme check
+```
 
-We love performant websites! Which is why we created [Shopify/lighthouse-ci-action](https://github.com/Shopify/lighthouse-ci-action). This runs a series of [Google Lighthouse](https://developers.google.com/web/tools/lighthouse) audits for the home, product and collections pages on a store for every commmit to ensure code that gets added doesn't degrade storefront performance over time.
+### Continuous Integration
 
-Dawn uses [GitHub Actions](https://github.com/features/actions) to run Shopify/lighthouse-ci-action for every commit. [This is a starting point](https://github.com/Shopify/dawn/blob/main/.github/workflows/lighthouse-ci.yml) and what we suggest to use in order to ensure you're building better themes. Feel free to build off of it!
+Dawn uses [GitHub Actions](https://github.com/features/actions) to maintain the quality of the theme. [This is a starting point](https://github.com/Shopify/dawn/blob/main/.github/workflows/ci.yml) and what we suggest to use in order to ensure you're building better themes. Feel free to build off of it!
+
+#### Shopify/lighthouse-ci-action
+
+We love fast websites! Which is why we created [Shopify/lighthouse-ci-action](https://github.com/Shopify/lighthouse-ci-action). This runs a series of [Google Lighthouse](https://developers.google.com/web/tools/lighthouse) audits for the home, product and collections pages on a store to ensure code that gets added doesn't degrade storefront performance over time.
+
+#### Shopify/theme-check-action
+
+Dawn runs [Theme Check](#Theme-Check) on every commit via [Shopify/theme-check-action](https://github.com/Shopify/theme-check-action).
 
 ## Contributing
 

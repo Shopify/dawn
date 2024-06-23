@@ -32,7 +32,7 @@ Before contributing to Dawn, please read the following theme code principles to 
 
 ### Why these principles?
 
-Browsers provide APIs to solve many problems: from [WebGL](https://en.wikipedia.org/wiki/WebGL) and [WASM](https://en.wikipedia.org/wiki/WebAssembly)-powered apps to static websites. The best APIs to use depends on the thing you’re building. Themes power ecommerce websites. In most cases, [Web-native](https://docs.google.com/document/d/11c0EpBmzIPiNrt8hHFz3pnTmEfC7vsC4kktZFoPhhPI/edit#heading=h.fdenrwz0rwne) is a perfect fit for ecommerce websites. Ecommerce needs incredibly fast websites for mostly “logged out” traffic.
+Browsers provide APIs to solve many problems: from [WebGL](https://en.wikipedia.org/wiki/WebGL) and [WASM](https://en.wikipedia.org/wiki/WebAssembly)-powered apps to static websites. The best APIs to use depends on the thing you’re building. Themes power ecommerce websites. In most cases, _Web-native_—making the most of the built-in features of browsers: HTTP, HTML, CSS, JavaScript, and the DOM—is a perfect fit for ecommerce websites. Ecommerce needs incredibly fast websites for mostly “logged out” traffic.
 
 ### Web-native in its purest form
 
@@ -63,16 +63,6 @@ We relentlessly and continuously optimize code within the constraint of being We
 
 Themes must be built with purpose. They shouldn’t support each and every feature in Shopify.
 
-### JavaScript not required, fails gracefully
-
-_NoJS is our baseline._
-
-We extract every bit of speed and functionality out of HTTP, semantic HTML, and CSS before writing our first line of JavaScript.
-
-JavaScript can only be used to progressively enhance features. JavaScript cannot be required to find or purchase products. And the little JavaScript that we use must always fail gracefully, such that every browser gets the most “enhanced” experience that it can within the capabilities that it has.
-
->:information_source: We do so not because we expect buyers to experience our storefronts with JavaScript disabled, but because it keeps us aligned with the other principles: writing fast, server-rendered, Web-native code.
-
 ### Server-rendered
 
 _Our main constraint._
@@ -93,7 +83,7 @@ And since legacy browsers are often the slowest, we don’t burden them with pol
 
 You can follow these steps to go from setting up a store to creating a pull request for Dawn.
 
->:information_source: We'll assume you're already set up with Git and GitHub (if you're not familiar with these, [start with these docs](https://docs.github.com/en/github/getting-started-with-github/quickstart/set-up-git)).
+>:information_source: We'll assume you're already set up with Git and GitHub (if you're not familiar with these, [start with these docs](https://docs.github.com/github/getting-started-with-github/quickstart/set-up-git)).
 
 1. Set up a [development store](https://shopify.dev/themes/tools/development-stores) so you can test your code changes (assuming you don't already have a store).
 2. Install the [Shopify CLI](https://github.com/Shopify/shopify-cli) by following [these steps](https://shopify.dev/themes/tools/cli/installation).
@@ -156,6 +146,6 @@ When you open a pull request, you must fill out the "Ready for review" template 
 
 ### Suggested changes
 
-We may ask for changes to be made before a PR can be merged, either using [suggested changes](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/incorporating-feedback-in-your-pull-request) or pull request comments. You can apply suggested changes directly through the UI. You can make any other changes in your fork, then commit them to your branch.
+We may ask for changes to be made before a PR can be merged, either using [suggested changes](https://docs.github.com/github/collaborating-with-issues-and-pull-requests/incorporating-feedback-in-your-pull-request) or pull request comments. You can apply suggested changes directly through the UI. You can make any other changes in your fork, then commit them to your branch.
 
-As you update your PR and apply changes, mark each conversation as [resolved](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/commenting-on-a-pull-request#resolving-conversations).
+As you update your PR and apply changes, mark each conversation as [resolved](https://docs.github.com/github/collaborating-with-issues-and-pull-requests/commenting-on-a-pull-request#resolving-conversations).
