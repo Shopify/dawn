@@ -60,6 +60,9 @@ class CartItems extends HTMLElement {
               targetElement.replaceWith(sourceElement);
             }
           }
+          if (document.querySelector('.shipping-bar')) {
+            cartDrawerUpdate();
+          }
         })
         .catch((e) => {
           console.error(e);
@@ -165,6 +168,10 @@ class CartItems extends HTMLElement {
           trapFocus(cartDrawerWrapper.querySelector('.drawer__inner-empty'), cartDrawerWrapper.querySelector('a'));
         } else if (document.querySelector('.cart-item') && cartDrawerWrapper) {
           trapFocus(cartDrawerWrapper, document.querySelector('.cart-item__name'));
+        }
+
+        if (document.querySelector('.shipping-bar')) {
+          cartDrawerUpdate();
         }
 
         publish(PUB_SUB_EVENTS.cartUpdate, { source: 'cart-items', cartData: parsedState, variantId: variantId });

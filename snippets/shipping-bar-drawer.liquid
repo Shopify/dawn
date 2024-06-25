@@ -1,0 +1,47 @@
+{% liquid
+  assign shipping_value = settings.threshold_amount | times: 100
+  assign cart_total = cart.total_price
+  assign shipping_amount_remain = shipping_value | minus: cart_total
+  assign shipping_percentage = cart_total | times: 100 | divided_by: shipping_value
+  assign total_remaining = shipping_amount_remain | money
+%}
+
+<style>
+  .shipping-bar-drawer {
+    margin-bottom: 2rem;
+  }
+  .shipping-bar-drawer p {
+    margin: 0;
+  }
+  .shipping-bar__bar {
+    position: relative;
+    background-color: {{ settings.progress_bar_bg }};
+    height: 1rem;
+    transition: width 1s linear;
+  }
+  .shipping-bar__progress {
+    width: {{ shipping_percentage }}%;
+    top: 0;
+    left: 0;
+    min-width: 0;
+    max-width: 100%;
+    height: 100%;
+    display: block;
+    background-color: {{ settings.progress_bar_color }};
+    transition: width 1s linear;
+  }
+  .shipping-bar__progress span {
+    transition: width 1s linear;
+  }
+</style>
+
+<div class="shipping-bar-drawer">
+  {% if shipping_amount_remain > 0 %}
+    <p class="shipping-bar__remain">{{ settings.shipping_bar_text | replace: '$', total_remaining }}</p>
+  {% elsif shipping_amount_remain <= 0 %}
+    <p class="shipping-bar__success">{{ settings.shipping_bar_success }}</p>
+  {% endif %}
+  <div class="shipping-bar__bar">
+    <div class="shipping-bar__progress"><span></span></div>
+  </div>
+</div>
