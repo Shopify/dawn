@@ -1,27 +1,63 @@
 {% layout 'smshr-theme' %}
 
-{% assign products_per_page = 24 %}
+{% liquid
+  assign products_per_page = 50
+  assign filter_count = 3
+
+  assign filter_label = 'filter ' | append: filter_count
+%}
 
 {% comment %} <div class="lg:px-large mx-auto max-w-[1920px] w-full xl:w-[1280px] min-[1600px]:w-[1600px] min-[1920px]:w-[1920px] "> {% endcomment %}
 <div class="lg:px-large mx-auto max-w-[1920px]">
-  <div class="mb-small py-mini flex justify-between">
+  <div class="px-base py-2.5 flex justify-between items-center border-b border-b-grey100 lg:border-b-0">
     <div class="text-t-sm">Hölzer (3459)</div>
 
-    <div class="text-body-xs">Sort: most relevant</div>
+    {% render 'button', variant: 'secondary', size: 'sm', text: filter_label, classes: 'lg:hidden' %}
+
+    <div class="hidden lg:block">
+      <div class="text-body-xs">Sort: most relevant</div>
+    </div>
   </div>
 
-  <div class="flex gap-8">
+  <div class="flex gap-8 ">
     <div class="hidden xl:flex self-stretch basis-[18.75%] shrink-0 border"></div>
     {%- paginate collection.products by products_per_page -%}
-      <ul class="mx-auto flex flex-wrap justify-center xl:justify-start flex-grow">
-        {%- for product in collection.products -%}
-          <li
-            class="basis-[198px] lg:basis-[320px] shrink-0"
-          >
-            {% render 'product-card', product: product %}
-          </li>
-        {%- endfor -%}
-      </ul>
+      <div>
+        <ul
+          id="products-wrapper"
+          data-next-url="{{ paginate.next.url }}"
+          data-per-page="{{ paginate.page_size }}"
+          class="mx-auto flex flex-wrap justify-center xl:justify-start flex-grow"
+        >
+          {%- for product in collection.products -%}
+            <li
+              class="min-[380px]:w-[190px] min-[396px]:w-[198px] lg:basis-[320px] shrink-0 product-item"
+            >
+              {% render 'product-card', product: product %}
+            </li>
+          {%- endfor -%}
+        </ul>
+
+        <div class="py-8">
+          <p class="text-body-xs text-grey500">
+            Showing
+            <span id="item_count"> </span>
+            of
+            <span id="total_item_count">
+              {{ paginate.items }}
+            </span>
+            items
+          </p>
+          {% if paginate.pages > 1 %}
+            <div>
+              {% render 'button', variant: 'secondary', size: 'sm', text: 'load more', classes: 'flex-grow load-more' %}
+              {% render 'loading-spinner', class: 'stroke-grey500 hidden load-more-spinner' %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
     {% endpaginate %}
   </div>
 </div>
+
+<script src="{{ 'paginate.js' | asset_url }}" defer="defer"></script>
