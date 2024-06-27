@@ -12,15 +12,18 @@
   {% render 'price-b', product: product main_class: '!text-h-sm !leading-5', discount_class: '!text-grey300' %}
 {% endcomment %}
 
+{% comment %}
+  assign price_min = product.price_min
+  assign price_max = product.price_max
+  assign available = target.available | default: false
+{% endcomment %}
+
 {%- liquid
   assign target = product.selected_or_first_available_variant | default: product
 
   assign compare_at_price = target.compare_at_price
 
   assign price = target.price
-  assign price_min = product.price_min
-  assign price_max = product.price_max
-  assign available = target.available | default: false
 
   if compare_at_price > price
     assign has_discount = true
@@ -28,10 +31,8 @@
     assign discount_percentage = discount | times: 100 | divided_by: compare_at_price | append: '%' | prepend: '-'
   endif
 
-  assign money_price = price | money
-  assign money_regular_price = compare_at_price | money
-  assign money_price_min = price_min | money
-  assign money_price_max = price_max | money
+  assign money_price = price | round | money
+  assign money_regular_price = compare_at_price | ceil | money
 
   if target == product and product.price_varies
     assign money_price = 'products.product.price.from_price_html' | t: price: money_price
