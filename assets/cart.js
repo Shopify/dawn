@@ -222,7 +222,7 @@ class CartItems extends HTMLElement {
   updateLiveRegions(line, message) {
     const lineItemError =
       document.getElementById(`Line-item-error-${line}`) || document.getElementById(`CartDrawer-LineItemError-${line}`);
-    if (lineItemError) lineItemError.querySelector('.cart-item__error-text').innerHTML = message;
+    if (lineItemError) lineItemError.querySelector('.cart-item__error-text').textContent = message;
 
     this.lineItemStatusElement.setAttribute('aria-hidden', true);
 
