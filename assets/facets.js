@@ -261,25 +261,26 @@ class FacetFiltersForm extends HTMLElement {
 
   onSubmitHandler(event) {
     event.preventDefault();
-    const sortFilterForms = document.querySelectorAll('facet-filters-form form');
-    if (event.srcElement.className == 'mobile-facets__checkbox') {
-      const searchParams = this.createSearchParams(event.target.closest('form'));
-      this.onSubmitForm(searchParams, event);
-    } else {
-      const forms = [];
-      const isMobile = event.target.closest('form').id === 'FacetFiltersFormMobile';
+    console.log('submit handler');
+    // const sortFilterForms = document.querySelectorAll('facet-filters-form form');
+    // if (event.srcElement.className == 'mobile-facets__checkbox') {
+    //   const searchParams = this.createSearchParams(event.target.closest('form'));
+    //   this.onSubmitForm(searchParams, event);
+    // } else {
+    //   const forms = [];
+    //   const isMobile = event.target.closest('form').id === 'FacetFiltersFormMobile';
 
-      sortFilterForms.forEach((form) => {
-        if (!isMobile) {
-          if (form.id === 'FacetSortForm' || form.id === 'FacetFiltersForm' || form.id === 'FacetSortDrawerForm') {
-            forms.push(this.createSearchParams(form));
-          }
-        } else if (form.id === 'FacetFiltersFormMobile') {
-          forms.push(this.createSearchParams(form));
-        }
-      });
-      this.onSubmitForm(forms.join('&'), event);
-    }
+    //   sortFilterForms.forEach((form) => {
+    //     if (!isMobile) {
+    //       if (form.id === 'FacetSortForm' || form.id === 'FacetFiltersForm' || form.id === 'FacetSortDrawerForm') {
+    //         forms.push(this.createSearchParams(form));
+    //       }
+    //     } else if (form.id === 'FacetFiltersFormMobile') {
+    //       forms.push(this.createSearchParams(form));
+    //     }
+    //   });
+    //   this.onSubmitForm(forms.join('&'), event);
+    // }
   }
 
   onActiveFilterClick(event) {
