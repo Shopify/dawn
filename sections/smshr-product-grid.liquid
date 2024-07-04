@@ -1,0 +1,125 @@
+{% liquid
+  assign products_per_page = 24
+  assign filter_count = 3
+
+  assign filter_label = 'filter ' | append: filter_count
+
+  assign product_count = collection.products_count
+
+  if collection.results_count
+    assign product_count = collection.results_count
+  elsif collection.products_count == collection.all_products_count
+    assign product_count = collection.products_count
+  else
+    assign product_count = collection.products_count
+  endif
+%}
+
+{%- paginate collection.products by products_per_page -%}
+  <div class="sticky top-16 bg-white py-[6px] flex justify-between items-center border-b border-b-grey100 lg:border-b-0">
+    <div class="text-t-sm">Hölzer ({{ product_count }})</div>
+
+    {% render 'button', variant: 'secondary', size: 'sm', text: filter_label, classes: 'lg:hidden' %}
+
+    <facet-filters-form class="facets facets-vertical-sort page-width small-hide">
+      <form class="facets-vertical-form" id="FacetSortForm">
+        <div class="facet-filters sorting caption">
+          <div class="facet-filters__field bg-white relative w-[180px]">
+            <span class="left-0 absolute top-1/2 -translate-y-1/2 text-body-xs">
+              <label for="SortBy">{{ 'products.facets.sort_by_label' | t }}</label>
+            </span>
+
+            <div class="select relative z-10">
+              {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
+              <select
+                name="sort_by"
+                class="select__select truncate appearance-none bg-transparent border-0 pl-[100px] pr-5 text-body-xs w-[180px]"
+                id="SortBy"
+                aria-describedby="a11y-refresh-page-message"
+              >
+                {{ 'products.facets.sort_by_label' | t -}}
+                :
+                {%- for option in collection.sort_options -%}
+                  <option
+                    class="text-body-xs"
+                    value="{{ option.value | escape }}"
+                    {% if option.value == sort_by %}
+                      selected="selected"
+                    {% endif %}
+                  >
+                    {{ option.name | escape }}
+                  </option>
+                {%- endfor -%}
+              </select>
+            </div>
+
+            <span class="absolute right-0 top-1/2 -translate-y-[42%]">
+              {% render 'icon-chevron-down', class: 'w-4 h-4 ' %}
+            </span>
+          </div>
+        </div>
+      </form>
+    </facet-filters-form>
+  </div>
+
+  <div class="flex gap-8 mt-small">
+    <div class="hidden sticky top-[132px] xl:flex self-stretch w-[19.5%] shrink-0 border-b border-b-grey100  h-screen">
+      <aside
+        aria-labelledby="verticalTitle"
+        class="facets-wrapper facets-wrapper--no-filters w-full"
+        id="main-collection-filters"
+      >
+        {% render 'smshr-facets',
+          results: collection,
+          paginate: paginate,
+          enable_filtering: true,
+          enable_sorting: true,
+          filter_type: 'vertical'
+        %}
+      </aside>
+    </div>
+
+    <div class="">
+      <ul
+        id="products-grid"
+        data-next-url="{{ paginate.next.url }}"
+        data-per-page="{{ paginate.page_size }}"
+        data-id="{{ section.id }}"
+        class="mx-auto flex flex-wrap justify-center xl:justify-start flex-grow products-wrapper"
+      >
+        {%- for product in collection.products -%}
+          <li
+            class="min-[380px]:w-[190px] min-[396px]:w-[198px] lg:basis-[320px] shrink-0 product-item"
+          >
+            {% render 'product-card', product: product %}
+          </li>
+        {%- endfor -%}
+      </ul>
+
+      <div class="pt-8 pb-12 flex flex-col items-center w-full gap-small">
+        <p class="text-body-xs text-grey500">
+          Showing
+          <span id="item_count"> </span>
+          of
+          <span id="total_item_count">
+            {{ paginate.items }}
+          </span>
+          items
+        </p>
+        {% if paginate.pages > 1 %}
+          <div class="flex self-stretch relative justify-center">
+            {% render 'button',
+              variant: 'secondary',
+              size: 'sm',
+              text: 'load more',
+              classes: 'flex-grow load-more max-w-[360px]'
+            %}
+            {% render 'loading-spinner', class: 'stroke-grey500 load-more-spinner hidden' %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endpaginate %}
+
+<script src="{{ 'paginate.js' | asset_url }}" defer="defer"></script>
