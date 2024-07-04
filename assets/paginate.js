@@ -12,6 +12,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let totalItemsDisplayed = 0;
     totalItemsDisplayed += itemsPerPage;
+
+    const total_count = parseInt(total_count_span.textContent);
+
+    if (totalItemsDisplayed > total_count || itemsPerPage < total_count) {
+      totalItemsDisplayed = total_count;
+    }
+
     count_span.textContent = totalItemsDisplayed;
 
     if (loadMoreBtn) {
@@ -43,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
           const total_count = parseInt(total_count_span.textContent);
 
-          if (totalItemsDisplayed > total_count) {
+          if (totalItemsDisplayed > total_count || itemsPerPage < total_count) {
             totalItemsDisplayed = total_count;
           }
 
