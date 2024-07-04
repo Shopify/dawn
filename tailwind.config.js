@@ -90,13 +90,16 @@ module.exports = {
           textDecoration: 'underline',
         },
         '.btn-sm': {
-          ...config('theme.fontSize["t-sm"]'),
+          ...styles.titleStyles,
+          fontSize: '16px',
           textTransform: 'uppercase',
+          fontFamily: '"National 2"',
         },
         '.btn-xs': {
-          ...config('theme.fontSize["t-xs"]'),
+          ...styles.titleStyles,
           fontSize: '12px',
           textTransform: 'uppercase',
+          fontFamily: '"National 2"',
         },
       };
       addComponents(typography);

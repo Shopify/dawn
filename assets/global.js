@@ -22,6 +22,28 @@ document.querySelectorAll('[id^="Details-"] summary').forEach((summary) => {
   summary.parentElement.addEventListener('keyup', onKeyUpEscape);
 });
 
+document.querySelectorAll('[id^="Details-HeaderMenu-"].mega-menu summary').forEach((summary) => {
+  summary.setAttribute('role', 'button');
+  summary.setAttribute('aria-expanded', summary.parentNode.hasAttribute('open'));
+
+  if (summary.nextElementSibling.getAttribute('id')) {
+    summary.setAttribute('aria-controls', summary.nextElementSibling.id);
+  }
+
+  summary.addEventListener('mouseenter', (event) => {
+    summary.parentElement.setAttribute('open', '');
+    event.currentTarget.setAttribute('aria-expanded', true);
+  });
+
+  summary.parentElement.addEventListener('mouseleave', (event) => {
+    summary.parentElement.removeAttribute('open');
+    event.currentTarget.setAttribute('aria-expanded', false);
+  });
+
+  if (summary.closest('header-drawer, menu-drawer')) return;
+  summary.parentElement.addEventListener('keyup', onKeyUpEscape);
+});
+
 const trapFocusHandlers = {};
 
 function trapFocus(container, elementToFocus = container) {
@@ -404,7 +426,7 @@ class MenuDrawer extends HTMLElement {
       isOpen ? this.closeMenuDrawer(event, summaryElement) : this.openMenuDrawer(summaryElement);
 
       if (window.matchMedia('(max-width: 990px)')) {
-        document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
+        // document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
       }
     } else {
       setTimeout(() => {
@@ -500,11 +522,13 @@ class HeaderDrawer extends MenuDrawer {
   openMenuDrawer(summaryElement) {
     this.header = this.header || document.querySelector('.section-header');
     this.borderOffset =
-      this.borderOffset || this.closest('.header-wrapper').classList.contains('header-wrapper--border-bottom') ? 1 : 0;
-    document.documentElement.style.setProperty(
-      '--header-bottom-position',
-      `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`
-    );
+      this.borderOffset || this.closest('.header-wrapper')?.classList?.contains('header-wrapper--border-bottom')
+        ? 1
+        : 0;
+    // document.documentElement.style.setProperty(
+    //   '--header-bottom-position',
+    //   `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`
+    // );
     this.header.classList.add('menu-open');
 
     setTimeout(() => {

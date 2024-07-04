@@ -8,17 +8,38 @@
   {% render 'product-card' product:product %}
 {% endcomment %}
 
-{% assign image_src = product.featured_image %}
-{% assign product_brand = product.brand | default: 'Victas' %}
-{% assign product_title = product.title | default: '' %}
+{% comment %}
+{% endcomment %}
 
-<div class="p-base w-[197px] lg:w-[320px] border border-grey100 {{ class }}">
-  <div class="mb-5 lg:mb-7">
+{%- liquid
+  assign image_src = product.featured_image
+  assign product_brand = product.vendor | default: ''
+  assign product_title = product.title | default: ''
+  assign variant_options = ''
+
+  for option in product.options_with_values
+    assign downcase_name = option.name | downcase | t
+    assign downcase_name_plural = option.name | append: 's' | downcase | t
+    assign option_name = option.values.size | pluralize: downcase_name, downcase_name_plural
+
+    assign option_name = option.name | downcase | t
+    assign option_string = option.values.size | append: ' ' | append: option_name
+
+    assign variant_options = variant_options | append: option_string
+
+    if forloop.index != product.options_with_values.size
+      assign variant_options = variant_options | append: ', '
+    endif
+  endfor
+%}
+
+<div class="p-base w-[197px] lg:w-[320px] h-[291px] lg:h-auto group cursor-pointer {{ class }}">
+  <div>
     <div class="w-[167px] h-[167px] lg:w-[288px] lg:h-[288px] mb-base lg:mb-large">
       <div class="w-full h-full flex justify-center items-center">
         <img
           src="{{ image_src | image_url: width: 288 | default: "https://placehold.co/288" }}"
-          class="w-full h-full"
+          class="w-full h-full object-cover object-top"
           alt="{{ product.media.alt | escape }}"
           width=""
           height=""
@@ -32,15 +53,21 @@
         {{ product_brand }}
       </h3>
 
-      <h1 class="text-body-xs lg:text-body-sm leading-4 lg:leading-5 text-black">
+      <h1 class="text-body-xs lg:text-body-sm leading-4 lg:leading-5 text-black line-clamp-2">
         {{ product_title }}
       </h1>
 
       {% render 'price-b',
         class: 'items-center flex-wrap gap-mini',
-        main_class: '!text-h-sm !leading-5 h-5 block',
-        discount_class: '!text-grey300 h-5 block'
+        main_class: '!text-h-sm !leading-5 block',
+        discount_class: '!text-grey300 block',
+        product: product
       %}
+
+      {% comment %} variants span {% endcomment %}
+      <p class="hidden lg:block text-grey500 text-body-xs text-[12px] lg:text-body-sm min-h-3 lg:min-h-5 invisible group-hover:visible truncate">
+        {{ variant_options }}
+      </p>
     </div>
   </div>
 </div>
