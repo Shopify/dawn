@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
   try {
-    const productsOnPage = document.getElementById('products-wrapper');
+    const productsOnPage = document.querySelector('#products-grid.products-wrapper');
     const loadMoreBtn = document.querySelector('.load-more');
     const loadMoreSpinner = document.querySelector('.load-more-spinner');
 
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
           const parser = new DOMParser();
           const doc = parser.parseFromString(nextPage, 'text/html');
 
-          const newProducts = doc.querySelector('#products-wrapper');
+          const newProducts = doc.querySelector('#products-grid.products-wrapper');
 
           const newUrl = newProducts.getAttribute('data-next-url');
 

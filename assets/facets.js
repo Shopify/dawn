@@ -283,6 +283,7 @@ class FacetFiltersForm extends HTMLElement {
   }
 
   onActiveFilterClick(event) {
+    console.log('FILTER CLICKED');
     event.preventDefault();
     FacetFiltersForm.toggleActiveFacets();
     const url =
