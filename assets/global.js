@@ -1187,17 +1187,18 @@ class WishlistHandler extends HTMLElement {
     this.removeButton = this.querySelector('[data-remove-from-wishlist]');
     this.shopUrl = window.Shopify.shop;
     this.customerId = this.dataset.customerId;
-    this.variantReference = this.dataset.variantReference;
-    this.itemsCount = document.getElementById('wishlist-items-count');
-
-    if (!this.shopUrl || !this.customerId || !this.variantReference) return;
-
+    this.productReference = this.dataset.productReference;
+    this.productsCount = document.getElementById('wishlist-products-count');
     this.bindEvents();
   }
 
   bindEvents() {
     this.addButton.addEventListener('click', (event) => {
       event.preventDefault();
+      if (!this.customerId) {
+        window.location.href = '/account/login';
+        return;
+      }
       this.updateWishlist('add');
     });
 
@@ -1208,15 +1209,19 @@ class WishlistHandler extends HTMLElement {
   }
 
   updateWishlist(action) {
-    const url = 'https://shopify-wishlist-app.fly.dev/update_wishlist/';
+    if (this.operationInProgress) {
+      return;
+    }
+
+    this.operationInProgress = true;
+
+    const url = window.digismoothieWishlistApp.appUrl;
     const data = {
       shop_url: this.shopUrl,
       customer_id: this.customerId,
-      variant_reference: this.variantReference,
+      product_reference: this.productReference,
       action: action,
     };
-
-    console.log(data, this.productCard);
 
     fetch(url, {
       method: 'POST',
@@ -1227,10 +1232,10 @@ class WishlistHandler extends HTMLElement {
     })
       .then((response) => response.json())
       .then((data) => {
-        alert(data.message);
         if (action === 'add') {
           this.addButton.classList.add('hidden');
           this.removeButton.classList.remove('hidden');
+          this.removeButton.classList.add('in-wishlist');
         } else {
           this.removeButton.classList.add('hidden');
           this.addButton.classList.remove('hidden');
@@ -1238,10 +1243,16 @@ class WishlistHandler extends HTMLElement {
         if (window.location.pathname === '/pages/wishlist' && this.closest('.wishlist-item')) {
           this.closest('.wishlist-item').remove();
         }
-        this.itemsCount.innerText = data.items_count;
+
+        this.productsCount.innerText = data.products_count;
+        this.removeButton.addEventListener('animationend', () => {
+          this.removeButton.classList.remove('in-wishlist');
+        });
+        this.operationInProgress = false;
       })
       .catch((error) => {
         console.error('Error:', error);
+        this.operationInProgress = false;
       });
   }
 }
