@@ -1265,7 +1265,6 @@ class VariantSelects extends HTMLElement {
         if (inventoryDestination) inventoryDestination.classList.toggle('hidden', inventorySource.innerText === '');
 
         const addButtonUpdated = html.getElementById(`ProductSubmitButton-${sectionId}`);
-
         this.toggleAddButton(
           addButtonUpdated ? addButtonUpdated.hasAttribute('disabled') : true,
           window.variantStrings.soldOut
