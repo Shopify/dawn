@@ -1080,6 +1080,7 @@ class VariantSelects extends HTMLElement {
       (variant) => this.querySelector(':checked').value === variant.option1
     );
     const inputWrappers = [...this.querySelectorAll('.product-form__input')];
+
     inputWrappers.forEach((option, index) => {
       if (index === 0) return;
       const optionInputs = [...option.querySelectorAll('input[type="radio"], option')];
@@ -1087,6 +1088,7 @@ class VariantSelects extends HTMLElement {
       const availableOptionInputsValue = selectedOptionOneVariants
         .filter((variant) => variant.available && variant[`option${index}`] === previousOptionSelected)
         .map((variantOption) => variantOption[`option${index + 1}`]);
+
       this.setInputAvailability(optionInputs, availableOptionInputsValue);
     });
   }
@@ -1123,7 +1125,7 @@ class VariantSelects extends HTMLElement {
     if (!section) return;
 
     const productForm = section.querySelector('product-form');
-    if (productForm) productForm.handleErrorMessage();
+    if (productForm) productForm.handleErrorMessage?.();
   }
 
   updateMedia(html) {
@@ -1254,12 +1256,12 @@ class VariantSelects extends HTMLElement {
         }
 
         const price = document.getElementById(`price-${this.dataset.section}`);
-
         if (price) price.classList.remove('hidden');
 
         if (inventoryDestination) inventoryDestination.classList.toggle('hidden', inventorySource.innerText === '');
 
         const addButtonUpdated = html.getElementById(`ProductSubmitButton-${sectionId}`);
+        console.log(addButtonUpdated, 'HOLA');
         this.toggleAddButton(
           addButtonUpdated ? addButtonUpdated.hasAttribute('disabled') : true,
           window.variantStrings.soldOut
