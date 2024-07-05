@@ -26,25 +26,86 @@
   {%- endif -%}
 {% endcomment %}
 
+{%- liquid
+  assign check_against_inventory = true
+  if product.selected_or_first_available_variant.inventory_management != 'shopify' or product.selected_or_first_available_variant.inventory_policy == 'continue'
+    assign check_against_inventory = false
+  endif
+  if product.selected_or_first_available_variant.quantity_rule.min > product.selected_or_first_available_variant.inventory_quantity and check_against_inventory
+    assign quantity_rule_soldout = true
+  endif
+
+  assign is_sold_out = false
+  assign btn_text = 'products.product.add_to_cart' | t
+  assign btn_text = 'add to cart'
+  if product.selected_or_first_available_variant.available == false or quantity_rule_soldout
+    assign is_sold_out = true
+    assign btn_text = 'products.product.sold_out' | t
+    assign btn_text = 'sold out '
+  endif
+-%}
+
 <div
   class="py-base w-full "
 >
-  <div class="flex gap-small mb-small sticky bottom-0">
-    {% render 'qty-picker' %}
+  <product-form
+    class="product-form"
+    data-hide-errors="{{ gift_card_recipient_feature_active }}"
+    data-section-id="{{ section.id }}"
+  >
+    {%- form 'product',
+      product,
+      id: product_form_id,
+      class: 'form',
+      novalidate: 'novalidate',
+      data-type: 'add-to-cart-form'
+    -%}
+      <input
+        type="hidden"
+        name="id"
+        value="{{ product.selected_or_first_available_variant.id }}"
+        {% if is_sold_out %}
+          disabled
+        {% endif %}
+        class="product-variant-id"
+      >
 
-    {% render 'button', variant: 'primary', size: 'lg', text: 'Add to Cart', classes: '!px-0 flex-grow' %}
-  </div>
+      <div class="flex gap-small mb-small sticky bottom-0">
+        {% render 'qty-picker' %}
 
-  {% render 'button', variant: 'secondary', size: 'lg', text: 'express checkout', classes: '!px-0 flex-grow w-full' %}
+        {%- liquid
 
-  <div class="flex pt-small gap-mini flex-grow-0">
-    {% render 'icon-paypal' %}
-    {% render 'icon-googlepay' %}
-    {% render 'icon-applepay' %}
-    {% render 'icon-visa' %}
-    {% render 'icon-mastercard' %}
-    {% render 'icon-amex' %}
-  </div>
+        -%}
+
+        {% render 'button',
+          id: 'ProductSubmitButton-{{ section_id }}',
+          variant: 'primary',
+          size: 'lg',
+          text: btn_text,
+          classes: '!px-0 flex-grow',
+          type: 'submit',
+          name: 'add',
+          disabled: is_sold_out
+        %}
+      </div>
+
+      {% render 'button',
+        variant: 'secondary',
+        size: 'lg',
+        text: 'express checkout',
+        classes: '!px-0 flex-grow w-full'
+      %}
+
+      <div class="flex pt-small gap-mini flex-grow-0">
+        {% render 'icon-paypal' %}
+        {% render 'icon-googlepay' %}
+        {% render 'icon-applepay' %}
+        {% render 'icon-visa' %}
+        {% render 'icon-mastercard' %}
+        {% render 'icon-amex' %}
+      </div>
+    {%- endform -%}
+  </product-form>
 </div>
 
 {% comment %}
