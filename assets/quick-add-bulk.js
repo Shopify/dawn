@@ -135,7 +135,7 @@ if (!customElements.get('quick-add-bulk')) {
             publish(PUB_SUB_EVENTS.cartUpdate, { source: 'quick-add', cartData: parsedState });
           })
           .catch((error) => {
-            console.log(error, 'error');
+            console.error(error, 'error');
           });
       }
 

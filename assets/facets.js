@@ -65,7 +65,6 @@ class FacetFiltersForm extends HTMLElement {
       .then((response) => response.text())
       .then((responseText) => {
         const html = responseText;
-        console.log(html, FacetFiltersForm.filterData.length);
         FacetFiltersForm.filterData = [...FacetFiltersForm.filterData, { html, url }];
         FacetFiltersForm.renderFilters(html, event);
         FacetFiltersForm.renderProductGridContainer(html);
@@ -96,13 +95,15 @@ class FacetFiltersForm extends HTMLElement {
   }
 
   static renderProductCount(html) {
-    const count = new DOMParser().parseFromString(html, 'text/html').getElementById('ProductCount').innerHTML;
+    const count = new DOMParser().parseFromString(html, 'text/html').getElementById('ProductCount')?.innerHTML;
+
     const container = document.getElementById('ProductCount');
     const containerDesktop = document.getElementById('ProductCountDesktop');
     container.innerHTML = count;
     container.classList.remove('loading');
     if (containerDesktop) {
-      containerDesktop.innerHTML = count;
+      const itemCount = containerDesktop.querySelector('#item_count');
+      itemCount.innerHTML = count;
       containerDesktop.classList.remove('loading');
     }
     const loadingSpinners = document.querySelectorAll(
@@ -287,7 +288,6 @@ class FacetFiltersForm extends HTMLElement {
   }
 
   onActiveFilterClick(event) {
-    console.log('FILTER CLICKED');
     event.preventDefault();
     FacetFiltersForm.toggleActiveFacets();
     const url =

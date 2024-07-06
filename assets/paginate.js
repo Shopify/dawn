@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const total_count = parseInt(total_count_span.textContent);
 
-    if (totalItemsDisplayed > total_count || total_count < itemsPerPage) {
+    if (totalItemsDisplayed > total_count || itemsPerPage > total_count) {
       totalItemsDisplayed = total_count;
     }
 
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
           totalItemsDisplayed += itemsPerPage;
 
-          if (totalItemsDisplayed > total_count || itemsPerPage < total_count) {
+          if (totalItemsDisplayed > total_count || itemsPerPage > total_count) {
             totalItemsDisplayed = total_count;
           }
 
@@ -61,6 +61,6 @@ document.addEventListener('DOMContentLoaded', function () {
       };
     }
   } catch (error) {
-    console.log('AN ERROR', error);
+    console.error('AN ERROR', error);
   }
 });

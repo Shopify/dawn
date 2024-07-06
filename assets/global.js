@@ -423,10 +423,12 @@ class MenuDrawer extends HTMLElement {
 
     if (detailsElement === this.mainDetailsToggle) {
       if (isOpen) event.preventDefault();
+
+      // console.log(isOpen, 'OPEN');
       isOpen ? this.closeMenuDrawer(event, summaryElement) : this.openMenuDrawer(summaryElement);
 
       if (window.matchMedia('(max-width: 990px)')) {
-        // document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
+        document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
       }
     } else {
       setTimeout(() => {
@@ -443,6 +445,10 @@ class MenuDrawer extends HTMLElement {
   openMenuDrawer(summaryElement) {
     setTimeout(() => {
       this.mainDetailsToggle.classList.add('menu-opening');
+      if (this.mainDetailsToggle.id === 'mobile_facet_smshrs') {
+        const mainContent = document.getElementById('MainContent');
+        mainContent.style.zIndex = 20;
+      }
     });
     summaryElement.setAttribute('aria-expanded', true);
     trapFocus(this.mainDetailsToggle, summaryElement);
@@ -505,6 +511,11 @@ class MenuDrawer extends HTMLElement {
         if (detailsElement.closest('details[open]')) {
           trapFocus(detailsElement.closest('details[open]'), detailsElement.querySelector('summary'));
         }
+
+        if (detailsElement.id === 'mobile_facet_smshrs') {
+          const mainContent = document.getElementById('MainContent');
+          mainContent.style.zIndex = 10;
+        }
       }
     };
 
@@ -525,10 +536,10 @@ class HeaderDrawer extends MenuDrawer {
       this.borderOffset || this.closest('.header-wrapper')?.classList?.contains('header-wrapper--border-bottom')
         ? 1
         : 0;
-    // document.documentElement.style.setProperty(
-    //   '--header-bottom-position',
-    //   `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`
-    // );
+    document.documentElement.style.setProperty(
+      '--header-bottom-position',
+      `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`
+    );
     this.header.classList.add('menu-open');
 
     setTimeout(() => {
@@ -1195,11 +1206,6 @@ class VariantSelects extends HTMLElement {
   renderProductInfo() {
     const requestedVariantId = this.currentVariant.id;
     const sectionId = this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section;
-    console.log(
-      `${this.dataset.url}?variant=${requestedVariantId}&section_id=${
-        this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section
-      }`
-    );
     fetch(
       `${this.dataset.url}?variant=${requestedVariantId}&section_id=${
         this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section
