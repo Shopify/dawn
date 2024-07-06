@@ -32,10 +32,12 @@ class FacetFiltersForm extends HTMLElement {
   static renderPage(searchParams, event, updateURLHash = true) {
     FacetFiltersForm.searchParamsPrev = searchParams;
     const sections = FacetFiltersForm.getSections();
+
     const countContainer = document.getElementById('ProductCount');
     const countContainerDesktop = document.getElementById('ProductCountDesktop');
     const loadingSpinners = document.querySelectorAll(
-      '.facets-container .loading__spinner, facet-filters-form .loading__spinner'
+      '.facets-container .loading__spinner, facet-filters-form .loading__spinner',
+      '.load-more-spinner'
     );
     loadingSpinners.forEach((spinner) => spinner.classList.remove('hidden'));
     document.getElementById('ProductGridContainer').querySelector('.collection').classList.add('loading');
@@ -63,6 +65,7 @@ class FacetFiltersForm extends HTMLElement {
       .then((response) => response.text())
       .then((responseText) => {
         const html = responseText;
+        console.log(html, FacetFiltersForm.filterData.length);
         FacetFiltersForm.filterData = [...FacetFiltersForm.filterData, { html, url }];
         FacetFiltersForm.renderFilters(html, event);
         FacetFiltersForm.renderProductGridContainer(html);
@@ -261,26 +264,26 @@ class FacetFiltersForm extends HTMLElement {
 
   onSubmitHandler(event) {
     event.preventDefault();
-    console.log('submit handler');
-    // const sortFilterForms = document.querySelectorAll('facet-filters-form form');
-    // if (event.srcElement.className == 'mobile-facets__checkbox') {
-    //   const searchParams = this.createSearchParams(event.target.closest('form'));
-    //   this.onSubmitForm(searchParams, event);
-    // } else {
-    //   const forms = [];
-    //   const isMobile = event.target.closest('form').id === 'FacetFiltersFormMobile';
+    const sortFilterForms = document.querySelectorAll('facet-filters-form form');
 
-    //   sortFilterForms.forEach((form) => {
-    //     if (!isMobile) {
-    //       if (form.id === 'FacetSortForm' || form.id === 'FacetFiltersForm' || form.id === 'FacetSortDrawerForm') {
-    //         forms.push(this.createSearchParams(form));
-    //       }
-    //     } else if (form.id === 'FacetFiltersFormMobile') {
-    //       forms.push(this.createSearchParams(form));
-    //     }
-    //   });
-    //   this.onSubmitForm(forms.join('&'), event);
-    // }
+    if (event.srcElement.className == 'mobile-facets__checkbox') {
+      const searchParams = this.createSearchParams(event.target.closest('form'));
+      this.onSubmitForm(searchParams, event);
+    } else {
+      const forms = [];
+      const isMobile = event.target.closest('form').id === 'FacetFiltersFormMobile';
+
+      sortFilterForms.forEach((form) => {
+        if (!isMobile) {
+          if (form.id === 'FacetSortForm' || form.id === 'FacetFiltersForm' || form.id === 'FacetSortDrawerForm') {
+            forms.push(this.createSearchParams(form));
+          }
+        } else if (form.id === 'FacetFiltersFormMobile') {
+          forms.push(this.createSearchParams(form));
+        }
+      });
+      this.onSubmitForm(forms.join('&'), event);
+    }
   }
 
   onActiveFilterClick(event) {
