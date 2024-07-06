@@ -368,3 +368,15 @@ class FacetRemove extends HTMLElement {
 }
 
 customElements.define('facet-remove', FacetRemove);
+
+// const mobileFilterDetailsElement = document.querySelectorAll('#mobile_facet_smshrs')?.forEach((detailsElement) => {
+//   const summaryElement = detailsElement.firstChild;
+
+//   const closeButton = detailsElement.querySelector('#mobile_facets_close');
+//   closeButton.addEventListener('click', (event) => {
+//     summaryElement.setAttribute('aria-expanded', !summaryElement.closest('details').hasAttribute('open'));
+
+//     if (summaryElement.closest('header-drawer, menu-drawer')) return;
+//     summaryElement.parentElement.addEventListener('keyup', onKeyUpEscape);
+//   });
+// });
