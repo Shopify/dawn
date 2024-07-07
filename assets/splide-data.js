@@ -8,12 +8,10 @@ function disableCarouselArrows(carousel_id) {
 
   return function () {
     if (firstElement?.classList.contains('is-active')) {
-      console.log('disable prev');
       prevBtn.setAttribute('disabled', true);
     }
 
     if (lastElement?.classList.contains('is-active')) {
-      console.log('disable next');
       nextBtn.setAttribute('disabled', true);
     }
   };
