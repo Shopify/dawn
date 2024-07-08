@@ -515,11 +515,11 @@ class MenuDrawer extends HTMLElement {
         if (detailsElement.closest('details[open]')) {
           trapFocus(detailsElement.closest('details[open]'), detailsElement.querySelector('summary'));
         }
-      }
 
-      if (detailsElement.id === 'mobile_facet_smshrs') {
-        const mainContent = document.getElementById('MainContent');
-        mainContent.style.zIndex = 10;
+        if (detailsElement.id === 'mobile_facet_smshrs') {
+          const mainContent = document.getElementById('MainContent');
+          mainContent.style.zIndex = 10;
+        }
       }
     };
 
