@@ -16,6 +16,12 @@
   {{ 'component-totals.css' | asset_url | stylesheet_tag }}
   {{ 'component-price.css' | asset_url | stylesheet_tag }}
   {{ 'component-discounts.css' | asset_url | stylesheet_tag }}
+  {% elsif settings.cart_type == "minicart" %}
+    {{ 'component-minicart.css' | asset_url | stylesheet_tag }}
+    {{ 'component-cart.css' | asset_url | stylesheet_tag }}
+    {{ 'component-totals.css' | asset_url | stylesheet_tag }}
+    {{ 'component-price.css' | asset_url | stylesheet_tag }}
+    {{ 'component-discounts.css' | asset_url | stylesheet_tag }}
 {%- endif -%}
 
 <style>
@@ -286,6 +292,7 @@
         {%- endcase -%}
       {%- endfor -%}
 
+      {%- unless settings.cart_type == 'minicart' -%}
       <a href="{{ routes.cart_url }}" class="header__icon header__icon--cart link focus-inset" id="cart-icon-bubble">
         {%- liquid
           if cart == empty
@@ -304,6 +311,46 @@
           </div>
         {%- endif -%}
       </a>
+      {%- endunless -%}
+      {%- if settings.cart_type == 'minicart' -%}
+        <div class="cart-drawer-wrapper shopify-section" id="cart-drawer-wrapper" data-id="{{ section.id }}">
+          <a href="{{ routes.cart_url }}" class="cart-link"></a>
+            <span class="header__icon header__icon--cart link focus-inset" id="cart-icon-bubble">
+              {%- liquid
+                if cart == empty
+                  render 'icon-cart-empty'
+                else
+                  render 'icon-cart'
+                endif
+              -%}
+              <span class="visually-hidden">{{ 'templates.cart.cart' | t }}</span>
+                {% liquid
+                  assign services_count = 0
+                  for item in cart.items
+                    if item.product.tags contains settings.service_product_tag
+                      assign item_count = item.quantity
+                      assign services_count = services_count | plus: item_count
+                    endif
+                  endfor
+
+                  assign cart_count_excl_services = cart.item_count | minus: services_count
+                  assign cart_empty = false
+                  if cart_count_excl_services == 0
+                    assign cart_empty = true
+                  endif
+                %}
+            
+              <div class="cart-count-bubble {% if cart_empty %} is-empty {% endif %}">
+                <span aria-hidden="true">{%- if cart_count_excl_services < 100 -%} {{ cart_count_excl_services }} {% else %} >99 </100>{%- endif -%}</span>
+                <span class="visually-hidden">{{ 'sections.header.cart_count' | t: count: cart_count_excl_services }}</span>
+              </div>
+            </span>
+            {%- render 'cart-drawer' -%}
+            {%- if settings.cart_type == "minicart" -%}
+              <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
+            {%- endif -%}
+        </div>
+      {%- endif -%}
     </div>
   </header>
 </{% if section.settings.sticky_header_type != 'none' %}sticky-header{% else %}div{% endif %}>
