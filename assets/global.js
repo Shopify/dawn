@@ -1275,3 +1275,12 @@ class BulkAdd extends HTMLElement {
 if (!customElements.get('bulk-add')) {
   customElements.define('bulk-add', BulkAdd);
 }
+
+// Get the button
+let backToTopBtn = document.getElementById("back-to-top");
+// Scroll to the top when the button is clicked
+backToTopBtn.onclick = function() {
+  document.body.scrollTop = 0; // For Safari
+  document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+ document.querySelector('html').style.scrollBehavior = 'smooth';
+};
