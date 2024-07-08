@@ -396,6 +396,10 @@ class MenuDrawer extends HTMLElement {
     this.querySelectorAll(
       'button:not(.localization-selector):not(.country-selector__close-button):not(.country-filter__reset-button)'
     ).forEach((button) => button.addEventListener('click', this.onCloseButtonClick.bind(this)));
+
+    this.querySelectorAll('#mobile_facets_close').forEach((button) =>
+      button.addEventListener('click', this.onCloseButtonClick.bind(this))
+    );
   }
 
   onKeyUp(event) {
@@ -511,11 +515,11 @@ class MenuDrawer extends HTMLElement {
         if (detailsElement.closest('details[open]')) {
           trapFocus(detailsElement.closest('details[open]'), detailsElement.querySelector('summary'));
         }
+      }
 
-        if (detailsElement.id === 'mobile_facet_smshrs') {
-          const mainContent = document.getElementById('MainContent');
-          mainContent.style.zIndex = 10;
-        }
+      if (detailsElement.id === 'mobile_facet_smshrs') {
+        const mainContent = document.getElementById('MainContent');
+        mainContent.style.zIndex = 10;
       }
     };
 
