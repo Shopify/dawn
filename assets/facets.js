@@ -292,12 +292,34 @@ class FacetFiltersForm extends HTMLElement {
     FacetFiltersForm.renderPage(searchParams, event);
   }
 
+  validateForm(filter) {
+    const pricePrefix = 'filter.v.price=';
+    const [priceFilterQuery] = filter.split('&').filter((filter) => filter.includes(pricePrefix));
+
+    if (!priceFilterQuery) return filter;
+
+    const restFilter = filter.split('&').filter((filter) => !filter.includes(pricePrefix));
+
+    const [key, value] = priceFilterQuery.split('=');
+    const [minValue, maxValue] = value.split('-');
+
+    const lowerKey = key + '.gte';
+    const upperKey = key + '.lte';
+
+    const priceFilter = `${lowerKey}=${minValue}&${upperKey}=${maxValue}`;
+
+    return [priceFilter, ...restFilter].join('&');
+  }
+
   onSubmitHandler(event) {
     event.preventDefault();
     const sortFilterForms = document.querySelectorAll('facet-filters-form form');
 
-    if (event.srcElement.className == 'mobile-facets__checkbox') {
+    if (event.srcElement.className.includes('mobile-facets__checkbox')) {
       const searchParams = this.createSearchParams(event.target.closest('form'));
+      const validatedForm = this.validateForm(searchParams);
+      console.log(validatedForm, searchParams);
+
       this.onSubmitForm(searchParams, event);
     } else {
       const forms = [];
@@ -313,24 +335,8 @@ class FacetFiltersForm extends HTMLElement {
         }
       });
 
-      const validatedForms = forms.map((filter) => {
-        const pricePrefix = 'filter.v.price=';
-        const isSmshrPriceFilter = filter.includes(pricePrefix);
-
-        if (!isSmshrPriceFilter) return filter;
-
-        const [key, value] = filter.split('=');
-        const [minValue, maxValue] = value.split('-');
-
-        const lowerKey = key + '.gte';
-        const upperKey = key + '.lte';
-
-        FacetFiltersForm.renderPriceFiltersUpdate(minValue, maxValue);
-        const priceFilter = `${lowerKey}=${minValue}&${upperKey}=${maxValue}`;
-
-        return priceFilter;
-      });
-
+      const validatedForms = forms.map((form) => this.validateForm(form));
+      console.log(validatedForms);
       this.onSubmitForm(validatedForms.join('&'), event);
     }
   }
