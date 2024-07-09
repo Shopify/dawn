@@ -1,0 +1,127 @@
+{% comment %}
+  Renders a collection price filter facet
+
+  Accepts:
+  - filter : {Object} a price filter on the collection
+
+
+  Usage: {% render 'price-filter', filter: filter  %}
+{% endcomment %}
+
+{% liquid
+  assign min_price = 0
+  assign max_price = filter.range_max
+
+  assign step = 100
+  assign price_groups = ''
+
+  assign price_groups = price_groups | split: ','
+  assign price_groups = ''
+
+  for i in (min_price..max_price)
+    assign start_price = forloop.index0 | times: step
+    assign end_price = start_price | plus: step
+
+    if end_price <= max_price
+      assign price_group = start_price | append: '-' | append: end_price
+      assign price_groups = price_groups | append: price_group | append: ','
+    endif
+  endfor
+
+  assign price_groups = price_groups | split: ','
+%}
+
+<ul
+  class="{{ visual_layout_class }} facets__list--vertical list-unstyled"
+  role="list"
+>
+  {% comment %}
+    {%- capture contentForQuerystring -%}{{ content_for_header }}{%- endcapture -%}
+
+    {%- assign page_url = contentForQuerystring
+      | split: '"pageurl":"'
+      | last
+      | split: '"'
+      | first
+      | split: '.myshopify.com'
+      | last
+      | replace: '\/', '/'
+      | replace: '%20', ' '
+      | replace: '\u0026', '&'
+      | split: '?'
+      | last
+    -%}
+  {% endcomment %}
+
+  {% comment %} {{ page_url }} {% endcomment %}
+  {{ request.params.id['sort_by.gte'] }}
+
+  {%- for group in price_groups -%}
+    {% comment %}
+      <script>
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+
+        const priceString = urlParams.get('sort_by');
+        const page = urlParams.get('page');
+
+        // Log the values to the console
+        console.log('sort_by:', sortBy); // Output: "price-descending"
+        console.log('page:', page); // Output: "2"
+
+        // Iterate over all query parameters
+        urlParams.forEach((value, key) => {
+          console.log(`${key}: ${value}`);
+        });
+      </script>
+    {% endcomment %}
+
+    {% liquid
+      assign group_values = group | split: '-'
+      assign lower_limit = group_values[0]
+      assign upper_limit = group_values[1]
+
+      assign lower_price = lower_limit | money
+      assign upper_price = upper_limit | money
+
+      assign label = lower_price | append: ' - ' | append: upper_price
+
+      if forloop.index0 == 0
+        assign prefix = 'Under'
+        assign label = prefix | append: ' ' | append: upper_price
+      endif
+
+      assign input_id = id_prefix | append: filter.label | append: group
+      assign name = 'filter.v.price'
+
+      assign is_disabled = false
+      if value.count == 0 and value.active == false
+        assign is_disabled = true
+      endif
+    %}
+
+    {% comment %}
+      {%- capture label_class -%}
+        facets__label facet-checkbox{% if is_disabled %} disabled{% endif %}{% if value.active %} active{% endif %}
+      {%- endcapture -%}
+    {% endcomment %}
+
+    {%- capture text_value -%}
+      <span class="facet-checkbox__text leading-[18px]" aria-hidden="true">
+        <span class="facet-checkbox__text-label text-body-xs text-black">{{- label | escape }}</span> 
+      </span>
+    {%- endcapture -%}
+
+    <li class="list-menu__item facets__item py-mini {% if forloop.index > show_more_number %} show-more-item hidden{% endif %}">
+      {% render 'multi-select',
+        type: 'radio',
+        name: name,
+        value: group,
+        id: input_id,
+        is_checked: value.active,
+        is_disabled: is_disabled,
+        text_value: text_value
+      %}
+    </li>
+  {%- endfor -%}
+</ul>
