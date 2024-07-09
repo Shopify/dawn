@@ -35,47 +35,7 @@
   class="{{ visual_layout_class }} facets__list--vertical list-unstyled"
   role="list"
 >
-  {% comment %}
-    {%- capture contentForQuerystring -%}{{ content_for_header }}{%- endcapture -%}
-
-    {%- assign page_url = contentForQuerystring
-      | split: '"pageurl":"'
-      | last
-      | split: '"'
-      | first
-      | split: '.myshopify.com'
-      | last
-      | replace: '\/', '/'
-      | replace: '%20', ' '
-      | replace: '\u0026', '&'
-      | split: '?'
-      | last
-    -%}
-  {% endcomment %}
-
-  {% comment %} {{ page_url }} {% endcomment %}
-  {{ request.params.id['sort_by.gte'] }}
-
   {%- for group in price_groups -%}
-    {% comment %}
-      <script>
-        const queryString = window.location.search;
-        const urlParams = new URLSearchParams(queryString);
-
-        const priceString = urlParams.get('sort_by');
-        const page = urlParams.get('page');
-
-        // Log the values to the console
-        console.log('sort_by:', sortBy); // Output: "price-descending"
-        console.log('page:', page); // Output: "2"
-
-        // Iterate over all query parameters
-        urlParams.forEach((value, key) => {
-          console.log(`${key}: ${value}`);
-        });
-      </script>
-    {% endcomment %}
-
     {% liquid
       assign group_values = group | split: '-'
       assign lower_limit = group_values[0]
@@ -93,11 +53,6 @@
 
       assign input_id = id_prefix | append: filter.label | append: group
       assign name = 'filter.v.price'
-
-      assign is_disabled = false
-      if value.count == 0 and value.active == false
-        assign is_disabled = true
-      endif
     %}
 
     {% comment %}
@@ -113,15 +68,7 @@
     {%- endcapture -%}
 
     <li class="list-menu__item facets__item py-mini {% if forloop.index > show_more_number %} show-more-item hidden{% endif %}">
-      {% render 'multi-select',
-        type: 'radio',
-        name: name,
-        value: group,
-        id: input_id,
-        is_checked: value.active,
-        is_disabled: is_disabled,
-        text_value: text_value
-      %}
+      {% render 'price-select', name: name, value: group, id: input_id, text_value: text_value %}
     </li>
   {%- endfor -%}
 </ul>
