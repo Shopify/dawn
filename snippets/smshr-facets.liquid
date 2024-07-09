@@ -192,7 +192,6 @@
                         ({{ filter.active_values.size }})</span
                       >
                     </span>
-
                     {%- if filter.operator == 'AND' -%}
                       <span class="facets__and-helptext">
                         {{ 'products.facets.filter_and_operator_subtitle' | t }}
@@ -218,6 +217,7 @@
                         assign sorted_values = active_filter_values | concat: inactive_filter_values
                       endif
                     -%}
+
                     <ul
                       class="{{ visual_layout_class }} facets__list--vertical list-unstyled grid grid-cols-3 gap-mini"
                       role="list"
@@ -230,6 +230,9 @@
                             assign is_disabled = true
                           endif
                         %}
+
+                        {% comment %} {{ value.active }} {% endcomment %}
+
                         {%- capture label_class -%}
                           facets__label facet-checkbox{% if is_disabled %} disabled{% endif %}{% if value.active %} active{% endif %}
                         {%- endcapture -%}
@@ -386,6 +389,56 @@
                     </ul>
                   </fieldset>
                   {%- if filter.values.size > show_more_number and filter_type == 'vertical' -%}
+                    <show-more-button>
+                      <button
+                        class="button-show-more link underlined-link"
+                        id="Show-More-{{ forloop.index }}-{{ section.id }}"
+                        type="button"
+                      >
+                        <span class="label-show-more label-text"
+                          ><span aria-hidden="true">+ </span>{{ 'products.facets.show_more' | t -}}
+                        </span>
+                        <span class="label-show-less label-text hidden"
+                          ><span aria-hidden="true">- </span>{{ 'products.facets.show_less' | t -}}
+                        </span>
+                      </button>
+                    </show-more-button>
+                  {%- endif %}
+                </div>
+              </details>
+            {% when 'price' %}
+              <details
+                id="Details-{{ filter.param_name | escape }}-{{ section.id }}"
+                class="facets__disclosure-vertical js-filter border-t border-t-grey100 py-4"
+                data-index="{{ forloop.index }}"
+                {% if forloop.index == 1 %}
+                  open
+                {% endif %}
+              >
+                <summary
+                  class="facets__summary caption-large focus-offset"
+                  aria-label="{{ filter.label | escape }} ({{ 'products.facets.filters_selected.one' | t: count: filter.active_values.size }})"
+                >
+                  <div class="flex justify-between gap-small items-center py-mini">
+                    <span class="facets__summary-label">
+                      {{ filter.label }}
+                    </span>
+
+                    {% render 'icon-chevron-down', class: 'w-4 h-4' %}
+                  </div>
+                </summary>
+
+                <div
+                  id="Facet-{{ forloop.index }}-{{ section.id }}"
+                  class="parent-display mt-small facets__display-vertical"
+                >
+                  <fieldset class="facets-wrap parent-wrap facets-wrap-vertical">
+                    <legend class="visually-hidden">{{ filter.label | escape }}</legend>
+
+                    {% render 'price-filter', filter: filter, id_prefix: 'Filter-' %}
+                  </fieldset>
+
+                  {%- if filter.values.size > show_more_number -%}
                     <show-more-button>
                       <button
                         class="button-show-more link underlined-link"

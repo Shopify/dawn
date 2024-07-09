@@ -178,6 +178,8 @@ class FacetFiltersForm extends HTMLElement {
         if (newElementToActivate && !isTextInput) newElementToActivate.focus();
       }
     }
+
+    FacetFiltersForm.initializePriceFilters(window.location.search.slice(1));
   }
 
   static renderActiveFacets(html) {
@@ -254,6 +256,33 @@ class FacetFiltersForm extends HTMLElement {
     ];
   }
 
+  static initializePriceFilters(searchParams) {
+    const pricePrefix = 'filter.v.price';
+
+    const priceQuery = searchParams.split('&').filter((query) => query.includes(pricePrefix));
+
+    if (!priceQuery.length) return;
+
+    const [minValue, maxValue] = priceQuery.map((value) => value.split('=')[1]);
+
+    FacetFiltersForm.renderPriceFiltersUpdate(minValue, maxValue);
+  }
+
+  static renderPriceFiltersUpdate(minValue, maxValue) {
+    const priceRange = `${minValue}-${maxValue}`;
+    const priceInputs = document.querySelectorAll('input[name="filter.v.price"]');
+
+    const activePriceInputs = Array.from(priceInputs).filter((input) => {
+      const match = input.id.match(/(?:Mobile-Filter-Price|Filter-Price)([0-9]+-[0-9]+)/);
+      const strippedInputRange = match ? match[1] : '';
+      return strippedInputRange === priceRange;
+    });
+
+    activePriceInputs.forEach((input) => {
+      input.setAttribute('checked', '');
+    });
+  }
+
   createSearchParams(form) {
     const formData = new FormData(form);
     return new URLSearchParams(formData).toString();
@@ -283,7 +312,26 @@ class FacetFiltersForm extends HTMLElement {
           forms.push(this.createSearchParams(form));
         }
       });
-      this.onSubmitForm(forms.join('&'), event);
+
+      const validatedForms = forms.map((filter) => {
+        const pricePrefix = 'filter.v.price=';
+        const isSmshrPriceFilter = filter.includes(pricePrefix);
+
+        if (!isSmshrPriceFilter) return filter;
+
+        const [key, value] = filter.split('=');
+        const [minValue, maxValue] = value.split('-');
+
+        const lowerKey = key + '.gte';
+        const upperKey = key + '.lte';
+
+        FacetFiltersForm.renderPriceFiltersUpdate(minValue, maxValue);
+        const priceFilter = `${lowerKey}=${minValue}&${upperKey}=${maxValue}`;
+
+        return priceFilter;
+      });
+
+      this.onSubmitForm(validatedForms.join('&'), event);
     }
   }
 
@@ -303,6 +351,7 @@ FacetFiltersForm.searchParamsInitial = window.location.search.slice(1);
 FacetFiltersForm.searchParamsPrev = window.location.search.slice(1);
 customElements.define('facet-filters-form', FacetFiltersForm);
 FacetFiltersForm.setListeners();
+FacetFiltersForm.initializePriceFilters(window.location.search.slice(1));
 
 class PriceRange extends HTMLElement {
   constructor() {
@@ -368,15 +417,3 @@ class FacetRemove extends HTMLElement {
 }
 
 customElements.define('facet-remove', FacetRemove);
-
-// const mobileFilterDetailsElement = document.querySelectorAll('#mobile_facet_smshrs')?.forEach((detailsElement) => {
-//   const summaryElement = detailsElement.firstChild;
-
-//   const closeButton = detailsElement.querySelector('#mobile_facets_close');
-//   closeButton.addEventListener('click', (event) => {
-//     summaryElement.setAttribute('aria-expanded', !summaryElement.closest('details').hasAttribute('open'));
-
-//     if (summaryElement.closest('header-drawer, menu-drawer')) return;
-//     summaryElement.parentElement.addEventListener('keyup', onKeyUpEscape);
-//   });
-// });
