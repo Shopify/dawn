@@ -178,6 +178,8 @@ class FacetFiltersForm extends HTMLElement {
         if (newElementToActivate && !isTextInput) newElementToActivate.focus();
       }
     }
+
+    FacetFiltersForm.initializePriceFilters(window.location.search.slice(1));
   }
 
   static renderActiveFacets(html) {
@@ -254,6 +256,33 @@ class FacetFiltersForm extends HTMLElement {
     ];
   }
 
+  static initializePriceFilters(searchParams) {
+    const pricePrefix = 'filter.v.price';
+
+    const priceQuery = searchParams.split('&').filter((query) => query.includes(pricePrefix));
+
+    if (!priceQuery.length) return;
+
+    const [minValue, maxValue] = priceQuery.map((value) => value.split('=')[1]);
+
+    FacetFiltersForm.renderPriceFiltersUpdate(minValue, maxValue);
+  }
+
+  static renderPriceFiltersUpdate(minValue, maxValue) {
+    const priceRange = `${minValue}-${maxValue}`;
+    const priceInputs = document.querySelectorAll('input[name="filter.v.price"]');
+
+    const activePriceInputs = Array.from(priceInputs).filter((input) => {
+      const match = input.id.match(/(?:Mobile-Filter-Price|Filter-Price)([0-9]+-[0-9]+)/);
+      const strippedInputRange = match ? match[1] : '';
+      return strippedInputRange === priceRange;
+    });
+
+    activePriceInputs.forEach((input) => {
+      input.setAttribute('checked', '');
+    });
+  }
+
   createSearchParams(form) {
     const formData = new FormData(form);
     return new URLSearchParams(formData).toString();
@@ -263,12 +292,34 @@ class FacetFiltersForm extends HTMLElement {
     FacetFiltersForm.renderPage(searchParams, event);
   }
 
+  validateForm(filter) {
+    const pricePrefix = 'filter.v.price=';
+    const [priceFilterQuery] = filter.split('&').filter((filter) => filter.includes(pricePrefix));
+
+    if (!priceFilterQuery) return filter;
+
+    const restFilter = filter.split('&').filter((filter) => !filter.includes(pricePrefix));
+
+    const [key, value] = priceFilterQuery.split('=');
+    const [minValue, maxValue] = value.split('-');
+
+    const lowerKey = key + '.gte';
+    const upperKey = key + '.lte';
+
+    const priceFilter = `${lowerKey}=${minValue}&${upperKey}=${maxValue}`;
+
+    return [priceFilter, ...restFilter].join('&');
+  }
+
   onSubmitHandler(event) {
     event.preventDefault();
     const sortFilterForms = document.querySelectorAll('facet-filters-form form');
 
-    if (event.srcElement.className == 'mobile-facets__checkbox') {
+    if (event.srcElement.className.includes('mobile-facets__checkbox')) {
       const searchParams = this.createSearchParams(event.target.closest('form'));
+      const validatedForm = this.validateForm(searchParams);
+      console.log(validatedForm, searchParams);
+
       this.onSubmitForm(searchParams, event);
     } else {
       const forms = [];
@@ -283,7 +334,10 @@ class FacetFiltersForm extends HTMLElement {
           forms.push(this.createSearchParams(form));
         }
       });
-      this.onSubmitForm(forms.join('&'), event);
+
+      const validatedForms = forms.map((form) => this.validateForm(form));
+      console.log(validatedForms);
+      this.onSubmitForm(validatedForms.join('&'), event);
     }
   }
 
@@ -303,6 +357,7 @@ FacetFiltersForm.searchParamsInitial = window.location.search.slice(1);
 FacetFiltersForm.searchParamsPrev = window.location.search.slice(1);
 customElements.define('facet-filters-form', FacetFiltersForm);
 FacetFiltersForm.setListeners();
+FacetFiltersForm.initializePriceFilters(window.location.search.slice(1));
 
 class PriceRange extends HTMLElement {
   constructor() {
@@ -368,15 +423,3 @@ class FacetRemove extends HTMLElement {
 }
 
 customElements.define('facet-remove', FacetRemove);
-
-// const mobileFilterDetailsElement = document.querySelectorAll('#mobile_facet_smshrs')?.forEach((detailsElement) => {
-//   const summaryElement = detailsElement.firstChild;
-
-//   const closeButton = detailsElement.querySelector('#mobile_facets_close');
-//   closeButton.addEventListener('click', (event) => {
-//     summaryElement.setAttribute('aria-expanded', !summaryElement.closest('details').hasAttribute('open'));
-
-//     if (summaryElement.closest('header-drawer, menu-drawer')) return;
-//     summaryElement.parentElement.addEventListener('keyup', onKeyUpEscape);
-//   });
-// });
