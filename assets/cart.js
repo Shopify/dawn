@@ -60,8 +60,13 @@ class CartItems extends HTMLElement {
               targetElement.replaceWith(sourceElement);
             }
           }
-          if (document.querySelector('.shipping-bar')) {
-            cartDrawerUpdate();
+          const shippingBars = document.querySelectorAll('shipping-bar');
+          if (shippingBars.length > 0) {
+            shippingBars.forEach((shippingBar) => {
+              if (typeof shippingBar.updateShippingBar === 'function') {
+                shippingBar.updateShippingBar();
+              }
+            });
           }
         })
         .catch((e) => {
@@ -170,8 +175,13 @@ class CartItems extends HTMLElement {
           trapFocus(cartDrawerWrapper, document.querySelector('.cart-item__name'));
         }
 
-        if (document.querySelector('.shipping-bar')) {
-          cartDrawerUpdate();
+        const shippingBars = document.querySelectorAll('shipping-bar');
+        if (shippingBars.length > 0) {
+          shippingBars.forEach((shippingBar) => {
+            if (typeof shippingBar.updateShippingBar === 'function') {
+              shippingBar.updateShippingBar();
+            }
+          });
         }
 
         publish(PUB_SUB_EVENTS.cartUpdate, { source: 'cart-items', cartData: parsedState, variantId: variantId });
