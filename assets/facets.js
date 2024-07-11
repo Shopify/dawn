@@ -12,6 +12,8 @@ class FacetFiltersForm extends HTMLElement {
 
     const facetWrapper = this.querySelector('#FacetsWrapperDesktop');
     if (facetWrapper) facetWrapper.addEventListener('keyup', onKeyUpEscape);
+
+    FacetFiltersForm.attachPriceInputListeners();
   }
 
   static setListeners() {
@@ -69,6 +71,7 @@ class FacetFiltersForm extends HTMLElement {
         FacetFiltersForm.renderFilters(html, event);
         FacetFiltersForm.renderProductGridContainer(html);
         FacetFiltersForm.renderProductCount(html);
+        FacetFiltersForm.attachPriceInputListeners();
         if (typeof initializeScrollAnimationTrigger === 'function') initializeScrollAnimationTrigger(html.innerHTML);
       });
   }
@@ -78,7 +81,28 @@ class FacetFiltersForm extends HTMLElement {
     FacetFiltersForm.renderFilters(html, event);
     FacetFiltersForm.renderProductGridContainer(html);
     FacetFiltersForm.renderProductCount(html);
+    FacetFiltersForm.attachPriceInputListeners();
     if (typeof initializeScrollAnimationTrigger === 'function') initializeScrollAnimationTrigger(html.innerHTML);
+  }
+
+  static attachPriceInputListeners() {
+    const priceInputs = document.querySelectorAll('input[name="filter.v.price"]');
+    const regex = /(?:Mobile-)?Filter-price([0-9]+-[0-9]+)/;
+
+    priceInputs.forEach((checkbox) => {
+      checkbox.addEventListener('change', function () {
+        if (this.checked) {
+          const currentRange = this.id.match(regex)[1];
+          priceInputs.forEach((otherCheckbox) => {
+            const otherMatch = otherCheckbox.id.match(regex);
+
+            if (otherMatch && otherMatch[1] !== currentRange) {
+              otherCheckbox.checked = false;
+            }
+          });
+        }
+      });
+    });
   }
 
   static renderProductGridContainer(html) {
@@ -273,7 +297,7 @@ class FacetFiltersForm extends HTMLElement {
     const priceInputs = document.querySelectorAll('input[name="filter.v.price"]');
 
     const activePriceInputs = Array.from(priceInputs).filter((input) => {
-      const match = input.id.match(/(?:Mobile-Filter-Price|Filter-Price)([0-9]+-[0-9]+)/);
+      const match = input.id.match(/(?:Mobile-Filter-price|Filter-price)([0-9]+-[0-9]+)/);
       const strippedInputRange = match ? match[1] : '';
       return strippedInputRange === priceRange;
     });
@@ -318,9 +342,8 @@ class FacetFiltersForm extends HTMLElement {
     if (event.srcElement.className.includes('mobile-facets__checkbox')) {
       const searchParams = this.createSearchParams(event.target.closest('form'));
       const validatedForm = this.validateForm(searchParams);
-      console.log(validatedForm, searchParams);
 
-      this.onSubmitForm(searchParams, event);
+      this.onSubmitForm(validatedForm, event);
     } else {
       const forms = [];
       const isMobile = event.target.closest('form').id === 'FacetFiltersFormMobile';
@@ -336,7 +359,6 @@ class FacetFiltersForm extends HTMLElement {
       });
 
       const validatedForms = forms.map((form) => this.validateForm(form));
-      console.log(validatedForms);
       this.onSubmitForm(validatedForms.join('&'), event);
     }
   }
