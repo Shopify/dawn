@@ -5,6 +5,10 @@ if (!customElements.get('quick-add-modal')) {
       constructor() {
         super();
         this.modalContent = this.querySelector('[id^="QuickAddInfo-"]');
+
+        this.addEventListener('product-info:loaded', ({ target }) => {
+          target.addPreProcessCallback(this.preprocessHTML.bind(this));
+        });
       }
 
       hide(preventFocus = false) {
@@ -25,24 +29,16 @@ if (!customElements.get('quick-add-modal')) {
           .then((response) => response.text())
           .then((responseText) => {
             const responseHTML = new DOMParser().parseFromString(responseText, 'text/html');
-            this.productElement = responseHTML.querySelector('section[id^="MainProduct-"]');
-            this.productElement.classList.forEach((classApplied) => {
-              if (classApplied.startsWith('color-') || classApplied === 'gradient')
-                this.modalContent.classList.add(classApplied);
-            });
-            this.preventDuplicatedIDs();
-            this.removeDOMElements();
-            this.setInnerHTML(this.modalContent, this.productElement.innerHTML);
+            const productElement = responseHTML.querySelector('product-info');
+
+            this.preprocessHTML(productElement);
+            HTMLUpdateUtility.setInnerHTML(this.modalContent, productElement.outerHTML);
 
             if (window.Shopify && Shopify.PaymentButton) {
               Shopify.PaymentButton.init();
             }
-
             if (window.ProductModel) window.ProductModel.loadShopifyXR();
 
-            this.removeGalleryListSemantic();
-            this.updateImageSizes();
-            this.preventVariantURLSwitching();
             super.show(opener);
           })
           .finally(() => {
@@ -52,57 +48,59 @@ if (!customElements.get('quick-add-modal')) {
           });
       }
 
-      setInnerHTML(element, html) {
-        element.innerHTML = html;
-
-        // Reinjects the script tags to allow execution. By default, scripts are disabled when using element.innerHTML.
-        element.querySelectorAll('script').forEach((oldScriptTag) => {
-          const newScriptTag = document.createElement('script');
-          Array.from(oldScriptTag.attributes).forEach((attribute) => {
-            newScriptTag.setAttribute(attribute.name, attribute.value);
-          });
-          newScriptTag.appendChild(document.createTextNode(oldScriptTag.innerHTML));
-          oldScriptTag.parentNode.replaceChild(newScriptTag, oldScriptTag);
+      preprocessHTML(productElement) {
+        productElement.classList.forEach((classApplied) => {
+          if (classApplied.startsWith('color-') || classApplied === 'gradient')
+            this.modalContent.classList.add(classApplied);
         });
+        this.preventDuplicatedIDs(productElement);
+        this.removeDOMElements(productElement);
+        this.removeGalleryListSemantic(productElement);
+        this.updateImageSizes(productElement);
+        this.preventVariantURLSwitching(productElement);
       }
 
-      preventVariantURLSwitching() {
-        const variantPicker = this.modalContent.querySelector('variant-radios,variant-selects');
-        if (!variantPicker) return;
-
-        variantPicker.setAttribute('data-update-url', 'false');
+      preventVariantURLSwitching(productElement) {
+        productElement.setAttribute('data-update-url', 'false');
       }
 
-      removeDOMElements() {
-        const pickupAvailability = this.productElement.querySelector('pickup-availability');
+      removeDOMElements(productElement) {
+        const pickupAvailability = productElement.querySelector('pickup-availability');
         if (pickupAvailability) pickupAvailability.remove();
 
-        const productModal = this.productElement.querySelector('product-modal');
+        const productModal = productElement.querySelector('product-modal');
         if (productModal) productModal.remove();
 
-        const modalDialog = this.productElement.querySelectorAll('modal-dialog');
+        const modalDialog = productElement.querySelectorAll('modal-dialog');
         if (modalDialog) modalDialog.forEach((modal) => modal.remove());
       }
 
-      preventDuplicatedIDs() {
-        const sectionId = this.productElement.dataset.section;
-        this.productElement.innerHTML = this.productElement.innerHTML.replaceAll(sectionId, `quickadd-${sectionId}`);
-        this.productElement.querySelectorAll('variant-selects, variant-radios, product-info').forEach((element) => {
-          element.dataset.originalSection = sectionId;
+      preventDuplicatedIDs(productElement) {
+        const sectionId = productElement.dataset.section;
+
+        const oldId = sectionId;
+        const newId = `quickadd-${sectionId}`;
+        productElement.innerHTML = productElement.innerHTML.replaceAll(oldId, newId);
+        Array.from(productElement.attributes).forEach((attribute) => {
+          if (attribute.value.includes(oldId)) {
+            productElement.setAttribute(attribute.name, attribute.value.replace(oldId, newId));
+          }
         });
+
+        productElement.dataset.originalSection = sectionId;
       }
 
-      removeGalleryListSemantic() {
-        const galleryList = this.modalContent.querySelector('[id^="Slider-Gallery"]');
+      removeGalleryListSemantic(productElement) {
+        const galleryList = productElement.querySelector('[id^="Slider-Gallery"]');
         if (!galleryList) return;
 
         galleryList.setAttribute('role', 'presentation');
         galleryList.querySelectorAll('[id^="Slide-"]').forEach((li) => li.setAttribute('role', 'presentation'));
       }
 
-      updateImageSizes() {
-        const product = this.modalContent.querySelector('.product');
-        const desktopColumns = product.classList.contains('product--columns');
+      updateImageSizes(productElement) {
+        const product = productElement.querySelector('.product');
+        const desktopColumns = product?.classList.contains('product--columns');
         if (!desktopColumns) return;
 
         const mediaImages = product.querySelectorAll('.product__media img');

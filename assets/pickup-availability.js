@@ -13,6 +13,8 @@ if (!customElements.get('pickup-availability')) {
       }
 
       fetchAvailability(variantId) {
+        if (!variantId) return;
+
         let rootUrl = this.dataset.rootUrl;
         if (!rootUrl.endsWith('/')) {
           rootUrl = rootUrl + '/';
@@ -34,8 +36,17 @@ if (!customElements.get('pickup-availability')) {
           });
       }
 
-      onClickRefreshList(evt) {
+      onClickRefreshList() {
         this.fetchAvailability(this.dataset.variantId);
+      }
+
+      update(variant) {
+        if (variant?.available) {
+          this.fetchAvailability(variant.id);
+        } else {
+          this.removeAttribute('available');
+          this.innerHTML = '';
+        }
       }
 
       renderError() {
