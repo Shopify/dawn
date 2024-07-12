@@ -71,6 +71,7 @@ try {
     drag: 'free',
     snap: true,
     autoWidth: true,
+    autoHeight: true,
   };
 
   teaserCarousels.forEach((carousel) => {
