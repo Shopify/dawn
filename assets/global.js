@@ -711,6 +711,12 @@ class DeferredMedia extends HTMLElement {
         // force autoplay for safari
         deferredElement.play();
       }
+
+      const formerStyle = deferredElement.getAttribute('style');
+      deferredElement.setAttribute('style', 'display: block;');
+      window.setTimeout(() => {
+        deferredElement.setAttribute('style', formerStyle);
+      }, 0);
     }
   }
 }
