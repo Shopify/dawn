@@ -2,21 +2,20 @@
 {{ 'splide-data.css' | asset_url | stylesheet_tag }}
 
 {% liquid
-  assign products = section.settings.collection.products
-  assign carousel_id = 'Highlights-' | append: section.id
+  assign carousel_id = 'Teaser-Carousel-' | append: section.id
 %}
 
 <div
-  class="related-products block"
+  class="block"
 >
-  {% unless products.size == 0 %}
+  {% unless section.blocks.size == 0 %}
     <div
       id="{{carousel_id}}"
       class="splide"
-      aria-label="carousel with thumbnail"
+      aria-label="teaser carousel"
     >
       <div class="relative flex justify-between mr-base items-center mb-base">
-        <h1 class="text-h-md">{{ section.settings.heading }}</h1>
+        <h1 class="text-h-md">{{ section.settings.headline }}</h1>
 
         <div class="splide__arrows flex gap-base">
           {% render 'prev', class: 'splide__arrow splide__arrow--prev' %}
@@ -27,9 +26,15 @@
       <div class="relative">
         <div class="splide__track">
           <ul class="splide__list">
-            {% for product in products limit: section.settings.products_to_show %}
+            {% for block in section.blocks %}
+              {% assign teaser = block.settings %}
               <li class="splide__slide">
-                {% render 'product-card', product: product, class: '!border-0' %}
+                {% render 'teaser',
+                  image: teaser.image,
+                  headline: teaser.headline,
+                  copy: teaser.copy,
+                  price: teaser.price
+                %}
               </li>
             {% endfor %}
           </ul>
@@ -39,41 +44,64 @@
   {% endunless %}
 </div>
 
-{% unless products.size == 0 %}
+{% unless section.blocks.size == 0 %}
   <script src="{{ 'splide.min.js' | asset_url }}" defer="defer"></script>
-  <script src="{{ 'splide-collection-carousel.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'splide-carousel.js' | asset_url }}" defer="defer"></script>
 {% endunless %}
 
 {% schema %}
 {
-  "name": "t:sections.collection-carousel.name",
+  "name": "t:sections.teaser-carousel.name",
   "tag": "section",
   "class": "section",
   "settings": [
     {
       "type": "text",
-      "id": "heading",
-      "default": "Recently Added",
-      "label": "t:sections.collection-carousel.settings.heading.label"
-    },
+      "id": "headline",
+      "default": "Highlights",
+      "label": "t:sections.teaser-carousel.settings.headline.label"
+    }
+  ],
+  "blocks": [
     {
-      "type": "range",
-      "id": "products_to_show",
-      "min": 2,
-      "max": 20,
-      "step": 1,
-      "default": 10,
-      "label": "t:sections.collection-carousel.settings.products_to_show.label"
-    },
-    {
-      "type": "collection",
-      "id": "collection",
-      "label": "t:sections.collection-carousel.settings.collection.label"
+      "type": "teaser",
+      "name": "t:sections.teaser-carousel.blocks.teaser.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "headline",
+          "label": "t:sections.teaser-carousel.blocks.teaser.settings.headline.label"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:sections.teaser-carousel.blocks.teaser.settings.image.label"
+        },
+        {
+          "type": "richtext",
+          "id": "teaser_copy",
+          "label": "t:sections.teaser-carousel.blocks.teaser.settings.teaser_copy.label"
+        },
+        {
+          "type": "number",
+          "id": "price",
+          "label": "t:sections.teaser-carousel.blocks.teaser.settings.price.label",
+          "info": "t:sections.teaser-carousel.blocks.teaser.settings.price.info"
+        }
+      ]
     }
   ],
   "presets": [
     {
-      "name": "t:sections.collection-carousel.presets.name"
+      "name": "t:sections.teaser-carousel.presets.name",
+      "blocks": [
+        {
+          "type": "teaser"
+        },
+        {
+          "type": "teaser"
+        }
+      ]
     }
   ]
 }

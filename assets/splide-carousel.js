@@ -17,10 +17,12 @@ function disableCarouselArrows(carousel_id) {
   };
 }
 
-function createRelatedProducts(carouselId) {
+function createRelatedProducts(carouselId, options) {
   const id = `#${carouselId}`;
-  try {
-    const related_carousel = new Splide(id, {
+
+  const carouselOptions = Object.assign(
+    {},
+    {
       cover: true,
       pagination: false,
       perPage: 4,
@@ -38,7 +40,12 @@ function createRelatedProducts(carouselId) {
           perPage: 2,
         },
       },
-    });
+    },
+    options
+  );
+
+  try {
+    const related_carousel = new Splide(id, carouselOptions);
 
     related_carousel.on('arrows:updated', disableCarouselArrows(carouselId));
     related_carousel.mount();
@@ -48,10 +55,27 @@ function createRelatedProducts(carouselId) {
   }
 }
 
-try {
-  const collectionCarousels = document.querySelectorAll('[id^="Collection-Carousel-"]');
+/**
+ * Create teaser carousel
+ */
 
-  collectionCarousels.forEach((carousel) => {
-    createRelatedProducts(carousel.id);
+try {
+  const teaserCarousels = document.querySelectorAll('[id^="Teaser-Carousel-"]');
+  const options = {
+    cover: true,
+    pagination: false,
+    perPage: 1,
+    perMove: 1,
+    focus: 0,
+    omitEnd: true,
+    drag: 'free',
+    snap: true,
+    autoWidth: true,
+  };
+
+  teaserCarousels.forEach((carousel) => {
+    createRelatedProducts(carousel.id, options);
   });
-} catch (error) {}
+} catch (error) {
+  console.error('Unable to create teaser carousel', error);
+}
