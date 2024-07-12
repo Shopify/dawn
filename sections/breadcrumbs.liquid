@@ -1,0 +1,293 @@
+{% comment %}
+  Usage
+
+  Add the section to a template to display breadcrumbs for the current page. The breadcrumbs will show the path from the home page to the current page. For products, it will display the path from the first collection to the product, and for blog posts, it will display the path from the blog it belongs to.
+
+  Customization:
+
+  1. Custom Path for Collections:
+     - Create a collection metafield: collection.metafields.custom.parent_collection
+     - When assigned to a collection, the breadcrumb path will be: Home > Parent Collection > Collection
+
+  2. Custom Path for Products:
+     - Create a product metafield: product.metafields.custom.main_collection
+     - When assigned to a product, the breadcrumb path will be: Home > Main Collection > Product
+
+  3. Combining Both Metafields for Products:
+     - When both metafields are assigned to a product, the breadcrumb path will be: Home > Parent Collection > Main Collection > Product
+{% endcomment %}
+
+{% liquid
+  assign t = template | split: '.' | first
+  assign parent_collection_title = collection.metafields.custom.parent_collection.value.title
+  assign parent_collection_link = collection.metafields.custom.parent_collection.value.url
+  assign main_collection = product.metafields.custom.main_collection.value.title
+  assign main_collection_link = product.metafields.custom.main_collection.value.url
+%}
+
+<div class="color-{{ section.settings.color_scheme }}">
+  <div class="breadcrumbs page-width section-{{ section.id }}-padding">
+    <div
+      role="navigation"
+      aria-label="breadcrumbs"
+      class="breadcrumbs-wrapper"
+      itemscope
+      itemtype="https://schema.org/BreadcrumbList"
+    >
+      <a class="breadcrumb_link" href="/" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <span itemprop="name">Home</span>
+        <meta itemprop="position" content="1">
+      </a>
+      <span aria-hidden="true" class="breadcrumb_arrow">{%- render 'icon-caret' -%}</span>
+      {% case t %}
+        {%- when 'article' -%}
+          <a
+            class="breadcrumb_link"
+            href="{{ blog.url }}"
+            itemprop="itemListElement"
+            itemscope
+            itemtype="https://schema.org/ListItem"
+          >
+            <span itemprop="name">{{ blog.title }}</span>
+            <meta itemprop="position" content="2">
+          </a>
+          <span aria-hidden="true" class="breadcrumb_arrow">{%- render 'icon-caret' -%}</span>
+          <span
+            class="breadcrumb_text"
+            aria-current="page"
+            itemprop="itemListElement"
+            itemscope
+            itemtype="https://schema.org/ListItem"
+          >
+            <span itemprop="name">{{ article.title }}</span>
+            <meta itemprop="position" content="3">
+          </span>
+        {% when 'product' %}
+          {% assign position = 2 %}
+          {% for collection in product.collections limit: 1 %}
+            {% if parent_collection_title != blank %}
+              <a
+                class="breadcrumb_link"
+                href="{{ parent_collection_link }}"
+                itemprop="itemListElement"
+                itemscope
+                itemtype="https://schema.org/ListItem"
+              >
+                <span itemprop="name">{{ parent_collection_title }}</span>
+                <meta itemprop="position" content="{{ position }}">
+              </a>
+              <span aria-hidden="true" class="breadcrumb_arrow">{%- render 'icon-caret' -%}</span>
+              {% assign position = position | plus: 1 %}
+            {% endif %}
+            <a
+              class="breadcrumb_link"
+              href="{{ collection.url }}"
+              itemprop="itemListElement"
+              itemscope
+              itemtype="https://schema.org/ListItem"
+            >
+              <span itemprop="name">{{ collection.title }}</span>
+              <meta itemprop="position" content="{{ position }}">
+            </a>
+            <span aria-hidden="true" class="breadcrumb_arrow">{%- render 'icon-caret' -%}</span>
+            {% assign position = position | plus: 1 %}
+          {% endfor %}
+          {% if main_collection != blank %}
+            <a
+              class="breadcrumb_link"
+              href="{{ main_collection_link }}"
+              itemprop="itemListElement"
+              itemscope
+              itemtype="https://schema.org/ListItem"
+            >
+              <span itemprop="name">{{ main_collection }}</span>
+              <meta itemprop="position" content="{{ position }}">
+            </a>
+            <span aria-hidden="true" class="breadcrumb_arrow">{%- render 'icon-caret' -%}</span>
+            {% assign position = position | plus: 1 %}
+          {% endif %}
+          <span
+            class="breadcrumb_text"
+            aria-current="page"
+            itemprop="itemListElement"
+            itemscope
+            itemtype="https://schema.org/ListItem"
+          >
+            <span itemprop="name">{{ product.title }}</span>
+            <meta itemprop="position" content="{{ position }}">
+          </span>
+        {% when 'collection' and collection.handle %}
+          {% assign position = 2 %}
+          {% if parent_collection_title != blank %}
+            <a
+              class="breadcrumb_link"
+              href="{{ parent_collection_link }}"
+              itemprop="itemListElement"
+              itemscope
+              itemtype="https://schema.org/ListItem"
+            >
+              <span itemprop="name">{{ parent_collection_title }}</span>
+              <meta itemprop="position" content="{{ position }}">
+            </a>
+            <span aria-hidden="true" class="breadcrumb_arrow">{%- render 'icon-caret' -%}</span>
+            {% assign position = position | plus: 1 %}
+          {% endif %}
+          <span
+            class="breadcrumb_text"
+            aria-current="page"
+            itemprop="itemListElement"
+            itemscope
+            itemtype="https://schema.org/ListItem"
+          >
+            <span itemprop="name">{{ collection.title }}</span>
+            <meta itemprop="position" content="{{ position }}">
+          </span>
+        {% when 'page' %}
+          <span
+            class="breadcrumb_text"
+            aria-current="page"
+            itemprop="itemListElement"
+            itemscope
+            itemtype="https://schema.org/ListItem"
+          >
+            <span itemprop="name">{{ page.title }}</span>
+            <meta itemprop="position" content="2">
+          </span>
+      {% endcase %}
+    </div>
+  </div>
+</div>
+
+{% style %}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.mobile_padding_top }}px;
+    padding-bottom: {{ section.settings.mobile_padding_bottom }}px;
+  }
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+  .section-{{ section.id }}-padding .breadcrumb_link,
+  .section-{{ section.id }}-padding .breadcrumb_text,
+  .section-{{ section.id }}-padding .breadcrumb_arrow {
+    color: inherit;
+    text-decoration: none;
+    line-height: normal;
+    font-size: {{ section.settings.font_size_mobile }}px;
+  }
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding .breadcrumb_link,
+    .section-{{ section.id }}-padding .breadcrumb_text,
+    .section-{{ section.id }}-padding .breadcrumb_arrow {
+        font-size: {{ section.settings.font_size_desktop }}px;
+    }
+  }
+  .breadcrumbs-wrapper {
+    line-height: normal;
+  }
+  .breadcrumb_arrow svg {
+    transform: rotate(270deg);
+    width: 10px;
+  }
+  .breadcrumb_link:hover {
+    opacity: 0.6;
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "t:sections.breadcrumbs.name",
+  "class": "breadcrumbs",
+  "disabled_on": {
+    "groups": ["header", "footer"],
+    "templates": ["index"]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.navigation_label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.breadcrumbs.settings.content.label"
+    },
+    {
+      "type": "range",
+      "id": "font_size_desktop",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "t:sections.breadcrumbs.settings.font_size_desktop.label",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "font_size_mobile",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "t:sections.breadcrumbs.settings.font_size_mobile.label",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_mobile_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.mobile_padding_top",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.mobile_padding_bottom",
+      "default": 10
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.breadcrumbs.presets.name"
+    }
+  ]
+}
+{% endschema %}
