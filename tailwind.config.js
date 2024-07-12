@@ -38,10 +38,6 @@ module.exports = {
     },
 
     fontSize: {
-      'h-lg': ['80px', styles.headingStyles],
-      'h-md': ['40px', styles.headingStyles],
-      'h-sm': ['24px', styles.headingStyles],
-      'h-xs': ['18px', styles.headingStyles],
       't-xlg': ['36px', { ...styles.titleStyles, letterSpacing: '-0.36px' }],
       't-lg': ['24px', styles.titleStyles],
       't-md': ['20px', styles.titleStyles],
@@ -75,6 +71,7 @@ module.exports = {
       screens: {
         tabletUp: '400px',
         desktopUp: '800px',
+        '5kUp': '2400',
       },
     },
   },
@@ -100,6 +97,38 @@ module.exports = {
           fontSize: '12px',
           textTransform: 'uppercase',
           fontFamily: '"National 2"',
+        },
+        '.text-h-lg': {
+          ...styles.headingStyles,
+          fontSize: '80px',
+          textTransform: 'uppercase',
+          fontFamily: '"National 2 Compressed"',
+        },
+        '.text-h-md': {
+          ...styles.headingStyles,
+          fontSize: '40px',
+          textTransform: 'uppercase',
+          fontFamily: '"National 2 Compressed"',
+        },
+        '.text-h-sm': {
+          ...styles.headingStyles,
+          fontSize: '24px',
+          lineHeight: '20px',
+          textTransform: 'uppercase',
+          fontFamily: '"National 2 Compressed"',
+        },
+        '.text-h-xs': {
+          ...styles.headingStyles,
+          fontSize: '18px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.36px',
+          fontFamily: '"National 2 Compressed"',
+        },
+        '.text-mb-lg': {
+          ...styles.headingStyles,
+          fontSize: '60px',
+          textTransform: 'uppercase',
+          fontFamily: '"National 2 Compressed"',
         },
       };
       addComponents(typography);
