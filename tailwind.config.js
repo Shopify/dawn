@@ -49,6 +49,15 @@ module.exports = {
       'body-xs': ['14px', styles.bodyStyles],
       'btn-xs': ['12px', styles.titleStyles],
     },
+    screens: {
+      tabletUp: '400px',
+      sm: '640px',
+      md: '800px',
+      lg: '1024px',
+      xl: '1280px',
+      '2xl': '1536px',
+      '5kUp': '2400px',
+    },
     extend: {
       borderRadius: {
         '4xl': '32px',
@@ -67,11 +76,6 @@ module.exports = {
         huge: 48,
         xl: 60,
         mega: 80,
-      },
-      screens: {
-        tabletUp: '400px',
-        desktopUp: '800px',
-        '5kUp': '2400',
       },
     },
   },
