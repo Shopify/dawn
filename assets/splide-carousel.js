@@ -93,6 +93,13 @@ try {
     snap: true,
     autoWidth: true,
     autoHeight: true,
+    gap: '48px',
+    rewind: true,
+    breakpoints: {
+      800: {
+        gap: '24px',
+      },
+    },
   };
 
   teaserCarousels.forEach((carousel) => {
