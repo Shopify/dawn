@@ -80,3 +80,24 @@ try {
 } catch (error) {
   console.error('Unable to create teaser carousel', error);
 }
+
+try {
+  const teaserCarousels = document.querySelectorAll('[id^="Small-Teaser-Carousel-"]');
+  const options = {
+    cover: true,
+    pagination: false,
+    perMove: 2,
+    focus: 0,
+    omitEnd: true,
+    drag: 'free',
+    snap: true,
+    autoWidth: true,
+    autoHeight: true,
+  };
+
+  teaserCarousels.forEach((carousel) => {
+    createRelatedProducts(carousel.id, options);
+  });
+} catch (error) {
+  console.error('Unable to create teaser carousel', error);
+}
