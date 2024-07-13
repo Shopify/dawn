@@ -4,7 +4,7 @@
   - image: {Object} teaser image url
   - title: {String} Teaser title
   - class: { String} css classes
-  -url : {String} url link
+  - url : {String} url link
   -variant: {String} teaser variant (small|medium)
 
   Usage:
@@ -14,25 +14,38 @@
   %}
 {% endcomment %}
 
-<div>
-  <a href="{{ url }}" class="flex flex-col gap-base {{ class }}">
-    <div class="w-[300px] aspect-square">
-      {%- if image -%}
-        {%- liquid
-          assign sizes = '100vw'
-          assign widths = '300'
-          assign height = image.width | divided_by: image.aspect_ratio | round
-        -%}
-        {{
-          image
-          | image_url: width: 300
-          | image_tag: loading: 'lazy', height: height, sizes: sizes, widths: widths, class: 'w-full h-full object-fill'
-        }}
-      {%- else -%}
-        {{ 'hero-apparel-1' | placeholder_svg_tag: 'placeholder-svg aspect-[1]' }}
-      {%- endif -%}
-    </div>
+{% liquid
+  assign base_class = 'w-[300px] h-[300px] aspe'
+  assign text_class = ''
 
-    <p class="text-t-md">{{ title }}</p>
-  </a>
-</div>
+  if variant == 'small'
+    assign base_class = base_class | append: ' w-[300px] h-[300px] aspect-square'
+    assign img_class = base_class | append: ' w-full h-full aspect-square object-cover'
+    assign text_class = text_class | append: ' text-t-md'
+  else
+    assign base_class = base_class | append: ' w-[300px] h-[404px] aspect-[75_/_101] xl:w-[400px] xl:w-[540px] xl:aspect-[20_/_27] relative'
+    assign img_class = base_class | append: ' aspect-[75_/_101] xl:aspect-[20_/_27] object-cover'
+    assign text_class = text_class | append: ' absolute bottom-huge text-white text-h-md text-center'
+  endif
+%}
+
+<a href="{{ url }}" class="flex flex-col gap-base {{ base_class }} {{ class }}">
+  <div class="w-[300px] aspect-square">
+    {%- if image -%}
+      {%- liquid
+        assign sizes = '100vw'
+        assign widths = '300'
+        assign height = image.width | divided_by: image.aspect_ratio | round
+      -%}
+      {{
+        image
+        | image_url: width: 300
+        | image_tag: loading: 'lazy', height: height, sizes: sizes, widths: widths, class: img_class
+      }}
+    {%- else -%}
+      {{ 'hero-apparel-1' | placeholder_svg_tag: 'placeholder-svg' }}
+    {%- endif -%}
+  </div>
+
+  <p class="{{text_class}}">{{ title }}</p>
+</a>
