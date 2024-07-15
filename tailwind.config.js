@@ -83,11 +83,15 @@ module.exports = {
     plugin(function ({ addComponents, config, addUtilities }) {
       const typography = {
         '.link-sm': {
-          ...config('theme.fontSize["body-sm"]'),
+          fontSize: '16px',
+          lineHeight: 'normal',
+          fontWeight: '400',
           textDecoration: 'underline',
         },
         '.link-xs': {
-          ...config('theme.fontSize["body-xs"]'),
+          fontSize: '14px',
+          lineHeight: 'normal',
+          fontWeight: '400',
           textDecoration: 'underline',
         },
         '.btn-sm': {
