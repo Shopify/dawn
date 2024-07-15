@@ -1104,6 +1104,72 @@ class HotSpots extends HTMLElement {
 
 customElements.define('hot-spots', HotSpots);
 
+class ShippingBar extends HTMLElement {
+  constructor() {
+    super();
+  }
+
+  connectedCallback() {
+    this.thresholdAmount = parseFloat(this.getAttribute('threshold-amount'));
+    this.progressBarBg = this.getAttribute('progress-bar-bg');
+    this.progressBarColor = this.getAttribute('progress-bar-color');
+    this.shippingBarText = this.getAttribute('shipping-bar-text');
+    this.shippingBarSuccess = this.getAttribute('shipping-bar-success');
+
+    this.initStyles();
+    this.updateShippingBar();
+  }
+
+  initStyles() {
+    const progressBar = this.querySelector('.shipping-bar__bar');
+    const progressBarProgress = this.querySelector('.shipping-bar__progress');
+    if (progressBar) {
+      progressBar.style.backgroundColor = this.progressBarBg;
+    }
+    if (progressBarProgress) {
+      progressBarProgress.style.backgroundColor = this.progressBarColor;
+    }
+  }
+
+  updateShippingBar() {
+    fetch('/cart.js')
+      .then((response) => response.json())
+      .then((data) => {
+        this.calculateProgress(data.total_price);
+      })
+      .catch((error) => console.error('Error updating shipping bar:', error));
+  }
+
+  calculateProgress(currentVal) {
+    const progressBar = this.querySelector('.shipping-bar__progress');
+    const progressOuter = this.querySelector('.shipping-bar__remain');
+    const successMsg = this.querySelector('.shipping-bar__success');
+    const result = Math.round((100 * currentVal) / this.thresholdAmount);
+
+    const shippingBarText = this.getAttribute('shipping-bar-text');
+    const shippingBarSuccess = this.getAttribute('shipping-bar-success');
+    const shippingBarCurrency = this.getAttribute('shipping-bar-currency');
+
+    if (progressBar) {
+      progressBar.style.width = `${result}%`;
+    }
+
+    let remainingAmount = this.thresholdAmount - currentVal;
+    if (remainingAmount <= 0) {
+      progressOuter.style.display = 'none';
+      successMsg.style.display = 'block';
+      successMsg.textContent = shippingBarSuccess;
+    } else {
+      let formattedAmount = new Intl.NumberFormat('fr-FR', { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(remainingAmount / 100);
+      progressOuter.style.display = 'block';
+      successMsg.style.display = 'none';
+      progressOuter.innerHTML = shippingBarText.replace('$', formattedAmount + ' ' + shippingBarCurrency);
+    }
+  }
+}
+
+customElements.define('shipping-bar', ShippingBar);
+
 // Prevent section from constant switching to 1st tab on re-render
 if (Shopify.designMode) {
   tabSectionsInit();
