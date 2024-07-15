@@ -108,3 +108,31 @@ try {
 } catch (error) {
   console.error('Unable to create teaser carousel', error);
 }
+
+try {
+  const teaserCarousels = document.querySelectorAll('[id^="TikTok-Carousel-"]');
+  const options = {
+    cover: true,
+    pagination: false,
+    perMove: 1,
+    focus: 0,
+    drag: 'free',
+    snap: true,
+    autoWidth: true,
+    autoHeight: true,
+    gap: '48px',
+    type: 'loop',
+    focus: 'center',
+    breakpoints: {
+      800: {
+        gap: '24px',
+      },
+    },
+  };
+
+  teaserCarousels.forEach((carousel) => {
+    createRelatedProducts(carousel.id, options);
+  });
+} catch (error) {
+  console.error('Unable to create teaser carousel', error);
+}
