@@ -86,7 +86,7 @@ try {
   const options = {
     cover: true,
     pagination: false,
-    perMove: 2,
+    perMove: 1,
     focus: 0,
     omitEnd: true,
     drag: 'free',
