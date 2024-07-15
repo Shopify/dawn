@@ -121,6 +121,7 @@ try {
     autoWidth: true,
     autoHeight: true,
     gap: '48px',
+    type: 'loop',
     focus: 'center',
     breakpoints: {
       800: {
