@@ -78,13 +78,16 @@ document.querySelectorAll('[id^="Details-"] summary').forEach((summary) => {
 });
 
 document.addEventListener('click', (event) => {
-  if (event.target.matches('[id^="Details-"] summary')) {
-    event.target.setAttribute('aria-expanded', !event.target.closest('details').hasAttribute('open'));
+  const target = event.target.closest('[id^="Details-"] summary');
+  if (target) {
+    target.setAttribute('aria-expanded', !target.closest('details').hasAttribute('open'));
   }
 });
 
 document.addEventListener('keyup', (event) => {
-  if (event.target.matches('[id^="Details-"] summary') && !event.target.closest('header-drawer, menu-drawer')) {
+  const target = event.target.closest('[id^="Details-"] summary');
+  if (target && !event.target.closest('header-drawer, menu-drawer')) {
+    event.target = target;
     onKeyUpEscape(event);
   }
 });
