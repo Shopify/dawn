@@ -35,7 +35,13 @@ if (!customElements.get('localization-form')) {
           this.elements.resetButton.addEventListener('mousedown', (event) => event.preventDefault());
         }
 
-        this.querySelectorAll('a').forEach((item) => item.addEventListener('click', this.onItemClick.bind(this)));
+        this.addEventListener('click', function(event) {
+          const target = event.target.closest('a');
+          if (target) {
+            event.preventDefault();
+            this.onItemClick(target);
+          }
+        });
       }
 
       hidePanel() {
@@ -102,10 +108,9 @@ if (!customElements.get('localization-form')) {
         }
       }
 
-      onItemClick(event) {
-        event.preventDefault();
+      onItemClick(target) {
         const form = this.querySelector('form');
-        this.elements.input.value = event.currentTarget.dataset.value;
+        this.elements.input.value = target.closest('a').dataset.value;
         if (form) form.submit();
       }
 
