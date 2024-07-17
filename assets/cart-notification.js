@@ -36,7 +36,7 @@ class CartNotification extends HTMLElement {
 
   renderContents(parsedState) {
     this.cartItemKey = parsedState.key;
-    console.log(this.cartItemKey);
+    console.log(this.getSectionInnerHTML(parsedState.sections['cart-icon-bubble']));
 
     this.getSectionsToRender().forEach((section) => {
       console.log(document.getElementById(section.id));
@@ -66,6 +66,8 @@ class CartNotification extends HTMLElement {
   }
 
   getSectionInnerHTML(html, selector = '.shopify-section') {
+    console.log(new DOMParser().parseFromString(html, 'text/html').querySelector(selector).innerHTML);
+
     return new DOMParser().parseFromString(html, 'text/html').querySelector(selector).innerHTML;
   }
 
