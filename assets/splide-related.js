@@ -45,7 +45,6 @@ function createRelatedProducts() {
 
     related_carousel.mount();
   } catch (error) {
-    console.error(error);
     console.error('Error mounting related carousel', error);
   }
 }
@@ -74,4 +73,6 @@ try {
   if (targetNode) {
     observer.observe(targetNode, config);
   }
-} catch (error) {}
+} catch (error) {
+  console.log(error, 'MUTATION observe error');
+}

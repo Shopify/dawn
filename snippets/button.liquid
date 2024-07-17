@@ -14,36 +14,41 @@
   {% render '/buttons/button', variant: 'primary', size:'lg', text: 'Add to Cart', onClick: 'handleButtonClick()' %}
 {% endcomment %}
 
-{% assign variant = variant | default: 'primary' %}
-{% assign size = size | default: 'sm' %}
-{% assign extra_classes = classes | default: '' %}
-{% assign text = text | default: 'Button' %}
-{% assign btn_classes = 'inline-flex justify-center items-center gap-[10px] rounded-4xl disabled:bg-grey300 disabled:text-grey500' %}
+{% liquid
+  assign variant = variant | default: 'primary'
+  assign size = size | default: 'sm'
+  assign extra_classes = classes | default: ''
+  assign text = text | default: 'Button'
+  assign type = type | default: 'button'
+  assign btn_classes = 'inline-flex justify-center items-center gap-[10px] rounded-4xl disabled:bg-grey300 disabled:text-grey500'
 
-{% if variant == 'secondary' %}
-  {% assign btn_classes = btn_classes | append: ' bg-grey50 text-black hover:bg-btnGradient' %}
-{% elsif variant == 'outline' %}
-  {% assign btn_classes = btn_classes
-    | append: ' bg-transparent border border-teal text-teal hover:bg-teal hover:text-sky'
-  %}
-{% else %}
-  {% assign btn_classes = btn_classes | append: ' bg-black text-white hover:bg-sky hover:text-white' %}
-{% endif %}
+  if variant == 'secondary'
+    assign btn_classes = btn_classes | append: ' bg-grey50 text-black hover:bg-btnGradient'
+    assign spinner_classes = ' stroke-black'
+  elsif variant == 'outline'
+    assign btn_classes = btn_classes | append: ' bg-transparent border border-teal text-teal hover:bg-teal hover:text-sky'
+    assign spinner_classes = ' stroke-teal'
+  else
+    assign btn_classes = btn_classes | append: ' bg-black text-white hover:bg-sky hover:text-white'
+    assign spinner_classes = ' stroke-white'
+  endif
 
-{% if size == 'sm' %}
-  {% assign btn_classes = btn_classes | append: ' h-[28px] py-[10px] px-large btn-xs' %}
-{% else %}
-  {% assign btn_classes = btn_classes | append: ' h-[54px] tabletUp:h-huge px-xl py-md btn-sm' %}
-{% endif %}
+  if size == 'sm'
+    assign btn_classes = btn_classes | append: ' h-[28px] py-[10px] px-large btn-xs'
+  else
+    assign btn_classes = btn_classes | append: ' h-[54px] tabletUp:h-huge px-xl py-md btn-sm'
+  endif
+
+  assign spinner_classes = spinner_classes | append: ' hidden'
+%}
 
 {% if url %}
-  <a href="{{ url }}">
+  <a href="{{ url }}" class="{{ extra_classes }}">
 {% endif %}
 <button
   id="{{ id }}"
-  class="{{ btn_classes }} {{ extra_classes }}"
-  type="button"
-  {% comment %} onclick="{{ onClick }}" {% endcomment %}
+  class="smshrs-btn {{ btn_classes }} {{ extra_classes }}"
+  type="{{type}}"
   {% if disabled == true %}
     disabled
   {% endif %}
@@ -53,6 +58,7 @@
   <span>
     {{ text }}
   </span>
+  {%- render 'loading-spinner', class: spinner_classes -%}
 </button>
 {% if url %}
   </a>
