@@ -1367,6 +1367,8 @@ class ProductRecommendations extends HTMLElement {
           if (html.querySelector('.grid__item')) {
             this.classList.add('product-recommendations--loaded');
           }
+
+          this.classList.add('recommendations-loaded');
         })
         .catch((e) => {
           console.error(e);
