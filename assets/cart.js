@@ -1,7 +1,6 @@
 class CartRemoveButton extends HTMLElement {
   constructor() {
     super();
-
     this.addEventListener('click', (event) => {
       event.preventDefault();
       const cartItems = this.closest('cart-items') || this.closest('cart-drawer-items');
@@ -230,6 +229,127 @@ class CartItems extends HTMLElement {
 }
 
 customElements.define('cart-items', CartItems);
+
+// class CartRecommendations extends HTMLElement {
+//   constructor() {
+//     super();
+//     console.log('HELOOO');
+//     this.lineItemsIds = this.dataset.items.split(', ').filter((o) => !!o);
+//     this.sectionId = this.dataset.section_id;
+//     console.log(this.lineItemsIds, 'HWELOOO');
+
+//     console.log(this.sectionId);
+//     this.onFetchCartProductRecommendations();
+//   }
+
+//   async onFetchCartProductRecommendations() {
+//     try {
+//       const ids = this.lineItemsIds.slice(0, 3); //use only 3 products
+//       const responses = await Promise.all(
+//         ids.map(async (id) => {
+//           const url = `${routes.product_recommendations_url}?section_id=${this.sectionId}&product_id=${id}&limit=5`;
+//           const resp = await fetch(url);
+//           return await resp.text();
+//         })
+//       );
+
+//       this.curateCartProductRecommendations(responses);
+//     } catch (error) {
+//       console.log('IT FAILED', error);
+//     }
+//   }
+
+//   curateCartProductRecommendations(textLists) {
+//     const recommendationItems = textLists
+//       .map((text) => {
+//         const html = document.createElement('div');
+//         html.innerHTML = text;
+//         const recommendations = html.querySelectorAll('splide__slide');
+//         return recommendations;
+//       })
+//       .flat();
+
+//     console.log(recommendationItems);
+//     return recommendationItems;
+//   }
+// }
+
+// customElements.define('cart-recommendations', CartRecommendations);
+
+class CartRecommendations extends HTMLElement {
+  constructor() {
+    super();
+  }
+
+  connectedCallback() {
+    this.lineItemsIds = this.dataset.items.split(', ').filter((o) => !!o);
+    this.sectionId = this.dataset.section_id;
+
+    if (!this.initialized) {
+      this.initialized = true;
+      this.onFetchCartProductRecommendations();
+    }
+  }
+
+  async onFetchCartProductRecommendations() {
+    try {
+      const ids = this.lineItemsIds.slice(0, 3); // use only 3 products
+      const responses = await Promise.all(
+        ids.map(async (id) => {
+          const url = `${routes.product_recommendations_url}?section_id=${this.sectionId}&product_id=${id}&limit=5`;
+          const resp = await fetch(url);
+          return await resp.text();
+        })
+      );
+
+      const recommendedItems = this.curateCartProductRecommendations(responses);
+
+      this.renderContent(responses[0], recommendedItems);
+
+      this.classList.add('recommendations-loaded');
+    } catch (error) {
+      console.log('IT FAILED', error);
+    }
+  }
+
+  curateCartProductRecommendations(textLists) {
+    const listItems = textLists
+      .map((text) => {
+        const html = document.createElement('div');
+        html.innerHTML = text;
+        const recommendations = html.querySelectorAll('.splide__slide');
+
+        return Array.from(recommendations);
+      })
+      .flat();
+
+    const seen = new Set();
+
+    const recommendationItems = listItems.filter((item) => {
+      const isDuplicate = seen.has(item.textContent);
+      seen.add(item.textContent);
+      return !isDuplicate;
+    });
+
+    return recommendationItems;
+  }
+
+  renderContent(newHtml, recommendationItems) {
+    const html = document.createElement('div');
+    html.innerHTML = newHtml;
+    const recommendations = html.querySelector('cart-recommendations');
+
+    if (recommendations && recommendations.innerHTML.trim().length) {
+      this.innerHTML = recommendations.innerHTML;
+
+      const splideList = this.querySelector('.splide__list');
+      splideList.innerHTML = '';
+      recommendationItems.forEach((item) => splideList.appendChild(item));
+    }
+  }
+}
+
+customElements.define('cart-recommendations', CartRecommendations);
 
 if (!customElements.get('cart-note')) {
   customElements.define(
