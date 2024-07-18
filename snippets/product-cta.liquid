@@ -6,7 +6,7 @@
   {{ 'template-collection.css' | asset_url | stylesheet_tag }}
 
   {% if section.settings.image_shape == 'blob' %}
-    {{ 'mask-blobs.css' | asset_url | stylesheet_tag }}
+    {{ 'checkout-btn.css' | asset_url | stylesheet_tag }}
   {%- endif -%}
 
   {%- unless section.settings.quick_add == 'none' -%}
@@ -31,12 +31,16 @@
   assign btn_text = 'products.product.sold_out' | t
 {% endcomment %}
 
+{{ 'checkout-btn.css' | asset_url | stylesheet_tag }}
+
 {%- liquid
   assign check_against_inventory = true
-  if product.selected_or_first_available_variant.inventory_management != 'shopify' or product.selected_or_first_available_variant.inventory_policy == 'continue'
+  assign product_variant = product.selected_or_first_available_variant
+
+  if product_variant.inventory_management != 'shopify' or product_variant.inventory_policy == 'continue'
     assign check_against_inventory = false
   endif
-  if product.selected_or_first_available_variant.quantity_rule.min > product.selected_or_first_available_variant.inventory_quantity and check_against_inventory
+  if product_variant.quantity_rule.min > product_variant.inventory_quantity and check_against_inventory
     assign quantity_rule_soldout = true
   endif
 
@@ -45,7 +49,7 @@
   assign btn_text = 'add to cart'
   assign add_btn_id = 'ProductSubmitButton-' | append: section_id
 
-  if product.selected_or_first_available_variant.available == false or quantity_rule_soldout
+  if product_variant.available == false or quantity_rule_soldout
     assign is_sold_out = true
     assign btn_text = 'sold out '
   endif
@@ -59,6 +63,21 @@
     data-hide-errors="{{ gift_card_recipient_feature_active }}"
     data-section-id="{{ section.id }}"
   >
+    <div class="product-form__error-message-wrapper mb-small flex items-center gap-mini" role="alert" hidden>
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        class="icon icon-error w-4 h-4"
+        viewBox="0 0 13 13"
+      >
+        <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
+        <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
+        <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
+        <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
+      </svg>
+      <span class="product-form__error-message text-body-sm text-red"></span>
+    </div>
+
     {%- form 'product',
       product,
       id: product_form_id,
@@ -69,7 +88,7 @@
       <input
         type="hidden"
         name="id"
-        value="{{ product.selected_or_first_available_variant.id }}"
+        value="{{ product_variant.id }}"
         {% if is_sold_out %}
           disabled
         {% endif %}
@@ -77,26 +96,86 @@
       >
 
       <div class="flex gap-small mb-small sticky bottom-0">
-        {% render 'qty-picker' %}
+        {% liquid
+          assign type = type | default: 'default'
+          assign classes = ''
+          assign btn_left = 'rounded-l-4xl cursor-pointer'
+          assign btn_right = 'rounded-r-4xl cursor-pointer'
+
+          if variant == 'checkout'
+            assign classes = classes | append: '  !w-[36px] h-[28px] text-body-xs py-[6px] text-center'
+            assign btn_left = btn_left | append: ' py-small px-[10px] no-bg'
+            assign btn_right = btn_right | append: ' py-small px-[10px] no-bg'
+          else
+            assign classes = classes | append: ' !w-huge h-[48px] text-t-md py-[11.5px] text-center'
+            assign btn_left = btn_left | append: ' py-small !pr-small !pl-base no-bg'
+            assign btn_right = btn_right | append: ' py-small !pl-small !pr-base no-bg'
+          endif
+
+          assign cart_qty = cart | item_count_for_variant: product_variant.id
+        %}
+
+        <div
+          class="flex flex-grow-0 product-form__input product-form__quantity"
+          id="Quantity-Form-{{ section.id }}"
+        >
+          <quantity-input
+            class="bg-grey50 rounded-4xl flex"
+            data-url="{{ product.url }}"
+            data-section="{{ section_id }}"
+          >
+            <button class="no-js-hidden quantity__button {{ btn_left }} hover:bg-grey100" name="minus" type="button">
+              <span class="visually-hidden">
+                {{- 'products.product.quantity.decrease' | t: product: product.title | escape -}}
+              </span>
+              {% render 'icon-minus', class: 'w-base h-base', svgClass: 'stroke-grey500 hover:stroke-black' %}
+            </button>
+
+            <input
+              class="quantity__input {{ classes }} !grow-0 bg-grey50 text-black"
+              type="number"
+              name="quantity"
+              id="Quantity-{{ section.id }}"
+              data-cart-quantity="{{ cart_qty }}"
+              data-min="{{ product_variant.quantity_rule.min }}"
+              min="{{ product_variant.quantity_rule.min }}"
+              {% if product_variant.quantity_rule.max != null %}
+                data-max="{{ product_variant.quantity_rule.max }}"
+                max="{{ product_variant.quantity_rule.max }}"
+              {% endif %}
+              aria-label="{{ 'products.product.quantity.input_label' | t: product: product_variant.title | escape }}"
+              data-index="{{ product_variant.id }}"
+
+              form="{{ product_form_id }}"
+              data-quantity-variant-id="{{ product_variant.id }}"
+
+              step="{{ product_variant.quantity_rule.increment }}"
+              value="{{ product_variant.quantity_rule.min }}"
+              form="{{ product_form_id }}"
+            >
+
+            <button class="no-js-hidden quantity__button {{ btn_right }} hover:bg-grey100 " name="plus" type="button">
+              <span class="visually-hidden">
+                {{- 'products.product.quantity.increase' | t: product: product.title | escape -}}
+              </span>
+              {% render 'icon-plus', class: 'w-base h-base', svgClass: 'stroke-grey500 hover:stroke-black' %}
+            </button>
+          </quantity-input>
+        </div>
 
         {% render 'button',
           id: add_btn_id,
           variant: 'primary',
           size: 'lg',
           text: btn_text,
-          classes: '!px-0 flex-grow',
+          classes: '!px-0 flex-grow add_to_cart',
           type: 'submit',
           name: 'add',
           disabled: is_sold_out
         %}
       </div>
 
-      {% render 'button',
-        variant: 'secondary',
-        size: 'lg',
-        text: 'express checkout',
-        classes: '!px-0 flex-grow w-full'
-      %}
+      {{ form | payment_button }}
 
       <div class="flex pt-small gap-mini flex-grow-0">
         {% render 'icon-paypal' %}
@@ -109,303 +188,3 @@
     {%- endform -%}
   </product-form>
 </div>
-
-{% comment %}
-  {% schema %}
-  {
-    "name": "t:sections.featured-collection.name",
-    "tag": "section",
-    "class": "section",
-    "disabled_on": {
-      "groups": ["header", "footer"]
-    },
-    "settings": [
-      {
-        "type": "inline_richtext",
-        "id": "title",
-        "default": "Featured collection",
-        "label": "t:sections.featured-collection.settings.title.label"
-      },
-      {
-        "type": "select",
-        "id": "heading_size",
-        "options": [
-          {
-            "value": "h2",
-            "label": "t:sections.all.heading_size.options__1.label"
-          },
-          {
-            "value": "h1",
-            "label": "t:sections.all.heading_size.options__2.label"
-          },
-          {
-            "value": "h0",
-            "label": "t:sections.all.heading_size.options__3.label"
-          }
-        ],
-        "default": "h1",
-        "label": "t:sections.all.heading_size.label"
-      },
-      {
-        "type": "richtext",
-        "id": "description",
-        "label": "t:sections.featured-collection.settings.description.label"
-      },
-      {
-        "type": "checkbox",
-        "id": "show_description",
-        "label": "t:sections.featured-collection.settings.show_description.label",
-        "default": false
-      },
-      {
-        "type": "select",
-        "id": "description_style",
-        "label": "t:sections.featured-collection.settings.description_style.label",
-        "options": [
-          {
-            "value": "body",
-            "label": "t:sections.featured-collection.settings.description_style.options__1.label"
-          },
-          {
-            "value": "subtitle",
-            "label": "t:sections.featured-collection.settings.description_style.options__2.label"
-          },
-          {
-            "value": "uppercase",
-            "label": "t:sections.featured-collection.settings.description_style.options__3.label"
-          }
-        ],
-        "default": "body"
-      },
-      {
-        "type": "collection",
-        "id": "collection",
-        "label": "t:sections.featured-collection.settings.collection.label"
-      },
-      {
-        "type": "range",
-        "id": "products_to_show",
-        "min": 2,
-        "max": 25,
-        "step": 1,
-        "default": 4,
-        "label": "t:sections.featured-collection.settings.products_to_show.label"
-      },
-      {
-        "type": "range",
-        "id": "columns_desktop",
-        "min": 1,
-        "max": 6,
-        "step": 1,
-        "default": 4,
-        "label": "t:sections.featured-collection.settings.columns_desktop.label"
-      },
-      {
-        "type": "checkbox",
-        "id": "full_width",
-        "label": "t:sections.featured-collection.settings.full_width.label",
-        "default": false
-      },
-      {
-        "type": "checkbox",
-        "id": "show_view_all",
-        "default": true,
-        "label": "t:sections.featured-collection.settings.show_view_all.label"
-      },
-      {
-        "type": "select",
-        "id": "view_all_style",
-        "label": "t:sections.featured-collection.settings.view_all_style.label",
-        "options": [
-          {
-            "value": "link",
-            "label": "t:sections.featured-collection.settings.view_all_style.options__1.label"
-          },
-          {
-            "value": "outline",
-            "label": "t:sections.featured-collection.settings.view_all_style.options__2.label"
-          },
-          {
-            "value": "solid",
-            "label": "t:sections.featured-collection.settings.view_all_style.options__3.label"
-          }
-        ],
-        "default": "solid"
-      },
-      {
-        "type": "checkbox",
-        "id": "enable_desktop_slider",
-        "label": "t:sections.featured-collection.settings.enable_desktop_slider.label",
-        "default": false
-      },
-      {
-        "type": "color_scheme",
-        "id": "color_scheme",
-        "label": "t:sections.all.colors.label",
-        "info": "t:sections.all.colors.has_cards_info",
-        "default": "scheme-1"
-      },
-      {
-        "type": "header",
-        "content": "t:sections.featured-collection.settings.header.content"
-      },
-      {
-        "type": "select",
-        "id": "image_ratio",
-        "options": [
-          {
-            "value": "adapt",
-            "label": "t:sections.featured-collection.settings.image_ratio.options__1.label"
-          },
-          {
-            "value": "portrait",
-            "label": "t:sections.featured-collection.settings.image_ratio.options__2.label"
-          },
-          {
-            "value": "square",
-            "label": "t:sections.featured-collection.settings.image_ratio.options__3.label"
-          }
-        ],
-        "default": "adapt",
-        "label": "t:sections.featured-collection.settings.image_ratio.label"
-      },
-      {
-        "type": "select",
-        "id": "image_shape",
-        "options": [
-          {
-            "value": "default",
-            "label": "t:sections.all.image_shape.options__1.label"
-          },
-          {
-            "value": "arch",
-            "label": "t:sections.all.image_shape.options__2.label"
-          },
-          {
-            "value": "blob",
-            "label": "t:sections.all.image_shape.options__3.label"
-          },
-          {
-            "value": "chevronleft",
-            "label": "t:sections.all.image_shape.options__4.label"
-          },
-          {
-            "value": "chevronright",
-            "label": "t:sections.all.image_shape.options__5.label"
-          },
-          {
-            "value": "diamond",
-            "label": "t:sections.all.image_shape.options__6.label"
-          },
-          {
-            "value": "parallelogram",
-            "label": "t:sections.all.image_shape.options__7.label"
-          },
-          {
-            "value": "round",
-            "label": "t:sections.all.image_shape.options__8.label"
-          }
-        ],
-        "default": "default",
-        "label": "t:sections.all.image_shape.label",
-        "info": "t:sections.all.image_shape.info"
-      },
-      {
-        "type": "checkbox",
-        "id": "show_secondary_image",
-        "default": false,
-        "label": "t:sections.featured-collection.settings.show_secondary_image.label"
-      },
-      {
-        "type": "checkbox",
-        "id": "show_vendor",
-        "default": false,
-        "label": "t:sections.featured-collection.settings.show_vendor.label"
-      },
-      {
-        "type": "checkbox",
-        "id": "show_rating",
-        "default": false,
-        "label": "t:sections.featured-collection.settings.show_rating.label",
-        "info": "t:sections.featured-collection.settings.show_rating.info"
-      },
-      {
-        "type": "select",
-        "id": "quick_add",
-        "default": "none",
-        "label": "t:sections.main-collection-product-grid.settings.quick_add.label",
-        "info": "t:sections.main-collection-product-grid.settings.quick_add.info",
-        "options": [
-          {
-            "value": "none",
-            "label": "t:sections.main-collection-product-grid.settings.quick_add.options.option_1"
-          },
-          {
-            "value": "standard",
-            "label": "t:sections.main-collection-product-grid.settings.quick_add.options.option_2"
-          },
-          {
-            "value": "bulk",
-            "label": "t:sections.main-collection-product-grid.settings.quick_add.options.option_3"
-          }
-        ]
-      },
-      {
-        "type": "header",
-        "content": "t:sections.featured-collection.settings.header_mobile.content"
-      },
-      {
-        "type": "select",
-        "id": "columns_mobile",
-        "default": "2",
-        "label": "t:sections.featured-collection.settings.columns_mobile.label",
-        "options": [
-          {
-            "value": "1",
-            "label": "t:sections.featured-collection.settings.columns_mobile.options__1.label"
-          },
-          {
-            "value": "2",
-            "label": "t:sections.featured-collection.settings.columns_mobile.options__2.label"
-          }
-        ]
-      },
-      {
-        "type": "checkbox",
-        "id": "swipe_on_mobile",
-        "default": false,
-        "label": "t:sections.featured-collection.settings.swipe_on_mobile.label"
-      },
-      {
-        "type": "header",
-        "content": "t:sections.all.padding.section_padding_heading"
-      },
-      {
-        "type": "range",
-        "id": "padding_top",
-        "min": 0,
-        "max": 100,
-        "step": 4,
-        "unit": "px",
-        "label": "t:sections.all.padding.padding_top",
-        "default": 36
-      },
-      {
-        "type": "range",
-        "id": "padding_bottom",
-        "min": 0,
-        "max": 100,
-        "step": 4,
-        "unit": "px",
-        "label": "t:sections.all.padding.padding_bottom",
-        "default": 36
-      }
-    ],
-    "presets": [
-      {
-        "name": "t:sections.featured-collection.presets.name"
-      }
-    ]
-  }
-  {% endschema %}
-{% endcomment %}
