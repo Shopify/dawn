@@ -212,7 +212,6 @@ class CartItems extends HTMLElement {
 
     [...cartItemElements, ...cartDrawerItemElements].forEach((overlay) => overlay.classList.remove('hidden'));
 
-    document.activeElement.blur();
     this.lineItemStatusElement.setAttribute('aria-hidden', false);
   }
 
@@ -229,53 +228,6 @@ class CartItems extends HTMLElement {
 }
 
 customElements.define('cart-items', CartItems);
-
-// class CartRecommendations extends HTMLElement {
-//   constructor() {
-//     super();
-//     console.log('HELOOO');
-//     this.lineItemsIds = this.dataset.items.split(', ').filter((o) => !!o);
-//     this.sectionId = this.dataset.section_id;
-//     console.log(this.lineItemsIds, 'HWELOOO');
-
-//     console.log(this.sectionId);
-//     this.onFetchCartProductRecommendations();
-//   }
-
-//   async onFetchCartProductRecommendations() {
-//     try {
-//       const ids = this.lineItemsIds.slice(0, 3); //use only 3 products
-//       const responses = await Promise.all(
-//         ids.map(async (id) => {
-//           const url = `${routes.product_recommendations_url}?section_id=${this.sectionId}&product_id=${id}&limit=5`;
-//           const resp = await fetch(url);
-//           return await resp.text();
-//         })
-//       );
-
-//       this.curateCartProductRecommendations(responses);
-//     } catch (error) {
-//       console.log('IT FAILED', error);
-//     }
-//   }
-
-//   curateCartProductRecommendations(textLists) {
-//     const recommendationItems = textLists
-//       .map((text) => {
-//         const html = document.createElement('div');
-//         html.innerHTML = text;
-//         const recommendations = html.querySelectorAll('splide__slide');
-//         return recommendations;
-//       })
-//       .flat();
-
-//     console.log(recommendationItems);
-//     return recommendationItems;
-//   }
-// }
-
-// customElements.define('cart-recommendations', CartRecommendations);
-
 class CartRecommendations extends HTMLElement {
   constructor() {
     super();
@@ -308,7 +260,7 @@ class CartRecommendations extends HTMLElement {
 
       this.classList.add('recommendations-loaded');
     } catch (error) {
-      console.log('IT FAILED', error);
+      console.log('FAILED TO FETCH CART RECOMMENDATIONS', error);
     }
   }
 
