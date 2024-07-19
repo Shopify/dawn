@@ -33,37 +33,72 @@
                 <ul
                   class="mega-menu__list page-width{% if link.levels == 1 %} mega-menu__list--condensed{% endif %}"
                   role="list"
+                  data-size="{{ link.links.size }}"
                 >
                   {%- for childlink in link.links -%}
-                    <li>
-                      <a
-                        id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}"
-                        href="{{ childlink.url }}"
-                        class="mega-menu__link mega-menu__link--level-2 link{% if childlink.current %} mega-menu__link--active{% endif %}"
-                        {% if childlink.current %}
-                          aria-current="page"
-                        {% endif %}
-                      >
-                        {{ childlink.title | escape }}
-                      </a>
-                      {%- if childlink.links != blank -%}
-                        <ul class="list-unstyled" role="list">
-                          {%- for grandchildlink in childlink.links -%}
-                            <li>
-                              <a
-                                id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
-                                href="{{ grandchildlink.url }}"
-                                class="mega-menu__link link{% if grandchildlink.current %} mega-menu__link--active{% endif %}"
-                                {% if grandchildlink.current %}
-                                  aria-current="page"
+                    {% liquid 
+                      assign links_with_banner = false
+                      assign title = childlink.title | split: '/' 
+                      if title[1] == 'banners'
+                        assign links_with_banner = true
+                      endif
+                    %}
+                    <li class="mega-menu__list-child">
+                      <div {% if links_with_banner %} class="menu__link--banner" {% endif %}>
+                        {% unless links_with_banner %}  
+                          <a
+                            id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}"
+                            href="{{ childlink.url }}"
+                            class="mega-menu__link mega-menu__link--level-2 link{% if childlink.current %} mega-menu__link--active{% endif %}"
+                            {% if childlink.current %}
+                              aria-current="page"
+                            {% endif %}
+                          >
+                            {{ childlink.title | escape }}
+                          </a>
+                        {% endunless %}
+                        {%- if childlink.links != blank -%}
+                          <ul class="list-unstyled" role="list">
+                            {%- for grandchildlink in childlink.links -%}
+                              {% for collection in collections %}
+                                {% if collection.url == grandchildlink.url %}
+                                  {% capture mage_menu_banner %}
+                                    {% if collection.metafields.custom.mega_menu_banner != blank %}
+                                      {{ collection.metafields.custom.mega_menu_banner.value | image_url: width: 320 | image_tag: width: 320, class: 'mega-menu__list_item_banner' }}
+                                    {% endif %}
+                                  {% endcapture %}
                                 {% endif %}
-                              >
-                                {{ grandchildlink.title | escape }}
-                              </a>
-                            </li>
-                          {%- endfor -%}
-                        </ul>
-                      {%- endif -%}
+                              {% endfor %}
+                              {% if links_with_banner %}
+                                  <a
+                                    id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
+                                    href="{{ grandchildlink.url }}"
+                                    class="mega-menu__link link{% if grandchildlink.current %} mega-menu__link--active{% endif %}"
+                                    {% if grandchildlink.current %}
+                                      aria-current="page"
+                                    {% endif %}
+                                  >
+                                    {{ mage_menu_banner }}
+                                    <p class="mega-menu__link--banner_title">{{ grandchildlink.title | escape }}</p>
+                                  </a>
+                              {% else %}
+                                <li>
+                                  <a
+                                    id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
+                                    href="{{ grandchildlink.url }}"
+                                    class="mega-menu__link link{% if grandchildlink.current %} mega-menu__link--active{% endif %}"
+                                    {% if grandchildlink.current %}
+                                      aria-current="page"
+                                    {% endif %}
+                                  >
+                                    {{ grandchildlink.title | escape }}
+                                  </a>
+                                </li>
+                              {% endif %}
+                            {%- endfor -%}
+                          </ul>
+                        {%- endif -%}
+                      </div>
                     </li>
                   {%- endfor -%}
                 </ul>

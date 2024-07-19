@@ -45,6 +45,13 @@
                           </button>
                           <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
                             {%- for childlink in link.links -%}
+                              {% liquid 
+                                assign links_with_banner = false
+                                assign title = childlink.title | split: '/' 
+                                if title[1] == 'banners'
+                                  assign links_with_banner = true
+                                endif
+                              %}
                               <li>
                                 {%- if childlink.links == blank -%}
                                   <a
@@ -57,6 +64,31 @@
                                   >
                                     {{ childlink.title | escape }}
                                   </a>
+                                {% elsif childlink.links != blank and links_with_banner %}
+                                  {%- for grandchildlink in childlink.links -%}
+                                    {% for collection in collections %}
+                                      {% if collection.url == grandchildlink.url %}
+                                        {% capture mage_menu_banner %}
+                                          {% if collection.metafields.custom.mega_menu_banner != blank %}
+                                            {{ collection.metafields.custom.mega_menu_banner.value | image_url: width: 320 | image_tag: width: 320, class: 'mega-menu__list_item_banner' }}
+                                          {% endif %}
+                                        {% endcapture %}
+                                      {% endif %}
+                                    {% endfor %}
+                                    <a
+                                      id="HeaderDrawer-{{ childlink.handle }}-{{ grandchildlink.handle }}"
+                                      href="{{ grandchildlink.url }}"
+                                      class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if grandchildlink.current %} menu-drawer__menu-item--active{% endif %}"
+                                      {% if childlink.current %}
+                                        aria-current="page"
+                                      {% endif %}
+                                    >
+                                    <div class="menu-drawer__banner">
+                                      {{ mage_menu_banner }}
+                                      <p class="mega-menu__link--banner_title">{{ grandchildlink.title | escape }}</p>
+                                    </div>
+                                    </a>
+                                  {% endfor %}
                                 {%- else -%}
                                   <details id="Details-menu-drawer-{{ link.handle }}-{{ childlink.handle }}">
                                     <summary
