@@ -49,12 +49,11 @@
             {{ section.settings.heading }}
           </h2>
         {% else %}
-          {%
-            render 'headings',
+          {% render 'headings',
             heading_size: section.settings.heading_element,
             heading_element: section.settings.heading_element,
             title: section.settings.heading,
-            class: 'title inline-richtext',
+            class: 'title inline-richtext'
           %}
         {% endunless %}
       </div>
@@ -88,12 +87,11 @@
                 {{ block.settings.title }}
               </h4>
             {% else %}
-              {%
-                render 'headings',
+              {% render 'headings',
                 heading_size: block.settings.heading_size,
                 heading_element: block.settings.heading_element,
                 title: block.settings.title,
-                class: 'title inline-richtext',
+                class: 'title inline-richtext'
               %}
             {% endunless %}
           </label>
@@ -134,28 +132,29 @@
                   assign products_to_display = block.settings.products_to_show
                 endif
 
-                assign show_desktop_slider = false
-                if block.settings.enable_desktop_slider and products_to_display > block.settings.columns_desktop
-                  assign show_desktop_slider = true
-                endif
-
-                assign columns_mobile_int = block.settings.columns_mobile | plus: 0
-                assign show_mobile_slider = false
-                if block.settings.swipe_on_mobile and products_to_display > columns_mobile_int
-                  assign show_mobile_slider = true
-                endif
+                assign slider_enabled = block.settings.enable_slider
               %}
-              <slider-component class="slider-mobile-gutter slider-component-full-width{% if show_desktop_slider %} slider-component-desktop{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+              <slider-component
+                class="{% if slider_enabled %} swiper {% endif %} swiper-slider-{{ block.id }} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+                id="slider-{{ block.id }}"
+                data-slider="true"
+                data-direction="horizontal"
+                data-loop="true"
+                data-slides-per-view-desktop="{{ block.settings.columns_desktop }}"
+                data-slides-per-view-mobile="{{ block.settings.columns_mobile }}"
+                data-autoplay="false"
+                data-pagination-type="{{ block.settings.pagination_type }}"
+              >
                 <ul
                   id="Slider-{{ block.id }}"
-                  class="grid product-grid contains-card contains-card--product{% if settings.card_style == 'standard' %} contains-card--standard{% endif %} grid--{{ block.settings.columns_desktop }}-col-desktop{% if block.settings.collection == blank %} grid--2-col-tablet-down{% else %} grid--{{ block.settings.columns_mobile }}-col-tablet-down{% endif %}{% if show_mobile_slider or show_desktop_slider %} slider{% if show_desktop_slider %} slider--desktop{% endif %}{% if show_mobile_slider %} slider--tablet grid--peek{% endif %}{% endif %}"
+                  class="{% if slider_enabled %} swiper-wrapper {% endif %} grid product-grid contains-card contains-card--product{% if settings.card_style == 'standard' %} contains-card--standard{% endif %} grid--{{ block.settings.columns_desktop }}-col-desktop{% if block.settings.collection == blank %} grid--2-col-tablet-down{% else %} grid--{{ block.settings.columns_mobile }}-col-tablet-down{% endif %}"
                   role="list"
                   aria-label="{{ 'general.slider.name' | t }}"
                 >
                   {%- for product in block.settings.collection.products limit: block.settings.products_to_show -%}
                     <li
                       id="Slide-{{ block.id }}-{{ forloop.index }}"
-                      class="grid__item{% if show_mobile_slider or show_desktop_slider %} slider__slide{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+                      class="swiper-slide slider__slide {% unless slider_enabled %} grid__item {% endunless %} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
                       {% if settings.animations_reveal_on_scroll %}
                         data-cascade
                         style="--animation-order: {{ forloop.index }};"
@@ -174,34 +173,9 @@
                     </li>
                   {%- endfor -%}
                 </ul>
-                {%- if show_mobile_slider or show_desktop_slider -%}
-                  <div class="slider-buttons no-js-hidden">
-                    <button
-                      type="button"
-                      class="slider-button slider-button--prev"
-                      name="previous"
-                      aria-label="{{ 'general.slider.previous_slide' | t }}"
-                      aria-controls="Slider-{{ block.id }}"
-                    >
-                      {% render 'icon-caret' %}
-                    </button>
-                    <div class="slider-counter caption">
-                      <span class="slider-counter--current">1</span>
-                      <span aria-hidden="true"> / </span>
-                      <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
-                      <span class="slider-counter--total">{{ products_to_display }}</span>
-                    </div>
-                    <button
-                      type="button"
-                      class="slider-button slider-button--next"
-                      name="next"
-                      aria-label="{{ 'general.slider.next_slide' | t }}"
-                      aria-controls="Slider-{{ block.id }}"
-                    >
-                      {% render 'icon-caret' %}
-                    </button>
-                  </div>
-                {%- endif -%}
+                {% if slider_enabled %}
+                  {% render 'swiper-pagination', section: block %}
+                {% endif %}
               </slider-component>
             {% endif %}
           </div>
@@ -667,10 +641,25 @@
         },
         {
           "type": "checkbox",
-          "id": "enable_desktop_slider",
-          "label": "t:sections.featured-collection.settings.enable_desktop_slider.label",
+          "id": "enable_slider",
           "default": false,
-          "info": "t:sections.tabs.settings.enable_desktop_slider.info"
+          "label": "t:sections.all.slider.enable_slider.label"
+        },
+        {
+          "type": "select",
+          "id": "pagination_type",
+          "options": [
+            {
+              "value": "bullets",
+              "label": "t:sections.all.pagination_type.options__1.label"
+            },
+            {
+              "value": "fraction",
+              "label": "t:sections.all.pagination_type.options__2.label"
+            }
+          ],
+          "default": "bullets",
+          "label": "t:sections.all.pagination_type.label"
         },
         {
           "type": "select",
@@ -773,13 +762,6 @@
               "label": "t:sections.featured-collection.settings.columns_mobile.options__2.label"
             }
           ]
-        },
-        {
-          "type": "checkbox",
-          "id": "swipe_on_mobile",
-          "default": false,
-          "info": "t:sections.tabs.settings.enable_desktop_slider.info",
-          "label": "t:sections.featured-collection.settings.swipe_on_mobile.label"
         },
         {
           "type": "header",

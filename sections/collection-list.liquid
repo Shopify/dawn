@@ -6,9 +6,6 @@
   .swiper-slider-{{ section.id }} .swiper-pagination-bullet-active circle {
     fill: {{ section.settings.color_scheme.settings['button'] }};
   }
-  .swiper-slider-{{ section.id }} .swiper-pagination-progressbar .swiper-pagination-progressbar-fill {
-    background-color: {{ section.settings.color_scheme.settings['button'] }};
-  }
 {%- endstyle -%}
 
 {%- style -%}
@@ -26,17 +23,13 @@
 {%- endstyle -%}
 
 {%- liquid
-  assign columns_mobile_int = section.settings.columns_mobile | plus: 0
-  assign show_mobile_slider = false
-  if section.settings.swipe_on_mobile and section.blocks.size > columns_mobile_int
-    assign show_mobile_slider = true
-  endif
+  assign slider_enabled = section.settings.enable_slider
 -%}
 
 <div class="color-{{ section.settings.color_scheme }} gradient">
   <div class="collection-list-wrapper isolate {% unless section.settings.full_width %} page-width-desktop{% endunless %}{% if section.settings.title == blank %} no-heading{% endif %}{% if section.settings.show_view_all == false or section.blocks.size > collections.size %} no-mobile-link{% endif %} section-{{ section.id }}-padding">
     {%- unless section.settings.title == blank -%}
-      <div class="title-wrapper-with-link{% if show_mobile_slider %} title-wrapper--self-padded-tablet-down{% else %} title-wrapper--self-padded-mobile{% endif %} title-wrapper--no-top-margin {% if section.settings.full_width %} title-width {% endif %}">
+      <div class="title-wrapper-with-link{% if slider_enabled %} title-wrapper--self-padded-tablet-down{% else %} title-wrapper--self-padded-mobile{% endif %} title-wrapper--no-top-margin {% if section.settings.full_width %} title-width {% endif %}">
         {% unless section.settings.heading_element_custom %}
           <h2
             id="SectionHeading-{{ section.id }}"
@@ -52,18 +45,17 @@
             endif
             assign id = 'SectionHeading-' | append: section.id
           %}
-          {%
-            render 'headings',
+          {% render 'headings',
             heading_size: section.settings.heading_size,
             heading_element: section.settings.heading_element,
             title: section.settings.title,
             class: class,
             id: id,
-            animation: settings.animations_reveal_on_scroll,
+            animation: settings.animations_reveal_on_scroll
           %}
         {% endunless %}
 
-        {%- if section.settings.show_view_all and show_mobile_slider -%}
+        {%- if section.settings.show_view_all -%}
           <a
             href="{{ routes.collections_url }}"
             id="ViewAll-{{ section.id }}"
@@ -76,8 +68,9 @@
       </div>
     {%- endunless -%}
 
-    <slider-component class="swiper swiper-slider-{{ section.id }}" 
-      id="slider-{{ section.id }}" 
+    <slider-component
+      class="{% if slider_enabled %} swiper {% endif %} swiper-slider-{{ section.id }}"
+      id="slider-{{ section.id }}"
       data-slider="true"
       data-direction="horizontal"
       data-loop="true"
@@ -87,7 +80,7 @@
       data-pagination-type="{{ section.settings.pagination_type }}"
     >
       <ul
-        class="swiper-wrapper collection-list contains-card contains-card--collection{% if settings.card_style == 'standard' %} contains-card--standard{% endif %} grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down{% if section.settings.swipe_on_mobile %} slider slider--tablet grid--peek{% endif %} collection-list--{{ section.blocks.size }}-items"
+        class="{% if slider_enabled %} swiper-wrapper {% endif %} collection-list contains-card contains-card--collection{% if settings.card_style == 'standard' %} contains-card--standard{% endif %} grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down collection-list--{{ section.blocks.size }}-items"
       >
         {%- liquid
           assign columns = section.blocks.size
@@ -98,7 +91,7 @@
         {%- for block in section.blocks -%}
           <li
             id="Slide-{{ section.id }}-{{ forloop.index }}"
-            class="swiper-slide collection-list__item grid__item{% if show_mobile_slider %} slider__slide{% endif %}{% if block.settings.collection.featured_image == nil %} collection-list__item--no-media{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+            class="swiper-slide slider__slide {% unless slider_enabled %}grid__item{% endunless %} {% if block.settings.collection.featured_image == nil %} collection-list__item--no-media{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
             {{ block.shopify_attributes }}
             {% if settings.animations_reveal_on_scroll %}
               data-cascade
@@ -116,18 +109,15 @@
           </li>
         {%- endfor -%}
       </ul>
-      
-    <div class="swiper-pagination__group">
-      <div class="swiper-button swiper-button-prev swiper-prev-button-slider-{{ section.id }}">{% render 'icon-caret' %}</div>
-      <div class="swiper-pagination swiper-pagination-slider-{{ section.id }}"></div>
-      <div class="swiper-button swiper-button-next swiper-next-button-slider-{{ section.id }}">{% render 'icon-caret' %}</div>
-    </div>
 
+      {% if slider_enabled %}
+        {% render 'swiper-pagination', section: section %}
+      {% endif %}
     </slider-component>
 
     {%- if section.settings.show_view_all and section.blocks.size < collections.size -%}
       <div
-        class="center collection-list-view-all{% if show_mobile_slider %} small-hide medium-hide{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+        class="center collection-list-view-all {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
         {% if settings.animations_reveal_on_scroll %}
           data-cascade
         {% endif %}
@@ -160,6 +150,12 @@
       "id": "full_width",
       "default": false,
       "label": "t:sections.all.full_width.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_slider",
+      "default": true,
+      "label": "t:sections.all.slider.enable_slider.label"
     },
     {
       "type": "inline_richtext",
@@ -281,12 +277,6 @@
       ],
       "default": "1",
       "label": "t:sections.collection-list.settings.columns_mobile.label"
-    },
-    {
-      "type": "checkbox",
-      "id": "swipe_on_mobile",
-      "default": false,
-      "label": "t:sections.collection-list.settings.swipe_on_mobile.label"
     },
     {
       "type": "header",

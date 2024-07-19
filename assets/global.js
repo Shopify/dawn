@@ -848,7 +848,7 @@ class SliderComponent extends HTMLElement {
       swiper.on('slideChangeTransitionEnd', () => {
         setTimeout(() => {
           document.body.classList.remove('selection--transparent');
-        }, 1000);
+        }, 2000);
       });
     }
   }
@@ -1361,7 +1361,11 @@ class ShippingBar extends HTMLElement {
       successMsg.style.display = 'block';
       successMsg.textContent = shippingBarSuccess;
     } else {
-      let formattedAmount = new Intl.NumberFormat('fr-FR', { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(remainingAmount / 100);
+      let formattedAmount = new Intl.NumberFormat('fr-FR', {
+        style: 'decimal',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(remainingAmount / 100);
       progressOuter.style.display = 'block';
       successMsg.style.display = 'none';
       progressOuter.innerHTML = shippingBarText.replace('$', formattedAmount + ' ' + shippingBarCurrency);
