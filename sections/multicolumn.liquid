@@ -13,20 +13,14 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  .swiper-slider-{{ section.id }} .swiper-pagination-bullet-active circle {
+    fill: {{ section.settings.color_scheme.settings['button'] }};
+  }
 {%- endstyle -%}
 
 {%- liquid
-  assign columns_mobile_int = section.settings.columns_mobile | plus: 0
-  assign show_mobile_slider = false
-  if section.settings.swipe_on_mobile and section.blocks.size > columns_mobile_int
-    assign show_mobile_slider = true
-  endif
-
-  assign columns_desktop_int = section.settings.columns_desktop | plus: 0
-  assign show_desktop_slider = false
-  if section.settings.enable_desktop_slider and section.blocks.size > columns_desktop_int
-    assign show_desktop_slider = true
-  endif
+  assign slider_enabled = section.settings.enable_slider
 -%}
 
 <div class="multicolumn color-{{ section.settings.color_scheme }} gradient{% unless section.settings.background_style == 'none' and settings.text_boxes_border_thickness > 0 or settings.text_boxes_shadow_opacity > 0 %} background-{{ section.settings.background_style }}{% endunless %}{% if section.settings.title == blank %} no-heading{% endif %}">
@@ -43,12 +37,11 @@
             {{ section.settings.title }}
           </h2>
         {% else %}
-          {%
-            render 'headings',
+          {% render 'headings',
             heading_size: section.settings.heading_size,
             heading_element: section.settings.heading_element,
             title: section.settings.heading,
-            class: 'title inline-richtext',
+            class: 'title inline-richtext'
           %}
         {% endunless %}
         {%- if section.settings.button_label != blank and show_mobile_slider -%}
@@ -58,9 +51,19 @@
         {%- endif -%}
       </div>
     {%- endunless -%}
-    <slider-component class="slider-mobile-gutter {% if section.settings.full_width %} slider-component-full-width{% endif %}{% if show_desktop_slider %} slider-component-desktop{% endif %} {% if show_mobile_slider %} slider-component-mobile {% endif %} {% unless section.settings.full_width %} page-width {% endunless %}">
+    <slider-component
+      class="{% if slider_enabled %} swiper {% endif %} swiper-slider-{{ section.id }} slider-mobile-gutter {% if section.settings.full_width %} slider-component-full-width{% endif %} {% unless section.settings.full_width %} page-width {% endunless %}"
+      id="slider-{{ section.id }}"
+      data-slider="true"
+      data-direction="horizontal"
+      data-loop="true"
+      data-slides-per-view-desktop="{{ section.settings.columns_desktop }}"
+      data-slides-per-view-mobile="{{ section.settings.columns_mobile }}"
+      data-autoplay="false"
+      data-pagination-type="{{ section.settings.pagination_type }}"
+    >
       <ul
-        class="multicolumn-list contains-content-container grid grid--{{ section.settings.columns_mobile }}-col-tablet-down grid--{{ section.settings.columns_desktop }}-col-desktop {% if show_mobile_slider or show_desktop_slider %} slider{% if show_desktop_slider %} slider--desktop{% endif %}{% if show_mobile_slider %} slider--tablet grid--peek{% endif %}{% endif %}"
+        class="{% if slider_enabled %} swiper-wrapper {% endif %} multicolumn-list contains-content-container grid grid--{{ section.settings.columns_mobile }}-col-tablet-down grid--{{ section.settings.columns_desktop }}-col-desktop"
         id="Slider-{{ section.id }}"
         role="list"
       >
@@ -84,7 +87,7 @@
 
           <li
             id="Slide-{{ section.id }}-{{ forloop.index }}"
-            class="multicolumn-list__item grid__item{% if show_mobile_slider or show_desktop_slider %} slider__slide{% endif %}{% if section.settings.column_alignment == 'center' %} center{% endif %}{{ empty_column }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+            class="swiper-slide multicolumn-list__item {% unless slider_enabled %}grid__item{% endunless %} slider__slide {% if section.settings.column_alignment == 'center' %} center{% endif %}{{ empty_column }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
             {{ block.shopify_attributes }}
             {% if settings.animations_reveal_on_scroll %}
               data-cascade
@@ -160,34 +163,11 @@
         {%- endfor -%}
       </ul>
 
-      {%- if show_mobile_slider or show_desktop_slider -%}
-        <div class="slider-buttons no-js-hidden">
-          <button
-            type="button"
-            class="slider-button slider-button--prev"
-            name="previous"
-            aria-label="{{ 'general.slider.previous_slide' | t }}"
-          >
-            {% render 'icon-caret' %}
-          </button>
-          <div class="slider-counter caption">
-            <span class="slider-counter--current">1</span>
-            <span aria-hidden="true"> / </span>
-            <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
-            <span class="slider-counter--total">{{ section.blocks.size }}</span>
-          </div>
-          <button
-            type="button"
-            class="slider-button slider-button--next"
-            name="next"
-            aria-label="{{ 'general.slider.next_slide' | t }}"
-          >
-            {% render 'icon-caret' %}
-          </button>
-        </div>
-      {%- endif -%}
+      {% if slider_enabled %}
+        {% render 'swiper-pagination', section: section %}
+      {% endif %}
     </slider-component>
-    <div class="center{% if show_mobile_slider %} small-hide medium-hide{% endif %}">
+    <div class="center{% if slider_enabled %} small-hide medium-hide{% endif %}">
       {%- if section.settings.button_label != blank -%}
         <a
           class="{% if section.settings.button_style == 'link' %} link underlined-link{% else %} button button--{{ section.settings.button_style }} {% endif %}"
@@ -220,9 +200,31 @@
       "label": "t:sections.all.full_width.label"
     },
     {
+      "type": "checkbox",
+      "id": "enable_slider",
+      "default": false,
+      "label": "t:sections.all.slider.enable_slider.label"
+    },
+    {
+      "type": "select",
+      "id": "pagination_type",
+      "options": [
+        {
+          "value": "bullets",
+          "label": "t:sections.all.pagination_type.options__1.label"
+        },
+        {
+          "value": "fraction",
+          "label": "t:sections.all.pagination_type.options__2.label"
+        }
+      ],
+      "default": "bullets",
+      "label": "t:sections.all.pagination_type.label"
+    },
+    {
       "type": "inline_richtext",
       "id": "title",
-      "default": "Multicolumn",
+      "default": "t:sections.multicolumn.settings.title.default",
       "label": "t:sections.multicolumn.settings.title.label"
     },
     {
@@ -353,7 +355,7 @@
     {
       "type": "text",
       "id": "button_label",
-      "default": "Button label",
+      "default": "t:sections.multicolumn.settings.button_label.default",
       "label": "t:sections.multicolumn.settings.button_label.label"
     },
     {
@@ -529,13 +531,13 @@
         {
           "type": "inline_richtext",
           "id": "title",
-          "default": "Column",
+          "default": "t:sections.multicolumn.blocks.column.settings.title.default",
           "label": "t:sections.multicolumn.blocks.column.settings.title.label"
         },
         {
           "type": "richtext",
           "id": "text",
-          "default": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
+          "default": "t:sections.multicolumn.blocks.column.settings.text.default",
           "label": "t:sections.multicolumn.blocks.column.settings.text.label"
         },
         {

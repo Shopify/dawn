@@ -26,7 +26,15 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  .swiper-slider-{{ section.id }} .swiper-pagination-bullet-active circle {
+    fill: {{ section.settings.color_scheme.settings['button'] }};
+  }
 {%- endstyle -%}
+
+{%- liquid
+  assign slider_enabled = section.settings.enable_slider
+-%}
 
 <div
   class="color-{{ section.settings.color_scheme }} isolate gradient{% unless request.design_mode %} hidden{% endunless %}"
@@ -59,17 +67,27 @@
       {%- endif -%}
     </div>
 
-    <slider-component class="slider-mobile-gutter{% if section.settings.full_width %} slider-component-full-width{% endif %} page-width{% if section.settings.full_width == false %} page-width-desktop{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+    <slider-component
+      class="{% if slider_enabled %} swiper {% endif %} swiper-slider-{{ section.id }} {% if section.settings.full_width %} slider-component-full-width{% endif %} page-width{% if section.settings.full_width == false %} page-width-desktop{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+      id="slider-{{ section.id }}"
+      data-slider="true"
+      data-direction="horizontal"
+      data-loop="true"
+      data-slides-per-view-desktop="{{ section.settings.columns_desktop }}"
+      data-slides-per-view-mobile="{{ section.settings.columns_mobile }}"
+      data-autoplay="false"
+      data-pagination-type="{{ section.settings.pagination_type }}"
+    >
       <ul
         id="Slider-{{ section.id }}"
-        class="grid product-grid contains-card contains-card--product{% if settings.card_style == 'standard' %} contains-card--standard{% endif %} grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down"
+        class="{% if slider_enabled %} swiper-wrapper {% endif %} grid product-grid contains-card contains-card--product{% if settings.card_style == 'standard' %} contains-card--standard{% endif %} grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down"
         role="list"
         aria-label="{{ 'general.slider.name' | t }}"
       >
         {% if request.design_mode %}
           {%- for i in (1..4) -%}
             <li
-              class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+              class="swiper-slide {% unless slider_enabled %}grid__item{% endunless %} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
               {% if settings.animations_reveal_on_scroll %}
                 data-cascade
                 style="--animation-order: {{ forloop.index }};"
@@ -84,32 +102,9 @@
           {%- endfor -%}
         {% endif %}
       </ul>
-      <div class="slider-buttons no-js-hidden hidden" id="section-{{ section.id }}-slider-buttons">
-        <button
-          type="button"
-          class="slider-button slider-button--prev"
-          name="previous"
-          aria-label="{{ 'general.slider.previous_slide' | t }}"
-          aria-controls="Slider-{{ section.id }}"
-        >
-          {% render 'icon-caret' %}
-        </button>
-        <div class="slider-counter caption">
-          <span class="slider-counter--current">1</span>
-          <span aria-hidden="true"> / </span>
-          <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
-          <span class="slider-counter--total">5</span>
-        </div>
-        <button
-          type="button"
-          class="slider-button slider-button--next"
-          name="next"
-          aria-label="{{ 'general.slider.next_slide' | t }}"
-          aria-controls="Slider-{{ section.id }}"
-        >
-          {% render 'icon-caret' %}
-        </button>
-      </div>
+      {% if slider_enabled %}
+        {% render 'swiper-pagination', section: section %}
+      {% endif %}
     </slider-component>
 
     {% if section.settings.image_shape == 'arch' %}
@@ -277,6 +272,28 @@
       "id": "full_width",
       "label": "t:sections.recently-viewed.settings.full_width.label",
       "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_slider",
+      "default": false,
+      "label": "t:sections.all.slider.enable_slider.label"
+    },
+    {
+      "type": "select",
+      "id": "pagination_type",
+      "options": [
+        {
+          "value": "bullets",
+          "label": "t:sections.all.pagination_type.options__1.label"
+        },
+        {
+          "value": "fraction",
+          "label": "t:sections.all.pagination_type.options__2.label"
+        }
+      ],
+      "default": "bullets",
+      "label": "t:sections.all.pagination_type.label"
     },
     {
       "type": "color_scheme",

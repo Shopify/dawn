@@ -134,8 +134,7 @@
   box-shadow: 0 0 0 0.3rem rgb(var(--color-background)), 0 0 0.5rem 0.4rem rgba(var(--color-foreground), 0.3);
 }
 
-.mobile-facets__sort .select__select.focused,
-.no-js .mobile-facets__sort .select__select:focus {
+.mobile-facets__sort .select__select.focused {
   outline: 0.2rem solid rgba(var(--color-foreground), 0.5);
   outline-offset: 0.3rem;
   box-shadow: 0 0 0 0.3rem rgb(var(--color-background)), 0 0 0.5rem 0.4rem rgba(var(--color-foreground), 0.3);
@@ -147,17 +146,10 @@
   box-shadow: 0 0 0 1rem rgb(var(--color-background)), 0 0 0.2rem 1.2rem rgba(var(--color-foreground), 0.3);
 }
 
-.facet-filters__sort.focused,
-.no-js .facet-filters__sort:focus {
+.facet-filters__sort.focused {
   outline: 0.2rem solid rgba(var(--color-foreground), 0.5);
   outline-offset: 1rem;
   box-shadow: 0 0 0 1rem rgb(var(--color-background)), 0 0 0.2rem 1.2rem rgba(var(--color-foreground), 0.3);
-}
-
-.no-js .facet-filters__sort:focus:not(:focus-visible),
-.no-js .mobile-facets__sort .select__select:focus:not(:focus-visible) {
-  outline: 0;
-  box-shadow: none;
 }
 
 .facets {
@@ -301,10 +293,17 @@
 
 .facets-layout-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   text-align: center;
   padding: 2rem 2.4rem;
-  gap: 3rem 1rem;
+}
+
+.facets-layout-list--swatch {
+  --swatch-input--size: 2.4rem;
+}
+
+.facets-layout-grid.facets-layout-grid {
+  gap: 1rem;
 }
 
 .facets-layout-grid.facets__list--vertical {
@@ -317,8 +316,8 @@
 }
 
 /* Hover/focus state */
-.facets-layout-list .facets__label:hover .facet-checkbox__text,
-.facets-layout-list input:focus ~ .facet-checkbox__text {
+.facets-layout-list .facets__label:hover .facet-checkbox__text-label,
+.facets-layout-list input:focus ~ .facet-checkbox__text-label {
   text-decoration: underline;
 }
 
@@ -326,17 +325,110 @@
   align-items: flex-start;
 }
 
-.facets-layout-grid .visual-display-parent {
+.facets-layout-grid .facets__label {
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
   padding: 0;
   height: 100%;
   font-size: 1.3rem;
 }
 
-.facets__item label,
-.facets__item input[type='checkbox'] {
+/* Image filter specific styles */
+.facets-layout-grid .facets__image-wrapper {
+  display: block;
+  position: relative;
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+  padding: 0.4rem;
+}
+
+.facets__image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Default state */
+.facets-layout-grid--image .facets__label {
+  outline-style: solid;
+  outline-color: transparent;
+  transition-property: outline-color, outline-width, box-shadow;
+  transition-duration: var(--duration-short);
+  transition-timing-function: ease;
+}
+
+.facets-layout-grid--image .facet-checkbox__text {
+  padding: 0.4rem;
+}
+
+/* Active state */
+.facets-layout-grid--image .facets__label.active {
+  outline-color: rgb(var(--color-foreground));
+  outline-width: 0.1rem;
+}
+
+/* Hover state */
+.facets-layout-grid--image .facets__label:hover {
+  outline-color: rgba(var(--color-foreground), 0.4);
+  outline-width: 0.2rem;
+}
+
+/* Focus visible */
+.facets-layout-grid--image .facets__label:has(:focus-visible) {
+  outline-color: rgba(var(--color-foreground), 0.5);
+  outline-width: 0.2rem;
+  box-shadow: 0px 0px 3px 1px rgba(var(--color-foreground), 0.25);
+}
+
+/* Focused state */
+.facets-layout-grid--image .facets__label.active:has(:focus-visible) {
+  outline-color: rgb(var(--color-foreground));
+  outline-width: 0.1rem;
+  box-shadow: 0 0 0 0.3rem rgb(var(--color-background)), 0 0 0 0.5rem rgba(var(--color-foreground), 0.5),
+    0 0 0.7rem 0.1rem rgba(var(--color-foreground), 0.25);
+}
+
+/* Disabled state */
+.facets-layout-grid--image .facets__label.disabled {
+  /* Note: disabled gets its transparency set by a parent, so no need to set an alpha here. Also, we move the outline to the child when disabled */
+  outline: none;
+}
+
+.facets-layout-grid--image .facets__label.disabled .facets__image-wrapper {
+  outline: 0.1rem solid rgb(var(--color-foreground));
+}
+
+.facets-layout-grid--image .facets__label.disabled .facets__image-wrapper:before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  /* 100% * square root of 2, this is not a magic number, it is math! */
+  width: 141.4%;
+  height: 0.1rem;
+  background-color: rgb(var(--color-foreground));
+  transform: rotate(-45deg);
+  transform-origin: left;
+}
+
+.facets-layout-grid--image .facets__label.disabled .disabled-line {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  background: transparent;
+  margin: 0;
+}
+
+.facets-layout-grid--image .facets__label.disabled .disabled-line line {
+  stroke: rgb(var(--color-foreground));
+  stroke-width: 1;
+}
+
+/* End of image filter specific styles */
+
+.list-menu__item label,
+.list-menu__item input[type='checkbox'] {
   cursor: pointer;
 }
 
@@ -350,18 +442,32 @@
 }
 
 /* Hover, active, and focus states */
-:is(.facets__label:hover, .facets__label.active, .facets__label:has(:focus-visible)) {
+.facets__label:hover,
+.facets__label.active,
+.facets__label:has(:focus-visible) {
   color: rgba(var(--color-foreground), 1);
 }
 
-/* Focus states for older browsers */
-@supports not selector(:has(a, b)) {
-  .facets__label:focus-within {
-    color: rgba(var(--color-foreground), 1);
-  }
+/* Disabled state */
+.facets-layout .facets__label.disabled {
+  pointer-events: none;
 }
 
-.facet-checkbox input[type='checkbox'] {
+.facets-layout:not(.facets-layout-list--swatch, .facets-layout-grid--image) .facets__label.disabled {
+  opacity: 0.4;
+}
+
+.facets-layout-grid--image .facets__label.disabled .facets__image-wrapper {
+  opacity: 0.2;
+}
+
+:is(.facets-layout-list--swatch, .facets-layout-grid--image) .facets__label.disabled .facet-checkbox__text {
+  opacity: 0.4;
+}
+
+/* End disabled state */
+
+.facets-layout-list--text input[type='checkbox'] {
   position: absolute;
   opacity: 1;
   width: 1.6rem;
@@ -373,25 +479,23 @@
   -webkit-appearance: none;
 }
 
-.facets-layout-grid input[type='checkbox'] {
+.facets-layout-grid input[type='checkbox'],
+.facets-layout-list--swatch input[type='checkbox'] {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
+  z-index: 1;
+  margin: 0;
   opacity: 0;
 }
 
-.facets__visual-display-wrapper {
+.facets-layout-list--swatch .facets__label {
   display: flex;
-  justify-content: center;
-  flex-shrink: 0;
+  align-items: center;
+  gap: 0.8rem;
 }
 
-.no-js .facet-checkbox input[type='checkbox'] {
-  z-index: 0;
+.swatch-input-wrapper {
+  display: flex;
 }
 
 .facet-checkbox > svg {
@@ -421,12 +525,6 @@
   .facet-checkbox > input[type='checkbox']:checked ~ .icon-checkmark {
     border: none;
   }
-}
-
-.facet-checkbox--disabled,
-.mobile-facets__label--disabled {
-  opacity: 0.4;
-  pointer-events: none;
 }
 
 .facets__price {
@@ -459,10 +557,6 @@ button.facets__button {
   padding-bottom: 1.4rem;
 }
 
-.facets__button-no-js {
-  transform: translateY(-0.6rem);
-}
-
 .active-facets {
   display: flex;
   flex-wrap: wrap;
@@ -490,7 +584,7 @@ span.active-facets__button-inner {
   min-width: 0;
   padding: 0.5rem 1rem;
   display: flex;
-  align-items: stretch;
+  align-items: center;
 }
 
 span.active-facets__button-inner:before,
@@ -565,8 +659,7 @@ a.active-facets__button:focus-visible {
     outline: transparent solid 1px;
   }
 }
-a.active-facets__button.focused,
-.no-js a.active-facets__button:focus {
+a.active-facets__button.focused {
   outline: none;
   box-shadow: none;
 }
@@ -577,8 +670,7 @@ a.active-facets__button:focus-visible .active-facets__button-inner {
   outline: none;
 }
 
-a.active-facets__button.focused .active-facets__button-inner,
-.no-js a.active-facets__button:focus .active-facets__button-inner {
+a.active-facets__button.focused .active-facets__button-inner {
   box-shadow: 0 0 0 0.1rem rgba(var(--color-foreground), 0.2), 0 0 0 0.2rem rgb(var(--color-background)),
     0 0 0 0.4rem rgb(var(--color-foreground));
   outline: none;
@@ -811,10 +903,6 @@ details.menu-opening .mobile-facets__close svg {
   grid-column-start: 2;
 }
 
-.no-js .mobile-facets__close-button {
-  display: none;
-}
-
 .mobile-facets__close-button .icon-arrow {
   transform: rotate(180deg);
   margin-right: 1rem;
@@ -832,10 +920,6 @@ details.menu-opening .mobile-facets__close svg {
 
 .mobile-facets__details[open] .icon-caret {
   transform: rotate(180deg);
-}
-
-.no-js .mobile-facets__details {
-  border-bottom: 1px solid rgba(var(--color-foreground), 0.04);
 }
 
 .mobile-facets__highlight {
@@ -968,10 +1052,6 @@ input.mobile-facets__checkbox {
   width: 50%;
 }
 
-.mobile-facets__footer noscript .button {
-  width: 100%;
-}
-
 .mobile-facets__sort {
   display: flex;
   justify-content: space-between;
@@ -983,11 +1063,6 @@ input.mobile-facets__checkbox {
 
 .mobile-facets__sort .select {
   width: auto;
-}
-
-.no-js .mobile-facets__sort .select {
-  position: relative;
-  right: -1rem;
 }
 
 .mobile-facets__sort .select .icon-caret {
@@ -1081,10 +1156,6 @@ input.mobile-facets__checkbox {
     display: none;
   }
 
-  .no-js .facets-vertical .facets-wrapper--no-filters {
-    display: block;
-  }
-
   .facets-vertical .product-grid-container {
     width: 100%;
   }
@@ -1103,17 +1174,6 @@ input.mobile-facets__checkbox {
     margin-bottom: 2rem;
   }
 
-  .facets-vertical .no-js .facets__button-no-js {
-    transform: none;
-    margin-left: 0;
-  }
-
-  .facets-vertical .no-js .facet-filters__field {
-    justify-content: flex-start;
-    padding-bottom: 1rem;
-    padding-top: 2rem;
-  }
-
   .facets-vertical .facets__price {
     padding: 0.5rem 0.5rem 0.5rem 0;
   }
@@ -1126,18 +1186,8 @@ input.mobile-facets__checkbox {
     margin-bottom: 1.5rem;
   }
 
-  .no-js .facets-vertical .facet-filters.sorting {
-    padding-left: 0;
-    flex-direction: column;
-  }
-
   .facets-vertical .facet-checkbox input[type='checkbox'] {
     z-index: 0;
-  }
-
-  .no-js .facets-vertical .facets-container {
-    display: flex;
-    flex-direction: column;
   }
 
   .facets-vertical .active-facets facet-remove:last-of-type {

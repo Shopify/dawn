@@ -70,6 +70,9 @@
           {% render 'icon-close' %}
         </button>
       </div>
+      {% if settings.show_shipping_bar_drawer %}
+        {% render 'shipping-bar' %}
+      {% endif %}
       <cart-drawer-items
         {% if cart == empty %}
           class=" is-empty"
@@ -278,7 +281,7 @@
                             <div class="cart-item__quantity-wrapper quantity-popover-wrapper">
                               <div class="quantity-popover-container{% if has_qty_rules or has_vol_pricing %} quantity-popover-container--hover{% endif %}">
                                 <quantity-input class="quantity cart-quantity">
-                                  <button class="quantity__button no-js-hidden" name="minus" type="button">
+                                  <button class="quantity__button" name="minus" type="button">
                                     <span class="visually-hidden">
                                       {{-
                                         'products.product.quantity.decrease'
@@ -296,7 +299,8 @@
                                     value="{{ item.quantity }}"
                                     {% # theme-check-disable %}
                                     data-cart-quantity="{{ cart | item_count_for_variant: item.variant.id }}"
-                                    min="{{ item.variant.quantity_rule.min }}"
+                                    min="0"
+                                    data-min="{{ item.variant.quantity_rule.min }}"
                                     {% if item.variant.quantity_rule.max != null %}
                                       max="{{ item.variant.quantity_rule.max }}"
                                     {% endif %}
@@ -306,7 +310,7 @@
                                     id="Drawer-quantity-{{ item.index | plus: 1 }}"
                                     data-index="{{ item.index | plus: 1 }}"
                                   >
-                                  <button class="quantity__button no-js-hidden" name="plus" type="button">
+                                  <button class="quantity__button" name="plus" type="button">
                                     <span class="visually-hidden">
                                       {{-
                                         'products.product.quantity.increase'
@@ -325,7 +329,7 @@
                                 <button
                                   type="button"
                                   class="button button--tertiary cart-remove-button"
-                                  aria-label="{{ 'sections.cart.remove_title' | t: title: item.title }}"
+                                  aria-label="{{ 'sections.cart.remove_title' | t: title: item.title | escape }}"
                                   data-variant-id="{{ item.variant.id }}"
                                 >
                                   {% render 'icon-remove' %}
@@ -359,7 +363,7 @@
                                     {{- 'products.product.volume_pricing.title' | t -}}
                                   </span>
                                 {%- endif -%}
-                                <div class="quantity__rules caption no-js-hidden">
+                                <div class="quantity__rules caption">
                                   {%- if item.variant.quantity_rule.increment > 1 -%}
                                     <span class="divider">
                                       {{-
@@ -371,7 +375,7 @@
                                   {%- if item.variant.quantity_rule.min > 1 -%}
                                     <span class="divider">
                                       {{-
-                                        'products.product.quantity.minimum_of'
+                                        'products.product.quantity.min_of'
                                         | t: quantity: item.variant.quantity_rule.min
                                       -}}
                                     </span>
@@ -379,7 +383,7 @@
                                   {%- if item.variant.quantity_rule.max != null -%}
                                     <span class="divider">
                                       {{-
-                                        'products.product.quantity.maximum_of'
+                                        'products.product.quantity.max_of'
                                         | t: quantity: item.variant.quantity_rule.max
                                       -}}
                                     </span>
@@ -478,7 +482,7 @@
                 {%- for discount in cart.cart_level_discount_applications -%}
                   <li class="discounts__discount discounts__discount--end">
                     {%- render 'icon-discount' -%}
-                    {{ discount.title }}
+                    {{ discount.title | escape }}
                     (-{{ discount.total_allocated_amount | money }})
                   </li>
                 {%- endfor -%}
@@ -492,14 +496,42 @@
           </div>
 
           <small class="tax-note caption-large rte">
-            {%- if cart.taxes_included and shop.shipping_policy.body != blank -%}
-              {{ 'sections.cart.taxes_included_and_shipping_policy_html' | t: link: shop.shipping_policy.url }}
-            {%- elsif cart.taxes_included -%}
-              {{ 'sections.cart.taxes_included_but_shipping_at_checkout' | t }}
-            {%- elsif shop.shipping_policy.body != blank -%}
-              {{ 'sections.cart.taxes_and_shipping_policy_at_checkout_html' | t: link: shop.shipping_policy.url }}
-            {%- else -%}
-              {{ 'sections.cart.taxes_and_shipping_at_checkout' | t }}
+            {%- if cart.duties_included and cart.taxes_included -%}
+              {%- if shop.shipping_policy.body == blank -%}
+                {{ 'sections.cart.duties_and_taxes_included_shipping_at_checkout_without_policy' | t }}
+              {%- else -%}
+                {{
+                  'sections.cart.duties_and_taxes_included_shipping_at_checkout_with_policy_html'
+                  | t: link: shop.shipping_policy.url
+                }}
+              {%- endif -%}
+            {%- elsif cart.duties_included == false and cart.taxes_included -%}
+              {%- if shop.shipping_policy.body == blank -%}
+                {{ 'sections.cart.taxes_included_shipping_at_checkout_without_policy' | t }}
+              {%- else -%}
+                {{
+                  'sections.cart.taxes_included_shipping_at_checkout_with_policy_html'
+                  | t: link: shop.shipping_policy.url
+                }}
+              {%- endif -%}
+            {%- elsif cart.duties_included and cart.taxes_included == false -%}
+              {%- if shop.shipping_policy.body == blank -%}
+                {{ 'sections.cart.duties_included_taxes_at_checkout_shipping_at_checkout_without_policy' | t }}
+              {%- else -%}
+                {{
+                  'sections.cart.duties_included_taxes_at_checkout_shipping_at_checkout_with_policy_html'
+                  | t: link: shop.shipping_policy.url
+                }}
+              {%- endif -%}
+            {%- elsif cart.duties_included == false and cart.taxes_included == false -%}
+              {%- if shop.shipping_policy.body == blank -%}
+                {{ 'sections.cart.taxes_at_checkout_shipping_at_checkout_without_policy' | t }}
+              {%- else -%}
+                {{
+                  'sections.cart.taxes_at_checkout_shipping_at_checkout_with_policy_html'
+                  | t: link: shop.shipping_policy.url
+                }}
+              {%- endif -%}
             {%- endif -%}
           </small>
         </div>
@@ -507,12 +539,6 @@
         <!-- CTAs -->
 
         <div class="cart__ctas" {{ block.shopify_attributes }}>
-          <noscript>
-            <button type="submit" class="cart__update-button button button--secondary" form="CartDrawer-Form">
-              {{ 'sections.cart.update' | t }}
-            </button>
-          </noscript>
-
           <button
             type="submit"
             id="CartDrawer-Checkout"
@@ -530,24 +556,3 @@
     </div>
   </div>
 </cart-drawer>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    function isIE() {
-      const ua = window.navigator.userAgent;
-      const msie = ua.indexOf('MSIE ');
-      const trident = ua.indexOf('Trident/');
-
-      return msie > 0 || trident > 0;
-    }
-
-    if (!isIE()) return;
-    const cartSubmitInput = document.createElement('input');
-    cartSubmitInput.setAttribute('name', 'checkout');
-    cartSubmitInput.setAttribute('type', 'hidden');
-    document.querySelector('#cart').appendChild(cartSubmitInput);
-    document.querySelector('#checkout').addEventListener('click', function (event) {
-      document.querySelector('#cart').submit();
-    });
-  });
-</script>
