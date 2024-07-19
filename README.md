@@ -97,3 +97,18 @@ Ensure that you follow the list of [theme store requirements](https://shopify.de
 ## License
 
 Copyright (c) 2021-present Shopify Inc. See [LICENSE](/LICENSE.md) for further details.
+
+# Web performance notes
+
+Improving the performance of a store varies a lot on the present issues, including for example uninstalling apps and create custom code, or it can be backwards, meaning, having an app is a better solution rather than having custom code. 
+
+In this particular case, when a theme is clean like this, the performance improvements that I could use would be related to: 
+- Use videos that weights less than 1MB.
+- Use images that weights less than 300kb, or the ideal less than 100kb without affecting the quality of the image. 
+- Pick SVG files for illustrations and icons, and webp and AVIF format for images. Even, JPEG is a better option.
+- Make sure that the main multimedia content is not laizy loaded. I have being using the practice to use: the following line of code: 
+```
+{% if section.index != 1 %} loading="lazy {% endif %}
+``` 
+That simple line of code will allow me to handle the lazy load that Shopify and browser offers, but only for sections that aren't the first one on the template. 
+- Avoid animations that consume a lot (For example, canva animations using WebGL or threeJS) as a main thread, so it doesn't hit that much on performance.  
