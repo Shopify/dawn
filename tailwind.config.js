@@ -112,12 +112,14 @@ module.exports = {
           fontSize: '80px',
           textTransform: 'uppercase',
           fontFamily: '"National 2 Compressed"',
+          letterSpacing: '3%',
         },
         '.text-h-md': {
           ...styles.headingStyles,
           fontSize: '40px',
           textTransform: 'uppercase',
           fontFamily: '"National 2 Compressed"',
+          letterSpacing: '3%',
         },
         '.text-h-sm': {
           ...styles.headingStyles,
@@ -125,6 +127,7 @@ module.exports = {
           lineHeight: '20px',
           textTransform: 'uppercase',
           fontFamily: '"National 2 Compressed"',
+          letterSpacing: '3%',
         },
         '.text-h-xs': {
           ...styles.headingStyles,
@@ -132,12 +135,14 @@ module.exports = {
           textTransform: 'uppercase',
           letterSpacing: '0.36px',
           fontFamily: '"National 2 Compressed"',
+          letterSpacing: '3%',
         },
         '.text-mb-lg': {
           ...styles.headingStyles,
           fontSize: '60px',
           textTransform: 'uppercase',
           fontFamily: '"National 2 Compressed"',
+          letterSpacing: '3%',
         },
       };
       addComponents(typography);
