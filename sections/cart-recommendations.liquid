@@ -1,0 +1,47 @@
+{% liquid
+  assign line_items_product_ids = cart.items | map: 'product_id' | join: ', '
+%}
+
+{{ 'splide-core.min.css' | asset_url | stylesheet_tag }}
+{{ 'splide-data.css' | asset_url | stylesheet_tag }}
+
+<div class="ml-base lg:ml-0 mt-[120px]">
+  <cart-recommendations
+    class="isolate{% if cart == empty %} is-empty{% endif %}"
+    data-items="{{ line_items_product_ids }}"
+    data-section_id="{{ section.id }}"
+  >
+    {% if recommendations.performed and recommendations.products_count > 0 %}
+      <div
+        id="cart-recommendations-carousel"
+        class="splide"
+        aria-label="related products carousel"
+      >
+        <div class="relative flex justify-between mr-base items-center mb-base">
+          <h1 class="text-h-md uppercase">{{ 'sections.cart.related_products' | t }}</h1>
+
+          <div class="splide__arrows flex gap-base">
+            {% render 'prev', class: 'splide__arrow splide__arrow--prev' %}
+            {% render 'next', class: 'splide__arrow splide__arrow--next' %}
+          </div>
+        </div>
+
+        <div class="relative">
+          <div class="splide__track">
+            <ul class="splide__list">
+              {% for product in recommendations.products %}
+                <li class="splide__slide">
+                  {% render 'product-card', product: product, class: '!border-0' %}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </cart-recommendations>
+</div>
+
+<script src="{{ 'cart.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'splide.min.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'splide-related.js' | asset_url }}" defer="defer"></script>

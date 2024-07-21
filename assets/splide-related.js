@@ -1,10 +1,10 @@
-function disableCarouselArrows(carousel_id) {
-  const items = document?.querySelectorAll(`#${carousel_id} li.splide__slide`);
+function disableCarouselArrows(id) {
+  const items = document?.querySelectorAll(`${id} li.splide__slide`);
   const firstElement = items?.[0];
   const lastElement = items?.[items?.length - 1];
 
-  const prevBtn = document?.querySelector(`#${carousel_id} .splide__arrow--prev`);
-  const nextBtn = document?.querySelector(`#${carousel_id} .splide__arrow--next`);
+  const prevBtn = document?.querySelector(`${id} .splide__arrow--prev`);
+  const nextBtn = document?.querySelector(`${id} .splide__arrow--next`);
 
   return function () {
     if (firstElement?.classList.contains('is-active')) {
@@ -17,9 +17,11 @@ function disableCarouselArrows(carousel_id) {
   };
 }
 
-function createRelatedProducts() {
+function createRelatedProducts(carouselId) {
+  const idSelector = `#${carouselId}`;
+
   try {
-    const related_carousel = new Splide('#related-products-carousel', {
+    const related_carousel = new Splide(idSelector, {
       cover: true,
       pagination: false,
       // loop: true,
@@ -41,38 +43,47 @@ function createRelatedProducts() {
       },
     });
 
-    related_carousel.on('arrows:updated', disableCarouselArrows('related-products-carousel'));
+    related_carousel.on('arrows:updated', disableCarouselArrows(idSelector));
 
     related_carousel.mount();
   } catch (error) {
-    console.error('Error mounting related carousel', error);
+    console.error('Error mounting related carousel' + carouselId, error);
   }
 }
 
-try {
-  createRelatedProducts();
-
-  const targetNode = document.querySelector('.related-products');
-  const config = { childList: true, subtree: true };
-
-  const callback = function (mutationsList, observer) {
-    for (let mutation of mutationsList) {
-      if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-        // Check if the added nodes include the carousel
-        if (document.querySelector('#related-products-carousel .splide__list')) {
-          createRelatedProducts();
-          observer.disconnect(); // Stop observing once the carousel is initialized
-          break;
+function observeElement(element, carouselId) {
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === 'class') {
+        const classList = mutation.target.classList;
+        if (classList.contains('recommendations-loaded')) {
+          createRelatedProducts(carouselId);
+          observer.disconnect(); // Optionally disconnect after firing the function
         }
       }
-    }
-  };
+    });
+  });
 
-  const observer = new MutationObserver(callback);
+  observer.observe(element, { attributes: true });
+}
 
-  if (targetNode) {
-    observer.observe(targetNode, config);
+try {
+  const carouselId = 'related-products-carousel';
+  const relatedCarousel = document.querySelector('product-recommendations');
+  if (relatedCarousel) {
+    observeElement(relatedCarousel, carouselId);
   }
 } catch (error) {
-  console.log(error, 'MUTATION observe error');
+  console.error('Unable to create related products carousel', error);
+}
+
+try {
+  const cartCarousel = document.querySelector('cart-recommendations');
+  const carouselId = 'cart-recommendations-carousel';
+
+  if (cartCarousel) {
+    observeElement(cartCarousel, carouselId);
+  }
+} catch (error) {
+  console.error('Unable to create cart carousel', error);
 }

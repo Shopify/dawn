@@ -428,7 +428,6 @@ class MenuDrawer extends HTMLElement {
     if (detailsElement === this.mainDetailsToggle) {
       if (isOpen) event.preventDefault();
 
-      // console.log(isOpen, 'OPEN');
       isOpen ? this.closeMenuDrawer(event, summaryElement) : this.openMenuDrawer(summaryElement);
 
       if (window.matchMedia('(max-width: 990px)')) {
@@ -1367,6 +1366,8 @@ class ProductRecommendations extends HTMLElement {
           if (html.querySelector('.grid__item')) {
             this.classList.add('product-recommendations--loaded');
           }
+
+          this.classList.add('recommendations-loaded');
         })
         .catch((e) => {
           console.error(e);

@@ -1,0 +1,143 @@
+{%- liquid
+  assign recommend_products = true
+
+  if recommendations.products and recommendations.products_count > 0
+    assign related_collection = recommendations
+  endif
+
+  for tag in product.tags
+    if tag contains '_related'
+      assign include_collection_handle = tag | split: '_' | last
+      assign include_collection = collections[include_collection_handle]
+      if include_collection != empty and include_collection.products_count > 0
+        assign related_collection = include_collection
+        assign recommend_products = false
+        break
+      endif
+    endif
+  endfor
+
+  assign number_of_products = section.settings.related_count
+  assign per_row = number_of_products
+  assign number_of_products_to_fetch = number_of_products | plus: 1
+  case per_row
+    when 1
+      assign grid_item_width = ''
+    when 2
+      assign grid_item_width = 'medium-up--one-half'
+    when 3
+      assign grid_item_width = 'small--one-half medium-up--one-third'
+    when 4
+      assign grid_item_width = 'small--one-half medium-up--one-quarter'
+    when 5
+      assign grid_item_width = 'small--one-half medium-up--one-fifth'
+    when 6
+      assign grid_item_width = 'small--one-half medium-up--one-sixth'
+  endcase
+-%}
+
+{%- if section.settings.show_product_recommendations -%}
+  <div
+    id="Recommendations-{{ product.id }}"
+    data-section-id="{{ product.id }}"
+    data-section-type="product-recommendations"
+    data-enable="{{ recommend_products }}"
+    data-product-id="{{ product.id }}"
+    data-url="{{ routes.product_recommendations_url }}"
+    data-limit="{{ number_of_products_to_fetch }}"
+  >
+    <div
+      data-section-id="{{ product.id }}"
+      data-subsection
+      data-section-type="collection-template"
+      class="index-section"
+    >
+      <div class="page-width">
+        <header class="section-header">
+          <h3 class="section-header__title">
+            {{ section.settings.product_recommendations_heading }}
+          </h3>
+        </header>
+      </div>
+
+      <div class="page-width page-width--flush-small">
+        <div class="grid-overflow-wrapper">
+          {%- if recommend_products -%}
+            <div class="product-recommendations-placeholder">
+              {% comment %}
+                This content is visually hidden and replaced when recommended
+                products show up
+              {% endcomment %}
+              <div class="grid grid--uniform visually-invisible" aria-hidden="true">
+                {%- render 'product-grid-item', product: product, grid_item_width: grid_item_width -%}
+              </div>
+            </div>
+          {%- endif -%}
+          {%- if related_collection.products_count > 1 -%}
+            <div class="product-recommendations">
+              <div class="grid grid--uniform" data-aos="overflow__animation">
+                {%- liquid
+                  assign current_product = product
+                  assign current_product_found = false
+                  assign related_count = 0
+                -%}
+                {%- for product in related_collection.products limit: number_of_products_to_fetch -%}
+                  {%- if product.handle == current_product.handle -%}
+                    {%- assign current_product_found = true -%}
+                  {%- else -%}
+                    {%- assign related_count = related_count | plus: 1 -%}
+                    {%- unless related_count > number_of_products -%}
+                      {%- if forloop.last and current_product_found -%}
+                        {%- render 'product-grid-item', product: product, grid_item_width: grid_item_width -%}
+                      {%- else -%}
+                        {%- render 'product-grid-item', product: product, grid_item_width: grid_item_width -%}
+                      {%- endif -%}
+                    {%- endunless -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+
+              {%- if settings.quick_shop_enable -%}
+                {%- for product in related_collection.products limit: number_of_products_to_fetch -%}
+                  {%- if product.handle != current_product.handle -%}
+                    {%- render 'quick-shop-modal', product: product -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Product recommendations",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_product_recommendations",
+      "label": "Show dynamic recommendations",
+      "info": "Dynamic recommendations change and improve with time. [Learn more](https://help.shopify.com/en/themes/development/recommended-products)",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "product_recommendations_heading",
+      "label": "Heading",
+      "default": "You may also like"
+    },
+    {
+      "type": "range",
+      "id": "related_count",
+      "label": "Number of related products",
+      "default": 5,
+      "min": 2,
+      "max": 6,
+      "step": 1
+    }
+  ]
+}
+{% endschema %}

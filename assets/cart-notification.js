@@ -25,6 +25,10 @@ class CartNotification extends HTMLElement {
     );
 
     document.body.addEventListener('click', this.onBodyClick);
+
+    setTimeout(() => {
+      this.close();
+    }, 3000);
   }
 
   close() {
@@ -36,10 +40,8 @@ class CartNotification extends HTMLElement {
 
   renderContents(parsedState) {
     this.cartItemKey = parsedState.key;
-    console.log(this.getSectionInnerHTML(parsedState.sections['cart-icon-bubble']));
 
     this.getSectionsToRender().forEach((section) => {
-      console.log(document.getElementById(section.id));
       document.getElementById(section.id).innerHTML = this.getSectionInnerHTML(
         parsedState.sections[section.id],
         section.selector
@@ -66,8 +68,6 @@ class CartNotification extends HTMLElement {
   }
 
   getSectionInnerHTML(html, selector = '.shopify-section') {
-    console.log(new DOMParser().parseFromString(html, 'text/html').querySelector(selector).innerHTML);
-
     return new DOMParser().parseFromString(html, 'text/html').querySelector(selector).innerHTML;
   }
 
