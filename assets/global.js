@@ -1089,6 +1089,49 @@ class SlideshowComponent extends SliderComponent {
 
 customElements.define('slideshow-component', SlideshowComponent);
 
+
+
+class CardColorSwatches extends HTMLElement {
+  constructor() {
+    super();
+    this.addEventListener('change', this.onVariantChange);
+    this.cardLink = this.closest('.card__content').querySelector('.card__heading a');
+    this.cardImage = this.closest('.card-wrapper ').querySelector('.card__media img');
+    this.formId = this.closest('.card__content').querySelector('.product-variant-id');
+    this.label = this.closest('.card__content').querySelector('.form__label span');
+    this.variantData = JSON.parse(this.querySelector('[type="application/json"]').textContent);
+    this.swatch = this.querySelector('.swatch-input__label')
+    this.inputs = this.querySelectorAll('.swatch-input__input')
+  }
+
+  onVariantChange(event) {
+    this.inputs.forEach(input =>{
+      input.classList.remove('active');
+    })
+    this.updateProductCard(event);
+  }
+
+  updateProductCard({ target }) {
+    const { value } = target;
+    target.classList.add('active');
+    let defaultLink = this.cardLink.dataset.link;
+    let currentVariant = this.variantData[target.dataset.index];
+    let currentVariantImage = target.dataset.variantImage;
+    if (currentVariantImage) {
+      this.cardImage.src = currentVariantImage;
+      this.cardImage.srcset = currentVariantImage;
+    }
+    this.cardLink.href = defaultLink + '?variant=' + currentVariant.id;
+    this.formId.value = currentVariant.id;
+    if (this.label) {
+      this.label.textContent = value;
+    }
+  }
+
+}
+
+customElements.define('card-color-swatches', CardColorSwatches);
+
 class VariantSelects extends HTMLElement {
   constructor() {
     super();
@@ -1098,7 +1141,6 @@ class VariantSelects extends HTMLElement {
     this.addEventListener('change', (event) => {
       const target = this.getInputForEventTarget(event.target);
       this.updateSelectionMetadata(event);
-
       publish(PUB_SUB_EVENTS.optionValueSelectionChange, {
         data: {
           event,
@@ -1111,7 +1153,6 @@ class VariantSelects extends HTMLElement {
 
   updateSelectionMetadata({ target }) {
     const { value, tagName } = target;
-
     if (tagName === 'SELECT' && target.selectedOptions.length) {
       Array.from(target.options)
         .find((option) => option.getAttribute('selected'))
@@ -1145,6 +1186,8 @@ class VariantSelects extends HTMLElement {
     return target.tagName === 'SELECT' ? target.selectedOptions[0] : target;
   }
 
+  
+  
   get selectedOptionValues() {
     return Array.from(this.querySelectorAll('select option[selected], fieldset input:checked')).map(
       ({ dataset }) => dataset.optionValueId
