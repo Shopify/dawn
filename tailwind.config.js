@@ -1,7 +1,21 @@
 /** @type {import('tailwindcss').Config} */
 
-const styles = require('./tw-config/typography');
 const plugin = require('tailwindcss/plugin');
+
+const typographyStyles = {
+  headingStyles: {
+    lineHeight: '80%',
+    fontWeight: '700',
+  },
+  titleStyles: {
+    lineHeight: 'normal',
+    fontWeight: '500',
+  },
+  bodyStyles: {
+    lineHeight: 'normal',
+    fontWeight: '400',
+  },
+};
 
 module.exports = {
   content: [
@@ -38,16 +52,16 @@ module.exports = {
     },
 
     fontSize: {
-      't-xlg': ['36px', { ...styles.titleStyles, letterSpacing: '-0.36px' }],
-      't-lg': ['24px', styles.titleStyles],
-      't-md': ['20px', styles.titleStyles],
-      't-sm': ['16px', styles.titleStyles],
-      't-xs': ['14px', styles.titleStyles],
-      'body-lg': ['24px', styles.bodyStyles],
-      'body-md': ['20px', styles.bodyStyles],
-      'body-sm': ['16px', styles.bodyStyles],
-      'body-xs': ['14px', styles.bodyStyles],
-      'btn-xs': ['12px', styles.titleStyles],
+      't-xlg': ['36px', { ...typographyStyles.titleStyles, letterSpacing: '-0.36px' }],
+      't-lg': ['24px', typographyStyles.titleStyles],
+      't-md': ['20px', { ...typographyStyles.titleStyles, lineHeight: '22px' }],
+      't-sm': ['16px', typographyStyles.titleStyles],
+      't-xs': ['14px', { ...typographyStyles.titleStyles, lineHeight: '18px' }],
+      'body-lg': ['24px', typographyStyles.bodyStyles],
+      'body-md': ['20px', { ...typographyStyles.bodyStyles, lineHeight: '22px' }],
+      'body-sm': ['16px', typographyStyles.bodyStyles],
+      'body-xs': ['14px', { ...typographyStyles.bodyStyles, lineHeight: '18px' }],
+      'btn-xs': ['12px', typographyStyles.titleStyles],
     },
     screens: {
       tabletUp: '400px',
@@ -96,33 +110,33 @@ module.exports = {
           textDecoration: 'underline',
         },
         '.btn-sm': {
-          ...styles.titleStyles,
+          ...typographyStyles.titleStyles,
           fontSize: '16px',
           textTransform: 'uppercase',
           fontFamily: '"National 2"',
         },
         '.btn-xs': {
-          ...styles.titleStyles,
+          ...typographyStyles.titleStyles,
           fontSize: '12px',
           textTransform: 'uppercase',
           fontFamily: '"National 2"',
         },
         '.text-h-lg': {
-          ...styles.headingStyles,
+          ...typographyStyles.headingStyles,
           fontSize: '80px',
           textTransform: 'uppercase',
           fontFamily: '"National 2 Compressed"',
           letterSpacing: '3%',
         },
         '.text-h-md': {
-          ...styles.headingStyles,
+          ...typographyStyles.headingStyles,
           fontSize: '40px',
           textTransform: 'uppercase',
           fontFamily: '"National 2 Compressed"',
           letterSpacing: '3%',
         },
         '.text-h-sm': {
-          ...styles.headingStyles,
+          ...typographyStyles.headingStyles,
           fontSize: '24px',
           lineHeight: '20px',
           textTransform: 'uppercase',
@@ -130,15 +144,15 @@ module.exports = {
           letterSpacing: '3%',
         },
         '.text-h-xs': {
-          ...styles.headingStyles,
+          ...typographyStyles.headingStyles,
           fontSize: '18px',
           textTransform: 'uppercase',
-          letterSpacing: '0.36px',
+          lineHeight: '80%',
           fontFamily: '"National 2 Compressed"',
           letterSpacing: '3%',
         },
         '.text-mb-lg': {
-          ...styles.headingStyles,
+          ...typographyStyles.headingStyles,
           fontSize: '60px',
           textTransform: 'uppercase',
           fontFamily: '"National 2 Compressed"',
