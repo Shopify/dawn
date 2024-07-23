@@ -1,7 +1,7 @@
 import './css/input.css'
 import './sass/app.scss'
-import {register} from 'swiper/element';
-import {Navigation, Pagination, EffectFade, Autoplay} from 'swiper/modules';
+import { register } from 'swiper/element';
+import { Navigation, Pagination, EffectFade, Autoplay } from 'swiper/modules';
 
 register();
 const swiperEls = document.querySelectorAll('swiper-container');
