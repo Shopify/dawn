@@ -1,0 +1,86 @@
+{%- liquid
+  assign variants_available_arr = product.variants | map: 'available'
+  assign variants_option1_arr = product.variants | map: 'option1'
+  assign variants_option2_arr = product.variants | map: 'option2'
+  assign variants_option3_arr = product.variants | map: 'option3'
+-%}
+
+{%- for value in option.values limit: option_limit -%}
+
+  {%- liquid
+    assign option_disabled = true
+
+    for option1_name in variants_option1_arr
+      case option.position
+        when 1
+          if variants_option1_arr[forloop.index0] == value and variants_available_arr[forloop.index0]
+            assign option_disabled = false
+          endif
+        when 2
+          if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == value and variants_available_arr[forloop.index0]
+            assign option_disabled = false
+          endif
+        when 3
+          if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == product.selected_or_first_available_variant.option2 and variants_option3_arr[forloop.index0] == value and variants_available_arr[forloop.index0]
+            assign option_disabled = false
+          endif
+      endcase
+    endfor
+  -%}
+
+  {%- capture variant_url -%}
+    {% for variant in product.variants %}
+      {% if variant.title contains value  %}
+        {{ variant.url }}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+  {%- endcapture -%}
+
+  <div class="color-swatch__label  {% if forloop.index == 1 %}active{% endif %} {% if option_disabled %}disabled{% endif %}" data-url="{{ variant_url | strip }}">
+    {% liquid
+      assign swatch_type = settings.color_swatches_type
+      assign color_swatches_defenition_list = settings.color_swatches_defenition | split: ';'
+  %}
+  {% capture hex_code %}
+    {%- if settings.use_metaobject == false -%}  
+      {% for color_swatches_defenition in color_swatches_defenition_list %}
+        {% assign color_swatches_value = color_swatches_defenition | split: ':' %}
+        {% if color_swatches_value[0] contains value %}
+          {{ color_swatches_value[1] }}
+        {% endif %}
+      {% endfor %}
+    {%- else -%}  
+      {% for colors_defenition in shop.metaobjects.color_swatches_definition.values %}
+        {% assign count = -1 %}
+        {% for name in colors_defenition.variant_name.value %}
+          {% assign count = count | plus: 1 %}
+          {% if name == value %}
+            {{ colors_defenition.hex_code.value[count] }}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    {% endif %}
+  {%- endcapture -%}
+  {% if swatch_type == 'color' %}
+    <div class="color-swatch" style="background-color: {{ hex_code | strip }};"></div>
+    {% if tooltip %}
+      <div class="color-swatch__tooltip">{{ value -}}</div>
+    {% else %}
+      {{ value -}}
+    {% endif %}
+    <span class="visually-hidden">{{ 'products.product.variant_sold_out_or_unavailable' | t }}</span>
+  {% else %}
+    <div class="color-swatch">
+      {% for variant in product.variants %}
+        {% if variant.title contains value and variant.image != blank %}
+          {{ variant.image | image_url: width: settings.color_swatches_width | image_tag: alt: variant.image.alt }}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+    </div>
+    {{ value -}}
+    <span class="visually-hidden">{{ 'products.product.variant_sold_out_or_unavailable' | t }}</span>
+  {% endif %}
+  </div>
+{%- endfor -%}

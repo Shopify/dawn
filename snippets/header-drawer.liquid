@@ -45,6 +45,13 @@
                           </button>
                           <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
                             {%- for childlink in link.links -%}
+                              {% liquid 
+                                assign links_with_banner = false
+                                assign title = childlink.title | split: '/' 
+                                if title[1] == 'banners'
+                                  assign links_with_banner = true
+                                endif
+                              %}
                               <li>
                                 {%- if childlink.links == blank -%}
                                   <a
@@ -57,6 +64,31 @@
                                   >
                                     {{ childlink.title | escape }}
                                   </a>
+                                {% elsif childlink.links != blank and links_with_banner %}
+                                  {%- for grandchildlink in childlink.links -%}
+                                    {% for collection in collections %}
+                                      {% if collection.url == grandchildlink.url %}
+                                        {% capture mage_menu_banner %}
+                                          {% if collection.metafields.custom.mega_menu_banner != blank %}
+                                            {{ collection.metafields.custom.mega_menu_banner.value | image_url: width: 320 | image_tag: width: 320, class: 'mega-menu__list_item_banner' }}
+                                          {% endif %}
+                                        {% endcapture %}
+                                      {% endif %}
+                                    {% endfor %}
+                                    <a
+                                      id="HeaderDrawer-{{ childlink.handle }}-{{ grandchildlink.handle }}"
+                                      href="{{ grandchildlink.url }}"
+                                      class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if grandchildlink.current %} menu-drawer__menu-item--active{% endif %}"
+                                      {% if childlink.current %}
+                                        aria-current="page"
+                                      {% endif %}
+                                    >
+                                    <div class="menu-drawer__banner">
+                                      {{ mage_menu_banner }}
+                                      <p class="mega-menu__link--banner_title">{{ grandchildlink.title | escape }}</p>
+                                    </div>
+                                    </a>
+                                  {% endfor %}
                                 {%- else -%}
                                   <details id="Details-menu-drawer-{{ link.handle }}-{{ childlink.handle }}">
                                     <summary
@@ -129,7 +161,17 @@
                 href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}"
                 class="menu-drawer__account link focus-inset h5 medium-hide large-up-hide"
               >
-                {% render 'icon-account' %}
+                {%- if section.settings.enable_customer_avatar -%}
+                  <account-icon>
+                    {%- if customer and customer.has_avatar? -%}
+                      {{ customer | avatar }}
+                    {%- else -%}
+                      {% render 'icon-account' %}
+                    {%- endif -%}
+                  </account-icon>
+                {%- else -%}
+                  {% render 'icon-account' %}
+                {%- endif -%}
                 {%- liquid
                   if customer
                     echo 'customer.account_fallback' | t
@@ -139,39 +181,10 @@
                 -%}
               </a>
             {%- endif -%}
-            {%- if localization.available_countries or localization.available_languages -%}
+            {%- if localization.available_countries and section.settings.enable_language_country_selector == false or localization.available_languages and section.settings.enable_language_country_selector == false -%}
               <div class="menu-drawer__localization header-localization">
                 {%- if localization.available_countries and localization.available_countries.size > 1 -%}
-                  <noscript>
-                    {%- form 'localization', id: 'HeaderCountryMobileFormNoScriptDrawer', class: 'localization-form' -%}
-                      <div class="localization-form__select">
-                        <h2 class="visually-hidden" id="HeaderCountryMobileLabelNoScriptDrawer">
-                          {{ 'localization.country_label' | t }}
-                        </h2>
-                        <select
-                          class="localization-selector link"
-                          name="country_code"
-                          aria-labelledby="HeaderCountryMobileLabelNoScriptDrawer"
-                        >
-                          {%- for country in localization.available_countries -%}
-                            <option
-                              value="{{ country.iso_code }}"
-                              {%- if country.iso_code == localization.country.iso_code %}
-                                selected
-                              {% endif %}
-                            >
-                              {{ country.name }} ({{ country.currency.iso_code }}
-                              {{ country.currency.symbol }})
-                            </option>
-                          {%- endfor -%}
-                        </select>
-                        {% render 'icon-caret' %}
-                      </div>
-                      <button class="button button--tertiary">{{ 'localization.update_country' | t }}</button>
-                    {%- endform -%}
-                  </noscript>
-
-                  <localization-form class="no-js-hidden">
+                  <localization-form>
                     {%- form 'localization', id: 'HeaderCountryMobileForm', class: 'localization-form' -%}
                       <div>
                         <h2 class="visually-hidden" id="HeaderCountryMobileLabel">
@@ -184,39 +197,7 @@
                 {% endif %}
 
                 {%- if localization.available_languages and localization.available_languages.size > 1 -%}
-                  <noscript>
-                    {%- form 'localization',
-                      id: 'HeaderLanguageMobileFormNoScriptDrawer',
-                      class: 'localization-form'
-                    -%}
-                      <div class="localization-form__select">
-                        <h2 class="visually-hidden" id="HeaderLanguageMobileLabelNoScriptDrawer">
-                          {{ 'localization.language_label' | t }}
-                        </h2>
-                        <select
-                          class="localization-selector link"
-                          name="locale_code"
-                          aria-labelledby="HeaderLanguageMobileLabelNoScriptDrawer"
-                        >
-                          {%- for language in localization.available_languages -%}
-                            <option
-                              value="{{ language.iso_code }}"
-                              lang="{{ language.iso_code }}"
-                              {%- if language.iso_code == localization.language.iso_code %}
-                                selected
-                              {% endif %}
-                            >
-                              {{ language.endonym_name | capitalize }}
-                            </option>
-                          {%- endfor -%}
-                        </select>
-                        {% render 'icon-caret' %}
-                      </div>
-                      <button class="button button--tertiary">{{ 'localization.update_language' | t }}</button>
-                    {%- endform -%}
-                  </noscript>
-
-                  <localization-form class="no-js-hidden">
+                  <localization-form>
                     {%- form 'localization', id: 'HeaderLanguageMobileForm', class: 'localization-form' -%}
                       <div>
                         <h2 class="visually-hidden" id="HeaderLanguageMobileLabel">
