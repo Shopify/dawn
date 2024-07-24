@@ -14,12 +14,19 @@
   <link rel="stylesheet" href="{{ 'component-mega-menu.css' | asset_url }}" media="print" onload="this.media='all'">
 {%- endif -%}
 
-{%- if settings.cart_type == "drawer" -%}
-  {{ 'component-cart-drawer.css' | asset_url | stylesheet_tag }}
+{%- if settings.cart_type == "drawer" or settings.cart_type == "minicart" -%}
   {{ 'component-cart.css' | asset_url | stylesheet_tag }}
   {{ 'component-totals.css' | asset_url | stylesheet_tag }}
   {{ 'component-price.css' | asset_url | stylesheet_tag }}
   {{ 'component-discounts.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
+
+{% if settings.cart_type == "drawer" %}
+  {{ 'component-cart-drawer.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
+
+{% if settings.cart_type == "minicart" %}
+  {{ 'component-minicart.css' | asset_url | stylesheet_tag }}
 {%- endif -%}
 
 <style>
@@ -271,6 +278,7 @@
         {%- endcase -%}
       {%- endfor -%}
 
+      {%- unless settings.cart_type == 'minicart' -%}
       <a href="{{ routes.cart_url }}" class="header__icon header__icon--cart link focus-inset" id="cart-icon-bubble">
         {%- liquid
           if cart == empty
@@ -289,6 +297,33 @@
           </div>
         {%- endif -%}
       </a>
+      {%- endunless -%}
+      {%- if settings.cart_type == 'minicart' -%}
+        <div class="cart-drawer-wrapper shopify-section" id="cart-drawer-wrapper" data-id="{{ section.id }}">
+            <a href="{{ routes.cart_url }}" class="header__icon header__icon--cart link focus-inset" id="cart-icon-bubble">
+              {%- liquid
+                if cart == empty
+                  render 'icon-cart-empty'
+                else
+                  render 'icon-cart'
+                endif
+              -%}
+              <span class="visually-hidden">{{ 'templates.cart.cart' | t }}</span>
+              {%- if cart != empty -%}
+                <div class="cart-count-bubble">
+                  {%- if cart.item_count < 100 -%}
+                    <span aria-hidden="true">{{ cart.item_count }}</span>
+                  {%- endif -%}
+                  <span class="visually-hidden">{{ 'sections.header.cart_count' | t: count: cart.item_count }}</span>
+                </div>
+              {%- endif -%}
+            </a>
+            {%- render 'cart-drawer' -%}
+            {%- if settings.cart_type == "minicart" -%}
+              <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
+            {%- endif -%}
+        </div>
+      {%- endif -%}
     </div>
   </header>
 </{% if section.settings.sticky_header_type != 'none' %}sticky-header{% else %}div{% endif %}>
