@@ -3,8 +3,8 @@
 
 {%- style -%}
   .section-{{ section.id }}-padding {
-    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
-    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    padding-top: {{ section.settings.mobile_padding_top }}px;
+    padding-bottom: {{ section.settings.mobile_padding_bottom }}px;
   }
 
   @media screen and (min-width: 750px) {
@@ -13,28 +13,37 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  .swiper-slider-{{ section.id }} .swiper-pagination-bullet-active circle {
+    fill: {{ section.settings.color_scheme.settings['button'] }};
+  }
 {%- endstyle -%}
 
 {%- liquid
-  assign columns_mobile_int = section.settings.columns_mobile | plus: 0
-  assign show_mobile_slider = false
-  if section.settings.swipe_on_mobile and section.blocks.size > columns_mobile_int
-    assign show_mobile_slider = true
-  endif
+  assign slider_enabled = section.settings.enable_slider
 -%}
 
 <div class="multicolumn color-{{ section.settings.color_scheme }} gradient{% unless section.settings.background_style == 'none' and settings.text_boxes_border_thickness > 0 or settings.text_boxes_shadow_opacity > 0 %} background-{{ section.settings.background_style }}{% endunless %}{% if section.settings.title == blank %} no-heading{% endif %}">
   <div
-    class="page-width section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+    class="section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
     {% if settings.animations_reveal_on_scroll %}
       data-cascade
     {% endif %}
   >
     {%- unless section.settings.title == blank -%}
-      <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin multicolumn__title">
-        <h2 class="title inline-richtext {{ section.settings.heading_size }}">
-          {{ section.settings.title }}
-        </h2>
+      <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin title-width">
+        {% unless section.settings.heading_element_custom %}
+          <h2 class="title inline-richtext {{ section.settings.heading_size }}">
+            {{ section.settings.title }}
+          </h2>
+        {% else %}
+          {% render 'headings',
+            heading_size: section.settings.heading_size,
+            heading_element: section.settings.heading_element,
+            title: section.settings.heading,
+            class: 'title inline-richtext'
+          %}
+        {% endunless %}
         {%- if section.settings.button_label != blank and show_mobile_slider -%}
           <a href="{{ section.settings.button_link }}" class="link underlined-link large-up-hide">
             {{- section.settings.button_label | escape -}}
@@ -42,9 +51,19 @@
         {%- endif -%}
       </div>
     {%- endunless -%}
-    <slider-component class="slider-mobile-gutter">
+    <slider-component
+      class="{% if slider_enabled %} swiper swiper-slider-{{ section.id }} {% endif %} slider-mobile-gutter {% if section.settings.full_width %} slider-component-full-width{% endif %} {% unless section.settings.full_width %} page-width {% endunless %}"
+      id="slider-{{ section.id }}"
+      data-slider="true"
+      data-direction="horizontal"
+      data-loop="true"
+      data-slides-per-view-desktop="{{ section.settings.columns_desktop }}"
+      data-slides-per-view-mobile="{{ section.settings.columns_mobile }}"
+      data-autoplay="false"
+      data-pagination-type="{{ section.settings.pagination_type }}"
+    >
       <ul
-        class="multicolumn-list contains-content-container grid grid--{{ section.settings.columns_mobile }}-col-tablet-down grid--{{ section.settings.columns_desktop }}-col-desktop{% if show_mobile_slider %} slider slider--tablet grid--peek{% endif %}"
+        class="{% if slider_enabled %} swiper-wrapper {% endif %} multicolumn-list contains-content-container grid grid--{{ section.settings.columns_mobile }}-col-tablet-down grid--{{ section.settings.columns_desktop }}-col-desktop"
         id="Slider-{{ section.id }}"
         role="list"
       >
@@ -68,7 +87,7 @@
 
           <li
             id="Slide-{{ section.id }}-{{ forloop.index }}"
-            class="multicolumn-list__item grid__item{% if section.settings.swipe_on_mobile %} slider__slide{% endif %}{% if section.settings.column_alignment == 'center' %} center{% endif %}{{ empty_column }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+            class="swiper-slide multicolumn-list__item {% unless slider_enabled %}grid__item{% endunless %} slider__slide {% if section.settings.column_alignment == 'center' %} center{% endif %}{{ empty_column }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
             {{ block.shopify_attributes }}
             {% if settings.animations_reveal_on_scroll %}
               data-cascade
@@ -144,37 +163,14 @@
         {%- endfor -%}
       </ul>
 
-      {%- if show_mobile_slider -%}
-        <div class="slider-buttons large-up-hide">
-          <button
-            type="button"
-            class="slider-button slider-button--prev"
-            name="previous"
-            aria-label="{{ 'general.slider.previous_slide' | t }}"
-          >
-            {% render 'icon-caret' %}
-          </button>
-          <div class="slider-counter caption">
-            <span class="slider-counter--current">1</span>
-            <span aria-hidden="true"> / </span>
-            <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
-            <span class="slider-counter--total">{{ section.blocks.size }}</span>
-          </div>
-          <button
-            type="button"
-            class="slider-button slider-button--next"
-            name="next"
-            aria-label="{{ 'general.slider.next_slide' | t }}"
-          >
-            {% render 'icon-caret' %}
-          </button>
-        </div>
-      {%- endif -%}
+      {% if slider_enabled %}
+        {% render 'swiper-pagination', section: section %}
+      {% endif %}
     </slider-component>
-    <div class="center{% if show_mobile_slider %} small-hide medium-hide{% endif %}">
+    <div class="center{% if slider_enabled %} small-hide medium-hide{% endif %}">
       {%- if section.settings.button_label != blank -%}
         <a
-          class="button button--primary"
+          class="{% if section.settings.button_style == 'link' %} link underlined-link{% else %} button button--{{ section.settings.button_style }} {% endif %}"
           {% if section.settings.button_link == blank %}
             role="link" aria-disabled="true"
           {% else %}
@@ -198,6 +194,34 @@
   },
   "settings": [
     {
+      "type": "checkbox",
+      "id": "full_width",
+      "default": false,
+      "label": "t:sections.all.full_width.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_slider",
+      "default": false,
+      "label": "t:sections.all.slider.enable_slider.label"
+    },
+    {
+      "type": "select",
+      "id": "pagination_type",
+      "options": [
+        {
+          "value": "bullets",
+          "label": "t:sections.all.pagination_type.options__1.label"
+        },
+        {
+          "value": "fraction",
+          "label": "t:sections.all.pagination_type.options__2.label"
+        }
+      ],
+      "default": "bullets",
+      "label": "t:sections.all.pagination_type.label"
+    },
+    {
       "type": "inline_richtext",
       "id": "title",
       "default": "t:sections.multicolumn.settings.title.default",
@@ -208,24 +232,32 @@
       "id": "heading_size",
       "options": [
         {
-          "value": "h2",
-          "label": "t:sections.all.heading_size.options__1.label"
+          "value": "h0",
+          "label": "t:sections.all.heading_size.options__0.label"
         },
         {
           "value": "h1",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "h2",
           "label": "t:sections.all.heading_size.options__2.label"
         },
         {
-          "value": "h0",
+          "value": "h3",
           "label": "t:sections.all.heading_size.options__3.label"
         },
         {
-          "value": "hxl",
+          "value": "h4",
           "label": "t:sections.all.heading_size.options__4.label"
         },
         {
-          "value": "hxxl",
+          "value": "h5",
           "label": "t:sections.all.heading_size.options__5.label"
+        },
+        {
+          "value": "h6",
+          "label": "t:sections.all.heading_size.options__6.label"
         }
       ],
       "default": "h1",
@@ -317,6 +349,10 @@
       "label": "t:sections.multicolumn.settings.background_style.label"
     },
     {
+      "type": "header",
+      "content": "t:sections.all.buttons.header_button.content"
+    },
+    {
       "type": "text",
       "id": "button_label",
       "default": "t:sections.multicolumn.settings.button_label.default",
@@ -328,10 +364,40 @@
       "label": "t:sections.multicolumn.settings.button_link.label"
     },
     {
+      "type": "select",
+      "id": "button_style",
+      "label": "t:sections.all.buttons.button_style.label",
+      "options": [
+        {
+          "label": "t:sections.all.buttons.button_style.options__1.label",
+          "value": "primary"
+        },
+        {
+          "label": "t:sections.all.buttons.button_style.options__2.label",
+          "value": "secondary"
+        },
+        {
+          "label": "t:sections.all.buttons.button_style.options__3.label",
+          "value": "link"
+        }
+      ],
+      "default": "primary"
+    },
+    {
       "type": "color_scheme",
       "id": "color_scheme",
       "label": "t:sections.all.colors.label",
       "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.multicolumn.settings.header_desktop.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_desktop_slider",
+      "label": "t:sections.multicolumn.settings.enable_desktop_slider.label",
+      "default": false
     },
     {
       "type": "header",
@@ -382,6 +448,74 @@
       "unit": "px",
       "label": "t:sections.all.padding.padding_bottom",
       "default": 36
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_mobile_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.mobile_padding_top",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.mobile_padding_bottom",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.heading_element_header.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "heading_element_custom",
+      "label": "t:sections.all.heading_element_custom.label",
+      "info": "t:sections.all.heading_element_custom.info",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "heading_element",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_element.options__1.label"
+        },
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_element.options__2.label"
+        },
+        {
+          "value": "h3",
+          "label": "t:sections.all.heading_element.options__3.label"
+        },
+        {
+          "value": "h4",
+          "label": "t:sections.all.heading_element.options__4.label"
+        },
+        {
+          "value": "h5",
+          "label": "t:sections.all.heading_element.options__5.label"
+        },
+        {
+          "value": "h6",
+          "label": "t:sections.all.heading_element.options__6.label"
+        }
+      ],
+      "default": "h2",
+      "label": "t:sections.all.heading_element.label",
+      "info": "t:sections.all.heading_element.info"
     }
   ],
   "blocks": [

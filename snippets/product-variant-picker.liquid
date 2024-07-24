@@ -11,15 +11,21 @@
 {%- unless product.has_only_default_variant -%}
   <variant-selects
     id="variant-selects-{{ section.id }}"
+    class="no-js-hidden"
     data-section="{{ section.id }}"
+    data-url="{{ product.url }}"
+    {% if update_url == false %}
+      data-update-url="false"
+    {% endif %}
     {{ block.shopify_attributes }}
   >
     {%- for option in product.options_with_values -%}
       {%- liquid
         assign swatch_count = option.values | map: 'swatch' | compact | size
         assign picker_type = block.settings.picker_type
+        assign tooltip = settings.product_page_tooltip
 
-        if swatch_count > 0 and block.settings.swatch_shape != 'none'
+        if swatch_count > 0
           if block.settings.picker_type == 'dropdown'
             assign picker_type = 'swatch_dropdown'
           else
@@ -30,16 +36,20 @@
       {%- if picker_type == 'swatch' -%}
         <fieldset class="js product-form__input product-form__input--swatch">
           <legend class="form__label">
-            {{ option.name }}:
+            {{ option.name }}
+            {%- unless tooltip -%}
+            :
             <span data-selected-value>
               {{- option.selected_value -}}
             </span>
+            {%- endunless -%}
           </legend>
           {% render 'product-variant-options',
             product: product,
             option: option,
             block: block,
-            picker_type: picker_type
+            picker_type: picker_type,
+            tooltip: tooltip
           %}
         </fieldset>
       {%- elsif picker_type == 'button' -%}
@@ -60,10 +70,10 @@
           <div class="select">
             {%- if picker_type == 'swatch_dropdown' -%}
               <span
-                data-selected-value
+                data-selected-dropdown-swatch="options[{{ option.name | escape }}]"
                 class="dropdown-swatch"
               >
-                {% render 'swatch', swatch: option.selected_value.swatch, shape: block.settings.swatch_shape %}
+                {% render 'swatch', swatch: option.selected_value.swatch %}
               </span>
             {%- endif -%}
             <select
@@ -84,7 +94,6 @@
         </div>
       {%- endif -%}
     {%- endfor -%}
-
     <script type="application/json" data-selected-variant>{{ product.selected_or_first_available_variant | json }}</script>
   </variant-selects>
 {%- endunless -%}

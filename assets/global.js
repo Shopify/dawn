@@ -617,7 +617,7 @@ class ModalDialog extends HTMLElement {
   }
 
   connectedCallback() {
-    if (this.moved) return;
+    if (this.moved || this.classList.contains('global-popup-modal')) return;
     this.moved = true;
     document.body.appendChild(this);
   }
@@ -719,102 +719,140 @@ customElements.define('deferred-media', DeferredMedia);
 class SliderComponent extends HTMLElement {
   constructor() {
     super();
-    this.slider = this.querySelector('[id^="Slider-"]');
-    this.sliderItems = this.querySelectorAll('[id^="Slide-"]');
-    this.enableSliderLooping = false;
-    this.currentPageElement = this.querySelector('.slider-counter--current');
-    this.pageTotalElement = this.querySelector('.slider-counter--total');
-    this.prevButton = this.querySelector('button[name="previous"]');
-    this.nextButton = this.querySelector('button[name="next"]');
-
-    if (!this.slider || !this.nextButton) return;
-
-    this.initPages();
-    const resizeObserver = new ResizeObserver((entries) => this.initPages());
-    resizeObserver.observe(this.slider);
-
-    this.slider.addEventListener('scroll', this.update.bind(this));
-    this.prevButton.addEventListener('click', this.onButtonClick.bind(this));
-    this.nextButton.addEventListener('click', this.onButtonClick.bind(this));
+    this.componentId = this.id;
+    this.paginationIcon = this.querySelector('.swiper-pagination-icon .icon');
+    this.init();
+    window.addEventListener('resize', debounce(this.init.bind(this), 500));
+    document.addEventListener('shopify:section:load', this.init.bind(this));
   }
 
-  initPages() {
-    this.sliderItemsToShow = Array.from(this.sliderItems).filter((element) => element.clientWidth > 0);
-    if (this.sliderItemsToShow.length < 2) return;
-    this.sliderItemOffset = this.sliderItemsToShow[1].offsetLeft - this.sliderItemsToShow[0].offsetLeft;
-    this.slidesPerPage = Math.floor(
-      (this.slider.clientWidth - this.sliderItemsToShow[0].offsetLeft) / this.sliderItemOffset
-    );
-    this.totalPages = this.sliderItemsToShow.length - this.slidesPerPage + 1;
-    this.update();
-  }
-
-  resetPages() {
-    this.sliderItems = this.querySelectorAll('[id^="Slide-"]');
-    this.initPages();
-  }
-
-  update() {
-    // Temporarily prevents unneeded updates resulting from variant changes
-    // This should be refactored as part of https://github.com/Shopify/dawn/issues/2057
-    if (!this.slider || !this.nextButton) return;
-
-    const previousPage = this.currentPage;
-    this.currentPage = Math.round(this.slider.scrollLeft / this.sliderItemOffset) + 1;
-
-    if (this.currentPageElement && this.pageTotalElement) {
-      this.currentPageElement.textContent = this.currentPage;
-      this.pageTotalElement.textContent = this.totalPages;
+  init() {
+    let enableSlider;
+    this.paginationType = this.dataset.paginationType;
+    if (this.dataset.slider) {
+      enableSlider = JSON.parse(this.dataset.slider);
     }
-
-    if (this.currentPage != previousPage) {
-      this.dispatchEvent(
-        new CustomEvent('slideChanged', {
-          detail: {
-            currentPage: this.currentPage,
-            currentElement: this.sliderItemsToShow[this.currentPage - 1],
-          },
-        })
-      );
-    }
-
-    if (this.enableSliderLooping) return;
-
-    if (this.isSlideVisible(this.sliderItemsToShow[0]) && this.slider.scrollLeft === 0) {
-      this.prevButton.setAttribute('disabled', 'disabled');
-    } else {
-      this.prevButton.removeAttribute('disabled');
-    }
-
-    if (this.isSlideVisible(this.sliderItemsToShow[this.sliderItemsToShow.length - 1])) {
-      this.nextButton.setAttribute('disabled', 'disabled');
-    } else {
-      this.nextButton.removeAttribute('disabled');
+    if (enableSlider) {
+      this.initSlider();
     }
   }
 
-  isSlideVisible(element, offset = 0) {
-    const lastVisibleSlide = this.slider.clientWidth + this.slider.scrollLeft - offset;
-    return element.offsetLeft + element.clientWidth <= lastVisibleSlide && element.offsetLeft >= this.slider.scrollLeft;
-  }
-
-  onButtonClick(event) {
-    event.preventDefault();
-    const step = event.currentTarget.dataset.step || 1;
-    this.slideScrollPosition =
-      event.currentTarget.name === 'next'
-        ? this.slider.scrollLeft + step * this.sliderItemOffset
-        : this.slider.scrollLeft - step * this.sliderItemOffset;
-    this.setSlidePosition(this.slideScrollPosition);
-  }
-
-  setSlidePosition(position) {
-    this.slider.scrollTo({
-      left: position,
+  initSlider() {
+    this.slider = new Swiper(`.swiper-${this.componentId}`, {
+      slidesPerView:
+        this.dataset.centeredSlides == 'true'
+          ? Math.floor(parseInt(this.dataset.slidesPerViewMobile))
+          : this.dataset.slidesPerViewMobile,
+      direction: this.dataset.direction,
+      spaceBetween: this.dataset.spaceBetweenMobile || 0,
+      loop: this.dataset.loop == 'true' ? true : false,
+      centeredSlides: this.dataset.centeredSlides == 'true' ? true : false,
+      initialSlide: this.dataset.centeredSlides == 'true' ? 1 : 0,
+      speed: 500,
+      pagination: {
+        el: `.swiper-pagination-${this.componentId}`,
+        clickable: true,
+        type: this.paginationType || 'bullets',
+        renderBullet: function (index, className) {
+          return `
+            <span class="${className}"> 
+              <svg
+                class="icon icon-pagination"
+                width="19"
+                height="19"
+                viewBox="0 0 19 19"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle cx="9.5" cy="9.5" r="9" fill="white" stroke="#121212"/>
+              </svg>
+            </span>
+          `;
+        },
+        renderProgressbar: function (progressbarFillClass) {
+          return `<span class="${progressbarFillClass}"></span>`;
+        },
+        renderFraction: function (currentClass, totalClass) {
+          return `<span class="${currentClass}"></span> / <span class="${totalClass}"></span>`;
+        },
+      },
+      navigation: {
+        nextEl: `.swiper-next-button-${this.componentId}`,
+        prevEl: `.swiper-prev-button-${this.componentId}`,
+      },
+      scrollbar: {
+        el: `.swiper-scrollbar-${this.componentId}`,
+        draggable: true,
+      },
+      thumbs: {
+        swiper:
+          this.nextElementSibling != null && this.nextElementSibling.classList.contains('thumbnails')
+            ? this.nextElementSibling
+            : '',
+      },
+      mousewheel: this.classList.contains('thumbnails') ? true : false,
+      breakpoints: {
+        // only for announcement bar
+        550: {
+          slidesPerView: this.dataset.slidesPerViewMobile550
+            ? this.dataset.centeredSlides == 'true'
+              ? Math.floor(parseInt(this.dataset.slidesPerViewMobile550))
+              : this.dataset.slidesPerViewMobile550
+            : this.dataset.slidesPerViewDesktop,
+          spaceBetween: this.dataset.spaceBetweenMobile || 0,
+        },
+        750: {
+          slidesPerView: this.dataset.slidesPerViewMobile750
+            ? this.dataset.centeredSlides == 'true'
+              ? Math.floor(parseInt(this.dataset.slidesPerViewMobile750))
+              : this.dataset.slidesPerViewMobile750
+            : this.dataset.slidesPerViewDesktop,
+          spaceBetween: this.dataset.spaceBetweenMobile || 0,
+        },
+        1100: {
+          slidesPerView: this.dataset.slidesPerViewMobile1100
+            ? this.dataset.centeredSlides == 'true'
+              ? Math.floor(parseInt(this.dataset.slidesPerViewMobile1100))
+              : this.dataset.slidesPerViewMobile1100
+            : this.dataset.slidesPerViewDesktop,
+          spaceBetween: this.dataset.spaceBetweenMobile || 0,
+        },
+        1280: {
+          autoplay: this.dataset.autoplayMobileOnly == 'true' ? this.dataset.autoplayMobileOnly : false,
+          slidesPerView:
+            this.dataset.centeredSlides == 'true'
+              ? Math.floor(parseInt(this.dataset.slidesPerViewDesktop))
+              : this.dataset.slidesPerViewDesktop,
+          spaceBetween: this.dataset.spaceBetweenDesktop || 0,
+          enabled: this.dataset.disabled == 'true' ? false : true,
+        },
+      },
+      autoplay:
+        this.dataset.autoplay == 'true'
+          ? {
+              delay: parseInt(this.dataset.autoplaySpeed),
+              disableOnInteraction: true,
+              pauseOnMouseEnter: true,
+            }
+          : false,
     });
+    let swiper = document.querySelector(`.swiper-${this.componentId}`)?.swiper;
+
+    if (swiper) {
+      swiper.on('slideChangeTransitionStart', () => {
+        // remove color of ::selection
+        // bug of swiper that randomly trigger ::selection color of an element, not fixed yet, this is a workaround
+        document.body.classList.add('selection--transparent');
+      });
+
+      swiper.on('slideChangeTransitionEnd', () => {
+        setTimeout(() => {
+          document.body.classList.remove('selection--transparent');
+        }, 2000);
+      });
+    }
   }
 }
-
 customElements.define('slider-component', SliderComponent);
 
 class SlideshowComponent extends SliderComponent {
@@ -1051,6 +1089,49 @@ class SlideshowComponent extends SliderComponent {
 
 customElements.define('slideshow-component', SlideshowComponent);
 
+
+
+class CardColorSwatches extends HTMLElement {
+  constructor() {
+    super();
+    this.addEventListener('change', this.onVariantChange);
+    this.cardLink = this.closest('.card__content').querySelector('.card__heading a');
+    this.cardImage = this.closest('.card-wrapper ').querySelector('.card__media img');
+    this.formId = this.closest('.card__content').querySelector('.product-variant-id');
+    this.label = this.closest('.card__content').querySelector('.form__label span');
+    this.variantData = JSON.parse(this.querySelector('[type="application/json"]').textContent);
+    this.swatch = this.querySelector('.swatch-input__label')
+    this.inputs = this.querySelectorAll('.swatch-input__input')
+  }
+
+  onVariantChange(event) {
+    this.inputs.forEach(input =>{
+      input.classList.remove('active');
+    })
+    this.updateProductCard(event);
+  }
+
+  updateProductCard({ target }) {
+    const { value } = target;
+    target.classList.add('active');
+    let defaultLink = this.cardLink.dataset.link;
+    let currentVariant = this.variantData[target.dataset.index];
+    let currentVariantImage = target.dataset.variantImage;
+    if (currentVariantImage) {
+      this.cardImage.src = currentVariantImage;
+      this.cardImage.srcset = currentVariantImage;
+    }
+    this.cardLink.href = defaultLink + '?variant=' + currentVariant.id;
+    this.formId.value = currentVariant.id;
+    if (this.label) {
+      this.label.textContent = value;
+    }
+  }
+
+}
+
+customElements.define('card-color-swatches', CardColorSwatches);
+
 class VariantSelects extends HTMLElement {
   constructor() {
     super();
@@ -1059,9 +1140,7 @@ class VariantSelects extends HTMLElement {
   connectedCallback() {
     this.addEventListener('change', (event) => {
       const target = this.getInputForEventTarget(event.target);
-      this.currentVariant = this.getVariantData(target.id);
-      this.updateSelectedSwatchValue(event);
-
+      this.updateSelectionMetadata(event);
       publish(PUB_SUB_EVENTS.optionValueSelectionChange, {
         data: {
           event,
@@ -1072,10 +1151,14 @@ class VariantSelects extends HTMLElement {
     });
   }
 
-  updateSelectedSwatchValue({ target }) {
+  updateSelectionMetadata({ target }) {
     const { value, tagName } = target;
-
     if (tagName === 'SELECT' && target.selectedOptions.length) {
+      Array.from(target.options)
+        .find((option) => option.getAttribute('selected'))
+        .removeAttribute('selected');
+      target.selectedOptions[0].setAttribute('selected', 'selected');
+
       const swatchValue = target.selectedOptions[0].dataset.optionSwatchValue;
       const selectedDropdownSwatchValue = target
         .closest('.product-form__input')
@@ -1103,16 +1186,10 @@ class VariantSelects extends HTMLElement {
     return target.tagName === 'SELECT' ? target.selectedOptions[0] : target;
   }
 
-  getVariantData(inputId) {
-    return JSON.parse(this.getVariantDataElement(inputId).textContent);
-  }
-
-  getVariantDataElement(inputId) {
-    return this.querySelector(`script[type="application/json"][data-resource="${inputId}"]`);
-  }
-
+  
+  
   get selectedOptionValues() {
-    return Array.from(this.querySelectorAll('select, fieldset input:checked')).map(
+    return Array.from(this.querySelectorAll('select option[selected], fieldset input:checked')).map(
       ({ dataset }) => dataset.optionValueId
     );
   }
@@ -1270,3 +1347,73 @@ class BulkAdd extends HTMLElement {
 if (!customElements.get('bulk-add')) {
   customElements.define('bulk-add', BulkAdd);
 }
+
+class ShippingBar extends HTMLElement {
+  constructor() {
+    super();
+  }
+
+  connectedCallback() {
+    this.thresholdAmount = parseFloat(this.getAttribute('threshold-amount'));
+    this.progressBarBg = this.getAttribute('progress-bar-bg');
+    this.progressBarColor = this.getAttribute('progress-bar-color');
+    this.shippingBarText = this.getAttribute('shipping-bar-text');
+    this.shippingBarSuccess = this.getAttribute('shipping-bar-success');
+
+    this.initStyles();
+    this.updateShippingBar();
+  }
+
+  initStyles() {
+    const progressBar = this.querySelector('.shipping-bar__bar');
+    const progressBarProgress = this.querySelector('.shipping-bar__progress');
+    if (progressBar) {
+      progressBar.style.backgroundColor = this.progressBarBg;
+    }
+    if (progressBarProgress) {
+      progressBarProgress.style.backgroundColor = this.progressBarColor;
+    }
+  }
+
+  updateShippingBar() {
+    fetch('/cart.js')
+      .then((response) => response.json())
+      .then((data) => {
+        this.calculateProgress(data.total_price);
+      })
+      .catch((error) => console.error('Error updating shipping bar:', error));
+  }
+
+  calculateProgress(currentVal) {
+    const progressBar = this.querySelector('.shipping-bar__progress');
+    const progressOuter = this.querySelector('.shipping-bar__remain');
+    const successMsg = this.querySelector('.shipping-bar__success');
+    const result = Math.round((100 * currentVal) / this.thresholdAmount);
+
+    const shippingBarText = this.getAttribute('shipping-bar-text');
+    const shippingBarSuccess = this.getAttribute('shipping-bar-success');
+    const shippingBarCurrency = this.getAttribute('shipping-bar-currency');
+
+    if (progressBar) {
+      progressBar.style.width = `${result}%`;
+    }
+
+    let remainingAmount = this.thresholdAmount - currentVal;
+    if (remainingAmount <= 0) {
+      progressOuter.style.display = 'none';
+      successMsg.style.display = 'block';
+      successMsg.textContent = shippingBarSuccess;
+    } else {
+      let formattedAmount = new Intl.NumberFormat('fr-FR', {
+        style: 'decimal',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(remainingAmount / 100);
+      progressOuter.style.display = 'block';
+      successMsg.style.display = 'none';
+      progressOuter.innerHTML = shippingBarText.replace('$', formattedAmount + ' ' + shippingBarCurrency);
+    }
+  }
+}
+
+customElements.define('shipping-bar', ShippingBar);

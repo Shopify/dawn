@@ -1,0 +1,374 @@
+{%- assign popupModalId = 'PopupModal-' | append: section.id -%}
+{%- assign modalCloseId = 'ModalClose-' | append: section.id -%}
+
+{{ 'section-global-popup.css' | asset_url | stylesheet_tag }}
+
+<modal-dialog
+  id="{{ popupModalId }}"
+  class="global-popup-modal {% if request.design_mode %}hidden{% endif %}"
+>
+  <div
+    role="dialog"
+    aria-label="text"
+    aria-modal="true"
+    class="global-popup-modal__content color-{{ section.settings.color_scheme }}"
+    tabindex="-1"
+  >
+    <button
+      id="{{ modalCloseId }}"
+      type="button"
+      class="global-popup-modal__toggle close_button"
+      aria-label="{{ 'accessibility.close' | t }}"
+    >
+      {% render 'icon-close' %}
+    </button>
+    <div class="global-popup-modal__content-info">
+      <div class="popup-content {% if section.settings.layout_row == true %} grid {% endif %} {% if section.settings.layout_row_right == true %} grid--reverse {% endif %}">
+        {% if section.settings.image %}
+          <div
+            class="popup_image {% if section.settings.layout_row == true %} grid--2-col grid__item {% endif %}"
+            style="
+              background: url('{{ section.settings.image | image_url: width: 800 }}');
+              background-repeat: no-repeat, repeat;
+              background-size: cover;
+              background-position: center;
+              {% if section.settings.layout_row != true %}min-height: 300px;{% endif %}
+            "
+          >
+            {% if section.settings.image %}<br>{% endif %}
+          </div>
+        {% else %}
+          <div class="popup_image {% if section.settings.layout_row == true %} grid--2-col grid__item popup-row {% endif %}">
+            {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+          </div>
+        {% endif %}
+        <div class="popup_blocks {{ section.settings.content_alignment }} {% if section.settings.layout_row == true %} grid--2-col grid__item {% endif %}">
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+              {%- when 'heading' -%}
+                <h2 class="{{ block.settings.heading_size }}" {{ block.shopify_attributes }}>
+                  {{- block.settings.heading -}}
+                </h2>
+              {%- when 'text' -%}
+                <p class="popup_text" {{ block.shopify_attributes }}>
+                  {{- block.settings.text -}}
+                </p>
+              {%- when 'button' -%}
+                {%- if block.settings.button_label != blank -%}
+                  <a
+                    {% if block.settings.button_link == blank %}
+                      role="link" aria-disabled="true"
+                    {% else %}
+                      href="{{ block.settings.button_link }}"
+                    {% endif %}
+                    class="{% if block.settings.button_style_secondary %} button--secondary button{% elsif block.settings.button_style_link %} button--link {% else %} button--primary button{% endif %}"
+                    {{ block.shopify_attributes }}
+                  >
+                    {{ block.settings.button_label | escape }}
+                  </a>
+                {%- endif -%}
+            {%- endcase -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</modal-dialog>
+
+<script>
+  window.globalPopup = {
+    ageOfPopupCookie: 1000 * 60 * 60 * 24 * {{ section.settings.opt_time }},
+    clearCookieCheckmark: {{ section.settings.cookie_checkmark }},
+    popupDelay: {{ section.settings.delay }} * 1000,
+    popupModalId: '{{ popupModalId }}',
+    modalCloseId: '{{ modalCloseId }}'
+  };
+
+  if (Shopify.designMode) {
+    document.addEventListener('shopify:section:load', function (event) {
+      if (event.detail.sectionId === '{{ section.id }}') {
+        document.getElementById(window.globalPopup.popupModalId).setAttribute('open', '');
+      }
+    })
+
+    const popupId = 'shopify-section-{{ section.id }}';
+
+    function getTryPopup() {
+      return document.getElementById(popupId);
+    }
+
+    function getWindowPopup() {
+      return document.getElementsByClassName('global-popup-modal')[0];
+    }
+
+    function isTargetPopup(event) {
+      const tryPopup = getTryPopup();
+      return tryPopup && event.target.id === popupId;
+    }
+
+    function displayPopup() {
+      const windowPopup = getWindowPopup();
+      if (windowPopup) {
+        windowPopup.classList.remove('hidden');
+      }
+    }
+
+    function hidePopup() {
+      const windowPopup = getWindowPopup();
+      if (windowPopup) {
+        windowPopup.classList.add('hidden');
+      }
+    }
+
+    document.addEventListener('shopify:section:select', function (event) {
+      if (!isTargetPopup(event)) {
+        return;
+      }
+      displayPopup();
+    });
+
+    document.addEventListener('shopify:section:deselect', function (event) {
+      if (!isTargetPopup(event)) {
+        return;
+      }
+      hidePopup();
+    });
+  }
+</script>
+
+{% schema %}
+{
+  "name": "t:sections.popup.name",
+  "tag": "section",
+  "class": "section",
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-2"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.rich-text.settings.content_alignment.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.rich-text.settings.content_alignment.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.rich-text.settings.content_alignment.options__3.label"
+        }
+      ],
+      "default": "center",
+      "label": "t:sections.rich-text.settings.content_alignment.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "layout_row",
+      "label": "t:sections.global_popup.horizontal_display",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "layout_row_right",
+      "label": "t:sections.global_popup.horizontal_display_layout",
+      "default": false
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "range",
+      "id": "delay",
+      "min": 1,
+      "max": 100,
+      "step": 1,
+      "unit": "s",
+      "label": "t:sections.global_popup.delay",
+      "default": 5
+    },
+    {
+      "type": "checkbox",
+      "id": "cookie_checkmark",
+      "default": false,
+      "label": "t:sections.global_popup.display_after_close"
+    },
+    {
+      "type": "range",
+      "id": "opt_time",
+      "min": 1,
+      "max": 100,
+      "step": 1,
+      "unit": "d",
+      "label": "t:sections.global_popup.display_in_days",
+      "default": 5
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "name": "t:sections.image-banner.blocks.heading.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "heading",
+          "default": "Popup heading",
+          "label": "t:sections.image-banner.blocks.heading.settings.heading.label"
+        },
+        {
+          "type": "select",
+          "id": "heading_size",
+          "options": [
+            {
+              "value": "h0",
+              "label": "t:sections.all.heading_size.options__0.label"
+            },
+            {
+              "value": "h1",
+              "label": "t:sections.all.heading_size.options__1.label"
+            },
+            {
+              "value": "h2",
+              "label": "t:sections.all.heading_size.options__2.label"
+            },
+            {
+              "value": "h3",
+              "label": "t:sections.all.heading_size.options__3.label"
+            },
+            {
+              "value": "h4",
+              "label": "t:sections.all.heading_size.options__4.label"
+            },
+            {
+              "value": "h5",
+              "label": "t:sections.all.heading_size.options__5.label"
+            },
+            {
+              "value": "h6",
+              "label": "t:sections.all.heading_size.options__6.label"
+            }
+          ],
+          "default": "h2",
+          "label": "t:sections.all.heading_size.label"
+        },
+        {
+          "type": "header",
+          "content": "t:sections.all.heading_element_header.content"
+        },
+        {
+          "type": "checkbox",
+          "id": "heading_element_custom",
+          "label": "t:sections.all.heading_element_custom.label",
+          "info": "t:sections.all.heading_element_custom.info",
+          "default": false
+        },
+        {
+          "type": "select",
+          "id": "heading_element",
+          "options": [
+            {
+              "value": "h1",
+              "label": "t:sections.all.heading_element.options__1.label"
+            },
+            {
+              "value": "h2",
+              "label": "t:sections.all.heading_element.options__2.label"
+            },
+            {
+              "value": "h3",
+              "label": "t:sections.all.heading_element.options__3.label"
+            },
+            {
+              "value": "h4",
+              "label": "t:sections.all.heading_element.options__4.label"
+            },
+            {
+              "value": "h5",
+              "label": "t:sections.all.heading_element.options__5.label"
+            },
+            {
+              "value": "h6",
+              "label": "t:sections.all.heading_element.options__6.label"
+            }
+          ],
+          "default": "h2",
+          "label": "t:sections.all.heading_element.label",
+          "info": "t:sections.all.heading_element.info"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "t:sections.rich-text.blocks.text.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "default": "<p>Share information about your brand with your customers. Describe a product, make announcements, or welcome customers to your store.</p>",
+          "label": "t:sections.rich-text.blocks.text.settings.text.label"
+        }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "t:sections.image-with-text.blocks.button.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "button_label",
+          "default": "Button label",
+          "label": "t:sections.image-with-text.blocks.button.settings.button_label.label",
+          "info": "t:sections.image-with-text.blocks.button.settings.button_label.info"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "t:sections.image-with-text.blocks.button.settings.button_link.label"
+        },
+        {
+          "type": "checkbox",
+          "id": "button_style_secondary",
+          "default": false,
+          "label": "t:sections.image-with-text.blocks.button.settings.outline_button.label"
+        },
+        {
+          "type": "checkbox",
+          "id": "button_style_link",
+          "default": false,
+          "label": "t:sections.image-with-text.blocks.button.settings.link_style_button.label"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.popup.name",
+      "blocks": [
+        {
+          "type": "heading"
+        },
+        {
+          "type": "text"
+        },
+        {
+          "type": "button"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

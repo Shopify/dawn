@@ -1,0 +1,65 @@
+{%- liquid
+  assign shipping_value = settings.threshold_amount | times: 100
+  assign cart_total = cart.total_price
+  assign shipping_amount_remain = shipping_value | minus: cart_total
+  assign shipping_percentage = cart_total | times: 100 | divided_by: shipping_value
+  assign total_remaining = shipping_amount_remain | money
+-%}
+
+<style>
+    .shipping-bar p {
+      margin: 0;
+    }
+    .shipping-bar__bar {
+      position: relative;
+      background-color: {{ settings.progress_bar_bg }};
+      height: 1rem;
+      transition: all 1000ms linear;
+    }
+    .shipping-bar__progress {
+      width: {{ shipping_percentage }}%;
+      top: 0;
+      left: 0;
+      min-width: 0;
+      max-width: 100%;
+      height: 100%;
+      display: block;
+      background-color: {{ settings.progress_bar_color }};
+      transition: all 1000ms linear;
+    }
+    .shipping-bar__progress span {
+      transition: width 1s linear;
+    }
+    {% if shipping_amount_remain > 0 %}
+      .shipping-bar__remain {
+    display: block;
+  }
+  .shipping-bar__success {
+    display: none;
+  }
+      {% elsif shipping_amount_remain <= 0 %}
+  .shipping-bar__remain {
+    display: none;
+  }
+  .shipping-bar__success {
+    display: block;
+  }
+      {% endif %}
+</style>
+
+<shipping-bar
+  threshold-amount="{{ settings.threshold_amount | times: 100 }}"
+  progress-bar-bg="{{ settings.progress_bar_bg }}"
+  progress-bar-color="{{ settings.progress_bar_color }}"
+  shipping-bar-text="{{ settings.shipping_bar_text }}"
+  shipping-bar-success="{{ settings.shipping_bar_success }}"
+  shipping-bar-currency="{{ cart.currency.symbol }}"
+  class="shipping-bar"
+>
+  <p class="shipping-bar__remain">{{ settings.shipping_bar_text | replace: '$', total_remaining }}</p>
+  <p class="shipping-bar__success">{{ settings.shipping_bar_success }}</p>
+
+  <div class="shipping-bar__bar">
+    <div class="shipping-bar__progress"><span></span></div>
+  </div>
+</shipping-bar>

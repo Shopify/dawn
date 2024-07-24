@@ -100,6 +100,14 @@ class CartItems extends HTMLElement {
               targetElement.replaceWith(sourceElement);
             }
           }
+          const shippingBars = document.querySelectorAll('shipping-bar');
+          if (shippingBars.length > 0) {
+            shippingBars.forEach((shippingBar) => {
+              if (typeof shippingBar.updateShippingBar === 'function') {
+                shippingBar.updateShippingBar();
+              }
+            });
+          }
         })
         .catch((e) => {
           console.error(e);
@@ -207,6 +215,15 @@ class CartItems extends HTMLElement {
           trapFocus(cartDrawerWrapper, document.querySelector('.cart-item__name'));
         }
 
+        const shippingBars = document.querySelectorAll('shipping-bar');
+        if (shippingBars.length > 0) {
+          shippingBars.forEach((shippingBar) => {
+            if (typeof shippingBar.updateShippingBar === 'function') {
+              shippingBar.updateShippingBar();
+            }
+          });
+        }
+
         publish(PUB_SUB_EVENTS.cartUpdate, { source: 'cart-items', cartData: parsedState, variantId: variantId });
       })
       .catch(() => {
@@ -222,7 +239,7 @@ class CartItems extends HTMLElement {
   updateLiveRegions(line, message) {
     const lineItemError =
       document.getElementById(`Line-item-error-${line}`) || document.getElementById(`CartDrawer-LineItemError-${line}`);
-    if (lineItemError) lineItemError.querySelector('.cart-item__error-text').innerHTML = message;
+    if (lineItemError) lineItemError.querySelector('.cart-item__error-text').textContent = message;
 
     this.lineItemStatusElement.setAttribute('aria-hidden', true);
 

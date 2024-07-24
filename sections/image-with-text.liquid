@@ -2,8 +2,8 @@
 
 {%- style -%}
   .section-{{ section.id }}-padding {
-    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
-    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    padding-top: {{ section.settings.mobile_padding_top }}px;
+    padding-bottom: {{ section.settings.mobile_padding_bottom }}px;
   }
 
   @media screen and (min-width: 750px) {
@@ -25,7 +25,7 @@
 -%}
 
 <div class="section-{{ section.id }}-padding gradient color-{{ section.settings.section_color_scheme }}">
-  <div class="page-width">
+  <div class="{% unless section.settings.full_width %} page-width {% endunless %}">
     <div class="image-with-text image-with-text--{{ section.settings.content_layout }} isolate{% if settings.text_boxes_border_thickness > 0 and settings.text_boxes_border_opacity > 0 and settings.media_border_thickness > 0 and settings.media_border_opacity > 0 %} collapse-borders{% endif %}{% unless section.settings.color_scheme == section.settings.section_color_scheme and settings.media_border_thickness > 0 and settings.text_boxes_shadow_opacity == 0 and settings.text_boxes_border_thickness == 0 or settings.text_boxes_border_opacity == 0 %} collapse-corners{% endunless %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
       <div class="image-with-text__grid grid grid--gapless grid--1-col grid--{% if section.settings.desktop_image_width == 'medium' %}2-col-tablet{% else %}3-col-tablet{% endif %}{% if section.settings.layout == 'text_first' %} image-with-text__grid--reverse{% endif %}">
         <div class="image-with-text__media-item image-with-text__media-item--{{ section.settings.desktop_image_width }} image-with-text__media-item--{{ section.settings.desktop_content_position }} grid__item">
@@ -67,12 +67,22 @@
             {%- for block in section.blocks -%}
               {% case block.type %}
                 {%- when 'heading' -%}
-                  <h2
-                    class="image-with-text__heading inline-richtext {{ block.settings.heading_size }}"
-                    {{ block.shopify_attributes }}
-                  >
-                    {{ block.settings.heading }}
-                  </h2>
+                  {% unless block.settings.heading_element_custom %}
+                    <h2
+                      class="image-with-text__heading inline-richtext {{ block.settings.heading_size }}"
+                      {{ block.shopify_attributes }}
+                    >
+                      {{ block.settings.heading }}
+                    </h2>
+                  {% else %}
+                    {% render 'headings',
+                      heading_size: block.settings.heading_size,
+                      heading_element: block.settings.heading_element,
+                      title: block.settings.heading,
+                      class: 'image-with-text__heading inline-richtext',
+                      attributes: block.shopify_attributes
+                    %}
+                  {% endunless %}
                 {%- when 'caption' -%}
                   <p
                     class="image-with-text__text image-with-text__text--caption {{ block.settings.text_style }} {{ block.settings.text_style }}--{{ block.settings.text_size }} {{ block.settings.text_style }}"
@@ -92,7 +102,7 @@
                       {% else %}
                         href="{{ block.settings.button_link }}"
                       {% endif %}
-                      class="button{% if block.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}"
+                      class="{% if block.settings.button_style == 'link' %} link underlined-link{% else %} button button--{{ block.settings.button_style }} {% endif %}"
                       {{ block.shopify_attributes }}
                     >
                       {{ block.settings.button_label | escape }}
@@ -115,6 +125,12 @@
     "groups": ["header", "footer"]
   },
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "default": false,
+      "label": "t:sections.all.full_width.label"
+    },
     {
       "type": "image_picker",
       "id": "image",
@@ -321,6 +337,30 @@
       "unit": "px",
       "label": "t:sections.all.padding.padding_bottom",
       "default": 36
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_mobile_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.mobile_padding_top",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.mobile_padding_bottom",
+      "default": 24
     }
   ],
   "blocks": [
@@ -340,28 +380,80 @@
           "id": "heading_size",
           "options": [
             {
-              "value": "h2",
-              "label": "t:sections.all.heading_size.options__1.label"
+              "value": "h0",
+              "label": "t:sections.all.heading_size.options__0.label"
             },
             {
               "value": "h1",
+              "label": "t:sections.all.heading_size.options__1.label"
+            },
+            {
+              "value": "h2",
               "label": "t:sections.all.heading_size.options__2.label"
             },
             {
-              "value": "h0",
+              "value": "h3",
               "label": "t:sections.all.heading_size.options__3.label"
             },
             {
-              "value": "hxl",
+              "value": "h4",
               "label": "t:sections.all.heading_size.options__4.label"
             },
             {
-              "value": "hxxl",
+              "value": "h5",
               "label": "t:sections.all.heading_size.options__5.label"
+            },
+            {
+              "value": "h6",
+              "label": "t:sections.all.heading_size.options__6.label"
             }
           ],
           "default": "h1",
           "label": "t:sections.all.heading_size.label"
+        },
+        {
+          "type": "header",
+          "content": "t:sections.all.heading_element_header.content"
+        },
+        {
+          "type": "checkbox",
+          "id": "heading_element_custom",
+          "label": "t:sections.all.heading_element_custom.label",
+          "info": "t:sections.all.heading_element_custom.info",
+          "default": false
+        },
+        {
+          "type": "select",
+          "id": "heading_element",
+          "options": [
+            {
+              "value": "h1",
+              "label": "t:sections.all.heading_element.options__1.label"
+            },
+            {
+              "value": "h2",
+              "label": "t:sections.all.heading_element.options__2.label"
+            },
+            {
+              "value": "h3",
+              "label": "t:sections.all.heading_element.options__3.label"
+            },
+            {
+              "value": "h4",
+              "label": "t:sections.all.heading_element.options__4.label"
+            },
+            {
+              "value": "h5",
+              "label": "t:sections.all.heading_element.options__5.label"
+            },
+            {
+              "value": "h6",
+              "label": "t:sections.all.heading_element.options__6.label"
+            }
+          ],
+          "default": "h2",
+          "label": "t:sections.all.heading_element.label",
+          "info": "t:sections.all.heading_element.info"
         }
       ]
     },
@@ -461,10 +553,24 @@
           "label": "t:sections.image-with-text.blocks.button.settings.button_link.label"
         },
         {
-          "type": "checkbox",
-          "id": "button_style_secondary",
-          "default": false,
-          "label": "t:sections.image-with-text.blocks.button.settings.outline_button.label"
+          "type": "select",
+          "id": "button_style",
+          "label": "t:sections.all.buttons.button_style.label",
+          "options": [
+            {
+              "label": "t:sections.all.buttons.button_style.options__1.label",
+              "value": "primary"
+            },
+            {
+              "label": "t:sections.all.buttons.button_style.options__2.label",
+              "value": "secondary"
+            },
+            {
+              "label": "t:sections.all.buttons.button_style.options__3.label",
+              "value": "link"
+            }
+          ],
+          "default": "primary"
         }
       ]
     }

@@ -20,7 +20,7 @@
   assign product_form_id = 'product-form-' | append: section.id
 -%}
 
-{%- for value in option.values -%}
+{%- for value in option.values limit: limit -%}
   {%- liquid
     assign swatch_focal_point = null
     if value.swatch.image
@@ -40,7 +40,11 @@
   -%}
 
   {%- capture input_id -%}
-    {{ section.id }}-{{ option.position }}-{{ forloop.index0 -}}
+    {%- if productCard -%}
+      {{ product.id }}-{{ option.position }}-{{ forloop.index0 -}}
+    {%- else -%}
+      {{ section.id }}-{{ option.position }}-{{ forloop.index0 -}}
+    {%- endif -%}
   {%- endcapture -%}
 
   {%- capture input_name -%}
@@ -50,6 +54,13 @@
   {%- capture input_dataset -%}
     data-product-url="{{ value.product_url }}"
     data-option-value-id="{{ value.id }}"
+    {% if value.variant.featured_image != blank %}
+      data-variant-image="{{ value.variant.featured_image | image_url: width: 533 }}"
+    {% endif %}
+  {%- endcapture -%}
+
+  {%- capture index -%}
+    {{ forloop.index0 -}}
   {%- endcapture -%}
 
   {%- capture label_unavailable -%}
@@ -66,15 +77,16 @@
     {%
       render 'swatch-input',
       id: input_id,
+      index: index,
       name: input_name,
       value: value | escape,
       swatch: value.swatch,
       product_form_id: product_form_id,
       checked: value.selected,
       visually_disabled: option_disabled,
-      shape: block.settings.swatch_shape,
       help_text: help_text,
       additional_props: input_dataset
+      tooltip: tooltip
     %}
   {%- elsif picker_type == 'button' -%}
     <input
@@ -117,8 +129,4 @@
       {%- endif %}
     </option>
   {%- endif -%}
-
-  <script type="application/json" data-resource="{{ input_id }}">
-    {{ value.variant | json }}
-  </script>
 {%- endfor -%}
