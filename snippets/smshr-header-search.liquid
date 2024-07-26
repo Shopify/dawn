@@ -1,0 +1,132 @@
+{% comment %}
+  Renders a header search modal. Should be used with 'header.liquid'
+
+  Accepts:
+  - input_id: {String} Id for the search input element (required)
+
+  Usage:
+  {% render 'header-search', input_id: 'My-Id'%}
+{% endcomment %}
+
+<details-modal class="header__search">
+  <details>
+    <summary
+      class="header__icon header__icon--search header__icon--summary link focus-inset modal__toggle"
+      aria-haspopup="dialog"
+      aria-label="{{ 'general.search.search' | t }}"
+    >
+      <span>
+        <div class="w-large h-large flex justify-center items-center">
+          {% render 'icon-search', class: 'modal__toggle-open icon icon-search' %}
+        </div>
+
+        {% comment %}
+          <svg class="modal__toggle-close icon icon-close" aria-hidden="true" focusable="false">
+            <use href="#icon-close">
+          </svg>
+        {% endcomment %}
+      </span>
+    </summary>
+    <div
+      class="search-modal modal__content gradient"
+      role="dialog"
+      aria-modal="true"
+      aria-label="{{ 'general.search.search' | t }}"
+    >
+      <div class="modal-overlay"></div>
+      <div
+        class="search-modal__content{% if settings.inputs_shadow_vertical_offset != 0 and settings.inputs_shadow_vertical_offset < 0 %} search-modal__content-top{% else %} search-modal__content-bottom{% endif %}"
+        tabindex="-1"
+      >
+        <predictive-search class="w-full" data-loading-text="{{ 'accessibility.loading' | t }}">
+          <form
+            action="{{ routes.search_url }}"
+            method="get"
+            role="search"
+            class="search search-modal__form relative"
+          >
+            <div class="field relative max-w-[400px] w-full mx-auto">
+              <button
+                class="search__button field__button w-base h-base flex justify-center items-center  absolute left-base top-1/2 -translate-y-1/2"
+                aria-label="{{ 'general.search.search' | t }}"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  class="icon"
+                >
+                  <g clip-path="url(#clip0_958_29921)">
+                  <path d="M13 6.5C13 7.93437 12.5344 9.25938 11.75 10.3344L15.2063 13.7937L15.9156 14.5L14.5 15.9156L13.7937 15.2094L10.3344 11.75C9.25938 12.5375 7.93437 13 6.5 13C2.90937 13 0 10.0906 0 6.5C0 2.90937 2.90937 0 6.5 0C10.0906 0 13 2.90937 13 6.5ZM6.5 11C7.09095 11 7.67611 10.8836 8.22208 10.6575C8.76804 10.4313 9.26412 10.0998 9.68198 9.68198C10.0998 9.26412 10.4313 8.76804 10.6575 8.22208C10.8836 7.67611 11 7.09095 11 6.5C11 5.90905 10.8836 5.32389 10.6575 4.77792C10.4313 4.23196 10.0998 3.73588 9.68198 3.31802C9.26412 2.90016 8.76804 2.56869 8.22208 2.34254C7.67611 2.1164 7.09095 2 6.5 2C5.90905 2 5.32389 2.1164 4.77792 2.34254C4.23196 2.56869 3.73588 2.90016 3.31802 3.31802C2.90016 3.73588 2.56869 4.23196 2.34254 4.77792C2.1164 5.32389 2 5.90905 2 6.5C2 7.09095 2.1164 7.67611 2.34254 8.22208C2.56869 8.76804 2.90016 9.26412 3.31802 9.68198C3.73588 10.0998 4.23196 10.4313 4.77792 10.6575C5.32389 10.8836 5.90905 11 6.5 11Z" fill="#D1D1D1"/>
+                  </g>
+                  <defs>
+                  <clipPath id="clip0_958_29921">
+                  <rect width="16" height="16" fill="white"/>
+                  </clipPath>
+                  </defs>
+                </svg>
+              </button>
+
+              <input
+                class="search__input field__input "
+                id="{{ input_id }}"
+                type="search"
+                name="q"
+                value="{{ search.terms | escape }}"
+                placeholder="{{ 'general.search.search' | t }}"
+                role="combobox"
+                aria-expanded="false"
+                aria-owns="predictive-search-results"
+                aria-controls="predictive-search-results"
+                aria-haspopup="listbox"
+                aria-autocomplete="list"
+                autocorrect="off"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+              >
+              {% comment %} <label class="field__label" for="{{ input_id }}">{{ 'general.search.search' | t }}</label> {% endcomment %}
+              <input type="hidden" name="options[prefix]" value="last">
+
+              {% comment %}
+                <button class="search__button field__button" aria-label="{{ 'general.search.search' | t }}">
+                  <svg class="icon icon-search" aria-hidden="true" focusable="false">
+                    <use href="#icon-search">
+                  </svg>
+                </button>
+              {% endcomment %}
+            </div>
+
+            <div
+              id="predictive-search-block"
+              class="predictive-search predictive-search--header mt-large"
+              tabindex="-1"
+              data-predictive-search
+            >
+              {%- render 'loading-spinner', class: 'predictive-search__loading-state' -%}
+            </div>
+
+            <span
+              class="predictive-search-status visually-hidden"
+              role="status"
+              aria-hidden="true"
+            ></span>
+          </form>
+        </predictive-search>
+
+        <button
+          type="button"
+          class="search-modal__close-button modal__close-button link link--text focus-inset absolute right-8 w-8 h-8 py-3 rounded-full bg-grey50 flex items-center justify-center"
+          aria-label="{{ 'accessibility.close' | t }}"
+        >
+          {% render 'icon-close', class: 'icon icon-close' %}
+        </button>
+      </div>
+    </div>
+  </details>
+</details-modal>
+
+<script src="{{ 'splide.min.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'splide-related.js' | asset_url }}" defer="defer"></script>

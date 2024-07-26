@@ -63,9 +63,12 @@ class FacetFiltersForm extends HTMLElement {
   }
 
   static renderSectionFromFetch(url, event) {
+    console.log(url, 'URL TO FETCH');
+
     fetch(url)
       .then((response) => response.text())
       .then((responseText) => {
+        console.log(responseText, 'FETCH RESP');
         const html = responseText;
         FacetFiltersForm.filterData = [...FacetFiltersForm.filterData, { html, url }];
         FacetFiltersForm.renderFilters(html, event);
