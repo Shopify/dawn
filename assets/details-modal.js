@@ -9,6 +9,8 @@ class DetailsModal extends HTMLElement {
     this.querySelector('button[type="button"]').addEventListener('click', this.close.bind(this));
 
     this.summaryToggle.setAttribute('role', 'button');
+
+    this.searchForm = this.querySelector('predictive-search');
   }
 
   isOpen() {
@@ -41,6 +43,10 @@ class DetailsModal extends HTMLElement {
     this.detailsContainer.removeAttribute('open');
     document.body.removeEventListener('click', this.onBodyClickEvent);
     document.body.classList.remove('overflow-hidden');
+
+    if (this.searchForm) {
+      this.searchForm.onFormReset();
+    }
   }
 }
 

@@ -1,6 +1,6 @@
 {% comment %}theme-check-disable ImgLazyLoading{% endcomment %}
 {%- if predictive_search.performed -%}
-  <div id="predictive-search-results" class="max-w-[400px] w-full mx-auto" role="listbox">
+  <div id="predictive-search-results" class="max-w-[400px] w-full mx-auto px-large lg:px-0" role="listbox">
     <div class="flex flex-col w-full gap-base">
       {%- if predictive_search.resources.products.size > 0 -%}
         <div>
@@ -134,45 +134,56 @@
     %}
   </span>
 
-  {% comment %}
-    {% assign products = predictive_search.resources.products %}
+  {% liquid
+    if predictive_search.resources.collections.size != 0
+      assign carousel_products = predictive_search.resources.collections.first.products
+    endif
 
-    {%- if products.size > 0 -%}
-      <div class="my-huge pl-8 {% if products.size %} search-items-loaded{% endif %}">
-        <div
-          id="predictive-search-carousel"
-          class="splide"
-          aria-label="related products carousel"
-        >
-          <div class="relative flex justify-between mr-base items-center mb-base">
-            <h1 class="text-t-md">Related products</h1>
+    if carousel_products == blank and predictive_search.resources.products.size != 0
+      assign carousel_products = predictive_search.resources.products
+    else
+      assign carousel_products = collections.first.products
+    endif
+  %}
 
-            <div class="splide__arrows flex gap-base">
-              {% render 'prev', class: 'splide__arrow splide__arrow--prev' %}
-              {% render 'next', class: 'splide__arrow splide__arrow--next' %}
-            </div>
+  {%- if carousel_products.size > 0 -%}
+    <div
+      id="predictive-search-block"
+      class="my-huge pl-8 {% if carousel_products.size %} search-items-loaded{% endif %}"
+    >
+      <div
+        id="predictive-search-carousel"
+        class="splide "
+        aria-label="related products carousel"
+      >
+        <div class="relative flex justify-between mr-base items-center mb-base">
+          <h1 class="text-t-md">Related products</h1>
+
+          <div class="splide__arrows flex gap-base">
+            {% render 'prev', class: 'splide__arrow splide__arrow--prev' %}
+            {% render 'next', class: 'splide__arrow splide__arrow--next' %}
           </div>
+        </div>
 
-          <div class="relative">
-            <div class="splide__track">
-              <ul class="splide__list">
-                {% for product in products %}
-                  <li class="splide__slide">
-                    {% liquid
-                      if forloop.first
-                        assign card_class = ' lg:!pl-0'
-                      else
-                        assign card_class = ' '
-                      endif
-                    %}
-                    {% render 'product-card', product: product, class: card_class %}
-                  </li>
-                {% endfor %}
-              </ul>
-            </div>
+        <div class="relative">
+          <div class="splide__track">
+            <ul class="splide__list">
+              {% for product in carousel_products limit: 16 %}
+                <li class="splide__slide">
+                  {% liquid
+                    if forloop.first
+                      assign card_class = ' lg:!pl-0'
+                    else
+                      assign card_class = ' '
+                    endif
+                  %}
+                  {% render 'product-card', product: product, class: card_class %}
+                </li>
+              {% endfor %}
+            </ul>
           </div>
         </div>
       </div>
-    {% endif %}
-  {% endcomment %}
+    </div>
+  {% endif %}
 {%- endif -%}
