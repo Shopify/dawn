@@ -9,27 +9,34 @@
 {% endcomment %}
 
 {% liquid
-  assign min_cents = 0
-  assign max_cents = filter.range_max
+  assign max_price_cents = filter.range_max
 
-  assign num_groups = 5
-  assign group_size = num_groups | minus: 1
-  assign step_cents = max_cents | divided_by: num_groups
+  assign group_size_cents = 10000
+  assign num_groups = max_price_cents | divided_by: group_size_cents
+  assign remainder = max_price_cents | modulo: group_size_cents
+  if remainder > 0
+    assign num_groups = num_groups | plus: 1
+  endif
+
   assign price_groups = ''
 
-  if max_cents > 0 and min_cents >= 0 and step_cents > 0
-    for i in (0..group_size)
-      assign start_price = i | times: step_cents
-      assign end_price = start_price | plus: step_cents
+  assign groups = num_groups | minus: 1
+  for i in (0..groups)
+    assign min_price_cents = i | times: group_size_cents
+    assign up_i = i | plus: 1
+    assign group_max_price_cents = up_i | times: group_size_cents
+    if group_max_price_cents > max_price_cents
+      assign group_max_price_cents = max_price_cents
+    endif
 
-      assign price_group = start_price | append: '-' | append: end_price
-      assign price_groups = price_groups | append: price_group
+    assign price_group = min_price_cents | append: '-' | append: group_max_price_cents
 
-      if i < group_size
-        assign price_groups = price_groups | append: ', '
-      endif
-    endfor
-  endif
+    if forloop.first
+      assign price_groups = price_group
+    else
+      assign price_groups = price_groups | append: ', ' | append: price_group
+    endif
+  endfor
 
   assign price_groups = price_groups | split: ', '
 %}
