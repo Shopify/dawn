@@ -1189,6 +1189,7 @@ class WishlistHandler extends HTMLElement {
     this.customerId = this.dataset.customerId;
     this.productReference = this.dataset.productReference;
     this.productsCount = document.getElementById('wishlist-products-count');
+    this.countBubble = document.querySelector('.wishlist-count-bubble');
     this.bindEvents();
   }
 
@@ -1240,18 +1241,23 @@ class WishlistHandler extends HTMLElement {
           this.removeButton.classList.add('hidden');
           this.addButton.classList.remove('hidden');
         }
+
         if (window.location.pathname === '/pages/wishlist' && this.closest('.wishlist-item')) {
           this.closest('.wishlist-item').remove();
         }
 
         this.productsCount.innerText = data.products_count;
+        this.countBubble.classList.toggle('hidden', data.products_count === 0);
+
         this.removeButton.addEventListener('animationend', () => {
           this.removeButton.classList.remove('in-wishlist');
         });
+
         this.operationInProgress = false;
       })
       .catch((error) => {
         console.error('Error:', error);
+
         this.operationInProgress = false;
       });
   }
