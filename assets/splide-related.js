@@ -87,3 +87,36 @@ try {
 } catch (error) {
   console.error('Unable to create cart carousel', error);
 }
+
+try {
+  const searchCarousel = document.querySelector('#predictive-search-block');
+  const carouselId = 'predictive-search-carousel';
+
+  if (searchCarousel) {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('search-items-loaded')) {
+              createRelatedProducts(carouselId);
+              // observer.disconnect();
+            }
+          });
+        } else if (mutation.type === 'attributes') {
+          if (mutation.attributeName === 'class' && mutation.target.classList.contains('search-items-loaded')) {
+            createRelatedProducts(carouselId);
+            // observer.disconnect();
+          }
+        }
+      });
+    });
+
+    observer.observe(searchCarousel, {
+      childList: true, // Observe direct children
+      attributes: true, // Observe attribute changes
+      subtree: true,
+    });
+  }
+} catch (error) {
+  console.error('Unable to create predictive search carousel', error);
+}
