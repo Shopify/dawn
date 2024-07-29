@@ -321,3 +321,182 @@ if (!customElements.get('cart-note')) {
     }
   );
 }
+
+class CartDiscountCode extends HTMLElement {
+  authorization_token = '';
+  constructor() {
+    super();
+    this.clearBtn = this.querySelector('#clear-discount-btn');
+    this.applyBtn = this.querySelector('#apply-discount-btn');
+    this.discountCodeError = this.querySelector('#discount-code-error');
+    this.discountCodeWrapper = this.querySelector('#applied-discount-code .applied-discount-code-wrapper');
+    this.discountCodeValue = this.querySelector('#applied-discount-code .applied-discount-code-value');
+    this.discountCodeInput = this.querySelector('#discount-code-input');
+    // this.totalCartSelector = this.querySelector('.cart__subtotal .cart__subtotal_money');
+    this.authorization_token = '';
+
+    this.applyStoredDiscount();
+    this.appendListeners();
+  }
+
+  disableElements() {
+    if (this.applyBtn) {
+      this.applyBtn.innerHTML += " <div class='loader'></div>";
+      this.applyBtn.style.pointerEvents = 'none';
+    }
+  }
+
+  enableElements() {
+    if (this.applyBtn) {
+      this.applyBtn.innerHTML = 'APPLY';
+      this.applyBtn.style.pointerEvents = 'all';
+    }
+  }
+
+  applyDiscount(discount_code) {
+    const code = discount_code.toLowerCase().trim();
+
+    this.disableElements();
+
+    fetch('/payments/config', { method: 'GET' })
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data, this);
+
+        const checkout_json_url = '/wallets/checkouts/';
+        this.authorization_token = btoa(data.paymentInstruments.accessToken);
+        fetch('/cart.js', {})
+          .then((res) => {
+            return res.json();
+          })
+          .then((data) => {
+            let body = {
+              checkout: {
+                country: Shopify.country,
+                discount_code: code,
+                line_items: data.items,
+                presentment_currency: Shopify.currency.active,
+              },
+            };
+            fetch(checkout_json_url, {
+              headers: {
+                accept: '*/*',
+                'cache-control': 'no-cache',
+                authorization: 'Basic ' + this.authorization_token,
+                'content-type': 'application/json, text/javascript',
+                pragma: 'no-cache',
+                'sec-fetch-dest': 'empty',
+                'sec-fetch-mode': 'cors',
+                'sec-fetch-site': 'same-origin',
+              },
+              referrerPolicy: 'strict-origin-when-cross-origin',
+              method: 'POST',
+              mode: 'cors',
+              credentials: 'include',
+              body: JSON.stringify(body),
+            })
+              .then((response) => {
+                return response.json();
+              })
+              .then((data) => {
+                if (data.checkout && data.checkout.applied_discounts.length > 0) {
+                  let discountApplyUrl = '/discount/' + code + '?v=' + Date.now() + '&redirect=/checkout/';
+                  fetch(discountApplyUrl, {}).then(function (response) {
+                    return response.text();
+                  });
+                  if (this.discountCodeError) this.discountCodeError.innerHTML = '';
+
+                  if (this.discountCodeValue) {
+                    this.discountCodeValue.innerHTML =
+                      data.checkout.applied_discounts[0].title +
+                      ' (' +
+                      data.checkout.applied_discounts[0].amount +
+                      ' ' +
+                      Shopify.currency.active +
+                      ')';
+                  }
+
+                  let localStorageValue = {
+                    code: code.trim(),
+                    currency: Shopify.currency.active,
+                    totalCartPrice: data.checkout.total_line_items_price,
+                    totalCart: Shopify.formatMoney(parseFloat(data.checkout.total_line_items_price * 100)),
+                  };
+
+                  localStorage.setItem('discountCode', JSON.stringify(localStorageValue));
+                } else {
+                  let reason = 'Please Enter Valid Coupon Code.';
+
+                  if (data.errors.discount_code.length) {
+                    reason = data.errors.discount_code[0].message;
+                  }
+
+                  if (this.discountCodeValue) this.discountCodeValue.innerHTML = '';
+                  this.clearLocalStorage();
+
+                  if (this.discountCodeError && reason) {
+                    this.discountCodeError.innerHTML = reason;
+                  }
+                }
+              })
+              .catch((e) => {
+                this.discountCodeError.innerHTML = 'Please Enter Valid Coupon Code.';
+              })
+              .finally(() => {
+                this.enableElements();
+              });
+          });
+      });
+  }
+
+  appendListeners() {
+    if (this.applyBtn) {
+      this.applyBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (this.discountCodeInput.value) {
+          this.applyDiscount(this.discountCodeInput.value);
+        }
+      });
+    }
+
+    if (this.discountCodeInput) {
+      this.discountCodeInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+          this.applyDiscount(this.discountCodeInput.value);
+        }
+      });
+    }
+
+    if (this.clearBtn) {
+      this.clearBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.clearDiscount();
+      });
+    }
+  }
+
+  applyStoredDiscount() {
+    if (localStorage.discountCode) this.applyDiscount(JSON.parse(localStorage.discountCode).code);
+  }
+
+  clearDiscount() {
+    this.disableElements();
+
+    if (this.discountCodeValue) this.discountCodeValue.innerHTML = '';
+    if (this.discountCodeError) this.discountCodeError.innerHTML = '';
+
+    this.clearLocalStorage();
+    fetch('/discount/CLEAR').finally(() => {
+      this.enableElements();
+    });
+  }
+
+  clearLocalStorage() {
+    if (this.discountCodeWrapper) this.discountCodeWrapper.style.display = 'none';
+    localStorage.removeItem('discountCode');
+  }
+}
+
+customElements.define('cart-discount', CartDiscountCode);
