@@ -360,8 +360,6 @@ class CartDiscountCode extends HTMLElement {
         const html = new DOMParser().parseFromString(responseText, 'text/html');
         const newDiscountList = html.querySelector('#discounts_list');
 
-        console.log(responseText);
-
         this.discountList.innerHTML = newDiscountList.innerHTML;
         this.appendClearBtnListener();
       })
@@ -431,6 +429,29 @@ class CartDiscountCode extends HTMLElement {
                   };
 
                   localStorage.setItem('discountCode', JSON.stringify(localStorageValue));
+
+                  const discountHtml = `
+                    <ul class="discounts list-unstyled" role="list">
+                      <li class="discounts__discount discounts__discount--position py-small w-full flex gap-2.5 items-center ">
+                          <div class="flex-grow flex gap-base items-center">
+                            <h2 class="uppercase text-t-sm text-green leading-5">
+                              ${data.checkout.applied_discounts[0].title}
+                            </h2>
+
+                            <span class="link-xs text-black cursor-pointer clear-discount-btn">
+                              Entfernen
+                            </span>
+                          </div>
+
+                          <p class="basis-1/3 text-right text-t-sm text-green leading-5">
+                            -${Shopify.formatMoney(parseFloat(data.checkout.applied_discounts[0].amount * 100))}
+                          </p>
+                        </li>
+                    </ul>
+                  `;
+
+                  this.discountList.innerHTML = discountHtml;
+                  this.appendClearBtnListener();
                 } else {
                   let reason = 'Please Enter Valid Coupon Code.';
 
@@ -460,6 +481,7 @@ class CartDiscountCode extends HTMLElement {
       this.discountCodeInput.addEventListener('keyup', (e) => {
         if (e.key === 'Enter' || e.keyCode === 13) {
           this.applyDiscount(this.discountCodeInput.value);
+          this.discountCodeInput.value = '';
         }
       });
     }
