@@ -21,8 +21,6 @@ function createRelatedProducts(carouselId) {
   const idSelector = `#${carouselId}`;
 
   try {
-    console.log('MOUNT STARTED');
-
     const related_carousel = new Splide(idSelector, {
       cover: true,
       pagination: false,
@@ -48,7 +46,6 @@ function createRelatedProducts(carouselId) {
     related_carousel.on('arrows:updated', disableCarouselArrows(idSelector));
 
     related_carousel.mount();
-    console.log('MOUNT COMPLETED');
   } catch (error) {
     console.error('Error mounting related carousel' + carouselId, error);
   }
@@ -122,4 +119,15 @@ try {
   }
 } catch (error) {
   console.error('Unable to create predictive search carousel', error);
+}
+
+try {
+  const carouselId = 'Popular-Picks-Carousel';
+  const popularPicks = document.querySelector(`#${carouselId}`);
+
+  if (popularPicks) {
+    createRelatedProducts(carouselId);
+  }
+} catch (error) {
+  console.error('Unable to create popular picks carousel', error);
 }
