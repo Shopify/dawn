@@ -218,8 +218,9 @@ function onKeyUpEscape(event) {
  * Prefetches a page by adding a <link> element to the document's head.
  * @param {string} href - The URL of the page to prefetch.
  * @param {string} [priority='auto'] - The priority of the prefetch request. Defaults to 'auto'.
+ * @param {'link' | 'speculation'} [method='link'] - The method to use for prefetching the page. Defaults to 'link'.
  */
-function addPrefetchLink(href, priority = 'auto') {
+function addPrefetchLink(href, priority = 'auto', method = 'link') {
   try {
     new URL(href) // Validate URL
   } catch (e) {
@@ -228,9 +229,8 @@ function addPrefetchLink(href, priority = 'auto') {
   }
   if (window.location.href === href) return
 
-  const useSpeculation = HTMLScriptElement.supports('speculationrules')
   try {
-    if (useSpeculation) {
+    if (method === 'speculation') {
       if (document.querySelector(`script[type="speculationrules"][data-href="${href}"]`)) return
 
       const specRuleScript = document.createElement('script')
@@ -263,19 +263,26 @@ function addPrefetchLink(href, priority = 'auto') {
  * Prefetches pages based on the specified method.
  * @param {'mouseover' | 'intersection'} method - The method to use for prefetching pages.
  */
-function initPagePrefetching(method) {
-  if (method !== 'mouseover' && method !== 'intersection') return
+function initPagePrefetching(deviceMethod) {
+  if (deviceMethod !== 'mouseover' && deviceMethod !== 'intersection') return
 
-  const prefetchLinkRegex = /^(\/|(\/(products|collections|pages|blogs|policies)\/.*))$/
+  const prefetchMethod = (HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules'))
+    ? 'speculation'
+    : 'link'
+
+  // TODO: Fall back to link prefetching if speculation prefetch fails
+
+  const prefetchRegions = ['products', 'collections', 'pages', 'blogs', 'policies', 'search'];
+  const prefetchLinkRegex = new RegExp(`^(\\/|(\\/(?:${prefetchRegions.join('|')})(\\/.*)?))$`);
   const prefetchLinks = document.querySelectorAll('a[href]')
 
   const handleMouseOver = (event) => {
-    addPrefetchLink(event.currentTarget.href, 'high')
+    addPrefetchLink(event.currentTarget.href, 'high', prefetchMethod)
   }
   const observer = new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
-        addPrefetchLink(entry.target.href, 'high')
+        addPrefetchLink(entry.target.href, 'high', prefetchMethod)
         observer.unobserve(entry.target)
       }
     })
@@ -283,10 +290,10 @@ function initPagePrefetching(method) {
 
   prefetchLinks.forEach((link) => {
     if (prefetchLinkRegex.test(link.pathname)) {
-      if (method === 'mouseover') {
+      if (deviceMethod === 'mouseover') {
         link.removeEventListener('mouseover', handleMouseOver)
         link.addEventListener('mouseover', handleMouseOver)
-      } else if (method === 'intersection') {
+      } else if (deviceMethod === 'intersection') {
         observer.observe(link)
       }
     }
