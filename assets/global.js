@@ -241,7 +241,6 @@ function addPrefetchLink(href, priority = 'auto') {
  */
 function initPagePrefetching(method) {
   if (method !== 'mouseover' && method !== 'intersection') return
-  console.log('prefetchPages using', method)
 
   const prefetchLinkRegex = /^(\/|(\/(products|collections|pages|policies)\/.*))$/
   const prefetchLinks = document.querySelectorAll('a[href]')
