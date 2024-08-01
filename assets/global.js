@@ -6,6 +6,18 @@ function getFocusableElements(container) {
   );
 }
 
+try {
+  const rtfPage = document.querySelector('#rtf-page');
+
+  if (rtfPage) {
+    rtfPage.querySelectorAll('p,h1,h2,h3,span').forEach(function (tag) {
+      if (tag.innerHTML.trim() === '&nbsp;') {
+        tag.classList.add('empty');
+      }
+    });
+  }
+} catch (error) {}
+
 document.querySelectorAll('[id^="Details-"] summary').forEach((summary) => {
   summary.setAttribute('role', 'button');
   summary.setAttribute('aria-expanded', summary.parentNode.hasAttribute('open'));
