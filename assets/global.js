@@ -220,8 +220,13 @@ function onKeyUpEscape(event) {
  * @param {string} [priority='auto'] - The priority of the prefetch request. Defaults to 'auto'.
  */
 function addPrefetchLink(href, priority = 'auto') {
-  if (!href) return
-  if (document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return
+  if (
+    !href ||
+    !(new URL(href)) ||
+    (HTMLScriptElement.supports("speculationrules")) ||
+    window.location.href === href ||
+    document.querySelectorAll(`link[rel="prefetch"][href="${href}"]`).length > 0
+  ) return
 
   try {
     const link = document.createElement('link')
@@ -242,7 +247,7 @@ function addPrefetchLink(href, priority = 'auto') {
 function initPagePrefetching(method) {
   if (method !== 'mouseover' && method !== 'intersection') return
 
-  const prefetchLinkRegex = /^(\/|(\/(products|collections|pages|policies)\/.*))$/
+  const prefetchLinkRegex = /^(\/|(\/(products|collections|pages|blogs|policies)\/.*))$/
   const prefetchLinks = document.querySelectorAll('a[href]')
 
   const handleMouseOver = (event) => {
