@@ -220,21 +220,40 @@ function onKeyUpEscape(event) {
  * @param {string} [priority='auto'] - The priority of the prefetch request. Defaults to 'auto'.
  */
 function addPrefetchLink(href, priority = 'auto') {
-  if (
-    !href ||
-    !(new URL(href)) ||
-    (HTMLScriptElement.supports("speculationrules")) ||
-    window.location.href === href ||
-    document.querySelectorAll(`link[rel="prefetch"][href="${href}"]`).length > 0
-  ) return
-
   try {
-    const link = document.createElement('link')
-    link.rel = 'prefetch'
-    link.href = href
-    link.fetchPriority = priority
-    link.as = 'document'
-    document.head.appendChild(link)
+    new URL(href) // Validate URL
+  } catch (e) {
+    console.error('Invalid URL', e)
+    return
+  }
+  if (window.location.href === href) return
+
+  const useSpeculation = HTMLScriptElement.supports('speculationrules')
+  try {
+    if (useSpeculation) {
+      if (document.querySelector(`script[type="speculationrules"][data-href="${href}"]`)) return
+
+      const specRuleScript = document.createElement('script')
+      specRuleScript.type = 'speculationrules'
+      specRuleScript.dataset.href = href
+      const specRule = {
+        prefetch: [{
+          urls: [href],
+          eagerness: 'eager'
+        }]
+      }
+      specRuleScript.textContent = JSON.stringify(specRule)
+      document.body.append(specRuleScript)
+    } else {
+      if (document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return
+
+      const link = document.createElement('link')
+      link.rel = 'prefetch'
+      link.href = href
+      link.fetchPriority = priority
+      link.as = 'document'
+      document.head.appendChild(link)
+    }
   } catch (e) {
     console.error('Failed to prefetch page', e)
   }
@@ -280,6 +299,7 @@ const getPrefetchMethod = () => {
     ? 'intersection'
     : 'mouseover'
 }
+
 document.addEventListener('DOMContentLoaded', () => initPagePrefetching(getPrefetchMethod()))
 // Update prefetch method on resize w/ debounce
 window.addEventListener('resize', debounce(() => initPagePrefetching(getPrefetchMethod()), 200))
