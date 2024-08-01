@@ -214,6 +214,72 @@ function onKeyUpEscape(event) {
   summaryElement.focus();
 }
 
+/**
+ * Prefetches a page by adding a <link> element to the document's head.
+ * @param {string} href - The URL of the page to prefetch.
+ * @param {string} [priority='auto'] - The priority of the prefetch request. Defaults to 'auto'.
+ */
+function addPrefetchLink(href, priority = 'auto') {
+  if (!href) return
+  if (document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return
+
+  try {
+    const link = document.createElement('link')
+    link.rel = 'prefetch'
+    link.href = href
+    link.fetchPriority = priority
+    link.as = 'document'
+    document.head.appendChild(link)
+  } catch (e) {
+    console.error('Failed to prefetch page', e)
+  }
+}
+
+/**
+ * Prefetches pages based on the specified method.
+ * @param {'mouseover' | 'intersection'} method - The method to use for prefetching pages.
+ */
+function initPagePrefetching(method) {
+  if (method !== 'mouseover' && method !== 'intersection') return
+  console.log('prefetchPages using', method)
+
+  const prefetchLinkRegex = /^(\/|(\/(products|collections|pages|policies)\/.*))$/
+  const prefetchLinks = document.querySelectorAll('a[href]')
+
+  const handleMouseOver = (event) => {
+    addPrefetchLink(event.currentTarget.href, 'high')
+  }
+  const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        addPrefetchLink(entry.target.href, 'high')
+        observer.unobserve(entry.target)
+      }
+    })
+  })
+
+  prefetchLinks.forEach((link) => {
+    if (prefetchLinkRegex.test(link.pathname)) {
+      if (method === 'mouseover') {
+        link.removeEventListener('mouseover', handleMouseOver)
+        link.addEventListener('mouseover', handleMouseOver)
+      } else if (method === 'intersection') {
+        observer.observe(link)
+      }
+    }
+  })
+}
+
+// If mobile, prefetch on intersection, otherwise prefetch on mouseover
+const getPrefetchMethod = () => {
+  return window.matchMedia('(max-width: 768px)').matches
+    ? 'intersection'
+    : 'mouseover'
+}
+document.addEventListener('DOMContentLoaded', () => initPagePrefetching(getPrefetchMethod()))
+// Update prefetch method on resize w/ debounce
+window.addEventListener('resize', debounce(() => initPagePrefetching(getPrefetchMethod()), 200))
+
 class QuantityInput extends HTMLElement {
   constructor() {
     super();
