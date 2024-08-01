@@ -323,34 +323,49 @@ if (!customElements.get('cart-note')) {
 }
 
 class CartDiscountCode extends HTMLElement {
-  authorization_token = '';
   constructor() {
     super();
-    this.clearBtn = this.querySelector('#clear-discount-btn');
-    this.applyBtn = this.querySelector('#apply-discount-btn');
-    this.discountCodeError = this.querySelector('#discount-code-error');
-    this.discountCodeWrapper = this.querySelector('#applied-discount-code .applied-discount-code-wrapper');
-    this.discountCodeValue = this.querySelector('#applied-discount-code .applied-discount-code-value');
-    this.discountCodeInput = this.querySelector('#discount-code-input');
-    // this.totalCartSelector = this.querySelector('.cart__subtotal .cart__subtotal_money');
     this.authorization_token = '';
 
+    this.discountCodeError = this.querySelector('#discount-code-error');
+    this.discountCodeInput = this.querySelector('#discount-code-input');
+
+    this.checkoutBtn = document.querySelector('.cart__footer .cart__ctas button.smshrs-btn');
+    this.loadingSpinner = this.checkoutBtn?.querySelector('.loading__spinner');
+
+    this.discountList = document.querySelector('#discounts_list');
+
     this.applyStoredDiscount();
-    this.appendListeners();
+    this.registerListeners();
   }
 
   disableElements() {
-    if (this.applyBtn) {
-      this.applyBtn.innerHTML += " <div class='loader'></div>";
-      this.applyBtn.style.pointerEvents = 'none';
+    if (this.checkoutBtn) {
+      this.checkoutBtn.setAttribute('disabled', true);
+      this.loadingSpinner.classList.remove('hidden');
     }
   }
 
   enableElements() {
-    if (this.applyBtn) {
-      this.applyBtn.innerHTML = 'APPLY';
-      this.applyBtn.style.pointerEvents = 'all';
+    if (this.checkoutBtn) {
+      this.checkoutBtn.removeAttribute('disabled');
+      this.loadingSpinner.classList.add('hidden');
     }
+  }
+
+  updateLiveRegion() {
+    fetch(`${routes.cart_url}?section_id=main-cart-checkout`)
+      .then((response) => response.text())
+      .then((responseText) => {
+        const html = new DOMParser().parseFromString(responseText, 'text/html');
+        const newDiscountList = html.querySelector('#discounts_list');
+
+        this.discountList.innerHTML = newDiscountList.innerHTML;
+        this.appendClearBtnListener();
+      })
+      .catch((e) => {
+        console.error(e);
+      });
   }
 
   applyDiscount(discount_code) {
@@ -363,8 +378,6 @@ class CartDiscountCode extends HTMLElement {
         return response.json();
       })
       .then((data) => {
-        console.log(data, this);
-
         const checkout_json_url = '/wallets/checkouts/';
         this.authorization_token = btoa(data.paymentInstruments.accessToken);
         fetch('/cart.js', {})
@@ -408,16 +421,6 @@ class CartDiscountCode extends HTMLElement {
                   });
                   if (this.discountCodeError) this.discountCodeError.innerHTML = '';
 
-                  if (this.discountCodeValue) {
-                    this.discountCodeValue.innerHTML =
-                      data.checkout.applied_discounts[0].title +
-                      ' (' +
-                      data.checkout.applied_discounts[0].amount +
-                      ' ' +
-                      Shopify.currency.active +
-                      ')';
-                  }
-
                   let localStorageValue = {
                     code: code.trim(),
                     currency: Shopify.currency.active,
@@ -426,6 +429,29 @@ class CartDiscountCode extends HTMLElement {
                   };
 
                   localStorage.setItem('discountCode', JSON.stringify(localStorageValue));
+
+                  const discountHtml = `
+                    <ul class="discounts list-unstyled" role="list">
+                      <li class="discounts__discount discounts__discount--position py-small w-full flex gap-2.5 items-center ">
+                          <div class="flex-grow flex gap-base items-center">
+                            <h2 class="uppercase text-t-sm text-green leading-5">
+                              ${data.checkout.applied_discounts[0].title}
+                            </h2>
+
+                            <span class="link-xs text-black cursor-pointer clear-discount-btn">
+                              Entfernen
+                            </span>
+                          </div>
+
+                          <p class="basis-1/3 text-right text-t-sm text-green leading-5">
+                            -${Shopify.formatMoney(parseFloat(data.checkout.applied_discounts[0].amount * 100))}
+                          </p>
+                        </li>
+                    </ul>
+                  `;
+
+                  this.discountList.innerHTML = discountHtml;
+                  this.appendClearBtnListener();
                 } else {
                   let reason = 'Please Enter Valid Coupon Code.';
 
@@ -433,7 +459,6 @@ class CartDiscountCode extends HTMLElement {
                     reason = data.errors.discount_code[0].message;
                   }
 
-                  if (this.discountCodeValue) this.discountCodeValue.innerHTML = '';
                   this.clearLocalStorage();
 
                   if (this.discountCodeError && reason) {
@@ -451,30 +476,28 @@ class CartDiscountCode extends HTMLElement {
       });
   }
 
-  appendListeners() {
-    if (this.applyBtn) {
-      this.applyBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (this.discountCodeInput.value) {
-          this.applyDiscount(this.discountCodeInput.value);
-        }
-      });
-    }
-
+  registerListeners() {
     if (this.discountCodeInput) {
       this.discountCodeInput.addEventListener('keyup', (e) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' || e.keyCode === 13) {
           this.applyDiscount(this.discountCodeInput.value);
+          this.discountCodeInput.value = '';
         }
       });
     }
 
-    if (this.clearBtn) {
-      this.clearBtn.addEventListener('click', (e) => {
+    this.appendClearBtnListener();
+  }
+
+  appendClearBtnListener() {
+    document.querySelectorAll('.clear-discount-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        console.log('CLICK');
+
         e.preventDefault();
         this.clearDiscount();
       });
-    }
+    });
   }
 
   applyStoredDiscount() {
@@ -483,18 +506,19 @@ class CartDiscountCode extends HTMLElement {
 
   clearDiscount() {
     this.disableElements();
-
-    if (this.discountCodeValue) this.discountCodeValue.innerHTML = '';
     if (this.discountCodeError) this.discountCodeError.innerHTML = '';
 
     this.clearLocalStorage();
-    fetch('/discount/CLEAR').finally(() => {
-      this.enableElements();
-    });
+    fetch('/discount/CLEAR')
+      .then(() => {
+        this.updateLiveRegion();
+      })
+      .finally(() => {
+        this.enableElements();
+      });
   }
 
   clearLocalStorage() {
-    if (this.discountCodeWrapper) this.discountCodeWrapper.style.display = 'none';
     localStorage.removeItem('discountCode');
   }
 }
