@@ -1,25 +1,27 @@
 {{ 'section-main-page.css' | asset_url | stylesheet_tag }}
 
-{%- style -%}
-  .section-{{ section.id }}-padding {
-    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
-    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
-  }
+<div class="rtf-page">
+  <div class="pb-large">
+    <h1 class="text-h-lg mb-0">
+      {{ page.title | escape }}
+    </h1>
+  </div>
 
-  @media screen and (min-width: 750px) {
-    .section-{{ section.id }}-padding {
-      padding-top: {{ section.settings.padding_top }}px;
-      padding-bottom: {{ section.settings.padding_bottom }}px;
-    }
-  }
-{%- endstyle -%}
-
-<div class="page-width page-width--narrow section-{{ section.id }}-padding">
-  <h1 class="main-page-title page-title h0{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
-    {{ page.title | escape }}
-  </h1>
-  <div class="rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+  <div class="rtf-content">
     {{ page.content }}
+  </div>
+
+  <div>
+    {% for block in section.blocks %}
+      {% assign image_with_caption = block.settings %}
+      <div class="pt-large pb-huge {% if forloop.last %} mb-0{% else %} mb-base{% endif %}">
+        {% render 'image-with-caption',
+          image: image_with_caption.image,
+          caption: image_with_caption.caption,
+          caption_size: image_with_caption.caption_type
+        %}
+      </div>
+    {% endfor %}
   </div>
 </div>
 
@@ -28,30 +30,38 @@
   "name": "t:sections.main-page.name",
   "tag": "section",
   "class": "section",
-  "settings": [
+  "blocks": [
     {
-      "type": "header",
-      "content": "t:sections.all.padding.section_padding_heading"
-    },
-    {
-      "type": "range",
-      "id": "padding_top",
-      "min": 0,
-      "max": 100,
-      "step": 4,
-      "unit": "px",
-      "label": "t:sections.all.padding.padding_top",
-      "default": 36
-    },
-    {
-      "type": "range",
-      "id": "padding_bottom",
-      "min": 0,
-      "max": 100,
-      "step": 4,
-      "unit": "px",
-      "label": "t:sections.all.padding.padding_bottom",
-      "default": 36
+      "type": "media_with_caption",
+      "name": "t:sections.main-page.blocks.media_with_caption.name",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:sections.main-page.blocks.media_with_caption.settings.image.label"
+        },
+        {
+          "type": "text",
+          "id": "caption",
+          "label": "t:sections.main-page.blocks.media_with_caption.settings.caption.label"
+        },
+        {
+          "type": "select",
+          "id": "caption_type",
+          "options": [
+            {
+              "value": "small",
+              "label": "t:sections.main-page.settings.caption_type.options__1.label"
+            },
+            {
+              "value": "large",
+              "label": "t:sections.main-page.settings.caption_type.options__2.label"
+            }
+          ],
+          "default": "small",
+          "label": "t:sections.main-page.settings.caption_type.label"
+        }
+      ]
     }
   ]
 }
