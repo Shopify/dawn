@@ -239,7 +239,7 @@ function addPrefetchLink(href, priority = 'auto') {
       const specRule = {
         prefetch: [{
           urls: [href],
-          eagerness: 'eager'
+          eagerness: 'immediate'
         }]
       }
       specRuleScript.textContent = JSON.stringify(specRule)
