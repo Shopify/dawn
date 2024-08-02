@@ -276,9 +276,9 @@ function initPagePrefetching(deviceMethod) {
   const prefetchLinkRegex = new RegExp(`^(\\/|(\\/(?:${prefetchRegions.join('|')})(\\/.*)?))$`);
   const prefetchLinks = document.querySelectorAll('a[href]')
 
-  const handleMouseOver = (event) => {
+  const handleMouseOver = (event) =>
     addPrefetchLink(event.currentTarget.href, 'high', prefetchMethod)
-  }
+
   const observer = new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
@@ -300,11 +300,27 @@ function initPagePrefetching(deviceMethod) {
   })
 }
 
-// If mobile, prefetch on intersection, otherwise prefetch on mouseover
+
+/**
+ * Returns the preferred method for prefetching based on the window size.
+ * @returns {'intersection' | 'mouseover'} The preferred method for prefetching. Possible values are 'intersection' or 'mouseover'.
+ */
 const getPrefetchMethod = () => {
   return window.matchMedia('(max-width: 768px)').matches
     ? 'intersection'
     : 'mouseover'
+}
+
+/**
+ * Determine if devices should even consider prefetching
+ * Low power mode, data saver, etc.
+ * @returns {boolean} Whether or not prefetching should be used.
+ */
+const shouldUsePrefetching = () => {
+  // Data saver mode
+  if (navigator.connection?.saveData) return false
+
+  // TODO: Low power mode
 }
 
 document.addEventListener('DOMContentLoaded', () => initPagePrefetching(getPrefetchMethod()))
