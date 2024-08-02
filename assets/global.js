@@ -1417,3 +1417,88 @@ class ShippingBar extends HTMLElement {
 }
 
 customElements.define('shipping-bar', ShippingBar);
+
+class WishlistHandler extends HTMLElement {
+  constructor() {
+    super();
+    this.addButton = this.querySelector('[data-add-to-wishlist]');
+    this.removeButton = this.querySelector('[data-remove-from-wishlist]');
+    this.shopUrl = window.Shopify.shop;
+    this.customerId = this.dataset.customerId;
+    this.productReference = this.dataset.productReference;
+    this.productsCount = document.getElementById('wishlist-products-count');
+    this.countBubble = document.querySelector('.wishlist-count-bubble');
+    this.bindEvents();
+  }
+
+  bindEvents() {
+    this.addButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      if (!this.customerId) {
+        window.location.href = '/account/login';
+        return;
+      }
+      this.updateWishlist('add');
+    });
+
+    this.removeButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      this.updateWishlist('remove');
+    });
+  }
+
+  updateWishlist(action) {
+    if (this.operationInProgress) {
+      return;
+    }
+
+    this.operationInProgress = true;
+
+    const url = window.digismoothieWishlistApp.appUrl;
+    const data = {
+      shop_url: this.shopUrl,
+      customer_id: this.customerId,
+      product_reference: this.productReference,
+      action: action,
+    };
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (action === 'add') {
+          this.addButton.classList.add('hidden');
+          this.removeButton.classList.remove('hidden');
+          this.removeButton.classList.add('in-wishlist');
+        } else {
+          this.removeButton.classList.add('hidden');
+          this.addButton.classList.remove('hidden');
+        }
+
+        if (window.location.pathname === '/pages/wishlist' && this.closest('.wishlist-item')) {
+          this.closest('.wishlist-item').remove();
+        }
+
+        this.productsCount.innerText = data.products_count;
+        this.countBubble.classList.toggle('hidden', data.products_count === 0);
+
+        this.removeButton.addEventListener('animationend', () => {
+          this.removeButton.classList.remove('in-wishlist');
+        });
+
+        this.operationInProgress = false;
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+
+        this.operationInProgress = false;
+      });
+  }
+}
+
+customElements.define('wishlist-handler', WishlistHandler);
