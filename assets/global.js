@@ -161,7 +161,6 @@ try {
 /**
  * Polyfill for managing focus visibility.
  * This function adds a polyfill for managing focus visibility. It listens for keyboard events and mouse events to determine if an element should have a "focused" class applied to it. The "focused" class is added to the currently focused element when it receives focus through keyboard navigation, and is removed when it loses focus or when a mouse click occurs.
- * @function focusVisiblePolyfill
  */
 function focusVisiblePolyfill() {
   const navKeys = [
