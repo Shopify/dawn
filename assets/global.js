@@ -264,6 +264,7 @@ function addPrefetchLink(href, priority = 'auto', method = 'link') {
  * @param {'mouseover' | 'intersection'} method - The method to use for prefetching pages.
  */
 function initPagePrefetching(deviceMethod) {
+  if (!shouldUsePrefetching()) return
   if (deviceMethod !== 'mouseover' && deviceMethod !== 'intersection') return
 
   const prefetchMethod = (HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules'))
@@ -300,7 +301,6 @@ function initPagePrefetching(deviceMethod) {
   })
 }
 
-
 /**
  * Returns the preferred method for prefetching based on the window size.
  * @returns {'intersection' | 'mouseover'} The preferred method for prefetching. Possible values are 'intersection' or 'mouseover'.
@@ -316,11 +316,17 @@ const getPrefetchMethod = () => {
  * Low power mode, data saver, etc.
  * @returns {boolean} Whether or not prefetching should be used.
  */
-const shouldUsePrefetching = () => {
+const shouldUsePrefetching = async () => {
   // Data saver mode
   if (navigator.connection?.saveData) return false
 
-  // TODO: Low power mode
+  // Low power mode
+  // Javascript can't detect low power mode, so we'll work off actual battery level
+  if (navigator.getBattery) {
+    navigator.getBattery().then((battery) => {
+      if (battery.level < 0.2) return false
+    })
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => initPagePrefetching(getPrefetchMethod()))
