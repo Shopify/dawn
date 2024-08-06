@@ -214,6 +214,125 @@ function onKeyUpEscape(event) {
   summaryElement.focus();
 }
 
+/**
+ * Prefetches a page by adding a <link> element to the document's head.
+ * @param {string} href - The URL of the page to prefetch.
+ * @param {string} [priority='auto'] - The priority of the prefetch request. Defaults to 'auto'.
+ * @param {'link' | 'speculation'} [method='link'] - The method to use for prefetching the page. Defaults to 'link'.
+ */
+function addPrefetchLink(href, priority = 'auto', method = 'link') {
+  try {
+    new URL(href) // Validate URL
+  } catch (e) {
+    console.error('Invalid URL', e)
+    return
+  }
+  if (window.location.href === href) return
+
+  try {
+    if (method === 'speculation') {
+      if (document.querySelector(`script[type="speculationrules"][data-href="${href}"]`)) return
+
+      const specRuleScript = document.createElement('script')
+      specRuleScript.type = 'speculationrules'
+      specRuleScript.dataset.href = href
+      const specRule = {
+        prefetch: [{
+          urls: [href],
+          eagerness: 'immediate'
+        }]
+      }
+      specRuleScript.textContent = JSON.stringify(specRule)
+      document.body.append(specRuleScript)
+    } else {
+      if (document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return
+
+      const link = document.createElement('link')
+      link.rel = 'prefetch'
+      link.href = href
+      link.fetchPriority = priority
+      link.as = 'document'
+      document.head.appendChild(link)
+    }
+  } catch (e) {
+    console.error('Failed to prefetch page', e)
+  }
+}
+
+/**
+ * Prefetches pages based on the specified method.
+ * @param {'mouseover' | 'intersection'} method - The method to use for prefetching pages.
+ */
+function initPagePrefetching(deviceMethod) {
+  if (!shouldUsePrefetching()) return
+  if (deviceMethod !== 'mouseover' && deviceMethod !== 'intersection') return
+
+  const prefetchMethod = (HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules'))
+    ? 'speculation'
+    : 'link'
+
+  // TODO: Fall back to link prefetching if speculation prefetch fails
+
+  const prefetchRegions = ['products', 'collections', 'pages', 'blogs', 'policies', 'search'];
+  const prefetchLinkRegex = new RegExp(`^(\\/|(\\/(?:${prefetchRegions.join('|')})(\\/.*)?))$`);
+  const prefetchLinks = document.querySelectorAll('a[href]')
+
+  const handleMouseOver = (event) =>
+    addPrefetchLink(event.currentTarget.href, 'high', prefetchMethod)
+
+  const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        addPrefetchLink(entry.target.href, 'high', prefetchMethod)
+        observer.unobserve(entry.target)
+      }
+    })
+  })
+
+  prefetchLinks.forEach((link) => {
+    if (prefetchLinkRegex.test(link.pathname)) {
+      if (deviceMethod === 'mouseover') {
+        link.removeEventListener('mouseover', handleMouseOver)
+        link.addEventListener('mouseover', handleMouseOver)
+      } else if (deviceMethod === 'intersection') {
+        observer.observe(link)
+      }
+    }
+  })
+}
+
+/**
+ * Returns the preferred method for prefetching based on the window size.
+ * @returns {'intersection' | 'mouseover'} The preferred method for prefetching. Possible values are 'intersection' or 'mouseover'.
+ */
+const getPrefetchMethod = () => {
+  return window.matchMedia('(max-width: 768px)').matches
+    ? 'intersection'
+    : 'mouseover'
+}
+
+/**
+ * Determine if devices should even consider prefetching
+ * Low power mode, data saver, etc.
+ * @returns {boolean} Whether or not prefetching should be used.
+ */
+const shouldUsePrefetching = async () => {
+  // Data saver mode
+  if (navigator.connection?.saveData) return false
+
+  // Low power mode
+  // Javascript can't detect low power mode, so we'll work off actual battery level
+  if (navigator.getBattery) {
+    navigator.getBattery().then((battery) => {
+      if (battery.level < 0.2) return false
+    })
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => initPagePrefetching(getPrefetchMethod()))
+// Update prefetch method on resize w/ debounce
+window.addEventListener('resize', debounce(() => initPagePrefetching(getPrefetchMethod()), 200))
+
 class QuantityInput extends HTMLElement {
   constructor() {
     super();
