@@ -184,16 +184,19 @@ class CartItems extends HTMLElement {
             section.selector
           );
         });
-        const updatedValue = parsedState.items[line - 1] ? parsedState.items[line - 1].quantity : undefined;
-        let message = '';
-        if (items.length === parsedState.items.length && updatedValue !== parseInt(quantityElement.value)) {
-          if (typeof updatedValue === 'undefined') {
-            message = window.cartStrings.error;
-          } else {
-            message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
+        const updatedLine = parsedState.items[line - 1];
+        if (updatedLine && updatedLine.variant_id === parseInt(variantId)) {
+          const updatedValue = updatedLine ? updatedLine.quantity : undefined;
+          let message = '';
+          if (updatedValue !== parseInt(quantityElement.value)) {
+            if (typeof updatedValue === 'undefined') {
+              message = window.cartStrings.error;
+            } else {
+              message = window.cartStrings.quantityError.replace('[quantity]', updatedValue);
+            }
           }
+          this.updateLiveRegions(line, message);
         }
-        this.updateLiveRegions(line, message);
 
         const lineItem =
           document.getElementById(`CartItem-${line}`) || document.getElementById(`CartDrawer-Item-${line}`);
