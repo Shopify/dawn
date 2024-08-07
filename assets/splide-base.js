@@ -1,10 +1,35 @@
 class SplideCarousel extends HTMLElement {
+  defaultOptions = {
+    cover: true,
+    pagination: false,
+    perPage: 4,
+    perMove: 1,
+    focus: 0,
+    omitEnd: true,
+    drag: 'free',
+    snap: true,
+    autoWidth: true,
+    gap: 2,
+    breakpoints: {
+      800: {
+        perPage: 4,
+      },
+      400: {
+        perPage: 2,
+      },
+    },
+  };
+
   constructor() {
     super();
     this.carousel_id = this.getAttribute('data-id');
-    console.log(this.carousel_id);
 
-    this.createRelatedProducts(this.carousel_id);
+    const options = this.getAttribute('data-options');
+    const carousel_options = options ? JSON.parse(options) : {};
+
+    this.carousel_options = Object.assign({}, this.defaultOptions, carousel_options);
+
+    this.createRelatedProducts(this.carousel_id, this.carousel_options);
   }
 
   disableCarouselArrows(carousel_id) {
@@ -26,35 +51,11 @@ class SplideCarousel extends HTMLElement {
     };
   }
 
-  createRelatedProducts(carousel_id) {
+  createRelatedProducts(carousel_id, options) {
     const id = `#${carousel_id}`;
 
-    const carouselOptions = Object.assign(
-      {},
-      {
-        cover: true,
-        pagination: false,
-        perPage: 4,
-        perMove: 1,
-        focus: 0,
-        omitEnd: true,
-        drag: 'free',
-        snap: true,
-        autoWidth: true,
-        gap: 2,
-        breakpoints: {
-          800: {
-            perPage: 4,
-          },
-          400: {
-            perPage: 2,
-          },
-        },
-      }
-    );
-
     try {
-      const related_carousel = new Splide(id, carouselOptions);
+      const related_carousel = new Splide(id, options);
 
       related_carousel.on('arrows:updated', this.disableCarouselArrows(carousel_id));
       related_carousel.mount();
