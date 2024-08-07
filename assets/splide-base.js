@@ -41,6 +41,7 @@ class SplideCarousel extends HTMLElement {
         drag: 'free',
         snap: true,
         autoWidth: true,
+        gap: 2,
         breakpoints: {
           800: {
             perPage: 4,
