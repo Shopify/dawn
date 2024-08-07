@@ -111,7 +111,7 @@ class CartDrawer extends HTMLElement {
   }
 
   /**
-   * Gets the inner HTML of a cart drawer section.
+   * Gets the inner HTML of a cart section.
    * @param {string} html - The HTML string to parse.
    * @param {string} [selector='.shopify-section'] - The selector to query for.
    * @returns {string} The inner HTML of the matched section.

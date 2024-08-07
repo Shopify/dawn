@@ -1,3 +1,7 @@
+/**
+ * Button to remove a cart line item.
+ * @extends HTMLElement
+ */
 class CartRemoveButton extends HTMLElement {
   constructor() {
     super();
@@ -12,9 +16,14 @@ class CartRemoveButton extends HTMLElement {
 
 customElements.define('cart-remove-button', CartRemoveButton);
 
+/**
+ * Cart Line Item custom element class.
+ * @extends HTMLElement
+ */
 class CartItems extends HTMLElement {
   constructor() {
     super();
+    /** @type {HTMLElement} */
     this.lineItemStatusElement =
       document.getElementById('shopping-cart-line-item-status') || document.getElementById('CartDrawer-LineItemStatus');
 
@@ -25,6 +34,7 @@ class CartItems extends HTMLElement {
     this.addEventListener('change', debouncedOnChange.bind(this));
   }
 
+  /** @type {Function|undefined} */
   cartUpdateUnsubscriber = undefined;
 
   connectedCallback() {
@@ -42,12 +52,22 @@ class CartItems extends HTMLElement {
     }
   }
 
+  /**
+   * Reset the quantity input to its original value.
+   * @param {string} id - The ID of the quantity input.
+   */
   resetQuantityInput(id) {
     const input = this.querySelector(`#Quantity-${id}`);
     input.value = input.getAttribute('value');
     this.isEnterPressed = false;
   }
 
+  /**
+   * Set the validity of the quantity input.
+   * @param {Event} event - The event object.
+   * @param {string} index - The index of the quantity input.
+   * @param {string} message - The validation error message.
+   */
   setValidity(event, index, message) {
     event.target.setCustomValidity(message);
     event.target.reportValidity();
@@ -55,6 +75,10 @@ class CartItems extends HTMLElement {
     event.target.select();
   }
 
+  /**
+   * Validate the quantity input.
+   * @param {Event} event - The event object.
+   */
   validateQuantity(event) {
     const inputValue = parseInt(event.target.value);
     const index = event.target.dataset.index;
@@ -82,10 +106,17 @@ class CartItems extends HTMLElement {
     }
   }
 
+  /**
+   * Handle the change event on the quantity input.
+   * @param {Event} event - The event object.
+   */
   onChange(event) {
     this.validateQuantity(event);
   }
 
+  /**
+   * Update cart DOM after a cart update.
+   */
   onCartUpdate() {
     if (this.tagName === 'CART-DRAWER-ITEMS') {
       fetch(`${routes.cart_url}?section_id=cart-drawer`)
@@ -118,6 +149,10 @@ class CartItems extends HTMLElement {
     }
   }
 
+  /**
+   * Array of section selectors for sections api to render.
+   * @returns {Array<Object>} The array of sections to render.
+   */
   getSectionsToRender() {
     return [
       {
@@ -143,6 +178,13 @@ class CartItems extends HTMLElement {
     ];
   }
 
+  /**
+   * Update the quantity of a cart line item.
+   * @param {string} line - The index of the line item to update.
+   * @param {number} quantity - The new quantity of the line item.
+   * @param {string} name - The name attribute of the line item (for focus trapping).
+   * @param {string} variantId - The variant ID of the line item.
+   */
   updateQuantity(line, quantity, name, variantId) {
     this.enableLoading(line);
 
@@ -219,6 +261,11 @@ class CartItems extends HTMLElement {
       });
   }
 
+  /**
+   * Update live regions with a message.
+   * @param {string} line - The line item index.
+   * @param {string} message - The message to display.
+   */
   updateLiveRegions(line, message) {
     const lineItemError =
       document.getElementById(`Line-item-error-${line}`) || document.getElementById(`CartDrawer-LineItemError-${line}`);
@@ -235,10 +282,20 @@ class CartItems extends HTMLElement {
     }, 1000);
   }
 
+  /**
+   * Gets the inner HTML of a cart section.
+   * @param {string} html - The HTML string to parse.
+   * @param {string} selector - The selector to query for.
+   * @returns {string} The inner HTML of the matched section.
+   */
   getSectionInnerHTML(html, selector) {
     return new DOMParser().parseFromString(html, 'text/html').querySelector(selector).innerHTML;
   }
 
+  /**
+   * Enable loading state for a cart line item.
+   * @param {string} line - The index of the line item.
+   */
   enableLoading(line) {
     const mainCartItems = document.getElementById('main-cart-items') || document.getElementById('CartDrawer-CartItems');
     mainCartItems.classList.add('cart__items--disabled');
@@ -252,6 +309,10 @@ class CartItems extends HTMLElement {
     this.lineItemStatusElement.setAttribute('aria-hidden', false);
   }
 
+  /**
+   * Disable loading state for a cart line item.
+   * @param {string} line - The index of the line item.
+   */
   disableLoading(line) {
     const mainCartItems = document.getElementById('main-cart-items') || document.getElementById('CartDrawer-CartItems');
     mainCartItems.classList.remove('cart__items--disabled');
@@ -269,6 +330,10 @@ customElements.define('cart-items', CartItems);
 if (!customElements.get('cart-note')) {
   customElements.define(
     'cart-note',
+    /**
+     * Cart Note custom element class.
+     * @extends HTMLElement
+     */
     class CartNote extends HTMLElement {
       constructor() {
         super();
