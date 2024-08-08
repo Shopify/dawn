@@ -56,10 +56,6 @@ class Paginate extends HTMLElement {
         this.nextUrl = newUrl;
 
         this.renderItemsCount();
-
-        // if (!newUrl) {
-        //   this.toggleLoading();
-        // }
       })
       .catch((err) => console.error(err))
       .finally(() => {
