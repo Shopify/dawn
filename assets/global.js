@@ -1,3 +1,8 @@
+/**
+ * Retrieves all focusable elements within a given container.
+ * @param {HTMLElement} container - The container element to search within.
+ * @returns {Array<HTMLElement>} - An array of focusable elements.
+ */
 function getFocusableElements(container) {
   return Array.from(
     container.querySelectorAll(
@@ -6,6 +11,9 @@ function getFocusableElements(container) {
   );
 }
 
+/**
+ * The SectionId class provides utility methods for working with section IDs.
+ */
 class SectionId {
   static #separator = '__';
 
@@ -25,6 +33,10 @@ class SectionId {
   }
 }
 
+/**
+ * Utility class for updating HTML nodes.
+ * @name HTMLUpdateUtility
+ */
 class HTMLUpdateUtility {
   /**
    * Used to swap an HTML node with a new node.
@@ -68,6 +80,7 @@ class HTMLUpdateUtility {
   }
 }
 
+// Set role and aria-expanded attributes for each summary element
 document.querySelectorAll('[id^="Details-"] summary').forEach((summary) => {
   summary.setAttribute('role', 'button');
   summary.setAttribute('aria-expanded', summary.parentNode.hasAttribute('open'));
@@ -80,12 +93,18 @@ document.querySelectorAll('[id^="Details-"] summary').forEach((summary) => {
     event.currentTarget.setAttribute('aria-expanded', !event.currentTarget.closest('details').hasAttribute('open'));
   });
 
+  // Add keyup event listener to handle ESC key
   if (summary.closest('header-drawer, menu-drawer')) return;
   summary.parentElement.addEventListener('keyup', onKeyUpEscape);
 });
 
 const trapFocusHandlers = {};
 
+/**
+ * Traps the focus within a specified container element.
+ * @param {HTMLElement} container - The container element to trap the focus within.
+ * @param {HTMLElement} [elementToFocus=container] - The element to focus initially within the container. Defaults to the container itself.
+ */
 function trapFocus(container, elementToFocus = container) {
   var elements = getFocusableElements(container);
   var first = elements[0];
@@ -139,6 +158,10 @@ try {
   focusVisiblePolyfill();
 }
 
+/**
+ * Polyfill for managing focus visibility.
+ * This function adds a polyfill for managing focus visibility. It listens for keyboard events and mouse events to determine if an element should have a "focused" class applied to it. The "focused" class is added to the currently focused element when it receives focus through keyboard navigation, and is removed when it loses focus or when a mouse click occurs.
+ */
 function focusVisiblePolyfill() {
   const navKeys = [
     'ARROWUP',
@@ -181,6 +204,9 @@ function focusVisiblePolyfill() {
   );
 }
 
+/**
+ * Pauses all media elements on the page.
+ */
 function pauseAllMedia() {
   document.querySelectorAll('.js-youtube').forEach((video) => {
     video.contentWindow.postMessage('{"event":"command","func":"' + 'pauseVideo' + '","args":""}', '*');
@@ -194,6 +220,10 @@ function pauseAllMedia() {
   });
 }
 
+/**
+ * Removes the trap focus behavior from the document.
+ * @param {HTMLElement} [elementToFocus=null] - The element to focus after removing the trap focus behavior.
+ */
 function removeTrapFocus(elementToFocus = null) {
   document.removeEventListener('focusin', trapFocusHandlers.focusin);
   document.removeEventListener('focusout', trapFocusHandlers.focusout);
@@ -202,6 +232,10 @@ function removeTrapFocus(elementToFocus = null) {
   if (elementToFocus) elementToFocus.focus();
 }
 
+/**
+ * Handles the key up event for the "Escape" key on summary elements within details elements.
+ * @param {KeyboardEvent} event - The key up event object.
+ */
 function onKeyUpEscape(event) {
   if (event.code.toUpperCase() !== 'ESCAPE') return;
 
@@ -214,6 +248,11 @@ function onKeyUpEscape(event) {
   summaryElement.focus();
 }
 
+/**
+ * Custom quantity input element.
+ * @class QuantityInput
+ * @extends HTMLElement
+ */
 class QuantityInput extends HTMLElement {
   constructor() {
     super();
@@ -225,6 +264,9 @@ class QuantityInput extends HTMLElement {
     );
   }
 
+  /**
+   * @type {Function | undefined}
+   */
   quantityUpdateUnsubscriber = undefined;
 
   connectedCallback() {
@@ -279,6 +321,12 @@ class QuantityInput extends HTMLElement {
 
 customElements.define('quantity-input', QuantityInput);
 
+/**
+ * Debounces a function to be executed after a specified wait time.
+ * @param {Function} fn - The function to be debounced.
+ * @param {number} wait - The wait time in milliseconds.
+ * @returns {Function} The debounced function.
+ */
 function debounce(fn, wait) {
   let t;
   return (...args) => {
@@ -287,6 +335,12 @@ function debounce(fn, wait) {
   };
 }
 
+/**
+ * Throttles the execution of a function.
+ * @param {Function} fn - The function to be throttled.
+ * @param {number} delay - The delay in milliseconds.
+ * @returns {Function} The throttled function.
+ */
 function throttle(fn, delay) {
   let lastCall = 0;
   return function (...args) {
@@ -299,6 +353,11 @@ function throttle(fn, delay) {
   };
 }
 
+/**
+ * Utility function to fetch a response from a URL.
+ * @param {string} [type='json'] - The type of response to accept. Defaults to 'json'.
+ * @returns {Object} The configuration object for the request.
+ */
 function fetchConfig(type = 'json') {
   return {
     method: 'POST',
@@ -308,18 +367,15 @@ function fetchConfig(type = 'json') {
 
 /*
  * Shopify Common JS
- *
  */
 if (typeof window.Shopify == 'undefined') {
   window.Shopify = {};
 }
-
 Shopify.bind = function (fn, scope) {
   return function () {
     return fn.apply(scope, arguments);
   };
 };
-
 Shopify.setSelectorByValue = function (selector, value) {
   for (var i = 0, count = selector.options.length; i < count; i++) {
     var option = selector.options[i];
@@ -329,13 +385,11 @@ Shopify.setSelectorByValue = function (selector, value) {
     }
   }
 };
-
 Shopify.addListener = function (target, eventName, callback) {
   target.addEventListener
     ? target.addEventListener(eventName, callback, false)
     : target.attachEvent('on' + eventName, callback);
 };
-
 Shopify.postLink = function (path, options) {
   options = options || {};
   var method = options['method'] || 'post';
@@ -356,7 +410,6 @@ Shopify.postLink = function (path, options) {
   form.submit();
   document.body.removeChild(form);
 };
-
 Shopify.CountryProvinceSelector = function (country_domid, province_domid, options) {
   this.countryEl = document.getElementById(country_domid);
   this.provinceEl = document.getElementById(province_domid);
@@ -367,7 +420,6 @@ Shopify.CountryProvinceSelector = function (country_domid, province_domid, optio
   this.initCountry();
   this.initProvince();
 };
-
 Shopify.CountryProvinceSelector.prototype = {
   initCountry: function () {
     var value = this.countryEl.getAttribute('data-default');
@@ -418,6 +470,10 @@ Shopify.CountryProvinceSelector.prototype = {
   },
 };
 
+/**
+ * Custom element for menu drawer.
+ * @extends HTMLElement
+ */
 class MenuDrawer extends HTMLElement {
   constructor() {
     super();
@@ -449,6 +505,10 @@ class MenuDrawer extends HTMLElement {
       : this.closeSubmenu(openDetailsElement);
   }
 
+  /**
+   * Handles the click event on the summary element. Expands or collapses the nested details element w/ focus management.
+   * @param {MouseEvent} event - The click event object.
+   */
   onSummaryClick(event) {
     const summaryElement = event.currentTarget;
     const detailsElement = summaryElement.parentNode;
@@ -480,6 +540,11 @@ class MenuDrawer extends HTMLElement {
     }
   }
 
+  /**
+   * Opens the menu drawer.
+   *
+   * @param {HTMLElement} summaryElement - The summary element that triggered the opening of the menu drawer.
+   */
   openMenuDrawer(summaryElement) {
     setTimeout(() => {
       this.mainDetailsToggle.classList.add('menu-opening');
@@ -489,6 +554,12 @@ class MenuDrawer extends HTMLElement {
     document.body.classList.add(`overflow-hidden-${this.dataset.breakpoint}`);
   }
 
+  /**
+   * Closes the menu drawer.
+   *
+   * @param {Event} event - The event that triggered the function.
+   * @param {boolean} [elementToFocus=false] - The element to focus after closing the menu drawer.
+   */
   closeMenuDrawer(event, elementToFocus = false) {
     if (event === undefined) return;
 
@@ -514,11 +585,19 @@ class MenuDrawer extends HTMLElement {
     });
   }
 
+  /**
+   * Handles the click event on the close button. Closes the submenu.
+   * @param {MouseEvent} event - The click event object.
+   */
   onCloseButtonClick(event) {
     const detailsElement = event.currentTarget.closest('details');
     this.closeSubmenu(detailsElement);
   }
 
+  /**
+   * Closes the submenu.
+   * @param {HTMLElement} detailsElement - The details element to close.
+   */
   closeSubmenu(detailsElement) {
     const parentMenuElement = detailsElement.closest('.submenu-open');
     parentMenuElement && parentMenuElement.classList.remove('submenu-open');
@@ -528,9 +607,18 @@ class MenuDrawer extends HTMLElement {
     this.closeAnimation(detailsElement);
   }
 
+  /**
+   * Closes the details element with an animation.
+   *
+   * @param {HTMLElement} detailsElement - The details element to be closed.
+   */
   closeAnimation(detailsElement) {
     let animationStart;
 
+    /**
+     * Handle animation frame update.
+     * @param {DOMHighResTimeStamp} time - The current time in milliseconds.
+     */
     const handleAnimation = (time) => {
       if (animationStart === undefined) {
         animationStart = time;
@@ -554,11 +642,19 @@ class MenuDrawer extends HTMLElement {
 
 customElements.define('menu-drawer', MenuDrawer);
 
+/**
+ * Custom element for header drawer.
+ * @extends MenuDrawer
+ */
 class HeaderDrawer extends MenuDrawer {
   constructor() {
     super();
   }
 
+  /**
+   * Opens the menu drawer.
+   * @param {HTMLElement} summaryElement - The summary element that triggered the opening of the menu drawer.
+   */
   openMenuDrawer(summaryElement) {
     this.header = this.header || document.querySelector('.section-header');
     this.borderOffset =
@@ -579,6 +675,13 @@ class HeaderDrawer extends MenuDrawer {
     document.body.classList.add(`overflow-hidden-${this.dataset.breakpoint}`);
   }
 
+  /**
+   * Closes the menu drawer and removes the 'menu-open' class from the header.
+   * Also removes the 'resize' event listener from the window.
+   *
+   * @param {Event} event - The event object.
+   * @param {HTMLElement} elementToFocus - The element to focus after closing the menu drawer.
+   */
   closeMenuDrawer(event, elementToFocus) {
     if (!elementToFocus) return;
     super.closeMenuDrawer(event, elementToFocus);
@@ -621,6 +724,7 @@ class ModalDialog extends HTMLElement {
     this.moved = true;
     document.body.appendChild(this);
   }
+
 
   show(opener) {
     this.openedBy = opener;
@@ -689,6 +793,10 @@ class ModalOpener extends HTMLElement {
 }
 customElements.define('modal-opener', ModalOpener);
 
+/**
+ * Custom element for deferred media loading.
+ * @extends HTMLElement
+ */
 class DeferredMedia extends HTMLElement {
   constructor() {
     super();
@@ -716,6 +824,10 @@ class DeferredMedia extends HTMLElement {
 
 customElements.define('deferred-media', DeferredMedia);
 
+/**
+ * Custom slider component element.
+ * @extends HTMLElement
+ */
 class SliderComponent extends HTMLElement {
   constructor() {
     super();
@@ -754,6 +866,9 @@ class SliderComponent extends HTMLElement {
     this.initPages();
   }
 
+  /**
+   * Update slider state
+   */
   update() {
     // Temporarily prevents unneeded updates resulting from variant changes
     // This should be refactored as part of https://github.com/Shopify/dawn/issues/2057
@@ -793,11 +908,21 @@ class SliderComponent extends HTMLElement {
     }
   }
 
+  /**
+   * Check if slide is visible.
+   * @param {HTMLElement} element - The slide element to check.
+   * @param {number} [offset=0] - The offset value.
+   * @returns {boolean} True if the slide is visible, false otherwise.
+   */
   isSlideVisible(element, offset = 0) {
     const lastVisibleSlide = this.slider.clientWidth + this.slider.scrollLeft - offset;
     return element.offsetLeft + element.clientWidth <= lastVisibleSlide && element.offsetLeft >= this.slider.scrollLeft;
   }
 
+  /**
+   * Handles navigation button click events.
+   * @param {MouseEvent} event - The click event object.
+   */
   onButtonClick(event) {
     event.preventDefault();
     const step = event.currentTarget.dataset.step || 1;
@@ -808,6 +933,10 @@ class SliderComponent extends HTMLElement {
     this.setSlidePosition(this.slideScrollPosition);
   }
 
+  /**
+   * Sets the scroll position of the slider.
+   * @param {number} position - The position to scroll to.
+   */
   setSlidePosition(position) {
     this.slider.scrollTo({
       left: position,
@@ -817,6 +946,10 @@ class SliderComponent extends HTMLElement {
 
 customElements.define('slider-component', SliderComponent);
 
+/**
+ * Custom element for slideshow component.
+ * @extends SliderComponent
+ */
 class SlideshowComponent extends SliderComponent {
   constructor() {
     super();
@@ -876,6 +1009,10 @@ class SlideshowComponent extends SliderComponent {
     }
   }
 
+  /**
+   * Handles navigation button click events.
+   * @param {MouseEvent} event - The click event object.
+   */
   onButtonClick(event) {
     super.onButtonClick(event);
     this.wasClicked = true;
@@ -900,6 +1037,10 @@ class SlideshowComponent extends SliderComponent {
     this.applyAnimationToAnnouncementBar(event.currentTarget.name);
   }
 
+  /**
+   * Sets the scroll position of the slider.
+   * @param {number} position - The position to scroll to.
+   */
   setSlidePosition(position) {
     if (this.setPositionTimeout) clearTimeout(this.setPositionTimeout);
     this.setPositionTimeout = setTimeout(() => {
@@ -909,6 +1050,9 @@ class SlideshowComponent extends SliderComponent {
     }, this.announcerBarAnimationDelay);
   }
 
+  /**
+   * Update slider state
+   */
   update() {
     super.update();
     this.sliderControlButtons = this.querySelectorAll('.slider-counter__link');
@@ -930,6 +1074,10 @@ class SlideshowComponent extends SliderComponent {
     this.autoplayButtonIsSetToPlay = !this.autoplayButtonIsSetToPlay;
   }
 
+  /**
+   * Handle focus out event. Toggle autoplay depending on button focus.
+   * @param {FocusEvent} event - The focus out event object.
+   */
   focusOutHandling(event) {
     if (this.sliderAutoplayButton) {
       const focusedOnAutoplayButton =
@@ -941,6 +1089,10 @@ class SlideshowComponent extends SliderComponent {
     }
   }
 
+  /**
+   * Handle focus in event. Toggle autoplay depending on button focus.
+   * @param {FocusEvent} event - The focus in event object.
+   */
   focusInHandling(event) {
     if (this.sliderAutoplayButton) {
       const focusedOnAutoplayButton =
@@ -955,6 +1107,7 @@ class SlideshowComponent extends SliderComponent {
     }
   }
 
+
   play() {
     this.slider.setAttribute('aria-live', 'off');
     clearInterval(this.autoplay);
@@ -966,6 +1119,10 @@ class SlideshowComponent extends SliderComponent {
     clearInterval(this.autoplay);
   }
 
+  /**
+   * Toggle the state of the play button.
+   * @param {boolean} pauseAutoplay - The state of the autoplay.
+   */
   togglePlayButtonState(pauseAutoplay) {
     if (pauseAutoplay) {
       this.sliderAutoplayButton.classList.add('slideshow__autoplay--paused');
@@ -984,7 +1141,10 @@ class SlideshowComponent extends SliderComponent {
     this.applyAnimationToAnnouncementBar();
   }
 
-  setSlideVisibility(event) {
+  /**
+   * Set the visibility of the slides.
+   */
+  setSlideVisibility() {
     this.sliderItemsToShow.forEach((item, index) => {
       const linkElements = item.querySelectorAll('a');
       if (index === this.currentPage - 1) {
@@ -1006,6 +1166,10 @@ class SlideshowComponent extends SliderComponent {
     this.wasClicked = false;
   }
 
+  /**
+   * Apply sliding animation to the announcement bar.
+   * @param {'next' | 'previous'} [button='next'] - The button direction.
+   */
   applyAnimationToAnnouncementBar(button = 'next') {
     if (!this.announcementBarSlider) return;
 
@@ -1037,6 +1201,10 @@ class SlideshowComponent extends SliderComponent {
     }, this.announcerBarAnimationDelay * 2);
   }
 
+  /**
+   * Navigate to specific slide based on clicked link.
+   * @param {Event} event - The event object.
+   */
   linkToSlide(event) {
     event.preventDefault();
     const slideScrollPosition =
@@ -1051,6 +1219,10 @@ class SlideshowComponent extends SliderComponent {
 
 customElements.define('slideshow-component', SlideshowComponent);
 
+/**
+ * Custom variant selector element.
+ * @extends HTMLElement
+ */
 class VariantSelects extends HTMLElement {
   constructor() {
     super();
@@ -1071,6 +1243,10 @@ class VariantSelects extends HTMLElement {
     });
   }
 
+  /**
+   * Updates the selection metadata based on the target element.
+   * @param {Event} event - The event object.
+   */
   updateSelectionMetadata({ target }) {
     const { value, tagName } = target;
 
@@ -1103,10 +1279,19 @@ class VariantSelects extends HTMLElement {
     }
   }
 
+  /**
+   * Retrieves input value for the given event target.
+   * @param {HTMLElement} target - The event target element.
+   * @returns {HTMLElement|HTMLOptionElement} The input value of the target element.
+   */
   getInputForEventTarget(target) {
     return target.tagName === 'SELECT' ? target.selectedOptions[0] : target;
   }
 
+  /**
+   * Returns array of selected option values.
+   * @returns {Array<string>} Array of selected option values.
+   */
   get selectedOptionValues() {
     return Array.from(this.querySelectorAll('select option[selected], fieldset input:checked')).map(
       ({ dataset }) => dataset.optionValueId
@@ -1116,6 +1301,10 @@ class VariantSelects extends HTMLElement {
 
 customElements.define('variant-selects', VariantSelects);
 
+/**
+ * Product Recommendations element.
+ * @extends HTMLElement
+ */
 class ProductRecommendations extends HTMLElement {
   observer = undefined;
 
@@ -1127,6 +1316,10 @@ class ProductRecommendations extends HTMLElement {
     this.initializeRecommendations(this.dataset.productId);
   }
 
+  /**
+   * Initialize intersection observer to load recommendations when in view.
+   * @param {string} productId - The product ID to fetch recommendations for.
+   */
   initializeRecommendations(productId) {
     this.observer?.unobserve(this);
     this.observer = new IntersectionObserver(
@@ -1140,6 +1333,10 @@ class ProductRecommendations extends HTMLElement {
     this.observer.observe(this);
   }
 
+  /**
+   * Load recommendations for the given product ID and create necessary wrappers and elements.
+   * @param {string} productId - The product ID to fetch recommendations
+   */
   loadRecommendations(productId) {
     fetch(`${this.dataset.url}&product_id=${productId}&section_id=${this.dataset.sectionId}`)
       .then((response) => response.text())
@@ -1168,6 +1365,11 @@ class ProductRecommendations extends HTMLElement {
 
 customElements.define('product-recommendations', ProductRecommendations);
 
+/**
+ * Account icon element.
+ * If user is signed in, it will replace the default icon with the user avatar.
+ * @extends HTMLElement
+ */
 class AccountIcon extends HTMLElement {
   constructor() {
     super();
@@ -1179,6 +1381,11 @@ class AccountIcon extends HTMLElement {
     document.addEventListener('storefront:signincompleted', this.handleStorefrontSignInCompleted.bind(this));
   }
 
+  /**
+   * Replace the default icon with the user avatar.
+   * @param {CustomEvent} event - The custom 'storefront:signincompleted' event object.
+   * @todo Document the custom event object.
+   */
   handleStorefrontSignInCompleted(event) {
     if (event?.detail?.avatar) {
       this.icon?.replaceWith(event.detail.avatar.cloneNode());
@@ -1188,6 +1395,10 @@ class AccountIcon extends HTMLElement {
 
 customElements.define('account-icon', AccountIcon);
 
+/**
+ * Bulk add element.
+ * @extends HTMLElement
+ */
 class BulkAdd extends HTMLElement {
   constructor() {
     super();
@@ -1196,6 +1407,11 @@ class BulkAdd extends HTMLElement {
     this.ids = [];
   }
 
+  /**
+   * Start queue for bulk-adding products.
+   * @param {string} id - Product ID.
+   * @param {number} quantity - Quantity to add.
+   */
   startQueue(id, quantity) {
     this.queue.push({ id, quantity });
     const interval = setInterval(() => {
@@ -1209,6 +1425,10 @@ class BulkAdd extends HTMLElement {
     }, 250);
   }
 
+  /**
+   * Send request to add products to cart.
+   * @param {Array<{id: string, quantity: number}>} queue - Queue of products to add.
+   */
   sendRequest(queue) {
     this.requestStarted = true;
     const items = {};
@@ -1220,12 +1440,22 @@ class BulkAdd extends HTMLElement {
     quickBulkElement.updateMultipleQty(items);
   }
 
+  /**
+   * Reset the product quantity input field.
+   * @param {string} id - Product ID.
+   */
   resetQuantityInput(id) {
     const input = this.querySelector(`#Quantity-${id}`);
     input.value = input.getAttribute('value');
     this.isEnterPressed = false;
   }
 
+  /**
+   * Set validity of the product quantity input field.
+   * @param {Event} event - The event object.
+   * @param {number} index - Product index.
+   * @param {string} message - Validity message.
+   */
   setValidity(event, index, message) {
     event.target.setCustomValidity(message);
     event.target.reportValidity();
@@ -1233,6 +1463,11 @@ class BulkAdd extends HTMLElement {
     event.target.select();
   }
 
+  /**
+   * Validate the product quantity input field.
+   * Set custom validity message if the input value is invalid.
+   * @param {Event} event - The event object.
+   */
   validateQuantity(event) {
     const inputValue = parseInt(event.target.value);
     const index = event.target.dataset.index;
@@ -1250,6 +1485,10 @@ class BulkAdd extends HTMLElement {
     }
   }
 
+  /**
+   * Get URL for sections, used to update sections with sections api.
+   * @returns {string} URL for sections.
+   */
   getSectionsUrl() {
     if (window.pageNumber) {
       return `${window.location.pathname}?page=${window.pageNumber}`;
@@ -1258,6 +1497,12 @@ class BulkAdd extends HTMLElement {
     }
   }
 
+  /**
+   * Gets the specified section's inner HTML from a request.
+   * @param {string} html - The HTML string.
+   * @param {string} selector - The CSS selector to query within the HTML string param.
+   * @returns {string} The inner HTML of the requested section.
+   */
   getSectionInnerHTML(html, selector) {
     return new DOMParser().parseFromString(html, 'text/html').querySelector(selector).innerHTML;
   }

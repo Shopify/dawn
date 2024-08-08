@@ -12,6 +12,9 @@ const attributes = {
   confirmMessage: 'data-confirm-message',
 };
 
+/**
+ * Customer addressed management class.
+ */
 class CustomerAddresses {
   constructor() {
     this.elements = this._getElements();
@@ -20,6 +23,11 @@ class CustomerAddresses {
     this._setupEventListeners();
   }
 
+  /**
+   * Gather actionable address elements.
+   * @returns {Object} elements required for address management.
+   * @private
+   */
   _getElements() {
     const container = document.querySelector(selectors.customerAddresses);
     return container
@@ -34,6 +42,10 @@ class CustomerAddresses {
       : {};
   }
 
+  /**
+   * Set up country and province selectors.
+   * @private
+   */
   _setupCountries() {
     if (Shopify && Shopify.CountryProvinceSelector) {
       // eslint-disable-next-line no-new
@@ -50,6 +62,10 @@ class CustomerAddresses {
     }
   }
 
+  /**
+   * Set up event listeners for actionable address elements.
+   * @private
+   */
   _setupEventListeners() {
     this.elements.toggleButtons.forEach((element) => {
       element.addEventListener('click', this._handleAddEditButtonClick);
@@ -62,18 +78,38 @@ class CustomerAddresses {
     });
   }
 
+  /**
+   * Toggle address container expanded state.
+   * @param {HTMLElement} target - The target element to toggle expanded state.
+   * @private
+   */
   _toggleExpanded(target) {
     target.setAttribute(attributes.expanded, (target.getAttribute(attributes.expanded) === 'false').toString());
   }
 
+  /**
+   * Handle add/edit button click event. Expand the address container.
+   * @param {Event} event - The click event object.
+   * @private
+   */
   _handleAddEditButtonClick = ({ currentTarget }) => {
     this._toggleExpanded(currentTarget);
   };
 
+  /**
+   * Handle cancel button click event. Close the address container.
+   * @param {Event} event - The click event object.
+   * @private
+   */
   _handleCancelButtonClick = ({ currentTarget }) => {
     this._toggleExpanded(currentTarget.closest(selectors.addressContainer).querySelector(`[${attributes.expanded}]`));
   };
 
+  /**
+   * Handle delete button click event. Confirm before submitting the deletion form.
+   * @param {Event} event - The click event object.
+   * @private
+   */
   _handleDeleteButtonClick = ({ currentTarget }) => {
     // eslint-disable-next-line no-alert
     if (confirm(currentTarget.getAttribute(attributes.confirmMessage))) {
