@@ -1,19 +1,31 @@
+/**
+ * Details Disclosure custom element class.
+ * @extends HTMLElement
+ */
 class DetailsDisclosure extends HTMLElement {
   constructor() {
     super();
+    /** @type {HTMLElement} */
     this.mainDetailsToggle = this.querySelector('details');
+    /** @type {HTMLElement} */
     this.content = this.mainDetailsToggle.querySelector('summary').nextElementSibling;
 
     this.mainDetailsToggle.addEventListener('focusout', this.onFocusOut.bind(this));
     this.mainDetailsToggle.addEventListener('toggle', this.onToggle.bind(this));
   }
 
+  /**
+   * Handle focus out event. Closes the details disclosure if focus is outside of it.
+   */
   onFocusOut() {
     setTimeout(() => {
       if (!this.contains(document.activeElement)) this.close();
     });
   }
 
+  /**
+   * Handle toggle event. Play or cancel animations when the details disclosure is toggled.
+   */
   onToggle() {
     if (!this.animations) this.animations = this.content.getAnimations();
 
@@ -24,6 +36,9 @@ class DetailsDisclosure extends HTMLElement {
     }
   }
 
+  /**
+   * Close the details disclosure.
+   */
   close() {
     this.mainDetailsToggle.removeAttribute('open');
     this.mainDetailsToggle.querySelector('summary').setAttribute('aria-expanded', false);
@@ -32,12 +47,21 @@ class DetailsDisclosure extends HTMLElement {
 
 customElements.define('details-disclosure', DetailsDisclosure);
 
+/**
+ * Header Menu custom element class.
+ * @extends DetailsDisclosure
+ */
 class HeaderMenu extends DetailsDisclosure {
   constructor() {
     super();
+    /** @type {HTMLElement|undefined} */
     this.header = document.querySelector('.header-wrapper');
   }
 
+
+  /**
+   * Handle toggle event, Toggles the visibility of the header menu details disclosure.
+   */
   onToggle() {
     if (!this.header) return;
     this.header.preventHide = this.mainDetailsToggle.open;
