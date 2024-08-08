@@ -121,11 +121,39 @@
 
               {% case filter.type %}
                 {% when 'boolean', 'list' %}
+                  {% liquid
+                    assign filter_is_active = false
+                    if filter_type == 'vertical'
+                      if filter_type == 'vertical' and forloop.index == 1
+                        assign filter_is_active = true
+                      endif
+                      if filter.active_values.size > 0 and settings.expand_active_filters
+                        assign filter_is_active = true
+                      endif
+                      if settings.pre_opened_filters contains filter.label
+                        assign filter_is_active = true
+                      endif
+                    endif
+
+                    if settings.hide_empty_filters
+                      assign filter_is_hidden = false
+                      assign all_counts_zero = true
+                      for value in filter.values
+                        if value.count > 0
+                          assign all_counts_zero = false
+                          break
+                        endif
+                      endfor
+                      if all_counts_zero
+                        assign filter_is_hidden = true
+                      endif
+                    endif
+                  %}
                   <details
                     id="Details-{{ filter.param_name | escape }}-{{ section.id }}"
-                    class="{% if filter_type == 'horizontal' %}disclosure-has-popup facets__disclosure{% else %} facets__disclosure-vertical{% endif %} js-filter"
+                    class="{% if filter_type == 'horizontal' %}disclosure-has-popup facets__disclosure{% else %} facets__disclosure-vertical{% endif %} js-filter{% if filter_is_hidden %} hidden{% endif %}"
                     data-index="{{ forloop.index }}"
-                    {% if filter_type == 'vertical' and forloop.index == 1 %}
+                    {% if filter_is_active %}
                       open
                     {% endif %}
                   >
@@ -215,7 +243,18 @@
                               </span>
                             {%- endcapture -%}
 
-                            <li class="list-menu__item facets__item{% if forloop.index > show_more_number and filter_type == 'vertical' %} show-more-item hidden{% endif %}">
+                            {% liquid
+                              assign show_more_item = false
+                              assign hide_list_item = false
+                              if forloop.index > show_more_number and filter_type == 'vertical'
+                                assign show_more_item = true
+                                assign hide_list_item = true
+                              endif
+                              if value.count == 0 and settings.hide_empty_filters
+                                assign hide_list_item = true
+                              endif
+                            %}
+                            <li class="list-menu__item facets__item{% if show_more_item %} show-more-item{% endif %}{% if hide_list_item %} hidden{% endif %}">
                               {%- if presentation == 'swatch' -%}
                                 <div class="{{ label_class }}">
                                   <div class="swatch-input-wrapper">
@@ -312,11 +351,22 @@
                     </div>
                   </details>
                 {% when 'price_range' %}
+                  {% liquid
+                    assign filter_is_active = false
+                    if filter_type == 'vertical' and forloop.index == 1
+                      assign filter_is_active = true
+                    endif
+                    if settings.expand_active_filters
+                      if filter.min_value.value or filter.max_value.value
+                        assign filter_is_active = true
+                      endif
+                    endif
+                  %}
                   <details
                     id="Details-{{ filter.param_name | escape }}-{{ section.id }}"
                     class="{% if filter_type == 'horizontal' %}disclosure-has-popup facets__disclosure{% else %} facets__disclosure-vertical{% endif %} js-filter"
                     data-index="{{ forloop.index }}"
-                    {% if filter_type == 'vertical' and forloop.index == 1 %}
+                    {% if filter_is_active %}
                       open
                     {% endif %}
                   >
@@ -524,9 +574,24 @@
 
                   {% case filter.type %}
                     {% when 'boolean', 'list' %}
+                      {% liquid
+                        if settings.hide_empty_filters
+                          assign filter_is_hidden = false
+                          assign all_counts_zero = true
+                          for value in filter.values
+                            if value.count > 0
+                              assign all_counts_zero = false
+                              break
+                            endif
+                          endfor
+                          if all_counts_zero
+                            assign filter_is_hidden = true
+                          endif
+                        endif
+                      %}
                       <details
                         id="Details-Mobile-{{ filter.param_name | escape }}-{{ section.id }}"
-                        class="mobile-facets__details js-filter"
+                        class="mobile-facets__details js-filter{% if filter_is_hidden %} hidden{% endif %}"
                         data-index="mobile-{{ forloop.index }}"
                       >
                         <summary class="mobile-facets__summary focus-inset">
@@ -590,7 +655,13 @@
                                 </span>
                               {%- endcapture -%}
 
-                              <li class="mobile-facets__item list-menu__item">
+                              {% liquid
+                                assign hide_list_item = false
+                                if value.count == 0 and settings.hide_empty_filters
+                                  assign hide_list_item = true
+                                endif
+                              %}
+                              <li class="mobile-facets__item list-menu__item{% if hide_list_item %} hidden{% endif %}">
                                 {% if presentation == 'swatch' %}
                                   <div class="{{ label_class }}">
                                     <div class="swatch-input-wrapper">

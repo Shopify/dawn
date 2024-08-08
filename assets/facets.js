@@ -67,6 +67,7 @@ class FacetFiltersForm extends HTMLElement {
         FacetFiltersForm.renderFilters(html, event);
         FacetFiltersForm.renderProductGridContainer(html);
         FacetFiltersForm.renderProductCount(html);
+        FacetFiltersForm.renderCollectionHeading(html);
         if (typeof initializeScrollAnimationTrigger === 'function') initializeScrollAnimationTrigger(html.innerHTML);
       });
   }
@@ -76,7 +77,17 @@ class FacetFiltersForm extends HTMLElement {
     FacetFiltersForm.renderFilters(html, event);
     FacetFiltersForm.renderProductGridContainer(html);
     FacetFiltersForm.renderProductCount(html);
+    FacetFiltersForm.renderCollectionHeading(html);
     if (typeof initializeScrollAnimationTrigger === 'function') initializeScrollAnimationTrigger(html.innerHTML);
+  }
+
+  static renderCollectionHeading(html) {
+    const heading = new DOMParser().parseFromString(html, 'text/html').getElementById('collectionHeading').innerHTML;
+    const collectionTitleElements = document.querySelectorAll('h1.collection-hero__title');
+    if (!collectionTitleElements) return;
+    collectionTitleElements.forEach((element) => {
+      element.innerHTML = heading;
+    });
   }
 
   static renderProductGridContainer(html) {
@@ -111,10 +122,10 @@ class FacetFiltersForm extends HTMLElement {
   static renderFilters(html, event) {
     const parsedHTML = new DOMParser().parseFromString(html, 'text/html');
     const facetDetailsElementsFromFetch = parsedHTML.querySelectorAll(
-      '#FacetFiltersForm .js-filter, #FacetFiltersFormMobile .js-filter, #FacetFiltersPillsForm .js-filter'
+      '#FacetFiltersForm, #FacetFiltersFormMobile, #FacetFiltersPillsForm'
     );
     const facetDetailsElementsFromDom = document.querySelectorAll(
-      '#FacetFiltersForm .js-filter, #FacetFiltersFormMobile .js-filter, #FacetFiltersPillsForm .js-filter'
+      '#FacetFiltersForm, #FacetFiltersFormMobile, #FacetFiltersPillsForm'
     );
 
     // Remove facets that are no longer returned from the server
