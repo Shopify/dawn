@@ -1,7 +1,6 @@
 {{ 'smshrs-facets.css' | asset_url | stylesheet_tag }}
 {{ 'component-show-more.css' | asset_url | stylesheet_tag }}
 {{ 'color-picker.css' | asset_url | stylesheet_tag }}
-<script src="{{ 'facets.js' | asset_url }}" defer="defer"></script>
 
 {% liquid
   assign products_per_page = 24
@@ -16,14 +15,32 @@
     assign product_count = collection.products_count
   endif
 
+  assign filter_count = 3 | prepend: '(' | append: ')'
+  assign filter_label = 'filter ' | append: filter_count
+
   assign sort_by = collection.sort_by | default: collection.default_sort_by
 %}
 
-<div class="lg:px-large mx-auto max-w-[1920px] lg:mt-large">
-  {%- paginate collection.products by products_per_page -%}
+{%- paginate collection.products by products_per_page -%}
+  <div class="bg-white py-2.5 px-base lg:hidden  flex justify-between items-center border-b border-b-grey100">
+    <h2 class="text-t-xs">
+      {{ collection.title }}
+    </h2>
+
+    {% render 'smshr-menu-drawer', collection: collection, filter_label: filter_label, section_id: section.id %}
+  </div>
+
+  {% render 'collections-banner', collection: collection %}
+
+  <div class="lg:px-large mx-auto max-w-[1920px] lg:mt-large">
     <div class="sticky top-16 bg-white py-2.5 px-base lg:px-0 lg:py-[6px] flex justify-between items-center border-b border-b-grey100 lg:border-b-0">
       <div class="text-t-sm">
-        {{ collection.title }} (<span id="ProductCount">{{ product_count }}</span>)
+        <span> </span>
+
+        <h2>
+          {{ 'sections.main_club_collection.all_products' | t }}
+          (<span id="ProductCount">{{ product_count }}</span>)
+        </h2>
       </div>
 
       <facet-filters-form class="facets facets-vertical-sort page-width hidden lg:block">
@@ -63,8 +80,6 @@
           </div>
         </form>
       </facet-filters-form>
-
-      {% render 'smshr-menu-drawer', collection: collection, section_id: section.id %}
     </div>
 
     <div class="flex gap-8 mt-small">
@@ -87,50 +102,51 @@
       <div class="product-grid-container flex-1" id="ProductGridContainer">
         <div class="collection">
           <div class="loading-overlay gradient"></div>
+          <pagination-block>
+            <ul
+              id="product-grid"
+              data-next-url="{{ paginate.next.url }}"
+              data-per-page="{{ paginate.page_size }}"
+              data-id="{{ section.id }}"
+              class="pagination-wrapper mx-auto flex flex-wrap justify-center xl:justify-start flex-grow products-wrapper"
+            >
+              {%- for product in collection.products -%}
+                <li
+                  class="min-[380px]:w-[190px] min-[396px]:w-[198px] lg:basis-[320px] shrink-0 product-item"
+                >
+                  {% render 'product-card', product: product %}
+                </li>
+              {%- endfor -%}
+            </ul>
 
-          <ul
-            id="product-grid"
-            data-next-url="{{ paginate.next.url }}"
-            data-per-page="{{ paginate.page_size }}"
-            data-id="{{ section.id }}"
-            class="mx-auto flex flex-wrap justify-center xl:justify-start flex-grow products-wrapper"
-          >
-            {%- for product in collection.products -%}
-              <li
-                class="min-[380px]:w-[190px] min-[396px]:w-[198px] lg:basis-[320px] shrink-0 product-item"
-              >
-                {% render 'product-card', product: product %}
-              </li>
-            {%- endfor -%}
-          </ul>
-
-          {% unless paginate.items == 0 %}
-            <div class="pt-8 pb-12 flex flex-col items-center w-full gap-small">
-              <p id="ProductCountDesktop" class="text-body-xs text-grey500">
-                <span id="item_count"> </span>
-                von
-                <span id="total_item_count">
-                  {{ paginate.items }}
-                </span>
-                Ergebnissen
-              </p>
-              {% if paginate.pages > 1 %}
-                <div class="flex self-stretch relative justify-center">
-                  {% render 'button',
-                    variant: 'secondary',
-                    size: 'lg',
-                    text: 'Mehr laden',
-                    classes: 'flex-grow load-more max-w-[360px]'
-                  %}
-                  {% render 'loading-spinner', class: 'stroke-grey500 load-more-spinner hidden' %}
-                </div>
-              {% endif %}
-            </div>
-          {% endunless %}
+            {% unless paginate.items == 0 %}
+              <div class="pt-8 pb-12 flex flex-col items-center w-full gap-small">
+                <p id="ProductCountDesktop" class="text-body-xs text-grey500">
+                  <span id="item_count"> </span>
+                  von
+                  <span id="total_item_count">
+                    {{ paginate.items }}
+                  </span>
+                  Ergebnissen
+                </p>
+                {% if paginate.pages > 1 %}
+                  <div class="flex self-stretch relative justify-center">
+                    {% render 'button',
+                      variant: 'secondary',
+                      size: 'lg',
+                      text: 'Mehr laden',
+                      classes: 'flex-grow load-more max-w-[360px]'
+                    %}
+                    {% render 'loading-spinner', class: 'stroke-grey500 load-more-spinner hidden' %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endunless %}
+          </pagination-block>
         </div>
       </div>
     </div>
-  {% endpaginate %}
-</div>
+  </div>
+{% endpaginate %}
 
-<script src="{{ 'paginate.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'pagination.js' | asset_url }}" defer="defer"></script>
