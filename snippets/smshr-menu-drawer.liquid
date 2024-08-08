@@ -9,8 +9,21 @@
 
 {% comment %} assign filter_count = 3 | prepend: '(' | append: ')' {% endcomment %}
 {% liquid
-  assign filter_count = ''
-  assign filter_label = 'filter ' | append: filter_count
+  assign selected_filters_count = 0
+
+  for filter in collection.filters
+    assign filter_name = filter.param_name | split: '.' | last | downcase
+
+    if filter_name != 'price' and filter.active_values.size > 0
+      assign selected_filters_count = selected_filters_count | plus: 1
+    elsif filter_name == 'price'
+      if filter.min_value.value != null or filter.max_value.value != null
+        assign selected_filters_count = selected_filters_count | plus: 1
+      endif
+    endif
+  endfor
+
+  assign filter_label = 'filter'
 
   assign sort_by = collection.sort_by | default: collection.default_sort_by
   assign default_presentation = 'text'
@@ -24,8 +37,9 @@
 >
   <details id="mobile_facet_smshrs" class="mobile-facets__disclosure disclosure-has-popup">
     <summary id="test2" class="mobile-facets__open-wrapper focus-offset">
-      <span class="mobile-facets__open inline-flex justify-center items-center gap-[10px] rounded-4xl disabled:bg-grey300 disabled:text-grey500 bg-grey50 text-black hover:bg-btnGradient h-[28px] py-[10px] px-large btn-xs icon icon-filter">
+      <span class="mobile-facets__open inline-flex justify-center items-center gap-1 rounded-4xl disabled:bg-grey300 disabled:text-grey500 bg-grey50 text-black hover:bg-btnGradient h-[28px] py-[10px] px-large btn-xs icon icon-filter">
         {{ filter_label }}
+        <span class="{% if selected_filters_count == 0 %}hidden{% endif %}"> ({{ selected_filters_count }}) </span>
       </span>
     </summary>
 
