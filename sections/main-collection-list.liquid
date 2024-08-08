@@ -1,0 +1,187 @@
+<script src="{{ 'pagination.js' | asset_url }}" defer="defer"></script>
+
+<style>
+  .grid-item {
+    border: 1px solid var(--grey-100);
+    {% comment %} margin: -1px; {% endcomment %}
+  }
+
+  .grid-item:nth-child(n) {
+    border-top: 0;
+  }
+
+  .grid-item:nth-child(n+1) {
+    border-left: 0;
+  }
+
+  .grid-item:nth-child(2n + 1) {
+    border-left: 1px solid var(--grey-100);
+  }
+
+  .grid-item:nth-child(-n + 2) {
+    border-top: 1px solid var(--grey-100);
+  }
+
+  @media (min-width: 640px) {
+    .grid-item:nth-child(2n + 1) {
+      border-left: unset;
+    }
+
+    .grid-item:nth-child(3n + 1) {
+      border-left: 1px solid var(--grey-100);
+    }
+
+     .grid-item:nth-child(-n + 3) {
+      border-top: 1px solid var(--grey-100);
+    }
+  }
+
+  @media (min-width: 800px) {
+
+    .grid-item:nth-child(3n + 1) {
+      border-left: unset;
+    }
+
+    .grid-item:nth-child(4n + 1) {
+      border-left: 1px solid var(--grey-100);
+    }
+
+     .grid-item:nth-child(-n + 4) {
+      border-top: 1px solid var(--grey-100);
+    }
+
+  }
+</style>
+
+<div class="pt-huge px-base lg:px-0 w-full mx-auto max-w-[960px] flex flex-col gap-mega">
+  <div class="text-center">
+    <h1 class="text-h-lg overflow-clip">
+      {{ section.settings.title }}
+    </h1>
+
+    <p class="text-body-sm mt-base">
+      {{ section.settings.headline }}
+    </p>
+
+    {% if section.settings.video != blank %}
+      <div class="w-full h-auto aspect-video mt-huge">
+        {{
+          section.settings.video
+          | video_tag:
+            image_size: '1500x',
+            autoplay: true,
+            loop: true,
+            controls: true,
+            muted: true,
+            class: 'w-full h-auto aspect-video'
+        }}
+      </div>
+    {% endif %}
+  </div>
+
+  {% liquid
+    assign items_per_page = 50
+  %}
+
+  <pagination-block>
+    {%- paginate collections by items_per_page -%}
+      <ul
+        class="collection-list pagination-wrapper grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4"
+        data-next-url="{{ paginate.next.url }}"
+        data-per-page="{{ paginate.page_size }}"
+        role="list"
+      >
+        {%- for collection in collections -%}
+          {% if collection.metafields.custom.clubs_collection.value %}
+            <li class="grid-item">
+              {% render 'collection-card', card_collection: collection %}
+            </li>
+          {% endif %}
+        {%- endfor -%}
+      </ul>
+
+      {% unless paginate.items == 0 or paginate.pages <= 1 %}
+        <div class="pt-8 pb-12 flex flex-col items-center w-full gap-small">
+          <p class="text-body-xs text-grey500">
+            <span id="item_count"> </span>
+            von
+            <span id="total_item_count">
+              {{ paginate.items }}
+            </span>
+            Ergebnissen
+          </p>
+          {% if paginate.pages > 1 %}
+            <div class="flex self-stretch relative justify-center">
+              {% render 'button',
+                variant: 'secondary',
+                size: 'lg',
+                text: 'Mehr laden',
+                classes: 'flex-grow load-more max-w-[360px]'
+              %}
+              {% render 'loading-spinner', class: 'stroke-grey500 load-more-spinner hidden' %}
+            </div>
+          {% endif %}
+        </div>
+      {% endunless %}
+    {%- endpaginate -%}
+  </pagination-block>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.main-collections-list.name",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "t:sections.main-collections-list.settings.title.label",
+      "default": "Listenseite für Kollektionen"
+    },
+    {
+      "type": "text",
+      "id": "headline",
+      "label": "t:sections.main-collections-list.settings.headline.label",
+      "default": "Hier findest du Euren vereinseigenen Teamshop"
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "t:sections.main-collections-list.settings.video.label"
+    },
+    {
+      "type": "select",
+      "id": "sort",
+      "options": [
+        {
+          "value": "alphabetical",
+          "label": "t:sections.main-collections-list.settings.sort.options__1.label"
+        },
+        {
+          "value": "alphabetical_reversed",
+          "label": "t:sections.main-collections-list.settings.sort.options__2.label"
+        },
+        {
+          "value": "date_reversed",
+          "label": "t:sections.main-collections-list.settings.sort.options__3.label"
+        },
+        {
+          "value": "date",
+          "label": "t:sections.main-collections-list.settings.sort.options__4.label"
+        },
+        {
+          "value": "products_high",
+          "label": "t:sections.main-collections-list.settings.sort.options__5.label"
+        },
+        {
+          "value": "products_low",
+          "label": "t:sections.main-collections-list.settings.sort.options__6.label"
+        }
+      ],
+      "default": "alphabetical",
+      "label": "t:sections.main-collections-list.settings.sort.label"
+    }
+  ]
+}
+{% endschema %}

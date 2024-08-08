@@ -1,0 +1,114 @@
+{% liquid
+  assign carousel_id = 'Brand-Carousel-' | append: section.id
+%}
+
+<div
+  class="block carousel-base{% if section.index ==1 %} !mb-10{% endif %}"
+>
+  {% unless section.blocks.size == 0 %}
+    <splide-carousel
+      id="{{carousel_id}}"
+      class="splide"
+      aria-label="brand-catalogue-carousel"
+      data-id="{{ carousel_id }}"
+    >
+      <div class="relative flex justify-between items-center carousel-heading">
+        <h1 class="text-h-md">{{ section.settings.headline }}</h1>
+
+        <div class="splide__arrows flex gap-base">
+          {% render 'prev', class: 'splide__arrow splide__arrow--prev' %}
+          {% render 'next', class: 'splide__arrow splide__arrow--next' %}
+        </div>
+      </div>
+
+      <div class="relative">
+        <div class="splide__track">
+          <ul class="splide__list carousel-list">
+            {% for block in section.blocks %}
+              <li class="splide__slide">
+                <div class="py-large px-9 w-[180px] h-[220px]  bg-grey50 flex flex-col gap-large items-center justify-center">
+                  {% assign url = block.settings.url | default: '#' %}
+
+                  <div class="w-[100px] h-[120px] aspect-[5_/_6] flex items-center">
+                    {%- if block.settings.image -%}
+                      {{
+                        block.settings.image
+                        | image_url: width: 600
+                        | image_tag: loading: 'lazy', class: 'shrink-0 w-full aspect-[5_/_6] !object-contain'
+                      }}
+
+                    {%- else -%}
+                      {{ 'hero-apparel-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                    {%- endif -%}
+                  </div>
+
+                  <a href="{{ url }}" class="btn-xs flex gap-mini w-full justify-between">
+                    <span>
+                      {{ 'sections.brand_cataglogue.url_title' | t }}
+                    </span>
+
+                    {% render 'icon-right-arrow' %}
+                  </a>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </splide-carousel>
+  {% endunless %}
+</div>
+
+{% unless section.blocks.size == 0 %}
+  <script src="{{ 'splide.min.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'splide-base.js' | asset_url }}" defer="defer"></script>
+{% endunless %}
+
+{% schema %}
+{
+  "name": "t:sections.brand-catalogue.name",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "headline",
+      "default": "Brand Catalogue",
+      "label": "t:sections.brand-catalogue.settings.headline.label"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "brand-item",
+      "name": "t:sections.brand-catalogue.blocks.brand-item.name",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:sections.brand-catalogue.blocks.brand-item.settings.image.label"
+        },
+
+        {
+          "type": "url",
+          "id": "url",
+          "label": "t:sections.brand-catalogue.blocks.brand-item.settings.url.label",
+          "info": "t:sections.brand-catalogue.blocks.brand-item.settings.url.info"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.brand-catalogue.presets.name",
+      "blocks": [
+        {
+          "type": "brand-item"
+        },
+        {
+          "type": "brand-item"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
