@@ -1,8 +1,21 @@
+/**
+ * Facet Filters Form custom element class.
+ * @extends HTMLElement
+ */
 class FacetFiltersForm extends HTMLElement {
   constructor() {
     super();
+    /**
+   * Handle click event on active filter.
+   * Remove active filter and trigger page update.
+   * @param {MouseEvent} event - Event object that triggered the click.
+   */
     this.onActiveFilterClick = this.onActiveFilterClick.bind(this);
 
+    /**
+     * Debounce submit handler to prevent excessive form submissions.
+     * @param {SubmitEvent} event - Event object.
+     */
     this.debouncedOnSubmit = debounce((event) => {
       this.onSubmitHandler(event);
     }, 800);
@@ -14,7 +27,15 @@ class FacetFiltersForm extends HTMLElement {
     if (facetWrapper) facetWrapper.addEventListener('keyup', onKeyUpEscape);
   }
 
+  /**
+   * Set event listeners for facet filters form.
+   */
   static setListeners() {
+    /**
+     * Handle window history change event.
+     * Update page with search parameters from history state.
+     * @param {PopStateEvent} event - Popstate event object.
+     */
     const onHistoryChange = (event) => {
       const searchParams = event.state ? event.state.searchParams : FacetFiltersForm.searchParamsInitial;
       if (searchParams === FacetFiltersForm.searchParamsPrev) return;
@@ -23,12 +44,22 @@ class FacetFiltersForm extends HTMLElement {
     window.addEventListener('popstate', onHistoryChange);
   }
 
+  /**
+   * Toggle active facet states.
+   * @param {boolean} [disable=true] - Whether to disable all active facets.
+   */
   static toggleActiveFacets(disable = true) {
     document.querySelectorAll('.js-facet-remove').forEach((element) => {
       element.classList.toggle('disabled', disable);
     });
   }
 
+  /**
+   * Update DOM of facets and loading states.
+   * @param {string} searchParams - The search parameters to update the facets with.
+   * @param {Event | null} event - The event object that triggered the update.
+   * @param {boolean} [updateURLHash=true] - Whether to update the URL hash.
+   */
   static renderPage(searchParams, event, updateURLHash = true) {
     FacetFiltersForm.searchParamsPrev = searchParams;
     const sections = FacetFiltersForm.getSections();
@@ -58,6 +89,11 @@ class FacetFiltersForm extends HTMLElement {
     if (updateURLHash) FacetFiltersForm.updateURLHash(searchParams);
   }
 
+  /**
+   * Fetch and update DOM with section from Sections API.
+   * @param {string} url - Sections API URL to fetch the section from.
+   * @param {SubmitEvent | null} event - Event object that triggered the fetch.
+   */
   static renderSectionFromFetch(url, event) {
     fetch(url)
       .then((response) => response.text())
@@ -71,6 +107,11 @@ class FacetFiltersForm extends HTMLElement {
       });
   }
 
+  /**
+   * Update DOM with section from cache.
+   * @param {Function} filterDataUrl - Filter function to filter cached data.
+   * @param {Event} event - Event object that triggered the update.
+   */
   static renderSectionFromCache(filterDataUrl, event) {
     const html = FacetFiltersForm.filterData.find(filterDataUrl).html;
     FacetFiltersForm.renderFilters(html, event);
@@ -79,6 +120,10 @@ class FacetFiltersForm extends HTMLElement {
     if (typeof initializeScrollAnimationTrigger === 'function') initializeScrollAnimationTrigger(html.innerHTML);
   }
 
+  /**
+   * Render product grid container with new HTML.
+   * @param {string} html - The HTML string to render the product grid container with.
+   */
   static renderProductGridContainer(html) {
     document.getElementById('ProductGridContainer').innerHTML = new DOMParser()
       .parseFromString(html, 'text/html')
@@ -92,6 +137,10 @@ class FacetFiltersForm extends HTMLElement {
       });
   }
 
+  /**
+   * Update product count and set loading state.
+   * @param {string} html - HTML string to extract product count from.
+   */
   static renderProductCount(html) {
     const count = new DOMParser().parseFromString(html, 'text/html').getElementById('ProductCount').innerHTML;
     const container = document.getElementById('ProductCount');
@@ -108,6 +157,11 @@ class FacetFiltersForm extends HTMLElement {
     loadingSpinners.forEach((spinner) => spinner.classList.add('hidden'));
   }
 
+  /**
+   * Render facets with new HTML.
+   * @param {string} html - HTML string to render facets with.
+   * @param {Event} event - Event object that triggered the render.
+   */
   static renderFilters(html, event) {
     const parsedHTML = new DOMParser().parseFromString(html, 'text/html');
     const facetDetailsElementsFromFetch = parsedHTML.querySelectorAll(
@@ -176,6 +230,10 @@ class FacetFiltersForm extends HTMLElement {
     }
   }
 
+  /**
+   * Render active facets section with new HTML.
+   * @param {string} html - HTML string to render active facets with.
+   */
   static renderActiveFacets(html) {
     const activeFacetElementSelectors = ['.active-facets-mobile', '.active-facets-desktop'];
 
@@ -188,6 +246,11 @@ class FacetFiltersForm extends HTMLElement {
     FacetFiltersForm.toggleActiveFacets(false);
   }
 
+  /**
+   * Render additional elements with new HTML.
+   * Update sorting, and mobile facet elements.
+   * @param {string} html - HTML string to render additional elements with.
+   */
   static renderAdditionalElements(html) {
     const mobileElementSelectors = ['.mobile-facets__open', '.mobile-facets__count', '.sorting'];
 
@@ -199,6 +262,11 @@ class FacetFiltersForm extends HTMLElement {
     document.getElementById('FacetFiltersFormMobile').closest('menu-drawer').bindEvents();
   }
 
+  /**
+   * Render facet product counts with new HTML.
+   * @param {Element} source - Source element to get counts from.
+   * @param {Element} target - Target element to render counts to.
+   */
   static renderCounts(source, target) {
     const targetSummary = target.querySelector('.facets__summary');
     const sourceSummary = source.querySelector('.facets__summary');
@@ -229,6 +297,11 @@ class FacetFiltersForm extends HTMLElement {
     }
   }
 
+  /**
+   * Render mobile facet product counts with new HTML.
+   * @param {Element} source - Source element to get counts from.
+   * @param {Element} target - Target element to render counts to.
+   */
   static renderMobileCounts(source, target) {
     const targetFacetsList = target.querySelector('.mobile-facets__list');
     const sourceFacetsList = source.querySelector('.mobile-facets__list');
@@ -238,10 +311,18 @@ class FacetFiltersForm extends HTMLElement {
     }
   }
 
+  /**
+   * Update URL hash with search parameters.
+   * @param {string} searchParams - The search parameters to update the URL hash with.
+   */
   static updateURLHash(searchParams) {
     history.pushState({ searchParams }, '', `${window.location.pathname}${searchParams && '?'.concat(searchParams)}`);
   }
 
+  /**
+   * Array of sections to update with facets.
+   * @returns {Array<string>} Array of section IDs to update with facets.
+   */
   static getSections() {
     return [
       {
@@ -250,22 +331,40 @@ class FacetFiltersForm extends HTMLElement {
     ];
   }
 
+  /**
+   * Create search parameters from form data.
+   * @param {HTMLFormElement} form - Form element to create search parameters from.
+   * @returns {string} Search parameters string.
+   */
   createSearchParams(form) {
     const formData = new FormData(form);
     return new URLSearchParams(formData).toString();
   }
 
+  /**
+   * Submit form and update page with provided search parameters.
+   * @param {string} searchParams - Search parameters to submit form with.
+   * @param {Event} event - Event object that triggered the form submission.
+   */
   onSubmitForm(searchParams, event) {
     FacetFiltersForm.renderPage(searchParams, event);
   }
 
+  /**
+   * Submit handler for facet filters form.
+   * Prevents default form submission and triggers page updates based on form data.
+   * Handles both mobile and desktop form submissions.
+   * @param {SubmitEvent} event - Event object that triggered the submission.
+   */
   onSubmitHandler(event) {
     event.preventDefault();
     const sortFilterForms = document.querySelectorAll('facet-filters-form form');
+    // TODO: Refactor to remove deprecated `srcElement` property.
     if (event.srcElement.className == 'mobile-facets__checkbox') {
       const searchParams = this.createSearchParams(event.target.closest('form'));
       this.onSubmitForm(searchParams, event);
     } else {
+      /** @type {Array<string>} */
       const forms = [];
       const isMobile = event.target.closest('form').id === 'FacetFiltersFormMobile';
 
@@ -282,6 +381,11 @@ class FacetFiltersForm extends HTMLElement {
     }
   }
 
+  /**
+   * Handle click event on active filter.
+   * Remove active filter and trigger page update.
+   * @param {MouseEvent} event - Event object that triggered the click.
+   */
   onActiveFilterClick(event) {
     event.preventDefault();
     FacetFiltersForm.toggleActiveFacets();
@@ -293,12 +397,17 @@ class FacetFiltersForm extends HTMLElement {
   }
 }
 
+/** @type {Array<{html: string, url: string}>} */
 FacetFiltersForm.filterData = [];
 FacetFiltersForm.searchParamsInitial = window.location.search.slice(1);
 FacetFiltersForm.searchParamsPrev = window.location.search.slice(1);
 customElements.define('facet-filters-form', FacetFiltersForm);
 FacetFiltersForm.setListeners();
 
+/**
+ * Price Range custom element class.
+ * @extends HTMLElement
+ */
 class PriceRange extends HTMLElement {
   constructor() {
     super();
@@ -309,11 +418,19 @@ class PriceRange extends HTMLElement {
     this.setMinAndMaxValues();
   }
 
+  /**
+   * On range change event handler. Trigger adjustments to valid values.
+   * @param {Event} event - Event object that triggered the change.
+   */
   onRangeChange(event) {
     this.adjustToValidValues(event.currentTarget);
     this.setMinAndMaxValues();
   }
 
+  /**
+   * Prevent invalid characters from being entered on key press.
+   * @param {KeyboardEvent} event - Keyboard event object.
+   */
   onKeyDown(event) {
     if (event.metaKey) return;
 
@@ -321,6 +438,9 @@ class PriceRange extends HTMLElement {
     if (!event.key.match(pattern)) event.preventDefault();
   }
 
+  /**
+   * Set min and max values for price range inputs.
+   */
   setMinAndMaxValues() {
     const inputs = this.querySelectorAll('input');
     const minInput = inputs[0];
@@ -331,6 +451,9 @@ class PriceRange extends HTMLElement {
     if (maxInput.value === '') minInput.setAttribute('data-max', maxInput.getAttribute('data-max'));
   }
 
+  /**
+   * Adjust input values to be within valid range.
+   */
   adjustToValidValues(input) {
     const value = Number(input.value);
     const min = Number(input.getAttribute('data-min'));
@@ -343,6 +466,10 @@ class PriceRange extends HTMLElement {
 
 customElements.define('price-range', PriceRange);
 
+/**
+ * Facet Remove custom element class.
+ * @extends HTMLElement
+ */
 class FacetRemove extends HTMLElement {
   constructor() {
     super();
@@ -355,6 +482,10 @@ class FacetRemove extends HTMLElement {
     });
   }
 
+  /**
+   * Close active filter.
+   * @param {Event} event - Event object that triggered the facet close.
+   */
   closeFilter(event) {
     event.preventDefault();
     const form = this.closest('facet-filters-form') || document.querySelector('facet-filters-form');
