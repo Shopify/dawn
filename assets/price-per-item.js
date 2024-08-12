@@ -1,10 +1,16 @@
 if (!customElements.get('price-per-item')) {
   customElements.define(
     'price-per-item',
+    /**
+     * Price Per Item custom element class.
+     * @extends HTMLElement
+     */
     class PricePerItem extends HTMLElement {
       constructor() {
         super();
+        /** @type {string} */
         this.variantId = this.dataset.variantId;
+        /** @type {HTMLInputElement | null} */
         this.input = document.getElementById(`Quantity-${this.dataset.sectionId || this.dataset.variantId}`);
         if (this.input) {
           this.input.addEventListener('change', this.onInputChange.bind(this));
@@ -13,7 +19,9 @@ if (!customElements.get('price-per-item')) {
         this.getVolumePricingArray();
       }
 
+      /** @type {Function | undefined} */
       updatePricePerItemUnsubscriber = undefined;
+      /** @type {Function | undefined} */
       variantIdChangedUnsubscriber = undefined;
 
       connectedCallback() {
@@ -55,10 +63,15 @@ if (!customElements.get('price-per-item')) {
         }
       }
 
+      /** Handle input change event. Update price per item. */
       onInputChange() {
         this.updatePricePerItem();
       }
 
+      /**
+       * Update price per item based on quantity in cart.
+       * @param {number | undefined} updatedCartQuantity - Updated quantity of variant in cart.
+       */
       updatePricePerItem(updatedCartQuantity) {
         if (this.input) {
           this.enteredQty = parseInt(this.input.value);
@@ -67,6 +80,7 @@ if (!customElements.get('price-per-item')) {
 
         // updatedCartQuantity is undefined when qty is updated on product page. We need to sum entered qty and current qty in cart.
         // updatedCartQuantity is not undefined when qty is updated in cart. We need to sum qty in cart and min qty for product.
+        /** @type {number} */
         this.currentQtyForVolumePricing = updatedCartQuantity === undefined ? this.getCartQuantity(updatedCartQuantity) + this.enteredQty : this.getCartQuantity(updatedCartQuantity) + parseInt(this.step);
 
         if (this.classList.contains('variant-item__price-per-item')) {
@@ -81,17 +95,27 @@ if (!customElements.get('price-per-item')) {
         }
       }
 
+      /**
+       * Get quantity of variant in cart.
+       * @param {number | undefined} updatedCartQuantity - Updated quantity of variant in cart.
+       * @returns {number} - Quantity of variant in cart.
+       */
       getCartQuantity(updatedCartQuantity) {
         return (updatedCartQuantity || updatedCartQuantity === 0) ? updatedCartQuantity : parseInt(this.input.dataset.cartQuantity);
       }
 
+      /**
+       * Get volume pricing array from product page.
+       */
       getVolumePricingArray() {
         const volumePricing = document.getElementById(`Volume-${this.dataset.sectionId || this.dataset.variantId}`);
+        /** @type {Array<{qty: number, price: string}>} */
         this.qtyPricePairs = [];
 
         if (volumePricing) {
           volumePricing.querySelectorAll('li').forEach(li => {
             const qty = parseInt(li.querySelector('span:first-child').textContent);
+            /** @type {string} */
             const price = (li.querySelector('span:not(:first-child):last-child').dataset.text);
             this.qtyPricePairs.push([qty, price]);
           });
