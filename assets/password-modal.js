@@ -1,3 +1,7 @@
+/**
+ * Password modal custom element class.
+ * @extends DetailsModal
+ */
 class PasswordModal extends DetailsModal {
   constructor() {
     super();
