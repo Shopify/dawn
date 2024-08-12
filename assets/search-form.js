@@ -21,9 +21,7 @@ class SearchForm extends HTMLElement {
     }
   }
 
-  /**
-   * Toggle input reset button visibility. Show when input has value.
-   */
+  /** Toggle input reset button visibility. Show when input has value. */
   toggleResetButton() {
     const resetIsHidden = this.resetButton.classList.contains('hidden');
     if (this.input.value.length > 0 && resetIsHidden) {
@@ -33,16 +31,12 @@ class SearchForm extends HTMLElement {
     }
   }
 
-  /**
-   * Handle input change event. Toggle reset button visibility.
-   */
+  /** Handle input change event. Toggle reset button visibility. */
   onChange() {
     this.toggleResetButton();
   }
 
-  /**
-   * Check if form should be reset.
-   */
+  /** Check if form should be reset. */
   shouldResetForm() {
     return !document.querySelector('[aria-selected="true"] a');
   }
