@@ -805,6 +805,10 @@ class DeferredMedia extends HTMLElement {
     poster.addEventListener('click', this.loadContent.bind(this));
   }
 
+  /**
+   * Load content for deferred media element.
+   * @param {boolean} [focus=true] - Whether to focus element after loading content.
+   */
   loadContent(focus = true) {
     window.pauseAllMedia();
     if (!this.getAttribute('loaded')) {
@@ -884,6 +888,7 @@ class SliderComponent extends HTMLElement {
 
     if (this.currentPage != previousPage) {
       this.dispatchEvent(
+        // TODO: Add jsdoc type for slideChanged event
         new CustomEvent('slideChanged', {
           detail: {
             currentPage: this.currentPage,
