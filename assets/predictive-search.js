@@ -1,16 +1,27 @@
+/**
+ * Predictive search custom element class.
+ * @extends SearchForm
+ */
 class PredictiveSearch extends SearchForm {
   constructor() {
     super();
+    /** @type {Object<string, any>} */
     this.cachedResults = {};
+    /** @type {HTMLElement} */
     this.predictiveSearchResults = this.querySelector('[data-predictive-search]');
+    /** @type {NodeListOf<Element>} */
     this.allPredictiveSearchInstances = document.querySelectorAll('predictive-search');
+    /** @type {boolean} */
     this.isOpen = false;
+    /** @type {AbortController} */
     this.abortController = new AbortController();
+    /** @type {string} */
     this.searchTerm = '';
 
     this.setupEventListeners();
   }
 
+  /** Setup and bind event listeners. */
   setupEventListeners() {
     this.input.form.addEventListener('submit', this.onFormSubmit.bind(this));
 
@@ -20,10 +31,15 @@ class PredictiveSearch extends SearchForm {
     this.addEventListener('keydown', this.onKeydown.bind(this));
   }
 
+  /**
+   * Get the search query from the input.
+   * @returns {string} Search query.
+   */
   getQuery() {
     return this.input.value.trim();
   }
 
+  /** Handle input change event. Update search term and get search results. */
   onChange() {
     super.onChange();
     const newSearchTerm = this.getQuery();
@@ -46,10 +62,18 @@ class PredictiveSearch extends SearchForm {
     this.getSearchResults(this.searchTerm);
   }
 
+  /**
+   * Handle form submit event. Prevent form submission if no search results available.
+   * @param {Event} event - Submit event object.
+   */
   onFormSubmit(event) {
     if (!this.getQuery().length || this.querySelector('[aria-selected="true"] a')) event.preventDefault();
   }
 
+  /**
+   * handle form reset event. Reset search term and abort search query.
+   * @param {Event} event - Reset event object.
+   */
   onFormReset(event) {
     super.onFormReset(event);
     if (super.shouldResetForm()) {
@@ -60,6 +84,7 @@ class PredictiveSearch extends SearchForm {
     }
   }
 
+  /** Handle focus event. Open search dropdown if results available. */
   onFocus() {
     const currentSearchTerm = this.getQuery();
 
@@ -75,12 +100,17 @@ class PredictiveSearch extends SearchForm {
     }
   }
 
+  /** Handle focus out event. Close search dropdown if focus is outside. */
   onFocusOut() {
     setTimeout(() => {
       if (!this.contains(document.activeElement)) this.close();
     });
   }
 
+  /**
+   * Handle keyup event. Up/down arrow keys to switch options, enter to select.
+   * @param {KeyboardEvent} event - Keyup event object.
+   */
   onKeyup(event) {
     if (!this.getQuery().length) this.close(true);
     event.preventDefault();
@@ -98,15 +128,24 @@ class PredictiveSearch extends SearchForm {
     }
   }
 
+  /**
+   * Handle keydown event. Prevent cursor from moving in input when using up/down arrow keys.
+   * @param {KeyboardEvent} event - Keydown event object.
+   */
   onKeydown(event) {
-    // Prevent the cursor from moving in the input when using the up and down arrow keys
     if (event.code === 'ArrowUp' || event.code === 'ArrowDown') {
       event.preventDefault();
     }
   }
 
+  /**
+   * Update 'Searched for' button text with new search term.
+   * @param {string} previousTerm - Previous search term.
+   * @param {string} newTerm - New search term.
+   */
   updateSearchForTerm(previousTerm, newTerm) {
     const searchForTextElement = this.querySelector('[data-predictive-search-search-for-text]');
+    /** @type {string | undefined} */
     const currentButtonText = searchForTextElement?.innerText;
     if (currentButtonText) {
       if (currentButtonText.match(new RegExp(previousTerm, 'g')).length > 1) {
@@ -118,6 +157,10 @@ class PredictiveSearch extends SearchForm {
     }
   }
 
+  /**
+   * Switch selected search dropdown option.
+   * @param {'up' | 'down'} direction - Direction to switch options.
+   */
   switchOption(direction) {
     if (!this.getAttribute('open')) return;
 
@@ -143,6 +186,7 @@ class PredictiveSearch extends SearchForm {
       i++;
     }
 
+    /** @type {HTMLElement} */
     this.statusElement.textContent = '';
 
     if (!moveUp && selectedElement) {
@@ -161,12 +205,17 @@ class PredictiveSearch extends SearchForm {
     this.input.setAttribute('aria-activedescendant', activeElement.id);
   }
 
+  /** Select search dropdown option. Click selected option. */
   selectOption() {
+    /** @type {HTMLButtonElement | null} */
     const selectedOption = this.querySelector('[aria-selected="true"] a, button[aria-selected="true"]');
-
     if (selectedOption) selectedOption.click();
   }
 
+  /**
+   * Get search results from predictive search API or cache.
+   * @param {string} searchTerm - Search term.
+   */
   getSearchResults(searchTerm) {
     const queryKey = searchTerm.replace(' ', '-').toLowerCase();
     this.setLiveRegionLoadingState();
@@ -198,7 +247,7 @@ class PredictiveSearch extends SearchForm {
         });
         this.renderSearchResults(resultsMarkup);
       })
-      .catch((error) => {
+      .catch((/** @type {Error} */ error) => {
         if (error?.code === 20) {
           // Code 20 means the call was aborted
           return;
@@ -208,14 +257,21 @@ class PredictiveSearch extends SearchForm {
       });
   }
 
+  /** Set loading state for live region. */
   setLiveRegionLoadingState() {
+    /** @type {HTMLSpanElement} */
     this.statusElement = this.statusElement || this.querySelector('.predictive-search-status');
+    /** @type {string} */
     this.loadingText = this.loadingText || this.getAttribute('data-loading-text');
 
     this.setLiveRegionText(this.loadingText);
     this.setAttribute('loading', true);
   }
 
+  /**
+   * Set text for live region.
+   * @param {string} statusText - Text to set in live region.
+   */
   setLiveRegionText(statusText) {
     this.statusElement.setAttribute('aria-hidden', 'false');
     this.statusElement.textContent = statusText;
@@ -225,6 +281,10 @@ class PredictiveSearch extends SearchForm {
     }, 1000);
   }
 
+  /**
+   * Render search results in results dropdown.
+   * @param {string} resultsMarkup - Search results html markup.
+   */
   renderSearchResults(resultsMarkup) {
     this.predictiveSearchResults.innerHTML = resultsMarkup;
     this.setAttribute('results', true);
@@ -233,17 +293,23 @@ class PredictiveSearch extends SearchForm {
     this.open();
   }
 
+  /** Remove loading state from live region and set results count. */
   setLiveRegionResults() {
     this.removeAttribute('loading');
     this.setLiveRegionText(this.querySelector('[data-predictive-search-live-region-count-value]').textContent);
   }
 
+  /**
+   * Get results dropdown max height.
+   * @returns {number} Max height (px) for results dropdown.
+   */
   getResultsMaxHeight() {
     this.resultsMaxHeight =
       window.innerHeight - document.querySelector('.section-header')?.getBoundingClientRect().bottom;
     return this.resultsMaxHeight;
   }
 
+  /** Open search. Set max height and open attributes. */
   open() {
     this.predictiveSearchResults.style.maxHeight = this.resultsMaxHeight || `${this.getResultsMaxHeight()}px`;
     this.setAttribute('open', true);
@@ -251,11 +317,19 @@ class PredictiveSearch extends SearchForm {
     this.isOpen = true;
   }
 
+  /**
+   * Close search.
+   * @param {boolean} [clearSearchTerm=false] - Clear search term from input.
+   */
   close(clearSearchTerm = false) {
     this.closeResults(clearSearchTerm);
     this.isOpen = false;
   }
 
+  /**
+   * Close search results dropdown.
+   * @param {boolean} [clearSearchTerm=false] - Clear search term from input.
+   */
   closeResults(clearSearchTerm = false) {
     if (clearSearchTerm) {
       this.input.value = '';
