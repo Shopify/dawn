@@ -1,3 +1,26 @@
+/**
+ * @typedef CustomerAddressSelectors
+ * @property {string} customerAddresses - Customer addresses container selector.
+ * @property {string} addressCountrySelect - Address country select selector.
+ * @property {string} addressContainer - Address container selector.
+ * @property {string} toggleAddressButton - Toggle address button selector.
+ * @property {string} cancelAddressButton - Cancel address button selector.
+ * @property {string} deleteAddressButton - Delete address button selector.
+ *
+ * @typedef CustomerAddressAttributes
+ * @property {string} expanded - Expanded attribute.
+ * @property {string} confirmMessage - Confirm message attribute
+ *
+ * @typedef CustomerAddressElements
+ * @property {HTMLElement} container - Customer addresses container element.
+ * @property {HTMLElement} addressContainer - Address container element.
+ * @property {NodeList} toggleButtons - Toggle address button elements.
+ * @property {NodeList} cancelButtons - Cancel address button elements.
+ * @property {NodeList} deleteButtons - Delete address button elements.
+ * @property {NodeList} countrySelects - Address country select elements.
+ */
+
+/** @type {CustomerAddressSelectors} */
 const selectors = {
   customerAddresses: '[data-customer-addresses]',
   addressCountrySelect: '[data-address-country-select]',
@@ -7,16 +30,16 @@ const selectors = {
   deleteAddressButton: 'button[data-confirm-message]',
 };
 
+/** @type {CustomerAddressAttributes} */
 const attributes = {
   expanded: 'aria-expanded',
   confirmMessage: 'data-confirm-message',
 };
 
-/**
- * Customer addressed management class.
- */
+/** Customer addressed management class. */
 class CustomerAddresses {
   constructor() {
+    /** @type {CustomerAddressElements} */
     this.elements = this._getElements();
     if (Object.keys(this.elements).length === 0) return;
     this._setupCountries();
@@ -25,7 +48,7 @@ class CustomerAddresses {
 
   /**
    * Gather actionable address elements.
-   * @returns {Object} elements required for address management.
+   * @returns {CustomerAddressElements} elements required for address management.
    * @private
    */
   _getElements() {
