@@ -357,6 +357,8 @@ function throttle(fn, delay) {
  * @typedef {Object} FetchConfig
  * @property {'POST' | 'GET' | 'PUT' | 'DELETE'} method - HTTP method for request.
  * @property {Object<string, string>} headers - Headers for request.
+ * @property {Object} [body] - Body for request.
+ * @property {Array<Object<string, string>>} [parameters] - Parameters for request.
  */
 /**
  * Utility function to fetch a response from a URL.
@@ -372,15 +374,27 @@ function fetchConfig(type = 'json') {
 
 /*
  * Shopify Common JS
+ * -----------------
  */
+
 if (typeof window.Shopify == 'undefined') {
   window.Shopify = {};
 }
+/**
+ * Bind a function to a context.
+ * @param {Function} fn - Function to bind.
+ * @param {Object} scope - Context to bind function to.
+ */
 Shopify.bind = function (fn, scope) {
   return function () {
     return fn.apply(scope, arguments);
   };
 };
+/**
+ * Set value of select element based on its value or innerHTML.
+ * @param {HTMLSelectElement} selector - Select element to set value for.
+ * @param {string} value - Value to set for select element.
+ */
 Shopify.setSelectorByValue = function (selector, value) {
   for (var i = 0, count = selector.options.length; i < count; i++) {
     var option = selector.options[i];
@@ -390,11 +404,22 @@ Shopify.setSelectorByValue = function (selector, value) {
     }
   }
 };
+/**
+ * Add an event listener to an element.
+ * @param {HTMLElement} target - Target element to add event listener to.
+ * @param {string} eventName - Name of event to listen for.
+ * @param {Function} callback - Function to call when event is triggered.
+ */
 Shopify.addListener = function (target, eventName, callback) {
   target.addEventListener
     ? target.addEventListener(eventName, callback, false)
     : target.attachEvent('on' + eventName, callback);
 };
+/**
+ * PostLink
+ * @param {string} path - URL to post to.
+ * @param {FetchConfig} options - Additional options for post.
+ */
 Shopify.postLink = function (path, options) {
   options = options || {};
   var method = options['method'] || 'post';
@@ -415,9 +440,18 @@ Shopify.postLink = function (path, options) {
   form.submit();
   document.body.removeChild(form);
 };
+/**
+ * CountryProvinceSelector
+ * @param {string} country_domid - ID of country selector element.
+ * @param {string} province_domid - ID of province selector element.
+ * @param {Object} options - Additional options for selector.
+ */
 Shopify.CountryProvinceSelector = function (country_domid, province_domid, options) {
+  /** @type {HTMLSelectElement} */
   this.countryEl = document.getElementById(country_domid);
+  /** @type {HTMLSelectElement} */
   this.provinceEl = document.getElementById(province_domid);
+  /** @type {HTMLElement} */
   this.provinceContainer = document.getElementById(options['hideElement'] || province_domid);
 
   Shopify.addListener(this.countryEl, 'change', Shopify.bind(this.countryHandler, this));
@@ -426,12 +460,14 @@ Shopify.CountryProvinceSelector = function (country_domid, province_domid, optio
   this.initProvince();
 };
 Shopify.CountryProvinceSelector.prototype = {
+  /** Initialize country selector */
   initCountry: function () {
     var value = this.countryEl.getAttribute('data-default');
     Shopify.setSelectorByValue(this.countryEl, value);
     this.countryHandler();
   },
 
+  /** Initialize province selector */
   initProvince: function () {
     var value = this.provinceEl.getAttribute('data-default');
     if (value && this.provinceEl.options.length > 0) {
@@ -439,9 +475,17 @@ Shopify.CountryProvinceSelector.prototype = {
     }
   },
 
+  /**
+   * Handle country select event.
+   * Update province dropdown based on selected country.
+   * @param {Event} e - Event object.
+   */
   countryHandler: function (e) {
+    /** @type {HTMLOptionElement} */
     var opt = this.countryEl.options[this.countryEl.selectedIndex];
+    /** @type {string} */
     var raw = opt.getAttribute('data-provinces');
+    /** @type {Array.<Array.<string>>} */
     var provinces = JSON.parse(raw);
 
     this.clearOptions(this.provinceEl);
@@ -459,12 +503,21 @@ Shopify.CountryProvinceSelector.prototype = {
     }
   },
 
+  /**
+   * Clear all options from a select box.
+   * @param {HTMLSelectElement} selector - The select element to clear.
+   */
   clearOptions: function (selector) {
     while (selector.firstChild) {
       selector.removeChild(selector.firstChild);
     }
   },
 
+  /**
+   * Set options for select element.
+   * @param {HTMLSelectElement} selector - Select element to set options for.
+   * @param {Array.<string>} values - Values to set as options.
+   */
   setOptions: function (selector, values) {
     for (var i = 0, count = values.length; i < values.length; i++) {
       var opt = document.createElement('option');
