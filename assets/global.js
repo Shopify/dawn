@@ -354,9 +354,14 @@ function throttle(fn, delay) {
 }
 
 /**
+ * @typedef {Object} FetchConfig
+ * @property {'POST' | 'GET' | 'PUT' | 'DELETE'} method - HTTP method for request.
+ * @property {Object<string, string>} headers - Headers for request.
+ */
+/**
  * Utility function to fetch a response from a URL.
  * @param {string} [type='json'] - The type of response to accept. Defaults to 'json'.
- * @returns {Object} The configuration object for the request.
+ * @returns {FetchConfig} The configuration object for the request.
  */
 function fetchConfig(type = 'json') {
   return {
@@ -701,6 +706,10 @@ class HeaderDrawer extends MenuDrawer {
 
 customElements.define('header-drawer', HeaderDrawer);
 
+/**
+ * Modal dialog custom element class.
+ * @extends HTMLElement
+ */
 class ModalDialog extends HTMLElement {
   constructor() {
     super();
@@ -726,8 +735,13 @@ class ModalDialog extends HTMLElement {
   }
 
 
+  /**
+   * Show modal dialog.
+   * @param {HTMLElement} opener - Element that triggered opening of modal.
+   */
   show(opener) {
     this.openedBy = opener;
+    /** @type {DeferredMedia} */
     const popup = this.querySelector('.template-popup');
     document.body.classList.add('overflow-hidden');
     this.setAttribute('open', '');
@@ -736,6 +750,7 @@ class ModalDialog extends HTMLElement {
     window.pauseAllMedia();
   }
 
+  /** Hide modal dialog. */
   hide() {
     document.body.classList.remove('overflow-hidden');
     document.body.dispatchEvent(new CustomEvent('modalClosed'));
