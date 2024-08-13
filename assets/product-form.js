@@ -1,22 +1,36 @@
 if (!customElements.get('product-form')) {
   customElements.define(
     'product-form',
+    /**
+     * Product Form custom element class.
+     * @extends HTMLElement
+     */
     class ProductForm extends HTMLElement {
       constructor() {
         super();
 
+        /** @type {HTMLFormElement} */
         this.form = this.querySelector('form');
         this.variantIdInput.disabled = false;
         this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
+        /** @type {CartNotification | CartDrawer} */
         this.cart = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
+        /** @type {HTMLButtonElement} */
         this.submitButton = this.querySelector('[type="submit"]');
+        /** @type {string} */
         this.submitButtonText = this.submitButton.querySelector('span');
 
         if (document.querySelector('cart-drawer')) this.submitButton.setAttribute('aria-haspopup', 'dialog');
 
+        /** @type {boolean} */
         this.hideErrors = this.dataset.hideErrors === 'true';
       }
 
+      /**
+       * Handle form submission.
+       * Prevents default form submission and sends form data via fetch.
+       * @param {SubmitEvent} evt - Submit event object.
+       */
       onSubmitHandler(evt) {
         evt.preventDefault();
         if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
@@ -44,7 +58,7 @@ if (!customElements.get('product-form')) {
 
         fetch(`${routes.cart_add_url}`, config)
           .then((response) => response.json())
-          .then((response) => {
+          .then((/** @type {JSON} */ response) => {
             if (response.status) {
               publish(PUB_SUB_EVENTS.cartError, {
                 source: 'product-form',
@@ -89,7 +103,7 @@ if (!customElements.get('product-form')) {
               this.cart.renderContents(response);
             }
           })
-          .catch((e) => {
+          .catch((/** @type {Error} */ e) => {
             console.error(e);
           })
           .finally(() => {
@@ -100,12 +114,18 @@ if (!customElements.get('product-form')) {
           });
       }
 
+      /**
+       * Handle error message display.
+       * @param {string | boolean} [errorMessage=false] - Error message to display. If false, hides error message.
+       */
       handleErrorMessage(errorMessage = false) {
         if (this.hideErrors) return;
 
+        /** @type {HTMLElement | null} */
         this.errorMessageWrapper =
           this.errorMessageWrapper || this.querySelector('.product-form__error-message-wrapper');
         if (!this.errorMessageWrapper) return;
+        /** @type {HTMLElement | null} */
         this.errorMessage = this.errorMessage || this.errorMessageWrapper.querySelector('.product-form__error-message');
 
         this.errorMessageWrapper.toggleAttribute('hidden', !errorMessage);
@@ -115,6 +135,11 @@ if (!customElements.get('product-form')) {
         }
       }
 
+      /**
+       * Toggle submit button state.
+       * @param {boolean} [disable=true] - Whether to disable submit button.
+       * @param {string} text - Text to display in submit button.
+       */
       toggleSubmitButton(disable = true, text) {
         if (disable) {
           this.submitButton.setAttribute('disabled', 'disabled');
@@ -125,6 +150,10 @@ if (!customElements.get('product-form')) {
         }
       }
 
+      /**
+       * Get variant ID input element.
+       * @returns {HTMLInputElement}
+       */
       get variantIdInput() {
         return this.form.querySelector('[name=id]');
       }
