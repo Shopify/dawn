@@ -142,7 +142,7 @@ const addProductToCart = async () => {
             },
             body: JSON.stringify(data)
         }).then(response => response.json()).then(data => {
-            atc_button.innerHTML = 'Adding to cart...';
+            atc_button.innerHTML = 'Added to Basket!'
             window.location.href = '/cart';
         });
     });
