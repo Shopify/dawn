@@ -90,3 +90,30 @@ document.addEventListener('DOMContentLoaded', function() {
     addQuantityListeners();
     addProductToCart();
 });
+
+
+
+// wb cart update function 
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to update the cart count
+    function updateCartCount() {
+        fetch('/cart.js')
+            .then(response => response.json())
+            .then(cart => {
+              const cartCount = document.getElementById('cart-count');
+              cartCount.textContent = cart.item_count > 0 ? cart.item_count : '';
+              console.log(cartCount.textContent);
+            });
+    }
+
+    // Event listener for adding items to the cart
+    document.querySelectorAll('.add-to-cart-button').forEach(button => {
+        button.addEventListener('click', function() {
+            // Update cart count after item is added
+            updateCartCount();
+        });
+    });
+
+    // Initial call to set the cart count on page load
+    updateCartCount();
+});
