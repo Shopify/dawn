@@ -73,7 +73,7 @@ const getVariantFromSelectedOptions = () => {
              },
              body: JSON.stringify(data)
          }).then(response => response.json()).then(data => {
-             atc_button.innerHTML = 'Adding to cart...';
+             atc_button.innerHTML = 'Added to basket';
             //  window.location.href = '/cart';
          }).catch(error => {
             console.error('Error:', error);
@@ -89,4 +89,31 @@ document.addEventListener('DOMContentLoaded', function() {
     attachEventListeners()
     addQuantityListeners();
     addProductToCart();
+});
+
+
+
+// wb cart update function 
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to update the cart count
+    function updateCartCount() {
+        fetch('/cart.js')
+            .then(response => response.json())
+            .then(cart => {
+              const cartCount = document.getElementById('cart-count');
+              cartCount.textContent = cart.item_count > 0 ? cart.item_count : '';
+              console.log(cartCount.textContent);
+            });
+    }
+
+    // Event listener for adding items to the cart
+    document.querySelectorAll('.add-to-cart-button').forEach(button => {
+        button.addEventListener('click', function() {
+            // Update cart count after item is added
+            updateCartCount();
+        });
+    });
+
+    // Initial call to set the cart count on page load
+    updateCartCount();
 });
