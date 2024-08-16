@@ -8,6 +8,8 @@ var TNB = {
       var buttonRegular = controls.querySelector('[data-button-regular]');
       var buttonTall = controls.querySelector('[data-button-tall]');
 
+      console.log(buttonRegular, buttonTall);
+
       function handleClickControl(tall) {
         if (tall) {
           regularOptions.forEach(function (el) {
@@ -33,7 +35,9 @@ var TNB = {
       }
 
       buttonRegular.addEventListener('click', handleClickControl);
-      buttonTall.addEventListener('click', handleClickControl);
+      buttonTall.addEventListener('click', function () {
+        handleClickControl(true);
+      });
     }
   },
 };
