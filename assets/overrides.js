@@ -22,20 +22,22 @@ var TNB = {
         buttonRegular.classList.add('inactive');
         buttonTall.classList.add('inactive');
 
-        console.log(this);
-
         if (tall) {
           tallOptions.forEach(function (el) {
             el.classList.remove('hide');
           });
 
           buttonTall.classList.remove('inactive');
+
+          TNB.state.tallSizingActive = true;
         } else {
           regularOptions.forEach(function (el) {
             el.classList.remove('hide');
           });
 
           buttonRegular.classList.remove('inactive');
+
+          TNB.state.tallSizingActive = false;
         }
       }
 
@@ -53,6 +55,10 @@ var TNB = {
         buttonTall.addEventListener('click', function () {
           handleClickControl(true);
         });
+
+        if (TNB.state.tallSizingActive) {
+          buttonTall.click();
+        }
       }
     }
   },
