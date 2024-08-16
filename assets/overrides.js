@@ -49,6 +49,7 @@ var TNB = {
 };
 
 function init() {
+  console.log(Shopify);
   TNB.tallSizingControls();
 }
 

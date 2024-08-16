@@ -1061,8 +1061,6 @@ class VariantSelects extends HTMLElement {
       const target = this.getInputForEventTarget(event.target);
       this.updateSelectionMetadata(event);
 
-      console.log('CHANGED');
-
       publish(PUB_SUB_EVENTS.optionValueSelectionChange, {
         data: {
           event,
