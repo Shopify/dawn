@@ -1,5 +1,5 @@
 var TNB = {
-  tallSizingControls: function () {
+  tallSizingControls: function (destroy) {
     var controls = document.querySelector('.tall-sizing-controls');
 
     if (controls) {
@@ -34,25 +34,32 @@ var TNB = {
         }
       }
 
-      buttonRegular.addEventListener('click', function () {
-        handleClickControl(false);
-      });
-      buttonTall.addEventListener('click', function () {
-        handleClickControl(true);
-      });
+      if (destroy) {
+        buttonRegular.removeEventListener('click', function () {
+          handleClickControl(false);
+        });
+        buttonTall.removeEventListener('click', function () {
+          handleClickControl(true);
+        });
+      } else {
+        buttonRegular.addEventListener('click', function () {
+          handleClickControl(false);
+        });
+        buttonTall.addEventListener('click', function () {
+          handleClickControl(true);
+        });
+      }
     }
   },
 };
 
 function init() {
-  TNB.tallSizingControls();
-
   subscribe(PUB_SUB_EVENTS.optionValueSelectionChange, function () {
-    console.log('optionValueSelectionChange');
+    TNB.tallSizingControls(true);
   });
 
   subscribe(PUB_SUB_EVENTS.variantChange, function () {
-    console.log('variantChange');
+    TNB.tallSizingControls(false);
   });
 }
 
