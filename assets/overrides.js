@@ -5,8 +5,8 @@ var TNB = {
     if (controls) {
       var regularOptions = controls.parentNode.querySelectorAll('label:not([data-tall-size])');
       var tallOptions = controls.parentNode.querySelectorAll('label[data-tall-size]');
-      var buttonRegular = controls.querySelectorAll('[data-button-regular]');
-      var buttonTall = controls.querySelectorAll('[data-button-tall]');
+      var buttonRegular = controls.querySelector('[data-button-regular]');
+      var buttonTall = controls.querySelector('[data-button-tall]');
 
       function handleClickControl(tall) {
         console.log(regularOptions);
