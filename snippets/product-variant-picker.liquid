@@ -28,24 +28,19 @@
         endif
 
         assign option_is_color = false
-        if option.name == 'Color'
+        assign downcased_option_name = option.name | downcase
+        if downcased_option_name == 'color'
           assign option_is_color = true
         endif
 
         assign has_tall_sizing = false
-        for option in product.options_with_values
-          for value in option.values
-            assign downcased_value = value | downcase
-            if downcased_value contains 'tall'
-              assign has_tall_sizing = true
-            endif
-          endfor
+        for value in option.values
+          assign downcased_value = value | downcase
+          if downcased_value contains 'tall'
+            assign has_tall_sizing = true
+          endif
         endfor
       -%}
-
-      {%- if has_tall_sizing -%}
-        <div>Has tall sizing</div>
-      {%- endif -%}
 
       {%- if picker_type == 'swatch' -%}
         <fieldset class="js product-form__input product-form__input--swatch">
@@ -75,12 +70,18 @@
               %}
             </div>
           {%- else -%}
-            {% render 'product-variant-options',
-              product: product,
-              option: option,
-              block: block,
-              picker_type: picker_type
-            %}
+            {%- if has_tall_sizing -%}
+              <button>Regular</button>
+              <button>Tall</button>
+
+            {%- else -%}
+              {% render 'product-variant-options',
+                product: product,
+                option: option,
+                block: block,
+                picker_type: picker_type
+              %}
+            {%- endif -%}
           {%- endif -%}
         </fieldset>
       {%- else -%}
