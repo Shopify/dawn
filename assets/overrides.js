@@ -8,9 +8,10 @@ var TNB = {
       var buttonRegular = controls.querySelector('[data-button-regular]');
       var buttonTall = controls.querySelector('[data-button-tall]');
 
-      console.log(buttonRegular, buttonTall);
-
       function handleClickControl(tall) {
+        console.log(regularOptions);
+        console.log(tallOptions);
+
         if (tall) {
           regularOptions.forEach(function (el) {
             el.classList.add('hide');
