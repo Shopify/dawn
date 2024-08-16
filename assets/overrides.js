@@ -24,15 +24,11 @@ var TNB = {
             el.classList.remove('hide');
           });
 
-          //   tallOptions[0].click();
-
           buttonTall.classList.remove('inactive');
         } else {
           regularOptions.forEach(function (el) {
             el.classList.remove('hide');
           });
-
-          //   regularOptions[0].click();
 
           buttonRegular.classList.remove('inactive');
         }
@@ -49,8 +45,15 @@ var TNB = {
 };
 
 function init() {
-  console.log(Shopify);
   TNB.tallSizingControls();
+
+  subscribe(PUB_SUB_EVENTS.optionValueSelectionChange, function () {
+    console.log('optionValueSelectionChange');
+  });
+
+  subscribe(PUB_SUB_EVENTS.variantChange, function () {
+    console.log('variantChange');
+  });
 }
 
 window.addEventListener('DOMContentLoaded', function () {
