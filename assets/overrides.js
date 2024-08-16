@@ -1,4 +1,7 @@
 var TNB = {
+  state: {
+    tallSizingActive: false,
+  },
   tallSizingControls: function (destroy) {
     var controls = document.querySelector('.tall-sizing-controls');
 
@@ -18,6 +21,8 @@ var TNB = {
 
         buttonRegular.classList.add('inactive');
         buttonTall.classList.add('inactive');
+
+        console.log(this);
 
         if (tall) {
           tallOptions.forEach(function (el) {
