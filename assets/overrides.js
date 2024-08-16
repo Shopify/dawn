@@ -72,6 +72,8 @@ function init() {
   subscribe(PUB_SUB_EVENTS.variantChange, function () {
     TNB.tallSizingControls(false);
   });
+
+  TNB.tallSizingControls(false);
 }
 
 window.addEventListener('DOMContentLoaded', function () {
