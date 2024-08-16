@@ -24,7 +24,7 @@ var TNB = {
             el.classList.remove('hide');
           });
 
-          tallOptions[0].click();
+          //   tallOptions[0].click();
 
           buttonTall.classList.remove('inactive');
         } else {
@@ -32,7 +32,7 @@ var TNB = {
             el.classList.remove('hide');
           });
 
-          regularOptions[0].click();
+          //   regularOptions[0].click();
 
           buttonRegular.classList.remove('inactive');
         }
