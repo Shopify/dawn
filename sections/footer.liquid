@@ -66,17 +66,49 @@
               data-cascade
             {% endif %}
           >
+            <div
+              class="footer-block grid__item{% if block.type == 'link_list' %} footer-block--menu{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+              {% if settings.animations_reveal_on_scroll %}
+                data-cascade
+                style="--animation-order: 0;"
+              {% endif %}
+            >
+              <h2 class="footer-block__heading inline-richtext">{{- block.settings.heading -}}</h2>
+            </div>
             {%- for block in section.blocks -%}
               <div
                 class="footer-block grid__item{% if block.type == 'link_list' %} footer-block--menu{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
                 {{ block.shopify_attributes }}
                 {% if settings.animations_reveal_on_scroll %}
                   data-cascade
-                  style="--animation-order: {{ forloop.index }};"
+                  style="--animation-order: {{ forloop.index | plus: 1 }};"
                 {% endif %}
               >
                 {%- if block.settings.heading != blank -%}
-                  <h2 class="footer-block__heading inline-richtext">{{- block.settings.heading -}}</h2>
+                  <h2 class="footer-block__heading inline-richtext">{{ shop.name }}</h2>
+                {%- endif -%}
+
+                {%- if settings.logo != blank -%}
+                  <div class="header__heading-logo-wrapper">
+                    {%- assign logo_alt = settings.logo.alt | default: shop.name | escape -%}
+                    {%- assign logo_height = settings.logo_width | divided_by: settings.logo.aspect_ratio -%}
+                    {% capture sizes %}(max-width: {{ settings.logo_width | times: 2 }}px) 50vw, {{ settings.logo_width }}px{% endcapture %}
+                    {% capture widths %}{{ settings.logo_width }}, {{ settings.logo_width | times: 1.5 | round }}, {{ settings.logo_width | times: 2 }}{% endcapture %}
+                    {{
+                      settings.logo
+                      | image_url: width: 600
+                      | image_tag:
+                        class: 'header__heading-logo motion-reduce',
+                        widths: widths,
+                        height: logo_height,
+                        width: settings.logo_width,
+                        alt: logo_alt,
+                        sizes: sizes,
+                        preload: true
+                    }}
+                  </div>
+                {%- else -%}
+                  <span class="h2">{{ shop.name }}</span>
                 {%- endif -%}
 
                 {%- case block.type -%}
