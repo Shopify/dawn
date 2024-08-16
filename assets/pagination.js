@@ -22,14 +22,7 @@ class Paginate extends HTMLElement {
   renderItemsCount() {
     this.totalItemsDisplayed += this.itemsPerPage;
 
-    if (!this.totalItemsDisplayed) {
-    }
-
-    const total_count = parseInt(this.total_count_span?.textContent);
-
-    if (!total_count) {
-      return;
-    }
+    const total_count = parseInt(this.total_count_span.textContent);
 
     if (this.totalItemsDisplayed > total_count || this.itemsPerPage > total_count) {
       this.totalItemsDisplayed = total_count;
