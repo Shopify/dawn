@@ -9,33 +9,34 @@ var TNB = {
       var buttonTall = controls.querySelector('[data-button-tall]');
 
       function handleClickControl(tall) {
-        console.log(regularOptions);
-        console.log(tallOptions);
+        regularOptions.forEach(function (el) {
+          el.classList.add('hide');
+        });
+        tallOptions.forEach(function (el) {
+          el.classList.add('hide');
+        });
+
+        buttonRegular.classList.add('inactive');
+        buttonTall.classList.add('inactive');
 
         if (tall) {
-          regularOptions.forEach(function (el) {
-            el.classList.add('hide');
-          });
           tallOptions.forEach(function (el) {
             el.classList.remove('hide');
           });
 
-          buttonRegular.classList.add('inactive');
-          buttonRegular.classList.remove('inactive');
+          buttonTall.classList.remove('inactive');
         } else {
           regularOptions.forEach(function (el) {
             el.classList.remove('hide');
           });
-          tallOptions.forEach(function (el) {
-            el.classList.add('hide');
-          });
 
           buttonRegular.classList.remove('inactive');
-          buttonRegular.classList.add('inactive');
         }
       }
 
-      buttonRegular.addEventListener('click', handleClickControl);
+      buttonRegular.addEventListener('click', function () {
+        handleClickControl(false);
+      });
       buttonTall.addEventListener('click', function () {
         handleClickControl(true);
       });
