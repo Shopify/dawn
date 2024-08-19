@@ -1,0 +1,1820 @@
+<script type="text/javascript" src="https://static-us.afterpay.com/javascript/present-afterpay.js"></script>
+
+<script type="text/javascript">
+  // Editable fields:
+  var afterpay_min = 0.04;            // As per your Afterpay contract.
+  var afterpay_max = 1000.00;         // As per your Afterpay contract.
+  var afterpay_logo_theme = 'black'; // Can be 'colour', 'black' or 'white'.
+
+  // Overrides:
+  // var afterpay_product_selector = '#product-price-selector';
+  // var afterpay_cart_integration_enabled = true;
+  var afterpay_cart_static_selector = '#cart-afterpay';
+  var afterpay_show_currency_code = false; //if you want to display USD after price
+  var afterpay_hide_range_decimals = true;
+  var afterpay_hide_upper_limit = true;
+
+  // Non-editable fields:
+  var afterpay_shop_currency = {{ shop.currency | json }};
+  var afterpay_shop_money_format = {{ shop.money_format | json }};
+  var afterpay_shop_permanent_domain = {{ shop.permanent_domain | json }};
+  var afterpay_theme_name = {{ theme.name | json }};
+  var afterpay_product = {{ product | json }};
+  var afterpay_current_variant = {{ product.selected_or_first_available_variant | json }};
+  var afterpay_cart_total_price = {{ cart.total_price | json }};
+  var afterpay_js_snippet_version = '1.0.1';
+
+  if (afterpay_product && afterpay_product.type === "Gift Card") {
+    afterpay_product_selector = "";
+  }
+</script>
+
+<script
+  type="text/javascript"
+>
+  // Editable fields:
+  var afterpay_min = 0.04;            // As per your Afterpay contract.
+  var afterpay_max = 1000.00;         // As per your Afterpay contract.
+  var afterpay_logo_theme = 'black'; // Can be 'colour', 'black' or 'white'.
+
+  // Overrides:
+  // var afterpay_product_selector = '#product-price-selector';
+  // var afterpay_cart_integration_enabled = true;
+  var afterpay_cart_static_selector = '#cart-afterpay';
+  var afterpay_show_currency_code = false; //if you want to display USD after price
+  var afterpay_hide_range_decimals = true;
+  var afterpay_hide_upper_limit = true;
+
+  // Non-editable fields:
+  var afterpay_shop_currency = {{ shop.currency | json }};
+  var afterpay_shop_money_format = {{ shop.money_format | json }};
+  var afterpay_shop_permanent_domain = {{ shop.permanent_domain | json }};
+  var afterpay_theme_name = {{ theme.name | json }};
+  var afterpay_product = {{ product | json }};
+  var afterpay_current_variant = {{ product.selected_or_first_available_variant | json }};
+  var afterpay_cart_total_price = {{ cart.total_price | json }};
+  var afterpay_js_snippet_version = '1.0.1';
+    
+  if (afterpay_product && afterpay_product.type === "Gift Card") { 
+    afterpay_product_selector = "";
+  }
+  
+  var Afterpay = {
+    supportedTheme: false,
+    mutationObserver: false,
+  };
+
+  /*
+   * Define our own function for this, since Array.prototype.indexOf is not supported in IE < 9.
+   * Use the native function if it exists.
+   */
+  Afterpay.arrayContainsElement = function (arr, element) {
+    var i;
+
+    if (Array.prototype.indexOf) {
+      return arr.indexOf(element) > -1;
+    }
+
+    for (i = 0; i < arr.length; i++) {
+      if (arr[i] == element) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  Afterpay.closePopup = function ($, event) {
+    event.preventDefault();
+
+    $('#afterpay-popup-wrapper').hide();
+  };
+
+  Afterpay.commonElements = {
+    product: {
+      price_selector: [
+        '#ProductPrice',
+        '#product-price',
+        '#ProductSection .product-single__prices',
+        '.product-details .product-price',
+        '.product--container .product-pricing',
+        '.productForm .product-price',
+        '.product-single__meta .product__price',
+        '.product__content .product__price',
+        'p.modal_price',
+        'ul.product-meta',
+        'ul.product-single__meta-list',
+        '.product-single__price',
+        '.product-single__prices',
+        '.product__price',
+      ],
+    },
+    cart: {
+      static_page: {
+        subtotal_selector: [
+          '#CartSubtotal',
+          'form .subtotal_amount',
+          '.cart__footer .cart__subtotal',
+          '.cart-footer .cart-footer__subtotal',
+          'span.cart__subtotal',
+          '.h1.cart-subtotal--price',
+          '.cart__row--table:last',
+        ],
+      },
+    },
+  };
+
+  Afterpay.extractPriceFromHTML = function (html_str) {
+    var total_price_str = html_str.replace(/[^0-9.]/g, '');
+    if (total_price_str == '') {
+      // @todo  Handle this differently from $0.00,
+      //        e.g. return something that won't evaluate to
+      //        type 'number'.
+    }
+    var total_price_in_cents = Math.round(parseFloat(total_price_str) * 100);
+
+    return total_price_in_cents;
+  };
+
+  Afterpay.generateCurrencyHTML = function (price_decimal) {
+    // @todo Format with commas (thousand separators).
+    // @todo Truncate decimals for big integers.
+    var a = Math.round(price_decimal, 2);
+    var b = a.toFixed(2);
+    if (afterpay_show_currency_code) {
+      return '$' + b + '&nbsp;' + afterpay_shop_currency.toUpperCase();
+    } else {
+      return '$' + b;
+    }
+  };
+
+  Afterpay.generateInsideLimitHTML = function ($afterpay_paragraph) {
+    if ($afterpay_paragraph.find('.afterpay-text1').html() == 'Interest-free installments by ') {
+      if (Afterpay.supportedTheme) {
+        $afterpay_paragraph.find('.afterpay-text1').html('Or 4 interest-free installments of ');
+      } else {
+        $afterpay_paragraph.find('.afterpay-text1').html('Or 4 payments of ');
+      }
+      $afterpay_paragraph.find('.afterpay-logo').insertAfter($afterpay_paragraph.find('.afterpay-instalments'));
+      $afterpay_paragraph
+        .find('.afterpay-text2')
+        .html(' with ')
+        .insertBefore($afterpay_paragraph.find('.afterpay-logo'));
+      $afterpay_paragraph.find('.afterpay-link-inner').html('More info');
+    }
+    return $afterpay_paragraph;
+  };
+
+  Afterpay.generateInstalmentHTML = function (variant_price_in_cents) {
+    var a = Math.round(variant_price_in_cents / 4);
+    var b = a / 100;
+    var c = b.toFixed(2);
+    if (afterpay_show_currency_code) {
+      return '$' + c + '&nbsp;' + afterpay_shop_currency.toUpperCase();
+    } else {
+      return '$' + c;
+    }
+  };
+
+  Afterpay.generateOutsideLimitHTML = function ($afterpay_paragraph) {
+    $afterpay_paragraph.find('.afterpay-text1').html('');
+    $afterpay_paragraph.find('.afterpay-logo').insertAfter($afterpay_paragraph.find('.afterpay-text1'));
+    $afterpay_paragraph.find('.afterpay-text2').html(' available for orders over ');
+    $afterpay_paragraph
+      .find('.afterpay-instalments')
+      .html(Afterpay.generateCurrencyHTML(afterpay_min))
+      .insertAfter($afterpay_paragraph.find('.afterpay-text2'));
+    $afterpay_paragraph.find('.afterpay-link-inner').html('&#9432;');
+    return $afterpay_paragraph;
+  };
+
+  Afterpay.init = function ($) {
+    Afterpay.supportedTheme = Afterpay.supportedThemes[afterpay_theme_name.toLowerCase()];
+    Afterpay.mutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+
+    var dom_mutation_observer;
+
+    if (/^\/cart/i.test(window.location.pathname)) {
+      // This is almost certainly the static Cart page.
+
+      if (afterpay_cart_integration_enabled != false) {
+        Afterpay.initStaticCartPage($);
+      }
+    } else if (/^\/(collections|products)/i.test(window.location.pathname) && afterpay_product) {
+      // This is probably a Product page.
+
+      Afterpay.initProductPage($);
+    }
+
+    /**
+     * For dynamic cart implementations,
+     * the following solution utilises MutationObserver
+     * to detect when `addedNode_selector` is added
+     * as a child of `target_selector`, at which time
+     * the Afterpay paragraph is appended after
+     * the newly added `subtotal_selector`.
+     * Note that the subtotal must be a child of the added node.
+     */
+
+    if (
+      afterpay_cart_integration_enabled != false &&
+      Afterpay.supportedTheme &&
+      Afterpay.supportedTheme.hasOwnProperty('cart') &&
+      Afterpay.supportedTheme.cart.hasOwnProperty('dynamic_content')
+    ) {
+      $.each(Afterpay.supportedTheme.cart.dynamic_content, function (date_str, expected_properties_obj) {
+        if (
+          expected_properties_obj.hasOwnProperty('target_selector') &&
+          expected_properties_obj.hasOwnProperty('addedNode_selector') &&
+          expected_properties_obj.hasOwnProperty('subtotal_selector')
+        ) {
+          //             console.log("AP> has all 3 selectors");
+          if (Afterpay.mutationObserver) {
+            dom_mutation_observer = new Afterpay.mutationObserver(function (mutations, observer) {
+              var i, j;
+
+              for (i = 0; i < mutations.length; i++) {
+                if (Afterpay.supportedTheme) {
+                  //                console.log("AP> supported theme")
+                  if ($(mutations[i].target).is(expected_properties_obj.target_selector))
+                    console.log('AP> found target_selector:', expected_properties_obj.target_selector);
+
+                  {
+                    for (j = 0; j < mutations[i].addedNodes.length; j++) {
+                      if (typeof mutations[i].addedNodes[j] == 'object') {
+                        if ($(mutations[i].addedNodes[j]).is(expected_properties_obj.addedNode_selector))
+                          console.log('AP> found addedNode_selector:', expected_properties_obj.addedNode_selector);
+                        {
+                          var $afterpay_paragraph = Afterpay.renderParagraph($, {
+                            total_price: afterpay_cart_total_price,
+                          });
+
+                          if (afterpay_shop_currency != 'USD') {
+                            $afterpay_paragraph.find('.afterpay-text1').html('Or 4 payments of ');
+                            $afterpay_paragraph.find('.afterpay-text2').html(' with ');
+                          }
+                          console.log('AP> price:', afterpay_cart_total_price);
+
+                          if (
+                            afterpay_cart_total_price < afterpay_min * 100 ||
+                            afterpay_cart_total_price > afterpay_max * 100
+                          ) {
+                            console.log('AP> price outside of range');
+                            if (afterpay_shop_currency == 'USD') {
+                              $afterpay_paragraph.find('.afterpay-text1').html('Interest-free installments by ');
+                              $afterpay_paragraph
+                                .find('.afterpay-logo')
+                                .insertAfter($afterpay_paragraph.find('.afterpay-text1'));
+                              $afterpay_paragraph.find('.afterpay-text2').html(' available between ');
+                              $afterpay_paragraph
+                                .find('.afterpay-instalments')
+                                .html(
+                                  Afterpay.generateCurrencyHTML(afterpay_min) +
+                                    ' - ' +
+                                    Afterpay.generateCurrencyHTML(afterpay_max)
+                                )
+                                .insertAfter($afterpay_paragraph.find('.afterpay-text2'));
+                              $afterpay_paragraph.find('.afterpay-link-inner').html('Learn more');
+                            } else {
+                              $afterpay_paragraph.hide();
+                            }
+                          }
+
+                          if (typeof afterpay_cart_dynamic_css != 'undefined') {
+                            $afterpay_paragraph.css(afterpay_cart_dynamic_css);
+                          }
+
+                          $(expected_properties_obj.target_selector)
+                            .find(expected_properties_obj.addedNode_selector)
+                            .find(expected_properties_obj.subtotal_selector)
+                            .after($afterpay_paragraph);
+
+                          document.querySelector(expected_properties_obj.subtotal_selector);
+
+                          console.log('AP> should have rendered:', $afterpay_paragraph);
+
+                          //                         if (expected_properties_obj.paragraph_css) {
+                          //                           $afterpay_paragraph.css(
+                          //                             expected_properties_obj.paragraph_css
+                          //                           );
+                          //                         }
+
+                          if (typeof expected_properties_obj.after_render == 'function') {
+                            expected_properties_obj.after_render($, $afterpay_paragraph);
+                          }
+
+                          afterpay_ga(
+                            'send',
+                            'event',
+                            'JS Include',
+                            'Dynamic Cart Content - Update',
+                            'Afterpay HTML Rendered After DOM Mutation'
+                          );
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            });
+
+            dom_mutation_observer.observe(document, {
+              childList: true,
+              attributes: false,
+              characterData: false,
+              subtree: true,
+              attributeOldValue: false,
+              characterDataOldValue: false,
+            });
+          } else {
+            // @todo Use an interval instead.
+          }
+
+          /**
+           * Update our cached value of the cart total
+           * when the cart is updated via ajax.
+           */
+          $(document).ajaxComplete(function (event, xhr, settings) {
+            if (settings.url == '/cart') {
+              var $subtotal_element = $(xhr.responseText)
+                .find(expected_properties_obj.subtotal_selector)
+                .find('span.visually-hidden');
+              if ($subtotal_element.length > 0) {
+                var subtotal_formatted_str = $subtotal_element.text();
+                var subtotal_int = Number(subtotal_formatted_str.replace(/[^0-9]/g, ''));
+                afterpay_cart_total_price = subtotal_int;
+                //$(expected_properties_obj.target_selector).find('.afterpay-instalments').html(Afterpay.generateInstalmentHTML(subtotal_int));
+
+                afterpay_ga(
+                  'send',
+                  'event',
+                  'JS Include',
+                  'Dynamic Cart Content - Update',
+                  'Afterpay HTML Updated After AJAX Complete'
+                );
+              } else {
+                afterpay_ga(
+                  'send',
+                  'event',
+                  'JS Include',
+                  'Dynamic Cart Content - Update',
+                  'Afterpay HTML Not Updated After AJAX Complete'
+                );
+              }
+            } else if (settings.url == '/cart/change.js') {
+              if (xhr.status == 200 && xhr.statusText == 'OK') {
+                var subtotal_int = xhr.responseJSON.total_price;
+                afterpay_cart_total_price = subtotal_int;
+                // Don't update the DOM immediately, just save the amount in memory and
+                // wait for the whole block to redraw.
+                // Our MutationObserver will pick it up later.
+                // If we do it now, our instalment text will update before the subtotal.
+                //$(expected_properties_obj.target_selector).find('.afterpay-instalments').html(Afterpay.generateInstalmentHTML(subtotal_int));
+
+                afterpay_ga(
+                  'send',
+                  'event',
+                  'JS Include',
+                  'Dynamic Cart Content - Update',
+                  'Afterpay Cart Total Updated After AJAX Complete'
+                );
+              }
+            }
+          });
+        }
+      });
+    }
+  };
+
+  Afterpay.initProductPage = function ($) {
+    // Define Variables
+
+    var $elements = null;
+    var $target_element = null;
+    var $watched_element = null;
+    var injection_position = 'after';
+    var $afterpay_paragraph;
+    var dom_mutation_observer;
+
+    $afterpay_paragraph = Afterpay.renderParagraph($, {
+      total_price: afterpay_current_variant.price,
+    });
+
+    if (typeof afterpay_product_selector != 'undefined') {
+      // Selector has been specified in the theme.liquid file.
+      // Use this instead of running search passes.
+
+      Afterpay.supportedTheme = true;
+
+      $elements = $(afterpay_product_selector);
+      if ($elements.length > 0) {
+        $target_element = $elements.first();
+
+        afterpay_ga('send', 'event', 'JS Include', 'Product Page - Search Complete', 'Manual Override');
+      }
+    } else {
+      // Search Pass 1: Theme Name Exact Match
+
+      if (Afterpay.supportedTheme) {
+        // The active theme name matches one of the supported themes.
+        // I.e: We think we know exactly where to inject the Afterpay HTML.
+
+        $.each(Afterpay.supportedTheme.product, function (date_str, expected_properties_obj) {
+          $elements = $(expected_properties_obj.selector);
+          if ($elements.length > 0) {
+            // The expected element was found.
+            // Store a reference to the target element and exit search.
+
+            $target_element = $elements.first();
+            if (expected_properties_obj.paragraph_css) {
+              $afterpay_paragraph.css(expected_properties_obj.paragraph_css);
+            }
+
+            afterpay_ga('send', 'event', 'JS Include', 'Product Page - Search Complete', 'Theme Name Exact Match');
+
+            return false;
+          }
+        });
+      }
+
+      // Search Pass 2: Theme Name Partial Match
+      else {
+        $elements = null;
+
+        $.each(Afterpay.supportedThemes, function (propertyName, valueOfProperty) {
+          var pattern = new RegExp(propertyName, 'i');
+          if (pattern.test(afterpay_theme_name)) {
+            // The active theme name contains the name of a supported theme.
+            // E.g.:
+            //  - "Copy of Debut"      matches /Debut/i
+            //  - "Supply with LayBuy" matches /Supply/i
+            //  - "Pipeline2"          matches /Pipeline/i
+            // Assume this is a supported theme that has been renamed.
+
+            $.each(Afterpay.supportedThemes[propertyName].product, function (date_str, expected_properties_obj) {
+              $elements = $(expected_properties_obj.selector);
+
+              if ($elements.length > 0) {
+                // The expected element was found.
+                // Assume that this is actually a renamed version of the supported theme.
+
+                Afterpay.supportedTheme = Afterpay.supportedThemes[propertyName];
+
+                // Store a reference to the target element and exit search.
+
+                $target_element = $elements.first();
+                if (expected_properties_obj.paragraph_css) {
+                  $afterpay_paragraph.css(expected_properties_obj.paragraph_css);
+                }
+
+                afterpay_ga(
+                  'send',
+                  'event',
+                  'JS Include',
+                  'Product Page - Search Complete',
+                  'Theme Name Partial Match'
+                );
+
+                return false;
+              }
+            });
+
+            if ($target_element !== null) {
+              // We matched an element on the page from a similarly named supported theme.
+              // No need to keep checking through the other themes.
+
+              return false;
+            }
+          }
+        });
+      }
+
+      // Search Pass 3: Common Elements
+      //
+      // If this pass finds a match it is similar to an exact match
+      // for a supported theme name, except the paragraph styling
+      // will be left as default.
+
+      if ($target_element === null) {
+        $.each(Afterpay.commonElements.product.price_selector, function (indexInArray, value) {
+          $elements = $(value);
+          if ($elements.length > 0) {
+            Afterpay.supportedTheme = true;
+
+            $target_element = $elements.first();
+
+            afterpay_ga('send', 'event', 'JS Include', 'Product Page - Search Complete', 'Common Element Match');
+
+            return false;
+          }
+        });
+      }
+
+      // Search Pass 4: Cart Form Fallback
+
+      if ($target_element === null) {
+        // The active theme is NOT supported, OR the expected markup was not available.
+        // We don't know where the main price block is,
+        // so we will inject the Afterpay HTML before the cart form.
+        // In future, we could consider scanning the DOM to find the main price block.
+        $elements = $('form[action^="/cart/add"]');
+        if ($elements.length > 0) {
+          $target_element = $elements.first();
+          injection_position = 'before';
+          if (afterpay_shop_currency == 'USD') {
+            $afterpay_paragraph.find('.afterpay-text1').html('Or 4 payments of ');
+          } else {
+            $afterpay_paragraph.find('.afterpay-text1').html('Make 4 interest-free payments of ');
+          }
+
+          afterpay_ga('send', 'event', 'JS Include', 'Product Page - Search Complete', 'Cart Form Fallback');
+        }
+      }
+    }
+
+    // Render Afterpay HTML
+
+    if ($target_element !== null) {
+      // We have a place to inject the Afterpay HTML.
+      // Render it on the page, but hide it if we need to.
+
+      if (!afterpay_current_variant.available) {
+        $afterpay_paragraph.hide();
+      } else if (
+        afterpay_current_variant.price < afterpay_min * 100 ||
+        afterpay_current_variant.price > afterpay_max * 100
+      ) {
+        if (afterpay_shop_currency == 'USD') {
+          $afterpay_paragraph = Afterpay.generateOutsideLimitHTML($afterpay_paragraph);
+        } else {
+          $afterpay_paragraph.hide();
+        }
+      }
+
+      if (typeof afterpay_product_css != 'undefined') {
+        $afterpay_paragraph.css(afterpay_product_css);
+      }
+
+      $target_element[injection_position]($afterpay_paragraph);
+    } else {
+      afterpay_ga('send', 'event', 'JS Include', 'Product Page - Search Complete', 'No Match');
+    }
+
+    /**
+     * Variable Price Fallback
+     *
+     * If a change event is not triggering on the cart form
+     * each time a new variant is being selected, but the product
+     * price element is being updated by some other means,
+     * use this fallback to watch for changes to the price element
+     * instead.
+     *
+     * If `MutationObserver` is supported by the browser it will be
+     * used, otherwise it will fallback to `setInterval`.
+     */
+
+    if (afterpay_variable_price_fallback != false) {
+      if (typeof afterpay_variable_price_fallback_selector != 'undefined') {
+        $elements = $(afterpay_variable_price_fallback_selector);
+        if ($elements.length > 0) {
+          $watched_element = $elements.first();
+        }
+      }
+
+      if ($watched_element === null && $target_element !== null) {
+        $watched_element = $target_element;
+      }
+
+      if ($watched_element !== null) {
+        if (Afterpay.mutationObserver) {
+          // Update the price initially, as well as on each mutation.
+          Afterpay.updateParagraph($afterpay_paragraph, Afterpay.extractPriceFromHTML($watched_element.text()));
+
+          dom_mutation_observer = new Afterpay.mutationObserver(function (mutations, observer) {
+            var i;
+
+            // Update our reference, just in case the markup has been regenerated.
+            $watched_element = $(afterpay_variable_price_fallback_selector).first();
+
+            for (i = 0; i < mutations.length; i++) {
+              if ($(mutations[i].target).is($watched_element)) {
+                Afterpay.updateParagraph(
+                  $afterpay_paragraph,
+                  Afterpay.extractPriceFromHTML(mutations[i].target.innerHTML)
+                );
+              }
+            }
+          });
+
+          dom_mutation_observer.observe(document.body, {
+            childList: true,
+            attributes: false,
+            characterData: false,
+            subtree: true,
+            attributeOldValue: false,
+            characterDataOldValue: false,
+          });
+        } else {
+          setInterval(function (e) {
+            // Update our reference, just in case the markup has been regenerated.
+            $watched_element = $(afterpay_variable_price_fallback_selector).first();
+
+            Afterpay.updateParagraph($afterpay_paragraph, Afterpay.extractPriceFromHTML($watched_element.text()));
+          }, 400);
+        }
+      }
+    } else {
+      $('body').on('change', $('form[action^="/cart/add"]'), function (event) {
+        // There has been a change to the cart form.
+        // Use the currently selected variant ID to recalculate the Afterpay instalments.
+        // If the current selection is not eligible, hide the Afterpay HTML entirely.
+
+        var $form = $(event.target).closest('form');
+        var selected_variant_id = parseInt(
+          $('input[name=id]:checked, select[name=id], input[name=id], hidden[name=id]', $form).val(),
+          10
+        );
+        var should_show_instalments = false;
+
+        if (!isNaN(selected_variant_id) && selected_variant_id > 0) {
+          $.each(afterpay_product.variants, function (variant_index, variant) {
+            if (variant.id == selected_variant_id) {
+              if (variant.available) {
+                if (variant.price >= afterpay_min * 100 && variant.price <= afterpay_max * 100) {
+                  should_show_instalments = true;
+                  if (afterpay_shop_currency == 'USD') {
+                    $afterpay_paragraph = Afterpay.generateInsideLimitHTML($afterpay_paragraph);
+                  }
+                  $afterpay_paragraph
+                    .find('.afterpay-instalments')
+                    .html(Afterpay.generateInstalmentHTML(variant.price));
+                } else if (afterpay_shop_currency == 'USD') {
+                  should_show_instalments = true;
+                  $afterpay_paragraph = Afterpay.generateOutsideLimitHTML($afterpay_paragraph);
+                }
+              }
+            }
+          });
+        }
+        if ($form.find('input[type=submit],button[type=submit]').is('[disabled]')) {
+          // The submit button is disabled.
+          // This most likely indicates that the product is not available,
+          // therefore the Afterpay elements should be hidden.
+          should_show_instalments = false;
+        }
+        if ($afterpay_paragraph !== null) {
+          if (should_show_instalments) {
+            $afterpay_paragraph.show();
+          } else {
+            $afterpay_paragraph.hide();
+          }
+        }
+      });
+    }
+  };
+
+  Afterpay.initStaticCartPage = function ($) {
+    // Define Variables
+
+    var $elements = null;
+    var $target_element = null;
+    var $watched_element = null;
+    var injection_position = 'after';
+    var $afterpay_paragraph;
+
+    $afterpay_paragraph = Afterpay.renderParagraph($, {
+      total_price: afterpay_cart_total_price,
+    });
+
+    if (typeof afterpay_cart_static_selector != 'undefined') {
+      // Selector has been specified in the theme.liquid file.
+      // Use this instead of running search passes.
+
+      Afterpay.supportedTheme = true;
+
+      $elements = $(afterpay_cart_static_selector);
+      if ($elements.length > 0) {
+        $target_element = $elements.first();
+        if (afterpay_shop_currency != 'USD') {
+          $afterpay_paragraph.find('.afterpay-text1').html('Or 4 payments of ');
+          $afterpay_paragraph.find('.afterpay-text2').html(' with ');
+        }
+
+        afterpay_ga('send', 'event', 'JS Include', 'Static Cart Page - Search Complete', 'Manual Override');
+      }
+    } else {
+      // Search Pass 1: Theme Name Exact Match
+
+      if (Afterpay.supportedTheme) {
+        // The active theme name matches one of the supported themes.
+        // I.e: We think we know exactly where to inject the Afterpay HTML.
+
+        $.each(Afterpay.supportedTheme.cart.static_page, function (date_str, expected_properties_obj) {
+          $elements = $(expected_properties_obj.selector);
+          if (expected_properties_obj.paragraph_css) {
+            $afterpay_paragraph.css(expected_properties_obj.paragraph_css);
+          }
+          if ($elements.length > 0) {
+            // The expected element was found.
+            // Store a reference to the target element and exit search.
+
+            $target_element = $elements.first();
+            if (afterpay_shop_currency != 'USD') {
+              $afterpay_paragraph.find('.afterpay-text1').html('Or 4 payments of ');
+              $afterpay_paragraph.find('.afterpay-text2').html(' with ');
+            }
+
+            afterpay_ga('send', 'event', 'JS Include', 'Static Cart Page - Search Complete', 'Theme Name Exact Match');
+
+            return false;
+          }
+        });
+      }
+
+      // Search Pass 2: Theme Name Partial Match
+      else {
+        $elements = null;
+
+        $.each(Afterpay.supportedThemes, function (propertyName, valueOfProperty) {
+          var pattern = new RegExp(propertyName, 'i');
+          if (pattern.test(afterpay_theme_name)) {
+            // The active theme name contains the name of a supported theme.
+            // E.g.:
+            //  - "Copy of Debut"      matches /Debut/i
+            //  - "Supply with LayBuy" matches /Supply/i
+            //  - "Pipeline2"          matches /Pipeline/i
+            // Assume this is a supported theme that has been renamed.
+
+            $.each(
+              Afterpay.supportedThemes[propertyName].cart.static_page,
+              function (date_str, expected_properties_obj) {
+                $elements = $(expected_properties_obj.selector);
+                if (expected_properties_obj.paragraph_css) {
+                  $afterpay_paragraph.css(expected_properties_obj.paragraph_css);
+                }
+
+                if ($elements.length > 0) {
+                  // The expected element was found.
+                  // Assume that this is actually a renamed version of the supported theme.
+
+                  Afterpay.supportedTheme = Afterpay.supportedThemes[propertyName];
+
+                  // Store a reference to the target element and exit search.
+
+                  $target_element = $elements.first();
+                  if (afterpay_shop_currency != 'USD') {
+                    $afterpay_paragraph.find('.afterpay-text1').html('Or 4 payments of ');
+                    $afterpay_paragraph.find('.afterpay-text2').html(' with ');
+                  }
+
+                  afterpay_ga(
+                    'send',
+                    'event',
+                    'JS Include',
+                    'Static Cart Page - Search Complete',
+                    'Theme Name Partial Match'
+                  );
+
+                  return false;
+                }
+              }
+            );
+
+            if ($target_element !== null) {
+              // We matched an element on the page from a similarly named supported theme.
+              // No need to keep checking through the other themes.
+
+              return false;
+            }
+          }
+        });
+      }
+
+      // Search Pass 3: Common Elements
+      //
+      // If this pass finds a match it is regarded the same as
+      // an exact match for a supported theme.
+
+      if ($target_element === null) {
+        $.each(Afterpay.commonElements.cart.static_page.subtotal_selector, function (indexInArray, value) {
+          $elements = $(value);
+          if ($elements.length > 0) {
+            Afterpay.supportedTheme = true;
+
+            $target_element = $elements.first();
+            if (afterpay_shop_currency != 'USD') {
+              $afterpay_paragraph.find('.afterpay-text1').html('Or 4 payments of ');
+              $afterpay_paragraph.find('.afterpay-text2').html(' with ');
+            }
+
+            afterpay_ga('send', 'event', 'JS Include', 'Static Cart Page - Search Complete', 'Common Element Match');
+
+            return false;
+          }
+        });
+      }
+
+      // Search Pass 4: Fallback
+
+      if ($target_element === null) {
+        // The active theme is NOT supported, OR the expected markup was not available.
+        // We don't know where the subtotal price block is,
+        // so we will inject the Afterpay HTML:
+        //  a) before the "Continue Shopping" / "Update Cart" buttons, or
+        //  b) after the cart form.
+
+        $afterpay_paragraph.css({
+          'text-align': 'right',
+        });
+
+        if (afterpay_shop_currency == 'USD') {
+          $afterpay_paragraph.find('.afterpay-text1').html('Or 4 payments of ');
+        } else {
+          $afterpay_paragraph.find('.afterpay-text1').html('Make 4 payments of ');
+        }
+
+        $elements = $('a[href="collections/all"],input[name=update]');
+
+        if ($elements.length > 0) {
+          $target_element = $elements.first();
+          injection_position = 'before';
+
+          afterpay_ga('send', 'event', 'JS Include', 'Static Cart Page - Search Complete', 'Cart Button Fallback');
+        } else {
+          $elements = $('form[action^="/cart"]:not(form[action^="/cart/add"])');
+
+          if ($elements.length > 0) {
+            $target_element = $elements.first();
+
+            afterpay_ga('send', 'event', 'JS Include', 'Static Cart Page - Search Complete', 'Cart Form Fallback');
+          }
+        }
+      }
+    }
+
+    // Render Afterpay HTML
+
+    if ($target_element !== null) {
+      // We have a place to inject the Afterpay HTML.
+      // Render it on the page, but hide it if we need to.
+
+      if (afterpay_cart_total_price < afterpay_min * 100 || afterpay_cart_total_price > afterpay_max * 100) {
+        if (afterpay_shop_currency == 'USD') {
+          $afterpay_paragraph.find('.afterpay-text1').html('Interest-free installments by ');
+          $afterpay_paragraph.find('.afterpay-logo').insertAfter($afterpay_paragraph.find('.afterpay-text1'));
+          $afterpay_paragraph.find('.afterpay-text2').html(' available between ');
+          $afterpay_paragraph
+            .find('.afterpay-instalments')
+            .html(Afterpay.generateCurrencyHTML(afterpay_min) + ' - ' + Afterpay.generateCurrencyHTML(afterpay_max))
+            .insertAfter($afterpay_paragraph.find('.afterpay-text2'));
+          $afterpay_paragraph.find('.afterpay-link-inner').html('Learn more');
+        } else {
+          $afterpay_paragraph.hide();
+        }
+      }
+
+      if (typeof afterpay_cart_static_css != 'undefined') {
+        $afterpay_paragraph.css(afterpay_cart_static_css);
+      }
+
+      $target_element[injection_position]($afterpay_paragraph);
+    } else {
+      afterpay_ga('send', 'event', 'JS Include', 'Static Cart Page - Search Complete', 'No Match');
+    }
+
+    /**
+     * Variable Price Fallback
+     *
+     * Use this fallback to watch for changes to the subtotal element
+     * and update the Afterpay instalments accordingly.
+     *
+     * If `MutationObserver` is supported by the browser it will be
+     * used, otherwise it will fallback to `setInterval`.
+     */
+
+    if (afterpay_variable_subtotal_fallback != false) {
+      if (typeof afterpay_variable_subtotal_fallback_selector != 'undefined') {
+        $elements = $(afterpay_variable_subtotal_fallback_selector);
+        if ($elements.length > 0) {
+          $watched_element = $elements.first();
+        }
+      }
+
+      if ($watched_element === null && $target_element !== null) {
+        $watched_element = $target_element;
+      }
+
+      if ($watched_element !== null) {
+        if (Afterpay.mutationObserver) {
+          // Update the price initially, as well as on each mutation.
+          Afterpay.updateParagraph($afterpay_paragraph, Afterpay.extractPriceFromHTML($watched_element.text()));
+
+          dom_mutation_observer = new Afterpay.mutationObserver(function (mutations, observer) {
+            var i;
+
+            // Update our reference, just in case the markup has been regenerated.
+            $watched_element = $(afterpay_variable_subtotal_fallback_selector).first();
+
+            for (i = 0; i < mutations.length; i++) {
+              if ($(mutations[i].target).is($watched_element)) {
+                Afterpay.updateParagraph(
+                  $afterpay_paragraph,
+                  Afterpay.extractPriceFromHTML(mutations[i].target.innerHTML)
+                );
+              }
+            }
+          });
+
+          dom_mutation_observer.observe($watched_element.get(0), {
+            childList: true,
+            attributes: false,
+            characterData: false,
+            subtree: true,
+            attributeOldValue: false,
+            characterDataOldValue: false,
+          });
+        } else {
+          setInterval(function (e) {
+            // Update our reference, just in case the markup has been regenerated.
+            $watched_element = $(afterpay_variable_subtotal_fallback_selector).first();
+
+            Afterpay.updateParagraph($afterpay_paragraph, Afterpay.extractPriceFromHTML($watched_element.text()));
+          }, 400);
+        }
+      }
+    }
+  };
+
+  Afterpay.launchPopup = function ($, event) {
+    event.preventDefault();
+
+    var $popup_wrapper, $popup_outer, $popup_inner, $a, $img, $close_button;
+
+    $popup_wrapper = $('#afterpay-popup-wrapper');
+
+    if ($popup_wrapper.length > 0) {
+      $popup_wrapper.show();
+    } else {
+      $popup_wrapper = $(document.createElement('div'))
+        .attr('id', 'afterpay-popup-wrapper')
+        .css({
+          position: 'fixed',
+          'z-index': 9999999999,
+          left: 0,
+          top: 0,
+          right: 0,
+          bottom: 0,
+          overflow: 'auto',
+        })
+        .appendTo('body')
+        .on('click', function (event) {
+          Afterpay.closePopup($, event);
+        });
+
+      $popup_outer = $(document.createElement('div'))
+        .attr('id', 'afterpay-popup-outer')
+        .css({
+          display: '-ms-flexbox',
+          display: '-webkit-flex',
+          display: 'flex',
+          '-webkit-justify-content': 'center',
+          '-ms-flex-pack': 'center',
+          'justify-content': 'center',
+          '-webkit-align-content': 'center',
+          '-ms-flex-line-pack': 'center',
+          'align-content': 'center',
+          '-webkit-align-items': 'center',
+          '-ms-flex-align': 'center',
+          'align-items': 'center',
+          width: '100%',
+          'min-height': '100%',
+          'background-color': 'rgba(0, 0, 0, 0.80)',
+        })
+        .appendTo($popup_wrapper);
+
+      $popup_inner = $(document.createElement('div'))
+        .attr('id', 'afterpay-popup-inner')
+        .css({
+          position: 'relative',
+          'background-color': '#fff',
+        })
+        .appendTo($popup_outer);
+
+      $a = $(document.createElement('a'));
+
+      if (afterpay_shop_currency == 'USD') {
+        $a.attr('href', 'https://www.afterpay.com/purchase-payment-agreement');
+      } else {
+        $a.attr('href', 'https://www.afterpay.com/terms');
+      }
+
+      $a.attr('target', '_blank')
+        .css({
+          display: 'block',
+        })
+        .appendTo($popup_inner);
+
+      $img = $(document.createElement('img'));
+
+      if (afterpay_shop_currency == 'USD') {
+        if ($(window).width() > 640) {
+          $img
+            .attr('src', 'https://static.afterpay.com/us-popup-medium.png')
+            .attr(
+              'srcset',
+              'https://static.afterpay.com/us-popup-medium.png 1x, https://static.afterpay.com/us-popup-medium@2x.png 2x'
+            )
+            .css({ 'max-width': '597px' });
+        } else {
+          $img
+            .attr('src', 'https://static.afterpay.com/us-popup-small.png')
+            .attr(
+              'srcset',
+              'https://static.afterpay.com/us-popup-small.png 1x, https://static.afterpay.com/us-popup-small@2x.png 2x'
+            )
+            .css({ 'max-width': '299px' });
+        }
+      } else {
+        if ($(window).width() > 640) {
+          $img.attr('src', 'https://static.afterpay.com/lightbox-desktop.png');
+        } else {
+          $img.attr('src', 'https://static.afterpay.com/lightbox-mobile.png');
+        }
+      }
+
+      $img
+        .css({
+          display: 'block',
+          width: '100%',
+        })
+        .appendTo($a)
+        .on('click', function (event) {
+          event.stopPropagation();
+        });
+
+      $close_button = $(document.createElement('a'))
+        .attr('href', '#')
+        .css({
+          position: 'absolute',
+          right: '8px',
+          top: '8px',
+        })
+        .html(
+          '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32" version="1.1" width="32px" height="32px"><g id="surface1"><path style=" " d="M 16 3 C 8.832031 3 3 8.832031 3 16 C 3 23.167969 8.832031 29 16 29 C 23.167969 29 29 23.167969 29 16 C 29 8.832031 23.167969 3 16 3 Z M 16 5 C 22.085938 5 27 9.914063 27 16 C 27 22.085938 22.085938 27 16 27 C 9.914063 27 5 22.085938 5 16 C 5 9.914063 9.914063 5 16 5 Z M 12.21875 10.78125 L 10.78125 12.21875 L 14.5625 16 L 10.78125 19.78125 L 12.21875 21.21875 L 16 17.4375 L 19.78125 21.21875 L 21.21875 19.78125 L 17.4375 16 L 21.21875 12.21875 L 19.78125 10.78125 L 16 14.5625 Z "/></g></svg>'
+        )
+        .appendTo($popup_inner)
+        .on('click', function (event) {
+          Afterpay.closePopup($, event);
+        });
+    }
+  };
+
+  Afterpay.loadScript = function (url, callback) {
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    if (script.readyState) {
+      // I.E.
+      script.onreadystatechange = function () {
+        if (script.readyState == 'loaded' || script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else {
+      // Others
+      script.onload = function () {
+        callback();
+      };
+    }
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  };
+
+  Afterpay.renderParagraph = function ($, options) {
+    var $afterpay_paragraph = $(document.createElement('div')).addClass('afterpay-paragraph');
+
+    if (afterpay_product !== null) {
+      $afterpay_paragraph.attr('data-product-id', afterpay_product.id);
+    }
+
+    var $text1 = $(document.createElement('span')).addClass('afterpay-text1').appendTo($afterpay_paragraph);
+
+    if (afterpay_shop_currency == 'USD') {
+      $text1.html('Or 4 interest-free installments of ');
+    } else {
+      $text1.html('Or make 4 interest-free payments of ');
+    }
+
+    var $afterpay_instalments = $(document.createElement('strong'))
+      .addClass('afterpay-instalments')
+      .html(Afterpay.generateInstalmentHTML(options.total_price))
+      .appendTo($afterpay_paragraph);
+
+    var $text2 = $(document.createElement('span')).addClass('afterpay-text2').appendTo($afterpay_paragraph);
+
+    if (afterpay_shop_currency == 'USD') {
+      $text2.html(' with ');
+    } else {
+      $text2.html(' fortnightly with ');
+    }
+
+    var $afterpay_logo = $(document.createElement('img'))
+      .addClass('afterpay-logo')
+      .css({ 'vertical-align': 'middle', width: '100px' })
+      .attr('src', 'https://static.afterpay.com/integration/product-page/logo-afterpay-' + afterpay_logo_theme + '.png')
+      .attr(
+        'srcset',
+        'https://static.afterpay.com/integration/product-page/logo-afterpay-' +
+          afterpay_logo_theme +
+          '.png 1x, https://static.afterpay.com/integration/product-page/logo-afterpay-' +
+          afterpay_logo_theme +
+          '@2x.png 2x, https://static.afterpay.com/integration/product-page/logo-afterpay-' +
+          afterpay_logo_theme +
+          '@3x.png 3x'
+      )
+      .attr('width', '100')
+      .attr('height', '21')
+      .attr('alt', 'Afterpay')
+      .appendTo($afterpay_paragraph);
+
+    var $text3 = $(document.createElement('span'))
+      .addClass('afterpay-text3')
+      .html('&nbsp;')
+      .appendTo($afterpay_paragraph);
+
+    var $afterpay_link = $(document.createElement('a')).addClass('afterpay-link');
+
+    if (afterpay_shop_currency == 'USD') {
+      $afterpay_link.attr('href', 'https://www.afterpay.com/purchase-payment-agreement');
+    } else {
+      $afterpay_link.attr('href', 'https://www.afterpay.com/terms');
+    }
+
+    $afterpay_link
+      .attr('target', '_blank')
+      .on('click', function (event) {
+        Afterpay.launchPopup($, event);
+      })
+      .appendTo($afterpay_paragraph);
+
+    var $u = $(document.createElement('u'))
+      .addClass('afterpay-link-inner')
+      .css({
+        'font-size': '12px',
+      })
+      .html('More info')
+      .appendTo($afterpay_link);
+
+    return $afterpay_paragraph;
+  };
+
+  Afterpay.supportedCurrencies = ['AUD', 'NZD', 'USD'];
+
+  Afterpay.supportedThemes = {
+    alchemy: {
+      product: {
+        '2017-12-14': {
+          selector: '.quadd-wrapper',
+        },
+      },
+    },
+    atlantic: {
+      product: {
+        '2017-12-14': {
+          selector: 'p.price',
+        },
+      },
+    },
+    blockshop: {
+      // tested on https://themes.shopify.com/themes/blockshop/styles/deli/preview
+      product: {
+        '2017-12-14': {
+          selector: 'article .prices',
+          paragraph_css: {
+            'margin-top': '-1em',
+            'margin-bottom': '2em',
+          },
+        },
+      },
+    },
+    boundless: {
+      // tested on https://themes.shopify.com/themes/boundless/styles/black-white/preview
+      product: {
+        '2017-12-14': {
+          selector: '#AddToCartForm-product-template .product__price',
+          paragraph_css: {
+            'margin-top': '-20px',
+          },
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-05-30': {
+            selector: 'span.cart__subtotal',
+          },
+        },
+        dynamic_content: {
+          '2018-01-22': {
+            target_selector: '#CartContainer',
+            addedNode_selector: 'form.ajaxcart',
+            subtotal_selector: '.ajaxcart__subtotal',
+            paragraph_css: {
+              'text-align': 'right',
+            },
+          },
+        },
+      },
+    },
+    brooklyn: {
+      // tested on https://themes.shopify.com/themes/brooklyn/styles/classic/preview
+      product: {
+        '2017-12-14': {
+          selector: '#ProductPrice',
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-05-30': {
+            selector: '.cart__row--table:last',
+          },
+        },
+        dynamic_content: {
+          '2018-06-25': {
+            target_selector: '#CartDrawer #CartContainer',
+            addedNode_selector: 'form.ajaxcart',
+            subtotal_selector: '.ajaxcart__footer .grid--full',
+            paragraph_css: {
+              'text-align': 'right',
+            },
+            after_render: function ($, $afterpay_paragraph) {
+              var $cart_drawer_inner = $('#CartContainer .ajaxcart__inner--has-fixed-footer');
+              var $cart_drawer_footer = $('#CartContainer .ajaxcart__footer--fixed');
+              var new_height = $cart_drawer_footer.outerHeight() + $afterpay_paragraph.outerHeight(true);
+              $cart_drawer_inner.css('bottom', new_height + 'px');
+              $cart_drawer_footer.css('height', new_height + 'px');
+            },
+          },
+        },
+      },
+    },
+    classic: {
+      // tested on local; classic is the default theme.
+      product: {
+        '2017-12-14': {
+          selector: '.product-single__prices',
+          paragraph_css: {
+            'margin-top': '-15px',
+            'margin-bottom': '30px',
+          },
+        },
+      },
+    },
+    debut: {
+      // tested on https://themes.shopify.com/themes/debut/styles/default/preview
+      product: {
+        '2017-12-14': {
+          selector: '.product-single__price',
+          paragraph_css: {
+            'margin-top': '-20px',
+            'margin-bottom': '40px',
+          },
+        },
+        '2018-07-04': {
+          selector: '.product__price',
+          paragraph_css: {
+            'margin-top': '-10px',
+            'margin-bottom': '40px',
+          },
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-05-30': {
+            selector: '.cart__footer .cart__subtotal',
+          },
+        },
+      },
+    },
+    district: {
+      // tested on https://themes.shopify.com/themes/district/styles/district/preview
+      product: {
+        '2017-12-14': {
+          selector: '#ComparePrice-product-template',
+          paragraph_css: {
+            'margin-top': '0.3rem',
+            display: 'block',
+            'font-style': 'normal',
+          },
+        },
+      },
+    },
+    empire: {
+      // tested on https://themes.shopify.com/themes/empire/styles/supply/preview
+      product: {
+        '2017-12-14': {
+          selector: '.product--container .product-pricing',
+          paragraph_css: {
+            'line-height': '1.5',
+            'margin-top': '10px',
+            'margin-bottom': '22px',
+          },
+        },
+      },
+    },
+    fashionopolism: {
+      // tested on https://themes.shopify.com/themes/fashionopolism/styles/secret-sale/preview
+      product: {
+        '2017-12-14': {
+          selector: '.product-prices',
+        },
+        '2018-08-10': {
+          selector: '#product-price',
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-08-10': {
+            selector: '#basket-right>h4',
+          },
+        },
+      },
+    },
+    flow: {
+      // tested on https://themes.shopify.com/themes/flow/styles/byron/preview
+      product: {
+        '2017-12-14': {
+          selector: '#ProductPrice',
+          paragraph_css: {
+            'margin-top': '-20px',
+            'margin-bottom': '30px',
+          },
+        },
+      },
+    },
+    grid: {
+      // tested on https://themes.shopify.com/themes/grid/styles/light/preview
+      product: {
+        '2017-12-14': {
+          selector: '.product-details .product-price',
+          paragraph_css: {
+            'margin-top': '-35px',
+            'margin-bottom': '40px',
+          },
+        },
+      },
+    },
+    icon: {
+      // tested on https://themes.shopify.com/themes/icon/styles/dolce/preview
+      product: {
+        '2017-12-14': {
+          selector: '#product-price',
+          paragraph_css: {
+            'margin-top': '-20px',
+          },
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-08-10': {
+            selector: '#basket-right>h4',
+          },
+        },
+      },
+    },
+    jumpstart: {
+      // tested on https://themes.shopify.com/themes/jumpstart/styles/jumpstart/preview
+      product: {
+        '2017-12-14': {
+          selector: '#AddToCartForm .price:last',
+        },
+        '2018-05-30': {
+          selector: '#ProductPrice-product-template',
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-05-30': {
+            selector: 'span.h3.cart__subtotal',
+          },
+        },
+      },
+    },
+    /*'loft': { // skipped because would need two <p> tags and a <style> tag for media queries to support both desktop and mobile.
+        'selector': '#ProductPrice',
+        'paragraph_css': {
+          'margin-top': '-0.5em',
+          'margin-bottom': '1.5em'
+        }
+      },*/
+    minimal: {
+      // tested on https://themes.shopify.com/themes/minimal/styles/vintage/preview
+      product: {
+        '2017-12-14': {
+          selector: '.product-single__prices',
+          paragraph_css: {
+            'margin-top': '-15px',
+          },
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-05-30': {
+            selector: '.h5.cart__subtotal',
+          },
+        },
+      },
+    },
+    modular: {
+      product: {
+        '2017-12-14': {
+          selector: '.productForm .product-price',
+          paragraph_css: {
+            'margin-top': '-1rem',
+            'margin-bottom': '1.5rem',
+          },
+        },
+      },
+    },
+    motion: {
+      product: {
+        '2017-12-14': {
+          selector: '.product-single__meta .product__price:last', // may have a '.product__price--compare' next to it, but it should be on the left.
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-05-30': {
+            selector: '.grid--full.cart__row--table:last',
+            paragraph_css: {
+              'margin-top': '10px',
+            },
+          },
+        },
+      },
+    },
+    narrative: {
+      // tested on https://themes.shopify.com/themes/narrative/styles/warm/preview
+      product: {
+        '2017-12-14': {
+          selector: '.product__content .product__price',
+          paragraph_css: {
+            'margin-top': '-10px',
+            'text-align': 'center',
+          },
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-05-30': {
+            selector: '.cart-footer .cart-footer__subtotal',
+          },
+        },
+      },
+    },
+    pacific: {
+      product: {
+        '2017-12-14': {
+          selector: '.product-price',
+        },
+      },
+    },
+    parallax: {
+      // tested on https://themes.shopify.com/themes/parallax/styles/aspen/preview
+      product: {
+        '2017-12-14': {
+          selector: '.modal_price',
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-05-31': {
+            selector: 'form .subtotal_amount',
+            paragraph_css: {
+              'font-size': '13px',
+            },
+          },
+        },
+      },
+    },
+    pipeline: {
+      // tested on https://themes.shopify.com/themes/pipeline/styles/bright/preview
+      product: {
+        '2017-12-14': {
+          selector: '#ComparePriceWrapper-product',
+          paragraph_css: {
+            'margin-top': '15px',
+            'line-height': '1.5',
+            'letter-spacing': '0',
+            'font-size': '14px',
+            'text-transform': 'none',
+            color: '#000',
+          },
+        },
+        '2018-08-10': {
+          selector: '#productInfo-product .product__price',
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-08-10': {
+            selector: '.cart__footer__text:first',
+          },
+        },
+      },
+    },
+    pop: {
+      // tested on https://themes.shopify.com/themes/pop/styles/bone/preview
+      product: {
+        '2017-12-14': {
+          selector: '.product-single__price',
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-05-30': {
+            selector: 'span.cart__subtotal',
+          },
+        },
+        dynamic_content: {
+          '2019-01-18': {
+            target_selector: '#ajaxifyCart',
+            addedNode_selector: 'form.cart-wrapper',
+            subtotal_selector: '.cart__subtotal',
+            paragraph_css: {
+              'text-align': 'right',
+            },
+          },
+        },
+      },
+    },
+    prestige: {
+      product: {
+        '2018-07-27': {
+          selector: '.ProductMeta__PriceList.Heading',
+        },
+      },
+    },
+    providence: {
+      product: {
+        '2017-12-14': {
+          selector: '.pricing',
+        },
+      },
+    },
+    retina: {
+      // tested on https://themes.shopify.com/themes/retina/styles/austin/preview
+      product: {
+        '2017-12-14': {
+          selector: '.modal_price',
+          paragraph_css: {
+            'margin-top': '-15px',
+            'margin-bottom': '20px',
+          },
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-08-10': {
+            selector: '#cart_form .subtotal_amount',
+            paragraph_css: {
+              'font-size': '13px',
+            },
+          },
+        },
+      },
+    },
+    showcase: {
+      // tested on https://themes.shopify.com/themes/showcase/styles/native/preview
+      product: {
+        '2018-08-10': {
+          selector: '.product-detail__title-and-price .price-area',
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-08-10': {
+            selector: '#cartform .subtotal',
+          },
+        },
+      },
+    },
+    showtime: {
+      // tested on https://themes.shopify.com/themes/showtime/styles/cooktime/preview
+      product: {
+        '2017-12-14': {
+          selector: '.desc_blk_bot .price',
+          paragraph_css: {
+            float: 'none',
+            clear: 'both',
+            'margin-bottom': '1rem',
+            'text-align': 'center',
+          },
+        },
+      },
+    },
+    simple: {
+      // tested on https://themes.shopify.com/themes/simple/styles/light/preview
+      product: {
+        '2017-12-14': {
+          selector: '#ProductSection .product-single__prices',
+          paragraph_css: {
+            'margin-top': '-15px',
+            'margin-bottom': '30px',
+          },
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-05-30': {
+            selector: 'span.cart__subtotal.h3',
+          },
+        },
+      },
+    },
+    supply: {
+      // tested on https://themes.shopify.com/themes/supply/styles/blue/preview
+      product: {
+        '2017-12-14': {
+          selector: 'ul.product-meta',
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-05-30': {
+            selector: '.h1.cart-subtotal--price',
+          },
+        },
+        dynamic_content: {
+          '2018-05-30': {
+            target_selector: '#ajaxifyCart.ajaxifyCart--content',
+            addedNode_selector: 'form.cart-form',
+            subtotal_selector: '.h1.cart-subtotal--price',
+          },
+        },
+      },
+    },
+    symmetry: {
+      // tested on https://themes.shopify.com/themes/symmetry/styles/beatnik/preview
+      product: {
+        '2017-12-14': {
+          selector: '#main-product-detail .price-area',
+        },
+      },
+    },
+    testament: {
+      // tested on https://themes.shopify.com/themes/testament/styles/genesis/preview
+      product: {
+        '2017-12-14': {
+          selector: '#product-price',
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-08-10': {
+            selector: '#basket-right>h4',
+          },
+        },
+      },
+    },
+    turbo: {
+      // Shopify removed this theme from https://themes.shopify.com/themes. Selectors added to support existing merchants
+      product: {
+        '2018-08-10': {
+          selector: '.modal_price',
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-08-10': {
+            selector: '#cart_form .cart_subtotal',
+          },
+        },
+      },
+    },
+    venture: {
+      // tested on https://themes.shopify.com/themes/venture/styles/snowboards/preview
+      product: {
+        '2017-12-14': {
+          selector: 'ul.product-single__meta-list',
+          paragraph_css: {
+            'margin-top': '10px',
+          },
+        },
+      },
+      cart: {
+        static_page: {
+          '2018-05-30': {
+            selector: 'p#CartSubtotal',
+          },
+        },
+      },
+    },
+    venue: {
+      // tested on https://themes.shopify.com/themes/venue/styles/evening/preview
+      product: {
+        '2017-12-14': {
+          selector: 'h3.product-single__price-text',
+          paragraph_css: {
+            'line-height': '1.5',
+          },
+        },
+      },
+    },
+  };
+
+  Afterpay.updateParagraph = function ($afterpay_paragraph, total_price_in_cents) {
+    if (total_price_in_cents >= afterpay_min * 100 && total_price_in_cents <= afterpay_max * 100) {
+      $afterpay_paragraph.show();
+      if (afterpay_shop_currency == 'USD') {
+        $afterpay_paragraph = Afterpay.generateInsideLimitHTML($afterpay_paragraph);
+      }
+      $afterpay_paragraph.find('.afterpay-instalments').html(Afterpay.generateInstalmentHTML(total_price_in_cents));
+    } else if (afterpay_shop_currency == 'USD') {
+      $afterpay_paragraph.show();
+      $afterpay_paragraph = Afterpay.generateOutsideLimitHTML($afterpay_paragraph);
+    } else {
+      $afterpay_paragraph.hide();
+    }
+  };
+
+  if (typeof afterpay_cart_integration_enabled == 'undefined') {
+    var afterpay_cart_integration_enabled;
+    if (afterpay_shop_currency == 'USD') {
+      afterpay_cart_integration_enabled = true;
+    } else {
+      afterpay_cart_integration_enabled = false;
+    }
+  }
+  if (typeof afterpay_variable_price_fallback == 'undefined') {
+    if (typeof afterpay_variable_price_fallback_selector == 'undefined') {
+      var afterpay_variable_price_fallback = false;
+    } else {
+      var afterpay_variable_price_fallback = true;
+    }
+  }
+  if (typeof afterpay_variable_subtotal_fallback == 'undefined') {
+    if (typeof afterpay_variable_subtotal_fallback_selector == 'undefined') {
+      var afterpay_variable_subtotal_fallback = false;
+    } else {
+      var afterpay_variable_subtotal_fallback = true;
+    }
+  }
+  if (typeof afterpay_ga_enabled == 'undefined') {
+    var afterpay_ga_enabled = false;
+  }
+
+  if (typeof afterpay_show_currency_code == 'undefined') {
+    var afterpay_show_currency_code = true;
+  }
+
+  if (afterpay_shop_currency == 'USD') {
+    afterpay_min = Math.max(afterpay_min, 35.0);
+  } else {
+    afterpay_min = Math.max(afterpay_min, 0.04);
+  }
+
+  if (afterpay_ga_enabled != false) {
+    (function (i, s, o, g, r, a, m) {
+      i['GoogleAnalyticsObject'] = r;
+      (i[r] =
+        i[r] ||
+        function () {
+          (i[r].q = i[r].q || []).push(arguments);
+        }),
+        (i[r].l = 1 * new Date());
+      (a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]);
+      a.async = 1;
+      a.src = g;
+      m.parentNode.insertBefore(a, m);
+    })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'afterpay_ga');
+  } else {
+    function afterpay_ga(a, b, c, d, e) {}
+  }
+  afterpay_ga('create', 'UA-108913162-2', { sampleRate: 1 });
+  afterpay_ga('send', 'event', 'JS Snippet', 'Report Version', afterpay_js_snippet_version);
+  afterpay_ga('send', 'event', 'JS Include', 'Report Version', '1.4.3');
+  afterpay_ga('send', 'event', 'Theme', 'Report Name', afterpay_theme_name);
+  afterpay_ga('send', 'event', 'Shop', 'Report Currency', afterpay_shop_currency);
+
+  if (Afterpay.arrayContainsElement(Afterpay.supportedCurrencies, afterpay_shop_currency)) {
+    // The store currency is compatible with Afterpay.
+    // Proceed.
+
+    if (
+      typeof jQuery != 'function' ||
+      !Object.prototype.hasOwnProperty.call(jQuery, 'fn') ||
+      parseFloat(jQuery.fn.jquery) < 1.7
+    ) {
+      // jQuery is not loaded or too old, load 1.12.4 from Google with "noConflict",
+      // then use it to initialise the Afterpay script.
+      Afterpay.loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js', function () {
+        var jQuery_1_12_4 = jQuery.noConflict(true);
+        Afterpay.init(jQuery_1_12_4);
+      });
+    } else {
+      // A compatible version of jQuery is already available.
+      // Use it to initialise the Afterpay script.
+      Afterpay.init(jQuery);
+    }
+  }
+</script>
