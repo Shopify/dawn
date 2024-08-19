@@ -5,11 +5,78 @@
   {% render 'header-mega-menu' %}
 {% endcomment %}
 
+{%- if section.settings.menu != blank -%}
+  {%- if section.settings.menu_type_desktop == 'dropdown' -%}
 <nav class="header__inline-menu">
   <ul class="list-menu list-menu--inline" role="list">
     {%- for link in section.settings.menu.links -%}
+      {% assign menu_item = "" %}
+      {% unless link.title contains "||||++|" %}      
       <li>
         {%- if link.links != blank -%}
+          <header-menu>
+            <details id="Details-HeaderMenu-{{ forloop.index }}">
+              <summary class="header__menu-item list-menu__item link focus-inset">
+                <span {%- if link.child_active %} class="header__active-menu-item"{% endif %}>{{ link.title | escape }}</span>
+                {% render 'icon-caret' %}
+              </summary>
+              <ul id="HeaderMenu-MenuList-{{ forloop.index }}" class="header__submenu list-menu list-menu--disclosure gradient caption-large motion-reduce global-settings-popup" role="list" tabindex="-1">
+                {%- for childlink in link.links -%}
+                  {% assign menu_item = "" %}
+                  {% unless childlink.title contains "||||++|" %}
+                  {% assign menu_item = childlink.title | split: "||||" %}
+                  <li>
+                    {%- if childlink.links == blank -%}
+                      <a href="{{ childlink.url }}" class="header__menu-item list-menu__item link link--text focus-inset caption-large{% if childlink.current %} list-menu__item--active{% endif %}"{% if childlink.current %} aria-current="page"{% endif %}>
+                        {{ menu_item[0] | replace: "~~|", "" | replace: "--|", "" | escape }}
+                      </a>
+                    {%- else -%}
+                      <details id="Details-HeaderSubMenu-{{ forloop.index }}">
+                        <summary class="header__menu-item link link--text list-menu__item focus-inset caption-large">
+                          <span>{{ menu_item[0] | replace: "~~|", "" | replace: "--|", "" | escape }}</span>
+                          {% render 'icon-caret' %}
+                        </summary>
+                        <ul id="HeaderMenu-SubMenuList-{{ forloop.index }}" class="header__submenu list-menu motion-reduce">
+                          {%- for grandchildlink in childlink.links -%}
+                            {% assign menu_item = "" %}
+                            {% unless grandchildlink.title contains "||||++|" %}
+                            {% assign menu_item = grandchildlink.title | split: "||||" %}
+                            <li>
+                              <a href="{{ grandchildlink.url }}" class="header__menu-item list-menu__item link link--text focus-inset caption-large{% if grandchildlink.current %} list-menu__item--active{% endif %}"{% if grandchildlink.current %} aria-current="page"{% endif %}>
+                                {{ menu_item[0] | replace: "~~|", "" | replace: "--|", "" | escape }}
+                              </a>
+                            </li>
+                            {% endunless %}
+                          {%- endfor -%}
+                        </ul>
+                      </details>
+                    {%- endif -%}
+                  </li>
+                  {% endunless %}
+                {%- endfor -%}
+              </ul>
+            </details>
+          </header-menu>
+        {%- else -%}
+          {% assign menu_item = link.title | split: "||||" %}
+          <a href="{{ link.url }}" class="header__menu-item list-menu__item link link--text focus-inset"{% if link.current %} aria-current="page"{% endif %}>
+            <span {%- if link.current %} class="header__active-menu-item"{% endif %}>{{ menu_item[0] | replace: "~~|", "" | replace: "--|", "" | escape }}</span>
+          </a>
+        {%- endif -%}
+      </li>
+      {% endunless %}
+    {%- endfor -%}
+  </ul>
+</nav>
+{%- else -%}
+<nav class="header__inline-menu">
+  <ul class="list-menu list-menu--inline" role="list">
+    {%- for link in section.settings.menu.links -%}
+      {% assign menu_item = "" %}
+      {% unless link.title contains "||||++|" %}
+      <li>
+        {%- if link.links != blank -%}
+          {% assign menu_flow_style = "" %}          
           <header-menu>
             <details id="Details-HeaderMenu-{{ forloop.index }}" class="mega-menu">
               <summary
@@ -25,6 +92,8 @@
                 </span>
                 {% render 'icon-caret' %}
               </summary>
+            {% capture child_megamenu %}{% endcapture %}
+              {% capture link_generate %}              
               <div
                 id="MegaMenu-Content-{{ forloop.index }}"
                 class="mega-menu__content color-{{ section.settings.menu_color_scheme }} gradient motion-reduce global-settings-popup"
@@ -35,20 +104,61 @@
                   role="list"
                 >
                   {%- for childlink in link.links -%}
+                    {% assign menu_item = "" %}
+                    {% unless childlink.title contains "||||++|" %}                    
                     <li>
+                    {% endunless %}
+                    {% if childlink.title contains "||||~~|" %}
+                    {% assign menu_flow_style = "flex" %}                      
                       <a
                         id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}"
                         href="{{ childlink.url }}"
                         class="mega-menu__link mega-menu__link--level-2 link{% if childlink.current %} mega-menu__link--active{% endif %}"
                         {% if childlink.current %}
                           aria-current="page"
+                          >
+                                {% assign menu_item = childlink.title | split: "||||~~|" %}
+                                <div class="megamenu__link-img_img">
+                                  <img src="{{ menu_item[1] }}" loading="lazy" alt="{% if menu_item[2] != blank %}{{ menu_item[2] }}{% else %}{{ menu_item[0] }}{% endif %}" />
+                                </div>
+                                <div class="megamenu__link-img_text">
+                                  {{ menu_item[0] }}
+                                </div>
+                            </a>
+                            {% elsif childlink.title contains "||||++|" %}
+                              {% assign menu_flow_style = "grid" %}
+                              {% assign menu_item = childlink.title | split: "||||++|" %}
+                              {% capture child_megamenu %}
+                                {{ child_megamenu }}
+                                <div class="megamenu__cat_item">
+                                  <a href="{{ childlink.url }}" class="mega-menu__link">
+                                    {% if menu_item[1] != blank %}
+                                    <img src="{{ menu_item[1] }}" loading="lazy" alt="{% if menu_item[2] != blank %}{{ menu_item[2] }}{% else %}{{ menu_item[0] }}{% endif %}" />                          
                         {% endif %}
-                      >
+                        {% if menu_item[0] != blank %}
+                          <span>{{ menu_item[0] | escape }}</span>
+                          {% endif %}
+                        </a>
+                      </div>
+                    {% endcapture %}
+                  {% elsif childlink.title contains "||||--|" %}
+                    {% assign menu_col = 0 %}
+                    {% assign menu_item = childlink.title | split: "||||--|" %}
+                    <a href="{{ childlink.url }}" class="mega-menu__link mega-menu__link--level-2 link{% if childlink.current %} mega-menu__link--active{% endif %}"{% if childlink.current %} aria-current="page"{% endif %}>
+                      {{ menu_item[0] | escape }}
+                    </a>
+                  {% else %}
+                  <a href="{{ childlink.url }}" class="mega-menu__link mega-menu__link--level-2 link{% if childlink.current %} mega-menu__link--active{% endif %}"{% if childlink.current %} aria-current="page"{% endif %}>                     
                         {{ childlink.title | escape }}
                       </a>
+                    {% endif %}
                       {%- if childlink.links != blank -%}
-                        <ul class="list-unstyled" role="list">
+                        {% assign menu_col = menu_item[1] | plus: 0 %}
+                      <ul class="list-unstyled megamenu__columns"{% if menu_col > 1 %} data-menu-col="{{ menu_col }}"{% endif %} role="list">
                           {%- for grandchildlink in childlink.links -%}
+                            {% assign menu_item = "" %}
+                            {% unless grandchildlink.title contains "||||++|" %}
+                            {% assign menu_item = grandchildlink.title | split: "||||" %}
                             <li>
                               <a
                                 id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
@@ -58,19 +168,40 @@
                                   aria-current="page"
                                 {% endif %}
                               >
-                                {{ grandchildlink.title | escape }}
+                              {{ menu_item[0] | escape }}
                               </a>
                             </li>
+                          {% endunless %}
                           {%- endfor -%}
                         </ul>
                       {%- endif -%}
+                      {% unless childlink.title contains "||||++|" %}
                     </li>
-                  {%- endfor -%}
+                  {% endunless %}
+                  {%- endif -%}
+                {% endfor %}
+                  {%  endcapture %}
+              <div id="MegaMenu-Content-{{ forloop.index }}" class="mega-menu__content gradient motion-reduce global-settings-popup{% if menu_flow_style == "flex" %} megamenu__link-img_wrap{% elsif menu_flow_style == "grid" and megamenu != blank %} megamenu__cat_menu{% endif %}" tabindex="-1">
+                {% if menu_flow_style == "grid" and megamenu != blank %}
+                <div class="page-width has_megamenu_img">
+                {% endif %}
+                <ul class="mega-menu__list{% unless menu_flow_style == "grid" and megamenu != blank %} page-width{% endunless %}{% if link.levels == 1 %} mega-menu__list--condensed{% endif %}" role="list">
+                  {{ link_generate }}
                 </ul>
-              </div>
+                {% if child_megamenu != blank %}
+                  <div class="megamenu__cat_wrap">
+                    {{ child_megamenu }}
+                  </div>
+                  {% endif %}
+                  {% if menu_flow_style == "grid" and megamenu != blank %}
+                  </div>
+                  {% endif %}
+                   </div>
             </details>
           </header-menu>
         {%- else -%}
+        {% assign menu_item = link.title | split: "||||" %}
+
           <a
             id="HeaderMenu-{{ link.handle }}"
             href="{{ link.url }}"
@@ -79,16 +210,13 @@
               aria-current="page"
             {% endif %}
           >
-            <span
-              {%- if link.current %}
-                class="header__active-menu-item"
-              {% endif %}
-            >
-              {{- link.title | escape -}}
-            </span>
+        <span {%- if link.current %} class="header__active-menu-item"{% endif %}>{{ menu_item[0] | escape }}</span>
           </a>
         {%- endif -%}
       </li>
+    {% endunless %}
     {%- endfor -%}
   </ul>
 </nav>
+{%- endif -%}
+{%- endif -%}
