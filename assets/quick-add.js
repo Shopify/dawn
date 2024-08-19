@@ -93,9 +93,11 @@ if (!customElements.get('quick-add-modal')) {
         const pickupAvailability = productElement.querySelector('pickup-availability');
         if (pickupAvailability) pickupAvailability.remove();
 
+        /** @type {ModalDialog | null} */
         const productModal = productElement.querySelector('product-modal');
         if (productModal) productModal.remove();
 
+        /** @type {NodeListOf<ModalDialog>} */
         const modalDialog = productElement.querySelectorAll('modal-dialog');
         if (modalDialog) modalDialog.forEach((modal) => modal.remove());
       }
