@@ -1026,26 +1026,35 @@ customElements.define('slider-component', SliderComponent);
 class SlideshowComponent extends SliderComponent {
   constructor() {
     super();
+    /** @type {HTMLElement | null} */
     this.sliderControlWrapper = this.querySelector('.slider-buttons');
+    /** @type {boolean} */
     this.enableSliderLooping = true;
+    /** @type {boolean} */
+    this.autoplayButtonIsSetToPlay = false;
 
     if (!this.sliderControlWrapper) return;
 
+    /** @type {HTMLElement | null} */
     this.sliderFirstItemNode = this.slider.querySelector('.slideshow__slide');
     if (this.sliderItemsToShow.length > 0) this.currentPage = 1;
 
+    /** @type {HTMLElement | null} */
     this.announcementBarSlider = this.querySelector('.announcement-bar-slider');
     // Value below should match --duration-announcement-bar CSS value
     this.announcerBarAnimationDelay = this.announcementBarSlider ? 250 : 0;
 
+    /** @type {Array<HTMLElement>} */
     this.sliderControlLinksArray = Array.from(this.sliderControlWrapper.querySelectorAll('.slider-counter__link'));
     this.sliderControlLinksArray.forEach((link) => link.addEventListener('click', this.linkToSlide.bind(this)));
     this.slider.addEventListener('scroll', this.setSlideVisibility.bind(this));
     this.setSlideVisibility();
 
     if (this.announcementBarSlider) {
+      /** @type {boolean} */
       this.announcementBarArrowButtonWasClicked = false;
 
+      /** @type {boolean} */
       this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
       this.reducedMotion.addEventListener('change', () => {
         if (this.slider.getAttribute('data-autoplay') === 'true') this.setAutoPlay();
@@ -1141,6 +1150,7 @@ class SlideshowComponent extends SliderComponent {
     this.sliderControlButtons[this.currentPage - 1].setAttribute('aria-current', true);
   }
 
+  /** Toggle autoplay state */
   autoPlayToggle() {
     this.togglePlayButtonState(this.autoplayButtonIsSetToPlay);
     this.autoplayButtonIsSetToPlay ? this.pause() : this.play();
@@ -1180,13 +1190,14 @@ class SlideshowComponent extends SliderComponent {
     }
   }
 
-
+  /** Play slideshow */
   play() {
     this.slider.setAttribute('aria-live', 'off');
     clearInterval(this.autoplay);
     this.autoplay = setInterval(this.autoRotateSlides.bind(this), this.autoplaySpeed);
   }
 
+  /** Pause slideshow */
   pause() {
     this.slider.setAttribute('aria-live', 'polite');
     clearInterval(this.autoplay);
@@ -1206,6 +1217,7 @@ class SlideshowComponent extends SliderComponent {
     }
   }
 
+  /** Auto rotate slides. Set position to 0 if past last slide. */
   autoRotateSlides() {
     const slideScrollPosition =
       this.currentPage === this.sliderItems.length ? 0 : this.slider.scrollLeft + this.sliderItemOffset;
