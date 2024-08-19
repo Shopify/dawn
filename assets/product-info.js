@@ -52,7 +52,7 @@ if (!customElements.get('product-info')) {
         this.quantityForm = this.querySelector('.product-form__quantity');
         if (!this.quantityForm) return;
 
-        this.setQuantityBoundries();
+        this.setQuantityBoundaries();
         if (!this.dataset.originalSection) {
           this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, this.fetchQuantityRules.bind(this));
         }
@@ -406,7 +406,7 @@ if (!customElements.get('product-info')) {
       }
 
       /** Set quantity input boundaries. */
-      setQuantityBoundries() {
+      setQuantityBoundaries() {
         const data = {
           cartQuantity: this.quantityInput.dataset.cartQuantity ? parseInt(this.quantityInput.dataset.cartQuantity) : 0,
           min: this.quantityInput.dataset.min ? parseInt(this.quantityInput.dataset.min) : 1,
@@ -458,7 +458,7 @@ if (!customElements.get('product-info')) {
        */
       updateQuantityRules(sectionId, html) {
         if (!this.quantityInput) return;
-        this.setQuantityBoundries();
+        this.setQuantityBoundaries();
 
         const quantityFormUpdated = html.getElementById(`Quantity-Form-${sectionId}`);
         const selectors = ['.quantity__input', '.quantity__rules', '.quantity__label'];
