@@ -1,87 +1,69 @@
-function disableCarouselArrows(carousel_id) {
-  const items = document?.querySelectorAll(`#${carousel_id} li.splide__slide`);
-  const firstElement = items?.[0];
-  const lastElement = items?.[items?.length - 1];
-
-  const prevBtn = document?.querySelector(`#${carousel_id} .splide__arrow--prev`);
-  const nextBtn = document?.querySelector(`#${carousel_id} .splide__arrow--next`);
-
-  return function () {
-    if (firstElement?.classList.contains('is-active')) {
-      prevBtn.setAttribute('disabled', true);
-    }
-
-    if (lastElement?.classList.contains('is-active')) {
-      nextBtn.setAttribute('disabled', true);
-    }
-  };
-}
-
-function createRelatedProducts(carouselId, options) {
-  const id = `#${carouselId}`;
-
-  const carouselOptions = Object.assign(
-    {},
-    {
-      cover: true,
-      pagination: false,
-      perPage: 4,
-      perMove: 1,
-      focus: 0,
-      omitEnd: true,
-      drag: 'free',
-      snap: true,
-      autoWidth: true,
-      breakpoints: {
-        800: {
-          perPage: 4,
-        },
-        400: {
-          perPage: 2,
-        },
-      },
-    },
-    options
-  );
-
-  try {
-    const related_carousel = new Splide(id, carouselOptions);
-
-    related_carousel.on('arrows:updated', disableCarouselArrows(carouselId));
-    related_carousel.mount();
-  } catch (error) {
-    console.error(error);
-    console.error(`Error mounting related carousel ${carouselId}`, error);
-  }
-}
-
-/**
- * Create teaser carousel
- */
-
-try {
-  const teaserCarousels = document.querySelectorAll('[id^="TikTok-Carousel-"]');
-  const options = {
+class SplideCarousel extends HTMLElement {
+  defaultOptions = {
     cover: true,
     pagination: false,
+    perPage: 4,
     perMove: 1,
     focus: 0,
+    omitEnd: true,
     drag: 'free',
     snap: true,
     autoWidth: true,
-    autoHeight: true,
-    gap: '48px',
-    focus: 'center',
+    gap: 2,
     breakpoints: {
       800: {
-        gap: '24px',
+        perPage: 4,
+      },
+      400: {
+        perPage: 2,
       },
     },
   };
 
-  teaserCarousels.forEach((carousel) => {
-    createRelatedProducts(carousel.id, options);
-  });
-} catch (error) {
-  console.error('Unable to create teaser carousel', error);
+  constructor() {
+    super();
+    this.carousel_id = this.getAttribute('data-id');
+
+    const options = this.getAttribute('data-options');
+    const carousel_options = options ? JSON.parse(options) : {};
+
+    this.carousel_options = Object.assign({}, this.defaultOptions, carousel_options);
+
+    this.createRelatedProducts(this.carousel_id, this.carousel_options);
+  }
+
+  disableCarouselArrows(carousel_id) {
+    const items = this.querySelectorAll(`#${carousel_id} li.splide__slide`);
+    const firstElement = items?.[0];
+    const lastElement = items?.[items?.length - 1];
+
+    const prevBtn = this?.querySelector(`#${carousel_id} .splide__arrow--prev`);
+    const nextBtn = this?.querySelector(`#${carousel_id} .splide__arrow--next`);
+
+    return function () {
+      if (firstElement?.classList.contains('is-active')) {
+        prevBtn.setAttribute('disabled', true);
+      }
+
+      if (lastElement?.classList.contains('is-active')) {
+        nextBtn.setAttribute('disabled', true);
+      }
+    };
+  }
+
+  createRelatedProducts(carousel_id, options) {
+    const id = `#${carousel_id}`;
+
+    try {
+      const related_carousel = new Splide(id, options);
+
+      related_carousel.on('arrows:updated', this.disableCarouselArrows(carousel_id));
+      related_carousel.mount();
+    } catch (error) {
+      console.error(error);
+      console.error(`Error mounting related carousel ${carousel_id}`, error);
+    }
+  }
 }
+
+customElements.define('splide-carousel', SplideCarousel);
