@@ -17,31 +17,35 @@ function disableCarouselArrows(id) {
   };
 }
 
-function createRelatedProducts(carouselId) {
+function createRelatedProducts(carouselId, options) {
   const idSelector = `#${carouselId}`;
 
   try {
-    const related_carousel = new Splide(idSelector, {
-      cover: true,
-      pagination: false,
-      // loop: true,
-      perPage: 4,
-      perMove: 1,
-      focus: 0,
-      omitEnd: true,
-      drag: 'free',
-      // type: 'loop',
-      snap: true,
-      autoWidth: true,
-      breakpoints: {
-        800: {
-          perPage: 4,
-        },
-        400: {
-          perPage: 2,
+    const carouselOptions = Object.assign(
+      {},
+      {
+        cover: true,
+        pagination: false,
+        perPage: 4,
+        perMove: 1,
+        focus: 0,
+        omitEnd: true,
+        drag: 'free',
+        snap: true,
+        autoWidth: true,
+        breakpoints: {
+          800: {
+            perPage: 4,
+          },
+          400: {
+            perPage: 2,
+          },
         },
       },
-    });
+      options
+    );
+
+    const related_carousel = new Splide(idSelector, carouselOptions);
 
     related_carousel.on('arrows:updated', disableCarouselArrows(idSelector));
 
@@ -98,7 +102,7 @@ try {
         if (mutation.type === 'childList') {
           mutation.addedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('search-items-loaded')) {
-              createRelatedProducts(carouselId);
+              createRelatedProducts(carouselId, { gap: 24 });
               // observer.disconnect();
             }
           });
@@ -119,15 +123,4 @@ try {
   }
 } catch (error) {
   console.error('Unable to create predictive search carousel', error);
-}
-
-try {
-  const carouselId = 'Popular-Picks-Carousel';
-  const popularPicks = document.querySelector(`#${carouselId}`);
-
-  if (popularPicks) {
-    createRelatedProducts(carouselId);
-  }
-} catch (error) {
-  console.error('Unable to create popular picks carousel', error);
 }
