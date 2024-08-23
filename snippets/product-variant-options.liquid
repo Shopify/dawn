@@ -22,7 +22,7 @@
 
 {%- for value in option.values -%}
   {%- liquid
-    assign selected_variant = null
+    assign selected_variant = product.selected_or_first_available_variant
     for variant in product.variants
       if variant.title contains value and variant.featured_image
         assign selected_variant = variant
@@ -76,14 +76,6 @@
     </span>
   {%- endcapture -%}
 
-  {%- capture product_image -%}
-    {%- if selected_variant -%}
-      {{- selected_variant.featured_image -}}
-    {%- else -%}
-      {{- product.featured_image -}}
-    {%- endif -%}
-  {%- endcapture -%}
-
   {%- if picker_type == 'swatch' -%}
     {%- capture help_text -%}
       <span class="visually-hidden">{{ value | escape }}</span>
@@ -124,12 +116,11 @@
     {%- if option_is_color -%}
       <label for="{{ input_id }}">
         <img
-          src="{{ product_image | product_img_url: '105x128', crop: 'center', scale: 2 }}"
+          src="{{ selected_variant.featured_image | product_img_url: '105x128', crop: 'center', scale: 2 }}"
           alt="{{ product.title }} - {{ value }}"
           title="{{ product.title }} - {{ value }}"
           width="60"
           height="73"
-          data-test="{{ selected_variant.title }}"
         >
       </label>
     {%- else -%}
