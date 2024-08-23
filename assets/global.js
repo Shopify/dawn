@@ -1101,18 +1101,24 @@ class VariantSelects extends HTMLElement {
 
   renderCustomizationFields(type) {
     const nameField = this.querySelector('#JerseyNameField');
+    const nameInput = nameField.querySelector('input');
     const numberField = this.querySelector('#JerseyNumberField');
+    const numberInput = numberField.querySelector('input');
 
     if (type.includes('name')) {
       nameField.classList.remove('hidden');
+      nameInput.setAttribute('required', 'true');
     } else {
       nameField.classList.add('hidden');
+      nameInput.removeAttribute('required');
     }
 
     if (type.includes('number')) {
       numberField.classList.remove('hidden');
+      numberInput.setAttribute('required', 'true');
     } else {
       numberField.classList.add('hidden');
+      numberInput.removeAttribute('required');
     }
   }
 
