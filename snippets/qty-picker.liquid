@@ -1,70 +1,69 @@
 {% comment %}
   Renders Quantity Picker Button
   Accepts:
-  -type: {String} button type (default | checkout).
-  -class: {String} .
+  - type: {String} button type (default | checkout).
+  - class: {String}
+  - name: {String}
+  - form_id: {String}
+  - min: {String}
+  - max: {String}
 
   Usage:
   {% render 'qty-picker' %}
 {% endcomment %}
 
-{% assign type = type | default: 'default' %}
-{% assign min = min | default: 1 %}
+{% liquid
+  assign type = type | default: 'default'
+  assign min = min | default: 0
+  assign max = max | default: 99
 
-{% assign classes = '' %}
-{% assign btn_left = 'rounded-l-4xl cursor-pointer' %}
-{% assign btn_right = 'rounded-r-4xl cursor-pointer' %}
+  assign classes = ''
+  assign btn_left = 'rounded-l-4xl cursor-pointer'
+  assign btn_right = 'rounded-r-4xl cursor-pointer'
 
-{% if variant == 'checkout' %}
-  {% assign classes = classes | append: '  !w-[36px] h-[28px] text-body-xs py-[6px] text-center' %}
-  {% assign btn_left = btn_left | append: ' py-small px-[10px] no-bg' %}
-  {% assign btn_right = btn_right | append: ' py-small px-[10px] no-bg' %}
-  {% assign icon_class = ' w-base h-3' %}
-{% else %}
-  {% assign classes = classes | append: ' !w-huge h-[48px] text-t-md py-[11.5px] text-center' %}
-  {% assign btn_left = btn_left | append: ' py-small !pr-small !pl-base no-bg' %}
-  {% assign btn_right = btn_right | append: ' py-small !pl-small !pr-base no-bg' %}
-  {% assign icon_class = ' w-base h-base' %}
-{% endif %}
+  if variant == 'checkout'
+    assign classes = classes | append: '  !w-[36px] h-[28px] text-body-xs py-[6px] text-center'
+    assign btn_left = btn_left | append: ' py-small px-[10px] no-bg'
+    assign btn_right = btn_right | append: ' py-small px-[10px] no-bg'
+    assign icon_class = ' w-base h-3'
+  else
+    assign classes = classes | append: ' !w-huge h-[48px] text-t-md py-[11.5px] text-center'
+    assign btn_left = btn_left | append: ' py-small !pr-small !pl-base no-bg'
+    assign btn_right = btn_right | append: ' py-small !pl-small !pr-base no-bg'
+    assign icon_class = ' w-base h-base'
+  endif
+%}
 
 <div class="flex flex-grow-0">
   <quantity-input class="bg-grey50 rounded-4xl flex" data-url="{{ product.url }}" data-section="{{ section.id }}">
-    <button class="no-js-hidden {{ btn_left }} hover:bg-grey100" name="minus" type="button">
+    <button class="no-js-hidden {{ btn_left }} hover:bg-grey100 quantity__button" name="minus" type="button">
       <span class="visually-hidden">
-        {{- 'products.product.quantity.decrease' | t: product: product.title | escape -}}
+        {{- 'products.product.customization_number.decrease' | t: product: product.title | escape -}}
       </span>
       {% render 'icon-minus', class: icon_class, svgClass: 'stroke-grey500 hover:stroke-black' %}
     </button>
 
     <input
-      {% comment %} type="number" {% endcomment %}
-      {% comment %} name="quantity" {% endcomment %}
-      {% comment %} id="Quantity-{{ section.id }}" {% endcomment %}
-      {% comment %} min="1" {% endcomment %}
-      {% comment %} value="1" {% endcomment %}
+      type="number"
+      name="{{name}}"
+      id="{{id}}"
+      value=""
+      class="quantity__input !grow-0 bg-grey50 text-black {{ classes }}"
+      form="{{form_id}}"
 
-      class="quantity__input {{ classes }} !grow-0 bg-grey50 text-black"
-      form="{{ product_form_id }}"
-      data-quantity-variant-id="{{ variant.id }}"
-      name="updates[{{ variant_id }}]"
       {% # theme-check-disable %}
-      value="{{ cart | item_count_for_variant: variant.id }}"
-      data-cart-quantity="{{ cart | item_count_for_variant: variant.id }}"
       min="{{ min }}"
-      data-min="{{ variant.quantity_rule.min }}"
-      {% if variant.quantity_rule.max != null %}
-        max="{{ variant.quantity_rule.max }}"
-      {% endif %}
-      step="{{ variant.quantity_rule.increment }}"
+      data-min="{{ min }}"
+      max="{{max}}"
       {% # theme-check-enable %}
-      aria-label="{{ 'products.product.quantity.input_label' | t: product: variant.title | escape }}"
-      id="Quantity-{{ variant.id }}"
-      data-index="{{ variant.id }}"
+      {% if required %}
+        required
+      {% endif %}
     >
 
-    <button class="no-js-hidden {{ btn_right }} hover:bg-grey100 " name="plus" type="button">
+    <button class="no-js-hidden {{ btn_right }} hover:bg-grey100 quantity__button" name="plus" type="button">
       <span class="visually-hidden">
-        {{- 'products.product.quantity.increase' | t: product: product.title | escape -}}
+        {{- 'products.product.customization_number.increase' | t: product: product.title | escape -}}
       </span>
       {% render 'icon-plus', class: icon_class, svgClass: 'stroke-grey500 hover:stroke-black' %}
     </button>

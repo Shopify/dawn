@@ -20,6 +20,13 @@ if (!customElements.get('product-form')) {
         evt.preventDefault();
         if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
+        const jersey_number = Array.from(evt.target.elements).find((el) => el.id === 'jersey_number');
+
+        if (jersey_number && !jersey_number.validity.valid) {
+          this.handleErrorMessage(window.variantStrings.jersey_number_required);
+          return;
+        }
+
         this.handleErrorMessage();
 
         this.submitButton.setAttribute('aria-disabled', true);
