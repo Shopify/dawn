@@ -29,7 +29,13 @@ class SplideCarousel extends HTMLElement {
 
     this.carousel_options = Object.assign({}, this.defaultOptions, carousel_options);
 
-    this.createRelatedProducts(this.carousel_id, this.carousel_options);
+    const carouselType = this.getAttribute('data-type') ?? 'default';
+
+    if (carouselType == 'thumbnail') {
+      this.createCarouselWithThumbnail(this.carousel_id, this.carousel_options);
+    } else {
+      this.createCarousel(this.carousel_id, this.carousel_options);
+    }
   }
 
   disableCarouselArrows(carousel_id) {
@@ -51,14 +57,57 @@ class SplideCarousel extends HTMLElement {
     };
   }
 
-  createRelatedProducts(carousel_id, options) {
+  createCarousel(carousel_id, options) {
     const id = `#${carousel_id}`;
 
     try {
-      const related_carousel = new Splide(id, options);
+      const newCarousel = new Splide(id, options);
 
-      related_carousel.on('arrows:updated', this.disableCarouselArrows(carousel_id));
-      related_carousel.mount();
+      newCarousel.on('arrows:updated', this.disableCarouselArrows(carousel_id));
+      newCarousel.mount();
+    } catch (error) {
+      console.error(error);
+      console.error(`Error mounting related carousel ${carousel_id}`, error);
+    }
+  }
+
+  createCarouselWithThumbnail(carousel_id, options) {
+    const id = `#${carousel_id}`;
+
+    try {
+      const splide = new Splide(id, options);
+
+      function initThumbnail(thumbnail, index) {
+        thumbnail?.addEventListener('click', function () {
+          splide.go(index);
+        });
+      }
+
+      const thumbnails = this?.getElementsByClassName('thumbnail');
+      let current;
+
+      for (let i = 0; i < thumbnails.length; i++) {
+        initThumbnail(thumbnails[i], i);
+      }
+
+      splide.on('mounted move', function () {
+        const thumbnail = thumbnails[splide.index];
+
+        if (thumbnail) {
+          if (current) {
+            current.classList.remove('is-active');
+          }
+
+          thumbnail.classList.add('is-active');
+          thumbnail.setAttribute('aria-current', 'true');
+          current = thumbnail;
+        }
+      });
+
+      splide.on('arrows:updated', this.disableCarouselArrows('main-carousel'));
+
+      splide.mount();
+      console.log('carousel moundted');
     } catch (error) {
       console.error(error);
       console.error(`Error mounting related carousel ${carousel_id}`, error);

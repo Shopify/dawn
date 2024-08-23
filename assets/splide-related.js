@@ -21,6 +21,9 @@ function createRelatedProducts(carouselId, options) {
   const idSelector = `#${carouselId}`;
 
   try {
+    const carouselElement = document.querySelector(idSelector);
+    if (!carouselElement) return;
+
     const carouselOptions = Object.assign(
       {},
       {
@@ -51,7 +54,7 @@ function createRelatedProducts(carouselId, options) {
 
     related_carousel.mount();
   } catch (error) {
-    console.error('Error mounting related carousel' + carouselId, error);
+    console.error(`Error mounting carousel with ID - ${carouselId} ${error}`);
   }
 }
 
@@ -78,7 +81,7 @@ try {
     observeElement(relatedCarousel, carouselId);
   }
 } catch (error) {
-  console.error('Unable to create related products carousel', error);
+  console.error(`Unable to create carousel with ID - ${carouselId} `, error);
 }
 
 try {
