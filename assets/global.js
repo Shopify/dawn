@@ -1010,6 +1010,7 @@ customElements.define('slideshow-component', SlideshowComponent);
 class VariantSelects extends HTMLElement {
   constructor() {
     super();
+    this.initCustomization();
     this.addEventListener('change', this.onVariantChange);
   }
 
@@ -1017,6 +1018,7 @@ class VariantSelects extends HTMLElement {
     this.updateOptions();
     this.updateMasterId();
     this.updateSelectedSwatchValue(event);
+    this.updateCustomizationFields(event);
     this.toggleAddButton(true, '', false);
     this.updatePickupAvailability();
     this.removeErrorMessage();
@@ -1076,6 +1078,47 @@ class VariantSelects extends HTMLElement {
     } else if (tagName === 'INPUT' && target.type === 'radio') {
       const selectedSwatchValue = this.querySelector(`[data-selected-swatch-value="${name}"]`);
       if (selectedSwatchValue) selectedSwatchValue.innerHTML = value;
+    }
+  }
+  updateCustomizationFields({ target }) {
+    const { name, tagName } = target;
+
+    if (name.toLowerCase() === 'options[customization]' && tagName === 'SELECT' && target.selectedOptions.length) {
+      const customizationType = target.selectedOptions[0].dataset.customizationType;
+      if (customizationType) this.renderCustomizationFields(customizationType);
+    }
+  }
+
+  initCustomization() {
+    const customizationSelect = this.querySelector('[name="options[Customization]"]');
+
+    if (!customizationSelect) return;
+
+    const customizationType = customizationSelect.selectedOptions[0].dataset.customizationType;
+
+    if (customizationType) this.renderCustomizationFields(customizationType);
+  }
+
+  renderCustomizationFields(type) {
+    const nameField = this.querySelector('#JerseyNameField');
+    const nameInput = nameField.querySelector('input');
+    const numberField = this.querySelector('#JerseyNumberField');
+    const numberInput = numberField.querySelector('input');
+
+    if (type.includes('name')) {
+      nameField.classList.remove('hidden');
+      nameInput.setAttribute('required', 'true');
+    } else {
+      nameField.classList.add('hidden');
+      nameInput.removeAttribute('required');
+    }
+
+    if (type.includes('number')) {
+      numberField.classList.remove('hidden');
+      numberInput.setAttribute('required', 'true');
+    } else {
+      numberField.classList.add('hidden');
+      numberInput.removeAttribute('required');
     }
   }
 
