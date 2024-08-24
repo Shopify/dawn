@@ -1,13 +1,26 @@
+{% comment %}
+  Renders a list of product's variants
+
+  Accepts:
+  - product: {Object} Product Liquid object
+  - show_image: {Boolean} Shows image of the variant in the row
+  - is_modal: {Boolean} Defines if this snippet lives in a modal (optional)
+
+  Usage:
+  {% render 'quick-order-list', product: product %}
+{% endcomment %}
+
 {% comment %} TODO: enable theme-check once `line_items_for` is accepted as valid filter {% endcomment %}
 {% # theme-check-disable %}
 {%- assign items_in_cart = cart | line_items_for: product | sum: 'quantity' -%}
 {% # theme-check-enable %}
-<div class="color-{{ section.settings.color_scheme }}{% unless is_modal %} gradient{% endunless %}">
+<div class="quick-order-list-container color-{{ section.settings.color_scheme }}{% unless is_modal %} gradient{% endunless %}">
   <quick-order-list
     class="page-width section-{{ section.id }}-padding"
-    id="quick-order-list-{{ product.id }}"
-    data-id="{{ section.id }}"
+    id="{{ section.id }}-{{ product.id }}"
+    data-section="{{ section.id }}"
     data-product-id="{{ product.id }}"
+    data-url="{{ product.url }}"
   >
     <form
       action="{{ routes.cart_update_url }}"
@@ -112,7 +125,7 @@
     {%- else -%}
       <div
         class="quick-order-list__total{% unless is_modal %} gradient{% endunless %}"
-        id="quick-order-list-total-{{ product.id }}"
+        id="quick-order-list-total-{{ product.id }}-{{ section.id }}"
       >
         <div class="quick-order-list-total__info">
           <div class="quick-order-list-total__column small-hide medium-hide">
@@ -123,7 +136,7 @@
               >
                 <span class="quick-order-list__button-text">{{- 'sections.quick_order_list.view_cart' | t -}}</span>
               </a>
-              <div class="variant-remove-total">
+              <div class="variant-remove-total{% if items_in_cart == 0 %} variant-remove-total--empty{% endif %}">
                 {%- render 'loading-spinner' -%}
                 <quick-order-list-remove-all-button
                   class="no-js-hidden"
@@ -161,14 +174,30 @@
               <p class="totals__subtotal h5">{{ 'sections.quick_order_list.product_total' | t }}</p>
             </div>
             <small class="tax-note caption-large rte">
-              {%- if cart.taxes_included and shop.shipping_policy.body != blank -%}
-                {{ 'sections.cart.taxes_included_and_shipping_policy_html' | t: link: shop.shipping_policy.url }}
-              {%- elsif cart.taxes_included -%}
-                {{ 'sections.cart.taxes_included_but_shipping_at_checkout' | t }}
-              {%- elsif shop.shipping_policy.body != blank -%}
-                {{ 'sections.cart.taxes_and_shipping_policy_at_checkout_html' | t: link: shop.shipping_policy.url }}
-              {%- else -%}
-                {{ 'sections.cart.taxes_and_shipping_at_checkout' | t }}
+              {%- if cart.duties_included and cart.taxes_included -%}
+                {%- if shop.shipping_policy.body == blank -%}
+                  {{ 'sections.cart.duties_and_taxes_included_shipping_at_checkout_without_policy' | t }}
+                {%- else -%}
+                  {{ 'sections.cart.duties_and_taxes_included_shipping_at_checkout_with_policy_html' | t: link: shop.shipping_policy.url }}
+                {%- endif -%}  
+              {%- elsif cart.duties_included == false and cart.taxes_included -%}
+                {%- if shop.shipping_policy.body == blank -%}
+                  {{ 'sections.cart.taxes_included_shipping_at_checkout_without_policy' | t }}
+                {%- else -%}
+                  {{ 'sections.cart.taxes_included_shipping_at_checkout_with_policy_html' | t: link: shop.shipping_policy.url }}
+                {%- endif -%}  
+              {%- elsif cart.duties_included and cart.taxes_included == false -%}
+                {%- if shop.shipping_policy.body == blank -%}
+                  {{ 'sections.cart.duties_included_taxes_at_checkout_shipping_at_checkout_without_policy' | t }}
+                {%- else -%}
+                  {{ 'sections.cart.duties_included_taxes_at_checkout_shipping_at_checkout_with_policy_html' | t: link: shop.shipping_policy.url }}
+                {%- endif -%}
+              {%- elsif cart.duties_included == false and cart.taxes_included == false -%}
+                {%- if shop.shipping_policy.body == blank -%}
+                  {{ 'sections.cart.taxes_at_checkout_shipping_at_checkout_without_policy' | t }}
+                {%- else -%}
+                  {{ 'sections.cart.taxes_at_checkout_shipping_at_checkout_with_policy_html' | t: link: shop.shipping_policy.url }}
+                {%- endif -%}
               {%- endif -%}
             </small>
           </div>

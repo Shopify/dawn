@@ -1,10 +1,6 @@
-Dawn 13.0.1 introduces a few fixes.
-### Changed
-- The cart drawer header (Product, Total) is not sticky anymore when the content is scrollable
+Dawn 15.0.1 introduces a few bug fixes.
 ### Fixes and improvements
-- Fix product rating alignment when the product doesn't have a media
-- Fix scroll issue on variant change
-- Limit width of country selector when the currency is the same for all the countries
-- Fix missing alt tags for the collection image on the collection page as well as for collection cards
-- Fix cart drawer's cart note to prevent overlapping of the text and caret icon
-- Fix cart drawer's header to prevent an overlap with the items in the cart
+- Fix issues where when the header section is hidden, some functionalities were broken.
+- Update cart errors to be output as a string rather than a HTML element.
+- Escape variant option names so that when an option includes quotation marks it doesn’t cause undesired effects.
+- Fix placeholder product cards that were not showing a default price and make the check more robust.
