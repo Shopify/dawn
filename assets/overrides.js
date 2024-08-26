@@ -69,8 +69,10 @@ function init() {
     TNB.tallSizingControls(true);
   });
 
-  subscribe(PUB_SUB_EVENTS.variantChange, function () {
+  subscribe(PUB_SUB_EVENTS.variantChange, function (e) {
     TNB.tallSizingControls(false);
+
+    console.log('Variant Change:', e);
   });
 
   TNB.tallSizingControls(false);
