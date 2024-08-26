@@ -73,6 +73,7 @@ function init() {
     TNB.tallSizingControls(false);
 
     console.log('Variant Change:', e);
+    console.log('wat');
   });
 
   TNB.tallSizingControls(false);
