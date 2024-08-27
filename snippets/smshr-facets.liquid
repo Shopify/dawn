@@ -64,275 +64,276 @@
             endif
           %}
 
-          <details
-            id="Details-{{ filter.param_name | escape }}-{{ section.id }}"
-            class="facets__disclosure-vertical js-filter border-t border-t-grey100 py-4 {% if forloop.last %} border-b border-b-grey100{% endif %}"
-            data-index="{{ forloop.index }}"
-            {% if forloop.index == 1 %}
-              open
-            {% endif %}
-          >
-            <summary
-              class="facets__summary caption-large focus-offset"
-              aria-label="{{ filter.label | escape }} ({{ 'products.facets.filters_selected.one' | t: count: filter.active_values.size }})"
+          {% if filter.values.size > 0 %}
+            <details
+              id="Details-{{ filter.param_name | escape }}-{{ section.id }}"
+              class="facets__disclosure-vertical js-filter border-t border-t-grey100 py-4 {% if forloop.last %} border-b border-b-grey100{% endif %}"
+              data-index="{{ forloop.index }}"
+              {% if forloop.index == 1 %}
+                open
+              {% endif %}
             >
-              <div class="flex justify-between gap-small items-center py-mini">
-                <span class="facets__summary-label">
-                  {{ filter.label }}
-                  <span class="facets__selected{% if filter.active_values.size == 0 or filter_name == 'price' %} hidden{% endif %}">
-                    ({{ filter.active_values.size }})</span
-                  >
-                </span>
-                {%- if filter.operator == 'AND' -%}
-                  <span class="facets__and-helptext">
-                    {{ 'products.facets.filter_and_operator_subtitle' | t }}
+              <summary
+                class="facets__summary caption-large focus-offset"
+                aria-label="{{ filter.label | escape }} ({{ 'products.facets.filters_selected.one' | t: count: filter.active_values.size }})"
+              >
+                <div class="flex justify-between gap-small items-center py-mini">
+                  <span class="facets__summary-label">
+                    {{ filter.label }}
+                    <span class="facets__selected{% if filter.active_values.size == 0 or filter_name == 'price' %} hidden{% endif %}">
+                      ({{ filter.active_values.size }})</span
+                    >
                   </span>
-                {%- endif -%}
+                  {%- if filter.operator == 'AND' -%}
+                    <span class="facets__and-helptext">
+                      {{ 'products.facets.filter_and_operator_subtitle' | t }}
+                    </span>
+                  {%- endif -%}
 
-                {% render 'icon-chevron-down', class: 'w-4 h-4 icon-caret' %}
-              </div>
-            </summary>
+                  {% render 'icon-chevron-down', class: 'w-4 h-4 icon-caret' %}
+                </div>
+              </summary>
 
-            {% case filter_name %}
-              {% when 'größe' %}
-                <div
-                  id="Facet-{{ forloop.index }}-{{ section.id }}"
-                  class="parent-display mt-small facets__display-vertical"
-                >
-                  <fieldset class="facets-wrap parent-wrap facets-wrap-vertical">
-                    <legend class="visually-hidden">{{ filter.label | escape }}</legend>
-                    {%- liquid
-                      assign sorted_values = filter.values
-                      # Keep the selected values grouped together when operator is AND
-                      if filter.operator == 'AND'
-                        assign active_filter_values = filter.values | where: 'active', true
-                        assign inactive_filter_values = filter.values | where: 'active', false
-                        assign sorted_values = active_filter_values | concat: inactive_filter_values
-                      endif
-                    -%}
+              {% case filter_name %}
+                {% when 'größe' %}
+                  <div
+                    id="Facet-{{ forloop.index }}-{{ section.id }}"
+                    class="parent-display mt-small facets__display-vertical"
+                  >
+                    <fieldset class="facets-wrap parent-wrap facets-wrap-vertical">
+                      <legend class="visually-hidden">{{ filter.label | escape }}</legend>
+                      {%- liquid
+                        assign sorted_values = filter.values
+                        # Keep the selected values grouped together when operator is AND
+                        if filter.operator == 'AND'
+                          assign active_filter_values = filter.values | where: 'active', true
+                          assign inactive_filter_values = filter.values | where: 'active', false
+                          assign sorted_values = active_filter_values | concat: inactive_filter_values
+                        endif
+                      -%}
 
-                    <ul
-                      class="{{ visual_layout_class }} facets__list--vertical list-unstyled grid grid-cols-3 gap-mini"
-                      role="list"
-                    >
-                      {%- for value in sorted_values -%}
-                        {% liquid
-                          assign input_id = 'Filter-' | append: filter.param_name | escape | append: '-' | append: forloop.index
-                          assign is_disabled = false
-                          if value.count == 0 and value.active == false
-                            assign is_disabled = true
-                          endif
-                        %}
-
-                        {% comment %} {{ value.active }} {% endcomment %}
-
-                        {%- capture label_class -%}
-                          facets__label facet-checkbox{% if is_disabled %} disabled{% endif %}{% if value.active %} active{% endif %}
-                        {%- endcapture -%}
-
-                        {%- capture label_class -%}
-                          facets__label facet-checkbox{% if is_disabled %} disabled{% endif %}{% if value.active %} active{% endif %}
-                        {%- endcapture -%}
-
-                        <li class="list-menu__item facets__item {% if forloop.index > show_more_number %} show-more-item hidden{% endif %}">
-                          {% assign label = value.label | escape %}
-
-                          {% render 'multi-size-select',
-                            name: value.param_name,
-                            value: value.value,
-                            id: input_id,
-                            is_checked: value.active,
-                            is_disabled: is_disabled,
-                            label: label
+                      <ul
+                        class="{{ visual_layout_class }} facets__list--vertical list-unstyled grid grid-cols-3 gap-mini"
+                        role="list"
+                      >
+                        {%- for value in sorted_values -%}
+                          {% liquid
+                            assign input_id = 'Filter-' | append: filter.param_name | escape | append: '-' | append: forloop.index
+                            assign is_disabled = false
+                            if value.count == 0 and value.active == false
+                              assign is_disabled = true
+                            endif
                           %}
-                        </li>
-                      {%- endfor -%}
-                    </ul>
-                  </fieldset>
-                  {%- if filter.values.size > show_more_number and filter_type == 'vertical' -%}
-                    <show-more-button>
-                      <button
-                        class="button-show-more link underlined-link"
-                        id="Show-More-{{ forloop.index }}-{{ section.id }}"
-                        type="button"
-                      >
-                        <span class="label-show-more label-text"
-                          ><span aria-hidden="true">+ </span>{{ 'products.facets.show_more' | t -}}
-                        </span>
-                        <span class="label-show-less label-text hidden"
-                          ><span aria-hidden="true">- </span>{{ 'products.facets.show_less' | t -}}
-                        </span>
-                      </button>
-                    </show-more-button>
-                  {%- endif %}
-                </div>
-              {% when 'farbe', %}
-                <div
-                  id="Facet-{{ forloop.index }}-{{ section.id }}"
-                  class="parent-display mt-small facets__display-vertical"
-                >
-                  <fieldset class="facets-wrap parent-wrap facets-wrap-vertical">
-                    <legend class="visually-hidden">{{ filter.label | escape }}</legend>
-                    {%- liquid
-                      assign sorted_values = filter.values
-                      # Keep the selected values grouped together when operator is AND
-                      if filter.operator == 'AND'
-                        assign active_filter_values = filter.values | where: 'active', true
-                        assign inactive_filter_values = filter.values | where: 'active', false
-                        assign sorted_values = active_filter_values | concat: inactive_filter_values
-                      endif
-                    -%}
-                    <ul
-                      class="{{ visual_layout_class }} facets__list--vertical list-unstyled flex flex-wrap gap-small"
-                      role="list"
-                    >
-                      {%- for value in sorted_values -%}
-                        {% liquid
-                          assign input_id = 'Filter-' | append: filter.param_name | escape | append: '-' | append: forloop.index
-                          assign is_disabled = false
-                          if value.count == 0 and value.active == false
-                            assign is_disabled = true
-                          endif
-                        %}
-                        {%- capture label_class -%}
+
+                          {% comment %} {{ value.active }} {% endcomment %}
+
+                          {%- capture label_class -%}
                           facets__label facet-checkbox{% if is_disabled %} disabled{% endif %}{% if value.active %} active{% endif %}
                         {%- endcapture -%}
 
-                        <li class="list-menu__item facets__item {% if forloop.index > show_more_number %} show-more-item hidden{% endif %}">
-                          <input
-                            type="checkbox"
-                            class="color-swatch hide_input {% if is_disabled %} disabled{% endif %}"
-                            id="{{ input_id }}"
-                            name="{{ value.param_name }}"
-                            value="{{ value.value }}"
-                            {% if value.active %}
-                              checked
-                            {% endif %}
-                            {% if is_disabled %}
-                              disabled
-                            {% endif %}
-                          >
-                          {%- liquid
-                            assign color_value = value.value | downcase
-                            for color_data in swatch_colors
-                              assign color_data_arr = color_data | split: ':'
-                              assign rule_name = color_data_arr[0] | strip
-
-                              assign normalizes_rule_name = rule_name | replace: '/', '-'
-                              assign normalizes_value = color_value | strip | replace: '/', '-'
-
-                              if normalizes_value == normalizes_rule_name
-                                assign color_codes = color_data_arr[1] | strip | split: '#'
-                                assign color_number = 0 | plus: color_codes.size
-                                break
-                              endif
-                            endfor
-                          -%}
-
-                          <label
-                            title="{{ color_value }}"
-                            data-{{ value.param_name }}="{{value.value}}"
-                            style="
-                              {%- case color_number -%}
-                              {%- when 2 -%}
-                                  background-color: #{{ color_codes[1] }}
-                              {%- when 3 -%}
-                                  background: linear-gradient(135deg, #{{ color_codes[1] }} 50%, #{{ color_codes[2] }} 50%);
-                              {%- when 4 -%}
-                                  background: conic-gradient(#{{ color_codes[1] }} 0% 33.33%, #{{ color_codes[2] }} 33.33% 66.66%,#{{ color_codes[3] }} 66.66% 100%);
-                              {%- else -%}
-                                  background-image:url({{ color_codes[0] | downcase | replace: ' ', '-' | file_img_url }})
-                              {%- endcase -%};
-                            "
-                            class="flex relative swatch-label round rounded-full w-8 h-8 bg-no-repeat bg-center bg-cover border border-grey100 cursor-pointer {{ label_class }}"
-                            for="{{input_id}}"
-                          >
-                            <span class="visually-hidden">
-                              {{- 'products.product.variant_sold_out_or_unavailable' | t -}}
-                            </span>
-                          </label>
-                        </li>
-                      {%- endfor -%}
-                    </ul>
-                  </fieldset>
-                  {%- if filter.values.size > show_more_number and filter_type == 'vertical' -%}
-                    <show-more-button>
-                      <button
-                        class="button-show-more link underlined-link"
-                        id="Show-More-{{ forloop.index }}-{{ section.id }}"
-                        type="button"
-                      >
-                        <span class="label-show-more label-text"
-                          ><span aria-hidden="true">+ </span>{{ 'products.facets.show_more' | t -}}
-                        </span>
-                        <span class="label-show-less label-text hidden"
-                          ><span aria-hidden="true">- </span>{{ 'products.facets.show_less' | t -}}
-                        </span>
-                      </button>
-                    </show-more-button>
-                  {%- endif %}
-                </div>
-              {% when 'price' %}
-                <div
-                  id="Facet-{{ forloop.index }}-{{ section.id }}"
-                  class="parent-display mt-small facets__display-vertical"
-                >
-                  <fieldset class="facets-wrap parent-wrap facets-wrap-vertical">
-                    <legend class="visually-hidden">{{ filter.label | escape }}</legend>
-
-                    {% render 'price-filter', filter: filter, id_prefix: 'Filter-' %}
-                  </fieldset>
-
-                  {%- if filter.values.size > show_more_number -%}
-                    <show-more-button>
-                      <button
-                        class="button-show-more link underlined-link"
-                        id="Show-More-{{ forloop.index }}-{{ section.id }}"
-                        type="button"
-                      >
-                        <span class="label-show-more label-text"
-                          ><span aria-hidden="true">+ </span>{{ 'products.facets.show_more' | t -}}
-                        </span>
-                        <span class="label-show-less label-text hidden"
-                          ><span aria-hidden="true">- </span>{{ 'products.facets.show_less' | t -}}
-                        </span>
-                      </button>
-                    </show-more-button>
-                  {%- endif %}
-                </div>
-              {% else %}
-                <div
-                  id="Facet-{{ forloop.index }}-{{ section.id }}"
-                  class="parent-display mt-small facets__display-vertical"
-                >
-                  <fieldset class="facets-wrap parent-wrap facets-wrap-vertical">
-                    <legend class="visually-hidden">{{ filter.label | escape }}</legend>
-                    {%- liquid
-                      assign sorted_values = filter.values
-                      # Keep the selected values grouped together when operator is AND
-                      if filter.operator == 'AND'
-                        assign active_filter_values = filter.values | where: 'active', true
-                        assign inactive_filter_values = filter.values | where: 'active', false
-                        assign sorted_values = active_filter_values | concat: inactive_filter_values
-                      endif
-                    -%}
-                    <ul
-                      class="{{ visual_layout_class }} facets__list--vertical list-unstyled"
-                      role="list"
-                    >
-                      {%- for value in sorted_values -%}
-                        {% liquid
-                          assign input_id = 'Filter-' | append: filter.param_name | escape | append: '-' | append: forloop.index
-                          assign is_disabled = false
-                          if value.count == 0 and value.active == false
-                            assign is_disabled = true
-                          endif
-                        %}
-                        {%- capture label_class -%}
+                          {%- capture label_class -%}
                           facets__label facet-checkbox{% if is_disabled %} disabled{% endif %}{% if value.active %} active{% endif %}
                         {%- endcapture -%}
 
-                        {%- capture text_value -%}
+                          <li class="list-menu__item facets__item {% if forloop.index > show_more_number %} show-more-item hidden{% endif %}">
+                            {% assign label = value.label | escape %}
+
+                            {% render 'multi-size-select',
+                              name: value.param_name,
+                              value: value.value,
+                              id: input_id,
+                              is_checked: value.active,
+                              is_disabled: is_disabled,
+                              label: label
+                            %}
+                          </li>
+                        {%- endfor -%}
+                      </ul>
+                    </fieldset>
+                    {%- if filter.values.size > show_more_number and filter_type == 'vertical' -%}
+                      <show-more-button>
+                        <button
+                          class="button-show-more link underlined-link"
+                          id="Show-More-{{ forloop.index }}-{{ section.id }}"
+                          type="button"
+                        >
+                          <span class="label-show-more label-text"
+                            ><span aria-hidden="true">+ </span>{{ 'products.facets.show_more' | t -}}
+                          </span>
+                          <span class="label-show-less label-text hidden"
+                            ><span aria-hidden="true">- </span>{{ 'products.facets.show_less' | t -}}
+                          </span>
+                        </button>
+                      </show-more-button>
+                    {%- endif %}
+                  </div>
+                {% when 'farbe', %}
+                  <div
+                    id="Facet-{{ forloop.index }}-{{ section.id }}"
+                    class="parent-display mt-small facets__display-vertical"
+                  >
+                    <fieldset class="facets-wrap parent-wrap facets-wrap-vertical">
+                      <legend class="visually-hidden">{{ filter.label | escape }}</legend>
+                      {%- liquid
+                        assign sorted_values = filter.values
+                        # Keep the selected values grouped together when operator is AND
+                        if filter.operator == 'AND'
+                          assign active_filter_values = filter.values | where: 'active', true
+                          assign inactive_filter_values = filter.values | where: 'active', false
+                          assign sorted_values = active_filter_values | concat: inactive_filter_values
+                        endif
+                      -%}
+                      <ul
+                        class="{{ visual_layout_class }} facets__list--vertical list-unstyled flex flex-wrap gap-small"
+                        role="list"
+                      >
+                        {%- for value in sorted_values -%}
+                          {% liquid
+                            assign input_id = 'Filter-' | append: filter.param_name | escape | append: '-' | append: forloop.index
+                            assign is_disabled = false
+                            if value.count == 0 and value.active == false
+                              assign is_disabled = true
+                            endif
+                          %}
+                          {%- capture label_class -%}
+                          facets__label facet-checkbox{% if is_disabled %} disabled{% endif %}{% if value.active %} active{% endif %}
+                        {%- endcapture -%}
+
+                          <li class="list-menu__item facets__item {% if forloop.index > show_more_number %} show-more-item hidden{% endif %}">
+                            <input
+                              type="checkbox"
+                              class="color-swatch hide_input {% if is_disabled %} disabled{% endif %}"
+                              id="{{ input_id }}"
+                              name="{{ value.param_name }}"
+                              value="{{ value.value }}"
+                              {% if value.active %}
+                                checked
+                              {% endif %}
+                              {% if is_disabled %}
+                                disabled
+                              {% endif %}
+                            >
+                            {%- liquid
+                              assign color_value = value.value | downcase
+                              for color_data in swatch_colors
+                                assign color_data_arr = color_data | split: ':'
+                                assign rule_name = color_data_arr[0] | strip
+
+                                assign normalizes_rule_name = rule_name | replace: '/', '-'
+                                assign normalizes_value = color_value | strip | replace: '/', '-'
+
+                                if normalizes_value == normalizes_rule_name
+                                  assign color_codes = color_data_arr[1] | strip | split: '#'
+                                  assign color_number = 0 | plus: color_codes.size
+                                  break
+                                endif
+                              endfor
+                            -%}
+
+                            <label
+                              title="{{ color_value }}"
+                              data-{{ value.param_name }}="{{value.value}}"
+                              style="
+                                {%- case color_number -%}
+                                {%- when 2 -%}
+                                    background-color: #{{ color_codes[1] }}
+                                {%- when 3 -%}
+                                    background: linear-gradient(135deg, #{{ color_codes[1] }} 50%, #{{ color_codes[2] }} 50%);
+                                {%- when 4 -%}
+                                    background: conic-gradient(#{{ color_codes[1] }} 0% 33.33%, #{{ color_codes[2] }} 33.33% 66.66%,#{{ color_codes[3] }} 66.66% 100%);
+                                {%- else -%}
+                                    background-image:url({{ color_codes[0] | downcase | replace: ' ', '-' | file_img_url }})
+                                {%- endcase -%};
+                              "
+                              class="flex relative swatch-label round rounded-full w-8 h-8 bg-no-repeat bg-center bg-cover border border-grey100 cursor-pointer {{ label_class }}"
+                              for="{{input_id}}"
+                            >
+                              <span class="visually-hidden">
+                                {{- 'products.product.variant_sold_out_or_unavailable' | t -}}
+                              </span>
+                            </label>
+                          </li>
+                        {%- endfor -%}
+                      </ul>
+                    </fieldset>
+                    {%- if filter.values.size > show_more_number and filter_type == 'vertical' -%}
+                      <show-more-button>
+                        <button
+                          class="button-show-more link underlined-link"
+                          id="Show-More-{{ forloop.index }}-{{ section.id }}"
+                          type="button"
+                        >
+                          <span class="label-show-more label-text"
+                            ><span aria-hidden="true">+ </span>{{ 'products.facets.show_more' | t -}}
+                          </span>
+                          <span class="label-show-less label-text hidden"
+                            ><span aria-hidden="true">- </span>{{ 'products.facets.show_less' | t -}}
+                          </span>
+                        </button>
+                      </show-more-button>
+                    {%- endif %}
+                  </div>
+                {% when 'price' %}
+                  <div
+                    id="Facet-{{ forloop.index }}-{{ section.id }}"
+                    class="parent-display mt-small facets__display-vertical"
+                  >
+                    <fieldset class="facets-wrap parent-wrap facets-wrap-vertical">
+                      <legend class="visually-hidden">{{ filter.label | escape }}</legend>
+
+                      {% render 'price-filter', filter: filter, id_prefix: 'Filter-' %}
+                    </fieldset>
+
+                    {%- if filter.values.size > show_more_number -%}
+                      <show-more-button>
+                        <button
+                          class="button-show-more link underlined-link"
+                          id="Show-More-{{ forloop.index }}-{{ section.id }}"
+                          type="button"
+                        >
+                          <span class="label-show-more label-text"
+                            ><span aria-hidden="true">+ </span>{{ 'products.facets.show_more' | t -}}
+                          </span>
+                          <span class="label-show-less label-text hidden"
+                            ><span aria-hidden="true">- </span>{{ 'products.facets.show_less' | t -}}
+                          </span>
+                        </button>
+                      </show-more-button>
+                    {%- endif %}
+                  </div>
+                {% else %}
+                  <div
+                    id="Facet-{{ forloop.index }}-{{ section.id }}"
+                    class="parent-display mt-small facets__display-vertical"
+                  >
+                    <fieldset class="facets-wrap parent-wrap facets-wrap-vertical">
+                      <legend class="visually-hidden">{{ filter.label | escape }}</legend>
+                      {%- liquid
+                        assign sorted_values = filter.values
+                        # Keep the selected values grouped together when operator is AND
+                        if filter.operator == 'AND'
+                          assign active_filter_values = filter.values | where: 'active', true
+                          assign inactive_filter_values = filter.values | where: 'active', false
+                          assign sorted_values = active_filter_values | concat: inactive_filter_values
+                        endif
+                      -%}
+                      <ul
+                        class="{{ visual_layout_class }} facets__list--vertical list-unstyled"
+                        role="list"
+                      >
+                        {%- for value in sorted_values -%}
+                          {% liquid
+                            assign input_id = 'Filter-' | append: filter.param_name | escape | append: '-' | append: forloop.index
+                            assign is_disabled = false
+                            if value.count == 0 and value.active == false
+                              assign is_disabled = true
+                            endif
+                          %}
+                          {%- capture label_class -%}
+                          facets__label facet-checkbox{% if is_disabled %} disabled{% endif %}{% if value.active %} active{% endif %}
+                        {%- endcapture -%}
+
+                          {%- capture text_value -%}
                          <span class="facet-checkbox__text leading-[18px]" aria-hidden="true">
                             <span class="facet-checkbox__text-label text-body-xs text-black capitalize">{{- value.label | escape }} ({{- value.count -}})</span> 
                           </span>
@@ -347,39 +348,40 @@
                             )
                           </span>
                         {%- endcapture -%}
-                        <li class="list-menu__item facets__ite py-mini {% if forloop.index > show_more_number %} show-more-item hidden{% endif %}">
-                          {% render 'multi-select',
-                            name: value.param_name,
-                            value: value.value,
-                            id: input_id,
-                            is_checked: value.active,
-                            is_disabled: is_disabled,
-                            label_class: label_class,
-                            text_value: text_value
-                          %}
-                        </li>
-                      {%- endfor -%}
-                    </ul>
-                  </fieldset>
-                  {%- if filter.values.size > show_more_number and filter_type == 'vertical' -%}
-                    <show-more-button>
-                      <button
-                        class="button-show-more link underlined-link"
-                        id="Show-More-{{ forloop.index }}-{{ section.id }}"
-                        type="button"
-                      >
-                        <span class="label-show-more label-text"
-                          ><span aria-hidden="true">+ </span>{{ 'products.facets.show_more' | t -}}
-                        </span>
-                        <span class="label-show-less label-text hidden"
-                          ><span aria-hidden="true">- </span>{{ 'products.facets.show_less' | t -}}
-                        </span>
-                      </button>
-                    </show-more-button>
-                  {%- endif %}
-                </div>
-            {% endcase %}
-          </details>
+                          <li class="list-menu__item facets__ite py-mini {% if forloop.index > show_more_number %} show-more-item hidden{% endif %}">
+                            {% render 'multi-select',
+                              name: value.param_name,
+                              value: value.value,
+                              id: input_id,
+                              is_checked: value.active,
+                              is_disabled: is_disabled,
+                              label_class: label_class,
+                              text_value: text_value
+                            %}
+                          </li>
+                        {%- endfor -%}
+                      </ul>
+                    </fieldset>
+                    {%- if filter.values.size > show_more_number and filter_type == 'vertical' -%}
+                      <show-more-button>
+                        <button
+                          class="button-show-more link underlined-link"
+                          id="Show-More-{{ forloop.index }}-{{ section.id }}"
+                          type="button"
+                        >
+                          <span class="label-show-more label-text"
+                            ><span aria-hidden="true">+ </span>{{ 'products.facets.show_more' | t -}}
+                          </span>
+                          <span class="label-show-less label-text hidden"
+                            ><span aria-hidden="true">- </span>{{ 'products.facets.show_less' | t -}}
+                          </span>
+                        </button>
+                      </show-more-button>
+                    {%- endif %}
+                  </div>
+              {% endcase %}
+            </details>
+          {% endif %}
         {%- endfor -%}
       </div>
 
