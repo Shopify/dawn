@@ -1,0 +1,40 @@
+{% comment %} Piggy-back on pricing component styles {% endcomment %}
+
+{%- liquid
+  if use_variant
+    assign target = product.selected_or_first_available_variant
+  elsif placeholder
+    assign target = null
+  else
+    assign target = product
+  endif
+
+  assign compare_at_price = target.compare_at_price
+  assign price = target.price | default: 1999
+  assign available = target.available | default: false
+  assign money_price = price | money
+
+  if target == product and product.price_varies
+    assign money_price = 'products.product.price.from_price_html' | t: price: money_price
+  endif
+-%}
+
+<div
+  class="
+    product-badges price
+    {%- if price_class %} {{ price_class }}{% endif -%}
+    {%- if available == false %} price--sold-out{% endif -%}
+    {%- if compare_at_price > price and product.quantity_price_breaks_configured? != true %} price--on-sale{% endif -%}
+    {%- if compare_at_price > price and product.quantity_price_breaks_configured? %} volume-pricing--sale-badge{% endif -%}
+    {%- if product.price_varies == false and product.compare_at_price_varies %} price--no-compare{% endif -%}
+    {%- if show_badges %} price--show-badge{% endif -%}
+  "
+>
+  <span class="badge price__badge-sale color-{{ settings.sale_badge_color_scheme }}">
+    {{ 'products.product.on_sale' | t }}
+  </span>
+
+  <span class="badge price__badge-sold-out color-{{ settings.sold_out_badge_color_scheme }}">
+    {{ 'products.product.sold_out' | t }}
+  </span>
+</div>
