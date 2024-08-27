@@ -107,7 +107,6 @@ class SplideCarousel extends HTMLElement {
       splide.on('arrows:updated', this.disableCarouselArrows('main-carousel'));
 
       splide.mount();
-      console.log('carousel moundted');
     } catch (error) {
       console.error(error);
       console.error(`Error mounting related carousel ${carousel_id}`, error);
