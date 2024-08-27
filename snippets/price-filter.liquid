@@ -9,36 +9,45 @@
 {% endcomment %}
 
 {% liquid
-  assign max_price_cents = filter.range_max
+  if price_groups == blank
+    assign max_price_cents = filter.range_max
+    assign min_price_cents = 0
 
-  assign group_size_cents = 10000
-  assign num_groups = max_price_cents | divided_by: group_size_cents
-  assign remainder = max_price_cents | modulo: group_size_cents
-  if remainder > 0
-    assign num_groups = num_groups | plus: 1
-  endif
-
-  assign price_groups = ''
-
-  assign groups = num_groups | minus: 1
-  for i in (0..groups)
-    assign min_price_cents = i | times: group_size_cents
-    assign up_i = i | plus: 1
-    assign group_max_price_cents = up_i | times: group_size_cents
-    if group_max_price_cents > max_price_cents
-      assign group_max_price_cents = max_price_cents
-    endif
-
-    assign price_group = min_price_cents | append: '-' | append: group_max_price_cents
-
-    if forloop.first
-      assign price_groups = price_group
+    if max_price_cents < 10000
+      assign rounded_max = 10000
+      assign price_ranges = min_price_cents | append: '-' | append: rounded_max
     else
-      assign price_groups = price_groups | append: ', ' | append: price_group
-    endif
-  endfor
+      assign rounded_max = max_price_cents | times: 0.0001 | ceil | times: 10000
+      assign gap = rounded_max | divided_by: 5 | times: 0.0001 | ceil | times: 10000
 
-  assign price_groups = price_groups | split: ', '
+      assign price_ranges = ''
+
+      assign current_min = min_price_cents
+      assign current_max = gap
+
+      for i in (1..5)
+        assign current_max = current_min | plus: gap
+        if current_max > rounded_max
+          assign current_max = rounded_max
+        endif
+
+        assign range = current_min | append: '-' | append: current_max
+
+        if forloop.first
+          assign price_ranges = range
+        else
+          assign price_ranges = price_ranges | append: ',' | append: range
+        endif
+
+        assign current_min = current_max
+        if current_min >= rounded_max
+          break
+        endif
+      endfor
+    endif
+
+    assign price_groups = price_ranges | split: ','
+  endif
 %}
 
 <ul
@@ -54,6 +63,10 @@
       assign lower_price = lower_limit | money
       assign upper_price = upper_limit | money
 
+      assign lower_group_value = lower_limit | divided_by: 100
+      assign upper_group_value = upper_limit | divided_by: 100
+
+      assign group_value = lower_group_value | append: '-' | append: upper_group_value
       assign label = lower_price | append: ' - ' | append: upper_price
 
       if forloop.index0 == 0
@@ -66,12 +79,6 @@
       assign name = 'filter.v.price'
     %}
 
-    {% comment %}
-      {%- capture label_class -%}
-        facets__label facet-checkbox{% if is_disabled %} disabled{% endif %}{% if value.active %} active{% endif %}
-      {%- endcapture -%}
-    {% endcomment %}
-
     {%- capture text_value -%}
       <span class="facet-checkbox__text leading-[18px]" aria-hidden="true">
         <span class="facet-checkbox__text-label text-body-xs text-black">{{- label | escape }}</span> 
@@ -79,7 +86,7 @@
     {%- endcapture -%}
 
     <li class="list-menu__item facets__item py-mini {% if forloop.index > show_more_number %} show-more-item hidden{% endif %}">
-      {% render 'price-select', name: name, value: group, id: input_id, text_value: text_value %}
+      {% render 'price-select', name: name, value: group_value, id: input_id, text_value: text_value %}
     </li>
   {%- endfor -%}
 </ul>

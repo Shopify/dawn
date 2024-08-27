@@ -11,19 +11,6 @@
   {% render 'smshr-facets', results: collection,  paginate: paginate %}
 {% endcomment %}
 
-{% comment %} {{ 'component-swatch-input.css' | asset_url | stylesheet_tag }} {% endcomment %}
-{% comment %} {{ 'component-swatch.css' | asset_url | stylesheet_tag }} {% endcomment %}
-
-{% comment %} assign sort_by = results.sort_by | default: results.default_sort_by {% endcomment %}
-{% comment %}
-  if results.url
-    assign results_url = results.url
-  else
-    assign terms = results.terms | escape
-    assign results_url = '?q=' | append: terms | append: '&options%5Bprefix%5D=last&sort_by=' | append: sort_by
-  endif
-{% endcomment %}
-
 {%- liquid
   assign total_active_values = 0
   assign default_presentation = 'text'
@@ -64,7 +51,92 @@
             endif
           %}
 
-          {% if filter.values.size > 0 %}
+          {% if filter_name == 'price' %}
+            {% liquid
+              assign max_price_cents = filter.range_max
+              assign min_price_cents = 0
+
+              if max_price_cents < 10000
+                assign rounded_max = 10000
+                assign price_ranges = min_price_cents | append: '-' | append: rounded_max
+              else
+                assign rounded_max = max_price_cents | times: 0.0001 | ceil | times: 10000
+                assign gap = rounded_max | divided_by: 5 | times: 0.0001 | ceil | times: 10000
+
+                assign price_ranges = ''
+
+                assign current_min = min_price_cents
+                assign current_max = gap
+
+                for i in (1..5)
+                  assign current_max = current_min | plus: gap
+                  if current_max > rounded_max
+                    assign current_max = rounded_max
+                  endif
+
+                  assign range = current_min | append: '-' | append: current_max
+
+                  if forloop.first
+                    assign price_ranges = range
+                  else
+                    assign price_ranges = price_ranges | append: ',' | append: range
+                  endif
+
+                  assign current_min = current_max
+                  if current_min >= rounded_max
+                    break
+                  endif
+                endfor
+              endif
+
+              assign price_groups = price_ranges | split: ','
+            %}
+
+            {% if price_groups.size > 0 %}
+              <details
+                id="Details-{{ filter.param_name | escape }}-{{ section.id }}"
+                class="facets__disclosure-vertical js-filter border-t border-t-grey100 py-4 {% if forloop.last %} border-b border-b-grey100{% endif %}"
+                data-index="{{ forloop.index }}"
+                {% if forloop.index == 1 %}
+                  open
+                {% endif %}
+              >
+                <summary
+                  class="facets__summary caption-large focus-offset"
+                  aria-label="{{ filter.label | escape }} ({{ 'products.facets.filters_selected.one' | t: count: filter.active_values.size }})"
+                >
+                  <div class="flex justify-between gap-small items-center py-mini">
+                    <span class="facets__summary-label">
+                      {{ filter.label }}
+                      <span class="facets__selected{% if filter.active_values.size == 0 or filter_name == 'price' %} hidden{% endif %}">
+                        ({{ filter.active_values.size }})</span
+                      >
+                    </span>
+                    {%- if filter.operator == 'AND' -%}
+                      <span class="facets__and-helptext">
+                        {{ 'products.facets.filter_and_operator_subtitle' | t }}
+                      </span>
+                    {%- endif -%}
+
+                    {% render 'icon-chevron-down', class: 'w-4 h-4 icon-caret' %}
+                  </div>
+                </summary>
+
+                <div
+                  id="Facet-{{ forloop.index }}-{{ section.id }}"
+                  class="parent-display mt-small facets__display-vertical"
+                >
+                  <fieldset class="facets-wrap parent-wrap facets-wrap-vertical">
+                    <legend class="visually-hidden">{{ filter.label | escape }}</legend>
+
+                    {% render 'price-filter', price_groups: price_groups, filter: filter, id_prefix: 'Filter-' %}
+                  </fieldset>
+                </div>
+              </details>
+            {% endif %}
+          {% endif %}
+
+          {% if filter_name != 'price' and filter.values.size > 0 %}
             <details
               id="Details-{{ filter.param_name | escape }}-{{ section.id }}"
               class="facets__disclosure-vertical js-filter border-t border-t-grey100 py-4 {% if forloop.last %} border-b border-b-grey100{% endif %}"
@@ -257,34 +329,6 @@
                       </ul>
                     </fieldset>
                     {%- if filter.values.size > show_more_number and filter_type == 'vertical' -%}
-                      <show-more-button>
-                        <button
-                          class="button-show-more link underlined-link"
-                          id="Show-More-{{ forloop.index }}-{{ section.id }}"
-                          type="button"
-                        >
-                          <span class="label-show-more label-text"
-                            ><span aria-hidden="true">+ </span>{{ 'products.facets.show_more' | t -}}
-                          </span>
-                          <span class="label-show-less label-text hidden"
-                            ><span aria-hidden="true">- </span>{{ 'products.facets.show_less' | t -}}
-                          </span>
-                        </button>
-                      </show-more-button>
-                    {%- endif %}
-                  </div>
-                {% when 'price' %}
-                  <div
-                    id="Facet-{{ forloop.index }}-{{ section.id }}"
-                    class="parent-display mt-small facets__display-vertical"
-                  >
-                    <fieldset class="facets-wrap parent-wrap facets-wrap-vertical">
-                      <legend class="visually-hidden">{{ filter.label | escape }}</legend>
-
-                      {% render 'price-filter', filter: filter, id_prefix: 'Filter-' %}
-                    </fieldset>
-
-                    {%- if filter.values.size > show_more_number -%}
                       <show-more-button>
                         <button
                           class="button-show-more link underlined-link"
