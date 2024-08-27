@@ -9,12 +9,20 @@
 {% endcomment %}
 
 {% liquid
-
+  assign option_name = 'Veredelung' | handleize
+  assign initials = 'Initialen' | handleize
+  assign small_number = 'Kleine Nummer' | handleize
+  assign back_number = 'Rückennummer' | handleize
+  assign small_name = 'Spielername klein' | handleize
+  assign large_name = 'Spielername Groß' | handleize
+  assign small_number_and_initials = 'Initialen + kleine Nummer' | handleize
+  assign small_name_and_number = 'Spielername klein + kleine Nummer' | handleize
+  assign large_name_and_number = 'Spielername Groß + kleine Nummer' | handleize
 %}
 
 <div class="mt-mini flex w-full flex-col gap-base">
   <div>
-    <h2 class="text-body-sm mb-small">Select customization type</h2>
+    <h2 class="text-t-xs mb-small">{{ 'sections.product-detail.select_type' | t }}</h2>
 
     <div class="relative">
       <select
@@ -44,20 +52,34 @@
   </div>
 
   <div class="mt-small flex flex-col gap-base">
-    <div id="JerseyNameField" class="field relative flex flex-col gap-small hidden">
-      <label for="jersey_name" class="text-t-sm">
-        {{ 'sections.product-detail.customization_name' | t }}
+    <div id="PlayerNameField" class="field relative flex flex-col gap-small hidden">
+      {% liquid
+        if handleize_value == initials or handleize_value == small_number_and_initials
+          assign name_type = 'Initialen'
+        elsif handleize_value == small_name or handleize_value == small_name_and_number or handleize_value == large_name or handleize_value == large_name_and_number
+          assign name_type = 'Spielername'
+        endif
+
+        assign name_field_type = name_type | default: ''
+
+        assign name_field = 'properties[' | append: name_field_type | append: ']'
+
+        assign decrease_title = 'products.customization.customization_number.decrease' | t
+        assign increase_title = 'products.customization.customization_number.decrease' | t
+      %}
+
+      <label for="player_name" class="text-body-sm">
+        {{ name_type }}
       </label>
 
       <input
         type="text"
         value=""
-        name="properties[Jersey Name]"
-        id="jersey_name"
+        name="{{name_field}}"
+        id="player_name"
         autocorrect="off"
         autocapitalize="off"
         autocomplete="given-name"
-
         placeholder="{{ 'sections.product-detail.customization_name' | t }}"
         class="input"
         form="{{ product_form_id }}"
@@ -65,14 +87,20 @@
     </div>
 
     <div
-      id="JerseyNumberField"
+      id="PlayerNumberField"
       class="flex flex-col gap-small hidden"
     >
-      <label for="jersey_name" class="text-t-sm">
+      <label for="player_number" class="text-body-sm">
         {{ 'sections.product-detail.customization_number' | t }}
       </label>
 
-      {% render 'qty-picker', id: 'jersey_number', form_id: product_form_id, name: 'properties[Jersey Number]' %}
+      {% render 'qty-picker',
+        id: 'player_number',
+        form_id: product_form_id,
+        name: 'properties[Spieler-Nummer]',
+        decrease_title: decrease_title,
+        increase_title: increase_title
+      %}
     </div>
   </div>
 </div>

@@ -1080,40 +1080,70 @@ class VariantSelects extends HTMLElement {
       if (selectedSwatchValue) selectedSwatchValue.innerHTML = value;
     }
   }
+
+  initCustomization() {
+    const customizationSelect = this.querySelector(`[name="options[${window.customizationStrings.optionName}]"]`);
+
+    if (!customizationSelect) return;
+
+    this.initialsTypes = [window.customizationStrings.initials, window.customizationStrings.smallNumberAndInitials];
+
+    this.nameTypes = [
+      window.customizationStrings.smallName,
+      window.customizationStrings.largeName,
+      window.customizationStrings.smallNameAndNumber,
+      window.customizationStrings.largeNameAndNumber,
+    ];
+
+    this.numberTypes = [
+      window.customizationStrings.smallNumber,
+      window.customizationStrings.backNumber,
+      window.customizationStrings.smallNameAndNumber,
+      window.customizationStrings.largeNameAndNumber,
+      window.customizationStrings.smallNumberAndInitials,
+    ];
+
+    const customizationType = customizationSelect.selectedOptions[0].dataset.customizationType;
+    if (customizationType) this.renderCustomizationFields(customizationType);
+  }
+
   updateCustomizationFields({ target }) {
     const { name, tagName } = target;
 
-    if (name.toLowerCase() === 'options[customization]' && tagName === 'SELECT' && target.selectedOptions.length) {
+    if (
+      name.toLowerCase() === `options[${window.customizationStrings.optionName}]` &&
+      tagName === 'SELECT' &&
+      target.selectedOptions.length
+    ) {
       const customizationType = target.selectedOptions[0].dataset.customizationType;
       if (customizationType) this.renderCustomizationFields(customizationType);
     }
   }
 
-  initCustomization() {
-    const customizationSelect = this.querySelector('[name="options[Customization]"]');
-
-    if (!customizationSelect) return;
-
-    const customizationType = customizationSelect.selectedOptions[0].dataset.customizationType;
-
-    if (customizationType) this.renderCustomizationFields(customizationType);
-  }
-
   renderCustomizationFields(type) {
-    const nameField = this.querySelector('#JerseyNameField');
+    const nameField = this.querySelector('#PlayerNameField');
+    const numberField = this.querySelector('#PlayerNumberField');
+
     const nameInput = nameField.querySelector('input');
-    const numberField = this.querySelector('#JerseyNumberField');
     const numberInput = numberField.querySelector('input');
 
-    if (type.includes('name')) {
-      nameField.classList.remove('hidden');
+    if (this.nameTypes.concat(this.initialsTypes).includes(type)) {
+      if (this.nameTypes.includes(type)) {
+        nameInput.setAttribute('name', `properties[Spielername]`);
+        nameInput.labels[0].textContent = 'Spielername';
+      } else if (this.initialsTypes.includes(type)) {
+        nameInput.setAttribute('name', `properties[Initialen]`);
+        nameInput.labels[0].textContent = 'Initialen';
+      }
+
       nameInput.setAttribute('required', 'true');
+      nameField.classList.remove('hidden');
     } else {
       nameField.classList.add('hidden');
       nameInput.removeAttribute('required');
     }
 
-    if (type.includes('number')) {
+    if (this.numberTypes.includes(type)) {
       numberField.classList.remove('hidden');
       numberInput.setAttribute('required', 'true');
     } else {
