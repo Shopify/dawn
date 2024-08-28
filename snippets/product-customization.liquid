@@ -18,9 +18,14 @@
   assign small_number_and_initials = 'Initialen + kleine Nummer' | handleize
   assign small_name_and_number = 'Spielername klein + kleine Nummer' | handleize
   assign large_name_and_number = 'Spielername Groß + kleine Nummer' | handleize
+
+  assign variants_available_arr = product.variants | map: 'available'
+  assign variants_option1_arr = product.variants | map: 'option1'
+  assign variants_option2_arr = product.variants | map: 'option2'
+  assign variants_option3_arr = product.variants | map: 'option3'
 %}
 
-<div class="mt-mini flex w-full flex-col gap-base">
+<div class="mt-mini">
   <div>
     <h2 class="text-t-xs mb-small">{{ 'sections.product-detail.select_type' | t }}</h2>
 
@@ -32,6 +37,27 @@
         class="text-body-sm bg-transparent appearance-none relative w-full flex justify-between p-base border border-grey100 rounded-[4px]  {{ select_class }} z-10 focus-visible:no-outline focus-visible:outline-offset-0 focus-visible:shadow-none product-form__input"
       >
         {% for value in option.values %}
+          {%- liquid
+            assign option_disabled = true
+
+            for option1_name in variants_option1_arr
+              case option.position
+                when 1
+                  if variants_option1_arr[forloop.index0] == value and variants_available_arr[forloop.index0]
+                    assign option_disabled = false
+                  endif
+                when 2
+                  if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == value and variants_available_arr[forloop.index0]
+                    assign option_disabled = false
+                  endif
+                when 3
+                  if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == product.selected_or_first_available_variant.option2 and variants_option3_arr[forloop.index0] == value and variants_available_arr[forloop.index0]
+                    assign option_disabled = false
+                  endif
+              endcase
+            endfor
+          -%}
+
           <option
             value="{{ value | escape }}"
             {% if option.selected_value == value %}
@@ -40,7 +66,14 @@
             class="text-body-sm text-black"
             data-customization-type="{{ value | handleize }}"
           >
-            {{ value }}
+            {% comment %}
+              {% if option_disabled -%}
+                {{- 'products.product.value_unavailable' | t: option_value: value -}}
+              {%- else -%}
+                {{- value -}}
+              {%- endif %}
+            {% endcomment %}
+            {{- value -}}
           </option>
         {% endfor %}
       </select>
@@ -51,7 +84,7 @@
     </div>
   </div>
 
-  <div class="mt-small flex flex-col gap-base">
+  <div class="flex flex-col gap-base">
     <div id="PlayerNameField" class="field relative flex flex-col gap-small hidden">
       {% liquid
         if handleize_value == initials or handleize_value == small_number_and_initials
