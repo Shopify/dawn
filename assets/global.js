@@ -1020,6 +1020,7 @@ class VariantSelects extends HTMLElement {
     this.updateSelectedSwatchValue(event);
     this.updateCustomizationFields(event);
     this.toggleAddButton(true, '', false);
+    this.updateProductAvailability();
     this.updatePickupAvailability();
     this.removeErrorMessage();
     this.updateVariantStatuses();
@@ -1200,9 +1201,11 @@ class VariantSelects extends HTMLElement {
       if (element.tagName === 'INPUT') {
         element.classList.toggle('disabled', !availableElement);
       } else if (element.tagName === 'OPTION') {
-        element.innerText = availableElement
-          ? value
-          : window.variantStrings.unavailable_with_option.replace('[value]', value);
+        // element.innerText = availableElement
+        //   ? value
+        //   : window.variantStrings.unavailable_with_option.replace('[value]', value);
+
+        element.innerText = value;
       }
     });
   }
@@ -1216,6 +1219,15 @@ class VariantSelects extends HTMLElement {
     } else {
       pickUpAvailability.removeAttribute('available');
       pickUpAvailability.innerHTML = '';
+    }
+  }
+
+  updateProductAvailability() {
+    const productAvailability = document.querySelector('product-availability');
+    if (!productAvailability) return;
+
+    if (this.currentVariant) {
+      productAvailability.fetchAvailability(this.currentVariant.id);
     }
   }
 
@@ -1422,6 +1434,57 @@ class VariantSelects extends HTMLElement {
 }
 
 customElements.define('variant-selects', VariantSelects);
+
+class ProductAvailability extends HTMLElement {
+  constructor() {
+    super();
+    this.onClickRefreshList = this.onClickRefreshList.bind(this);
+    this.fetchAvailability(this.dataset.variantId);
+  }
+
+  fetchAvailability(variantId) {
+    let rootUrl = this.dataset.rootUrl;
+    if (!rootUrl.endsWith('/')) {
+      rootUrl = rootUrl + '/';
+    }
+    const variantSectionUrl = `${rootUrl}variants/${variantId}/?section_id=product-availability`;
+
+    fetch(variantSectionUrl)
+      .then((response) => response.text())
+      .then((text) => {
+        const sectionInnerHTML = new DOMParser().parseFromString(text, 'text/html').querySelector('.shopify-section');
+        console.log('RESPONSE', sectionInnerHTML);
+        this.renderPreview(sectionInnerHTML);
+      })
+      .catch((e) => {
+        const button = this.querySelector('button');
+        if (button) button.removeEventListener('click', this.onClickRefreshList);
+        this.renderError();
+      });
+  }
+
+  onClickRefreshList(evt) {
+    this.fetchAvailability(this.dataset.variantId);
+  }
+
+  renderError() {
+    // this.innerHTML = '';
+    // this.appendChild(this.errorHtml);
+    // this.querySelector('button').addEventListener('click', this.onClickRefreshList);
+  }
+
+  renderPreview(sectionInnerHTML) {
+    if (!sectionInnerHTML.querySelector('product-availability')) {
+      this.innerHTML = '';
+      this.removeAttribute('available');
+      return;
+    }
+    this.innerHTML = sectionInnerHTML.querySelector('product-availability').outerHTML;
+    this.setAttribute('available', '');
+  }
+}
+
+customElements.define('product-availability', ProductAvailability);
 
 class ProductRecommendations extends HTMLElement {
   constructor() {
