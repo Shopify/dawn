@@ -89,11 +89,33 @@
       data-speed="{{ section.settings.change_slides_speed }}"
     >
       {%- for block in section.blocks -%}
-        <style>
-          #Slide-{{ section.id }}-{{ forloop.index }} .banner__media::after {
-            opacity: {{ block.settings.image_overlay_opacity | divided_by: 100.0 }};
-          }
-        </style>
+        {% liquid
+          if block.settings.image
+            assign height = block.settings.image.width | divided_by: block.settings.image.aspect_ratio | round
+            assign image_url = block.settings.image | image_url: width: 5000, height: height
+          endif
+        %}
+
+        {% if image_url %}
+          <style>
+            #Slide-{{ section.id }}-{{ forloop.index }} .banner__media{
+              background: linear-gradient(180deg, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.50) 100%), url("{{ image_url }}") lightgray 50% / cover no-repeat;
+            }
+
+            @media screen and (min-width: 800px and max-width:2400px) {
+               #Slide-{{ section.id }}-{{ forloop.index }} .banner__media{
+                background: linear-gradient(180deg, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.50) 100%), url("{{ image_url }}") lightgray -55.915px -195.903px / 104.368% 164.948% no-repeat;
+              }
+            }
+          </style>
+
+        {% else %}
+          <style>
+            #Slide-{{ section.id }}-{{ forloop.index }} .banner__media::after {
+              background: linear-gradient(180deg, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.50) 100%);
+            }
+          </style>
+        {% endif %}
         <div
           class="slideshow__slide grid__item grid--1-col slider__slide aspect-[131_/_220] md:aspect-[40_/_27] xl:aspect-[64_/27] 5kUp:aspect-[10_/_3]"
           id="Slide-{{ section.id }}-{{ forloop.index }}"
@@ -104,31 +126,33 @@
           tabindex="-1"
         >
           <div class="slideshow__media banner__media media{% if block.settings.image == blank %} placeholder{% endif %}">
-            {%- if block.settings.image -%}
-              {%- liquid
-                assign height = block.settings.image.width | divided_by: block.settings.image.aspect_ratio | round
+            {%- if block.settings.image == blank -%}
+              {% comment %}
+                {%- liquid
+                    assign height = block.settings.image.width | divided_by: block.settings.image.aspect_ratio | round
 
-                assign sizes = '100vw'
-                assign widths = '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840, 5000'
-                assign fetch_priority = 'auto'
-                if section.index == 1
-                  assign fetch_priority = 'high'
-                endif
-              -%}
-              {%- if forloop.first %}
-                {{
-                  block.settings.image
-                  | image_url: width: 5000
-                  | image_tag: height: height, sizes: sizes, widths: widths, fetchpriority: fetch_priority
-                }}
-              {%- else -%}
-                {{
-                  block.settings.image
-                  | image_url: width: 5000
-                  | image_tag: loading: 'lazy', height: height, sizes: sizes, widths: widths
-                }}
-              {%- endif -%}
-            {%- else -%}
+                    assign sizes = '100vw'
+                    assign widths = '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840, 5000'
+                    assign fetch_priority = 'auto'
+                    if section.index == 1
+                      assign fetch_priority = 'high'
+                    endif
+                  -%}
+                  {%- if forloop.first %}
+                    {{
+                      block.settings.image
+                      | image_url: width: 5000
+                      | image_tag: height: height, sizes: sizes, widths: widths, fetchpriority: fetch_priority
+                    }}
+                  {%- else -%}
+                    {{
+                      block.settings.image
+                      | image_url: width: 5000
+                      | image_tag: loading: 'lazy', height: height, sizes: sizes, widths: widths
+                    }}
+                  {%- endif -%}
+                {%- else -%}
+              {% endcomment %}
               {%- assign placeholder_slide = forloop.index | modulo: 2 -%}
               {%- if placeholder_slide == 1 -%}
                 {{ 'hero-apparel-2' | placeholder_svg_tag: 'placeholder-svg' }}
