@@ -48,6 +48,7 @@ function createRelatedProducts(carouselId, options) {
       options
     );
 
+    console.log(carouselOptions);
     const related_carousel = new Splide(idSelector, carouselOptions);
 
     related_carousel.on('arrows:updated', disableCarouselArrows(idSelector));
@@ -58,13 +59,13 @@ function createRelatedProducts(carouselId, options) {
   }
 }
 
-function observeElement(element, carouselId) {
+function observeElement(element, carouselId, options) {
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       if (mutation.attributeName === 'class') {
         const classList = mutation.target.classList;
         if (classList.contains('recommendations-loaded')) {
-          createRelatedProducts(carouselId);
+          createRelatedProducts(carouselId, options);
           observer.disconnect(); // Optionally disconnect after firing the function
         }
       }
@@ -78,7 +79,9 @@ try {
   const carouselId = 'related-products-carousel';
   const relatedCarousel = document.querySelector('product-recommendations');
   if (relatedCarousel) {
-    observeElement(relatedCarousel, carouselId);
+    observeElement(relatedCarousel, carouselId, {
+      breakpoints: { 1280: { padding: { left: 16 } } },
+    });
   }
 } catch (error) {
   console.error(`Unable to create carousel with ID - ${carouselId} `, error);
