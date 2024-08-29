@@ -18,6 +18,14 @@ class PredictiveSearch extends SearchForm {
     this.addEventListener('focusout', this.onFocusOut.bind(this));
     this.addEventListener('keyup', this.onKeyup.bind(this));
     this.addEventListener('keydown', this.onKeydown.bind(this));
+
+    this.querySelectorAll('.popular_search_terms')?.forEach((el) => {
+      el.addEventListener('click', (evt) => {
+        const query = el.textContent.trim();
+        const url = `${routes.search_url}?q=${encodeURIComponent(query)}`;
+        window.location.href = url;
+      });
+    });
   }
 
   getQuery() {
