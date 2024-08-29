@@ -1,7 +1,9 @@
 {% comment %}theme-check-disable UndefinedObject{% endcomment %}
 
 {% liquid
-  assign shop_address = shop.address.street | append: shop.address.city
+  assign default_address = shop.address.street | append: shop.address.city
+  assign shop_address = shop.address.summary | default: default_address
+  assign shop_opening_hours = settings.opening_hours
 %}
 
 <footer class="footer  bg-black ">
@@ -13,7 +15,7 @@
       endif
     -%}
 
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-y-huge gap-x-large lg:gap-x-0">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-y-huge gap-x-large lg:gap-x-0">
       {% if section.settings.footer_menu != blank %}
         {% for link in section.settings.footer_menu.links limit: 2 -%}
           <div>
@@ -48,30 +50,36 @@
       {% endif %}
 
       <div class="w-full flex flex-col gap-large">
-        {% if shop.address != blank %}
-          <div class="w-full flex-wrap flex gap-small">
+        {% if shop.address != blank and shop_opening_hours != blank %}
+          <div class="w-full flex flex-col justify-center gap-small">
             {%- render 'icon-address', class: 'fill-grey300' -%}
 
             <div class="w-full flex flex-col gap-small">
-              <p class="text-body-xs text-grey300 capitalize">
-                {{ shop.address.summary | default: shop_address }}
-              </p>
+              {% if shop_address != blank %}
+                <p class="text-body-xs text-grey300 capitalize">
+                  {{ shop_address }}
+                </p>
+              {% endif %}
 
-              <p></p>
+              {% if shop_opening_hours != blank %}
+                <p class="text-body-xs text-grey300 capitalize opening-hours">
+                  {{ shop_opening_hours }}
+                </p>
+              {% endif %}
             </div>
           </div>
         {% endif %}
 
         <div class="w-full flex flex-col gap-small">
           {% if shop.phone != blank %}
-            <div class="flex flex-wrap items-center gap-small w-full">
+            <div class="flex flex-col justify-center gap-small w-full">
               {% render 'icon-phone', class: 'fill-grey700' %}
               <a href="tel:{{shop.phone}}" class="text-body-xs text-grey300 capitalize break-all">{{ shop.phone }}</a>
             </div>
           {% endif %}
 
           {% if shop.email != blank %}
-            <div class="flex flex-wrap items-center gap-small w-full">
+            <div class="flex flex-col justify-center gap-small w-full">
               {% render 'icon-mail', class: 'fill-grey700' %}
               <a href="mailto:{{shop.email}}" class="text-body-xs text-grey300 break-all">{{ shop.email }}</a>
             </div>
@@ -93,10 +101,18 @@
   </div>
 
   <div class="overflow-hidden pt-base">
-    <div class="lg:absolute mb-large lg:mb-0 w-full px-large lg:px-0">
-      <p class="max-w-[1080px] mx-auto text-body-xs text-white">
-        &copy; {{ 'now' | date: '%Y' }} Smshrs GmbH. Alle Rechte vorbehalten
-      </p>
+    <div class="max-w-[1080px] mx-auto lg:absolute mb-large lg:mb-0 w-full px-large lg:px-0">
+      {% if shop.enabled_payment_types.size > 0 %}
+        <ul class="flex pt-small gap-mini flex-grow-0 flex-wrap" role="list">
+          {%- for type in shop.enabled_payment_types -%}
+            <li class="">
+              {{ type | payment_type_svg_tag: class: 'icon w-[30px] h-5 !fill-[#D8E3F3]' }}
+            </li>
+          {%- endfor -%}
+        </ul>
+      {% endif %}
+
+      <p class="text-body-xs text-white">&copy; {{ 'now' | date: '%Y' }} Smshrs GmbH. Alle Rechte vorbehalten</p>
     </div>
 
     {% render 'footer-logo', class: 'fill-grey700 relative -bottom-[12px] md:bottom-0 opacity-1/2 w-full' %}
