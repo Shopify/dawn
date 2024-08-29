@@ -1453,7 +1453,6 @@ class ProductAvailability extends HTMLElement {
       .then((response) => response.text())
       .then((text) => {
         const sectionInnerHTML = new DOMParser().parseFromString(text, 'text/html').querySelector('.shopify-section');
-        console.log('RESPONSE', sectionInnerHTML);
         this.renderPreview(sectionInnerHTML);
       })
       .catch((e) => {
