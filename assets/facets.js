@@ -63,12 +63,9 @@ class FacetFiltersForm extends HTMLElement {
   }
 
   static renderSectionFromFetch(url, event) {
-    console.log(url, 'URL TO FETCH');
-
     fetch(url)
       .then((response) => response.text())
       .then((responseText) => {
-        console.log(responseText, 'FETCH RESP');
         const html = responseText;
         FacetFiltersForm.filterData = [...FacetFiltersForm.filterData, { html, url }];
         FacetFiltersForm.renderFilters(html, event);
@@ -129,8 +126,7 @@ class FacetFiltersForm extends HTMLElement {
     container.innerHTML = count;
     container.classList.remove('loading');
     if (containerDesktop) {
-      const itemCount = containerDesktop.querySelector('#item_count');
-      itemCount.innerHTML = count;
+      containerDesktop.innerHTML = count;
       containerDesktop.classList.remove('loading');
     }
     const loadingSpinners = document.querySelectorAll(

@@ -1,7 +1,10 @@
 class Paginate extends HTMLElement {
   constructor() {
     super();
+    this.initialize();
+  }
 
+  initialize() {
     this.paginationContainer = this.querySelector('.pagination-wrapper');
     this.itemsPerPage = parseInt(this.paginationContainer.getAttribute('data-per-page'));
     this.loadMoreBtn = this.querySelector('.load-more');
