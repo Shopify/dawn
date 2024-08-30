@@ -2,15 +2,6 @@ var TNB = {
   state: {
     tallSizingActive: false,
   },
-  updateOptionNameLabels: function (variant) {
-    if (!variant.options) return false;
-
-    var optionNameLabels = document.querySelectorAll('.option-name-label');
-
-    variant.options.forEach(function (option, i) {
-      optionNameLabels[i].innerHTML = option;
-    });
-  },
   tallSizingControls: function (destroy) {
     var controls = document.querySelector('.tall-sizing-controls');
 
@@ -82,7 +73,6 @@ function init() {
 
   subscribe(PUB_SUB_EVENTS.variantChange, function (e) {
     TNB.tallSizingControls(false);
-    // TNB.updateOptionNameLabels(e.data.variant);
 
     // console.log('Variant Change:', e);
   });
