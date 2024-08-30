@@ -51,6 +51,6 @@ if (!customElements.get('share-button')) {
         this.urlToShare = url;
         this.elements.urlInput.value = url;
       }
-    }
+    },
   );
 }

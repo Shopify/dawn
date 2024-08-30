@@ -1,8 +1,8 @@
 function getFocusableElements(container) {
   return Array.from(
     container.querySelectorAll(
-      "summary, a[href], button:enabled, [tabindex]:not([tabindex^='-']), [draggable], area, input:not([type=hidden]):enabled, select:enabled, textarea:enabled, object, iframe"
-    )
+      "summary, a[href], button:enabled, [tabindex]:not([tabindex^='-']), [draggable], area, input:not([type=hidden]):enabled, select:enabled, textarea:enabled, object, iframe",
+    ),
   );
 }
 
@@ -177,7 +177,7 @@ function focusVisiblePolyfill() {
       currentFocusedElement = document.activeElement;
       currentFocusedElement.classList.add('focused');
     },
-    true
+    true,
   );
 }
 
@@ -221,7 +221,7 @@ class QuantityInput extends HTMLElement {
     this.changeEvent = new Event('change', { bubbles: true });
     this.input.addEventListener('change', this.onInputChange.bind(this));
     this.querySelectorAll('button').forEach((button) =>
-      button.addEventListener('click', this.onButtonClick.bind(this))
+      button.addEventListener('click', this.onButtonClick.bind(this)),
     );
   }
 
@@ -431,10 +431,10 @@ class MenuDrawer extends HTMLElement {
 
   bindEvents() {
     this.querySelectorAll('summary').forEach((summary) =>
-      summary.addEventListener('click', this.onSummaryClick.bind(this))
+      summary.addEventListener('click', this.onSummaryClick.bind(this)),
     );
     this.querySelectorAll(
-      'button:not(.localization-selector):not(.country-selector__close-button):not(.country-filter__reset-button)'
+      'button:not(.localization-selector):not(.country-selector__close-button):not(.country-filter__reset-button)',
     ).forEach((button) => button.addEventListener('click', this.onCloseButtonClick.bind(this)));
   }
 
@@ -565,7 +565,7 @@ class HeaderDrawer extends MenuDrawer {
       this.borderOffset || this.closest('.header-wrapper').classList.contains('header-wrapper--border-bottom') ? 1 : 0;
     document.documentElement.style.setProperty(
       '--header-bottom-position',
-      `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`
+      `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`,
     );
     this.header.classList.add('menu-open');
 
@@ -590,7 +590,7 @@ class HeaderDrawer extends MenuDrawer {
     this.header &&
       document.documentElement.style.setProperty(
         '--header-bottom-position',
-        `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`
+        `${parseInt(this.header.getBoundingClientRect().bottom - this.borderOffset)}px`,
       );
     document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
   };
@@ -667,7 +667,7 @@ class BulkModal extends HTMLElement {
     };
 
     new IntersectionObserver(handleIntersection.bind(this)).observe(
-      document.querySelector(`#QuickBulk-${this.dataset.productId}-${this.dataset.sectionId}`)
+      document.querySelector(`#QuickBulk-${this.dataset.productId}-${this.dataset.sectionId}`),
     );
   }
 }
@@ -743,7 +743,7 @@ class SliderComponent extends HTMLElement {
     if (this.sliderItemsToShow.length < 2) return;
     this.sliderItemOffset = this.sliderItemsToShow[1].offsetLeft - this.sliderItemsToShow[0].offsetLeft;
     this.slidesPerPage = Math.floor(
-      (this.slider.clientWidth - this.sliderItemsToShow[0].offsetLeft) / this.sliderItemOffset
+      (this.slider.clientWidth - this.sliderItemsToShow[0].offsetLeft) / this.sliderItemOffset,
     );
     this.totalPages = this.sliderItemsToShow.length - this.slidesPerPage + 1;
     this.update();
@@ -774,7 +774,7 @@ class SliderComponent extends HTMLElement {
             currentPage: this.currentPage,
             currentElement: this.sliderItemsToShow[this.currentPage - 1],
           },
-        })
+        }),
       );
     }
 
@@ -851,7 +851,7 @@ class SlideshowComponent extends SliderComponent {
           () => {
             this.announcementBarArrowButtonWasClicked = true;
           },
-          { once: true }
+          { once: true },
         );
       });
     }
@@ -1095,7 +1095,7 @@ class VariantSelects extends HTMLElement {
 
       selectedDropdownSwatchValue.style.setProperty(
         '--swatch-focal-point',
-        target.selectedOptions[0].dataset.optionSwatchFocalPoint || 'unset'
+        target.selectedOptions[0].dataset.optionSwatchFocalPoint || 'unset',
       );
     } else if (tagName === 'INPUT' && target.type === 'radio') {
       const selectedSwatchValue = target.closest(`.product-form__input`).querySelector('[data-selected-value]');
@@ -1109,7 +1109,7 @@ class VariantSelects extends HTMLElement {
 
   get selectedOptionValues() {
     return Array.from(this.querySelectorAll('select option[selected], fieldset input:checked')).map(
-      ({ dataset }) => dataset.optionValueId
+      ({ dataset }) => dataset.optionValueId,
     );
   }
 }
@@ -1135,7 +1135,7 @@ class ProductRecommendations extends HTMLElement {
         observer.unobserve(this);
         this.loadRecommendations(productId);
       },
-      { rootMargin: '0px 0px 400px 0px' }
+      { rootMargin: '0px 0px 400px 0px' },
     );
     this.observer.observe(this);
   }

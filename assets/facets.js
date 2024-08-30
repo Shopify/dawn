@@ -35,7 +35,7 @@ class FacetFiltersForm extends HTMLElement {
     const countContainer = document.getElementById('ProductCount');
     const countContainerDesktop = document.getElementById('ProductCountDesktop');
     const loadingSpinners = document.querySelectorAll(
-      '.facets-container .loading__spinner, facet-filters-form .loading__spinner'
+      '.facets-container .loading__spinner, facet-filters-form .loading__spinner',
     );
     loadingSpinners.forEach((spinner) => spinner.classList.remove('hidden'));
     document.getElementById('ProductGridContainer').querySelector('.collection').classList.add('loading');
@@ -103,7 +103,7 @@ class FacetFiltersForm extends HTMLElement {
       containerDesktop.classList.remove('loading');
     }
     const loadingSpinners = document.querySelectorAll(
-      '.facets-container .loading__spinner, facet-filters-form .loading__spinner'
+      '.facets-container .loading__spinner, facet-filters-form .loading__spinner',
     );
     loadingSpinners.forEach((spinner) => spinner.classList.add('hidden'));
   }
@@ -111,10 +111,10 @@ class FacetFiltersForm extends HTMLElement {
   static renderFilters(html, event) {
     const parsedHTML = new DOMParser().parseFromString(html, 'text/html');
     const facetDetailsElementsFromFetch = parsedHTML.querySelectorAll(
-      '#FacetFiltersForm .js-filter, #FacetFiltersFormMobile .js-filter, #FacetFiltersPillsForm .js-filter'
+      '#FacetFiltersForm .js-filter, #FacetFiltersFormMobile .js-filter, #FacetFiltersPillsForm .js-filter',
     );
     const facetDetailsElementsFromDom = document.querySelectorAll(
-      '#FacetFiltersForm .js-filter, #FacetFiltersFormMobile .js-filter, #FacetFiltersPillsForm .js-filter'
+      '#FacetFiltersForm .js-filter, #FacetFiltersFormMobile .js-filter, #FacetFiltersPillsForm .js-filter',
     );
 
     // Remove facets that are no longer returned from the server

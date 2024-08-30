@@ -160,6 +160,6 @@ if (!customElements.get('recipient-form')) {
           this.clearErrorMessage();
         }
       }
-    }
+    },
   );
 }

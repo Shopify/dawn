@@ -8,7 +8,7 @@ class CartNotification extends HTMLElement {
 
     this.notification.addEventListener('keyup', (evt) => evt.code === 'Escape' && this.close());
     this.querySelectorAll('button[type="button"]').forEach((closeButton) =>
-      closeButton.addEventListener('click', this.close.bind(this))
+      closeButton.addEventListener('click', this.close.bind(this)),
     );
   }
 
@@ -21,7 +21,7 @@ class CartNotification extends HTMLElement {
         this.notification.focus();
         trapFocus(this.notification);
       },
-      { once: true }
+      { once: true },
     );
 
     document.body.addEventListener('click', this.onBodyClick);
@@ -39,7 +39,7 @@ class CartNotification extends HTMLElement {
     this.getSectionsToRender().forEach((section) => {
       document.getElementById(section.id).innerHTML = this.getSectionInnerHTML(
         parsedState.sections[section.id],
-        section.selector
+        section.selector,
       );
     });
 

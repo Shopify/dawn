@@ -2,7 +2,7 @@ Copyright (c) 2021-present Shopify Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, sell and/or create derivative works of the Software or any part thereof, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The rights granted above may only be exercised to develop themes that integrate or interoperate with Shopify software or services, and, if applicable, to distribute, offer for sale or otherwise make available any such themes via the Shopify Theme Store.   All other uses of the Software are strictly prohibited.
+The rights granted above may only be exercised to develop themes that integrate or interoperate with Shopify software or services, and, if applicable, to distribute, offer for sale or otherwise make available any such themes via the Shopify Theme Store. All other uses of the Software are strictly prohibited.
 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 

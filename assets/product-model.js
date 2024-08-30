@@ -23,7 +23,7 @@ if (!customElements.get('product-model')) {
 
         this.modelViewerUI = new Shopify.ModelViewerUI(this.querySelector('model-viewer'));
       }
-    }
+    },
   );
 }
 

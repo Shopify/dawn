@@ -9,7 +9,7 @@ if (!customElements.get('quick-order-list-remove-button')) {
           this.startQueue(this.dataset.index, 0);
         });
       }
-    }
+    },
   );
 }
 
@@ -61,7 +61,7 @@ if (!customElements.get('quick-order-list-remove-all-button')) {
           .classList.toggle('hidden', showConfirmation);
         this.quickOrderList.querySelector('.quick-order-list-total__info').classList.toggle('hidden', showInfo);
       }
-    }
+    },
   );
 }
 
@@ -262,13 +262,13 @@ if (!customElements.get('quick-order-list')) {
               this.ids.flat().forEach((i) => {
                 elementToReplace.querySelector(`#Variant-${i}`).innerHTML = this.getSectionInnerHTML(
                   parsedState.sections[section.section],
-                  `#Variant-${i}`
+                  `#Variant-${i}`,
                 );
               });
             } else {
               elementToReplace.innerHTML = this.getSectionInnerHTML(
                 parsedState.sections[section.section],
-                section.selector
+                section.selector,
               );
             }
           }
@@ -432,8 +432,8 @@ if (!customElements.get('quick-order-list')) {
             ? window.quickOrderListStrings.itemRemoved
             : window.quickOrderListStrings.itemsRemoved
           : quantity === 1
-          ? window.quickOrderListStrings.itemAdded
-          : window.quickOrderListStrings.itemsAdded;
+            ? window.quickOrderListStrings.itemAdded
+            : window.quickOrderListStrings.itemsAdded;
 
         messages.forEach((msg) => (msg.innerHTML = textTemplate.replace('[quantity]', absQuantity)));
 
@@ -490,6 +490,6 @@ if (!customElements.get('quick-order-list')) {
           quickOrderListItems.forEach((overlay) => overlay.classList.add('hidden'));
         }
       }
-    }
+    },
   );
 }

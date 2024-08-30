@@ -75,7 +75,7 @@ if (!customElements.get('quick-add-bulk')) {
           () => {
             event.target.setCustomValidity('');
           },
-          { once: true }
+          { once: true },
         );
       }
 
@@ -86,7 +86,7 @@ if (!customElements.get('quick-add-bulk')) {
             .then((responseText) => {
               const html = new DOMParser().parseFromString(responseText, 'text/html');
               const sourceQty = html.querySelector(
-                `#quick-add-bulk-${this.dataset.id}-${this.closest('.collection').dataset.id}`
+                `#quick-add-bulk-${this.dataset.id}-${this.closest('.collection').dataset.id}`,
               );
               if (sourceQty) {
                 this.innerHTML = sourceQty.innerHTML;
@@ -179,7 +179,7 @@ if (!customElements.get('quick-add-bulk')) {
           if (elementToReplace) {
             elementToReplace.innerHTML = this.getSectionInnerHTML(
               parsedState.sections[section.section],
-              section.selector
+              section.selector,
             );
           }
         });
@@ -191,6 +191,6 @@ if (!customElements.get('quick-add-bulk')) {
         this.listenForActiveInput();
         this.listenForKeydown();
       }
-    }
+    },
   );
 }
