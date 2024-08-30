@@ -125,8 +125,7 @@ if (!customElements.get('product-info')) {
             this.pendingRequestUrl = null;
             const html = new DOMParser().parseFromString(responseText, 'text/html');
 
-            const sku = document.getElementById(`sku-${this.dataset.section}`);
-            if (sku) sku.classList.remove('visibility-hidden'), this.updateSku(html);
+            this.updateDynamic(`sku-${this.dataset.section}`, html);
 
             callback(html);
           })
@@ -143,8 +142,7 @@ if (!customElements.get('product-info')) {
           });
       }
 
-      updateSku(html) {
-        const id = `sku-${this.dataset.section}`;
+      updateDynamic(id, html) {
         const destination = document.getElementById(id);
         const source = html.getElementById(id);
 
