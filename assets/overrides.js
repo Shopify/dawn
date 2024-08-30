@@ -72,7 +72,7 @@ function init() {
   subscribe(PUB_SUB_EVENTS.variantChange, function (e) {
     TNB.tallSizingControls(false);
 
-    // console.log('Variant Change:', e);
+    console.log('Variant Change:', e);
   });
 
   TNB.tallSizingControls(false);
