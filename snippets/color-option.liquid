@@ -6,20 +6,25 @@
   - block: {Object} block object.
 {% endcomment %}
 
-{%- assign swatchType = settings.swatchType -%}
-{%- assign swatchStyle = settings.swatchStyle -%}
-{%- assign swatchSize = settings.swatchSize -%}
-{%- assign swatchColors = settings.swatchColors | newline_to_br | split: '<br />' -%}
+{%- assign swatch_type = settings.swatchType -%}
+{%- assign swatch_style = settings.swatchStyle -%}
+{%- assign swatch_size = settings.swatchSize -%}
+{%- assign swatch_colors = settings.swatchColors | newline_to_br | split: '<br />' -%}
 
 <style>
+  .color-swatch-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
   .color-swatch {
-    width: {{ swatchSize }}px;
-    height: {{ swatchSize }}px;
-    display: inline-block;
-    margin-right: 10px;
+    width: {{ swatch_size }}px;
+    height: {{ swatch_size }}px;
     cursor: pointer;
     border: 1px solid #d6d6d6;
     position: relative;
+    background-size: cover;
+    background-position: center;
   }
   .color-swatch.round {
     border-radius: 50%;
@@ -28,7 +33,7 @@
     border-radius: 5px;
   }
   .color-swatch.portrait {
-    height: {{ swatchSize | times: 1.5 }}px;
+    height: {{ swatch_size | times: 1.5 }}px;
   }
   .color-swatch.selected:after {
     content: '';
@@ -45,41 +50,38 @@
   }
 </style>
 
-<div class="color-swatch-container">
+<div class="color-swatch-wrapper" data-option-index="{{ option.position }}">
   {%- for value in option.values -%}
-    {%- assign color_swatch_id = value | handle -%}
-    {%- assign swatch_style = '' -%}
+    {%- liquid
+      assign color_swatch_id = section.id | append: '-' | append: option.position | append: '-' | append: forloop.index0
+      assign swatch_style = ''
 
-    {%- if swatchType == 'color' -%}
-      {%- for color in swatchColors -%}
-        {%- assign color_data = color | split: ':' -%}
-        {%- if color_data.first == value -%}
-          {%- assign swatch_style = 'background-color:' | append: color_data.last -%}
-          {%- break -%}
-        {%- endif -%}
-      {%- endfor -%}
-    {%- elsif swatchType == 'variantImage' -%}
-      {%- for variant in product.variants -%}
-        {%- if variant.options contains value -%}
-          {%- assign swatch_style = 'background-image: url('
-            | append: variant.image
-            | image_url: width: swatchSize
-            | append: ')'
-          -%}
-          {%- break -%}
-        {%- endif -%}
-      {%- endfor -%}
-    {%- endif -%}
-
+      if swatch_type == 'color'
+        for color in swatch_colors
+          assign color_data = color | split: ':'
+          if color_data.first == value
+            assign swatch_style = 'background-color:' | append: color_data.last
+            break
+          endif
+        endfor
+      elsif swatch_type == 'variantImage'
+        for variant in product.variants
+          if variant.options contains value
+            assign swatch_style = 'background-image: url(' | append: variant.image | image_url: width: swatch_size | append: ')'
+            break
+          endif
+        endfor
+      endif
+    -%}
     <label
       for="{{ color_swatch_id }}"
-      class="color-swatch {{ swatchStyle }} {% if option.selected_value == value %}selected{% endif %}"
+      class="color-swatch {{ swatch_style }} {% if option.selected_value == value %}selected{% endif %}"
       style="{{ swatch_style }}"
     >
       <input
         type="radio"
         id="{{ color_swatch_id }}"
-        name="{{ option.name }}"
+        name="{{ option.name | handle }}"
         value="{{ value | escape }}"
         {% if option.selected_value == value %}
           checked
@@ -93,12 +95,13 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    var swatchContainer = document.querySelector('.color-swatch-container');
-    var swatches = swatchContainer.querySelectorAll('.color-swatch');
+    var swatchWrapper = document.querySelector('.color-swatch-wrapper[data-option-index="{{ option.position }}"]');
+    var swatches = swatchWrapper.querySelectorAll('.color-swatch');
     var selectedDisplay = document.querySelector('#selected-{{ option.name | handle }}');
 
     swatches.forEach(function(swatch) {
-      swatch.addEventListener('click', function() {
+      swatch.addEventListener('click', function(event) {
+        event.preventDefault();
         var input = this.querySelector('input[type="radio"]');
         var value = input.value;
 
@@ -119,12 +122,14 @@
         }
 
         // Trigger variant change event
-        document.dispatchEvent(new CustomEvent('variant:change', {
+        var variantChangeEvent = new CustomEvent('variant:changed', {
+          bubbles: true,
           detail: {
-            option: '{{ option.name }}',
+            optionPosition: {{ option.position }},
             value: value
           }
-        }));
+        });
+        this.dispatchEvent(variantChangeEvent);
       });
     });
   });
