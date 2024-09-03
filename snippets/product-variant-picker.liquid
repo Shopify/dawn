@@ -42,16 +42,32 @@
         endfor
       -%}
 
+      {% comment %} Assign color categories array {% endcomment %}
       {%- capture color_categories -%}
         {%- for value in option.values -%}
           {%- for tag in value.variant.product.tags -%}
             {%- if tag contains 'color-category' -%}
-              {%- assign category = tag | split: ':' -%}
-              {{- category[1] -}},
+              {{- category -}},
             {%- endif -%}
           {%- endfor -%}
         {%- endfor -%}
       {%- endcapture -%}
+
+      {% comment %} Group colors by category {% endcomment %}
+      {%- capture grouped_colors -%}
+        {%- assign color_categories_array = color_categories | split: ',' -%}
+        {%- for color_category in color_categories_array -%}
+          {%- for value in option.values -%}
+            {%- assign tags = value.variant.product.tags || join: ' ' -%}
+            {%- if tags contains color_category -%}
+              {{- value -}},
+            {%- endif -%}
+          {%- endfor -%}
+          {%- unless forloop.last -%}|{%- endunless -%}
+        {%- endfor -%}
+      {%- endcapture -%}
+
+      {%- assign grouped_colors = grouped_colors | split: '|' -%}
 
       {%- if picker_type == 'swatch' -%}
         <fieldset class="js product-form__input product-form__input--swatch">
@@ -79,9 +95,12 @@
           {%- if option_is_color -%}
             <div class="product-form-colors">
               {%- assign color_categories_array = color_categories | split: ',' -%}
-              {%- if color_categories_array.size > 0 -%}
+              {%- if color_categories.size > 0 -%}
                 {%- for category in color_categories_array -%}
-                  <div>{{ category }}</div>
+                  <div>
+                    {{ category }}:
+                    {{ grouped_colors[forloop.index0] | join: ' ' }}
+                  </div>
                 {%- endfor -%}
               {%- else -%}
                 {% render 'product-variant-options',
