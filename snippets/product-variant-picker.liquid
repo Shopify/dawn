@@ -33,16 +33,16 @@
           assign option_is_color = true
         endif
 
-        assign color_categories = ''
-        for value in option.values
-          for tag in value.variant.product.tags
-            if tag contains 'color-category'
-              assign category = tag | split: ':'
-              assign category_title = category[1] | concat: ','
-              assign color_categories = color_categories | concat: category_title
-            endif
+        capture color_categories
+          for value in option.values
+            for tag in value.variant.product.tags
+              if tag contains 'color-category'
+                assign category = tag | split: ':'
+                {{ category[1] }},
+              endif
+            endfor
           endfor
-        endfor
+        endcapture
 
         assign has_tall_sizing = false
         for value in option.values
@@ -91,13 +91,14 @@
                 {%- for category in color_categories -%}
                   <div>{{ category }}</div>
                 {%- endfor -%}
+              {%- else -%}
+                {% render 'product-variant-options',
+                  product: product,
+                  option: option,
+                  block: block,
+                  picker_type: picker_type
+                %}
               {%- endif -%}
-              {% render 'product-variant-options',
-                product: product,
-                option: option,
-                block: block,
-                picker_type: picker_type
-              %}
             </div>
           {%- else -%}
             {%- if has_tall_sizing -%}
