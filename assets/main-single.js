@@ -2,7 +2,7 @@
 
 
 const createStylesheet =  async () => {
-   await  fetch('https://sea-turtle-app-cr2ki.ondigitalocean.app/blend/get-all').then(response => response.json())
+   await  fetch('https://app.whiskyblender.com/blend/get-all').then(response => response.json())
     .then(data => {
         let stylesheet = document.querySelector(`#bar-colors`);
         let styles = ``;
