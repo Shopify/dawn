@@ -3,14 +3,20 @@ var TNB = {
     tallSizingActive: false,
   },
   megaMenuHover: function () {
-    let items = document.querySelector('.header__inline-menu').querySelectorAll('details');
+    const inlineMenu = document.querySelector('.header__inline-menu');
 
-    items.forEach((item) => {
+    const detailsItems = inlineMenu.querySelectorAll('details');
+
+    detailsItems.forEach((item) => {
+      const ulElement = item.querySelector('ul');
+
       item.addEventListener('mouseover', () => {
         item.setAttribute('open', true);
-        item.querySelector('ul').addEventListener('mouseleave', () => {
+
+        ulElement.addEventListener('mouseleave', () => {
           item.removeAttribute('open');
         });
+
         item.addEventListener('mouseleave', () => {
           item.removeAttribute('open');
         });
