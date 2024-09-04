@@ -155,6 +155,36 @@
             <span class="caption-large light">{{ block.settings.description | escape }}</span>
 
             {% render 'price', product: card_product, price_class: '', show_compare_at_price: true %}
+
+            {% assign keys = 'Color,color,Colour,colour' | split: ',' %}
+            {% for key in keys %}
+              {% if card_product.options contains key %}
+                <div class="product_tile_color_holder">
+                  {% for color_option in card_product.options_by_name[key].values %}
+                    {% for variant in card_product.variants %}
+                      {% if variant.options contains color_option %}
+                        {% if variant.image %}
+                          {% assign background_style = color_option %}
+                        {% endif %}
+                        {% if variant.metafields.color.swatch %}
+                          {% assign background_style = variant.metafields.color.swatch %}
+                        {% endif %}
+                        {% if variant.metafields.image.swatch %}
+                          {% assign background_style = 'url(' | append: variant.metafields.image.swatch | append: ')' %}
+                        {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                    <input
+                      type="radio"
+                      name="{{ card_product.id }}_card_color"
+                      id="{{ card_product.id }}_color_{{ forloop.index }}"
+                      style="background: {{ background_style }}; background-size: cover;"
+                    >
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endfor %}
+
             {%- if card_product.quantity_price_breaks_configured? -%}
               {% if card_product.variants.size == 1 and quick_add == 'bulk' %}
                 {% liquid
