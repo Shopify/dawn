@@ -3,25 +3,35 @@ var TNB = {
     tallSizingActive: false,
   },
   megaMenuHover: function () {
-    const inlineMenu = document.querySelector('.header__inline-menu');
-
-    const detailsItems = inlineMenu.querySelectorAll('details');
-
-    detailsItems.forEach((item) => {
-      const ulElement = item.querySelector('ul');
-
-      item.addEventListener('mouseover', () => {
-        item.setAttribute('open', true);
-
-        ulElement.addEventListener('mouseleave', () => {
-          item.removeAttribute('open');
-        });
-
-        item.addEventListener('mouseleave', () => {
-          item.removeAttribute('open');
-        });
-      });
+    $('.header__inline-menu').menuAim({
+      activate: function () {
+        console.log('activate:', e);
+      },
+      deactivate: function (e) {
+        console.log('deactivate:', e);
+      },
+      rowSelector: 'details',
+      submenuDirection: 'below',
     });
+
+    // const inlineMenu = document.querySelector('.header__inline-menu');
+    // const detailsItems = inlineMenu.querySelectorAll('details');
+
+    // detailsItems.forEach((item) => {
+    //   const ulElement = item.querySelector('ul');
+
+    //   item.addEventListener('mouseover', () => {
+    //     item.setAttribute('open', true);
+
+    //     ulElement.addEventListener('mouseleave', () => {
+    //       item.removeAttribute('open');
+    //     });
+
+    //     item.addEventListener('mouseleave', () => {
+    //       item.removeAttribute('open');
+    //     });
+    //   });
+    // });
   },
   tallSizingControls: function (destroy) {
     var controls = document.querySelector('.tall-sizing-controls');
