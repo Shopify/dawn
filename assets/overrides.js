@@ -2,6 +2,21 @@ var TNB = {
   state: {
     tallSizingActive: false,
   },
+  megaMenuHover: function () {
+    let items = document.querySelector('.header__inline-menu').querySelectorAll('details');
+
+    items.forEach((item) => {
+      item.addEventListener('mouseover', () => {
+        item.setAttribute('open', true);
+        item.querySelector('ul').addEventListener('mouseleave', () => {
+          item.removeAttribute('open');
+        });
+        item.addEventListener('mouseleave', () => {
+          item.removeAttribute('open');
+        });
+      });
+    });
+  },
   tallSizingControls: function (destroy) {
     var controls = document.querySelector('.tall-sizing-controls');
 
@@ -78,6 +93,8 @@ function init() {
   });
 
   TNB.tallSizingControls(false);
+
+  TNB.megaMenuHover();
 }
 
 window.addEventListener('DOMContentLoaded', function () {
