@@ -1,0 +1,277 @@
+{% schema %}
+{
+  "name": "Meet the Team",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Section Title",
+      "default": "Meet Our Team"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "default": false,
+      "label": "t:sections.rich-text.settings.full_width.label"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 52
+    }
+  ],
+  "blocks": [
+    {
+      "type": "team_member",
+      "name": "Team Member",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Member Image"
+        },
+        {
+          "type": "text",
+          "id": "name",
+          "label": "Name",
+          "default": "John Doe"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Job Title",
+          "default": "Position"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description",
+          "default": "A brief description about the team member."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Meet the Team",
+      "blocks": [
+        {
+          "type": "team_member"
+        },
+        {
+          "type": "team_member"
+        },
+        {
+          "type": "team_member"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+
+<div class="meet-the-team {% unless section.settings.full_width %} page-width{% endunless %} {% if section.settings.full_width %}content-container--full-width{% endif %} section-{{ section.id }}-padding color-{{ section.settings.color_scheme }}">
+  <div class="page-width">
+    <h2 class="section-title h1 heading-decoration-right{{ section.settings.content_alignment }}">
+      {{ section.settings.title }}
+    </h2>
+    <div class="team-members">
+      {% for block in section.blocks %}
+        {% if block.type == 'team_member' %}
+          <div class="team-member" data-member-id="{{ block.id }}">
+            {% if block.settings.image %}
+              <div class="team-member-image-wrapper">
+                {{
+                  block.settings.image
+                  | image_url: width: 300
+                  | image_tag: loading: 'lazy', width: 300, height: 300, alt: block.settings.title
+                }}
+              </div>
+            {% endif %}
+            <div class="team-member-details-container">
+              <div class="team-member-name-wrapper">
+                <h3 class="member-name">{{ block.settings.name }}</h3>
+                <div class="menmber-name-arrow">></div>
+              </div>
+              <hr class="team-devider">
+              <p class="member-title">{{ block.settings.title }}</p>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="teamMemberModal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <p id="modalName"></p>
+    <p id="modalTitle"></p>
+    <p id="modalDescription"></p>
+  </div>
+</div>
+
+<style>
+  .meet-the-team {
+    padding: 40px 20px;
+  }
+
+  .section-title {
+    margin-bottom: 30px;
+  }
+
+  .team-members {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .team-member {
+    flex-basis: 100%;
+    max-width: 100%;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    margin-bottom: 16px;
+    background: var(--alakazam-dark-blue);
+  }
+
+  .team-member:hover {
+    transform: scale(1.05);
+  }
+
+  .team-member-image-wrapper img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .team-member-details-container {
+    padding: 0 1.6rem;
+  }
+
+  .member-name {
+    margin-bottom: 5px;
+    color: #fff;
+  }
+
+  .team-devider {
+    margin: 0 auto;
+    background: var(--alakazam-orange);
+  }
+
+  .member-title {
+    font-style: italic;
+    color: #fff;
+  }
+
+  @media screen and (min-width: 750px) {
+    .team-member {
+      flex-basis: calc(50% - 15px);
+      max-width: calc(50% - 15px);
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .team-member {
+      flex-basis: calc(33.333% - 20px);
+      max-width: calc(33.333% - 20px);
+    }
+  }
+
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+
+  .modal-content {
+    background-color: var(--alakazam-dark-blue);
+    border: 1px solid var(--alakazam-orange);
+    color: #fff;
+    margin: 15% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 600px;
+  }
+
+  .close {
+    color: var(--alakazam-orange);
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .close:hover,
+  .close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var teamMembers = {
+      {% for block in section.blocks %}
+        {% if block.type == 'team_member' %}
+          "{{ block.id }}": {
+            "name": {{ block.settings.name | json }},
+            "title": {{ block.settings.title | json }},
+            "description": {{ block.settings.description | json }}
+          },
+        {% endif %}
+      {% endfor %}
+    };
+
+    var modal = document.getElementById("teamMemberModal");
+    var modalName = document.getElementById("modalName");
+    var modalTitle = document.getElementById("modalTitle");
+    var modalDescription = document.getElementById("modalDescription");
+    var span = document.getElementsByClassName("close")[0];
+
+    document.querySelectorAll('.team-member').forEach(function(member) {
+      member.addEventListener('click', function() {
+        var memberId = this.getAttribute('data-member-id');
+        var memberData = teamMembers[memberId];
+
+        modalName.textContent = memberData.name;
+        modalTitle.textContent = memberData.title;
+        modalDescription.textContent = memberData.description;
+
+        modal.style.display = "block";
+      });
+    });
+
+    span.onclick = function() {
+      modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+  });
+</script>
