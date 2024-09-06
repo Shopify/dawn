@@ -73,8 +73,26 @@ const getVariantFromSelectedOptions = () => {
              },
              body: JSON.stringify(data)
          }).then(response => response.json()).then(data => {
+            
              atc_button.innerHTML = 'Added to basket';
-            //  window.location.href = '/cart';
+
+             //if cart count is 0 refresh the page
+                if (document.getElementById('cart-count-hidden').textContent == 0) {
+                    location.reload();
+                }
+              
+           //refersh cart count
+              fetch('/cart.js')
+            .then(response => response.json())
+            .then(cart => {
+              const cartCount = document.getElementById('cart-count');
+              cartCount.textContent = cart.item_count > 0 ? cart.item_count : '';
+              console.log(cartCount.textContent);
+            });
+ 
+             setTimeout(() => {
+                 atc_button.innerHTML = 'Add to basket';
+             }, 2000);
          }).catch(error => {
             console.error('Error:', error);
          });
