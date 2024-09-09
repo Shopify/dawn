@@ -23,10 +23,10 @@ class SizeChartModal extends HTMLElement {
   }
 
   open() {
-    console.dir(this);
+    console.log(this.detailsContainer);
     this.onBodyClickEvent = this.onBodyClickEvent || this.onBodyClick.bind(this);
     this.detailsContainer.setAttribute('open', true);
-    document.body.addEventListener('click', this.onBodyClickEvent);
+    // document.body.addEventListener('click', this.onBodyClickEvent);
     document.body.classList.add('overflow-hidden');
 
     trapFocus(
