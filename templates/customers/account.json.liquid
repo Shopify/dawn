@@ -1,0 +1,40 @@
+{% layout none %}
+{
+  "orders" : [
+  {% paginate customer.orders by 250 %}
+  
+
+    {% for order in customer.orders %}
+
+          {% for line_item in order.line_items %}
+                  {
+                    "id": "{{ line_item.product.id }}",
+                    "title" : "{{ line_item.product.title | strip_html | strip_newlines | escape }}",
+                    
+                    "description" : "{{ line_item.product.description | strip_html | strip_newlines | escape | truncate: 150 }}",
+                    
+					          "tags" : [
+                    {% for tag in line_item.product.tags %}
+                      "{{ tag | escape }}"
+                      {% unless forloop.last %}, {% endunless %}
+                    {% endfor %}
+                    ],
+                    "start_time" : "{{ line_item.product.metafields.my_fields.academy_start_time_and_date | date: '%H:%M' }}",
+                    "start_date" : "{{ line_item.product.metafields.my_fields.academy_start_time_and_date | date: '%d/%m/%Y' }}",
+                    "video_embed" : [
+                    {% assign videoEmbed = line_item.product.metafields.my_fields.video_embed | strip_html | split: ',' | remove: '[' | remove: ']' %}
+                    {% for video in videoEmbed %}
+                      {{ video }}
+                      {% unless forloop.last %}, {% endunless %}
+                    {% endfor %}],
+                 
+                    "video_stream": "{{ line_item.product.metafields.my_fields.video_stream }}",
+                    "stream_chat": "{{ line_item.product.metafields.my_fields.stream_chat }}",
+                    "video_stream_svp":"{{ 'svp_player' | append: line_item.product.metafields.my_fields.video_stream }}"
+                  }{% unless forloop.last %}, {% endunless %}
+		{% endfor %}
+	{% unless forloop.last %}, {% endunless %}
+  {% endfor %}
+  {% endpaginate %}
+  ]
+}

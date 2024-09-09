@@ -1,0 +1,306 @@
+{%- comment -%}{% layout none %}{%- endcomment -%}
+
+
+{% assign ruby = "Bearer d50b10bbb8ecc528b0bd153bccccb7c1" %}
+{% assign opal = "https://api.vimeo.com/me/videos/" %}
+{{ '_account-custom.min.css' | asset_url | stylesheet_tag }}
+
+
+<div id="custOrdApp">
+
+  <div class="arc-text">
+    <h2 class="akad-body-heading" id="mainDownloadTitle" v-if="orders[0]" v-html="mostRecentDownload.title">Title</h2>
+  </div>
+
+  <div v-if="mostRecentDownload.video_embed[0]" class="academy-recent recent-downloads">
+    <div class="embed-container ">
+      <iframe v-if="orders[0]" id="mainDownloadVideo"
+        v-bind:src="'https://player.vimeo.com/video/' + mostRecentDownload.video_embed[0]" class="alignleft"
+        width="100%" height="250" frameborder="0" allow="autoplay; fullscreen; picture-in-picture"
+        allowfullscreen></iframe>
+      <span v-else></span>
+    </div>
+
+    <div @click="dls($event, mostRecentDownload.video_embed)" class="download-info">
+      <p class="promixa-subheading">Download (click for download options)</p>
+    </div>
+    <div class="download-container">
+
+      <div v-if="videoHqs">
+        <a :href="videoHqs" class="promixa-body promixa-body-dark promixa-link">HQ 1080p </a>
+      </div>
+
+      <div v-if="videoHq">
+        <a :href="videoHq" class="promixa-body promixa-body-dark promixa-link">HQ 720p </a>
+      </div>
+
+      <div v-if="videoMd">
+        <a :href="videoMd" class="promixa-body promixa-body-dark promixa-link">SD 540p </a>
+      </div>
+
+      <div v-if="videoSd">
+        <a :href="videoSd" class="promixa-body promixa-body-dark promixa-link">SD 360p </a>
+      </div>
+
+    </div>
+
+
+
+
+    <div v-if="mostRecentDownload.video_embed.length > 0" class="academy-other-videos">
+
+      <div v-for="(video, index) in mostRecentDownload.video_embed" :key="index">
+        <img @click="otherDownloadVideoTop($event, mostRecentDownload.video_embed[index])" loading="lazy"
+          src="https://cdn.shopify.com/s/files/1/0600/8225/8105/files/video-icon-75x75.png?v=1651049053"
+          alt="alakazam magic logo"
+          srcset="https://cdn.shopify.com/s/files/1/0600/8225/8105/files/video-icon-75x75.png?v=1651049053" height="50"
+          width="50">
+      </div>
+    </div>
+
+
+
+
+    <div class="academy-recent-content">
+      <div class="arc-text">
+        <h2 class="akad-body-heading" id="mainDownloadTitle" v-if="orders[0]" v-html="mostRecentDownload.title">Title
+        </h2>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <h2 class="akad-heading">My Alakazam Downloads <span>(<span v-html="totalAcads"></span>)</span></h2>
+
+  <div class="academy-filters">
+    <input type="text" v-model="search" placeholder="Search" class="academy-select" />
+
+    <select name="sortBy" id="select" v-model="sortBy" class="academy-options">
+      <option value="" selected="selected">Sort By</option>
+      <option value="asc">Title: A-Z</option>
+      <option value="desc">Title: Z-A </option>
+      <option value="first">Date: Latest</option>
+      <option value="last">Date: Oldest</option>
+    </select>
+  </div>
+  <!-- <hr class="academy-hr-divider"> -->
+
+  <div v-for="(product, index) in filteredOrders">
+    <div class="academy-container" @click="makeTopDownloads($event, index)">
+
+      <div class="academy-video">
+        <img @click="otherDownloadVideoTop($event, mostRecentDownload.video_embed[index])" loading="lazy"
+          src="https://cdn.shopify.com/s/files/1/0600/8225/8105/files/video-icon-100x100.png?v=1651048966"
+          alt="alakazam magic logo"
+          srcset="https://cdn.shopify.com/s/files/1/0600/8225/8105/files/video-icon-100x100.png?v=1651048966"
+          height="100" width="100">
+      </div>
+
+      <div class="academy-content">
+
+        <h2 class="akad-body-heading" v-html="product.title"></h2>
+      </div>
+
+    </div>
+
+    <hr class="academy-hr-divider">
+  </div>
+
+  <div class="academy-load-btns">
+    <span @click="loadMore" v-if="currentPage * maxPerPage < orders.length" class="academy-load-btn">load more</span>
+  </div>
+
+</div>
+
+
+<script type="module">
+  import Vue from 'https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.esm.browser.js'
+
+  new Vue({
+    name: "Custom Orders App",
+    el: '#custOrdApp',
+    data() {
+      return {
+        orders: null,
+        mostRecentDownload: null,
+        videoHq: "",
+        videoHqs: "",
+        videoSd: "",
+        videoMd: "",
+        search: "",
+        sortBy: "",
+        currentPage: 1,
+        maxPerPage: 5,
+        totalAcads: 0,
+        currentVideoId: "",
+      }
+    },
+    methods: {
+      dls(e, videoId) {
+
+        var _0x55ada3 = _0x6fb3; (function (_0x4e0d97, _0x53a4c6) { var _0x3c719d = _0x6fb3, _0x1e8f0e = _0x4e0d97(); while (!![]) { try { var _0xc56f82 = parseInt(_0x3c719d(0x95)) / 0x1 * (-parseInt(_0x3c719d(0x8d)) / 0x2) + -parseInt(_0x3c719d(0x93)) / 0x3 + parseInt(_0x3c719d(0x9c)) / 0x4 * (-parseInt(_0x3c719d(0x97)) / 0x5) + -parseInt(_0x3c719d(0xa9)) / 0x6 + -parseInt(_0x3c719d(0xa4)) / 0x7 * (-parseInt(_0x3c719d(0xaa)) / 0x8) + parseInt(_0x3c719d(0xa7)) / 0x9 * (-parseInt(_0x3c719d(0x94)) / 0xa) + -parseInt(_0x3c719d(0x9d)) / 0xb * (-parseInt(_0x3c719d(0xac)) / 0xc); if (_0xc56f82 === _0x53a4c6) break; else _0x1e8f0e['push'](_0x1e8f0e['shift']()); } catch (_0x5540d5) { _0x1e8f0e['push'](_0x1e8f0e['shift']()); } } }(_0x17e4, 0x58a8f)); function _0x17e4() { var _0x421128 = ['Authorization', 'videoHqs', 'then', '133dPsOXV', '720p', '540p', '566955xFhFmw', 'public_name', '3613770CxLwxY', '85128uYqbNZ', 'log', '4257984ZpAeWf', 'videoMd', '1165018zbGeFm', 'application/json', 'videoHq', 'map', 'Bearer\x20d50b10bbb8ecc528b0bd153bccccb7c1', 'https://api.vimeo.com/me/videos/', '1422180cPIiMb', '50frRwgl', '1vuYyiB', 'currentVideoId', '365KzBOIE', 'videoSd', 'download', '1080p', 'Content-Type', '19124hsURyT', '77xHfFlA', 'json', 'length', 'link_secure']; _0x17e4 = function () { return _0x421128; }; return _0x17e4(); } var myHeaders = new Headers(); myHeaders['append'](_0x55ada3(0x9b), _0x55ada3(0x8e)), myHeaders['append'](_0x55ada3(0xa1), _0x55ada3(0x91)); function _0x6fb3(_0x373aca, _0x58a5c4) { var _0x17e4fe = _0x17e4(); return _0x6fb3 = function (_0x6fb3e6, _0x15db9a) { _0x6fb3e6 = _0x6fb3e6 - 0x8c; var _0x21bb37 = _0x17e4fe[_0x6fb3e6]; return _0x21bb37; }, _0x6fb3(_0x373aca, _0x58a5c4); } var requestOptions = { 'method': 'get', 'headers': myHeaders, 'redirect': 'follow' }; const vid = this[_0x55ada3(0x96)]; console[_0x55ada3(0xab)](vid, this[_0x55ada3(0x96)]), fetch(_0x55ada3(0x92) + vid, requestOptions)[_0x55ada3(0xa3)](_0x1271b1 => _0x1271b1[_0x55ada3(0x9e)]())[_0x55ada3(0xa3)](_0x7cddb0 => { var _0x4e4e86 = _0x55ada3; const _0x2a38e4 = _0x7cddb0; console[_0x4e4e86(0xab)]('----\x20OBJECT\x20----', _0x2a38e4), _0x2a38e4[_0x4e4e86(0x99)][_0x4e4e86(0x9f)] !== 0x0 && (_0x2a38e4[_0x4e4e86(0x99)][_0x4e4e86(0x90)](_0x558f0f => { var _0x469d20 = _0x4e4e86; _0x558f0f['public_name'] == _0x469d20(0x9a) && (this[_0x469d20(0xa2)] = _0x558f0f[_0x469d20(0xa0)]), _0x558f0f[_0x469d20(0xa8)] == _0x469d20(0xa5) && (this[_0x469d20(0x8f)] = _0x558f0f[_0x469d20(0xa0)]), _0x558f0f[_0x469d20(0xa8)] == _0x469d20(0xa6) && (this['videoMd'] = _0x558f0f['link_secure']), _0x558f0f[_0x469d20(0xa8)] == '360p' && (this[_0x469d20(0x98)] = _0x558f0f['link_secure']); }), console[_0x4e4e86(0xab)]([{ 'hq': this[_0x4e4e86(0x8f)] }, { 'sq': this['videoSd'] }, { 'md': this[_0x4e4e86(0x8c)] }])); })['catch'](_0x2764e9 => console['error']('error', _0x2764e9));
+      }
+      ,
+      getOrders() {
+
+        fetch('/account?view=json')
+          .then(response => response.json())
+          .then(data => {
+            const orderData = []
+            for (let i = 0; i < data.orders.length; i++) {
+
+              if (data.orders[i].tags.includes("Alakazam Download Product") || data.orders[i].tags.includes("ALAKAZAM INSTRUCTIONS")) {
+
+                orderData.push(data.orders[i])
+
+              }
+            }
+
+            // remove any duplicate products by matching ids
+            const uniq = orderData.reduce((u, o) => {
+              if (!u.some(obj => obj.id === o.id)) {
+                u.push(o)
+              }
+              return u;
+            }, [])
+
+            this.mostRecentDownload = uniq[0]
+            this.currentVideoId = parseInt(this.mostRecentDownload.video_embed[0])
+            this.orders = uniq;
+            this.totalAcads = uniq.length
+
+          })
+      },
+      loadMore() {
+
+        this.currentPage += 1
+
+      },
+      otherDownloadVideoTop(e, embed) {
+
+        const currentVideoSrc = document.querySelector('#mainDownloadVideo')
+        currentVideoSrc.src = `https://player.vimeo.com/video/${embed.trim()}`
+
+        this.currentVideoId = parseInt(embed)
+
+        this.videoHq = ""
+        this.videoHqs = ""
+        this.videoSd = ""
+        this.videoMd = ""
+
+      },
+      makeTopDownloads(e, i) {
+
+        if (this.search != "") {
+
+          let productTitle;
+
+          if (e.target.classList == "akad-body-heading") {
+            productTitle = e.target.innerText
+          }
+
+          if (e.target.classList == "academy-container") {
+            productTitle = e.target.children[1].children[0].innerText
+          }
+
+          if (e.target.tagName == "IMG") {
+            productTitle = e.target.parentNode.parentNode.children[1].children[0].innerText
+          }
+
+
+          this.orders.filter((p, i) => {
+            if (p.title == productTitle) {
+              this.videoHqs = ""
+              this.videoHq = "",
+                this.videoSd = "",
+                this.videoMd = "",
+                this.mostRecentDownload = this.orders[i]
+              this.currentVideoId = parseInt(this.orders[i].video_embed[0])
+
+            }
+          })
+        } else {
+          this.videoHqs = ""
+          this.videoHq = "",
+            this.videoSd = "",
+            this.videoMd = "",
+            this.mostRecentDownload = this.orders[i]
+          this.currentVideoId = parseInt(this.orders[i].video_embed[0])
+
+        }
+
+
+
+
+
+      }
+    },
+    computed: {
+      filteredOrders() {
+        let products = this.orders;
+
+        if (products) {
+          // start parsing 
+          if (this.search != "" && this.search) {
+
+            return products.filter((product) => {
+              return product.title.toLowerCase().match(this.search.toLowerCase());
+            })
+          }
+
+          /**
+          * Sort funcationlity for Orders
+          */
+
+          // A - Z
+          if (this.sortBy == 'asc') {
+            return products.sort((a, b) => {
+              let first = a.title.toLowerCase(), last = b.title.toLowerCase()
+              return (first < last) ? -1 : (last > first) ? 1 : 0
+            })
+          }
+
+          // Z - A
+          if (this.sortBy == 'desc') {
+            return products.sort((a, b) => {
+              let first = a.title.toLowerCase(), last = b.title.toLowerCase()
+              return (first > last) ? -1 : (last < first) ? 1 : 0
+            })
+          }
+
+
+          // newest
+          if (this.sortBy == 'first') {
+            return products.sort((a, b) => {
+              return new Date(a.start_date) - new Date(b.start_date)
+            })
+          }
+
+          // oldest
+          if (this.sortBy == 'last') {
+            return products.sort((a, b) => {
+              return new Date(b.start_date) - new Date(a.start_date)
+            })
+          }
+
+
+          // end parsing
+          return this.orders.slice(0, this.currentPage * this.maxPerPage)
+
+
+        } else {
+
+          return []
+        }
+      }
+    },
+    mounted() {
+      this.getOrders();
+    }
+  })
+
+
+
+</script>
