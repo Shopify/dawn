@@ -15,17 +15,16 @@ class SizeChartModal extends HTMLElement {
 
   onSummaryClick(event) {
     event.preventDefault();
-    console.dir(this);
-    this.detailsContainer.hasAttribute('open') ? this.close() : this.open(event);
+    this.detailsContainer.hasAttribute('open') ? this.close() : this.open();
   }
 
   onBodyClick(event) {
     if (!this.contains(event.target) || event.target.classList.contains('modal-overlay')) this.close(false);
   }
 
-  open(event) {
+  open() {
     this.onBodyClickEvent = this.onBodyClickEvent || this.onBodyClick.bind(this);
-    event.target.closest('details').setAttribute('open', true);
+    this.detailsContainer.setAttribute('open', true);
     document.body.addEventListener('click', this.onBodyClickEvent);
     document.body.classList.add('overflow-hidden');
 
