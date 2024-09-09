@@ -1,0 +1,217 @@
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<style>
+  .cta-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin: 0 -4px;
+  }
+  .cta-block {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    padding: 60px 20px;
+    margin: 0 4px 8px 4px;
+    overflow: hidden;
+    width: calc(33.333% - 8px);
+    box-sizing: border-box;
+    border: 2px solid var(--alakazam-orange);
+  }
+  .cta-block::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, var(--overlay-opacity));
+    z-index: 1;
+  }
+  .cta-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: #fff;
+  }
+  .cta-title {
+    font-size: 2em;
+    margin-bottom: 10px;
+  }
+  .cta-subtitle {
+    font-size: 1em;
+    margin-bottom: 20px;
+  }
+  @media screen and (max-width: 749px) {
+    .cta-block {
+      width: calc(50% - 8px);
+    }
+  }
+  @media screen and (max-width: 480px) {
+    .cta-block {
+      width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+</style>
+
+<div class="color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding {% if section.settings.full_width %} content-container--full-width{% endif %}">
+  <div class="page-width">
+    <h2 class="h1 {%if section.settings.content_alignment == 'left' %} heading-decoration-right {% endif %} {%if section.settings.content_alignment == 'center' %} heading-decoration {% endif %}{%if section.settings.content_alignment == 'left' %} heading-decoration-right {% endif %}">
+      {{ section.settings.title }}
+    </h2>
+    <div class="cta-section">
+      {% for block in section.blocks %}
+        {% if block.type == 'cta' %}
+          <div
+            class="cta-block"
+            style="background-image: url('{{ block.settings.background_image | img_url: 'master' }}');"
+          >
+            <div class="cta-overlay" style="opacity: {{ block.settings.overlay_opacity | divided_by: 100.0 }};"></div>
+            <div class="cta-content">
+              <h2 class="cta-title">{{ block.settings.title }}</h2>
+              <p class="cta-subtitle">{{ block.settings.subtitle }}</p>
+              <a href="{{ block.settings.button_link }}" class="button">{{ block.settings.button_text }}</a>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Call to Actions",
+  "max_blocks": 10,
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "default": true,
+      "label": "t:sections.rich-text.settings.full_width.label"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Section Title",
+      "default": "Calls to Action"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.rich-text.settings.content_alignment.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.rich-text.settings.content_alignment.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.rich-text.settings.content_alignment.options__3.label"
+        }
+      ],
+      "default": "center",
+      "label": "t:sections.rich-text.settings.content_alignment.label"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 52
+    }
+  ],
+  "blocks": [
+    {
+      "type": "cta",
+      "name": "CTA Block",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "background_image",
+          "label": "Background Image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Your Title Here"
+        },
+        {
+          "type": "text",
+          "id": "subtitle",
+          "label": "Subtitle",
+          "default": "Your subtitle here"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button Text",
+          "default": "Click Here"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button Link"
+        },
+        {
+          "type": "range",
+          "id": "overlay_opacity",
+          "min": 0,
+          "max": 100,
+          "step": 10,
+          "unit": "%",
+          "label": "Overlay Opacity",
+          "default": 50
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Call to Actions",
+      "blocks": [
+        {
+          "type": "cta"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
