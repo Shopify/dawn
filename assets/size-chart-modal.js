@@ -1,7 +1,7 @@
 class SizeChartModal extends HTMLElement {
   constructor() {
     super();
-    this.contentContainer = document.querySelector('.size-chart-modal');
+    this.contentContainer = document.querySelector('size-chart-modal');
     this.detailsContainer = this.contentContainer.querySelector('details');
 
     this.addEventListener('click', this.onSummaryClick.bind(this));
@@ -24,10 +24,10 @@ class SizeChartModal extends HTMLElement {
     this.onBodyClickEvent = this.onBodyClickEvent || this.onBodyClick.bind(this);
     this.detailsContainer.setAttribute('open', true);
 
-    setTimeout(() => {
-      document.body.classList.add('overflow-hidden');
-      document.body.addEventListener('click', this.onBodyClickEvent);
+    document.body.classList.add('overflow-hidden');
+    document.body.addEventListener('click', this.onBodyClickEvent);
 
+    setTimeout(() => {
       trapFocus(
         this.detailsContainer.querySelector('[tabindex="-1"]'),
         this.detailsContainer.querySelector('input:not([type="hidden"])')
