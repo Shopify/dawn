@@ -1,0 +1,423 @@
+{% assign ruby = "Bearer d50b10bbb8ecc528b0bd153bccccb7c1" %}
+{% assign opal = "https://api.vimeo.com/me/videos/" %}
+{%- comment -%}{% layout none %}{%- endcomment -%}
+
+
+{{ '_account-custom.min.css' | asset_url | stylesheet_tag }}
+<script language="javascript" type="text/javascript" src="//play.webvideocore.net/js/dplayer.js"></script>
+
+
+<div id="custOrdApp">
+
+  <div class="arc-text">
+    <h2 class="akad-body-heading" id="mainTitle" v-if="mostRecent.title" v-html="mostRecent.title">Title</h2>
+  </div>
+
+
+  <div class="svpPlayerDivTest" style="position: relative;"></div>
+
+  <div v-if="mostRecent.stream_chat !== ''">
+    <iframe width="100%" height="350px" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"
+      allowtransparency="true"
+      v-bind:src="'https://chatroll.com/embed/chat/ttt5-with-jamie-daws?id=' + mostRecent.stream_chat + '&platform=html'"></iframe>
+  </div>
+
+  <div v-if="mostRecent.video_embed[0]" class="academy-recent">
+    <div class="embed-container">
+      <iframe v-if="orders[0]" id="mainVideo" v-bind:src="'https://player.vimeo.com/video/' + mostRecent.video_embed[0]"
+        width="100%" height="250" frameborder="0" allow="autoplay; fullscreen; picture-in-picture"
+        allowfullscreen></iframe>
+      <span v-else></span>
+    </div>
+
+
+    <div @click="dls($event, mostRecent.video_embed)" class="download-info">
+      <p class="promixa-subheading">Download (click for download options)</p>
+    </div>
+    <div class="download-container">
+
+      <div v-if="videoHqs">
+        <a :href="videoHqs" class="promixa-body promixa-body-dark promixa-link">HQ 1080p </a>
+      </div>
+
+      <div v-if="videoHq">
+        <a :href="videoHq" class="promixa-body promixa-body-dark promixa-link">HQ 720p </a>
+      </div>
+
+      <div v-if="videoMd">
+        <a :href="videoMd" class="promixa-body promixa-body-dark promixa-link">SD 540p </a>
+      </div>
+
+      <div v-if="videoSd">
+        <a :href="videoSd" class="promixa-body promixa-body-dark promixa-link">SD 360p </a>
+      </div>
+
+    </div>
+
+    <div v-if="mostRecent.video_embed.length > 0" class="academy-other-videos">
+
+      <div v-for="(video, index) in mostRecent.video_embed" :key="index">
+        <img @click="otherVideoTop($event, mostRecent.video_embed[index])" loading="lazy"
+          src="https://cdn.shopify.com/s/files/1/0600/8225/8105/files/video-icon-75x75.png?v=1651049053"
+          alt="alakazam magic logo"
+          srcset="https://cdn.shopify.com/s/files/1/0600/8225/8105/files/video-icon-75x75.png?v=1651049053" height="50"
+          width="50">
+      </div>
+    </div>
+
+    <div class="academy-recent-content">
+
+
+
+    </div>
+
+  </div>
+
+  <div v-else>
+    <h2 class="promixa-subheading">Video Coming Soon</h2>
+  </div>
+
+
+  <h2 class="akad-heading">My Alakazam Academies <span>(<span v-html="totalAcads"></span>)</span></h2>
+
+  <div class="academy-filters">
+    <input type="text" v-model="search" placeholder="Search" class="academy-select" />
+
+    <select name="sortBy" id="select" v-model="sortBy" class="academy-options">
+      <option value="" selected="selected">Sort By</option>
+      <option value="asc">Title: A-Z</option>
+      <option value="desc">Title: Z-A </option>
+      <option value="first">Date: Latest</option>
+      <option value="last">Date: Oldest</option>
+    </select>
+  </div>
+  <!-- <hr class="academy-hr-divider"> -->
+
+  <div v-for="(product, index) in filteredOrders">
+
+
+
+    <div class="academy-container" @click="makeTopAcademies($event, index)">
+
+
+      <div class="academy-video">
+        <img @click="otherDownloadVideoTop($event, mostRecentDownload.video_embed[index])" loading="lazy"
+          src="https://cdn.shopify.com/s/files/1/0600/8225/8105/files/video-icon-100x100.png?v=1651048966"
+          alt="alakazam magic logo"
+          srcset="https://cdn.shopify.com/s/files/1/0600/8225/8105/files/video-icon-100x100.png?v=1651048966"
+          height="100" width="100">
+      </div>
+
+      <div class="academy-content">
+
+        <h2 class="akad-body-heading" v-html="product.title"></h2>
+        <!-- <p  class="akad-body" v-html="product.description"></p> -->
+        <div class="academy-dates">
+          <p v-if="product.start_time"><span v-html="product.start_time"></span> GMT</p>
+          <p v-html="product.start_date"></p>
+        </div>
+      </div>
+
+      <div class="academy-stream">
+
+        <div v-if="product.video_stream !== ''">
+
+
+
+          <p v-if="product.start_date === todaysDate && parseInt(product.start_time.split(':')[0]) >= timeNow "><i
+              class="fa fa-circle text-danger Blink"></i>&nbsp; Live</p>
+          <em v-if="product.start_date === todaysDate && parseInt(product.start_time.split(':')[0]) >= timeNow ">Click
+            to view stream</em>
+
+        </div>
+
+
+
+      </div>
+
+    </div>
+
+    <hr class="academy-hr-divider">
+  </div>
+
+  <div class="academy-load-btns">
+    <span @click="loadMore" v-if="currentPage * maxPerPage < orders.length" class="academy-load-btn">load more</span>
+  </div>
+
+</div>
+
+<script type="module">
+  import Vue from 'https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.esm.browser.js'
+
+  new Vue({
+    name: "Custom Orders App",
+    el: '#custOrdApp',
+    data() {
+      return {
+        orders: null,
+        mostRecent: null,
+        search: "",
+        sortBy: "",
+        currentPage: 1,
+        maxPerPage: 5,
+        totalAcads: 0,
+        videoHq: "",
+        videoHqs: "",
+        videoSd: "",
+        videoMd: "",
+        currentVideoId: "",
+        todaysDate: new Date().toLocaleDateString(),
+        timeNow: parseInt(new Date().toLocaleTimeString('en-GB', {
+          hour12: false,
+          hour: "numeric",
+          minute: "numeric"
+        }).split(':')[0])
+
+      }
+    },
+    methods: {
+      dls(e, videoId) {
+
+        function _0x1770(_0x52af75, _0xc63ff6) { var _0x144177 = _0x1441(); return _0x1770 = function (_0x17702c, _0x1269eb) { _0x17702c = _0x17702c - 0xce; var _0x371f13 = _0x144177[_0x17702c]; return _0x371f13; }, _0x1770(_0x52af75, _0xc63ff6); } function _0x1441() { var _0x4bed50 = ['791612sBxDJt', 'download', '7864sgBivX', '3310uMsSUM', 'videoSd', 'then', 'append', 'get', 'application/json', '----\x20OBJECT\x20----', 'log', 'map', '342AFVVgh', '179912uYIOvW', 'error', 'length', '1756836GJlFAu', 'public_name', 'link_secure', '1080p', '2469670LuTSRP', 'currentVideoId', 'videoHq', 'https://api.vimeo.com/me/videos/', 'videoMd', '720p', '772829suznjq', 'Bearer\x20d50b10bbb8ecc528b0bd153bccccb7c1', '360p', '20019GXsFLX', 'json', 'Authorization']; _0x1441 = function () { return _0x4bed50; }; return _0x1441(); } var _0x2aa0e4 = _0x1770; (function (_0x33cc0b, _0x25270b) { var _0x278aa6 = _0x1770, _0x5368c7 = _0x33cc0b(); while (!![]) { try { var _0x38f83a = -parseInt(_0x278aa6(0xe9)) / 0x1 + parseInt(_0x278aa6(0xcf)) / 0x2 + parseInt(_0x278aa6(0xec)) / 0x3 + -parseInt(_0x278aa6(0xd1)) / 0x4 * (-parseInt(_0x278aa6(0xd2)) / 0x5) + parseInt(_0x278aa6(0xdf)) / 0x6 + parseInt(_0x278aa6(0xe3)) / 0x7 + -parseInt(_0x278aa6(0xdc)) / 0x8 * (parseInt(_0x278aa6(0xdb)) / 0x9); if (_0x38f83a === _0x25270b) break; else _0x5368c7['push'](_0x5368c7['shift']()); } catch (_0x17ab02) { _0x5368c7['push'](_0x5368c7['shift']()); } } }(_0x1441, 0xb0500)); var myHeaders = new Headers(); myHeaders[_0x2aa0e4(0xd5)]('Content-Type', _0x2aa0e4(0xd7)), myHeaders[_0x2aa0e4(0xd5)](_0x2aa0e4(0xce), _0x2aa0e4(0xea)); var requestOptions = { 'method': _0x2aa0e4(0xd6), 'headers': myHeaders, 'redirect': 'follow' }; const vid = this[_0x2aa0e4(0xe4)]; console['log'](vid, this[_0x2aa0e4(0xe4)]), fetch(_0x2aa0e4(0xe6) + vid, requestOptions)[_0x2aa0e4(0xd4)](_0x2f00b0 => _0x2f00b0[_0x2aa0e4(0xed)]())[_0x2aa0e4(0xd4)](_0x33a63c => { var _0xa6976b = _0x2aa0e4; const _0xa0e943 = _0x33a63c; console['log'](_0xa6976b(0xd8), _0xa0e943), _0xa0e943[_0xa6976b(0xd0)][_0xa6976b(0xde)] !== 0x0 && (_0xa0e943['download'][_0xa6976b(0xda)](_0x241aab => { var _0x54bd94 = _0xa6976b; _0x241aab[_0x54bd94(0xe0)] == _0x54bd94(0xe2) && (this['videoHqs'] = _0x241aab[_0x54bd94(0xe1)]), _0x241aab['public_name'] == _0x54bd94(0xe8) && (this[_0x54bd94(0xe5)] = _0x241aab[_0x54bd94(0xe1)]), _0x241aab[_0x54bd94(0xe0)] == '540p' && (this[_0x54bd94(0xe7)] = _0x241aab[_0x54bd94(0xe1)]), _0x241aab[_0x54bd94(0xe0)] == _0x54bd94(0xeb) && (this['videoSd'] = _0x241aab[_0x54bd94(0xe1)]); }), console[_0xa6976b(0xd9)]([{ 'hq': this[_0xa6976b(0xe5)] }, { 'sq': this[_0xa6976b(0xd3)] }, { 'md': this[_0xa6976b(0xe7)] }])); })['catch'](_0x5865c9 => console[_0x2aa0e4(0xdd)](_0x2aa0e4(0xdd), _0x5865c9));
+
+
+      },
+      getOrders() {
+        fetch('/account?view=json')
+          .then(response => response.json())
+          .then(data => {
+            const orderData = []
+
+            const products = data.orders.sort((a, b) => {
+              return new Date(a.start_date) - new Date(b.start_date)
+            })
+
+
+
+            for (let i = 0; i < products.length; i++) {
+              if (products[i].tags.includes("Alakazam Academy Product")) {
+                orderData.push(products[i])
+              }
+            }
+
+
+
+            // remove any duplicate products by matching ids
+            const uniq = orderData.reduce((u, o) => {
+              if (!u.some(obj => obj.id === o.id)) {
+                u.push(o)
+              }
+              return u;
+            }, [])
+
+            this.mostRecent = uniq[0]
+
+            this.currentVideoId = parseInt(this.mostRecent.video_embed[0])
+
+            this.orders = uniq;
+
+            this.totalAcads = uniq.length
+
+
+
+          })
+      },
+      loadMore() {
+        this.currentPage += 1
+      },
+      otherVideoTop(e, embed) {
+        const currentVideoSrc = document.querySelector('#mainVideo')
+        currentVideoSrc.src = `https://player.vimeo.com/video/${embed}`
+        this.currentVideoId = parseInt(embed)
+
+        this.videoHq = ""
+        this.videoHqs = ""
+        this.videoSd = ""
+        this.videoMd = ""
+      },
+      makeTopAcademies(e, i) {
+
+        this.mostRecent = this.orders[i]
+
+
+
+        if (this.search != "") {
+
+          let productTitle;
+
+          if (e.target.classList == "akad-body-heading") {
+            productTitle = e.target.innerText
+          }
+
+          if (e.target.classList == "academy-container") {
+            productTitle = e.target.children[1].children[0].innerText
+          }
+
+          if (e.target.tagName == "IMG") {
+            productTitle = e.target.parentNode.parentNode.children[1].children[0].innerText
+          }
+
+
+          this.orders.filter((p, i) => {
+            if (p.title == productTitle) {
+              this.videoHqs = ""
+              this.videoHq = "",
+                this.videoSd = "",
+                this.videoMd = "",
+                this.mostRecent = this.orders[i]
+              this.currentVideoId = parseInt(this.orders[i].video_embed[0])
+
+
+            }
+          })
+        } else {
+          this.videoHqs = ""
+          this.videoHq = "",
+            this.videoSd = "",
+            this.videoMd = "",
+            this.mostRecent = this.orders[i]
+          this.currentVideoId = parseInt(this.orders[i].video_embed[0])
+
+        }
+
+
+
+        this.createSvpDivs()
+
+
+
+
+        if (this.mostRecent.video_stream !== "") {
+
+          this.svpPlayerInit()
+        }
+
+
+
+
+
+
+
+
+
+      },
+      createSvpDivs() {
+
+        let svpPlayerDiv = document.querySelector('.svpPlayerDivTest')
+
+        if (this.mostRecent.video_stream == "") {
+          svpPlayerDiv.classList.add('hide-video')
+        } else {
+          svpPlayerDiv.classList.remove('hide-video')
+
+        }
+
+        this.orders.map(order => {
+
+          if (order.video_stream_svp !== "" && order.video_stream !== "") {
+
+            let svpIdDiv = document.createElement('div')
+
+            if (!document.querySelector(`#${order.video_stream_svp}`)) {
+              svpIdDiv.id = order.video_stream_svp
+              svpPlayerDiv.appendChild(svpIdDiv)
+            }
+          }
+
+
+        })
+      },
+
+      svpPlayerInit() {
+
+
+
+        let selecteddiv = document.getElementById(this.mostRecent.video_stream_svp)
+        let svpPlayerDiv = document.querySelector('.svpPlayerDivTest')
+
+        svpPlayerDiv.childNodes.forEach(child => {
+          if (this.mostRecent.video_stream_svp == child.id) {
+            child.classList.remove('hide-video')
+          } else {
+            child.classList.add('hide-video')
+          }
+        })
+
+        let vars = { clip_id: this.mostRecent.video_stream, transparent: "true", pause: "1", repeat: "", bg_color: "#ffffff", fs_mode: "2", no_controls: "", start_img: "0", start_volume: "34", close_button: "", brand_new_window: "1", auto_hide: "1", stretch_video: "", player_align: "NONE", offset_x: "0", offset_y: "0", player_color_ratio: 0.6, skinAlpha: "50", colorBase: "#250864", colorIcon: "#ffffff", colorHighlight: "#7f54f8", direct: "false", is_responsive: "true", viewers_limit: 0, cc_position: "bottom", cc_positionOffset: 70, cc_multiplier: 0.03, cc_textColor: "#ffffff", cc_textOutlineColor: "#ffffff", cc_bkgColor: "#000000", cc_bkgAlpha: 0.1, aspect_ratio: "16:9", play_button: "1", play_button_style: "pulsing", sleek_player: "1", auto_play: "0", auto_play_type: "unMute", floating_player: "none" };
+        let svp_player = new SVPDynamicPlayer(this.mostRecent.video_stream_svp, "", "100%", "100%", { use_div: this.mostRecent.video_stream_svp, skin: "3" }, vars);
+        svp_player.execute()
+
+
+
+      }
+
+    },
+    computed: {
+      filteredOrders() {
+        let products = this.orders;
+
+        if (products) {
+
+          // search input
+          if (this.search != "" && this.search) {
+            return products.filter((product) => {
+              return product.title.toLowerCase().match(this.search.toLowerCase());
+            })
+          }
+
+          /**
+          * Sort funcationlity for Orders
+          */
+
+          // A - Z
+          if (this.sortBy == 'asc') {
+            return products.sort((a, b) => {
+              let first = a.title.toLowerCase(), last = b.title.toLowerCase()
+              return (first < last) ? -1 : (last > first) ? 1 : 0
+            })
+          }
+
+          // Z - A
+          if (this.sortBy == 'desc') {
+            return products.sort((a, b) => {
+              let first = a.title.toLowerCase(), last = b.title.toLowerCase()
+              return (first > last) ? -1 : (last < first) ? 1 : 0
+            })
+          }
+
+
+          // newest
+          if (this.sortBy == 'first') {
+            return products.sort((a, b) => {
+              return new Date(a.start_date) - new Date(b.start_date)
+            })
+          }
+
+          // oldest
+          if (this.sortBy == 'last') {
+            return products.sort((a, b) => {
+              return new Date(b.start_date) - new Date(a.start_date)
+            })
+          }
+
+
+          // end parsing
+          return this.orders.slice(0, this.currentPage * this.maxPerPage)
+
+
+        } else {
+
+          return []
+        }
+      },
+    },
+    mounted() {
+
+      this.getOrders();
+
+
+    }
+  })
+
+
+</script>
