@@ -10,10 +10,6 @@ class SizeChartModal extends HTMLElement {
     this.detailsContainer.querySelector('button[type="button"]').addEventListener('click', this.close.bind(this));
   }
 
-  isOpen() {
-    return this.detailsContainer.hasAttribute('open');
-  }
-
   onSummaryClick(event) {
     event.preventDefault();
     this.detailsContainer.hasAttribute('open') ? this.close() : this.open();
