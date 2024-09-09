@@ -1,0 +1,278 @@
+{{ 'customer.css' | asset_url | stylesheet_tag }}
+
+<div class="customer account">
+  {%- comment -%} Account Intro {%- endcomment -%}
+  <div class="customer-account-header">
+    <h1>{{ 'customer.account.title' | t }} <span class="customer-account-sub"></span></h1>
+
+  </div>
+
+  <div class="account-container">
+
+    <div class="alakazam-account-nav">
+      {%- comment -%} navigation {%- endcomment -%}
+      <div class="alakazam-account-nav__tabs">
+        <div class="nav-active cursor-for-tabs">Account Details</div>
+        <div class="cursor-for-tabs">Order History</div>
+        <div>
+          <a href="/pages/wishlist">Wish List</a>
+        </div>
+        <div>
+          <a href="/pages/reward">Loyalty Points</a>
+        </div>
+        <div class="cursor-for-tabs">Downloads</div>
+        <div class="cursor-for-tabs">Academies</div>
+        <div class="cursor-for-tabs">Partner Downloads</div>
+        <div class="cursor-for-tabs"><a target="_blank" href="https://alakazam.co.uk/pages/unlimited">Alakazam Unlimited</a></div>
+        <div class="cursor-for-tabs">Redeem</div>
+        <a href="{{ routes.account_logout_url }}" class="cta-sign-out">
+          Sign Out
+        </a>
+      </div>
+
+    </div>
+
+    {%- comment -%}Window Tabs{%- endcomment -%}
+    <div class="alakazam-account-tabs">
+
+
+      {%- comment -%} Account Detail
+      {%- endcomment -%}
+      <div class="alakazam-account-tab tab-show">
+        {% section 'account-details' %}
+      </div>
+
+
+      {%- comment -%} Order History {%- endcomment -%}
+      <div class="alakazam-account-tab ">
+        <h2>{{ 'customer.orders.title' | t }}</h2>
+
+        {% paginate customer.orders by 20 %}
+        {%- if customer.orders.size > 0 -%}
+        <table role="table" class="order-history">
+          <caption class="visually-hidden">{{ 'customer.orders.title' | t }}</caption>
+          <thead role="rowgroup" class="alakazam-order-thead">
+            <tr role="row">
+              <th id="ColumnOrder" class="alakazam-order-th" scope="col" role="columnheader">{{
+                'customer.orders.order_number' | t }}</th>
+              <th id="ColumnDate" class="alakazam-order-th" scope="col" role="columnheader">{{ 'customer.orders.date' |
+                t }}</th>
+              {%- comment -%}<th id="ColumnPayment" scope="col" role="columnheader">{{ 'customer.orders.payment_status'
+                | t }}</th>{%- endcomment -%}
+              {%- comment -%}<th id="ColumnFulfillment" class="alakazam-order-th" scope="col" role="columnheader">{{
+                'customer.orders.fulfillment_status' | t }}
+              </th>{%- endcomment -%}
+
+              {%- comment -%}
+              TODO: Custom Tracking in td bellow
+              {%- endcomment -%}
+              <th id="ColumnTotal" class="alakazam-order-th" scope="col" role="columnheader">Delivery</th>
+              <th id="ColumnTotal" class="alakazam-order-th" scope="col" role="columnheader">Status</th>
+              {%- comment -%}END Custom Tracking {%- endcomment -%}
+
+              <th id="ColumnTotal" class="alakazam-order-th" scope="col" role="columnheader">{{ 'customer.orders.total'
+                | t }}</th>
+              {%- comment -%}
+              TODO: Points Gained in td bellow
+              {%- endcomment -%}
+              <th id="ColumnTotal" class="alakazam-order-th" scope="col" role="columnheader">Points Earned</th>
+
+            </tr>
+          </thead>
+          <tbody role="rowgroup">
+            {%- for order in customer.orders -%}
+            <tr role="row">
+              <td id="RowOrder" role="cell" headers="ColumnOrder" data-label="{{ 'customer.orders.order_number' | t }}">
+                <a href="{{ order.customer_url }}"
+                  aria-label="{{ 'customer.orders.order_number_link' | t: number: order.name }}">
+                  {{ order.name }}
+                </a>
+              </td>
+              <td headers="RowOrder ColumnDate" role="cell" data-label="{{ 'customer.orders.date' | t }}">
+                {{ order.created_at | time_tag: format: 'date' }}
+              </td>
+              {%- comment -%}
+              <td headers="RowOrder ColumnPayment" role="cell" data-label="{{ 'customer.orders.payment_status' | t }}">
+                {{ order.financial_status_label }}
+              </td>
+              {%- endcomment -%}
+
+              {%- comment -%}<td headers="RowOrder ColumnFulfillment" role="cell"
+                data-label="{{ 'customer.orders.fulfillment_status' | t }}">
+                {{ order.fulfillment_status_label }}
+              </td>{%- endcomment -%}
+              <td headers="RowOrder " role="cell" data-label="">
+                {{ order.fulfillment_status_label }}
+              </td>
+              <td headers="RowOrder " role="cell" data-label="">
+
+                {% for line_item in order.line_items %}
+
+                {%- if line_item.fulfillment -%}
+
+                {%- if line_item.fulfillment.tracking_number -%}
+                <a href="{{ line_item.fulfillment.tracking_url }}">#{{ line_item.fulfillment.tracking_number }}</a>
+                {%- endif -%}
+
+                {% else %}
+
+                {% endif %}
+                {% endfor %}
+
+
+              </td>
+              {%- comment -%} END Custom Tracking{%- endcomment -%}
+
+              <td headers="RowOrder ColumnTotal" role="cell" data-label="{{ 'customer.orders.total' | t }}">
+                {{ order.total_price | money }}</td>
+
+              <td><a href="https://alakazammagic.myshopify.com/pages/reward">View Points</a></td>
+            </tr>
+            {%- endfor -%}
+          </tbody>
+        </table>
+        {%- else -%}
+        <p>{{ 'customer.orders.none' | t }}</p>
+        {%- endif -%}
+
+        {%- if paginate.pages > 1 -%}
+        {%- if paginate.parts.size > 0 -%}
+        <nav class="pagination" role="navigation" aria-label="{{ 'general.pagination.label' | t }}">
+          <ul role="list">
+            {%- if paginate.previous -%}
+            <li>
+              <a href="{{ paginate.previous.url }}" aria-label="{{ 'general.pagination.previous' | t }}">
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 6">
+                  <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M9.354.646a.5.5 0 00-.708 0L5 4.293 1.354.646a.5.5 0 00-.708.708l4 4a.5.5 0 00.708 0l4-4a.5.5 0 000-.708z"
+                    fill="currentColor">
+                </svg>
+              </a>
+            </li>
+            {%- endif -%}
+
+            {%- for part in paginate.parts -%}
+            <li>
+              {%- if part.is_link -%}
+              <a href="{{ part.url }}" aria-label="{{ 'general.pagination.page' | t: number: part.title }}">{{
+                part.title
+                }}</a>
+              {%- else -%}
+              {%- if part.title == paginate.current_page -%}
+              <span aria-current="page" aria-label="{{ 'general.pagination.page' | t: number: part.title }}">{{
+                part.title
+                }}</span>
+              {%- else -%}
+              <span>{{ part.title }}</span>
+              {%- endif -%}
+              {%- endif -%}
+            </li>
+            {%- endfor -%}
+
+            {%- if paginate.next -%}
+            <li>
+              <a href="{{ paginate.next.url }}" aria-label="{{ 'general.pagination.next' | t }}">
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 10 6">
+                  <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M9.354.646a.5.5 0 00-.708 0L5 4.293 1.354.646a.5.5 0 00-.708.708l4 4a.5.5 0 00.708 0l4-4a.5.5 0 000-.708z"
+                    fill="currentColor">
+                </svg>
+              </a>
+            </li>
+            {%- endif -%}
+          </ul>
+        </nav>
+        {%- endif -%}
+        {%- endif -%}
+        {% endpaginate %}
+      </div>
+
+
+
+
+      {%- comment -%} Wish List {%- endcomment -%}
+      <div class="alakazam-account-tab ">
+
+      </div>
+
+      {%- comment -%} Loyalty Points {%- endcomment -%}
+      <div class="alakazam-account-tab ">
+
+
+      </div>
+
+      {%- comment -%} Downloads {%- endcomment -%}
+      <div class="alakazam-account-tab ">
+        {% section 'account-downloads' %}
+
+      </div>
+
+
+      {%- comment -%} Academies {%- endcomment -%}
+      <div class="alakazam-account-tab ">
+        {% section 'account-academies' %}
+      </div>
+
+
+      {%- comment -%} Partner Downloads Murphys({%- endcomment -%}
+      <div class="alakazam-account-tab ">
+        {% section 'account-murphysdownloads' %}
+
+      </div>
+
+
+
+
+      {%- comment -%} Redeem {%- endcomment -%}
+      <div class="alakazam-account-tab ">
+        {% section 'account-redeem' %}
+      </div>
+
+
+
+    </div>{%- comment -%} Tabs Section END {%- endcomment -%}
+  </div>
+</div>
+
+
+{%- comment -%}
+
+{% for order in customer.orders %}
+
+{{ order.order_number }}
+{% for line_item in order.line_items %}
+
+{%- if line_item.fulfillment -%}
+{{ line_item.title }}
+{{ line_item.product.tags }}
+{%- if line_item.fulfillment.tracking_number -%} #{{ line_item.fulfillment.tracking_number }} {%- endif -%}
+<br>
+{% else %}
+none
+{% endif %}
+{% endfor %}
+
+
+
+
+{% if line_item.product.tags contains "Alakazam Academy Product" %}
+
+<div>
+  {{ line_item.product.title }}
+
+  {{ line_item.product.description }}
+  {{ line_item.product.metafields.my_fields.video_embed }}
+  {{ line_item.product.metafields.my_fields.video_stream }}
+
+</div>
+
+<br>
+{% endif %}
+
+{% endfor %}
+
+{% endfor %}
+
+
+{%- endcomment -%}
+<script src="{{ '_account-custom.min.js' | asset_url }}" defer="defer"></script>

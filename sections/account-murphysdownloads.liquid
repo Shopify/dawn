@@ -1,0 +1,448 @@
+{{ '_account-custom.min.css' | asset_url | stylesheet_tag }}
+{{ 'mydownloads.css' | asset_url | stylesheet_tag }}
+
+
+
+<div class="sfd-mydownloads">
+
+
+  <div class="sfd-mydownloads-items">
+
+    {% if customer %}
+    {% comment %} **All content for layout goes here** {% endcomment%}
+
+    <div id="sfd-downloaditems">
+      <p style="text-align: center;"> fetching downloads . . .
+      <p style="text-align: center;"><img src="https://cdn.shopify.com/s/images/spinner_big.gif" loading="lazy"
+          height="50" width="50"></p>
+    </div>
+
+    {% else %}
+    <p style="text-align:center;">Please login to view your downloads.</p>
+    <p style="text-align:center;">
+      <a href="/account/login" class="h5" style="text-align:center;"><b>Login<b></a>
+      <br>
+    </p>
+    {% endif %}
+  </div>
+</div>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+
+  var downloads_api_client = function () {
+    var callback_url = null;// this may be set to a server for the sending of notification of emails to customers once their downloads are watermarked and ready for download.
+    var shopify_frontend_endpoint_url = 'https://apps.superfighterdesign.com/shopify/subs/mmlink_alakazammagic/shopify_frontend_endpoint.php';
+    // ASSIGN SHARED SECRET BELOW
+
+
+    // This shared secret must be the same as $Shopify_purchases_ajax_shared_secret in the file shopify_frontend_endpoint.php
+    {% assign shared_secret = "395649563048" %}
+
+    {% assign nonce = 'now' | date: "%s" %}
+    {% assign hmac_data = customer.email | append: nonce %}
+
+    {% assign hmac_digest = hmac_data | hmac_sha256: shared_secret %}
+
+
+
+    // in order to use test emails, authentication must be turned off in shopify_frontend_endpoint.php
+    // the liquid variable was not being assigned on some browsers to returns of the function called so it is now added explicitly to all functions.
+
+
+    function getDownloadFiles(product_id) {
+      return $.ajax({
+        type: "GET",
+        url: shopify_frontend_endpoint_url,
+        dataType: 'json',
+        data: { functionname: 'getDownloadFiles', arguments: ["{{customer.email}}", product_id], hmacdigest: "{{hmac_digest}}", nonce: "{{nonce}}" },
+      });
+    }
+
+    function getData() {
+      return $.ajax({
+        type: "GET",
+        url: shopify_frontend_endpoint_url,
+        dataType: 'json',
+        /*data: {functionname: 'add', arguments: [1, 2]},*/
+        data: { functionname: 'get_downloads', arguments: ["{{customer.email}}"], hmacdigest: "{{hmac_digest}}", nonce: "{{nonce}}" },
+      });
+    }
+
+    function handleData(obj, textstatus) {
+      console.log("handling data now");
+      console.log(obj);
+      //console.log(textstatus);
+      document.getElementById("sfd-downloaditems").innerHTML = '';
+      if (!('error' in obj)) {
+        var response = obj.result;
+        //console.log("response: ");
+        //console.log(response);
+
+        var product = null;
+        var arrayLength = response.length;
+        //console.log('number of products: '+arrayLength);
+
+        for (var count = 0; count < arrayLength; count++) {
+          //console.log(count);
+          product = response[count];
+
+          // check if image link is given
+          if (product.Image_url == null) {
+            var hide_if_empty = ' hidden';
+          } else {
+            var hide_if_empty = '';
+          }
+
+          // check if it is a video, if so, how many how parts are there, make html for parts links
+          var product_title_action_html = '';
+          var image_action_html = '';
+          var combined_list_html = '';
+          var streams_list_html = '';
+          var downloads_list_html = '';
+          if (product.Type == 'Video' || product.Type == 'Mixed' || product.Type == 'Ebook' || product.Type == 'Event') {
+            if (null != product.Files) {
+              // place different video parts into html to later insert into a cell
+              var no_ofparts = product.Files.length;
+              //console.log('Product name: '+product.Name);
+              //console.log('Number of parts = '+no_ofparts);
+              var video_num = 1;
+              var pdf_num = 1;
+              for (var i = 1; i <= no_ofparts; i++) {
+                //console.log(i);
+                var part_name = null;
+                var video_link_name = null;
+                var download_link_name = null;
+                var part_id = null;
+                var part_type = null;
+
+                //console.log(product.Files[i-1]);
+                if (product.Files[i - 1].Type == '.mp4') {
+                  video_link_name = 'Video ' + video_num;
+                  part_name = product.Files[i - 1].Title;
+                  console.log(part_name);
+                  if (part_name == '') {
+                    part_name = 'Part ' + i;
+                    console.log(part_name);
+                  }
+                  part_id = product.Files[i - 1].ID;
+                  part_type = product.Files[i - 1].Type;
+
+                  //add product_title_action if not already set(we prefer to just use video)
+                  if (product_title_action_html == '') {
+                    product_title_action_html = '<a style="cursor:pointer; font-weight:bold;" onclick="downloads_client.playVideo(' + product.ID + ',' + i + ',\'' + product.Name.replace('\'', '\\\'') + '\',\'' + part_name + '\');">' + product.Name + '</a>';
+                    image_action_html = '<a style="cursor:pointer" onclick="downloads_client.playVideo(' + product.ID + ',' + i + ',\'' + product.Name.replace('\'', '\\\'') + '\',\'' + part_name + '\');"><img width="100%" src="' + product.Image_url + '"' + hide_if_empty + '></a>';
+                  }
+
+                  //add new line to streams list
+                  streams_list_html +=
+                    '<p id="' + part_id + '">\
+                    <a class="line-item__title link" style="cursor:pointer" onclick="downloads_client.playVideo('+ product.ID + ',' + i + ',\'' + product.Name.replace('\'', '\\\'') + '\',\'' + part_name + '\');">' + part_name + '</a>\
+                  </p>';
+                  //add new line to downloads list 
+                  downloads_list_html +=
+                    '<p id="' + part_id + '">\
+                    <a class="line-item__title link" style="cursor:pointer" onclick="downloads_client.getDownloadLink('+ product.ID + ',' + i + ',\'' + product.Name.replace('\'', '\\\'') + '\',' + part_id + ').done(downloads_client.handleLink).fail(downloads_client.log_error2);">' + part_name + '</a>\
+                  </p>';
+                  combined_list_html +=
+                    '<p>\
+                    <a class="h5" onclick="downloads_client.playVideo('+ product.ID + ',' + i + ',\'' + product.Name.replace('\'', '\\\'') + '\',\'' + part_name + '\');">' + part_name + '</a>\
+                  \
+                  \
+                    <a class="mydownloads-download-link" style="cursor:pointer" onclick="downloads_client.getDownloadLink('+ product.ID + ',' + i + ',\'' + product.Name.replace('\'', '\\\'') + '\',' + part_id + ').done(downloads_client.handleLink).fail(downloads_client.log_error2);">[download]</a>\
+                  </p>';
+                  video_num++;
+                } else if (product.Files[i - 1].Type == '.pdf') {
+                  console.log("B2");
+                  download_link_name = 'pdf ' + pdf_num;
+                  part_name = product.Files[i - 1].Title;
+                  part_id = product.Files[i - 1].ID;
+                  part_type = product.Files[i - 1].Type;
+
+                  //add an empty line to streams list
+                  streams_list_html += '<p>&nbsp</p>';
+                  //add a new line to downloads list
+                  downloads_list_html +=
+                    '<p id="' + part_id + '">\
+                    <a class="line-item__title link" style="cursor:pointer" onclick="downloads_client.getDownloadLink('+ product.ID + ',' + i + ',\'' + product.Name.replace('\'', '\\\'') + '\',' + part_id + ').done(downloads_client.handleLink).fail(downloads_client.log_error2);">' + part_name + ' (' + part_type + ')</a>\
+                  </p>';
+                  combined_list_html +=
+                    '<p><span class="mydownloads-item--price-title">\
+                    <a class="h5" style="cursor:pointer" onclick="downloads_client.getDownloadLink('+ product.ID + ',' + i + ',\'' + product.Name.replace('\'', '\\\'') + '\',' + part_id + ').done(downloads_client.handleLink).fail(downloads_client.log_error2);">' + part_name + ' (' + part_type + ')</a>\
+                  </span></p>';
+                  pdf_num++;
+                } else { // for files of other types eg .zip files
+                  console.log("B3");
+                  download_link_name = 'other file type';
+                  part_name = product.Files[i - 1].Title;
+                  part_id = product.Files[i - 1].ID;
+                  part_type = product.Files[i - 1].Type;
+
+                  //add an empty line to streams list
+                  streams_list_html += '<p>&nbsp</p>';
+                  //add a new line to downloads list
+                  downloads_list_html +=
+                    '<p id="' + part_id + '">\
+                    <a class="line-item__title link" style="cursor:pointer" onclick="downloads_client.getDownloadLink('+ product.ID + ',' + i + ',\'' + product.Name.replace('\'', '\\\'') + '\',' + part_id + ').done(downloads_client.handleLink).fail(downloads_client.log_error2);">' + part_name + ' (' + part_type + ')</a>\
+                  </p>';
+                  combined_list_html +=
+                    '<p><span class="mydownloads-item--price-title">\
+                    <a class="h5" style="cursor:pointer" onclick="downloads_client.getDownloadLink('+ product.ID + ',' + i + ',\'' + product.Name.replace('\'', '\\\'') + '\',' + part_id + ').done(downloads_client.handleLink).fail(downloads_client.log_error2);">' + part_name + ' (' + part_type + ')</a>\
+                  </span></p>';
+                }
+              } // endfor
+            } // endif isset product.files
+
+            if (null != product.LicenseCodes) {
+              if (null != product.LicenseCodes.LicenseCode) {
+                combined_list_html += '<div><p><span style="font-size: 13px;">License Code: ' + product.LicenseCodes.LicenseCode + '</span></p></div>';
+              }
+              if (null != product.LicenseCodes.Url) {
+                combined_list_html += '<div><p><a href="' + product.LicenseCodes.Url + '">Register License</a></p></div>';
+              }
+
+            }
+
+            if (null != product.Description) {
+              combined_list_html += '<p>' + product.Description + '</p>';
+            }
+
+          } /*else if (product.Type == 'Ebook'){ // Not needed.
+          console.log("B1");
+          download_link_name = 'eBook';
+          part_name = product.Files[0].Title;
+          part_id = product.Files[0].ID;
+          part_type = product.Files[0].Type;
+          
+          //add an empty line to streams list
+          streams_list_html += '<p>&nbsp</p>';
+          //add a new line to downloads list
+          downloads_list_html +=    
+            '<p id="'+part_id+'">\
+              <a class="line-item__title link" style="cursor:pointer" onclick="downloads_client.getDownloadLink('+product.ID+','+1+',\''+callback_url+'\','+part_id+').done(downloads_client.handleLink).fail(downloads_client.log_error2);">'+download_link_name+' ('+part_type+')</a>\
+            </p>'; 
+        } */
+
+          //console.log('product: ');
+          //console.log(product.Name);
+
+          if (product_title_action_html != '') {
+            var product_title_display_html = product_title_action_html;
+            var image_display_html = image_action_html;
+          } else {
+            var product_title_display_html = product.Name;
+            var image_display_html = '<img width="113" src="' + product.Image_url + '"' + hide_if_empty + '>';
+
+          }
+          document.getElementById("sfd-downloaditems").innerHTML +=
+            // PRODUCT LINE HTML GOES HERE        
+            '<li class="mydownloads-item">\
+            <figure class="mydownloads-item--image-wrapper">\
+              '+ image_display_html + '\
+            </figure>\
+\
+            <div class="mydownloads-item--inner" style="padding:10px">\
+              <div class="mydownloads-item--content">\
+                <h3 class="mydownloads-item--content-title">\
+                  '+ product_title_display_html + '\
+                </h3>\
+                <div class="video_position" style="padding:3px" id="video_goes_here'+ product.ID + '"></div>\
+              </div>\
+              <div class="mydownloads-item--info">\
+                <div class="mydownloads-item--content-price">\
+                  '+ combined_list_html + '\
+                </div>\
+              </div>\
+            </div>\
+          </li>';
+        }
+      }
+
+
+      else {
+        var response = obj.error;
+        if (response == "No downloads available for this account." || response == "Customer not found") {
+          response = "No downloads available for this account.";
+          //console.log("testing");  
+          document.getElementById("sfd-downloaditems").innerHTML +=
+            '<tr class="line-item">\
+			  <div>\
+                <td class="line-item__product-info">\
+                  <div class="line-item__product-info-wrapper">\
+                    <div class="line-item__meta">\
+                      <p>'+ response + '</p>\
+                    </div>\
+                  </div>\
+                </td>\
+			  </div>\
+            </tr>';
+        }
+
+        console.log(response);
+      }
+    }
+
+    function log_error(obj, textstatus) {
+      console.log("ERROR (1) in json response: ");
+      console.log(obj);
+      //console.log(textstatus);
+      if (!('error' in obj)) {
+        var response = obj.result;
+      }
+      else {
+        var response = obj.error;
+      }
+    }
+
+    //call ajax immediately on page load
+    getData().done(handleData).fail(log_error);
+
+    return {
+      playVideo: function (product_id, part, product_name, part_name) {
+        document.getElementById("video_goes_here" + product_id).innerHTML = '<div width=100% autoplay controls style="padding: 30px;"><p style="text-align: center;"><img src="https://cdn.shopify.com/s/images/spinner_big.gif"/></p></div>';
+        downloads_client.streamVideo(product_id, part, product_name, part_name).done(downloads_client.handleStream).fail(downloads_client.log_error2);
+      },
+
+      streamVideo: function (product_id, part, product_name, part_name) {
+        return $.ajax({
+          type: "GET",
+          url: shopify_frontend_endpoint_url,
+          dataType: 'json',
+          indexValue: { param1: product_name, param2: part_name, param3: product_id },
+          data: { functionname: 'streamVideo', arguments: ["{{customer.email}}", product_id, part], hmacdigest: "{{hmac_digest}}", nonce: "{{nonce}}" },
+        });
+      },
+
+      handleStream: function (obj, textstatus) {
+        //console.log("handling stream now");
+        //console.log(obj);
+        //console.log(textstatus);
+        var product_name = this.indexValue.param1;
+        var part_name = this.indexValue.param2;
+        var product_id = this.indexValue.param3;
+        if (!('error' in obj)) {
+          video_url = decodeURIComponent(obj.result);
+          //console.log("video_url in handleStream function: ");
+          //console.log(video_url);
+
+          var all_video_elements = document.getElementsByClassName("video_position");
+          var no_of_video_elements = all_video_elements.length;
+          for (var numb = 0; numb < no_of_video_elements; numb++) {
+            all_video_elements[numb].innerHTML = '';
+          }
+
+          document.getElementById("video_goes_here" + product_id).innerHTML =
+            //VIDEO PLAYER HTML GOES HERE
+            //'\
+            //<div class="text--strong">'+product_name+'</div>\
+            //<div class="text">'+part_name+'</div>\
+
+            '<div>\
+            <video class="sfd-video" width="640" autoplay controls>\
+              <source src="'+ video_url + '" type="video/mp4">\
+               Your browser does not support the video tag.\
+            </video>\
+          </div>';
+
+
+
+          //<div class="hide-on-desktop hide-on-tablets">\
+          //<video width=100% autoplay controls>\
+          //<source src="'+video_url+'" type="video/mp4">\
+          //Your browser does not support the video tag.\
+          //</video>\
+          //</div>\
+          //';
+        }
+        else {
+          var response = obj.error;
+          //console.log(response);
+        }
+      },
+
+      getDownloadLink: function (product_id, part = null, callback_url = null, part_id) {
+        //part id is used to identify the html insertion point in the ajax callback function
+        /*if (part = null){
+          part = part_id; // part_id uses file_id which can also be used to identify the files.
+                  // part numbers start from 1, 2, 3, etc, while file ids are five digits.
+        }*/
+        return $.ajax({
+          type: "GET",
+          url: shopify_frontend_endpoint_url,
+          indexValue: { param1: part_id, param2: product_id, param3: "{{customer.email}}", param4: part, param5: callback_url },
+          dataType: 'json',
+          /*data: {functionname: 'add', arguments: [1, 2]},*/
+          data: { functionname: 'getDownloadLink', arguments: ["{{customer.email}}", product_id, part, callback_url], hmacdigest: "{{hmac_digest}}", nonce: "{{nonce}}" },
+        });
+      },
+
+      handleLink: function (obj, textstatus) {
+        //console.log("handling link now");
+        //console.log(obj);
+        //console.log(textstatus);
+        //console.log("----------");
+
+        var html_insertion_point_id = this.indexValue.param1;
+        var product_id = this.indexValue.param2;
+        var email = this.indexValue.param3;
+        var part = this.indexValue.param4;
+        var callback_url = this.indexValue.param5;
+
+        //console.log('here is the part_id: '+ html_insertion_point_id);
+
+        if (!('error' in obj)) {
+          //console.log("no error: ");
+          //console.log(obj);
+
+          if (obj.result == null) {
+            //console.log("Invalid response: ");
+            //console.log(obj);
+
+          } else if (obj.result.Status == 'ready') {
+            var download_url = obj.result.DownloadLink;
+            var status = 'ready';
+            //console.log("download_url in handlelink function: ");
+            //console.log(download_url);
+
+            //redirect to download url
+            window.location = download_url;
+
+          } else if (obj.result.Status == 'queued') {
+            var status = 'queued';
+            document.getElementById(html_insertion_point_id).innerHTML =
+              '<a class="line-item__title link" style="cursor:pointer" onclick="downloads_client.getDownloadLink(' + product_id + ',' + part + ',\'' + callback_url + '\',' + html_insertion_point_id + ').done(downloads_client.handleLink).fail(downloads_client.log_error2);">"' + Status + '"</a>';
+
+          } else if (obj.result.Status == 'watermarking') {
+            var percent_complete = obj.result.PercentComplete;
+            var status = 'watermarking... ' + percent_complete + '% complete';
+            document.getElementById(html_insertion_point_id).innerHTML =
+              '<a class="line-item__title link">' + status + '</a>';
+          }
+
+        }
+        else {
+          var response = obj.error;
+          //console.log(response);
+        }
+      },
+
+      log_error2: function (obj, textstatus) {
+        console.log("ERROR (2) in json response: ");
+        console.log(obj);
+        //console.log(textstatus);
+        if (!('error' in obj)) {
+          var response = obj.result;
+        }
+        else {
+          var response = obj.error;
+        }
+      }
+    }
+  }
+
+  var downloads_client = downloads_api_client();
+
+
+</script>
