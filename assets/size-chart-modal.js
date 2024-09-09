@@ -3,10 +3,9 @@ class SizeChartModal extends HTMLElement {
     super();
     this.contentContainer = document.querySelector('.size-chart-modal');
     this.detailsContainer = this.contentContainer.querySelector('details');
-    this.summaryToggle = document.querySelector('#size-chart-toggle');
 
-    this.detailsContainer.addEventListener('keyup', (event) => event.code.toUpperCase() === 'ESCAPE' && this.close());
     this.addEventListener('click', this.onSummaryClick.bind(this));
+    this.detailsContainer.addEventListener('keyup', (event) => event.code.toUpperCase() === 'ESCAPE' && this.close());
     this.detailsContainer.querySelector('button[type="button"]').addEventListener('click', this.close.bind(this));
   }
 
@@ -17,7 +16,8 @@ class SizeChartModal extends HTMLElement {
   }
 
   onBodyClick(event) {
-    if (!this.contains(event.target) || event.target.classList.contains('modal-overlay')) this.close(false);
+    if (!thisdetailsContainer.contains(event.target) || event.target.classList.contains('modal-overlay'))
+      this.close(false);
   }
 
   open() {
