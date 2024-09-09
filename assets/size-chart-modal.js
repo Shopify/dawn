@@ -26,6 +26,8 @@ class SizeChartModal extends HTMLElement {
     this.onBodyClickEvent = this.onBodyClickEvent || this.onBodyClick.bind(this);
     this.detailsContainer.setAttribute('open', true);
 
+    console.log('wat');
+
     requestAnimationFrame(function () {
       document.body.classList.add('overflow-hidden');
       document.body.addEventListener('click', this.onBodyClickEvent);
