@@ -4,8 +4,6 @@ class SizeChartModal extends HTMLElement {
     this.detailsContainer = this.querySelector('details');
     this.summaryToggle = document.querySelector('#size-chart-toggle');
 
-    console.log(this.summaryToggle);
-
     this.detailsContainer.addEventListener('keyup', (event) => event.code.toUpperCase() === 'ESCAPE' && this.close());
     this.summaryToggle.addEventListener('click', this.onSummaryClick.bind(this));
     this.detailsContainer.querySelector('button[type="button"]').addEventListener('click', this.close.bind(this));
@@ -17,6 +15,7 @@ class SizeChartModal extends HTMLElement {
 
   onSummaryClick(event) {
     event.preventDefault();
+    console.log(this);
     event.target.closest('details').hasAttribute('open') ? this.close() : this.open(event);
   }
 
