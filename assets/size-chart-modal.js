@@ -23,7 +23,7 @@ class SizeChartModal extends HTMLElement {
   }
 
   open() {
-    console.log(this);
+    console.dir(this);
     this.onBodyClickEvent = this.onBodyClickEvent || this.onBodyClick.bind(this);
     this.detailsContainer.setAttribute('open', true);
     document.body.addEventListener('click', this.onBodyClickEvent);
