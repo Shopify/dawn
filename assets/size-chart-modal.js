@@ -29,12 +29,12 @@ class SizeChartModal extends HTMLElement {
 
     requestAnimationFrame(function () {
       document.body.addEventListener('click', this.onBodyClickEvent);
-    });
 
-    trapFocus(
-      this.detailsContainer.querySelector('[tabindex="-1"]'),
-      this.detailsContainer.querySelector('input:not([type="hidden"])')
-    );
+      trapFocus(
+        this.detailsContainer.querySelector('[tabindex="-1"]'),
+        this.detailsContainer.querySelector('input:not([type="hidden"])')
+      );
+    });
   }
 
   close(focusToggle = true) {
