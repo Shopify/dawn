@@ -8,6 +8,8 @@ class SizeChartModal extends HTMLElement {
     this.summaryToggle.addEventListener('click', this.onSummaryClick.bind(this));
     this.detailsContainer.querySelector('button[type="button"]').addEventListener('click', this.close.bind(this));
 
+    console.log('init');
+
     subscribe(PUB_SUB_EVENTS.variantChange, (e) => {
       console.log('wat', this);
       this.summaryToggle = document.querySelector('#size-chart-toggle');
