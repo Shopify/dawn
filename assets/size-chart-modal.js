@@ -26,9 +26,7 @@ class SizeChartModal extends HTMLElement {
     this.onBodyClickEvent = this.onBodyClickEvent || this.onBodyClick.bind(this);
     this.detailsContainer.setAttribute('open', true);
 
-    console.log('wat');
-
-    requestAnimationFrame(function () {
+    setTimeout(() => {
       document.body.classList.add('overflow-hidden');
       document.body.addEventListener('click', this.onBodyClickEvent);
 
@@ -38,7 +36,9 @@ class SizeChartModal extends HTMLElement {
         this.detailsContainer.querySelector('[tabindex="-1"]'),
         this.detailsContainer.querySelector('input:not([type="hidden"])')
       );
-    });
+    }, 10);
+
+    requestAnimationFrame(function () {});
   }
 
   close(focusToggle = true) {
