@@ -8,8 +8,6 @@ class SizeChartModal extends HTMLElement {
     this.detailsContainer.addEventListener('keyup', (event) => event.code.toUpperCase() === 'ESCAPE' && this.close());
     this.addEventListener('click', this.onSummaryClick.bind(this));
     this.detailsContainer.querySelector('button[type="button"]').addEventListener('click', this.close.bind(this));
-
-    console.log('init', this);
   }
 
   isOpen() {
@@ -19,6 +17,7 @@ class SizeChartModal extends HTMLElement {
   onSummaryClick(event) {
     event.preventDefault();
     this.detailsContainer.hasAttribute('open') ? this.close() : this.open();
+    console.log('click', this);
   }
 
   onBodyClick(event) {
