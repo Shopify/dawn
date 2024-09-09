@@ -25,10 +25,12 @@ class SizeChartModal extends HTMLElement {
   open() {
     this.onBodyClickEvent = this.onBodyClickEvent || this.onBodyClick.bind(this);
     this.detailsContainer.setAttribute('open', true);
-    document.body.classList.add('overflow-hidden');
 
     requestAnimationFrame(function () {
+      document.body.classList.add('overflow-hidden');
       document.body.addEventListener('click', this.onBodyClickEvent);
+
+      console.log(this);
 
       trapFocus(
         this.detailsContainer.querySelector('[tabindex="-1"]'),
