@@ -1,19 +1,13 @@
 class SizeChartModal extends HTMLElement {
   constructor() {
     super();
-    this.detailsContainer = this.querySelector('details');
+    this.contentContainer = document.querySelector('.size-chart-modal');
+    this.detailsContainer = this.contentContainer.querySelector('details');
     this.summaryToggle = document.querySelector('#size-chart-toggle');
 
     this.detailsContainer.addEventListener('keyup', (event) => event.code.toUpperCase() === 'ESCAPE' && this.close());
-    this.summaryToggle.addEventListener('click', this.onSummaryClick.bind(this));
+    this.addEventListener('click', this.onSummaryClick.bind(this));
     this.detailsContainer.querySelector('button[type="button"]').addEventListener('click', this.close.bind(this));
-
-    console.log('init');
-
-    subscribe(PUB_SUB_EVENTS.variantChange, (e) => {
-      console.log('wat', this);
-      this.summaryToggle = document.querySelector('#size-chart-toggle');
-    });
   }
 
   isOpen() {
@@ -57,11 +51,11 @@ class SizeChartModal extends HTMLElement {
   }
 
   close(focusToggle = true) {
-    removeTrapFocus(focusToggle ? this.summaryToggle : null);
+    removeTrapFocus(focusToggle ? this : null);
     this.detailsContainer.removeAttribute('open');
     document.body.removeEventListener('click', this.onBodyClickEvent);
     document.body.classList.remove('overflow-hidden');
   }
 }
 
-customElements.define('size-chart-modal', SizeChartModal);
+customElements.define('size-chart-modal-toggle', SizeChartModal);
