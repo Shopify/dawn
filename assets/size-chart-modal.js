@@ -23,11 +23,13 @@ class SizeChartModal extends HTMLElement {
   }
 
   open() {
-    console.log(this.detailsContainer);
     this.onBodyClickEvent = this.onBodyClickEvent || this.onBodyClick.bind(this);
     this.detailsContainer.setAttribute('open', true);
-    // document.body.addEventListener('click', this.onBodyClickEvent);
     document.body.classList.add('overflow-hidden');
+
+    requestAnimationFrame(function () {
+      document.body.addEventListener('click', this.onBodyClickEvent);
+    });
 
     trapFocus(
       this.detailsContainer.querySelector('[tabindex="-1"]'),
