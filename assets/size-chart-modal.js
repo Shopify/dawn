@@ -17,7 +17,7 @@ class SizeChartModal extends HTMLElement {
   onSummaryClick(event) {
     event.preventDefault();
     this.detailsContainer.hasAttribute('open') ? this.close() : this.open();
-    console.log('click', this);
+    console.dir('click', this);
   }
 
   onBodyClick(event) {
