@@ -7,6 +7,10 @@ class SizeChartModal extends HTMLElement {
     this.detailsContainer.addEventListener('keyup', (event) => event.code.toUpperCase() === 'ESCAPE' && this.close());
     this.summaryToggle.addEventListener('click', this.onSummaryClick.bind(this));
     this.detailsContainer.querySelector('button[type="button"]').addEventListener('click', this.close.bind(this));
+
+    subscribe(PUB_SUB_EVENTS.variantChange, (e) => {
+      this.summaryToggle = document.querySelector('#size-chart-toggle');
+    });
   }
 
   isOpen() {
@@ -30,7 +34,15 @@ class SizeChartModal extends HTMLElement {
       document.body.classList.add('overflow-hidden');
       document.body.addEventListener('click', this.onBodyClickEvent);
 
-      console.log(this);
+      trapFocus(
+        this.detailsContainer.querySelector('[tabindex="-1"]'),
+        this.detailsContainer.querySelector('input:not([type="hidden"])')
+      );
+    }, 10);
+
+    setTimeout(() => {
+      document.body.classList.add('overflow-hidden');
+      document.body.addEventListener('click', this.onBodyClickEvent);
 
       trapFocus(
         this.detailsContainer.querySelector('[tabindex="-1"]'),
