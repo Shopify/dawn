@@ -2,7 +2,7 @@ class SizeChartModal extends HTMLElement {
   constructor() {
     super();
     this.detailsContainer = this.querySelector('details');
-    this.summaryToggle = document.querySelector('.size-chart__toggle');
+    this.summaryToggle = document.querySelector('#size-chart-toggle');
 
     this.detailsContainer.addEventListener('keyup', (event) => event.code.toUpperCase() === 'ESCAPE' && this.close());
     this.summaryToggle.addEventListener('click', this.onSummaryClick.bind(this));
