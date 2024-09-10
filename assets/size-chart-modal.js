@@ -32,19 +32,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Testing
   $('body').on('keyup', (event) => {
     if (event.key.toUpperCase() === 'ESCAPE') {
-      var sizeChartModalDetails = $('.size-chart-modal details');
-      console.log(sizeChartModalDetails.eq(0), sizeChartModalDetails.eq(0).hasAttribute('open'));
-
-      if (sizeChartModalDetails.eq(0).hasAttribute('open')) {
-        var sizeChartToggle = $('.size-chart__toggle');
-
-        sizeChartModalDetails.removeAttr('open');
-        removeTrapFocus(sizeChartToggle.eq(0));
-        document.body.classList.remove('overflow-hidden');
-      }
+      var sizeChartToggle = $('.size-chart__toggle');
+      $('.size-chart-modal details').removeAttr('open');
+      removeTrapFocus(sizeChartToggle.eq(0));
+      document.body.classList.remove('overflow-hidden');
     }
   });
 });
