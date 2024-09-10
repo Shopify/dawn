@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     sizeChartModalDetails.setAttribute('open', 'true');
 
+    console.log(sizeChartModalDetails);
+
     requestAnimationFrame(function () {
       trapFocus(
         sizeChartModalDetails.find('[tabindex="-1"]').eq(0),
