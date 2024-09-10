@@ -35,9 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
   $('body').on('keyup', (event) => {
     if (event.key.toUpperCase() === 'ESCAPE') {
       var sizeChartModalDetails = $('.size-chart-modal details');
+      console.log(sizeChartModalDetails);
 
       if (sizeChartModalDetails.eq(0).hasAttribute('open')) {
-        console.log('wat');
         var sizeChartToggle = $('.size-chart__toggle');
         sizeChartModalDetails.removeAttr('open');
         removeTrapFocus(sizeChartToggle.eq(0));
