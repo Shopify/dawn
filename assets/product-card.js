@@ -40,6 +40,13 @@ class ProductCard extends HTMLElement {
     // if (productImage) this.elements.image.src = productImage;
     // if (productUrl) this.elements.link.href = productUrl;
 
+    // if (productCompareAtPrice !== productPrice) {
+    //   this.elements.priceSaleOriginal.innerHTML = productCompareAtPrice;
+    //   this.elements.priceSale.innerHTML = productPrice;
+    // } else {
+    //   this.elements.priceRegular.innerHTML = productPrice;
+    // }
+
     this.classList.add('swatch-selected');
   }
 
