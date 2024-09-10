@@ -1,4 +1,6 @@
-document.addEventListener('DOMContentLoaded', (event) => {
+document.addEventListener('DOMContentLoaded', () => {
+  console.log($);
+
   $('body').on('click', '#size-chart-toggle', function () {
     var sizeChartModal = $('.size-chart-modal');
     var sizeChartModalDetails = sizeChartModal.find('details');
