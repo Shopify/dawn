@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     var sizeChartModal = $('.size-chart-modal');
     var sizeChartModalDetails = sizeChartModal.find('details');
 
-    sizeChartModalDetails.removeAttribute('open');
+    sizeChartModalDetails.removeAttr('open');
     removeTrapFocus(this);
   });
 
