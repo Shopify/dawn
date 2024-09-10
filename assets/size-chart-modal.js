@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
       var sizeChartModalDetails = $('.size-chart-modal details');
 
       if (sizeChartModalDetails.eq(0).hasAttribute('open')) {
+        console.log('wat');
         var sizeChartToggle = $('.size-chart__toggle');
         sizeChartModalDetails.removeAttr('open');
         removeTrapFocus(sizeChartToggle.eq(0));
