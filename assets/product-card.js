@@ -6,15 +6,10 @@ class ProductCard extends HTMLElement {
       swatches: this.querySelectorAll('.product_tile_color_holder input[type="radio"]'),
     };
 
-    console.log(this.elements);
-
-    // this.swatches = this.querySelectorAll('.product_tile_color_holder input[type"radio"]');
-
-    // if (this.swatches) {
-    //   this.swatches.forEach((el) => {
-    //     el.addEventListener('change', this.onSwatchChange.bind(this));
-    //   });
-    // }
+    this.elements.swatches.forEach((el) => {
+      console.log(el);
+      el.addEventListener('change', this.onSwatchChange.bind(this));
+    });
 
     // this.detailsContainer = this.querySelector('details');
     // this.summaryToggle = this.querySelector('summary');
@@ -27,9 +22,9 @@ class ProductCard extends HTMLElement {
     // this.summaryToggle.setAttribute('role', 'button');
   }
 
-  // onSwatchChange(e) {
-  //   console.log(e);
-  // }
+  onSwatchChange(e) {
+    console.log(e);
+  }
 
   // isOpen() {
   //   return this.detailsContainer.hasAttribute('open');
