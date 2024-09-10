@@ -1,33 +1,35 @@
-$('body').on('click', '#size-chart-toggle', function () {
-  var sizeChartModal = $('.size-chart-modal');
-  var sizeChartModalDetails = sizeChartModal.find('details');
+document.addEventListener('DOMContentLoaded', (event) => {
+  $('body').on('click', '#size-chart-toggle', function () {
+    var sizeChartModal = $('.size-chart-modal');
+    var sizeChartModalDetails = sizeChartModal.find('details');
 
-  sizeChartModalDetails.setAttribute('open', 'true');
+    sizeChartModalDetails.setAttribute('open', 'true');
 
-  requestAnimationFrame(function () {
-    trapFocus(
-      sizeChartModalDetails.find('[tabindex="-1"]').eq(0),
-      sizeChartModalDetails.querySelector('[type="button"]').eq(0)
-    );
+    requestAnimationFrame(function () {
+      trapFocus(
+        sizeChartModalDetails.find('[tabindex="-1"]').eq(0),
+        sizeChartModalDetails.querySelector('[type="button"]').eq(0)
+      );
+    });
   });
-});
 
-$('body').on('click', '.size-chart-modal__close-button', function () {
-  var sizeChartModal = $('.size-chart-modal');
-  var sizeChartModalDetails = sizeChartModal.find('details');
+  $('body').on('click', '.size-chart-modal__close-button', function () {
+    var sizeChartModal = $('.size-chart-modal');
+    var sizeChartModalDetails = sizeChartModal.find('details');
 
-  sizeChartModalDetails.removeAttribute('open');
-  removeTrapFocus(this);
-});
-
-$('body').on('click', function (event) {
-  var sizeChartModal = $('.size-chart-modal');
-  var sizeChartModalDetails = sizeChartModal.find('details');
-
-  if (!sizeChartModalDetails.contains(event.currentTarget) || $(event.target).hasClass('modal-overlay')) {
     sizeChartModalDetails.removeAttribute('open');
-    removeTrapFocus(false);
-  }
+    removeTrapFocus(this);
+  });
+
+  $('body').on('click', function (event) {
+    var sizeChartModal = $('.size-chart-modal');
+    var sizeChartModalDetails = sizeChartModal.find('details');
+
+    if (!sizeChartModalDetails.contains(event.currentTarget) || $(event.target).hasClass('modal-overlay')) {
+      sizeChartModalDetails.removeAttribute('open');
+      removeTrapFocus(false);
+    }
+  });
 });
 
 // class SizeChartModal extends HTMLElement {
