@@ -35,6 +35,7 @@ class ProductCard extends HTMLElement {
     } = e.target;
 
     console.log(productName, productImage, productPrice, productCompareAtPrice, productUrl);
+    console.log(this.elements.title);
 
     if (productName) this.elements.title.innerHTML = productName;
     if (productImage) this.elements.image.src = productImage;
