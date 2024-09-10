@@ -2,7 +2,7 @@ class ProductCard extends HTMLElement {
   constructor() {
     super();
 
-    console.log(this);
+    console.dir(this);
 
     this.swatches = this.querySelectorAll('.product_tile_color_holder input[type"radio"]');
 
