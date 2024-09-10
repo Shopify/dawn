@@ -4,12 +4,16 @@ class ProductCard extends HTMLElement {
 
     this.elements = {
       swatches: this.querySelectorAll('.product_tile_color_holder input[type="radio"]'),
+      image: this.querySelector('.card__media img:first-child'),
+      priceRegular: this.querySelector('.price__regular .price-item'),
+      priceSaleOriginal: this.querySelector('.price__sale .price-item--regular'),
+      priceSale: this.querySelector('.price__sale .price-item--sale'),
+      title: this.querySelector('.full-unstyled-link'),
+      link: this.querySelector('.full-unstyled-link'),
     };
 
     this.elements.swatches.forEach((el) => {
       el.addEventListener('change', this.onSwatchChange.bind(this));
-
-      console.log(el);
     });
 
     // this.detailsContainer = this.querySelector('details');
@@ -24,7 +28,11 @@ class ProductCard extends HTMLElement {
   }
 
   onSwatchChange(e) {
-    console.log(e);
+    const {
+      dataset: { productName },
+    } = e.target;
+
+    console.log(productName);
   }
 
   // isOpen() {
