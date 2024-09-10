@@ -6,11 +6,11 @@ class ProductCard extends HTMLElement {
 
     console.log(this);
 
-    if (this.swatches) {
-      this.swatches.forEach((el) => {
-        el.addEventListener('change', this.onSwatchChange.bind(this));
-      });
-    }
+    // if (this.swatches) {
+    //   this.swatches.forEach((el) => {
+    //     el.addEventListener('change', this.onSwatchChange.bind(this));
+    //   });
+    // }
 
     // this.detailsContainer = this.querySelector('details');
     // this.summaryToggle = this.querySelector('summary');
@@ -23,9 +23,9 @@ class ProductCard extends HTMLElement {
     // this.summaryToggle.setAttribute('role', 'button');
   }
 
-  onSwatchChange(e) {
-    console.log(e);
-  }
+  // onSwatchChange(e) {
+  //   console.log(e);
+  // }
 
   // isOpen() {
   //   return this.detailsContainer.hasAttribute('open');
