@@ -35,11 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   $('body').on('keyup', (event) => {
-    console.log(event, this);
-
     if (event.code.toUpperCase() === 'ESCAPE') {
       var sizeChartToggle = $('.size-chart__toggle');
-      $(this).removeAttr('open');
+      $('.size-chart-modal details').removeAttr('open');
       removeTrapFocus(sizeChartToggle.eq(0));
       document.body.classList.remove('overflow-hidden');
     }
