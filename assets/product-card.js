@@ -8,8 +8,8 @@ class ProductCard extends HTMLElement {
       priceRegular: this.querySelector('.price__regular .price-item'),
       priceSaleOriginal: this.querySelector('.price__sale .price-item--regular'),
       priceSale: this.querySelector('.price__sale .price-item--sale'),
-      title: this.querySelector('.full-unstyled-link'),
-      link: this.querySelector('.full-unstyled-link'),
+      title: this.querySelectorAll('.full-unstyled-link'),
+      link: this.querySelectorAll('.full-unstyled-link'),
     };
 
     this.elements.swatches.forEach((el) => {
@@ -28,18 +28,28 @@ class ProductCard extends HTMLElement {
   }
 
   onSwatchChange(e) {
-    console.log(this, e);
-
     const {
       dataset: { productName, productImage, productPrice, productCompareAtPrice, productUrl },
     } = e.target;
 
     console.log(productName, productImage, productPrice, productCompareAtPrice, productUrl);
-    console.log(this.elements.title);
 
-    if (productName) this.elements.title.innerHTML = productName;
-    if (productImage) this.elements.image.src = productImage;
-    if (productUrl) this.elements.link.href = productUrl;
+    if (productName) {
+      this.elements.title.forEach((el) => {
+        el.innerHTML = productName;
+      });
+    }
+
+    if (productUrl) {
+      this.elements.link.forEach((el) => {
+        el.href = productUrl;
+      });
+    }
+
+    if (productImage) {
+      this.elements.image.src = productImage;
+      this.elements.image.srcset = productImage;
+    }
 
     if (productCompareAtPrice !== productPrice) {
       this.elements.priceSaleOriginal.innerHTML = productCompareAtPrice;
