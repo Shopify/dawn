@@ -36,9 +36,9 @@ class ProductCard extends HTMLElement {
 
     console.log(productName, productImage, productPrice, productCompareAtPrice, productUrl);
 
-    if (productName) this.elements.title.innerHTML = productName;
-    if (productImage) this.elements.image.src = productImage;
-    if (productUrl) this.elements.link.href = productUrl;
+    // if (productName) this.elements.title.innerHTML = productName;
+    // if (productImage) this.elements.image.src = productImage;
+    // if (productUrl) this.elements.link.href = productUrl;
 
     this.classList.add('swatch-selected');
   }
