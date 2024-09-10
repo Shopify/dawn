@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     var sizeChartModalDetails = sizeChartModal.find('details');
 
     sizeChartModalDetails.attr('open', 'true');
+    document.body.classList.add('overflow-hidden');
 
     requestAnimationFrame(function () {
       trapFocus(
@@ -19,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     sizeChartModalDetails.removeAttr('open');
     removeTrapFocus(this);
+    document.body.classList.remove('overflow-hidden');
   });
 
   $('body').on('click', function (event) {
@@ -28,14 +30,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!sizeChartModalDetails.contains(event.currentTarget) || $(event.target).hasClass('modal-overlay')) {
       sizeChartModalDetails.removeAttr('open');
       removeTrapFocus(false);
+      document.body.classList.remove('overflow-hidden');
     }
   });
 
-  $('.size-chart-modal details').on('keyup', (event) => {
+  $('.size-chart-modal__content').on('keyup', (event) => {
     if (event.code.toUpperCase() === 'ESCAPE') {
       var sizeChartToggle = $('.size-chart__toggle');
+      console.log(this);
       $(this).removeAttr('open');
       removeTrapFocus(sizeChartToggle.eq(0));
+      document.body.classList.remove('overflow-hidden');
     }
   });
 });
