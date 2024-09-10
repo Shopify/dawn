@@ -7,8 +7,9 @@ class ProductCard extends HTMLElement {
     };
 
     this.elements.swatches.forEach((el) => {
-      console.log(el);
       el.addEventListener('change', this.onSwatchChange.bind(this));
+
+      console.log(el);
     });
 
     // this.detailsContainer = this.querySelector('details');
