@@ -6,12 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
     sizeChartModalDetails.attr('open', 'true');
     document.body.classList.add('overflow-hidden');
 
-    requestAnimationFrame(function () {
-      trapFocus(
-        sizeChartModalDetails.find('[tabindex="-1"]').eq(0),
-        sizeChartModalDetails.find('.size-chart-modal__close-button').eq(0)
-      );
-    });
+    trapFocus(
+      sizeChartModalDetails.find('.size-chart-modal__content').eq(0),
+      sizeChartModalDetails.find('.size-chart-modal__close-button').eq(0)
+    );
   });
 
   $('body').on('click', '.size-chart-modal__close-button', function () {
@@ -34,12 +32,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  $('.size-chart-modal__content').on('keyup', (event) => {
+  $('body').on('keyup', (event) => {
     if (event.key.toUpperCase() === 'ESCAPE') {
-      var sizeChartToggle = $('.size-chart__toggle');
-      $('.size-chart-modal details').removeAttr('open');
-      removeTrapFocus(sizeChartToggle.eq(0));
-      document.body.classList.remove('overflow-hidden');
+      var sizeChartModalDetails = $('.size-chart-modal details');
+
+      if (sizeChartModalDetails.eq(0).hasAttribute('open')) {
+        var sizeChartToggle = $('.size-chart__toggle');
+        sizeChartModalDetails.removeAttr('open');
+        removeTrapFocus(sizeChartToggle.eq(0));
+        document.body.classList.remove('overflow-hidden');
+      }
     }
   });
 });
