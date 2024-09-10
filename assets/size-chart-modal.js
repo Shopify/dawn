@@ -1,58 +1,90 @@
-class SizeChartModal extends HTMLElement {
-  constructor() {
-    super();
-    this.contentContainer = document.querySelector('size-chart-modal');
-    this.detailsContainer = this.contentContainer.querySelector('details');
+$('body').on('click', '#size-chart-toggle', function () {
+  var sizeChartModal = $('.size-chart-modal');
+  var sizeChartModalDetails = sizeChartModal.find('details');
 
-    this.addEventListener('click', this.onSummaryClick.bind(this));
-    this.detailsContainer.addEventListener('keyup', (event) => event.code.toUpperCase() === 'ESCAPE' && this.close());
-    this.detailsContainer.querySelector('button[type="button"]').addEventListener('click', this.close.bind(this));
+  sizeChartModalDetails.setAttribute('open', 'true');
+
+  requestAnimationFrame(function () {
+    trapFocus(
+      sizeChartModalDetails.find('[tabindex="-1"]').eq(0),
+      sizeChartModalDetails.querySelector('[type="button"]').eq(0)
+    );
+  });
+});
+
+$('body').on('click', '.size-chart-modal__close-button', function () {
+  var sizeChartModal = $('.size-chart-modal');
+  var sizeChartModalDetails = sizeChartModal.find('details');
+
+  sizeChartModalDetails.removeAttribute('open');
+  removeTrapFocus(this);
+});
+
+$('body').on('click', function (event) {
+  var sizeChartModal = $('.size-chart-modal');
+  var sizeChartModalDetails = sizeChartModal.find('details');
+
+  if (!sizeChartModalDetails.contains(event.currentTarget) || $(event.target).hasClass('modal-overlay')) {
+    sizeChartModalDetails.removeAttribute('open');
+    removeTrapFocus(false);
   }
+});
 
-  onSummaryClick(event) {
-    event.preventDefault();
-    this.detailsContainer.hasAttribute('open') ? this.close() : this.open();
-    console.dir(this);
-  }
+// class SizeChartModal extends HTMLElement {
+//   constructor() {
+//     super();
+//     this.contentContainer = document.querySelector('size-chart-modal');
+//     this.detailsContainer = this.contentContainer.querySelector('details');
 
-  onBodyClick(event) {
-    if (!thisdetailsContainer.contains(event.target) || event.target.classList.contains('modal-overlay'))
-      this.close(false);
-  }
+//     this.addEventListener('click', this.onSummaryClick.bind(this));
+//     this.detailsContainer.addEventListener('keyup', (event) => event.code.toUpperCase() === 'ESCAPE' && this.close());
+//     this.detailsContainer.querySelector('button[type="button"]').addEventListener('click', this.close.bind(this));
+//   }
 
-  open() {
-    this.onBodyClickEvent = this.onBodyClickEvent || this.onBodyClick.bind(this);
-    this.detailsContainer.setAttribute('open', true);
+//   onSummaryClick(event) {
+//     event.preventDefault();
+//     this.detailsContainer.hasAttribute('open') ? this.close() : this.open();
+//     console.dir(this);
+//   }
 
-    document.body.classList.add('overflow-hidden');
-    document.body.addEventListener('click', this.onBodyClickEvent);
+//   onBodyClick(event) {
+//     if (!thisdetailsContainer.contains(event.target) || event.target.classList.contains('modal-overlay'))
+//       this.close(false);
+//   }
 
-    setTimeout(() => {
-      trapFocus(
-        this.detailsContainer.querySelector('[tabindex="-1"]'),
-        this.detailsContainer.querySelector('input:not([type="hidden"])')
-      );
-    }, 10);
+//   open() {
+//     this.onBodyClickEvent = this.onBodyClickEvent || this.onBodyClick.bind(this);
+//     this.detailsContainer.setAttribute('open', true);
 
-    setTimeout(() => {
-      document.body.classList.add('overflow-hidden');
-      document.body.addEventListener('click', this.onBodyClickEvent);
+//     document.body.classList.add('overflow-hidden');
+//     document.body.addEventListener('click', this.onBodyClickEvent);
 
-      trapFocus(
-        this.detailsContainer.querySelector('[tabindex="-1"]'),
-        this.detailsContainer.querySelector('input:not([type="hidden"])')
-      );
-    }, 10);
+//     setTimeout(() => {
+//       trapFocus(
+//         this.detailsContainer.querySelector('[tabindex="-1"]'),
+//         this.detailsContainer.querySelector('input:not([type="hidden"])')
+//       );
+//     }, 10);
 
-    requestAnimationFrame(function () {});
-  }
+//     setTimeout(() => {
+//       document.body.classList.add('overflow-hidden');
+//       document.body.addEventListener('click', this.onBodyClickEvent);
 
-  close(focusToggle = true) {
-    removeTrapFocus(focusToggle ? this : null);
-    this.detailsContainer.removeAttribute('open');
-    document.body.removeEventListener('click', this.onBodyClickEvent);
-    document.body.classList.remove('overflow-hidden');
-  }
-}
+//       trapFocus(
+//         this.detailsContainer.querySelector('[tabindex="-1"]'),
+//         this.detailsContainer.querySelector('input:not([type="hidden"])')
+//       );
+//     }, 10);
 
-customElements.define('size-chart-modal-toggle', SizeChartModal);
+//     requestAnimationFrame(function () {});
+//   }
+
+//   close(focusToggle = true) {
+//     removeTrapFocus(focusToggle ? this : null);
+//     this.detailsContainer.removeAttribute('open');
+//     document.body.removeEventListener('click', this.onBodyClickEvent);
+//     document.body.classList.remove('overflow-hidden');
+//   }
+// }
+
+// customElements.define('size-chart-modal-toggle', SizeChartModal);
