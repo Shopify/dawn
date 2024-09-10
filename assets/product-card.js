@@ -29,10 +29,14 @@ class ProductCard extends HTMLElement {
 
   onSwatchChange(e) {
     const {
-      dataset: { productName },
+      dataset: { productName, productImage, productPrice, productCompareAtPrice, productUrl },
     } = e.target;
 
-    console.log(productName);
+    if (productName) this.elements.title.innerHTML = productName;
+    if (productImage) this.elements.image.src = productImage;
+    if (productUrl) this.elements.link.href = productUrl;
+
+    this.classList.add('swatch-selected');
   }
 
   // isOpen() {
