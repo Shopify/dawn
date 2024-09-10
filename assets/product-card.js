@@ -3,7 +3,14 @@ class ProductCard extends HTMLElement {
     super();
 
     this.swatchesContainer = this.querySelector('.product_tile_color_holder');
-    console.log(this);
+    this.swatches = this.swatchesContainer && this.swatchesContainer.querySelector('input[type"radio"]');
+
+    if (this.swatches) {
+      this.swatches.forEach((el) => {
+        el.addEventListener('change', this.onSwatchChange.bind(this));
+      });
+    }
+
     // this.detailsContainer = this.querySelector('details');
     // this.summaryToggle = this.querySelector('summary');
     // this.header = document.querySelector('.section-header');
@@ -13,6 +20,10 @@ class ProductCard extends HTMLElement {
     // this.querySelector('button[type="button"]').addEventListener('click', this.close.bind(this));
 
     // this.summaryToggle.setAttribute('role', 'button');
+  }
+
+  onSwatchChange(e) {
+    console.log(e);
   }
 
   // isOpen() {
