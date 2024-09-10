@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  $('.size-chart-modal__content').on('keyup', (event) => {
+  $('body').on('keyup', '.size-chart-modal__content', (event) => {
     console.log(event, this);
 
     if (event.code.toUpperCase() === 'ESCAPE') {
