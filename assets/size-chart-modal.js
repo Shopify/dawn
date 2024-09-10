@@ -35,9 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   $('.size-chart-modal__content').on('keyup', (event) => {
+    console.log(e, this);
+
     if (event.code.toUpperCase() === 'ESCAPE') {
       var sizeChartToggle = $('.size-chart__toggle');
-      console.log(this);
       $(this).removeAttr('open');
       removeTrapFocus(sizeChartToggle.eq(0));
       document.body.classList.remove('overflow-hidden');
