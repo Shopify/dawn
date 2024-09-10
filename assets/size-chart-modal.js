@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(function () {
       trapFocus(
         sizeChartModalDetails.find('[tabindex="-1"]').eq(0),
-        sizeChartModalDetails.find('[type="button"]').eq(0)
+        sizeChartModalDetails.find('.size-chart-modal__close-button').eq(0)
       );
     });
   });
