@@ -5,8 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     sizeChartModalDetails.attr('open', 'true');
 
-    console.log(sizeChartModalDetails);
-
     requestAnimationFrame(function () {
       trapFocus(
         sizeChartModalDetails.find('[tabindex="-1"]').eq(0),
@@ -19,8 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
     var sizeChartModal = $('.size-chart-modal');
     var sizeChartModalDetails = sizeChartModal.find('details');
 
-    console.log('wat');
-
     sizeChartModalDetails.removeAttr('open');
     removeTrapFocus(this);
   });
@@ -30,8 +26,16 @@ document.addEventListener('DOMContentLoaded', () => {
     var sizeChartModalDetails = sizeChartModal.find('details');
 
     if (!sizeChartModalDetails.contains(event.currentTarget) || $(event.target).hasClass('modal-overlay')) {
-      sizeChartModalDetails.removeAttribute('open');
+      sizeChartModalDetails.removeAttr('open');
       removeTrapFocus(false);
+    }
+  });
+
+  $('.size-chart-modal details').on('keyup', (event) => {
+    if (event.code.toUpperCase() === 'ESCAPE') {
+      var sizeChartToggle = $('.size-chart__toggle');
+      $(this).removeAttr('open');
+      removeTrapFocus(sizeChartToggle.eq(0));
     }
   });
 });
