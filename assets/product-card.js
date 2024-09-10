@@ -3,10 +3,11 @@ class ProductCard extends HTMLElement {
     super();
 
     this.swatchesContainer = this.querySelector('.product_tile_color_holder');
-    this.swatches = this.swatchesContainer && this.swatchesContainer.querySelector('input[type"radio"]');
+    this.swatches = this.swatchesContainer && this.swatchesContainer.querySelectorAll('input[type"radio"]');
 
     if (this.swatches) {
       this.swatches.forEach((el) => {
+        console.log(el);
         el.addEventListener('change', this.onSwatchChange.bind(this));
       });
     }
