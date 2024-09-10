@@ -13,6 +13,7 @@ class ProductCard extends HTMLElement {
     };
 
     this.elements.swatches.forEach((el) => {
+      console.log(this);
       el.addEventListener('change', this.onSwatchChange.bind(this));
     });
 
