@@ -32,6 +32,8 @@ class ProductCard extends HTMLElement {
       dataset: { productName, productImage, productPrice, productCompareAtPrice, productUrl },
     } = e.target;
 
+    console.log(productName, productImage, productPrice, productCompareAtPrice, productUrl);
+
     if (productName) this.elements.title.innerHTML = productName;
     if (productImage) this.elements.image.src = productImage;
     if (productUrl) this.elements.link.href = productUrl;
