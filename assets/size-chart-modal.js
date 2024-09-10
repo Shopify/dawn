@@ -33,10 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   $('body').on('keyup', (event) => {
+    console.log(event.key);
+    console.log(sizeChartModalDetails.eq(0), sizeChartModalDetails.eq(0).hasAttribute('open'));
+
     if (event.key.toUpperCase() === 'ESCAPE') {
       var sizeChartModalDetails = $('.size-chart-modal details');
-
-      console.log(sizeChartModalDetails.eq(0), sizeChartModalDetails.eq(0).hasAttribute('open'));
 
       if (sizeChartModalDetails.eq(0).hasAttribute('open')) {
         var sizeChartToggle = $('.size-chart__toggle');
