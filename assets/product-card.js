@@ -13,7 +13,6 @@ class ProductCard extends HTMLElement {
     };
 
     this.elements.swatches.forEach((el) => {
-      console.log(this);
       el.addEventListener('change', this.onSwatchChange.bind(this));
     });
 
@@ -29,6 +28,8 @@ class ProductCard extends HTMLElement {
   }
 
   onSwatchChange(e) {
+    console.log(this, e);
+
     const {
       dataset: { productName, productImage, productPrice, productCompareAtPrice, productUrl },
     } = e.target;
