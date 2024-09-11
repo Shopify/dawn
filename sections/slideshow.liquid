@@ -112,10 +112,12 @@
         aria-label="{{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
         tabindex="-1"
       >
-        <div class="slideshow__media banner__media media{% if block.settings.image == blank %} placeholder{% endif %}{% if section.settings.image_behavior != 'none' %} animate--{{ section.settings.image_behavior }}{% endif %}">
+        <div class="slideshow__media banner__media media{% if block.settings.image == blank %} placeholder{% endif %}{% if section.settings.image_behavior != 'none' %} animate--{{ section.settings.image_behavior }}{% endif %}{% if block.settings.mobile_image != blank %} has-mobile-image{% endif %}">
           {%- if block.settings.image -%}
             {%- liquid
               assign height = block.settings.image.width | divided_by: block.settings.image.aspect_ratio | round
+              assign mobile_widths = '375, 550, 750, 1100, 1500'
+
               if section.settings.image_behavior == 'ambient'
                 assign sizes = '120vw'
                 assign widths = '450, 660, 900, 1320, 1800, 2136, 2400, 3600, 7680'
@@ -134,12 +136,36 @@
                 | image_url: width: 3840
                 | image_tag: height: height, sizes: sizes, widths: widths, fetchpriority: fetch_priority
               }}
+
+              {%- if block.settings.mobile_image != blank -%}
+                {% assign mobile_height = block.settings.mobile_image.width
+                  | divided_by: block.settings.mobile_image.aspect_ratio
+                  | round
+                %}
+                {{
+                  block.settings.mobile_image
+                  | image_url: width: 3840
+                  | image_tag: height: mobile_height, sizes: sizes, widths: mobile_widths, fetchpriority: fetch_priority
+                }}
+              {%- endif -%}
             {%- else -%}
               {{
                 block.settings.image
                 | image_url: width: 3840
                 | image_tag: loading: 'lazy', height: height, sizes: sizes, widths: widths
               }}
+
+              {%- if block.settings.mobile_image != blank -%}
+                {% assign mobile_height = block.settings.mobile_image.width
+                  | divided_by: block.settings.mobile_image.aspect_ratio
+                  | round
+                %}
+                {{
+                  block.settings.mobile_image
+                  | image_url: width: 3840
+                  | image_tag: height: mobile_height, sizes: sizes, widths: mobile_widths
+                }}
+              {%- endif -%}
             {%- endif -%}
           {%- else -%}
             {%- assign placeholder_slide = forloop.index | modulo: 2 -%}
