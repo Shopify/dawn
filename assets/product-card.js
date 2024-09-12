@@ -8,7 +8,7 @@ class ProductCard extends HTMLElement {
       priceRegular: this.querySelector('.price__regular .price-item'),
       priceSaleOriginal: this.querySelector('.price__sale .price-item--regular'),
       priceSale: this.querySelector('.price__sale .price-item--sale'),
-      titles: this.querySelectorAll('.full-unstyled-link'),
+      titles: this.querySelectorAll('.full-unstyled-link:not(.product_tile_color_holder__more-colors)'),
       links: this.querySelectorAll('.full-unstyled-link'),
     };
 
