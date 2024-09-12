@@ -8,23 +8,13 @@ class ProductCard extends HTMLElement {
       priceRegular: this.querySelector('.price__regular .price-item'),
       priceSaleOriginal: this.querySelector('.price__sale .price-item--regular'),
       priceSale: this.querySelector('.price__sale .price-item--sale'),
-      title: this.querySelectorAll('.full-unstyled-link'),
-      link: this.querySelectorAll('.full-unstyled-link'),
+      titles: this.querySelectorAll('.full-unstyled-link'),
+      links: this.querySelectorAll('.full-unstyled-link'),
     };
 
     this.elements.swatches.forEach((el) => {
       el.addEventListener('change', this.onSwatchChange.bind(this));
     });
-
-    // this.detailsContainer = this.querySelector('details');
-    // this.summaryToggle = this.querySelector('summary');
-    // this.header = document.querySelector('.section-header');
-
-    // this.detailsContainer.addEventListener('keyup', (event) => event.code.toUpperCase() === 'ESCAPE' && this.close());
-    // this.summaryToggle.addEventListener('click', this.onSummaryClick.bind(this));
-    // this.querySelector('button[type="button"]').addEventListener('click', this.close.bind(this));
-
-    // this.summaryToggle.setAttribute('role', 'button');
   }
 
   onSwatchChange(e) {
@@ -32,16 +22,14 @@ class ProductCard extends HTMLElement {
       dataset: { productName, productImage, productPrice, productCompareAtPrice, productUrl },
     } = e.target;
 
-    console.log(productName, productImage, productPrice, productCompareAtPrice, productUrl);
-
     if (productName) {
-      this.elements.title.forEach((el) => {
+      this.elements.titles.forEach((el) => {
         el.innerHTML = productName;
       });
     }
 
     if (productUrl) {
-      this.elements.link.forEach((el) => {
+      this.elements.links.forEach((el) => {
         el.href = productUrl;
       });
     }
