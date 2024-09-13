@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     var sizeChartModal = $('.size-chart-modal');
     var sizeChartModalDetails = sizeChartModal.find('details');
 
-    if (!sizeChartModalDetails.contains(event.currentTarget) || $(event.target).hasClass('modal-overlay')) {
+    if (!sizeChartModalDetails.get(0).contains(event.currentTarget) || $(event.target).hasClass('modal-overlay')) {
       sizeChartModalDetails.removeAttr('open');
       removeTrapFocus(false);
       document.body.classList.remove('overflow-hidden');
