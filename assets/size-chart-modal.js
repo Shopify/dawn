@@ -1,6 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
-  $('body').on('click', '.size-chart__toggle', function () {
-    var sizeChartModal = $('.size-chart-modal');
+  $('body').on('click', '.size-chart__toggle', function (e) {
+    var sizeChartLink = $(e.currentTarget);
+    var container = sizeChartLink.closest('quick-add-modal');
+
+    if (container.length > 0) {
+      container = $('body');
+    }
+
+    var sizeChartModal = container.find('.size-chart-modal');
     var sizeChartModalDetails = sizeChartModal.find('details');
 
     sizeChartModalDetails.attr('open', 'true');
