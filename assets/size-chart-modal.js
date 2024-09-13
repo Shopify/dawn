@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     var sizeChartLink = $(e.currentTarget);
     var container = sizeChartLink.closest('quick-add-modal');
 
-    if (container.length > 0) {
+    if (container.length == 0) {
       container = $('body');
     }
 
@@ -13,9 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
     sizeChartModalDetails.attr('open', 'true');
     document.body.classList.add('overflow-hidden');
 
-    console.log(container);
-    console.log(sizeChartModal);
-    console.log(sizeChartModalDetails);
+    // console.log(container);
+    // console.log(sizeChartModal);
+    // console.log(sizeChartModalDetails);
 
     trapFocus(
       sizeChartModalDetails.find('.size-chart-modal__content').eq(0),
