@@ -59,13 +59,13 @@ var TNB = {
       }
     }
 
-    $('body').on('click', '.tall-sizing-controls [data-button-regular]', function () {
+    $('body').on('click', '.tall-sizing-controls [data-button-regular]', function (e) {
       const target = $(e.currentTarget);
       const controls = target.closest('.tall-sizing-controls').get(0);
       handleClickControl(controls, false);
     });
 
-    $('body').on('click', '.tall-sizing-controls [data-button-tall]', function () {
+    $('body').on('click', '.tall-sizing-controls [data-button-tall]', function (e) {
       const target = $(e.currentTarget);
       const controls = target.closest('.tall-sizing-controls').get(0);
       handleClickControl(controls, true);
