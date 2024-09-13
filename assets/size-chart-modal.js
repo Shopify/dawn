@@ -13,6 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
     sizeChartModalDetails.attr('open', 'true');
     document.body.classList.add('overflow-hidden');
 
+    console.log(container);
+    console.log(sizeChartModal);
+    console.log(sizeChartModalDetails);
+
     trapFocus(
       sizeChartModalDetails.find('.size-chart-modal__content').eq(0),
       sizeChartModalDetails.find('.size-chart-modal__close-button').eq(0)
