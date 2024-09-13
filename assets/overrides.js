@@ -87,14 +87,10 @@ var TNB = {
 function init() {
   subscribe(PUB_SUB_EVENTS.optionValueSelectionChange, function (e) {
     TNB.tallSizingControls(true);
-
-    // console.log('Option value selection change:', e);
   });
 
   subscribe(PUB_SUB_EVENTS.variantChange, function (e) {
     TNB.tallSizingControls(false);
-
-    // console.log('Variant Change:', e);
   });
 
   TNB.tallSizingControls(false);
