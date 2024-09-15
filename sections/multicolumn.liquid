@@ -17,6 +17,14 @@
   .swiper-slider-{{ section.id }} .swiper-pagination-bullet-active circle {
     fill: {{ section.settings.color_scheme.settings['button'] }};
   }
+
+  .multicolumn .title-wrapper-with-link.align-center {
+    justify-content: center;
+  }
+
+  .multicolumn .title-wrapper-with-link.align-right {
+    justify-content: end;
+  }
 {%- endstyle -%}
 
 {%- liquid
@@ -25,13 +33,13 @@
 
 <div class="multicolumn color-{{ section.settings.color_scheme }} gradient{% unless section.settings.background_style == 'none' and settings.text_boxes_border_thickness > 0 or settings.text_boxes_shadow_opacity > 0 %} background-{{ section.settings.background_style }}{% endunless %}{% if section.settings.title == blank %} no-heading{% endif %}">
   <div
-    class="section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+    class="section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %} {% unless section.settings.full_width %} page-width {% endunless %}"
     {% if settings.animations_reveal_on_scroll %}
       data-cascade
     {% endif %}
   >
     {%- unless section.settings.title == blank -%}
-      <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin title-width">
+      <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin {% if section.settings.heading_alignment == 'center' %} align-center{% elsif section.settings.heading_alignment == 'right' %} align-right{% endif %}">
         {% unless section.settings.heading_element_custom %}
           <h2 class="title inline-richtext {{ section.settings.heading_size }}">
             {{ section.settings.title }}
@@ -52,11 +60,11 @@
       </div>
     {%- endunless -%}
     <slider-component
-      class="{% if slider_enabled %} swiper swiper-slider-{{ section.id }} {% endif %} slider-mobile-gutter {% if section.settings.full_width %} slider-component-full-width{% endif %} {% unless section.settings.full_width %} page-width {% endunless %}"
+      class="{% if slider_enabled %} swiper swiper-slider-{{ section.id }} {% endif %} slider-mobile-gutter {% if section.settings.full_width %} slider-component-full-width{% endif %}"
       id="slider-{{ section.id }}"
       data-slider="true"
       data-direction="horizontal"
-      data-loop="true"
+      data-loop="false"
       data-slides-per-view-desktop="{{ section.settings.columns_desktop }}"
       data-slides-per-view-mobile="{{ section.settings.columns_mobile }}"
       data-autoplay="false"
@@ -167,7 +175,7 @@
         {% render 'swiper-pagination', section: section %}
       {% endif %}
     </slider-component>
-    <div class="center{% if slider_enabled %} small-hide medium-hide{% endif %}">
+    <div class="center">
       {%- if section.settings.button_label != blank -%}
         <a
           class="{% if section.settings.button_style == 'link' %} link underlined-link{% else %} button button--{{ section.settings.button_style }} {% endif %}"
@@ -226,6 +234,26 @@
       "id": "title",
       "default": "t:sections.multicolumn.settings.title.default",
       "label": "t:sections.multicolumn.settings.title.label"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.multicolumn.settings.heading_alignment.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.multicolumn.settings.heading_alignment.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.multicolumn.settings.heading_alignment.options__3.label"
+        }
+      ],
+      "default": "left",
+      "label": "t:sections.multicolumn.settings.heading_alignment.label"
     },
     {
       "type": "select",
@@ -391,16 +419,6 @@
     },
     {
       "type": "header",
-      "content": "t:sections.multicolumn.settings.header_desktop.content"
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_desktop_slider",
-      "label": "t:sections.multicolumn.settings.enable_desktop_slider.label",
-      "default": false
-    },
-    {
-      "type": "header",
       "content": "t:sections.multicolumn.settings.header_mobile.content"
     },
     {
@@ -418,12 +436,6 @@
       ],
       "default": "1",
       "label": "t:sections.multicolumn.settings.columns_mobile.label"
-    },
-    {
-      "type": "checkbox",
-      "id": "swipe_on_mobile",
-      "default": false,
-      "label": "t:sections.multicolumn.settings.swipe_on_mobile.label"
     },
     {
       "type": "header",
