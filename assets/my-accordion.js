@@ -1,7 +1,7 @@
 class MyAccordion extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `<style>
-      .accordion {
+      .my-accordion {
         transition: 0.4s;
       }
 
@@ -14,9 +14,17 @@ class MyAccordion extends HTMLElement {
       .panel.show {
         max-height: 500px; /* Quick fix: hardcode the approximate expanded panel's total height including the children panels and text */
       }
+
+      .mdi {
+        transition: transform 0.2s ease-in-out;
+      }
+
+      .mdi.rotate {
+        transform: rotate(180deg);
+      }
     </style>` + this.innerHTML;
 
-    let acc = this.querySelectorAll(".accordion");
+    let acc = this.querySelectorAll(".my-accordion");
     acc.forEach((el) => {
       const icon = el.querySelector('.mdi');
 
@@ -25,13 +33,13 @@ class MyAccordion extends HTMLElement {
         let panel = this.nextElementSibling;
 
         if (panel.style.maxHeight) {
-          icon.classList.remove('mdi-chevron-down');
-          icon.classList.add('mdi-chevron-right');
+          icon.classList.remove('mdi-minus', 'rotate');
+          icon.classList.add('mdi-plus');
           panel.style.maxHeight = null;
           panel.classList.remove('show');
         } else {
-          icon.classList.remove('mdi-chevron-right');
-          icon.classList.add('mdi-chevron-down');
+          icon.classList.remove('mdi-plus');
+          icon.classList.add('mdi-minus', 'rotate');
           // Temporarily expand the panel to calculate the maximum height
           panel.style.maxHeight = 'none';
           let expandedHeight = panel.scrollHeight;
