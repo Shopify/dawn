@@ -27,7 +27,12 @@
   }
 {%- endstyle -%}
 
-<footer {% if section.settings.footer_background %} style="background: url({{ section.settings.footer_background | img_url: original }}); background-size: cover;" {% endif %} class="footer color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding">
+<footer
+  {% if section.settings.footer_background %}
+    style="background: url({{ section.settings.footer_background | img_url: original }}); background-size: cover;"
+  {% endif %}
+  class="footer color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding"
+>
   {%- liquid
     assign has_social_icons = true
     if settings.social_facebook_link == blank and settings.social_instagram_link == blank and settings.social_youtube_link == blank and settings.social_tiktok_link == blank and settings.social_twitter_link == blank and settings.social_pinterest_link == blank and settings.social_snapchat_link == blank and settings.social_tumblr_link == blank and settings.social_vimeo_link == blank
@@ -75,8 +80,10 @@
                   style="--animation-order: {{ forloop.index }};"
                 {% endif %}
               >
-                {%- if block.settings.heading != blank -%}
-                  <h2 class="footer-block__heading inline-richtext">{{- block.settings.heading -}}</h2>
+                {%- if block.type != 'text_and_button' -%}
+                  {%- if block.settings.heading != blank -%}
+                    <h2 class="footer-block__heading inline-richtext">{{- block.settings.heading -}}</h2>
+                  {%- endif -%}
                 {%- endif -%}
 
                 {%- case block.type -%}
@@ -152,6 +159,22 @@
                       {%- else -%}
                         {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
                       {%- endif -%}
+                    </div>
+                  {%- when 'text_and_button' -%}
+                    <div class="text-and-button">
+                      {% if block.settings.heading != blank %}
+                        <p class="text-and-button__heading">{{ block.settings.heading }}</p>
+                      {% endif %}
+
+                      {% if block.settings.subtext != blank %}
+                        <div class="text-and-button__subtext">{{ block.settings.subtext }}</div>
+                      {% endif %}
+
+                      {% if block.settings.button_text != blank and block.settings.button_link != blank %}
+                        <a href="{{ block.settings.button_link }}" class="button">
+                          {{ block.settings.button_text }}
+                        </a>
+                      {% endif %}
                     </div>
                 {%- endcase -%}
               </div>
@@ -302,7 +325,6 @@
         <small class="copyright__content"
           >&copy; {{ 'now' | date: '%Y' }}, {{ shop.name | link_to: routes.root_url -}}
         </small>
-        <small class="copyright__content">{{ powered_by_link }}</small>
         {%- if section.settings.show_policy -%}
           <ul class="policies list-unstyled">
             {%- for policy in shop.policies -%}
@@ -316,6 +338,9 @@
             {%- endfor -%}
           </ul>
         {%- endif -%}
+        <div class="copyright__content">
+          Designed and Developed by <a href="https://www.uncovercommerce.com">Uncover Commerce</a>
+        </div>
       </div>
     </div>
   </div>
@@ -383,6 +408,35 @@
           "id": "subtext",
           "default": "t:sections.footer.blocks.text.settings.subtext.default",
           "label": "t:sections.footer.blocks.text.settings.subtext.label"
+        }
+      ]
+    },
+    {
+      "type": "text_and_button",
+      "name": "Text and Button",
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "heading",
+          "default": "t:sections.footer.blocks.text.settings.heading.default",
+          "label": "t:sections.footer.blocks.text.settings.heading.label"
+        },
+        {
+          "type": "richtext",
+          "id": "subtext",
+          "default": "t:sections.footer.blocks.text.settings.subtext.default",
+          "label": "t:sections.footer.blocks.text.settings.subtext.label"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button Text",
+          "default": "Click Here"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button Link"
         }
       ]
     },
@@ -558,8 +612,8 @@
     {
       "type": "image_picker",
       "id": "footer_background",
-      "label": "Footer Background Image - Alakazam",
-      }
+      "label": "Footer Background Image - Alakazam"
+    }
   ],
   "default": {
     "blocks": [
