@@ -13,18 +13,18 @@
 
 {%- if section.settings.enable_custom_aspect_ratio -%}
   {% style %}
-  @media screen and (min-width: 750px) {
-    #Slider-{{ section.id }} {
-      aspect-ratio: {{ section.settings.custom_aspect_ratio }};
+    @media screen and (min-width: 750px) {
+      #Slider-{{ section.id }} {
+        aspect-ratio: {{ section.settings.custom_aspect_ratio }};
+      }
     }
-  }
 
-  @media screen and (max-width: 749px) {
-    #Slider-{{ section.id }} {% if section.settings.show_text_below %}.banner__media{% endif %} {
-      aspect-ratio: {{ section.settings.custom_aspect_ratio }};
-      position: relative;
+    @media screen and (max-width: 749px) {
+      #Slider-{{ section.id }} {% if section.settings.show_text_below %}.banner__media{% endif %} {
+        aspect-ratio: {{ section.settings.custom_aspect_ratio }};
+        position: relative;
+      }
     }
-  }
   {% endstyle %}
 {%- endif -%}
 
@@ -48,27 +48,21 @@
         display: block;
       }
     }
-
-    {% for block in section.blocks %}
-        #Slide-{{ section.id }}-{{ forloop.index }} .banner__media::after {
-          opacity: {{ block.settings.image_overlay_opacity | divided_by: 100.0 }};
-        }
-    {% endfor %}
   {%- endstyle -%}
 {%- endif -%}
 
-{% liquid 
-    assign is_collection = false
-    if template.name == 'collection'
-      assign is_collection = true
-    endif
+{% liquid
+  assign is_collection = false
+  if template.name == 'collection'
+    assign is_collection = true
+  endif
 
-    for block in section.blocks
-      assign without_image = false
-      if block.settings.image == blank
-        assign without_image = true
-      endif
-    endfor
+  for block in section.blocks
+    assign without_image = false
+    if block.settings.image == blank
+      assign without_image = true
+    endif
+  endfor
 %}
 
 <slider-component
@@ -88,9 +82,14 @@
     id="Slider-{{ section.id }}"
   >
     {%- for block in section.blocks -%}
+      <style>
+        #Slide-{{ section.id }}-{{ forloop.index }} .banner__media::after {
+          opacity: {{ block.settings.image_overlay_opacity | divided_by: 100.0 }};
+        }
+      </style>
       <div
         class="swiper-slide"
-        id=""
+        id="Slide-{{ section.id }}-{{ forloop.index }}"
         {{ block.shopify_attributes }}
         role="group"
         aria-roledescription="{{ 'sections.slideshow.slide' | t }}"
@@ -120,13 +119,23 @@
               {{
                 block.settings.image
                 | image_url: width: 3840
-                | image_tag: height: height, sizes: sizes, widths: widths, fetchpriority: fetch_priority, class: desktop_class
+                | image_tag:
+                  height: height,
+                  sizes: sizes,
+                  widths: widths,
+                  fetchpriority: fetch_priority,
+                  class: desktop_class
               }}
-              {% if block.settings.image_mobile != blank %}  
+              {% if block.settings.image_mobile != blank %}
                 {{
                   block.settings.image_mobile
                   | image_url: width: 3840
-                  | image_tag: height: height, sizes: sizes, widths: widths, fetchpriority: fetch_priority, class: 'mobile_image'
+                  | image_tag:
+                    height: height,
+                    sizes: sizes,
+                    widths: widths,
+                    fetchpriority: fetch_priority,
+                    class: 'mobile_image'
                 }}
               {% endif %}
             {%- else -%}
@@ -135,16 +144,15 @@
                 | image_url: width: 3840
                 | image_tag: loading: 'lazy', height: height, sizes: sizes, widths: widths, class: desktop_class
               }}
-              {% if block.settings.image_mobile != blank %}  
+              {% if block.settings.image_mobile != blank %}
                 {{
                   block.settings.image_mobile
                   | image_url: width: 3840
                   | image_tag: loading: 'lazy', height: height, sizes: sizes, widths: widths, class: 'mobile_image'
                 }}
               {% endif %}
-              {%- endif -%}
+            {%- endif -%}
           {%- elsif is_collection -%}
-            
           {%- else -%}
             {%- assign placeholder_slide = forloop.index | modulo: 2 -%}
             {%- if placeholder_slide == 1 -%}
@@ -171,12 +179,11 @@
                   {{ block.settings.heading }}
                 </h2>
               {% else %}
-                {%
-                  render 'headings',
+                {% render 'headings',
                   heading_size: block.settings.heading_size,
                   heading_element: block.settings.heading_element,
                   title: block.settings.heading,
-                  class: 'banner__heading inline-richtext',
+                  class: 'banner__heading inline-richtext'
                 %}
               {% endunless %}
             {% elsif is_collection %}
@@ -189,12 +196,11 @@
                   {% endif %}
                 </h2>
               {% else %}
-                {%
-                  render 'headings',
+                {% render 'headings',
                   heading_size: block.settings.heading_size,
                   heading_element: block.settings.heading_element,
-                  title: collection.description ,
-                  class: 'banner__heading inline-richtext',
+                  title: collection.description,
+                  class: 'banner__heading inline-richtext'
                 %}
               {% endunless %}
             {%- endif -%}
@@ -219,9 +225,13 @@
   </div>
 
   <div class="swiper-pagination__group">
-    <div class="swiper-button swiper-button-prev swiper-prev-button-slider-{{ section.id }}">{% render 'icon-caret' %}</div>
+    <div class="swiper-button swiper-button-prev swiper-prev-button-slider-{{ section.id }}">
+      {% render 'icon-caret' %}
+    </div>
     <div class="swiper-pagination swiper-pagination-slider-{{ section.id }}"></div>
-    <div class="swiper-button swiper-button-next swiper-next-button-slider-{{ section.id }}">{% render 'icon-caret' %}</div>
+    <div class="swiper-button swiper-button-next swiper-next-button-slider-{{ section.id }}">
+      {% render 'icon-caret' %}
+    </div>
   </div>
 </slider-component>
 
