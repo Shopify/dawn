@@ -1089,8 +1089,6 @@ class SlideshowComponent extends SliderComponent {
 
 customElements.define('slideshow-component', SlideshowComponent);
 
-
-
 class CardColorSwatches extends HTMLElement {
   constructor() {
     super();
@@ -1100,14 +1098,14 @@ class CardColorSwatches extends HTMLElement {
     this.formId = this.closest('.card__content').querySelector('.product-variant-id');
     this.label = this.closest('.card__content').querySelector('.form__label span');
     this.variantData = JSON.parse(this.querySelector('[type="application/json"]').textContent);
-    this.swatch = this.querySelector('.swatch-input__label')
-    this.inputs = this.querySelectorAll('.swatch-input__input')
+    this.swatch = this.querySelector('.swatch-input__label');
+    this.inputs = this.querySelectorAll('.swatch-input__input');
   }
 
   onVariantChange(event) {
-    this.inputs.forEach(input =>{
+    this.inputs.forEach((input) => {
       input.classList.remove('active');
-    })
+    });
     this.updateProductCard(event);
   }
 
@@ -1127,7 +1125,6 @@ class CardColorSwatches extends HTMLElement {
       this.label.textContent = value;
     }
   }
-
 }
 
 customElements.define('card-color-swatches', CardColorSwatches);
@@ -1186,8 +1183,6 @@ class VariantSelects extends HTMLElement {
     return target.tagName === 'SELECT' ? target.selectedOptions[0] : target;
   }
 
-  
-  
   get selectedOptionValues() {
     return Array.from(this.querySelectorAll('select option[selected], fieldset input:checked')).map(
       ({ dataset }) => dataset.optionValueId
@@ -1248,6 +1243,41 @@ class ProductRecommendations extends HTMLElement {
 }
 
 customElements.define('product-recommendations', ProductRecommendations);
+
+class HotSpots extends HTMLElement {
+  constructor() {
+    super();
+    this.el = this;
+    this.buttons = this.querySelectorAll('[data-button]');
+    this.hotspotBlocks = this.querySelectorAll('[data-hotspot-block]');
+
+    if (this.buttons.length > 0 && this.hotspotBlocks.length > 0) {
+      this.bindEvents();
+    }
+  }
+
+  bindEvents() {
+    this.buttons.forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        const id = button.dataset.button;
+        this.showContent(id);
+      });
+    });
+  }
+
+  showContent(id) {
+    this.hotspotBlocks.forEach((block) => {
+      if (block.dataset.hotspotBlock === id) {
+        block.classList.add('is-active');
+      } else {
+        block.classList.remove('is-active');
+      }
+    });
+  }
+}
+
+customElements.define('hot-spots', HotSpots);
 
 class AccountIcon extends HTMLElement {
   constructor() {
