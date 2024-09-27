@@ -1,4 +1,10 @@
-Vue.component('my-component', {
-  template: '<div>Hello from My Component!</div>',
-  // Add your component's data, methods, etc. here
-});
+const { createApp, ref } = Vue;
+
+createApp({
+  setup() {
+    const message = ref('Hello vue!');
+    return {
+      message,
+    };
+  },
+}).mount('#app');
