@@ -49,7 +49,7 @@ class ProductCard extends HTMLElement {
     }
 
     if (this.elements.swatchName) {
-      console.log(value);
+      this.elements.swatchName.innerHTML = value;
     }
 
     this.classList.add('swatch-selected');
