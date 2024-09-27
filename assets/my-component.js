@@ -1,10 +1,8 @@
-import { createApp, ref } from 'vue';
-
-createApp({
+import { ref } from 'vue';
+export default {
   setup() {
-    const message = ref('Hello Vue!');
-    return {
-      message,
-    };
+    const count = ref(0);
+    return { count };
   },
-}).mount('#app');
+  template: `<div>Count is: {{ count }}</div>`,
+};
