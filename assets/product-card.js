@@ -4,6 +4,7 @@ class ProductCard extends HTMLElement {
 
     this.elements = {
       swatches: this.querySelectorAll('.product_tile_color_holder input[type="radio"]'),
+      swatchName: this.querySelector('.product-tile-color-name'),
       image: this.querySelector('.card__media img:first-child'),
       priceRegular: this.querySelector('.price__regular .price-item'),
       priceSaleOriginal: this.querySelector('.price__sale .price-item--regular'),
@@ -20,6 +21,7 @@ class ProductCard extends HTMLElement {
   onSwatchChange(e) {
     const {
       dataset: { productName, productImage, productPrice, productCompareAtPrice, productUrl },
+      value,
     } = e.target;
 
     if (productName) {
@@ -44,6 +46,10 @@ class ProductCard extends HTMLElement {
       this.elements.priceSale.innerHTML = productPrice;
     } else {
       this.elements.priceRegular.innerHTML = productPrice;
+    }
+
+    if (this.elements.swatchName) {
+      console.log(value);
     }
 
     this.classList.add('swatch-selected');
