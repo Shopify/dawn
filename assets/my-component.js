@@ -1,8 +1,4 @@
 Vue.component('my-component', {
-  template: '<div>{{ message }}</div>',
-  data() {
-    return {
-      message: 'Hello from My Component!',
-    };
-  },
+  template: '<div>Hello from My Component!</div>',
+  // Add your component's data, methods, etc. here
 });
