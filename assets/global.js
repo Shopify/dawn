@@ -1099,7 +1099,7 @@ class VariantSelects extends HTMLElement {
       );
     } else if (tagName === 'INPUT' && target.type === 'radio') {
       const selectedSwatchValue = target.closest(`.product-form__input`).querySelector('[data-selected-value]');
-      if (selectedSwatchValue) selectedSwatchValue.innerHTML = '&nbsp;' + value;
+      if (selectedSwatchValue) selectedSwatchValue.innerHTML = value;
     }
   }
 
