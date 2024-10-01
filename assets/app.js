@@ -14,25 +14,34 @@ const MyComponent = {
             <a :href="product.url" target="_blank" rel="noopener noreferrer">
               <center><img :src="product.image || demoImage" :alt="product.title" /></center>
               <h4>{{ product.title }}</h4>
-              <p>Price: {{ product.price | formatPrice }}</p>
+              <p>Price: {{ formatPrice(product.price) }}</p>
             </a>
             <button class="add-to-cart" @click="addToCart(product, product.variants[0].id)">Add to Cart</button>
             <p v-if="product.cartMessage" class="cart-message">{{ product.cartMessage }}</p>
           </div>
         </div>
+        <button class="slick-prev" @click="prevSlide" style="background-color:red;color:#fff;position:absolute; left:10px; z-index: 1;">&#10094;</button>
+        <button class="slick-next" @click="nextSlide" style="background-color:red;color:#fff;position:absolute; right:10px; z-index: 1;">&#10095;</button>
       </div>
       <!-- Mini Cart -->
       <div class="mini-cart" :class="{ open: isMiniCartOpen }">
         <button class="close-btn" @click="closeMiniCart">X</button>
         <h3>Mini Cart</h3>
         <ul v-if="cartItems.length > 0">
-          <li v-for="(item, index) in cartItems" :key="index">
-            <p>{{ item.title }} - {{ item.quantity }} x {{ item.price | formatPrice }}</p>
+          <li v-for="(item, index) in cartItems" :key="index" class="cart-item">
+            <img :src="item.image || demoImage" alt="Product Image" class="cart-image" />
+            <div class="cart-info">
+              <p>{{ item.title }}</p>
+              <p>{{ item.quantity }} x {{ formatPrice(item.price) }}</p>
+            </div>
           </li>
         </ul>
         <p v-if="cartItems.length === 0">Your cart is empty.</p>
-        <p>Total: {{ cartTotal | formatPrice }}</p>
-        <button class="checkout-btn" @click="checkout">Checkout</button>
+        <p>Total: {{ formatPrice(cartTotal) }}</p>
+        <div class="cart-buttons">
+          <button class="checkout-btn" @click="checkout">Checkout</button>
+          <button class="view-cart-btn" @click="viewCart">View Cart</button>
+        </div>
       </div>
     </div>
   `,
@@ -44,25 +53,35 @@ const MyComponent = {
       cartTotal: 0,
       isMiniCartOpen: false,
       demoImage: 'https://via.placeholder.com/150',
+      storeCurrency: 'USD', // Default currency
     };
   },
   methods: {
     changeMessage() {
       this.message = 'Message has been changed!';
     },
+    async fetchStoreCurrency() {
+      try {
+        const response = await fetch('/cart.js');
+        const data = await response.json();
+        this.storeCurrency = data.currency; // Get currency from cart data
+      } catch (error) {
+        console.error('Failed to fetch store currency:', error);
+      }
+    },
     async fetchProducts() {
       const response = await fetch('https://homeceuconnectiontest.myshopify.com/admin/api/2023-01/products.json', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'X-Shopify-Access-Token': 'Your-Access-Token',
+          'X-Shopify-Access-Token': 'Your-access-token',
         },
       });
 
       const data = await response.json();
       this.products = data.products.map((product) => ({
         title: product.title,
-        price: product.variants[0].price,
+        price: product.variants[0].price, // Price in cents
         url: `https://homeceuconnectiontest.myshopify.com/products/${product.handle}`,
         image: product.images.length > 0 ? product.images[0].src : null,
         variants: product.variants,
@@ -73,15 +92,19 @@ const MyComponent = {
     initSlickSlider() {
       $('.slick-slider').slick({
         dots: false,
-        arrows: true,
+        arrows: false, // Disable default arrows to use custom buttons
         infinite: true,
         autoplay: true,
         speed: 500,
         slidesToShow: 6,
         slidesToScroll: 1,
-        prevArrow: '<button class="slick-prev">&#10094;</button>',
-        nextArrow: '<button class="slick-next">&#10095;</button>',
       });
+    },
+    nextSlide() {
+      $('.slick-slider').slick('slickNext');
+    },
+    prevSlide() {
+      $('.slick-slider').slick('slickPrev');
     },
     async addToCart(product, variantId) {
       const response = await fetch('/cart/add.js', {
@@ -94,7 +117,7 @@ const MyComponent = {
 
       if (response.ok) {
         product.cartMessage = 'Product added to cart successfully!';
-        this.fetchCart();
+        await this.fetchCart();
         this.openMiniCart();
 
         setTimeout(() => {
@@ -110,9 +133,11 @@ const MyComponent = {
       this.cartItems = data.items.map((item) => ({
         title: item.title,
         quantity: item.quantity,
-        price: item.final_price / 100,
+        price: item.final_price / 100, // Convert from cents to dollars
+        image: item.image || this.demoImage,
+        id: item.id, // Store the item ID for removal
       }));
-      this.cartTotal = data.total_price / 100;
+      this.cartTotal = data.total_price / 100; // Convert from cents to dollars
     },
     openMiniCart() {
       this.isMiniCartOpen = true;
@@ -123,17 +148,35 @@ const MyComponent = {
     checkout() {
       window.location.href = '/checkout'; // Redirect to checkout page
     },
+    viewCart() {
+      window.location.href = '/cart'; // Redirect to cart page
+    },
     formatPrice(value) {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'USD',
+        currency: this.storeCurrency, // Use the dynamically fetched store currency
       }).format(value);
     },
   },
   mounted() {
+    this.fetchStoreCurrency(); // Fetch the store currency on component mount
     this.fetchProducts();
   },
 };
+
+// Create the first Vue app for products
+const productApp = createApp({
+  components: {
+    MyComponent,
+  },
+  template: `
+    <div>
+      <h2>Product Section</h2>
+      <MyComponent />
+    </div>
+  `,
+});
+productApp.mount('#product-app');
 
 // CollectionComponent to show a list of Shopify collections
 const CollectionComponent = {
@@ -172,7 +215,7 @@ const CollectionComponent = {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
-              'X-Shopify-Access-Token': 'Your-Access-Token',
+              'X-Shopify-Access-Token': 'Your-access-token',
             },
           }
         );
@@ -183,8 +226,7 @@ const CollectionComponent = {
           url: `https://homeceuconnectiontest.myshopify.com/collections/${collection.handle}`,
         }));
       } catch (error) {
-        this.error = 'Failed to load collections.';
-        console.error('Error fetching collections:', error);
+        this.error = 'Failed to fetch collections.';
       } finally {
         this.loading = false;
       }
@@ -194,19 +236,6 @@ const CollectionComponent = {
     this.fetchCollections();
   },
 };
-
-// Create the first Vue app for products
-const productApp = createApp({
-  components: {
-    MyComponent,
-  },
-  template: `
-    <div>
-      <h2>Product Section</h2>
-      <MyComponent />
-    </div>
-  `,
-});
 
 // Create the second Vue app for collections
 const collectionApp = createApp({
@@ -222,71 +251,58 @@ const collectionApp = createApp({
 });
 
 // Mount the Vue apps to different DOM elements
-productApp.mount('#product-app');
 collectionApp.mount('#collection-app');
 
 // Add some CSS for layout
 const style = document.createElement('style');
-style.textContent = `
-  body {
-    font-family: Arial, sans-serif;
-  }
+style.innerHTML = `
   .slick-slider {
     margin: 20px 0;
   }
   .product-card {
     border: 1px solid #ccc;
-    padding: 16px;
+    padding: 10px;
+    margin: 10px;
     text-align: center;
+    display: inline-block;
+    width: 150px;
   }
   .add-to-cart {
-    background-color: #28a745;
-    color: #fff;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-    border-radius: 4px;
-  }
-  .mini-cart {
-    position: fixed;
-    right: -300px;
-    top: 0;
-    width: 300px;
-    height: 100%;
-    background: #fff;
-    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    transition: right 0.3s ease;
-    overflow-y: auto;
-    z-index: 1000;
-  }
-  .mini-cart.open {
-    right: 0;
-  }
-  .close-btn {
-    background: #f00;
-    color: #fff;
+    background-color: green;
+    color: white;
     border: none;
     padding: 5px 10px;
     cursor: pointer;
-    float: right;
   }
-  .checkout-btn {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
+  .mini-cart {
+    position: fixed;
+    right: 10px;
+    top: 10px;
+    border: 1px solid #ccc;
     padding: 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 10px;
+    background-color: white;
+    display: none;
   }
-  .cart-message {
-    margin-top: 10px;
-    color: green;
+  .mini-cart.open {
+    display: block;
+  }
+  .cart-item {
+    display: flex;
+    margin-bottom: 10px;
+  }
+  .cart-image {
+    width: 50px;
+    height: auto;
+    margin-right: 10px;
+  }
+  .cart-info {
+    flex-grow: 1;
+  }
+  .cart-buttons {
+    display: flex;
+    justify-content: space-between;
   }
 `;
-
-// Append the style to the document head
 document.head.appendChild(style);
 
 // Load Slick CSS and JS
