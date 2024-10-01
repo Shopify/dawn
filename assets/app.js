@@ -1,5 +1,6 @@
 const { createApp } = Vue;
-// Define your component
+
+// MyComponent to handle products and mini cart
 const MyComponent = {
   template: `
     <div>
@@ -13,12 +14,25 @@ const MyComponent = {
             <a :href="product.url" target="_blank" rel="noopener noreferrer">
               <center><img :src="product.image || demoImage" :alt="product.title" /></center>
               <h4>{{ product.title }}</h4>
-              <p>Price: {{ product.price }}</p>
+              <p>Price: {{ product.price | formatPrice }}</p>
             </a>
-            <button @click="addToCart(product, product.variants[0].id)">Add to Cart</button>
+            <button class="add-to-cart" @click="addToCart(product, product.variants[0].id)">Add to Cart</button>
             <p v-if="product.cartMessage" class="cart-message">{{ product.cartMessage }}</p>
           </div>
         </div>
+      </div>
+      <!-- Mini Cart -->
+      <div class="mini-cart" :class="{ open: isMiniCartOpen }">
+        <button class="close-btn" @click="closeMiniCart">X</button>
+        <h3>Mini Cart</h3>
+        <ul v-if="cartItems.length > 0">
+          <li v-for="(item, index) in cartItems" :key="index">
+            <p>{{ item.title }} - {{ item.quantity }} x {{ item.price | formatPrice }}</p>
+          </li>
+        </ul>
+        <p v-if="cartItems.length === 0">Your cart is empty.</p>
+        <p>Total: {{ cartTotal | formatPrice }}</p>
+        <button class="checkout-btn" @click="checkout">Checkout</button>
       </div>
     </div>
   `,
@@ -26,6 +40,9 @@ const MyComponent = {
     return {
       message: 'Initial message from MyComponent!',
       products: [],
+      cartItems: [],
+      cartTotal: 0,
+      isMiniCartOpen: false,
       demoImage: 'https://via.placeholder.com/150',
     };
   },
@@ -48,13 +65,12 @@ const MyComponent = {
         price: product.variants[0].price,
         url: `https://homeceuconnectiontest.myshopify.com/products/${product.handle}`,
         image: product.images.length > 0 ? product.images[0].src : null,
-        variants: product.variants, // Keep the variants for adding to cart
-        cartMessage: '', // Initialize cart message for each product
+        variants: product.variants,
+        cartMessage: '',
       }));
       this.$nextTick(() => this.initSlickSlider());
     },
     initSlickSlider() {
-      // Initialize the Slick slider
       $('.slick-slider').slick({
         dots: false,
         arrows: true,
@@ -63,10 +79,8 @@ const MyComponent = {
         speed: 500,
         slidesToShow: 6,
         slidesToScroll: 1,
-        prevArrow:
-          '<button class="slick-prev" style="background-color:#000;color:#fff;position:absolute; left:10px; z-index: 1;">&#10094;</button>',
-        nextArrow:
-          '<button class="slick-next" style="background-color:#000;color:#fff;position:absolute; right:10px; z-index: 1;">&#10095;</button>',
+        prevArrow: '<button class="slick-prev">&#10094;</button>',
+        nextArrow: '<button class="slick-next">&#10095;</button>',
       });
     },
     async addToCart(product, variantId) {
@@ -79,18 +93,41 @@ const MyComponent = {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        console.log('Item added to cart:', data);
-        product.cartMessage = 'Product added to cart successfully!'; // Set success message for the specific product
+        product.cartMessage = 'Product added to cart successfully!';
+        this.fetchCart();
+        this.openMiniCart();
 
-        // Hide message after 3 seconds
         setTimeout(() => {
           product.cartMessage = '';
         }, 3000);
       } else {
-        console.error('Failed to add to cart:', response.statusText);
-        product.cartMessage = 'Failed to add to cart.'; // Set error message for the specific product
+        product.cartMessage = 'Failed to add to cart.';
       }
+    },
+    async fetchCart() {
+      const response = await fetch('/cart.js');
+      const data = await response.json();
+      this.cartItems = data.items.map((item) => ({
+        title: item.title,
+        quantity: item.quantity,
+        price: item.final_price / 100,
+      }));
+      this.cartTotal = data.total_price / 100;
+    },
+    openMiniCart() {
+      this.isMiniCartOpen = true;
+    },
+    closeMiniCart() {
+      this.isMiniCartOpen = false;
+    },
+    checkout() {
+      window.location.href = '/checkout'; // Redirect to checkout page
+    },
+    formatPrice(value) {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      }).format(value);
     },
   },
   mounted() {
@@ -98,53 +135,150 @@ const MyComponent = {
   },
 };
 
-// Create your Vue app
-const testApp = createApp({
+// CollectionComponent to show a list of Shopify collections
+const CollectionComponent = {
+  template: `
+    <div>
+      <h3>Collections</h3>
+      <div v-if="collections.length > 0">
+        <ul>
+          <li v-for="(collection, index) in collections" :key="index">
+            <a :href="collection.url" target="_blank" rel="noopener noreferrer">
+              {{ collection.title }}
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div v-if="loading">Loading collections...</div>
+      <div v-if="error" style="color:red;">{{ error }}</div>
+    </div>
+  `,
   data() {
     return {
-      greeting: 'Hello from Vue!',
+      collections: [],
+      loading: false,
+      error: null,
     };
   },
+  methods: {
+    async fetchCollections() {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await fetch(
+          'https://homeceuconnectiontest.myshopify.com/admin/api/2023-01/custom_collections.json',
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Shopify-Access-Token': 'Your-Access-Token',
+            },
+          }
+        );
+
+        const data = await response.json();
+        this.collections = data.custom_collections.map((collection) => ({
+          title: collection.title,
+          url: `https://homeceuconnectiontest.myshopify.com/collections/${collection.handle}`,
+        }));
+      } catch (error) {
+        this.error = 'Failed to load collections.';
+        console.error('Error fetching collections:', error);
+      } finally {
+        this.loading = false;
+      }
+    },
+  },
+  mounted() {
+    this.fetchCollections();
+  },
+};
+
+// Create the first Vue app for products
+const productApp = createApp({
   components: {
     MyComponent,
   },
   template: `
     <div>
-      <h2>{{ greeting }}</h2>
+      <h2>Product Section</h2>
       <MyComponent />
     </div>
   `,
 });
 
-// Mount your app
-testApp.mount('#vue-test');
+// Create the second Vue app for collections
+const collectionApp = createApp({
+  components: {
+    CollectionComponent,
+  },
+  template: `
+    <div>
+      <h2>Collection Section</h2>
+      <CollectionComponent />
+    </div>
+  `,
+});
 
-// Add some CSS for the layout
+// Mount the Vue apps to different DOM elements
+productApp.mount('#product-app');
+collectionApp.mount('#collection-app');
+
+// Add some CSS for layout
 const style = document.createElement('style');
 style.textContent = `
+  body {
+    font-family: Arial, sans-serif;
+  }
   .slick-slider {
     margin: 20px 0;
-    position: relative; /* Ensure relative positioning for arrows */
   }
   .product-card {
     border: 1px solid #ccc;
-    border-radius: 4px;
     padding: 16px;
     text-align: center;
   }
-  .product-card img {
-    max-width: 100%;
-    height: auto;
+  .add-to-cart {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
     border-radius: 4px;
   }
-  .product-card button {
-    margin-top: 10px;
-    background-color: #000;
+  .mini-cart {
+    position: fixed;
+    right: -300px;
+    top: 0;
+    width: 300px;
+    height: 100%;
+    background: #fff;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    transition: right 0.3s ease;
+    overflow-y: auto;
+    z-index: 1000;
+  }
+  .mini-cart.open {
+    right: 0;
+  }
+  .close-btn {
+    background: #f00;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    float: right;
+  }
+  .checkout-btn {
+    background-color: #007bff;
     color: #fff;
     border: none;
     padding: 10px;
     border-radius: 4px;
     cursor: pointer;
+    margin-top: 10px;
   }
   .cart-message {
     margin-top: 10px;
