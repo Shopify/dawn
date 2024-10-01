@@ -2,9 +2,9 @@
 {{ 'quick-order-list.css' | asset_url | stylesheet_tag }}
 {{ 'quantity-popover.css' | asset_url | stylesheet_tag }}
 
-<script src="{{ 'quick-order-list.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'quantity-popover.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'price-per-item.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'quick-order-list.js' | asset_url }}" defer="defer"></script>
 
 {%- style -%}
   .section-{{ section.id }}-padding {
@@ -20,255 +20,11 @@
   }
 {%- endstyle -%}
 
-{% comment %} TODO: enable theme-check once `line_items_for` is accepted as valid filter {% endcomment %}
-{% # theme-check-disable %}
-{%- assign items_in_cart = cart | line_items_for: product | sum: 'quantity' -%}
-{% # theme-check-enable %}
-
-<div class="color-{{ section.settings.color_scheme }} gradient">
-  <quick-order-list
-    class="page-width section-{{ section.id }}-padding"
-    id="quick-order-list"
-    data-id="{{ section.id }}"
-  >
-    <form
-      action="{{ routes.cart_update_url }}"
-      class="quick-order-list__contents critical-hidden"
-      method="post"
-      id="QuickOrderList"
-    >
-      <div class="quick-order-list__container" id="main-variant-items">
-        <div class="js-contents">
-          <table class="quick-order-list__table">
-            <caption class="visually-hidden">
-              {{ 'sections.cart.title' | t }}
-            </caption>
-            <thead>
-              <tr>
-                <th class="caption-with-letter-spacing" scope="col">
-                  {%- if product.has_only_default_variant -%}
-                    {{ 'sections.quick_order_list.product' | t }}
-                  {%- else -%}
-                    {{ 'sections.quick_order_list.variant' | t }}
-                  {%- endif -%}
-                </th>
-                <th class="large-up-hide right caption-with-letter-spacing" scope="col">
-                  {%- if product.has_only_default_variant -%}
-                    {{ 'sections.quick_order_list.product_total' | t }}
-                  {%- else -%}
-                    {{ 'sections.quick_order_list.variant_total' | t }}
-                  {%- endif -%}
-                </th>
-                <th
-                  class="quick-order-list__table-heading--wide small-hide medium-hide caption-with-letter-spacing"
-                  scope="col"
-                >
-                  {{ 'products.product.quantity.label' | t }}
-                </th>
-                <th
-                  class="quick-order-list__table-heading--wide small-hide medium-hide caption-with-letter-spacing"
-                  scope="col"
-                >
-                  {{ 'sections.cart.headings.price' | t }}
-                </th>
-                <th class="small-hide medium-hide right caption-with-letter-spacing" scope="col">
-                  {%- if product.has_only_default_variant -%}
-                    {{ 'sections.quick_order_list.product_total' | t }}
-                  {%- else -%}
-                    {{ 'sections.quick_order_list.variant_total' | t }}
-                  {%- endif -%}
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {%- if product.has_only_default_variant -%}
-                {%- render 'quick-order-list-row',
-                  item: product,
-                  image: product.featured_media,
-                  sku: product.selected_or_first_available_variant.sku,
-                  variant: product.selected_or_first_available_variant
-                -%}
-              {%- else -%}
-                {%- for variant in product.variants -%}
-                  {%- render 'quick-order-list-row',
-                    item: variant,
-                    image: variant.image,
-                    sku: variant.sku,
-                    variant: variant
-                  -%}
-                {%- endfor -%}
-              {%- endif -%}
-            </tbody>
-          </table>
-        </div>
-        <noscript>
-          {%- if product.has_only_default_variant or product.variants.size == 1 -%}
-            <button type="submit" class="button button--secondary right" formnovalidate form="QuickOrderList">
-              {{ 'sections.cart.update' | t }}
-            </button>
-          {%- endif -%}
-        </noscript>
-      </div>
-
-      <p class="visually-hidden" id="quick-order-list-live-region-text" aria-live="polite" role="status"></p>
-      <p
-        class="visually-hidden"
-        id="shopping-cart-variant-item-status"
-        aria-live="polite"
-        aria-hidden="true"
-        role="status"
-      >
-        {{ 'accessibility.loading' | t }}
-      </p>
-    </form>
-
-    {%- if product.has_only_default_variant or product.variants.size == 1 -%}
-      <span class="quick-order-list-error">
-        {% comment %} Populated by JS {% endcomment %}
-      </span>
-    {%- else -%}
-      <div
-        class="quick-order-list__total gradient"
-        id="quick-order-list-total"
-      >
-        <div class="quick-order-list-total__info">
-          <div class="quick-order-list-total__column small-hide medium-hide">
-            <div class="quick-order-list-buttons">
-              <a
-                href="{{ routes.cart_url }} "
-                class="quick-order-list__button button button--secondary small-hide  medium-hide"
-              >
-                <span class="quick-order-list__button-text">{{- 'sections.quick_order_list.view_cart' | t -}}</span>
-              </a>
-              <div class="variant-remove-total">
-                {%- render 'loading-spinner' -%}
-                <quick-order-list-remove-all-button
-                  class="no-js-hidden"
-                  data-action="confirm"
-                >
-                  <button class="button button--tertiary" type="button">
-                    {% render 'icon-remove' %}
-                    <span class="text-body">{{ 'sections.quick_order_list.remove_all' | t }}</span>
-                  </button>
-                </quick-order-list-remove-all-button>
-              </div>
-            </div>
-            <span class="quick-order-list__message caption-large" role="status">
-              <span class="quick-order-list__message-icon hidden">{%- render 'icon-checkmark' -%}</span>
-              <span class="quick-order-list__message-text"></span>
-            </span>
-            <span class="quick-order-list-error">
-              {% comment %} Populated by JS {% endcomment %}
-            </span>
-          </div>
-          <div class="quick-order-list__total-items">
-            <span>
-              {{ items_in_cart }}
-            </span>
-            <p class="h5">{{ 'sections.quick_order_list.total_items' | t }}</p>
-          </div>
-          <div class="quick-order-list-total__price">
-            <noscript>
-              <button type="submit" class="button button--secondary" formnovalidate form="QuickOrderList">
-                {{ 'sections.cart.update' | t }}
-              </button>
-            </noscript>
-            <div class="totals__product-total">
-              <span class="totals__subtotal-value">
-                {% comment %} TODO: enable theme-check once `line_items_for` is accepted as valid filter {% endcomment %}
-                {% # theme-check-disable %}
-                {{ cart | line_items_for: product | sum: 'original_line_price' | money }}
-                {% # theme-check-enable %}
-              </span>
-              <p class="totals__subtotal h5">{{ 'sections.quick_order_list.product_total' | t }}</p>
-            </div>
-            <small class="tax-note caption-large rte">
-              {%- if cart.taxes_included and shop.shipping_policy.body != blank -%}
-                {{ 'sections.cart.taxes_included_and_shipping_policy_html' | t: link: shop.shipping_policy.url }}
-              {%- elsif cart.taxes_included -%}
-                {{ 'sections.cart.taxes_included_but_shipping_at_checkout' | t }}
-              {%- elsif shop.shipping_policy.body != blank -%}
-                {{ 'sections.cart.taxes_and_shipping_policy_at_checkout_html' | t: link: shop.shipping_policy.url }}
-              {%- else -%}
-                {{ 'sections.cart.taxes_and_shipping_at_checkout' | t }}
-              {%- endif -%}
-            </small>
-          </div>
-          <div class="quick-order-list-total__column large-up-hide">
-            <div class="quick-order-list-buttons">
-              <a
-                href="{{ routes.cart_url }}"
-                class="quick-order-list__button button button--secondary button--full-width"
-              >
-                <span class="quick-order-list__button-text">{{- 'sections.quick_order_list.view_cart' | t -}}</span>
-              </a>
-              <div class="variant-remove-total">
-                {%- render 'loading-spinner' -%}
-                <quick-order-list-remove-all-button
-                  class="no-js-hidden"
-                  data-action="confirm"
-                >
-                  <button class="button button--tertiary" type="button">
-                    {% render 'icon-remove' %}
-
-                    <span class="text-body">{{ 'sections.quick_order_list.remove_all' | t }}</span>
-                  </button>
-                </quick-order-list-remove-all-button>
-              </div>
-            </div>
-            <span class="quick-order-list__message caption-large" role="status">
-              <span class="quick-order-list__message-icon hidden">{%- render 'icon-checkmark' -%}</span>
-              <span class="quick-order-list__message-text"></span>
-            </span>
-            <span class="quick-order-list-error">
-              {% comment %} Populated by JS {% endcomment %}
-            </span>
-          </div>
-        </div>
-        <div class="quick-order-list-total__confirmation hidden">
-          <span class="text-body">
-            {{ 'sections.quick_order_list.remove_all_items_confirmation' | t: quantity: items_in_cart }}
-          </span>
-          <quick-order-list-remove-all-button
-            data-action="remove"
-          >
-            <button
-              class="quick-order-list__button-confirm button button--secondary"
-              type="button"
-            >
-              {{- 'sections.quick_order_list.remove_all' | t -}}
-            </button>
-          </quick-order-list-remove-all-button>
-          <quick-order-list-remove-all-button
-            data-action="cancel"
-          >
-            <button
-              class="quick-order-list__button-cancel button button--tertiary"
-              type="button"
-            >
-              {{- 'sections.quick_order_list.cancel' | t -}}
-            </button>
-          </quick-order-list-remove-all-button>
-        </div>
-      </div>
-    {%- endif -%}
-  </quick-order-list>
-  <template id="QuickOrderListErrorTemplate-{{ section.id }}">
-    <svg
-      aria-hidden="true"
-      focusable="false"
-      class="icon icon-error"
-      viewBox="0 0 13 13"
-    >
-      <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
-      <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
-      <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
-      <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
-    </svg>
-    <span class="quick-order-list-error-message caption-large" role="alert"></span>
-  </template>
-</div>
+{% render 'quick-order-list',
+  product: product,
+  show_image: section.settings.show_image,
+  show_sku: section.settings.show_sku
+%}
 
 {% schema %}
 {
@@ -294,7 +50,7 @@
       "type": "color_scheme",
       "id": "color_scheme",
       "label": "t:sections.all.colors.label",
-      "default": "background-1"
+      "default": "scheme-1"
     },
     {
       "type": "header",

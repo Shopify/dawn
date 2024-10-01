@@ -1,6 +1,6 @@
 {{ 'section-blog-post.css' | asset_url | stylesheet_tag }}
 
-<article class="article-template" itemscope itemtype="http://schema.org/BlogPosting">
+<article class="article-template">
   {%- for block in section.blocks -%}
     {%- case block.type -%}
       {%- when '@app' -%}
@@ -15,7 +15,6 @@
           >
             <div
               class="article-template__hero-{{ block.settings.image_height }} media"
-              itemprop="image"
               {% if block.settings.image_height == 'adapt' and article.image %}
                 style="padding-bottom: {{ 1 | divided_by: article.image.aspect_ratio | times: 100 }}%;"
               {% endif %}
@@ -49,18 +48,17 @@
         >
           <h1
             class="article-template__title"
-            itemprop="headline"
           >
             {{ article.title | escape }}
           </h1>
           {%- if block.settings.blog_show_date -%}
-            <span class="circle-divider caption-with-letter-spacing" itemprop="dateCreated pubdate datePublished">
+            <span class="circle-divider caption-with-letter-spacing">
               {{- article.published_at | time_tag: format: 'date' -}}
             </span>
           {%- endif -%}
           {%- if block.settings.blog_show_author -%}
-            <span class="caption-with-letter-spacing" itemprop="author" itemscope itemtype="http://schema.org/Person">
-              <span itemprop="name">{{ article.author }}</span>
+            <span class="caption-with-letter-spacing">
+              <span>{{ article.author }}</span>
             </span>
           {%- endif -%}
         </header>
@@ -68,7 +66,6 @@
       {%- when 'content' -%}
         <div
           class="article-template__content page-width page-width--narrow rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-          itemprop="articleBody"
           {{ block.shopify_attributes }}
         >
           {{ article.content }}
@@ -87,8 +84,12 @@
 
   <div class="article-template__back element-margin-top center{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
     <a href="{{ blog.url }}" class="article-template__link link animate-arrow">
-      <span class="icon-wrap">{% render 'icon-arrow' %}</span>
-      {{ 'blogs.article.back_to_blog' | t: title: blog.title }}
+      <span class="icon-wrap">
+        <span class="svg-wrapper">
+          {{- 'icon-arrow.svg' | inline_asset_content -}}
+        </span>
+      </span>
+      {{ 'blogs.article.back_to_blog' | t: title: blog.title | escape }}
     </a>
   </div>
   {%- if blog.comments_enabled? -%}
@@ -140,7 +141,9 @@
           {%- if form.errors -%}
             <div class="form__message" role="alert">
               <h3 class="form-status caption-large text-body" tabindex="-1" autofocus>
-                {% render 'icon-error' %}
+                <span class="svg-wrapper">
+                  {{- 'icon-error.svg' | inline_asset_content -}}
+                </span>
                 {{ 'templates.contact.form.error_heading' | t }}
               </h3>
             </div>
@@ -163,7 +166,9 @@
           {%- elsif form.posted_successfully? -%}
             <div class="form-status-list form__message" role="status">
               <h3 class="form-status" tabindex="-1" autofocus>
-                {% render 'icon-success' %}
+                <span class="svg-wrapper">
+                  {{- 'icon-success.svg' | inline_asset_content -}}
+                </span>
                 {{ post_message | t }}
               </h3>
             </div>
@@ -198,7 +203,9 @@
                 {%- if form.errors contains 'author' -%}
                   <small id="CommentForm-author-error">
                     <span class="form__message">
-                      {%- render 'icon-error' -%}
+                      <span class="svg-wrapper">
+                        {{- 'icon-error.svg' | inline_asset_content -}}
+                      </span>
                       {{- 'blogs.article.name' | t }}
                       {{ form.errors.messages.author }}.</span
                     >
@@ -230,7 +237,9 @@
                 {%- if form.errors contains 'email' -%}
                   <small id="CommentForm-email-error">
                     <span class="form__message">
-                      {%- render 'icon-error' -%}
+                      <span class="svg-wrapper">
+                        {{- 'icon-error.svg' | inline_asset_content -}}
+                      </span>
                       {{- 'blogs.article.email' | t }}
                       {{ form.errors.messages.email }}.</span
                     >
@@ -260,7 +269,9 @@
             {%- if form.errors contains 'body' -%}
               <small id="CommentForm-body-error">
                 <span class="form__message">
-                  {%- render 'icon-error' -%}
+                  <span class="svg-wrapper">
+                    {{- 'icon-error.svg' | inline_asset_content -}}
+                  </span>
                   {{- 'blogs.article.message' | t }}
                   {{ form.errors.messages.body }}.</span
                 >
@@ -278,34 +289,7 @@
 </article>
 
 <script type="application/ld+json">
-  {
-    "@context": "http://schema.org",
-    "@type": "Article",
-    "articleBody": {{ article.content | strip_html | json }},
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": {{ request.origin | append: page.url | json }}
-    },
-    "headline": {{ article.title | json }},
-    {% if article.excerpt != blank %}
-      "description": {{ article.excerpt | strip_html | json }},
-    {% endif %}
-    {% if article.image %}
-      "image": [
-        {{ article | image_url: width: 1920 | prepend: "https:" | json }}
-      ],
-    {% endif %}
-    "datePublished": {{ article.published_at | date: '%Y-%m-%dT%H:%M:%SZ' | json }},
-    "dateCreated": {{ article.created_at | date: '%Y-%m-%dT%H:%M:%SZ' | json }},
-    "author": {
-      "@type": "Person",
-      "name": {{ article.author | json }}
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": {{ shop.name | json }}
-    }
-  }
+  {{ article | structured_data }}
 </script>
 
 {% schema %}
@@ -382,7 +366,7 @@
           "type": "text",
           "id": "share_label",
           "label": "t:sections.main-article.blocks.share.settings.text.label",
-          "default": "Share"
+          "default": "t:sections.main-article.blocks.share.settings.text.default"
         },
         {
           "type": "paragraph",

@@ -26,6 +26,7 @@
       </h2>
     {%- endif -%}
     <div class="collage{% if section.settings.mobile_layout == 'collage' %} collage--mobile{% endif %}">
+      {% assign skip_card_product_styles = false %}
       {%- for block in section.blocks -%}
         <div
           class="collage__item collage__item--{{ block.type }} collage__item--{{ section.settings.desktop_layout }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
@@ -97,8 +98,10 @@
                 media_aspect_ratio: 'adapt',
                 show_secondary_image: block.settings.second_image,
                 extend_height: true,
-                placeholder_image: placeholder_image
+                placeholder_image: placeholder_image,
+                skip_styles: skip_card_product_styles
               %}
+              {% assign skip_card_product_styles = true %}
             {%- when 'collection' -%}
               {%- assign placeholder_image = 'collection-apparel-' | append: placeholder_image_index -%}
               {% render 'card-collection',
@@ -111,43 +114,7 @@
               %}
             {%- when 'video' -%}
               <div class="collage-card {% if section.settings.card_styles == 'none' %}global-media-settings{% else %}{{ section.settings.card_styles }} color-{{ settings.card_color_scheme }} gradient{% endif %}">
-                <noscript>
-                  <a
-                    href="{{ block.settings.video_url }}"
-                    class="collage-card__link"
-                  >
-                    <div
-                      class="media media--transparent ratio"
-                      {% if block.settings.cover_image != blank %}
-                        style="--ratio-percent: {{ 1 | divided_by: block.settings.cover_image.aspect_ratio | times: 100 }}%"
-                      {% else %}
-                        style="--ratio-percent: 100%"
-                      {% endif %}
-                    >
-                      {%- if block.settings.cover_image != blank -%}
-                        {%- capture sizes -%}
-                          (min-width: {{ settings.page_width }}px)
-                          {% if section.blocks.size == 1 -%}
-                            calc({{ settings.page_width }}px - 100px)
-                          {%- else -%}
-                            {{- settings.page_width | minus: 100 | times: 0.67 | round }}px
-                          {%- endif -%}
-                          , (min-width: 750px)
-                          {%- if section.blocks.size == 1 %} calc(100vw - 100px){% else %} 500px{% endif -%}
-                          , calc(100vw - 30px)
-                        {%- endcapture -%}
-                        {{
-                          block.settings.cover_image
-                          | image_url: width: 3000
-                          | image_tag: sizes: sizes, widths: '550, 720, 990, 1100, 1500, 2200, 3000'
-                        }}
-                      {%- else -%}
-                        {{ 'hero-apparel-3' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
-                      {%- endif -%}
-                    </div>
-                  </a>
-                </noscript>
-                <modal-opener class="no-js-hidden" data-modal="#PopupModal-{{ block.id }}">
+                <modal-opener data-modal="#PopupModal-{{ block.id }}">
                   <div class="deferred-media">
                     <button
                       class="deferred-media__poster full-unstyled-link"
@@ -165,7 +132,9 @@
                         {% endif %}
                       >
                         <span class="deferred-media__poster-button motion-reduce">
-                          {%- render 'icon-play' -%}
+                          <span class="svg-wrapper">
+                            {{- 'icon-play.svg' | inline_asset_content -}}
+                          </span>
                         </span>
 
                         {%- if block.settings.cover_image != blank -%}
@@ -209,7 +178,9 @@
                       class="modal-video__toggle"
                       aria-label="{{ 'accessibility.close' | t }}"
                     >
-                      {% render 'icon-close' %}
+                      <span class="svg-wrapper">
+                        {{- 'icon-close.svg' | inline_asset_content -}}
+                      </span>
                     </button>
                     <div class="modal-video__content-info">
                       <deferred-media class="modal-video__video template-popup">
@@ -256,7 +227,7 @@
     {
       "type": "inline_richtext",
       "id": "heading",
-      "default": "Multimedia collage",
+      "default": "t:sections.collage.settings.heading.default",
       "label": "t:sections.collage.settings.heading.label"
     },
     {
@@ -274,6 +245,14 @@
         {
           "value": "h0",
           "label": "t:sections.all.heading_size.options__3.label"
+        },
+        {
+          "value": "hxl",
+          "label": "t:sections.all.heading_size.options__4.label"
+        },
+        {
+          "value": "hxxl",
+          "label": "t:sections.all.heading_size.options__5.label"
         }
       ],
       "default": "h1",
@@ -333,7 +312,7 @@
       "id": "color_scheme",
       "label": "t:sections.all.colors.label",
       "info": "t:sections.all.colors.has_cards_info",
-      "default": "background-1"
+      "default": "scheme-1"
     },
     {
       "type": "header",
@@ -421,7 +400,7 @@
         {
           "type": "text",
           "id": "description",
-          "default": "Describe the video",
+          "default": "t:sections.collage.blocks.video.settings.description.default",
           "label": "t:sections.collage.blocks.video.settings.description.label",
           "info": "t:sections.collage.blocks.video.settings.description.info"
         }
