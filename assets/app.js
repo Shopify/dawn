@@ -38,7 +38,7 @@ const MyComponent = {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'X-Shopify-Access-Token': 'Your-access-token',
+          'X-Shopify-Access-Token': 'Your-Access-Token',
         },
       });
 
