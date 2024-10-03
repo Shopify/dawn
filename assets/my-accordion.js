@@ -60,4 +60,42 @@ class MyAccordion extends HTMLElement {
   }
 }
 
+class SimpleAccordion extends HTMLElement {
+  constructor() {
+    super();
+
+    this.innerHTML = `<style>
+    .accordion-header {
+      cursor: pointer;
+    }
+
+    .accordion-content {
+      display: none;
+    }
+
+    .accordion-content.expanded {
+      display: block;
+    }
+  </style>` + this.innerHTML;
+
+    // 要素を取得
+    this.header = this.querySelector('.accordion-header');
+    this.content = this.querySelector('.accordion-content');
+  }
+
+  connectedCallback() {
+    this.header.addEventListener('click', this.toggleContent.bind(this));
+  }
+
+  disconnectedCallback() {
+    this.header.removeEventListener('click', this.toggleContent.bind(this));
+  }
+
+  toggleContent() {
+    // Tailwind CSSを使用して表示/非表示を切り替える
+    this.content.classList.toggle('expanded');
+  }
+}
+
 customElements.define('my-accordion', MyAccordion);
+customElements.define('simple-accordion', SimpleAccordion);
