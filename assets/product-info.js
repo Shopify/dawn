@@ -128,7 +128,9 @@ if (!customElements.get('product-info')) {
             // set focus to last clicked option value
             document.querySelector(`#${targetId}`)?.focus();
 
-            console.log('wat');
+            if (window.yopto) {
+              yotpo.initWidgets();
+            }
           })
           .catch((error) => {
             if (error.name === 'AbortError') {

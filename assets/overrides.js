@@ -81,10 +81,6 @@ function init() {
     TNB.refreshTallSizingControls();
   });
 
-  subscribe(PUB_SUB_EVENTS.variantChange, function (e) {
-    console.log('Wat2');
-  });
-
   TNB.tallSizingControls();
   TNB.megaMenuHover();
 }
