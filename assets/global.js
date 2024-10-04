@@ -1100,7 +1100,13 @@ class VariantSelects extends HTMLElement {
         target.selectedOptions[0].dataset.optionSwatchFocalPoint || 'unset'
       );
     } else if (tagName === 'INPUT' && target.type === 'radio') {
-      const selectedSwatchValue = target.closest(`.product-form__input`).querySelector('[data-selected-value]');
+      let container = target.closest(`.product-form-colors`);
+
+      if (!container) {
+        container = target.closest(`.product-form__input`);
+      }
+
+      const selectedSwatchValue = container.querySelector('[data-selected-value]');
       if (selectedSwatchValue) selectedSwatchValue.innerHTML = value;
     }
   }
