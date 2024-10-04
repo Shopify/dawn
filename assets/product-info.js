@@ -127,6 +127,8 @@ if (!customElements.get('product-info')) {
           .then(() => {
             // set focus to last clicked option value
             document.querySelector(`#${targetId}`)?.focus();
+
+            console.log('wat');
           })
           .catch((error) => {
             if (error.name === 'AbortError') {
