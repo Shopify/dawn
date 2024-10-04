@@ -1074,8 +1074,6 @@ class VariantSelects extends HTMLElement {
   updateSelectionMetadata({ target }) {
     const { value, tagName } = target;
 
-    console.log(target);
-
     if (tagName === 'SELECT' && target.selectedOptions.length) {
       Array.from(target.options)
         .find((option) => option.getAttribute('selected'))
@@ -1105,6 +1103,8 @@ class VariantSelects extends HTMLElement {
       if (!container) {
         container = target.closest(`.product-form__input`);
       }
+
+      console.log(container);
 
       const selectedSwatchValue = container.querySelector('[data-selected-value]');
       if (selectedSwatchValue) selectedSwatchValue.innerHTML = value;
