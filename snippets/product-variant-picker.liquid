@@ -78,18 +78,45 @@
 
       {%- if picker_type == 'swatch' -%}
         <fieldset class="js product-form__input product-form__input--swatch">
-          <legend class="form__label">
-            {{ option.name }}:
-            {%- if color_categories.size == 0 -%}
-              &nbsp;<span data-selected-value>{{- option.selected_value -}}</span>
-            {% endif %}
-          </legend>
-          {% render 'product-variant-options',
-            product: product,
-            option: option,
-            block: block,
-            picker_type: picker_type
-          %}
+          {%- if color_categories_array.size > 0 -%}
+            {%- for category in color_categories_array -%}
+              {% assign category_name = category | split: ':' %}
+              <div class="color-category">
+                <div class="form__label">
+                  {{ category_name[1] }}:
+                  {%- if grouped_colors[forloop.index0] contains option.selected_value -%}
+                    <span class="option-name-label" data-selected-value
+                      >&nbsp;
+                      {{- option.selected_value -}}
+                    </span>
+                  {%- endif -%}
+                </div>
+                <div class="product-form-colors">
+                  {%
+                    render 'product-variant-options',
+                    product: product,
+                    option: option,
+                    block: block,
+                    picker_type: picker_type,
+                    values: grouped_colors[forloop.index0] | join: ' '
+                  %}
+                </div>
+              </div>
+            {%- endfor -%}
+          {%- else -%}
+            <legend class="form__label">
+              {{ option.name }}:
+              {%- if color_categories.size == 0 -%}
+                &nbsp;<span data-selected-value>{{- option.selected_value -}}</span>
+              {% endif %}
+            </legend>
+            {% render 'product-variant-options',
+              product: product,
+              option: option,
+              block: block,
+              picker_type: picker_type
+            %}
+          {%- endif -%}
         </fieldset>
       {%- elsif picker_type == 'button' -%}
         <fieldset class="js product-form__input product-form__input--pill {%- if option_is_color -%}product-form__input--color{%- endif -%}">
@@ -114,7 +141,6 @@
             {% endif %}
           </legend>
           {%- if option_is_color -%}
-            <span data-test="{{ color_categories_array.size }}"></span>
             {%- if color_categories_array.size > 0 -%}
               {%- for category in color_categories_array -%}
                 {% assign category_name = category | split: ':' %}
