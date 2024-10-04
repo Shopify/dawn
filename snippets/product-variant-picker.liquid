@@ -73,8 +73,22 @@
           {%- unless forloop.last -%}|{%- endunless -%}
         {%- endfor -%}
       {%- endcapture -%}
-
       {%- assign grouped_colors = grouped_colors | split: '|' -%}
+
+      {%- capture ungrouped_colors = '' -%}
+        {%- for value in option.values -%}
+          {% assign color_is_grouped = false %}
+          {%- for category in color_categories_array -%}
+            {%- if grouped_colors[forloop.index0] contains value -%}
+              {% assign color_is_grouped = true %}
+            {% endif %}
+          {%- endfor -%}
+          {% unless color_is_grouped %}
+            {{- value -}},
+          {% endunless %}
+        {%- endfor -%}
+      {%- endcapture -%}
+      {% assign ungrouped_colors_array = ungrouped_colors | split: ',' %}
 
       {%- if picker_type == 'swatch' -%}
         <fieldset class="js product-form__input product-form__input--swatch">
@@ -83,26 +97,22 @@
             <div class="color-category">
               <div class="form__label">
                 {{ settings.default_color_category }}:
-                {% comment %}
-                  {%- if grouped_colors[forloop.index0] contains option.selected_value -%}
-                    <span class="option-name-label" data-selected-value
-                      >&nbsp;
-                      {{- option.selected_value -}}
-                    </span>
-                  {%- endif -%}
-                {% endcomment %}
+                {%- if ungrouped_colors_array contains option.selected_value -%}
+                  <span class="option-name-label" data-selected-value
+                    >&nbsp;
+                    {{- option.selected_value -}}
+                  </span>
+                {%- endif -%}
               </div>
               <div class="product-form-colors">
-                {% comment %}
-                  {%
-                    render 'product-variant-options',
-                    product: product,
-                    option: option,
-                    block: block,
-                    picker_type: picker_type,
-                    values: grouped_colors[forloop.index0] | join: ' '
-                  %}
-                {% endcomment %}
+                {%
+                  render 'product-variant-options',
+                  product: product,
+                  option: option,
+                  block: block,
+                  picker_type: picker_type,
+                  values: ungrouped_colors_array | join: ' '
+                %}
               </div>
             </div>
 
