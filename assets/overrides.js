@@ -79,7 +79,10 @@ var TNB = {
 function init() {
   subscribe(PUB_SUB_EVENTS.optionValueSelectionChange, function (e) {
     TNB.refreshTallSizingControls();
-    console.log('wat');
+
+    if (window.yopto) {
+      yotpo.initWidgets();
+    }
   });
 
   subscribe(PUB_SUB_EVENTS.variantChange, function (e) {
@@ -87,7 +90,6 @@ function init() {
   });
 
   TNB.tallSizingControls();
-
   TNB.megaMenuHover();
 }
 
