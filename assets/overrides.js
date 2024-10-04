@@ -79,11 +79,12 @@ var TNB = {
 function init() {
   subscribe(PUB_SUB_EVENTS.optionValueSelectionChange, function (e) {
     TNB.refreshTallSizingControls();
+    console.log('wat');
   });
 
-  // subscribe(PUB_SUB_EVENTS.variantChange, function (e) {
-  //   TNB.tallSizingControls(false);
-  // });
+  subscribe(PUB_SUB_EVENTS.variantChange, function (e) {
+    console.log('Wat2');
+  });
 
   TNB.tallSizingControls();
 
