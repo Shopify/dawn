@@ -1098,7 +1098,7 @@ class VariantSelects extends HTMLElement {
         target.selectedOptions[0].dataset.optionSwatchFocalPoint || 'unset'
       );
     } else if (tagName === 'INPUT' && target.type === 'radio') {
-      let container = target.closest(`.product-form-colors`);
+      let container = target.closest(`.color-category`);
 
       if (!container) {
         container = target.closest(`.product-form__input`);
