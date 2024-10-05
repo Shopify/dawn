@@ -1,9 +1,14 @@
 if (!customElements.get('quick-add-modal')) {
   customElements.define(
     'quick-add-modal',
+    /**
+     * Quick Add Modal custom element class.
+     * @extends ModalDialog
+     */
     class QuickAddModal extends ModalDialog {
       constructor() {
         super();
+        /** @type {HTMLElement | null} */
         this.modalContent = this.querySelector('[id^="QuickAddInfo-"]');
 
         this.addEventListener('product-info:loaded', ({ target }) => {
@@ -11,6 +16,10 @@ if (!customElements.get('quick-add-modal')) {
         });
       }
 
+      /**
+       * Hide quick add modal.
+       * @param {boolean} [preventFocus=false] - Whether to prevent focusing on opener after close.
+       */
       hide(preventFocus = false) {
         const cartNotification = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
         if (cartNotification) cartNotification.setActiveElement(this.openedBy);
@@ -20,6 +29,10 @@ if (!customElements.get('quick-add-modal')) {
         super.hide();
       }
 
+      /**
+       * Show quick add modal.
+       * @param {HTMLElement} opener - Element that triggered opening of modal.
+       */
       show(opener) {
         opener.setAttribute('aria-disabled', true);
         opener.classList.add('loading');
@@ -48,6 +61,10 @@ if (!customElements.get('quick-add-modal')) {
           });
       }
 
+      /**
+       * Preprocess product info HTML.
+       * @param {ProductInfo} productElement - Product info element.
+       */
       preprocessHTML(productElement) {
         productElement.classList.forEach((classApplied) => {
           if (classApplied.startsWith('color-') || classApplied === 'gradient')
@@ -60,21 +77,36 @@ if (!customElements.get('quick-add-modal')) {
         this.preventVariantURLSwitching(productElement);
       }
 
+      /**
+       * Prevent switching variant URLs. Set data-update-url to false.
+       * @param {ProductInfo} productElement - Product info element.
+       */
       preventVariantURLSwitching(productElement) {
         productElement.setAttribute('data-update-url', 'false');
       }
 
+      /**
+       * Remove unnecessary DOM elements.
+       * @param {ProductInfo} productElement - Product info element.
+       */
       removeDOMElements(productElement) {
         const pickupAvailability = productElement.querySelector('pickup-availability');
         if (pickupAvailability) pickupAvailability.remove();
 
+        /** @type {ModalDialog | null} */
         const productModal = productElement.querySelector('product-modal');
         if (productModal) productModal.remove();
 
+        /** @type {NodeListOf<ModalDialog>} */
         const modalDialog = productElement.querySelectorAll('modal-dialog');
         if (modalDialog) modalDialog.forEach((modal) => modal.remove());
       }
 
+      /**
+       * Prevent duplicated IDs across quick add modal and page.
+       * Prefix modal IDs with 'quickadd-'.
+       * @param {ProductInfo} productElement - Product info element.
+       */
       preventDuplicatedIDs(productElement) {
         const sectionId = productElement.dataset.section;
 
@@ -90,6 +122,10 @@ if (!customElements.get('quick-add-modal')) {
         productElement.dataset.originalSection = sectionId;
       }
 
+      /**
+       * Remove gallery list semantic roles.
+       * @param {ProductInfo} productElement - Product info element
+       */
       removeGalleryListSemantic(productElement) {
         const galleryList = productElement.querySelector('[id^="Slider-Gallery"]');
         if (!galleryList) return;
@@ -98,6 +134,10 @@ if (!customElements.get('quick-add-modal')) {
         galleryList.querySelectorAll('[id^="Slide-"]').forEach((li) => li.setAttribute('role', 'presentation'));
       }
 
+      /**
+       * Set product media image sizes based on product page width.
+       * @param {ProductInfo} productElement - Product info element
+       */
       updateImageSizes(productElement) {
         const product = productElement.querySelector('.product');
         const desktopColumns = product?.classList.contains('product--columns');

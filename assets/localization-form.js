@@ -1,11 +1,31 @@
+/**
+  * @typedef {Object} LocalizationFormElements
+  * @property {HTMLInputElement} input - Hidden input element for selected locale code.
+  * @property {HTMLButtonElement} button - Button to open country selector.
+  * @property {HTMLElement} panel - Country selector panel/popup wrapper.
+  * @property {HTMLInputElement} search - Input element for country search.
+  * @property {HTMLButtonElement} closeButton - Button to close country selector.
+  * @property {HTMLButtonElement} resetButton - Button to reset country search.
+  * @property {HTMLElement} searchIcon - Search icon element.
+  * @property {HTMLElement} liveRegion - Live region for search results count.
+  */
+
 if (!customElements.get('localization-form')) {
   customElements.define(
     'localization-form',
+    /**
+     * Localization form custom element class.
+     * @extends HTMLElement
+     */
     class LocalizationForm extends HTMLElement {
       constructor() {
         super();
         this.mql = window.matchMedia('(min-width: 750px)');
+
+        /** @type {HTMLElement} */
         this.header = document.querySelector('.header-wrapper');
+
+        /** @type {LocalizationFormElements} */
         this.elements = {
           input: this.querySelector('input[name="locale_code"], input[name="country_code"]'),
           button: this.querySelector('button.localization-form__select'),
@@ -38,6 +58,7 @@ if (!customElements.get('localization-form')) {
         this.querySelectorAll('a').forEach((item) => item.addEventListener('click', this.onItemClick.bind(this)));
       }
 
+      /** Directly hide country selector panel. */
       hidePanel() {
         this.elements.button.setAttribute('aria-expanded', 'false');
         this.elements.panel.setAttribute('hidden', true);
@@ -51,11 +72,17 @@ if (!customElements.get('localization-form')) {
         this.header.preventHide = false;
       }
 
+      /**
+       * Handle keydown event on container element.
+       * Key up/down to navigate through country list.
+       * @param {KeyboardEvent} event - Keyboard event object.
+       */
       onContainerKeyDown(event) {
         const focusableItems = Array.from(this.querySelectorAll('a')).filter(
           (item) => !item.parentElement.classList.contains('hidden')
         );
         let focusedItemIndex = focusableItems.findIndex((item) => item === document.activeElement);
+        /** @type {HTMLAnchorElement} */
         let itemToFocus;
 
         switch (event.code.toUpperCase()) {
@@ -85,6 +112,12 @@ if (!customElements.get('localization-form')) {
         });
       }
 
+      /**
+       * Handle keyup event on container element.
+       * Escape key to close country selector.
+       * Space key to open country selector.
+       * @param {KeyboardEvent} event - Keyboard event object.
+       */
       onContainerKeyUp(event) {
         event.preventDefault();
 
@@ -102,6 +135,10 @@ if (!customElements.get('localization-form')) {
         }
       }
 
+      /**
+       * Select country on item click and submit form.
+       * @param {MouseEvent} event - Mouse event object.
+       */
       onItemClick(event) {
         event.preventDefault();
         const form = this.querySelector('form');
@@ -109,6 +146,7 @@ if (!customElements.get('localization-form')) {
         if (form) form.submit();
       }
 
+      /** Open country selector panel. */
       openSelector() {
         this.elements.button.focus();
         this.elements.panel.toggleAttribute('hidden');
@@ -128,6 +166,10 @@ if (!customElements.get('localization-form')) {
         document.querySelector('.menu-drawer').classList.add('country-selector-open');
       }
 
+      /**
+       * Close country selector panel.
+       * @param {FocusEvent} event - Focus event object.
+       */
       closeSelector(event) {
         if (
           event.target.classList.contains('country-selector__overlay') ||
@@ -138,6 +180,11 @@ if (!customElements.get('localization-form')) {
         }
       }
 
+      /**
+       * Format string for search normalization.
+       * @param {string} str - String to normalize.
+       * @returns {string} Normalized string.
+       */
       normalizeString(str) {
         return str
           .normalize('NFD')
@@ -145,6 +192,7 @@ if (!customElements.get('localization-form')) {
           .toLowerCase();
       }
 
+      /** Filter countries based on search input value. */
       filterCountries() {
         const searchValue = this.normalizeString(this.elements.search.value);
         const popularCountries = this.querySelector('.popular-countries');
@@ -179,6 +227,7 @@ if (!customElements.get('localization-form')) {
         this.querySelector('.country-selector__list').scrollTop = 0;
       }
 
+      /** Reset country search filter. */
       resetFilter(event) {
         event.stopPropagation();
         this.elements.search.value = '';
@@ -186,16 +235,22 @@ if (!customElements.get('localization-form')) {
         this.elements.search.focus();
       }
 
+      /** Hide search icon on search input focus. */
       onSearchFocus() {
         this.elements.searchIcon.classList.add('country-filter__search-icon--hidden');
       }
 
+      /** Show search icon on search input blur. */
       onSearchBlur() {
         if (!this.elements.search.value) {
           this.elements.searchIcon.classList.remove('country-filter__search-icon--hidden');
         }
       }
 
+      /**
+       * Prevent form submission on search input keydown.
+       * @param {KeyboardEvent} event - Keyboard event object.
+       */
       onSearchKeyDown(event) {
         if (event.code.toUpperCase() === 'ENTER') {
           event.preventDefault();
