@@ -201,6 +201,7 @@ if (!customElements.get('quick-order-list')) {
             id: this.quickOrderListId,
             section: document.getElementById(this.quickOrderListId).dataset.section,
             selector: `#${this.quickOrderListId} .js-contents`,
+            variantSelector: `.quick-order-list__container .variant-item[data-variant-id="[variant-id]"]`,
           },
           {
             id: 'cart-icon-bubble',
@@ -211,11 +212,13 @@ if (!customElements.get('quick-order-list')) {
             id: `quick-order-list-live-region-text-${this.dataset.productId}`,
             section: 'cart-live-region-text',
             selector: '.shopify-section',
+            selectorAll: `.quick-order-list__live-region-text[data-product-id="${this.dataset.productId}"]`,
           },
           {
             id: `quick-order-list-total-${this.dataset.productId}-${this.dataset.section}`,
             section: document.getElementById(this.quickOrderListId).dataset.section,
             selector: `#${this.quickOrderListId} .quick-order-list__total`,
+            selectorAll: `.quick-order-list__total[data-product-id="${this.dataset.productId}"]`,
           },
           {
             id: 'CartDrawer',
@@ -258,11 +261,22 @@ if (!customElements.get('quick-order-list')) {
               ? sectionElement.querySelector(section.selector)
               : sectionElement;
           if (elementToReplace) {
-            if (section.selector === `#${this.quickOrderListId} .js-contents` && this.ids.length > 0) {
+            if (section.variantSelector && this.ids.length > 0) {
               this.ids.flat().forEach((i) => {
-                elementToReplace.querySelector(`#Variant-${i}`).innerHTML = this.getSectionInnerHTML(
+                document
+                  .querySelectorAll(section.variantSelector.replace('[variant-id]', i))
+                  .forEach((variantElementToReplace) => {
+                    variantElementToReplace.innerHTML = this.getSectionInnerHTML(
+                      parsedState.sections[section.section],
+                      `#Variant-${i}`
+                    );
+                  });
+              });
+            } else if (section.selectorAll) {
+              document.querySelectorAll(section.selectorAll).forEach((allElementToReplace) => {
+                allElementToReplace.innerHTML = this.getSectionInnerHTML(
                   parsedState.sections[section.section],
-                  `#Variant-${i}`
+                  section.selector
                 );
               });
             } else {
@@ -273,9 +287,11 @@ if (!customElements.get('quick-order-list')) {
             }
           }
         });
-        this.defineInputsAndQuickOrderTable();
-        this.addMultipleDebounce();
-        this.ids = [];
+        document.querySelectorAll(`quick-order-list[data-product-id="${this.dataset.productId}"]`).forEach((el) => {
+          el.defineInputsAndQuickOrderTable();
+          el.addMultipleDebounce();
+          el.ids = [];
+        });
       }
 
       getTableHead() {
