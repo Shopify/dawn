@@ -1,0 +1,412 @@
+<div class='sl-brandstyle-9fe1c2dc-94c1-4306-9cfb-55bd0a83df2e'>
+<div class='sl-pattern-062a0b83-8bde-4a82-9728-74463a4639a9{{ section.settings.pattern_select }} sl-pattern-{{ section.settings.pattern_select }}'>
+{{ 'shoplift.css' | asset_url | stylesheet_tag }}
+{{ 'https://unicons.iconscout.com/release/v4.0.0/css/line.css' | stylesheet_tag }}
+
+{% render 'sl-bar-styling' with section.settings as section_settings, section_id: section.id, universal_custom_colors: true %}
+
+{% liquid
+    assign extra_classes = " "
+
+    unless section.settings.text_color == "rgba(0,0,0,0)" or section.settings.text_color == "transparent"
+        assign extra_classes = extra_classes | append: " custom_color"
+    endunless
+
+    unless section.settings.background_color == "rgba(0,0,0,0)" or section.settings.background_color == "transparent"
+        assign extra_classes = extra_classes | append: " custom_bg"
+    endunless
+
+    unless section.settings.border_color == "rgba(0,0,0,0)" or section.settings.border_color == "transparent"
+        assign extra_classes = extra_classes | append: " custom_border"
+    endunless
+%}
+
+<section id="shoplift--{{ section.id }}" class="sl-section shoplift-offer--bar{{extra_classes}} {% if section.settings.sticky_on_scroll == true %}shoplift-offer--bar--sticky{% endif %}">
+  <div class="offer-bar__content {% if section.settings.border_type == 'bottom' %}offer-bar__content--border-bottom{% endif %}">
+    <div class="offer__container height__controller">
+      {% if section.settings.message_link %}
+        <a href="{{ section.settings.message_link }}" class="message__link">
+      {% endif %}
+        <div class="banner__heading banner__heading--{{ section.settings.text_size }} sl-font-style--{{section.settings.font_style}}">
+            {% if section.settings.show_review_stars == true %}
+                {% assign stars = section.settings.star_rating | plus: 0 %}
+                {% assign stars_floor = stars | floor %}
+                {% assign stars_ceil = stars | ceil %}
+                <div class="banner__heading__stars">
+                    {% for i in (1..stars_floor) %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="19" viewBox="0 0 20 19" fill="none">
+                            <path d="M10 15.2701L16.18 19.0001L14.54 11.9701L20 7.24006L12.81 6.62006L10 6.10352e-05L7.19 6.62006L0 7.24006L5.45 11.9701L3.82 19.0001L10 15.2701Z" fill="currentColor"/>
+                        </svg>
+                    {% endfor %}
+                    {% if stars != stars_floor %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="19" viewBox="0 0 20 19" fill="none">
+                            <path d="M10 13.4001V4.10006L11.71 8.13006L16.09 8.50006L12.77 11.3901L13.76 15.6701L10 13.4001ZM20 7.24006L12.81 6.63006L10 6.10352e-05L7.19 6.63006L0 7.24006L5.45 11.9701L3.82 19.0001L10 15.2701L16.18 19.0001L14.54 11.9701L20 7.24006Z" fill="currentColor"/>
+                        </svg>
+                    {% endif %}
+                    {% for i in (stars_ceil..4) %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="19" viewBox="0 0 20 19" fill="none">
+                            <path d="M10 13.39L6.24 15.66L7.23 11.38L3.91 8.5L8.29 8.13L10 4.09L11.71 8.13L16.09 8.5L12.77 11.38L13.76 15.66L10 13.39ZM20 7.24L12.81 6.63L10 0L7.19 6.63L0 7.24L5.45 11.97L3.82 19L10 15.27L16.18 19L14.54 11.97L20 7.24Z" fill="currentColor"/>
+                        </svg>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {% if section.settings.message_icon != "" %}
+                    <i class="sl-message-icon uil uil-{{ section.settings.message_icon }}" aria-label="Icon {{section.settings.message_icon}}"></i>
+                {% endif %}
+            {% endif %}
+            <span>
+                {% if section.settings.strikethrough_text != blank %}
+                    {% capture strikeHtml %}<s>{{ section.settings.strikethrough_text }}</s>{% endcapture %}
+                    {{ section.settings.headline_text | replace: section.settings.strikethrough_text, strikeHtml }}
+                {% else %}
+                    {{ section.settings.headline_text }}
+                {% endif %}
+            </span>
+            {% if section.settings.message_link %}
+                {% if section.settings.link_style == 'arrow' %}
+                    <span class="sl-arrow-caret" aria-hidden>
+                    <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="m -2,7.00008 v 2 H 14 L 8.5,14.5001 9.92,15.9201 17.84,8.00008 9.92,0.0800781 8.5,1.50008 l 5.5,5.5 z" fill="currentColor"/>
+                    </svg>
+                    </span>
+                {% else %}
+                    <span class="banner__heading__cta {% if section.settings.use_caps %}banner__heading__cta--uppercase{% endif %}">Shop Now</span>
+                {% endif %}
+            {% endif %}
+        </div>
+      {% if section.settings.message_link %}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% javascript %}
+    window.addEventListener('load', (event) => {
+        const thisBar = document.querySelector('.shoplift-offer--bar--sticky');
+
+        if (thisBar != null) {
+            const thisHeader = document.querySelector('.shoplift-offerbar-wrapper');
+            thisHeader.classList.add("shoplift-offer-bar-sticky");
+
+            const mainHeader = document.querySelector('#shopify-section-header > sticky-header');
+
+            const mainInitialTop = mainHeader.offsetTop;
+            const stickyStart = mainHeader ? (mainHeader.offsetTop + mainHeader.clientHeight) : 0;
+            let lastScroll = window.scrollY;
+            document.addEventListener("scroll", (scrollEvent) => {
+                if (!thisHeader) return;
+
+                // Do it quick and dirty
+                const mainHidden = mainHeader && (window.scrollY > lastScroll);
+                lastScroll = window.scrollY;
+
+                const makeSticky = window.pageYOffset > stickyStart || mainHeader && window.pageYOffset > mainInitialTop && mainHeader.parentElement.classList.contains("shopify-section-header-sticky");
+
+                thisHeader.classList.toggle("shoplift-offer-bar-sticky", makeSticky);
+
+                if (!makeSticky) return;
+
+                let topPosition = 0;
+
+                if (mainHeader && !mainHidden)
+                    topPosition += mainHeader.clientHeight;
+
+                thisHeader.style.top = topPosition + "px";
+            });
+        }
+    });
+{% endjavascript %}
+
+{% schema %}
+{
+    "name": "⚡ Single message bar 1.0",
+    "class": "shoplift-offerbar-wrapper",
+    "settings": [
+      {
+          "type": "select",
+          "id": "devices",
+          "label": "Show on",
+          "options": [
+              {
+                  "value": "all",
+                  "label": "All devices"
+              },
+              {
+                  "value": "desktop",
+                  "label": "Desktop only"
+              },
+              {
+                  "value": "mobile",
+                  "label": "Mobile only"
+              }
+          ],
+          "default": "all"
+      },
+      {
+          "type": "checkbox",
+          "id": "sticky_on_scroll",
+          "label": "Sticky on scroll",
+          "info": "Save your changes to see your edits apply",
+          "default": true
+      },
+      {
+          "type": "text",
+          "id": "headline_text",
+          "label": "Message text",
+          "default": "Free shipping on all orders"
+      },
+      {
+          "type": "text",
+          "id": "strikethrough_text",
+          "label": "Strikethrough text",
+          "info": "Strike through specific text in your message for sale prices"
+      },
+      {
+          "type": "url",
+          "id": "message_link",
+          "label": "Message link"
+      },
+      {
+          "type": "select",
+          "id": "link_style",
+          "label": "Link style",
+          "options": [
+              {
+                  "value": "arrow",
+                  "label": "Arrow"
+              },
+              {
+                  "value": "call_to_action",
+                  "label": "Call to action"
+              }
+          ],
+          "default": "arrow"
+      },
+      {
+          "type": "checkbox",
+          "id": "use_caps",
+          "label": "Use ALL CAPS for call to action link style",
+          "default": true
+      },
+      {
+          "type": "text",
+          "id": "message_icon",
+          "label": "Message icon",
+          "placeholder": "icon_name",
+          "info": "To add an icon, copy the icon namer from the [Unicons library](https://iconscout.com/unicons/explore/line)",
+          "default": "check-circle"
+      },
+      {
+          "type": "checkbox",
+          "id": "show_review_stars",
+          "label": "Show review stars instead of icon",
+          "default": false
+      },
+      {
+          "type": "range",
+          "id": "star_rating",
+          "label": "Star rating",
+          "min": 1,
+          "max": 5,
+          "step": 0.5,
+          "default": 4.5
+      },
+{
+          "type": "select",
+          "id": "pattern_select",
+          "label": "Pattern",
+          "info": "To edit your color schemes, visit your Brand Styles settings",
+          "options": [
+{
+                "value":"062a0b83-8bde-4a82-9728-74463a4639a9",
+                "label": "Content Pattern 1"
+            },
+{
+                "value":"460bba36-6a45-4965-826f-6a9ab5bbdf9d",
+                "label": "Product Pattern 2"
+            },
+{
+                "value":"7c082461-7887-4e10-97b3-1c7a621284a5",
+                "label": "Content Pattern 2"
+            },
+{
+                "value":"b7fc2ce4-1631-417b-b468-bb1ced60e45f",
+                "label": "Product Pattern 1"
+            }
+]},
+
+      {
+        "type": "select",
+        "id": "bar_height",
+        "label": "Bar height",
+        "options": [
+            {
+                "value": "large",
+                "label": "Large"
+            },
+            {
+                "value": "medium",
+                "label": "Medium"
+            },
+            {
+                "value": "small",
+                "label": "Small"
+            }
+        ],
+        "default": "medium"
+      },
+      {
+        "type": "select",
+        "id": "font_style",
+        "label": "Font style",
+        "options": [
+            {
+                "value": "title",
+                "label": "Title"
+            },
+            {
+                "value": "body",
+                "label": "Body"
+            },
+            {
+                "value": "button",
+                "label": "Button"
+            },
+            {
+                "value": "label",
+                "label": "Label"
+            }
+        ],
+        "default": "body"
+      },
+      {
+        "type": "select",
+        "id": "text_size",
+        "label": "Text size",
+        "options": [
+            {
+                "value": "large",
+                "label": "Large"
+            },
+            {
+                "value": "medium",
+                "label": "Medium"
+            },
+            {
+                "value": "small",
+                "label": "Small"
+            }
+        ],
+        "default": "medium"
+      },
+      {
+        "type": "select",
+        "id": "border_type",
+        "label": "Section border",
+        "options": [
+            {
+                "value": "brand_style",
+                "label": "Match Brand Styles"
+            },
+            {
+                "value": "none",
+                "label": "Don't show"
+            },
+            {
+                "value": "bottom",
+                "label": "Bottom"
+            },
+            {
+                "value": "all",
+                "label": "Show border"
+            }
+        ],
+        "default": "brand_style"
+      },
+      {
+          "type": "header",
+          "content": "Mobile"
+      },
+      {
+        "type": "select",
+        "id": "mobile_bar_height",
+        "label": "Bar height",
+        "options": [
+            {
+                "value": "match_desktop",
+                "label": "Match Desktop"
+            },
+            {
+                "value": "large",
+                "label": "Large"
+            },
+            {
+                "value": "medium",
+                "label": "Medium"
+            },
+            {
+                "value": "small",
+                "label": "Small"
+            }
+        ],
+        "default": "match_desktop"
+      },
+      {
+          "type": "select",
+          "id": "mobile_text_size",
+          "label": "Text size",
+          "options": [
+              {
+                  "value": "match_desktop",
+                  "label": "Match Desktop"
+              },
+              {
+                  "value": "large",
+                  "label": "Large"
+              },
+              {
+                  "value": "medium",
+                  "label": "Medium"
+              },
+              {
+                  "value": "small",
+                  "label": "Small"
+              }
+          ],
+          "default": "match_desktop"
+      },
+      {
+          "type": "header",
+          "content": "Custom Colors",
+          "info": "These color pickers allow you to deviate from your brand kit color schemes. To revert to a preset color scheme, remove the hex code below."
+      },
+      {
+          "type": "color",
+          "id": "background_color",
+          "label": "Background color",
+          "default": "transparent"
+      },
+      {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "default": "transparent"
+      },
+      {
+          "type": "color",
+          "id": "border_color",
+          "label": "Border color",
+          "default": "transparent"
+      }
+  ],
+  "presets": [
+      {
+          "name": "⚡ Single message bar 1.0"
+      }
+  ]
+}
+{% endschema %}
+
+</div>
+</div>
