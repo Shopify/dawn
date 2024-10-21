@@ -4,6 +4,7 @@ class ProductCard extends HTMLElement {
 
     this.elements = {
       swatches: this.querySelectorAll('.product_tile_color_holder input[type="radio"]'),
+      swatchLabels: this.querySelectorAll('.product_tile_color_holder label'),
       swatchName: this.querySelector('.product-tile-color-name'),
       image: this.querySelector('.card__media img:first-child'),
       priceRegular: this.querySelector('.price__regular .price-item'),
@@ -16,6 +17,21 @@ class ProductCard extends HTMLElement {
     this.elements.swatches.forEach((el) => {
       el.addEventListener('change', this.onSwatchChange.bind(this));
     });
+
+    this.elements.swatchLabels.forEach((el) => {
+      el.addEventListener('mouseenter', this.onSwatchChange.bind(this));
+    });
+  }
+
+  onSwatchChangeMouseEnter(e) {
+    const targetSwatch = e.target.getAttribute('for');
+
+    if (targetSwatch) {
+      const targetSwatchElement = document.querySelector(`#${targetSwatch}`);
+      this.onSwatchChange({
+        target: targetSwatchElement,
+      });
+    }
   }
 
   onSwatchChange(e) {
