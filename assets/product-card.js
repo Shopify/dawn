@@ -63,7 +63,9 @@ class ProductCard extends HTMLElement {
       this.elements.priceSaleOriginal.innerHTML = productCompareAtPrice;
       this.elements.priceSale.innerHTML = productPrice;
     } else {
-      this.elements.priceRegular.innerHTML = productPrice;
+      if (productPrice) {
+        this.elements.priceRegular.innerHTML = productPrice;
+      }
     }
 
     if (this.elements.swatchName) {
