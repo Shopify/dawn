@@ -28,10 +28,9 @@ class ProductCard extends HTMLElement {
 
     if (targetSwatch) {
       const targetSwatchElement = document.querySelector(`#${targetSwatch}`);
-      console.log(`#${targetSwatch}`, targetSwatchElement);
-      // this.onSwatchChange({
-      //   target: targetSwatchElement,
-      // });
+      this.onSwatchChange({
+        target: targetSwatchElement,
+      });
     }
   }
 
