@@ -27,7 +27,7 @@ class ProductCard extends HTMLElement {
     const targetSwatch = e.target.getAttribute('for');
 
     if (targetSwatch) {
-      const targetSwatchElement = document.querySelector(`input#${targetSwatch}`);
+      const targetSwatchElement = document.querySelector(`input[id="${targetSwatch}"]`);
       console.log(`input#${targetSwatch}`, targetSwatchElement);
       // this.onSwatchChange({
       //   target: targetSwatchElement,
