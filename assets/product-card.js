@@ -26,12 +26,9 @@ class ProductCard extends HTMLElement {
   onSwatchChangeMouseEnter(e) {
     const targetSwatch = e.target.getAttribute('for');
 
-    console.log(e);
-    console.log(targetSwatch);
-    console.log('wat');
-
     if (targetSwatch) {
       const targetSwatchElement = document.querySelector(`#${targetSwatch}`);
+      console.log(targetSwatchElement);
       // this.onSwatchChange({
       //   target: targetSwatchElement,
       // });
