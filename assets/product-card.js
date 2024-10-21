@@ -19,7 +19,7 @@ class ProductCard extends HTMLElement {
     });
 
     this.elements.swatchLabels.forEach((el) => {
-      el.addEventListener('mouseenter', this.onSwatchChange.bind(this));
+      el.addEventListener('mouseenter', this.onSwatchChangeMouseEnter.bind(this));
     });
   }
 
