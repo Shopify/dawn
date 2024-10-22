@@ -131,6 +131,7 @@ function init() {
 
   TNB.tallSizingControls();
   TNB.megaMenuHover();
+  TNB.sliderArrows();
 }
 
 window.addEventListener('DOMContentLoaded', function () {
