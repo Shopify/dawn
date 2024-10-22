@@ -10,7 +10,7 @@ var TNB = {
       const items = slider.find('li');
 
       const scrollLeft = slider.get(0).scrollLeft;
-      const itemWidth = items[0].outerWidth(true);
+      const itemWidth = items.get(0).scrollWidth;
 
       slider.get(0).scrollTo({
         left: scrollLeft + itemWidth,
@@ -35,7 +35,7 @@ var TNB = {
       const items = slider.find('li');
 
       const scrollLeft = slider.get(0).scrollLeft;
-      const itemWidth = items[0].outerWidth(true);
+      const itemWidth = items.get(0).scrollWidth;
 
       slider.get(0).scrollTo({
         left: scrollLeft - itemWidth,
