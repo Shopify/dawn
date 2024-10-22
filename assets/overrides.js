@@ -23,7 +23,7 @@ var TNB = {
       console.log(scrollLeft + itemWidth, slider.get(0).scrollWidth);
 
       if (scrollLeft + itemWidth >= slider.get(0).scrollWidth) {
-        parent.find('.slider-button--next').addAttr('disabled');
+        parent.find('.slider-button--next').attr('disabled', '');
       }
     };
 
@@ -41,7 +41,7 @@ var TNB = {
       });
 
       if (scrollLeft - itemWidth * 2 <= 0) {
-        parent.find('.slider-button--prev').addAttr('disabled');
+        parent.find('.slider-button--prev').attr('disabled', '');
       }
     };
 
