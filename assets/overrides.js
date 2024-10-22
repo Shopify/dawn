@@ -4,6 +4,7 @@ var TNB = {
   },
   sliderArrows: function () {
     const handleClickNext = function (e) {
+      console.log('next');
       const parent = $(e.currentTarget).closest('.collection');
       const slider = parent.find('slider-component > ul');
       const items = slider.find('li');
@@ -15,9 +16,20 @@ var TNB = {
         left: scrollLeft + itemWidth,
         behavior: 'smooth',
       });
+
+      if (scrollLeft - itemWidth <= 0) {
+        parent.find('.slider-button--prev').removeAttr('disabled');
+      }
+
+      console.log(scrollLeft + itemWidth >= slider.get(0).scrollWidth);
+
+      if (scrollLeft + itemWidth >= slider.get(0).scrollWidth) {
+        parent.find('.slider-button--next').addAttr('disabled');
+      }
     };
 
     const handleClickPrev = function (e) {
+      console.log('prev');
       const parent = $(e.currentTarget).closest('.collection');
       const slider = parent.find('slider-component > ul');
       const items = slider.find('li');
@@ -29,6 +41,10 @@ var TNB = {
         left: scrollLeft - itemWidth,
         behavior: 'smooth',
       });
+
+      if (scrollLeft - itemWidth <= 0) {
+        parent.find('.slider-button--prev').addAttr('disabled');
+      }
     };
 
     $('body').on('click', '.collection__arrows .slider-button--prev', handleClickPrev);
