@@ -20,7 +20,7 @@ var TNB = {
         parent.find('.slider-button--prev').removeAttr('disabled');
       }
 
-      console.log(slider.get(0).scrollWidth - scrollLeft == slider.outerWidth());
+      console.log(slider.get(0).scrollWidth, scrollLeft, slider.outerWidth());
 
       if (scrollLeft + itemWidth >= slider.get(0).scrollWidth) {
         parent.find('.slider-button--next').attr('disabled', '');
