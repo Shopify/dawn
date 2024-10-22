@@ -57,10 +57,10 @@ if (!customElements.get('media-gallery')) {
           if (!this.mql.matches || this.elements.thumbnails) {
             activeMedia.parentElement.scrollTo({ left: activeMedia.offsetLeft });
           }
-          const activeMediaRect = activeMedia.getBoundingClientRect();
           // Don't scroll if the image is already in view
-          if (activeMediaRect.top > -0.5) return;
-          const top = activeMediaRect.top + window.scrollY;
+          // const activeMediaRect = activeMedia.getBoundingClientRect();
+          // if (activeMediaRect.top > -0.5) return;
+          // const top = activeMediaRect.top + window.scrollY;
           // window.scrollTo({ top: top, behavior: 'smooth' });
         });
         this.playActiveMedia(activeMedia);
