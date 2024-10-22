@@ -16,13 +16,11 @@ var TNB = {
         behavior: 'smooth',
       });
 
-      if (scrollLeft - itemWidth <= 0) {
-        parent.find('.slider-button--prev').removeAttr('disabled');
-      }
+      parent.find('.slider-button--prev').removeAttr('disabled');
 
-      console.log(slider.get(0).scrollWidth, scrollLeft, slider.outerWidth());
+      console.log(scrollLeft + itemWidth * 2, slider.get(0).scrollWidth);
 
-      if (scrollLeft + itemWidth >= slider.get(0).scrollWidth) {
+      if (scrollLeft + itemWidth * 2 >= slider.get(0).scrollWidth) {
         parent.find('.slider-button--next').attr('disabled', '');
       }
     };
