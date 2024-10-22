@@ -2,6 +2,38 @@ var TNB = {
   state: {
     tallSizingActive: false,
   },
+  sliderArrows: function () {
+    const handleClickNext = function (e) {
+      const parent = $(e.currentTarget).closest('.collection');
+      const slider = parent.find('slider-component > ul');
+      const items = slider.find('li');
+
+      const scrollLeft = slider.get(0).scrollLeft;
+      const itemWidth = items[0].outerWidth(true);
+
+      slider.get(0).scrollTo({
+        left: scrollLeft + itemWidth,
+        behavior: 'smooth',
+      });
+    };
+
+    const handleClickPrev = function (e) {
+      const parent = $(e.currentTarget).closest('.collection');
+      const slider = parent.find('slider-component > ul');
+      const items = slider.find('li');
+
+      const scrollLeft = slider.get(0).scrollLeft;
+      const itemWidth = items[0].outerWidth(true);
+
+      slider.get(0).scrollTo({
+        left: scrollLeft - itemWidth,
+        behavior: 'smooth',
+      });
+    };
+
+    $('body').on('click', '.collection__arrows .slider-button--prev', handleClickPrev);
+    $('body').on('click', '.collection__arrows .slider-button--next', handleClickNext);
+  },
   megaMenuHover: function () {
     const inlineMenu = document.querySelector('.header__inline-menu');
     const detailsItems = inlineMenu.querySelectorAll('details');
