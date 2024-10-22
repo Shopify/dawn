@@ -36,6 +36,8 @@ var TNB = {
         behavior: 'smooth',
       });
 
+      parent.find('.slider-button--next').removeAttr('disabled');
+
       if (scrollLeft - itemWidth * 2 <= 0) {
         parent.find('.slider-button--prev').attr('disabled', '');
       }
