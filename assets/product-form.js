@@ -12,6 +12,8 @@ if (!customElements.get('product-form')) {
         this.submitButton = this.querySelector('[type="submit"]');
         this.submitButtonText = this.submitButton.querySelector('span');
         this.popupNotice = this.querySelector('.popup-notice');
+        this.popupNoticeAccept = this.querySelector('.popup-notice button[type="submit"]');
+        this.popupNoticeCancel = this.querySelector('.popup-notice button[type="reset"]');
 
         if (document.querySelector('cart-drawer')) this.submitButton.setAttribute('aria-haspopup', 'dialog');
 
@@ -43,13 +45,7 @@ if (!customElements.get('product-form')) {
         }
         config.body = formData;
 
-        console.log(this.popupNotice);
-
-        if (this.popupNotice) {
-          this.popupNotice.classList.remove('is-hidden');
-        }
-
-        fetch(`${routes.cart_add_url}`, config)
+        const submitForm = fetch(`${routes.cart_add_url}`, config)
           .then((response) => response.json())
           .then((response) => {
             if (response.status) {
@@ -105,6 +101,24 @@ if (!customElements.get('product-form')) {
             if (!this.error) this.submitButton.removeAttribute('aria-disabled');
             this.querySelector('.loading__spinner').classList.add('hidden');
           });
+
+        if (this.popupNotice) {
+          this.popupNotice.classList.remove('is-hidden');
+
+          const handleClickAccept = () => {
+            submitForm();
+          };
+
+          const handleClickCancel = () => {
+            this.popupNotice.classList.add('is-hidden');
+            this.popupNoticeAccept.removeEventListener('click', handleClickAccept);
+          };
+
+          this.popupNoticeAccept.addEventListener('click', handleClickAccept);
+          this.popupNoticeCancel.addEventListener('click', handleClickCancel);
+        } else {
+          submitForm();
+        }
       }
 
       handleErrorMessage(errorMessage = false) {
