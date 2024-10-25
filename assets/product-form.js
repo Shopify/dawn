@@ -103,8 +103,6 @@ if (!customElements.get('product-form')) {
             this.querySelector('.loading__spinner').classList.add('hidden');
           });
 
-        console.log(this.popupNotice);
-
         if (this.popupNotice) {
           this.popupNotice.classList.remove('is-hidden');
 
@@ -120,6 +118,7 @@ if (!customElements.get('product-form')) {
           this.popupNoticeAccept.addEventListener('click', handleClickAccept);
           this.popupNoticeCancel.addEventListener('click', handleClickCancel);
         } else {
+          console.log('no popup notice');
           submitForm();
         }
       }
