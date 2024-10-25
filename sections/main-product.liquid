@@ -102,7 +102,7 @@
                   {{ block.shopify_attributes }}
                 >
                   {%- render 'product-badges', product: product -%}
-                  <h1>{{ product.title | escape }}</h1>
+                  <h1 id="product-title">{{ product.title | escape }}</h1>
                   <a href="{{ product.url }}" class="product__title">
                     <h2 class="h1">
                       {{ product.title | escape }}
@@ -252,6 +252,58 @@
                       </span>
                     {% endif %}
                     {{- block.settings.notice_text -}}
+                  </div>
+                {% endif %}
+              {% when popup-notice %}
+                {% liquid
+                  assign has_notice = false
+
+                  for selected_product in block.settings.product_list
+                    if selected_product.id == product.id
+                      assign has_notice = true
+                    endif
+                  endfor
+
+                  if block.settings.product_tag != blank
+                    if product.tags contains block.settings.product_tag
+                      assign has_notice = true
+                    endif
+                  endif
+                %}
+
+                {% if has_notice %}
+                  <div class="popup-notice" style="display: none;">
+                    <modal-opener data-modal="#product-notice">
+                      <button
+                        id="{{ product_form_id }}-submit"
+                        type="submit"
+                        name="add"
+                        class="quick-add__submit"
+                        aria-haspopup="dialog"
+                        aria-labelledby="product-title"
+                      >
+                        View Notice
+                      </button>
+                    </modal-opener>
+                    <quick-add-modal id="product-notice" class="quick-add-modal">
+                      <div
+                        role="dialog"
+                        aria-label="Important information regarding {{ product.title }}"
+                        aria-modal="true"
+                        class="quick-add-modal__content global-settings-popup"
+                        tabindex="-1"
+                      >
+                        <button
+                          id="ModalClose-product-notice"
+                          type="button"
+                          class="quick-add-modal__toggle"
+                          aria-label="{{ 'accessibility.close' | t }}"
+                        >
+                          {% render 'icon-close' %}
+                        </button>
+                        <div>{{- block.settings.notice_text -}}</div>
+                      </div>
+                    </quick-add-modal>
                   </div>
                 {% endif %}
               {%- when 'custom_liquid' -%}
@@ -887,6 +939,34 @@
           ],
           "default": "none",
           "label": "t:sections.main-product.blocks.notice.settings.notice_icon.label"
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:sections.all.colors.label",
+          "default": "scheme-1"
+        },
+        {
+          "type": "text",
+          "id": "product_tag",
+          "label": "Tags",
+          "info": "Show the notice on products with this tag"
+        },
+        {
+          "type": "product_list",
+          "id": "product_list",
+          "label": "t:sections.main-product.blocks.notice.settings.product_list.label"
+        }
+      ]
+    },
+    {
+      "type": "popup-notice",
+      "name": "Popup Notice",
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "notice_text",
+          "label": "t:sections.main-product.blocks.notice.settings.notice_text.label"
         },
         {
           "type": "color_scheme",
