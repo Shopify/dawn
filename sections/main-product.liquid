@@ -257,54 +257,6 @@
                     {{- block.settings.notice_text -}}
                   </div>
                 {% endif %}
-              {% when 'popup-notice' %}
-                {% liquid
-                  assign has_notice = false
-
-                  for selected_product in block.settings.product_list
-                    if selected_product.id == product.id
-                      assign has_notice = true
-                    endif
-                  endfor
-
-                  if block.settings.product_tag != blank
-                    if product.tags contains block.settings.product_tag
-                      assign has_notice = true
-                    endif
-                  endif
-                %}
-
-                {% if has_notice %}
-                  <div class="modal product-notice-modal">
-                    <div
-                      class="modal__content popup"
-                      role="dialog"
-                      aria-modal="true"
-                      aria-label="Important information regarding {{ product.title }}"
-                    >
-                      <div
-                        class="modal__content"
-                        tabindex="-1"
-                      >
-                        <div class="modal__content-container">
-                          <div class="page-width">
-                            {{- block.settings.notice_text -}}
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          class="modal__close-button modal__close-button link link--text focus-inset"
-                          aria-label="{{ 'accessibility.close' | t }}"
-                        >
-                          <svg class="icon icon-close" aria-hidden="true" focusable="false">
-                            <use href="#icon-close">
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                {% endif %}
               {%- when 'custom_liquid' -%}
                 {{ block.settings.custom_liquid }}
               {%- when 'collapsible_tab' -%}
@@ -564,12 +516,30 @@
               {%- when 'variant_picker' -%}
                 {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
               {%- when 'buy_buttons' -%}
-                {%- render 'buy-buttons',
+                {% liquid
+                  assign has_notice = false
+
+                  for selected_product in block.settings.product_list
+                    if selected_product.id == product.id
+                      assign has_notice = true
+                    endif
+                  endfor
+
+                  if block.settings.product_tag != blank
+                    if product.tags contains block.settings.product_tag
+                      assign has_notice = true
+                    endif
+                  endif
+                %}
+
+                {%-
+                  render 'buy-buttons',
                   block: block,
                   product: product,
                   product_form_id: product_form_id,
                   section_id: section.id,
-                  show_pickup_availability: true
+                  show_pickup_availability: true,
+                  popup_message: has_notice ? block.settings.popup_message : null
                 -%}
               {%- when 'rating' -%}
                 {%- if product.metafields.reviews.rating.value != blank -%}
@@ -959,34 +929,6 @@
       ]
     },
     {
-      "type": "popup-notice",
-      "name": "Popup Notice",
-      "settings": [
-        {
-          "type": "inline_richtext",
-          "id": "notice_text",
-          "label": "t:sections.main-product.blocks.notice.settings.notice_text.label"
-        },
-        {
-          "type": "color_scheme",
-          "id": "color_scheme",
-          "label": "t:sections.all.colors.label",
-          "default": "scheme-1"
-        },
-        {
-          "type": "text",
-          "id": "product_tag",
-          "label": "Tags",
-          "info": "Show the notice on products with this tag"
-        },
-        {
-          "type": "product_list",
-          "id": "product_list",
-          "label": "t:sections.main-product.blocks.notice.settings.product_list.label"
-        }
-      ]
-    },
-    {
       "type": "inventory",
       "name": "t:sections.main-product.blocks.inventory.name",
       "limit": 1,
@@ -1096,6 +1038,22 @@
           "default": true,
           "label": "t:sections.main-product.blocks.buy_buttons.settings.show_gift_card_recipient.label",
           "info": "t:sections.main-product.blocks.buy_buttons.settings.show_gift_card_recipient.info"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "popup_message",
+          "label": "Popup message text"
+        },
+        {
+          "type": "text",
+          "id": "popup_message_tags",
+          "label": "Popup message tags",
+          "info": "Show the popup message only on products with this tag"
+        },
+        {
+          "type": "product_list",
+          "id": "product_list",
+          "label": "Show the popup message on these specific products"
         }
       ]
     },
