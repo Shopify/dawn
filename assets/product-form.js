@@ -11,6 +11,7 @@ if (!customElements.get('product-form')) {
         this.cart = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
         this.submitButton = this.querySelector('[type="submit"]');
         this.submitButtonText = this.submitButton.querySelector('span');
+        this.popupNotice = this.querySelector('.popup-notice');
 
         if (document.querySelector('cart-drawer')) this.submitButton.setAttribute('aria-haspopup', 'dialog');
 
@@ -41,6 +42,10 @@ if (!customElements.get('product-form')) {
           this.cart.setActiveElement(document.activeElement);
         }
         config.body = formData;
+
+        if (this.popupNotice) {
+          this.popupNotice.classList.remove('is-hidden');
+        }
 
         fetch(`${routes.cart_add_url}`, config)
           .then((response) => response.json())
