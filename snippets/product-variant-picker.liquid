@@ -61,12 +61,15 @@
 
       {%- assign color_categories_array = color_categories | split: ',' | uniq -%}
 
-      {% if block.settings.color_category_order != blank %}
-        {% assign color_category_order_array = block.settings.color_category_order | newline_to_br | split: '<br />' %}
-        {% assign de_duped_sorted_categories = color_category_order_array | concat: color_categories_array | uniq %}
+      {% comment %} WIP sort color categories based on admin field {% endcomment %}
+      {% comment %}
+        {% if block.settings.color_category_order != blank %}
+          {% assign color_category_order_array = block.settings.color_category_order | split: '\n' %}
+          {% assign de_duped_sorted_categories = color_category_order_array | concat: color_categories_array | uniq %}
 
-        {% render 'dump' with de_duped_sorted_categories %}
-      {% endif %}
+          {% render 'dump' with de_duped_sorted_categories %}
+        {% endif %}
+      {% endcomment %}
 
       {% comment %} Group colors by category {% endcomment %}
       {%- capture grouped_colors -%}
@@ -100,31 +103,7 @@
       {%- if picker_type == 'swatch' -%}
         <fieldset class="js product-form__input product-form__input--swatch">
           {%- if color_categories_array.size > 0 -%}
-            {% comment %} Colors not assigned to a group {% endcomment %}
-            {% if ungrouped_colors_array.size > 0 %}
-              <div class="color-category">
-                <div class="form__label">
-                  {{ settings.default_color_category }}:
-                  <span class="option-name-label" data-selected-value>
-                    {%- if ungrouped_colors_array contains option.selected_value -%}
-                      &nbsp;
-                      {{- option.selected_value -}}
-                    {%- endif -%}
-                  </span>
-                </div>
-                <div class="product-form-colors">
-                  {%
-                    render 'product-variant-options',
-                    product: product,
-                    option: option,
-                    block: block,
-                    picker_type: picker_type,
-                    values: ungrouped_colors_array | join: ' '
-                  %}
-                </div>
-              </div>
-            {% endif %}
-
+            {% comment %} Colors assigned to a group {% endcomment %}
             {%- for category in color_categories_array -%}
               {% assign category_name = category | split: ':' %}
               <div class="color-category">
@@ -149,6 +128,31 @@
                 </div>
               </div>
             {%- endfor -%}
+
+            {% comment %} Colors not assigned to a group {% endcomment %}
+            {% if ungrouped_colors_array.size > 0 %}
+              <div class="color-category">
+                <div class="form__label">
+                  {{ settings.default_color_category }}:
+                  <span class="option-name-label" data-selected-value>
+                    {%- if ungrouped_colors_array contains option.selected_value -%}
+                      &nbsp;
+                      {{- option.selected_value -}}
+                    {%- endif -%}
+                  </span>
+                </div>
+                <div class="product-form-colors">
+                  {%
+                    render 'product-variant-options',
+                    product: product,
+                    option: option,
+                    block: block,
+                    picker_type: picker_type,
+                    values: ungrouped_colors_array | join: ' '
+                  %}
+                </div>
+              </div>
+            {% endif %}
           {%- else -%}
             <legend class="form__label">
               {{ option.name }}:
