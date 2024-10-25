@@ -43,6 +43,8 @@ if (!customElements.get('product-form')) {
         }
         config.body = formData;
 
+        console.log(this.popupNotice);
+
         if (this.popupNotice) {
           this.popupNotice.classList.remove('is-hidden');
         }
