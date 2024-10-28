@@ -22,9 +22,8 @@ if (!customElements.get('product-form')) {
       }
 
       onSubmitHandler(evt) {
-        console.log(this.submitButton);
         evt.preventDefault();
-        if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
+        if (this.submitButton && this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
         this.handleErrorMessage();
 
