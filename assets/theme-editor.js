@@ -36,6 +36,13 @@ document.addEventListener('shopify:section:load', () => {
   }
 });
 
+document.addEventListener('shopify:section:unload', (event) => {
+  document.querySelectorAll(`[data-section="${event.detail.sectionId}"]`).forEach((element) => {
+    element.remove();
+    document.body.classList.remove('overflow-hidden');
+  });
+});
+
 document.addEventListener('shopify:section:reorder', () => hideProductModal());
 
 document.addEventListener('shopify:section:select', () => hideProductModal());
