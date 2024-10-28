@@ -107,6 +107,7 @@ if (!customElements.get('product-form')) {
           });
 
         if (this.popupNotice) {
+          console.log('has popup notice');
           this.popupNotice.classList.remove('is-hidden');
 
           const handleClickAccept = () => {
@@ -118,7 +119,7 @@ if (!customElements.get('product-form')) {
             this.popupNoticeAccept.removeEventListener('click', handleClickAccept);
           };
 
-          this.popupNoticeAccept.addEventListener('click', handleClickAccept);
+          // this.popupNoticeAccept.addEventListener('click', handleClickAccept);
           this.popupNoticeCancel.addEventListener('click', handleClickCancel);
         } else {
           console.log('no popup notice');
