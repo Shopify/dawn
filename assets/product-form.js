@@ -17,13 +17,12 @@ if (!customElements.get('product-form')) {
 
         if (document.querySelector('cart-drawer')) this.submitButton.setAttribute('aria-haspopup', 'dialog');
         if (this.submitButton.type === 'button')
-          // this.submitButton.addEventListener('click', this.onSubmitHandler.bind(this));
+          this.submitButton.addEventListener('click', this.handleClickSubmit.bind(this));
 
-          this.hideErrors = this.dataset.hideErrors === 'true';
+        this.hideErrors = this.dataset.hideErrors === 'true';
       }
 
       onSubmitHandler(evt) {
-        console.log(evt);
         evt.preventDefault();
         if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
@@ -48,7 +47,7 @@ if (!customElements.get('product-form')) {
         }
         config.body = formData;
 
-        const submitForm = fetch(`${routes.cart_add_url}`, config)
+        fetch(`${routes.cart_add_url}`, config)
           .then((response) => response.json())
           .then((response) => {
             console.log('submit form');
@@ -103,28 +102,28 @@ if (!customElements.get('product-form')) {
             this.submitButton.classList.remove('loading');
             if (this.cart && this.cart.classList.contains('is-empty')) this.cart.classList.remove('is-empty');
             if (!this.error) this.submitButton.removeAttribute('aria-disabled');
+            if (this.popupNotice) this.popupNotice.classList.add('is-hidden');
             this.querySelector('.loading__spinner').classList.add('hidden');
           });
+      }
 
-        if (this.popupNotice) {
-          console.log('has popup notice');
-          this.popupNotice.classList.remove('is-hidden');
+      handleClickSubmit(evt) {
+        evt.preventDefault();
 
-          const handleClickAccept = () => {
-            // submitForm();
-          };
+        this.popupNotice.classList.remove('is-hidden');
 
-          const handleClickCancel = () => {
-            this.popupNotice.classList.add('is-hidden');
-            this.popupNoticeAccept.removeEventListener('click', handleClickAccept);
-          };
+        const handleClickAccept = () => {
+          // this.onSubmitHandler(evt);
+          console.log('accept');
+        };
 
-          // this.popupNoticeAccept.addEventListener('click', handleClickAccept);
-          this.popupNoticeCancel.addEventListener('click', handleClickCancel);
-        } else {
-          console.log('no popup notice');
-          submitForm();
-        }
+        const handleClickCancel = () => {
+          this.popupNotice.classList.add('is-hidden');
+          this.popupNoticeAccept.removeEventListener('click', handleClickAccept);
+        };
+
+        this.popupNoticeAccept.addEventListener('click', handleClickAccept);
+        this.popupNoticeCancel.addEventListener('click', handleClickCancel);
       }
 
       handleErrorMessage(errorMessage = false) {
