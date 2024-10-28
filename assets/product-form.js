@@ -106,6 +106,7 @@ if (!customElements.get('product-form')) {
           });
 
         if (this.popupNotice) {
+          console.log('has popup notice');
           this.popupNotice.classList.remove('is-hidden');
 
           const handleClickAccept = () => {
