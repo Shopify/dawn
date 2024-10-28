@@ -9,13 +9,14 @@ if (!customElements.get('product-form')) {
         this.variantIdInput.disabled = false;
         this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
         this.cart = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
-        this.submitButton = this.querySelector('[type="submit"]');
+        this.submitButton = this.querySelector('.product-form__submit');
         this.submitButtonText = this.submitButton.querySelector('span');
         this.popupNotice = this.querySelector('.popup-notice');
         this.popupNoticeAccept = this.querySelector('.popup-notice button[type="submit"]');
         this.popupNoticeCancel = this.querySelector('.popup-notice button[type="reset"]');
 
         if (document.querySelector('cart-drawer')) this.submitButton.setAttribute('aria-haspopup', 'dialog');
+        if (this.submitButton.type === 'button') this.submitButton.addEventListener('click', this.onSubmitHandler);
 
         this.hideErrors = this.dataset.hideErrors === 'true';
       }
