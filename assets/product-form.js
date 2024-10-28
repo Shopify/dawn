@@ -17,9 +17,9 @@ if (!customElements.get('product-form')) {
 
         if (document.querySelector('cart-drawer')) this.submitButton.setAttribute('aria-haspopup', 'dialog');
         if (this.submitButton.type === 'button')
-          this.submitButton.addEventListener('click', this.onSubmitHandler.bind(this));
+          // this.submitButton.addEventListener('click', this.onSubmitHandler.bind(this));
 
-        this.hideErrors = this.dataset.hideErrors === 'true';
+          this.hideErrors = this.dataset.hideErrors === 'true';
       }
 
       onSubmitHandler(evt) {
