@@ -24,7 +24,7 @@ if (!customElements.get('product-form')) {
 
       onSubmitHandler(evt) {
         evt.preventDefault();
-        if (this.submitButton && this.submitButton.getAttribute('aria-disabled') === 'true') return;
+        if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
         this.handleErrorMessage();
 
@@ -106,11 +106,10 @@ if (!customElements.get('product-form')) {
           });
 
         if (this.popupNotice) {
-          console.log('has popup notice');
           this.popupNotice.classList.remove('is-hidden');
 
           const handleClickAccept = () => {
-            submitForm();
+            // submitForm();
           };
 
           const handleClickCancel = () => {
