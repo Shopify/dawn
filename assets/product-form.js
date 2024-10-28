@@ -15,8 +15,6 @@ if (!customElements.get('product-form')) {
         this.popupNoticeAccept = this.querySelector('.popup-notice button[type="submit"]');
         this.popupNoticeCancel = this.querySelector('.popup-notice button[type="reset"]');
 
-        console.log(this.submitButton);
-
         if (document.querySelector('cart-drawer')) this.submitButton.setAttribute('aria-haspopup', 'dialog');
         if (this.submitButton.type === 'button') this.submitButton.addEventListener('click', this.onSubmitHandler);
 
@@ -24,6 +22,7 @@ if (!customElements.get('product-form')) {
       }
 
       onSubmitHandler(evt) {
+        console.log(this.submitButton);
         evt.preventDefault();
         if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
