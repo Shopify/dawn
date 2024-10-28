@@ -25,12 +25,18 @@ if (!customElements.get('product-form')) {
       onSubmitHandler(evt) {
         evt.preventDefault();
         if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
+        if (this.popupNotice && this.popupNoticeAccept.getAttribute('aria-disabled') === 'true') return;
 
         this.handleErrorMessage();
 
         this.submitButton.setAttribute('aria-disabled', true);
         this.submitButton.classList.add('loading');
-        this.querySelector('.loading__spinner').classList.remove('hidden');
+        this.querySelectorAll('.loading__spinner').forEach((el) => el.classList.remove('hidden'));
+
+        if (this.popupNotice) {
+          this.popupNoticeAccept.setAttribute('aria-disabled', true);
+          this.popupNoticeAccept.classList.add('loading');
+        }
 
         const config = fetchConfig('javascript');
         config.headers['X-Requested-With'] = 'XMLHttpRequest';
@@ -102,8 +108,12 @@ if (!customElements.get('product-form')) {
             this.submitButton.classList.remove('loading');
             if (this.cart && this.cart.classList.contains('is-empty')) this.cart.classList.remove('is-empty');
             if (!this.error) this.submitButton.removeAttribute('aria-disabled');
-            if (this.popupNotice) this.popupNotice.classList.add('is-hidden');
-            this.querySelector('.loading__spinner').classList.add('hidden');
+            if (this.popupNotice) {
+              this.popupNotice.classList.add('is-hidden');
+              this.popupNoticeAccept.classList.remove('loading');
+            }
+
+            this.querySelectorAll('.loading__spinner').forEach((el) => el.classList.add('hidden'));
           });
       }
 
@@ -113,8 +123,7 @@ if (!customElements.get('product-form')) {
         this.popupNotice.classList.remove('is-hidden');
 
         const handleClickAccept = () => {
-          // this.onSubmitHandler(evt);
-          console.log('accept');
+          this.onSubmitHandler(evt);
         };
 
         const handleClickCancel = () => {
