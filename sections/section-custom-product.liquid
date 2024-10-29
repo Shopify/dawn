@@ -1,0 +1,343 @@
+<section class="product-custom-section">
+  <div x-data="productPage()">
+    <div class="product-section p-8 flex flex-col lg:flex-row lg:space-x-8 ">
+      <div class="product-images lg:w-1/2">
+        <div class="flex gap-2 mt-4 flex-wrap first:w-full">
+          <template x-for="(image, index) in productImages">
+            <img
+              @click="selectedImage = image"
+              :src="image.src"
+              alt="Product Thumbnail"
+              :class="index === 0 ? 'w-full' : 'w-[49%]'"
+              class="cursor-pointer"
+            >
+          </template>
+        </div>
+      </div>
+
+      <div class="product-details lg:w-1/2">
+        <h1 class=" product__text inline-richtext caption-with-letter-spacing color-[#898989] mt-[44px] text-[12px]">
+          WEEKEND
+        </h1>
+        <h1 class=" product__title text-[24px] mt-[14px]">{{ product.title }}</h1>
+        <div class="flex mt-[10px] max-h-[24px] mb-[8px] flex gap-[10px] items-center">
+          <div class="text-[18px] color-[#898989] line-through">{{ product.price | money }}</div>
+          <div class="text-[18px]">{{ product.compare_at_price | money }}</div>
+          {% if product.price > product.compare_at_price %}
+            <div class="text-[10px] leading-0 max-h-[24px] flex-center px-[10px]  flex justify-between items-center bg-[#000] rounded-full text-white">
+              SALE
+            </div>
+            <div class="text-[10px] max-h-[24px] flex-centr px-[10px] flex justify-between items-center bg-[#E90000] rounded-full text-white">
+              SAVE 20%
+            </div>
+          {% endif %}
+        </div>
+
+        <p class=" text-[14px] leading-[20px]">{{ product.description }}</p>
+
+        <div class="mt-4 flex no-wrap">
+          <p class="font-medium text-[14px] leading-[20px] uppercase">
+            {{ product.options[0] }}:<span class="font-normal capitalize" x-text="selectedColor"></span>
+          </p>
+
+          <div class="flex space-x-2 mt-[8px]"></div>
+        </div>
+        {% assign unique_colors = '' %}
+        <div class="flex mt-[8px]">
+          {% for variant in product.variants %}
+            {% if unique_colors contains variant.option1 %}
+            {% else %}
+              <div
+                @click="addSelectedColor('{{ variant.option1 }}')"
+                class="w-[48px] h-[48px] border-[1px] border-solid border-[#969696] flex items-center justify-center cursor-pointer"
+                :class="{'border-2 border-black': selectedColor === '{{ variant.option1 }}'}"
+              >
+                <div class="block! w-[20px] h-[20px] rounded-full" style="background-color: {{variant.option1}};"></div>
+              </div>
+              {% assign unique_colors = unique_colors | append: variant.option1 | append: ',' %}
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <div class="mt-4 flex no-wrap">
+          <p class="font-medium text-[14px] leading-[20px] uppercase">
+            {{ product.options[1] }}:<span class="font-normal capitalize" x-text="selectedSize"></span>
+          </p>
+          <div class="flex space-x-2 mt-[8px]"></div>
+        </div>
+        {% assign unique_size = '' %}
+        <div class="flex  mt-[8px]" :key="size">
+          {% for variant in product.variants %}
+            {% if unique_size contains variant.option2 %}
+            {% else %}
+              <div
+                @click="selectedSize = '{{ variant.option2 }}'"
+                :class="{'border-2 border-black': selectedSize === '{{ variant.option2 }}'}"
+                class="w-[48px] h-[48px] border-[1px] border-solid border-[#969696] flex items-center justify-center cursor-pointer"
+              >
+                {{ variant.option2 }}
+              </div>
+              {% assign unique_size = unique_size | append: variant.option2 | append: ',' %}
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <div class="mt-4">
+          <p class="font-bold text-[14px] leading-[20px] mt-[24px] mb-[8px] flex">Add Custom Text:</p>
+          <div class=" flex justify-between">
+            <input
+              type="text"
+              x-model="customText"
+              class="w-full mr-[14px] h-[48px] border-b border-b-color-[rgba(0, 0, 0, 0.5)]"
+              placeholder="Text"
+            >
+            <button
+              @click="addCustomText()"
+              :disabled="!customText"
+              class="text-[14px] leading-[20px] w-[82px] h-[48px] hyphens-none"
+              :class="{'bg-black text-white': customText, 'text-[#bfbfbf] bg-[#7f7f7f]': !customText}"
+            >
+              Add +$12
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4 flex items-center space-x-4">
+          <div class="flex items-center w-[88px] px-[14px] py-[12px] h-[48px] border border-black">
+            <button @click="decreaseQuantity()" class="px-2 py-1">-</button>
+            <input class="w-[20px] text-center" type="number" x-model="quantity">
+            <button @click="quantity++" class="px-2 py-1">+</button>
+          </div>
+
+          <button @click="addToCart()" class="h-[48px] w-full px-6 py-2 border border-black uppercase">
+            Add to Cart
+          </button>
+        </div>
+        <button
+          @click="buyNow(); addCustomText()"
+          class="h-[48px] w-full px-6 py-2 bg-black text-white uppercase mt-[11px]"
+        >
+          Buy now
+        </button>
+
+        <div x-data="{ open: false }" class="border-t border-black mt-[32px]">
+          <button
+            @click="open = !open"
+            class="flex justify-between items-center w-full py-4 text-left focus:outline-none"
+          >
+            <h2 class="text-[16px] leading-[24px] font-medium">Desription</h2>
+            <span
+              class="transform transition-transform duration-200"
+              :class="{'rotate-180': open}"
+            >
+              <svg class="icon icon-caret w-[9px] h-[6px]" viewBox="0 0 10 6">
+                <path fill="currentColor" fill-rule="evenodd" d="M9.354.646a.5.5 0 0 0-.708 0L5 4.293 1.354.646a.5.5 0 0 0-.708.708l4 4a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 0 0-.708" clip-rule="evenodd"/>
+              </svg>
+            </span>
+          </button>
+
+          <div
+            x-show="open"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 -translate-y-2"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 -translate-y-2"
+            class="pb-4 prose prose-sm"
+          >
+            <p class="text-[14px] leading-[20px]">
+              Lorem ipsum dolor sit amet consectetur. Non nisl leo ullamcorper vitae. Odio euismod mollis sit malesuada
+              nullam ultrices pellentesque amet tristique. Malesuada fringilla nunc donec vitae ipsum adipiscing. Lacus
+              pellentesque nunc viverra vehicula netus.
+            </p>
+          </div>
+        </div>
+        <div x-data="{ open: false }" class="border-t border-black">
+          <button
+            @click="open = !open"
+            class="flex justify-between items-center w-full py-4 text-left focus:outline-none"
+          >
+            <h2 class="text-[16px] leading-[24px] font-medium">Made by</h2>
+            <span
+              class="transform transition-transform duration-200"
+              :class="{'rotate-180': open}"
+            >
+              <svg class="icon icon-caret w-[9px] h-[6px]" viewBox="0 0 10 6">
+                <path fill="currentColor" fill-rule="evenodd" d="M9.354.646a.5.5 0 0 0-.708 0L5 4.293 1.354.646a.5.5 0 0 0-.708.708l4 4a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 0 0-.708" clip-rule="evenodd"/>
+              </svg>
+            </span>
+          </button>
+
+          <div
+            x-show="open"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 -translate-y-2"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 -translate-y-2"
+            class="pb-4 prose prose-sm"
+          >
+            <p class="text-[14px] leading-[20px]">
+              Lorem ipsum dolor sit amet consectetur. Non nisl leo ullamcorper vitae. Odio euismod mollis sit malesuada
+              nullam ultrices pellentesque amet tristique. Malesuada fringilla nunc donec vitae ipsum adipiscing. Lacus
+              pellentesque nunc viverra vehicula netus.
+            </p>
+          </div>
+        </div>
+        <div x-data="{ open: false }" class="border-t border-black">
+          <button
+            @click="open = !open"
+            class="flex justify-between items-center w-full py-4 text-left focus:outline-none"
+          >
+            <h2 class="text-[16px] leading-[24px] font-medium">Shipping</h2>
+            <span
+              class="transform transition-transform duration-200"
+              :class="{'rotate-180': open}"
+            >
+              <svg class="icon icon-caret w-[9px] h-[6px]" viewBox="0 0 10 6">
+                <path fill="currentColor" fill-rule="evenodd" d="M9.354.646a.5.5 0 0 0-.708 0L5 4.293 1.354.646a.5.5 0 0 0-.708.708l4 4a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 0 0-.708" clip-rule="evenodd"/>
+              </svg>
+            </span>
+          </button>
+
+          <div
+            x-show="open"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 -translate-y-2"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 -translate-y-2"
+            class="pb-4 prose prose-sm"
+          >
+            <p class="text-[14px] leading-[20px]">
+              Lorem ipsum dolor sit amet consectetur. Non nisl leo ullamcorper vitae. Odio euismod mollis sit malesuada
+              nullam ultrices pellentesque amet tristique. Malesuada fringilla nunc donec vitae ipsum adipiscing. Lacus
+              pellentesque nunc viverra vehicula netus.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+
+function productPage() {
+  return {
+    productName: '{{ product.title }}',
+    productDescription: '{{ product.description }}',
+    productImages: {{ product.media | json }},
+    selectedImage: '{{ product.featured_image.src }}',
+    productColors: {{ product.variants | json }},
+    selectedColor: '',
+    productSizes: {{ product.variants | json }},
+    productS: [],
+    selectedSize: '',
+    customText: '',
+    quantity: 1,
+    originalPrice: '{{ product.compare_at_price | money }}',
+    salePrice: '{{ product.price | money }}',
+    productVariants: {{product.variants | json}},
+    product: {{product | json}},
+    init() {
+      if (this.productVariants.length > 0 && this.productVariants[0].option1) this.selectedColor = this.productVariants[0].option1;
+      if (this.productVariants.length > 0 && this.productVariants[0].option2) this.selectedSize = this.productVariants[0].option2;
+    },
+    getVariantId() {
+      const matchingVariant = this.productVariants.find(variant =>
+        variant.option1 === this.selectedColor && variant.option2 === this.selectedSize
+      );
+      return matchingVariant ? matchingVariant.id : null;
+    },
+    updateCart() {
+      fetch('/cart.js', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => response.json())
+      .then(data => {
+        if(document.querySelector('.cart-count-bubble')){
+            document.querySelector('.cart-count-bubble').innerText = data.item_count;     
+        }else{
+            document.getElementById('cart-icon-bubble').insertAdjacentHTML('beforeend', 
+                `<div class="cart-count-bubble">${data.item_count}</div>`
+            );
+        }
+      })
+      .catch(error => console.error('Error fetching cart:', error));
+    },
+    addToCart() {
+      fetch('/cart/add.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id:this.getVariantId(),
+          quantity: this.quantity,
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        this.updateCart();
+      })
+      .catch(error => {
+        console.error('Error adding product to cart:', error);
+      });
+    },
+    addCustomText() {
+    if(this.customText){
+      fetch('/cart/add.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: 42355587678296,
+          quantity: this.quantity,
+          properties: {
+            'Custom Text': this.customText,
+            'Color': this.selectedColor,
+            'Size': this.selectedSize,
+          },
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        this.updateCart();
+      })
+      .catch(error => {
+        console.error('Error adding product to cart:', error);
+      });
+    }
+    },
+    buyNow() {
+      this.addToCart()
+      this.addCustomText()
+      window.location.href = '/cart';
+    },
+    decreaseQuantity() {
+      if (this.quantity > 1) this.quantity--;
+    },
+    reorderImagesByColor(color) {
+      const matchingImage = this.productImages.find(image => image.src.includes(color));      
+      if (matchingImage) {
+        this.productImages = this.productImages.filter(image => !image.src.includes(color));
+        this.productImages.unshift(matchingImage);
+      }
+    },
+    addSelectedColor(color){
+        this.selectedColor = color
+        this.selectedImage =`files/${color}.png`
+        this.reorderImagesByColor(color)
+    }
+    
+  }
+}
+</script>
