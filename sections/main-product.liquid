@@ -15,9 +15,11 @@
   {{ 'component-slider.css' | asset_url | stylesheet_tag }}
   {{ 'component-rating.css' | asset_url | stylesheet_tag }}
   {{ 'component-deferred-media.css' | asset_url | stylesheet_tag }}
+  {{ 'component-popup-notice.css' | asset_url | stylesheet_tag }}
   {{ 'quick-add.css' | asset_url | stylesheet_tag }}
 
   <script src="{{ 'quick-add.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'popup-notice.js' | asset_url }}" defer="defer"></script>
 
   {% unless product.has_only_default_variant %}
     {{ 'component-product-variant-picker.css' | asset_url | stylesheet_tag }}
@@ -256,6 +258,46 @@
                     {% endif %}
                     {{- block.settings.notice_text -}}
                   </div>
+                {% endif %}
+              {%- when 'popup_notice' -%}
+                {% liquid
+                  assign has_notice = false
+
+                  for selected_product in block.settings.product_list
+                    if selected_product.id == product.id
+                      assign has_notice = true
+                    endif
+                  endfor
+
+                  if block.settings.product_tag != blank
+                    if product.tags contains block.settings.product_tag
+                      assign has_notice = true
+                    endif
+                  endif
+                %}
+                {% if has_notice %}
+                  <popup-notice>
+                    <div class="popup-notice__content">
+                      {% if block.settings.icon != 'none' %}
+                        <span class="product-notice-icon">
+                          {%- case block.settings.icon -%}
+                            {%- when 'info' -%}
+                              {% render 'icon-info' %}
+                            {%- when 'error' -%}
+                              {% render 'icon-error' %}
+                            {%- when 'discount' -%}
+                              {% render 'icon-discount' %}
+                            {%- when 'warning' -%}
+                              {% render 'icon-warning' %}
+                            {%- when 'note' -%}
+                              {% render 'icon-note' %}
+                          {%- endcase -%}
+                        </span>
+                      {% endif %}
+                      {{- block.settings.notice_text -}}
+                      <button class="close-popup" aria-label="Close Popup">Close</button>
+                    </div>
+                  </popup-notice>
                 {% endif %}
               {%- when 'custom_liquid' -%}
                 {{ block.settings.custom_liquid }}
@@ -874,6 +916,66 @@
     {
       "type": "notice",
       "name": "t:sections.main-product.blocks.notice.name",
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "notice_text",
+          "label": "t:sections.main-product.blocks.notice.settings.notice_text.label"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "t:sections.main-product.blocks.notice.settings.notice_icon.option_1.label"
+            },
+            {
+              "value": "info",
+              "label": "t:sections.main-product.blocks.notice.settings.notice_icon.option_2.label"
+            },
+            {
+              "value": "error",
+              "label": "t:sections.main-product.blocks.notice.settings.notice_icon.option_3.label"
+            },
+            {
+              "value": "discount",
+              "label": "t:sections.main-product.blocks.notice.settings.notice_icon.option_4.label"
+            },
+            {
+              "value": "warning",
+              "label": "t:sections.main-product.blocks.notice.settings.notice_icon.option_5.label"
+            },
+            {
+              "value": "note",
+              "label": "t:sections.main-product.blocks.notice.settings.notice_icon.option_6.label"
+            }
+          ],
+          "default": "none",
+          "label": "t:sections.main-product.blocks.notice.settings.notice_icon.label"
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:sections.all.colors.label",
+          "default": "scheme-1"
+        },
+        {
+          "type": "text",
+          "id": "product_tag",
+          "label": "Tags",
+          "info": "Show the notice on products with this tag"
+        },
+        {
+          "type": "product_list",
+          "id": "product_list",
+          "label": "t:sections.main-product.blocks.notice.settings.product_list.label"
+        }
+      ]
+    },
+    {
+      "type": "popup_notice",
+      "name": "Popup notice",
       "settings": [
         {
           "type": "inline_richtext",
