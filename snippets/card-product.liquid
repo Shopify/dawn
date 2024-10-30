@@ -17,7 +17,7 @@
   - horizontal_quick_add: {Boolean} Changes the quick add button styles when set to true. Default: false (optional)
   - placeholder_image: {String} The placeholder image to use when no product exists. Default: 'product-apparel-2' (optional)
   - loop_index: {Number} The current forloop index (optional)
-  - image_override: {String} Product image override (optional)
+  - image_override: {String} Product image override
 
   Usage:
   {% render 'card-product', show_vendor: section.settings.show_vendor %}
@@ -39,11 +39,7 @@
     if card_product.featured_media and media_aspect_ratio == 'portrait'
       assign ratio = 0.8
     elsif card_product.featured_media and media_aspect_ratio == 'adapt'
-      if image_override
-        assign ratio = image_override.aspect_ratio
-      else
-        assign ratio = card_product.featured_media.aspect_ratio
-      endif
+      assign ratio = card_product.featured_media.aspect_ratio
     endif
     if ratio == 0 or ratio == null
       assign ratio = 1
@@ -55,11 +51,11 @@
     <div
       class="
         card card--{{ settings.card_style }}
-        {% if image_override or card_product.featured_media %} card--media{% else %} card--text{% endif %}
+        {% if card_product.featured_media %} card--media{% else %} card--text{% endif %}
         {% if settings.card_style == 'card' %} color-{{ settings.card_color_scheme }} gradient{% endif %}
         {% if image_shape and image_shape != 'default' %} card--shape{% endif %}
         {% if extend_height %} card--extend-height{% endif %}
-        {% if image_override == nil or card_product.featured_media == nil and settings.card_style == 'card' %} ratio{% endif %}
+        {% if card_product.featured_media == nil and settings.card_style == 'card' %} ratio{% endif %}
         {% if horizontal_class %} card--horizontal{% endif %}
       "
       style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%;"
@@ -73,30 +69,25 @@
             <div class="media media--transparent media--hover-effect">
               {%- if card_product.featured_media.media_type != 'video' -%}
                 {% comment %}theme-check-disable ImgLazyLoading{% endcomment %}
-                {% if image_override != blank %}
-                  {% assign featured_media = image_override %}
-                {% else %}
-                  {% assign featured_media = card_product.featured_media %}
-                {% endif %}
                 <img
                   srcset="
-                    {%- if featured_media.width >= 165 -%}{{ featured_media | image_url: width: 165 }} 165w,{%- endif -%}
-                    {%- if featured_media.width >= 360 -%}{{ featured_media | image_url: width: 360 }} 360w,{%- endif -%}
-                    {%- if featured_media.width >= 533 -%}{{ featured_media | image_url: width: 533 }} 533w,{%- endif -%}
-                    {%- if featured_media.width >= 720 -%}{{ featured_media | image_url: width: 720 }} 720w,{%- endif -%}
-                    {%- if featured_media.width >= 940 -%}{{ featured_media | image_url: width: 940 }} 940w,{%- endif -%}
-                    {%- if featured_media.width >= 1066 -%}{{ featured_media | image_url: width: 1066 }} 1066w,{%- endif -%}
-                    {{ card_product.featured_media | image_url }} {{ featured_media.width }}w
+                    {%- if card_product.featured_media.width >= 165 -%}{{ card_product.featured_media | image_url: width: 165 }} 165w,{%- endif -%}
+                    {%- if card_product.featured_media.width >= 360 -%}{{ card_product.featured_media | image_url: width: 360 }} 360w,{%- endif -%}
+                    {%- if card_product.featured_media.width >= 533 -%}{{ card_product.featured_media | image_url: width: 533 }} 533w,{%- endif -%}
+                    {%- if card_product.featured_media.width >= 720 -%}{{ card_product.featured_media | image_url: width: 720 }} 720w,{%- endif -%}
+                    {%- if card_product.featured_media.width >= 940 -%}{{ card_product.featured_media | image_url: width: 940 }} 940w,{%- endif -%}
+                    {%- if card_product.featured_media.width >= 1066 -%}{{ card_product.featured_media | image_url: width: 1066 }} 1066w,{%- endif -%}
+                    {{ card_product.featured_media | image_url }} {{ card_product.featured_media.width }}w
                   "
-                  src="{{ featured_media | image_url: width: 533 }}"
+                  src="{{ card_product.featured_media | image_url: width: 533 }}"
                   sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 130 | divided_by: 4 }}px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)"
-                  alt="{{ featured_media.alt | escape }}"
+                  alt="{{ card_product.featured_media.alt | escape }}"
                   class="motion-reduce"
                   {% unless lazy_load == false %}
                     loading="lazy"
                   {% endunless %}
-                  width="{{ featured_media.width }}"
-                  height="{{ featured_media.height }}"
+                  width="{{ card_product.featured_media.width }}"
+                  height="{{ card_product.featured_media.height }}"
                 >
                 {% comment %}theme-check-enable ImgLazyLoading{% endcomment %}
               {% endif %}
