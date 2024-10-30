@@ -2,16 +2,18 @@ class CustomPopup extends HTMLElement {
   constructor() {
     super();
     this.closeButton = this.querySelector('.close-popup');
+    this.popupContent = this.querySelector('.popup-notice__content');
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.innerHTML = `<slot></slot>`;
     this.isOpen = false;
 
     // Check sessionStorage to see if popup has already been closed
-    if (!sessionStorage.getItem('popupClosed') || document.documentElement.classList.contains('shopify-design-mode')) {
+    if (!sessionStorage.getItem('popupClosed')) {
       this.open();
     }
 
     this.closeButton.addEventListener('click', this.close.bind(this));
+    this.addEventListener('click', this.handleOutsideClick.bind(this));
     document.addEventListener('keydown', this.handleKeydown.bind(this));
   }
 
@@ -29,9 +31,7 @@ class CustomPopup extends HTMLElement {
     this.isOpen = false;
 
     // Store the popup closed state in sessionStorage
-    if (!document.documentElement.classList.contains('shopify-design-mode')) {
-      sessionStorage.setItem('popupClosed', 'true');
-    }
+    sessionStorage.setItem('popupClosed', 'true');
   }
 
   focusTrap() {
@@ -56,6 +56,12 @@ class CustomPopup extends HTMLElement {
         }
       }
     });
+  }
+
+  handleOutsideClick(e) {
+    if (e.target === this && !this.popupContent.contains(e.target)) {
+      this.close();
+    }
   }
 
   handleKeydown(e) {
