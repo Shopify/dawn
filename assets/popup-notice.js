@@ -29,7 +29,9 @@ class CustomPopup extends HTMLElement {
     this.isOpen = false;
 
     // Store the popup closed state in sessionStorage
-    sessionStorage.setItem('popupClosed', 'true');
+    if (!document.documentElement.classList.contains('shopify-design-mode')) {
+      sessionStorage.setItem('popupClosed', 'true');
+    }
   }
 
   focusTrap() {
