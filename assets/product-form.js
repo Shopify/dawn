@@ -20,8 +20,6 @@ if (!customElements.get('product-form')) {
           this.submitButton.addEventListener('click', this.handleClickSubmit.bind(this));
 
         this.hideErrors = this.dataset.hideErrors === 'true';
-
-        console.log(this.cart);
       }
 
       onSubmitHandler(evt) {
