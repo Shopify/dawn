@@ -97,6 +97,7 @@ if (!customElements.get('product-form')) {
               );
               quickAddModal.hide(true);
             } else {
+              console.log(response);
               this.cart.renderContents(response);
             }
           })
