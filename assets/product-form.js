@@ -53,11 +53,6 @@ if (!customElements.get('product-form')) {
         }
         config.body = formData;
 
-        // Display the key/value pairs
-        for (var pair of formData.entries()) {
-          console.log(pair[0] + ', ' + pair[1]);
-        }
-
         fetch(`${routes.cart_add_url}`, config)
           .then((response) => response.json())
           .then((response) => {
@@ -102,7 +97,6 @@ if (!customElements.get('product-form')) {
               );
               quickAddModal.hide(true);
             } else {
-              console.log(response);
               this.cart.renderContents(response);
             }
           })
