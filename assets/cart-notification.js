@@ -46,6 +46,8 @@ class CartNotification extends HTMLElement {
       });
     }
 
+    console.log(this.dataset);
+
     const recommendedProducts = fetch(
       `${this.dataset.recommendedProductsUrl}&product_id=${parsedState.id}&section_id=${this.dataset.sectionId}&intent=complementary&limit=1`
     )
