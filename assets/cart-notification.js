@@ -46,34 +46,31 @@ class CartNotification extends HTMLElement {
       });
     }
 
-    console.log(this.dataset);
-
     const recommendedProducts = fetch(
       `${this.dataset.recommendedProductsUrl}&product_id=${parsedState.id}&section_id=${this.dataset.sectionId}&intent=complementary&limit=1`
     )
-      .then((response) => response.text())
-      .then((text) => {
-        const html = document.createElement('div');
-        html.innerHTML = text;
-        const recommendations = html.querySelector('product-recommendations');
+      .then((response) => response.json())
+      .then((json) => {
+        console.log(json);
+        // const html = document.createElement('div');
+        // html.innerHTML = text;
+        // const recommendations = html.querySelector('product-recommendations');
 
-        if (recommendations?.innerHTML.trim().length) {
-          this.innerHTML = recommendations.innerHTML;
-        }
+        // if (recommendations?.innerHTML.trim().length) {
+        //   this.innerHTML = recommendations.innerHTML;
+        // }
 
-        if (!this.querySelector('slideshow-component') && this.classList.contains('complementary-products')) {
-          this.remove();
-        }
+        // if (!this.querySelector('slideshow-component') && this.classList.contains('complementary-products')) {
+        //   this.remove();
+        // }
 
-        if (html.querySelector('.grid__item')) {
-          this.classList.add('product-recommendations--loaded');
-        }
+        // if (html.querySelector('.grid__item')) {
+        //   this.classList.add('product-recommendations--loaded');
+        // }
       })
       .catch((e) => {
         console.error(e);
       });
-
-    console.log(recommendedProducts);
 
     if (this.header) this.header.reveal();
     this.open();
