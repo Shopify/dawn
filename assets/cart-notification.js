@@ -47,7 +47,7 @@ class CartNotification extends HTMLElement {
     }
 
     const recommendedProducts = fetch(
-      `${this.dataset.recommendedProductsURL}&product_id=${parsedState.id}&section_id=${this.dataset.sectionId}&intent=complementary&limit=1`
+      `${this.dataset.recommendedProductsUrl}&product_id=${parsedState.id}&section_id=${this.dataset.sectionId}&intent=complementary&limit=1`
     )
       .then((response) => response.text())
       .then((text) => {
