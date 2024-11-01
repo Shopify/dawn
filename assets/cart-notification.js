@@ -34,7 +34,14 @@ class CartNotification extends HTMLElement {
     removeTrapFocus(this.activeElement);
   }
 
-  renderContents(parsedState) {
+  async renderContents(parsedState) {
+    if (!parsedState.sections) {
+      const sections = await fetch(
+        `${routes.cart_url}?sections=${this.getSectionsToRender().map((section) => section.id)}`
+      );
+      parsedState.sections = await sections.json();
+    }
+
     this.cartItemKey = parsedState.key;
     this.getSectionsToRender().forEach((section) => {
       document.getElementById(section.id).innerHTML = this.getSectionInnerHTML(
