@@ -9,10 +9,7 @@
   {% render 'cart-notification' %}
 {% endcomment %}
 
-<cart-notification
-  data-recommended-products-url="{{ routes.product_recommendations_url }}"
-  data-section-id="cart-notification-recommendations"
->
+<cart-notification data-recommened-products-url="{{ routes.product_recommendations_url }}.json">
   <div class="cart-notification-wrapper{% if desktop_menu_type != 'drawer' %} page-width{% endif %}">
     <div
       id="cart-notification"
@@ -53,7 +50,42 @@
         </form>
         <button type="button" class="link button-label">{{ 'general.continue_shopping' | t }}</button>
       </div>
-      <div id="cart-notification-recommendations" class="cart-notification__recommended-products"></div>
+      <div class="cart-notification__recommended-products">
+        <product-recommendations
+          class="related-products page-width section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+          data-url="{{ routes.product_recommendations_url }}?limit=1"
+          data-section-id="{{ section.id }}"
+          data-product-id="{{ product.id }}"
+          style="padding: 0;"
+        >
+          {% if recommendations.performed and recommendations.products_count > 0 %}
+            <ul
+              class="grid product-grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down"
+              role="list"
+              display:
+              none;
+            >
+              {% assign skip_card_product_styles = false %}
+              {% for recommendation in recommendations.products %}
+                {% if recommendation.id != settings.returns_product %}
+                  <li class="grid__item" data-id="{{ recommendation.id }}">
+                    {% render 'card-product',
+                      card_product: recommendation,
+                      media_aspect_ratio: section.settings.image_ratio,
+                      image_shape: section.settings.image_shape,
+                      show_secondary_image: section.settings.show_secondary_image,
+                      show_vendor: section.settings.show_vendor,
+                      show_rating: section.settings.show_rating,
+                      skip_styles: skip_card_product_styles
+                    %}
+                  </li>
+                {% endif %}
+                {%- assign skip_card_product_styles = true -%}
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </product-recommendations>
+      </div>
     </div>
   </div>
 </cart-notification>

@@ -35,8 +35,7 @@ class CartNotification extends HTMLElement {
   }
 
   renderContents(parsedState) {
-    // this.cartItemKey = parsedState.key;
-    console.log(parsedState);
+    this.cartItemKey = parsedState.key;
     if (parsedState.sections) {
       this.getSectionsToRender().forEach((section) => {
         document.getElementById(section.id).innerHTML = this.getSectionInnerHTML(
@@ -46,32 +45,6 @@ class CartNotification extends HTMLElement {
       });
     }
 
-    const recommendedProducts = fetch(
-      `${this.dataset.recommendedProductsUrl}.json?product_id=${parsedState.product_id}&section_id=${this.dataset.sectionId}&intent=complementary&limit=1`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        // const html = document.createElement('div');
-        // html.innerHTML = text;
-        // const recommendations = html.querySelector('product-recommendations');
-
-        // if (recommendations?.innerHTML.trim().length) {
-        //   this.innerHTML = recommendations.innerHTML;
-        // }
-
-        // if (!this.querySelector('slideshow-component') && this.classList.contains('complementary-products')) {
-        //   this.remove();
-        // }
-
-        // if (html.querySelector('.grid__item')) {
-        //   this.classList.add('product-recommendations--loaded');
-        // }
-      })
-      .catch((e) => {
-        console.error(e);
-      });
-
     if (this.header) this.header.reveal();
     this.open();
   }
@@ -80,7 +53,7 @@ class CartNotification extends HTMLElement {
     return [
       {
         id: 'cart-notification-product',
-        selector: `[id^="cart-notification-product-"]`,
+        selector: `[id="cart-notification-product-${this.cartItemKey}"]`,
       },
       {
         id: 'cart-notification-button',
