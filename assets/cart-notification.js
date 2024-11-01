@@ -46,6 +46,30 @@ class CartNotification extends HTMLElement {
       });
     }
 
+    const recommendedProducts = fetch(`${this.dataset.recommendedProductsURL}&product_id=${parsedState.id}&section_id=${this.dataset.sectionId}&intent=complementary`)
+      .then((response) => response.text())
+      .then((text) => {
+        const html = document.createElement('div');
+        html.innerHTML = text;
+        const recommendations = html.querySelector('product-recommendations');
+
+        if (recommendations?.innerHTML.trim().length) {
+          this.innerHTML = recommendations.innerHTML;
+        }
+
+        if (!this.querySelector('slideshow-component') && this.classList.contains('complementary-products')) {
+          this.remove();
+        }
+
+        if (html.querySelector('.grid__item')) {
+          this.classList.add('product-recommendations--loaded');
+        }
+      })
+      .catch((e) => {
+        console.error(e);
+      });
+  }
+
     if (this.header) this.header.reveal();
     this.open();
   }

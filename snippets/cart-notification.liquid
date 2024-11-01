@@ -9,7 +9,10 @@
   {% render 'cart-notification' %}
 {% endcomment %}
 
-<cart-notification>
+<cart-notification
+  data-recommened-products-url="{{ routes.product_recommendations_url }}.json"
+  data-section-id="cart-notification-recommendations"
+>
   <div class="cart-notification-wrapper{% if desktop_menu_type != 'drawer' %} page-width{% endif %}">
     <div
       id="cart-notification"
@@ -50,80 +53,7 @@
         </form>
         <button type="button" class="link button-label">{{ 'general.continue_shopping' | t }}</button>
       </div>
-      <div class="cart-notification__recommended-products">
-        <product-recommendations
-          class="related-products page-width section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-          data-url="{{ routes.product_recommendations_url }}?limit=1&intent=complementary"
-          data-section-id="{{ section.id }}"
-          data-product-id="{{ product.id }}"
-          style="padding: 0;"
-        >
-          {% if recommendations.performed and recommendations.products_count > 0 %}
-            {% render 'dump' with recommendations.products %}
-            <ul
-              class="grid product-grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down"
-              role="list"
-              style="display: none;"
-            >
-              {% for recommendation in recommendations.products %}
-                {% if recommendation.id != settings.returns_product %}
-                  <li class="grid__item" data-id="{{ recommendation.id }}">
-                    <div id="cart-notification-product-{{ item.key }}" class="cart-item">
-                      {%- if recommendation.image -%}
-                        <div class="cart-notification-product__image global-media-settings">
-                          <img
-                            src="{{ recommendation.image | image_url: width: 140 }}"
-                            alt="{{ recommendation.image.alt | escape }}"
-                            width="70"
-                            height="{{ 70 | divided_by: recommendation.image.aspect_ratio | ceil }}"
-                            loading="lazy"
-                          >
-                        </div>
-                      {%- endif -%}
-                      <div>
-                        {%- if settings.show_vendor -%}
-                          <p class="caption-with-letter-spacing light">{{ recommendation.product.vendor }}</p>
-                        {%- endif -%}
-                        <h3 class="cart-notification-product__name h4">{{ recommendation.title | escape }}</h3>
-                        <dl>
-                          {%- unless recommendation.product.has_only_default_variant -%}
-                            {%- for option in recommendation.options_with_values -%}
-                              <div class="product-option">
-                                <dt>{{ option.name }}:</dt>
-                                <dd>{{ option.value }}</dd>
-                              </div>
-                            {%- endfor -%}
-                          {%- endunless -%}
-                          {%- for property in recommendation.properties -%}
-                            {%- assign property_first_char = property.first | slice: 0 -%}
-                            {%- if property.last != blank and property_first_char != '_' -%}
-                              <div class="product-option">
-                                <dt>{{ property.first }}:</dt>
-                                <dd>
-                                  {%- if property.last contains '/uploads/' -%}
-                                    <a href="{{ property.last }}" class="link" target="_blank">
-                                      {{ property.last | split: '/' | last }}
-                                    </a>
-                                  {%- else -%}
-                                    {{ property.last }}
-                                  {%- endif -%}
-                                </dd>
-                              </div>
-                            {%- endif -%}
-                          {%- endfor -%}
-                        </dl>
-                        {%- if recommendation.selling_plan_allocation != null -%}
-                          <p class="product-option">{{ recommendation.selling_plan_allocation.selling_plan.name }}</p>
-                        {%- endif -%}
-                      </div>
-                    </div>
-                  </li>
-                {% endif %}
-              {% endfor %}
-            </ul>
-          {% endif %}
-        </product-recommendations>
-      </div>
+      <div id="cart-notification-recommendations" class="cart-notification__recommended-products"></div>
     </div>
   </div>
 </cart-notification>
