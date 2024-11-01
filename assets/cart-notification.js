@@ -35,7 +35,7 @@ class CartNotification extends HTMLElement {
   }
 
   renderContents(parsedState) {
-    this.cartItemKey = parsedState.key;
+    // this.cartItemKey = parsedState.key;
     if (parsedState.sections) {
       this.getSectionsToRender().forEach((section) => {
         document.getElementById(section.id).innerHTML = this.getSectionInnerHTML(
@@ -53,7 +53,7 @@ class CartNotification extends HTMLElement {
     return [
       {
         id: 'cart-notification-product',
-        selector: `[id="cart-notification-product-${this.cartItemKey}"]`,
+        selector: `[id^="cart-notification-product-"]`,
       },
       {
         id: 'cart-notification-button',
