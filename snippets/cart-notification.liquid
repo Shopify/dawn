@@ -59,28 +59,45 @@
           style="padding: 0;"
         >
           {% if recommendations.performed and recommendations.products_count > 0 %}
+            {% render 'dump' with recommendations.products %}
             <ul
               class="grid product-grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down"
               role="list"
               display:
               none;
             >
-              {% assign skip_card_product_styles = false %}
               {% for recommendation in recommendations.products %}
                 {% if recommendation.id != settings.returns_product %}
                   <li class="grid__item" data-id="{{ recommendation.id }}">
-                    {% render 'card-product',
-                      card_product: recommendation,
-                      media_aspect_ratio: section.settings.image_ratio,
-                      image_shape: section.settings.image_shape,
-                      show_secondary_image: section.settings.show_secondary_image,
-                      show_vendor: section.settings.show_vendor,
-                      show_rating: section.settings.show_rating,
-                      skip_styles: skip_card_product_styles
-                    %}
+                    <div id="cart-notification-product-{{ item.key }}" class="cart-item">
+                      {%- if recommendation.featured_image -%}
+                        <div class="cart-notification-product__image global-media-settings">
+                          <img
+                            src="{{ recommendation.featured_image | image_url: width: 140 }}"
+                            alt="{{ recommendation.featured_image.alt | escape }}"
+                            width="70"
+                            height="{{ 70 | divided_by: recommendation.featured_image.aspect_ratio | ceil }}"
+                            loading="lazy"
+                          >
+                        </div>
+                      {%- endif -%}
+                      <div>
+                        {%- if settings.show_vendor -%}
+                          <p class="caption-with-letter-spacing light">{{ recommendation.vendor }}</p>
+                        {%- endif -%}
+                        <h3 class="cart-notification-product__name h4">{{ recommendation.title | escape }}</h3>
+                        <dl>
+                          {%- for option in recommendation.options -%}
+                            <div class="product-option">
+                              <dt>{{ option.name }}:</dt>
+                              <dd>{{ option.values.join | join: ', ' }}</dd>
+                            </div>
+                          {%- endfor -%}
+                        </dl>
+                      </div>
+                    </div>
                   </li>
                 {% endif %}
-                {%- assign skip_card_product_styles = true -%}
               {% endfor %}
             </ul>
           {% endif %}
