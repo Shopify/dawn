@@ -53,7 +53,7 @@ class CartNotification extends HTMLElement {
     return [
       {
         id: 'cart-notification-product',
-        selector: `[id="cart-notification-product-${this.cartItemKey}"]`,
+        selector: `[class="cart-notification-product"]`,
       },
       {
         id: 'cart-notification-button',
