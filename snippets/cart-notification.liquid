@@ -9,7 +9,7 @@
   {% render 'cart-notification' %}
 {% endcomment %}
 
-<cart-notification data-recommened-products-url="{{ routes.product_recommendations_url }}.json">
+<cart-notification>
   <div class="cart-notification-wrapper{% if desktop_menu_type != 'drawer' %} page-width{% endif %}">
     <div
       id="cart-notification"
@@ -53,50 +53,34 @@
       <div class="cart-notification__recommended-products">
         <product-recommendations
           class="related-products page-width section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-          data-url="{{ routes.product_recommendations_url }}?limit=1"
+          data-url="{{ routes.product_recommendations_url }}?limit=2"
           data-section-id="{{ section.id }}"
           data-product-id="{{ product.id }}"
           style="padding: 0;"
         >
           {% if recommendations.performed and recommendations.products_count > 0 %}
             <h3>You may also like</h3>
-            {% render 'dump' with recommendations.products[0] %}
+            {% render 'dump' with recommendations.products[0].options_with_values %}
             <ul
               role="list"
               style="display: none; list-style: none; padding: 0; margin: 0;"
             >
+              {% assign skip_card_product_styles = false %}
               {% for recommendation in recommendations.products %}
                 {% if recommendation.id != settings.returns_product %}
                   <li data-id="{{ recommendation.id }}">
-                    <div class="cart-notification-product">
-                      {%- if recommendation.featured_image -%}
-                        <div class="cart-notification-product__image global-media-settings">
-                          <img
-                            src="{{ recommendation.featured_image | image_url: width: 140 }}"
-                            alt="{{ recommendation.featured_image.alt | escape }}"
-                            width="70"
-                            height="{{ 70 | divided_by: recommendation.featured_image.aspect_ratio | ceil }}"
-                            loading="lazy"
-                          >
-                        </div>
-                      {%- endif -%}
-                      <div>
-                        {%- if settings.show_vendor -%}
-                          <p class="caption-with-letter-spacing light">{{ recommendation.vendor }}</p>
-                        {%- endif -%}
-                        <h3 class="cart-notification-product__name h4">{{ recommendation.title | escape }}</h3>
-                        <dl>
-                          {%- for option in recommendation.options_with_values -%}
-                            <div class="product-option">
-                              <dt>{{ option.name }}:</dt>
-                              <dd>{{ option.values.join }}</dd>
-                            </div>
-                          {%- endfor -%}
-                        </dl>
-                      </div>
-                    </div>
+                    {% render 'card-product',
+                      card_product: recommendation,
+                      media_aspect_ratio: section.settings.image_ratio,
+                      image_shape: section.settings.image_shape,
+                      show_secondary_image: section.settings.show_secondary_image,
+                      show_vendor: section.settings.show_vendor,
+                      show_rating: section.settings.show_rating,
+                      skip_styles: skip_card_product_styles
+                    %}
                   </li>
                 {% endif %}
+                {%- assign skip_card_product_styles = true -%}
               {% endfor %}
             </ul>
           {% endif %}
