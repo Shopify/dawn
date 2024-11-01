@@ -49,9 +49,9 @@ class CartNotification extends HTMLElement {
     const recommendedProducts = fetch(
       `${this.dataset.recommendedProductsUrl}&product_id=${parsedState.id}&section_id=${this.dataset.sectionId}&intent=complementary&limit=1`
     )
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
+      .then((response) => response.text())
+      .then((text) => {
+        console.log(text);
         // const html = document.createElement('div');
         // html.innerHTML = text;
         // const recommendations = html.querySelector('product-recommendations');
