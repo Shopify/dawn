@@ -46,7 +46,9 @@ class CartNotification extends HTMLElement {
       });
     }
 
-    const recommendedProducts = fetch(`${this.dataset.recommendedProductsURL}&product_id=${parsedState.id}&section_id=${this.dataset.sectionId}&intent=complementary&limit=1`)
+    const recommendedProducts = fetch(
+      `${this.dataset.recommendedProductsURL}&product_id=${parsedState.id}&section_id=${this.dataset.sectionId}&intent=complementary&limit=1`
+    )
       .then((response) => response.text())
       .then((text) => {
         const html = document.createElement('div');
@@ -68,7 +70,8 @@ class CartNotification extends HTMLElement {
       .catch((e) => {
         console.error(e);
       });
-  }
+
+    console.log(recommendedProducts);
 
     if (this.header) this.header.reveal();
     this.open();
