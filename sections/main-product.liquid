@@ -1,3 +1,12 @@
+{% assign meterOptions = '110 cm,150 cm' | split: ',' %}
+{% assign option2 = product.selected_or_first_available_variant.option2 | string %}
+{% assign is_option_in_meterOptions = false %}
+
+{% for meter in meterOptions %}
+  {% if meter == option2 %}
+    {% assign is_option_in_meterOptions = true %}
+  {% endif %}
+{% endfor %}
 <product-info
   id="MainProduct-{{ section.id }}"
   class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}"
@@ -240,7 +249,11 @@
                   -%}
                   {% # theme-check-enable %}
                   <label class="quantity__label form__label" for="Quantity-{{ section.id }}">
-                    {{ 'products.product.quantity.label' | t }}
+                    {% if is_option_in_meterOptions %}
+                      Länge in cm
+                    {% else %}
+                      {{ 'products.product.quantity.label' | t }}
+                    {% endif %}
                     <span class="quantity__rules-cart{% if cart_qty == 0 %} hidden{% endif %}">
                       {%- render 'loading-spinner' -%}
                       <span
@@ -267,13 +280,31 @@
                         id="Quantity-{{ section.id }}"
                         data-cart-quantity="{{ cart_qty }}"
                         data-min="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
-                        min="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
+                        min="
+                          {%- if is_option_in_meterOptions -%}
+                            10
+                          {%- else -%}
+                            1
+                          {%- endif -%}
+                        "
                         {% if product.selected_or_first_available_variant.quantity_rule.max != null %}
                           data-max="{{ product.selected_or_first_available_variant.quantity_rule.max }}"
                           max="{{ product.selected_or_first_available_variant.quantity_rule.max }}"
                         {% endif %}
-                        step="{{ product.selected_or_first_available_variant.quantity_rule.increment }}"
-                        value="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
+                        step="
+                          {%- if is_option_in_meterOptions -%}
+                            10
+                          {%- else -%}
+                            1
+                          {%- endif -%}
+                        "
+                        value="
+                          {%- if is_option_in_meterOptions -%}
+                            10
+                          {%- else -%}
+                            1
+                          {%- endif -%}
+                        "
                         form="{{ product_form_id }}"
                       >
                       <button class="quantity__button" name="plus" type="button">

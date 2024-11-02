@@ -310,7 +310,9 @@ if (!customElements.get('product-info')) {
         if (modalContent && newModalContent) modalContent.innerHTML = newModalContent.innerHTML;
       }
 
-      setQuantityBoundries() {
+      setQuantityBoundries(html) {
+        const selection = html ? this.getSelectedVariant(html) : null;
+
         const data = {
           cartQuantity: this.quantityInput.dataset.cartQuantity ? parseInt(this.quantityInput.dataset.cartQuantity) : 0,
           min: this.quantityInput.dataset.min ? parseInt(this.quantityInput.dataset.min) : 1,
@@ -319,6 +321,13 @@ if (!customElements.get('product-info')) {
         };
 
         let min = data.min;
+        let step = data.step;
+
+        if (['110 cm', '150 cm'].includes(selection?.option2) || !selection) {
+          min = 10;
+          step = 10;
+        }
+
         const max = data.max === null ? data.max : data.max - data.cartQuantity;
         if (max !== null) min = Math.min(min, max);
         if (data.cartQuantity >= data.min) min = Math.min(min, data.step);
@@ -352,7 +361,7 @@ if (!customElements.get('product-info')) {
 
       updateQuantityRules(sectionId, html) {
         if (!this.quantityInput) return;
-        this.setQuantityBoundries();
+        this.setQuantityBoundries(html);
 
         const quantityFormUpdated = html.getElementById(`Quantity-Form-${sectionId}`);
         const selectors = ['.quantity__input', '.quantity__rules', '.quantity__label'];
