@@ -1,0 +1,213 @@
+{% comment %}
+  Renders product variant options
+
+  Accepts:
+  - product: {Object} product object.
+  - option: {Object} current product_option object.
+  - block: {Object} block object.
+
+
+  Usage:
+  {% render 'product-variant-options',
+    product: product,
+    option: option,
+    block: block
+  %}
+{% endcomment %}
+{%- liquid
+  assign variants_available_arr = product.variants | map: 'available'
+  assign variants_option1_arr = product.variants | map: 'option1'
+  assign variants_option2_arr = product.variants | map: 'option2'
+  assign variants_option3_arr = product.variants | map: 'option3'
+
+  assign product_form_id = 'product-form-' | append: section.id
+
+  assign swatchType = settings.swatchType
+  assign swatchStyle = settings.swatchStyle
+  assign swatchSize = settings.swatchSize
+  assign swatchColors = settings.swatchColors | newline_to_br | split: '<br />'
+-%}
+
+<style>
+  .product-form__input input[type='radio'] + label.color-swatch,
+  .product-form__input input[type='radio'] + label.color-swatch:after,
+  .product-form__input input[type='radio'] + label.color-swatch:before{
+          border-radius: 0;
+  }
+  .product-form__input input[type='radio'] + label.color-swatch.round,
+  .product-form__input input[type='radio'] + label.color-swatch.round:after,
+  .product-form__input input[type='radio'] + label.color-swatch.round:before{
+      border-radius: 100%;
+    }
+  .product-form__input input[type='radio'] + label.color-swatch.round-corners,
+  .product-form__input input[type='radio'] + label.color-swatch.round-corners:after,
+  .product-form__input input[type='radio'] + label.color-swatch.round-corners:before{
+          border-radius: 5px;
+    }
+    .product-form__input input[type='radio'] + label.color-swatch{
+      border:1px rgb(214,214,214) solid;
+      width: {{swatchSize}}px;
+      height: {{swatchSize}}px;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+      margin-right: 9px;
+    }
+    .product-form__input input[type='radio'] + label.color-swatch:before{
+      content: "";
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      width: calc(100% + 2px);
+      height: calc(100% + 2px);
+      border: 1px rgb(214,214,214) solid;
+      z-index: 0;
+    }
+    .product-form__input input[type='radio'] + label.color-swatch:after{
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      {%- if settings.dark or swatchType == "variantImage" -%}
+         border: none;
+      {%- else -%}
+        border: 3px rgb(255 255 255) solid;
+      {%- endif -%}
+    }
+    .product-form__input input[type='radio'] + label.color-swatch:hover:before{
+      border: 1px rgb(125 124 124) solid;
+    }
+    .product-form__input input[type='radio']:checked + label.color-swatch:before{
+    {%- if settings.dark -%}
+      box-shadow: 0 0 0 2px rgb(var(--color-foreground));
+      {%- else -%}
+      box-shadow: 0 0 0 1px rgb(var(--color-foreground));
+      {%- endif -%}
+      border-color:rgb(var(--color-foreground));
+    }
+    .product-form__input input[type='radio'] + label.color-swatch.variant-swatch{
+      background-color:white;
+      {%- if swatchStyle == "portrait" -%}
+      height: calc({{swatchSize}}px/ 0.66);
+      {%- endif -%}
+    }
+</style>
+
+{%- for value in option.values -%}
+  {%- liquid
+    assign option_disabled = true
+
+    for option1_name in variants_option1_arr
+      case option.position
+        when 1
+          if variants_option1_arr[forloop.index0] == value and variants_available_arr[forloop.index0]
+            assign option_disabled = false
+          endif
+        when 2
+          if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == value and variants_available_arr[forloop.index0]
+            assign option_disabled = false
+          endif
+        when 3
+          if option1_name == product.selected_or_first_available_variant.option1 and variants_option2_arr[forloop.index0] == product.selected_or_first_available_variant.option2 and variants_option3_arr[forloop.index0] == value and variants_available_arr[forloop.index0]
+            assign option_disabled = false
+          endif
+      endcase
+    endfor
+  -%}
+
+  {%- if block.settings.picker_type == 'button' -%}
+    <input
+      type="radio"
+      id="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
+      name="{{ option.name }}"
+      value="{{ value | escape }}"
+      form="{{ product_form_id }}"
+      {% if option.selected_value == value %}
+        checked
+      {% endif %}
+      {% if option_disabled %}
+        class="disabled"
+      {% endif %}
+    >
+    {%- if swatchType == 'variantImage' -%}
+      <label
+        data-{{ option.name }}="{{value}}"
+        style="
+          background-image:url(
+            {%- liquid
+              assign optionIndex = option.position | minus: 1
+              for variant in product.variants
+                  if variant.options[optionIndex] == value
+                    assign swatchSizePortrait = swatchSize | times: 2
+                    echo variant.image | image_url: width: swatchSizePortrait
+                    break
+                  endif
+              endfor
+          -%}
+             );
+        "
+        class="color-swatch variant-swatch {% case swatchStyle %}{% when "round" %}round{% when "square-round-corners" %}round-corners{% endcase %}"
+        for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
+      >
+        <span class="visually-hidden">{{ 'products.product.variant_sold_out_or_unavailable' | t }}</span>
+      </label>
+    {%- else -%}
+      {%- liquid
+        for colorData in swatchColors
+          assign colorDataArr = colorData | split: ':'
+          assign ruleName = colorDataArr[0] | strip
+          if value == ruleName
+            assign colorCodes = colorDataArr[1] | strip | split: '#'
+            assign colorNumber = 0 | plus: colorCodes.size
+            break
+          endif
+        endfor
+      -%}
+      <label
+        data-{{ option.name }}="{{value}}"
+        style="
+              {%- case colorNumber -%}
+          {%- when 2 -%}
+              background-color: #{{ colorCodes[1] }}
+          {%- when 3 -%}
+              background: linear-gradient(135deg, #{{ colorCodes[1] }} 50%, #{{ colorCodes[2] }} 50%);
+          {%- when 4 -%}
+              background: linear-gradient(to right,#{{ colorCodes[1] }} 33%,#{{ colorCodes[2] }} 33%,#{{ colorCodes[2] }} 66%, #{{ colorCodes[3] }} 66%);
+          {%- else -%}
+              background-image:url({{ colorCodes[0] | downcase | replace: ' ', '-' | file_img_url }})
+          {%- endcase -%}
+          ;
+        "
+        class="color-swatch {% case swatchStyle %}{% when "round" %}round{% when "square-round-corners" %}round-corners{% endcase %}"
+        for="{{ section.id }}-{{ option.position }}-{{ forloop.index0 }}"
+      >
+        <span class="visually-hidden">{{ 'products.product.variant_sold_out_or_unavailable' | t }}</span>
+      </label>
+      {%- assign colorCodes = '' -%}
+    {%- endif -%}
+  {%- elsif block.settings.picker_type == 'dropdown' -%}
+    <option
+      value="{{ value | escape }}"
+      {% if option.selected_value == value %}
+        selected="selected"
+      {% endif %}
+    >
+      {% if option_disabled -%}
+        {{- 'products.product.value_unavailable' | t: option_value: value -}}
+      {%- else -%}
+        {{- value -}}
+      {%- endif %}
+    </option>
+  {%- endif -%}
+{%- endfor -%}
+
+<script>
+  document.querySelectorAll('input+label[data-{{ option.name | downcase }}]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      document.querySelector('#selected-{{option.name}}').textContent = " "+el.getAttribute('data-{{ option.name | downcase }}')
+    })
+  })
+</script>
