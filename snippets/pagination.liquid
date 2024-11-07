@@ -13,6 +13,12 @@
 
 {{ 'component-pagination.css' | asset_url | stylesheet_tag }}
 
+{% capture psudo_spacer %}
+  <li class="pagination__spacer pagination__spacer--psudo">
+    <span class="pagination__item">&hellip;</span>
+  </li> 
+{% endcapture %}
+
 {%- if paginate.parts.size > 0 -%}
   <div class="pagination-wrapper">
     <nav class="pagination" role="navigation" aria-label="{{ 'general.pagination.label' | t }}">
@@ -32,7 +38,11 @@
         {%- endif -%}
 
         {%- for part in paginate.parts -%}
-          <li>
+          {% assign next_part = paginate.parts[forloop.index] %}
+          {% if forloop.last and part.title != paginate.current_page and prev_part.title != paginate.current_page  %}
+              {{ psudo_spacer }}
+          {% endif %}
+          <li class="{% if part.is_link %}pagintaion__link{% elsif part.title != paginate.current_page %}pagination__spacer{% endif %}">
             {%- if part.is_link -%}
               <a
                 href="{{ part.url }}{{ anchor }}"
@@ -57,6 +67,11 @@
               {%- endif -%}
             {%- endif -%}
           </li>
+       
+          {% if forloop.first and part.title != paginate.current_page and next_part.title != paginate.current_page %}
+            {{ psudo_spacer }}
+          {% endif %} 
+          {% assign prev_part = part %}
         {%- endfor -%}
 
         {%- if paginate.next -%}
