@@ -889,6 +889,8 @@ class SlideshowComponent extends SliderComponent {
       return;
     }
 
+    if (!this.enableSliderLooping) return;
+
     if (isFirstSlide && event.currentTarget.name === 'previous') {
       this.slideScrollPosition =
         this.slider.scrollLeft + this.sliderFirstItemNode.clientWidth * this.sliderItemsToShow.length;
