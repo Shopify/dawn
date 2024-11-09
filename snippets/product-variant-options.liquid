@@ -21,6 +21,20 @@
 {% endcomment %}
 {%- liquid
   assign product_form_id = 'product-form-' | append: section.id
+  assign apply_variant_filter = false
+
+  if tag_variant_filter != blank apply_variant_filter = true
+
+  assign variant_filter_tag_found = false
+  for value in option.values
+    if value.variant.product.tags contains tag_variant_filter
+      assign variant_filter_tag_found = true
+    endif
+  endfor
+
+  if variant_filter_tag_found == false
+    assign apply_variant_filter = false
+  endif
 -%}
 
 {%- for value in option.values -%}
@@ -82,7 +96,7 @@
     {% endif %}
 
     {%- if picker_type == 'swatch' -%}
-      {% if tag_variant_filter == blank or value.variant.product.tags contains tag_variant_filter %}
+      {% if variant_filter_tag_found == false or tag_variant_filter == blank or value.variant.product.tags contains tag_variant_filter %}
         {%- capture help_text -%}
           <span class="visually-hidden">{{ value | escape }}</span>
           {{ label_unavailable }}
