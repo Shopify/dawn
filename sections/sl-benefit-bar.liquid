@@ -1,0 +1,623 @@
+<div class='sl-brandstyle-9fe1c2dc-94c1-4306-9cfb-55bd0a83df2e'>
+<div class='sl-pattern-062a0b83-8bde-4a82-9728-74463a4639a9{{ section.settings.pattern_select }} sl-pattern-{{ section.settings.pattern_select }}'>
+{{ 'shoplift.css' | asset_url | stylesheet_tag }}
+{{ 'https://unicons.iconscout.com/release/v4.0.0/css/line.css' | stylesheet_tag }}
+
+{% render 'sl-bar-styling' with section.settings as section_settings, section_id: section.id, universal_custom_colors: true %}
+
+{% style %}
+    #shoplift--{{ section.id }} .liftkit__slider_control {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0 1rem;
+        z-index: 3;
+    }
+
+    #shoplift--{{ section.id }} .offer-bar__content {
+        display: flex
+    }
+
+    #shoplift--{{ section.id }} .liftkit__slider_control .controls {
+        cursor: pointer;
+    }
+    #shoplift--{{ section.id }} .liftkit__slider_control .controls:hover {
+        opacity: .8;
+    }
+
+    {% if section.settings.desktop_layout == "carousel" or section.settings.desktop_layout == "alternate_timer" %}
+        #shoplift--{{ section.id }} .offer__container.height__controller:before {
+            content: '';
+            display: block;
+            {% case section.settings.text_size %}
+                {% when "large" %}
+                    height: 16px;
+                {% when "medium" %}
+                    height: 14px;
+                {% when "small" %}
+                    height: 12px;
+            {% endcase %}
+        }
+    {% endif %}
+
+    #shoplift--{{ section.id }} .benefit__text-wrap {
+        {% if section.settings.desktop_layout == "carousel" or section.settings.desktop_layout == "alternate_timer" %}
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            z-index: 1;
+
+            -webkit-transition: opacity 1s;
+            -moz-transition: opacity 1s;
+            -o-transition: opacity 1s;
+            transition: opacity 1s;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        {% endif %}
+
+        {% if section.settings.desktop_layout == "inline" %}
+            margin: 0 1em;
+        {% endif %}
+    }
+
+    {% if section.settings.desktop_layout == "inline" %}
+    @media screen and (max-width: 749px) {
+        #shoplift--{{ section.id }} .offer__container {
+            justify-content: unset;
+        }
+        #shoplift--{{ section.id }} .benefit__text-wrap {
+            flex: 1 0 auto;
+        }
+    }
+    {% endif %}
+
+    #shoplift--{{ section.id }} .showing {
+        opacity: 1;
+        z-index: 2;
+    }
+
+    #shoplift--{{ section.id }} .offer__container {
+        position: relative;
+        {% if section.settings.desktop_layout == "inline" %}
+            scroll-snap-type: x mandatory;
+            display: flex;
+            -webkit-overflow-scrolling: touch;
+            overflow-x: scroll;
+        {% endif %}
+    }
+
+{% endstyle %}
+
+{% liquid
+    assign extra_classes = ""
+
+    unless section.settings.text_color == "rgba(0,0,0,0)" or section.settings.text_color == "transparent"
+        assign extra_classes = extra_classes | append: " custom_color"
+    endunless
+
+    unless section.settings.background_color == "rgba(0,0,0,0)" or section.settings.background_color == "transparent"
+        assign extra_classes = extra_classes | append: " custom_bg"
+    endunless
+    
+    unless section.settings.border_color == "rgba(0,0,0,0)" or section.settings.border_color == "transparent"
+        assign extra_classes = extra_classes | append: " custom_border"
+    endunless
+%}
+
+<section id="shoplift--{{ section.id }}" class="shoplift-offer--bar{{extra_classes}} sl-section">
+    <div class="offer-bar__content">
+        <div class="offer__container height__controller">
+        {% if section.settings.desktop_layout == "carousel"%}
+            <div class="liftkit__slider_control">
+                <span class="controls" id="benefit-bar-previous">
+                    <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.00025 12C5.74425 12 5.48825 11.902 5.29325 11.707L0.29325 6.707C-0.09775 6.316 -0.09775 5.684 0.29325 5.293L5.29325 0.293C5.68425 -0.0979999 6.31625 -0.0979999 6.70725 0.293C7.09825 0.684 7.09825 1.316 6.70725 1.707L2.41425 6L6.70725 10.293C7.09825 10.684 7.09825 11.316 6.70725 11.707C6.51225 11.902 6.25625 12 6.00025 12Z" fill="currentColor"/>
+                    </svg>
+                </span>
+                <span class="controls" id="benefit-bar-next">
+                    <svg width="7" height="12" viewBox="0 0 7 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M1.00025 12C0.74425 12 0.48825 11.902 0.29325 11.707C-0.09775 11.316 -0.09775 10.684 0.29325 10.293L4.58625 6L0.29325 1.707C-0.09775 1.316 -0.09775 0.684 0.29325 0.293C0.68425 -0.0979999 1.31625 -0.0979999 1.70725 0.293L6.70725 5.293C7.09825 5.684 7.09825 6.316 6.70725 6.707L1.70725 11.707C1.51225 11.902 1.25625 12 1.00025 12Z" fill="currentColor"/>
+                    </svg>
+                </span>
+            </div>
+        {% endif %}
+        {% for block in section.blocks %}
+            <div class="benefit__text-wrap{% if forloop.index == 1 %} showing{% endif%} benefit__text-wrap--show-{{ block.settings.devices }} sl-font-style--{{section.settings.font_style}}" {{ block.shopify_attributes }}>
+                {% if block.settings.message_link %}
+                <a href="{{ block.settings.message_link }}" class="message__link">
+                {% endif %}
+                    <div class="banner__heading banner__heading--{{ section.settings.text_size }}">
+                        {% if block.settings.message_icon != blank %}
+                            <i class="sl-message-icon uil uil-{{ block.settings.message_icon }}" aria-label="Icon {{section.settings.message_icon}}"></i>
+                        {% endif %}
+                        <span>{{ block.settings.text }}</span>
+                    </div>
+                {% if block.settings.message_link %}
+                </a>
+                {% endif %}
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+</section>
+<script>
+{% if section.settings.sticky_on_scroll == true %}
+    window.addEventListener('load', (event) => {
+        const thisHeader = document.querySelector('.shoplift-offerbar-benefit-wrapper');
+        thisHeader.classList.add("shoplift-offer-bar-sticky");
+
+        const mainHeader = document.querySelector('#shopify-section-header > sticky-header');
+        const offerBar = document.querySelector('.shoplift-offerbar-wrapper');
+
+        const mainInitialTop = mainHeader.offsetTop;
+        const stickyStart = mainHeader ? (mainHeader.offsetTop + mainHeader.clientHeight + 1) : 0;
+        let lastScroll = window.scrollY;
+        document.addEventListener("scroll", (scrollEvent) => {
+            if (!thisHeader) return;
+
+            // Do it quick and dirty
+            const mainHidden = mainHeader && (window.scrollY > lastScroll);
+            lastScroll = window.scrollY;
+
+            const makeSticky = window.pageYOffset > stickyStart || mainHeader && window.pageYOffset > mainInitialTop && mainHeader.parentElement.classList.contains("shopify-section-header-sticky");
+
+            thisHeader.classList.toggle("shoplift-offer-bar-sticky", makeSticky);
+
+            if (!makeSticky) return;
+
+            let topPosition = 0;
+
+            if (mainHeader && !mainHidden)
+                topPosition += mainHeader.clientHeight;
+
+            if (offerBar && offerBar.classList.contains('shoplift-offer-bar-sticky'))
+                topPosition += offerBar.clientHeight;
+
+            thisHeader.style.top = topPosition + "px";
+        });
+    });
+{% endif %}
+    let controls = document.querySelectorAll('#shoplift--{{ section.id }} .controls');
+    for (var i = 0; i < controls.length; i++) {
+        controls[i].style.display = 'inline-block';
+    }
+
+    let slides = [];
+    function refreshSlides() {
+        slides = document.querySelectorAll('#shoplift--{{ section.id }} .benefit__text-wrap');
+    }
+    refreshSlides();
+
+    let currentSlide = 0;
+
+
+    {% if section.settings.desktop_layout == "alternate_timer" %}
+    let slideInterval = setInterval(nextSlide, {{ section.settings.timer_length }} * 1000);
+    function nextSlide() {
+        if (slides.length == 0) refreshSlides();
+        slides[currentSlide].classList.remove('showing');
+        currentSlide = (currentSlide + 1) % slides.length;
+        if (window.innerWidth >= 750) {
+            while(slides[currentSlide].classList.contains('benefit__text-wrap--show-mobile')) {
+                currentSlide = (currentSlide + 1) % slides.length;
+            }
+        }
+        else {
+            while(slides[currentSlide].classList.contains('benefit__text-wrap--show-desktop')) {
+                currentSlide = (currentSlide + 1) % slides.length;
+            }
+        }
+        slides[currentSlide].classList.add('showing');
+    }
+    document.addEventListener("shopify:section:load", () => {
+        currentSlide = 0;
+        refreshSlides();
+    })
+    {% elsif section.settings.desktop_layout == "carousel" %}
+    /*
+    function goToSlide(n) {
+        console.log(slides, currentSlide, "#shoplift--{{ section.id }} .benefit__text-wrap")
+        if (slides.length == 0) refreshSlides();
+        slides[currentSlide].classList.remove('showing');
+        currentSlide = (n + slides.length) % slides.length;
+        console.log("Current slide:", currentSlide);
+        slides[currentSlide].classList.add('showing');
+    }
+    function nextSlide() {
+        goToSlide(currentSlide + 1);
+    }
+    function previousSlide() {
+        goToSlide(currentSlide - 1);
+    }
+    */
+    function nextSlide() {
+        if (slides.length == 0) refreshSlides();
+        slides[currentSlide].classList.remove('showing');
+        currentSlide = (currentSlide + 1) % slides.length;
+        if (window.innerWidth >= 750) {
+            while(slides[currentSlide].classList.contains('benefit__text-wrap--show-mobile')) {
+                currentSlide = (currentSlide + 1) % slides.length;
+            }
+        }
+        else {
+            while(slides[currentSlide].classList.contains('benefit__text-wrap--show-desktop')) {
+                currentSlide = (currentSlide + 1) % slides.length;
+            }
+        }
+        slides[currentSlide].classList.add('showing');
+    }
+    function previousSlide() {
+        if (slides.length == 0) refreshSlides();
+        slides[currentSlide].classList.remove('showing');
+        currentSlide = (currentSlide + slides.length - 1) % slides.length;
+        if (window.innerWidth >= 750) {
+            while(slides[currentSlide].classList.contains('benefit__text-wrap--show-mobile')) {
+                currentSlide = (currentSlide + slides.length - 1) % slides.length;
+            }
+        }
+        else {
+            while(slides[currentSlide].classList.contains('benefit__text-wrap--show-desktop')) {
+                currentSlide = (currentSlide + slides.length - 1) % slides.length;
+            }
+        }
+        slides[currentSlide].classList.add('showing');
+    }
+
+    function initControls(isDesignEvent) {
+        if (isDesignEvent) {
+            currentSlide = 0;
+            refreshSlides();
+        }
+        let next = document.querySelector('#shoplift--{{ section.id }} #benefit-bar-next');
+        let previous = document.querySelector('#shoplift--{{ section.id }} #benefit-bar-previous');
+        next.onclick = function() {
+            nextSlide();
+        };
+        previous.onclick = function() {
+            previousSlide();
+        };
+    }
+
+    document.addEventListener("shopify:section:load", () => initControls(true))
+    initControls(false);
+    {% endif %}
+</script>
+
+{% schema %}
+{
+    "name": "⚡ Multi-message bar 1.0",
+    "class": "shoplift-offerbar-benefit-wrapper",
+    "settings": [
+        {
+            "type": "select",
+            "id": "devices",
+            "label": "Show on",
+            "options": [
+                {
+                    "value": "all",
+                    "label": "All devices"
+                },
+                {
+                    "value": "desktop",
+                    "label": "Desktop only"
+                },
+                {
+                    "value": "mobile",
+                    "label": "Mobile only"
+                }
+            ],
+            "default": "all"
+        },
+        {
+            "type": "checkbox",
+            "id": "sticky_on_scroll",
+            "label": "Sticky on scroll",
+            "default": true,
+            "info": "Save your changes to see your edits apply"
+        },
+        {
+            "type": "select",
+            "id": "desktop_layout",
+            "label": "Message layout",
+            "options": [
+                {
+                    "value": "inline",
+                    "label": "Inline (swipe on mobile)"
+                },
+                {
+                    "value": "carousel",
+                    "label": "Carousel"
+                },
+                {
+                    "value": "alternate_timer",
+                    "label": "Alternate on timer"
+                }
+            ],
+            "info": "Save your changes to see your edits apply",
+            "default": "inline"
+        },
+        {
+            "type": "range",
+            "id": "timer_length",
+            "min": 1,
+            "max": 10,
+            "step": 1,
+            "unit": "s",
+            "label": "Timer length",
+            "default": 9,
+            "info": "Applies to ‘Alternate on timer’ layout only."
+        },
+{
+          "type": "select",
+          "id": "pattern_select",
+          "label": "Pattern",
+          "info": "To edit your color schemes, visit your Brand Styles settings",
+          "options": [
+{
+                "value":"062a0b83-8bde-4a82-9728-74463a4639a9",
+                "label": "Content Pattern 1"
+            },
+{
+                "value":"460bba36-6a45-4965-826f-6a9ab5bbdf9d",
+                "label": "Product Pattern 2"
+            },
+{
+                "value":"7c082461-7887-4e10-97b3-1c7a621284a5",
+                "label": "Content Pattern 2"
+            },
+{
+                "value":"b7fc2ce4-1631-417b-b468-bb1ced60e45f",
+                "label": "Product Pattern 1"
+            }
+]},
+
+        {
+            "type": "select",
+            "id": "bar_height",
+            "label": "Bar height",
+            "options": [
+                {
+                    "value": "large",
+                    "label": "Large"
+                },
+                {
+                    "value": "medium",
+                    "label": "Medium"
+                },
+                {
+                    "value": "small",
+                    "label": "Small"
+                }
+            ],
+            "default": "medium"
+        },
+        {
+            "type": "select",
+            "id": "font_style",
+            "label": "Font style",
+            "options": [
+                {
+                    "value": "title",
+                    "label": "Title"
+                },
+                {
+                    "value": "body",
+                    "label": "Body"
+                },
+                {
+                    "value": "button",
+                    "label": "Button"
+                },
+                {
+                    "value": "label",
+                    "label": "Label"
+                }
+            ],
+            "default": "body"
+        },
+        {
+            "type": "select",
+            "id": "text_size",
+            "label": "Text size",
+            "options": [
+                {
+                    "value": "large",
+                    "label": "Large"
+                },
+                {
+                    "value": "medium",
+                    "label": "Medium"
+                },
+                {
+                    "value": "small",
+                    "label": "Small"
+                }
+            ],
+            "default": "medium"
+        },
+        {
+            "type": "select",
+            "id": "border_type",
+            "label": "Section Border",
+            "options": [
+                {
+                    "value": "brand_style",
+                    "label": "Match Brand Styles"
+                },
+                {
+                    "value": "none",
+                    "label": "Don't show border"
+                },
+                {
+                    "value": "bottom",
+                    "label": "Bottom"
+                },
+                {
+                    "value": "all",
+                    "label": "Show border"
+                }
+            ],
+            "default": "brand_style"
+        },
+        {
+            "type": "header",
+            "content": "Mobile"
+        },
+        {
+            "type": "select",
+            "id": "mobile_bar_height",
+            "label": "Bar height",
+            "options": [
+                {
+                    "value": "match_desktop",
+                    "label": "Match Desktop"
+                },
+                {
+                    "value": "large",
+                    "label": "Large"
+                },
+                {
+                    "value": "medium",
+                    "label": "Medium"
+                },
+                {
+                    "value": "small",
+                    "label": "Small"
+                }
+            ],
+            "default": "match_desktop"
+        },
+        {
+            "type": "select",
+            "id": "mobile_text_size",
+            "label": "Text size",
+            "options": [
+                {
+                    "value": "match_desktop",
+                    "label": "Match Desktop"
+                },
+                {
+                    "value": "large",
+                    "label": "Large"
+                },
+                {
+                    "value": "medium",
+                    "label": "Medium"
+                },
+                {
+                    "value": "small",
+                    "label": "Small"
+                }
+            ],
+            "default": "match_desktop"
+        },
+        {
+            "type": "header",
+            "content": "Custom Colors",
+            "info": "These color pickers allow you to deviate from your brand kit color schemes. To revert to a preset color scheme, remove the hex code below."
+        },
+        {
+            "type": "color",
+            "id": "background_color",
+            "label": "Background color",
+            "default": "transparent"
+        },
+        {
+            "type": "color",
+            "id": "text_color",
+            "label": "Text color",
+            "default": "transparent"
+        },
+        {
+            "type": "color",
+            "id": "border_color",
+            "label": "Border color",
+            "default": "transparent"
+        }
+    ],
+    "blocks": [
+        {
+            "name": "Benefit text",
+            "type": "benefit_linktext",
+            "limit": 5,
+            "settings": [
+                {
+                    "type": "select",
+                    "id": "devices",
+                    "label": "Show on",
+                    "options": [
+                        {
+                            "value": "all",
+                            "label": "All devices"
+                        },
+                        {
+                            "value": "desktop",
+                            "label": "Desktop only"
+                        },
+                        {
+                            "value": "mobile",
+                            "label": "Mobile only"
+                        }
+                    ],
+                    "default": "all"
+                },
+                {
+                    "type": "text",
+                    "id": "text",
+                    "label": "Benefit text",
+                    "default": "Get 50% off this week only"
+                },
+                {
+                    "type": "url",
+                    "id": "message_link",
+                    "label": "Benefit link"
+                },
+                {
+                    "type": "text",
+                    "id": "message_icon",
+                    "label": "Benefit icon",
+                    "placeholder": "icon-name",
+                    "default": "icon-name",
+                    "info": "To add an icon, copy the icon namer from the [Unicons library](https://iconscout.com/unicons/explore/line)"
+                }
+            ]
+        }
+    ],
+    "presets": [
+        {
+            "name": "⚡ Multi-message bar 1.0",
+            "blocks": [
+                {
+                    "type": "benefit_linktext",
+                    "settings": {
+                        "text": "Get 50% off",
+                        "message_icon": "tag"
+                    }
+                },
+                {
+                    "type": "benefit_linktext",
+                    "settings": {
+                        "text": "Free shipping on all orders",
+                        "message_icon": "truck"
+                    }
+                },
+                {
+                    "type": "benefit_linktext",
+                    "settings": {
+                        "text": "Satisfaction guaranteed",
+                        "message_icon": "check"
+                    }
+                }
+            ]
+        }
+    ]
+}
+{% endschema %}
+
+</div>
+</div>

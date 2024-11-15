@@ -1,6 +1,6 @@
 {% style %}
 
-  .shoplift-offerbar-wrapper {
+  .shoplift-offerbar-wrapper{
     transition: all 0.3s ease-out;
   }
 
@@ -30,12 +30,12 @@
     line-height: 1;
   }
 
-  .shoplift-offer--bar .banner__heading p {
+  .shoplift-offer--bar .banner__heading p{
     margin: 0;
     padding: 0;
   }
   
-  .shoplift-offer--bar .message__link .arrow--caret {
+  .shoplift-offer--bar .message__link .arrow--caret{
     line-height: 0;
   }
 
@@ -80,6 +80,9 @@
 
   #shoplift--{{ section_id }} .offer__container {
     padding: 0 10px;
+    {% unless section_settings.font_weight == "brand_style" %}
+      font-weight: {{ section_settings.font_weight }};
+    {% endunless %}
   }
 
   #shoplift--{{ section_id }} .height__controller {
@@ -140,15 +143,17 @@
   }
 
 
-  {% unless section_settings.border_type == "brand_style" %}
-    #shoplift--{{ section_id }}.sl-section {
+  {% unless section_settings.border_type == "none" or section_settings.border_type == "" %}
+    #shoplift--{{ section_id }} .offer-bar__content {
       border-style: solid;
-      border-color: currentColor;
+      border-color: var(--lk-body-text);
       {% case section_settings.border_type %}
         {% when "bottom" %}
-          border-width: 0 0 1px 0;
+          border-width: 0 0 {{ section_settings.border_width | default: "1px" }} 0;
+        {% when "horizontal" %}
+          border-width: {{ section_settings.border_width | default: "1px" }} 0;
         {% when "all" %}
-          border-width: 1px;
+          border-width: {{ section_settings.border_width | default: "1px" }};
         {% when "none" %}
           border-width: 0;
       {% endcase %}
@@ -160,17 +165,15 @@
   {% endunless %}
       /* Color overrides */
       {% unless section_settings.background_color == "transparent" or section_settings.background_color == "rgba(0,0,0,0)" %}
-        #shoplift--{{ section_id }}.custom_bg {
+        #shoplift--{{ section_id }}.custom_bg .offer-bar__content {
           background-color: {{ section_settings.background_color }};
         }
       {% endunless %}
 
       {% unless section_settings.border_color == "transparent" or section_settings.border_color == "rgba(0,0,0,0)" %}
-        {% unless section_Settings.border_type == "brand_style" %}
-          #shoplift--{{ section_id }}.custom_border {
-            border-color: {{ section_settings.border_color }};
-          }
-        {% endunless %}
+        #shoplift--{{ section_id }}.custom_border .offer-bar__content {
+          border-color: {{ section_settings.border_color }};
+        }
       {% endunless %}
 
       {% unless section_settings.text_color == "transparent" or section_settings.text_color == "rgba(0,0,0,0)" %}
@@ -192,6 +195,45 @@
   {% endunless %}
 
   @media screen and (max-width: 749px) {
+    {% unless section_settings.mobile_background_color == "transparent" or section_settings.mobile_background_color == "rgba(0,0,0,0)" %}
+      #shoplift--{{ section_id }}.custom_mobile_bg .offer-bar__content {
+        background-color: {{ section_settings.mobile_background_color }};
+      }
+    {% endunless %}
+
+    {% unless section_settings.mobile_border_type == "match_desktop" or section_settings.mobile_border_type == section_settings.border_type %}
+      #shoplift--{{ section_id }} .offer-bar__content {
+        border-style: solid;
+        {% if section_settings.mobile_border_width == "match_desktop" or section_settings.mobile_border_width == blank %}
+          {% case section_settings.border_type %}
+            {% when "none" %}
+              border-width: 0;
+            {% when "bottom" %}
+              border-width: 0 0 {{ section_settings.border_width }} 0;
+            {% when "horizontal" %}
+              border-width: {{ section_settings.border_width }} 0;
+            {% when "all" %}
+              border-width: {{ section_settings.border_width }};
+            {% else %}
+              border-width: 0;
+          {% endcase %}
+        {% else %}
+          {% case section_settings.mobile_border_type %}
+            {% when "none" %}
+              border-width: 0;
+            {% when "bottom" %}
+              border-width: 0 0 {{ section_settings.mobile_border_width }} 0;
+            {% when "horizontal" %}
+              border-width: {{ section_settings.mobile_border_width }} 0;
+            {% when "all" %}
+              border-width: {{ section_settings.mobile_border_width }};
+            {% else %}
+              border-width: 0;
+          {% endcase %}
+        {% endif %}
+      }
+    {% endunless %}
+
     #shoplift--{{ section_id }} .height__controller {
       {% if section_settings.mobile_bar_height == "match_desktop" %}
         {% case section_settings.bar_height %}
@@ -305,6 +347,25 @@
         {% endif %}
       }
     {% endif %}
+
+    {% unless section_settings.mobile_border_color == "transparent" or section_settings.mobile_border_color == "rgba(0,0,0,0)" %}
+      #shoplift--{{ section_id }}.custom_border .offer-bar__content {
+        border-color: {{ section_settings.border_color }};
+      }
+    {% endunless %}
+
+    {% unless section_settings.mobile_text_color == "transparent" or section_settings.mobile_text_color == "rgba(0,0,0,0)" %}
+      #shoplift--{{ section_id }}.custom_mobile_color .banner__heading * {
+        color: {{ section_settings.mobile_text_color }};
+      }
+
+      #shoplift--{{ section_id }}.custom_mobile_color .message__link svg,
+      #shoplift--{{ section_id }}.custom_mobile_color .message__link svg path,
+      #shoplift--{{ section_id }}.custom_mobile_color .banner__heading svg,
+      #shoplift--{{ section_id }}.custom_mobile_color .banner__heading svg path {
+        fill: {{ section_settings.mobile_text_color }};
+      }
+    {% endunless %}
   }
 
   #shoplift--{{ section_id }} .banner__heading__stars {
