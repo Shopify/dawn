@@ -1,1 +1,0 @@
-{{ 'general.cart.view' | t: count: cart.item_count }}
