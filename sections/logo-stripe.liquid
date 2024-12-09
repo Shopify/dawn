@@ -1,8 +1,10 @@
 {%- style -%}
-  @media screen and (max-width: 749px) {
-    #logoStripe-{{ section.id }} {
-      padding: {{ section.settings.banner_height }}px 0;
-    }
+  #logoStripe-{{ section.id }} {
+    padding: {{ section.settings.banner_height }}px 0;
+    {%- if section.settings.background == true -%}
+    background-image: url('{{ section.settings.background_image | img_url: 'master' }}');
+    {%- endif -%}
+    background-color: {{ section.settings.background_color }}
   }
 
   @media screen and (min-width: 750px) {
@@ -37,22 +39,22 @@
 <div
   id="logoStripe-{{ section.id }}"
   class="banner banner--content-align-{{ section.settings.desktop_content_alignment }} banner--content-align-mobile-{{ section.settings.mobile_content_alignment }} banner--{{ section.settings.banner_height }}{% if section.settings.show_text_box == false %} banner--desktop-transparent{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
-  style="{%- if section.settings.background == true -%}background-image: url('https:{{ section.settings.background_image | img_url: 'master' }}');{%- endif -%}"
 >
   <div class="banner__media {% if section.settings.image_behavior != 'none' %} animate--{{ section.settings.image_behavior }}{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
     {%- liquid
-      assign banner_height = section.settings.image.width | divided_by: section.settings.image.aspect_ratio
-      if section.settings.image != blank
-        assign image_class = 'banner__media-image-half'
-      endif
-      if section.settings.image != blank and section.settings.stack_images_on_mobile
+      if section.settings.logo != blank and section.settings.stack_images_on_mobile
         assign sizes = stacked_sizes
-      elsif section.settings.image != blank
+      elsif section.settings.logo != blank
         assign sizes = half_width
       else
         assign sizes = full_width
       endif
     -%}
+    {{
+      section.settings.logo
+      | image_url: width: 1080
+      | image_tag: width: section.settings.image.width, sizes: sizes, widths: widths, fetchpriority: fetch_priority
+    }}
   </div>
 </div>
 
@@ -84,7 +86,7 @@
     },
     {
       "type": "image_picker",
-      "id": "image",
+      "id": "logo",
       "label": "Logo / Badge"
     },
     {
