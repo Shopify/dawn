@@ -27,7 +27,10 @@
   }
 {%- endstyle -%}
 
-<footer class="footer color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding">
+<footer
+  class="footer color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding bg-image"
+  style="background-image:url('https:{{ section.settings.background_image | img_url: 'master' }}')"
+>
   {%- liquid
     assign has_social_icons = true
     if settings.social_facebook_link == blank and settings.social_instagram_link == blank and settings.social_youtube_link == blank and settings.social_tiktok_link == blank and settings.social_twitter_link == blank and settings.social_pinterest_link == blank and settings.social_snapchat_link == blank and settings.social_tumblr_link == blank and settings.social_vimeo_link == blank
@@ -241,11 +244,34 @@
               {{ shop | login_button: action: 'follow' }}
             </div>
           {%- endif -%}
-
-          {%- if section.settings.show_social and has_social_icons -%}
-            {%- render 'social-icons', class: 'footer__list-social' -%}
-          {%- endif -%}
         </div>
+
+        {%- if section.settings.enable_logo -%}
+          <div class="footer__logo">
+            <a href="{{ routes.root_url }}" class="footer__foot-link link link--text focus-inset">
+              {%- if section.settings.footer_logo != blank -%}
+                <div class="footer__foot-logo-wrapper">
+                  {%- assign logo_alt = settings.logo.alt | default: shop.name | escape -%}
+                  {%- assign logo_height = settings.logo_width | divided_by: settings.logo.aspect_ratio -%}
+                  {% capture sizes %}(min-width: 750px) {{ settings.logo_width }}px, 50vw{% endcapture %}
+                  {% capture widths %}{{ settings.logo_width }}, {{ settings.logo_width | times: 1.5 | round }}, {{ settings.logo_width | times: 2 }}{% endcapture %}
+                  {{
+                    section.settings.footer_logo
+                    | image_url: width: 600
+                    | image_tag:
+                      class: 'footer__foot-logo',
+                      widths: widths,
+                      height: logo_height,
+                      width: settings.logo_width,
+                      alt: logo_alt,
+                      sizes: sizes,
+                      preload: true
+                  }}
+                </div>
+              {%- endif -%}
+            </a>
+          </div>
+        {%- endif -%}
       </div>
     {%- endunless -%}
   {%- endif -%}
@@ -302,7 +328,7 @@
         <small class="copyright__content"
           >&copy; {{ 'now' | date: '%Y' }}, {{ shop.name | link_to: routes.root_url -}}
         </small>
-        <small class="copyright__content">{{ powered_by_link }}</small>
+        <small class="copyright__content">P. IVA 02396630358</small>
         {%- if section.settings.show_policy -%}
           <ul class="policies list-unstyled">
             {%- for policy in shop.policies -%}
@@ -318,6 +344,13 @@
         {%- endif -%}
       </div>
     </div>
+    {%- if section.settings.show_social and has_social_icons -%}
+      <div class="footer__content-bottom-wrapper page-width footer__content-bottom-wrapper--center">
+        <div class="footer_social">
+          {%- render 'social-icons', class: 'footer__list-social' -%}
+        </div>
+      </div>
+    {%- endif -%}
   </div>
 </footer>
 
@@ -430,6 +463,11 @@
   ],
   "settings": [
     {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Immagine di sfondo"
+    },
+    {
       "type": "color_scheme",
       "id": "color_scheme",
       "label": "t:sections.all.colors.label",
@@ -451,6 +489,22 @@
       "id": "newsletter_heading",
       "default": "t:sections.footer.settings.newsletter_heading.default",
       "label": "t:sections.footer.settings.newsletter_heading.label"
+    },
+    {
+      "type": "header",
+      "content": "Logo",
+      "info": "Vuoi visualizzare il logo nel footer?"
+    },
+    {
+      "type": "image_picker",
+      "id": "footer_logo",
+      "label": "logo del footer"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_logo",
+      "default": true,
+      "label": "Mostra logo"
     },
     {
       "type": "header",
