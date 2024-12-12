@@ -1,5 +1,4 @@
-{{ 'splide.min.css' | asset_url | stylesheet_tag }}
-{{ 'splide.min.js' | asset_url | script_tag }}
+{{ 'macy.min.js' | asset_url | script_tag }}
 
 {%- style -%}
   .section-{{ section.id }}-padding {
@@ -25,17 +24,6 @@
     }
   }
 {%- endstyle -%}
-
-{% assign array_of_images = article.metafields.custom.carousel.value %}
-{%- liquid
-  if section.settings.columns_desktop <= array_of_images.count
-    assign posts_exceed_limit = true
-    assign posts_displayed = section.settings.columns_desktop
-  else
-    assign posts_exceed_limit = false
-    assign posts_displayed = array_of_images.count
-  endif
--%}
 
 <div class="blog color-{{ section.settings.color_scheme }} gradient{% if section.settings.heading == blank %} no-heading{% endif %}">
   <div class="page-width-desktop isolate{% if posts_displayed < 3 %} page-width-tablet{% endif %} section-{{ section.id }}-padding">
@@ -65,54 +53,22 @@
       </div>
     {%- endunless -%}
 
-    <div class="splide" aria-label="Splide Basic HTML Example">
-      <div class="splide__track">
-        <ul class="splide__list">
-          {% if array_of_images %}
-            {% for article_image in array_of_images %}
-              <li
-                id="Slide-{{ section.id }}-{{ forloop.index }}"
-                class="article slider__slide {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-                {% if settings.animations_reveal_on_scroll %}
-                  data-cascade
-                  style="--animation-order: {{ forloop.index }};"
-                {% endif %}
-              >
-                <div class="{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-                  <div
-                    style=" {% if settings.blog_card_style == 'standard' %} --ratio-percent: 100%;{% elsif settings.blog_card_style == 'card' %} --ratio-percent: 0%;{% endif %}"
-                  >
-                    <div
-                      class="card__inner{% if settings.blog_card_style == 'standard' %} color-{{ settings.blog_card_color_scheme }} gradient{% endif %} ratio"
-                      style="--ratio-percent: {{ section.settings.image_proportion }}%;"
-                    >
-                      <div class="">
-                        <div class="">
-                          {%- liquid
-                            assign grid_space_desktop = settings.spacing_grid_horizontal | divided_by: 2 | append: 'px'
-                          -%}
-                          {%- capture sizes -%}
-                        {% if section.blocks.size == 1 -%}(min-width: {{ settings.page_width }}px) calc({{ settings.page_width }}px - 100px){% else %}(min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - 100px) * 2 / 3 - {{ grid_space_desktop }}){% endif %},
-                        {% if section.blocks.size == 1 -%}(min-width: 750px) calc(100vw - 100px){% else %}(min-width: 750px) calc((100vw - 100px) * 2 / 3 - {{ grid_space_desktop }}){% endif %},
-                        {% if section.blocks.size == 2 and section.settings.mobile_layout == 'collage' -%}calc((100vw - 30px) / 2){% else %}calc(100vw - 30px){% endif %}
-                      {%- endcapture -%}
-                          {{
-                            article_image
-                            | image_url: width: 3200
-                            | image_tag:
-                              sizes: sizes,
-                              widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200'
-                          }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </li>
-            {%- endfor -%}
-          {%- endif -%}
-        </ul>
-      </div>
+    <div class="gallery-container">
+      {% assign array_of_images = article.metafields.custom.carousel.value %}
+      {% if array_of_images %}
+        {% for article_image in array_of_images %}
+          <div
+            id="Slide-{{ section.id }}-{{ forloop.index }}"
+            class="article slider__slide {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+            {% if settings.animations_reveal_on_scroll %}
+              data-cascade
+              style="--animation-order: {{ forloop.index }};"
+            {% endif %}
+          >
+            {{ article_image | image_url }}
+          </div>
+        {%- endfor -%}
+      {%- endif -%}
     </div>
   </div>
 </div>
