@@ -1,148 +1,121 @@
 {% comment %}
-  Custom Color Swatch Variant Picker
+  Custom Two-Color Swatches Using Shopify Built-in Form Logic
 {% endcomment %}
 
-{%- unless product.has_only_default_variant -%}
-  <variant-selects
-    id="variant-selects-{{ section.id }}"
-    data-section="{{ section.id }}"
-    {{ block.shopify_attributes }}
-  >
-    {%- for option in product.options_with_values -%}
-      {%- if option.name == 'Color' -%}
-        <!-- Target 'Color' option -->
-        <fieldset class="js product-form__input product-form__input--swatch">
-          <legend class="form__label">{{ option.name }}</legend>
-          <div class="variant-swatches">
-            {%- for value in option.values -%}
-              {%- assign variant = product.variants | where: 'option1', value | first -%}
-              {%- assign primary_color = variant.metafields.custom.primarycolor -%}
-              {%- assign secondary_color = variant.metafields.custom.secondarycolor -%}
+<form method="post" action="/cart/add" id="product-form-{{ product.id }}" enctype="multipart/form-data">
+  <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
 
-              {%- if primary_color and secondary_color -%}
-                <label
-                  for="swatch-{{ variant.id }}"
-                  class="swatch-label"
-                  data-value="{{ value }}"
-                >
-                  <input
-                    type="radio"
-                    name="options[{{ option.name }}]"
-                    id="swatch-{{ variant.id }}"
-                    value="{{ value }}"
-                    {% if variant.id == product.selected_or_first_available_variant.id %}
-                      checked
-                    {% endif %}
-                  >
-                  <!-- Custom diagonal swatch -->
-                  <div class="swatch">
-                    <div
-                      class="swatch-half swatch-half-1"
-                      style="background-color: {{ primary_color }};"
-                    ></div>
-                    <div
-                      class="swatch-half swatch-half-2"
-                      style="background-color: {{ secondary_color }};"
-                    ></div>
-                  </div>
-                </label>
-              {%- endif -%}
-            {%- endfor -%}
-          </div>
-        </fieldset>
-      {%- else -%}
-        <!-- Default Shopify Variant Picker -->
-        <div class="product-form__input product-form__input--dropdown">
-          <label class="form__label" for="Option-{{ forloop.index0 }}">
-            {{ option.name }}
-          </label>
-          <select
-            id="Option-{{ forloop.index0 }}"
-            class="select__select"
-            name="options[{{ option.name }}]"
-            form="{{ product_form_id }}"
-          >
-            {%- for value in option.values -%}
-              <option
-                value="{{ value }}"
-                {% if option.selected_value == value %}
-                  selected
-                {% endif %}
+  {%- for option in product.options_with_values -%}
+    {%- if option.name == 'Color' -%}
+      <fieldset class="product-form__input product-form__input--swatch">
+        <legend class="form__label">{{ option.name }}</legend>
+        <div class="variant-swatches">
+          {%- for value in option.values -%}
+            {%- assign variant = product.variants | where: 'option1', value | first -%}
+            {%- assign primary_color = variant.metafields.custom.primarycolor -%}
+            {%- assign secondary_color = variant.metafields.custom.secondarycolor -%}
+
+            {%- if primary_color and secondary_color -%}
+              <label
+                for="swatch-{{ variant.id }}"
+                class="swatch-label"
+                data-value="{{ value }}"
               >
-                {{ value }}
-              </option>
-            {%- endfor -%}
-          </select>
+                <input
+                  type="radio"
+                  name="id"
+                  id="swatch-{{ variant.id }}"
+                  value="{{ variant.id }}"
+                  {% if variant.id == product.selected_or_first_available_variant.id %}
+                    checked
+                  {% endif %}
+                >
+                <div class="swatch">
+                  <div
+                    class="swatch-half swatch-half-1"
+                    style="background-color: {{ primary_color }};"
+                  ></div>
+                  <div
+                    class="swatch-half swatch-half-2"
+                    style="background-color: {{ secondary_color }};"
+                  ></div>
+                </div>
+              </label>
+            {%- endif -%}
+          {%- endfor -%}
         </div>
-      {%- endif -%}
-    {%- endfor -%}
-  </variant-selects>
+      </fieldset>
+    {%- else -%}
+      <!-- Default Picker for Other Options -->
+      <div class="product-form__input product-form__input--dropdown">
+        <label class="form__label">{{ option.name }}</label>
+        <select name="options[{{ option.name }}]">
+          {%- for value in option.values -%}
+            <option
+              value="{{ value }}"
+              {% if option.selected_value == value %}
+                selected
+              {% endif %}
+            >
+              {{ value }}
+            </option>
+          {%- endfor -%}
+        </select>
+      </div>
+    {%- endif -%}
+  {%- endfor -%}
 
-  <!-- Update Form on Swatch Click -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const swatchInputs = document.querySelectorAll('.variant-swatches input[type="radio"]');
-      swatchInputs.forEach((input) => {
-        input.addEventListener('change', (event) => {
-          const selectedValue = event.target.value;
-          const productForm = event.target.closest('form');
-          if (productForm) {
-            // Update hidden input or submit form
-            productForm.submit();
-          }
-        });
-      });
-    });
-  </script>
+  <!-- Add to Cart Button -->
+  <button type="submit" class="product-form__submit button button--primary">Add to Cart</button>
+</form>
 
-  <style>
-    .variant-swatches {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+<style>
+  .variant-swatches {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
 
-    .swatch-label {
-      position: relative;
-      display: inline-block;
-      cursor: pointer;
-      width: 30px;
-      height: 30px;
-    }
+  .swatch-label {
+    position: relative;
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+  }
 
-    .swatch-label input {
-      position: absolute;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-    }
+  .swatch-label input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
 
-    .swatch {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      border: 1px solid #ccc;
-      position: relative;
-      overflow: hidden;
-    }
+  .swatch {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    position: relative;
+    overflow: hidden;
+  }
 
-    .swatch-half {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-    }
+  .swatch-half {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+  }
 
-    .swatch-half-1 {
-      clip-path: polygon(0 0, 100% 0, 0 100%);
-    }
+  .swatch-half-1 {
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+  }
 
-    .swatch-half-2 {
-      clip-path: polygon(100% 0, 100% 100%, 0 100%);
-    }
+  .swatch-half-2 {
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  }
 
-    .swatch-label input:checked + .swatch {
-      border: 2px solid #000;
-    }
-  </style>
-{%- endunless -%}
+  .swatch-label input:checked + .swatch {
+    border: 2px solid #000;
+  }
+</style>
