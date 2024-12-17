@@ -1,58 +1,65 @@
-{%- for variant in product.variants -%}
-  {%- assign current_option_value = variant[option.name] -%}
-  {%- assign is_selected = current_option_value == value -%}
-  {%- capture input_id -%}
+{%- assign product_form_id = 'product-form-' | append: section.id -%}
+
+{%- for value in option.values -%}
+  {%- assign matching_variant = product.variants | where: option.name, value | first -%}
+
+  {%- if matching_variant -%}
+    {%- comment %} Only proceed if a matching variant is found {%- endcomment %}
+    {%- capture input_id -%}
       {{ section.id }}-{{ option.position }}-{{ forloop.index0 }}
     {%- endcapture -%}
 
-  {%- capture input_name -%}
+    {%- capture input_name -%}
       {{ option.name }}-{{ option.position }}
     {%- endcapture -%}
 
-  {%- capture input_dataset -%}
+    {%- capture input_dataset -%}
       data-product-url="{{ value.product_url }}"
       data-option-value-id="{{ value.id }}"
     {%- endcapture -%}
 
-  {%- capture label_unavailable -%}
+    {%- capture label_unavailable -%}
       <span class="visually-hidden label-unavailable">
         {{- 'products.product.variant_sold_out_or_unavailable' | t -}}
       </span>
     {%- endcapture -%}
 
-  {% if picker_type == 'button' -%}
-    {%- assign primary_color = variant.metafields.custom.primarycolor -%}
-    {%- assign secondary_color = variant.metafields.custom.secondarycolor -%}
-    <input
-      type="radio"
-      id="{{ input_id }}"
-      name="{{ input_name | escape }}"
-      value="{{ value | escape }}"
-      form="{{ product_form_id }}"
-      {% if is_selected %}
-        checked
-      {% endif %}
-      {% if variant.available == false %}
-        disabled class="disabled"
-      {% endif %}
-      {{ input_dataset }}
-    >
-    <label for="{{ input_id }}" class="swatch-button-label">
-      {% if primary_color and secondary_color -%}
-        <div class="swatch-button">
-          <div
-            class="swatch-half swatch-half-1"
-            style="background-color: {{ primary_color }};"
-          ></div>
-          <div
-            class="swatch-half swatch-half-2"
-            style="background-color: {{ secondary_color }};"
-          ></div>
-        </div>
-      {%- else -%}
-        {{ value }}
-      {%- endif -%}
-      {{ label_unavailable }}
-    </label>
-  {% endif -%}
+    {% if picker_type == 'button' -%}
+      {%- assign primary_color = matching_variant.metafields.custom.primarycolor -%}
+      {%- assign secondary_color = matching_variant.metafields.custom.secondarycolor -%}
+
+      <input
+        type="radio"
+        id="{{ input_id }}"
+        name="{{ input_name | escape }}"
+        value="{{ value | escape }}"
+        form="{{ product_form_id }}"
+        {% if value.selected %}
+          checked
+        {% endif %}
+        {% if matching_variant.available == false %}
+          disabled class="disabled"
+        {% endif %}
+        {{ input_dataset }}
+      >
+      <label for="{{ input_id }}" class="swatch-button-label">
+        {% if primary_color and secondary_color -%}
+          <div class="swatch-button">
+            <div
+              class="swatch-half swatch-half-1"
+              style="background-color: {{ primary_color }};"
+            ></div>
+            <div
+              class="swatch-half swatch-half-2"
+              style="background-color: {{ secondary_color }};"
+            ></div>
+          </div>
+        {%- else -%}
+          {{ value }}
+        {%- endif -%}
+        {{ label_unavailable }}
+      </label>
+    {% endif -%}
+  {%- endif -%}
+  {%- comment %} End if matching variant is found {%- endcomment %}
 {%- endfor -%}
