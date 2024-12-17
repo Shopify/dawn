@@ -9,8 +9,6 @@
       {% assign secondary_color = variant.metafields.custom.secondarycolor %}
 
       {% if primary_color and secondary_color %}
-        {{ primary_color | default: 'No primary color' }} / {{ secondary_color | default: 'No secondary color' }}
-
         <label for="variant-{{ variant.id }}" class="swatch-label">
           <input
             type="radio"
@@ -21,17 +19,34 @@
               checked
             {% endif %}
           >
-          <div
-            class="swatch"
-            style="
-              width: 30px;
-              height: 30px;
-              border-radius: 50%;
-              background: linear-gradient(45deg, {{ primary_color }} 50%, {{ secondary_color }} 50%);
-              border: 1px solid #ccc;
-              cursor: pointer;
-            "
-          ></div>
+          <div class="swatch" style="position: relative;">
+            <!-- First Half -->
+            <div
+              class="swatch-half swatch-half-1"
+              style="
+                width: 50%;
+                height: 100%;
+                background-color: {{ primary_color }};
+                position: absolute;
+                top: 0;
+                left: 0;
+                clip-path: polygon(0 0, 100% 0, 0 100%);
+              "
+            ></div>
+            <!-- Second Half -->
+            <div
+              class="swatch-half swatch-half-2"
+              style="
+                width: 50%;
+                height: 100%;
+                background-color: {{ secondary_color }};
+                position: absolute;
+                top: 0;
+                right: 0;
+                clip-path: polygon(100% 0, 100% 100%, 0 100%);
+              "
+            ></div>
+          </div>
         </label>
       {% endif %}
     {% endfor %}
@@ -40,15 +55,17 @@
   <script>
     // JavaScript to update the variant when a swatch is clicked
     document.addEventListener('DOMContentLoaded', function () {
-      const productForm = document.getElementById('{{ product_form_id }}');
-      if (productForm) {
-        const swatchInputs = productForm.querySelectorAll('.variant-swatches input[type="radio"]');
-        swatchInputs.forEach((input) => {
-          input.addEventListener('change', (event) => {
+      const swatchInputs = document.querySelectorAll('.variant-swatches input[type="radio"]');
+      swatchInputs.forEach((input) => {
+        input.addEventListener('change', (event) => {
+          const productForm = event.target.closest('form');
+          if (productForm) {
             productForm.submit();
-          });
+          } else {
+            console.warn('No product form found!');
+          }
         });
-      }
+      });
     });
   </script>
 
@@ -66,6 +83,7 @@
       position: relative;
       width: 30px;
       height: 30px;
+      cursor: pointer;
     }
 
     .swatch-label input[type='radio'] {
@@ -81,7 +99,14 @@
       height: 30px;
       border-radius: 50%;
       border: 1px solid #ccc;
-      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* For debugging purposes - visible borders */
+    .swatch-half {
+      width: 100%;
+      height: 100%;
     }
   </style>
 {% endif %}
