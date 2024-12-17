@@ -1,0 +1,155 @@
+{% assign color_options = 'light-pink,white' | split: ',' %}
+
+<!-- Step 1: Product Selection -->
+<div class="stepper">
+  <div class="step" data-step="1">
+    <h2>Step 1: Select Product 1</h2>
+    <ul>
+      {% for product in collections.all.products %}
+        {% if product.available %}
+          <li>
+            <input type="radio" id="product-{{ product.id }}" name="product-1" value="{{ product.id }}">
+            <label for="product-{{ product.id }}">{{ product.title }}</label>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+    <button class="next-step" data-step="1">Next Step</button>
+  </div>
+
+  <!-- Step 2: Color Selection -->
+  <div class="step" data-step="2">
+    <h2>Step 2: Select Color for Product 1</h2>
+    <ul>
+      {% for color in color_options %}
+        <li>
+          <input type="radio" id="color-{{ color }}" name="color-1" value="{{ color }}">
+          <label for="color-{{ color }}">{{ color }}</label>
+          <div class="color-option" style="background-color: {{ get_color_circle(color, color) }};"></div>
+        </li>
+      {% endfor %}
+    </ul>
+    <button class="prev-step" data-step="2">Previous Step</button>
+    <button class="next-step" data-step="2">Next Step</button>
+  </div>
+
+  <!-- Step 3: Color Selection -->
+  <div class="step" data-step="3">
+    <h2>Step 3: Select Color for Product 2</h2>
+    <ul>
+      {% for color in color_options %}
+        <li>
+          <input type="radio" id="color-{{ color }}" name="color-2" value="{{ color }}">
+          <label for="color-{{ color }}">{{ color }}</label>
+          <div class="color-option" style="background-color: {{ get_color_circle(color, color) }};"></div>
+        </li>
+      {% endfor %}
+    </ul>
+    <button class="prev-step" data-step="3">Previous Step</button>
+    <button class="add-to-cart">Add to Cart</button>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+  const stepper = document.querySelector('.stepper');
+  const steps = stepper.querySelectorAll('.step');
+  const productInputs = stepper.querySelectorAll('input[name="product-1"]');
+  const colorInputs = stepper.querySelectorAll('input[name="color-1"], input[name="color-2"]');
+
+  let currentStep = 1;
+  let selectedProduct = null;
+  let selectedColors = {};
+
+  // Handle step navigation
+  stepper.addEventListener('click', (e) => {
+    if (e.target.classList.contains('next-step')) {
+      currentStep++;
+      showStep(currentStep);
+    } else if (e.target.classList.contains('prev-step')) {
+      currentStep--;
+      showStep(currentStep);
+    }
+  });
+
+  // Handle product selection
+  productInputs.forEach((input) => {
+    input.addEventListener('change', (e) => {
+      selectedProduct = e.target.value;
+    });
+  });
+
+  // Handle color selection
+  colorInputs.forEach((input) => {
+    input.addEventListener('change', (e) => {
+      const step = e.target.name.split('-')[1];
+      selectedColors[step] = e.target.value;
+    });
+  });
+
+  // Add to cart functionality
+  document.querySelector('button.add-to-cart').addEventListener('click', () => {
+    const variantIds = [];
+    Object.keys(selectedColors).forEach((step) => {
+      const productId = selectedProduct;
+      const color = selectedColors[step];
+      const variantId = getVariantId(productId, color);
+      variantIds.push(variantId);
+    });
+    addVariantsToCart(variantIds);
+  });
+
+  // Helper functions
+  function showStep(step) {
+    steps.forEach((stepElement) => {
+      stepElement.style.display = 'none';
+    });
+    steps[step - 1].style.display = 'block';
+  }
+
+  function getVariantId(productId, color) {
+    // You'll need to implement this function to retrieve the variant ID
+    // based on the product ID and color selection
+    // For example, you can use the Shopify API to retrieve the variant ID
+    // or store the variant IDs in a JavaScript object
+  }
+
+  function addVariantsToCart(variantIds) {
+    // You'll need to implement this function to add the variant IDs to the cart
+    // using the Shopify API or a JavaScript library like Ajax Cart
+  }
+
+  function get_color_circle(color1, color2) {
+    // Helper function to generate the color circle
+    if (color1 === color2) {
+      return `background-color: ${color1};`;
+    } else {
+      return `background-image: linear-gradient(to bottom right, ${color1}, ${color2});`;
+    }
+  }
+</script>
+
+<!-- CSS -->
+<style>
+  .stepper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .step {
+    display: none;
+  }
+
+  .step.active {
+    display: block;
+  }
+
+  .color-option {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 10px;
+  }
+</style>
