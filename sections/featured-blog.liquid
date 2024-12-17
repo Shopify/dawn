@@ -83,13 +83,20 @@
           {%- endfor -%}
         {%- else -%}
           {% assign blog_articles = '' | split: ',' %}
+          {% assign delimiter = '___' %}
           {%- for link in linklists.blogs.links -%}
             {%- assign blog = link.object -%}
-            {%- for article in blog.articles -%}
-              {%- assign blog_articles = article -%}
+            {%- for item in blog.articles -%}
+              {% assign identifier = item.published_at
+                | date: '%Y-%m-%d'
+                | append: delimiter
+                | append: item.handle
+                | split: ' '
+              %}
+              {% assign blog_articles = blog_articles | concat: identifier %}
             {%- endfor -%}
           {%- endfor -%}
-          {%- blog_articles | sort: published_at -%}
+          {% assign blog_articles = blog_articles | sort_natural | reverse %}
           {%- for sorted_article in blog_articles limit: section.settings.post_limit -%}
             <li
               id="Slide-{{ section.id }}-{{ forloop.index }}"
