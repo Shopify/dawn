@@ -1,68 +1,94 @@
-{% assign variants = product.variants %}
+{% comment %}
+  Custom Color Swatch Variant Picker
+{% endcomment %}
 
-<h3>Currently under construction, we're very sorry!</h3>
+{%- unless product.has_only_default_variant -%}
+  <variant-selects
+    id="variant-selects-{{ section.id }}"
+    data-section="{{ section.id }}"
+    {{ block.shopify_attributes }}
+  >
+    {%- for option in product.options_with_values -%}
+      {%- if option.name == 'Color' -%}
+        <!-- Target 'Color' option -->
+        <fieldset class="js product-form__input product-form__input--swatch">
+          <legend class="form__label">{{ option.name }}</legend>
+          <div class="variant-swatches">
+            {%- for value in option.values -%}
+              {%- assign variant = product.variants | where: 'option1', value | first -%}
+              {%- assign primary_color = variant.metafields.custom.primarycolor -%}
+              {%- assign secondary_color = variant.metafields.custom.secondarycolor -%}
 
-{% if variants.size > 1 %}
-  <div class="variant-swatches">
-    {% for variant in variants %}
-      {% assign primary_color = variant.metafields.custom.primarycolor %}
-      {% assign secondary_color = variant.metafields.custom.secondarycolor %}
-
-      {% if primary_color and secondary_color %}
-        <label for="variant-{{ variant.id }}" class="swatch-label">
-          <input
-            type="radio"
-            name="{{ product_form_id }}[id]"
-            id="variant-{{ variant.id }}"
-            value="{{ variant.id }}"
-            {% if variant.id == product.selected_or_first_available_variant.id %}
-              checked
-            {% endif %}
-          >
-          <div class="swatch" style="position: relative;">
-            <!-- First Half -->
-            <div
-              class="swatch-half swatch-half-1"
-              style="
-                width: 50%;
-                height: 100%;
-                background-color: {{ primary_color }};
-                position: absolute;
-                top: 0;
-                left: 0;
-                clip-path: polygon(0 0, 100% 0, 0 100%);
-              "
-            ></div>
-            <!-- Second Half -->
-            <div
-              class="swatch-half swatch-half-2"
-              style="
-                width: 50%;
-                height: 100%;
-                background-color: {{ secondary_color }};
-                position: absolute;
-                top: 0;
-                right: 0;
-                clip-path: polygon(100% 0, 100% 100%, 0 100%);
-              "
-            ></div>
+              {%- if primary_color and secondary_color -%}
+                <label
+                  for="swatch-{{ variant.id }}"
+                  class="swatch-label"
+                  data-value="{{ value }}"
+                >
+                  <input
+                    type="radio"
+                    name="options[{{ option.name }}]"
+                    id="swatch-{{ variant.id }}"
+                    value="{{ value }}"
+                    {% if variant.id == product.selected_or_first_available_variant.id %}
+                      checked
+                    {% endif %}
+                  >
+                  <!-- Custom diagonal swatch -->
+                  <div class="swatch">
+                    <div
+                      class="swatch-half swatch-half-1"
+                      style="background-color: {{ primary_color }};"
+                    ></div>
+                    <div
+                      class="swatch-half swatch-half-2"
+                      style="background-color: {{ secondary_color }};"
+                    ></div>
+                  </div>
+                </label>
+              {%- endif -%}
+            {%- endfor -%}
           </div>
-        </label>
-      {% endif %}
-    {% endfor %}
-  </div>
+        </fieldset>
+      {%- else -%}
+        <!-- Default Shopify Variant Picker -->
+        <div class="product-form__input product-form__input--dropdown">
+          <label class="form__label" for="Option-{{ forloop.index0 }}">
+            {{ option.name }}
+          </label>
+          <select
+            id="Option-{{ forloop.index0 }}"
+            class="select__select"
+            name="options[{{ option.name }}]"
+            form="{{ product_form_id }}"
+          >
+            {%- for value in option.values -%}
+              <option
+                value="{{ value }}"
+                {% if option.selected_value == value %}
+                  selected
+                {% endif %}
+              >
+                {{ value }}
+              </option>
+            {%- endfor -%}
+          </select>
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+  </variant-selects>
 
+  <!-- Update Form on Swatch Click -->
   <script>
-    // JavaScript to update the variant when a swatch is clicked
     document.addEventListener('DOMContentLoaded', function () {
       const swatchInputs = document.querySelectorAll('.variant-swatches input[type="radio"]');
       swatchInputs.forEach((input) => {
         input.addEventListener('change', (event) => {
+          const selectedValue = event.target.value;
           const productForm = event.target.closest('form');
           if (productForm) {
+            // Update hidden input or submit form
             productForm.submit();
-          } else {
-            console.warn('No product form found!');
           }
         });
       });
@@ -77,36 +103,46 @@
     }
 
     .swatch-label {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
       position: relative;
+      display: inline-block;
+      cursor: pointer;
       width: 30px;
       height: 30px;
-      cursor: pointer;
     }
 
-    .swatch-label input[type='radio'] {
+    .swatch-label input {
       position: absolute;
+      opacity: 0;
       width: 100%;
       height: 100%;
-      opacity: 0;
       cursor: pointer;
     }
 
     .swatch {
-      width: 30px;
-      height: 30px;
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
       border: 1px solid #ccc;
       position: relative;
       overflow: hidden;
     }
 
-    /* For debugging purposes - visible borders */
     .swatch-half {
+      position: absolute;
       width: 100%;
       height: 100%;
     }
+
+    .swatch-half-1 {
+      clip-path: polygon(0 0, 100% 0, 0 100%);
+    }
+
+    .swatch-half-2 {
+      clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    }
+
+    .swatch-label input:checked + .swatch {
+      border: 2px solid #000;
+    }
   </style>
-{% endif %}
+{%- endunless -%}
