@@ -10,40 +10,38 @@
 {% endcomment %}
 
 {{ block.settings.liquid_before }}
-{%- if product.metafields.custom.linked_products != blank -%}
-  <div class="fake-variants">
-    {%- if block.settings.linked_products_label != blank -%}
-      {% assign show_color_swatches = block.settings.show_color_swatches %}
-      {% assign show_image_swatches = block.settings.show_image_swatches %}
-      {% if show_color_swatches or show_image_swatches %}
-        <p class="form__label">
-          <span>{{ block.settings.linked_products_label }}:</span>
-          <span>
-            {% for linked_product in product.metafields.custom.linked_products.value %}
-              {% if linked_product.handle == product.handle %}
-                {% if linked_product.metafields.custom.linked_products_name != blank %}
-                  {{ linked_product.metafields.custom.linked_products_name }}
-                {% else %}
-                  {{ linked_product.title }}
-                {% endif %}
+{%- if product.metafields.expansion.linked_products != blank -%}
+  <div id="5125124" class="exp-lp-container">
+    {% assign show_color_swatches = block.settings.show_color_swatches %}
+    {% assign show_image_swatches = block.settings.show_image_swatches %}
+    {% if show_color_swatches or show_image_swatches %}
+      <p class="exp-lp-products-label">
+        <span id="512r12r2112">{{ block.settings.linked_products_label }}:</span>
+        <span id=>
+          {% for linked_product in product.metafields.custom.linked_products.value %}
+            {% if linked_product.handle == product.handle %}
+              {% if linked_product.metafields.expansion.linked_products_name != blank %}
+                {{ linked_product.metafields.custom.linked_products_name }}
+              {% else %}
+                {{ linked_product.title }}
               {% endif %}
-            {% endfor %}
-          </span>
-        </p>
-      {% else %}
-        <p class="form__label">{{ block.settings.linked_products_name }}</p>
-      {% endif %}
-    {%- endif -%}
-    <ul class="{% if show_color_swatches or show_image_swatches %}fake-variants__swatches{% endif %}">
+            {% endif %}
+          {% endfor %}
+        </span>
+      </p>
+    {% else %}
+      <p class="exp-linked-products-label">{{ block.settings.linked_products_name }}</p>
+    {% endif %}
+    <ul class="{% if show_color_swatches or show_image_swatches %}exp-linked-products-swatches{% endif %}">
       {%- for linked_product in product.metafields.custom.linked_products -%}
         {%- liquid
           if show_color_swatches or show_image_swatches
-            assign linked_product_swatch_color = linked_product.metafields.custom.color_swatch
+            assign linked_product_swatch_color = linked_product.metafields.expansion.linked_products_color_swatch
           endif
 
           assign linked_product_title = linked_product.title
-          if linked_product.metafields.custom.linked_products_name != blank
-            assign linked_product_title = linked_product.metafields.custom.linked_products_name
+          if linked_product.metafields.expansion.linked_products_name != blank
+            assign linked_product_title = linked_product.metafields.expansion.linked_products_name
           endif
 
           assign use_swatch = false
@@ -56,17 +54,17 @@
 
         <li
           {% if use_swatch %}
-            class="product-color-swatch"
+            class="exp-linked-product-swatch"
             style="{% if linked_product_swatch_color != blank %}--color-swatch-background: {{ linked_product_swatch_color | default: 'transparent' }};{% endif %}{% if show_image_swatches == true %}--image-swatch-background: url({{ linked_product.featured_image | image_url: width: 200 }});{% endif %}"
             aria-label="{{ linked_product_title }}"
           {% endif -%}
           data-product-handle="{{ linked_product.handle }}"
         >
           {%- if linked_product.handle == product.handle -%}
-            <span class="fake-variants__label">
+            <span class="exp-linked-product">
               {%- if use_swatch -%}
-                <span class="product-color-swatch__inner"></span>
-                <span class="visually-hidden">{{ linked_product_title }}</span>
+                <span class="exp-linked-products-swatch-inner"></span>
+                <span class="exp-linked-products-swatch-text">{{ linked_product_title }}</span>
               {%- else -%}
                 {{ linked_product }}
               {%- endif -%}
@@ -78,19 +76,21 @@
             {% # theme-check-enable %}
 
             <a
-              class="fake-variants__label"
+              class="exp-linked-product"
               href="{{ linked_product.url }}"
-              {% if block.settings.enable_quick_fake_variant_change %}
-                id="fakeVariantProductId-{{ linkd_product.id }}"
-                data-product-id="{{ linked_product.id }}"
-                data-update-url="true"
-                data-product-url="{{ linked_product.url }}"
-                data-url="{{ linked_product.url }}"
-              {% endif %}
+              {% comment %}
+                {% if block.settings.enable_quick_fake_variant_change %}
+                  id="linkedProductId-{{ linkd_product.id }}"
+                  data-product-id="{{ linked_product.id }}"
+                  data-update-url="true"
+                  data-product-url="{{ linked_product.url }}"
+                  data-url="{{ linked_product.url }}"
+                {% endif %}
+              {% endcomment %}
             >
               {%- if use_swatch -%}
-                <span class="product-color-swatch__inner"></span>
-                <span class="visually-hidden">{{ linked_product_title }}</span>
+                <span class="exp-linked-products-swatch-inner"></span>
+                <span class="exp-linked-products-swatch-text">{{ linked_product_title }}</span>
               {%- else -%}
                 {{ linked_product_title }}
               {%- endif -%}
@@ -103,43 +103,34 @@
 {%- endif -%}
 {{ block.settings.liquid_after }}
 
-{% comment %}
 <style>
-    /*
-    bs-add
-    - support for fake variants
-  */
-  .fake-variants[loading] {
+  .exp-linked-products[loading] {
     pointer-events: none;
     cursor: not-allowed;
     opacity: .5;
   }
 
-  .fake-variants ul {
+  .exp-linked-products ul {
     list-style: none; 
     padding: 0;
     margin: 0;
   }
 
-  .fake-variants li {
+  .exp-linked-products li {
     display: inline;
   }
 
-  .fake-variants a.fake-variants__label {
+  .exp-linked-products a.exp-linked-product {
     text-decoration: none;
   }
 
-  .fake-variants .form__label {
+  .exp-linked-products-label {
     padding-left: 0;
     margin-bottom: 0.2rem;
     font-weight: 400;
   }
 
-  /*
-    bs-add
-    - support for fake variants
-  */
-  .fake-variants .fake-variants__label {
+  .exp-linked-products .exp-linked-product {
     border: var(--variant-pills-border-width) solid rgba(var(--color-foreground), var(--variant-pills-border-opacity));
     background-color: rgb(var(--color-background));
     color: rgba(var(--color-foreground));
@@ -158,11 +149,7 @@
     overflow: hidden;
   }
 
-  /*
-    bs-add
-    - support for fake variants
-  */
-  .fake-variants .fake-variants__label:before {
+  .exp-linked-products .exp-linked-product:before {
     content: '';
     position: absolute;
     top: calc(var(--variant-pills-border-width) * -1);
@@ -175,32 +162,20 @@
       var(--variant-pills-shadow-blur-radius) rgba(var(--color-shadow), var(--variant-pills-shadow-opacity));
   }
 
-  /*
-    bs-add
-    - support for fake variants
-  */
-  .fake-variants a.fake-variants__label:hover {
+  .exp-linked-products a.exp-linked-product:hover {
     border-color: rgb(var(--color-foreground));
   }
 
-  /*
-    bs-add
-    - support for fake variants
-  */
-  .fake-variants span.fake-variants__label {
+  .exp-linked-products span.exp-linked-product {
     background-color: rgb(var(--color-foreground));
     color: rgb(var(--color-background));
   }
 
-  /* 
-    bs-add
-    - support for PDP color swatches
-  */
-  .fake-variants .fake-variants__swatches {
+  .exp-linked-products .fake-variants__swatches {
     display: flex;
     flex-wrap: wrap;
   }
-  .fake-variants .fake-variants__swatches .fake-variants__label {
+  .exp-linked-products-swatches .exp-linked-product {
     width: 3.5rem;
     height: 3.5rem;
     padding: 0;
@@ -214,14 +189,14 @@
       rgba(var(--color-foreground), var(--variant-color-pills-border-opacity));
     border-radius: var(--variant-color-pills-radius);
   }
-  .fake-variants .fake-variants__swatches span.fake-variants__label {
+  .exp-linked-products-swatches span.exp-linked-product {
     background-color: var(--color-swatch-background, transparent);
     background-image: var(--image-swatch-background);
     background-repeat: no-repeat;
     background-size: contain;
     border-color: rgb(var(--color-foreground));
   }
-  .fake-variants .fake-variants__swatches span.fake-variants__label .product-color-swatch__inner {
+  .exp-linked-products-swatches span.exp-linked-product .exp-linked-products-swatch-inner {
     position: absolute;
     border-radius: var(--variant-color-pills-radius);
     border: var(--variant-color-pills-border-width) solid rgb(var(--color-foreground));
@@ -230,7 +205,7 @@
     bottom: calc(var(--variant-color-pills-border-width) * 2);
     left: calc(var(--variant-color-pills-border-width) * 2);
   }
-  .fake-variants .fake-variants__swatches a.fake-variants__label:before {
+  .exp-linked-products-swatches a.exp-linked-product:before {
     top: calc(var(--variant-color-pills-border-width) * -1);
     right: calc(var(--variant-color-pills-border-width) * -1);
     bottom: calc(var(--variant-color-pills-border-width) * -1);
@@ -239,7 +214,7 @@
     box-shadow: var(--variant-color-pills-shadow-horizontal-offset) var(--variant-color-pills-shadow-vertical-offset)
       var(--variant-color-pills-shadow-blur-radius) rgba(var(--color-shadow), var(--variant-color-pills-shadow-opacity));
   }
-  .fake-variants .fake-variants__swatches span.fake-variants__label::after {
+  .exp-linked-products-swatches span.exp-linked-product::after {
     content: '';
     position: absolute;
     border-radius: var(--variant-color-pills-radius);
@@ -250,29 +225,32 @@
     left: 0;
   }
 
-  .fake-variants .fake-variants__label .visually-hidden {
+  .exp-linked-products-swatch-text {
     display: none;
   }
 </style>
-{% endcomment %}
 
 {% schema %}
 {
-  "type": "fake_variant_picker",
-  "name": "Fake variant picker",
+  "type": "expansion_linked_products",
+  "name": "Expansion linked products",
   "limit": 1,
   "settings": [
     {
-      "type": "paragraph",
-      "content": "Fake variants allow you to link multiple products together to simulate regular product variants. To configure fake variants you must create the following product metafields:"
+      "type": "header",
+      "content": "How to use this expansion block"
     },
     {
       "type": "paragraph",
-      "content": "bonshore.product_variants (type product list)"
+      "content": "Linked products allow you to link multiple products together to simulate product variants. To configure linked products you must create the following product metafields:"
     },
     {
       "type": "paragraph",
-      "content": "bonshore.product_variants_name (type: single line text)"
+      "content": "expansion.linked_products | This "
+    },
+    {
+      "type": "paragraph",
+      "content": "expansion.linked_products_name (type: single line text)"
     },
     {
       "type": "paragraph",
