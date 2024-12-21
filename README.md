@@ -28,6 +28,6 @@ The six digit number should be generated randomly and checked to ensure uniquene
 
 ## Block ID reference
 
-Linked products: lp
-Purchase option selector: po
-Quantity upsell: qu
+Linked products: lp  
+Purchase option selector: po  
+Quantity upsell: qu  
