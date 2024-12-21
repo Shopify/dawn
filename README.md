@@ -22,12 +22,12 @@ Every element in in the DOM should have a static ID with the following format:
 
 As an example:
 ```
-id="exp-lp-123456
+id="exp-lp-123456"
 ```
 The six digit number should be generated randomly and checked to ensure uniqueness.
 
 ## Block ID reference
-| Block | ID |
-| Linked products | lp |
-| Purchase option selector | po |
-| Quantity upsell | qu |
+
+Linked products: lp
+Purchase option selector: po
+Quantity upsell: qu
