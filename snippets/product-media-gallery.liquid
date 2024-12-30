@@ -325,3 +325,96 @@
     </slider-component>
   {%- endif -%}
 </media-gallery>
+
+<slider-component
+  class="swiper swiper-slider-{{ section.id }} mobile--gallery"
+  id="slider-{{ section.id }}"
+  data-slider="true"
+  data-direction="horizontal"
+  data-loop="false"
+  data-slides-per-view-desktop="1"
+  data-slides-per-view-mobile="1"
+  data-autoplay="false"
+  data-pagination-type="{{ section.settings.pagination_type }}"
+  data-space-between-mobile="16"
+  data-space-between-desktop="20"
+>
+  <div
+    class="swiper-wrapper"
+  >
+    {%- if product.selected_or_first_available_variant.featured_media != null -%}
+      {%- assign featured_media = product.selected_or_first_available_variant.featured_media -%}
+      <li
+        id="Slide-{{ section.id }}-{{ featured_media.id }}"
+        class="product__media-item grid__item slider__slide is-active{% if single_media_visible %} product__media-item--single{% endif %}{% if featured_media.media_type != 'image' %} product__media-item--full{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+        data-media-id="{{ section.id }}-{{ featured_media.id }}"
+      >
+        {%- assign media_position = 1 -%}
+        {% render 'product-thumbnail',
+          media: featured_media,
+          media_count: media_count,
+          position: media_position,
+          desktop_layout: section.settings.gallery_layout,
+          mobile_layout: section.settings.mobile_thumbnails,
+          loop: section.settings.enable_video_looping,
+          modal_id: section.id,
+          xr_button: true,
+          media_width: media_width,
+          media_fit: section.settings.media_fit,
+          constrain_to_viewport: section.settings.constrain_to_viewport,
+          lazy_load: false,
+          show_wishlist_button: true
+        %}
+      </li>
+    {%- endif -%}
+    {%- for media in product.media -%}
+      {% if media_position >= limit
+        or media_position >= 1
+        and section.settings.hide_variants
+        and variant_images contains media.src
+      %}
+        {% continue %}
+      {% endif %}
+
+      {%- unless media.id == product.selected_or_first_available_variant.featured_media.id -%}
+        <li
+          id="Slide-{{ section.id }}-{{ media.id }}"
+          class="swiper-slide"
+          data-media-id="{{ section.id }}-{{ media.id }}"
+        >
+          {%- liquid
+            assign media_position = media_position | default: 0 | plus: 1
+            assign lazy_load = false
+            if media_position > 1
+              assign lazy_load = true
+            endif
+
+            assign show_wishlist_button = true
+            if section.settings.gallery_layout == 'stacked' or section.settings.gallery_layout == 'columns'
+              unless media_position == 1
+                assign show_wishlist_button = false
+              endunless
+            endif
+          -%}
+          {% render 'product-thumbnail',
+            media: media,
+            media_count: media_count,
+            position: media_position,
+            desktop_layout: section.settings.gallery_layout,
+            mobile_layout: section.settings.mobile_thumbnails,
+            loop: section.settings.enable_video_looping,
+            modal_id: section.id,
+            xr_button: true,
+            media_width: media_width,
+            media_fit: section.settings.media_fit,
+            constrain_to_viewport: section.settings.constrain_to_viewport,
+            lazy_load: lazy_load,
+            show_wishlist_button: settings.enable_wishlist
+          %}
+        </li>
+      {%- endunless -%}
+    {%- endfor -%}
+  </div>
+
+  {% render 'swiper-pagination', section: section %}
+</slider-component>
