@@ -208,6 +208,61 @@ if (!customElements.get('product-info')) {
               variant,
             },
           });
+
+          const mobileProductsElement = document.querySelector('slider-component.mobile--gallery');
+          if (mobileProductsElement && mobileProductsElement.swiper) {
+            updateMobileSwiper(mobileProductsElement.swiper);
+          }
+
+          function updateMobileSwiper(swiper) {
+            if (!swiper) return;
+            swiper.update();
+            swiper.slideTo(0);
+
+            const selectedInput = document.querySelector(
+              'variant-selects input[type="radio"]:checked, variant-radios input[type="radio"]:checked'
+            );
+            if (selectedInput?.dataset.variantImage) {
+              const firstSlide = swiper.slides[0];
+              if (firstSlide) {
+                const existingModalOpener = firstSlide.querySelector('modal-opener');
+                const existingModalId = existingModalOpener?.dataset.modal;
+                const mediaId = selectedInput.dataset.mediaId || firstSlide.dataset.mediaId;
+
+                firstSlide.innerHTML = `
+                  <div class="product-media-container media-type-image media-fit-contain global-media-settings gradient" style="--ratio: 1.0; --preview-ratio: 1.0;">
+                    <modal-opener class="product__modal-opener product__modal-opener--image" data-modal="${existingModalId}">
+                      <span class="product__media-icon motion-reduce quick-add-hidden product__media-icon--lightbox" aria-hidden="true">
+                        <svg aria-hidden="true" focusable="false" class="icon icon-plus" width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path fill-rule="evenodd" clip-rule="evenodd" d="M4.66724 7.93978C4.66655 7.66364 4.88984 7.43922 5.16598 7.43853L10.6996 7.42464C10.9758 7.42395 11.2002 7.64724 11.2009 7.92339C11.2016 8.19953 10.9783 8.42395 10.7021 8.42464L5.16849 8.43852C4.89235 8.43922 4.66793 8.21592 4.66724 7.93978Z" fill="currentColor"></path>
+                          <path fill-rule="evenodd" clip-rule="evenodd" d="M7.92576 4.66463C8.2019 4.66394 8.42632 4.88723 8.42702 5.16337L8.4409 10.697C8.44159 10.9732 8.2183 11.1976 7.94215 11.1983C7.66601 11.199 7.44159 10.9757 7.4409 10.6995L7.42702 5.16588C7.42633 4.88974 7.64962 4.66532 7.92576 4.66463Z" fill="currentColor"></path>
+                          <path fill-rule="evenodd" clip-rule="evenodd" d="M12.8324 3.03011C10.1255 0.323296 5.73693 0.323296 3.03011 3.03011C0.323296 5.73693 0.323296 10.1256 3.03011 12.8324C5.73693 15.5392 10.1255 15.5392 12.8324 12.8324C15.5392 10.1256 15.5392 5.73693 12.8324 3.03011ZM2.32301 2.32301C5.42035 -0.774336 10.4421 -0.774336 13.5395 2.32301C16.6101 5.39361 16.6366 10.3556 13.619 13.4588L18.2473 18.0871C18.4426 18.2824 18.4426 18.599 18.2473 18.7943C18.0521 18.9895 17.7355 18.9895 17.5402 18.7943L12.8778 14.1318C9.76383 16.6223 5.20839 16.4249 2.32301 13.5395C-0.774335 10.4421 -0.774335 5.42035 2.32301 2.32301Z" fill="currentColor"></path>
+                        </svg>
+                      </span>
+                      <div class="loading__spinner hidden">
+                        <svg aria-hidden="true" focusable="false" class="spinner" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+                          <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+                        </svg>
+                      </div>
+                      <div class="product__media media media--transparent" data-media-id="${mediaId}">
+                        <img src="${selectedInput.dataset.variantImage}" 
+                             alt="${selectedInput.dataset.variantTitle || ''}"
+                             loading="lazy"
+                             class="image-magnify-lightbox"
+                             data-media-id="${mediaId}"
+                             sizes="(min-width: 1200px) 715px, (min-width: 990px) calc(65.0vw - 10rem), (min-width: 750px) calc((100vw - 11.5rem) / 2), calc(100vw / 1 - 4rem)">
+                      </div>
+                      <button class="product__media-toggle quick-add-hidden product__media-zoom-lightbox" type="button" aria-haspopup="dialog" data-media-id="${mediaId}">
+                        <span class="visually-hidden">
+                          Open media in modal
+                        </span>
+                      </button>
+                    </modal-opener>
+                  </div>
+                `;
+              }
+            }
+          }
         };
       }
 
