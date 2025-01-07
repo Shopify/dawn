@@ -47,6 +47,13 @@
   .swiper-slider-{{ section.id }} .swiper-pagination-bullet-active circle {
     fill: {{ section.settings.color_scheme.settings['button'] }};
   }
+  {% if section.settings.products_to_show <= section.settings.columns_desktop %}
+    @media (min-width: 750px) {
+      .section-{{ section.id }}-padding .swiper .swiper-pagination__group {
+        display: none;
+      }
+    }
+  {% endif %}
 {%- endstyle -%}
 
 {%- liquid
@@ -61,11 +68,11 @@
   class="color-{{ section.settings.color_scheme }} isolate gradient"
 >
   <div
-    class="collection{% if section.settings.quick_add == 'bulk' %} collection-quick-add-bulk{% endif %} section-{{ section.id }}-padding{% if section.settings.full_width %} collection--full-width {%else %} page-width{% endif %}"
+    class="collection{% if section.settings.quick_add == 'bulk' %} collection-quick-add-bulk{% endif %} section-{{ section.id }}-padding{% if section.settings.full_width %} collection--full-width{% endif %}"
     id="collection-{{ section.id }}"
     data-id="{{ section.id }}"
   >
-    <div class="collection__title title-wrapper title-wrapper--no-top-margin {% if slider_enabled %} title-wrapper--self-padded-tablet-down{% endif %}{% if slider_enabled %} collection__title--desktop-slider{% endif %}">
+    <div class="collection__title title-wrapper title-wrapper--no-top-margin page-width{% if slider_enabled %} title-wrapper--self-padded-tablet-down{% endif %}{% if slider_enabled %} collection__title--desktop-slider{% endif %}">
       {%- if section.settings.title != blank -%}
         {% unless section.settings.heading_element_custom %}
           <h2 class="title inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
@@ -102,85 +109,86 @@
         </div>
       {%- endif -%}
     </div>
-
-    <slider-component
-      class="{% if slider_enabled %} swiper swiper-slider-{{ section.id }}  {% endif %} {% if section.settings.full_width == false %} page-width-desktop{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-      id="slider-{{ section.id }}"
-      data-slider="true"
-      data-direction="horizontal"
-      data-loop="true"
-      data-slides-per-view-desktop="{{ section.settings.columns_desktop }}"
-      data-slides-per-view-mobile="{{ section.settings.columns_mobile }}"
-      data-autoplay="false"
-      data-pagination-type="{{ section.settings.pagination_type }}"
-      data-space-between-mobile="16"
-      data-space-between-desktop="20"
-    >
-      <div
-        id="Slider-{{ section.id }}"
-        data-id="{{ section.id }}"
-        class="{% if slider_enabled %} swiper-wrapper {% else %} grid {% endif %} product-grid contains-card contains-card--product{% if settings.card_style == 'standard' %} contains-card--standard{% endif %} grid--{{ section.settings.columns_desktop }}-col-desktop{% if section.settings.collection == blank %} grid--2-col-tablet-down{% else %} grid--{{ section.settings.columns_mobile }}-col-tablet-down{% endif %}"
-        role="list"
-        aria-label="{{ 'general.slider.name' | t }}"
+    <div class="{% if section.settings.full_width == false %}page-width{% endif %}">
+      <slider-component
+        class="{% if slider_enabled %} swiper swiper-slider-{{ section.id }}  {% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+        id="slider-{{ section.id }}"
+        data-slider="true"
+        data-direction="horizontal"
+        data-loop="true"
+        data-slides-per-view-desktop="{{ section.settings.columns_desktop }}"
+        data-slides-per-view-mobile="{{ section.settings.columns_mobile }}"
+        data-autoplay="false"
+        data-pagination-type="{{ section.settings.pagination_type }}"
+        data-space-between-mobile="16"
+        data-space-between-desktop="20"
       >
-        {% assign skip_card_product_styles = false %}
-        {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
-          <div
-            id="Slide-{{ section.id }}-{{ forloop.index }}"
-            class="swiper-slide slider__slide {% unless slider_enabled %}grid__item{% endunless %} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-            {% if settings.animations_reveal_on_scroll %}
-              data-cascade
-              style="--animation-order: {{ forloop.index }};"
-            {% endif %}
-          >
-            {% render 'card-product',
-              card_product: product,
-              media_aspect_ratio: section.settings.image_ratio,
-              image_shape: section.settings.image_shape,
-              show_secondary_image: section.settings.show_secondary_image,
-              show_vendor: section.settings.show_vendor,
-              show_rating: section.settings.show_rating,
-              skip_styles: skip_card_product_styles,
-              section_id: section.id,
-              quick_add: section.settings.quick_add
-            %}
-          </div>
-          {%- assign skip_card_product_styles = true -%}
-        {%- else -%}
-          {%- for i in (1..section.settings.columns_desktop) -%}
-            <div
+        <ul
+          id="Slider-{{ section.id }}"
+          data-id="{{ section.id }}"
+          class="{% if slider_enabled %} swiper-wrapper {% else %} grid {% endif %} product-grid contains-card contains-card--product{% if settings.card_style == 'standard' %} contains-card--standard{% endif %} grid--{{ section.settings.columns_desktop }}-col-desktop{% if section.settings.collection == blank %} grid--2-col-tablet-down{% else %} grid--{{ section.settings.columns_mobile }}-col-tablet-down{% endif %}"
+          role="list"
+          aria-label="{{ 'general.slider.name' | t }}"
+        >
+          {% assign skip_card_product_styles = false %}
+          {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
+            <li
               id="Slide-{{ section.id }}-{{ forloop.index }}"
-              class="swiper-slide {% unless slider_enabled %}grid__item{% endunless %} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+              class="swiper-slide slider__slide {% unless slider_enabled %}grid__item{% endunless %} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
               {% if settings.animations_reveal_on_scroll %}
                 data-cascade
                 style="--animation-order: {{ forloop.index }};"
               {% endif %}
             >
-              {% liquid
-                assign ridx = forloop.rindex
-                case ridx
-                  when 5
-                    assign ridx = 1
-                  when 6
-                    assign ridx = 2
-                endcase
-              %}
-              {%- assign placeholder_image = 'product-apparel-' | append: ridx -%}
               {% render 'card-product',
-                show_vendor: section.settings.show_vendor,
+                card_product: product,
                 media_aspect_ratio: section.settings.image_ratio,
                 image_shape: section.settings.image_shape,
-                placeholder_image: placeholder_image
+                show_secondary_image: section.settings.show_secondary_image,
+                show_vendor: section.settings.show_vendor,
+                show_rating: section.settings.show_rating,
+                skip_styles: skip_card_product_styles,
+                section_id: section.id,
+                quick_add: section.settings.quick_add
               %}
-            </div>
+            </li>
+            {%- assign skip_card_product_styles = true -%}
+          {%- else -%}
+            {%- for i in (1..section.settings.columns_desktop) -%}
+              <li
+                id="Slide-{{ section.id }}-{{ forloop.index }}"
+                class="swiper-slide {% unless slider_enabled %}grid__item{% endunless %} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+                {% if settings.animations_reveal_on_scroll %}
+                  data-cascade
+                  style="--animation-order: {{ forloop.index }};"
+                {% endif %}
+              >
+                {% liquid
+                  assign ridx = forloop.rindex
+                  case ridx
+                    when 5
+                      assign ridx = 1
+                    when 6
+                      assign ridx = 2
+                  endcase
+                %}
+                {%- assign placeholder_image = 'product-apparel-' | append: ridx -%}
+                {% render 'card-product',
+                  show_vendor: section.settings.show_vendor,
+                  media_aspect_ratio: section.settings.image_ratio,
+                  image_shape: section.settings.image_shape,
+                  placeholder_image: placeholder_image
+                %}
+              </li>
+            {%- endfor -%}
           {%- endfor -%}
-        {%- endfor -%}
-      </div>
+        </ul>
 
-      {% if slider_enabled %}
-        {% render 'swiper-pagination', section: section %}
-      {% endif %}
-    </slider-component>
+        {% if slider_enabled %}
+          {% render 'swiper-pagination', section: section %}
+        {% endif %}
+      </slider-component>
+    </div>
 
     {%- if section.settings.show_view_all and more_in_collection -%}
       <div class="center collection__view-all{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
