@@ -1,3 +1,125 @@
+{% if product.metafields.custom.selected_variant == true or product.metafields.custom.selected_variant == null %}
+<style>
+  .hidden {
+    display: none;
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const mediaGallery = document.querySelector('media-gallery');
+    const productSection = document.querySelector(".product-variant-id");
+    const sectionID = "{{ section.id }}";
+
+    // Ensure required elements are available
+    if (!mediaGallery || !productSection) {
+      console.error('Required elements are missing from the DOM.');
+      return;
+    }
+
+    const handle = `products/${"{{ product.handle }}"}.js`;
+
+    fetch(`${window.Shopify.routes.root}${handle}`)
+      .then(response => response.json())
+      .then(product => {
+        const optionsToWatch = "{{ settings.selected_option_name }}".split(",");
+        const colorOption = product.options.find(option => optionsToWatch.includes(option.name)) || null;
+
+        if (!colorOption) {
+          console.warn("No relevant options available for this product.");
+          return;
+        }
+
+        const colorValues = colorOption.values;
+        const colorImagePositions = {};
+
+        // Map colors to their starting image positions
+        colorValues.forEach(color => {
+          const variant = product.variants.find(variant => variant.options[colorOption.position - 1] === color);
+
+          if (variant && variant.featured_image) {
+            colorImagePositions[color] = variant.featured_image.position;
+          }
+        });
+
+        // Sort colors by starting image position
+        const sortedColors = Object.entries(colorImagePositions).sort((a, b) => a[1] - b[1]);
+        const colorImageRanges = {};
+
+        sortedColors.forEach((color, index) => {
+          const colorName = color[0];
+          const startPos = color[1];
+          const endPos = sortedColors[index + 1] ? sortedColors[index + 1][1] : null;
+
+          colorImageRanges[colorName] = endPos ? [startPos, endPos] : [startPos];
+        });
+
+        // Group image IDs by color based on image ranges
+        const colorImageIDs = {};
+        Object.entries(colorImageRanges).forEach(([color, range]) => {
+          const startPos = range[0];
+          const endPos = range[1] || product.media.length + 1; // If no end position, use the end of the media list
+          
+          const imageIDs = product.media
+            .filter((media, index) => {
+              const imagePosition = index + 1; // Adjust index to be position-based
+              return imagePosition >= startPos && imagePosition < endPos;
+            })
+            .map(media => media.id);
+
+          colorImageIDs[color] = imageIDs;
+        });
+
+        // Apply data-media-group attributes to images
+        Object.entries(colorImageIDs).forEach(([color, imageIDs]) => {
+          imageIDs.forEach(mediaID => {
+            const selector = `[data-media-id="${sectionID}-${mediaID}"], [data-target="${sectionID}-${mediaID}"]`;
+            const mediaItems = mediaGallery.querySelectorAll(`li${selector}`);
+
+            mediaItems.forEach(mediaItem => {
+              mediaItem.setAttribute('data-media-group', color);
+            });
+          });
+        });
+
+        const showVariantImage = () => {
+          const variantSelects = document.querySelector('variant-selects');
+
+          // Get the selected color
+          const currentValues = Array.from(
+            variantSelects.querySelectorAll('select option[selected], fieldset input:checked')
+          ).map(el => el.value);
+
+          const selectedColor = currentValues.find(value => colorImageRanges.hasOwnProperty(value));
+
+          // Show/hide images based on the selected color
+          mediaGallery.querySelectorAll('ul li[data-media-group]').forEach(mediaItem => {
+            if (mediaItem.getAttribute('data-media-group') === selectedColor) {
+              mediaItem.classList.remove('hidden');
+            } else {
+              mediaItem.classList.add('hidden');
+            }
+          });
+
+          // Reinitialize slider if necessary
+          mediaGallery.querySelectorAll('slider-component').forEach(slider => {
+            if (typeof slider.initPages === 'function') {
+              slider.initPages();
+            }
+          });
+        };
+
+        // Initial display setup
+        showVariantImage();
+
+        // Update images when a new variant is selected
+        productSection.addEventListener('change', showVariantImage);
+      })
+      .catch(error => console.error("Error fetching product data:", error));
+  });
+</script>
+{% endif %}
+
 <product-info
   id="MainProduct-{{ section.id }}"
   class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}"
