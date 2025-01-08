@@ -11,6 +11,19 @@
   {% render 'product-media-gallery' %}
 {% endcomment %}
 
+{% assign variant_grouping_position = section.settings.variant_grouping_position | minus: 1 %}
+{% assign variant_image_groupings = product.metafields.custom.variant_images_grouping_list.value %}
+
+<style>
+  .hide-image:not(.is-active) {
+    display: none;
+  } 
+  
+  .product-media-modal__content .hide-image:not(.is-active) {
+    display: none;
+  }
+</style>
+
 {%- liquid
   if section.settings.hide_variants and variant_images.size == product.media.size
     assign single_media_visible = true
@@ -50,6 +63,10 @@
   {% endif %}
   aria-label="{{ 'products.product.media.gallery_viewer' | t }}"
   data-desktop-layout="{{ section.settings.gallery_layout }}"
+  data-group-variants="{{ section.settings.group_variants_enable }}"
+  data-has-only-default-variant="{{ product.has_only_default_variant }}"
+  data-disable-image-grouping="{{ product.metafields.custom.disable_image_grouping.value }}"
+
 >
   <div id="GalleryStatus-{{ section.id }}" class="visually-hidden" role="status"></div>
   <slider-component id="GalleryViewer-{{ section.id }}" class="slider-mobile-gutter">
@@ -63,6 +80,36 @@
     >
       {%- if product.selected_or_first_available_variant.featured_media != null -%}
         {%- assign featured_media = product.selected_or_first_available_variant.featured_media -%}
+
+{% if section.settings.group_variants_enable and product.has_only_default_variant != true and product.metafields.custom.disable_image_grouping.value != true %}   
+  {% if section.settings.group_variants_source == "metafield" %}     
+    {%- assign variant_grouping_name = nil -%}
+    {% for grouping in variant_image_groupings %}
+      {% assign file_group = grouping.file_grouping.value %}
+      {% assign variant_group = grouping.variants.value %}
+      {% for file in file_group %}
+        {% if featured_media == file %}
+          {% assign variant_grouping_name = grouping.name.value %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+      {% if variant_grouping_name != nil %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    {%- assign variant_grouping_name = nil -%}
+    {% if section.settings.group_variants_source == "filename" %}
+      {%- assign extracted_parts = featured_media.src | split: section.settings.variant_grouping_delimiter -%}
+    {% elsif section.settings.group_variants_source == "alttext" %}
+      {%- assign extracted_parts = featured_media.alt | split: section.settings.variant_grouping_delimiter -%}
+    {% endif %}
+    {%- assign variant_grouping_name = extracted_parts[variant_grouping_position] -%}
+    {%- assign selected_or_first_available_variant_grouping_name = variant_grouping_name -%}
+  {% endif %}
+{% endif %} 
+
+        
         <li
           id="Slide-{{ section.id }}-{{ featured_media.id }}"
           class="product__media-item grid__item slider__slide is-active{% if single_media_visible %} product__media-item--single{% endif %}{% if featured_media.media_type != 'image' %} product__media-item--full{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
@@ -95,9 +142,51 @@
         {% endif %}
 
         {%- unless media.id == product.selected_or_first_available_variant.featured_media.id -%}
+
+{% if section.settings.group_variants_enable and product.has_only_default_variant != true and product.metafields.custom.disable_image_grouping.value != true %} 
+  {% if section.settings.group_variants_source == "metafield" %}       
+    {%- assign variant_grouping_name = nil -%}
+    {% assign hide_image = true %}
+    {% for grouping in variant_image_groupings %}
+      {% assign file_group = grouping.file_grouping.value %}
+      {% assign variant_group = grouping.variants.value %}
+      {% for file in file_group %}
+        {% if media == file %}
+          {% assign variant_grouping_name = grouping.name.value %}
+          {% for variant_in_group in variant_group %}
+            {% if variant_in_group.id == product.selected_or_first_available_variant.id %}
+              {% assign hide_image = false %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% if hide_image == false %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+      {% if hide_image == false %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    {%- assign variant_grouping_name = nil -%}
+    {% if section.settings.group_variants_source == "filename" %}
+      {%- assign extracted_parts  = media.src | split: section.settings.variant_grouping_delimiter -%}
+    {% elsif section.settings.group_variants_source == "alttext" %}
+      {%- assign extracted_parts = media.alt | split: section.settings.variant_grouping_delimiter -%}
+    {% endif %}
+    {%- assign hide_image = true -%}
+    {%- assign variant_grouping_name = extracted_parts[variant_grouping_position] -%}
+    {% if selected_or_first_available_variant_grouping_name == variant_grouping_name %}
+      {%- assign hide_image = false -%}
+    {%- endif -%}
+  {% endif %} 
+{% endif %} 
+
+          
           <li
             id="Slide-{{ section.id }}-{{ media.id }}"
-            class="product__media-item grid__item slider__slide{% if single_media_visible %} product__media-item--single{% endif %}{% if product.selected_or_first_available_variant.featured_media == nil and forloop.index == 1 %} is-active{% endif %}{% if media.media_type != 'image' %} product__media-item--full{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+            class={% if hide_image %} hide-image{% endif %}product__media-item grid__item slider__slide{% if single_media_visible %} product__media-item--single{% endif %}{% if product.selected_or_first_available_variant.featured_media == nil and forloop.index == 1 %} is-active{% endif %}{% if media.media_type != 'image' %} product__media-item--full{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
             data-media-id="{{ section.id }}-{{ media.id }}"
           >
             {%- liquid
