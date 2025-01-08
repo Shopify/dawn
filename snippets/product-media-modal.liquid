@@ -9,6 +9,12 @@
   {% render 'product-media-modal' %}
 {% endcomment %}
 
+{% assign variant_grouping_position = section.settings.variant_grouping_position | minus: 1 %}
+{% assign variant_image_groupings = product.metafields.custom.variant_images_grouping_list.value %}
+{% assign featured_media = product.selected_or_first_available_variant.featured_media %}
+{% assign hide_image = false %}
+
+
 <product-modal id="ProductModal-{{ section.id }}" class="product-media-modal media-modal">
   <div
     class="product-media-modal__dialog color-{{ section.settings.color_scheme }} gradient"
@@ -32,10 +38,40 @@
       aria-label="{{ 'products.modal.label' | t }}"
       tabindex="0"
     >
+
+  {% if section.settings.group_variants_enable and product.has_only_default_variant != true and product.metafields.custom.disable_image_grouping.value != true %}   
+  {% if section.settings.group_variants_source == "metafield" %}     
+    {%- assign variant_grouping_name = nil -%}
+    {% for grouping in variant_image_groupings %}
+      {% assign file_group = grouping.file_grouping.value %}
+      {% assign variant_group = grouping.variants.value %}
+      {% for file in file_group %}
+        {% if featured_media == file %}
+          {% assign variant_grouping_name = grouping.name.value %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+      {% if variant_grouping_name != nil %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    {%- assign variant_grouping_name = nil -%}
+    {% if section.settings.group_variants_source == "filename" %}
+      {%- assign extracted_parts = featured_media.src | split: section.settings.variant_grouping_delimiter -%}
+    {% elsif section.settings.group_variants_source == "alttext" %}
+      {%- assign extracted_parts = featured_media.alt | split: section.settings.variant_grouping_delimiter -%}
+    {% endif %}
+    {%- assign variant_grouping_name = extracted_parts[variant_grouping_position] -%}
+    {%- assign selected_or_first_available_variant_grouping_name = variant_grouping_name -%}
+  {% endif %}
+{% endif %} 
+
       {%- liquid
         if product.selected_or_first_available_variant.featured_media != null
           assign media = product.selected_or_first_available_variant.featured_media
-          render 'product-media', media: media, loop: section.settings.enable_video_looping, variant_image: section.settings.hide_variants
+          render 'product-media', media: media, loop: section.settings.enable_video_looping, variant_image: variant_image, hide_image: hide_image, variant_grouping_name: variant_grouping_name
+
         endif
       -%}
 
@@ -46,9 +82,53 @@
           else
             assign variant_image = false
           endif
+        -%}
 
+{% if section.settings.group_variants_enable and product.has_only_default_variant != true and product.metafields.custom.disable_image_grouping.value != true %} 
+  {% if section.settings.group_variants_source == "metafield" %}       
+    {%- assign variant_grouping_name = nil -%}
+    {% assign hide_image = true %}
+    {% for grouping in variant_image_groupings %}
+      {% assign file_group = grouping.file_grouping.value %}
+      {% assign variant_group = grouping.variants.value %}
+      {% for file in file_group %}
+        {% if media == file %}
+          {% assign variant_grouping_name = grouping.name.value %}
+          {% for variant_in_group in variant_group %}
+            {% if variant_in_group.id == product.selected_or_first_available_variant.id %}
+              {% assign hide_image = false %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% if hide_image == false %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+      {% if hide_image == false %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    {%- assign variant_grouping_name = nil -%}
+    {% if section.settings.group_variants_source == "filename" %}
+      {%- assign extracted_parts  = media.src | split: section.settings.variant_grouping_delimiter -%}
+    {% elsif section.settings.group_variants_source == "alttext" %}
+      {%- assign extracted_parts = media.alt | split: section.settings.variant_grouping_delimiter -%}
+    {% endif %}
+    {%- assign hide_image = true -%}
+    {%- assign variant_grouping_name = extracted_parts[variant_grouping_position] -%}
+    {% if selected_or_first_available_variant_grouping_name == variant_grouping_name %}
+      {%- assign hide_image = false -%}
+    {%- endif -%}
+  {% endif %} 
+{% endif %} 
+
+        
+        {%- liquid
           unless media.id == product.selected_or_first_available_variant.featured_media.id
-            render 'product-media', media: media, loop: section.settings.enable_video_looping, variant_image: variant_image
+            render 'product-media', media: media, loop: section.settings.enable_video_looping, variant_image: variant_image, hide_image: hide_image, variant_grouping_name: variant_grouping_name
+
           endunless
         -%}
       {%- endfor -%}
