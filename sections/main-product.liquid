@@ -5,10 +5,10 @@
 </style>
 
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener('DOMContentLoaded', () => {
     const mediaGallery = document.querySelector('media-gallery');
-    const productSection = document.querySelector(".product-variant-id");
-    const sectionID = "{{ section.id }}";
+    const productSection = document.querySelector('.product-variant-id');
+    const sectionID = '{{ section.id }}';
 
     // Ensure required elements are available
     if (!mediaGallery || !productSection) {
@@ -16,16 +16,16 @@
       return;
     }
 
-    const handle = `products/${"{{ product.handle }}"}.js`;
+    const handle = `products/${'{{ product.handle }}'}.js`;
 
     fetch(`${window.Shopify.routes.root}${handle}`)
-      .then(response => response.json())
-      .then(product => {
-        const optionsToWatch = "{{ settings.selected_option_name }}".split(",");
-        const colorOption = product.options.find(option => optionsToWatch.includes(option.name)) || null;
+      .then((response) => response.json())
+      .then((product) => {
+        const optionsToWatch = '{{ settings.selected_option_name }}'.split(',');
+        const colorOption = product.options.find((option) => optionsToWatch.includes(option.name)) || null;
 
         if (!colorOption) {
-          console.warn("No relevant options available for this product.");
+          console.warn('No relevant options available for this product.');
           return;
         }
 
@@ -33,8 +33,8 @@
         const colorImagePositions = {};
 
         // Map colors to their starting image positions
-        colorValues.forEach(color => {
-          const variant = product.variants.find(variant => variant.options[colorOption.position - 1] === color);
+        colorValues.forEach((color) => {
+          const variant = product.variants.find((variant) => variant.options[colorOption.position - 1] === color);
 
           if (variant && variant.featured_image) {
             colorImagePositions[color] = variant.featured_image.position;
@@ -58,24 +58,24 @@
         Object.entries(colorImageRanges).forEach(([color, range]) => {
           const startPos = range[0];
           const endPos = range[1] || product.media.length + 1; // If no end position, use the end of the media list
-          
+
           const imageIDs = product.media
             .filter((media, index) => {
               const imagePosition = index + 1; // Adjust index to be position-based
               return imagePosition >= startPos && imagePosition < endPos;
             })
-            .map(media => media.id);
+            .map((media) => media.id);
 
           colorImageIDs[color] = imageIDs;
         });
 
         // Apply data-media-group attributes to images
         Object.entries(colorImageIDs).forEach(([color, imageIDs]) => {
-          imageIDs.forEach(mediaID => {
+          imageIDs.forEach((mediaID) => {
             const selector = `[data-media-id="${sectionID}-${mediaID}"], [data-target="${sectionID}-${mediaID}"]`;
             const mediaItems = mediaGallery.querySelectorAll(`li${selector}`);
 
-            mediaItems.forEach(mediaItem => {
+            mediaItems.forEach((mediaItem) => {
               mediaItem.setAttribute('data-media-group', color);
             });
           });
@@ -87,12 +87,12 @@
           // Get the selected color
           const currentValues = Array.from(
             variantSelects.querySelectorAll('select option[selected], fieldset input:checked')
-          ).map(el => el.value);
+          ).map((el) => el.value);
 
-          const selectedColor = currentValues.find(value => colorImageRanges.hasOwnProperty(value));
+          const selectedColor = currentValues.find((value) => colorImageRanges.hasOwnProperty(value));
 
           // Show/hide images based on the selected color
-          mediaGallery.querySelectorAll('ul li[data-media-group]').forEach(mediaItem => {
+          mediaGallery.querySelectorAll('ul li[data-media-group]').forEach((mediaItem) => {
             if (mediaItem.getAttribute('data-media-group') === selectedColor) {
               mediaItem.classList.remove('hidden');
             } else {
@@ -101,7 +101,7 @@
           });
 
           // Reinitialize slider if necessary
-          mediaGallery.querySelectorAll('slider-component').forEach(slider => {
+          mediaGallery.querySelectorAll('slider-component').forEach((slider) => {
             if (typeof slider.initPages === 'function') {
               slider.initPages();
             }
@@ -114,7 +114,7 @@
         // Update images when a new variant is selected
         productSection.addEventListener('change', showVariantImage);
       })
-      .catch(error => console.error("Error fetching product data:", error));
+      .catch((error) => console.error('Error fetching product data:', error));
   });
 </script>
 
@@ -217,14 +217,15 @@
                   {{- block.settings.text -}}
                 </p>
               {%- when 'title' -%}
-                <div class="product__title" {{ block.shopify_attributes }}>
-                  <h1>{{ product.title | escape }}</h1>
-                  <a href="{{ product.url }}" class="product__title">
-                    <h2 class="h1">
-                      {{ product.title | escape }}
-                    </h2>
-                  </a>
-                </div>
+                <div class="product-title-price">
+                  <div class="product__title" {{ block.shopify_attributes }}>
+                    <h1>{{ product.title | escape }}</h1>
+                    <a href="{{ product.url }}" class="product__title">
+                      <h2 class="h1">
+                        {{ product.title | escape }}
+                      </h2>
+                    </a>
+                  </div>
               {%- when 'price' -%}
                 <div id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
                   {%- render 'price',
@@ -234,23 +235,10 @@
                     price_class: 'price--large'
                   -%}
                 </div>
+                </div>
                 {%- if product.quantity_price_breaks_configured? -%}
                   <div class="volume-pricing-note" id="Volume-Note-{{ section.id }}">
                     <span>{{ 'products.product.volume_pricing.note' | t }}</span>
-                  </div>
-                {%- endif -%}
-                {%- if cart.taxes_included or cart.duties_included or shop.shipping_policy.body != blank -%}
-                  <div class="product__tax caption rte">
-                    {%- if cart.duties_included and cart.taxes_included -%}
-                      {{ 'products.product.duties_and_taxes_included' | t }}
-                    {%- elsif cart.taxes_included -%}
-                      {{ 'products.product.taxes_included' | t }}
-                    {%- elsif cart.duties_included -%}
-                      {{ 'products.product.duties_included' | t }}
-                    {%- endif -%}
-                    {%- if shop.shipping_policy.body != blank -%}
-                      {{ 'products.product.shipping_policy_html' | t: link: shop.shipping_policy.url }}
-                    {%- endif -%}
                   </div>
                 {%- endif -%}
                 <div {{ block.shopify_attributes }}>
