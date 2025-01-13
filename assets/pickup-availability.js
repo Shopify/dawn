@@ -19,8 +19,9 @@ if (!customElements.get('pickup-availability')) {
         if (!rootUrl.endsWith('/')) {
           rootUrl = rootUrl + '/';
         }
+        console.log(rootUrl);
         const variantSectionUrl = `${rootUrl}variants/${variantId}/?section_id=pickup-availability`;
-
+ console.log(variantSectionUrl);
         fetch(variantSectionUrl)
           .then((response) => response.text())
           .then((text) => {
