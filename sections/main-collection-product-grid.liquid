@@ -167,15 +167,24 @@
                   {%- endfor -%}
                 {%- endfor -%}
                 {%- liquid
-                  assign option_chosen = 'Color'
+                  # List of translations for the desired option (e.g., "Color" and "Szín")
+                  assign option_translations = 'Color,Szín' | split: ','
                   assign option_index = ''
+
+                  # Find the index of the desired option by checking against translations
                   for option in product.options
-                    if option_chosen == option
-                      assign option_index = forloop.index0
+                    for translation in option_translations
+                      if option == translation
+                        assign option_index = forloop.parentloop.index0
+                        break
+                      endif
+                    endfor
+                    if option_index != ''
                       break
                     endif
                   endfor
                 -%}
+
                 {%- if option_index == '' or colorFilterEnabled -%}
                   <li
                     class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
@@ -236,7 +245,6 @@
                     {% endunless %}
                   {% endfor %}
                 {%- endif -%}
-
                 {%- assign skip_card_product_styles = true -%}
               {%- endfor -%}
             </ul>
