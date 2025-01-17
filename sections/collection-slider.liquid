@@ -1,0 +1,98 @@
+{% comment %}
+  collection-slider.liquid
+  This section displays a collection slider.
+{% endcomment %}
+
+{% if section.settings.collection %}
+  {% assign collection = collections[section.settings.collection] %}
+  <h2>{{ section.settings.title }}</h2>
+  <div class="collection-slider">
+    {% for product in collection.products %}
+      <div class="collection-item">
+        <a href="{{ product.url }}">
+          <img
+            src="{{ product.featured_image | image_url: '300x300' | default: 'path/to/fallback-image.jpg' }}"
+            alt="{{ product.title }}"
+            width="300"
+            height="300"
+          >
+          <span>{{ product.title }}</span>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>Please select a collection in the settings.</p>
+{% endif %}
+
+<style>
+  .collection-slider {
+    display: flex;
+    overflow-x: scroll;
+    gap: 20px;
+  }
+
+  .collection-item {
+    min-width: 200px;
+    text-align: center;
+  }
+
+  .collection-item img {
+    width: 100%;
+    height: auto;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const slider = document.querySelector('.collection-slider');
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    slider.addEventListener('mousedown', (e) => {
+      isDown = true;
+      slider.classList.add('active');
+      startX = e.pageX - slider.offsetLeft;
+      scrollLeft = slider.scrollLeft;
+    });
+
+    slider.addEventListener('mouseleave', () => {
+      isDown = false;
+      slider.classList.remove('active');
+    });
+
+    slider.addEventListener('mouseup', () => {
+      isDown = false;
+      slider.classList.remove('active');
+    });
+
+    slider.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - slider.offsetLeft;
+      const walk = (x - startX) * 3; //scroll-fast
+      slider.scrollLeft = scrollLeft - walk;
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Collection Slider",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection",
+      "default": "frontpage"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Featured Collection"
+    }
+  ]
+}
+{% endschema %}
