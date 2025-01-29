@@ -94,23 +94,43 @@
                   aria-label="{{ 'sections.header.announcement' | t }}"
                   {{ block.shopify_attributes }}
                 >
-                  {%- if block.settings.text != blank -%}
-                    {%- if block.settings.link != blank -%}
-                      <a
-                        href="{{ block.settings.link }}"
-                        class="announcement-bar__link link link--text focus-inset animate-arrow"
-                      >
+                  {% if block.type == 'announcementImage' -%}
+                    {%- if block.settings.content != blank -%}
+                      {% assign section_image = block.settings.image %}
+                      {%- if section_image != blank -%}
+                        <img
+                          src="{{ section_image | image_url }}"
+                          width="{{ section_image.width }}"
+                          height="{{ section_image.height }}"
+                          alt="{{ section_image.alt }}"
+                          class="announcementImage_image"
+                        >
+                      {% endif %}
+
+                      <span class="announcement-bar__message white_link_styling h5">
+                        {{ block.settings.content }}
+                      </span>
                     {%- endif -%}
-                    <p class="announcement-bar__message h5">
-                      <span>{{ block.settings.text | escape }}</span>
+
+                  {% else %}
+                    {%- if block.settings.text != blank -%}
                       {%- if block.settings.link != blank -%}
-                        {{- 'icon-arrow.svg' | inline_asset_content -}}
+                        <a
+                          href="{{ block.settings.link }}"
+                          class="announcement-bar__link link link--text focus-inset animate-arrow"
+                        >
                       {%- endif -%}
-                    </p>
-                    {%- if block.settings.link != blank -%}
-                      </a>
+                      <p class="announcement-bar__message h5">
+                        <span>{{ block.settings.text | escape }}</span>
+                        {%- if block.settings.link != blank -%}
+                          {{- 'icon-arrow.svg' | inline_asset_content -}}
+                        {%- endif -%}
+                      </p>
+                      {%- if block.settings.link != blank -%}
+                        </a>
+                      {%- endif -%}
                     {%- endif -%}
-                  {%- endif -%}
+                  {% endif %}
                 </div>
               </div>
             {%- endfor -%}
@@ -163,6 +183,26 @@
     </div>
   </div>
 </div>
+
+<style>
+  .announcementImage_image {
+    width: 120px;
+    height: 60px;
+    object-fit: contain;
+    padding-right: 12px;
+  }
+  .white_link_styling {
+    margin-top: 1px;
+  }
+  .white_link_styling a {
+    color: #fff;
+  }
+  @media (max-width: 509px) {
+    .announcementImage_image {
+      display: none;
+    }
+  }
+</style>
 
 {% schema %}
 {
@@ -254,6 +294,23 @@
           "type": "url",
           "id": "link",
           "label": "t:sections.announcement-bar.blocks.announcement.settings.link.label"
+        }
+      ]
+    },
+    {
+      "type": "announcementImage",
+      "name": "announcement with Image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "default": "t:sections.announcement-bar.blocks.announcement.settings.text.default",
+          "label": "t:sections.announcement-bar.blocks.announcement.settings.text.label"
         }
       ]
     }
