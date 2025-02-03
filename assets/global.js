@@ -712,6 +712,7 @@ class DeferredMedia extends HTMLElement {
         deferredElement.play();
       }
 
+      // Workaround for safari iframe bug
       const formerStyle = deferredElement.getAttribute('style');
       deferredElement.setAttribute('style', 'display: block;');
       window.setTimeout(() => {
