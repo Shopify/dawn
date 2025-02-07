@@ -28,11 +28,12 @@ class CartItems extends HTMLElement {
   cartUpdateUnsubscriber = undefined;
 
   connectedCallback() {
-    this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, (event) => {
+    this.cartUpdateUnsubscriber = subscribe(PUB_SUB_EVENTS.cartUpdate, async (event) => {
       if (event.source === 'cart-items') {
         return;
       }
-      this.onCartUpdate();
+      const html = await this.onCartUpdate();
+      console.log('onCartUpdate is done', html);
     });
   }
 
@@ -86,35 +87,35 @@ class CartItems extends HTMLElement {
     this.validateQuantity(event);
   }
 
-  onCartUpdate() {
+  async onCartUpdate() {
     if (this.tagName === 'CART-DRAWER-ITEMS') {
-      fetch(`${routes.cart_url}?section_id=cart-drawer`)
-        .then((response) => response.text())
-        .then((responseText) => {
-          const html = new DOMParser().parseFromString(responseText, 'text/html');
-          const selectors = ['cart-drawer-items', '.cart-drawer__footer'];
-          for (const selector of selectors) {
-            const targetElement = document.querySelector(selector);
-            const sourceElement = html.querySelector(selector);
-            if (targetElement && sourceElement) {
-              targetElement.replaceWith(sourceElement);
-            }
+      try {
+        const response = await fetch(`${routes.cart_url}?section_id=cart-drawer`);
+        const textResponse = await response.text();
+        const html = new DOMParser().parseFromString(textResponse, 'text/html');
+        const selectors = ['cart-drawer-items', '.cart-drawer__footer'];
+        for (const selector of selectors) {
+          const targetElement = document.querySelector(selector);
+          const sourceElement = html.querySelector(selector);
+          if (targetElement && sourceElement) {
+            targetElement.replaceWith(sourceElement);
           }
-        })
-        .catch((e) => {
-          console.error(e);
-        });
+        }
+        return(html);
+      } catch (e) {
+        console.error(e);
+      }
     } else {
-      fetch(`${routes.cart_url}?section_id=main-cart-items`)
-        .then((response) => response.text())
-        .then((responseText) => {
-          const html = new DOMParser().parseFromString(responseText, 'text/html');
-          const sourceQty = html.querySelector('cart-items');
-          this.innerHTML = sourceQty.innerHTML;
-        })
-        .catch((e) => {
-          console.error(e);
-        });
+      try {
+        const response = await fetch(`${routes.cart_url}?section_id=main-cart-items`);
+        const textResponse = await response.text();
+        const html = new DOMParser().parseFromString(textResponse, 'text/html');
+        const sourceQty = html.querySelector('cart-items');
+        this.innerHTML = sourceQty.innerHTML;
+        return(html);
+      } catch (e) {
+        console.error(e);
+      }
     }
   }
 
