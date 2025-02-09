@@ -11,7 +11,7 @@ function onIntersection(elements, observer) {
       if (elementTarget.classList.contains(SCROLL_ANIMATION_OFFSCREEN_CLASSNAME)) {
         elementTarget.classList.remove(SCROLL_ANIMATION_OFFSCREEN_CLASSNAME);
         if (elementTarget.hasAttribute('data-cascade'))
-          elementTarget.setAttribute('style', `--animation-order: ${index};`);
+          elementTarget.style.setProperty('--animation-order', index);
       }
       observer.unobserve(elementTarget);
     } else {
