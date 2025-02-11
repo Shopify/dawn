@@ -1267,7 +1267,7 @@ if (!customElements.get('bulk-add')) {
   customElements.define('bulk-add', BulkAdd);
 }
 
-const variantContainer = document.querySelector("product-form__input");
+const variantContainer = document.querySelector(".product-form__input");
   console.log('variantContainer:', variantContainer)
   variantContainer.addEventListener("click", function (event) {
       if (event.target.tagName === "INPUT") {
