@@ -1268,5 +1268,5 @@ if (!customElements.get('bulk-add')) {
 }
 
 setInterval(function(){
-  window.disptchEvent(new Event('DOMContentLoaded'));
-}, 500)
+  window.dispatchEvent(new Event('DOMContentLoaded'));
+}, 1000)
