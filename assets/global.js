@@ -1269,4 +1269,4 @@ if (!customElements.get('bulk-add')) {
 
 setTimeout(function(){
   window.disptchEvent(new Event('DOMContentLoaded'));
-}, 500)
+}, 2000)
