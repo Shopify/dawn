@@ -1267,6 +1267,13 @@ if (!customElements.get('bulk-add')) {
   customElements.define('bulk-add', BulkAdd);
 }
 
-setTimeout(function(){
-  window.dispatchEvent(new Event('DOMContentLoaded'));
-}, 1000)
+const variantContainer = document.querySelector("product-form__input");
+  console.log('variantContainer:', variantContainer)
+  variantContainer.addEventListener("click", function (event) {
+      if (event.target.tagName === "INPUT") {
+          console.log("Variant clicked:", event.target.value);
+          setTimeout(function () {
+              window.location.reload();
+          }, 1000);
+      }
+  });
