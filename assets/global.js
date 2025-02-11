@@ -1266,10 +1266,10 @@ class BulkAdd extends HTMLElement {
 if (!customElements.get('bulk-add')) {
   customElements.define('bulk-add', BulkAdd);
 }
-const customForm = document.querySelector("product-form.product-form");
-customForm.addEventlistener('change', function(event) => {
-  event.preventDefault();
-})
+// const customForm = document.querySelector("product-form.product-form");
+// customForm.addEventlistener('change', function(event) => {
+//   event.preventDefault();
+// })
 const variantContainer = document.querySelector(".product-form__input");
   console.log('variantContainer:', variantContainer)
   variantContainer.addEventListener("click", function (event) {
