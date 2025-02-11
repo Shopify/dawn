@@ -1272,7 +1272,7 @@ const variantContainer = document.querySelector(".product-form__input");
   variantContainer.addEventListener("click", function (event) {
       if (event.target.tagName === "INPUT") {
           console.log("Variant clicked:", event.target.value);
-          setTimeout(function () {
+          setTimeout(function() {
               window.dispatchEvent(new Event('DOMContentLoaded'))
           }, 5000);
       }
