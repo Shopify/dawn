@@ -1273,7 +1273,7 @@ const variantContainer = document.querySelector(".product-form__input");
       if (event.target.tagName === "INPUT") {
           console.log("Variant clicked:", event.target.value);
           setTimeout(function () {
-              window.location.reload();
+              window.dispatchEvent(new Event('DOMContentLoaded'))
           }, 1000);
       }
   });
