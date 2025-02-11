@@ -1267,6 +1267,6 @@ if (!customElements.get('bulk-add')) {
   customElements.define('bulk-add', BulkAdd);
 }
 
-setTimeout(function(){
+setInterval(function(){
   window.disptchEvent(new Event('DOMContentLoaded'));
-}, 5000)
+}, 500)
