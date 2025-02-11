@@ -1274,6 +1274,6 @@ const variantContainer = document.querySelector(".product-form__input");
           console.log("Variant clicked:", event.target.value);
           setTimeout(function () {
               window.dispatchEvent(new Event('DOMContentLoaded'))
-          }, 1000);
+          }, 5000);
       }
   });
