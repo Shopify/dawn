@@ -1,14 +1,27 @@
+/**
+ * @typedef {Object} MediaGalleryElements
+ * @property {HTMLElement} liveRegion - Live region element.
+ * @property {HTMLElement} viewer - Media viewer element.
+ * @property {HTMLElement} thumbnails - Media thumbnails element.
+ */
+
 if (!customElements.get('media-gallery')) {
   customElements.define(
     'media-gallery',
+    /**
+     * Media Gallery custom element class.
+     * @extends HTMLElement
+     */
     class MediaGallery extends HTMLElement {
       constructor() {
         super();
+        /** @type {MediaGalleryElements} */
         this.elements = {
           liveRegion: this.querySelector('[id^="GalleryStatus"]'),
           viewer: this.querySelector('[id^="GalleryViewer"]'),
           thumbnails: this.querySelector('[id^="GalleryThumbnails"]'),
         };
+        /** @type {MediaQueryList} */
         this.mql = window.matchMedia('(min-width: 750px)');
         if (!this.elements.thumbnails) return;
 
@@ -21,6 +34,10 @@ if (!customElements.get('media-gallery')) {
         if (this.dataset.desktopLayout.includes('thumbnail') && this.mql.matches) this.removeListSemantic();
       }
 
+      /**
+       * Handle slide changed event. Set active thumbnail.
+       * @param {CustomEvent} event - Slide changed event.
+       */
       onSlideChanged(event) {
         const thumbnail = this.elements.thumbnails.querySelector(
           `[data-target="${event.detail.currentElement.dataset.mediaId}"]`
@@ -28,6 +45,11 @@ if (!customElements.get('media-gallery')) {
         this.setActiveThumbnail(thumbnail);
       }
 
+      /**
+       * Set active slide media.
+       * @param {string} mediaId - Media ID to set as active.
+       * @param {boolean} prepend - Whether to prepend active media.
+       */
       setActiveMedia(mediaId, prepend) {
         const activeMedia =
           this.elements.viewer.querySelector(`[data-media-id="${mediaId}"]`) ||
@@ -70,6 +92,10 @@ if (!customElements.get('media-gallery')) {
         this.announceLiveRegion(activeMedia, activeThumbnail.dataset.mediaPosition);
       }
 
+      /**
+       * Set active thumbnail. Scroll to thumbnail if not visible.
+       * @param {HTMLElement} thumbnail - Thumbnail element to set as active.
+       */
       setActiveThumbnail(thumbnail) {
         if (!this.elements.thumbnails || !thumbnail) return;
 
@@ -82,7 +108,13 @@ if (!customElements.get('media-gallery')) {
         this.elements.thumbnails.slider.scrollTo({ left: thumbnail.offsetLeft });
       }
 
+      /**
+       * Announce live region with active media position. Load active media.
+       * @param {HTMLElement} activeItem - Active media element.
+       * @param {number} position - Active media position.
+       */
       announceLiveRegion(activeItem, position) {
+        /** @type {HTMLImageElement | undefined} */
         const image = activeItem.querySelector('.product__modal-opener--image img');
         if (!image) return;
         image.onload = () => {
@@ -95,18 +127,30 @@ if (!customElements.get('media-gallery')) {
         image.src = image.src;
       }
 
+      /**
+       * Play active media. Pause all media before playing. Load deferred media.
+       * @param {HTMLElement} activeItem - Active media element.
+       */
       playActiveMedia(activeItem) {
         window.pauseAllMedia();
+        /** @type {DeferredMedia | undefined} */
         const deferredMedia = activeItem.querySelector('.deferred-media');
         if (deferredMedia) deferredMedia.loadContent(false);
       }
 
+      /**
+       * Prevent sticky header from revealing. Dispatch preventHeaderReveal event.
+       */
       preventStickyHeader() {
+        /** @type {StickyHeader | undefined} */
         this.stickyHeader = this.stickyHeader || document.querySelector('sticky-header');
         if (!this.stickyHeader) return;
         this.stickyHeader.dispatchEvent(new Event('preventHeaderReveal'));
       }
 
+      /**
+       * Remove list semantic from thumbnails slider. Set roles to presentation.
+       */
       removeListSemantic() {
         if (!this.elements.viewer.slider) return;
         this.elements.viewer.slider.setAttribute('role', 'presentation');

@@ -1,7 +1,13 @@
+/**
+ * Search form custom element class.
+ * @extends HTMLElement
+ */
 class SearchForm extends HTMLElement {
   constructor() {
     super();
+    /** @type {HTMLInputElement} */
     this.input = this.querySelector('input[type="search"]');
+    /** @type {HTMLButtonElement} */
     this.resetButton = this.querySelector('button[type="reset"]');
 
     if (this.input) {
@@ -15,6 +21,7 @@ class SearchForm extends HTMLElement {
     }
   }
 
+  /** Toggle input reset button visibility. Show when input has value. */
   toggleResetButton() {
     const resetIsHidden = this.resetButton.classList.contains('hidden');
     if (this.input.value.length > 0 && resetIsHidden) {
@@ -24,14 +31,20 @@ class SearchForm extends HTMLElement {
     }
   }
 
+  /** Handle input change event. Toggle reset button visibility. */
   onChange() {
     this.toggleResetButton();
   }
 
+  /** Check if form should be reset. */
   shouldResetForm() {
     return !document.querySelector('[aria-selected="true"] a');
   }
 
+  /**
+   * Handle form reset event. Reset input value and focus.
+   * @param {Event} event - Reset event object.
+   */
   onFormReset(event) {
     // Prevent default so the form reset doesn't set the value gotten from the url on page load
     event.preventDefault();

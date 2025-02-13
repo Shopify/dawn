@@ -1,3 +1,7 @@
+/**
+ * Cart Drawer custom element class.
+ * @extends HTMLElement
+ */
 class CartDrawer extends HTMLElement {
   constructor() {
     super();
@@ -7,6 +11,9 @@ class CartDrawer extends HTMLElement {
     this.setHeaderCartIconAccessibility();
   }
 
+  /**
+   * Sets accessibility attributes for header cart icon.
+   */
   setHeaderCartIconAccessibility() {
     const cartLink = document.querySelector('#cart-icon-bubble');
     if (!cartLink) return;
@@ -25,6 +32,10 @@ class CartDrawer extends HTMLElement {
     });
   }
 
+  /**
+   * Opens the cart drawer.
+   * @param {HTMLElement} [triggeredBy] - The element that triggered the open action.
+   */
   open(triggeredBy) {
     if (triggeredBy) this.setActiveElement(triggeredBy);
     const cartDrawerNote = this.querySelector('[id^="Details-"] summary');
@@ -49,12 +60,18 @@ class CartDrawer extends HTMLElement {
     document.body.classList.add('overflow-hidden');
   }
 
+  /**
+   * Closes the cart drawer.
+   */
   close() {
     this.classList.remove('active');
     removeTrapFocus(this.activeElement);
     document.body.classList.remove('overflow-hidden');
   }
 
+  /**
+   * Sets accessibility attributes for the cart drawer note.
+   */
   setSummaryAccessibility(cartDrawerNote) {
     cartDrawerNote.setAttribute('role', 'button');
     cartDrawerNote.setAttribute('aria-expanded', 'false');
@@ -70,6 +87,10 @@ class CartDrawer extends HTMLElement {
     cartDrawerNote.parentElement.addEventListener('keyup', onKeyUpEscape);
   }
 
+  /**
+   * Renders the cart drawer contents.
+   * @param {Object} parsedState - The parsed state of the cart.
+   */
   renderContents(parsedState) {
     this.querySelector('.drawer__inner').classList.contains('is-empty') &&
       this.querySelector('.drawer__inner').classList.remove('is-empty');
@@ -89,10 +110,20 @@ class CartDrawer extends HTMLElement {
     });
   }
 
+  /**
+   * Gets the inner HTML of a cart section.
+   * @param {string} html - The HTML string to parse.
+   * @param {string} [selector='.shopify-section'] - The selector to query for.
+   * @returns {string} The inner HTML of the matched section.
+   */
   getSectionInnerHTML(html, selector = '.shopify-section') {
     return new DOMParser().parseFromString(html, 'text/html').querySelector(selector).innerHTML;
   }
 
+  /**
+   * Array of section selectors for sections api to render.
+   * @returns {Array<Object>} The array of sections to render.
+   */
   getSectionsToRender() {
     return [
       {
@@ -105,10 +136,20 @@ class CartDrawer extends HTMLElement {
     ];
   }
 
+  /**
+   * Gets the DOM of a cart drawer section.
+   * @param {string} html - The HTML string to parse.
+   * @param {string} [selector='.shopify-section'] - The selector to query for.
+   * @returns {HTMLElement} The DOM of the matched section.
+   */
   getSectionDOM(html, selector = '.shopify-section') {
     return new DOMParser().parseFromString(html, 'text/html').querySelector(selector);
   }
 
+  /**
+   * Sets the active element.
+   * @param {HTMLElement} element - The element to set as active.
+   */
   setActiveElement(element) {
     this.activeElement = element;
   }
@@ -116,7 +157,15 @@ class CartDrawer extends HTMLElement {
 
 customElements.define('cart-drawer', CartDrawer);
 
+/**
+ * Cart Drawer Items custom element class.
+ * @extends CartItems
+ */
 class CartDrawerItems extends CartItems {
+  /**
+   * Array of section selectors for sections api to render.
+   * @returns {Array<Object>} The array of sections to render.
+   */
   getSectionsToRender() {
     return [
       {
