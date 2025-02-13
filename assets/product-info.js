@@ -340,7 +340,7 @@ if (!customElements.get('product-info')) {
         if (!currentVariantId) return;
 
         this.querySelector('.quantity__rules-cart .loading__spinner').classList.remove('hidden');
-        fetch(`${this.dataset.url}?variant=${currentVariantId}&section_id=${this.dataset.section}`)
+        return fetch(`${this.dataset.url}?variant=${currentVariantId}&section_id=${this.dataset.section}`)
           .then((response) => response.text())
           .then((responseText) => {
             const html = new DOMParser().parseFromString(responseText, 'text/html');
