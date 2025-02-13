@@ -1197,15 +1197,18 @@ class AccountIcon extends HTMLElement {
 customElements.define('account-icon', AccountIcon);
 
 class BulkAdd extends HTMLElement {
+  static ASYNC_REQUEST_DELAY = 250;
+
   constructor() {
     super();
     this.queue = [];
-    this.requestStarted = false;
+    this.setRequestStarted(false);
     this.ids = [];
   }
 
   startQueue(id, quantity) {
     this.queue.push({ id, quantity });
+
     const interval = setInterval(() => {
       if (this.queue.length > 0) {
         if (!this.requestStarted) {
@@ -1214,18 +1217,27 @@ class BulkAdd extends HTMLElement {
       } else {
         clearInterval(interval);
       }
-    }, 250);
+    }, BulkAdd.ASYNC_REQUEST_DELAY);
   }
 
   sendRequest(queue) {
-    this.requestStarted = true;
+    this.setRequestStarted(true);
     const items = {};
+
     queue.forEach((queueItem) => {
       items[parseInt(queueItem.id)] = queueItem.quantity;
     });
     this.queue = this.queue.filter((queueElement) => !queue.includes(queueElement));
-    const quickBulkElement = this.closest('quick-order-list') || this.closest('quick-add-bulk');
-    quickBulkElement.updateMultipleQty(items);
+
+    this.updateMultipleQty(items);
+  }
+
+  setRequestStarted(requestStarted) {
+    this._requestStarted = requestStarted;
+  }
+
+  get requestStarted() {
+    return this._requestStarted;
   }
 
   resetQuantityInput(id) {
@@ -1254,15 +1266,8 @@ class BulkAdd extends HTMLElement {
     } else {
       event.target.setCustomValidity('');
       event.target.reportValidity();
+      event.target.setAttribute('value', inputValue);
       this.startQueue(index, inputValue);
-    }
-  }
-
-  getSectionsUrl() {
-    if (window.pageNumber) {
-      return `${window.location.pathname}?page=${window.pageNumber}`;
-    } else {
-      return `${window.location.pathname}`;
     }
   }
 
