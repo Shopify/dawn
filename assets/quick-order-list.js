@@ -3,7 +3,7 @@ if (!customElements.get('quick-order-list')) {
     'quick-order-list',
     class QuickOrderList extends BulkAdd {
       cartUpdateUnsubscriber = undefined;
-
+      hasPendingQuantityUpdate = false;
       constructor() {
         super();
         this.isListInsideModal = this.closest('bulk-modal');
@@ -80,7 +80,10 @@ if (!customElements.get('quick-order-list')) {
 
         this.querySelectorAll('quantity-input').forEach((qty) => {
           const debouncedOnChange = debounce(this.onChange.bind(this), BulkAdd.ASYNC_REQUEST_DELAY, true);
-          qty.addEventListener('change', debouncedOnChange);
+          qty.addEventListener('change', (event) => {
+            this.hasPendingQuantityUpdate = true;
+            debouncedOnChange(event);
+          });
         });
 
         this.querySelectorAll('.quick-order-list-remove-button').forEach((button) => {
@@ -201,7 +204,7 @@ if (!customElements.get('quick-order-list')) {
           const newSection = new DOMParser().parseFromString(sections[section], 'text/html').querySelector(selector);
 
           if (section === this.dataset.section) {
-            if (this.queue.length > 0) return;
+            if (this.queue.length > 0 || this.hasPendingQuantityUpdate) return;
 
             const focusedElement = document.activeElement;
             let focusTarget = focusedElement?.dataset?.target;
@@ -321,6 +324,8 @@ if (!customElements.get('quick-order-list')) {
       }
 
       updateMultipleQty(items) {
+        if (this.queue.length == 0) this.hasPendingQuantityUpdate = false;
+
         this.toggleLoading(true);
         const url = this.dataset.url || window.location.pathname;
 

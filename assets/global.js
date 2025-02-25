@@ -279,26 +279,14 @@ class QuantityInput extends HTMLElement {
 
 customElements.define('quantity-input', QuantityInput);
 
-function debounce(fn, wait, leading = false) {
+function debounce(fn, wait) {
   let t;
-  let invoked = false;
-
   return (...args) => {
-    const context = this;
-
-    if (leading && !invoked) {
-      // Invoke immediately on the leading edge
-      fn.apply(context, args);
-      invoked = true;
-    }
-
     clearTimeout(t);
-    t = setTimeout(() => {
-      invoked = false;
-      fn.apply(context, args);
-    }, wait);
+    t = setTimeout(() => fn.apply(this, args), wait);
   };
 }
+
 
 function throttle(fn, delay) {
   let lastCall = 0;
@@ -1342,4 +1330,3 @@ class CartPerformance {
     );
   }
 }
-
