@@ -79,7 +79,7 @@ if (!customElements.get('quick-order-list')) {
         this.allInputsArray = Array.from(this.querySelectorAll('input[type="number"]'));
 
         this.querySelectorAll('quantity-input').forEach((qty) => {
-          const debouncedOnChange = debounce(this.onChange.bind(this), BulkAdd.ASYNC_REQUEST_DELAY);
+          const debouncedOnChange = debounce(this.onChange.bind(this), BulkAdd.ASYNC_REQUEST_DELAY, true);
           qty.addEventListener('change', debouncedOnChange);
         });
 
@@ -201,6 +201,8 @@ if (!customElements.get('quick-order-list')) {
           const newSection = new DOMParser().parseFromString(sections[section], 'text/html').querySelector(selector);
 
           if (section === this.dataset.section) {
+            if (this.queue.length > 0) return;
+
             const focusedElement = document.activeElement;
             let focusTarget = focusedElement?.dataset?.target;
             if (focusTarget?.includes('remove')) {
@@ -208,28 +210,18 @@ if (!customElements.get('quick-order-list')) {
                 ?.dataset.target;
             }
 
-            // if requests are still pending, inject loading state in response
-            if (this.queue.length > 0) this.toggleLoading(true, newSection);
-
             const total = this.getTotalBar();
             if (total) {
               total.innerHTML = newSection.querySelector('.quick-order-list__total').innerHTML;
             }
 
+            const table = this.quickOrderListTable;
             const newTable = newSection.querySelector('.quick-order-list__table');
 
             // only update variants if they are from the active page
             const shouldUpdateVariants =
               this.currentPage === (newSection.querySelector('.pagination-wrapper')?.dataset.page ?? '1');
             if (newTable && shouldUpdateVariants) {
-              const table = this.quickOrderListTable;
-
-              // skip variants that are queued for update
-              [...new Set(this.queue.map(({ id }) => id))].forEach(
-                (id) =>
-                  (newTable.querySelector(`#Variant-${id}`).innerHTML = table.querySelector(`#Variant-${id}`).innerHTML)
-              );
-
               table.innerHTML = newTable.innerHTML;
 
               const newFocusTarget = this.querySelector(`[data-target='${focusTarget}']`);

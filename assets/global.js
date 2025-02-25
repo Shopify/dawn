@@ -279,11 +279,24 @@ class QuantityInput extends HTMLElement {
 
 customElements.define('quantity-input', QuantityInput);
 
-function debounce(fn, wait) {
+function debounce(fn, wait, leading = false) {
   let t;
+  let invoked = false;
+
   return (...args) => {
+    const context = this;
+
+    if (leading && !invoked) {
+      // Invoke immediately on the leading edge
+      fn.apply(context, args);
+      invoked = true;
+    }
+
     clearTimeout(t);
-    t = setTimeout(() => fn.apply(this, args), wait);
+    t = setTimeout(() => {
+      invoked = false;
+      fn.apply(context, args);
+    }, wait);
   };
 }
 
