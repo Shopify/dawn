@@ -287,6 +287,7 @@ function debounce(fn, wait) {
   };
 }
 
+
 function throttle(fn, delay) {
   let lastCall = 0;
   return function (...args) {
@@ -1329,4 +1330,3 @@ class CartPerformance {
     );
   }
 }
-
