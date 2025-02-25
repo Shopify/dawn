@@ -77,15 +77,21 @@ if (!customElements.get('quick-add-bulk')) {
         );
       }
 
+      get sectionId() {
+        if (!this._sectionId) {
+          this._sectionId = this.closest('.collection-quick-add-bulk').dataset.id;
+        }
+
+        return this._sectionId;
+      }
+
       onCartUpdate() {
         return new Promise((resolve, reject) => {
-          fetch(`${this.getSectionsUrl()}?section_id=${this.closest('.collection').dataset.id}`)
+          fetch(`${this.getSectionsUrl()}?section_id=${this.sectionId}`)
             .then((response) => response.text())
             .then((responseText) => {
               const html = new DOMParser().parseFromString(responseText, 'text/html');
-              const sourceQty = html.querySelector(
-                `#quick-add-bulk-${this.dataset.id}-${this.closest('.collection').dataset.id}`
-              );
+              const sourceQty = html.querySelector(`#quick-add-bulk-${this.dataset.index}-${this.sectionId}`);
               if (sourceQty) {
                 this.innerHTML = sourceQty.innerHTML;
               }
@@ -142,9 +148,9 @@ if (!customElements.get('quick-add-bulk')) {
       getSectionsToRender() {
         return [
           {
-            id: `quick-add-bulk-${this.dataset.index}-${this.closest('.collection-quick-add-bulk').dataset.id}`,
-            section: this.closest('.collection-quick-add-bulk').dataset.id,
-            selector: `#quick-add-bulk-${this.dataset.index}-${this.closest('.collection-quick-add-bulk').dataset.id}`,
+            id: `quick-add-bulk-${this.dataset.index}-${this.sectionId}`,
+            section: this.sectionId,
+            selector: `#quick-add-bulk-${this.dataset.index}-${this.sectionId}`,
           },
           {
             id: 'cart-icon-bubble',
