@@ -1,0 +1,259 @@
+
+{% assign avada_seo_pages = "product,collection,blog,article" | split:"," %}
+{%- if avada_seo_pages contains request.page_type -%}
+{% capture avada_structured_data %}
+
+{%- if request.page_type == 'product' -%}
+{%- assign avada_product_review = false -%}
+{
+"@context": "https://schema.org/",
+"@type": "Product",
+"@id": "{{ canonical_url | default product.id }}",
+"name": "{{ product.title | strip_html | strip_newlines | strip | escape }}",
+"description": "{{ product.description | strip_html | strip_newlines | strip | escape }}",
+"brand": {
+  "@type": "Brand",
+  "name": "{{ product.vendor }}"
+},
+"offers": {
+  "@type": "Offer",
+  "price": "{{ product.selected_or_first_available_variant.price | divided_by: 100.0 }}",
+  "priceCurrency": "{{ cart.currency.iso_code }}",
+  "itemCondition": "https://schema.org/NewCondition",
+  "availability": "https://schema.org/{%- if product.selected_or_first_available_variant.available -%}InStock{%- else -%}OutOfStock{%- endif -%}",
+  "url": "{{ shop.url }}{{ product.url }}"
+},
+"image": [{% for image in product.images %}
+  "https:{{ image | img_url: 'master' }}"{%- if forloop.last == false -%},{%- endif -%}
+  {% endfor %}
+],
+"releaseDate": "{{ product.published_at }}"
+{%- if product.selected_or_first_available_variant -%}
+,
+"sku": "{{ product.selected_or_first_available_variant.sku }}",
+"mpn": "{{ product.selected_or_first_available_variant.barcode | default: product.selected_or_first_available_variant.sku }}"
+{%- endif -%}
+
+{%- assign ryviu = product.metafields.ryviu -%}
+{%- if ryviu -%}
+  {%- assign aggregateRating = ryviu.product_reviews_info | split: ";" -%}
+  {%- assign r_avg = aggregateRating[1] | plus: 0 -%}
+  {%- assign r_count = aggregateRating[0] | plus: 0 -%}
+  {%- if r_count > 0 and avada_product_review == false -%}
+  {%- assign avada_product_review = true -%}
+,
+"aggregateRating": {
+ "@type": "AggregateRating",
+ "ratingValue": "{{ r_avg }}",
+ "reviewCount": "{{ r_count }}"
+}
+  {%- endif -%}
+{%- endif -%}
+
+{%- capture ssw_rich_snippet -%}{% render 'ssw-widget-avg-rate-rich', rich_snippet_type: 'json' %}{%- endcapture -%}
+{%- unless ssw_rich_snippet contains 'Liquid error' -%}
+{%- if avada_product_review == false -%}
+{%- assign avada_product_review = true -%}
+{{ ssw_rich_snippet }}
+{%- endif -%}
+{%- endunless -%}
+
+{%- assign stamped = product.metafields.stamped -%}
+{%- if stamped.reviews_count and stamped.reviews_count != "0" and avada_product_review == false -%}
+{%- assign avada_product_review = true -%}
+,
+"aggregateRating": {
+ "@type": "AggregateRating",
+ "ratingValue": {{ stamped.reviews_average | round:2 }},
+ "reviewCount": {{ stamped.reviews_count }}
+}
+{%- endif -%}
+
+}
+{%- endif -%}
+
+{%- if request.page_type == 'article' -%}
+{
+"@context": "https://schema.org/",
+"@type": "Article",
+"@id": "{{ article.id }}",
+"articleBody": {{ article.content | strip_html | strip_newlines | strip | escape | json }},
+"mainEntityOfPage": {
+  "@type": "WebPage",
+  "@id": {{ shop.url | append: page.url | json }}
+},
+"headline": {{ article.title | strip_html | strip_newlines | strip | escape | json }},
+{%- if article.excerpt != blank -%}
+"description": {{ article.excerpt | strip_html | json }},
+{% endif %}
+{%- if article.image -%}
+{%- assign avada_seo_article_image_size = article.image.width | append: 'x' -%}
+"image": [
+  {{ article | img_url: avada_seo_article_image_size | prepend: "https:" | json }}
+],
+{% endif %}
+"datePublished": {{ article.published_at | date: '%Y-%m-%dT%H:%M:%SZ' | json }},
+"dateCreated": {{ article.created_at | date: '%Y-%m-%dT%H:%M:%SZ' | json }},
+"dateModified": {{ article.updated_at | default: article.created_at | date: '%Y-%m-%dT%H:%M:%SZ' | json }},
+"author": {
+  "@type": "Person",
+  "name": {{ article.author | json }}
+},
+"publisher": {
+  "@type": "Organization",
+  "logo": {
+    "@type": "ImageObject",
+    "url": {{ settings.share_image | img_url: 'master' | prepend: "https:" | json }}
+  },
+  "name": {{ shop.name | json }}
+}
+}
+{%- endif -%}
+
+{% endcapture %}
+<!-- Added by AVADA SEO Suite: {{ request.page_type | capitalize }} Structured Data -->
+<script type="application/ld+json">{{ avada_structured_data | strip_html | strip }}</script>
+<!-- /Added by AVADA SEO Suite -->
+{%- endif -%}
+
+<!-- Added by AVADA SEO Suite: Breadcrumb Structured Data  -->
+<script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+    "@type": "ListItem",
+    "position": 1,
+    "name": "Home",
+    "item": "{{ shop.url }}"
+  }
+  {%- if request.page_type == 'product' -%}, {
+    "@type": "ListItem",
+    "position": 2,
+    "name": "{{ product.title | strip_html | strip_newlines | strip | escape }}",
+    "item": "{{ shop.url }}{{ product.url }}"
+  }
+  {%- endif -%}
+  {%- if request.page_type == 'collection' -%}, {
+    "@type": "ListItem",
+    "position": 2,
+    "name": "{{ collection.title | strip_html | strip_newlines | strip | escape }}",
+    "item": "{{ shop.url }}{{ collection.url }}"
+  }
+  {%- endif -%}
+  {%- if request.page_type == 'blog' -%}, {
+    "@type": "ListItem",
+    "position": 2,
+    "name": "{{ blog.title | strip_html | strip_newlines | strip | escape }}",
+    "item": "{{ shop.url }}{{ blog.url }}"
+  }
+  {%- endif -%}
+  {%- if request.page_type == 'article' -%}, {
+    "@type": "ListItem",
+    "position": 2,
+    "name": "{{ blog.title | strip_html | strip_newlines | strip | escape }}",
+    "item": "{{ shop.url }}{{ blog.url }}"
+  }, {
+    "@type": "ListItem",
+    "position": 3,
+    "name": "{{ article.title | strip_html | strip_newlines | strip | escape }}",
+    "item": "{{ shop.url }}{{ article.url }}"
+  }
+  {%- endif -%}
+  ]
+}
+</script>
+<!-- Added by AVADA SEO Suite -->
+
+{%- if request.page_type == 'index' -%}
+<!-- Added by AVADA SEO Suite: WebSite SearchAction Structured Data  -->
+<script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "url": "{{ shop.url }}",
+  "potentialAction": {
+  "@type": "SearchAction",
+  "target": "{{ shop.url }}/search?q={search_term_string}",
+  "query-input": "required name=search_term_string"
+  }
+}
+</script>
+<!-- Added by AVADA SEO Suite -->
+{%- endif -%}
+  {%- assign sameLinks = '' -%}
+
+  {%- if settings.social_twitter_link and settings.social_twitter_link != '' -%}
+  {%- assign sameLinks = sameLinks | append: ':::' -%}
+  {%- assign sameLinks = sameLinks | append: settings.social_twitter_link -%}
+  
+  {%- endif -%}
+
+  {%- if settings.social_facebook_link and settings.social_facebook_link != '' -%}
+  {%- assign sameLinks = sameLinks | append: ':::' -%}
+  {%- assign sameLinks = sameLinks | append: settings.social_facebook_link -%}
+  
+  {%- endif -%}
+
+  {%- if settings.social_pinterest_link and settings.social_pinterest_link != '' -%}
+  {%- assign sameLinks = sameLinks | append: ':::' -%}
+  {%- assign sameLinks = sameLinks | append: settings.social_pinterest_link -%}
+  
+  {%- endif -%}
+
+  {%- if settings.social_instagram_link and settings.social_instagram_link != '' -%}
+  {%- assign sameLinks = sameLinks | append: ':::' -%}
+  {%- assign sameLinks = sameLinks | append: settings.social_instagram_link -%}
+  
+  {%- endif -%}
+
+  {%- if settings.social_tumblr_link and settings.social_tumblr_link != '' -%}
+  {%- assign sameLinks = sameLinks | append: ':::' -%}
+  {%- assign sameLinks = sameLinks | append: settings.social_tumblr_link -%}
+  
+  {%- endif -%}
+
+  {%- if settings.social_snapchat_link -%}
+  {%- assign sameLinks = sameLinks | append: ':::' -%}
+  {%- assign sameLinks = sameLinks | append: settings.social_snapchat_link -%}
+  {%- endif -%}
+
+  {%- if settings.social_youtube_link and settings.social_youtube_link != '' -%}
+  {%- assign sameLinks = sameLinks | append: ':::' -%}
+  {%- assign sameLinks = sameLinks | append: settings.social_youtube_link -%}
+  
+  {%- endif -%}
+
+  {%- if settings.social_vimeo_link -%}
+  {%- assign sameLinks = sameLinks | append: ':::' -%}
+  {%- assign sameLinks = sameLinks | append: settings.social_vimeo_link -%}
+  {%- endif -%}
+
+  
+  
+  
+  
+  
+
+  {%- assign sameLinks = sameLinks | split: ':::' -%}
+
+  {%- if request.page_type == 'index' -%}
+  <!-- Added by AVADA SEO Suite: Organization Structured Data  -->
+  <script type="application/ld+json">{
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": {{ shop.name | json }},
+    "url": {{ shop.url | append: page.url | json }},
+    {% if settings.share_image and settings.share_image != "" -%}
+    {%- assign avada_seo_logo_size = settings.share_image.width | append: 'x' -%}
+    "logo": {{ settings.share_image | img_url: avada_seo_logo_size | prepend: "https:" | json }},
+    {% endif -%}
+    "sameAs": [
+      {% for sameLink in sameLinks -%}
+      {% if sameLink != '' -%}
+      {{ sameLink | json }}{%- if forloop.last == false -%},{% endif -%}
+      {%- endif -%}
+      {% endfor %}
+    ]
+  }
+  </script>
+  <!-- Added by AVADA SEO Suite -->
+  {%- endif -%}

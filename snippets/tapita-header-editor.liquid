@@ -1,0 +1,121 @@
+
+        {% if request.design_mode %}
+{{ "tapita-cdn-assets-1.6.38.js" | asset_url | script_tag }}         
+<script>
+var descendingPath = ["heratica", "tapita-inner-temple", "tapita-section-body"];
+
+window.addEventListener("shopify:section:load", function (event) {
+    console.log("triggered", event.target, "version 1.1.0");
+    if (event.target.childNodes.length > 0) {
+        var ttlScripts = [];
+
+        var chosenSelector = descendingPath.map(function (name) {
+            return "." + name;
+        }).join(" > ");
+        event.target.childNodes.forEach(function (el1) {
+            if (el1 instanceof HTMLElement) {
+                var cur = el1.querySelector(chosenSelector);
+                if (cur) {
+                    console.log("cur", cur);
+                    if (cur.childNodes.length > 0) {
+                        cur.childNodes.forEach(function (el) {
+                            if (el instanceof HTMLElement && el.nodeName === "SCRIPT") {
+                                var k = el.innerText.trim();
+                                if (k) {
+                                    ttlScripts.push(k);
+                                }
+                            }
+                        });
+                    }
+                } else {
+                }
+            }
+        });
+
+        var pptr_3 = /\/\/ open core id 3[\s;]+\/\*[\s;]+([\s\S]+)\*\/[\s;]+\/\/ close core id 3/;
+
+        ttlScripts = ttlScripts.filter(function (scp) {
+            var match_3 = scp.match(pptr_3);
+            if (!match_3 || (match_3[1].trim().toLowerCase() === "true")) {
+                return true;
+            }
+        });
+
+        if (ttlScripts.length > 0) {
+            var t_str = ttlScripts.join(";");
+            var pptr = /\/\/ open core id 1[\s;]+PageBuilderComponent\.renderForIdWithProps\("([\w]+)", ([\s\S]+})\)[\s;]+\/\/ close core id 1/;
+            var pptr_2 = /\/\/ open core id 2[\s;]+\/\*[\s;]+([\s\S]+)\*\/[\s;]+\/\/ close core id 2/;
+
+            var match = t_str.match(pptr);
+            var match_2 = t_str.match(pptr_2);
+
+            if (match) {
+                var idds = match[1];
+                var t = event.target.querySelector("#" + idds);
+                if (t) {
+                    if (match_2) {
+                        var f = {
+                            pageData: JSON.parse(match_2[1])
+                        };
+                        f.endPoint = "https://tapita.io/pb/graphql/";
+                        if (t.innerHTML.trim().length === 0) {
+                            var fakeDoc = {
+                                "getElementById": function () {
+                                    return t;
+                                }
+                            };
+                            PageBuilderComponent.renderForIdWithProps(match[1], f, fakeDoc);
+                            var inner_temple = t.parentElement.parentElement;
+                            var inner_temple_secret = t.parentElement.parentElement.firstElementChild;
+                            var secret_tp = false;
+                            inner_temple_secret.classList.forEach(function (cl) {
+                                if (cl.startsWith("tapita-hidden-")) {
+                                    secret_tp = true;
+                                }
+                            });
+                            if (secret_tp && inner_temple_secret) {
+                                inner_temple_secret.innerHTML = "";
+                            }
+                            var needling = inner_temple.querySelectorAll(".tapita-section-product-injector > .tapitaSection");
+                            var timingScrpt = [];
+
+                            needling.forEach(function (sec) {
+                                sec.childNodes.forEach(function (el) {
+                                    if (el instanceof HTMLElement && el.nodeName === "SCRIPT") {
+                                        timingScrpt.push(el.innerText);
+                                    }
+                                });
+                            });
+                            if (timingScrpt.length) {
+                                var trr = timingScrpt.join(";");
+                                window.prf = inner_temple;
+                                var conslPttr = /console\.\w+\(((?!\)).*)\)\s/g;
+
+                                var defPttr = /let\s+self_c\s+=\s+document\.getElementsByClassName\("(.*)"\);/;
+                                var selMatch = trr.match(defPttr);
+                                if (selMatch) {
+                                    var newCl = selMatch[1].split(" ").map(function (cl) {
+                                        return "." + cl;
+                                    }).join("");
+                                    trr = trr.replace(
+                                        selMatch[0],
+                                        `let self_c = document.querySelectorAll("${newCl}")`
+                                    );
+                                }
+                                var fac = trr.replaceAll("document.", "window.prf.").replaceAll(conslPttr, "");
+                                (new Function(fac))();
+                            }
+
+                        }
+                    }
+                } else {
+                }
+            }
+
+        } else {
+        }
+    }
+});
+</script>
+ {% endif %}
+ 

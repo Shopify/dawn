@@ -1,0 +1,485 @@
+{{ 'colorbox.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'jquery.colorbox-min.js' | asset_url }}" defer="defer"></script>
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+  }
+  @media only screen and (max-width: 768px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top_mobile }}px;
+      padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+    }
+  }
+
+  {% if section.settings.bg_image != blank  %}
+    #shopify-section-{{ section.id }} .section-collection-item {
+      background: url("{{ section.settings.bg_image | img_url: 'master' }}"); 
+      background-size: cover; 
+      background-repeat: no-repeat; 
+      background-position: {{ section.settings.bg_image_position }};
+    }
+  {% endif %}
+  @media only screen and (max-width: 768px) {
+    {% if section.settings.bg_image_mobile != blank  %}
+      #shopify-section-{{ section.id }} .section-collection-item {
+        background: url("{{ section.settings.bg_image_mobile | img_url: 'master' }}"); 
+        background-size: cover; 
+        background-repeat: no-repeat; 
+        background-position: {{ section.settings.bg_image_position_mobile }};
+      }
+    {% else %}
+      #shopify-section-{{ section.id }} .section-collection-item {
+        background: transparent;
+      }
+    {% endif %}
+  }
+  
+  {% comment %}テキストのレイアウト{% endcomment %}
+  #shopify-section-{{ section.id }} .title-wrapper-with-link {
+    justify-content: {{ section.settings.heading_position }};
+  }
+  #shopify-section-{{ section.id }} .collection-item-image-content p {
+    text-align: {{ section.settings.content_position }};
+  }
+  @media only screen and (max-width: 768px) {
+    #shopify-section-{{ section.id }} .collection-item-image-content p {
+      text-align: left;
+    }
+  }
+
+  {% comment %}コンテナのレイアウト{% endcomment %}
+  {% if section.settings.container_position == 'right' %}
+   #shopify-section-{{ section.id }} .collection-item-image-sub {
+      order: 3;
+    }  
+    #shopify-section-{{ section.id }} .collection-item-image-main {
+      order: 2;
+    }  
+    #shopify-section-{{ section.id }} .collection-item-image-content {
+      order: 1;
+    }
+    #shopify-section-{{ section.id }} .collection-item-image-sub {
+      padding-left: 108px;
+      padding-right: 28px;
+    }
+    #shopify-section-{{ section.id }} .collection-item-image-content {
+      padding-right: 29px;
+    }
+    @media only screen and (max-width: 768px) {
+      #shopify-section-{{ section.id }} .collection-item-image-sub {
+        padding-left: 0;
+        padding-right: 0;
+      }
+      #shopify-section-{{ section.id }} .collection-item-image-content {
+        padding-right: 0;
+      }
+    }
+  {% else %}
+    #shopify-section-{{ section.id }} .collection-item-image-sub {
+      padding-left: 28px;
+      padding-right: 108px;
+    }
+    #shopify-section-{{ section.id }} .collection-item-image-content {
+      padding-left: 29px;
+    }
+    #shopify-section-{{ section.id }} .collection-item-image-button {
+      text-align: right;
+      margin-right: 28px;
+    }
+    @media only screen and (max-width: 768px) {
+      #shopify-section-{{ section.id }} .collection-item-image-sub {
+        padding-left: 0;
+        padding-right: 0;
+      }
+      #shopify-section-{{ section.id }} .collection-item-image-content {
+        padding-left: 0;
+      }
+    }
+  {% endif %}
+  @media only screen and (max-width: 768px) {
+    #shopify-section-{{ section.id }} .collection-item-image-button {
+      text-align: center;
+      margin-right: 0;
+    }
+  }
+  
+  {% if section.blocks == blank %}
+    #shopify-section-{{ section.id }} .collection-item-image-sub {
+      display: block;
+    }
+  {% endif %}}  
+{%- endstyle -%}
+
+{%- liquid
+  assign columns_mobile_int = section.settings.columns_mobile | plus: 0
+  assign show_mobile_slider = false
+  if section.settings.swipe_on_mobile and section.blocks.size > columns_mobile_int
+    assign show_mobile_slider = true
+  endif
+-%}
+
+<div 
+  {% if section.settings.id_name != blank %}id="{{ section.settings.id_name }}"{% endif %}
+  class="section-collection-item{% if section.settings.class_name != blank %} {{ section.settings.class_name }}{% endif %}">
+  <div class="page-width section-{{ section.id }}-padding isolate">
+    {%- unless section.settings.title == blank -%}
+      <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin title-position--{{ section.settings.heading_position }}">
+        <h2 class="title {{ section.settings.heading_size }}">
+          {% if  section.settings.sub-title != blank %}{{ section.settings.sub-title }}<br>{% endif %}
+          {{ section.settings.title }}
+        </h2>
+      </div>
+    {%- endunless -%}
+
+    <div class="collection-item-container">
+      <div class="collection-item-image-sub">
+        {%- for block in section.blocks -%}     
+          <div class="collection-item-image-sub-inner">
+            <a class="inline" href="#inline-content-{{ block.id }}">
+              <img src="{{ block.settings.image | img_url: 'large' }}">
+            </a>
+          </div>  
+        
+        <div style="display: none;">
+          <section id="inline-content-{{ block.id }}" class="collection-item-image-sub-content">
+            <div class="modal-image">
+              <img src="{{ block.settings.image | img_url: 'large' }}">
+            </div>  
+            <div class="modal-content">
+              <h3>{{ block.settings.title }}</h3>
+              <p>{{ block.settings.text }}</p>
+              <ul>
+                {% if block.settings.maker != blank %}<li>Maker: {{ block.settings.maker }}</li>{% endif %}
+                {% if  block.settings.type != blank %}<li>Type: {{ block.settings.type }}</li>{% endif %}
+                {% if block.settings.allergens != blank %}<li>Common Allergens: {{ block.settings.allergens }}</li>{% endif %}
+              </ul>
+            </div>
+          </section>
+        </div>
+        {%- endfor -%}  
+      </div>
+      <div class="collection-item-image-main">
+        <img src="{{ section.settings.image | img_url: 'master' }}">
+      </div>
+      <div class="collection-item-image-content">
+        <p1>{{ section.settings.content_available }}</p1>
+        <p>{{ section.settings.content }}</p>
+        <div class="collection-item-image-button">
+          <a href="{{ section.settings.button_link1 }}" class="button button--primary bt1">{{ section.settings.button_label1 }}</a>
+          <a href="{{ section.settings.button_link2 }}" class="button button--primary bt2">{{ section.settings.button_label2 }}</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+$(function() {
+  $(".inline").colorbox({
+    inline:true,
+    maxWidth:"90%",
+    maxHeight:"90%",
+    opacity: 0.7
+  });
+});  
+</script>
+
+{% schema %}
+{
+  "name": "Collection Item",
+  "class": "section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "見出し"
+    },
+    {
+      "type": "text",
+      "id": "sub-title",
+      "default": "No.1",
+      "label": "サブ見出し"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "default": "Collection Item",
+      "label": "見出し"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_size.options__2.label"
+        },
+        {
+          "value": "h0",
+          "label": "t:sections.all.heading_size.options__3.label"
+        }
+      ],
+      "default": "h1",
+      "label": "見出しのサイズ"
+    },
+    {
+      "type": "select",
+      "id": "heading_position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left",
+      "label": "見出しの位置"
+    },
+    {
+      "type": "header",
+      "content": "コンテンツ"
+    },
+    {
+      "type": "select",
+      "id": "container_position",
+      "options": [
+        {
+          "value": "left",
+          "label": "画像：左、テキスト：右"
+        },
+        {
+          "value": "right",
+          "label": "テキスト：左、画像：右"
+        }
+      ],
+      "default": "left",
+      "label": "テキスト・画像の位置"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "メイン画像"
+    },
+    {
+      "type": "textarea",
+      "id": "content_available",
+      "label": "テキスト_購入可能"
+    },
+    {
+      "type": "textarea",
+      "id": "content",
+      "label": "テキスト"
+    },
+    {
+      "type": "select",
+      "id": "content_position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left",
+      "label": "テキストの位置"
+    },
+    {
+      "type": "text",
+      "id": "button_label1",
+      "label": "t:sections.multicolumn.settings.button_label.label1"
+    },
+    {
+      "type": "url",
+      "id": "button_link1",
+      "label": "t:sections.multicolumn.settings.button_link.label1"
+    },
+    {
+      "type": "text",
+      "id": "button_label2",
+      "label": "t:sections.multicolumn.settings.button_label.label2"
+    },
+    {
+      "type": "url",
+      "id": "button_link2",
+      "label": "t:sections.multicolumn.settings.button_link.label2"
+    },
+    {
+      "type": "header",
+      "content": "レイアウト（PC）"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 300,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 300,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    },
+    {
+        "type": "image_picker",
+        "id": "bg_image",
+        "label": "背景画像"
+    },
+    {
+        "type": "select",
+        "id": "bg_image_position",
+        "options": [
+          {
+            "value": "top",
+            "label": "Top"
+          },
+          {
+            "value": "center",
+            "label": "Center"
+          },
+          {
+            "value": "bottom",
+            "label": "Bottom"
+          }
+        ],
+        "default": "top",
+        "label": "背景画像の位置"
+    },
+    {
+      "type": "header",
+      "content": "レイアウト（Mobile）"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    },
+    {
+        "type": "image_picker",
+        "id": "bg_image_mobile",
+        "label": "背景画像（Mobile）"
+    },
+    {
+        "type": "select",
+        "id": "bg_image_position_mobile",
+        "options": [
+          {
+            "value": "top",
+            "label": "Top"
+          },
+          {
+            "value": "center",
+            "label": "Center"
+          },
+          {
+            "value": "bottom",
+            "label": "Bottom"
+          }
+        ],
+        "default": "top",
+        "label": "背景画像の位置（Mobile）"
+    },
+    {
+        "type": "header",
+        "content": "Custom"
+    },
+    {
+      "type": "text",
+      "id": "id_name",
+      "label": "ID Name"
+    },
+    {
+      "type": "text",
+      "id": "class_name",
+      "label": "Class Name"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "column",
+      "name": "Item",
+      "limit": 3,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "画像"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "見出し"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "テキスト"
+        },
+        {
+          "type": "text",
+          "id": "maker",
+          "label": "Maker"
+        },
+        {
+          "type": "text",
+          "id": "type",
+          "label": "Type"
+        },
+        {
+          "type": "text",
+          "id": "allergens",
+          "label": "Common Allergens"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection Item"
+    }
+  ]
+}
+{% endschema %}

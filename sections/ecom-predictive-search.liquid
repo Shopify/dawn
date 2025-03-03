@@ -1,0 +1,278 @@
+<div id="ecom-shopify-section-predictive-search">
+{%- if predictive_search.performed -%}
+  <style>
+    .ecom-predictive-search {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      min-width: 100%;
+      border: 1px solid #ccc;
+      background: #ffffff;
+      max-height: 400px;
+      overflow-y: auto;
+      z-index: 25;
+    }
+    .ecom-predictive-search-wrapper {
+      display: flex;
+      padding-bottom: 10px;
+      position: relative;
+    }
+    .ecom-predictive-search-wrapper::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: currentColor;
+      opacity: 0.25;
+    }
+    .ecom-predictive-search-group {
+      flex: 0 0 250px;
+      width: 250px;
+    }
+    .ecom-predictive-search__result-group {
+      flex: 1 1 auto;
+      min-width: 300px;
+    }
+    .ecom-predictive-search__heading {
+      padding: 15px 20px 7.5px;
+      margin: 0;
+      font-size: 14px;
+      text-transform: uppercase;
+      color: #000000;
+      position: relative;
+    }
+    .ecom-predictive-search__heading::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 20px;
+      right: 20px;
+      height: 1px;
+      opacity: 0.2;
+      background: currentColor;
+    }
+    .ecom-predictive-search__item-title, .ecom-predictive-search__item-query {
+      line-height: 1.2;
+      transition: 0.25s;
+    }
+    .ecom-predictive-search__results-list {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+    .ecom-predictive-search__item {
+      width: 100%;
+      padding: 10px 20px;
+      display: inline-block;
+      text-decoration: none;
+      font-size: 16px;
+      color: #000000;
+      font-weight: 500;
+    }
+    .ecom-predictive-search__item p {
+      margin: 0;
+    }
+    .ecom-predictive-search__item:hover {
+      color: #000000;
+    }
+    .ecom-predictive-search__item-query mark {
+      background: none;
+      padding: 0;
+      transition: 0.25s;
+    }
+    .ecom-predictive-search__item-query span {
+      color: #747474;
+      filter: opacity(0.5);
+      transition: 0.25s;
+    }
+    .ecom-predictive-search__product {
+      display: flex;
+      gap: 20px;
+    }
+    .ecom-predictive-search__item-price {
+      display: inline-block;
+      color: #747474;
+      font-size: 12px;
+    }
+    .ecom-predictive-search__item-heading {
+      line-height: 1;
+    }
+    .ecom-predictive-search__image {
+      object-fit: cover;
+      height: 50px !important;
+    }
+    .ecom-predictive-search__item--term {
+      display: flex;
+      justify-content: space-between;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .ecom-predictive-search-icon {
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+    .ecom-predictive-search-icon svg {
+      width: 17px;
+      height: 17px;
+      transform: translateX(-3px);
+      transition: 0.25s;
+      pointer-events: none;
+      fill: currentColor;
+    }
+    .ecom-predictive-search__item--term:hover svg {
+      transform: translateX(0);
+    }
+    .predictive-search__pages-wrapper-mobile {
+      display: none;
+    }
+    @media (max-width: 768px) {
+      .predictive-search__pages-wrapper-mobile {
+        display: block;
+      }
+      .predictive-search__pages-wrapper-page {
+        display: none;
+      }
+      .ecom-predictive-search-wrapper {
+        flex-direction: column;
+      }
+      .ecom-predictive-search-group {
+        flex: 0;
+      }
+    }
+  </style>
+  {% assign first_column_results_size = predictive_search.resources.queries.size
+      |plus: predictive_search.resources.collection.size
+      |plus: predictive_search.resources.pages.size
+      |plus: predictive_search.resources.articles.size
+  %}
+  <div class="ecom-predictive-search">
+  {%- if first_column_results_size > 0 or predictive_search.resources.products.size > 0 -%}
+    <div class="ecom-predictive-search-wrapper">
+  {% endif %}
+    {%- if first_column_results_size > 0 -%}
+      <div class="ecom-predictive-search-group">
+    {% endif %}
+      {%- if predictive_search.resources.queries.size > 0 or predictive_search.resources.collections.size > 0 -%}
+        <div>
+          <h2 class="ecom-predictive-search__heading">Suggestions</h2>
+          <ul class="ecom-predictive-search__results-list">
+            {%- for query in predictive_search.resources.queries -%}
+              <li class="ecom-predictive-search__list-item">
+                <a href="{{ query.url }}" class="ecom-predictive-search__item" tabindex="-1">
+                  <div class="ecom-predictive-search__item-content">
+                    <p class="ecom-predictive-search__item-query" aria-label="{{ query.text }}">{{ query.styled_text }}</p>
+                  </div>
+                </a>
+              </li>
+            {%- endfor -%}
+            {%- for collection in predictive_search.resources.collections -%}
+              <li class="ecom-predictive-search__list-item">
+                <a href="{{ collection.url }}" class="ecom-predictive-search__item" tabindex="-1">
+                  <div class="ecom-predictive-search__item-content">
+                    <p class="ecom-predictive-search__item-title">{{ collection.title }}</p>
+                  </div>
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+      {%- if predictive_search.resources.pages.size > 0 or predictive_search.resources.articles.size > 0 -%}
+        <div class="predictive-search__pages-wrapper predictive-search__pages-wrapper-page">
+          <h2 class="ecom-predictive-search__heading">Pages</h2>
+          <ul class="ecom-predictive-search__results-list" role="group">
+            {%- for page in predictive_search.resources.pages -%}
+              <li class="ecom-predictive-search__list-item" role="option">
+                <a href="{{ page.url }}" class="ecom-predictive-search__item" tabindex="-1">
+                  <div class="ecom-predictive-search__item-content">
+                    <p class="ecom-predictive-search__item-title">{{ page.title }}</p>
+                  </div>
+                </a>
+              </li>
+            {%- endfor -%}
+            {%- for article in predictive_search.resources.articles -%}
+              <li class="ecom-predictive-search__list-item">
+                <a href="{{ article.url }}" class="ecom-predictive-search__item" tabindex="-1">
+                  <div class="ecom-predictive-search__item-content">
+                    <p class="ecom-predictive-search__item-title">{{ article.title }}</p>
+                  </div>
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+    {%- if first_column_results_size > 0 -%}
+      </div>
+    {% endif %}
+    {%- if predictive_search.resources.products.size > 0 -%}
+      <div class="ecom-predictive-search__result-group">
+        <div>
+          <h2 class="ecom-predictive-search__heading">Products</h2>
+          <ul class="ecom-predictive-search__results-list">
+            {%- for product in predictive_search.resources.products -%}
+              <li class="ecom-predictive-search__list-item">
+                <a href="{{ product.url }}" class="ecom-predictive-search__item ecom-predictive-search__product" tabindex="-1">
+                  {%- if product.featured_media != blank -%}
+                    <img class="ecom-predictive-search__image" src="{{ product.featured_media | image_url: width: 150 }}" alt="{{ product.featured_media.alt }}" width="50" height="50">
+                  {%- endif -%}
+                  <div class="ecom-predictive-search__item-content">
+                    <p class="ecom-predictive-search__item-title">{{ product.title }}</p>
+                    <div class="ecom-predictive-search__item-price">{{ product.price | money_with_currency}}</div>
+                  </div>
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      </div>
+    {%- endif -%}
+    {%- if predictive_search.resources.pages.size > 0 or predictive_search.resources.articles.size > 0 -%}
+        <div class="predictive-search__pages-wrapper predictive-search__pages-wrapper-mobile">
+          <h2 class="ecom-predictive-search__heading">Pages</h2>
+          <ul class="ecom-predictive-search__results-list" role="group">
+            {%- for page in predictive_search.resources.pages -%}
+              <li class="ecom-predictive-search__list-item" role="option">
+                <a href="{{ page.url }}" class="ecom-predictive-search__item" tabindex="-1">
+                  <div class="ecom-predictive-search__item-content">
+                    <p class="ecom-predictive-search__item-title">{{ page.title }}</p>
+                  </div>
+                </a>
+              </li>
+            {%- endfor -%}
+            {%- for article in predictive_search.resources.articles -%}
+              <li class="ecom-predictive-search__list-item">
+                <a href="{{ article.url }}" class="ecom-predictive-search__item" tabindex="-1">
+                  <div class="ecom-predictive-search__item-content">
+                    <p class="ecom-predictive-search__item-title">{{ article.title }}</p>
+                  </div>
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+    {%- endif -%}
+  {%- if first_column_results_size > 0 or predictive_search.resources.products.size > 0 -%}
+    </div>
+  {% endif %}
+    <div class="ecom-predictive-search__search-for-button">
+      <button
+        class="ecom-predictive-search__item ecom-predictive-search__item--term"
+        tabindex="-1"
+        role="option"
+        aria-selected="false"
+        type="submit"
+      >
+        <span class="ecom-predictive-search-search-for-text" data-predictive-search-search-for-text>Search for "{{predictive_search.terms }}"</span>
+        <span class="ecom-predictive-search-icon"><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M507.3 267.3c6.2-6.2 6.2-16.4 0-22.6l-144-144c-6.2-6.2-16.4-6.2-22.6 0s-6.2 16.4 0 22.6L457.4 240 16 240c-8.8 0-16 7.2-16 16s7.2 16 16 16l441.4 0L340.7 388.7c-6.2 6.2-6.2 16.4 0 22.6s16.4 6.2 22.6 0l144-144z"/></svg></span>
+      </button>
+    </div>
+  </div>
+{%- endif -%}
+</div>

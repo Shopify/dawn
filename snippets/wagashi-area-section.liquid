@@ -1,0 +1,181 @@
+{% assign _has_detail = 'true' %}
+{% if has_detail != blank %}
+  {% assign _has_detail = has_detail %}
+{% endif %}
+
+<div class="wagashi-area-section">
+  <div class="page-width">
+    <div class="wagashi-area-section-body">
+      <header class="wagashi-area-section-header">
+        <p>Producing area</p>
+      </header>
+      <h2 class="wagashi-area-section-name">
+        <span class="name-ja">{{ area.name }}</span> | 
+        <span class="name-en">{{ area.name_en }}</span>
+      </h2>
+      <p class="wagashi-area-section-description">{{ area.description | newline_to_br }}</p>
+      <img src="{{ area.thumbnail | image_url: width: 1100 }}" alt="" width="550" class="wagashi-area-section-image">
+      {% if _has_detail == 'true' %}
+      <div class="wagashi-area-section-more">
+        <a href="/pages/area/{{ area.name_en | downcase }}" class="button-more-01">Details</a>
+      </div>
+      {% endif %}
+    </div>
+    <div class="wagashi-area-section-map">
+      {% render "japan-map-svg", handle: area.name_en, has_hover: has_hover %}
+    </div>
+  </div>
+</div>
+
+<script>
+  /*descriptionは150文字以上は表示しない*/
+  document.addEventListener("DOMContentLoaded", function () {
+    function truncateTextForMobile() {
+      if (window.innerWidth <= 768) { // モバイルサイズ（768px以下）なら実行
+        document.querySelectorAll(".wagashi-area-section-description").forEach(el => {
+          let text = el.innerText.trim();
+          if (text.length > 150) {
+            el.innerText = text.substring(0, 150) + "...";
+          }
+        });
+      }
+    }
+
+    truncateTextForMobile(); // 初回実行
+
+    // 画面サイズが変わったときに再チェック（必要なら追加）
+    window.addEventListener("resize", truncateTextForMobile);
+  });
+  const WAGASHI_AREA_THUMBNAIL_DATA = {};
+  {% for wagashi_area in shop.metaobjects.wagashi_area.values %}
+    WAGASHI_AREA_THUMBNAIL_DATA[{{ wagashi_area.name_en | json }}] = {{ wagashi_area.thumbnail.value | json }};
+  {% endfor %}
+
+  const WAGASHI_AREA_DATA = {{ shop.metaobjects.wagashi_area.values | json }};
+  let body = null, nameJa = null, nameEn = null, description = null, image = null, svgPaths = null, detailsButton = null;
+
+  function wait(time) {
+    return new Promise(resolve => setTimeout(resolve, time));
+  }
+
+  async function update(data) {
+    body.classList.add('fade-out');
+    await wait(250);
+
+    const thumbnail_url = WAGASHI_AREA_THUMBNAIL_DATA[data.name_en];
+    nameJa.innerHTML = data.name;
+    nameEn.innerHTML = data.name_en;
+    description.innerHTML = data.description || '';
+    image.setAttribute('src', thumbnail_url || '');
+
+    if (detailsButton) {
+      detailsButton.setAttribute('href', `/pages/area/${data.name_en.toLowerCase()}`);
+    }
+
+    body.classList.remove('fade-out');
+  }
+
+  let currentHighlighted = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    body = document.querySelector('.wagashi-area-section-body');
+    nameJa = document.querySelector('.wagashi-area-section-name .name-ja');
+    nameEn = document.querySelector('.wagashi-area-section-name .name-en');
+    description = document.querySelector('.wagashi-area-section-description');
+    image = document.querySelector('.wagashi-area-section-image');
+    detailsButton = document.querySelector('.button-more-01');
+    svgPaths = document.querySelectorAll('[class^=area-]');
+
+    // モバイルとデスクトップで処理を分ける
+    const isDesktop = window.innerWidth >= 768;  // デスクトップ画面の基準
+    
+    // 初期状態設定
+    const initialHighlight = window.location.pathname === '/pages/wagashipedia' ? '.area-kyoto' : null;
+    if (initialHighlight) {
+      const initialPath = document.querySelector(initialHighlight);
+      if (initialPath) {
+        initialPath.classList.add('active');
+        currentHighlighted = initialPath;
+      }
+    }
+
+    // SVGのホバーとクリック処理
+    svgPaths.forEach(path => {
+      const areaName = path.getAttribute('data-handle');
+
+      // デスクトップ用: SVGをクリックするとリンクに遷移
+      if (isDesktop) {
+        path.addEventListener('click', () => {
+          const area = WAGASHI_AREA_DATA.find(v => v.name_en.toLowerCase() === areaName.toLowerCase());
+          if (area) {
+            window.location.href = `/pages/area/${area.name_en.toLowerCase()}`;
+          }
+        });
+
+        // デスクトップ用: SVGをhoverしたときに表示を更新
+        path.addEventListener('mouseenter', (ev) => {
+          let handle = ev.currentTarget.getAttribute('data-handle');
+          handle = handle.charAt(0).toUpperCase() + handle.slice(1);
+
+          const data = WAGASHI_AREA_DATA.find(v => v.name_en === handle);
+          if (data) {
+            update(data);
+            highlightRegion(ev.currentTarget);
+          }
+        });
+      } else {
+        // モバイル用: SVGクリック無効化（リンクなし）
+        path.removeEventListener('click', () => {});
+
+        // モバイル用: SVG hoverで表示更新
+        path.addEventListener('mouseenter', (ev) => {
+          let handle = ev.currentTarget.getAttribute('data-handle');
+          handle = handle.charAt(0).toUpperCase() + handle.slice(1);
+
+          const data = WAGASHI_AREA_DATA.find(v => v.name_en === handle);
+          if (data) {
+            update(data);
+            highlightRegion(ev.currentTarget);
+          }
+        });
+        // SVG hoverで表示更新
+        path.addEventListener('mouseenter', (ev) => {
+          let handle = ev.currentTarget.getAttribute('data-handle');
+          handle = handle.charAt(0).toUpperCase() + handle.slice(1);
+        
+          const data = WAGASHI_AREA_DATA.find(v => v.name_en === handle);
+          if (data) {
+            // 150文字以上ならカット
+            data.description = data.description.length > 150 
+              ? data.description.substring(0, 150) + "..." 
+              : data.description;
+            
+            update(data);
+            highlightRegion(ev.currentTarget);
+          }
+        });
+
+        // モバイル用: detailsボタンのリンクを動的に更新
+        path.addEventListener('mouseenter', (ev) => {
+          let handle = ev.currentTarget.getAttribute('data-handle');
+          handle = handle.charAt(0).toUpperCase() + handle.slice(1);
+
+          const data = WAGASHI_AREA_DATA.find(v => v.name_en === handle);
+          if (data && detailsButton) {
+            detailsButton.setAttribute('href', `/pages/area/${data.name_en.toLowerCase()}`);
+          }
+        });
+      }
+    });
+  });
+
+  // クリックしたエリアをhighlightする
+  function highlightRegion(newRegion) {
+    if (currentHighlighted && currentHighlighted !== newRegion) {
+      currentHighlighted.classList.remove('active');
+    }
+
+    newRegion.classList.add('active');
+    currentHighlighted = newRegion;
+  }
+</script>

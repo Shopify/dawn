@@ -1,0 +1,50 @@
+{% assign articles = blogs.news.articles %}
+
+<script>
+  {% comment %}console.log('articles', {{ articles | json }}){% endcomment %}
+</script>
+
+<div class="blog-list-items">
+  {% for article in articles %}
+    {% assign article_area = article.metafields.custom.area.value %}
+    {% assign article_season = article.metafields.custom.season.value %}
+
+    <script>
+      {% comment %}console.log('area', {{ area | json }}){% endcomment %}
+      {% comment %}console.log('season', {{ season | json }}){% endcomment %}
+    </script>
+
+    {% if area != blank %}
+    {% unless article_area.system.handle contains area %}{% continue %}{% endunless %}
+    {% endif %}
+
+    {% if season != blank %}
+    {% unless article_season.system.handle contains season %}{% continue %}{% endunless %}
+    {% endif %}
+
+    {% assign count = count | plus: 1 %}
+    {% if count > 8 %}
+      {% break %}
+    {% endif %}
+
+    {% if filtered_articles == "" %}
+      {% assign filtered_articles = article | json %}
+    {% else %}
+      {% assign filtered_articles = filtered_articles | append: ',' | append: article | json %}
+    {% endif %}
+
+    <a href="/blogs/{{ article.handle }}" class="blog-list-item">
+      <img src="{{ article.image | img_url: '500x500' }}" width="500" alt="" class="blog-list-item-thumbnail" />
+      <div class="blog-list-item-body">
+        <p class="blog-list-item-title">{{ article.title }}</p>
+        <p class="blog-list-item-excerpt">
+          {%- if article.excerpt.size > 0 -%}
+            {{ article.excerpt | strip_html | truncatewords: 30 }}
+          {%- else -%}
+            {{ article.content | strip_html | truncatewords: 30 }}
+          {%- endif -%}
+        </p>
+      </div>
+    </a>
+  {% endfor %}
+</div>

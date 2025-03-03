@@ -1,0 +1,114 @@
+{{ 'area-detail.css' | asset_url | stylesheet_tag }}
+
+{% assign products = metaobject.products.value %}
+{% assign makers = metaobject.makers.value %}
+{% assign article_area = article.metafields.custom.area.value %}
+
+<script>
+  {% comment %}console.log('products', {{ products | json }}){% endcomment %}
+  {% comment %}console.log('makers', {{ makers | json }}){% endcomment %}
+
+  let currentHighlighted = null; // 現在強調されている都道府県
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    const body = document.querySelector('.wagashi-area-section-body');
+    const nameJa = document.querySelector('.wagashi-area-section-name .name-ja');
+    const nameEn = document.querySelector('.wagashi-area-section-name .name-en');
+    const description = document.querySelector('.wagashi-area-section-description');
+    const image = document.querySelector('.wagashi-area-section-image');
+    const svgPaths = document.querySelectorAll('[class^=area-]');
+
+    // 現在のページのURLから都道府県名を取得
+    const pathname = window.location.pathname;
+    const areaMatch = pathname.match(/\/pages\/area\/([a-zA-Z0-9-]+)/);
+
+    if (areaMatch && areaMatch[1]) {  // 都道府県名がURLに存在する場合
+      const areaName = areaMatch[1].toLowerCase();  // 都道府県名を小文字に変換
+      const areaPath = document.querySelector(`.area-${areaName}`);  // 対応するエリアの要素を取得
+      
+      if (areaPath) {
+        areaPath.classList.add('active'); // 該当の都道府県をactiveにする
+        currentHighlighted = areaPath;  // 現在選択されているエリアを追跡
+      }
+    }
+  });
+</script>
+
+<div class="area-detail">
+  <div class="breadcrumb">
+    <ul>
+      <li><a href="/pages/wagashipedia/">Wagashipedia</a></li>
+      <li>{{ handle | camelcase }}</li>
+    </ul>
+  </div>
+  <div class="area-detail-kv">
+    <div class="area-detail-kv-image-box">
+      <picture>
+        {% if metaobject.key_visual_mobile != blank %}
+          <source srcset="{{ metaobject.key_visual_mobile | img_url: '780x908' }}" media="(max-width: 768px)" />
+        {% endif %}
+        <img src="{{ metaobject.key_visual | img_url: '1920x1200' }}" alt="" class="area-detail-kv-image {% if metaobject.key_visual_mobile != blank %}has-mobile{% endif %}" />
+      </picture>
+    </div>
+    <div class="page-width">
+      <div class="area-detail-kv-body">
+        <hgroup>
+          <p class="area-detail-kv-title">{{ metaobject.name }}</p>
+          <p class="area-detail-kv-title-en" style="color: {{ metaobject.primary_color }}">{{ handle | capitalize }}</p>
+        </hgroup>
+      </div>
+    </div>
+  </div>
+
+  <div class="wagashi-area">
+    {% render "wagashi-area-section", area: metaobject, has_detail: 'false' %}
+  </div>
+
+  <header class="wagashi-header-02">
+    <h1 class="wagashi-header-02-text">TOP WAGASHI IN {{ handle | upcase }}</h1>
+  </header>
+  {% if products != blank %}
+  <section class="wagashi-product-list">
+    <div class="page-width">
+      {% render "wagashi-product-list", products: products %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if makers != blank %}
+  <section class="wagashi-maker-list">
+    <div class="wagashi-maker-list">
+      <div class="page-width">
+        <header class="wagashi-header-04">
+          <h1 class="wagashi-header-04-text">Explore {{ handle | camelcase }} by Maker</h1>
+        </header>
+        {% render "wagashi-maker-list", makers: makers %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if article_area != blank %}
+    <div class="blog-list">
+      <div class="page-width">
+        <header class="wagashi-header-04">
+          <h2 class="wagashi-header-04-text">Inspiring Articles of {{ handle | camelcase }}</h2>
+        </header>
+        {% render "blog-list", area: handle %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+{% schema %}
+  {
+    "name": "Maker detail",
+    "settings": [
+      {
+        "type": "text",
+        "id": "id_name",
+        "label": "ID名"
+      }
+    ]
+  }
+{% endschema %}

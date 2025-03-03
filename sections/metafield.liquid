@@ -1,0 +1,134 @@
+<link rel="stylesheet" href="{{ 'component-rte.css' | asset_url }}" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="{{ 'section-main-page.css' | asset_url }}" media="print" onload="this.media='all'">
+
+<noscript>{{ 'component-rte.css' | asset_url | stylesheet_tag }}</noscript>
+<noscript>{{ 'section-main-page.css' | asset_url | stylesheet_tag }}</noscript>
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }  
+  {% if section.settings.bg_image != blank  %}
+    #shopify-section-{{ section.id }} .page-width {
+      background: url("{{ section.settings.bg_image | img_url: 'master' }}"); 
+      background-size: cover; 
+      background-repeat: no-repeat; 
+      background-position: {{ section.settings.bg_image_position }};
+    }
+  {% endif %}
+  {% if section.settings.bg_color != blank  %}
+    @media only screen and (max-width: 768px) {
+      #shopify-section-{{ section.id }} .page-width {
+        background: {{ section.settings.bg_color }};
+      }
+    }
+  {% endif %}
+{%- endstyle -%}
+
+<div 
+  {% if section.settings.id_name != blank %}id="{{ section.settings.id_name }}"{% endif %} 
+  class="color-{{ section.settings.color_scheme }}{% if section.settings.bg_fixed %}gradient{% endif %}{% if section.settings.class_name != blank %} {{ section.settings.class_name }}{% endif %}">
+  <div class="page-width section-{{ section.id }}-padding section-metafield">
+
+    <div class="rte">
+      {%- for block in section.blocks -%}
+        {% if block.settings.image != blank or block.settings.title != blank %}
+        <div class="metafield-container">
+          <div class="metafield-image">
+            <img src="{{ block.settings.image | img_url: 'master' }}">
+          </div>
+          <div class="metafield-content">
+            <h3>{{  block.settings.title }}</h3>
+            <p>{{  block.settings.textarea }}</p>
+          </div>
+        </div>
+        {% endif %}  
+      {% endfor %}  
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Metafield",
+  "tag": "section",
+  "class": "section section-page",
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 300,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 300,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    },
+    {
+        "type": "header",
+        "content": "Custom"
+    },
+    {
+      "type": "text",
+      "id": "id_name",
+      "label": "ID Name"
+    },
+    {
+      "type": "text",
+      "id": "class_name",
+      "label": "Class Name"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "column",
+      "name": "Item",
+      "limit": 3,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "画像"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title"
+        },
+        {
+          "type": "richtext",
+          "id": "textarea",
+          "label": "Text"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Metafield"
+    }
+  ]
+}
+{% endschema %}

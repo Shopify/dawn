@@ -1,0 +1,165 @@
+
+            <div class="tapitaSection">
+                {{ 'tapita-template-collection.css' | asset_url | stylesheet_tag }}
+                {{ 'tapita-component-loading-overlay.css' | asset_url | stylesheet_tag }}
+                {{ 'tapita-component-card.css' | asset_url | stylesheet_tag }}
+                {{ 'tapita-component-price.css' | asset_url | stylesheet_tag }}
+                {{ 'tapita-component-product-grid.css' | asset_url | stylesheet_tag }}
+                {{ 'tapita-product-list-extra.css' | asset_url | stylesheet_tag }}
+
+                {% assign real_product-handle = product_handle | default: "all" %}
+                {% assign filter_product-handles = product_handles | default: "" | split: "," %}
+                {% assign real_product_target_ident = product_target_ident | default: section.settings.product_target_ident %}
+                {% assign real_product_ident = product_ident | default: section.settings.product_ident %}
+                {% assign real_product-title = product_title | default: section.settings.product-title %}
+                {% assign real_product-limit = product_limit | default: 8 %}
+
+                {% assign cr_collection = collections[real_product-handle] %}
+                {% assign target = real_product_target_ident %}
+                {% assign ident = target | split: "_" | reverse | first %}
+
+                {% assign self_identification = "ProductGridContainer "
+                | append: real_product_ident
+                | append: "_"
+                | append: ident
+                | replace: " ", ""
+                %}
+                
+                {% assign scroll_ref_id = "tpt_"
+                | append: real_product_ident
+                | append: "_"
+                | append: ident
+                %}
+
+
+                {% assign product_count = 0 %}
+                {%- if cr_collection and cr_collection.products.size > 0 -%}
+                  {% assign product_count = cr_collection.products.size %}
+                {% endif %}
+                {%  if filter_product-handles and filter_product-handles.size > 0  %}
+                  {% assign product_count = filter_product-handles.size %}
+                {%  endif %}
+                {% assign product_count_torender = product_count | at_most: real_product-limit %}
+                {%- if product_count and product_count > 0 -%}
+
+                <div class="{{self_identification}}" style="display: none;">
+                        <div class="collection page-width">
+                        <div class="loading-overlay gradient"></div>
+                        {% if real_product-title %}
+                            <h3>{{real_product-title}}</h3>
+                        {% endif %}
+                        <ul class="grid grid--2-col product-grid
+                            {% if product_count_torender < 4 %} grid--{{ product_count_torender }}-col-tablet{% else %}
+                            {% if product_count_torender == 4 %} grid--4-col-desktop{% else %} grid--3-col-tablet grid--one-third-max grid--4-col-desktop grid--quarter-max{% endif %}
+                            {% endif %} {{scroll_ref_id}}">
+
+                            {%  if filter_product-handles and filter_product-handles.size > 0 %}
+                              {%  for handle in filter_product-handles limit: real_product-limit %}
+                                  {% assign product = all_products[handle] %}
+                                  <li class="grid__item">
+                                      {% render 'tapita-product-card',
+                                      product_card_product: product,
+                                      media_size: section.settings.image_ratio,
+                                      show_secondary_image: section.settings.show_secondary_image,
+                                      add_image_padding: section.settings.add_image_padding,
+                                      show_vendor: section.settings.show_vendor,
+                                      show_image_outline: section.settings.show_image_outline,
+                                      show_rating: section.settings.show_rating
+                                      %}
+                                  </li>
+                              {%- endfor -%}
+                            {%  else %}
+                                {%- for product in cr_collection.products limit: real_product-limit -%}
+                                <li class="grid__item">
+                                    {% render 'tapita-product-card',
+                                    product_card_product: product,
+                                    media_size: section.settings.image_ratio,
+                                    show_secondary_image: section.settings.show_secondary_image,
+                                    add_image_padding: section.settings.add_image_padding,
+                                    show_vendor: section.settings.show_vendor,
+                                    show_image_outline: section.settings.show_image_outline,
+                                    show_rating: section.settings.show_rating
+                                    %}
+                                </li>
+                                {%- endfor -%}
+                            {% endif %}
+                        </ul>
+                        <div class="control-position-box tpt-pscroll-{{ product_count_torender }}">
+                             <button class="left" onclick="tapita_small_step_{{ident}}(1)">&larr;</button>
+                             <button class="right" onclick="tapita_small_step_{{ident}}(0)">&rarr;</button>
+                        </div>
+                        <script>
+                          function tapita_small_step_{{ident}}(dirt){
+                          var pCtn = ".smpb-container .{{scroll_ref_id}}";
+                          var ctnOb = document.querySelector(pCtn);
+                          var cOb = ctnOb.childNodes;
+                            if(ctnOb.childElementCount){
+                              var f=null;
+                              var l=null;
+                              var filteredCOb = [];
+                              cOb.forEach(function(e){
+                                if (!!e.tagName)
+                                  filteredCOb.push(e);
+                              });
+                              cOb = filteredCOb;
+                              cOb.forEach(function(e, i){
+                                var dem = false;
+                                try {
+                                    dem = e.getBoundingClientRect();
+                                } catch (err) {}
+                                if (!dem)
+                                    return;
+                                var vs = dem.left>=0 && dem.right <= (window.innerWidth || document.documentElement.clientWidth);
+                                if(vs && f===null){
+                                    f=i
+                                }
+                                if(vs){
+                                l = i;
+                                }
+                              })
+                              var lm=ctnOb.childElementCount;
+                              var tmp_neg=(dirt?((f)-1):((l)+1))%lm;
+                              var tmp_n_neg = tmp_neg<0? tmp_neg+lm:tmp_neg;
+                              cOb[tmp_n_neg].scrollIntoView({
+                              block: "nearest",
+                              inline: dirt ? "start" : "end",
+                              behavior: "smooth",
+                              })
+                            }  
+                          }
+                        </script>
+                     </div>
+                    {%- endif -%}
+                </div>
+
+                <script>
+                    var counter_{{ident}} = 0;
+                    var timer_{{ident}} = setInterval(function () {
+                    try{
+                        let target_c = document.querySelector("{{target}}");
+                        if (target_c && !target_c.innerHTML) {
+                        let self_c = document.getElementsByClassName("{{self_identification}}");
+                        if(self_c.length >0 ){
+                            target_c.style.setProperty('display', 'block');
+                            target_c.style.setProperty('overflow', 'clip');
+                            self_c[0].style.setProperty('display', 'unset');
+                            window.tpb_srsappended_{{ident}} = self_c[0];
+                            target_c.appendChild(self_c[0]);
+                        } else if (window.tpb_srsappended_{{ident}}) {
+                            target_c.style.setProperty('display', 'block');
+                            target_c.style.setProperty('overflow', 'clip');
+                            window.tpb_srsappended_{{ident}}.style.setProperty('display', 'unset');
+                            target_c.appendChild(window.tpb_srsappended_{{ident}});
+                        }
+                /*         clearInterval(timer_{{ident}}); */
+                        } else if (counter_{{ident}} > 60) {
+                /*         clearInterval(timer_{{ident}}); */
+                        }
+                    }catch(e){
+                        console.warn(e);
+                        clearInterval(timer_{{ident}});
+                    }
+                }, 300);
+                </script>
+                </div>
+        

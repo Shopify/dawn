@@ -1,0 +1,277 @@
+{%- style -%}
+  .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+  }
+  @media only screen and (max-width: 768px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top_mobile }}px;
+      padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+    }
+  }
+  #shopify-section-{{ section.id }} .title span {
+    color: {{ section.settings.title_color }};
+  }
+  {% if section.settings.bg_image != blank  %}
+    #shopify-section-{{ section.id }} .section-list-market {
+      background: url("{{ section.settings.bg_image | img_url: 'master' }}"); 
+      background-size: cover; 
+      background-repeat: no-repeat; 
+      background-position: {{ section.settings.bg_image_position }};
+    }
+  {% endif %}
+  @media only screen and (max-width: 768px) {
+    {% if section.settings.bg_image_mobile != blank  %}
+      #shopify-section-{{ section.id }} .section-list-market {
+        background: url("{{ section.settings.bg_image_mobile | img_url: 'master' }}"); 
+        background-size: cover; 
+        background-repeat: no-repeat; 
+        background-position: {{ section.settings.bg_image_position_mobile }};
+      }
+    {% else %}
+      #shopify-section-{{ section.id }} .section-list-market {
+        background: transparent;
+      }
+    {% endif %}
+  }
+{%- endstyle -%}
+
+{%- liquid
+  assign columns_mobile_int = section.settings.columns_mobile | plus: 0
+  assign show_mobile_slider = false
+  if section.settings.swipe_on_mobile and section.blocks.size > columns_mobile_int
+    assign show_mobile_slider = true
+  endif
+-%}
+
+<div 
+  {% if section.settings.id_name != blank %}id="{{ section.settings.id_name }}"{% endif %}
+  class="section-list-market{% if section.settings.class_name != blank %} {{ section.settings.class_name }}{% endif %}">
+  <div class="page-width section-{{ section.id }}-padding isolate">
+    {%- unless section.settings.title == blank -%}
+      <div class="title-wrapper-with-link title-wrapper--self-padded-mobile title-wrapper--no-top-margin title-position--{{ section.settings.heading_position }}">
+        <h2 class="title {{ section.settings.heading_size }}">
+          {{ section.settings.title }}
+        </h2>
+      </div>
+    {%- endunless -%}
+    
+    <div class="list-market-container">     
+      {%- for block in section.blocks -%}     
+        <div class="list-market-item">
+          {% if block.settings.link != blank %}
+            <a href="{{ block.settings.link }}">{% endif %}
+            <img src="{{ block.settings.image | img_url: 'large' }}">
+          {% if block.settings.link != blank %}</a>{% endif %}
+          <h3>
+            {{ block.settings.title }}
+          </h3>
+          <h4>
+            {% if block.settings.sub-title != blank %}{{ block.settings.sub-title }}{% endif %}
+          </h4>
+          <p>
+            {% if block.settings.text != blank %}{{ block.settings.text }}{% endif %}
+          </p>
+        </div>  
+      {%- endfor -%}  
+    </div>
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Collection List(Market)",
+  "class": "section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "見出し"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "default": "Collection Item",
+      "label": "見出し"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_size.options__2.label"
+        },
+        {
+          "value": "h0",
+          "label": "t:sections.all.heading_size.options__3.label"
+        }
+      ],
+      "default": "h1",
+      "label": "見出しのサイズ"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "見出しのアクセントカラー",
+      "info": "適用させるには見出しのテキストを<span></span>で囲んでください。"
+    },
+    {
+      "type": "header",
+      "content": "レイアウト（PC）"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 400,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 400,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 40
+    },
+    {
+        "type": "image_picker",
+        "id": "bg_image",
+        "label": "背景画像"
+    },
+    {
+        "type": "select",
+        "id": "bg_image_position",
+        "options": [
+          {
+            "value": "top",
+            "label": "Top"
+          },
+          {
+            "value": "center",
+            "label": "Center"
+          },
+          {
+            "value": "bottom",
+            "label": "Bottom"
+          }
+        ],
+        "default": "top",
+        "label": "背景画像の位置"
+    },
+    {
+      "type": "header",
+      "content": "レイアウト（Mobile）"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    },
+    {
+        "type": "image_picker",
+        "id": "bg_image_mobile",
+        "label": "背景画像（Mobile）"
+    },
+    {
+        "type": "select",
+        "id": "bg_image_position_mobile",
+        "options": [
+          {
+            "value": "top",
+            "label": "Top"
+          },
+          {
+            "value": "center",
+            "label": "Center"
+          },
+          {
+            "value": "bottom",
+            "label": "Bottom"
+          }
+        ],
+        "default": "top",
+        "label": "背景画像の位置（Mobile）"
+    },
+    {
+        "type": "header",
+        "content": "Custom"
+    },
+    {
+      "type": "text",
+      "id": "id_name",
+      "label": "ID Name"
+    },
+    {
+      "type": "text",
+      "id": "class_name",
+      "label": "Class Name"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Collection",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "画像"
+        },
+        {
+          "type": "text",
+          "id": "link",
+          "label": "画像リンク"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "見出し"
+        },
+        {
+          "type": "text",
+          "id": "sub-title",
+          "label": "サブ見出し"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "テキスト"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection List(Market)"
+    }
+  ]
+}
+{% endschema %}

@@ -3,96 +3,82 @@
 
 {%- style -%}
   .section-{{ section.id }}-padding {
-    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
-    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
-  }
-
-  @media screen and (min-width: 750px) {
-    .section-{{ section.id }}-padding {
       padding-top: {{ section.settings.padding_top }}px;
       padding-bottom: {{ section.settings.padding_bottom }}px;
+  }
+  @media only screen and (max-width: 768px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top_mobile }}px;
+      padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
     }
+  }
+  {% if section.settings.bg_image != blank  %}
+    #shopify-section-{{ section.id }} .section-collapsible-content {
+      background: url("{{ section.settings.bg_image | img_url: 'master' }}"); 
+      background-size: cover; 
+      background-repeat: no-repeat; 
+      background-position: {{ section.settings.bg_image_position }};
+    }
+  {% endif %}
+  @media only screen and (max-width: 768px) {
+    {% if section.settings.bg_image_mobile != blank  %}
+      #shopify-section-{{ section.id }} .section-collapsible-content {
+        background: url("{{ section.settings.bg_image_mobile | img_url: 'master' }}"); 
+        background-size: cover; 
+        background-repeat: no-repeat; 
+        background-position: {{ section.settings.bg_image_position_mobile }};
+      }
+    {% else %}
+      #shopify-section-{{ section.id }} .section-collapsible-content {
+        background: transparent;
+      }
+    {% endif %}
   }
 {%- endstyle -%}
 
-<div class="color-{{ section.settings.color_scheme }} gradient">
+<div 
+  {% if section.settings.id_name != blank %}id="{{ section.settings.id_name }}"{% endif %}
+  class="color-{{ section.settings.color_scheme }} gradient section-collapsible-content{% if section.settings.class_name != blank %} {{ section.settings.class_name }}{% endif %}">
   <div class="collapsible-content collapsible-{{ section.settings.layout }}-layout isolate{% if section.settings.layout == 'section' %} page-width{% elsif section.settings.layout == 'none' %} content-container content-container--full-width{% endif %}">
     <div class="collapsible-content__wrapper section-{{ section.id }}-padding{% if section.settings.layout == 'section' %} content-container color-{{ section.settings.container_color_scheme }} gradient{% endif %}">
       <div class="{% if section.settings.image == blank %}collapsible-content-wrapper-narrow{% else %}page-width{% endif %}">
-        <div
-          class="collapsible-content__header{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-          style="text-align: {{ section.settings.heading_alignment }};"
-        >
+        <div class="collapsible-content__header" style="text-align: {{ section.settings.heading_alignment }};">
           {%- if section.settings.caption != blank -%}
-            <p class="caption-with-letter-spacing">
-              {{ section.settings.caption | escape }}
-            </p>
+            <p class="caption-with-letter-spacing"> {{ section.settings.caption | escape }}</p>
           {% endif %}
           {%- if section.settings.heading != blank -%}
-            <h2 class="collapsible-content__heading inline-richtext {{ section.settings.heading_size }}">
-              {{ section.settings.heading }}
-            </h2>
+            <h2 class="collapsible-content__heading {{ section.settings.heading_size }}">{{ section.settings.heading | escape }}</h2>
           {%- else -%}
             <h2 class="visually-hidden">{{ 'accessibility.collapsible_content_title' | t }}</h2>
           {% endif %}
         </div>
-        <div class="grid grid--1-col grid--2-col-tablet collapsible-content__grid{% if section.settings.desktop_layout == 'image_second' %} collapsible-content__grid--reverse{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+        <div class="grid grid--1-col grid--2-col-tablet collapsible-content__grid{% if section.settings.desktop_layout == 'image_second' %} collapsible-content__grid--reverse{% endif %}">
           {%- if section.settings.image != blank -%}
             <div class="grid__item collapsible-content__grid-item">
-              <div
-                class="collapsible-content__media collapsible-content__media--{{ section.settings.image_ratio }} media global-media-settings gradient"
-                {% if section.settings.image_ratio == 'adapt' %}
-                  style="padding-bottom: {{ 1 | divided_by: section.settings.image.aspect_ratio | times: 100 }}%;"
-                {% endif %}
+              <div class="collapsible-content__media collapsible-content__media--{{ section.settings.image_ratio }} media global-media-settings gradient"
+                {% if section.settings.image_ratio == 'adapt' %} style="padding-bottom: {{ 1 | divided_by: section.settings.image.aspect_ratio | times: 100 }}%;"{% endif %}
               >
-                {%- liquid
-                  assign padding_multiplier = 1
-                  if section.settings.layout == 'section'
-                    assign padding_multiplier = 2
-                  endif
-                  assign desktop_tablet_padding = 100 | times: padding_multiplier | append: 'px'
-                  assign mobile_padding = 30 | times: padding_multiplier | append: 'px'
-                -%}
-                {%- capture sizes -%}
-                  (min-width: {{ settings.page_width }}px) calc(({{ settings.page_width }}px - {{ desktop_tablet_padding }}) / 2),
-                  (min-width: 750px) calc((100vw - {{ desktop_tablet_padding }}) / 2),
-                  calc(100vw - {{ mobile_padding }})
-                {%- endcapture -%}
-                {{
-                  section.settings.image
-                  | image_url: width: 3200
-                  | image_tag:
-                    sizes: sizes,
-                    widths: '50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3200'
-                }}
+              {%- capture sizes -%}(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 2 }}px, (min-width: 750px) calc((100vw - 130px) / 2), calc((100vw - 50px) / 2){%- endcapture -%}
+              {{ section.settings.image | image_url: width: 1500 | image_tag:
+                loading: 'lazy',
+                sizes: sizes,
+                widths: '165, 360, 535, 750, 1070, 1250, 1500'
+              }}
               </div>
             </div>
           {% endif %}
           <div class="grid__item">
             {%- for block in section.blocks -%}
-              <div
-                class="accordion{% if section.settings.layout == 'row' %} content-container color-{{ section.settings.container_color_scheme }} gradient{% endif %}"
-                {{ block.shopify_attributes }}
-              >
-                <details
-                  id="Details-{{ block.id }}-{{ section.id }}"
-                  {% if section.settings.open_first_collapsible_row and forloop.first %}
-                    open
-                  {% endif %}
-                >
+              <div class="accordion{% if section.settings.layout == 'row' %} content-container color-{{ section.settings.container_color_scheme }} gradient{% endif %}" {{ block.shopify_attributes }}>
+                <details id="Details-{{ block.id }}-{{ section.id }}"{% if section.settings.open_first_collapsible_row and forloop.first %} open{% endif %}>
                   <summary id="Summary-{{ block.id }}-{{ section.id }}">
                     {% render 'icon-accordion', icon: block.settings.icon %}
-                    <h3 class="accordion__title inline-richtext h4">
-                      {{ block.settings.heading | default: block.settings.page.title | escape }}
+                    <h3 class="accordion__title h4">
+                      {{ block.settings.heading | default: block.settings.page.title }}
                     </h3>
-                    {{- 'icon-caret.svg' | inline_asset_content -}}
+                    {% render 'icon-caret' %}
                   </summary>
-                  <div
-                    class="accordion__content rte"
-                    id="CollapsibleAccordion-{{ block.id }}-{{ section.id }}"
-                    role="region"
-                    aria-labelledby="Summary-{{ block.id }}-{{ section.id }}"
-                  >
+                  <div class="accordion__content rte" id="CollapsibleAccordion-{{ block.id }}-{{ section.id }}" role="region" aria-labelledby="Summary-{{ block.id }}-{{ section.id }}">
                     {{ block.settings.row_content }}
                     {{ block.settings.page.content }}
                   </div>
@@ -111,9 +97,6 @@
   "name": "t:sections.collapsible_content.name",
   "tag": "section",
   "class": "section",
-  "disabled_on": {
-    "groups": ["header", "footer"]
-  },
   "settings": [
     {
       "type": "text",
@@ -121,10 +104,10 @@
       "label": "t:sections.collapsible_content.settings.caption.label"
     },
     {
-      "type": "inline_richtext",
+      "type": "text",
       "id": "heading",
       "label": "t:sections.collapsible_content.settings.heading.label",
-      "default": "t:sections.collapsible_content.settings.heading.default"
+      "default": "Collapsible content"
     },
     {
       "type": "select",
@@ -141,14 +124,6 @@
         {
           "value": "h0",
           "label": "t:sections.all.heading_size.options__3.label"
-        },
-        {
-          "value": "hxl",
-          "label": "t:sections.all.heading_size.options__4.label"
-        },
-        {
-          "value": "hxxl",
-          "label": "t:sections.all.heading_size.options__5.label"
         }
       ],
       "default": "h1",
@@ -175,10 +150,6 @@
       "default": "center"
     },
     {
-      "type": "header",
-      "content": "t:sections.collapsible_content.settings.layout_header.content"
-    },    
-    {
       "type": "select",
       "id": "layout",
       "label": "t:sections.collapsible_content.settings.layout.label",
@@ -199,16 +170,61 @@
       "default": "none"
     },
     {
-      "type": "color_scheme",
-      "id": "container_color_scheme",
-      "label": "t:sections.collapsible_content.settings.container_color_scheme.label",
-      "default": "scheme-2"
-    },    
-    {
-      "type": "color_scheme",
+      "type": "select",
       "id": "color_scheme",
-      "label": "t:sections.collapsible_content.settings.section_color_scheme.label",
-      "default": "scheme-1"
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.all.colors.accent_1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.all.colors.accent_2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.all.colors.background_1.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.all.colors.background_2.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.all.colors.inverse.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.all.colors.label"
+    },
+    {
+      "type": "select",
+      "id": "container_color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.all.colors.accent_1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.all.colors.accent_2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.all.colors.background_1.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.all.colors.background_2.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.all.colors.inverse.label"
+        }
+      ],
+      "default": "background-2",
+      "label": "t:sections.collapsible_content.settings.container_color_scheme.label",
+      "info": "t:sections.collapsible_content.settings.container_color_scheme.info"
     },
     {
       "type": "checkbox",
@@ -259,17 +275,18 @@
         }
       ],
       "default": "image_second",
-      "label": "t:sections.collapsible_content.settings.desktop_layout.label"
+      "label": "t:sections.collapsible_content.settings.desktop_layout.label",
+      "info": "t:sections.collapsible_content.settings.desktop_layout.info"
     },
     {
       "type": "header",
-      "content": "t:sections.all.padding.section_padding_heading"
+      "content": "レイアウト（PC）"
     },
     {
       "type": "range",
       "id": "padding_top",
       "min": 0,
-      "max": 100,
+      "max": 300,
       "step": 4,
       "unit": "px",
       "label": "t:sections.all.padding.padding_top",
@@ -279,11 +296,99 @@
       "type": "range",
       "id": "padding_bottom",
       "min": 0,
-      "max": 100,
+      "max": 300,
       "step": 4,
       "unit": "px",
       "label": "t:sections.all.padding.padding_bottom",
       "default": 36
+    },
+    {
+        "type": "image_picker",
+        "id": "bg_image",
+        "label": "背景画像"
+    },
+    {
+        "type": "select",
+        "id": "bg_image_position",
+        "options": [
+          {
+            "value": "top",
+            "label": "Top"
+          },
+          {
+            "value": "center",
+            "label": "Center"
+          },
+          {
+            "value": "bottom",
+            "label": "Bottom"
+          }
+        ],
+        "default": "top",
+        "label": "背景画像の位置"
+    },
+    {
+      "type": "header",
+      "content": "レイアウト（Mobile）"
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    },
+    {
+        "type": "image_picker",
+        "id": "bg_image_mobile",
+        "label": "背景画像（Mobile）"
+    },
+    {
+        "type": "select",
+        "id": "bg_image_position_mobile",
+        "options": [
+          {
+            "value": "top",
+            "label": "Top"
+          },
+          {
+            "value": "center",
+            "label": "Center"
+          },
+          {
+            "value": "bottom",
+            "label": "Bottom"
+          }
+        ],
+        "default": "top",
+        "label": "背景画像の位置（Mobile）"
+    },
+    {
+        "type": "header",
+        "content": "Custom"
+    },
+    {
+      "type": "text",
+      "id": "id_name",
+      "label": "ID Name"
+    },
+    {
+      "type": "text",
+      "id": "class_name",
+      "label": "Class Name"
     }
   ],
   "blocks": [
@@ -294,8 +399,9 @@
         {
           "type": "text",
           "id": "heading",
-          "default": "t:sections.collapsible_content.blocks.collapsible_row.settings.heading.default",
-          "label": "t:sections.collapsible_content.blocks.collapsible_row.settings.heading.label"
+          "default": "Collapsible row",
+          "label": "t:sections.collapsible_content.blocks.collapsible_row.settings.heading.label",
+          "info": "t:sections.collapsible_content.blocks.collapsible_row.settings.heading.info"
         },
         {
           "type": "select",

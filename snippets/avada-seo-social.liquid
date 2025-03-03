@@ -1,0 +1,71 @@
+{%- assign avada_seo_social_image = '' -%}
+{%- assign avada_seo_site_name = '' | default: shop.name -%}
+{%- assign og_title = avada_seo_site_name -%}
+
+{%- if request.page_type == 'product' -%}
+  {%- assign metafieldsSocialPost = product.metafields.meta['social-post'] -%}
+{%- elsif request.page_type == 'article' -%}
+  {%- assign metafieldsSocialPost = article.metafields.meta['social-post'] -%}
+{%- elsif request.page_type == 'collection' -%}
+  {%- assign metafieldsSocialPost = collection.metafields.meta['social-post'] -%}
+{%- elsif request.page_type == 'page' -%}
+  {%- assign metafieldsSocialPost = page.metafields.meta['social-post'] -%}
+{%- endif -%}
+{%- assign avada_seo_site_name = app.metafields.seo.meta.social.siteName | default: shop.name -%}
+{%- assign og_url = canonical_url -%}
+{%- assign og_title = page_title | default: shop.name -%}
+{%- assign og_description = page_description | default: shop.description | default: shop.name -%}
+{%- if request.page_type == 'product' -%}
+  {%- assign metafieldsSocialPost = product.metafields.meta['social-post'] -%}
+{%- elsif request.page_type == 'article' -%}
+  {%- assign metafieldsSocialPost = article.metafields.meta['social-post'] -%}
+{%- elsif request.page_type == 'collection' -%}
+  {%- assign metafieldsSocialPost = collection.metafields.meta['social-post'] -%}
+{%- elsif request.page_type == 'page' -%}
+  {%- assign metafieldsSocialPost = page.metafields.meta['social-post'] -%}
+{%- endif -%}
+{%- if metafieldsSocialPost -%}
+  {%- if metafieldsSocialPost.title and metafieldsSocialPost.title != blank -%}
+    {%- assign og_title = metafieldsSocialPost.title -%}
+  {%- endif -%}
+
+  {%- if metafieldsSocialPost.description and metafieldsSocialPost.description != blank -%}
+    {%- assign og_description = metafieldsSocialPost.description -%}
+  {%- endif -%}
+  {%- capture og_image_tags -%}
+  {%- if metafieldsSocialPost.image and metafieldsSocialPost.image != blank -%}
+    <meta property='og:image' content='{{  metafieldsSocialPost.image }}'>
+    <meta property='og:image:secure_url' content='{{  metafieldsSocialPost.image }}'>
+    <meta name='twitter:image' content='{{ metafieldsSocialPost.image }}'>
+  {%- endif -%}
+  {%- endcapture -%}
+  <meta property='og:site_name' content='{{ avada_seo_site_name }}'>
+  <meta property='og:url' content='{{ og_url }}'>
+  <meta property='og:title' content='{{ og_title | strip_html | strip | escape }}'>
+  <meta property='og:type' content='{{ request.page_type  }}'>
+  <meta property='og:description' content='{{ og_description | strip_html | strip | escape }}'>
+
+  {%- if request.page_type == 'product' -%}
+    {%- if product.available -%}
+      {%- assign og_product_availability = 'instock' -%}
+    {%- else -%}
+      {%- assign og_product_availability = 'oos' -%}
+    {%- endif -%}
+
+    <meta property='product:availability' content='{{ og_product_availability }}'>
+    <meta
+      property='product:price:amount'
+      content='{{ product.selected_or_first_available_variant.price | money_without_currency | strip_html }}'
+    >
+    <meta property='product:price:currency' content='{{ cart.currency.iso_code }}'>
+  {%- endif -%}
+
+  <meta name='twitter:site' content='{{ avada_seo_site_name | prepend: '@' }}'>
+  <meta name='twitter:card' content='summary_large_image'>
+  <meta name='twitter:title' content='{{ og_title | strip_html | strip  | escape}}'>
+  <meta
+    name='twitter:description'
+    content='{{ og_description | strip_html | strip|escape | truncate: 140  }}'
+  >
+  {{ og_image_tags }}
+{%- endif -%}

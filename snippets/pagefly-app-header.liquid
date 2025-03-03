@@ -1,0 +1,66 @@
+{% if page and page.metafields.pagefly.html_meta %}
+  {{page.metafields.pagefly.html_meta}}
+{% endif %}
+{% if request.path == '/apps/pagefly' %}
+  <meta name="robots" content="noindex">
+{% endif %}
+{%- liquid
+  assign isValidPageBuitByPageFly = true
+  if template.suffix != 'blank' and template.suffix contains 'pf-'
+    assign css_file_name = template.suffix | append: '-css'
+  elsif template.name == 'index' and content_for_layout contains '__pagefly-home' or content_for_layout contains 'shopify-section-pagefly-home'
+    assign css_file_name = 'pf-home-css'
+  elsif template.name == 'password' and content_for_layout contains '__pagefly-password' or content_for_layout contains 'shopify-section-pagefly-password'
+    assign css_file_name = 'pf-password-css'
+  elsif template.name == 'product' and content_for_layout contains '__pagefly-product-section'
+    assign css_file_name = 'pf-product-css'
+  elsif template.name == 'collection' and content_for_layout contains '__pagefly-collection-section'
+    assign css_file_name = 'pf-collection-css'
+  else
+    assign isValidPageBuitByPageFly = false
+  endif
+
+  if isValidPageBuitByPageFly == true
+    assign refined_google_font_url = ''
+    assign refined_google_font_url_html = ''
+    capture css_content
+      include css_file_name
+    endcapture
+    capture pagefly_header
+      render 'pagefly-main-css'
+      unless css_content contains 'Liquid error'
+        echo css_content
+      endunless
+    endcapture
+    if pagefly_header contains 'data-pf-font="google"'
+      assign header_split = pagefly_header | split: '<link rel="stylesheet" data-pf-font="google" href="'
+      for header_item in header_split
+        if header_item contains "https://fonts.googleapis.com/css2?"
+          assign header_item_split = header_item | split: '&display=swap" media="all">'
+          assign original_google_font = header_item_split[0] | append: '&display=swap" media="all">' | prepend: '<link rel="stylesheet" data-pf-font="google" href="'
+
+          assign pagefly_header = pagefly_header | replace: original_google_font , ''
+          assign google_font_url = header_item_split[0] | split: 'https://fonts.googleapis.com/css2?'
+          assign refined_google_font_url = google_font_url[1] | prepend: '&' | append: refined_google_font_url
+        endif
+      endfor
+      if refined_google_font_url != ''
+        assign refined_google_font_url = refined_google_font_url | replace_first: '&', '' | prepend: 'https://fonts.googleapis.com/css2?'
+        capture refined_google_font_url_html
+          echo '<!-- PageFly begins loading Google fonts -->'
+          echo '<link rel="preconnect" href="https://fonts.googleapis.com">'
+          echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+          echo refined_google_font_url | prepend: '<link rel="preload" as="style" fetchpriority="low" href="' | append: '&display=block">'
+          echo refined_google_font_url | prepend: '<link rel="stylesheet" href="' | append: '&display=block" media="(min-width: 640px)">'
+          echo refined_google_font_url | prepend: '<link rel="stylesheet" href="' | append: '&display=block" media="print" onload="this.onload=null;this.media=__PF_GOOGLE_FONT_MEDIA_ALL__">' | replace: '__PF_GOOGLE_FONT_MEDIA_ALL__', "'all'"
+          echo '<!-- PageFly ends loading Google fonts -->'
+        endcapture
+      endif
+    endif
+    echo '<!-- PageFly Header Render begins -->'
+    render 'pagefly-main-js'
+    echo refined_google_font_url_html
+    echo pagefly_header
+    echo '<!-- PageFly Header Render ends -->'
+  endif
+-%}

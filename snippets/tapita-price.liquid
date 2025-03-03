@@ -1,0 +1,158 @@
+
+            {% comment %}
+                Renders a list of product's price (regular, sale)
+
+                Accepts:
+                - product: {Object} Product Liquid object (optional)
+                - use_variant: {Boolean} Renders selected or first variant price instead of overall product pricing (optional)
+                - show_badges: {Boolean} Renders 'Sale' and 'Sold Out' tags if the product matches the condition (optional)
+                - price_class: {String} Adds a price class to the price element (optional)
+
+                Usage:
+                {% render 'price', product: product %}
+            {% endcomment %}
+            {%- liquid
+            if use_variant
+                assign target = product.selected_or_first_available_variant
+            else
+                assign target = product
+            endif
+
+            assign compare_at_price = target.compare_at_price
+            assign price = target.price | default: 1999
+            assign available = target.available | default: false
+            assign money_price = price | money
+            if settings.currency_code_enabled
+                assign money_price = price | money_with_currency
+            endif
+
+            if target == product and product.price_varies
+                assign from_translate = 'From ' | t
+                assign from_translate_t = from_translate | slice: 0,20 | downcase
+                if from_translate_t == 'translation missing:'
+                    assign money_price = 'From ' | append: money_price
+                else
+                    assign money_price = from_translate | append: money_price
+                endif
+            endif
+            -%}
+
+            <div class="price
+            {%- if price_class %} {{ price_class }}{% endif -%}
+            {%- if available == false %} price--sold-out {% endif -%}
+            {%- if compare_at_price > price %} price--on-sale {% endif -%}
+            {%- if product.price_varies == false and product.compare_at_price_varies %} price--no-compare{% endif -%}
+            {%- if show_badges %} price--show-badge{% endif -%}">
+            
+            {% assign regular_prc_t = 'products.product.price.regular_price' | t %}
+            {% assign regular_prc_prefix = regular_prc_t | slice: 0,20 | downcase %}
+            <div>
+                {%- comment -%}
+                Explanation of description list:
+                    - div.price__regular: Displayed when there are no variants on sale
+                    - div.price__sale: Displayed when a variant is a sale
+                {%- endcomment -%}
+                <div class="price__regular">
+                <span class="visually-hidden visually-hidden--inline">
+                    {%- if regular_prc_prefix != 'translation missing:' -%}
+                           {{ regular_prc_t }}
+                    {%- else -%}
+                           Regular price
+                    {%- endif -%}
+                </span>
+                <span class="price-item price-item--regular">
+                    {{ money_price }}
+                </span>
+                </div>
+                <div class="price__sale">
+                {%- unless product.price_varies == false and product.compare_at_price_varies %}
+                    <span class="visually-hidden visually-hidden--inline">
+                        {%- if regular_prc_prefix != 'translation missing:' -%}
+                               {{ regular_prc_t }}
+                        {%- else -%}
+                               Regular price
+                        {%- endif -%}
+                    </span>
+                    <span>
+                        <s class="price-item price-item--regular">
+                            {% if settings.currency_code_enabled %}
+                            {{ compare_at_price | money_with_currency }}
+                            {% else %}
+                            {{ compare_at_price | money }}
+                            {% endif %}
+                        </s>
+                    </span>
+                {%- endunless -%}
+                
+                {% assign sale_prc_t = 'products.product.price.sale_price' | t %}
+                {% assign sale_prc_prefix = sale_prc_t | slice: 0,20 | downcase %}
+            
+                <span class="visually-hidden visually-hidden--inline">
+                    {%- if sale_prc_prefix != 'translation missing:' -%}
+                           {{ sale_prc_t }}
+                    {%- else -%}
+                           Sale price
+                    {%- endif -%}
+                </span>
+                <span class="price-item price-item--sale price-item--last">
+                    {{ money_price }}
+                </span>
+                </div>
+                <small class="unit-price caption{% if product.selected_or_first_available_variant.unit_price_measurement == nil %} hidden{% endif %}">
+                
+                {% assign unit_prc_t = 'products.product.price.unit_price' | t %}
+                {% assign unit_prc_prefix = unit_prc_t | slice: 0,20 | downcase %}
+                
+                <span class="visually-hidden">
+                    {%- if unit_prc_prefix != 'translation missing:' -%}
+                           {{ unit_prc_t }}
+                    {%- else -%}
+                           Unit price
+                    {%- endif -%}
+                </span>
+                <span class="price-item price-item--last">
+                    <span>{{- product.selected_or_first_available_variant.unit_price | money -}}</span>
+                    <span aria-hidden="true">/</span>
+                    {% assign sep_unit_prc_t = 'accessibility.unit_price_separator' | t %}
+                    {% assign sep_unit_prc_prefix = sep_unit_prc_t | slice: 0,20 | downcase %}
+                    <span class="visually-hidden">&nbsp;
+                         {%- if sep_unit_prc_prefix != 'translation missing:' -%}
+                               {{ sep_unit_prc_t }}
+                        {%- else -%}
+                               per
+                        {%- endif -%}
+                    &nbsp;</span>
+                    <span>
+                    {%- if product.selected_or_first_available_variant.unit_price_measurement.reference_value != 1 -%}
+                        {{- product.selected_or_first_available_variant.unit_price_measurement.reference_value -}}
+                    {%- endif -%}
+                    {{ product.selected_or_first_available_variant.unit_price_measurement.reference_unit }}
+                    </span>
+                </span>
+                </small>
+            </div>
+            {% assign on_sale_t = 'products.product.on_sale' | t %}
+            {% assign on_sale_prefix = on_sale_t | slice: 0,20 | downcase %}
+            
+            {% assign sold_out_t = 'products.product.sold_out' | t %}
+            {% assign sold_out_prefix = sold_out_t | slice: 0,20 | downcase %}
+            
+            {%- if show_badges -%}
+                <span class="badge price__badge-sale color_red">
+                    {%- if on_sale_prefix != 'translation missing:' -%}
+                           {{ on_sale_t }}
+                    {%- else -%}
+                           Sale
+                    {%- endif -%}
+                </span>
+
+                <span class="badge price__badge-sold-out color_black">
+                    {%- if sold_out_prefix != 'translation missing:' -%}
+                       {{ sold_out_t }}
+                    {%- else -%}
+                       Sold out
+                    {%- endif -%}
+                </span>
+            {%- endif -%}
+            </div>
+        

@@ -1,0 +1,115 @@
+{{ 'maker-detail.css' | asset_url | stylesheet_tag }}
+{{ 'store-infomation.css' | asset_url | stylesheet_tag }}
+
+
+{% assign features = metaobject.features.value %}
+{% assign stores = metaobject.stores.value %}
+{% assign products = metaobject.products.value %}
+
+<div
+  class="maker-detail"
+>
+  <div class="breadcrumb">
+    <ul>
+      <li><a href="/pages/wagashipedia/">Wagashipedia</a></li>
+      <li>{{ metaobject.name | camelcase }}</li>
+    </ul>
+  </div>
+  <div class="maker-detail-kv">
+    <div class="maker-detail-kv-image-box">
+      <picture>
+        {% if metaobject.key_visual_mobile != blank %}
+          <source srcset="{{ metaobject.key_visual_mobile | img_url: '780x908' }}" media="(max-width: 768px)" />
+        {% endif %}
+        <img src="{{ metaobject.key_visual | img_url: '1920x1200' }}" alt="" class="maker-detail-kv-image {% if metaobject.key_visual_mobile != blank %}has-mobile{% endif %}" />
+      </picture>
+    </div>
+    <div class="maker-detail-kv-body">
+      <div class="page-width">
+        <hgroup>
+          <h1 class="maker-detail-kv-title">{{ metaobject.name }}</h1>
+        </hgroup>
+        <p class="maker-detail-kv-description">{{ metaobject.subtitle }}</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="maker-detail-info">
+    <header class="maker-detail-info-header">
+      <h1 class="maker-detail-info-header-text">{{ metaobject.name }}</h1>
+    </header>
+    <div class="page-width">
+      <div class="maker-detail-info-items">
+        <div>
+          <p class="maker-detail-info-title">{{ metaobject.name }}</p>
+          <p class="maker-detail-info-description">{{ metaobject.description }}</p>
+        </div>
+        <div>
+          <img src="{{ metaobject.thumbnail | image_url: width: 527 }}" alt="" class="maker-detail-info-image">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% if features != blank %}
+  <section class="maker-detail-features">
+    <header class="maker-detail-features-header">
+      <h1 class="maker-detail-features-header-text">{{ metaobject.name }} Features</h1>
+    </header>
+    <div class="page-width">
+      {%- for feature in features -%}
+      <div class="maker-detail-features-items">
+        <div class="maker-detail-features-body">
+          {{ feature.body | metafield_tag }}
+        </div>
+        <div>
+          <img src="{{ feature.image | image_url: width: 527 }}" alt="" class="maker-detail-features-image">
+        </div>
+      </div>
+      {%- endfor -%}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if products != blank %}
+  <section class="maker-detail-products">
+    <div class="page-width">
+      <header class="maker-detail-products-header">
+        <h1 class="maker-detail-products-header-text">Typical products</h1>
+      </header>
+      <div class="maker-detail-products-items">
+        {% assign count = 0 %}
+        {%- for product in products -%}
+          {% assign count = count | plus: 1 %}
+          <a href="/pages/wagashipedia/{{ product.system.handle }}" class="maker-detail-products-item">
+            <div class="maker-detail-products-image">
+              <img src="{{ product.images.value | first | image_url: width: 600 }}" alt="">
+            </div>
+            <p class="maker-detail-products-title">{{ product.title_en }}</p>
+          </a>
+          {% if count == 3 %}
+            {% break %}
+          {% endif %}
+        {%- endfor -%}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if stores != blank %}
+  {% render "store-infomation", stores: stores %}
+  {% endif %}
+</div>
+
+{% schema %}
+  {
+    "name": "Maker detail",
+    "settings": [
+      {
+        "type": "text",
+        "id": "id_name",
+        "label": "ID名"
+      }
+    ]
+  }
+{% endschema %}

@@ -1,0 +1,165 @@
+
+            <div class="tapitaSection">
+                {{ 'tapita-template-collection.css' | asset_url | stylesheet_tag }}
+                {{ 'tapita-component-loading-overlay.css' | asset_url | stylesheet_tag }}
+                {{ 'tapita-component-card.css' | asset_url | stylesheet_tag }}
+                {{ 'tapita-component-price.css' | asset_url | stylesheet_tag }}
+                {{ 'tapita-component-product-grid.css' | asset_url | stylesheet_tag }}
+                {{ 'tapita-product-list-extra.css' | asset_url | stylesheet_tag }}
+                
+                {% assign real_product-handle = product_handle | default: "all" %}
+                {% assign filter_product-handles = product_handles | default: "" | split: "," %}
+                {% assign real_product_target_ident = product_target_ident | default: section.settings.product_target_ident %}
+                {% assign real_product_ident = product_ident | default: section.settings.product_ident %}
+                {% assign real_product-title = product_title | default: section.settings.product-title %}
+                {% assign real_product-limit = product_limit | default: 8 %}
+                
+                {% assign balanceHeight = evenlyHeight | default: 0 %}
+
+                {% assign cr_collection = collections[real_product-handle] %}
+                {% assign target = real_product_target_ident %}
+                {% assign ident = target | split: "_" | reverse | first%}
+
+                {% assign self_identification = "ProductGridContainer "
+                | append: real_product_ident
+                | append: "_"
+                | append: ident
+                | replace: " ", ""
+                %}
+                {% assign product_count = 0 %}
+                {%- if cr_collection and cr_collection.products.size > 0 -%}
+                  {% assign product_count = cr_collection.products.size %}
+                {% endif %}
+                {%  if filter_product-handles and filter_product-handles.size > 0  %}
+                  {% assign product_count = filter_product-handles.size %}
+                {%  endif %}
+                
+                {% unless tpt_all_count %}
+                  {% assign tpt_all_count = 0 %}
+                {% endunless %}
+                
+                {%- if product_count and product_count > 0 -%}
+                  <div class="{{self_identification}} {%- if balanceHeight > 0 -%}balanced-height{%- endif -%}" style="display: none;">
+                      {% if balanceHeight > 0 %}
+                            <style>
+                            .{{self_identification}}.balanced-height .card-wrapper, 
+                              .{{self_identification}}.balanced-height .card-wrapper .card.card--product,
+                              .{{self_identification}}.balanced-height .card-wrapper .card.card--product .card__inner,
+                              .{{self_identification}}.balanced-height .card-wrapper .card.card--product .card__inner > *,
+                              .{{self_identification}}.balanced-height .card-wrapper .card.card--product .card__inner > * > .media{
+                              height: 100%;
+                            }
+                              .{{self_identification}}.balanced-height .card-wrapper .card.card--product .card__badge{
+                                height: auto;
+                              }
+                              .{{self_identification}}.balanced-height .card-wrapper .card.card--product{
+                                height: {{ balanceHeight }}px;
+                              }
+                            @media only screen and (max-width: 780px) {
+                                .{{self_identification}}.balanced-height .card-wrapper .card.card--product{
+                                  height: {{ balanceHeight | times: 0.8 | at_least: 200 }}px;
+                                }
+                              }
+                            @media only screen and (max-width: 400px) {
+                                .{{self_identification}}.balanced-height .card-wrapper .card.card--product{
+                                  height: {{ balanceHeight | times: 0.7 | at_least: 200 }}px;
+                                }
+                              }
+                            @media only screen and (max-width: 1280px) {
+                                .{{self_identification}}.balanced-height .card-wrapper .card.card--product{
+                                  height: {{ balanceHeight | times: 1.1 | at_least: 300 }}px;
+                                }
+                              }
+                              .{{self_identification}}.balanced-height .card-wrapper .card.card--product .card__inner > * > .media {
+                                justify-content: center;
+                                align-items: center;
+                                display: flex;
+                              }
+                              .{{self_identification}}.balanced-height .card-wrapper .card.card--product .card__inner > * > .media img {
+                                height: 100%;
+                                width: auto;
+                              }
+                              .{{self_identification}}.balanced-height .card-wrapper .card-information .full-unstyled-link,
+                              .{{self_identification}}.balanced-height .card-wrapper .card-information .price {
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                              }
+                            </style>
+                          {% endif %}
+                        <div class="collection page-width">
+                        <div class="loading-overlay gradient"></div>
+                        {% if real_product-title %}
+                            <h3>{{real_product-title}}</h3>
+                        {% endif %}
+                        <ul class="
+                            grid grid--2-col product-grid
+                            {% if product_count < 4 %} grid--{{ product_count }}-col-tablet{% else %}
+                            {% if product_count == 4 %} grid--4-col-desktop{% else %} grid--3-col-tablet grid--one-third-max grid--4-col-desktop grid--quarter-max{% endif %}
+                            {% endif %}">
+                            {%  if filter_product-handles and filter_product-handles.size > 0 %}
+                              {%  for handle in filter_product-handles limit: real_product-limit %}
+                                  {% assign product = all_products[handle] %}
+                                  <li class="grid__item">
+                                      {% render 'tapita-product-card',
+                                      product_card_product: product,
+                                      media_size: section.settings.image_ratio,
+                                      show_secondary_image: section.settings.show_secondary_image,
+                                      add_image_padding: section.settings.add_image_padding,
+                                      show_vendor: section.settings.show_vendor,
+                                      show_image_outline: section.settings.show_image_outline,
+                                      show_rating: section.settings.show_rating
+                                      %}
+                                  </li>
+                              {%- endfor -%}
+                            {%  else %}
+                              {%- for product in cr_collection.products limit: real_product-limit  -%}
+                                  <li class="grid__item">
+                                      {% render 'tapita-product-card',
+                                      product_card_product: product,
+                                      media_size: section.settings.image_ratio,
+                                      show_secondary_image: section.settings.show_secondary_image,
+                                      add_image_padding: section.settings.add_image_padding,
+                                      show_vendor: section.settings.show_vendor,
+                                      show_image_outline: section.settings.show_image_outline,
+                                      show_rating: section.settings.show_rating
+                                      %}
+                                  </li>
+                              {%- endfor -%}
+                            {%- endif -%}
+                        </ul>
+                        </div>
+                        {%- endif -%}
+                </div>
+
+                <script>
+                    var counter_{{ident}} = 0;
+                    var timer_{{ident}} = setInterval(function () {
+                    try{
+                        let target_c = document.querySelector("{{target}}");
+                        if (target_c && !target_c.innerHTML) {
+                        let self_c = document.getElementsByClassName("{{self_identification}}");
+                        if(self_c.length >0 ){
+                            target_c.style.setProperty('display', 'block');
+                            target_c.style.setProperty('overflow', 'clip');
+                            self_c[0].style.setProperty('display', 'unset');
+                            window.tpb_srsappended_{{ident}} = self_c[0];
+                            target_c.appendChild(self_c[0]);
+                        } else if (window.tpb_srsappended_{{ident}}) {
+                            target_c.style.setProperty('display', 'block');
+                            target_c.style.setProperty('overflow', 'clip');
+                            window.tpb_srsappended_{{ident}}.style.setProperty('display', 'unset');
+                            target_c.appendChild(window.tpb_srsappended_{{ident}});
+                        }
+                /*         clearInterval(timer_{{ident}}); */
+                        } else if (counter_{{ident}} > 60) {
+                /*         clearInterval(timer_{{ident}}); */
+                        }
+                    }catch(e){
+                        console.warn(e);
+                        clearInterval(timer_{{ident}});
+                    }
+                }, 300);
+                </script>
+                </div>
+        
