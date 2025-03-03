@@ -19,6 +19,32 @@ if (!customElements.get('product-form')) {
 
       onSubmitHandler(evt) {
         evt.preventDefault();
+
+        // validate the stringing form too, if the validation fails, highlight it and  return early
+        const stringingForm = document.getElementById('stringing-form');
+        if (stringingForm) {
+          if (!stringingForm.checkValidity()) {
+            const radioButtons = stringingForm.querySelectorAll('input[type="radio"]');
+            const invalidRadioName = Array.from(radioButtons).find((radio) => radio.validity.valueMissing)?.name;
+
+            const errorMessage =
+              invalidRadioName === 'string-product'
+                ? 'Please select a String'
+                : invalidRadioName === 'string-variant'
+                  ? 'Please choose a String Color'
+                  : invalidRadioName === 'string-tension'
+                    ? 'Please select a tension'
+                    : 'Please select all required options';
+
+            this.handleErrorMessage(errorMessage);
+
+            return stringingForm.reportValidity();
+          } else {
+            this.handleErrorMessage('');
+          }
+        }
+        // validation finsihed
+
         if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
         this.handleErrorMessage();
@@ -32,17 +58,60 @@ if (!customElements.get('product-form')) {
         delete config.headers['Content-Type'];
 
         const formData = new FormData(this.form);
-        if (this.cart) {
-          formData.append(
-            'sections',
-            this.cart.getSectionsToRender().map((section) => section.id)
-          );
-          formData.append('sections_url', window.location.pathname);
-          this.cart.setActiveElement(document.activeElement);
-        }
-        config.body = formData;
 
-        fetch(`${routes.cart_add_url}`, config)
+        const sections = this.cart ? this.cart.getSectionsToRender().map((section) => section.id) : [];
+
+        const items = [
+          {
+            id: formData.get('id'),
+            quantity: formData.get('quantity') || 1,
+          },
+        ];
+
+        // check if stringing service is selected
+        const frameSelected = document.querySelector('input[name="frame"]:checked')?.id;
+        if (frameSelected === 'pro-stringing') {
+          const variantSelected = document.querySelector('input[name="string-variant"]:checked')?.id;
+          const tensionSelected = document.querySelector('input[name="string-tension"]:checked')?.id;
+          const stringingServiceVariantId = window.s3_stringing_service_variant_id;
+
+          if (variantSelected && tensionSelected && stringingServiceVariantId) {
+            items.push(
+              {
+                id: stringingServiceVariantId,
+                quantity: 1,
+                properties: {
+                  _tension: `${tensionSelected}lbs`,
+                  _bundleId: formData.get('id'),
+                },
+              },
+              {
+                id: variantSelected,
+                quantity: 1,
+                properties: {
+                  _bundleId: formData.get('id'),
+                },
+              },
+            );
+          }
+        }
+
+        // check if remix or printing is selected
+
+        // Single combined request with sections
+        fetch(`${routes.cart_add_url}`, {
+          ...config,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...config.headers,
+          },
+          body: JSON.stringify({
+            items,
+            sections: sections,
+            sections_url: window.location.pathname,
+          }),
+        })
           .then((response) => response.json())
           .then((response) => {
             if (response.status) {
@@ -82,16 +151,16 @@ if (!customElements.get('product-form')) {
                 'modalClosed',
                 () => {
                   setTimeout(() => {
-                    CartPerformance.measure("add:paint-updated-sections", () => {
+                    CartPerformance.measure('add:paint-updated-sections', () => {
                       this.cart.renderContents(response);
                     });
                   });
                 },
-                { once: true }
+                { once: true },
               );
               quickAddModal.hide(true);
             } else {
-              CartPerformance.measure("add:paint-updated-sections", () => {
+              CartPerformance.measure('add:paint-updated-sections', () => {
                 this.cart.renderContents(response);
               });
             }
@@ -105,7 +174,7 @@ if (!customElements.get('product-form')) {
             if (!this.error) this.submitButton.removeAttribute('aria-disabled');
             this.querySelector('.loading__spinner').classList.add('hidden');
 
-            CartPerformance.measureFromEvent("add:user-action", evt);
+            CartPerformance.measureFromEvent('add:user-action', evt);
           });
       }
 
@@ -137,6 +206,6 @@ if (!customElements.get('product-form')) {
       get variantIdInput() {
         return this.form.querySelector('[name=id]');
       }
-    }
+    },
   );
 }

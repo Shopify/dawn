@@ -10,6 +10,18 @@
   Usage:
   {% render 'buy-buttons', block: block, product: product, product_form_id: product_form_id, section_id: section.id, show_pickup_availability: true %}
 {% endcomment %}
+
+{% assign is_product_stringable = product.metafields.custom_but_hidden.studio_pro_stringing.value %}
+{% assign is_product_remixable = product.metafields.custom_but_hidden.stickers.value %}
+{% assign is_product_printable = product.metafields.custom_but_hidden.customise.value %}
+
+{% assign is_product_customisable = is_product_stringable
+  | append: is_product_remixable
+  | append: is_product_printable
+%}
+
+{% comment %} TODO: think about styling of accelerated checkout {% endcomment %}
+
 <div {{ block.shopify_attributes }}>
   {%- if product != blank -%}
     {%- liquid
@@ -19,8 +31,8 @@
       endif
 
       assign show_dynamic_checkout = false
-      if block.settings.show_dynamic_checkout and gift_card_recipient_feature_active == false
-        assign show_dynamic_checkout = true
+      if block.settings.show_dynamic_checkout and gift_card_recipient_feature_active == false and is_product_customisable.size == 0
+        assign show_dynamic_checkout = false
       endif
     -%}
 
@@ -74,7 +86,7 @@
             id="ProductSubmitButton-{{ section_id }}"
             type="submit"
             name="add"
-            class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
+            class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary button--large{% else %}button--primary button--xlarge{% endif %}"
             {% if product.selected_or_first_available_variant.available == false
               or quantity_rule_soldout
               or product.selected_or_first_available_variant == null

@@ -3,17 +3,57 @@
   Accepts:
   - swatch: {Object} a swatch object
   - shape: {String} swatch shape. Accepts 'square', defaults to circle.
+  - featured_image: {Object} optional variant featured image, used when option is Colour
+  - hex_from_map: {String} optional hex value from color map
 
   Usage:
   {% render 'swatch',
     swatch: value.swatch
     shape: 'square'
+    featured_image: image_src
+    hex_from_map: hex_from_map
   %}
 {% endcomment %}
 
 {%- liquid
   assign swatch_value = null
-  if swatch.image
+  if hex_from_map
+    assign sanitized_hex_map = hex_from_map | strip | split: '/'
+    assign hex_codes = ''
+    for hex in sanitized_hex_map
+      assign clean_hex = hex | strip
+      unless forloop.first
+        assign hex_codes = hex_codes | append: ','
+      endunless
+      assign hex_codes = hex_codes | append: clean_hex
+    endfor
+    assign hex_codes = hex_codes | split: ','
+
+    if hex_codes.size > 1
+      capture swatch_value
+        echo 'linear-gradient(to right bottom'
+        if hex_codes.size == 2
+          for hex in hex_codes
+            echo ', ' | append: hex | append: ' 50%'
+          endfor
+        else
+          for hex in hex_codes
+            assign percentage = forloop.index | times: 33
+            if forloop.last
+              assign percentage = 100
+            endif
+            echo ', ' | append: hex | append: ' ' | append: percentage | append: '%'
+          endfor
+        endif
+        echo ')'
+      endcapture
+    else
+      assign swatch_value = hex_codes.first
+    endif
+  elsif featured_image
+    assign image_url = featured_image | image_url: width: 100
+    assign swatch_value = 'url(' | append: image_url | append: ')'
+  elsif swatch.image
     assign image_url = swatch.image | image_url: width: 50
     assign swatch_value = 'url(' | append: image_url | append: ')'
     assign swatch_focal_point = swatch.image.presentation.focal_point
@@ -25,7 +65,15 @@
 <span
   {% if swatch_value %}
     class="swatch{% if shape == 'square' %} swatch--square{% endif %}"
-    style="--swatch--background: {{ swatch_value }};{% if swatch_focal_point %} --swatch-focal-point: {{ swatch_focal_point }};{% endif %}"
+    style="
+      --swatch--background: {{ swatch_value }};{% if swatch_focal_point %} --swatch-focal-point: {{ swatch_focal_point }};{% endif %} {% if featured_image %}
+         --swatch--border-radius: 5px;
+         --swatch--size: 9rem;
+      {% endif %}
+       {% if hex_from_map %}
+         --swatch--size: 4.7rem;
+       {% endif %}
+    "
   {% else %}
     class="swatch swatch--unavailable{% if shape == 'square' %} swatch--square{% endif %}"
   {% endif %}
