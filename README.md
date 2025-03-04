@@ -97,3 +97,8 @@ Ensure that you follow the list of [theme store requirements](https://shopify.de
 ## License
 
 Copyright (c) 2021-present Shopify Inc. See [LICENSE](/LICENSE.md) for further details.
+
+テスト環境へのpush
+pushターゲットテーマ名：
+JAPANBITE_DEV 20250303_githubテスト環境
+shopify theme push --theme=176689676573
