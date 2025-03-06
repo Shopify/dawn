@@ -53,6 +53,7 @@ query getCollectionById($id: ID!) {
         variants(first: 15) {
           nodes {
             id
+            sku
             title
             availableForSale
             price {
