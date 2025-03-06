@@ -130,6 +130,7 @@ function Stringing({ stringingCollectionId }: { stringingCollectionId: string | 
                     }}
                   >
                     <input
+                      data-sku={variant.sku}
                       disabled={variant.availableForSale === false}
                       onChange={(_) => {
                         setConfig({

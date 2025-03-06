@@ -70,8 +70,15 @@ if (!customElements.get('product-form')) {
 
         // check if stringing service is selected
         const frameSelected = document.querySelector('input[name="frame"]:checked')?.id;
-        if (frameSelected === 'pro-stringing') {
+        let selectedVariantSku = null;
+        try {
+          selectedVariantSku = JSON.parse(
+            document.querySelector('variant-selects [data-selected-variant]')?.innerHTML,
+          )?.sku;
+        } catch (error) {}
+        if (frameSelected === 'pro-stringing' && selectedVariantSku) {
           const variantSelected = document.querySelector('input[name="string-variant"]:checked')?.id;
+          const stringVariantSku = document.querySelector('input[name="string-variant"]:checked')?.dataset.sku;
           const tensionSelected = document.querySelector('input[name="string-tension"]:checked')?.id;
           const stringingServiceVariantId = window.s3_stringing_service_variant_id;
 
@@ -81,6 +88,8 @@ if (!customElements.get('product-form')) {
                 id: stringingServiceVariantId,
                 quantity: 1,
                 properties: {
+                  _racket: selectedVariantSku,
+                  _string: stringVariantSku,
                   _tension: `${tensionSelected}lbs`,
                   _bundleId: formData.get('id'),
                 },
