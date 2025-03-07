@@ -1,8 +1,6 @@
-Dawn 15.2.0 provides a few fixes for known bugs and updates the styling for the new dynamic checkout buttons.
+Dawn 15.3.0 adds pagination to the quick order list, updates settings labels, and introduces a few bug fixes.
 ### Changed
-- Adjust the local selector dropdown to match the maximum width of its content.
-- Adjust the styling for dynamic checkout buttons now that they’re using a new HTML structure.
+- Quick order list paginates product variants, improving buyer experience for products containing many variants.
+- Theme setting labels were updated across all surfaces to make them less crowded and easier to scan.
 ### Fixes and improvements
-- Fix issue where while in the theme editor, a modal wouldn’t be cleared once the section it belonged to was removed.
-- Updated the account login link to use a nofollow attribute so that google doesn’t interpret it as spammy backlinking.
-- Fix issue where the svg icon for the filters were not clickable
+- Fix issue where quick order list displayed the remove all button on small windows, even if no variants were in the cart.
