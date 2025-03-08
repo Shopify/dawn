@@ -319,7 +319,7 @@ if (!customElements.get('product-info')) {
         };
 
         let min = data.min;
-        const max = data.max === null ? data.max : data.max - data.cartQuantity;
+        const max = data.max === null ? data.max : Math.max(0, data.max - data.cartQuantity);
         if (max !== null) min = Math.min(min, max);
         if (data.cartQuantity >= data.min) min = Math.min(min, data.step);
 
