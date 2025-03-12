@@ -191,6 +191,7 @@ const SPlusContent = ({ referenceIds }: TProps) => {
           }
 
           case 'ui_swipeable': {
+            // TODO: account for more than 3 on desktop
             return (
               <div
                 style={{
