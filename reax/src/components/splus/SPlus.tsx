@@ -19,6 +19,8 @@ type X = Maybe<
 const SPlusContent = ({ referenceIds }: TProps) => {
   const [sPlusData, setSPlusData] = useState<X[] | null>(null);
 
+  const isMobile = useIsMobile();
+
   useEffect(() => {
     try {
       (async () => {
@@ -130,16 +132,15 @@ const SPlusContent = ({ referenceIds }: TProps) => {
         switch (comp?.type) {
           case 'ui_media': {
             // account for desktop nand mobile media and handle video files too
+            const index = isMobile ? 1 : 0;
             return comp.actualMediaList ? (
               <img
                 style={{
                   width: '100%',
-                  padding: '0rem 0.5rem',
-                  borderRadius: '11px',
                   overflow: 'hidden',
                 }}
-                src={comp.actualMediaList[0]?.image?.url}
-                alt={comp.actualMediaList[0]?.image?.altText}
+                src={comp.actualMediaList[index]?.image?.url}
+                alt={comp.actualMediaList[index]?.image?.altText}
               />
             ) : null;
           }
@@ -151,21 +152,22 @@ const SPlusContent = ({ referenceIds }: TProps) => {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  flexDirection: side === 'Left' ? 'row' : 'row-reverse',
+                  flexDirection: isMobile ? 'column' : side === 'Left' ? 'row' : 'row-reverse',
+                  margin: isMobile ? '2rem 0' : '1rem 0',
                 }}
               >
                 <img
                   style={{
-                    width: '50%',
+                    width: isMobile ? '100%' : '50%',
                   }}
                   src={comp.actualMedia[0]?.image?.url}
                   alt=""
                 />
-                <div style={{ maxWidth: '50%', padding: '0rem 3rem' }}>
+                <div style={{ maxWidth: isMobile ? '100%' : '50%', padding: isMobile ? '2rem 0' : '0rem 3rem' }}>
                   <h2
                     style={{
-                      fontSize: '4rem',
-                      letterSpacing: '-1.5px',
+                      fontSize: isMobile ? '2rem' : '4rem',
+                      letterSpacing: isMobile ? '-1px' : '-1.5px',
                       fontWeight: 'bold',
                       margin: 0,
                     }}
@@ -175,7 +177,7 @@ const SPlusContent = ({ referenceIds }: TProps) => {
                   <p
                     style={{
                       letterSpacing: '0px',
-                      fontSize: '1.8rem',
+                      fontSize: isMobile ? '1.5rem' : '1.8rem',
                       color: 'var(--gray-80)',
                       marginTop: '5px',
                       lineHeight: '180%',
@@ -189,6 +191,7 @@ const SPlusContent = ({ referenceIds }: TProps) => {
           }
 
           case 'ui_swipeable': {
+            // TODO: account for more than 3 on desktop
             return (
               <div
                 style={{
@@ -204,6 +207,7 @@ const SPlusContent = ({ referenceIds }: TProps) => {
                   {comp.fields.find((x) => x.key === 'title')?.value}
                 </h3>
                 <div
+                  className={'no-scrollbar'}
                   style={{
                     display: 'flex',
                     gap: '1.5rem',
@@ -221,13 +225,15 @@ const SPlusContent = ({ referenceIds }: TProps) => {
                       <div
                         className="sheet"
                         style={{
-                          minWidth: comp.actualBlockDataList?.length == 3 ? '32%' : '24%',
+                          minWidth: isMobile ? '75%' : comp.actualBlockDataList?.length == 3 ? '32%' : '24%',
                           overflow: 'hidden',
                         }}
                       >
                         <img
                           style={{
                             width: '100%',
+                            maxHeight: '80%',
+                            objectFit: 'cover',
                           }}
                           src={image?.image.url}
                           alt={image?.image.altText}
@@ -282,6 +288,20 @@ const SPlus = (props: TProps) => {
       <SPlusContent {...props} />
     </ErrorBoundary>
   );
+};
+
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      setIsMobile(true);
+    } else {
+      setIsMobile(false);
+    }
+  }, []);
+
+  return isMobile;
 };
 
 export default SPlus;
