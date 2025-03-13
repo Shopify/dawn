@@ -16,122 +16,176 @@ type X = Maybe<
   }
 >;
 
+// Define additional types for our optimized data fetching
+interface MediaRequest {
+  metaobject: X;
+  ids: string[];
+  type: 'media_list' | 'media' | 'swipeable';
+  blockData?: { metaobject: TBlockSwipeable }[];
+}
+
 const SPlusContent = ({ referenceIds }: TProps) => {
   const [sPlusData, setSPlusData] = useState<X[] | null>(null);
-
   const isMobile = useIsMobile();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      (async () => {
-        const topLevelMetaobjectsPromise = [];
-        //1. fetch top level mos
-        for (const referenceId of referenceIds.contents) {
-          const res = client.request(getMetaobjectQuery, {
-            variables: {
-              id: referenceId,
-            },
-          });
+    (async () => {
+      try {
+        // Fetch all top level metaobjects concurrently
+        const topLevelMetaobjectsPromises = referenceIds.contents.map((referenceId) =>
+          client.request(getMetaobjectQuery, {
+            variables: { id: referenceId },
+          }),
+        );
 
-          topLevelMetaobjectsPromise.push(res);
-        }
+        const topLevelResponses = await Promise.all(topLevelMetaobjectsPromises);
+        const topLevelMetaobjects = topLevelResponses.map((res) => res.data).filter((data) => data && data.metaobject);
 
-        const topLevelMetaobjects = await Promise.all(topLevelMetaobjectsPromise).then((x) => x.map((y) => y.data));
+        // Prepare secondary requests based on metaobject types
+        const mediaRequests: MediaRequest[] = [];
+        const swipeableBlockPromises: {
+          metaobject: X;
+          promise: Promise<any[]>;
+        }[] = [];
 
-        console.log(topLevelMetaobjects);
+        // Ensure we have proper type casting here to match X type
+        const metaobjectsToProcess: X[] = topLevelMetaobjects
+          .map((data) => data?.metaobject as X)
+          .filter((mo): mo is X => Boolean(mo));
 
-        for await (const component of topLevelMetaobjects) {
-          if (!component || !component.metaobject) {
-            continue;
-          }
-          const metaobject = component.metaobject;
+        // First pass: collect all IDs that need to be fetched
+        for (const metaobject of metaobjectsToProcess) {
+          if (!metaobject) continue;
+
           switch (metaobject.type) {
             case 'ui_media': {
               const desktopMedia = metaobject.fields.find((x) => x.key === 'for_desktop')?.value || '';
               const mobileMedia = metaobject.fields.find((x) => x.key === 'for_mobile')?.value || '';
 
-              const { data: mediaData } = await client.request(getNodesQuery, {
-                variables: {
-                  ids: [desktopMedia, mobileMedia],
-                },
-              });
-
-              //   @ts-ignore
-              metaobject.actualMediaList = mediaData?.nodes;
-
+              if (desktopMedia || mobileMedia) {
+                mediaRequests.push({
+                  metaobject,
+                  ids: [desktopMedia, mobileMedia].filter(Boolean),
+                  type: 'media_list',
+                });
+              }
               break;
             }
 
             case 'ui_fifty_fifty': {
               const media = metaobject.fields.find((x) => x.key === 'media')?.value || '';
-              const { data: mediaData } = await client.request(getNodesQuery, {
-                variables: {
+              if (media) {
+                mediaRequests.push({
+                  metaobject,
                   ids: [media],
-                },
-              });
-              //   @ts-ignore
-              metaobject.actualMedia = mediaData?.nodes;
+                  type: 'media',
+                });
+              }
               break;
             }
 
             case 'ui_swipeable': {
               const blockIDs = metaobject?.fields[0]?.value;
-              const swipeableBlockListPromise = [];
+              if (blockIDs) {
+                // Parse block IDs and fetch all blocks concurrently
+                const blockRefs: string[] = JSON.parse(blockIDs);
+                const blockPromises = blockRefs.map((blockRefId: string) =>
+                  client.request(getMetaobjectQuery, {
+                    variables: { id: blockRefId },
+                  }),
+                );
 
-              if (!blockIDs) {
-                break;
+                swipeableBlockPromises.push({ metaobject, promise: Promise.all(blockPromises) });
               }
-              for (const blockRefId of JSON.parse(blockIDs)) {
-                const res = client.request(getMetaobjectQuery, {
-                  variables: {
-                    id: blockRefId,
-                  },
-                });
-                swipeableBlockListPromise.push(res);
-              }
-
-              // @ts-ignore
-              const swipeableBlockData: { metaobject: TBlockSwipeable }[] = await Promise.all(
-                swipeableBlockListPromise,
-                // @ts-ignore
-              ).then((x) => x.map((y) => y.data).filter((z) => Boolean(z.metaobject)));
-
-              console.log({ swipeableBlockData });
-
-              const { data } = await client.request(getNodesQuery, {
-                variables: {
-                  ids: swipeableBlockData.map((x) => x.metaobject.fields.find((y) => y.key === 'media')?.value!),
-                },
-              });
-              //   @ts-ignore
-              metaobject.actualMediaList = data?.nodes;
-              //   @ts-ignore
-              metaobject.actualBlockDataList = swipeableBlockData.map((x) => x.metaobject);
-
               break;
             }
-
-            default:
-              break;
           }
         }
 
-        console.log(topLevelMetaobjects);
-        if (topLevelMetaobjects.length > 0) {
-          setSPlusData(topLevelMetaobjects.map((x) => x?.metaobject!).filter(Boolean));
+        // Process swipeable blocks first to collect media IDs
+        await Promise.all(
+          swipeableBlockPromises.map(async ({ metaobject, promise }) => {
+            const blockResponses = await promise;
+            const blockData = blockResponses.map((res) => res.data).filter((data) => data && data.metaobject);
+
+            // Extract media IDs from blocks
+            const mediaIds = blockData
+              .map((data) => data.metaobject.fields.find((y: any) => y.key === 'media')?.value)
+              .filter(Boolean) as string[];
+
+            if (mediaIds.length > 0) {
+              mediaRequests.push({
+                metaobject,
+                ids: mediaIds,
+                type: 'swipeable',
+                blockData: blockData.map((d) => ({ metaobject: d.metaobject })),
+              });
+            }
+          }),
+        );
+
+        // Batch all media requests into a single request per unique ID
+        const allMediaIds = new Set<string>();
+        mediaRequests.forEach((req) => req.ids.forEach((id) => allMediaIds.add(id)));
+
+        // Fetch all media in a single request if we have any IDs to fetch
+        const mediaMap = new Map();
+        if (allMediaIds.size > 0) {
+          const { data: allMediaData } = await client.request(getNodesQuery, {
+            variables: { ids: Array.from(allMediaIds) },
+          });
+
+          if (allMediaData?.nodes) {
+            allMediaData.nodes.forEach((node) => {
+              if (node) mediaMap.set(node.id, node);
+            });
+          }
         }
-      })();
-    } catch (error) {
-      console.log({ error });
-    }
+
+        // Update metaobjects with fetched data
+        for (const request of mediaRequests) {
+          const { metaobject, type } = request;
+
+          if (!metaobject) {
+            continue;
+          }
+
+          if (type === 'media_list') {
+            metaobject.actualMediaList = request.ids.map((id) => mediaMap.get(id)).filter(Boolean);
+          } else if (type === 'media') {
+            metaobject.actualMedia = request.ids.map((id) => mediaMap.get(id)).filter(Boolean);
+          } else if (type === 'swipeable' && request.blockData) {
+            metaobject.actualMediaList = request.ids.map((id) => mediaMap.get(id)).filter(Boolean);
+            metaobject.actualBlockDataList = request.blockData.map((d) => d.metaobject);
+          }
+        }
+
+        if (metaobjectsToProcess.length > 0) {
+          setSPlusData(metaobjectsToProcess);
+          setTimeout(() => {
+            setLoading(false);
+          }, 500);
+        }
+      } catch (error) {
+        console.log({ error });
+      }
+    })();
   }, [referenceIds]);
 
   return (
-    <div>
+    <div
+      style={{
+        opacity: loading ? 0 : 1,
+        translateY: loading ? '3rem' : '0',
+        filter: loading ? 'blur(5px)' : 'blur(0)',
+        transition: 'all 0.5s ease-out',
+      }}
+    >
       {sPlusData?.map((comp) => {
         switch (comp?.type) {
           case 'ui_media': {
-            // account for desktop nand mobile media and handle video files too
+            // TODO: account for desktop nand mobile media and handle video files too
             const index = isMobile ? 1 : 0;
             return comp.actualMediaList ? (
               <img
