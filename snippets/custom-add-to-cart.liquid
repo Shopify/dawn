@@ -1,0 +1,41 @@
+{% comment %}
+  Custom Add-to-Cart Button Component
+  - Displays an accessible Add-to-Cart button.
+  - Handles disabled state for unavailable or sold-out products.
+  - Supports custom class for additional styling.
+
+  Accepts:
+  - product: {Object} Shopify product object.
+  - section_id: {String} Section ID to ensure unique button targeting.
+  - show_dynamic_checkout: {Boolean} Determines whether to show the dynamic checkout button.
+  - custom_class: {String} Custom class to be added to the button for styling.
+
+  Usage:
+  {% render 'custom-add-to-cart', product: product, section_id: section.id, show_dynamic_checkout: false, custom_class: 'my-custom-class' %}
+{% endcomment %}
+
+{%- assign custom_class = custom_class | default: '' -%}
+
+<button
+  id="ProductSubmitButton-{{ section_id }}"
+  type="submit"
+  name="add"
+  class="add-to-cart-button button button--primary {{ custom_class }}"
+  {% if product.selected_or_first_available_variant.available == false
+    or quantity_rule_soldout
+    or product.selected_or_first_available_variant == null
+  %}
+    disabled
+  {% endif %}
+>
+  <span>
+    {%- if product.selected_or_first_available_variant == null -%}
+      {{ 'products.product.unavailable' | t }}
+    {%- elsif product.selected_or_first_available_variant.available == false or quantity_rule_soldout -%}
+      {{ 'products.product.sold_out' | t }}
+    {%- else -%}
+      {{ 'products.product.add_to_cart' | t }}
+    {%- endif -%}
+  </span>
+  {%- render 'loading-spinner' -%}
+</button>

@@ -1,0 +1,53 @@
+{% comment %}
+  Custom Quantity Input Component
+  - Allows users to adjust product quantity before adding to cart.
+  - Ensures correct min, max, and step values to comply with inventory rules.
+  - Prevents empty input issues by defaulting min quantity to 1.
+  - Supports custom class for additional styling.
+
+  Accepts:
+  - product: {Object} Shopify product object.
+  - section_id: {String} Section ID to ensure unique input targeting.
+  - form_id: {String} ID of the associated product form.
+  - custom_class: {String} Custom class to be added to the button for styling.
+
+  Usage:
+  {% render 'custom-quantity-input', product: product, section_id: section.id, form_id: product_form_id, custom_class: 'my-custom-class' %}
+{% endcomment %}
+
+{%- assign selected_variant = product.selected_or_first_available_variant -%}
+{%- assign min_quantity = selected_variant.quantity_rule.min | default: 1 -%}
+{%- assign max_quantity = selected_variant.quantity_rule.max -%}
+{%- assign step_quantity = selected_variant.quantity_rule.increment | default: 1 -%}
+{%- assign custom_class = custom_class | default: '' -%}
+
+<quantity-input class="quantity {{ custom_class }}" data-url="{{ product.url }}" data-section="{{ section_id }}">
+  <button class="quantity__button" name="minus" type="button">
+    <span class="visually-hidden">
+      {{- 'products.product.quantity.decrease' | t: product: product.title | escape -}}
+    </span>
+    {% render 'icon-minus' %}
+  </button>
+  <input
+    class="quantity__input"
+    type="number"
+    name="quantity"
+    id="Quantity-{{ section_id }}"
+    data-cart-quantity="{{ cart | item_count_for_variant: selected_variant.id }}"
+    data-min="{{ min_quantity }}"
+    min="{{ min_quantity }}"
+    {% if max_quantity != null %}
+      data-max="{{ max_quantity }}"
+      max="{{ max_quantity }}"
+    {% endif %}
+    step="{{ step_quantity }}"
+    value="{{ min_quantity }}"
+    form="{{ form_id }}"
+  >
+  <button class="quantity__button" name="plus" type="button">
+    <span class="visually-hidden">
+      {{- 'products.product.quantity.increase' | t: product: product.title | escape -}}
+    </span>
+    {% render 'icon-plus' %}
+  </button>
+</quantity-input>

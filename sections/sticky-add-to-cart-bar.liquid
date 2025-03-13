@@ -1,0 +1,146 @@
+{% comment %}
+  Sticky Add-to-Cart Bar Section
+
+  - Syncs with the main variant picker to ensure accurate variant selection.
+  - Displays product image, title, price, quantity selector, and add-to-cart button.
+  - Supports custom layout through the `color_scheme` and `position` settings.
+  - Optimized for performance with a lightweight structure, lazy-loaded images, and minimal re-renders.
+  - Uses a fixed 60x60 image size instead of `srcset` to reduce unnecessary processing.
+  - Doesn't use the price snippet as it is updated via JS, meaning we would need to edit Shopify core code to update properly.
+
+  This section can be enabled/disabled and customized via the Shopify theme settings.
+{% endcomment %}
+
+{%- if settings.enable_sticky_add_to_cart -%}
+  {{ 'section-sticky-add-to-cart-bar.css' | asset_url | stylesheet_tag }}
+
+  {%- assign selected_variant = product.selected_or_first_available_variant -%}
+
+  <div
+    id="sticky-add-to-cart-bar"
+    class="sticky-add-to-cart-bar {% if request.design_mode %} sticky-add-to-cart-bar--visible{% endif %}"
+    data-observer-toggle
+    data-observer-class="sticky-add-to-cart-bar--visible"
+  >
+    <div class="page-width sticky-add-to-cart-bar__outer-wrapper sticky-add-to-cart-bar__position--{{ section.settings.position }}">
+      <div class="sticky-add-to-cart-bar__inner-wrapper color-{{ section.settings.color_scheme }} gradient">
+        <div class="sticky-add-to-cart-bar__content">
+          {%- assign image_object = selected_variant.featured_image | default: product.featured_image -%}
+          <div class="sticky-add-to-cart-bar__top-wrapper">
+            <div class="sticky-add-to-cart-bar__image-wrapper">
+              <img
+                src="{{ image_object | image_url: width: 60, height: 60, crop: 'center' }}"
+                width="60"
+                height="60"
+                alt="{{ product.title | escape }}"
+                class="sticky-add-to-cart-bar__image"
+                loading="lazy"
+                aria-label="Product image for {{ product.title }}"
+                data-default-image="{{ image_object | image_url: width: 60, height: 60, crop: 'center' }}"
+              >
+            </div>
+
+            <div class="sticky-add-to-cart-bar__info">
+              <div class="sticky-add-to-cart-bar__composed-title">
+                <h3 class="sticky-add-to-cart-bar__title">
+                  {{ product.title | escape }}
+                </h3>
+
+                {% if product.variants.size > 1 %}
+                  <span class="sticky-add-to-cart-bar__variant-name">
+                    {{ selected_variant.title }}
+                  </span>
+                {%- endif %}
+              </div>
+
+              <span class="sticky-add-to-cart-bar__price">
+                <span class="sticky-add-to-cart-bar__price-value">
+                  {{- selected_variant.price | money_without_currency -}}
+                </span>
+                <span class="sticky-add-to-cart-bar__currency">{{ cart.currency.symbol }}</span>
+              </span>
+            </div>
+          </div>
+
+          {%- assign product_form_id = 'sticky-product-form-' | append: product.id -%}
+
+          <form method="post" action="/cart/add" id="{{ product_form_id }}" class="sticky-add-to-cart-bar__form">
+            <input type="hidden" name="form_type" value="product">
+            <input type="hidden" name="utf8" value="✓">
+            <input type="hidden" name="id" value="{{ selected_variant.id }}" class="product-variant-id">
+
+            {% render 'custom-quantity-input',
+              product: product,
+              section_id: section.id,
+              form_id: product_form_id,
+              custom_class: 'sticky-add-to-cart-bar__quantity'
+            %}
+            {% render 'custom-add-to-cart',
+              product: product,
+              section_id: section.id,
+              show_dynamic_checkout: false,
+              custom_class: 'sticky-add-to-cart-bar__button'
+            %}
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ 'variant-selection-listener.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'sticky-add-to-cart-bar-updater.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'helper-class-on-scroll.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:sections.sticky-add-to-cart-bar.name",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:sections.sticky-add-to-cart-bar.reminder"
+    },
+    {
+      "type": "select",
+      "id": "position",
+      "label": "t:sections.sticky-add-to-cart-bar.position.label",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.sticky-add-to-cart-bar.position.left.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.sticky-add-to-cart-bar.position.center.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.sticky-add-to-cart-bar.position.right.label"
+        }
+      ],
+      "default": "center",
+      "info": "t:sections.sticky-add-to-cart-bar.position.info"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.sticky-add-to-cart-bar.color_scheme.label",
+      "default": "scheme-1",
+      "info": "t:sections.sticky-add-to-cart-bar.color_scheme.info"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.sticky-add-to-cart-bar.presets.name",
+      "settings": {
+        "position": "center",
+        "color_scheme": "scheme-1"
+      }
+    }
+  ],
+  "enabled_on": {
+    "templates": ["product"]
+  }
+}
+{% endschema %}
