@@ -89,6 +89,31 @@
             {%- case block.type -%}
               {%- when '@app' -%}
                 {% render block %}
+              {%- when 'tag' -%}
+                {% assign product_date = product.published_at | date: '%s' %}
+                {% assign current_date = 'now' | date: '%s' %}
+                {% assign difference_seconds = current_date | minus: product_date %}
+                {% assign difference_days = difference_seconds | divided_by: 86400 %}
+
+                {% if difference_days < block.settings.new_in_days %}
+                  <span class="product_tags_forty">New</span>
+                {% endif %}
+
+                {% assign total_inventory = 0 %}
+                {% assign inventory_policy_deny = true %}
+
+                {% for variant in product.variants %}
+                  {% assign total_inventory = total_inventory | plus: variant.inventory_quantity %}
+                  {% if variant.inventory_policy != 'deny' %}
+                    {% assign inventory_policy_deny = false %}
+                  {% endif %}
+                {% endfor %}
+
+                {% if total_inventory <= block.settings.stock_threshold and inventory_policy_deny %}
+                  {% if total_inventory > 0 %}
+                    <span class="product_tags_forty">Last few remaining</span>
+                  {% endif %}
+                {% endif %}
               {%- when 'text' -%}
                 <p
                   class="product__text inline-richtext{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}"
@@ -771,6 +796,23 @@
       "type": "title",
       "name": "t:sections.main-product.blocks.title.name",
       "limit": 1
+    },
+    {
+      "type": "tag",
+      "name": "Tag",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "number",
+          "id": "new_in_days",
+          "label": "How many days since published should 'New' tag be displayed?"
+        },
+        {
+          "type": "number",
+          "id": "stock_threshold",
+          "label": "What is the stock threshold for 'Low Stock' tag?"
+        }
+      ]
     },
     {
       "type": "price",
