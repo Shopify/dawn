@@ -201,16 +201,17 @@ function Stringing({
                   <label
                     className="sheet"
                     key={tension}
+                    htmlFor={String(tension)}
                     style={{
+                      fontSize: window.innerWidth > 768 ? '1.6rem' : '1.4rem',
                       display: maxTensionPounds < tension ? 'none' : 'block',
                       borderRadius: 'var(--variant-pills-radius)',
-                      padding: '0.5rem 0',
+                      padding: '0.4rem 0',
                       textAlign: 'center',
                       outline: config.tension === tension ? '2px solid var(--accent-color)' : '2px solid transparent',
                       color: config.tension === tension ? 'black' : 'var(--gray-70)',
                       transition: 'all 0.3s',
                     }}
-                    htmlFor={String(tension)}
                   >
                     <input
                       onChange={(_) => {
