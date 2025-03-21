@@ -3,7 +3,14 @@ import { fetchCollectionQuery } from '../../lib/gql';
 import client from '../../lib/shopify-client';
 import { ProductNodes, TConfig } from '../../types';
 
-function Stringing({ stringingCollectionId }: { stringingCollectionId: string | null }) {
+function Stringing({
+  stringingCollectionId,
+  maxTension,
+}: {
+  stringingCollectionId: string | null;
+  maxTension: string | null;
+}) {
+  const maxTensionPounds = parseInt((maxTension || '69').replace(/[^\d.]/g, ''));
   const [stringingProducts, setStringingProducts] = useState<ProductNodes>([]);
   const [config, setConfig] = useState<TConfig>({
     stringProduct: null,
@@ -53,6 +60,7 @@ function Stringing({ stringingCollectionId }: { stringingCollectionId: string | 
         </legend>
         {stringingProducts
           .filter((x) => !x?.tags.includes('Service'))
+          .filter((y) => y.availableForSale)
           .map((string) => {
             const id = string?.id.split('/').pop();
             return (
@@ -102,64 +110,72 @@ function Stringing({ stringingCollectionId }: { stringingCollectionId: string | 
         {config.stringProduct ? (
           <div>
             <legend className="form__label">
-              <span>Color</span>
+              <span>
+                {config.stringVariant?.selectedOptions.find((x) => x.name === 'Color')?.value || 'Choose Color'}
+              </span>
             </legend>
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              {config.stringProduct.variants.nodes.map((variant) => {
-                const id = variant.id.split('/').pop();
-                const hex = config.stringProduct?.options[0].optionValues.find((x) => x.name == variant.title)?.swatch
-                  ?.color;
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+              {config.stringProduct.variants.nodes
+                .sort((a, b) => (a.id > b.id ? 1 : -1))
+                .sort((x, _) => (x.availableForSale ? -1 : 1))
+                .map((variant) => {
+                  const id = variant.id.split('/').pop();
+                  const hex = config.stringProduct?.options[0].optionValues.find((x) => x.name == variant.title)?.swatch
+                    ?.color;
 
-                return (
-                  <label
-                    className={`sheet`}
-                    key={id}
-                    htmlFor={id}
-                    style={{
-                      width: '50px',
-                      height: '50px',
-                      borderRadius: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginRight: '0.4rem',
-                      justifyContent: 'center',
-                      outline:
-                        config.stringVariant?.id === variant.id
-                          ? '2px solid var(--accent-color)'
-                          : '2px solid transparent',
-                    }}
-                  >
-                    <input
-                      data-sku={variant.sku}
-                      disabled={variant.availableForSale === false}
-                      onChange={(_) => {
-                        setConfig({
-                          stringProduct: config.stringProduct,
-                          stringVariant: variant,
-                          tension: config.tension,
-                        });
+                  const isOutOfStock = variant.availableForSale === false;
+
+                  return (
+                    <label
+                      className={`sheet`}
+                      key={id}
+                      htmlFor={id}
+                      style={{
+                        opacity: isOutOfStock ? 0.1 : 1,
+                        width: '50px',
+                        height: '50px',
+                        borderRadius: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginRight: '0.4rem',
+                        justifyContent: 'center',
+                        outline:
+                          config.stringVariant?.id === variant.id
+                            ? '2px solid var(--accent-color)'
+                            : '2px solid transparent',
                       }}
-                      required
-                      type="radio"
-                      name="string-variant"
-                      id={id}
-                    />
-                    {hex ? (
-                      <span
-                        style={{
-                          width: '46px',
-                          height: '46px',
-                          background: hex,
-                          borderRadius: '100%',
-                          display: 'block',
+                    >
+                      <input
+                        data-sku={variant.sku}
+                        disabled={variant.availableForSale === false}
+                        onChange={(_) => {
+                          setConfig({
+                            stringProduct: config.stringProduct,
+                            stringVariant: variant,
+                            tension: config.tension,
+                          });
                         }}
-                      ></span>
-                    ) : (
-                      <span>{variant.title}</span>
-                    )}
-                  </label>
-                );
-              })}
+                        required
+                        type="radio"
+                        name="string-variant"
+                        id={id}
+                      />
+                      {hex ? (
+                        <span
+                          style={{
+                            width: '46px',
+                            height: '46px',
+                            background: hex,
+                            borderRadius: '100%',
+                            display: 'block',
+                          }}
+                        ></span>
+                      ) : (
+                        <span>{variant.title}</span>
+                      )}
+                    </label>
+                  );
+                })}
             </div>
           </div>
         ) : null}
@@ -177,6 +193,7 @@ function Stringing({ stringingCollectionId }: { stringingCollectionId: string | 
                 gap: '1.5rem',
                 justifyContent: 'start',
                 gridTemplateColumns: 'repeat(4, 1fr)',
+                marginTop: '1rem',
               }}
             >
               {Array.from({ length: 20 }, (_, i) => i + 21).map((tension) => {
@@ -184,15 +201,17 @@ function Stringing({ stringingCollectionId }: { stringingCollectionId: string | 
                   <label
                     className="sheet"
                     key={tension}
+                    htmlFor={String(tension)}
                     style={{
+                      fontSize: window.innerWidth > 768 ? '1.6rem' : '1.4rem',
+                      display: maxTensionPounds < tension ? 'none' : 'block',
                       borderRadius: 'var(--variant-pills-radius)',
-                      padding: '0.5rem 0',
+                      padding: '0.4rem 0',
                       textAlign: 'center',
                       outline: config.tension === tension ? '2px solid var(--accent-color)' : '2px solid transparent',
                       color: config.tension === tension ? 'black' : 'var(--gray-70)',
                       transition: 'all 0.3s',
                     }}
-                    htmlFor={String(tension)}
                   >
                     <input
                       onChange={(_) => {
