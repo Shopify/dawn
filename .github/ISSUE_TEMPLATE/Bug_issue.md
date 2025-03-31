@@ -1,20 +1,24 @@
 ---
-name: Bug issue
+name: Bug report
 about: Use this template for reporting a bug
-labels: 'type:bug'
-
+labels: bug
 ---
 
-**Describe the current behavior**
+## Describe the current behavior
 
-**Describe the expected behavior**
 
-**Version information (Dawn, browsers and operating systems)**
-- Dawn Version: 1.0.0
-- Chrome Version 91.0.4472.114
-- macOS Version 11.3.1
+## Describe the expected behavior
 
-**Possible solution**
 
-**Additional context/screenshots**
-Add any other context about the problem here. If applicable, add screenshots to help explain.
+## Version information (Dawn, browsers and operating systems)
+
+- Dawn Version: 7.0.1
+- Chrome Version 108.0.5359.124
+- macOS Version 13.1
+
+## Possible solution
+
+
+## Additional context/screenshots
+<!-- Add any other context about the problem here. If applicable, add screenshots to help explain. -->
+
