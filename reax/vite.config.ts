@@ -9,6 +9,7 @@ export default defineConfig({
       input: {
         stringing: 'src/components/stringing/index.tsx',
         splus: 'src/components/splus/index.tsx',
+        remix: 'src/components/remix/index.tsx',
       },
       output: {
         dir: '../assets/',

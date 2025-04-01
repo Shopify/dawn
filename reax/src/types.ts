@@ -5,6 +5,22 @@ declare global {
     shopUrl: string;
     s3_pat: string;
     s3_stringing_service_variant_id: string | undefined;
+    s3_remix_modal_controller:
+      | {
+          openModal: () => void;
+          closeModal: () => void;
+          isOpen: boolean;
+        }
+      | undefined;
+    s3_remix_config:
+      | {
+          racketFrameColor: string;
+          racketGripColor: string;
+          logoColor: string;
+          stickerTextColor: string;
+          modelPath: string;
+        }
+      | undefined;
   }
 }
 

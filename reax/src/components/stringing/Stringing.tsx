@@ -95,7 +95,12 @@ function Stringing({
                   id={id}
                 />
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <img width={80} src={string.featuredImage?.url} alt={string.featuredImage?.altText || ''} />
+                  <img
+                    width={80}
+                    height={80}
+                    src={string.featuredImage?.url}
+                    alt={string.featuredImage?.altText || ''}
+                  />
                   <span style={{ color: 'var(--gray-80)', fontSize: '1.5rem' }}>{string?.title}</span>
                 </div>
                 <div style={{ fontSize: '1.2rem' }}>
