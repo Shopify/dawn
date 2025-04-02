@@ -70,6 +70,129 @@
       padding-top: 0.5rem;
     }
   }
+
+  .menu-toggle {
+    position: fixed !important;
+    top: 20px !important;
+    left: 20px !important;
+    z-index: 1001 !important;
+    font-size: 36px !important;
+    font-family: 'review-black-trial', sans-serif !important;
+    text-decoration: none;
+    color: #000;
+    transition: color 0.8s ease-in-out;
+    background: transparent;
+  }
+
+  .menu-toggle.active {
+    color: #fff !important;
+  }
+
+  .menu-toggle:hover {
+    transform: scale(1.05);
+  }
+
+  .menu-toggle::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(to bottom, #000 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+    z-index: -1;
+  }
+
+  .fullscreen-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: #000;
+    transform: translateY(-100%);
+    transition: transform 0.8s ease-in-out;
+    z-index: 1000;
+  }
+
+  .fullscreen-nav.active {
+    transform: translateY(0);
+  }
+
+  .fullscreen-nav.active + .menu-toggle {
+    color: #fff;
+  }
+
+  .fullscreen-nav.active + .menu-toggle::before {
+    opacity: 1;
+  }
+
+  .nav-content {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+  }
+
+  .nav-menu li {
+    margin: 20px 0;
+  }
+
+  .nav-menu a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 48px !important;
+    font-family: 'review-black-trial', sans-serif !important;
+    font-weight: 900 !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    transition: color 0.2s ease;
+    letter-spacing: 1px;
+  }
+
+  .menu-toggle:hover,
+  .nav-menu a:hover {
+    opacity: 0.8;
+  }
+
+  @font-face {
+    font-family: 'review-black-trial';
+    src: url('review-black-trial.woff2') format('woff2'),
+         url('review-black-trial.woff') format('woff'),
+         url('review-black-trial.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  /* Close button styling */
+  .navbar-close {
+    position: fixed !important;
+    top: 20px !important;
+    left: 20px !important;
+    z-index: 1002 !important;
+    font-size: 36px !important;
+    color: #fff;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease;
+  }
+
+  /* Show close button when navbar is active */
+  .navbar-close.active {
+    opacity: 1;
+    visibility: visible;
+  }
 </style>
 
 {%- style -%}
@@ -142,7 +265,7 @@
       {%- if request.page_type == 'index' -%}
         <h1 class="header__heading">
       {%- endif -%}
-          <a href="{{ routes.root_url }}" class="header__heading-link link link--text focus-inset">
+          <a href="#" class="header__heading-link link link--text focus-inset menu-toggle" onclick="return false;">
             {%- if settings.logo != blank -%}
               <div class="header__heading-logo-wrapper">
                 {%- assign logo_alt = settings.logo.alt | default: "Babylon" | escape -%}
@@ -160,13 +283,26 @@
                 }}
               </div>
             {%- else -%}
-              <span class="h2">{{ "Babylon" }}</span>
+              <span class="h2">Menu</span>
             {%- endif -%}
           </a>
       {%- if request.page_type == 'index' -%}
         </h1>
       {%- endif -%}
     {%- endif -%}
+
+    <!-- Add the fullscreen nav right after the header link -->
+    <div class="fullscreen-nav">
+      <div class="navbar-close">×</div>
+      <nav class="nav-content">
+        <ul class="nav-menu">
+          <li><a href="/">Home</a></li>
+          <li><a href="/collections">Shop</a></li>
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
 
     {%- liquid
       if section.settings.menu != blank
@@ -404,6 +540,23 @@
   }
 
   customElements.define('sticky-header', StickyHeader);
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const nav = document.querySelector('.fullscreen-nav');
+    const closeBtn = document.querySelector('.navbar-close');
+    let isOpen = false;
+
+    function toggleNav() {
+      isOpen = !isOpen;
+      menuToggle.classList.toggle('active');
+      nav.classList.toggle('active');
+      closeBtn.classList.toggle('active');
+    }
+
+    menuToggle.addEventListener('click', toggleNav);
+    closeBtn.addEventListener('click', toggleNav);
+  });
 {% endjavascript %}
 
 <script type="application/ld+json">
