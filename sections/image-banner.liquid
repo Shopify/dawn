@@ -1,5 +1,5 @@
 {% comment %}
-  Modified Image Banner Section with centered square image on white background
+  Modified Image Banner Section with centered square image on white background and overlay image
 {% endcomment %}
 
 {{ 'section-image-banner.css' | asset_url | stylesheet_tag }}
@@ -20,10 +20,10 @@
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    padding: 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 20px;
   }
 
   .square-image-wrapper {
@@ -42,14 +42,36 @@
     object-fit: contain;
   }
 
-  .button-container {
-    margin-top: 20px;
+  .overlay-image-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%; /* Adjust this to change overlay image size */
+    z-index: 2;
     text-align: center;
+  }
+
+  .overlay-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 20px; /* Space between overlay image and button */
+  }
+
+  .button-container {
+    width: 100%;
+    text-align: center;
+    margin-top: 20px;
   }
 
   @media screen and (max-width: 749px) {
     .square-container {
       padding: 15px;
+    }
+
+    .overlay-image-container {
+      width: 80%; /* Larger overlay on mobile */
     }
   }
 </style>
@@ -67,32 +89,62 @@
           | image_tag: class: 'square-image', loading: 'lazy', alt: section.settings.image.alt
           | escape
         }}
+
+        {% if section.settings.overlay_image != blank %}
+          <div class="overlay-image-container">
+            {{
+              section.settings.overlay_image
+              | image_url: width: 400
+              | image_tag: class: 'overlay-image', loading: 'lazy', alt: section.settings.overlay_image.alt
+              | escape
+            }}
+
+            <div class="button-container">
+              {% if section.blocks.size > 0 %}
+                {% for block in section.blocks %}
+                  {% if block.type == 'buttons' and block.settings.button_label_1 != blank %}
+                    <a
+                      {% if block.settings.button_link_1 == blank %}
+                        role="link" aria-disabled="true"
+                      {% else %}
+                        href="{{ block.settings.button_link_1 }}"
+                      {% endif %}
+                      class="button{% if block.settings.button_style_secondary_1 %} button--secondary{% else %} button--primary{% endif %}"
+                      {{ block.shopify_attributes }}
+                    >
+                      {{- block.settings.button_label_1 | escape -}}
+                    </a>
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
       </div>
     {% else %}
       <div class="square-image-wrapper">
         {{ 'image' | placeholder_svg_tag: 'square-image placeholder-svg' }}
+        <div class="button-container">
+          {% if section.blocks.size > 0 %}
+            {% for block in section.blocks %}
+              {% if block.type == 'buttons' and block.settings.button_label_1 != blank %}
+                <a
+                  {% if block.settings.button_link_1 == blank %}
+                    role="link" aria-disabled="true"
+                  {% else %}
+                    href="{{ block.settings.button_link_1 }}"
+                  {% endif %}
+                  class="button{% if block.settings.button_style_secondary_1 %} button--secondary{% else %} button--primary{% endif %}"
+                  {{ block.shopify_attributes }}
+                >
+                  {{- block.settings.button_label_1 | escape -}}
+                </a>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        </div>
       </div>
     {% endif %}
-
-    <div class="button-container">
-      {% if section.blocks.size > 0 %}
-        {% for block in section.blocks %}
-          {% if block.type == 'buttons' and block.settings.button_label_1 != blank %}
-            <a
-              {% if block.settings.button_link_1 == blank %}
-                role="link" aria-disabled="true"
-              {% else %}
-                href="{{ block.settings.button_link_1 }}"
-              {% endif %}
-              class="button{% if block.settings.button_style_secondary_1 %} button--secondary{% else %} button--primary{% endif %}"
-              {{ block.shopify_attributes }}
-            >
-              {{- block.settings.button_label_1 | escape -}}
-            </a>
-          {% endif %}
-        {% endfor %}
-      {% endif %}
-    </div>
   </div>
 </div>
 
@@ -108,7 +160,12 @@
     {
       "type": "image_picker",
       "id": "image",
-      "label": "Image"
+      "label": "Background Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "overlay_image",
+      "label": "Overlay Image"
     },
     {
       "type": "range",
