@@ -28,7 +28,7 @@ const Remix = () => {
   const cursorPositionRef = useRef<number | null>(null);
 
   const [isAnimating, setIsAnimating] = useState(true);
-  const [stickerError, setStickerError] = useState('');
+  const [_, setStickerError] = useState('');
   const [isModelLoading, setIsModelLoading] = useState(true);
 
   const [isModalOpen, setIsModalOpen] = useState(true);

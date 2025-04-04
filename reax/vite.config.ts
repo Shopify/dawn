@@ -10,6 +10,7 @@ export default defineConfig({
         stringing: 'src/components/stringing/index.tsx',
         splus: 'src/components/splus/index.tsx',
         remix: 'src/components/remix/index.tsx',
+        track: 'src/components/track/index.tsx',
       },
       output: {
         dir: '../assets/',
