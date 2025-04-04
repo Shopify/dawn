@@ -72,6 +72,12 @@ if (!customElements.get('product-form')) {
                 cartData: response,
               });
             this.error = false;
+            const cart = this.getCartFromCookies();
+            if (cart) {
+              this.sendCartToApp(cart);
+            } else {
+              console.log('Failed to get cart Id');
+            }
             const quickAddModal = this.closest('quick-add-modal');
             if (quickAddModal) {
               document.body.addEventListener(
@@ -97,6 +103,29 @@ if (!customElements.get('product-form')) {
             if (!this.error) this.submitButton.removeAttribute('aria-disabled');
             this.querySelector('.loading__spinner').classList.add('hidden');
           });
+      }
+
+      getCartFromCookies() {
+        const cookieValue = document.cookie.replace(/(?:(?:^|.*;\s*)cart\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+        return cookieValue ? decodeURIComponent(cookieValue) : null;
+      }
+
+      async sendCartToApp(cart) {
+        try {
+          const response = await fetch('https://shopify-gwp-app.onrender.com/api/getcart', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ cartId: cart }),
+          });
+
+          if (!response.ok){
+            console.error('app error');
+          }
+        } catch (error) {
+          console.error('sending error:', error);
+        }
       }
 
       handleErrorMessage(errorMessage = false) {
