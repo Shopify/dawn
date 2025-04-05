@@ -266,7 +266,7 @@ const Remix = () => {
 
     if (stickerName) {
       document.getElementById('remix-description')!.innerHTML =
-        `You are personalising this product with: ${stickerName}`;
+        `Uniquely Yours — You are making this ${document.title.split('-')[0].split(' –')[0]} truly yours by personalising with <span class='emojiFont'>${stickerName}</span>`;
     } else {
       document.getElementById('remix-description')!.innerHTML = defaultCopy;
     }
@@ -294,8 +294,28 @@ const Remix = () => {
               <div id="model"></div>
 
               {isModelLoading ? (
-                <div className="fixed flex h-full w-full items-center justify-center text-center text-gray-70">
-                  <h5>Part of the pleasure is the build up. Are you ready?</h5>
+                <div
+                  style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    height: '100%',
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    color: 'var(--gray-70)',
+                  }}
+                >
+                  <h2
+                    style={{
+                      fontSize: '1.5rem',
+                      letterSpacing: '0px',
+                    }}
+                  >
+                    Part of the pleasure is the build up. Are you ready?
+                  </h2>
                 </div>
               ) : (
                 <div>
@@ -306,26 +326,68 @@ const Remix = () => {
                       width: '100%',
                       textAlign: 'center',
                       fontSize: '2.2rem',
+                      zIndex: 50,
                     }}
                   >
-                    <h3
+                    <div
                       style={{
-                        letterSpacing: '-1px',
-                        marginBottom: 0,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '2rem 4rem',
                       }}
                     >
-                      <span style="background: linear-gradient(90deg, rgb(183, 33, 255) 0%, rgb(33, 212, 253) 100%) padding-box text; color: transparent;">
-                        ✨ Racket Remix
-                      </span>{' '}
-                      {` `}
-                      by Studio
-                    </h3>
+                      <svg
+                        onClick={() => {
+                          setIsModalOpen(false);
+                        }}
+                        width={24}
+                        height={24}
+                        aria-hidden="true"
+                        fill="none"
+                        strokeWidth={2}
+                        stroke="var(--gray-90)"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      <div>
+                        <h3
+                          style={{
+                            letterSpacing: '-1px',
+                            margin: 0,
+                          }}
+                        >
+                          <span style="background: linear-gradient(90deg, rgb(183, 33, 255) 0%, rgb(33, 212, 253) 100%) padding-box text; color: transparent;">
+                            ✨ Racket Remix
+                          </span>{' '}
+                          {` `}
+                          by Studio
+                        </h3>
+                      </div>
+                      <svg
+                        onClick={() => {
+                          setIsModalOpen(false);
+                        }}
+                        width={24}
+                        height={24}
+                        aria-hidden="true"
+                        fill="none"
+                        strokeWidth={2}
+                        stroke="var(--gray-90)"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M6 18 18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
                     <p
                       style={{
-                        marginTop: '1.5rem',
-                        color: 'var(--gray-40)',
+                        marginTop: '0.5rem',
+                        color: 'var(--gray-30)',
                         lineHeight: '140%',
-                        fontSize: '1.8rem',
+                        fontSize: '1.7rem',
                         letterSpacing: '0px',
                       }}
                     >
@@ -368,7 +430,7 @@ const Remix = () => {
                       justifyContent: 'center',
                       alignItems: 'center',
                       position: 'absolute',
-                      bottom: '15rem',
+                      bottom: '10rem',
                       width: '100%',
                       transition: 'opacity 0.5s ease',
                       opacity: isAnimating ? 0 : 1,
@@ -428,6 +490,51 @@ const Remix = () => {
                       })}
                     </div>
 
+                    {/* <div
+                      style={{
+                        width: '40vw',
+                        minWidth: '350px',
+                        maxWidth: '450px',
+                        marginTop: '1rem',
+                      }}
+                      className="field"
+                    >
+                      <input
+                        style={{
+                          textTransform: 'uppercase',
+                        }}
+                        className="field__input emojiFont"
+                        autoComplete="off"
+                        ref={inputRef}
+                        onInput={(e: Event) => {
+                          const target = e.target as HTMLInputElement;
+                          const splitter = new GraphemeSplitter();
+                          const inputValue = target.value;
+
+                          const filteredValue = splitter
+                            .splitGraphemes(inputValue)
+                            .filter((grapheme) => validEmojis.includes(grapheme) || isCharAlphanumeric(grapheme))
+                            .slice(0, 8)
+                            .join('')
+                            .toUpperCase();
+
+                          target.value = filteredValue;
+
+                          setStickerName(filteredValue);
+
+                          cursorPositionRef.current = target.selectionStart;
+                        }}
+                        type="text"
+                        id="sticker-name-input"
+                        name="name"
+                        value={stickerName}
+                        placeholder="Your-Personalisation"
+                      />
+                      <label class="field__label" for="sticker-name-input">
+                        Your Personalisation
+                      </label>
+                    </div> */}
+
                     <div
                       style={{
                         position: 'relative',
@@ -436,24 +543,12 @@ const Remix = () => {
                       <input
                         className="emojiFont"
                         type="text"
-                        style={{
-                          borderRadius: '3rem',
-                          outline: 'none',
-                          border: '1.5px solid black',
-                          padding: '1.5rem 2.5rem',
-                          marginTop: '2rem',
-                          fontSize: '1.7rem',
-                          textTransform: 'uppercase',
-                          width: '40vw',
-                          minWidth: '400px',
-                          maxWidth: '450px',
-                        }}
                         name="name"
                         id="sticker-name-input"
                         placeholder="Your-Personalisation"
+                        value={stickerName}
                         autoComplete="off"
                         ref={inputRef}
-                        value={stickerName}
                         onInput={(e: Event) => {
                           const target = e.target as HTMLInputElement;
                           const splitter = new GraphemeSplitter();
@@ -475,7 +570,7 @@ const Remix = () => {
                       />
                       <svg
                         onClick={() => {
-                          window.s3_remix_modal_controller?.closeModal();
+                          setIsModalOpen(false);
                         }}
                         style={{
                           width: '24px',
@@ -498,6 +593,66 @@ const Remix = () => {
                         ></path>
                       </svg>
                     </div>
+
+                    <div
+                      style={{
+                        opacity: stickerName.length > 0 ? 1 : 0,
+                        transition: 'opacity 0.2s ease-in-out',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        gap: '1rem',
+                        marginTop: '2rem',
+                      }}
+                    >
+                      <button
+                        onClick={() => {
+                          setStickerName('');
+                          setIsModalOpen(false);
+                        }}
+                        style={{ color: 'var(--gray-90)', backgroundColor: 'white', borderColor: 'white' }}
+                        className={'button'}
+                      >
+                        Remove
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsModalOpen(false);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                        className={'button'}
+                      >
+                        <span>Personalise</span>
+                        <span>
+                          <svg
+                            style={{
+                              width: '2rem',
+                              fill: 'currentColor',
+                              stroke: 'currentColor',
+                              marginLeft: '0.5rem',
+                            }}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            strokeWidth="1.5"
+                          >
+                            <path
+                              d="M8 15C12.8747 15 15 12.949 15 8C15 12.949 17.1104 15 22 15C17.1104 15 15 17.1104 15 22C15 17.1104 12.8747 15 8 15Z"
+                              strokeWidth="1.5"
+                              strokeLinejoin="round"
+                            ></path>
+                            <path
+                              d="M2 6.5C5.13376 6.5 6.5 5.18153 6.5 2C6.5 5.18153 7.85669 6.5 11 6.5C7.85669 6.5 6.5 7.85669 6.5 11C6.5 7.85669 5.13376 6.5 2 6.5Z"
+                              strokeWidth="1.5"
+                              strokeLinejoin="round"
+                            ></path>
+                          </svg>
+                        </span>
+                      </button>
+                    </div>
+
                     {/* {stickerError ? <p style={{ color: 'red' }}>{stickerError}</p> : null} */}
                   </div>
 
