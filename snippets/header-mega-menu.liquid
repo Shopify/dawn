@@ -1,29 +1,30 @@
 {% comment %}
   Renders a megamenu for the header.
-
   Usage:
   {% render 'header-mega-menu' %}
 {% endcomment %}
-
-<nav class="header__inline-menu">
-  <ul class="list-menu list-menu--inline" role="list">
+<nav class="header__inline-menu" style="height: 100%">
+  <ul style="height: 100%; " class="list-menu list-menu--inline" role="list">
     {%- for link in section.settings.menu.links -%}
       <li>
         {%- if link.links != blank -%}
-          <header-menu>
-            <details id="Details-HeaderMenu-{{ forloop.index }}" class="mega-menu">
+          <header-menu style="height: 100%;">
+            <details style="height: 100%;" id="Details-HeaderMenu-{{ forloop.index }}" class="mega-menu">
               <summary
+                style="height: 100%;"
                 id="HeaderMenu-{{ link.handle }}"
                 class="header__menu-item list-menu__item link focus-inset"
+                data-has-submenu="true"
+                data-url="{{ link.url }}"
               >
                 <span
+                  style="text-transform: uppercase; font-weight: 500;"
                   {%- if link.child_active %}
                     class="header__active-menu-item"
                   {% endif %}
                 >
                   {{- link.title | escape -}}
                 </span>
-                {{- 'icon-caret.svg' | inline_asset_content -}}
               </summary>
               <div
                 id="MegaMenu-Content-{{ forloop.index }}"
@@ -47,10 +48,11 @@
                         {{ childlink.title | escape }}
                       </a>
                       {%- if childlink.links != blank -%}
-                        <ul class="list-unstyled" role="list">
+                        <ul style="margin-top: 0.8rem;" class="list-unstyled" role="list">
                           {%- for grandchildlink in childlink.links -%}
-                            <li>
+                            <li style="margin-bottom: 0.3rem; color: black">
                               <a
+                                style="font-size: 1.5rem;"
                                 id="HeaderMenu-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
                                 href="{{ grandchildlink.url }}"
                                 class="mega-menu__link link{% if grandchildlink.current %} mega-menu__link--active{% endif %}"
@@ -72,6 +74,7 @@
           </header-menu>
         {%- else -%}
           <a
+            style="text-transform: uppercase; font-weight: 500;"
             id="HeaderMenu-{{ link.handle }}"
             href="{{ link.url }}"
             class="header__menu-item list-menu__item link link--text focus-inset"
@@ -92,3 +95,107 @@
     {%- endfor -%}
   </ul>
 </nav>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Get all mega menu containers
+    const megaMenuContainers = document.querySelectorAll('.mega-menu');
+
+    megaMenuContainers.forEach((container) => {
+      const menuItem = container.querySelector('summary');
+      const submenu = container.querySelector('.mega-menu__content');
+      let isMouseOverMenu = false;
+      let isMouseOverSubmenu = false;
+      let timeoutId = null;
+
+      // Function to check if we should keep the menu open
+      function shouldKeepMenuOpen() {
+        return isMouseOverMenu || isMouseOverSubmenu;
+      }
+
+      // Function to open the mega menu
+      function openMegaMenu() {
+        if (!container.hasAttribute('open')) {
+          container.setAttribute('open', '');
+        }
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+      }
+
+      // Add accessible role and attributes for better semantics
+      menuItem.setAttribute('role', 'link');
+      menuItem.setAttribute('aria-expanded', 'false');
+
+      // Update ARIA attributes when menu opens/closes
+      const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          if (mutation.attributeName === 'open') {
+            const isOpen = container.hasAttribute('open');
+            menuItem.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          }
+        });
+      });
+
+      observer.observe(container, { attributes: true });
+
+      // Function to close the mega menu with a delay
+      function closeMegaMenu() {
+        if (shouldKeepMenuOpen()) return;
+
+        if (timeoutId) clearTimeout(timeoutId);
+
+        timeoutId = setTimeout(() => {
+          if (!shouldKeepMenuOpen()) {
+            container.removeAttribute('open');
+          }
+        }, 150); // Small delay to make the interaction smoother
+      }
+
+      // Menu item (top level) mouse events
+      menuItem.addEventListener('mouseenter', function () {
+        isMouseOverMenu = true;
+        openMegaMenu();
+      });
+
+      menuItem.addEventListener('mouseleave', function () {
+        isMouseOverMenu = false;
+        closeMegaMenu();
+      });
+
+      // Submenu mouse events
+      submenu.addEventListener('mouseenter', function () {
+        isMouseOverSubmenu = true;
+        openMegaMenu();
+      });
+
+      submenu.addEventListener('mouseleave', function () {
+        isMouseOverSubmenu = false;
+        closeMegaMenu();
+      });
+
+      // Make top-level menu items clickable
+      menuItem.addEventListener('click', function (event) {
+        // For all menu items (with or without submenus), navigate to URL
+        const linkUrl = this.getAttribute('data-url');
+        if (linkUrl) {
+          window.location.href = linkUrl;
+        }
+
+        // Always prevent the default details toggle behavior
+        event.preventDefault();
+      });
+
+      // Keyboard accessibility
+      menuItem.addEventListener('focus', openMegaMenu);
+
+      container.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+          container.removeAttribute('open');
+          menuItem.focus();
+        }
+      });
+    });
+  });
+</script>
