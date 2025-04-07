@@ -106,6 +106,11 @@ class FacetFiltersForm extends HTMLElement {
       '.facets-container .loading__spinner, facet-filters-form .loading__spinner'
     );
     loadingSpinners.forEach((spinner) => spinner.classList.add('hidden'));
+
+    const endlessCollection = new Ajaxinate({
+      container: '#product-grid',
+      pagination: '.infinite_next',
+    });
   }
 
   static renderFilters(html, event) {
