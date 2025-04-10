@@ -98,3 +98,4 @@ if (!customElements.get('media-gallery')) {
     }
   );
 }
+<script src="{{ 'media-gallery.js' | asset_url }}" defer="defer"></script>
