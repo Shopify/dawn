@@ -1,0 +1,1 @@
+(()=>{"use strict";class t extends HTMLButtonElement{constructor(){super()}connectedCallback(){this.url=this.getAttribute("data-url")||"#",this.addEventListener("click",(()=>{window.location.href=this.url}))}updateUrl(t){this.url=t}}customElements.define("link-button",t,{extends:"button"})})();

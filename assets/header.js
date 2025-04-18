@@ -1,0 +1,1 @@
+(()=>{"use strict";class e extends HTMLElement{constructor(){super()}connectedCallback(){const e=this.querySelector(".burger-btn");e&&e.addEventListener("click",(()=>{this.toggleMenu()}))}toggleMenu(){console.log("Бургер-меню нажато!"),this.classList.toggle("active")}}customElements.define("custom-header",e)})();

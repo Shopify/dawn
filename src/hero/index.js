@@ -1,1 +1,1 @@
-document.querySelectorAll('an');
+import '../scss/hero.scss';
