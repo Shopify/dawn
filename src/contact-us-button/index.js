@@ -17,5 +17,6 @@ class LinkButton extends HTMLButtonElement {
     this.url = newUrl;
   }
 }
+console.log(9876);
 
 customElements.define('link-button', LinkButton, { extends: 'button' });
