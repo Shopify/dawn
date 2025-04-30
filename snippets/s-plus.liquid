@@ -1,51 +1,38 @@
 {% assign s_plus = product.metafields.custom_but_hidden.s_plus_reference.value %}
-
 <section data-splus-reference-ids="{{ s_plus | json | escape }}" id="splus-root"></section>
-
-<div id="splus-script-container" style="display: block;"></div>
-
-<script>
+<div id="splus-script-container"></div>
+<script defer="defer">
   console.log('hgjgjhghghjhgghjhjggfhfgjhjhgfjfgfhj');
-  let splusLoaded = false;
-  window.addEventListener('load', (e) => {
+  document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('splus-script-container');
+    let scriptLoaded = false;
+    let scriptLoading = false;
 
-    let observer;
+    // Function to load the script
+    const loadScript = () => {
+      if (scriptLoaded || scriptLoading) return;
+      scriptLoading = true;
 
-    observer = new IntersectionObserver(
-      (entries, observer) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const script = document.createElement('script');
-            script.src = "{{ 'vx-splus.js' | asset_url }}";
-            script.defer = true;
-            script.type = 'module';
-            container.appendChild(script);
-            observer.unobserve(entry.target);
-            console.log(entry.target);
-          }
-        });
-      },
-      {
-        root: null,
-        rootMargin: '500px',
-        threshold: 1.0,
-      }
-    );
-
-    observer.observe(container);
-  });
-  /*
-  window.addEventListener('scroll', function () {
-    if (!splusLoaded && window.scrollY > 200) {
-      splusLoaded = true;
-      const container = document.getElementById('splus-script-container');
       const script = document.createElement('script');
       script.src = "{{ 'vx-splus.js' | asset_url }}";
       script.defer = true;
       script.type = 'module';
+      script.onload = () => {
+        scriptLoaded = true;
+        scriptLoading = false;
+      };
+      script.onerror = () => {
+        scriptLoading = false;
+        console.error('Failed to load S-Plus options.');
+      };
       container.appendChild(script);
+    };
+
+    // Use requestIdleCallback if available, otherwise setTimeout
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => loadScript(), { timeout: 4000 });
+    } else {
+      setTimeout(loadScript, 2000);
     }
   });
-  */
 </script>
