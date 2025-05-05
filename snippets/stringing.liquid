@@ -68,42 +68,55 @@
     const root = document.getElementById('stringing-root');
     const proStringing = document.getElementById('pro-stringing');
     let scriptLoaded = false;
-    let stringingInstance = null;
+    let scriptLoading = false;
 
-    // Handle radio changes
+    // Function to load the script
+    const loadScript = () => {
+      if (scriptLoaded || scriptLoading) return;
+
+      scriptLoading = true;
+      const script = document.createElement('script');
+      script.src = "{{ 'vx-stringing.js' | asset_url }}";
+      script.defer = true;
+      script.type = 'module';
+
+      script.onload = () => {
+        scriptLoaded = true;
+        scriptLoading = false;
+      };
+
+      script.onerror = () => {
+        scriptLoading = false;
+        root.innerHTML = 'Failed to load stringing options. Please refresh the page.';
+      };
+
+      document.body.appendChild(script);
+    };
+
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => loadScript(), { timeout: 4000 });
+    } else {
+      setTimeout(loadScript, 2000);
+    }
+
     document.querySelector('.frame').addEventListener('change', (e) => {
       if (e.target.name === 'frame') {
         root.style.display = e.target.id === 'pro-stringing' ? 'block' : 'none';
 
-        if (e.target.id === 'pro-stringing' && !scriptLoaded) {
-          loadStringingScript();
+        if (e.target.id === 'pro-stringing') {
+          loadScript();
+            setTimeout(() => {
+                window.scrollBy({
+                top: 222,
+                left: 0,
+                behavior: 'smooth'
+            });
+          }, 300)
         }
       }
     });
-
-    // Load stringing script
-    async function loadStringingScript() {
-      try {
-        const script = document.createElement('script');
-        script.src = "{{ 'vx-stringing.js' | asset_url }}";
-        script.defer = true;
-        script.type = 'module';
-
-        await script.addEventListener('load', () => {
-          scriptLoaded = true;
-        });
-
-        document.body.appendChild(script);
-      } catch (error) {
-        console.error('Stringing script load failed:', error);
-        root.innerHTML = 'Failed to load stringing options. Please refresh the page.';
-      }
-    }
-
-    // Initialize if pro-stringing is checked
-    if (proStringing.checked) {
-      loadStringingScript();
-      root.style.display = 'block';
-    }
   });
+
+    // set the stringing variant id on window
+      window.s3_stringing_service_variant_id = '{{ all_products['studio-pro-stringing'].variants.first.id  }}';
 </script>

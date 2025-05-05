@@ -32,14 +32,7 @@ function Stringing({
         }
 
         if (dataCol?.collection?.products?.nodes && dataCol?.collection?.products?.nodes.length > 0) {
-          const products = dataCol?.collection?.products?.nodes;
           setStringingProducts(dataCol?.collection.products.nodes || []);
-
-          const proStringingProduct = products.find((x) => x && x.tags.includes('Service'));
-
-          if (proStringingProduct) {
-            window.s3_stringing_service_variant_id = proStringingProduct.variants.nodes[0].id.split('/').pop();
-          }
         }
       } catch (error) {
         console.error(error);
@@ -53,13 +46,12 @@ function Stringing({
   }
 
   return (
-    <form id="stringing-form" style={{}}>
-      <div>
+    <form id="stringing-form" style={{ marginTop: '2rem' }}>
+      <div id="strings-container">
         <legend className="form__label">
-          <span>String</span>
+          <span>Choose String</span>
         </legend>
         {stringingProducts
-          .filter((x) => !x?.tags.includes('Service'))
           .filter((y) => y.availableForSale)
           .map((string) => {
             const id = string?.id.split('/').pop();
@@ -88,6 +80,7 @@ function Stringing({
                       stringVariant: null,
                       tension: null,
                     });
+                    scrollTo('string-variants-container');
                   }}
                   required
                   type="radio"
@@ -104,25 +97,32 @@ function Stringing({
                   <span style={{ color: 'var(--gray-80)', fontSize: '1.5rem' }}>{string?.title}</span>
                 </div>
                 <div style={{ fontSize: '1.2rem' }}>
-                  {string.priceRange.minVariantPrice.amount} {string.priceRange.minVariantPrice.currencyCode}
+                  {parseInt(string.priceRange.minVariantPrice.amount)} {string.priceRange.minVariantPrice.currencyCode}
                 </div>
               </label>
             );
           })}
       </div>
 
-      <div>
+      <div
+        style={{
+          scrollMarginTop: '10rem',
+        }}
+        id="string-variants-container"
+      >
         {config.stringProduct ? (
           <div>
             <legend className="form__label">
               <span>
-                {config.stringVariant?.selectedOptions.find((x) => x.name === 'Color')?.value || 'Choose Color'}
+                {config.stringVariant?.selectedOptions.find((x) => x.name === 'Color')?.value ||
+                  `${config.stringProduct?.title}, Now choose the Color`}
               </span>
             </legend>
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
               {config.stringProduct.variants.nodes
                 .sort((a, b) => (a.id > b.id ? 1 : -1))
                 .sort((x, _) => (x.availableForSale ? -1 : 1))
+                .filter((x) => x.availableForSale)
                 .map((variant) => {
                   const id = variant.id.split('/').pop();
                   const hex = config.stringProduct?.options[0].optionValues.find((x) => x.name == variant.title)?.swatch
@@ -159,6 +159,7 @@ function Stringing({
                             stringVariant: variant,
                             tension: config.tension,
                           });
+                          scrollTo('string-tensions-container');
                         }}
                         required
                         type="radio"
@@ -186,11 +187,18 @@ function Stringing({
         ) : null}
       </div>
 
-      <div>
+      <div
+        style={{
+          scrollMarginTop: '10rem',
+        }}
+        id="string-tensions-container"
+      >
         {config.stringVariant ? (
           <div>
             <legend className="form__label">
-              <span>Tension</span>
+              <span>
+                {config.stringVariant?.title} {config.stringProduct?.title}, select Tension now
+              </span>
             </legend>
             <div
               style={{
@@ -210,8 +218,8 @@ function Stringing({
                     style={{
                       fontSize: window.innerWidth > 768 ? '1.6rem' : '1.4rem',
                       display: maxTensionPounds < tension ? 'none' : 'block',
-                      borderRadius: 'var(--variant-pills-radius)',
-                      padding: '0.4rem 0',
+                      //   borderRadius: 'var(--variant-pills-radius)',
+                      padding: '0.8rem 0',
                       textAlign: 'center',
                       outline: config.tension === tension ? '2px solid var(--accent-color)' : '2px solid transparent',
                       color: config.tension === tension ? 'black' : 'var(--gray-70)',
@@ -239,8 +247,38 @@ function Stringing({
           </div>
         ) : null}
       </div>
+
+      {config.stringVariant && config.tension ? (
+        <div
+          style={{
+            background: 'rgb(233, 255, 241)',
+            padding: '0.2rem 2rem',
+            borderRadius: '10px',
+            color: '#002d03',
+            fontSize: '1.5rem',
+            lineHeight: '1.6',
+            letterSpacing: '0.03rem',
+          }}
+        >
+          <p>
+            All set! You are customising this racket with {config.stringVariant?.selectedOptions[0].value}{' '}
+            {config.stringProduct?.title} string and the tension of {config.tension} LBS.
+          </p>
+        </div>
+      ) : null}
     </form>
   );
 }
+
+const scrollTo = (where: string) => {
+  const element = document.getElementById(where);
+  if (element) {
+    setTimeout(() => {
+      window.document.getElementById(where)?.scrollIntoView({
+        behavior: 'smooth',
+      });
+    }, 500);
+  }
+};
 
 export default Stringing;

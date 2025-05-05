@@ -22,7 +22,7 @@ if (!customElements.get('product-form')) {
 
         // validate the stringing form too, if the validation fails, highlight it and  return early
         const stringingForm = document.getElementById('stringing-form');
-        if (stringingForm) {
+        if (stringingForm && document.querySelector('input[name="frame"]:checked')?.id === 'pro-stringing') {
           if (!stringingForm.checkValidity()) {
             const radioButtons = stringingForm.querySelectorAll('input[type="radio"]');
             const invalidRadioName = Array.from(radioButtons).find((radio) => radio.validity.valueMissing)?.name;
@@ -105,7 +105,35 @@ if (!customElements.get('product-form')) {
           }
         }
 
-        // check if remix or printing is selected
+        // check if remix is selected
+        const theSticker = document.getElementById('the-sticker');
+
+        if (theSticker && window.s3_remix_service_variant_id) {
+          const stickerText = theSticker.innerText;
+
+          let textToBeStickered = '';
+
+          for (let element of stickerText) {
+            const isAlphabet = isCharAlphanumeric(element);
+            if (isAlphabet) {
+              textToBeStickered += element;
+            } else {
+              textToBeStickered += `{${convertEmojiToHex(element)}}`;
+            }
+          }
+
+          items.push({
+            id: window.s3_remix_service_variant_id,
+            quantity: 1,
+            properties: {
+              _stickerText: textToBeStickered,
+              _textColor: window.s3_remix_config.stickerTextColor || 'UNKNOWN',
+              _bundleId: formData.get('id'),
+            },
+          });
+        }
+
+        //  check if printing is selected
 
         // Single combined request with sections
         fetch(`${routes.cart_add_url}`, {
@@ -218,3 +246,10 @@ if (!customElements.get('product-form')) {
     },
   );
 }
+
+const isCharAlphanumeric = (char) => {
+  const alphanumericRegex = /^[a-zA-Z0-9. ]*$/;
+  return alphanumericRegex.test(char);
+};
+
+const convertEmojiToHex = (emoji) => emoji.codePointAt(0)?.toString(16);
