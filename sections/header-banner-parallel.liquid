@@ -1,0 +1,198 @@
+{{ 'section-header-banner.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  #HeaderBanner-{{ section.id }}::after {
+    opacity: {{ section.settings.image_overlay_opacity | divided_by: 100.0 }};
+  }
+
+  {%- if section.settings.desktop_image != blank and section.settings.desktop_image_height == 'adapt' -%}
+    @media screen and (min-width: 750px) {
+      #HeaderBanner-{{ section.id }} .header-banner__media {
+        padding-bottom: {{ 1 | divided_by: section.settings.desktop_image.aspect_ratio | times: 100 }}%;
+      }
+    }
+  {%- endif -%}
+
+  {%- if section.settings.mobile_image != blank and section.settings.mobile_image_height == 'adapt' -%}
+    @media screen and (max-width: 749px) {
+      #HeaderBanner-{{ section.id }} .header-banner__media {
+        padding-bottom: {{ 1 | divided_by: section.settings.mobile_image.aspect_ratio | times: 100 }}%;
+      }
+    }
+  {%- endif -%}
+{%- endstyle -%}
+
+<div
+  id="HeaderBanner-{{ section.id }}"
+  class="header-banner header-banner--{{ section.settings.desktop_image_height }} header-banner--mobile-{{ section.settings.mobile_image_height }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+>
+  <div class="header-banner__media-wrapper">
+    {%- if section.settings.desktop_image != blank -%}
+      <div class="header-banner__media media{% if section.settings.mobile_image != blank %} small-hide{% endif %}{% if section.settings.image_behavior != 'none' %} animate--{{ section.settings.image_behavior }}{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+        {{
+          section.settings.desktop_image
+          | image_url: width: 3840
+          | image_tag:
+            loading: 'eager',
+            width: section.settings.desktop_image.width,
+            height: section.settings.desktop_image.height,
+            class: 'header-banner__media-image',
+            sizes: '100vw',
+            widths: '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840'
+        }}
+      </div>
+    {%- else -%}
+      <div class="header-banner__media media{% if section.settings.mobile_image != blank %} small-hide{% endif %}">
+        {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.mobile_image != blank -%}
+      <div class="header-banner__media media medium-hide large-up-hide{% if section.settings.image_behavior != 'none' %} animate--{{ section.settings.image_behavior }}{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+        {{
+          section.settings.mobile_image
+          | image_url: width: 3840
+          | image_tag:
+            loading: 'eager',
+            width: section.settings.mobile_image.width,
+            height: section.settings.mobile_image.height,
+            class: 'header-banner__media-image',
+            sizes: '100vw',
+            widths: '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840'
+        }}
+      </div>
+    {%- else -%}
+      <div class="header-banner__media media medium-hide large-up-hide">
+        {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+      </div>
+    {%- endif -%}
+  </div>
+
+  {%- if section.settings.banner_link != blank -%}
+    <a href="{{ section.settings.banner_link }}" class="header-banner__link full-unstyled-link"></a>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Header Banner",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "url",
+      "id": "banner_link",
+      "label": "Banner link",
+      "info": "Optional: Makes the entire banner clickable"
+    },
+    {
+      "type": "image_picker",
+      "id": "desktop_image",
+      "label": "Desktop Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile Image"
+    },
+    {
+      "type": "range",
+      "id": "image_overlay_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 10,
+      "unit": "%",
+      "label": "Image overlay opacity",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Desktop height"
+    },
+    {
+      "type": "select",
+      "id": "desktop_image_height",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        },
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        }
+      ],
+      "default": "medium",
+      "label": "Desktop image height"
+    },
+    {
+      "type": "header",
+      "content": "Mobile height"
+    },
+    {
+      "type": "select",
+      "id": "mobile_image_height",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        },
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        }
+      ],
+      "default": "medium",
+      "label": "Mobile image height"
+    },
+    {
+      "type": "select",
+      "id": "image_behavior",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "ambient",
+          "label": "Ambient"
+        },
+        {
+          "value": "fixed",
+          "label": "Fixed"
+        },
+        {
+          "value": "zoom-in",
+          "label": "Zoom in"
+        }
+      ],
+      "default": "none",
+      "label": "Image behavior"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Header Banner"
+    }
+  ]
+}
+{% endschema %}
