@@ -23,6 +23,29 @@
       {{ blog.title | escape }}
     </h1>
 
+    <!-- RecipeKit Category Filter -->
+    {%- assign all_categories = '' -%}
+    {%- for article in blog.articles -%}
+      {%- assign rk_resource_id = article.id | downcase -%}
+      {%- assign rk_mf = article.metafields.recipekit[rk_resource_id] -%}
+      {%- if rk_mf and rk_mf.recipe_category != blank -%}
+        {%- assign cat = rk_mf.recipe_category | strip -%}
+        {%- unless all_categories contains cat -%}
+          {%- assign all_categories = all_categories | append: cat | append: '||' -%}
+        {%- endunless -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- assign category_array = all_categories | split: '||' | uniq | sort -%}
+    <div class="recipekit-category-filter">
+      <button class="filter-btn" data-category="All">All</button>
+      {%- for cat in category_array -%}
+        {%- if cat != '' -%}
+          <button class="filter-btn" data-category="{{ cat | escape }}">{{ cat }}</button>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+    <!-- End Filter -->
+
     <div class="main-blog-recipekit-grid">
       {%- for article in blog.articles -%}
         {%- assign rk_resource_id = article.id | downcase -%}
