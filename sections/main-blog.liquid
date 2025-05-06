@@ -1,7 +1,6 @@
 {{ 'component-article-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'section-main-blog.css' | asset_url | stylesheet_tag }}
-{{ 'recipe-blog-index.css' | asset_url | stylesheet_tag }}
 
 {%- style -%}
   .section-{{ section.id }}-padding {
@@ -17,65 +16,30 @@
   }
 {%- endstyle -%}
 
-{%- paginate blog.articles by 12 -%}
+{%- paginate blog.articles by 6 -%}
   <div class="main-blog page-width section-{{ section.id }}-padding">
     <h1 class="title--primary{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
-      Great When Freshly Juiced
-      <span style="display:block;font-size:1.1rem;font-weight:400;margin-top:0.3em;">from the Breville Test Kitchen</span>
+      {{ blog.title | escape }}
     </h1>
 
-    <!-- Example filter bar (static for now, replace with dynamic as needed) -->
-    <div class="recipe-blog-index__filters">
-      <button class="active">All</button>
-      <button>Juicers</button>
-      <button>Blenders and Blixers</button>
-      <button>Food Processors</button>
-      <button>Mixers</button>
-      <button>Ice Cream Makers</button>
-      <button>Water & Tea</button>
-      <!-- Add more as needed -->
-    </div>
-
-    <div class="recipe-blog-index__grid">
+    <div class="blog-articles {% if section.settings.layout == 'collage' %}blog-articles--collage{% endif %}">
       {%- for article in blog.articles -%}
-        <div class="recipe-blog-index__card">
-          <a href="{{ article.url }}" tabindex="-1">
-            {% if article.image %}
-              <img class="recipe-blog-index__img" src="{{ article.image | img_url: '600x450', scale: 2 }}" alt="{{ article.title | escape }}" loading="lazy" />
-            {% else %}
-              <div class="recipe-blog-index__img" style="background:#eee;"></div>
-            {% endif %}
-          </a>
-          <div class="recipe-blog-index__content">
-            <div class="recipe-blog-index__meta">
-              {%- render 'recipekit', article: article, mode: 'index' -%}
-              {% assign rk_resource_id = article.id | downcase %}
-              {% assign rk_mf = article.metafields.recipekit[rk_resource_id] %}
-              {% if rk_mf != blank %}
-                {% if rk_mf.prep_time != blank %}
-                  <span class="recipe-blog-index__prep-time">{{ rk_mf.prep_time }}</span>
-                {% endif %}
-                {% if rk_mf.recipe_category != blank %}
-                  <span class="recipe-blog-index__category">{{ rk_mf.recipe_category }}</span>
-                {% endif %}
-              {% endif %}
-            </div>
-            <a href="{{ article.url }}" class="recipe-blog-index__title">{{ article.title }}</a>
-            {% if rk_mf != blank and rk_mf.recipe_rating %}
-              <div class="recipe-blog-index__rating">
-                {% assign current_rating = rk_mf.recipe_rating | ceil | default: 5 | at_most: 5 %}
-                {% assign rating_count = rk_mf.rating_count | default: '1' | at_least: '1' %}
-                {% for i in (1..5) %}
-                  {% if i <= current_rating %}
-                    <span style="color:#FFD700;">★</span>
-                  {% else %}
-                    <span style="color:#D3D3D3;">★</span>
-                  {% endif %}
-                {% endfor %}
-                <span style="color:#888;font-size:0.95em;">({{ rating_count }} review{{ rating_count | pluralize: '', 's' }})</span>
-              </div>
-            {% endif %}
-          </div>
+        <div
+          class="blog-articles__article article{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+          {% if settings.animations_reveal_on_scroll %}
+            data-cascade
+            style="--animation-order: {{ forloop.index }};"
+          {% endif %}
+        >
+          {%- render 'article-card',
+            article: article,
+            media_height: section.settings.image_height,
+            media_aspect_ratio: article.image.aspect_ratio,
+            show_image: section.settings.show_image,
+            show_date: section.settings.show_date,
+            show_author: section.settings.show_author,
+            show_excerpt: true
+          -%}
         </div>
       {%- endfor -%}
     </div>
