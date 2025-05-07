@@ -116,6 +116,12 @@
          {% endcomment %}
       </div>
     {%- endif -%}
+    {%- assign tag_color_map = '' -%}
+    {%- for block in section.blocks -%}
+      {%- if block.settings.tag != blank and block.settings.banner_color != blank -%}
+        {%- assign tag_color_map = tag_color_map | append: block.settings.tag | append: ':' | append: block.settings.banner_color | append: ',' -%}
+      {%- endif -%}
+    {%- endfor -%}
     <div class="main-blog-recipekit-grid">
       {%- for article in blog.articles -%}
         {%- assign rk_resource_id = article.id | downcase -%}
@@ -149,7 +155,16 @@
           </a>
           <div class="recipekit-card-meta">
             {%- if rk_mf and rk_mf.recipe_category != blank -%}
-              <span class="recipekit-category-badge">{{ rk_mf.recipe_category }}</span>
+              {%- assign badge_color = '' -%}
+              {%- assign tag_pairs = tag_color_map | split: ',' -%}
+              {%- for pair in tag_pairs -%}
+                {%- assign tag = pair | split: ':' | first -%}
+                {%- assign color = pair | split: ':' | last -%}
+                {%- if rk_mf.recipe_category == tag -%}
+                  {%- assign badge_color = color -%}
+                {%- endif -%}
+              {%- endfor -%}
+              <span class="recipekit-category-badge"{% if badge_color != '' %} style="background: {{ badge_color }}"{% endif %}>{{ rk_mf.recipe_category }}</span>
             {%- endif -%}
             <a href="{{ article.url }}" class="recipekit-card-title-link"><div class="recipekit-card-title">{{ article.title }}</div></a>
           </div>
