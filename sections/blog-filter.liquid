@@ -1,8 +1,53 @@
 {% comment %}
   Blog Filter Section
-  This section defines filter tags for the blog index, each with a tag, banner image, color, and headline.
-  UI logic/rendering will be added later.
+  Renders a filter bar for the blog index. Each filter is a pill button linking to the tagged URL,
+  and the active filter is highlighted. Banner logic can be added later.
 {% endcomment %}
+
+<style>
+.blog-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 32px 0 24px 0;
+  align-items: center;
+}
+.blog-filter-pill {
+  display: inline-block;
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: #f6f6f6;
+  color: #2d213f;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background 0.2s, color 0.2s;
+  text-decoration: none;
+  outline: none;
+}
+.blog-filter-pill.active, .blog-filter-pill[aria-current="true"] {
+  background: #3b153c;
+  color: #fff;
+}
+</style>
+
+<div class="blog-filter-bar">
+  {% assign current_tag = request.path | split: '/tagged/' | last | handle %}
+  {% for block in section.blocks %}
+    {% assign tag_handle = block.settings.tag | handleize %}
+    <a
+      href="/blogs/{{ blog.handle }}/tagged/{{ tag_handle }}"
+      class="blog-filter-pill{% if tag_handle == current_tag %} active{% endif %}"
+      aria-current="{{ tag_handle == current_tag }}">
+      {{ block.settings.tag }}
+      {%- if block.settings.count and block.settings.count != blank -%}
+        <span class="blog-filter-count">({{ block.settings.count }})</span>
+      {%- endif -%}
+    </a>
+  {% endfor %}
+</div>
+
 
 {% schema %}
 {
