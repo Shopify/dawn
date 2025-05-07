@@ -17,7 +17,48 @@
   }
 {%- endstyle -%}
 
-{% section 'blog-filter' %}
+{%- if blog.handle == 'recipes' -%}
+  <style>
+    .blog-filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 32px 0 24px 0;
+      align-items: center;
+    }
+    .blog-filter-pill {
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 999px;
+      background: #f6f6f6;
+      color: #2d213f;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      transition: background 0.2s, color 0.2s;
+      text-decoration: none;
+      outline: none;
+    }
+    .blog-filter-pill.active, .blog-filter-pill[aria-current="true"] {
+      background: #3b153c;
+      color: #fff;
+    }
+  </style>
+
+  <div class="blog-filter-bar">
+    {% assign current_tag = request.path | split: '/tagged/' | last | handle %}
+    {% for block in section.blocks %}
+      {% assign tag_handle = block.settings.tag | handleize %}
+      <a
+        href="/blogs/{{ blog.handle }}/tagged/{{ tag_handle }}"
+        class="blog-filter-pill{% if tag_handle == current_tag %} active{% endif %}"
+        aria-current="{{ tag_handle == current_tag }}">
+        {{ block.settings.tag }}
+      </a>
+    {% endfor %}
+  </div>
+{%- endif -%}
 
 {%- paginate blog.articles by 6 -%}
   <div class="main-blog page-width section-{{ section.id }}-padding">
@@ -78,6 +119,35 @@
   "tag": "section",
   "class": "section",
   "settings": [
+  ],
+  "blocks": [
+    {
+      "type": "filter",
+      "name": "Filter Tag",
+      "settings": [
+        {
+          "type": "text",
+          "id": "tag",
+          "label": "Tag (must match post tag)"
+        },
+        {
+          "type": "image_picker",
+          "id": "banner_image",
+          "label": "Banner Image"
+        },
+        {
+          "type": "color",
+          "id": "banner_color",
+          "label": "Banner Color"
+        },
+        {
+          "type": "text",
+          "id": "headline",
+          "label": "Headline"
+        }
+      ]
+    }
+  ],
     {
       "type": "header",
       "content": "t:sections.main-blog.settings.header.content"
