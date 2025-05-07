@@ -24,6 +24,39 @@
     </h1>
 
     {%- if request.path contains '/blogs/recipes' -%}
+      {%- assign active_block = null -%}
+      {% for block in section.blocks %}
+        {% if current_tags contains block.settings.tag %}
+          {% assign active_block = block %}
+        {% endif %}
+      {% endfor %}
+      {% assign banner_image = section.settings.default_banner_image %}
+      {% assign banner_headline = section.settings.default_banner_headline %}
+      {% if banner_image == blank %}
+        {% assign banner_image = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80' %}
+      {% endif %}
+      {% if banner_headline == blank %}
+        {% assign banner_headline = 'Coffee Drinks with Smooth, Rich and Complex Flavors' %}
+      {% endif %}
+      {% if active_block != null %}
+        {% if active_block.settings.banner_image != blank %}
+          {% assign banner_image = active_block.settings.banner_image %}
+        {% endif %}
+        {% if active_block.settings.headline != blank %}
+          {% assign banner_headline = active_block.settings.headline %}
+        {% endif %}
+      {% endif %}
+      <div class="blog-banner">
+        <div class="blog-banner-image">
+          <img src="{{ banner_image | img_url: '2000x' }}" alt="{{ banner_headline }}">
+        </div>
+        <div class="blog-banner-content">
+          <h1>{{ banner_headline }}</h1>
+          {%- if active_block != null and active_block.settings.headline != blank -%}
+            <div class="blog-banner-sub">from the Breville Test Kitchen</div>
+          {%- endif -%}
+        </div>
+      </div>
       <div class="blog-filter-wrapper">
         <div class="blog-filter">
           {% assign all_active = false %}
@@ -120,6 +153,40 @@
 {%- endpaginate -%}
 
 <style>
+.blog-banner {
+  position: relative;
+  width: 100%;
+  margin-bottom: 32px;
+}
+.blog-banner-image img {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  display: block;
+}
+.blog-banner-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  color: #fff;
+  padding: 60px 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.10) 100%);
+}
+.blog-banner-content h1 {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin-bottom: 0.2em;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.22);
+}
+.blog-banner-sub {
+  font-size: 1.3em;
+  font-weight: 400;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.22);
+}
+
 .blog-filter-wrapper {
   display: flex;
   flex-direction: column;
@@ -226,6 +293,17 @@
   "tag": "section",
   "class": "section",
   "settings": [
+    {
+      "type": "image_picker",
+      "id": "default_banner_image",
+      "label": "Default Banner Image"
+    },
+    {
+      "type": "text",
+      "id": "default_banner_headline",
+      "label": "Default Banner Headline",
+      "default": "Coffee Drinks with Smooth, Rich and Complex Flavors"
+    },
     {
       "type": "header",
       "content": "t:sections.main-blog.settings.header.content"
