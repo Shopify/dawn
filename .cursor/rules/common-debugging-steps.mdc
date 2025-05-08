@@ -1,0 +1,47 @@
+---
+description: Common Debugging Steps for Shopify Theme Customization
+globs: 
+alwaysApply: false
+---
+# Common Debugging Steps for Shopify Theme Customization
+
+This guide outlines common issues and recommended debugging steps when working on Shopify theme customizations, particularly with CSS and Liquid.
+
+1.  **Verify Theme Customizer Settings:**
+    *   Many visual aspects (e.g., logo position, color schemes, feature toggles) are controlled by settings in the Shopify Admin (Online Store -> Themes -> Customize -> Section/Theme Settings).
+    *   Always double-check that the relevant settings are configured as expected, as these often drive Liquid logic that adds CSS classes or changes behavior.
+    *   **Example:** Header mobile logo position relies on "Mobile logo position" being set to "Left" in Header settings.
+
+2.  **Clear Browser Cache / Hard Refresh:**
+    *   Browsers aggressively cache CSS and JavaScript. After making changes to these assets, always perform a hard refresh to ensure you're seeing the latest version.
+    *   **Shortcuts:** Cmd+Shift+R (Mac), Ctrl+Shift+R (Windows/Linux).
+
+3.  **Use Browser Developer Tools (Inspector):**
+    *   **Element Inspection:** Right-click on the problematic element and choose "Inspect" or "Inspect Element".
+    *   **Styles Panel:** This is crucial for CSS debugging.
+        *   See all CSS rules applying to the selected element.
+        *   Identify which rules are active and which are overridden (struck-through).
+        *   Check the specificity of selectors. Highly specific selectors from base theme CSS (like Dawn's `base.css`) might override your custom styles.
+        *   Verify your custom CSS file (`[assets/rave-custom.css](mdc:assets/rave-custom.css)`) is loaded and its rules are present.
+    *   **Computed Panel:** Shows the final, calculated value for each CSS property on the element, after all stylesheets and inline styles have been considered.
+    *   **Classes:** Verify that the expected CSS classes (e.g., `header--mobile-left`) are present on the HTML elements. These are often added by Liquid logic based on theme settings.
+    *   **Console:** Check for JavaScript errors, which might break functionality or prevent CSS classes from being applied correctly.
+
+4.  **CSS Specificity and `!important`:**
+    *   If your custom styles aren't applying, it's often due to more specific selectors in the base theme's CSS.
+    *   You can increase the specificity of your selectors or, as a last resort for targeted overrides, use `!important`. Use `!important` judiciously as it can make future CSS maintenance harder.
+
+5.  **Media Query Scoping:**
+    *   Ensure styles intended for specific viewports (mobile, tablet, desktop) are correctly wrapped in appropriate media queries (e.g., `@media screen and (max-width: 749px)` for mobile, `@media screen and (min-width: 990px)` for desktop).
+    *   A common issue encountered was desktop-specific grid styles for the header unintentionally affecting mobile layout until they were properly scoped with a `min-width` media query.
+
+6.  **Homepage-Specific Issues:**
+    *   Shopify themes can have CSS rules or Liquid logic that applies only to the homepage (e.g., via `body.template-index` class or specific homepage section IDs).
+    *   If an issue occurs only on the homepage, inspect elements there to find homepage-specific styles that might be overriding more general rules.
+
+7.  **Liquid Asset Inclusion Order:**
+    *   Ensure that shared resources like CSS variable definitions (`[snippets/rave-variables.liquid](mdc:snippets/rave-variables.liquid)`) are included in `[layout/theme.liquid](mdc:layout/theme.liquid)` *before* the main custom stylesheet (`[assets/rave-custom.css](mdc:assets/rave-custom.css)`) that depends on them.
+
+8.  **Shopify CLI and Development Server:**
+    *   Use `shopify theme dev --store YOUR_STORE.myshopify.com` for local development.
+    *   Ensure the dev server is running and syncing changes. Sometimes, a restart of the dev server might be needed if changes don't appear to be syncing.

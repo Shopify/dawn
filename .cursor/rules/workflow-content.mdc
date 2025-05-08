@@ -1,0 +1,48 @@
+---
+description: Use this workflow when changes have been made directly in the Shopify Admin Theme Editor (e.g., changing text, images, section settings) and need to be synced back to the Git repository. This assumes the Shopify GitHub integration is **NOT** enabled or not reliably syncing.
+globs: 
+alwaysApply: false
+---
+# Workflow: Content Update Sync
+
+Use this workflow when changes have been made directly in the Shopify Admin Theme Editor (e.g., changing text, images, section settings) and need to be synced back to the Git repository. This assumes the Shopify GitHub integration is **NOT** enabled or not reliably syncing.
+
+**Your Role:** Guide the user to pull changes from Shopify into their local Git repository, commit them, and push them, typically to the `main` branch after review.
+
+## Steps:
+
+1.  **Identify the Target Branch & Theme:**
+    *   Ask: "Which theme in Shopify Admin has the content updates you want to save? (e.g., the Live theme, or a specific Staging theme?)"
+    *   Ask: "Which Git branch should these content updates be saved to? (Usually `main` or `develop`)"
+    *   Let the target branch be `<target-branch>` (e.g., `main`).
+    *   Run `git checkout <target-branch>`
+    *   Run `git pull origin <target-branch>` to ensure the local branch is up-to-date first.
+
+2.  **Pull Changes from Shopify Theme:**
+    *   Ask: "Ready to pull the latest changes from the Shopify theme into your local `<target-branch>` branch?"
+    *   Identify the Theme ID or Name: Use `shopify theme list` if unsure, and ask the user to confirm the correct theme.
+    *   Run `shopify theme pull --theme <THEME_ID_OR_NAME> --only templates/*.json --only config/settings_data.json --only sections/*.json`
+        *   *Explanation:* We use `--only` flags to primarily pull JSON files (templates, settings, section schemas/data) where content and settings changes from the editor are stored. This avoids overwriting local code files (like Liquid snippets, CSS, JS) if they haven't actually changed on Shopify.
+    *   *(Adjust `--only` patterns if other file types commonly store editor changes in this specific theme setup)*.
+
+3.  **Review Pulled Changes:**
+    *   Run `git status` to show the files that have been changed by the pull.
+    *   Advise the user: "Please review the changes pulled from Shopify (shown above) to make sure they look correct."
+    *   Offer to show diffs for specific files if requested (`git diff <filename>`).
+
+4.  **Commit the Content Updates:**
+    *   Ask: "Do the pulled changes look correct and are ready to be committed to the `<target-branch>` branch?"
+    *   If yes, ask for a commit message (e.g., "Sync content updates from Shopify Admin").
+    *   Run `git add .` (or specific changed JSON files).
+    *   Run `git commit -m "content: <commit-message>"` (using a `content:` prefix).
+
+5.  **Push Changes to GitHub:**
+    *   Ask: "Ready to push these content updates to the `<target-branch>` branch on GitHub?"
+    *   If yes: Run `git push origin <target-branch>`.
+    *   **Caution:** If `<target-branch>` is `main`, remind the user: "Pushing to `main` updates the primary codebase history."
+
+## Notes:
+
+*   This workflow is less ideal than making changes via code and PRs, as pulling can sometimes overwrite unintended local changes if not careful with flags.
+*   If the Shopify GitHub integration *is* active and working correctly for the target theme/branch, this manual pull/push workflow might not be necessary, as the integration should commit changes automatically.
+*   Focus on pulling only the files likely changed by the Theme Editor (mostly JSON files).

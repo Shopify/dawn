@@ -1,0 +1,47 @@
+---
+description:  Header Customization Logic
+globs: 
+alwaysApply: false
+---
+# Header Customization Logic
+
+The header in this theme (`[sections/header.liquid](mdc:sections/header.liquid)`) has significant customizations to achieve specific desktop and mobile layouts.
+
+## Desktop Header (min-width: 990px)
+
+*   **Layout Goal:** Split navigation (Left Navigation - Centered Logo - Right Navigation).
+*   **Theme Setting Trigger:** This layout is active when "Logo position" is set to "Middle center" in the Theme Customizer (Header section settings).
+*   **Implementation Details:**
+    *   **Liquid (`[sections/header.liquid](mdc:sections/header.liquid)`)**: When the above condition is met and the menu type is not "drawer", the Liquid code calculates the midpoint of the main menu (`linklists[section.settings.menu]`). It then renders the first half of the links in a `<nav class="...--left">` before the logo, and the second half in a `<nav class="...--right">` after the logo.
+    *   **CSS (`[assets/rave-custom.css](mdc:assets/rave-custom.css)`)**: The `header.header--middle-center` element is styled with `display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;`. The child navigation elements (`nav.header__inline-menu--left`, `nav.header__inline-menu--right`) and the logo (`>.header__heading`) are explicitly placed using `grid-column` and `justify-self`.
+        *   **Important:** All these grid-related CSS rules are wrapped in an `@media screen and (min-width: 990px)` query to ensure they only apply to desktop views.
+
+## Mobile Header (max-width: 749px)
+
+*   **Layout Goal:** Logo on the far left, Hamburger Menu icon on the far right.
+*   **Theme Setting Trigger:** This layout relies on "Mobile logo position" being set to "Left" in the Theme Customizer (Header section settings). This adds the `header--mobile-left` class to the `<header>` element.
+*   **Implementation Details (CSS in `[assets/rave-custom.css](mdc:assets/rave-custom.css)` within `@media screen and (max-width: 749px)`)**: 
+        *   The `header.header--mobile-left` element is styled with `display: flex !important; justify-content: space-between !important; align-items: center !important;`.
+        *   The logo container (`.header__heading`) has `order: 1 !important; margin-right: auto !important; justify-self: start !important; margin-left: 0 !important;` to force it left.
+        *   The `header-drawer` (containing the hamburger icon) has `order: 2 !important;`.
+        *   The entire `header.header` element (which contains the logo and hamburger) has `position: relative; z-index: 101;` and a `background-color` (e.g., `rgb(var(--color-background))`) to ensure it stays visually above the unfolding menu panel.
+
+## Mobile Menu Panel (`#menu-drawer.menu-drawer`)
+
+*   **Appearance:** Slides down from directly beneath the header bar.
+*   **Animation:** Achieved using a `max-height` transition. The panel is `position: fixed;`.
+    *   Closed state: `max-height: 0; visibility: hidden; overflow: hidden;`.
+    *   Open state: `max-height: calc(100vh - var(--header-bottom-position)); visibility: visible;`.
+*   **Positioning:** 
+    *   `top: var(--header-bottom-position);` (Dynamically set by Dawn's JS to be the bottom edge of the visible header bar).
+    *   `height` is effectively controlled by `max-height` to fill the space below the header.
+    *   `z-index: 100;` (below the main header bar, which is `z-index: 101`).
+*   **Styling:**
+    *   Background: White (uses `var(--rave-color-background-main, #FFFFFF) !important;`).
+    *   Item Separators: Each `<li>` has a `border-bottom` using `var(--rave-color-primary-text)`.
+    *   Active/Hover/Focus Item Style: Underlined text (`text-decoration: underline !important;`), transparent background.
+*   **Overlay Removal:** Dawn's default `summary::before` overlay (for side drawers) is hidden with `display: none !important;` for `.js header-drawer > details[open] > summary.header__icon--menu::before` because it conflicts with the full-screen top-slide menu.
+
+## General Header Customizations
+
+*   **Icons Hidden:** Default Shopify header icons (search, account, cart) are hidden by commenting out the `<div class="header__icons">...</div>` block in `[sections/header.liquid](mdc:sections/header.liquid)`.

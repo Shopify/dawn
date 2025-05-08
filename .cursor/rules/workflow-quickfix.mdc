@@ -1,0 +1,66 @@
+---
+description: Use this workflow for small, targeted bug fixes or minor tweaks where a full PR cycle might feel too heavy. **Caution is still advised.** Branching is highly recommended.
+globs: 
+alwaysApply: false
+---
+# Workflow: Quick Fix / Small Change
+
+Use this workflow for small, targeted bug fixes or minor tweaks where a full PR cycle might feel too heavy. **Caution is still advised.** Branching is highly recommended.
+
+**Your Role:** Guide the user through the steps, strongly encouraging branching. Automate Git commands cautiously, always confirming user intent, especially before pushing.
+
+## Steps:
+
+1.  **Identify Current Branch & Status:**
+    *   Ask: "What small fix are you working on? Let's check your current status."
+    *   Run `git status` to show the current branch and any uncommitted changes.
+    *   Advise committing or stashing any unrelated changes first.
+
+2.  **Create a Fix Branch (Strongly Recommended):**
+    *   Explain: "Even for small fixes, creating a branch is safer. It keeps the fix isolated."
+    *   Ask the user for a short name for the fix (e.g., "fix-button-color").
+    *   Construct the branch name: `fix/<fix-name>` (e.g., `fix/button-color`).
+    *   Ask: "Shall I create and switch to the `fix/<fix-name>` branch?"
+    *   If yes: Run `git checkout -b fix/<fix-name>`
+    *   If no (user insists on working on `main` or another branch): Warn **strongly** about the risks. Proceed with extreme caution and confirmation on every step.
+
+3.  **Start Local Development Server:**
+    *   Inform the user: "I will now start the local development server for you, connected to your store (`01bb23-0a.myshopify.com`)."
+    *   Run `shopify theme dev --store 01bb23-0a.myshopify.com` using the terminal tool.
+    *   Instruct the user: "Please **pop this command out** to run in the background in your terminal. This allows us to continue working while the server runs. You can preview your changes live at http://127.0.0.1:9292. You can stop the server later by pressing Ctrl+C in that terminal window."
+    *   Assist with the fix.
+
+4.  **Commit the Fix:**
+    *   Ask: "Is the fix complete and ready to be saved?"
+    *   If yes, ask for a concise commit message (e.g., "Fix button color on product page").
+    *   Run `git add .` (or specific files if preferred by user).
+    *   Run `git commit -m "fix: <commit-message>"`.
+
+5.  **Push Changes:**
+    *   **Option A (Push Fix Branch - Safest):**
+        *   Ask: "Ready to push the `fix/<fix-name>` branch to GitHub for review or backup?"
+        *   If yes: Run `git push origin fix/<fix-name>`
+        *   Suggest creating a PR on GitHub to merge into `main` (similar to Feature Workflow step 6).
+    *   **Option B (Push to a Preview Theme - Use with Caution):**
+        *   Ask: "Alternatively, do you want to push this fix directly to a *new unpublished preview theme* on Shopify for immediate testing? (This bypasses GitHub PR review)."
+        *   If yes:
+            *   Run `shopify theme push -u --name "Preview - <fix-name>"` (The `-u` flag creates a *new* unpublished theme).
+            *   Provide the preview link from the output to the user.
+            *   Remind the user this fix still needs to be merged into the `main` branch on Git eventually (likely via a PR from the `fix/<fix-name>` branch, even if pushed for preview).
+
+6.  **Merge into `main` (Required Eventually):**
+    *   **Never push directly to `main`** without a merge (ideally via PR).
+    *   Guide the user through creating a PR on GitHub for the `fix/<fix-name>` branch if they haven't already.
+    *   Once merged on GitHub, guide them to update their local `main`:
+        *   Run `git checkout main`
+        *   Run `git pull origin main`
+
+7.  **Cleanup (Optional):**
+    *   Guide deleting the fix branch locally (`git branch -d fix/<fix-name>`) after it's merged into `main`.
+
+## Safety Checks:
+
+*   **Strongly discourage** working directly on `main`.
+*   **Never allow pushing directly to the live theme** or overwriting `main` directly from this workflow without an explicit merge (preferably via PR).
+*   Clearly explain the difference between pushing a branch to GitHub vs. pushing code to a Shopify theme slot.
+*   Confirm all Git actions.
