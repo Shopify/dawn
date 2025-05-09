@@ -342,6 +342,63 @@
   </div>
 {%- endpaginate -%}
 
+{% if current_tags != blank and current_tags.size > 0 %}
+  {% comment %}Find the matching metaobject entry for the current tag{% endcomment %}
+  {% assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values %}
+  {% assign matching_group = nil %}
+  {% for tag_obj in recipe_tag_group %}
+    {% if tag_obj.tag == current_tags[0] %}
+      {% assign matching_group = tag_obj %}
+    {% endif %}
+  {% endfor %}
+
+  {% if matching_group.product %}
+    {% assign product_obj = matching_group.product %}
+    <div class="product-recommendations" data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product_obj.id }}&limit=4&intent=related">
+      {%- if recommendations.performed and recommendations.products_count > 0 -%}
+        {% if recommendations.intent == 'related' %}
+          <h2>You may also like</h2>
+        {% elsif recommendations.intent == 'complementary' %}
+          <h2>Pair it with</h2>
+        {% endif %}
+        <ul>
+          {%- for rec_product in recommendations.products -%}
+            <li class="product">
+              <a href="{{ rec_product.url }}">
+                <img class="product__img" src="{{ rec_product.featured_image | image_url: width: 300, height: 300 }}" alt="{{ rec_product.featured_image.alt }}" />
+                <p class="product__title">{{ rec_product.title }}</p>
+                <p class="product__price">{{ rec_product.price | money }}</p>
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+
+    {% javascript %}
+      const handleIntersection = (entries, observer) => {
+        if (!entries[0].isIntersecting) return;
+        observer.unobserve(productRecommendationsSection);
+        const url = productRecommendationsSection.dataset.url;
+        fetch(url)
+          .then(response => response.text())
+          .then(text => {
+            const html = document.createElement('div');
+            html.innerHTML = text;
+            const recommendations = html.querySelector('.product-recommendations');
+            if (recommendations && recommendations.innerHTML.trim().length) {
+              productRecommendationsSection.innerHTML = recommendations.innerHTML;
+            }
+          })
+          .catch(e => console.error(e));
+      };
+      const productRecommendationsSection = document.querySelector('.product-recommendations');
+      const observer = new IntersectionObserver(handleIntersection, { rootMargin: '0px 0px 200px 0px' });
+      observer.observe(productRecommendationsSection);
+    {% endjavascript %}
+  {% endif %}
+{% endif %}
+
 <style>
 .blog-banner {
   width: 100%;
