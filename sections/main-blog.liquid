@@ -179,16 +179,24 @@
             {% comment %}Get recent articles from this category if needed{% endcomment %}
             {% assign articles_needed = 3 | minus: valid_articles_count %}
             {% if articles_needed > 0 %}
-              {% assign category_articles = blog.articles | where: "tags", block_tag %}
+              {% comment %}Debug info{% endcomment %}
               {% assign added_articles = 0 %}
-              {% for cat_article in category_articles %}
-                {% unless valid_articles contains cat_article.handle %}
+              {% for cat_article in blog.articles %}
+                {% assign has_tag = false %}
+                {% for article_tag in cat_article.tags %}
+                  {% if article_tag == block_tag %}
+                    {% assign has_tag = true %}
+                    {% break %}
+                  {% endif %}
+                {% endfor %}
+                
+                {% if has_tag and valid_articles contains cat_article.handle == false %}
                   {% assign valid_articles = valid_articles | append: cat_article.handle | append: ',' %}
                   {% assign added_articles = added_articles | plus: 1 %}
                   {% if added_articles >= articles_needed %}
                     {% break %}
                   {% endif %}
-                {% endunless %}
+                {% endif %}
               {% endfor %}
             {% endif %}
             
