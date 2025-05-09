@@ -161,7 +161,40 @@
           <div class="main-blog-recipekit-grid">
             {% assign handles_string = matching_metaobject.recipe_1 | append: ',' | append: matching_metaobject.recipe_2 | append: ',' | append: matching_metaobject.recipe_3 %}
             {% assign handles_array = handles_string | split: ',' %}
+            
+            {% comment %}Count valid articles from metaobject handles{% endcomment %}
+            {% assign valid_articles_count = 0 %}
+            {% assign valid_articles = '' %}
             {% for recipe_handle in handles_array %}
+              {% assign recipe_handle = recipe_handle | strip %}
+              {% if recipe_handle != blank %}
+                {% assign article = blog.articles | where: "handle", recipe_handle | first %}
+                {% if article %}
+                  {% assign valid_articles_count = valid_articles_count | plus: 1 %}
+                  {% assign valid_articles = valid_articles | append: article.handle | append: ',' %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+            
+            {% comment %}Get recent articles from this category if needed{% endcomment %}
+            {% assign articles_needed = 3 | minus: valid_articles_count %}
+            {% if articles_needed > 0 %}
+              {% assign category_articles = blog.articles | where: "tags", block_tag %}
+              {% assign added_articles = 0 %}
+              {% for cat_article in category_articles %}
+                {% unless valid_articles contains cat_article.handle %}
+                  {% assign valid_articles = valid_articles | append: cat_article.handle | append: ',' %}
+                  {% assign added_articles = added_articles | plus: 1 %}
+                  {% if added_articles >= articles_needed %}
+                    {% break %}
+                  {% endif %}
+                {% endunless %}
+              {% endfor %}
+            {% endif %}
+            
+            {% comment %}Display all collected articles{% endcomment %}
+            {% assign final_handles = valid_articles | split: ',' %}
+            {% for recipe_handle in final_handles %}
               {% assign recipe_handle = recipe_handle | strip %}
               {% if recipe_handle != blank %}
                 {% assign article = blog.articles | where: "handle", recipe_handle | first %}
