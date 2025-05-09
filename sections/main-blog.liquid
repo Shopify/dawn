@@ -392,13 +392,22 @@
     </div>
     
     {% if matching_metaobject and matching_metaobject.product != blank %}
-      {% assign product_handle = matching_metaobject.product | split: ',' | first %}
-      {% assign reference_product = all_products[product_handle] %}
+      {% assign product_json = matching_metaobject.product | replace: '"', '' | replace: '[', '' | replace: ']', '' %}
+      {% assign product_gids = product_json | split: ',' %}
+      {% assign first_gid = product_gids | first %}
+      {% assign product_id = first_gid | split: '/' | last %}
       
-      {% if reference_product != blank %}
+      {% comment %}Debug GID parsing{% endcomment %}
+      <div class="debug-info" style="margin: 20px; padding: 20px; border: 1px solid #ddd; background: #f9f9f9;">
+        <h3>GID Parsing Debug</h3>
+        <p>First GID: {{ first_gid }}</p>
+        <p>Extracted Product ID: {{ product_id }}</p>
+      </div>
+      
+      {% if product_id != blank %}
         <div
           class="product-recommendations" 
-          data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ reference_product.id }}&limit=4&intent=related"
+          data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product_id }}&limit=4&intent=related"
         >
           <h2>Recommended Products</h2>
         </div>
