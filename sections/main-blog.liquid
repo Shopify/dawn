@@ -378,42 +378,43 @@
   {% endif %}
   
   {% if recommendation_product != blank %}
-      <div class="page-width section-{{ section.id }}-padding">
-        <div class="product-recommendations">
-          <h2 class="product-recommendations-heading">You Might Also Like</h2>
-          <div id="product-recommendations" data-url="{{ routes.product_recommendations_url }}?section_id=product-recommendations&product_id={{ recommendation_product.id }}&limit=4">
-            {% comment %} Recommendations will be loaded here {% endcomment %}
+      {% comment %}Get related products based on current tag{% endcomment %}
+      {% assign related_products = collections.all.products | where: "tags", current_tag | limit: 4 %}
+      
+      {% comment %}If not enough products with matching tag, add some from the same collection{% endcomment %}
+      {% if related_products.size < 4 and recommendation_product.collections.first != blank %}
+        {% assign needed_products = 4 | minus: related_products.size %}
+        {% for collection_product in recommendation_product.collections.first.products limit: needed_products %}
+          {% unless related_products contains collection_product or collection_product.id == recommendation_product.id %}
+            {% assign related_products = related_products | concat: collection_product %}
+            {% if related_products.size >= 4 %}
+              {% break %}
+            {% endif %}
+          {% endunless %}
+        {% endfor %}
+      {% endif %}
+      
+      {% comment %}Display the product recommendations{% endcomment %}
+      {% if related_products.size > 0 %}
+        <div class="page-width section-{{ section.id }}-padding">
+          <div class="product-recommendations">
+            <h2 class="product-recommendations-heading">You Might Also Like</h2>
+            <ul class="grid product-grid grid--2-col grid--4-col-desktop">
+              {%- for product in related_products limit: 4 -%}
+                <li class="grid__item">
+                  {% render 'card-product',
+                    card_product: product,
+                    media_aspect_ratio: 'square',
+                    show_secondary_image: false,
+                    show_vendor: false,
+                    show_rating: false
+                  %}
+                </li>
+              {%- endfor -%}
+            </ul>
           </div>
         </div>
-      </div>
-      
-      <script>
-        const handleIntersection = (entries, observer) => {
-          if (!entries[0].isIntersecting) return;
-          observer.unobserve(productRecommendationsSection);
-          
-          const url = productRecommendationsSection.dataset.url;
-          fetch(url)
-            .then(response => response.text())
-            .then(text => {
-              const html = document.createElement('div');
-              html.innerHTML = text;
-              const recommendations = html.querySelector('.product-recommendations');
-              if (recommendations && recommendations.innerHTML.trim().length) {
-                productRecommendationsSection.innerHTML = recommendations.innerHTML;
-              }
-            })
-            .catch(e => {
-              console.error(e);
-            });
-        };
-        
-        const productRecommendationsSection = document.getElementById('product-recommendations');
-        if (productRecommendationsSection) {
-          const observer = new IntersectionObserver(handleIntersection, {rootMargin: '0px 0px 200px 0px'});
-          observer.observe(productRecommendationsSection);
-        }
-      </script>
+      {% endif %}
       
       <style>
         .product-recommendations {
