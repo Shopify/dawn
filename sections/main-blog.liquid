@@ -410,7 +410,13 @@
           data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product_id }}&limit=4&intent=related"
         >
           <h2>Recommended Products</h2>
-        </div>
+          <!-- Fallback content that will be replaced if API returns recommendations -->
+          <div class="fallback-content">
+            <p style="text-align: center; margin: 20px 0;">Loading recommendations for product ID: {{ product_id }}...</p>
+            <p style="text-align: center; margin: 20px 0;">
+              Reference URL: {{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product_id }}&limit=4&intent=related
+            </p>
+          </div>
       {% endif %}
     {% endif %}
   {% endif %}
@@ -653,34 +659,73 @@
 {% javascript %}
   // Product recommendations initialization
   document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, looking for product recommendations section');
     const productRecommendationsSection = document.querySelector('.product-recommendations');
     
     if (productRecommendationsSection) {
+      console.log('Found product recommendations section');
+      console.log('URL:', productRecommendationsSection.dataset.url);
+      
+      // Add debug message to the page
+      const debugMsg = document.createElement('div');
+      debugMsg.className = 'js-debug';
+      debugMsg.style.padding = '10px';
+      debugMsg.style.margin = '10px 0';
+      debugMsg.style.border = '1px solid #ddd';
+      debugMsg.style.background = '#f9f9f9';
+      debugMsg.innerHTML = '<h3>JavaScript Debug</h3><p>JavaScript initialized, waiting for section to be visible</p>';
+      productRecommendationsSection.appendChild(debugMsg);
+      
       const handleIntersection = (entries, observer) => {
         if (!entries[0].isIntersecting) return;
 
         observer.unobserve(productRecommendationsSection);
+        debugMsg.innerHTML += '<p>Section is now visible, fetching recommendations</p>';
 
         const url = productRecommendationsSection.dataset.url;
+        console.log('Fetching from URL:', url);
 
+        // Direct fetch for product recommendations
         fetch(url)
-          .then(response => response.text())
+          .then(response => {
+            console.log('Response status:', response.status);
+            debugMsg.innerHTML += `<p>API response status: ${response.status}</p>`;
+            return response.text();
+          })
           .then(text => {
+            console.log('Received response text');
+            debugMsg.innerHTML += '<p>Received response from API</p>';
+            
             const html = document.createElement('div');
             html.innerHTML = text;
             const recommendations = html.querySelector('.product-recommendations');
 
+            debugMsg.innerHTML += recommendations ? 
+              `<p>Found recommendations in response (HTML length: ${recommendations.innerHTML.length})</p>` : 
+              '<p>No recommendations found in response</p>';
+
             if (recommendations && recommendations.innerHTML.trim().length) {
-              productRecommendationsSection.innerHTML = recommendations.innerHTML;
+              console.log('Updating recommendations HTML');
+              const contentToInsert = recommendations.innerHTML;
+              // Save the debug div
+              productRecommendationsSection.innerHTML = contentToInsert;
+              // Re-add the debug div after updating content
+              productRecommendationsSection.appendChild(debugMsg);
+            } else {
+              console.log('No recommendations content found');
+              debugMsg.innerHTML += '<p>No recommendations content to display</p>';
             }
           })
           .catch(e => {
-            console.error(e);
+            console.error('Error fetching recommendations:', e);
+            debugMsg.innerHTML += `<p>Error: ${e.message}</p>`;
           });
       };
 
       const observer = new IntersectionObserver(handleIntersection, {rootMargin: '0px 0px 200px 0px'});
       observer.observe(productRecommendationsSection);
+    } else {
+      console.log('Product recommendations section not found');
     }
   });
 {% endjavascript %}
