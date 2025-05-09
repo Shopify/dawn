@@ -362,37 +362,6 @@
         >
           <h2>Recommended Products</h2>
         </div>
-
-        {% javascript %}
-          const handleIntersection = (entries, observer) => {
-            if (!entries[0].isIntersecting) return;
-
-            observer.unobserve(productRecommendationsSection);
-
-            const url = productRecommendationsSection.dataset.url;
-
-            fetch(url)
-              .then(response => response.text())
-              .then(text => {
-                const html = document.createElement('div');
-                html.innerHTML = text;
-                const recommendations = html.querySelector('.product-recommendations');
-
-                if (recommendations && recommendations.innerHTML.trim().length) {
-                  productRecommendationsSection.innerHTML = recommendations.innerHTML;
-                }
-              })
-              .catch(e => {
-                console.error(e);
-              });
-          };
-
-          const productRecommendationsSection = document.querySelector('.product-recommendations');
-          if (productRecommendationsSection) {
-            const observer = new IntersectionObserver(handleIntersection, {rootMargin: '0px 0px 200px 0px'});
-            observer.observe(productRecommendationsSection);
-          }
-        {% endjavascript %}
       {% endif %}
     {% endif %}
   {% endif %}
@@ -631,6 +600,41 @@
   color: #3d174f;
 }
 </style>
+
+{% javascript %}
+  // Product recommendations initialization
+  document.addEventListener('DOMContentLoaded', () => {
+    const productRecommendationsSection = document.querySelector('.product-recommendations');
+    
+    if (productRecommendationsSection) {
+      const handleIntersection = (entries, observer) => {
+        if (!entries[0].isIntersecting) return;
+
+        observer.unobserve(productRecommendationsSection);
+
+        const url = productRecommendationsSection.dataset.url;
+
+        fetch(url)
+          .then(response => response.text())
+          .then(text => {
+            const html = document.createElement('div');
+            html.innerHTML = text;
+            const recommendations = html.querySelector('.product-recommendations');
+
+            if (recommendations && recommendations.innerHTML.trim().length) {
+              productRecommendationsSection.innerHTML = recommendations.innerHTML;
+            }
+          })
+          .catch(e => {
+            console.error(e);
+          });
+      };
+
+      const observer = new IntersectionObserver(handleIntersection, {rootMargin: '0px 0px 200px 0px'});
+      observer.observe(productRecommendationsSection);
+    }
+  });
+{% endjavascript %}
 
 <style>
 .product-recommendations {
