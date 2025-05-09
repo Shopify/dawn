@@ -342,6 +342,46 @@
   </div>
 {%- endpaginate -%}
 
+{% comment %} Product recommendations for tagged groups only {% endcomment %}
+{% if current_tags != blank and current_tags.size > 0 %}
+  {% assign current_tag = current_tags[0] %}
+  {% assign matching_metaobject = nil %}
+  {% assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values %}
+  
+  {% for tag_obj in recipe_tag_group %}
+    {% if tag_obj.tag == current_tag %}
+      {% assign matching_metaobject = tag_obj %}
+      {% break %}
+    {% endif %}
+  {% endfor %}
+  
+  {% if matching_metaobject != nil and matching_metaobject.product != blank %}
+    <div class="color-{{ section.settings.color_scheme | default: 'background-1' }} gradient">
+      <div class="product-recommendations page-width section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}" 
+           data-tag-based-recommendations
+           data-section-id="{{ section.id }}"
+           data-tag-name="{{ current_tag }}">
+        
+        <h2 class="related-products__heading inline-richtext h1">
+          Recommended Products for {{ current_tag }}
+        </h2>
+        
+        <div id="tag-product-recommendations-container" class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list">
+          <div class="grid__item loading-recommendations">
+            <div class="loading-overlay gradient">
+              <div class="loading-overlay__spinner">
+                <svg aria-hidden="true" focusable="false" class="spinner" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+                  <circle class="path" fill="none" stroke-width="6" cx="33" cy="33" r="30"></circle>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endif %}
+
 <style>
 .blog-banner {
   width: 100%;
@@ -741,3 +781,188 @@
   ]
 }
 {% endschema %}
+
+{% javascript %}
+class TagBasedProductRecommendations extends HTMLElement {
+  constructor() {
+    super();
+    this.container = this.querySelector('#tag-product-recommendations-container');
+    this.tagName = this.dataset.tagName;
+    this.sectionId = this.dataset.sectionId;
+    this.init();
+  }
+
+  async init() {
+    if (!this.container || !this.tagName) return;
+    
+    try {
+      // Find matching metaobject for the current tag
+      const response = await fetch(`/api/2023-10/graphql.json`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Storefront-Access-Token': '{{ shop.storefront_access_token }}'
+        },
+        body: JSON.stringify({
+          query: `
+            query getMetaobjectByTag {
+              metaobjects(type: "recipe_tag_group", first: 10) {
+                edges {
+                  node {
+                    id
+                    fields {
+                      key
+                      value
+                    }
+                  }
+                }
+              }
+            }
+          `
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      const metaobjects = data.data.metaobjects.edges;
+      let productIds = [];
+
+      // Find the metaobject with the current tag and get its product IDs
+      for (const edge of metaobjects) {
+        const metaobject = edge.node;
+        const tagField = metaobject.fields.find(field => field.key === 'tag');
+        const productField = metaobject.fields.find(field => field.key === 'product');
+
+        if (tagField && tagField.value === this.tagName && productField) {
+          // Parse the product field value (it's a JSON string of product GIDs)
+          try {
+            productIds = JSON.parse(productField.value);
+          } catch (e) {
+            console.error('Error parsing product IDs:', e);
+          }
+          break;
+        }
+      }
+
+      if (productIds.length === 0) {
+        this.container.innerHTML = '<div class="grid__item"><p>No product recommendations found.</p></div>';
+        return;
+      }
+
+      // Fetch product details for each product ID
+      const productIdsString = productIds.map(id => `"${id}"`).join(',');
+      const productsResponse = await fetch(`/api/2023-10/graphql.json`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Storefront-Access-Token': '{{ shop.storefront_access_token }}'
+        },
+        body: JSON.stringify({
+          query: `
+            query getProductsByIds {
+              nodes(ids: [${productIdsString}]) {
+                ... on Product {
+                  id
+                  title
+                  handle
+                  featuredImage {
+                    url(transform: { maxWidth: 500, maxHeight: 500, crop: CENTER })
+                    altText
+                  }
+                  priceRange {
+                    minVariantPrice {
+                      amount
+                      currencyCode
+                    }
+                  }
+                  vendor
+                }
+              }
+            }
+          `
+        })
+      });
+
+      if (!productsResponse.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const productsData = await productsResponse.json();
+      const products = productsData.data.nodes.filter(node => node); // Filter out any null values
+
+      if (products.length === 0) {
+        this.container.innerHTML = '<div class="grid__item"><p>No product recommendations found.</p></div>';
+        return;
+      }
+
+      this.renderProducts(products);
+    } catch (error) {
+      console.error('Error fetching product recommendations:', error);
+      this.container.innerHTML = '<div class="grid__item"><p>Error loading product recommendations.</p></div>';
+    }
+  }
+
+  renderProducts(products) {
+    const productCards = products.map(product => {
+      const price = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: product.priceRange.minVariantPrice.currencyCode || 'USD'
+      }).format(product.priceRange.minVariantPrice.amount);
+
+      return `
+        <li class="grid__item">
+          <div class="card-wrapper">
+            <a href="/products/${product.handle}" class="full-unstyled-link">
+              <div class="card card--product">
+                <div class="card__inner">
+                  <div class="card__media">
+                    <div class="media media--transparent media--square">
+                      <img
+                        src="${product.featuredImage?.url || '//cdn.shopify.com/s/files/1/0533/2089/files/placeholder-image.png?v=1745074293'}"
+                        alt="${product.featuredImage?.altText || product.title}"
+                        class="motion-reduce"
+                        loading="lazy"
+                        width="500"
+                        height="500"
+                      >
+                    </div>
+                  </div>
+                  <div class="card__content">
+                    <div class="card__information">
+                      <h3 class="card__heading">
+                        <span class="full-unstyled-link">${product.title}</span>
+                      </h3>
+                      ${product.vendor ? `<div class="card-information__text caption-with-letter-spacing">${product.vendor}</div>` : ''}
+                      <div class="price">
+                        <div class="price__regular">
+                          <span class="price-item price-item--regular">
+                            ${price}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+        </li>
+      `;
+    }).join('');
+
+    this.container.innerHTML = `<ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down">${productCards}</ul>`;
+  }
+}
+
+customElements.define('product-recommendations', TagBasedProductRecommendations);
+
+document.addEventListener('DOMContentLoaded', () => {
+  const tagRecommendationsElement = document.querySelector('[data-tag-based-recommendations]');
+  if (tagRecommendationsElement) {
+    new TagBasedProductRecommendations();
+  }
+});
+{% endjavascript %}
