@@ -28,10 +28,20 @@
     </h1>
 {% endif %}
     {%- if request.path contains '/blogs/recipes' -%}
+      {%- assign recipe_tag_groups = shop.metaobjects.recipe_tag_group.values -%}
       {%- assign active_block = null -%}
+      {%- assign metaobject_match = false -%}
       {% for block in section.blocks %}
-        {% if current_tags contains block.settings.tag %}
+        {% assign block_tag = block.settings.tag %}
+        {% assign tag_found = false %}
+        {% for tag_group in recipe_tag_groups %}
+          {% if tag_group.tag == block_tag %}
+            {% assign tag_found = true %}
+          {% endif %}
+        {% endfor %}
+        {% if (current_tags contains block_tag and tag_found) %}
           {% assign active_block = block %}
+          {% assign metaobject_match = true %}
         {% endif %}
       {% endfor %}
       {% assign banner_image = section.settings.default_banner_image %}
@@ -85,10 +95,14 @@
           </a>
           {% for block in section.blocks %}
             {% assign tag = block.settings.tag %}
-            {% assign banner_image = block.settings.banner_image %}
-            {% assign banner_color = block.settings.banner_color %}
             {% assign is_active = false %}
-            {% if current_tags contains tag %}
+            {% assign tag_found = false %}
+            {% for tag_group in recipe_tag_groups %}
+              {% if tag_group.tag == tag %}
+                {% assign tag_found = true %}
+              {% endif %}
+            {% endfor %}
+            {% if current_tags contains tag and tag_found %}
               {% assign is_active = true %}
             {% endif %}
             <a
@@ -111,7 +125,13 @@
             {% for block in section.blocks %}
               {% assign tag = block.settings.tag %}
               {% assign is_active = false %}
-              {% if current_tags contains tag %}
+              {% assign tag_found = false %}
+              {% for tag_group in recipe_tag_groups %}
+                {% if tag_group.tag == tag %}
+                  {% assign tag_found = true %}
+                {% endif %}
+              {% endfor %}
+              {% if current_tags contains tag and tag_found %}
                 {% assign is_active = true %}
               {% endif %}
               <option value="{% if is_active %}/blogs/recipes{% else %}/blogs/recipes/tagged/{{ tag | handle }}{% endif %}" {% if is_active %}selected{% endif %}>{{ tag }}</option>
