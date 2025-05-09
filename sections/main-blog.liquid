@@ -140,7 +140,45 @@
     {%- endfor -%}
     {% if current_tags == blank or current_tags.size == 0 %}
   <div class="main-blog-recipekit-grid grouped-by-category">
-    <h2 class="debug-placeholder">DEBUG: All selected – no posts shown</h2>
+    {% assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values %}
+    {% for block in section.blocks %}
+      {% assign block_tag = block.settings.tag %}
+      {% assign matching_metaobject = nil %}
+      {% for tag_obj in recipe_tag_group %}
+        {% if tag_obj.tag == block_tag %}
+          {% assign matching_metaobject = tag_obj %}
+        {% endif %}
+      {% endfor %}
+      {% if matching_metaobject %}
+        <div class="main-blog-category-group">
+          <h2 class="main-blog-category-header">{{ block_tag }}</h2>
+          <div class="main-blog-category-articles">
+            {% for recipe_handle in matching_metaobject.recipe_1 | append: ',' | append: matching_metaobject.recipe_2 | append: ',' | append: matching_metaobject.recipe_3 | split: ',' %}
+              {% assign recipe_handle = recipe_handle | strip %}
+              {% if recipe_handle != blank %}
+                {% assign article = blog.articles | where: "handle", recipe_handle | first %}
+                {% if article %}
+                  <div class="recipekit-card-outer">
+                    <a href="{{ article.url }}" class="recipekit-card-link" aria-label="{{ article.title | escape }}">
+                      <div class="recipekit-card">
+                        <div class="recipekit-card-image-wrapper">
+                          {% if article.image %}
+                            <img class="recipekit-card-image" src="{{ article.image | img_url: '1000x1000', scale: 2 }}" alt="{{ article.title | escape }}" loading="lazy">
+                          {% endif %}
+                        </div>
+                      </div>
+                    </a>
+                    <div class="recipekit-card-meta">
+                      <a href="{{ article.url }}" class="recipekit-card-title-link"><div class="recipekit-card-title">{{ article.title }}</div></a>
+                    </div>
+                  </div>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
   </div>
 {% else %}
   <div class="main-blog-recipekit-grid">
