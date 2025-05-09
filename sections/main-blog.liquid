@@ -342,6 +342,95 @@
   </div>
 {%- endpaginate -%}
 
+{% comment %} Product Recommendations for Tagged Pages {% endcomment %}
+{% if current_tags != blank and current_tags.size > 0 %}
+  {% assign current_tag = current_tags | first %}
+  {% assign matching_metaobject = nil %}
+  {% assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values %}
+  {% for tag_obj in recipe_tag_group %}
+    {% if tag_obj.tag == current_tag %}
+      {% assign matching_metaobject = tag_obj %}
+      {% break %}
+    {% endif %}
+  {% endfor %}
+  
+  {% assign recommendation_product = nil %}
+  
+  {% comment %}Try to get product from metaobject first{% endcomment %}
+  {% if matching_metaobject and matching_metaobject.product != blank %}
+    {% assign product_handle = matching_metaobject.product | strip %}
+    {% assign recommendation_product = all_products[product_handle] %}
+  {% endif %}
+  
+  {% comment %}If no product from metaobject, try to find one with matching tag{% endcomment %}
+  {% if recommendation_product == nil or recommendation_product == blank %}
+    {% for product in collections.all.products limit: 10 %}
+      {% if product.tags contains current_tag %}
+        {% assign recommendation_product = product %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+  
+  {% comment %}If still no product, use a popular product{% endcomment %}
+  {% if recommendation_product == nil or recommendation_product == blank %}
+    {% assign recommendation_product = collections.all.products.first %}
+  {% endif %}
+  
+  {% if recommendation_product != blank %}
+      <div class="page-width section-{{ section.id }}-padding">
+        <div class="product-recommendations">
+          <h2 class="product-recommendations-heading">You Might Also Like</h2>
+          <div id="product-recommendations" data-url="{{ routes.product_recommendations_url }}?section_id=product-recommendations&product_id={{ recommendation_product.id }}&limit=4">
+            {% comment %} Recommendations will be loaded here {% endcomment %}
+          </div>
+        </div>
+      </div>
+      
+      <script>
+        const handleIntersection = (entries, observer) => {
+          if (!entries[0].isIntersecting) return;
+          observer.unobserve(productRecommendationsSection);
+          
+          const url = productRecommendationsSection.dataset.url;
+          fetch(url)
+            .then(response => response.text())
+            .then(text => {
+              const html = document.createElement('div');
+              html.innerHTML = text;
+              const recommendations = html.querySelector('.product-recommendations');
+              if (recommendations && recommendations.innerHTML.trim().length) {
+                productRecommendationsSection.innerHTML = recommendations.innerHTML;
+              }
+            })
+            .catch(e => {
+              console.error(e);
+            });
+        };
+        
+        const productRecommendationsSection = document.getElementById('product-recommendations');
+        if (productRecommendationsSection) {
+          const observer = new IntersectionObserver(handleIntersection, {rootMargin: '0px 0px 200px 0px'});
+          observer.observe(productRecommendationsSection);
+        }
+      </script>
+      
+      <style>
+        .product-recommendations {
+          margin-top: 40px;
+        }
+        
+        .product-recommendations-heading {
+          font-size: 24px;
+          margin-bottom: 24px;
+          font-weight: 600;
+          color: rgb(6, 42, 48);
+          text-align: center;
+        }
+      </style>
+  {% endif %}
+{% endif %}
+
 <style>
 .blog-banner {
   width: 100%;
