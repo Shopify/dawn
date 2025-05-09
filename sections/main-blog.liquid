@@ -344,12 +344,52 @@
     {% assign current_tag = current_tags | first %}
     {% assign matching_metaobject = nil %}
     {% assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values %}
+    
+    <!-- Debug information -->
+    <div class="debug-info" style="margin: 20px; padding: 20px; border: 1px solid #ddd; background: #f9f9f9;">
+      <h3>Debug Information</h3>
+      <p>Current tag: {{ current_tag }}</p>
+      <p>Recipe tag group count: {{ recipe_tag_group.size }}</p>
+      
+      <h4>Available metaobjects:</h4>
+      <ul>
+        {% for tag_obj in recipe_tag_group %}
+          <li>
+            <strong>Tag:</strong> {{ tag_obj.tag }}<br>
+            <strong>Product field:</strong> {{ tag_obj.product }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+    
     {% for tag_obj in recipe_tag_group %}
       {% if tag_obj.tag == current_tag %}
         {% assign matching_metaobject = tag_obj %}
         {% break %}
       {% endif %}
     {% endfor %}
+    
+    <!-- Debug for matching metaobject -->
+    <div class="debug-info" style="margin: 20px; padding: 20px; border: 1px solid #ddd; background: #f9f9f9;">
+      <h3>Matching Metaobject Debug</h3>
+      {% if matching_metaobject %}
+        <p>Found matching metaobject for tag: {{ current_tag }}</p>
+        <p>Product field value: {{ matching_metaobject.product }}</p>
+        {% if matching_metaobject.product != blank %}
+          {% assign product_handle = matching_metaobject.product | split: ',' | first %}
+          <p>Product handle: {{ product_handle }}</p>
+          {% if all_products[product_handle] %}
+            <p>Product exists: Yes - {{ all_products[product_handle].title }}</p>
+          {% else %}
+            <p>Product exists: No - Could not find product with handle: {{ product_handle }}</p>
+          {% endif %}
+        {% else %}
+          <p>Product field is blank</p>
+        {% endif %}
+      {% else %}
+        <p>No matching metaobject found for tag: {{ current_tag }}</p>
+      {% endif %}
+    </div>
     
     {% if matching_metaobject and matching_metaobject.product != blank %}
       {% assign product_handle = matching_metaobject.product | split: ',' | first %}
