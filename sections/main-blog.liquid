@@ -338,6 +338,64 @@
   {%- if paginate.pages > 1 -%}
     {%- render 'pagination', paginate: paginate -%}
   {%- endif -%}
+  
+  {% comment %}Product recommendations for tagged groups only{% endcomment %}
+  {% if current_tags != blank and current_tags.size > 0 %}
+    {% assign current_tag = current_tags | first %}
+    {% assign matching_metaobject = nil %}
+    {% assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values %}
+    {% for tag_obj in recipe_tag_group %}
+      {% if tag_obj.tag == current_tag %}
+        {% assign matching_metaobject = tag_obj %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+    
+    {% if matching_metaobject and matching_metaobject.product != blank %}
+      {% assign product_handle = matching_metaobject.product | split: ',' | first %}
+      {% assign reference_product = all_products[product_handle] %}
+      
+      {% if reference_product != blank %}
+        <div
+          class="product-recommendations" 
+          data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ reference_product.id }}&limit=4&intent=related"
+        >
+          <h2>Recommended Products</h2>
+        </div>
+
+        {% javascript %}
+          const handleIntersection = (entries, observer) => {
+            if (!entries[0].isIntersecting) return;
+
+            observer.unobserve(productRecommendationsSection);
+
+            const url = productRecommendationsSection.dataset.url;
+
+            fetch(url)
+              .then(response => response.text())
+              .then(text => {
+                const html = document.createElement('div');
+                html.innerHTML = text;
+                const recommendations = html.querySelector('.product-recommendations');
+
+                if (recommendations && recommendations.innerHTML.trim().length) {
+                  productRecommendationsSection.innerHTML = recommendations.innerHTML;
+                }
+              })
+              .catch(e => {
+                console.error(e);
+              });
+          };
+
+          const productRecommendationsSection = document.querySelector('.product-recommendations');
+          if (productRecommendationsSection) {
+            const observer = new IntersectionObserver(handleIntersection, {rootMargin: '0px 0px 200px 0px'});
+            observer.observe(productRecommendationsSection);
+          }
+        {% endjavascript %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
 {% endif %}
   </div>
 {%- endpaginate -%}
@@ -574,7 +632,84 @@
 }
 </style>
 
+<style>
+.product-recommendations {
+  margin-top: 40px;
+  margin-bottom: 40px;
+  max-width: 100%;
+}
 
+.product-recommendations h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  color: #2a1040;
+  text-align: center;
+}
+
+.product-recommendations ul {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+@media screen and (max-width: 768px) {
+  .product-recommendations ul {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .product-recommendations ul {
+    grid-template-columns: 1fr;
+  }
+}
+
+.product-recommendations .product {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-recommendations .product:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.product-recommendations .product a {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+.product-recommendations .product__img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 10px 10px 0 0;
+}
+
+.product-recommendations .product__title {
+  margin: 10px 0 5px;
+  font-weight: 500;
+  font-size: 16px;
+  color: #2a1040;
+}
+
+.product-recommendations .product__price {
+  margin: 0 0 10px;
+  font-weight: 600;
+  color: #062a30;
+}
+</style>
 
 {% schema %}
 {
