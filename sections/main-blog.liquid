@@ -155,75 +155,114 @@
           {% assign matching_metaobject = tag_obj %}
         {% endif %}
       {% endfor %}
+
       {% if matching_metaobject %}
         <div class="main-blog-category-group">
           <h2 class="main-blog-category-header">{{ block_tag }}</h2>
           <div class="main-blog-recipekit-grid">
-            {% assign handles_string = matching_metaobject.recipe_1 | append: ',' | append: matching_metaobject.recipe_2 | append: ',' | append: matching_metaobject.recipe_3 %}
-            {% assign handles_array = handles_string | split: ',' %}
-            {% for recipe_handle in handles_array %}
-              {% assign recipe_handle = recipe_handle | strip %}
-              {% if recipe_handle != blank %}
-                {% assign article = blog.articles | where: "handle", recipe_handle | first %}
-                {% if article %}
-                  {%- assign rk_resource_id = article.id | downcase -%}
-                  {%- assign rk_mf = article.metafields.recipekit[rk_resource_id] -%}
-                  <div class="recipekit-card-outer">
-                    <a href="{{ article.url }}" class="recipekit-card-link" aria-label="{{ article.title | escape }}">
-                      <div class="recipekit-card">
-                        <div class="recipekit-card-image-wrapper">
-                          {%- if rk_mf and rk_mf.recipe_image != blank -%}
-                            {%- assign image_url = rk_mf.recipe_image -%}
-                            {%- if image_url contains 'cloudinary.com' -%}
-                              {%- assign rk_last_url = image_url | split: 'upload/' -%}
-                              {%- assign card_image = rk_last_url[1] | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/t_1x1_recipe_image,f_auto/' -%}
-                            {%- elsif image_url contains 'backblazeb2.com' -%}
-                              {%- assign rk_last_url = image_url | split: 'backblazeb2.com/file/recipekit-bucket/' -%}
-                              {%- assign card_image = 'https://images.getrecipekit.com/' | append: rk_last_url[1] | append: '?aspect_ratio=1:1&quality=90&' -%}
-                            {%- elsif image_url contains 'cdn.shopify.com' -%}
-                              {%- assign card_image = image_url | append: '&width=1000&height=1000' -%}
-                            {%- else -%}
-                              {%- assign card_image = image_url -%}
-                            {%- endif -%}
-                            <img class="recipekit-card-image" src="{{ card_image }}" alt="{{ article.title | escape }}" loading="lazy">
-                          {%- elsif article.image -%}
-                            <img class="recipekit-card-image" src="{{ article.image | img_url: '1000x1000', scale: 2 }}" alt="{{ article.title | escape }}" loading="lazy">
-                          {%- endif -%}
-                          {%- if rk_mf and rk_mf.prep_time != blank -%}
-                            <span class="recipekit-prep-time">{{ rk_mf.prep_time }}</span>
-                          {%- endif -%}
-                        </div>
-                      </div>
-                    </a>
-                    <div class="recipekit-card-meta">
-                      {%- if rk_mf and rk_mf.recipe_category != blank -%}
-                        {%- assign badge_color = '' -%}
-                        {%- assign tag_pairs = tag_color_map | split: ',' -%}
-                        {%- for pair in tag_pairs -%}
-                          {%- assign tag_item = pair | split: ':' | first -%}
-                          {%- assign color = pair | split: ':' | last -%}
-                          {%- if rk_mf.recipe_category == tag_item -%}
-                            {%- assign badge_color = color -%}
-                          {%- endif -%}
-                        {%- endfor -%}
-                        <span class="recipekit-category-badge"{% if badge_color != '' %} style="background: {{ badge_color }}"{% endif %}>{{ rk_mf.recipe_category }}</span>
+            {%- assign category_articles = '' | split: '' -%}
+            {%- assign displayed_article_handles = '' | split: '' -%}
+
+            {%- comment -%}
+              Step 1 & 2: Fetch metaobject handles and collect valid articles
+            {%- endcomment -%}
+            {%- assign metaobject_handles = '' | split: '' -%}
+            {%- if matching_metaobject.recipe_1 and matching_metaobject.recipe_1 != blank -%}
+              {%- assign metaobject_handles = metaobject_handles | push: matching_metaobject.recipe_1 -%}
+            {%- endif -%}
+            {%- if matching_metaobject.recipe_2 and matching_metaobject.recipe_2 != blank -%}
+              {%- assign metaobject_handles = metaobject_handles | push: matching_metaobject.recipe_2 -%}
+            {%- endif -%}
+            {%- if matching_metaobject.recipe_3 and matching_metaobject.recipe_3 != blank -%}
+              {%- assign metaobject_handles = metaobject_handles | push: matching_metaobject.recipe_3 -%}
+            {%- endif -%}
+
+            {%- for recipe_handle in metaobject_handles -%}
+              {%- assign article = blog.articles | where: "handle", recipe_handle | first -%}
+              {%- if article and category_articles.size < 3 -%}
+                {%- assign category_articles = category_articles | push: article -%}
+                {%- assign displayed_article_handles = displayed_article_handles | push: article.handle -%}
+              {%- endif -%}
+            {%- endfor -%}
+
+            {%- comment -%}
+              Step 3 & 4: Determine how many more articles are needed and fetch recent ones
+            {%- endcomment -%}
+            {%- assign needed_articles = 3 | minus: category_articles.size -%}
+
+            {%- if needed_articles > 0 -%}
+              {%- for article_item in blog.articles -%}
+                {%- if category_articles.size >= 3 -%}
+                  {%- break -%}
+                {%- endif -%}
+                {%- if article_item.tags contains block_tag and displayed_article_handles contains article_item.handle == false -%}
+                  {%- assign category_articles = category_articles | push: article_item -%}
+                  {%- assign displayed_article_handles = displayed_article_handles | push: article_item.handle -%}
+                {%- endif -%}
+              {%- endfor -%}
+            {%- endif -%}
+
+            {%- comment -%}
+              Step 5: Render the category_articles
+            {%- endcomment -%}
+            {% for article in category_articles limit: 3 %}
+              {%- assign rk_resource_id = article.id | downcase -%}
+              {%- assign rk_mf = article.metafields.recipekit[rk_resource_id] -%}
+              <div class="recipekit-card-outer">
+                <a href="{{ article.url }}" class="recipekit-card-link" aria-label="{{ article.title | escape }}">
+                  <div class="recipekit-card">
+                    <div class="recipekit-card-image-wrapper">
+                      {%- if rk_mf and rk_mf.recipe_image != blank -%}
+                        {%- assign image_url = rk_mf.recipe_image -%}
+                        {%- if image_url contains 'cloudinary.com' -%}
+                          {%- assign rk_last_url = image_url | split: 'upload/' -%}
+                          {%- assign card_image = rk_last_url[1] | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/t_1x1_recipe_image,f_auto/' -%}
+                        {%- elsif image_url contains 'backblazeb2.com' -%}
+                          {%- assign rk_last_url = image_url | split: 'backblazeb2.com/file/recipekit-bucket/' -%}
+                          {%- assign card_image = 'https://images.getrecipekit.com/' | append: rk_last_url[1] | append: '?aspect_ratio=1:1&quality=90&' -%}
+                        {%- elsif image_url contains 'cdn.shopify.com' -%}
+                          {%- assign card_image = image_url | append: '&width=1000&height=1000' -%}
+                        {%- else -%}
+                          {%- assign card_image = image_url -%}
+                        {%- endif -%}
+                        <img class="recipekit-card-image" src="{{ card_image }}" alt="{{ article.title | escape }}" loading="lazy">
+                      {%- elsif article.image -%}
+                        <img class="recipekit-card-image" src="{{ article.image | img_url: '1000x1000', scale: 2 }}" alt="{{ article.title | escape }}" loading="lazy">
                       {%- endif -%}
-                      <a href="{{ article.url }}" class="recipekit-card-title-link"><div class="recipekit-card-title">{{ article.title }}</div></a>
+                      {%- if rk_mf and rk_mf.prep_time != blank -%}
+                        <span class="recipekit-prep-time">{{ rk_mf.prep_time }}</span>
+                      {%- endif -%}
                     </div>
                   </div>
-                {% endif %}
-              {% endif %}
+                </a>
+                <div class="recipekit-card-meta">
+                  {%- if rk_mf and rk_mf.recipe_category != blank -%}
+                    {%- assign badge_color = '' -%}
+                    {%- assign tag_pairs = tag_color_map | split: ',' -%}
+                    {%- for pair in tag_pairs -%}
+                      {%- assign tag_item = pair | split: ':' | first -%}
+                      {%- assign color = pair | split: ':' | last -%}
+                      {%- if rk_mf.recipe_category == tag_item -%}
+                        {%- assign badge_color = color -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+                    <span class="recipekit-category-badge"{% if badge_color != '' %} style="background: {{ badge_color }}"{% endif %}>{{ rk_mf.recipe_category }}</span>
+                  {%- endif -%}
+                  <a href="{{ article.url }}" class="recipekit-card-title-link"><div class="recipekit-card-title">{{ article.title }}</div></a>
+                </div>
+              </div>
             {% endfor %}
+
             <!-- View More Card -->
             <div class="recipekit-card-outer view-more-card">
               <a href="/blogs/recipes/tagged/{{ block_tag | handle }}" class="recipekit-card-link" aria-label="View more recipes in {{ block_tag }}">
                 <div class="recipekit-card">
                   <div class="recipekit-card-image-wrapper">
                     {% if block.settings.view_more_image != blank %}
-  <img class="recipekit-card-image" src="{{ block.settings.view_more_image | img_url: '600x600', crop: 'center' }}" alt="View More" loading="lazy">
-{% else %}
-  <img class="recipekit-card-image" src="https://cdn.shopify.com/s/files/1/0173/8181/8422/files/Dash_Pattern_Icon_ca6e694e-c077-41e3-bfcb-71692f0d98f4.png?v=1746822390" alt="View More" loading="lazy">
-{% endif %}
+                      <img class="recipekit-card-image" src="{{ block.settings.view_more_image | img_url: '600x600', crop: 'center' }}" alt="View More" loading="lazy">
+                    {% else %}
+                      <img class="recipekit-card-image" src="https://cdn.shopify.com/s/files/1/0173/8181/8422/files/Dash_Pattern_Icon_ca6e694e-c077-41e3-bfcb-71692f0d98f4.png?v=1746822390" alt="View More" loading="lazy">
+                    {% endif %}
                   </div>
                 </div>
               </a>
