@@ -343,71 +343,12 @@
   {%- endif -%}
 {% endif %}
  
-  {% if current_tags != blank and current_tags.size > 0 %}
-    {% assign current_blog_tag = current_tags.first %}
-    <p>DEBUG: Current Blog Tag: {{ current_blog_tag }}</p>
-    {% assign seed_product_id = '4437371682870' %}{% comment %}Default seed product ID{% endcomment %}
-    <p>DEBUG: Initial Seed Product ID: {{ seed_product_id }}</p>
-    {% assign found_products_for_tag = false %}
-
-    {% for recipe_group_entry in shop.metaobjects.recipe_tag_group.values %}
-      <p>DEBUG: Checking Metaobject Tag: {{ recipe_group_entry.tag }} against {{ current_blog_tag }}</p>
-      {% if recipe_group_entry.tag == current_blog_tag %}
-        <p>DEBUG: Matched Metaobject Tag!</p>
-        <p>DEBUG: Metaobject Product Field Value: {{ recipe_group_entry.product }}</p>
-        {% if recipe_group_entry.product and recipe_group_entry.product != blank %}
-          <p>DEBUG: recipe_group_entry.product (RAW JSON attempt): {{ recipe_group_entry.product | json }}</p>
-          <p>DEBUG: recipe_group_entry.product (joined normally): {{ recipe_group_entry.product | join: ', ' }}</p>
-          
-          {% assign gid_string_list = recipe_group_entry.product | join: '##GID_SEPARATOR##' %}
-          <p>DEBUG: GID String List (joined with custom separator): {{ gid_string_list }}</p>
-          {% assign product_gids_array = gid_string_list | split: '##GID_SEPARATOR##' %}
-          <p>DEBUG: Product GIDs Array Size (after split): {{ product_gids_array.size }}</p>
-
-          {% assign temp_products_list = '' | split: '' %}
-
-          <p style="color: red; font-weight: bold;">DEBUG: ABOUT TO ENTER GID LOOP (iterating product_gids_array)</p>
-          {% for gid in product_gids_array %}
-            <p style="color: green; font-weight: bold;">DEBUG: INSIDE GID LOOP - Processing GID: {{ gid }}</p>
-            {% if gid == blank %}{% continue %}{% endif %}{% comment %}Skip if blank, just in case split produces empty elements {% endcomment %}
-            {% assign product_id_parts = gid | split: '/' %}
-            {% assign product_id_numeric = product_id_parts.last | times: 1 %}
-            <p>DEBUG: Extracted Numeric Product ID: {{ product_id_numeric }}</p>
-            {% if product_id_numeric != 0 %}
-                {% assign current_product_object = all_products[product_id_numeric] %}
-                {% if current_product_object %}
-                    <p>DEBUG: Found Product Object: {{ current_product_object.title }} (ID: {{ current_product_object.id }})</p>
-                    {% assign temp_products_list = temp_products_list | push: current_product_object %}
-                {% else %}
-                    <p>DEBUG: Product Object NOT found for ID {{ product_id_numeric }} using all_products[numeric_id_lookup]</p>
-                {% endif %}
-            {% endif %}
-          {% endfor %}
-
-          <p>DEBUG: Temp Products List Size: {{ temp_products_list.size }}</p>
-          {% if temp_products_list.size > 0 %}
-            {% assign sorted_products = temp_products_list | sort: 'total_sold' | reverse %}
-            {% if sorted_products.first %}
-              <p>DEBUG: Top Sorted Product: {{ sorted_products.first.title }} (ID: {{ sorted_products.first.id }}, Sold: {{ sorted_products.first.total_sold }})</p>
-              {% assign seed_product_id = sorted_products.first.id %}
-              {% assign found_products_for_tag = true %}
-            {% else %}
-              <p>DEBUG: Sorted products list is empty.</p>
-            {% endif %}
-          {% endif %}
-        {% else %}
-            <p>DEBUG: Metaobject product field is blank or not structured as expected.</p>
-        {% endif %}
-        {% break %}{% comment %}Exit loop once matching tag is found and processed{% endcomment %}
-      {% endif %}
-    {% endfor %}
-    <p>DEBUG: Final Seed Product ID: {{ seed_product_id }}</p>
-    <p>DEBUG: Found Products for Tag Flag: {{ found_products_for_tag }}</p>
-
+ {% if current_tags != blank and current_tags.size > 0 %}      
+        <!-- Product Recommendations Section -->
   <product-recommendations
     class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-    data-product-id="{{ seed_product_id }}"
-    data-url="/recommendations/products?product_id={{ seed_product_id }}&limit=8"
+    data-product-id="4437371682870"
+    data-url="/recommendations/products?limit=8"
     data-section-id="related-products"
   >
     {% if recommendations.performed and recommendations.products_count > 0 %}
