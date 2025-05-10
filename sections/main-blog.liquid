@@ -378,11 +378,24 @@
             console.log('Product references:', {{ product_references | json }});
           </script>
           
-          {% assign product_ids = product_references | split: ',' %}
-          {% for product_id in product_ids %}
-            {% assign product_id = product_id | strip %}
-            {% if product_id != blank %}
+          {% assign product_references_parsed = product_references | replace: '\"', '"' | remove: '\\' %}
+          {% assign product_gids = product_references_parsed | strip | remove: '[' | remove: ']' | remove: '"' | split: ',' %}
+          
+          <script>
+            console.log('Parsed product GIDs:', {{ product_gids | json }});
+          </script>
+          
+          {% for gid in product_gids %}
+            {% assign gid = gid | strip %}
+            {% if gid != blank %}
+              {% assign gid_parts = gid | split: '/' %}
+              {% assign product_id = gid_parts.last %}
               {% assign product = all_products[product_id] %}
+              
+              <script>
+                console.log('GID:', '{{ gid }}', 'Product ID:', '{{ product_id }}', 'Product found:', {{ product != blank }});
+              </script>
+              
               {% if product != blank %}
                 <li class="grid__item">
                   {% render 'card-product', 
@@ -401,7 +414,7 @@
           {% endfor %}
           
           {% comment %} If no products were rendered, show a message {% endcomment %}
-          {% if product_ids.size == 0 %}
+          {% if product_gids.size == 0 %}
             <li class="grid__item">
               <div class="card-wrapper">
                 <div class="card">
