@@ -345,14 +345,78 @@
  
  {% if current_tags != blank and current_tags.size > 0 %}      
         <!-- Product Recommendations Section -->
+  {% assign current_tag = current_tags | first %}
+  {% assign seed_product_id = '4437371682870' %}
+  
+  {% comment %}Find matching metaobject for the current tag{% endcomment %}
+  {% assign matching_metaobject = nil %}
+  {% assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values %}
+  {% for tag_obj in recipe_tag_group %}
+    {% if tag_obj.tag == current_tag %}
+      {% assign matching_metaobject = tag_obj %}
+      {% break %}
+    {% endif %}
+  {% endfor %}
+  
+  {% comment %}Extract product IDs from the metaobject{% endcomment %}
+  {% if matching_metaobject != nil and matching_metaobject.product != blank %}
+    {% assign product_ids = matching_metaobject.product %}
+    {% if product_ids contains 'gid://' %}
+      {% assign product_id_array = product_ids | replace: '[', '' | replace: ']', '' | replace: '''', '' | replace: ' ', '' | split: ',' %}
+      
+      {% comment %}Create array of clean product IDs without the GID prefix{% endcomment %}
+      {% assign clean_product_ids = '' %}
+      {% for product_id_gid in product_id_array %}
+        {% if product_id_gid contains 'gid://shopify/Product/' %}
+          {% assign clean_id = product_id_gid | replace: 'gid://shopify/Product/', '' %}
+          {% assign clean_product_ids = clean_product_ids | append: clean_id | append: ',' %}
+        {% endif %}
+      {% endfor %}
+      {% assign clean_product_ids = clean_product_ids | split: ',' %}
+      
+      {% comment %}Get products and sort by bestselling{% endcomment %}
+      {% if clean_product_ids.size > 0 %}
+        {% assign product_handles = '' %}
+        {% for product_id in clean_product_ids %}
+          {% assign product = all_products[product_id] %}
+          {% if product.handle != blank %}
+            {% assign product_handles = product_handles | append: product.handle | append: ',' %}
+          {% endif %}
+        {% endfor %}
+        
+        {% assign product_handles = product_handles | split: ',' %}
+        {% if product_handles.size > 0 %}
+          {% assign bestselling_products = collections.all.products | where: "available" | sort: "best-selling" %}
+          {% assign seed_product = nil %}
+          
+          {% comment %}Find the best-selling product from our list{% endcomment %}
+          {% for bestseller in bestselling_products %}
+            {% if product_handles contains bestseller.handle %}
+              {% assign seed_product = bestseller %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
+          
+          {% if seed_product != nil %}
+            {% assign seed_product_id = seed_product.id %}
+          {% elsif clean_product_ids.size > 0 %}
+            {% assign seed_product_id = clean_product_ids | first %}
+          {% endif %}
+        {% elsif clean_product_ids.size > 0 %}
+          {% assign seed_product_id = clean_product_ids | first %}
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+  
   <product-recommendations
     class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-    data-product-id="4437371682870"
+    data-product-id="{{ seed_product_id }}"
     data-url="/recommendations/products?limit=8"
     data-section-id="related-products"
   >
     {% if recommendations.performed and recommendations.products_count > 0 %}
-      <h2 class="main-blog-category-header">You might also like</h2>
+      <h2 class="main-blog-category-header">You might also like {{ seed_product_id }}</h2>
       <ul
         class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
         role="list"
