@@ -139,19 +139,28 @@
               %}
             </div>
             {% if section.settings.show_color_variants == true %}
+              {% assign colors_seen = '' | split: ',' %}
+              {% assign first_color = product.variants.first.options.first | downcase %}
+              {% assign colors_seen = colors_seen | append: first_color %}
+
               {%- for variant in product.variants -%}
-                {%- if variant.available == true and forloop.first == false -%}
-                  <div class="swipeable-product-card">
-                    {% render 'card-product',
-                      card_product: product,
-                      card_variant: variant,
-                      media_aspect_ratio: 'adapt',
-                      image_shape: 'default',
-                      show_secondary_image: false,
-                      show_rating: false
-                    %}
-                  </div>
-                {%- endif -%}
+                {%- assign current_color = variant.options.first | downcase -%}
+
+                {%- unless colors_seen contains current_color -%}
+                  {%- if variant.available == true -%}
+                    {% assign colors_seen = colors_seen | append: current_color %}
+                    <div class="swipeable-product-card">
+                      {% render 'card-product',
+                        card_product: product,
+                        card_variant: variant,
+                        media_aspect_ratio: 'adapt',
+                        image_shape: 'default',
+                        show_secondary_image: false,
+                        show_rating: false
+                      %}
+                    </div>
+                  {%- endif -%}
+                {%- endunless -%}
               {%- endfor -%}
             {% endif %}
           {% else %}
@@ -184,7 +193,6 @@
       "limit": 15
     },
     {
-
       "type": "checkbox",
       "id": "show_color_variants",
       "label": "Show Color Variants",
