@@ -27,11 +27,12 @@
     transition: transform 0.3s ease-in-out;
     gap: 20px;
     padding-left: 4rem;
+    padding-right: 1rem;
   }
 
   .swipeable-product-card {
     flex: 0 0 auto;
-    width: calc(33.333% - 40px);
+    width: calc(33.333% - 30px);
     min-width: 250px;
   }
 
@@ -99,7 +100,13 @@
     <div class=" page-width" style="display: flex; justify-content: space-between; align-items: center;">
       <div class="title-wrapper">
         {%- if section.settings.title != blank -%}
-          <h2 class="title inline-richtext {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+          <h2
+            style="
+              font-weight: 800;
+              font-size: 2.7rem;
+            "
+            class="title inline-richtext {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+          >
             {{ section.settings.title }}
           </h2>
         {%- endif -%}
@@ -131,22 +138,23 @@
                 show_rating: false
               %}
             </div>
-            {%- for variant in product.variants -%}
-              {%- if variant.metafields.custom_but_hidden.col_independent_variant == true
-                and variant.available == true
-              -%}
-                <div class="swipeable-product-card">
-                  {% render 'card-product',
-                    card_product: product,
-                    card_variant: variant,
-                    media_aspect_ratio: 'adapt',
-                    image_shape: 'default',
-                    show_secondary_image: false,
-                    show_rating: false
-                  %}
-                </div>
-              {%- endif -%}
-            {%- endfor -%}
+            {% if section.settings.show_color_variants == true %}
+              {%- for variant in product.variants -%}
+                {%- if variant.available == true and forloop.first == false -%}
+                  <div class="swipeable-product-card">
+                    {% render 'card-product',
+                      card_product: product,
+                      card_variant: variant,
+                      media_aspect_ratio: 'adapt',
+                      image_shape: 'default',
+                      show_secondary_image: false,
+                      show_rating: false
+                    %}
+                  </div>
+                {%- endif -%}
+              {%- endfor -%}
+            {% endif %}
+          {% else %}
           {%- endfor -%}
         </div>
       </div>
@@ -174,6 +182,14 @@
       "id": "products",
       "label": "Products",
       "limit": 15
+    },
+    {
+
+      "type": "checkbox",
+      "id": "show_color_variants",
+      "label": "Show Color Variants",
+      "default": false,
+      "info": "When enabled, each color variant will be shown as a separate product card."
     },
     {
       "type": "color_scheme",
