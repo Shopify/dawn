@@ -1,5 +1,6 @@
 {{ 'component-article-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
 {{ 'section-main-blog.css' | asset_url | stylesheet_tag }}
 {{ 'section-main-blog-recipekit.css' | asset_url | stylesheet_tag }}
 
@@ -350,41 +351,36 @@
 {% if current_tags != blank and current_tags.size > 0 %}      
         <!-- Product Recommendations Section -->
   <product-recommendations
-    class="custom-recommendations page-width"
+    class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
     data-product-id="4437371682870"
     data-url="/recommendations/products?limit=4"
     data-section-id="related-products"
   >
-    {% if recommendations.performed %}
-      <h2>You might also like</h2>
-      <div class="product-grid grid grid--2-col-tablet-down grid--4-col-desktop">
+    {% if recommendations.performed and recommendations.products_count > 0 %}
+      <h2 class="related-products__heading inline-richtext">You might also like</h2>
+      <ul
+        class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
+        role="list"
+      >
+        {% assign skip_card_product_styles = false %}
         {% for product in recommendations.products %}
-          {% render 'card-product', 
-            card_product: product,
-            show_vendor: false,
-            media_aspect_ratio: 'square',
-            show_secondary_image: true
-          %}
+          <li class="grid__item">
+            {% render 'card-product',
+              card_product: product,
+              media_aspect_ratio: 'square',
+              show_secondary_image: true,
+              show_vendor: false,
+              show_rating: false,
+              skip_styles: skip_card_product_styles
+            %}
+          </li>
+          {%- assign skip_card_product_styles = true -%}
         {% endfor %}
-      </div>
+      </ul>
     {% endif %}
   </product-recommendations>
 {% endif %}
 <style>
-/* Custom styles for product recommendations */
-.custom-recommendations .media.media--hover-effect > img + img {
-  opacity: 0;
-  transition: opacity var(--duration-long) ease;
-}
-
-.custom-recommendations .card-wrapper:hover .media.media--hover-effect > img:first-child:not(:only-child) {
-  opacity: 0;
-}
-
-.custom-recommendations .card-wrapper:hover .media.media--hover-effect > img + img {
-  opacity: 1;
-}
-
 .blog-banner {
   width: 100%;
   margin-bottom: 32px;
