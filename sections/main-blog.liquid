@@ -354,16 +354,17 @@
         {% endif %}
       {% endfor %}
       
-      {% comment %}Extract product ID from best_selling_product field{% endcomment %}
+      {% comment %}Extract product ID and store both the GID and numeric ID{% endcomment %}
       {% assign product_id = '4437371682870' %} {% comment %}Default fallback ID{% endcomment %}
+      {% assign original_product_gid = '' %}
       {% if matching_tag_obj != nil and matching_tag_obj.best_selling_product != blank %}
-        {% assign best_selling_product = matching_tag_obj.best_selling_product | strip %}
-        {% comment %}Extract numeric ID from gid format if needed{% endcomment %}
-        {% if best_selling_product contains "gid://" %}
-          {% assign product_id_parts = best_selling_product | split: '/' %}
+        {% assign original_product_gid = matching_tag_obj.best_selling_product | strip %}
+        {% comment %}Store both the GID and numeric ID for flexibility{% endcomment %}
+        {% if original_product_gid contains "gid://" %}
+          {% assign product_id_parts = original_product_gid | split: '/' %}
           {% assign product_id = product_id_parts | last %}
         {% else %}
-          {% assign product_id = best_selling_product %}
+          {% assign product_id = original_product_gid %}
         {% endif %}
       {% endif %}
       
@@ -373,10 +374,54 @@
     
     <!-- Combined product grid with seed product and recommendations -->
     <div class="combined-product-grid">
-      <!-- Seed product card -->
+      <!-- Seed product card with debug info visible -->
       {% assign skip_card_product_styles = false %}
-      {%- capture product_id_as_number -%}{{ product_id | plus: 0 }}{%- endcapture -%}
-      {% assign seed_product = product_id_as_number | append: '' | product_object %}
+      
+      <!-- Debug info for troubleshooting -->
+      <div style="background: #f5f5f5; border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; font-family: monospace; font-size: 14px;">
+        <p><strong>Product ID:</strong> {{ product_id }}</p>
+        
+        {% comment %}Attempt to load product using several methods{% endcomment %}
+        {% assign seed_product = null %}
+        
+        {% comment %}Method 1: Try loading by variant ID{% endcomment %}
+        {% for product in collections.all.products limit: 200 %}
+          {% for variant in product.variants %}
+            {% if variant.id == product_id or variant.id == product_id | plus: 0 %}
+              {% assign seed_product = product %}
+              <p style="color: green;"><strong>✅ Found match by variant ID!</strong> Product: {{ product.title }}</p>
+              {% break %}
+            {% endif %}
+          {% endfor %}
+          {% if seed_product != null %}{% break %}{% endif %}
+        {% endfor %}
+        
+        {% comment %}Method 2: Try by product ID{% endcomment %}
+        {% if seed_product == null %}
+          {% for product in collections.all.products limit: 200 %}
+            {% if product.id == product_id or product.id == product_id | plus: 0 %}
+              {% assign seed_product = product %}
+              <p style="color: green;"><strong>✅ Found match by product ID!</strong> Product: {{ product.title }}</p>
+              {% break %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        
+        {% comment %}Method 3: If we have the GID, try to get the handle and use that{% endcomment %}
+        {% if seed_product == null and matching_tag_obj.best_selling_product contains "gid://" %}
+          {% assign gid = matching_tag_obj.best_selling_product %}
+          <p><strong>Original GID:</strong> {{ gid }}</p>
+          
+          {% comment %}If we can access the actual product from the GID directly{% endcomment %}
+          {% if gid contains "/Product/" %}
+            <p><strong>Detected Product GID</strong></p>
+          {% endif %}
+        {% endif %}
+        
+        {% if seed_product == null %}
+          <p style="color: red;"><strong>❌ Could not find product with ID:</strong> {{ product_id }}</p>
+        {% endif %}
+      </div>
       {% if seed_product != blank %}
         <div class="seed-product-wrapper">
           <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list" style="margin-bottom: 0;">
