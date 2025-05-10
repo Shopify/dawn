@@ -357,12 +357,19 @@
         <p>DEBUG: Metaobject Product Field Value: {{ recipe_group_entry.product }}</p>
         {% if recipe_group_entry.product and recipe_group_entry.product != blank %}
           <p>DEBUG: recipe_group_entry.product (RAW JSON attempt): {{ recipe_group_entry.product | json }}</p>
-          <p>DEBUG: recipe_group_entry.product (joined): {{ recipe_group_entry.product | join: ', ' }}</p>
+          <p>DEBUG: recipe_group_entry.product (joined normally): {{ recipe_group_entry.product | join: ', ' }}</p>
+          
+          {% assign gid_string_list = recipe_group_entry.product | join: '##GID_SEPARATOR##' %}
+          <p>DEBUG: GID String List (joined with custom separator): {{ gid_string_list }}</p>
+          {% assign product_gids_array = gid_string_list | split: '##GID_SEPARATOR##' %}
+          <p>DEBUG: Product GIDs Array Size (after split): {{ product_gids_array.size }}</p>
+
           {% assign temp_products_list = '' | split: '' %}
 
-          <p style="color: red; font-weight: bold;">DEBUG: ABOUT TO ENTER GID LOOP (iterating recipe_group_entry.product)</p>
-          {% for gid in recipe_group_entry.product %}
+          <p style="color: red; font-weight: bold;">DEBUG: ABOUT TO ENTER GID LOOP (iterating product_gids_array)</p>
+          {% for gid in product_gids_array %}
             <p style="color: green; font-weight: bold;">DEBUG: INSIDE GID LOOP - Processing GID: {{ gid }}</p>
+            {% if gid == blank %}{% continue %}{% endif %}{% comment %}Skip if blank, just in case split produces empty elements {% endcomment %}
             {% assign product_id_parts = gid | split: '/' %}
             {% assign product_id_numeric = product_id_parts.last | times: 1 %}
             <p>DEBUG: Extracted Numeric Product ID: {{ product_id_numeric }}</p>
