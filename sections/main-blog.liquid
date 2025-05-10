@@ -367,65 +367,86 @@
         {% endif %}
       {% endif %}
 
-      {%- comment -%} Render the seed product card outside recommendations {%- endcomment -%}
+      {%- comment -%} Logic to get seed_product_handle {%- endcomment -%}
       {% assign seed_product_handle = nil %}
       {% assign product_id_number = product_id | plus: 0 %}
-      {% for product in collections.all.products %}
-        {% if product.id == product_id %}
-          {% assign seed_product_handle = product.handle %}
+      {% for product_loop_var in collections.all.products %}
+        {% if product_loop_var.id == product_id %}
+          {% assign seed_product_handle = product_loop_var.handle %}
           {% break %}
-        {% elsif product.id == product_id_number %}
-          {% assign seed_product_handle = product.handle %}
+        {% elsif product_loop_var.id == product_id_number %}
+          {% assign seed_product_handle = product_loop_var.handle %}
           {% break %}
         {% endif %}
       {% endfor %}
+
+      {%- comment -%} Determine if we have a valid seed product object {%- endcomment -%}
+      {% assign has_valid_seed_product = false %}
+      {% assign seed_product_object = nil %}
       {% if seed_product_handle %}
-        {% assign seed_product = all_products[seed_product_handle] %}
-        <div style="margin-bottom: 2rem;">
-          <h3>Featured Product</h3>
-          {% render 'card-product',
-            card_product: seed_product,
-            media_aspect_ratio: square,
-            show_secondary_image: true,
-            show_vendor: false,
-            show_rating: false,
-            skip_styles: false
-          %}
-        </div>
+        {% assign seed_product_object = all_products[seed_product_handle] %}
+        {% if seed_product_object %}
+          {% assign has_valid_seed_product = true %}
+        {% endif %}
       {% endif %}
       
-        <!-- Product Recommendations Section -->
-  <product-recommendations
-    class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-    data-product-id="{{ product_id }}"
-    data-url="/recommendations/products?limit=8"
-    data-section-id="related-products"
-  >
-    {% if recommendations.performed and recommendations.products_count > 0 %}
-      <h2 class="related-products__heading inline-richtext main-blog-category-header">You might also like</h2>
-      <ul
-        class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
-        role="list"
+      {%- comment -%} Product Recommendations Section Wrapper {%- endcomment -%}
+      <product-recommendations
+        class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+        data-product-id="{{ product_id }}"
+        data-url="/recommendations/products?limit=8"
+        data-section-id="related-products"
       >
-        {% assign skip_card_product_styles = false %}
-        {% for product in recommendations.products %}
-          <li class="grid__item">
-            {% render 'card-product',
-              card_product: product,
-              media_aspect_ratio: square,
-              show_secondary_image: true,
-              show_vendor: false,
-              show_rating: false,
-              skip_styles: skip_card_product_styles
-            %}
-          </li>
-          {%- assign skip_card_product_styles = true -%}
-        {% endfor %}
-      </ul>
-    {% endif %}
-  </product-recommendations>
-{% endif %}
+        {%- comment -%} 
+          Only display the heading and list IF we have a seed product OR actual recommendations.
+        {%- endcomment -%}
+        {% if has_valid_seed_product or (recommendations.performed and recommendations.products_count > 0) %}
+          
+          <h2 class="related-products__heading inline-richtext main-blog-category-header">You might also like</h2>
+          
+          <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list">
+            
+            {%- comment -%} First LI: Seed Product {%- endcomment -%}
+            {% if has_valid_seed_product %}
+              <li class="grid__item">
+                {% render 'card-product',
+                  card_product: seed_product_object,
+                  media_aspect_ratio: square,
+                  show_secondary_image: true,
+                  show_vendor: false,
+                  show_rating: false,
+                  skip_styles: false
+                %}
+              </li>
+            {% endif %}
 
+            {%- comment -%} Subsequent LIs: Recommended Products {%- endcomment -%}
+            {% if recommendations.performed and recommendations.products_count > 0 %}
+              {% assign skip_card_product_styles = false %}
+              {% for product_rec_item in recommendations.products %}
+                {%- comment -%} Skip rendering the seed product if it also appears in recommendations AND we already rendered it {%- endcomment -%}
+                {% if has_valid_seed_product and product_rec_item.id == seed_product_object.id %}{% continue %}{% endif %}
+                
+                <li class="grid__item">
+                  {% render 'card-product',
+                    card_product: product_rec_item,
+                    media_aspect_ratio: square,
+                    show_secondary_image: true,
+                    show_vendor: false,
+                    show_rating: false,
+                    skip_styles: skip_card_product_styles
+                  %}
+                </li>
+                {%- assign skip_card_product_styles = true -%}
+              {% endfor %}
+            {% endif %}
+            
+          </ul>
+          
+        {% endif %}
+        
+      </product-recommendations>
+{% endif %}
  
   </div>
 
