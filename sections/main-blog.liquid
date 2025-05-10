@@ -264,29 +264,7 @@
               {% endif %}
             {% endfor %}
             <!-- Product Recommendations for this tagged group -->
-            <div class="main-blog-product-recommendations">
-              <product-recommendations
-                class="related-products page-width section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-                data-url="/recommendations/products?section_id={{ section.id }}&product_id=4437371682870&limit=4"
-                data-section-id="{{ section.id }}"
-                data-product-id="4437371682870"
-              >
-                {% if recommendations.performed and recommendations.products_count > 0 %}
-                  <h2 class="related-products__heading inline-richtext h3">
-                    Recommended Products
-                  </h2>
-                  <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list">
-                    {% assign skip_card_product_styles = false %}
-                    {% for recommendation in recommendations.products %}
-                      <li class="grid__item">
-                        {% render 'card-product', card_product: recommendation, skip_styles: skip_card_product_styles, section_id: section.id %}
-                      </li>
-                      {%- assign skip_card_product_styles = true -%}
-                    {% endfor %}
-                  </ul>
-                {% endif %}
-              </product-recommendations>
-            </div>
+            <div class="main-blog-product-recommendations" id="recommendations-for-{{ block_tag | handle }}"></div>
             <!-- View More Card -->
             <div class="recipekit-card-outer view-more-card">
               <a href="/blogs/recipes/tagged/{{ block_tag | handle }}" class="recipekit-card-link" aria-label="View more recipes in {{ block_tag }}">
@@ -600,9 +578,30 @@
   font-weight: 700;
   color: #3d174f;
 }
-</style>
 
-
+{% javascript %}
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.main-blog-product-recommendations').forEach(function(container) {
+    var productId = '4437371682870';
+    var sectionId = '{{ section.id }}';
+    var url = '/recommendations/products?section_id=' + sectionId + '&product_id=' + productId + '&limit=4';
+    fetch(url)
+      .then(function(response) { return response.text(); })
+      .then(function(html) {
+        var tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        // Try to find a product grid or recommendations block in the returned HTML
+        var recommendations = tempDiv.querySelector('.product-grid, .related-products, .main-blog-product-recommendations');
+        if (recommendations) {
+          container.innerHTML = recommendations.outerHTML;
+        } else {
+          // fallback: inject entire returned HTML
+          container.innerHTML = html;
+        }
+      });
+  });
+});
+{% endjavascript %}
 
 {% schema %}
 {
