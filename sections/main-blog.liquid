@@ -403,50 +403,41 @@
         <p><strong>Clean Product IDs ({{ clean_product_ids.size }} items):</strong></p>
         <ul>
           {% for id in clean_product_ids %}
-            <li>{{ id }} {% assign p = all_products[id] %}{% if p != blank %}- found product: {{ p.title }} (handle: {{ p.handle }}){% else %}- NOT FOUND in all_products{% endif %}</li>
+            <li>{{ id }}</li>
           {% endfor %}
         </ul>
       </div>
       
       {% comment %}Get products and sort by bestselling{% endcomment %}
       {% if clean_product_ids.size > 0 %}
-        {% assign product_handles = '' %}
-        {% for product_id in clean_product_ids %}
-          {% assign product = all_products[product_id] %}
-          {% if product.handle != blank %}
-            {% assign product_handles = product_handles | append: product.handle | append: ',' %}
-          {% endif %}
+        {% assign product_handles_from_ids = '' | split: '' %} 
+        {% for c_id_str in clean_product_ids %}
+          {% assign c_id_num = c_id_str | times: 1 %} 
+          {% for p in collections.all.products %}
+            {% if p.id == c_id_num %}
+              {% assign product_handles_from_ids = product_handles_from_ids | push: p.handle %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
         {% endfor %}
         
-        {% assign product_handles = product_handles | split: ',' %}
-        
-        <!-- DEBUG: Product Handles -->
+        <!-- DEBUG: Product Handles from IDs -->
         <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc; font-family: monospace; font-size: 12px;">
-          <p><strong>Product Handles ({{ product_handles.size }} items):</strong></p>
+          <p><strong>Product Handles from IDs ({{ product_handles_from_ids.size }} items):</strong></p>
           <ul>
-            {% for handle in product_handles %}
+            {% for handle in product_handles_from_ids %}
               <li>{{ handle }}</li>
             {% endfor %}
           </ul>
         </div>
-        <!-- DEBUG: First 10 Bestselling Handles -->
-        <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc; font-family: monospace; font-size: 12px;">
-          <p><strong>First 10 Bestselling Handles:</strong></p>
-          <ul>
-            {% assign bestselling_products = collections.all.products | where: "available" | sort: "best-selling" %}
-            {% for bestseller in bestselling_products limit: 10 %}
-              <li>{{ bestseller.handle }}</li>
-            {% endfor %}
-          </ul>
-        </div>
         
-        {% if product_handles.size > 0 %}
+        {% if product_handles_from_ids.size > 0 %}
           {% assign bestselling_products = collections.all.products | where: "available" | sort: "best-selling" %}
           {% assign seed_product = nil %}
           
           {% comment %}Find the best-selling product from our list{% endcomment %}
           {% for bestseller in bestselling_products limit: 20 %}
-            {% if product_handles contains bestseller.handle %}
+            {% if product_handles_from_ids contains bestseller.handle %}
               {% assign seed_product = bestseller %}
               {% break %}
             {% endif %}
