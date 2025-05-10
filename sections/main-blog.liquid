@@ -367,45 +367,22 @@
         {% endif %}
       {% endif %}
       
-        <!-- Product Recommendations Section -->
-  <product-recommendations
-    class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-    data-product-id="{{ product_id }}"
-    data-url="/recommendations/products?limit=8"
-    data-section-id="related-products"
-  >
-    {% if recommendations.performed and recommendations.products_count > 0 or product_id != blank %}
-      <h2 class="related-products__heading inline-richtext main-blog-category-header">You might also like</h2>
-      <ul
-        class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
-        role="list"
-      >
-        {% assign skip_card_product_styles = false %}
-        
-        {% comment %}First add the seed product using the product_id{% endcomment %}
-        {%- capture product_id_as_number -%}{{ product_id | plus: 0 }}{%- endcapture -%}
-        {% assign seed_product = product_id_as_number | append: '' | product_object %}
-        {% if seed_product != blank %}
-          <li class="grid__item">
-            {% render 'card-product',
-              card_product: seed_product,
-              media_aspect_ratio: square,
-              show_secondary_image: true,
-              show_vendor: false,
-              show_rating: false,
-              skip_styles: skip_card_product_styles
-            %}
-          </li>
-          {%- assign skip_card_product_styles = true -%}
-        {% endif %}
-        
-        {% comment %}Then add the recommended products{% endcomment %}
-        {% for product in recommendations.products %}
-          {% comment %}Skip if this is the same as the seed product{% endcomment %}
-          {% if product.id != seed_product.id %}
+        <!-- Custom Product Recommendations Section -->
+  <div class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+    <h2 class="related-products__heading inline-richtext main-blog-category-header">You might also like</h2>
+    
+    <!-- Combined product grid with seed product and recommendations -->
+    <div class="combined-product-grid">
+      <!-- Seed product card -->
+      {% assign skip_card_product_styles = false %}
+      {%- capture product_id_as_number -%}{{ product_id | plus: 0 }}{%- endcapture -%}
+      {% assign seed_product = product_id_as_number | append: '' | product_object %}
+      {% if seed_product != blank %}
+        <div class="seed-product-wrapper">
+          <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list" style="margin-bottom: 0;">
             <li class="grid__item">
               {% render 'card-product',
-                card_product: product,
+                card_product: seed_product,
                 media_aspect_ratio: square,
                 show_secondary_image: true,
                 show_vendor: false,
@@ -413,12 +390,44 @@
                 skip_styles: skip_card_product_styles
               %}
             </li>
-            {%- assign skip_card_product_styles = true -%}
-          {% endif %}
-        {% endfor %}
-      </ul>
-    {% endif %}
-  </product-recommendations>
+          </ul>
+        </div>
+        {%- assign skip_card_product_styles = true -%}
+      {% endif %}
+      
+      <!-- Shopify Product Recommendations -->
+      <product-recommendations
+        class="shopify-recommendations"
+        data-product-id="{{ product_id }}"
+        data-url="/recommendations/products?limit=7"
+        data-section-id="related-products"
+      >
+        {% if recommendations.performed and recommendations.products_count > 0 %}
+          <ul
+            class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
+            role="list"
+          >
+            {% comment %}Add the recommended products (except the seed product){% endcomment %}
+            {% for product in recommendations.products %}
+              {% comment %}Skip if this is the same as the seed product{% endcomment %}
+              {% if product.id != seed_product.id %}
+                <li class="grid__item">
+                  {% render 'card-product',
+                    card_product: product,
+                    media_aspect_ratio: square,
+                    show_secondary_image: true,
+                    show_vendor: false,
+                    show_rating: false,
+                    skip_styles: skip_card_product_styles
+                  %}
+                </li>
+                {%- assign skip_card_product_styles = true -%}
+              {% endif %}
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </product-recommendations>
+    </div>
 {% endif %}
 
  
@@ -430,6 +439,22 @@
 
 
 <style>
+/* Combined product grid styling */
+.combined-product-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.seed-product-wrapper ul.product-grid {
+  margin-bottom: 0;
+}
+
+.shopify-recommendations ul.product-grid {
+  margin-top: 0;
+}
+
+/* Existing styles */
 .blog-banner {
   width: 100%;
   margin-bottom: 32px;
