@@ -2,6 +2,8 @@
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'section-main-blog.css' | asset_url | stylesheet_tag }}
 {{ 'section-main-blog-recipekit.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+{{ 'section-related-products.css' | asset_url | stylesheet_tag }}
 
 {%- style -%}
   .section-{{ section.id }}-padding {
@@ -281,25 +283,19 @@
               </div>
             </div>
           </div>
-        {%- comment -%}
-          Product Recommendations for this tag group
-        {%- endcomment -%}
-        {%- comment -%} Parse product GID array from stringified JSON array {%- endcomment -%}
-        {%- assign product_gid_string = matching_metaobject.product | remove: '[' | remove: ']' | remove: '"' -%}
-        {%- assign product_gid_array = product_gid_string | split: ',' -%}
-        {%- assign first_product_gid = product_gid_array[0] | strip -%}
-        {%- if first_product_gid != blank -%}
-          <div class="main-blog-recommendations color-background-2 gradient" style="margin-top: 2em;">
+          <!-- Product Recommendations -->
+          {% unless block_tag == 'Popular' %}
+          {% if matching_metaobject and matching_metaobject.product != blank %}
+            {% assign first_product_gid = matching_metaobject.product | first %}
+            {% assign first_product_numeric = first_product_gid | split: '/' | last %}
             <product-recommendations
-              class="related-products page-width section-{{ section.id }}-padding isolate"
-              data-url="{{ routes.product_recommendations_url }}?section_id=main-blog&limit=4"
-              data-section-id="main-blog"
-              data-product-id="{{ first_product_gid }}"
+              class="related-products page-width inline-related-products"
+              data-url="{{ routes.product_recommendations_url }}?limit=4&product_id={{ first_product_numeric }}"
+              data-section-id="{{ section.id }}-{{ block_tag | handle }}"
+              data-product-id="{{ first_product_numeric }}"
             >
               {% if recommendations.performed and recommendations.products_count > 0 %}
-                <h2 class="related-products__heading inline-richtext h2">
-                  Recommended Products for {{ block_tag }}
-                </h2>
+                <h2 class="related-products__heading">Shop {{ block_tag }}</h2>
                 <ul
                   class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
                   role="list"
@@ -311,23 +307,24 @@
                         card_product: recommendation,
                         media_aspect_ratio: 'square',
                         image_shape: 'default',
-                        show_secondary_image: false,
+                        show_secondary_image: true,
                         show_vendor: false,
                         show_rating: false,
                         skip_styles: skip_card_product_styles
                       %}
                     </li>
-                    {%- assign skip_card_product_styles = true -%}
+                    {% assign skip_card_product_styles = true %}
                   {% endfor %}
                 </ul>
               {% endif %}
             </product-recommendations>
-          </div>
-        {%- endif -%}
+          {% endif %}
+          {% endunless %}
+        </div>
       </div>
     {% endif %}
-    {% endfor %}
-  </div>
+  {% endfor %}
+</div>
 {% else %}
   <div class="main-blog-recipekit-grid">
     {%- for article in blog.articles -%}
@@ -784,8 +781,3 @@
   ]
 }
 {% endschema %}
-
-{%- comment -%}
-  Move any required <script> for product-recommendations here if needed in future.
-{%- endcomment -%}
-
