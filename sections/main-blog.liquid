@@ -344,28 +344,56 @@
 {% endif %}
  
  {% if current_tags != blank and current_tags.size > 0 %}
-      {% comment %}Find the matching metaobject for the current tag{% endcomment %}
-      {% assign matching_tag_obj = nil %}
-      {% assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values %}
-      {% for tag_obj in recipe_tag_group %}
-        {% if current_tags contains tag_obj.tag %}
-          {% assign matching_tag_obj = tag_obj %}
-          {% break %}
-        {% endif %}
-      {% endfor %}
-      
-      {% comment %}Extract product ID from best_selling_product field{% endcomment %}
-      {% assign product_id = '4437371682870' %} {% comment %}Default fallback ID{% endcomment %}
-      {% if matching_tag_obj != nil and matching_tag_obj.best_selling_product != blank %}
-        {% assign best_selling_product = matching_tag_obj.best_selling_product %}
-        {% comment %}Extract numeric ID from gid format if needed{% endcomment %}
-        {% if best_selling_product contains 'gid://' %}
-          {% assign product_id_parts = best_selling_product | split: '/' %}
-          {% assign product_id = product_id_parts | last %}
+      <!-- DEBUG INFO START -->
+      <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 10px; margin: 10px 0; font-family: monospace; font-size: 14px;">
+        <div><strong>Current Tags:</strong> {{ current_tags | join: ', ' }}</div>
+        
+        {% comment %}Find the matching metaobject for the current tag{% endcomment %}
+        {% assign matching_tag_obj = nil %}
+        {% assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values %}
+        <div><strong>Available Tag Objects:</strong> 
+          <ul style="margin: 5px 0 5px 20px;">
+          {% for tag_obj in recipe_tag_group %}
+            <li>{{ tag_obj.tag }} (has best_selling_product: {% if tag_obj.best_selling_product != blank %}yes{% else %}no{% endif %})</li>
+            {% if current_tags contains tag_obj.tag %}
+              {% assign matching_tag_obj = tag_obj %}
+              {% assign matched_tag = tag_obj.tag %}
+            {% endif %}
+          {% endfor %}
+          </ul>
+        </div>
+        
+        <div><strong>Matched Tag:</strong> {% if matching_tag_obj != nil %}{{ matched_tag }}{% else %}None{% endif %}</div>
+        
+        {% comment %}Extract product ID from best_selling_product field{% endcomment %}
+        {% assign product_id = '4437371682870' %} {% comment %}Default fallback ID{% endcomment %}
+        <div><strong>Initial Product ID:</strong> {{ product_id }} (default fallback)</div>
+        
+        {% if matching_tag_obj != nil %}
+          <div><strong>Best Selling Product Raw Value:</strong> {{ matching_tag_obj.best_selling_product }}</div>
+          
+          {% if matching_tag_obj.best_selling_product != blank %}
+            {% assign best_selling_product = matching_tag_obj.best_selling_product %}
+            {% comment %}Extract numeric ID from gid format if needed{% endcomment %}
+            {% if best_selling_product contains 'gid://' %}
+              {% assign product_id_parts = best_selling_product | split: '/' %}
+              <div><strong>Product ID Parts:</strong> {{ product_id_parts | join: ', ' }}</div>
+              {% assign product_id = product_id_parts | last %}
+              <div><strong>Extracted Product ID:</strong> {{ product_id }} (from GID)</div>
+            {% else %}
+              {% assign product_id = best_selling_product %}
+              <div><strong>Direct Product ID:</strong> {{ product_id }}</div>
+            {% endif %}
+          {% else %}
+            <div><strong>No Best Selling Product Found:</strong> Using default ID</div>
+          {% endif %}
         {% else %}
-          {% assign product_id = best_selling_product %}
+          <div><strong>No Matching Tag Object Found:</strong> Using default ID</div>
         {% endif %}
-      {% endif %}
+        
+        <div><strong>Final Product ID Used:</strong> {{ product_id }}</div>
+      </div>
+      <!-- DEBUG INFO END -->
       
         <!-- Product Recommendations Section -->
   <product-recommendations
