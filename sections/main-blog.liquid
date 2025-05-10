@@ -348,6 +348,11 @@
   {% assign current_tag = current_tags | first %}
   {% assign seed_product_id = '4437371682870' %}
   
+  <!-- DEBUG: Current Tag -->
+  <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc; font-family: monospace; font-size: 12px;">
+    <p><strong>Current Tag:</strong> {{ current_tag }}</p>
+  </div>
+  
   {% comment %}Find matching metaobject for the current tag{% endcomment %}
   {% assign matching_metaobject = nil %}
   {% assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values %}
@@ -358,11 +363,30 @@
     {% endif %}
   {% endfor %}
   
+  <!-- DEBUG: Matching Metaobject -->
+  <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc; font-family: monospace; font-size: 12px;">
+    <p><strong>Matching Metaobject Found:</strong> {% if matching_metaobject != nil %}Yes{% else %}No{% endif %}</p>
+    {% if matching_metaobject != nil %}
+      <p><strong>Metaobject Tag:</strong> {{ matching_metaobject.tag }}</p>
+      <p><strong>Raw Product IDs:</strong> {{ matching_metaobject.product }}</p>
+    {% endif %}
+  </div>
+  
   {% comment %}Extract product IDs from the metaobject{% endcomment %}
   {% if matching_metaobject != nil and matching_metaobject.product != blank %}
     {% assign product_ids = matching_metaobject.product %}
     {% if product_ids contains 'gid://' %}
       {% assign product_id_array = product_ids | replace: '[', '' | replace: ']', '' | replace: "'", '' | replace: ' ', '' | split: ',' %}
+      
+      <!-- DEBUG: Product ID Array -->
+      <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc; font-family: monospace; font-size: 12px;">
+        <p><strong>Product ID Array ({{ product_id_array.size }} items):</strong></p>
+        <ul>
+          {% for id in product_id_array %}
+            <li>{{ id }}</li>
+          {% endfor %}
+        </ul>
+      </div>
       
       {% comment %}Create array of clean product IDs without the GID prefix{% endcomment %}
       {% assign clean_product_ids = '' %}
@@ -373,6 +397,16 @@
         {% endif %}
       {% endfor %}
       {% assign clean_product_ids = clean_product_ids | split: ',' %}
+      
+      <!-- DEBUG: Clean Product IDs -->
+      <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc; font-family: monospace; font-size: 12px;">
+        <p><strong>Clean Product IDs ({{ clean_product_ids.size }} items):</strong></p>
+        <ul>
+          {% for id in clean_product_ids %}
+            <li>{{ id }}</li>
+          {% endfor %}
+        </ul>
+      </div>
       
       {% comment %}Get products and sort by bestselling{% endcomment %}
       {% if clean_product_ids.size > 0 %}
@@ -385,17 +419,38 @@
         {% endfor %}
         
         {% assign product_handles = product_handles | split: ',' %}
+        
+        <!-- DEBUG: Product Handles -->
+        <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc; font-family: monospace; font-size: 12px;">
+          <p><strong>Product Handles ({{ product_handles.size }} items):</strong></p>
+          <ul>
+            {% for handle in product_handles %}
+              <li>{{ handle }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        
         {% if product_handles.size > 0 %}
           {% assign bestselling_products = collections.all.products | where: "available" | sort: "best-selling" %}
           {% assign seed_product = nil %}
           
           {% comment %}Find the best-selling product from our list{% endcomment %}
-          {% for bestseller in bestselling_products %}
+          {% for bestseller in bestselling_products limit: 20 %}
             {% if product_handles contains bestseller.handle %}
               {% assign seed_product = bestseller %}
               {% break %}
             {% endif %}
           {% endfor %}
+          
+          <!-- DEBUG: Bestselling Product -->
+          <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc; font-family: monospace; font-size: 12px;">
+            <p><strong>Found Bestselling Product:</strong> {% if seed_product != nil %}Yes{% else %}No{% endif %}</p>
+            {% if seed_product != nil %}
+              <p><strong>Product Title:</strong> {{ seed_product.title }}</p>
+              <p><strong>Product ID:</strong> {{ seed_product.id }}</p>
+              <p><strong>Product Handle:</strong> {{ seed_product.handle }}</p>
+            {% endif %}
+          </div>
           
           {% if seed_product != nil %}
             {% assign seed_product_id = seed_product.id %}
@@ -409,6 +464,11 @@
     {% endif %}
   {% endif %}
   
+  <!-- DEBUG: Final Seed Product ID -->
+  <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc; font-family: monospace; font-size: 12px;">
+    <p><strong>Final Seed Product ID:</strong> {{ seed_product_id }}</p>
+  </div>
+  
   <product-recommendations
     class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
     data-product-id="{{ seed_product_id }}"
@@ -416,7 +476,7 @@
     data-section-id="related-products"
   >
     {% if recommendations.performed and recommendations.products_count > 0 %}
-      <h2 class="main-blog-category-header">You might also like {{ product_handles }}</h2>
+      <h2 class="main-blog-category-header">You might also like</h2>
       <ul
         class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
         role="list"
