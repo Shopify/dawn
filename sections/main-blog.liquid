@@ -343,11 +343,34 @@
   {%- endif -%}
 {% endif %}
  
- {% if current_tags != blank and current_tags.size > 0 %}      
+ {% if current_tags != blank and current_tags.size > 0 %}
+      {% comment %}Find the matching metaobject for the current tag{% endcomment %}
+      {% assign matching_tag_obj = nil %}
+      {% assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values %}
+      {% for tag_obj in recipe_tag_group %}
+        {% if current_tags contains tag_obj.tag %}
+          {% assign matching_tag_obj = tag_obj %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+      
+      {% comment %}Extract product ID from best_selling_product field{% endcomment %}
+      {% assign product_id = '4437371682870' %} {% comment %}Default fallback ID{% endcomment %}
+      {% if matching_tag_obj != nil and matching_tag_obj.best_selling_product != blank %}
+        {% assign best_selling_product = matching_tag_obj.best_selling_product %}
+        {% comment %}Extract numeric ID from gid format if needed{% endcomment %}
+        {% if best_selling_product contains 'gid://' %}
+          {% assign product_id_parts = best_selling_product | split: '/' %}
+          {% assign product_id = product_id_parts | last %}
+        {% else %}
+          {% assign product_id = best_selling_product %}
+        {% endif %}
+      {% endif %}
+      
         <!-- Product Recommendations Section -->
   <product-recommendations
     class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-    data-product-id="4437371682870"
+    data-product-id="{{ product_id }}"
     data-url="/recommendations/products?limit=8"
     data-section-id="related-products"
   >
