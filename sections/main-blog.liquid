@@ -369,12 +369,8 @@
 
       {%- comment -%} Render the seed product card outside recommendations {%- endcomment -%}
       {% assign seed_product_handle = nil %}
-      {% assign product_id_number = product_id | plus: 0 %}
       {% for product in collections.all.products %}
-        {% if product.id == product_id %}
-          {% assign seed_product_handle = product.handle %}
-          {% break %}
-        {% elsif product.id == product_id_number %}
+        {% if product.id == product_id or product.id == product_id | plus: 0 %}
           {% assign seed_product_handle = product.handle %}
           {% break %}
         {% endif %}
@@ -407,37 +403,21 @@
         class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
         role="list"
       >
+        {% assign skip_card_product_styles = false %}
+        {% for product in recommendations.products %}
+          <li class="grid__item">
+            {% render 'card-product',
+              card_product: product,
+              media_aspect_ratio: square,
+              show_secondary_image: true,
+              show_vendor: false,
+              show_rating: false,
+              skip_styles: skip_card_product_styles
+            %}
+          </li>
+          {%- assign skip_card_product_styles = true -%}
+        {% endfor %}
       </ul>
-
-<ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list">
-  {%- if seed_product_handle -%}
-    {% assign seed_product = all_products[seed_product_handle] %}
-    <li class="grid__item">
-      {% render 'card-product',
-        card_product: seed_product,
-        media_aspect_ratio: square,
-        show_secondary_image: true,
-        show_vendor: false,
-        show_rating: false,
-        skip_styles: false
-      %}
-    </li>
-  {%- endif -%}
-  {% assign skip_card_product_styles = false %}
-  {% for product in recommendations.products %}
-    <li class="grid__item">
-      {% render 'card-product',
-        card_product: product,
-        media_aspect_ratio: square,
-        show_secondary_image: true,
-        show_vendor: false,
-        show_rating: false,
-        skip_styles: skip_card_product_styles
-      %}
-    </li>
-    {%- assign skip_card_product_styles = true -%}
-  {% endfor %}
-</ul>
     {% endif %}
   </product-recommendations>
 {% endif %}
