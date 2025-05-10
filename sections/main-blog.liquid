@@ -381,21 +381,25 @@
         role="list"
       >
         {% assign skip_card_product_styles = false %}
-        {%- assign seed_product = all_products[product_id] -%}
-        {% if seed_product %}
-          <li class="grid__item">
-            {% render 'card-product',
-              card_product: seed_product,
-              media_aspect_ratio: square,
-              show_secondary_image: true,
-              show_vendor: false,
-              show_rating: false,
-              skip_styles: skip_card_product_styles
-            %}
-          </li>
-          {%- assign skip_card_product_styles = true -%}
-        {% endif %}
-        {% for product in recommendations.products %}
+        {%- assign seed_found = false -%}
+        {%- for product in recommendations.products -%}
+          {% if product.id == product_id and seed_found == false %}
+            <li class="grid__item">
+              {% render 'card-product',
+                card_product: product,
+                media_aspect_ratio: square,
+                show_secondary_image: true,
+                show_vendor: false,
+                show_rating: false,
+                skip_styles: skip_card_product_styles
+              %}
+            </li>
+            {%- assign skip_card_product_styles = true -%}
+            {%- assign seed_found = true -%}
+          {% endif %}
+        {%- endfor -%}
+        {%- assign skip_card_product_styles = false -%}
+        {%- for product in recommendations.products -%}
           {% if product.id != product_id %}
             <li class="grid__item">
               {% render 'card-product',
@@ -409,7 +413,7 @@
             </li>
             {%- assign skip_card_product_styles = true -%}
           {% endif %}
-        {% endfor %}
+        {%- endfor -%}
       </ul>
     {% endif %}
   </product-recommendations>
