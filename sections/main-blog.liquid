@@ -335,12 +335,80 @@
       </div>
     {%- endfor -%}
   </div>
+
+  <div
+    class="product-recommendations"
+    data-url="{{ routes.product_recommendations_url }}?section_id=main-blog&product_id=4437371682870&limit=4&intent=related"
+  >
+    {%- if recommendations.performed? and recommendations.products_count > 0 -%}
+      {% if recommendations.intent == 'related' %}
+        <h2>You may also like</h2>
+      {% elsif recommendations.intent == 'complementary' %}
+        <h2>Pair it with</h2>
+      {% endif %}
+
+      <ul>
+        {%- for product in recommendations.products -%}
+          <li class="product">
+            <a href="{{ product.url }}">
+              <img
+                class="product__img"
+                src="{{ product.featured_image | image_url: width: 300, height: 300 }}"
+                alt="{{ product.featured_image.alt }}"
+              />
+
+              <p class="product__title">{{ product.title }}</p>
+              <p class="product__price">{{ product.price | money}}</p>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+
   {%- if paginate.pages > 1 -%}
     {%- render 'pagination', paginate: paginate -%}
   {%- endif -%}
 {% endif %}
   </div>
 {%- endpaginate -%}
+
+{% javascript %}
+  const handleIntersection = (entries, observer) => {
+    if (!entries[0].isIntersecting) return;
+
+    const productRecommendationsSection = entries[0].target;
+    observer.unobserve(productRecommendationsSection);
+
+    const url = productRecommendationsSection.dataset.url;
+
+    fetch(url)
+      .then(response => response.text())
+      .then(text => {
+        const html = document.createElement('div');
+        html.innerHTML = text;
+        const recommendations = html.querySelector('.product-recommendations');
+
+        if (recommendations && recommendations.innerHTML.trim().length) {
+          productRecommendationsSection.innerHTML = recommendations.innerHTML;
+        }
+      })
+      .catch(e => {
+        console.error(e);
+      });
+  };
+
+  // Query for all recommendation sections if there could be more than one
+  // or ensure your specific one is targetable, e.g. by a unique ID or data attribute if needed.
+  // For now, assuming it's the only one or the first one with this class on the page after a tag filter is applied.
+  const productRecommendationsSection = document.querySelector('.product-recommendations');
+  
+  // Ensure the section exists before observing, especially since it's conditionally rendered.
+  if (productRecommendationsSection) {
+    const observer = new IntersectionObserver(handleIntersection, {rootMargin: '0px 0px 200px 0px'});
+    observer.observe(productRecommendationsSection);
+  }
+{% endjavascript %}
 
 <style>
 .blog-banner {
@@ -573,8 +641,6 @@
   color: #3d174f;
 }
 </style>
-
-
 
 {% schema %}
 {
