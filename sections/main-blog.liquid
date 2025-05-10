@@ -281,8 +281,49 @@
               </div>
             </div>
           </div>
-        </div>
-      {% endif %}
+        {%- comment -%}
+          Product Recommendations for this tag group
+        {%- endcomment -%}
+        {%- assign product_gid_array = matching_metaobject.product -%}
+        {%- if product_gid_array and product_gid_array.size > 0 -%}
+          {%- assign first_product_gid = product_gid_array[0] -%}
+          <div class="main-blog-recommendations color-background-2 gradient" style="margin-top: 2em;">
+            <product-recommendations
+              class="related-products page-width section-{{ section.id }}-padding isolate"
+              data-url="{{ routes.product_recommendations_url }}?section_id=main-blog&limit=4"
+              data-section-id="main-blog"
+              data-product-id="{{ first_product_gid }}"
+            >
+              {% if recommendations.performed and recommendations.products_count > 0 %}
+                <h2 class="related-products__heading inline-richtext h2">
+                  Recommended Products for {{ block_tag }}
+                </h2>
+                <ul
+                  class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
+                  role="list"
+                >
+                  {% assign skip_card_product_styles = false %}
+                  {% for recommendation in recommendations.products %}
+                    <li class="grid__item">
+                      {% render 'card-product',
+                        card_product: recommendation,
+                        media_aspect_ratio: 'square',
+                        image_shape: 'default',
+                        show_secondary_image: false,
+                        show_vendor: false,
+                        show_rating: false,
+                        skip_styles: skip_card_product_styles
+                      %}
+                    </li>
+                    {%- assign skip_card_product_styles = true -%}
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </product-recommendations>
+          </div>
+        {%- endif -%}
+      </div>
+    {% endif %}
     {% endfor %}
   </div>
 {% else %}
@@ -741,3 +782,8 @@
   ]
 }
 {% endschema %}
+
+{%- comment -%}
+  Move any required <script> for product-recommendations here if needed in future.
+{%- endcomment -%}
+
