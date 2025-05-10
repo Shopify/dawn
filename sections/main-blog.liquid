@@ -283,6 +283,13 @@
           </div>
         </div>
       {% endif %}
+
+      <!-- Product Recommendations for Tagged Group -->
+      <div class="main-blog-recommendations" data-recommendations-group="{{ block_tag }}">
+        <div class="main-blog-recommendations-inner" id="recommendations-{{ block_tag | handle }}">
+          <!-- Recommendations will be injected here by JS -->
+        </div>
+      </div>
     {% endfor %}
   </div>
 {% else %}
@@ -341,6 +348,50 @@
 {% endif %}
   </div>
 {%- endpaginate -%}
+
+{% javascript %}
+(function() {
+  // Only run on blog pages with tagged groups
+  var groups = document.querySelectorAll('.main-blog-recommendations-inner');
+  if (!groups.length) return;
+
+  // Seed Product ID (to be made dynamic later)
+  var seedProductId = '4437371682870';
+  var sectionId = 'main-blog';
+  var recommendationsUrl = '/recommendations/products.json?product_id=' + seedProductId + '&section_id=' + sectionId;
+
+  fetch(recommendationsUrl)
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+      if (!data.products || !data.products.length) return;
+      var html = '';
+      html += '<h2 class="related-products__heading">Recommended Products</h2>';
+      html += '<ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list">';
+      data.products.forEach(function(product) {
+        html += '<li class="grid__item">';
+        html += '<a href="' + product.url + '" class="card-product">';
+        html += '<div class="card-product__image-wrapper">';
+        if (product.featured_image) {
+          html += '<img src="' + product.featured_image + '" alt="' + (product.title || '') + '" class="card-product__image" loading="lazy">';
+        }
+        html += '</div>';
+        html += '<div class="card-product__info">';
+        html += '<div class="card-product__title">' + (product.title || '') + '</div>';
+        if (product.price) {
+          html += '<div class="card-product__price">' + product.price + '</div>';
+        }
+        html += '</div>';
+        html += '</a>';
+        html += '</li>';
+      });
+      html += '</ul>';
+      // Insert recommendations into each group
+      groups.forEach(function(group) {
+        group.innerHTML = html;
+      });
+    });
+})();
+{% endjavascript %}
 
 <style>
 .blog-banner {
