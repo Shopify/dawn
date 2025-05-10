@@ -343,12 +343,44 @@
   {%- endif -%}
 {% endif %}
  
- {% if current_tags != blank and current_tags.size > 0 %}      
-        <!-- Product Recommendations Section -->
+ {% if current_tags != blank and current_tags.size > 0 %}
+    {% assign current_blog_tag = current_tags.first %}
+    {% assign seed_product_id = '4437371682870' %}{% comment %}Default seed product ID{% endcomment %}
+    {% assign found_products_for_tag = false %}
+
+    {% for recipe_group_entry in shop.metaobjects.recipe_tag_group.values %}
+      {% if recipe_group_entry.tag == current_blog_tag %}
+        {% if recipe_group_entry.product and recipe_group_entry.product.value != blank %}
+          {% assign product_gids = recipe_group_entry.product.value %}
+          {% assign temp_products_list = '' | split: '' %}
+
+          {% for gid in product_gids %}
+            {% assign product_id_parts = gid | split: '/' %}
+            {% assign product_id_numeric = product_id_parts.last | times: 1 %}
+            {% if product_id_numeric != 0 %}
+                {% assign current_product_object = all_products[product_id_numeric] %}
+                {% if current_product_object %}
+                    {% assign temp_products_list = temp_products_list | push: current_product_object %}
+                {% endif %}
+            {% endif %}
+          {% endfor %}
+
+          {% if temp_products_list.size > 0 %}
+            {% assign sorted_products = temp_products_list | sort: 'total_sold' | reverse %}
+            {% if sorted_products.first %}
+              {% assign seed_product_id = sorted_products.first.id %}
+              {% assign found_products_for_tag = true %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+        {% break %}{% comment %}Exit loop once matching tag is found and processed{% endcomment %}
+      {% endif %}
+    {% endfor %}
+
   <product-recommendations
     class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-    data-product-id="4437371682870"
-    data-url="/recommendations/products?limit=8"
+    data-product-id="{{ seed_product_id }}"
+    data-url="/recommendations/products?product_id={{ seed_product_id }}&limit=8"
     data-section-id="related-products"
   >
     {% if recommendations.performed and recommendations.products_count > 0 %}
