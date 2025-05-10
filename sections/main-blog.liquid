@@ -367,87 +367,36 @@
         {% endif %}
       {% endif %}
       
-        <!-- Custom Product Recommendations Section -->
-  <div class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-    <h2 class="related-products__heading inline-richtext main-blog-category-header">You might also like</h2>
-    
-    <!-- Combined product grid with seed product and recommendations -->
-    <div class="combined-product-grid">
-      <!-- Seed product card -->
-      {% assign skip_card_product_styles = false %}
-      {% assign seed_product = null %}
-      {% assign product_id_number = product_id | plus: 0 %}
-      {% for p in collections.all.products %}
-        {% if p.id == product_id_number %}
-          {% assign seed_product = all_products[p.handle] %}
-          {% break %}
-        {% endif %}
-      {% endfor %}
-      {% if seed_product != blank %}
-        <div class="seed-product-wrapper">
-          <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list" style="margin-bottom: 0;">
-            <li class="grid__item">
-              {% render 'card-product',
-                card_product: seed_product,
-                media_aspect_ratio: square,
-                show_secondary_image: true,
-                show_vendor: false,
-                show_rating: false,
-                skip_styles: skip_card_product_styles
-              %}
-            </li>
-          </ul>
-        </div>
-        {%- assign skip_card_product_styles = true -%}
-      {% else %}
-        <div style="color: red; font-size: 14px;">Seed product not found for ID: {{ product_id_number }}</div>
-      {% endif %}
-                card_product: seed_product,
-                media_aspect_ratio: square,
-                show_secondary_image: true,
-                show_vendor: false,
-                show_rating: false,
-                skip_styles: skip_card_product_styles
-              %}
-            </li>
-          </ul>
-        </div>
-        {%- assign skip_card_product_styles = true -%}
-      {% endif %}
-      
-      <!-- Shopify Product Recommendations -->
-      <product-recommendations
-        class="shopify-recommendations"
-        data-product-id="{{ product_id }}"
-        data-url="/recommendations/products?limit=7"
-        data-section-id="related-products"
+        <!-- Product Recommendations Section -->
+  <product-recommendations
+    class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+    data-product-id="{{ product_id }}"
+    data-url="/recommendations/products?limit=8"
+    data-section-id="related-products"
+  >
+    {% if recommendations.performed and recommendations.products_count > 0 %}
+      <h2 class="related-products__heading inline-richtext main-blog-category-header">You might also like</h2>
+      <ul
+        class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
+        role="list"
       >
-        {% if recommendations.performed and recommendations.products_count > 0 %}
-          <ul
-            class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
-            role="list"
-          >
-            {% comment %}Add the recommended products (except the seed product){% endcomment %}
-            {% for product in recommendations.products %}
-              {% comment %}Skip if this is the same as the seed product{% endcomment %}
-              {% if product.id != seed_product.id %}
-                <li class="grid__item">
-                  {% render 'card-product',
-                    card_product: product,
-                    media_aspect_ratio: square,
-                    show_secondary_image: true,
-                    show_vendor: false,
-                    show_rating: false,
-                    skip_styles: skip_card_product_styles
-                  %}
-                </li>
-                {%- assign skip_card_product_styles = true -%}
-              {% endif %}
-            {% endfor %}
-          </ul>
-        {% endif %}
-      </product-recommendations>
-    </div>
+        {% assign skip_card_product_styles = false %}
+        {% for product in recommendations.products %}
+          <li class="grid__item">
+            {% render 'card-product',
+              card_product: product,
+              media_aspect_ratio: square,
+              show_secondary_image: true,
+              show_vendor: false,
+              show_rating: false,
+              skip_styles: skip_card_product_styles
+            %}
+          </li>
+          {%- assign skip_card_product_styles = true -%}
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </product-recommendations>
 {% endif %}
 
  
@@ -459,22 +408,6 @@
 
 
 <style>
-/* Combined product grid styling */
-.combined-product-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.seed-product-wrapper ul.product-grid {
-  margin-bottom: 0;
-}
-
-.shopify-recommendations ul.product-grid {
-  margin-top: 0;
-}
-
-/* Existing styles */
 .blog-banner {
   width: 100%;
   margin-bottom: 32px;
