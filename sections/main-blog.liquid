@@ -376,7 +376,7 @@
   {% if matching_metaobject != nil and matching_metaobject.product != blank %}
     {% assign product_ids = matching_metaobject.product %}
     {% if product_ids contains 'gid://' %}
-      {% assign product_id_array = product_ids | replace: '[', '' | replace: ']', '' | replace: '"', '' | split: ',' %}
+      {% assign product_id_array = product_ids | replace: '[', '' | replace: ']', '' | replace: "'", '' | replace: ' ', '' | split: ',' %}
       
       <!-- DEBUG: Product ID Array -->
       <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc; font-family: monospace; font-size: 12px;">
@@ -391,9 +391,8 @@
       {% comment %}Create array of clean product IDs without the GID prefix{% endcomment %}
       {% assign clean_product_ids = '' %}
       {% for product_id_gid in product_id_array %}
-        {% assign trimmed_id = product_id_gid | strip %}
-        {% if trimmed_id contains 'gid://shopify/Product/' %}
-          {% assign clean_id = trimmed_id | replace: 'gid://shopify/Product/', '' %}
+        {% if product_id_gid contains 'gid://shopify/Product/' %}
+          {% assign clean_id = product_id_gid | replace: 'gid://shopify/Product/', '' %}
           {% assign clean_product_ids = clean_product_ids | append: clean_id | append: ',' %}
         {% endif %}
       {% endfor %}
@@ -404,7 +403,7 @@
         <p><strong>Clean Product IDs ({{ clean_product_ids.size }} items):</strong></p>
         <ul>
           {% for id in clean_product_ids %}
-            <li>{{ id }}</li>
+            <li>{{ id }} {% assign p = all_products[id] %}{% if p != blank %}- found product: {{ p.title }} (handle: {{ p.handle }}){% else %}- NOT FOUND in all_products{% endif %}</li>
           {% endfor %}
         </ul>
       </div>
@@ -413,12 +412,9 @@
       {% if clean_product_ids.size > 0 %}
         {% assign product_handles = '' %}
         {% for product_id in clean_product_ids %}
-          {% assign product_id_str = product_id | strip %}
-          {% if product_id_str != blank %}
-            {% assign product = all_products[product_id_str] %}
-            {% if product.handle != blank %}
-              {% assign product_handles = product_handles | append: product.handle | append: ',' %}
-            {% endif %}
+          {% assign product = all_products[product_id] %}
+          {% if product.handle != blank %}
+            {% assign product_handles = product_handles | append: product.handle | append: ',' %}
           {% endif %}
         {% endfor %}
         
@@ -430,6 +426,16 @@
           <ul>
             {% for handle in product_handles %}
               <li>{{ handle }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <!-- DEBUG: First 10 Bestselling Handles -->
+        <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc; font-family: monospace; font-size: 12px;">
+          <p><strong>First 10 Bestselling Handles:</strong></p>
+          <ul>
+            {% assign bestselling_products = collections.all.products | where: "available" | sort: "best-selling" %}
+            {% for bestseller in bestselling_products limit: 10 %}
+              <li>{{ bestseller.handle }}</li>
             {% endfor %}
           </ul>
         </div>
@@ -459,16 +465,10 @@
           {% if seed_product != nil %}
             {% assign seed_product_id = seed_product.id %}
           {% elsif clean_product_ids.size > 0 %}
-            {% assign first_id = clean_product_ids | first | strip %}
-            {% if first_id != blank %}
-              {% assign seed_product_id = first_id %}
-            {% endif %}
+            {% assign seed_product_id = clean_product_ids | first %}
           {% endif %}
         {% elsif clean_product_ids.size > 0 %}
-          {% assign first_id = clean_product_ids | first | strip %}
-          {% if first_id != blank %}
-            {% assign seed_product_id = first_id %}
-          {% endif %}
+          {% assign seed_product_id = clean_product_ids | first %}
         {% endif %}
       {% endif %}
     {% endif %}
