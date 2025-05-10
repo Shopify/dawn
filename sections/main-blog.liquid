@@ -27,13 +27,6 @@
 {%- paginate blog.articles by pagination_count -%}
 
   <div class="main-blog page-width section-{{ section.id }}-padding">
-    <!-- DEBUG OUTPUT START -->
-    <div style="background-color: #ffcc00; border: 2px solid #ff0000; padding: 10px; margin: 10px 0; font-size: 16px; font-weight: bold; color: #000000;">
-      DEBUG INFO: Product Recommendations Section
-      <br>
-      Seed Product ID: {{ product_id }}
-    </div>
-    <!-- DEBUG OUTPUT END -->
     {%- if request.path contains '/blogs/recipes' -%}
 
     {% else %}
@@ -374,13 +367,6 @@
         {% endif %}
       {% endif %}
       
-        <!-- DEBUG OUTPUT START -->
-        <div style="background-color: #ffcc00; border: 2px solid #ff0000; padding: 10px; margin: 10px 0; font-size: 16px; font-weight: bold; color: #000000;">
-          DEBUG INFO: Product Recommendations Section
-          <br>
-          Seed Product ID: {{ product_id }}
-        </div>
-        <!-- DEBUG OUTPUT END -->
         <!-- Product Recommendations Section -->
   <product-recommendations
     class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
@@ -388,16 +374,18 @@
     data-url="/recommendations/products?limit=8"
     data-section-id="related-products"
   >
-    {% if recommendations.performed and recommendations.products_count > 0 %}
+    {% if recommendations.performed and recommendations.products_count > 0 or product_id != blank %}
       <h2 class="related-products__heading inline-richtext main-blog-category-header">You might also like</h2>
       <ul
         class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
         role="list"
       >
         {% assign skip_card_product_styles = false %}
-        {% comment %}Manually add the seed product as the first item{% endcomment %}
-        {% assign seed_product = all_products[product_id] %}
-        {% if seed_product %}
+        
+        {% comment %}First add the seed product using the product_id{% endcomment %}
+        {%- capture product_id_as_number -%}{{ product_id | plus: 0 }}{%- endcapture -%}
+        {% assign seed_product = product_id_as_number | append: '' | product_object %}
+        {% if seed_product != blank %}
           <li class="grid__item">
             {% render 'card-product',
               card_product: seed_product,
@@ -410,19 +398,23 @@
           </li>
           {%- assign skip_card_product_styles = true -%}
         {% endif %}
-        {% comment %}Add the rest of the recommended products{% endcomment %}
+        
+        {% comment %}Then add the recommended products{% endcomment %}
         {% for product in recommendations.products %}
-          <li class="grid__item">
-            {% render 'card-product',
-              card_product: product,
-              media_aspect_ratio: square,
-              show_secondary_image: true,
-              show_vendor: false,
-              show_rating: false,
-              skip_styles: skip_card_product_styles
-            %}
-          </li>
-          {%- assign skip_card_product_styles = true -%}
+          {% comment %}Skip if this is the same as the seed product{% endcomment %}
+          {% if product.id != seed_product.id %}
+            <li class="grid__item">
+              {% render 'card-product',
+                card_product: product,
+                media_aspect_ratio: square,
+                show_secondary_image: true,
+                show_vendor: false,
+                show_rating: false,
+                skip_styles: skip_card_product_styles
+              %}
+            </li>
+            {%- assign skip_card_product_styles = true -%}
+          {% endif %}
         {% endfor %}
       </ul>
     {% endif %}
