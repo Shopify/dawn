@@ -1,140 +1,32 @@
-<section class="hero-video-component">
-  {%- liquid
-    assign desktop_video = section.settings.desktop_video
-    assign mobile_video = section.settings.mobile_video
-    assign desktop_poster = section.settings.desktop_poster_image
-    assign mobile_poster = section.settings.mobile_poster_image
+<section class="section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} isolate gradient hero-video-component">
+  {% if section.settings.video != blank %}
+    <a href="{{ section.settings.link_to }}" class="hero-video-component__media-container">
+      {% comment %}
+        {% assign fetch_priority = 'auto' %}
+        {% assign loading = 'lazy' %}
+        {% assign preload = 'none' %}
+      {% endcomment %}
 
-    assign fetch_priority = 'auto'
-    assign loading_attr = 'lazy'
-    if section.index0 == 0
-      assign fetch_priority = 'high'
-      assign loading_attr = 'eager'
-    endif
-  -%}
-
-  {% if desktop_video != blank or mobile_video != blank or desktop_poster != blank or mobile_poster != blank %}
-    <a href="{{ section.settings.button_link }}" class="hero-video-component__media-link-wrapper">
-      <div class="hero-video-component__media-container">
-        {% if mobile_video != blank or mobile_poster != blank %}
-          {% comment %} Mobile-specific media is defined. Render mobile version and desktop version. CSS will switch. {% endcomment %}
-          {% if mobile_video != blank %}
-            <video
-              class="hero-video-component__media hero-video-component__media--mobile"
-              autoplay
-              muted
-              loop
-              playsinline
-              {% if mobile_poster != blank %}
-                poster="{{ mobile_poster | image_url: width: 768 }}"
-              {% endif %}
-              fetchpriority="{{ fetch_priority }}"
-              aria-label="{{ section.settings.title | default: 'Hero video background' }}"
-            >
-              {% for source in mobile_video.sources %}
-                <source src="{{ source.url }}" type="{{ source.mime_type }}">
-              {% endfor %}
-              Your browser does not support the video tag.
-              {% if mobile_poster != blank -%}
-                <img
-                  src="{{ mobile_poster | image_url: width: 768 }}"
-                  alt=""
-                  loading="{{ loading_attr }}"
-                  fetchpriority="{{ fetch_priority }}"
-                >
-              {%- endif %}
-            </video>
-          {% elsif mobile_poster != blank %}
-            <img
-              src="{{ mobile_poster | image_url: width: 768 }}"
-              alt="Background"
-              class="hero-video-component__media hero-video-component__media--mobile"
-              loading="{{ loading_attr }}"
-              fetchpriority="{{ fetch_priority }}"
-              width="{{ mobile_poster.width }}"
-              height="{{ mobile_poster.height }}"
-            >
-          {% endif %}
-
-          {% comment %} Desktop version (shown when not mobile) {% endcomment %}
-          {% if desktop_video != blank %}
-            <video
-              class="hero-video-component__media hero-video-component__media--desktop"
-              autoplay
-              muted
-              loop
-              playsinline
-              {% if desktop_poster != blank %}
-                poster="{{ desktop_poster | image_url: width: 1500 }}"
-              {% endif %}
-              fetchpriority="{{ fetch_priority }}"
-              aria-label="{{ section.settings.title | default: 'Hero video background' }}"
-            >
-              {% for source in desktop_video.sources %}
-                <source src="{{ source.url }}" type="{{ source.mime_type }}">
-              {% endfor %}
-              Your browser does not support the video tag.
-              {% if desktop_poster != blank -%}
-                <img
-                  src="{{ desktop_poster | image_url: width: 1500 }}"
-                  alt=""
-                  loading="{{ loading_attr }}"
-                  fetchpriority="{{ fetch_priority }}"
-                >
-              {%- endif %}
-            </video>
-          {% elsif desktop_poster != blank %}
-            <img
-              src="{{ desktop_poster | image_url: width: 1500 }}"
-              alt="Background"
-              class="hero-video-component__media hero-video-component__media--desktop"
-              loading="{{ loading_attr }}"
-              fetchpriority="{{ fetch_priority }}"
-              width="{{ desktop_poster.width }}"
-              height="{{ desktop_poster.height }}"
-            >
-          {% endif %}
-
-        {% elsif desktop_video != blank or desktop_poster != blank %}
-          {% comment %} Only desktop media is defined. Use it for all views. {% endcomment %}
-          {% if desktop_video != blank %}
-            <video
-              class="hero-video-component__media"
-              autoplay
-              muted
-              loop
-              playsinline
-              {% if desktop_poster != blank %}
-                poster="{{ desktop_poster | image_url: width: 1500 }}"
-              {% endif %}
-              fetchpriority="{{ fetch_priority }}"
-              aria-label="{{ section.settings.title | default: 'Hero video background' }}"
-            >
-              {% for source in desktop_video.sources %}
-                <source src="{{ source.url }}" type="{{ source.mime_type }}">
-              {% endfor %}
-              Your browser does not support the video tag.
-              {% if desktop_poster != blank -%}
-                <img
-                  src="{{ desktop_poster | image_url: width: 1500 }}"
-                  alt=""
-                  loading="{{ loading_attr }}"
-                  fetchpriority="{{ fetch_priority }}"
-                >
-              {%- endif %}
-            </video>
-          {% elsif desktop_poster != blank %}
-            <img
-              src="{{ desktop_poster | image_url: width: 1500 }}"
-              alt="Background"
-              class="hero-video-component__media"
-              loading="{{ loading_attr }}"
-              fetchpriority="{{ fetch_priority }}"
-              width="{{ desktop_poster.width }}"
-              height="{{ desktop_poster.height }}"
-            >
-          {% endif %}
+      {% comment %}
+        {% if section.index0 == 0 %}
+          {% assign fetch_priority = 'high' %}
+          {% assign loading = 'eager' %}
+          {% assign preload = 'auto' %}
         {% endif %}
+      {% endcomment %}
+
+      <div class="mobile-video-container global-media-settings--full-width">
+        {{
+          section.settings.mobile_video
+          | video_tag: image_size: '600x', autoplay: true, muted: true, loop: true, playsinline: true
+        }}
+      </div>
+
+      <div class="video-container global-media-settings--full-width">
+        {{
+          section.settings.video
+          | video_tag: image_size: '1600x', autoplay: true, muted: true, loop: true, playsinline: true
+        }}
       </div>
     </a>
   {% endif %}
@@ -142,7 +34,9 @@
   <div class="hero-video-component__content-container">
     <div class="hero-video-component__content">
       {% if section.settings.subtitle != blank %}
-        <h3 style="font-size: 1.1rem; margin-top: 2rem; color: var(--gray-50)">{{ section.settings.subtitle }}</h3>
+        <h3 style="font-size: 1.3rem; margin-top: 2rem; color: rgba(var(--color-foreground), 0.7); font-weight: 100;">
+          {{ section.settings.subtitle }}
+        </h3>
       {% endif %}
 
       {% if section.settings.title != blank %}
@@ -155,9 +49,9 @@
 
       {% if section.settings.button_text != blank %}
         <a
-          style="padding: 2.5rem 4rem;"
-          href="{{ section.settings.button_link }}"
-          class="button button--secondary"
+          style="padding: 2.5rem 4rem; background: #ebedf0; border-radius: 100px;"
+          href="{{ section.settings.link_to }}"
+          class="button button--tertiary"
         >
           {{ section.settings.button_text }}
         </a>
@@ -167,40 +61,56 @@
 </section>
 
 <style>
-  .hero-video-component {
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    position: relative;
+    .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
   }
 
-  .hero-video-component__media-link-wrapper,
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+  .mobile-video-container {
+    display: none;
+  }
+
+  .video-container {
+    display: block;
+    width: 100vw;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  @media (max-width: 768px) {
+    .mobile-video-container {
+      display: block;
+    }
+
+    .video-container {
+      display: none;
+    }
+  }
+
   .hero-video-component__media-container {
     width: 100%;
     margin: 0;
     padding: 0;
     overflow: hidden;
-    display: block; /* Ensure the link wrapper behaves as a block */
-    position: relative; /* For absolute positioning of content if needed */
   }
 
-  .hero-video-component__media {
+  .hero-video-component__video {
     width: 100%;
-    height: auto; /* Or 100% if container has fixed height */
+    height: auto;
     display: block;
     object-fit: cover;
   }
 
-  .hero-video-component__media--desktop {
-    display: block;
-  }
-  .hero-video-component__media--mobile {
-    display: none;
-  }
-
   .hero-video-component__content-container {
     width: 100%;
-    /* position: absolute; top: 0; left: 0; height: 100%; display: flex; align-items: center; justify-content: center; */ /* Example for overlay content */
   }
 
   .hero-video-component__content {
@@ -208,8 +118,6 @@
     margin: 0 auto;
     padding: 0 20px;
     text-align: center;
-    position: relative; /* To ensure content is above media if overlaid */
-    z-index: 1;
   }
 
   .hero-video-component__title {
@@ -225,16 +133,10 @@
     font-size: 1.8rem;
     margin: 1.4rem 0 2.8rem 0;
     line-height: 1.5;
-    color: var(--gray-50);
+    color: rgba(var(--color-foreground), 0.7);
   }
 
   @media (max-width: 768px) {
-    .hero-video-component__media--desktop {
-      display: none;
-    }
-    .hero-video-component__media--mobile {
-      display: block;
-    }
     .hero-video-component__title {
       font-size: 3rem;
     }
@@ -252,25 +154,13 @@
   "settings": [
     {
       "type": "video",
-      "id": "desktop_video",
+      "id": "video",
       "label": "Desktop Video"
-    },
-    {
-      "type": "image_picker",
-      "id": "desktop_poster_image",
-      "label": "Desktop Poster Image",
-      "info": "Fallback image for desktop video. Shown while video loads or if it can't play. Also used if no desktop video is provided."
     },
     {
       "type": "video",
       "id": "mobile_video",
-      "label": "Mobile Video (Optional)"
-    },
-    {
-      "type": "image_picker",
-      "id": "mobile_poster_image",
-      "label": "Mobile Poster Image (Optional)",
-      "info": "Fallback image for mobile video. Shown while video loads or if it can't play. Also used if no mobile video is provided, or as a mobile-specific static image."
+      "label": "Mobile Video"
     },
     {
       "type": "text",
@@ -299,18 +189,48 @@
     },
     {
       "type": "url",
-      "id": "button_link",
-      "label": "Button Link",
+      "id": "link_to",
+      "label": "Link To",
       "default": "/"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Section Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 0
     }
   ],
   "presets": [
     {
       "name": "Hero Video Component",
       "settings": {
-        "title": "PHOTON LIKE MOVEMENTS",
-        "description": "Own the court with a limited edition that delivers precise control and premium build quality",
-        "button_text": "BEND YOUR OPPONENT"
+        "title": "MOTION IN ACTION",
+        "description": "Experience the speed and precision with our latest video showcase",
+        "button_text": "EXPLORE MORE"
       }
     }
   ]
