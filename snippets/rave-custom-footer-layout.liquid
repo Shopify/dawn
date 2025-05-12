@@ -1,0 +1,111 @@
+{% comment %}
+  Snippet to render footer blocks into a custom two-column layout.
+  Expects 'blocks' to be passed in.
+  Uses a two-pass approach to avoid complex array manipulation.
+{% endcomment %}
+
+{%- liquid
+  assign menu_block_rendered = false
+-%}
+
+<div class="footer-column-left">
+  {%- for block in blocks -%}
+    {%- if block.type == 'link_list' and menu_block_rendered == false -%}
+      {%- assign menu_block_rendered = true -%}
+      <div class="footer-block grid__item footer-block--menu" {{ block.shopify_attributes }}>
+        {%- if block.settings.heading != blank -%}
+          <h2 class="footer-block__heading inline-richtext">{{- block.settings.heading -}}</h2>
+        {%- endif -%}
+        {%- if block.settings.menu != blank -%}
+          <ul class="footer-block__details-content list-unstyled">
+            {%- for link in block.settings.menu.links -%}
+              <li>
+                <a
+                  href="{{ link.url }}"
+                  class="link link--text list-menu__item list-menu__item--link{% if link.active %} list-menu__item--active{% endif %}"
+                >
+                  {{ link.title | escape }}
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+      </div>
+      {%- break -%}
+      {# Only render the first menu block found #}
+    {%- endif -%}
+  {%- endfor -%}
+</div>
+
+<div class="footer-column-right">
+  {%- for block in blocks -%}
+    {%- comment %} Skip rendering the menu block here if it was already rendered in the left column {%- endcomment %}
+    {%- assign is_menu_block = false -%}
+    {%- if block.type == 'link_list' and menu_block_rendered == true -%}
+      {%- comment %}
+        We need to check if this IS the specific menu block already rendered.
+        This simplistic check assumes only one menu block is intended for the left.
+        A more robust check might compare block.id if multiple menus were possible.
+        For this use case, skipping any link_list if one was already rendered should suffice.
+      {%- endcomment %}
+      {% assign is_menu_block = true %}
+    {%- endif -%}
+
+    {%- unless is_menu_block -%}
+      <div class="footer-block grid__item" {{ block.shopify_attributes }}>
+        {%- if block.settings.heading != blank -%}
+          <h2 class="footer-block__heading inline-richtext">{{- block.settings.heading -}}</h2>
+        {%- endif -%}
+
+        {%- case block.type -%}
+          {%- when 'custom_text' -%}
+            <div class="footer-block__details-content rte">
+              {{ block.settings.custom_text_content }}
+            </div>
+          {%- when 'text' -%}
+            <div class="footer-block__details-content rte">
+              {{ block.settings.subtext }}
+            </div>
+            {%- comment %} Render other non-menu block types here if needed {%- endcomment %}
+          {%- when '@app' -%}
+            {% render block %}
+          {%- when 'brand_information' -%}
+            {%- comment %} Decide if brand info should be here or handled separately {%- endcomment %}
+            <div class="footer-block__brand-info">
+              {%- if settings.brand_headline != blank -%}
+                <h2 class="footer-block__heading rte">{{ settings.brand_headline }}</h2>
+              {%- endif -%}
+              {%- if settings.brand_description != blank -%}
+                <div class="rte">{{ settings.brand_description }}</div>
+              {%- endif -%}
+              {%- if block.settings.show_social -%}
+                {%- render 'social-icons', class: 'footer__list-social' -%}
+              {%- endif -%}
+            </div>
+          {%- when 'image' -%}
+            {%- comment %} Decide if image block should be here {%- endcomment %}
+            <div class="footer-block__details-content footer-block-image {{ block.settings.alignment }}">
+              {%- if block.settings.image != blank -%}
+                {% assign image_size_2x = block.settings.image_width | times: 2 | at_most: 5760 %}
+                <div
+                  class="footer-block__image-wrapper"
+                  style="max-width: min(100%, {{ block.settings.image_width }}px);"
+                >
+                  <img
+                    srcset="{{ block.settings.image | image_url: width: block.settings.image_width }}, {{ block.settings.image | image_url: width: image_size_2x }} 2x"
+                    src="{{ block.settings.image | image_url: width: 760 }}"
+                    alt="{{ block.settings.image.alt | escape }}"
+                    loading="lazy"
+                    width="{{ block.settings.image.width }}"
+                    height="{{ block.settings.image.height }}"
+                  >
+                </div>
+              {%- else -%}
+                {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+              {%- endif -%}
+            </div>
+        {%- endcase -%}
+      </div>
+    {%- endunless -%}
+  {%- endfor -%}
+</div>

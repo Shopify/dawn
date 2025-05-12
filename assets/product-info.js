@@ -393,16 +393,16 @@ if (!customElements.get('product-info')) {
       }
 
       get relatedProducts() {
-        const relatedProductsSectionId = SectionId.getIdForSection(
-          SectionId.parseId(this.sectionId),
+        const relatedProductsSectionId = ThemeSectionId.getIdForSection(
+          ThemeSectionId.parseId(this.sectionId),
           'related-products'
         );
         return document.querySelector(`product-recommendations[data-section-id^="${relatedProductsSectionId}"]`);
       }
 
       get quickOrderList() {
-        const quickOrderListSectionId = SectionId.getIdForSection(
-          SectionId.parseId(this.sectionId),
+        const quickOrderListSectionId = ThemeSectionId.getIdForSection(
+          ThemeSectionId.parseId(this.sectionId),
           'quick_order_list'
         );
         return document.querySelector(`quick-order-list[data-id^="${quickOrderListSectionId}"]`);

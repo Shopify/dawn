@@ -1,0 +1,99 @@
+{% comment %}
+  Hero section with options for desktop image, mobile image, or video, and an optional link.
+{% endcomment %}
+
+{%- liquid
+  assign hero_link = section.settings.hero_link
+-%}
+
+<div class="main-hero">
+  {%- if hero_link != blank -%}
+    <a href="{{ hero_link }}" class="main-hero__link">
+  {%- endif -%}
+
+  {%- if section.settings.video_url != blank -%}
+    <div class="main-hero__video-wrapper">
+      {%- if section.settings.video_url.type == 'youtube' -%}
+        <iframe
+          src="https://www.youtube.com/embed/{{ section.settings.video_url.id }}?loop=1&autoplay=1&mute=1&playlist={{ section.settings.video_url.id }}&iv_load_policy=3&controls=0&disablekb=1&showinfo=0&rel=0"
+          frameborder="0"
+          allow="autoplay; encrypted-media"
+          allowfullscreen
+          title="{{ section.settings.video_url.alt | escape }}"
+          class="main-hero__video"
+        ></iframe>
+      {%- elsif section.settings.video_url.type == 'vimeo' -%}
+        <iframe
+          src="https://player.vimeo.com/video/{{ section.settings.video_url.id }}?autoplay=1&loop=1&muted=1&background=1"
+          frameborder="0"
+          allow="autoplay; encrypted-media"
+          allowfullscreen
+          title="{{ section.settings.video_url.alt | escape }}"
+          class="main-hero__video"
+        ></iframe>
+      {%- endif -%}
+    </div>
+  {%- elsif section.settings.image_desktop != blank -%}
+    <picture>
+      {%- if section.settings.image_mobile != blank -%}
+        <source
+          media="(max-width: 749px)"
+          srcset="{{ section.settings.image_mobile | image_url: width: section.settings.image_mobile.width }}"
+        >
+      {%- endif -%}
+      <img
+        src="{{ section.settings.image_desktop | image_url: width: section.settings.image_desktop.width }}"
+        alt="{{ section.settings.image_desktop.alt | escape }}"
+        width="{{ section.settings.image_desktop.width }}"
+        height="{{ section.settings.image_desktop.height }}"
+        class="main-hero__image"
+        loading="lazy"
+      >
+    </picture>
+  {%- else -%}
+    {{ 'lifestyle-2' | placeholder_svg_tag: 'placeholder-svg placeholder main-hero__placeholder' }}
+  {%- endif -%}
+
+  {%- if hero_link != blank -%}
+    </a>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Main Hero",
+  "tag": "section",
+  "class": "section-main-hero",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image_desktop",
+      "label": "Desktop Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Mobile Image",
+      "info": "Optional. Uses Desktop Image if not set."
+    },
+    {
+      "type": "video_url",
+      "id": "video_url",
+      "label": "Background Video URL",
+      "accept": ["youtube", "vimeo"],
+      "info": "Optional. Replaces images if a valid URL is provided. Autoplays muted and looped."
+    },
+    {
+      "type": "url",
+      "id": "hero_link",
+      "label": "Hero Link",
+      "info": "Optional. Makes the entire hero section a clickable link."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Main Hero"
+    }
+  ]
+}
+{% endschema %}
