@@ -355,7 +355,7 @@
       {% endfor %}
       
       {% comment %}Extract product ID from best_selling_product field{% endcomment %}
-      {% assign product_id = '4437371682870' %} {% comment %}Default fallback ID{% endcomment %}
+      {% assign product_id = '' %} {% comment %}Default fallback: blank{% endcomment %}
       {% if matching_tag_obj != nil and matching_tag_obj.best_selling_product != blank %}
         {% assign best_selling_product = matching_tag_obj.best_selling_product | strip %}
         {% comment %}Extract numeric ID from gid format if needed{% endcomment %}
@@ -371,10 +371,10 @@
   <product-recommendations
     class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
     data-product-id="{{ product_id }}"
-    data-url="/recommendations/products?limit=8"
+    data-url="/recommendations/products?limit=4"
     data-section-id="related-products"
   >
-    {% if recommendations.performed and recommendations.products_count > 0 %}
+    {% if recommendations.performed and recommendations.products_count > 0 and product_id %}
       <h2 class="related-products__heading inline-richtext main-blog-category-header">You might also like</h2>
       <ul
         class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
@@ -382,6 +382,27 @@
       >
         {% assign skip_card_product_styles = false %}
         {% for product in recommendations.products %}
+          <li class="grid__item">
+            {% render 'card-product',
+              card_product: product,
+              media_aspect_ratio: square,
+              show_secondary_image: true,
+              show_vendor: false,
+              show_rating: false,
+              skip_styles: skip_card_product_styles
+            %}
+          </li>
+          {%- assign skip_card_product_styles = true -%}
+        {% endfor %}
+      </ul>
+    {% else %}
+      <h2 class="related-products__heading inline-richtext main-blog-category-header">Popular Products</h2>
+      <ul
+        class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
+        role="list"
+      >
+        {% assign skip_card_product_styles = false %}
+        {% for product in collections.all.products limit: 4 %}
           <li class="grid__item">
             {% render 'card-product',
               card_product: product,
