@@ -1,0 +1,189 @@
+{% comment %}
+  New Custom Footer Snippet (rave-custom-footer.liquid)
+  Uses CSS Grid for a two-column layout.
+  - Left column: First menu block.
+  - Right column: Remaining text/custom_text blocks, displayed inline on desktop.
+{% endcomment %}
+
+{%- liquid
+  assign left_column_blocks = '' | split: ''
+  assign right_column_blocks = '' | split: ''
+  assign menu_block_assigned_to_left = false
+
+  for block in blocks
+    if block.type == 'link_list' and menu_block_assigned_to_left == false
+      assign temp_block_array = '' | split: ''
+      assign temp_block_array = temp_block_array | concat: [block]
+      assign left_column_blocks = left_column_blocks | concat: temp_block_array
+      assign menu_block_assigned_to_left = true
+    elsif block.type == 'text' or block.type == 'custom_text' or block.type == 'image' or block.type == 'brand_information'
+      assign temp_block_array = '' | split: ''
+      assign temp_block_array = temp_block_array | concat: [block]
+      assign right_column_blocks = right_column_blocks | concat: temp_block_array
+    endif
+  endfor
+-%}
+
+<style>
+  .rcf {
+    --text-color: var(--rave-color-primary-text, #3d2120);
+    --font-size-desktop: 1.4rem;
+    --font-size-mobile: 1rem;
+    --line-height: 1.2;
+    --item-gap-desktop: 1.25rem;
+    --item-gap-mobile: 0.25rem;
+    --column-gap-desktop: 2rem;
+    --column-gap-mobile: 0.5rem; /* Gap between stacked columns on mobile */
+    color: var(--text-color);
+    font-family: var(--font-body-family);
+  }
+
+  .rcf__wrapper {
+    display: grid;
+    grid-template-columns: 1fr; /* Mobile: Single column */
+    gap: var(--column-gap-mobile);
+    padding: 1rem 1.5rem; /* Mobile padding */
+    max-width: var(--page-width, 1200px);
+    margin: 0 auto;
+  }
+
+  @media screen and (min-width: 750px) {
+    /* Desktop */
+    .rcf__wrapper {
+      grid-template-columns: auto 1fr; /* Auto for left, 1fr for right */
+      /* grid-template-columns: minmax(auto, 40%) 1fr; /* Example: Left col takes up to 40% or content width */
+      gap: var(--column-gap-desktop);
+      padding: 1rem 3rem; /* Desktop padding, aligns with header */
+      align-items: baseline;
+    }
+  }
+
+  .rcf__column {
+    display: flex;
+    flex-direction: column; /* Items stack vertically in mobile */
+    align-items: flex-start; /* Left align on mobile */
+    gap: var(--item-gap-mobile);
+  }
+
+  @media screen and (min-width: 750px) {
+    /* Desktop */
+    .rcf__column {
+      flex-direction: row; /* Items inline on desktop */
+      align-items: baseline;
+      gap: var(--item-gap-desktop);
+    }
+    .rcf__column--left {
+      justify-content: flex-start;
+    }
+    .rcf__column--right {
+      justify-content: flex-end;
+    }
+  }
+
+  .rcf__item {
+    font-size: var(--font-size-mobile);
+    line-height: var(--line-height);
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--text-color);
+    text-decoration: none;
+  }
+
+  @media screen and (min-width: 750px) {
+    /* Desktop */
+    .rcf__item {
+      font-size: var(--font-size-desktop);
+    }
+  }
+
+  .rcf__item--link:hover {
+    text-decoration: underline;
+  }
+
+  .rcf__menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: contents; /* Makes <li> direct children of the flex/grid .rcf__column */
+  }
+
+  .rcf__text-block {
+    /* No specific styles needed if .rcf__item covers it */
+  }
+  .rcf__text-block--heading {
+    display: none; /* Hide block headings by default, can be enabled */
+  }
+</style>
+
+<div class="rcf">
+  <div class="rcf__wrapper">
+    {%- if left_column_blocks.size > 0 -%}
+      <div class="rcf__column rcf__column--left">
+        {%- for block in left_column_blocks -%}
+          {%- if block.type == 'link_list' and block.settings.menu != blank -%}
+            <ul class="rcf__menu-list" role="list">
+              {%- for link in block.settings.menu.links -%}
+                <li>
+                  <a href="{{ link.url }}" class="rcf__item rcf__item--link">
+                    {{ link.title | escape }}
+                  </a>
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if right_column_blocks.size > 0 -%}
+      <div class="rcf__column rcf__column--right">
+        {%- for block in right_column_blocks -%}
+          {%- comment %}
+            For the right column, we treat each block as an item.
+            If a block has a heading, we might choose to display it or not.
+            Currently, block headings are hidden by .rcf__text-block--heading { display: none; }
+          {%- endcomment %}
+          <div class="rcf__block-item">
+            {%- if block.settings.heading != blank -%}
+              <h2 class="rcf__text-block--heading">{{ block.settings.heading }}</h2>
+            {%- endif -%}
+
+            {%- case block.type -%}
+              {%- when 'text' -%}
+                {%- if block.settings.subtext != blank -%}
+                  <div class="rcf__item rcf__text-block">{{ block.settings.subtext }}</div>
+                {%- endif -%}
+              {%- when 'custom_text' -%}
+                {%- if block.settings.custom_text_content != blank -%}
+                  <div class="rcf__item rcf__text-block">{{ block.settings.custom_text_content }}</div>
+                {%- endif -%}
+              {%- when 'brand_information' -%}
+                {% comment %} For simplicity, only showing description if present. Add more as needed. {% endcomment %}
+                {%- if settings.brand_description != blank -%}
+                  <div class="rcf__item rcf__text-block">{{ settings.brand_description }}</div>
+                {%- endif -%}
+              {%- when 'image' -%}
+                {%- if block.settings.image != blank -%}
+                  {%- assign image_size_2x = block.settings.image_width | times: 2 | at_most: 5760 -%}
+                  <div
+                    class="footer-block__image-wrapper"
+                    style="max-width: min(100%, {{ block.settings.image_width }}px);"
+                  >
+                    <img
+                      srcset="{{ block.settings.image | image_url: width: block.settings.image_width }}, {{ block.settings.image | image_url: width: image_size_2x }} 2x"
+                      src="{{ block.settings.image | image_url: width: 760 }}"
+                      alt="{{ block.settings.image.alt | escape }}"
+                      loading="lazy"
+                      width="{{ block.settings.image.width }}"
+                      height="{{ block.settings.image.height }}"
+                      class="rcf__item"
+                    >
+                  </div>
+                {%- endif -%}
+            {%- endcase -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+</div>
