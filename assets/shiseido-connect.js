@@ -5,7 +5,7 @@ const cpbApiGetOtpUrl = document.querySelector('[cpb-api-get-otp-url]').getAttri
 const customerId = __st.cid;
 
 async function cpbConnectCheck() {
-  const url = `${cpbApiCheckIdUrl}`;
+  const url = `${cpbApiBaseUrl}`;
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -15,7 +15,7 @@ async function cpbConnectCheck() {
       site_serial: cpbApiSiteSerial,
       tkisk_cd: '606222',
       tkisk_ec_id: customerId,
-      target_url: cpbApiConnectUrl,
+      target_url: cpbApiCheckIdUrl,
     }),
   });
 
@@ -37,7 +37,7 @@ async function cpbConnectCheck() {
 }
 
 async function getCpbConnectOtp() {
-  const url = `${cpbApiGetOtpUrl}`;
+  const url = `${cpbApiBaseUrl}`;
   const response = await fetch(url, {
     method: 'POST',
     headers: {
