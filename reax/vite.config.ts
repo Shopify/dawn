@@ -11,6 +11,7 @@ export default defineConfig({
         splus: 'src/components/splus/index.tsx',
         remix: 'src/components/remix/index.tsx',
         track: 'src/components/track/index.tsx',
+        'tshirt-printing': 'src/components/tshirt-printing/index.tsx',
       },
       output: {
         dir: '../assets/',
