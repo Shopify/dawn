@@ -18,10 +18,6 @@ This repository contains a customized version of the Shopify **Dawn** theme used
   - workflow guides such as `super-prompt-3-workflow.mdc` and `workflow-quickfix.mdc`.
 
 ## Development Notes
-- The theme is developed with **Shopify CLI**. Start a local server with:
-  ```bash
-  shopify theme dev --store <your-store>.myshopify.com
-  ```
 - Follow Git workflows described in `super-prompt-3-workflow.mdc` (feature branches, PRs) or `workflow-quickfix.mdc` for small fixes.
 - Custom CSS and JS are isolated in the `assets/rave-*` files. Use CSS variables from `rave-variables.liquid` and keep styles mobile first.
 - Prettier settings are defined in `.prettierrc.json` (120 character width, single quotes except in Liquid files).
