@@ -89,7 +89,7 @@ class CartItems extends HTMLElement {
 
   onCartUpdate() {
     if (this.tagName === 'CART-DRAWER-ITEMS') {
-      return fetch(`${routes.cart_url}?section_id=cart-drawer`)
+      return fetch(`${routes.cart_url}.js?section_id=cart-drawer`)
         .then((response) => response.text())
         .then((responseText) => {
           const html = new DOMParser().parseFromString(responseText, 'text/html');
@@ -106,7 +106,7 @@ class CartItems extends HTMLElement {
           console.error(e);
         });
     } else {
-      return fetch(`${routes.cart_url}?section_id=main-cart-items`)
+      return fetch(`${routes.cart_url}.js?section_id=main-cart-items`)
         .then((response) => response.text())
         .then((responseText) => {
           const html = new DOMParser().parseFromString(responseText, 'text/html');
@@ -155,7 +155,7 @@ class CartItems extends HTMLElement {
     });
     const eventTarget = event.currentTarget instanceof CartRemoveButton ? 'clear' : 'change';
 
-    fetch(`${routes.cart_change_url}`, { ...fetchConfig(), ...{ body } })
+    fetch(`${routes.cart_change_url}.js`, { ...fetchConfig(), ...{ body } })
       .then((response) => {
         return response.text();
       })
@@ -284,7 +284,7 @@ if (!customElements.get('cart-note')) {
           'input',
           debounce((event) => {
             const body = JSON.stringify({ note: event.target.value });
-            fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } })
+            fetch(`${routes.cart_update_url}.js`, { ...fetchConfig(), ...{ body } })
               .then(() => CartPerformance.measureFromEvent('note-update:user-action', event));
           }, ON_CHANGE_DEBOUNCE_TIMER)
         );
