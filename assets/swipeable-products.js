@@ -29,34 +29,21 @@ function initSwipeableProducts() {
     nextBtn.addEventListener('click', () => navigateSlider(1));
 
     productsContainer.addEventListener('scroll', () => {
-      console.log('first');
-      console.log(productsContainer.scrollLeft);
-      if (productsContainer.scrollLeft > 0) {
-        prevBtn.style.opacity = '1';
-        prevBtn.disabled = false;
-      } else {
-        prevBtn.style.opacity = '0.5';
-        prevBtn.disabled = true;
-      }
+      const scrollPosition = productsContainer.scrollLeft;
+      const cardWidthWithGap = cardWidth + gap;
+      currentIndex = Math.round(scrollPosition / cardWidthWithGap);
 
-      if (productsContainer.scrollLeft < productsContainer.scrollWidth - productsContainer.offsetWidth) {
-        nextBtn.style.opacity = '1';
-        nextBtn.disabled = false;
-      } else {
-        nextBtn.style.opacity = '0.5';
-        nextBtn.disabled = true;
-      }
+      updateButtonStates();
     });
 
     function navigateSlider(direction) {
       currentIndex = Math.max(0, Math.min(maxIndex, currentIndex + direction));
-      slideToIndex(currentIndex);
+      const scrollPosition = currentIndex * (cardWidth + gap);
+      productsContainer.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth',
+      });
       updateButtonStates();
-    }
-
-    function slideToIndex(index) {
-      const offset = index * (cardWidth + gap);
-      wrapper.style.transform = `translateX(-${offset}px)`;
     }
 
     function updateButtonStates() {
