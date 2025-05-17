@@ -92,3 +92,47 @@
     </script>
   </variant-selects>
 {%- endunless -%}
+
+{% comment %} ! PUT SERVICES DATA ON WINDOW {% endcomment %}
+{% comment %} ! THIS PLACE IS FOR PRODUCTS WHICH HAVE ONLY SINGLE VARIANT. for the other one when we have variants, see product-variant-options.liquid {% endcomment %}
+
+{% if product.has_only_default_variant %}
+  {% comment %} # REMIX {% endcomment %}
+
+  {% assign remix_model_name = product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_3d_model.value.name
+    | json
+  %}
+
+  {% assign remix_model_path = product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_3d_model.value.name
+    | downcase
+    | prepend: 'rmx-'
+    | append: '.glb'
+    | asset_url
+  %}
+  {% assign racket_frame_color = product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_racket_frame_color.value
+    | default: '#8348ff'
+  %}
+  {% assign racket_grip_color = product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_racket_grip_color.value
+    | default: '#ffffff'
+  %}
+  {% assign logo_color = product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_logo_color.value
+    | default: '#ff0000'
+  %}
+  {% assign sticker_text_color = product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_sticker_text_color.value
+    | default: '#ffffff'
+  %}
+{% endif %}
+
+<script defer="defer">
+  window.s3_product_name = '{{ product.title | escape }}'
+
+  if (typeof {{remix_model_name | default: false}} === 'string') {
+      window.s3_remix_config = {
+          racketFrameColor: {{ racket_frame_color | json }},
+          racketGripColor: {{ racket_grip_color | json }},
+          logoColor: {{ logo_color | json }},
+          stickerTextColor: {{ sticker_text_color | json }},
+          modelPath: '{{ remix_model_path }}'
+      };
+   }
+</script>
