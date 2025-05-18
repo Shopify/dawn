@@ -1,6 +1,6 @@
 # Rave Yoga Shopify Theme (Customized Dawn v15.3.0)
 
-This project involves migrating the WordPress site `rave-yoga.com` to Shopify, using a customized version of the Dawn theme (v15.3.0). The primary goal is to replicate the design of the original site, starting with the header.
+This project involves migrating the Readymag site `rave-yoga.com` to Shopify, using a customized version of the Dawn theme (v15.3.0). The primary goal is to replicate the design of the original site, starting with the header.
 
 ## Project Information
 
