@@ -687,44 +687,109 @@
         <!-- You May Also Like Section -->
         <div class="recipe-recommendations">
           <h2 class="recipe-section-title">You may also like</h2>
+          <p style="background: #f0f0f0; padding: 5px;">DEBUG: Starting product ID logic.</p>
           {%- comment -%}
             1. Initialize product_id_for_recommendations
             2. Try to find a product ID based on article tags and recipe_tag_group metaobject
           {%- endcomment -%}
           {% assign product_id_for_recommendations = null %}
           {% assign found_tag_product_id = false %}
+          <p style="background: #f0f0f0; padding: 5px;">
+            DEBUG: Initial product_id_for_recommendations: {{ product_id_for_recommendations | default: 'nil' }}
+          </p>
+          <p style="background: #f0f0f0; padding: 5px;">
+            DEBUG: Article Tags: {{ article.tags | join: ', ' | default: 'No Tags' }}
+          </p>
+          <p style="background: #f0f0f0; padding: 5px;">
+            DEBUG: shop.metaobjects.recipe_tag_group.values.size:
+            {{ shop.metaobjects.recipe_tag_group.values.size | default: 'N/A' }}
+          </p>
 
           {% if article.tags.size > 0 and shop.metaobjects.recipe_tag_group.values.size > 0 %}
+            <p style="background: #f0f0f0; padding: 5px;">DEBUG: Entered tag processing loop.</p>
             {% for current_article_tag in article.tags %}
-              {% if found_tag_product_id == true %}{% break %}{% endif %}
+              <p style="background: #eee; padding: 3px; margin-left: 10px;">
+                DEBUG: Current Article Tag Loop: {{ current_article_tag }}
+              </p>
+              {% if found_tag_product_id == true %}
+                <p style="background: #eee; padding: 3px; margin-left: 10px;">
+                  DEBUG: found_tag_product_id is true, breaking article tag loop.
+                </p>
+                {% break %}
+              {% endif %}
               {% assign current_article_tag_stripped = current_article_tag | strip %}
+              <p style="background: #eee; padding: 3px; margin-left: 10px;">
+                DEBUG: Stripped Article Tag: {{ current_article_tag_stripped }}
+              </p>
               {% for tag_obj in shop.metaobjects.recipe_tag_group.values %}
+                <p style="background: #ddd; padding: 2px; margin-left: 20px;">
+                  DEBUG: Metaobject Loop: tag_obj.tag = {{ tag_obj.tag | default: 'N/A' }}
+                </p>
                 {% if tag_obj.tag == current_article_tag_stripped %}
+                  <p style="background: #ccf; padding: 2px; margin-left: 30px;">
+                    DEBUG: Matched tag_obj.tag: {{ tag_obj.tag }} with {{ current_article_tag_stripped }}
+                  </p>
                   {% if tag_obj.best_selling_product != blank %}
+                    <p style="background: #ccf; padding: 2px; margin-left: 30px;">
+                      DEBUG: tag_obj.best_selling_product: {{ tag_obj.best_selling_product }}
+                    </p>
                     {% assign best_selling_product_value = tag_obj.best_selling_product | strip %}
                     {% if best_selling_product_value contains 'gid://' %}
                       {% assign product_id_parts = best_selling_product_value | split: '/' %}
                       {% assign product_id_for_recommendations = product_id_parts | last %}
+                      <p style="background: #ccf; padding: 2px; margin-left: 30px;">
+                        DEBUG: Parsed from GID: {{ product_id_for_recommendations }}
+                      </p>
                     {% else %}
                       {% assign product_id_for_recommendations = best_selling_product_value %}
+                      <p style="background: #ccf; padding: 2px; margin-left: 30px;">
+                        DEBUG: Used non-GID value: {{ product_id_for_recommendations }}
+                      </p>
                     {% endif %}
 
                     {% if product_id_for_recommendations != blank %}
+                      <p style="background: #ccf; padding: 2px; margin-left: 30px;">
+                        DEBUG: product_id_for_recommendations is now: {{ product_id_for_recommendations }}. Setting
+                        found_tag_product_id to true.
+                      </p>
                       {% assign found_tag_product_id = true %}
                       {% break %}
                     {% endif %}
+                  {% else %}
+                    <p style="background: #ccf; padding: 2px; margin-left: 30px;">
+                      DEBUG: tag_obj.best_selling_product is BLANK for matched tag.
+                    </p>
                   {% endif %}
                 {% endif %}
               {% endfor %}
             {% endfor %}
+          {% else %}
+            <p style="background: #f0f0f0; padding: 5px;">
+              DEBUG: Did NOT enter tag processing loop. Conditions: article.tags.size > 0 is
+              {{ article.tags.size > 0 }}, shop.metaobjects.recipe_tag_group.values.size > 0 is
+              {{ shop.metaobjects.recipe_tag_group.values.size > 0 }}
+            </p>
           {% endif %}
+
+          <p style="background: #f0f0f0; padding: 5px;">
+            DEBUG: Before fallback - product_id_for_recommendations:
+            {{ product_id_for_recommendations | default: 'nil' }}
+          </p>
+          <p style="background: #f0f0f0; padding: 5px;">
+            DEBUG: Fallback product.id: {{ product.id | default: 'product.id not available' }}
+          </p>
 
           {%- comment -%}
             3. If no ID found from tags, fall back to the product.id from the recipe's main product block
           {%- endcomment -%}
           {% if product_id_for_recommendations == null or product_id_for_recommendations == blank %}
+            <p style="background: #f0f0f0; padding: 5px;">DEBUG: Fallback logic triggered. Assigning product.id.</p>
             {% assign product_id_for_recommendations = product.id %}
           {% endif %}
+          <p style="background: #f0f0f0; padding: 5px;">
+            DEBUG: FINAL product_id_for_recommendations for component:
+            {{ product_id_for_recommendations | default: 'nil or blank' }}
+          </p>
 
           <product-recommendations
             class="related-products isolate"
