@@ -687,50 +687,67 @@
         <!-- You May Also Like Section -->
         <div class="recipe-recommendations">
           <h2 class="recipe-section-title">You may also like</h2>
-          <p style="background: #f0f0f0; padding: 5px;">DEBUG: Starting product ID logic.</p>
 
           <div style="background: #e0e0e0; padding: 10px; margin-bottom: 10px;">
-            <h3 style="margin-top: 0;">DEBUG: Dumping shop.metaobjects.recipe_tag_group.values</h3>
-            {% if shop.metaobjects.recipe_tag_group.values != blank
-              and shop.metaobjects.recipe_tag_group.values.size > 0
-            %}
-              <p>Count: {{ shop.metaobjects.recipe_tag_group.values | size }}</p>
-              {% for tag_obj_item in shop.metaobjects.recipe_tag_group.values %}
-                <div style="border: 1px solid #ccc; padding: 5px; margin-bottom: 5px;">
-                  <p>
-                    <strong>Item {{ forloop.index }}:</strong>
-                  </p>
-                  <pre>{{ tag_obj_item | json }}</pre>
-                  <p><em>Attempting to access specific fields:</em></p>
-                  <p>- tag: {{ tag_obj_item.tag | default: 'N/A' }}</p>
-                  <p>- best_selling_product: {{ tag_obj_item.best_selling_product | default: 'N/A' }}</p>
-                  {% comment %} Add any other known or suspected field names here for testing {% endcomment %}
-                  <p>- custom_field_example: {{ tag_obj_item.custom_field_example | default: 'N/A' }}</p>
-                </div>
-              {% endfor %}
+            <h3 style="margin-top: 0;">DEBUG: Metaobject Access Test</h3>
+            {% assign rtg_values = shop.metaobjects.recipe_tag_group.values %}
+
+            <p>Attempting to access: shop.metaobjects.recipe_tag_group.values</p>
+
+            {% if rtg_values == null %}
+              <p>Result: rtg_values is nil.</p>
             {% else %}
-              <p>shop.metaobjects.recipe_tag_group.values is blank or empty.</p>
-              <p>
-                Direct output of .values:
-                {{ shop.metaobjects.recipe_tag_group.values | default: 'Not available or nil' }}
-              </p>
+              <p>Result: rtg_values is NOT nil.</p>
+              <p>Count using | size: {{ rtg_values | size }}</p>
+
+              {% if rtg_values.first != null %}
+                <p>First item is NOT nil. Accessing fields from first item:</p>
+                <p>- Tag: {{ rtg_values.first.tag | default: 'N/A or error' }}</p>
+                <p>
+                  - Best Selling Product (raw): {{ rtg_values.first.best_selling_product | default: 'N/A or error' }}
+                </p>
+                <p>
+                  - Best Selling Product ID (if product object):
+                  {{ rtg_values.first.best_selling_product.id | default: 'N/A or error' }}
+                </p>
+                <pre>First item JSON: {{ rtg_values.first | json }}</pre>
+              {% else %}
+                <p>
+                  First item (rtg_values.first) IS nil, even though rtg_values is not nil. This usually means the
+                  collection is empty.
+                </p>
+              {% endif %}
+            {% endif %}
+
+            <hr>
+            <p>Trying with a potential namespace 'custom': shop.metaobjects.custom.recipe_tag_group.values</p>
+            {% assign custom_rtg_values = shop.metaobjects.custom.recipe_tag_group.values %}
+            {% if custom_rtg_values == null %}
+              <p>Result: custom_rtg_values is nil.</p>
+            {% else %}
+              <p>Result: custom_rtg_values is NOT nil.</p>
+              <p>Count using | size: {{ custom_rtg_values | size }}</p>
+              {% if custom_rtg_values.first != null %}
+                <p>First item is NOT nil. Accessing fields from first item:</p>
+                <p>- Tag: {{ custom_rtg_values.first.tag | default: 'N/A or error' }}</p>
+                <p>
+                  - Best Selling Product (raw):
+                  {{ custom_rtg_values.first.best_selling_product | default: 'N/A or error' }}
+                </p>
+                <p>
+                  - Best Selling Product ID (if product object):
+                  {{ custom_rtg_values.first.best_selling_product.id | default: 'N/A or error' }}
+                </p>
+                <pre>First item JSON: {{ custom_rtg_values.first | json }}</pre>
+              {% else %}
+                <p>First item (custom_rtg_values.first) IS nil, even though custom_rtg_values is not nil.</p>
+              {% endif %}
             {% endif %}
           </div>
 
-          <p style="background: #f0f0f0; padding: 5px;">
-            TESTING DIRECT METAOBJECT ACCESS: First tag_obj.tag is:
-            {{
-              shop.metaobjects.recipe_tag_group.values.first.tag
-              | default: 'recipe_tag_group.values.first.tag NOT ACCESSIBLE or EMPTY'
-            }}
-          </p>
-
-          <p style="background: #f0f0f0; padding: 5px;">
-            TESTING DIRECT METAOBJECT ACCESS: Count of values: {{ shop.metaobjects.recipe_tag_group.values | size }}
-          </p>
-
           {%- comment -%}
             1. Initialize product_id_for_recommendations
+            2. Try to find a product ID based on article tags and recipe_tag_group metaobject
           {%- endcomment -%}
           {% assign product_id_for_recommendations = null %}
           {% assign found_tag_product_id = false %}
