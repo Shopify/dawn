@@ -17,10 +17,18 @@
   - horizontal_class: {Boolean} Add a card--horizontal class if set to true. Default: false (optional)
   - horizontal_quick_add: {Boolean} Changes the quick add button styles when set to true. Default: false (optional)
   - placeholder_image: {String} The placeholder image to use when no product exists. Default: 'product-apparel-2' (optional)
+  - disabled: {Boolean} Disable the card. Default: 'false'
 
   Usage:
   {% render 'card-product', show_vendor: section.settings.show_vendor %}
 {% endcomment %}
+
+{% comment %}
+  ! you have to take care of the products and the variants. both.
+{% endcomment %}
+
+{% assign belongs_to_sale_collection = card_product.collections | where: 'handle', 'sale' | first %}
+
 {%- unless skip_styles -%}
   {{ 'component-rating.css' | asset_url | stylesheet_tag }}
   {{ 'component-volume-pricing.css' | asset_url | stylesheet_tag }}
@@ -51,7 +59,7 @@
         {% if extend_height %} card--extend-height{% endif %}
         {% if card_product.featured_media == nil and settings.card_style == 'card' %} ratio{% endif %}
         {% if horizontal_class %} card--horizontal{% endif %}
-        {% if card_variant.available == false or card_product.available == false %} card--disabled{% endif %}
+        {% if disabled == true %} card--disabled{% endif %}
       "
       style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%;"
     >
@@ -135,7 +143,7 @@
             </div>
           </div>
         {%- endif -%}
-        <div class="card__content">
+        <div class="card__content" style="padding: 0">
           <div class="card__information">
             <h3
               class="card__heading"
@@ -155,35 +163,51 @@
           </div>
           <div class="card__badge {{ settings.badge_position }}">
             {%- if card_variant -%}
-              {%- if card_variant.available == false -%}
-                <span
-                  id="NoMediaStandardBadge-{{ section_id }}-{{ card_product.id }}-{{ card_variant.id }}"
-                  class="badge badge--bottom-left color-{{ settings.sold_out_badge_color_scheme }}"
-                >
-                  {{- 'products.product.sold_out' | t -}}
-                </span>
-              {%- elsif card_variant.compare_at_price > card_variant.price and card_variant.available -%}
+              {%- if card_variant.available == true
+                and card_variant.compare_at_price > card_variant.price
+                and belongs_to_sale_collection != null
+              -%}
                 <span
                   id="NoMediaStandardBadge-{{ section_id }}-{{ card_product.id }}-{{ card_variant.id }}"
                   class="badge badge--bottom-left color-{{ settings.sale_badge_color_scheme }}"
                 >
-                  {{- 'products.product.on_sale' | t -}}
+                  {% if card_variant.compare_at_price > card_variant.price %}
+                    {% assign saving_percentage = card_variant.compare_at_price
+                      | minus: card_variant.price
+                      | times: 100
+                      | divided_by: card_variant.compare_at_price
+                      | round
+                    %}
+                    {{ saving_percentage }}% OFF
+                  {% endif %}
                 </span>
               {%- endif -%}
             {%- else -%}
-              {%- if card_product.available == false -%}
-                <span
-                  id="NoMediaStandardBadge-{{ section_id }}-{{ card_product.id }}"
-                  class="badge badge--bottom-left color-{{ settings.sold_out_badge_color_scheme }}"
-                >
-                  {{- 'products.product.sold_out' | t -}}
-                </span>
-              {%- elsif card_product.compare_at_price > card_product.price and card_product.available -%}
+              {%- if card_product.available == true
+                and card_product.compare_at_price > card_product.price
+                and belongs_to_sale_collection != null
+              -%}
                 <span
                   id="NoMediaStandardBadge-{{ section_id }}-{{ card_product.id }}"
                   class="badge badge--bottom-left color-{{ settings.sale_badge_color_scheme }}"
                 >
-                  {{- 'products.product.on_sale' | t -}}
+                  {% if card_product.compare_at_price > card_product.price %}
+                    {% assign saving_percentage = card_product.compare_at_price
+                      | minus: card_product.price
+                      | times: 100
+                      | divided_by: card_product.compare_at_price
+                      | round
+                    %}
+                    {{ saving_percentage }}% OFF
+                  {% endif %}
+                </span>
+              {% elsif card_product.metafields.custom_but_hidden.product_tag != null %}
+                <span
+                  style="background-color: rgb(53, 151, 255); color: white;"
+                  id="NoMediaStandardBadge-{{ section_id }}-{{ card_product.id }}"
+                  class="badge badge--bottom-left"
+                >
+                  {{ card_product.metafields.custom_but_hidden.product_tag }}
                 </span>
               {%- endif -%}
             {%- endif -%}

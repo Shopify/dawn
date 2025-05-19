@@ -113,10 +113,7 @@ function Stringing({
         {config.stringProduct ? (
           <div>
             <legend className="form__label">
-              <span>
-                {config.stringVariant?.selectedOptions.find((x) => x.name === 'Color')?.value ||
-                  `${config.stringProduct?.title}, Now choose the Color`}
-              </span>
+              <span>Choose the Color</span>
             </legend>
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
               {config.stringProduct.variants.nodes
@@ -152,6 +149,7 @@ function Stringing({
                     >
                       <input
                         data-sku={variant.sku}
+                        data-string={(config?.stringProduct?.title || '') + ' - ' + variant.title}
                         disabled={variant.availableForSale === false}
                         onChange={(_) => {
                           setConfig({
@@ -196,9 +194,7 @@ function Stringing({
         {config.stringVariant ? (
           <div>
             <legend className="form__label">
-              <span>
-                {config.stringVariant?.title} {config.stringProduct?.title}, select Tension now
-              </span>
+              <span>adjust Tension</span>
             </legend>
             <div
               style={{
@@ -261,8 +257,9 @@ function Stringing({
           }}
         >
           <p>
-            All set! You are customising this racket with {config.stringVariant?.selectedOptions[0].value}{' '}
-            {config.stringProduct?.title} string and the tension of {config.tension} LBS.
+            All set for the court! You are customising this {window.s3_product_name} Racket with{' '}
+            {config.stringVariant?.selectedOptions[0].value} {config.stringProduct?.title}, strung at the tension of{' '}
+            {config.tension} LBS.
           </p>
         </div>
       ) : null}

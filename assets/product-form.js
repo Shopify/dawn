@@ -89,7 +89,9 @@ if (!customElements.get('product-form')) {
                 quantity: 1,
                 properties: {
                   _racket: selectedVariantSku,
+                  _racketName: window?.s3_product_name || '',
                   _string: stringVariantSku,
+                  _stringName: document.querySelector('input[name="string-variant"]:checked')?.dataset?.string || '',
                   _tension: `${tensionSelected}lbs`,
                   _bundleId: formData.get('id'),
                 },
@@ -134,6 +136,19 @@ if (!customElements.get('product-form')) {
         }
 
         //  check if printing is selected
+        const theTshirtText = document.getElementById('the-tshirt-text');
+
+        if (theTshirtText && window.s3_tshirt_printing_service_variant_id) {
+          items.push({
+            id: window.s3_tshirt_printing_service_variant_id,
+            quantity: 1,
+            properties: {
+              _tshirtText: theTshirtText.innerText,
+              _textColor: window.s3_tshirt_printing_config.tshirtTextColor || 'UNKNOWN',
+              _bundleId: formData.get('id'),
+            },
+          });
+        }
 
         // Single combined request with sections
         fetch(`${routes.cart_add_url}`, {

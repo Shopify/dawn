@@ -12,6 +12,9 @@
   Usage:
   {% render 'price', product: product %}
 {% endcomment %}
+
+{% assign belongs_to_sale_collection = product.collections | where: 'handle', 'sale' | first %}
+
 {%- liquid
   if use_variant
     assign target = product.selected_or_first_available_variant
@@ -127,14 +130,35 @@
         </span>
       </small>
     </div>
-    {%- if show_badges -%}
-      <span class="badge price__badge-sale color-{{ settings.sale_badge_color_scheme }}">
-        {{ 'products.product.on_sale' | t }}
+    {%- if belongs_to_sale_collection and template.name == 'product' -%}
+      <span
+        style="margin-left: 1rem;"
+        id="NoMediaStandardBadge-{{ section_id }}-{{ card_product.id }}-{{ card_variant.id }}"
+        class="badge badge--bottom-left color-{{ settings.sale_badge_color_scheme }}"
+      >
+        {% if product.compare_at_price > product.price %}
+          {% assign saving_percentage = product.compare_at_price
+            | minus: product.selected_or_first_available_variant.price
+            | times: 100
+            | divided_by: product.compare_at_price
+            | round
+          %}
+          {{ saving_percentage }}% OFF
+        {% endif %}
       </span>
-
-      <span class="badge price__badge-sold-out color-{{ settings.sold_out_badge_color_scheme }}">
-        {{ 'products.product.sold_out' | t }}
-      </span>
-    {%- endif -%}
+      {% comment %} dont show percent off in UAE {% endcomment %}
+    {% elsif template.name == 'product' %}
+      {% unless shop.currency == 'AED' %}
+        <div style="color: var(--accent-color)" class="price-item">
+          {% assign saving_percentage = product.compare_at_price
+            | minus: product.selected_or_first_available_variant.price
+            | times: 100
+            | divided_by: product.compare_at_price
+            | round
+          -%}
+          ({{ saving_percentage }}% OFF)
+        </div>
+      {% endunless %}
+    {% endif %}
   </div>
 {% endunless %}

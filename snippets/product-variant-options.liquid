@@ -126,26 +126,76 @@
   {%- endif -%}
 {%- endfor -%}
 
+{% comment %} ! PUT SERVICES DATA ON WINDOW {% endcomment %}
+{% comment %} ! maintain it with product-variant-picker.liquid (thats for products which have only single variant){% endcomment %}
+
+{% comment %} # TSHIRT PRINTING {% endcomment %}
+
+{% assign tshirt_color = '#000000' %}
+{% assign tshirt_text_color = '#ffffff' %}
+{% assign texture_path = 'tshirt-texture.png' | asset_url %}
+
+{% assign selected_variant = product.selected_or_first_available_variant %}
+{% assign selected_color = selected_variant.option1 | downcase %}
+
+{% for variant in product.variants %}
+  {% assign current_color = variant.option1 | downcase %}
+
+  {% if current_color == selected_color and variant.metafields.custom_but_hidden.tpr_text_color.value %}
+    {% assign tshirt_color = variant.metafields.custom_but_hidden.tpr_t_shirt_color.value %}
+    {% assign tshirt_text_color = variant.metafields.custom_but_hidden.tpr_text_color.value %}
+  {% endif %}
+{% endfor %}
+
+{% comment %} # REMIX {% endcomment %}
+
+{% assign remix_model_name = product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_3d_model.value.name
+  | json
+%}
+{% assign remix_model_path = product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_3d_model.value.name
+  | downcase
+  | prepend: 'rmx-'
+  | append: '.glb'
+  | asset_url
+%}
+{% assign racket_frame_color = product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_racket_frame_color.value
+  | default: '#8348ff'
+%}
+{% assign racket_grip_color = product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_racket_grip_color.value
+  | default: '#ffffff'
+%}
+{% assign logo_color = product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_logo_color.value
+  | default: '#ff0000'
+%}
+{% assign sticker_text_color = product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_sticker_text_color.value
+  | default: '#ffffff'
+%}
+
 <script defer="defer">
-  var modelName =
-    '{{ product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_3d_model.value.name | json }}';
+  setTimeout(function() {
+      try {
+          document.getElementById('sku').textContent = '{{ product.selected_or_first_available_variant.sku  }}'
+          } catch (e) {
+              console.error('coulnt set sku', e)
+          }
+  }, 500)
 
-    var racketFrameColor = {{ product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_racket_frame_color.value | default: '#8348ff' | json }};
-    var racketGripColor = {{ product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_racket_grip_color.value | default: '#ffffff' | json }};
-    var logoColor = {{ product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_logo_color.value | default: '#ff0000' | json }};
-    var stickerTextColor = {{ product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_sticker_text_color.value | default: '#ffffff' | json }};
+  if (typeof {{remix_model_name}} === 'string') {
+    window.s3_remix_config = {
+        racketFrameColor: {{ racket_frame_color | json }},
+        racketGripColor: {{ racket_grip_color | json }},
+        logoColor: {{ logo_color | json }},
+        stickerTextColor: {{ sticker_text_color | json }},
+        modelPath: '{{ remix_model_path }}'
+    };
+  }
 
-    var obj = {
-        racketFrameColor,
-        racketGripColor,
-        logoColor,
-        stickerTextColor,
-        modelPath:  '{{ product.selected_or_first_available_variant.metafields.custom_but_hidden.rmx_3d_model.value.name | downcase | prepend: 'rmx-' | append: '.glb' | asset_url }}'
-    }
 
-    console.log(obj)
+  // ! TSHIRT PRINTING
 
-  if (typeof modelName === 'string' && modelName != 'null') {
-    window.s3_remix_config = obj;
+  window.s3_tshirt_printing_config = {
+    tshirtColor: {{ tshirt_color | json }},
+    tshirtTextColor: {{ tshirt_text_color | json }},
+    texturePath: {{ texture_path | json }}
   }
 </script>

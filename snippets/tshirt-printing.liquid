@@ -1,0 +1,69 @@
+{{ 'services.css' | asset_url | stylesheet_tag }}
+
+<style>
+  @font-face {
+    font-family: 'segui';
+    src: url("{{ 'seguibl.ttf' | asset_url }}") format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+
+  .tshirt-printing-font {
+    font-family: 'segui',  sans-serif !important;
+    /* letter-spacing: -1px; */
+  }
+</style>
+
+<section
+  id="tshirt-printing-modal"
+  style="display: none;"
+></section>
+
+<section class="tshirt-printing-container">
+  <legend class="form__label">
+    <span>Personalise</span>
+  </legend>
+
+  <label class="frame-option sheet" for="tshirt-printing">
+    <input type="radio" name="customisation" id="tshirt-printing">
+    <div class="frame-name" style="display: flex; justify-content: space-between; align-items: center;">
+      <span id="tshirt-printing-title">Make this T-Shirt yours </span>
+      <span style="color: var(--gray-50); font-size: 1.3rem;">
+        {{- all_products['t-shirt-printing'].price | money -}}
+      </span>
+    </div>
+    <span class="frame-description" id="tshirt-printing-description">
+      Personalize this {{ product.title | escape }} and make it truly yours with our optional offering, designed to
+      showcase your unique style on the court.
+    </span>
+  </label>
+</section>
+
+<script defer="defer">
+  document.addEventListener('DOMContentLoaded', () => {
+    const label = document.querySelector('label[for="tshirt-printing"]');
+    const root = document.getElementById('tshirt-printing-modal');
+
+    if (label && root) {
+      label.addEventListener('click', () => {
+        if (window?.s3_tshirt_printing_controller?.openModal) {
+          window.s3_tshirt_printing_controller.openModal();
+        }
+        root.style.display = 'block';
+
+        // Check if script already loaded
+        if (!document.querySelector('script[src*="vx-tshirt-printing"]')) {
+          const script = document.createElement('script');
+          script.src = "{{ 'vx-tshirt-printing.js' | asset_url }}";
+          script.defer = true;
+          script.type = 'module';
+          document.body.appendChild(script);
+        }
+      });
+
+      // set the tshirt-printing variant id on window
+      window.s3_tshirt_printing_service_variant_id = '{{ all_products['t-shirt-printing'].variants.first.id  }}';
+    }
+  });
+</script>
