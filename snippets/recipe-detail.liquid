@@ -688,9 +688,19 @@
         <div class="recipe-recommendations">
           <h2 class="recipe-section-title">You may also like</h2>
           <p style="background: #f0f0f0; padding: 5px;">DEBUG: Starting product ID logic.</p>
+          <p style="background: #f0f0f0; padding: 5px;">
+            TESTING DIRECT METAOBJECT ACCESS: First tag_obj.tag is:
+            {{
+              shop.metaobjects.recipe_tag_group.values.first.tag
+              | default: 'recipe_tag_group.values.first.tag NOT ACCESSIBLE or EMPTY'
+            }}
+          </p>
+          <p style="background: #f0f0f0; padding: 5px;">
+            TESTING DIRECT METAOBJECT ACCESS: Count of values: {{ shop.metaobjects.recipe_tag_group.values | size }}
+          </p>
+
           {%- comment -%}
             1. Initialize product_id_for_recommendations
-            2. Try to find a product ID based on article tags and recipe_tag_group metaobject
           {%- endcomment -%}
           {% assign product_id_for_recommendations = null %}
           {% assign found_tag_product_id = false %}
@@ -707,11 +717,10 @@
           {% assign debug_condition_article_tags_exist = false %}
           {% if article.tags.size > 0 %}{% assign debug_condition_article_tags_exist = true %}{% endif %}
           {% assign debug_condition_metaobjects_exist = false %}
-          {% if shop.metaobjects.recipe_tag_group.values.size > 0 -%}
-            {%- assign debug_condition_metaobjects_exist = true -%}
-          {%- endif %}
+          {% assign metaobject_values_count = shop.metaobjects.recipe_tag_group.values | size %}
+          {% if metaobject_values_count > 0 %}{% assign debug_condition_metaobjects_exist = true %}{% endif %}
 
-          {% if article.tags.size > 0 and shop.metaobjects.recipe_tag_group.values.size > 0 %}
+          {% if article.tags.size > 0 and metaobject_values_count > 0 %}
             <p style="background: #f0f0f0; padding: 5px;">DEBUG: Entered tag processing loop.</p>
             {% for current_article_tag in article.tags %}
               <p style="background: #eee; padding: 3px; margin-left: 10px;">
@@ -772,8 +781,8 @@
           {% else %}
             <p style="background: #f0f0f0; padding: 5px;">
               DEBUG: Did NOT enter tag processing loop. Conditions: article.tags.size > 0 is
-              {{ debug_condition_article_tags_exist }}, shop.metaobjects.recipe_tag_group.values.size > 0 is
-              {{ debug_condition_metaobjects_exist }}
+              {{ debug_condition_article_tags_exist }}, metaobject_values_count > 0 is
+              {{ debug_condition_metaobjects_exist }} (Count: {{ metaobject_values_count }})
             </p>
           {% endif %}
 
