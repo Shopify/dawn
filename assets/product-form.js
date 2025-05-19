@@ -89,7 +89,9 @@ if (!customElements.get('product-form')) {
                 quantity: 1,
                 properties: {
                   _racket: selectedVariantSku,
+                  _racketName: window?.s3_product_name || '',
                   _string: stringVariantSku,
+                  _stringName: document.querySelector('input[name="string-variant"]:checked')?.dataset?.string || '',
                   _tension: `${tensionSelected}lbs`,
                   _bundleId: formData.get('id'),
                 },
@@ -135,7 +137,6 @@ if (!customElements.get('product-form')) {
 
         //  check if printing is selected
         const theTshirtText = document.getElementById('the-tshirt-text');
-        console.log({ theTshirtText: theTshirtText.innerText });
 
         if (theTshirtText && window.s3_tshirt_printing_service_variant_id) {
           items.push({

@@ -149,6 +149,7 @@ function Stringing({
                     >
                       <input
                         data-sku={variant.sku}
+                        data-string={(config?.stringProduct?.title || '') + ' - ' + variant.title}
                         disabled={variant.availableForSale === false}
                         onChange={(_) => {
                           setConfig({
