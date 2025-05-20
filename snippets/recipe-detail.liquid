@@ -826,21 +826,25 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    function forceTwoColGridInRecommendations() {
-      var recs = document.querySelectorAll('.related-products .product-grid');
-      recs.forEach(function (grid) {
-        var items = grid.querySelectorAll('.grid__item');
-        items.forEach(function (item) {
-          item.style.width = '50%';
-          item.style.maxWidth = '50%';
-        });
-      });
-    }
-    // Run once on DOM ready
-    forceTwoColGridInRecommendations();
-    // Also run after AJAX loads (Shopify recommendations)
-    document.addEventListener('shopify:section:load', forceTwoColGridInRecommendations);
-    // Fallback: run again after a short delay in case of late JS injection
-    setTimeout(forceTwoColGridInRecommendations, 1000);
+    // Listen for DOM changes inside product-recommendations
+    var recs = document.querySelector('.related-products');
+    if (!recs) return;
+
+    // Use MutationObserver to watch for the grid being injected
+    var observer = new MutationObserver(function (mutations) {
+      var grid = recs.querySelector('ul.product-grid');
+      if (grid) {
+        // Remove any grid--*-col-* classes except the ones we want
+        grid.className = grid.className
+          .replace(/grid--\d-col-desktop/g, '')
+          .replace(/grid--\d-col-tablet-down/g, '')
+          .trim();
+        // Add the desired classes
+        grid.classList.add('grid--2-col-desktop', 'grid--2-col-tablet-down');
+        observer.disconnect(); // Stop observing once done
+      }
+    });
+
+    observer.observe(recs, { childList: true, subtree: true });
   });
 </script>
