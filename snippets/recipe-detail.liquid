@@ -1013,41 +1013,28 @@
   <div class="recipekit-related-recipes page-width">
     <h2 class="recipe-section-title">More {{ selected_product_group.tag }} Recipes</h2>
     <div class="main-blog-recipekit-grid">
-      {%- assign recipe_handles = '' -%}
-      {%- assign recipe_imgs = '' -%}
       {%- assign recipe_handles = selected_product_group.recipe_1
         | append: ','
         | append: selected_product_group.recipe_2
         | append: ','
         | append: selected_product_group.recipe_3
       -%}
-      {%- assign recipe_imgs = selected_product_group.recipe_1_img
+      {%- assign recipe_img_gids = selected_product_group.recipe_1_img
         | append: ','
         | append: selected_product_group.recipe_2_img
         | append: ','
         | append: selected_product_group.recipe_3_img
       -%}
       {%- assign handle_array = recipe_handles | split: ',' -%}
-      {%- assign img_array = recipe_imgs | split: ',' -%}
+      {%- assign img_gid_array = recipe_img_gids | split: ',' -%}
       {%- for handle in handle_array -%}
         {%- assign idx = forloop.index0 -%}
-        {%- assign img_obj = img_array[idx] -%}
+        {%- assign img_gid = img_gid_array[idx] | strip -%}
         {%- assign clean_handle = handle | remove: 'recipes/' | strip -%}
-        {%- if clean_handle != blank -%}
+        {%- if clean_handle != blank and img_gid != blank -%}
           {%- assign title_temp = clean_handle | replace: '-', ' ' | strip -%}
           {%- assign title_words = title_temp | split: ' ' -%}
           {%- assign title_case = '' -%}
-          <!-- DEBUG: show handle, title_temp, title_words, and final title_case -->
-          <div style="display:none">
-            handle: {{ handle -}}
-            <br>
-            clean_handle: {{ clean_handle -}}
-            <br>
-            title_temp: {{ title_temp -}}
-            <br>
-            title_words: {{ title_words | join: ',' -}}
-            <br>
-          </div>
           {%- for word in title_words -%}
             {%- if word != '' -%}
               {%- assign word_cap = word | downcase | capitalize -%}
@@ -1057,21 +1044,33 @@
               {%- endunless -%}
             {%- endif -%}
           {%- endfor -%}
-          <div style="display:none">title_case: {{ title_case }}</div>
           {%- assign recipe_url = shop.url | append: '/blogs/recipes/' | append: clean_handle -%}
+          {%- assign image_object = null -%}
+          {%- if img_gid contains 'gid://shopify/MediaImage/' -%}
+            {%- assign image_id = img_gid | split: 'gid://shopify/MediaImage/' | last -%}
+            {%- assign image_object = media[image_id] -%}
+          {%- endif -%}
           <div class="recipekit-card-outer">
             <a href="{{ recipe_url }}" class="recipekit-card-link" aria-label="{{ title_case }}">
               <div class="recipekit-card">
                 <div class="recipekit-card-image-wrapper">
-                  {%- if img_obj != blank -%}
+                  {%- if image_object -%}
                     <img
                       class="recipekit-card-image"
-                      src="{{ img_obj | image_url: width: 600, height: 600, crop: 'center' }}"
+                      src="{{ image_object | img_url: '300x300', crop: 'center' }}"
                       alt="{{ title_case }}"
                       loading="lazy"
                       width="300"
                       height="300"
                     >
+                  {%- else -%}
+                    <!-- Fallback if image_object is not found -->
+                    <div
+                      class="recipekit-card-image placeholder-image"
+                      style="width:300px; height:300px; background-color:#f0f0f0; display:flex; align-items:center; justify-content:center;"
+                    >
+                      No Image
+                    </div>
                   {%- endif -%}
                 </div>
               </div>
