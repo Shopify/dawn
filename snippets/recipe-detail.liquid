@@ -1004,7 +1004,6 @@
 {% if selected_product_group != null %}
   <div class="page-width">
     <h2 class="related-recipes-title">More {{ selected_product_group.tag }} Recipes</h2>
-
     <!-- Debug Info (Hidden) -->
     <div style="display: none;">
       <div>Product Group Tag: {{ selected_product_group.tag }}</div>
@@ -1016,132 +1015,52 @@
     </div>
 
     <div class="main-blog-recipekit-grid">
-      {% comment %}Collect related recipes{% endcomment %}
+      {% comment %}Initialize variables{% endcomment %}
       {% assign valid_articles = '' %}
       {% assign valid_articles_count = 0 %}
+      {% assign displayed_count = 0 %}
 
-      {% comment %}Try metaobject recipes first{% endcomment %}
+      {% comment %}Add explicit recipes from metaobject fields{% endcomment %}
       {% if selected_product_group.recipe_1 != blank and selected_product_group.recipe_1 != article.handle %}
-        {% assign valid_articles = valid_articles | append: selected_product_group.recipe_1 | append: ',' %}
-        {% assign valid_articles_count = valid_articles_count | plus: 1 %}
+        {% assign recipe_article = blog.articles | where: 'handle', selected_product_group.recipe_1 | first %}
+        {% if recipe_article %}
+          {% assign valid_articles = valid_articles | append: selected_product_group.recipe_1 | append: ',' %}
+          {% assign valid_articles_count = valid_articles_count | plus: 1 %}
+        {% endif %}
       {% endif %}
 
       {% if selected_product_group.recipe_2 != blank and selected_product_group.recipe_2 != article.handle %}
-        {% assign valid_articles = valid_articles | append: selected_product_group.recipe_2 | append: ',' %}
-        {% assign valid_articles_count = valid_articles_count | plus: 1 %}
+        {% assign recipe_article = blog.articles | where: 'handle', selected_product_group.recipe_2 | first %}
+        {% if recipe_article %}
+          {% assign valid_articles = valid_articles | append: selected_product_group.recipe_2 | append: ',' %}
+          {% assign valid_articles_count = valid_articles_count | plus: 1 %}
+        {% endif %}
       {% endif %}
 
       {% if selected_product_group.recipe_3 != blank and selected_product_group.recipe_3 != article.handle %}
-        {% assign valid_articles = valid_articles | append: selected_product_group.recipe_3 | append: ',' %}
-        {% assign valid_articles_count = valid_articles_count | plus: 1 %}
+        {% assign recipe_article = blog.articles | where: 'handle', selected_product_group.recipe_3 | first %}
+        {% if recipe_article %}
+          {% assign valid_articles = valid_articles | append: selected_product_group.recipe_3 | append: ',' %}
+          {% assign valid_articles_count = valid_articles_count | plus: 1 %}
+        {% endif %}
       {% endif %}
 
-      {% comment %}Display related recipes{% endcomment %}
-      {% assign displayed_count = 0 %}
-      {% assign handles_array = valid_articles | split: ',' %}
-
-      {% for recipe_handle in handles_array %}
-        {% assign recipe_handle = recipe_handle | strip %}
-        {% if recipe_handle != blank %}
-          {% assign recipe_article = blog.articles | where: 'handle', recipe_handle | first %}
-          {% if recipe_article %}
-            {% assign displayed_count = displayed_count | plus: 1 %}
-            {%- assign rk_recipe_id = recipe_article.id | downcase -%}
-            {%- assign rk_recipe_mf = recipe_article.metafields.recipekit[rk_recipe_id] -%}
-            <div class="recipekit-card-outer">
-              <a
-                href="{{ recipe_article.url }}"
-                class="recipekit-card-link"
-                aria-label="{{ recipe_article.title | escape }}"
-              >
-                <div class="recipekit-card">
-                  <div class="recipekit-card-image-wrapper">
-                    {%- if rk_recipe_mf and rk_recipe_mf.recipe_image != blank -%}
-                      {%- assign image_url = rk_recipe_mf.recipe_image -%}
-                      {%- if image_url contains 'cloudinary.com' -%}
-                        {%- assign rk_last_url = image_url | split: 'upload/' -%}
-                        {%- assign card_image = rk_last_url[1]
-                          | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/t_1x1_recipe_image,f_auto/'
-                        -%}
-                      {%- elsif image_url contains 'backblazeb2.com' -%}
-                        {%- assign rk_last_url = image_url | split: 'backblazeb2.com/file/recipekit-bucket/' -%}
-                        {%- assign card_image = 'https://images.getrecipekit.com/'
-                          | append: rk_last_url[1]
-                          | append: '?aspect_ratio=1:1&quality=90&'
-                        -%}
-                      {%- elsif image_url contains 'cdn.shopify.com' -%}
-                        {%- assign card_image = image_url | append: '&width=1000&height=1000' -%}
-                      {%- else -%}
-                        {%- assign card_image = image_url -%}
-                      {%- endif -%}
-                      <img
-                        class="recipekit-card-image"
-                        src="{{ card_image }}"
-                        alt="{{ recipe_article.title | escape }}"
-                        loading="lazy"
-                        width="400"
-                        height="400"
-                      >
-                    {%- elsif recipe_article.image -%}
-                      <img
-                        class="recipekit-card-image"
-                        src="{{ recipe_article.image | img_url: '1000x1000', scale: 2 }}"
-                        alt="{{ recipe_article.title | escape }}"
-                        loading="lazy"
-                        width="400"
-                        height="400"
-                      >
-                    {%- endif -%}
-                    {%- assign recipe_rating_num = rk_recipe_mf.recipe_rating | plus: 0 -%}
-                    {%- assign rating_count_num = rk_recipe_mf.rating_count | plus: 0 -%}
-                    {% if recipe_rating_num > 4 and rating_count_num > 4 %}
-                      <span class="recipekit-top-rated-badge">Top Rated</span>
-                    {% endif %}
-                    {%- if rk_recipe_mf and rk_recipe_mf.prep_time != blank -%}
-                      <span class="recipekit-prep-time">{{ rk_recipe_mf.prep_time }}</span>
-                    {%- endif -%}
-                  </div>
-                </div>
-              </a>
-              <div class="recipekit-card-meta">
-                <a href="{{ recipe_article.url }}" class="recipekit-card-title-link">
-                  <div class="recipekit-card-title">{{ recipe_article.title }}</div>
-                </a>
-              </div>
-            </div>
-          {% endif %}
-        {% endif %}
-      {% endfor %}
-
-      {% comment %}If no explicit recipes were shown, try tag-based fallback{% endcomment %}
-      {% if displayed_count == 0 %}
-        <div style="display: none;">
-          Trying Tag Fallback using display name: {{ selected_product_group.tag }}
-          <br>
-          Match logic: Loop through all articles, check if any article has ANY tag that matches
-          {{ selected_product_group.tag }}
-        </div>
-
-        {% assign fallback_count = 0 %}
-        {% for tag_article in blog.articles limit: 15 %}
-          {% if tag_article.handle != article.handle %}
-            {% assign has_tag = false %}
-            {% for tag in tag_article.tags %}
-              {% if tag == selected_product_group.tag %}
-                {% assign has_tag = true %}
-                {% break %}
-              {% endif %}
-            {% endfor %}
-
-            {% if has_tag %}
-              {% assign fallback_count = fallback_count | plus: 1 %}
-              {%- assign rk_recipe_id = tag_article.id | downcase -%}
-              {%- assign rk_recipe_mf = tag_article.metafields.recipekit[rk_recipe_id] -%}
+      {% comment %}Display explicit recipes first{% endcomment %}
+      {% if valid_articles_count > 0 %}
+        {% assign handles_array = valid_articles | split: ',' %}
+        {% for recipe_handle in handles_array %}
+          {% assign recipe_handle = recipe_handle | strip %}
+          {% if recipe_handle != blank %}
+            {% assign recipe_article = blog.articles | where: 'handle', recipe_handle | first %}
+            {% if recipe_article %}
+              {% assign displayed_count = displayed_count | plus: 1 %}
+              {%- assign rk_recipe_id = recipe_article.id | downcase -%}
+              {%- assign rk_recipe_mf = recipe_article.metafields.recipekit[rk_recipe_id] -%}
               <div class="recipekit-card-outer">
                 <a
-                  href="{{ tag_article.url }}"
+                  href="{{ recipe_article.url }}"
                   class="recipekit-card-link"
-                  aria-label="{{ tag_article.title | escape }}"
+                  aria-label="{{ recipe_article.title | escape }}"
                 >
                   <div class="recipekit-card">
                     <div class="recipekit-card-image-wrapper">
@@ -1166,16 +1085,16 @@
                         <img
                           class="recipekit-card-image"
                           src="{{ card_image }}"
-                          alt="{{ tag_article.title | escape }}"
+                          alt="{{ recipe_article.title | escape }}"
                           loading="lazy"
                           width="400"
                           height="400"
                         >
-                      {%- elsif tag_article.image -%}
+                      {%- elsif recipe_article.image -%}
                         <img
                           class="recipekit-card-image"
-                          src="{{ tag_article.image | img_url: '1000x1000', scale: 2 }}"
-                          alt="{{ tag_article.title | escape }}"
+                          src="{{ recipe_article.image | img_url: '1000x1000', scale: 2 }}"
+                          alt="{{ recipe_article.title | escape }}"
                           loading="lazy"
                           width="400"
                           height="400"
@@ -1193,14 +1112,111 @@
                   </div>
                 </a>
                 <div class="recipekit-card-meta">
-                  <a href="{{ tag_article.url }}" class="recipekit-card-title-link">
-                    <div class="recipekit-card-title">{{ tag_article.title }}</div>
+                  <a href="{{ recipe_article.url }}" class="recipekit-card-title-link">
+                    <div class="recipekit-card-title">{{ recipe_article.title }}</div>
                   </a>
                 </div>
               </div>
-              {% if fallback_count >= 3 %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+
+      {% comment %}If no explicit recipes were shown, try tag-based fallback{% endcomment %}
+      {% if displayed_count == 0 %}
+        <div style="display: none;">
+          <div>Trying Tag Fallback for: "{{ selected_product_group.tag }}"</div>
+          <div>Looking for articles with the same tag, excluding the current article</div>
+        </div>
+
+        {% assign fallback_count = 0 %}
+        {% assign tag_to_match = selected_product_group.tag %}
+
+        {% comment %}Debug all blog articles and their tags{% endcomment %}
+        <div style="display: none;">
+          <h4>All Blog Articles:</h4>
+          {% for debug_article in blog.articles limit: 20 %}
+            <div>{{ debug_article.handle }} - Tags: {{ debug_article.tags | join: ', ' }}</div>
+          {% endfor %}
+        </div>
+
+        {% for tag_article in blog.articles limit: 20 %}
+          {% if tag_article.handle != article.handle %}
+            {% for article_tag in tag_article.tags %}
+              {% if article_tag == tag_to_match %}
+                {% assign fallback_count = fallback_count | plus: 1 %}
+                {%- assign rk_recipe_id = tag_article.id | downcase -%}
+                {%- assign rk_recipe_mf = tag_article.metafields.recipekit[rk_recipe_id] -%}
+                <div class="recipekit-card-outer">
+                  <a
+                    href="{{ tag_article.url }}"
+                    class="recipekit-card-link"
+                    aria-label="{{ tag_article.title | escape }}"
+                  >
+                    <div class="recipekit-card">
+                      <div class="recipekit-card-image-wrapper">
+                        {%- if rk_recipe_mf and rk_recipe_mf.recipe_image != blank -%}
+                          {%- assign image_url = rk_recipe_mf.recipe_image -%}
+                          {%- if image_url contains 'cloudinary.com' -%}
+                            {%- assign rk_last_url = image_url | split: 'upload/' -%}
+                            {%- assign card_image = rk_last_url[1]
+                              | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/t_1x1_recipe_image,f_auto/'
+                            -%}
+                          {%- elsif image_url contains 'backblazeb2.com' -%}
+                            {%- assign rk_last_url = image_url | split: 'backblazeb2.com/file/recipekit-bucket/' -%}
+                            {%- assign card_image = 'https://images.getrecipekit.com/'
+                              | append: rk_last_url[1]
+                              | append: '?aspect_ratio=1:1&quality=90&'
+                            -%}
+                          {%- elsif image_url contains 'cdn.shopify.com' -%}
+                            {%- assign card_image = image_url | append: '&width=1000&height=1000' -%}
+                          {%- else -%}
+                            {%- assign card_image = image_url -%}
+                          {%- endif -%}
+                          <img
+                            class="recipekit-card-image"
+                            src="{{ card_image }}"
+                            alt="{{ tag_article.title | escape }}"
+                            loading="lazy"
+                            width="400"
+                            height="400"
+                          >
+                        {%- elsif tag_article.image -%}
+                          <img
+                            class="recipekit-card-image"
+                            src="{{ tag_article.image | img_url: '1000x1000', scale: 2 }}"
+                            alt="{{ tag_article.title | escape }}"
+                            loading="lazy"
+                            width="400"
+                            height="400"
+                          >
+                        {%- endif -%}
+                        {%- assign recipe_rating_num = rk_recipe_mf.recipe_rating | plus: 0 -%}
+                        {%- assign rating_count_num = rk_recipe_mf.rating_count | plus: 0 -%}
+                        {% if recipe_rating_num > 4 and rating_count_num > 4 %}
+                          <span class="recipekit-top-rated-badge">Top Rated</span>
+                        {% endif %}
+                        {%- if rk_recipe_mf and rk_recipe_mf.prep_time != blank -%}
+                          <span class="recipekit-prep-time">{{ rk_recipe_mf.prep_time }}</span>
+                        {%- endif -%}
+                      </div>
+                    </div>
+                  </a>
+                  <div class="recipekit-card-meta">
+                    <a href="{{ tag_article.url }}" class="recipekit-card-title-link">
+                      <div class="recipekit-card-title">{{ tag_article.title }}</div>
+                    </a>
+                  </div>
+                </div>
+                {% if fallback_count >= 3 %}
+                  {% break %}
+                {% endif %}
+                {% comment %}Break out of the article_tag loop once we've found a match{% endcomment %}
                 {% break %}
               {% endif %}
+            {% endfor %}
+            {% if fallback_count >= 3 %}
+              {% break %}
             {% endif %}
           {% endif %}
         {% endfor %}
@@ -1208,136 +1224,11 @@
         {% comment %}If still no recipes found, show a debug message{% endcomment %}
         {% if fallback_count == 0 %}
           <div style="display: none;">
-            No articles found with tag: {{ selected_product_group.tag }}
-            <br>
-            Checked tags of all blog articles
+            <div>No articles found with tag: "{{ tag_to_match }}"</div>
+            <div>Checked tags of 20 blog articles</div>
           </div>
         {% endif %}
       {% endif %}
     </div>
   </div>
-
-  <style>
-    /* Recipe Card Grid and Cards Styles */
-    .related-recipes-title {
-      font-size: 32px;
-      font-weight: 600;
-      margin: 40px 0 24px;
-      text-align: center;
-      color: #333;
-    }
-
-    .main-blog-recipekit-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-      margin-bottom: 60px;
-    }
-
-    .recipekit-card-outer {
-      position: relative;
-    }
-
-    .recipekit-card-link {
-      text-decoration: none;
-      color: inherit;
-      display: block;
-    }
-
-    .recipekit-card {
-      background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-      transition: transform 0.3s, box-shadow 0.3s;
-      position: relative;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .recipekit-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-    }
-
-    .recipekit-card-image-wrapper {
-      position: relative;
-      aspect-ratio: 1/1;
-      overflow: hidden;
-    }
-
-    .recipekit-card-image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.5s;
-    }
-
-    .recipekit-card:hover .recipekit-card-image {
-      transform: scale(1.05);
-    }
-
-    .recipekit-card-meta {
-      padding: 12px 0 5px;
-    }
-
-    .recipekit-card-title-link {
-      text-decoration: none;
-      color: #333;
-    }
-
-    .recipekit-card-title {
-      font-weight: 600;
-      font-size: 18px;
-      margin: 0;
-      line-height: 1.3;
-    }
-
-    .recipekit-top-rated-badge {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      background-color: rgb(211, 236, 232);
-      color: #333;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 600;
-      z-index: 1;
-    }
-
-    .recipekit-prep-time {
-      position: absolute;
-      bottom: 12px;
-      right: 12px;
-      background-color: rgba(0, 0, 0, 0.7);
-      color: #fff;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
-      z-index: 1;
-    }
-
-    @media screen and (max-width: 768px) {
-      .main-blog-recipekit-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .related-recipes-title {
-        font-size: 28px;
-        margin: 32px 0 20px;
-      }
-    }
-
-    @media screen and (max-width: 480px) {
-      .main-blog-recipekit-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .related-recipes-title {
-        font-size: 24px;
-        margin: 28px 0 16px;
-      }
-    }
-  </style>
 {% endif %}
