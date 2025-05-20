@@ -1115,13 +1115,19 @@
 
       {% comment %}If no explicit recipes were shown, try tag-based fallback{% endcomment %}
       {% if displayed_count == 0 %}
-        <div style="display: none;">Trying Tag Fallback: {{ selected_product_group.tag }}</div>
+        <div style="display: none;">
+          Trying Tag Fallback using display name: {{ selected_product_group.tag }}
+          <br>
+          Match logic: Loop through all articles, check if any article has ANY tag that matches
+          {{ selected_product_group.tag }}
+        </div>
+
         {% assign fallback_count = 0 %}
-        {% for tag_article in blog.articles limit: 12 %}
+        {% for tag_article in blog.articles limit: 15 %}
           {% if tag_article.handle != article.handle %}
             {% assign has_tag = false %}
-            {% for article_tag in tag_article.tags %}
-              {% if article_tag == selected_product_group.tag %}
+            {% for tag in tag_article.tags %}
+              {% if tag == selected_product_group.tag %}
                 {% assign has_tag = true %}
                 {% break %}
               {% endif %}
@@ -1198,6 +1204,15 @@
             {% endif %}
           {% endif %}
         {% endfor %}
+
+        {% comment %}If still no recipes found, show a debug message{% endcomment %}
+        {% if fallback_count == 0 %}
+          <div style="display: none;">
+            No articles found with tag: {{ selected_product_group.tag }}
+            <br>
+            Checked tags of all blog articles
+          </div>
+        {% endif %}
       {% endif %}
 
       {% comment %}Last resort fallback - show any recipes if nothing else worked{% endcomment %}
