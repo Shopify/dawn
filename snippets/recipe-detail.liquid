@@ -1208,38 +1208,27 @@
       {%- comment -%}Fallback: Display recipes from blog if we don't have 3 valid recipes{%- endcomment -%}
       {%- if displayed_count < 3 -%}
         {%- assign using_fallback = true -%}
-        {%- assign needed_recipes = 3 | minus: displayed_count -%}
-        {%- assign displayed_array = displayed_recipes | split: ',' -%}
         {%- assign card_count = displayed_count -%}
+        {%- assign current_article_id = article.id -%}
 
-        {%- for article in blog.articles limit: 10 -%}
+        {%- for blog_article in blog.articles limit: 10 -%}
           {%- if card_count >= 3 -%}
             {%- break -%}
           {%- endif -%}
 
-          {%- assign current_handle = article.handle | strip -%}
-          {%- assign is_displayed = false -%}
-
-          {%- for displayed in displayed_array -%}
-            {%- if displayed == current_handle -%}
-              {%- assign is_displayed = true -%}
-              {%- break -%}
-            {%- endif -%}
-          {%- endfor -%}
-
-          {%- unless is_displayed or article.id == article.id -%}
+          {%- if blog_article.id != current_article_id -%}
             {%- assign card_count = card_count | plus: 1 -%}
             {%- assign card_id = card_count -%}
 
             <div class="recipekit-card-outer" role="listitem">
-              <a href="{{ article.url }}" class="recipekit-card-link" aria-labelledby="recipe-title-{{ card_id }}">
+              <a href="{{ blog_article.url }}" class="recipekit-card-link" aria-labelledby="recipe-title-{{ card_id }}">
                 <div class="recipekit-card">
                   <div class="recipekit-card-image-wrapper">
-                    {%- if article.image -%}
+                    {%- if blog_article.image -%}
                       <img
                         class="recipekit-card-image"
-                        src="{{ article.image | img_url: '300x300', crop: 'center' }}"
-                        alt="Recipe image for {{ article.title }}"
+                        src="{{ blog_article.image | img_url: '300x300', crop: 'center' }}"
+                        alt="Recipe image for {{ blog_article.title }}"
                         loading="lazy"
                         width="300"
                         height="300"
@@ -1257,12 +1246,12 @@
                 </div>
               </a>
               <div class="recipekit-card-meta">
-                <a href="{{ article.url }}" class="recipekit-card-title-link">
-                  <div id="recipe-title-{{ card_id }}" class="recipekit-card-title">{{ article.title }}</div>
+                <a href="{{ blog_article.url }}" class="recipekit-card-title-link">
+                  <div id="recipe-title-{{ card_id }}" class="recipekit-card-title">{{ blog_article.title }}</div>
                 </a>
               </div>
             </div>
-          {%- endunless -%}
+          {%- endif -%}
         {%- endfor -%}
       {%- endif -%}
 
