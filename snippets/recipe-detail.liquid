@@ -841,16 +841,25 @@
             </product-recommendations>
           {%- else -%}
             <ul class="grid product-grid grid--2-col-desktop grid--2-col-tablet-down" role="list">
-              {%- for popular_product in collections.all.products limit: 4 -%}
-                <li class="grid__item">
-                  {% render 'card-product',
-                    card_product: popular_product,
-                    media_aspect_ratio: 'square',
-                    show_secondary_image: true,
-                    show_vendor: false,
-                    show_rating: false
-                  %}
-                </li>
+              {%- assign displayed_count = 0 -%}
+              {%- for article in blog.articles limit: 1000 -%}
+                {%- if article.id != current_article.id -%}
+                  {%- if article.tags contains selected_product_group.tag -%}
+                    {%- assign displayed_count = displayed_count | plus: 1 -%}
+                    <li class="grid__item">
+                      {% render 'card-product',
+                        card_product: article,
+                        media_aspect_ratio: 'square',
+                        show_secondary_image: true,
+                        show_vendor: false,
+                        show_rating: false
+                      %}
+                    </li>
+                    {%- if displayed_count >= 3 -%}
+                      {%- break -%}
+                    {%- endif -%}
+                  {%- endif -%}
+                {%- endif -%}
               {%- endfor -%}
             </ul>
           {%- endif -%}
@@ -1004,20 +1013,13 @@
   <div class="recipekit-related-recipes page-width">
     <h2 class="recipe-section-title">More {{ selected_product_group.tag }} Recipes</h2>
 
-    <!-- Debug info (hidden) -->
-    <div style="display: none;">Current tag: {{ selected_product_group.tag }} Current article ID: {{ article.id }}</div>
-
     <div class="main-blog-recipekit-grid">
       {% assign displayed_count = 0 %}
-      {% assign max_scan = 5 %}
-      {% assign target_tag = selected_product_group.tag %}
-
-      <!-- Only scan the first few articles for efficiency -->
-      {% for article_in_blog in blog.articles limit: max_scan %}
+      {% for article_in_blog in blog.articles limit: 10 %}
         {% if article_in_blog.id != article.id %}
           {% assign has_matching_tag = false %}
           {% for article_tag in article_in_blog.tags %}
-            {% if article_tag == target_tag %}
+            {% if article_tag == selected_product_group.tag %}
               {% assign has_matching_tag = true %}
               {% break %}
             {% endif %}
@@ -1053,15 +1055,15 @@
               </div>
             </div>
 
-            {% if displayed_count >= 2 %}
+            {% if displayed_count >= 3 %}
               {% break %}
             {% endif %}
           {% endif %}
         {% endif %}
       {% endfor %}
 
-      <!-- View All Card - Make more prominent if we have no articles -->
-      <div class="recipekit-card-outer view-more-card {% if displayed_count == 0 %}full-width{% endif %}">
+      <!-- View All Card -->
+      <div class="recipekit-card-outer view-more-card">
         <a
           href="/blogs/recipes/tagged/{{ selected_product_group.tag | handle }}"
           class="recipekit-card-link"
@@ -1077,7 +1079,7 @@
                 width="300"
                 height="300"
               >
-              <span class="view-all-overlay">View All {{ selected_product_group.tag }} Recipes</span>
+              <span class="view-all-overlay">View All</span>
             </div>
           </div>
         </a>
@@ -1111,10 +1113,6 @@
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 20px;
       margin-top: 20px;
-    }
-
-    .full-width {
-      grid-column: 1 / -1;
     }
 
     .recipekit-card-outer {
