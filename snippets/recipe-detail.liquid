@@ -1190,23 +1190,20 @@
             <hr>
             Debug DisplayLoop: Processing handle "<strong>{{ recipe_handle }}</strong>".
             <br>
-            Attempting direct lookup `articles["{{ recipe_handle }}"]` again...
-            {%- assign direct_lookup_article = articles[recipe_handle] -%}
-            {%- if direct_lookup_article -%}
-              Direct lookup FOUND. Title: `{{ direct_lookup_article.title | escape }}` | URL: `
-              {{- direct_lookup_article.url -}}
-              ` | Published: `{{ direct_lookup_article.published_at }}` | Blog it belongs to (from direct lookup): `
-              {{- direct_lookup_article.blog.title | escape -}}
-              ` (handle: `{{ direct_lookup_article.blog.handle | escape }}`).
-            {%- else -%}
-              Direct lookup via `articles["{{ recipe_handle }}"]` NOT FOUND.
-            {%- endif -%}
+            Attempting manual lookup for handle "{{ recipe_handle }}" in blog context `{{ blog.handle | escape }}`...
           </div>
 
-          {%- assign recipe_article = blog.articles | where: 'handle', recipe_handle | first -%}
+          {%- assign recipe_article = null -%}
+          {%- for art_in_blog in blog.articles -%}
+            {%- if art_in_blog.handle == recipe_handle -%}
+              {%- assign recipe_article = art_in_blog -%}
+              {%- break -%}
+            {%- endif -%}
+          {%- endfor -%}
+
           <div style="display:none;">
-            Debug DisplayLoop: Result of `blog.articles | where: 'handle', "{{ recipe_handle }}" | first` (using current
-            blog context `{{ blog.handle | escape }}`):
+            Debug DisplayLoop: Result of manual loop through `blog.articles` (context: `{{ blog.handle | escape }}`) for
+            handle "{{ recipe_handle }}":
             {% if recipe_article -%}
               FOUND article: `{{ recipe_article.title | escape }}` (URL: `{{ recipe_article.url }}`). This will be
               displayed.
