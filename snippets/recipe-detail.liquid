@@ -514,6 +514,17 @@
   .related-products__heading {
     display: none !important;
   }
+  .product-recommendations-wrapper[data-loading='true'] .product-recommendations > * {
+    opacity: 0;
+    transition: opacity 0.1s ease-in-out;
+  }
+  .product-recommendations-wrapper[data-loading='true'] .product-recommendations {
+    min-height: 200px; /* Adjust if necessary to prevent layout shift */
+  }
+  .product-recommendations-wrapper[data-loading='false'] .product-recommendations > * {
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out 0.1s;
+  }
 </style>
 
 <div class="page-width">
@@ -698,67 +709,69 @@
 
           <!-- Debug output -->
           <div style="display: none;">Debug - Product ID: {{ product_id_for_recommendations }}</div>
-          <product-recommendations
-            class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-            data-product-id="{{ product_id_for_recommendations }}"
-            data-url="/recommendations/products?limit=4"
-            data-section-id="related-products"
-          >
-            {% comment %}
-              <product-recommendations
-                class="related-products isolate"
-                data-url="{{ routes.product_recommendations_url }}"
-                data-product-id="{{ product_id_for_recommendations }}"
-                data-limit="4"
-                data-section-id="recipe-detail-recommendations"
-              >
+          <div class="product-recommendations-wrapper" data-loading="true">
+            <product-recommendations
+              class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+              data-product-id="{{ product_id_for_recommendations }}"
+              data-url="/recommendations/products?limit=4"
+              data-section-id="related-products"
+            >
+              {% comment %}
+                <product-recommendations
+                  class="related-products isolate"
+                  data-url="{{ routes.product_recommendations_url }}"
+                  data-product-id="{{ product_id_for_recommendations }}"
+                  data-limit="4"
+                  data-section-id="recipe-detail-recommendations"
+                >
 
-                  The product-recommendations web component will fetch recommendations.
-                  If product_id_for_recommendations is valid and has related products, they will be shown.
-                  If product_id_for_recommendations is blank, or no specific recommendations are found,
-                  it often falls back to general recommendations or a pre-defined list,
-                  or an empty state if configured that way by the theme's JS for the component.
-                  This explicit fallback provides a default list of popular products.
-            {% endcomment %}
-            {% if recommendations.performed and recommendations.products_count > 0 %}
-              <!-- Debug output -->
-              <div style="display: none;">
-                Debug - Recommendations performed: {{ recommendations.performed }} Debug - Products count:
-                {{ recommendations.products_count }}
-              </div>
-              <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list">
-                {%- for recommended_product in recommendations.products -%}
-                  <li class="grid__item">
-                    {% render 'card-product',
-                      card_product: recommended_product,
-                      media_aspect_ratio: 'square',
-                      show_secondary_image: true,
-                      show_vendor: false,
-                      show_rating: false
-                    %}
-                  </li>
-                {%- endfor -%}
-              </ul>
-            {%- else -%}
-              {%- comment -%}
-                Fallback to general popular products if no specific product_id was provided for recommendations,
-                or if recommendations were fetched for a product_id but returned no results.
-              {%- endcomment -%}
-              <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list">
-                {%- for popular_product in collections.all.products limit: 4 -%}
-                  <li class="grid__item">
-                    {% render 'card-product',
-                      card_product: popular_product,
-                      media_aspect_ratio: 'square',
-                      show_secondary_image: true,
-                      show_vendor: false,
-                      show_rating: false
-                    %}
-                  </li>
-                {%- endfor -%}
-              </ul>
-            {%- endif -%}
-          </product-recommendations>
+                    The product-recommendations web component will fetch recommendations.
+                    If product_id_for_recommendations is valid and has related products, they will be shown.
+                    If product_id_for_recommendations is blank, or no specific recommendations are found,
+                    it often falls back to general recommendations or a pre-defined list,
+                    or an empty state if configured that way by the theme's JS for the component.
+                    This explicit fallback provides a default list of popular products.
+              {% endcomment %}
+              {% if recommendations.performed and recommendations.products_count > 0 %}
+                <!-- Debug output -->
+                <div style="display: none;">
+                  Debug - Recommendations performed: {{ recommendations.performed }} Debug - Products count:
+                  {{ recommendations.products_count }}
+                </div>
+                <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list">
+                  {%- for recommended_product in recommendations.products -%}
+                    <li class="grid__item">
+                      {% render 'card-product',
+                        card_product: recommended_product,
+                        media_aspect_ratio: 'square',
+                        show_secondary_image: true,
+                        show_vendor: false,
+                        show_rating: false
+                      %}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              {%- else -%}
+                {%- comment -%}
+                  Fallback to general popular products if no specific product_id was provided for recommendations,
+                  or if recommendations were fetched for a product_id but returned no results.
+                {%- endcomment -%}
+                <ul class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down" role="list">
+                  {%- for popular_product in collections.all.products limit: 4 -%}
+                    <li class="grid__item">
+                      {% render 'card-product',
+                        card_product: popular_product,
+                        media_aspect_ratio: 'square',
+                        show_secondary_image: true,
+                        show_vendor: false,
+                        show_rating: false
+                      %}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+            </product-recommendations>
+          </div>
         </div>
       </div>
 
@@ -828,3 +841,39 @@
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const recsWrapper = document.querySelector('.product-recommendations-wrapper');
+    const recsComponent = recsWrapper
+      ? recsWrapper.querySelector('product-recommendations[data-product-id="{{ product_id_for_recommendations }}"]')
+      : null;
+
+    if (recsComponent && recsWrapper) {
+      let observer;
+      const stopLoading = () => {
+        recsWrapper.dataset.loading = 'false';
+        if (observer) {
+          observer.disconnect();
+        }
+      };
+
+      observer = new MutationObserver(() => {
+        // Check if the component has rendered product items.
+        // This assumes .grid__item is a reliable indicator of loaded recommendations.
+        // You might need to adjust the selector based on what the component renders.
+        if (recsComponent.querySelector('.grid__item')) {
+          stopLoading();
+        }
+      });
+
+      observer.observe(recsComponent, { childList: true, subtree: true });
+
+      // Fallback: ensure loading state is removed after a timeout,
+      // in case the component loads nothing or fails silently without adding .grid__item.
+      setTimeout(() => {
+        stopLoading();
+      }, 3500); // Adjust timeout as needed (e.g., 3-5 seconds)
+    }
+  });
+</script>
