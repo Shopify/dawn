@@ -999,3 +999,150 @@
     })();
   </script>
 {% endif %}
+
+{%- if selected_product_group -%}
+  <div class="recipekit-related-recipes">
+    <h2 class="recipe-section-title">More {{ selected_product_group.tag }} Recipes</h2>
+    <div class="main-blog-recipekit-grid">
+      {%- assign handles_string = selected_product_group.recipe_1
+        | append: ','
+        | append: selected_product_group.recipe_2
+        | append: ','
+        | append: selected_product_group.recipe_3
+      -%}
+      {%- assign handles_array = handles_string | split: ',' -%}
+      {%- assign valid_articles_count = 0 -%}
+      {%- assign valid_articles = '' -%}
+      {%- for recipe_handle in handles_array -%}
+        {%- assign recipe_handle = recipe_handle | strip -%}
+        {%- if recipe_handle != blank -%}
+          {%- assign article = blog.articles | where: 'handle', recipe_handle | first -%}
+          {%- if article -%}
+            {%- assign valid_articles_count = valid_articles_count | plus: 1 -%}
+            {%- assign valid_articles = valid_articles | append: article.handle | append: ',' -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- assign target_article_count = 3 -%}
+      {%- if selected_product_group.double_articles -%}
+        {%- assign target_article_count = 7 -%}
+      {%- endif -%}
+      {%- assign articles_needed = target_article_count | minus: valid_articles_count -%}
+      {%- if articles_needed > 0 -%}
+        {%- assign added_articles = 0 -%}
+        {%- for cat_article in blog.articles -%}
+          {%- assign has_tag = false -%}
+          {%- for article_tag in cat_article.tags -%}
+            {%- if article_tag == selected_product_group.tag -%}
+              {%- assign has_tag = true -%}
+              {%- break -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- if has_tag -%}
+            {%- unless valid_articles contains cat_article.handle -%}
+              {%- assign valid_articles = valid_articles | append: cat_article.handle | append: ',' -%}
+              {%- assign added_articles = added_articles | plus: 1 -%}
+              {%- if added_articles >= articles_needed -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endunless -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {%- assign final_handles = valid_articles | split: ',' -%}
+      {%- for recipe_handle in final_handles -%}
+        {%- assign recipe_handle = recipe_handle | strip -%}
+        {%- if recipe_handle != blank -%}
+          {%- assign article = blog.articles | where: 'handle', recipe_handle | first -%}
+          {%- if article -%}
+            {%- assign rk_resource_id = article.id | downcase -%}
+            {%- assign rk_mf = article.metafields.recipekit[rk_resource_id] -%}
+            <div class="recipekit-card-outer">
+              <a href="{{ article.url }}" class="recipekit-card-link" aria-label="{{ article.title | escape }}">
+                <div class="recipekit-card">
+                  <div class="recipekit-card-image-wrapper">
+                    {%- if rk_mf and rk_mf.recipe_image != blank -%}
+                      {%- assign image_url = rk_mf.recipe_image -%}
+                      {%- if image_url contains 'cloudinary.com' -%}
+                        {%- assign rk_last_url = image_url | split: 'upload/' -%}
+                        {%- assign card_image = rk_last_url[1]
+                          | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/t_1x1_recipe_image,f_auto/'
+                        -%}
+                      {%- elsif image_url contains 'backblazeb2.com' -%}
+                        {%- assign rk_last_url = image_url | split: 'backblazeb2.com/file/recipekit-bucket/' -%}
+                        {%- assign card_image = 'https://images.getrecipekit.com/'
+                          | append: rk_last_url[1]
+                          | append: '?aspect_ratio=1:1&quality=90&'
+                        -%}
+                      {%- elsif image_url contains 'cdn.shopify.com' -%}
+                        {%- assign card_image = image_url | append: '&width=1000&height=1000' -%}
+                      {%- else -%}
+                        {%- assign card_image = image_url -%}
+                      {%- endif -%}
+                      <img
+                        class="recipekit-card-image"
+                        src="{{ card_image }}"
+                        alt="{{ article.title | escape }}"
+                        loading="lazy"
+                        width="300"
+                        height="300"
+                      >
+                    {%- elsif article.image -%}
+                      <img
+                        class="recipekit-card-image"
+                        src="{{ article.image | img_url: '1000x1000', scale: 2 }}"
+                        alt="{{ article.title | escape }}"
+                        loading="lazy"
+                        width="300"
+                        height="300"
+                      >
+                    {%- endif -%}
+                    {%- assign recipe_rating_num = rk_mf.recipe_rating | plus: 0 -%}
+                    {%- assign rating_count_num = rk_mf.rating_count | plus: 0 -%}
+                    {%- if recipe_rating_num > 4 and rating_count_num > 4 -%}
+                      <span class="recipekit-top-rated-badge">Top Rated</span>
+                    {%- endif -%}
+                    {%- if rk_mf and rk_mf.prep_time != blank -%}
+                      <span class="recipekit-prep-time">{{ rk_mf.prep_time }}</span>
+                    {%- endif -%}
+                  </div>
+                </div>
+              </a>
+              <div class="recipekit-card-meta">
+                <a href="{{ article.url }}" class="recipekit-card-title-link">
+                  <div class="recipekit-card-title">{{ article.title }}</div>
+                </a>
+              </div>
+            </div>
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      <!-- View More Card -->
+      <div class="recipekit-card-outer view-more-card">
+        <a
+          href="/blogs/recipes/tagged/{{ selected_product_group.tag | handle }}"
+          class="recipekit-card-link"
+          aria-label="View more recipes in {{ selected_product_group.tag }}"
+        >
+          <div class="recipekit-card">
+            <div class="recipekit-card-image-wrapper">
+              <img
+                class="recipekit-card-image"
+                src="https://cdn.shopify.com/s/files/1/0173/8181/8422/files/Dash_Pattern_Icon_ca6e694e-c077-41e3-bfcb-71692f0d98f4.png?v=1746822390"
+                alt="View More"
+                loading="lazy"
+                width="300"
+                height="300"
+              >
+            </div>
+          </div>
+        </a>
+        <div class="recipekit-card-meta">
+          <a href="/blogs/recipes/tagged/{{ selected_product_group.tag | handle }}" class="recipekit-card-title-link">
+            <div class="recipekit-card-title">View More {{ selected_product_group.tag }} Recipes</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
