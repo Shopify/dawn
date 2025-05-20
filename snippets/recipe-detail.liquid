@@ -957,83 +957,86 @@
     </p>
   </div>
 
-  <div class="recipe-similar-recipes-grid">
-    {% assign current_article_id = article.id %}
-    {% assign similar_recipes_count = 0 %}
+  {% assign pagination_count = 1000 %}
+  {%- paginate blog.articles by pagination_count -%}
+    <div class="recipe-similar-recipes-grid">
+      {% assign current_article_id = article.id %}
+      {% assign similar_recipes_count = 0 %}
 
-    <!-- Direct tag matching approach -->
-    {% assign matching_recipe_tags = '' | split: ',' %}
-    {% for tag in article.tags %}
-      {% for group in shop.metaobjects.recipe_tag_group.values %}
-        {% if tag == group.tag %}
-          {% assign tag_array = tag | split: ',' %}
-          {% assign matching_recipe_tags = matching_recipe_tags | concat: tag_array %}
-        {% endif %}
-      {% endfor %}
-    {% endfor %}
-
-    <!-- Debug match status for each article -->
-    <div style="background: #f0f0f0; padding: 10px; margin-bottom: 20px; font-size: 11px; border: 1px solid #ddd; max-height: 400px; overflow-y: auto;">
-      <p><strong>Debug: Tag Matching Results</strong></p>
-      {% for blog_article in blog.articles limit: 1000 %}
-        {% if blog_article.id != current_article_id %}
-          <div style="margin-bottom: 5px; border-bottom: 1px solid #ddd;">
-            <p><strong>Article:</strong> {{ blog_article.title }}</p>
-            <p><strong>ID:</strong> {{ blog_article.id }}</p>
-            <p><strong>Tags:</strong> {{ blog_article.tags | join: ', ' }}</p>
-            <p>
-              <strong>Match status:</strong>
-              {% assign found_match = false %}
-              {% for tag in blog_article.tags %}
-                {% for match_tag in matching_recipe_tags %}
-                  {% if tag == match_tag %}
-                    Tag "{{ tag }}" matches category!
-                    {% assign found_match = true %}
-                    {% break %}
-                  {% endif %}
-                {% endfor %}
-                {% if found_match %}{% break %}{% endif %}
-              {% endfor %}
-              {% unless found_match %}No matching tags{% endunless %}
-            </p>
-          </div>
-        {% endif %}
-      {% endfor %}
-    </div>
-
-    <!-- Simpler tag matching approach -->
-    {% for similar_article in blog.articles limit: 1000 %}
-      {% if similar_article.id != current_article_id and similar_recipes_count < 3 %}
-        {% assign has_matching_tag = false %}
-
-        {% for match_tag in matching_recipe_tags %}
-          {% if similar_article.tags contains match_tag %}
-            {% assign has_matching_tag = true %}
-            {% break %}
+      <!-- Direct tag matching approach -->
+      {% assign matching_recipe_tags = '' | split: ',' %}
+      {% for tag in article.tags %}
+        {% for group in shop.metaobjects.recipe_tag_group.values %}
+          {% if tag == group.tag %}
+            {% assign tag_array = tag | split: ',' %}
+            {% assign matching_recipe_tags = matching_recipe_tags | concat: tag_array %}
           {% endif %}
         {% endfor %}
+      {% endfor %}
 
-        {% if has_matching_tag %}
-          {% render 'similar-recipe-card', similar_article: similar_article %}
-          {% assign similar_recipes_count = similar_recipes_count | plus: 1 %}
-        {% endif %}
-      {% endif %}
-    {% endfor %}
-
-    <!-- Fallback: If no matching tags, show most recent recipes -->
-    {% if similar_recipes_count == 0 %}
-      <div style="text-align: center; margin-bottom: 20px; padding: 10px; background: #fffdf0; border: 1px solid #ffe0b2; border-radius: 4px;">
-        <p>No recipes found with matching tags - showing recent recipes instead</p>
+      <!-- Debug match status for each article -->
+      <div style="background: #f0f0f0; padding: 10px; margin-bottom: 20px; font-size: 11px; border: 1px solid #ddd; max-height: 400px; overflow-y: auto;">
+        <p><strong>Debug: Tag Matching Results</strong></p>
+        {% for blog_article in paginate.pages_object limit: 1000 %}
+          {% if blog_article.id != current_article_id %}
+            <div style="margin-bottom: 5px; border-bottom: 1px solid #ddd;">
+              <p><strong>Article:</strong> {{ blog_article.title }}</p>
+              <p><strong>ID:</strong> {{ blog_article.id }}</p>
+              <p><strong>Tags:</strong> {{ blog_article.tags | join: ', ' }}</p>
+              <p>
+                <strong>Match status:</strong>
+                {% assign found_match = false %}
+                {% for tag in blog_article.tags %}
+                  {% for match_tag in matching_recipe_tags %}
+                    {% if tag == match_tag %}
+                      Tag "{{ tag }}" matches category!
+                      {% assign found_match = true %}
+                      {% break %}
+                    {% endif %}
+                  {% endfor %}
+                  {% if found_match %}{% break %}{% endif %}
+                {% endfor %}
+                {% unless found_match %}No matching tags{% endunless %}
+              </p>
+            </div>
+          {% endif %}
+        {% endfor %}
       </div>
 
-      {% for similar_article in blog.articles limit: 1000 %}
+      <!-- Simpler tag matching approach -->
+      {% for similar_article in paginate.pages %}
         {% if similar_article.id != current_article_id and similar_recipes_count < 3 %}
-          {% render 'similar-recipe-card', similar_article: similar_article %}
-          {% assign similar_recipes_count = similar_recipes_count | plus: 1 %}
+          {% assign has_matching_tag = false %}
+
+          {% for match_tag in matching_recipe_tags %}
+            {% if similar_article.tags contains match_tag %}
+              {% assign has_matching_tag = true %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
+
+          {% if has_matching_tag %}
+            {% render 'similar-recipe-card', similar_article: similar_article %}
+            {% assign similar_recipes_count = similar_recipes_count | plus: 1 %}
+          {% endif %}
         {% endif %}
       {% endfor %}
-    {% endif %}
-  </div>
+
+      <!-- Fallback: If no matching tags, show most recent recipes -->
+      {% if similar_recipes_count == 0 %}
+        <div style="text-align: center; margin-bottom: 20px; padding: 10px; background: #fffdf0; border: 1px solid #ffe0b2; border-radius: 4px;">
+          <p>No recipes found with matching tags - showing recent recipes instead</p>
+        </div>
+
+        {% for similar_article in paginate.pages %}
+          {% if similar_article.id != current_article_id and similar_recipes_count < 3 %}
+            {% render 'similar-recipe-card', similar_article: similar_article %}
+            {% assign similar_recipes_count = similar_recipes_count | plus: 1 %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    </div>
+  {%- endpaginate -%}
 </div>
 
 <style>
