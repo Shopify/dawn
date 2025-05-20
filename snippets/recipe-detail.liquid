@@ -1029,6 +1029,11 @@
       {%- assign recipe_3_handle = selected_product_group.recipe_3 -%}
       {%- assign recipe_3_img = selected_product_group.recipe_3_img -%}
 
+      {%- comment -%}Track displayed recipes and count{%- endcomment -%}
+      {%- assign displayed_recipes = '' -%}
+      {%- assign displayed_count = 0 -%}
+      {%- assign using_fallback = false -%}
+
       {%- comment -%}Recipe 1{%- endcomment -%}
       {%- assign handle_str = recipe_1_handle | strip -%}
       {%- assign img_metaobject_field = recipe_1_img -%}
@@ -1048,6 +1053,8 @@
           {%- endif -%}
         {%- endfor -%}
         {%- assign recipe_url = shop.url | append: '/blogs/recipes/' | append: clean_handle -%}
+        {%- assign displayed_recipes = displayed_recipes | append: clean_handle | append: ',' -%}
+        {%- assign displayed_count = displayed_count | plus: 1 -%}
 
         {%- assign image_to_display = img_metaobject_field.value -%}
 
@@ -1103,6 +1110,8 @@
           {%- endif -%}
         {%- endfor -%}
         {%- assign recipe_url = shop.url | append: '/blogs/recipes/' | append: clean_handle -%}
+        {%- assign displayed_recipes = displayed_recipes | append: clean_handle | append: ',' -%}
+        {%- assign displayed_count = displayed_count | plus: 1 -%}
 
         {%- assign image_to_display = img_metaobject_field.value -%}
 
@@ -1158,6 +1167,8 @@
           {%- endif -%}
         {%- endfor -%}
         {%- assign recipe_url = shop.url | append: '/blogs/recipes/' | append: clean_handle -%}
+        {%- assign displayed_recipes = displayed_recipes | append: clean_handle | append: ',' -%}
+        {%- assign displayed_count = displayed_count | plus: 1 -%}
 
         {%- assign image_to_display = img_metaobject_field.value -%}
 
@@ -1194,10 +1205,71 @@
         </div>
       {%- endif -%}
 
-      <!-- View All Card -->
+      {%- comment -%}Fallback: Display recipes from blog if we don't have 3 valid recipes{%- endcomment -%}
+      {%- if displayed_count < 3 -%}
+        {%- assign using_fallback = true -%}
+        {%- assign needed_recipes = 3 | minus: displayed_count -%}
+        {%- assign displayed_array = displayed_recipes | split: ',' -%}
+        {%- assign card_count = displayed_count -%}
+
+        {%- for article in blog.articles limit: 10 -%}
+          {%- if card_count >= 3 -%}
+            {%- break -%}
+          {%- endif -%}
+
+          {%- assign current_handle = article.handle | strip -%}
+          {%- assign is_displayed = false -%}
+
+          {%- for displayed in displayed_array -%}
+            {%- if displayed == current_handle -%}
+              {%- assign is_displayed = true -%}
+              {%- break -%}
+            {%- endif -%}
+          {%- endfor -%}
+
+          {%- unless is_displayed or article.id == article.id -%}
+            {%- assign card_count = card_count | plus: 1 -%}
+            {%- assign card_id = card_count -%}
+
+            <div class="recipekit-card-outer" role="listitem">
+              <a href="{{ article.url }}" class="recipekit-card-link" aria-labelledby="recipe-title-{{ card_id }}">
+                <div class="recipekit-card">
+                  <div class="recipekit-card-image-wrapper">
+                    {%- if article.image -%}
+                      <img
+                        class="recipekit-card-image"
+                        src="{{ article.image | img_url: '300x300', crop: 'center' }}"
+                        alt="Recipe image for {{ article.title }}"
+                        loading="lazy"
+                        width="300"
+                        height="300"
+                      >
+                    {%- else -%}
+                      <div
+                        class="recipekit-card-image placeholder-image"
+                        style="width:300px; height:300px; background-color:#f0f0f0; display:flex; align-items:center; justify-content:center;"
+                        aria-hidden="true"
+                      >
+                        <span>No Image Available</span>
+                      </div>
+                    {%- endif -%}
+                  </div>
+                </div>
+              </a>
+              <div class="recipekit-card-meta">
+                <a href="{{ article.url }}" class="recipekit-card-title-link">
+                  <div id="recipe-title-{{ card_id }}" class="recipekit-card-title">{{ article.title }}</div>
+                </a>
+              </div>
+            </div>
+          {%- endunless -%}
+        {%- endfor -%}
+      {%- endif -%}
+
+      <!-- View More Card -->
       <div class="recipekit-card-outer view-more-card" role="listitem">
         <a
-          href="/blogs/recipes/tagged/{{ selected_product_group.tag | handle }}"
+          href="{% if using_fallback %}/blogs/recipes{% else %}/blogs/recipes/tagged/{{ selected_product_group.tag | handle }}{% endif %}"
           class="recipekit-card-link"
           aria-labelledby="view-more-title"
         >
@@ -1217,9 +1289,16 @@
           </div>
         </a>
         <div class="recipekit-card-meta">
-          <a href="/blogs/recipes/tagged/{{ selected_product_group.tag | handle }}" class="recipekit-card-title-link">
+          <a
+            href="{% if using_fallback %}/blogs/recipes{% else %}/blogs/recipes/tagged/{{ selected_product_group.tag | handle }}{% endif %}"
+            class="recipekit-card-title-link"
+          >
             <div id="view-more-title" class="recipekit-card-title">
-              See All {{ selected_product_group.tag }} Recipes
+              {% if using_fallback %}
+                See All Recipes
+              {% else %}
+                See All {{ selected_product_group.tag }} Recipes
+              {% endif %}
             </div>
           </a>
         </div>
