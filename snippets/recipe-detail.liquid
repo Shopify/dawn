@@ -1012,56 +1012,63 @@
 {%- if selected_product_group and selected_product_group.tag != blank -%}
   <div class="recipekit-related-recipes page-width">
     <h2 class="recipe-section-title">More {{ selected_product_group.tag }} Recipes</h2>
-
     <div class="main-blog-recipekit-grid">
-      {% assign displayed_count = 0 %}
-      {% for article_in_blog in blog.articles limit: 10 %}
-        {% if article_in_blog.id != article.id %}
-          {% assign has_matching_tag = false %}
-          {% for article_tag in article_in_blog.tags %}
-            {% if article_tag == selected_product_group.tag %}
-              {% assign has_matching_tag = true %}
-              {% break %}
-            {% endif %}
-          {% endfor %}
-
-          {% if has_matching_tag %}
-            {% assign displayed_count = displayed_count | plus: 1 %}
-            <div class="recipekit-card-outer">
-              <a
-                href="{{ article_in_blog.url }}"
-                class="recipekit-card-link"
-                aria-label="{{ article_in_blog.title | escape }}"
-              >
-                <div class="recipekit-card">
-                  <div class="recipekit-card-image-wrapper">
-                    {% if article_in_blog.image %}
-                      <img
-                        class="recipekit-card-image"
-                        src="{{ article_in_blog.image | img_url: '600x600', crop: 'center' }}"
-                        alt="{{ article_in_blog.title | escape }}"
-                        loading="lazy"
-                        width="300"
-                        height="300"
-                      >
-                    {% endif %}
-                  </div>
+      {%- assign recipe_handles = '' -%}
+      {%- assign recipe_imgs = '' -%}
+      {%- assign recipe_handles = selected_product_group.recipe_1
+        | append: ','
+        | append: selected_product_group.recipe_2
+        | append: ','
+        | append: selected_product_group.recipe_3
+      -%}
+      {%- assign recipe_imgs = selected_product_group.recipe_1_img
+        | append: ','
+        | append: selected_product_group.recipe_2_img
+        | append: ','
+        | append: selected_product_group.recipe_3_img
+      -%}
+      {%- assign handle_array = recipe_handles | split: ',' -%}
+      {%- assign img_array = recipe_imgs | split: ',' -%}
+      {%- for handle in handle_array -%}
+        {%- assign idx = forloop.index0 -%}
+        {%- assign img_url = img_array[idx] | strip -%}
+        {%- assign clean_handle = handle | remove: 'recipes/' | strip -%}
+        {%- if clean_handle != blank -%}
+          {%- assign title_temp = clean_handle | replace: '-', ' ' | strip -%}
+          {%- assign title_words = title_temp | split: ' ' -%}
+          {%- assign title_case = '' -%}
+          {%- for word in title_words -%}
+            {%- assign first = word | slice: 0, 1 | upcase -%}
+            {%- assign rest = word | slice: 1 | downcase -%}
+            {%- assign title_case = title_case | append: first | append: rest -%}
+            {%- unless forloop.last -%}
+              {%- assign title_case = title_case | append: ' ' -%}
+            {%- endunless -%}
+          {%- endfor -%}
+          {%- assign recipe_url = shop.url | append: '/blogs/recipes/' | append: clean_handle -%}
+          <div class="recipekit-card-outer">
+            <a href="{{ recipe_url }}" class="recipekit-card-link" aria-label="{{ title_case }}">
+              <div class="recipekit-card">
+                <div class="recipekit-card-image-wrapper">
+                  <img
+                    class="recipekit-card-image"
+                    src="{{ img_url }}"
+                    alt="{{ title_case }}"
+                    loading="lazy"
+                    width="300"
+                    height="300"
+                  >
                 </div>
-              </a>
-              <div class="recipekit-card-meta">
-                <a href="{{ article_in_blog.url }}" class="recipekit-card-title-link">
-                  <div class="recipekit-card-title">{{ article_in_blog.title }}</div>
-                </a>
               </div>
+            </a>
+            <div class="recipekit-card-meta">
+              <a href="{{ recipe_url }}" class="recipekit-card-title-link">
+                <div class="recipekit-card-title">{{ title_case }}</div>
+              </a>
             </div>
-
-            {% if displayed_count >= 3 %}
-              {% break %}
-            {% endif %}
-          {% endif %}
-        {% endif %}
-      {% endfor %}
-
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
       <!-- View All Card -->
       <div class="recipekit-card-outer view-more-card">
         <a
@@ -1091,7 +1098,6 @@
       </div>
     </div>
   </div>
-
   <style>
     .view-all-overlay {
       position: absolute;
@@ -1107,33 +1113,27 @@
       text-transform: uppercase;
       letter-spacing: 1px;
     }
-
     .main-blog-recipekit-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 20px;
       margin-top: 20px;
     }
-
     .recipekit-card-outer {
       position: relative;
     }
-
     .recipekit-card-link {
       text-decoration: none;
       color: inherit;
     }
-
     .recipekit-card {
       border-radius: 8px;
       overflow: hidden;
       transition: transform 0.3s;
     }
-
     .recipekit-card:hover {
       transform: translateY(-5px);
     }
-
     .recipekit-card-image-wrapper {
       position: relative;
       width: 100%;
@@ -1141,7 +1141,6 @@
       overflow: hidden;
       border-radius: 8px;
     }
-
     .recipekit-card-image {
       position: absolute;
       top: 0;
@@ -1151,22 +1150,18 @@
       object-fit: cover;
       transition: transform 0.3s;
     }
-
     .recipekit-card:hover .recipekit-card-image {
       transform: scale(1.05);
     }
-
     .recipekit-card-meta {
       padding: 12px 0;
     }
-
     .recipekit-card-title {
       font-weight: 600;
       font-size: 16px;
       line-height: 1.4;
       color: rgb(6, 42, 48);
     }
-
     @media screen and (max-width: 767px) {
       .main-blog-recipekit-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -1177,7 +1172,6 @@
         padding: 8px 15px;
       }
     }
-
     @media screen and (max-width: 480px) {
       .main-blog-recipekit-grid {
         grid-template-columns: 1fr;
