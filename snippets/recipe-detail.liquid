@@ -1172,10 +1172,52 @@
       {%- assign displayed_count = 0 -%}
       {%- assign handles_array = valid_article_handles | split: ',' -%}
 
+      <div style="display:none;">
+        Debug DisplayLoop: Current `blog` context: Title: `{{ blog.title | escape }}` | Handle: `
+        {{- blog.handle | escape -}}
+        ` | URL: `{{ blog.url }}` | Total articles in this blog context (`blog.articles_count`):
+        {{ blog.articles_count }}.
+        <br>
+        Current page's article (`article.title`): {{ article.title | escape }} belongs to blog titled: `
+        {{- article.blog.title | escape -}}
+        ` with handle: `{{ article.blog.handle | escape }}`.
+      </div>
+
       {%- for recipe_handle in handles_array -%}
         {%- assign recipe_handle = recipe_handle | strip -%}
         {%- if recipe_handle != blank -%}
+          <div style="display:none;">
+            <hr>
+            Debug DisplayLoop: Processing handle "<strong>{{ recipe_handle }}</strong>".
+            <br>
+            Attempting direct lookup `articles["{{ recipe_handle }}"]` again...
+            {%- assign direct_lookup_article = articles[recipe_handle] -%}
+            {%- if direct_lookup_article -%}
+              Direct lookup FOUND. Title: `{{ direct_lookup_article.title | escape }}` | URL: `
+              {{- direct_lookup_article.url -}}
+              ` | Published: `{{ direct_lookup_article.published_at }}` | Blog it belongs to (from direct lookup): `
+              {{- direct_lookup_article.blog.title | escape -}}
+              ` (handle: `{{ direct_lookup_article.blog.handle | escape }}`).
+            {%- else -%}
+              Direct lookup via `articles["{{ recipe_handle }}"]` NOT FOUND.
+            {%- endif -%}
+          </div>
+
           {%- assign recipe_article = blog.articles | where: 'handle', recipe_handle | first -%}
+          <div style="display:none;">
+            Debug DisplayLoop: Result of `blog.articles | where: 'handle', "{{ recipe_handle }}" | first` (using current
+            blog context `{{ blog.handle | escape }}`):
+            {% if recipe_article -%}
+              FOUND article: `{{ recipe_article.title | escape }}` (URL: `{{ recipe_article.url }}`). This will be
+              displayed.
+            {%- else -%}
+              NOT FOUND in `blog.articles` (current blog context: `{{ blog.title | escape }}` / `
+              {{- blog.handle | escape -}}
+              `). This will NOT be displayed.
+            {%- endif %}
+            <hr>
+          </div>
+
           {%- if recipe_article -%}
             {%- assign displayed_count = displayed_count | plus: 1 -%}
             {%- assign rk_recipe_id = recipe_article.id | downcase -%}
@@ -1252,7 +1294,8 @@
           Tier 1 displayed: {{ displayed_count }}. Need {{ recipes_still_needed }} more. Trying Tag Fallback using
           display name: {{ selected_product_group.tag | escape }}
           <br>
-          Match logic: Loop through all articles, check if any article has ANY tag that exactly matches "
+          Match logic: Loop through all articles in `blog.articles` (context: `{{ blog.handle }}`), check if any article
+          has ANY tag that exactly matches "
           {{- selected_product_group.tag | escape -}}
           "
         </div>
@@ -1355,7 +1398,8 @@
         {%- if fallback_count == 0 and displayed_count < 3 and recipes_still_needed > 0 -%}
           <div style="display: none;">
             No additional articles found with tag: "{{ selected_product_group.tag | escape }}" after checking
-            {{ metaobject_recipes_found_count }} metaobject handles and {{ fallback_count }} fallback articles. <br>
+            {{ metaobject_recipes_found_count }} metaobject handles and {{ fallback_count }} fallback articles from blog
+            `{{ blog.handle }}`. <br>
             Total displayed: {{ displayed_count }}.
           </div>
         {%- endif -%}
