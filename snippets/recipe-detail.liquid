@@ -713,18 +713,20 @@
             <!-- Debug output for the best selling product -->
             <div style="display:none;">Best Selling Product: {{ selected_product_group.best_selling_product }}</div>
             {%- assign product_gid = selected_product_group.best_selling_product -%}
-            {%- assign product_id_for_recommendations = product_gid | split: '/' | last -%}
+            {%- assign product_id_parts = product_gid | split: '/' -%}
+            {%- assign product_id_for_recommendations = product_id_parts | last | plus: 0 -%}
             <!-- Debug output for the extracted product ID -->
             <div style="display:none;">Debug - Product ID: {{ product_id_for_recommendations }}</div>
           {%- endif -%}
 
           {%- assign product_obj = null -%}
-          {%- if product_id_for_recommendations -%}
-            {%- assign temp_product = all_products | where: 'id', product_id_for_recommendations | first -%}
-            {%- if temp_product -%}
-              {%- assign product_obj = temp_product -%}
+          {%- for product in collections.all.products -%}
+            {%- assign product_id_num = product.id | plus: 0 -%}
+            {%- if product_id_num == product_id_for_recommendations -%}
+              {%- assign product_obj = product -%}
+              {%- break -%}
             {%- endif -%}
-          {%- endif -%}
+          {%- endfor -%}
 
           {%- if product_obj -%}
             <product-recommendations
