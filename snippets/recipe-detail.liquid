@@ -924,6 +924,190 @@
   </div>
 </div>
 
+<!-- Similar Recipes Section -->
+{% if selected_product_group and selected_product_group.tag != blank %}
+  <div class="page-width">
+    <h2 class="recipe-section-title">More {{ selected_product_group.tag }} Recipes</h2>
+    <div class="recipe-similar-recipes-grid">
+      {% assign current_tag = selected_product_group.tag %}
+      {% assign current_article_id = article.id %}
+      {% assign similar_recipes_count = 0 %}
+
+      {% for similar_article in blog.articles limit: 12 %}
+        {% if similar_article.id != current_article_id and similar_recipes_count < 3 %}
+          {% assign has_matching_tag = false %}
+          {% for tag in similar_article.tags %}
+            {% if tag == current_tag %}
+              {% assign has_matching_tag = true %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
+
+          {% if has_matching_tag %}
+            {%- assign rk_resource_id_similar = similar_article.id | downcase -%}
+            {%- assign rk_mf_similar = similar_article.metafields.recipekit[rk_resource_id_similar] -%}
+            <div class="recipekit-card-outer">
+              <a
+                href="{{ similar_article.url }}"
+                class="recipekit-card-link"
+                aria-label="{{ similar_article.title | escape }}"
+              >
+                <div class="recipekit-card">
+                  <div class="recipekit-card-image-wrapper">
+                    {%- if rk_mf_similar and rk_mf_similar.recipe_image != blank -%}
+                      {%- assign image_url = rk_mf_similar.recipe_image -%}
+                      {%- if image_url contains 'cloudinary.com' -%}
+                        {%- assign rk_last_url = image_url | split: 'upload/' -%}
+                        {%- assign card_image = rk_last_url[1]
+                          | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/t_1x1_recipe_image,f_auto/'
+                        -%}
+                      {%- elsif image_url contains 'backblazeb2.com' -%}
+                        {%- assign rk_last_url = image_url | split: 'backblazeb2.com/file/recipekit-bucket/' -%}
+                        {%- assign card_image = 'https://images.getrecipekit.com/'
+                          | append: rk_last_url[1]
+                          | append: '?aspect_ratio=1:1&quality=90&'
+                        -%}
+                      {%- elsif image_url contains 'cdn.shopify.com' -%}
+                        {%- assign card_image = image_url | append: '&width=300&height=300' -%}
+                      {%- else -%}
+                        {%- assign card_image = image_url -%}
+                      {%- endif -%}
+                      <img
+                        class="recipekit-card-image"
+                        src="{{ card_image }}"
+                        alt="{{ similar_article.title | escape }}"
+                        loading="lazy"
+                        width="300"
+                        height="300"
+                      >
+                    {%- elsif similar_article.image -%}
+                      <img
+                        class="recipekit-card-image"
+                        src="{{ similar_article.image | img_url: width: 300, height: 300, crop: 'center' }}"
+                        alt="{{ similar_article.title | escape }}"
+                        loading="lazy"
+                        width="300"
+                        height="300"
+                      >
+                    {%- else -%}
+                      <svg
+                        class="placeholder-svg recipekit-card-image"
+                        width="300"
+                        height="300"
+                        viewBox="0 0 300 300"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <rect width="300" height="300" style="fill: #f0f0f0;"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="20px" fill="#aaa">No Image</text>
+                      </svg>
+                    {%- endif -%}
+                    {%- if rk_mf_similar and rk_mf_similar.prep_time != blank -%}
+                      <span class="recipekit-prep-time">{{ rk_mf_similar.prep_time }}</span>
+                    {%- endif -%}
+                  </div>
+                </div>
+              </a>
+              <div class="recipekit-card-meta">
+                <a href="{{ similar_article.url }}" class="recipekit-card-title-link">
+                  <div class="recipekit-card-title">{{ similar_article.title }}</div>
+                </a>
+              </div>
+            </div>
+            {% assign similar_recipes_count = similar_recipes_count | plus: 1 %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <style>
+    /* Similar Recipes Styles */
+    .recipe-similar-recipes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .recipekit-card-outer {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .recipekit-card-link {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .recipekit-card {
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+
+    .recipekit-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .recipekit-card-image-wrapper {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+    }
+
+    .recipekit-card-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .placeholder-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .recipekit-prep-time {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #333;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .recipekit-card-meta {
+      padding: 10px 0;
+    }
+
+    .recipekit-card-title {
+      font-weight: 600;
+      font-size: 16px;
+      margin-top: 8px;
+      color: #333;
+    }
+
+    .recipekit-card-title-link {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    @media screen and (max-width: 767px) {
+      .recipe-similar-recipes-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .recipe-similar-recipes-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+{% endif %}
+
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     // Listen for DOM changes inside product-recommendations
