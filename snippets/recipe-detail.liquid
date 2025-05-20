@@ -1039,73 +1039,63 @@
       {%- assign metaobject_recipes_found_count = 0 -%}
       {%- assign current_article_actual_handle = article.handle | split: '/' | last -%}
       <div style="display:none;">
-        Current Article Actual Handle (for comparison): {{ current_article_actual_handle }}
+        Debug: Current Article Actual Handle (for exclusion): {{ current_article_actual_handle }}
       </div>
 
       {%- comment -%}Try metaobject recipes first{%- endcomment -%}
-      {%- assign mo_recipe_1_full_path = selected_product_group.recipe_1 -%}
-      {%- if mo_recipe_1_full_path != blank -%}
-        {%- assign mo_recipe_1_handle = mo_recipe_1_full_path | split: '/' | last -%}
-        <div style="display:none;">
-          MO1 Handle: {{ mo_recipe_1_handle }}. Is it current?
-          {% if mo_recipe_1_handle == current_article_actual_handle %}YES{% else %}NO{% endif %}
-        </div>
-        {%- if mo_recipe_1_handle != current_article_actual_handle -%}
-          {%- assign recipe1_article_obj = blog.articles | where: 'handle', mo_recipe_1_handle | first -%}
+      {%- assign mo_paths = ''
+        | split: ''
+        | push: selected_product_group.recipe_1
+        | push: selected_product_group.recipe_2
+        | push: selected_product_group.recipe_3
+      -%}
+      {%- for i in (1..3) -%}
+        {%- assign mo_field_name = 'recipe_' | append: i -%}
+        {%- assign mo_full_path = selected_product_group[mo_field_name] -%}
+        <div style="display:none;">Debug MO{{ i }}: Full path from metaobject: "{{ mo_full_path }}"</div>
+        {%- if mo_full_path != blank -%}
+          {%- assign mo_handle_to_check = mo_full_path | split: '/' | last | strip -%}
           <div style="display:none;">
-            MO1 Article Found in blog.articles?
-            {% if recipe1_article_obj %}YES (Title: {{ recipe1_article_obj.title | escape }}){% else %}NO{% endif %}
+            Debug MO{{ i }}: Extracted handle: "{{ mo_handle_to_check }}". Is it current?
+            {% if mo_handle_to_check == current_article_actual_handle %}YES{% else %}NO{% endif %}
           </div>
-          {%- if recipe1_article_obj -%}
-            {%- assign valid_article_handles = valid_article_handles | append: mo_recipe_1_handle | append: ',' -%}
-            {%- assign metaobject_recipes_found_count = metaobject_recipes_found_count | plus: 1 -%}
+          {%- if mo_handle_to_check != current_article_actual_handle -%}
+            {%- assign temp_article_obj = articles[mo_handle_to_check] -%}
+            <div style="display:none;">
+              Debug MO{{ i }}: Article direct lookup `articles["{{ mo_handle_to_check }}"]`:
+              {% if temp_article_obj -%}
+                FOUND (Title: {{ temp_article_obj.title | escape }})
+              {%- else -%}
+                NOT FOUND
+              {%- endif %}
+            </div>
+            {%- if temp_article_obj -%}
+              {%- assign valid_article_handles = valid_article_handles | append: mo_handle_to_check | append: ',' -%}
+              {%- assign metaobject_recipes_found_count = metaobject_recipes_found_count | plus: 1 -%}
+            {%- else -%}
+              {%- comment -%}Try with blog.articles as a fallback lookup if direct articles[handle] fails {%- endcomment -%}
+              {%- assign temp_article_obj_blog = blog.articles | where: 'handle', mo_handle_to_check | first -%}
+              <div style="display:none;">
+                Debug MO{{ i }}: Article blog lookup `blog.articles | where: 'handle', "{{ mo_handle_to_check }}"`:
+                {% if temp_article_obj_blog -%}
+                  FOUND (Title: {{ temp_article_obj_blog.title | escape }})
+                {%- else -%}
+                  NOT FOUND
+                {%- endif %}
+              </div>
+              {%- if temp_article_obj_blog -%}
+                {%- assign valid_article_handles = valid_article_handles | append: mo_handle_to_check | append: ',' -%}
+                {%- assign metaobject_recipes_found_count = metaobject_recipes_found_count | plus: 1 -%}
+              {%- endif -%}
+            {%- endif -%}
           {%- endif -%}
         {%- endif -%}
-      {%- endif -%}
-
-      {%- assign mo_recipe_2_full_path = selected_product_group.recipe_2 -%}
-      {%- if mo_recipe_2_full_path != blank -%}
-        {%- assign mo_recipe_2_handle = mo_recipe_2_full_path | split: '/' | last -%}
-        <div style="display:none;">
-          MO2 Handle: {{ mo_recipe_2_handle }}. Is it current?
-          {% if mo_recipe_2_handle == current_article_actual_handle %}YES{% else %}NO{% endif %}
-        </div>
-        {%- if mo_recipe_2_handle != current_article_actual_handle -%}
-          {%- assign recipe2_article_obj = blog.articles | where: 'handle', mo_recipe_2_handle | first -%}
-          <div style="display:none;">
-            MO2 Article Found in blog.articles?
-            {% if recipe2_article_obj %}YES (Title: {{ recipe2_article_obj.title | escape }}){% else %}NO{% endif %}
-          </div>
-          {%- if recipe2_article_obj -%}
-            {%- assign valid_article_handles = valid_article_handles | append: mo_recipe_2_handle | append: ',' -%}
-            {%- assign metaobject_recipes_found_count = metaobject_recipes_found_count | plus: 1 -%}
-          {%- endif -%}
-        {%- endif -%}
-      {%- endif -%}
-
-      {%- assign mo_recipe_3_full_path = selected_product_group.recipe_3 -%}
-      {%- if mo_recipe_3_full_path != blank -%}
-        {%- assign mo_recipe_3_handle = mo_recipe_3_full_path | split: '/' | last -%}
-        <div style="display:none;">
-          MO3 Handle: {{ mo_recipe_3_handle }}. Is it current?
-          {% if mo_recipe_3_handle == current_article_actual_handle %}YES{% else %}NO{% endif %}
-        </div>
-        {%- if mo_recipe_3_handle != current_article_actual_handle -%}
-          {%- assign recipe3_article_obj = blog.articles | where: 'handle', mo_recipe_3_handle | first -%}
-          <div style="display:none;">
-            MO3 Article Found in blog.articles?
-            {% if recipe3_article_obj %}YES (Title: {{ recipe3_article_obj.title | escape }}){% else %}NO{% endif %}
-          </div>
-          {%- if recipe3_article_obj -%}
-            {%- assign valid_article_handles = valid_article_handles | append: mo_recipe_3_handle | append: ',' -%}
-            {%- assign metaobject_recipes_found_count = metaobject_recipes_found_count | plus: 1 -%}
-          {%- endif -%}
-        {%- endif -%}
-      {%- endif -%}
+      {%- endfor -%}
 
       <div style="display:none;">
-        Tier 1: Processed {{ metaobject_recipes_found_count }} from metaobject. Handles accumulated:
-        {{ valid_article_handles }}
+        Tier 1 Summary: Processed {{ metaobject_recipes_found_count }} from metaobject. Handles accumulated: "
+        {{- valid_article_handles -}}
+        "
       </div>
 
       {%- comment -%}Display related recipes from metaobject handles{%- endcomment -%}
