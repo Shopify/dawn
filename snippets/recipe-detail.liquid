@@ -1004,22 +1004,20 @@
   <div class="recipekit-related-recipes page-width">
     <h2 class="recipe-section-title">More {{ selected_product_group.tag }} Recipes</h2>
 
-    <!-- Debug output (hidden) -->
-    <div style="display: none;">
-      Selected tag: {{ selected_product_group.tag }} Recipe 1: {{ selected_product_group.recipe_1.value }} Recipe 2:
-      {{ selected_product_group.recipe_2.value }} Recipe 3: {{ selected_product_group.recipe_3.value }} Current article
-      handle: {{ article.handle }}
-    </div>
-
     <div class="main-blog-recipekit-grid">
-      {%- comment -%}Display directly from metaobject references{%- endcomment -%}
-      {%- if selected_product_group.recipe_1.value != blank -%}
-        {%- for article_in_blog in blog.articles limit: 10 -%}
-          {%- if article_in_blog.handle == selected_product_group.recipe_1.value
-            and article_in_blog.id != article.id
-          -%}
-            {%- assign rk_resource_id = article_in_blog.id | downcase -%}
-            {%- assign rk_mf = article_in_blog.metafields.recipekit[rk_resource_id] -%}
+      {% assign displayed_count = 0 %}
+      {% for article_in_blog in blog.articles limit: 10 %}
+        {% if article_in_blog.id != article.id %}
+          {% assign has_matching_tag = false %}
+          {% for article_tag in article_in_blog.tags %}
+            {% if article_tag == selected_product_group.tag %}
+              {% assign has_matching_tag = true %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
+
+          {% if has_matching_tag %}
+            {% assign displayed_count = displayed_count | plus: 1 %}
             <div class="recipekit-card-outer">
               <a
                 href="{{ article_in_blog.url }}"
@@ -1028,19 +1026,16 @@
               >
                 <div class="recipekit-card">
                   <div class="recipekit-card-image-wrapper">
-                    {%- if article_in_blog.image -%}
+                    {% if article_in_blog.image %}
                       <img
                         class="recipekit-card-image"
-                        src="{{ article_in_blog.image | img_url: '1000x1000', scale: 2 }}"
+                        src="{{ article_in_blog.image | img_url: '600x600', crop: 'center' }}"
                         alt="{{ article_in_blog.title | escape }}"
                         loading="lazy"
                         width="300"
                         height="300"
                       >
-                    {%- endif -%}
-                    {%- if rk_mf and rk_mf.prep_time != blank -%}
-                      <span class="recipekit-prep-time">{{ rk_mf.prep_time }}</span>
-                    {%- endif -%}
+                    {% endif %}
                   </div>
                 </div>
               </a>
@@ -1050,146 +1045,13 @@
                 </a>
               </div>
             </div>
-            {% break %}
-          {%- endif -%}
-        {%- endfor -%}
-      {%- endif -%}
 
-      {%- if selected_product_group.recipe_2.value != blank -%}
-        {%- for article_in_blog in blog.articles limit: 10 -%}
-          {%- if article_in_blog.handle == selected_product_group.recipe_2.value
-            and article_in_blog.id != article.id
-          -%}
-            {%- assign rk_resource_id = article_in_blog.id | downcase -%}
-            {%- assign rk_mf = article_in_blog.metafields.recipekit[rk_resource_id] -%}
-            <div class="recipekit-card-outer">
-              <a
-                href="{{ article_in_blog.url }}"
-                class="recipekit-card-link"
-                aria-label="{{ article_in_blog.title | escape }}"
-              >
-                <div class="recipekit-card">
-                  <div class="recipekit-card-image-wrapper">
-                    {%- if article_in_blog.image -%}
-                      <img
-                        class="recipekit-card-image"
-                        src="{{ article_in_blog.image | img_url: '1000x1000', scale: 2 }}"
-                        alt="{{ article_in_blog.title | escape }}"
-                        loading="lazy"
-                        width="300"
-                        height="300"
-                      >
-                    {%- endif -%}
-                    {%- if rk_mf and rk_mf.prep_time != blank -%}
-                      <span class="recipekit-prep-time">{{ rk_mf.prep_time }}</span>
-                    {%- endif -%}
-                  </div>
-                </div>
-              </a>
-              <div class="recipekit-card-meta">
-                <a href="{{ article_in_blog.url }}" class="recipekit-card-title-link">
-                  <div class="recipekit-card-title">{{ article_in_blog.title }}</div>
-                </a>
-              </div>
-            </div>
-            {% break %}
-          {%- endif -%}
-        {%- endfor -%}
-      {%- endif -%}
-
-      {%- if selected_product_group.recipe_3.value != blank -%}
-        {%- for article_in_blog in blog.articles limit: 10 -%}
-          {%- if article_in_blog.handle == selected_product_group.recipe_3.value
-            and article_in_blog.id != article.id
-          -%}
-            {%- assign rk_resource_id = article_in_blog.id | downcase -%}
-            {%- assign rk_mf = article_in_blog.metafields.recipekit[rk_resource_id] -%}
-            <div class="recipekit-card-outer">
-              <a
-                href="{{ article_in_blog.url }}"
-                class="recipekit-card-link"
-                aria-label="{{ article_in_blog.title | escape }}"
-              >
-                <div class="recipekit-card">
-                  <div class="recipekit-card-image-wrapper">
-                    {%- if article_in_blog.image -%}
-                      <img
-                        class="recipekit-card-image"
-                        src="{{ article_in_blog.image | img_url: '1000x1000', scale: 2 }}"
-                        alt="{{ article_in_blog.title | escape }}"
-                        loading="lazy"
-                        width="300"
-                        height="300"
-                      >
-                    {%- endif -%}
-                    {%- if rk_mf and rk_mf.prep_time != blank -%}
-                      <span class="recipekit-prep-time">{{ rk_mf.prep_time }}</span>
-                    {%- endif -%}
-                  </div>
-                </div>
-              </a>
-              <div class="recipekit-card-meta">
-                <a href="{{ article_in_blog.url }}" class="recipekit-card-title-link">
-                  <div class="recipekit-card-title">{{ article_in_blog.title }}</div>
-                </a>
-              </div>
-            </div>
-            {% break %}
-          {%- endif -%}
-        {%- endfor -%}
-      {%- endif -%}
-
-      <!-- Fallback: Get tagged articles if specific recipes aren't found -->
-      {%- assign card_count = 0 -%}
-      {%- if card_count < 1 -%}
-        {%- for article_in_blog in blog.articles limit: 5 -%}
-          {%- if article_in_blog.id != article.id -%}
-            {%- for article_tag in article_in_blog.tags -%}
-              {%- if article_tag == selected_product_group.tag -%}
-                {%- assign card_count = card_count | plus: 1 -%}
-                {%- assign rk_resource_id = article_in_blog.id | downcase -%}
-                {%- assign rk_mf = article_in_blog.metafields.recipekit[rk_resource_id] -%}
-                <div class="recipekit-card-outer">
-                  <a
-                    href="{{ article_in_blog.url }}"
-                    class="recipekit-card-link"
-                    aria-label="{{ article_in_blog.title | escape }}"
-                  >
-                    <div class="recipekit-card">
-                      <div class="recipekit-card-image-wrapper">
-                        {%- if article_in_blog.image -%}
-                          <img
-                            class="recipekit-card-image"
-                            src="{{ article_in_blog.image | img_url: '1000x1000', scale: 2 }}"
-                            alt="{{ article_in_blog.title | escape }}"
-                            loading="lazy"
-                            width="300"
-                            height="300"
-                          >
-                        {%- endif -%}
-                        {%- if rk_mf and rk_mf.prep_time != blank -%}
-                          <span class="recipekit-prep-time">{{ rk_mf.prep_time }}</span>
-                        {%- endif -%}
-                      </div>
-                    </div>
-                  </a>
-                  <div class="recipekit-card-meta">
-                    <a href="{{ article_in_blog.url }}" class="recipekit-card-title-link">
-                      <div class="recipekit-card-title">{{ article_in_blog.title }}</div>
-                    </a>
-                  </div>
-                </div>
-                {%- if card_count >= 3 -%}
-                  {%- break -%}
-                {%- endif -%}
-              {%- endif -%}
-            {%- endfor -%}
-          {%- endif -%}
-          {%- if card_count >= 3 -%}
-            {%- break -%}
-          {%- endif -%}
-        {%- endfor -%}
-      {%- endif -%}
+            {% if displayed_count >= 3 %}
+              {% break %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
 
       <!-- View All Card -->
       <div class="recipekit-card-outer view-more-card">
@@ -1294,30 +1156,6 @@
       font-size: 16px;
       line-height: 1.4;
       color: rgb(6, 42, 48);
-    }
-
-    .recipekit-top-rated-badge,
-    .recipekit-prep-time {
-      position: absolute;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-
-    .recipekit-top-rated-badge {
-      top: 10px;
-      left: 10px;
-      background-color: rgb(211, 236, 232);
-      color: rgb(6, 42, 48);
-    }
-
-    .recipekit-prep-time {
-      bottom: 10px;
-      right: 10px;
-      background-color: rgba(0, 0, 0, 0.7);
-      color: white;
     }
 
     @media screen and (max-width: 767px) {
