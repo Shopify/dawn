@@ -1036,26 +1036,48 @@
     <div class="main-blog-recipekit-grid">
       {%- comment -%}Collect related recipes{%- endcomment -%}
       {%- assign valid_article_handles = '' -%}
-      {%- assign metaobject_handles_processed = 0 -%}
+      {%- assign metaobject_recipes_found_count = 0 -%}
 
       {%- comment -%}Try metaobject recipes first{%- endcomment -%}
-      {%- assign mo_recipe_1_handle = selected_product_group.recipe_1 | split: '/' | last -%}
-      {%- if selected_product_group.recipe_1 != blank and mo_recipe_1_handle != article.handle -%}
-        {%- assign valid_article_handles = valid_article_handles | append: mo_recipe_1_handle | append: ',' -%}
-        {%- assign metaobject_handles_processed = metaobject_handles_processed | plus: 1 -%}
+      {%- assign mo_recipe_1_full_path = selected_product_group.recipe_1 -%}
+      {%- if mo_recipe_1_full_path != blank -%}
+        {%- assign mo_recipe_1_handle = mo_recipe_1_full_path | split: '/' | last -%}
+        {%- if mo_recipe_1_handle != article.handle -%}
+          {%- assign recipe1_article_obj = blog.articles | where: 'handle', mo_recipe_1_handle | first -%}
+          {%- if recipe1_article_obj -%}
+            {%- assign valid_article_handles = valid_article_handles | append: mo_recipe_1_handle | append: ',' -%}
+            {%- assign metaobject_recipes_found_count = metaobject_recipes_found_count | plus: 1 -%}
+          {%- endif -%}
+        {%- endif -%}
       {%- endif -%}
 
-      {%- assign mo_recipe_2_handle = selected_product_group.recipe_2 | split: '/' | last -%}
-      {%- if selected_product_group.recipe_2 != blank and mo_recipe_2_handle != article.handle -%}
-        {%- assign valid_article_handles = valid_article_handles | append: mo_recipe_2_handle | append: ',' -%}
-        {%- assign metaobject_handles_processed = metaobject_handles_processed | plus: 1 -%}
+      {%- assign mo_recipe_2_full_path = selected_product_group.recipe_2 -%}
+      {%- if mo_recipe_2_full_path != blank -%}
+        {%- assign mo_recipe_2_handle = mo_recipe_2_full_path | split: '/' | last -%}
+        {%- if mo_recipe_2_handle != article.handle -%}
+          {%- assign recipe2_article_obj = blog.articles | where: 'handle', mo_recipe_2_handle | first -%}
+          {%- if recipe2_article_obj -%}
+            {%- assign valid_article_handles = valid_article_handles | append: mo_recipe_2_handle | append: ',' -%}
+            {%- assign metaobject_recipes_found_count = metaobject_recipes_found_count | plus: 1 -%}
+          {%- endif -%}
+        {%- endif -%}
       {%- endif -%}
 
-      {%- assign mo_recipe_3_handle = selected_product_group.recipe_3 | split: '/' | last -%}
-      {%- if selected_product_group.recipe_3 != blank and mo_recipe_3_handle != article.handle -%}
-        {%- assign valid_article_handles = valid_article_handles | append: mo_recipe_3_handle | append: ',' -%}
-        {%- assign metaobject_handles_processed = metaobject_handles_processed | plus: 1 -%}
+      {%- assign mo_recipe_3_full_path = selected_product_group.recipe_3 -%}
+      {%- if mo_recipe_3_full_path != blank -%}
+        {%- assign mo_recipe_3_handle = mo_recipe_3_full_path | split: '/' | last -%}
+        {%- if mo_recipe_3_handle != article.handle -%}
+          {%- assign recipe3_article_obj = blog.articles | where: 'handle', mo_recipe_3_handle | first -%}
+          {%- if recipe3_article_obj -%}
+            {%- assign valid_article_handles = valid_article_handles | append: mo_recipe_3_handle | append: ',' -%}
+            {%- assign metaobject_recipes_found_count = metaobject_recipes_found_count | plus: 1 -%}
+          {%- endif -%}
+        {%- endif -%}
       {%- endif -%}
+
+      <div style="display:none;">
+        Tier 1: Processed {{ metaobject_recipes_found_count }} from metaobject. Handles: {{ valid_article_handles }}
+      </div>
 
       {%- comment -%}Display related recipes from metaobject handles{%- endcomment -%}
       {%- assign displayed_count = 0 -%}
@@ -1139,10 +1161,11 @@
       {%- if recipes_still_needed > 0 -%}
         <div style="display: none;">
           Tier 1 displayed: {{ displayed_count }}. Need {{ recipes_still_needed }} more. Trying Tag Fallback using
-          display name: {{ selected_product_group.tag }}
+          display name: {{ selected_product_group.tag | escape }}
           <br>
-          Match logic: Loop through all articles, check if any article has ANY tag that matches
-          {{ selected_product_group.tag }}
+          Match logic: Loop through all articles, check if any article has ANY tag that exactly matches "
+          {{- selected_product_group.tag | escape -}}
+          "
         </div>
 
         {%- assign fallback_count = 0 -%}
@@ -1161,8 +1184,9 @@
 
           {%- if tag_article.handle != article.handle and current_handle_is_in_displayed_list == false -%}
             {%- assign has_tag = false -%}
-            {%- for tag in tag_article.tags -%}
-              {%- if tag == selected_product_group.tag -%}
+            {%- for tag_raw in tag_article.tags -%}
+              {%- assign tag_processed = tag_raw | strip -%}
+              {%- if tag_processed == selected_product_group.tag -%}
                 {%- assign has_tag = true -%}
                 {%- break -%}
               {%- endif -%}
@@ -1239,10 +1263,10 @@
         {%- endfor -%}
 
         {%- comment -%}If still no recipes found by tag, show a debug message{%- endcomment -%}
-        {%- if fallback_count == 0 and displayed_count < 3 -%}
+        {%- if fallback_count == 0 and displayed_count < 3 and recipes_still_needed > 0 -%}
           <div style="display: none;">
-            No additional articles found with tag: {{ selected_product_group.tag }} after checking
-            {{ metaobject_handles_processed }} metaobject handles and {{ fallback_count }} fallback articles. <br>
+            No additional articles found with tag: "{{ selected_product_group.tag | escape }}" after checking
+            {{ metaobject_recipes_found_count }} metaobject handles and {{ fallback_count }} fallback articles. <br>
             Total displayed: {{ displayed_count }}.
           </div>
         {%- endif -%}
