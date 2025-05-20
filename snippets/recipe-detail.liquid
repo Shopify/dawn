@@ -12,14 +12,6 @@
   - Social sharing
 {% endcomment %}
 
-<!-- TEST BLOCK: all_articles availability -->
-<div style="background: #ffd; color: #333; font-size: 14px; padding: 10px; margin-bottom: 10px; border: 1px solid #cc0;">
-  <strong>all_articles test:</strong><br>
-  Test handle: <code>buffalo-cauliflower-bites</code><br>
-  Result:<br>
-  <pre style="white-space: pre-wrap; word-break: break-all;">{{ all_articles['buffalo-cauliflower-bites'] | json }}</pre>
-</div>
-
 {%- assign rk_resource_id = article.id | downcase -%}
 {%- assign rk_mf = article.metafields.recipekit[rk_resource_id] -%}
 {%- assign rk_settings = shop.metafields.recipekit.settings -%}
@@ -1020,82 +1012,55 @@
 {%- if selected_product_group and selected_product_group.tag != blank -%}
   <div class="recipekit-related-recipes page-width">
     <h2 class="recipe-section-title">More {{ selected_product_group.tag }} Recipes</h2>
-    <!-- Debug output -->
-    <div style="background: #ffe; color: #333; font-size: 14px; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc;">
-      <strong>Debug Info:</strong><br>
-      <b>article.tags:</b> {{ article.tags | join: ', ' -}}
-      <br>
-      <b>selected_product_group.tag:</b> {{ selected_product_group.tag -}}
-      <br>
-      <b>selected_product_group (json):</b> {{ selected_product_group | json -}}
-      <br>
-      recipe_1.value: {{ selected_product_group.recipe_1.value -}}
-      <br>
-      recipe_2.value: {{ selected_product_group.recipe_2.value -}}
-      <br>
-      recipe_3.value: {{ selected_product_group.recipe_3.value -}}
-      <br>
-      Handles used:<br>
-      {%- assign debug_handle1 = selected_product_group.recipe_1.value | remove: 'recipes/' | remove: '/' -%}
-      {%- assign debug_handle2 = selected_product_group.recipe_2.value | remove: 'recipes/' | remove: '/' -%}
-      {%- assign debug_handle3 = selected_product_group.recipe_3.value | remove: 'recipes/' | remove: '/' -%}
-      handle1: {{ debug_handle1 -}}
-      <br>
-      handle2: {{ debug_handle2 -}}
-      <br>
-      handle3: {{ debug_handle3 -}}
-      <br>
-      <br>
-      all_articles[handle1] exists: {% if all_articles[debug_handle1] %}yes{% else %}no{% endif -%}
-      <br>
-      all_articles[handle2] exists: {% if all_articles[debug_handle2] %}yes{% else %}no{% endif -%}
-      <br>
-      all_articles[handle3] exists: {% if all_articles[debug_handle3] %}yes{% else %}no{% endif -%}
-      <br>
-    </div>
-    <div class="main-blog-recipekit-grid">
-      {%- assign handle1 = selected_product_group.recipe_1.value | remove: 'recipes/' | remove: '/' -%}
-      {%- assign handle2 = selected_product_group.recipe_2.value | remove: 'recipes/' | remove: '/' -%}
-      {%- assign handle3 = selected_product_group.recipe_3.value | remove: 'recipes/' | remove: '/' -%}
-      {%- assign handles = handle1 | append: ',' | append: handle2 | append: ',' | append: handle3 -%}
-      {%- assign handles_array = handles | split: ',' -%}
 
-      {%- for handle in handles_array -%}
-        {%- assign handle = handle | strip -%}
-        <!-- Debug: handle = {{ handle }}, exists: {% if all_articles[handle] %}yes{% else %}no{% endif %} -->
-        {%- if handle != blank and handle != article.handle -%}
-          {%- assign related_article = all_articles[handle] -%}
-          {%- if related_article -%}
+    <div class="main-blog-recipekit-grid">
+      {% assign displayed_count = 0 %}
+      {% for article_in_blog in blog.articles limit: 10 %}
+        {% if article_in_blog.id != article.id %}
+          {% assign has_matching_tag = false %}
+          {% for article_tag in article_in_blog.tags %}
+            {% if article_tag == selected_product_group.tag %}
+              {% assign has_matching_tag = true %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
+
+          {% if has_matching_tag %}
+            {% assign displayed_count = displayed_count | plus: 1 %}
             <div class="recipekit-card-outer">
               <a
-                href="{{ related_article.url }}"
+                href="{{ article_in_blog.url }}"
                 class="recipekit-card-link"
-                aria-label="{{ related_article.title | escape }}"
+                aria-label="{{ article_in_blog.title | escape }}"
               >
                 <div class="recipekit-card">
                   <div class="recipekit-card-image-wrapper">
-                    {%- if related_article.image -%}
+                    {% if article_in_blog.image %}
                       <img
                         class="recipekit-card-image"
-                        src="{{ related_article.image | img_url: '600x600', crop: 'center' }}"
-                        alt="{{ related_article.title | escape }}"
+                        src="{{ article_in_blog.image | img_url: '600x600', crop: 'center' }}"
+                        alt="{{ article_in_blog.title | escape }}"
                         loading="lazy"
                         width="300"
                         height="300"
                       >
-                    {%- endif -%}
+                    {% endif %}
                   </div>
                 </div>
               </a>
               <div class="recipekit-card-meta">
-                <a href="{{ related_article.url }}" class="recipekit-card-title-link">
-                  <div class="recipekit-card-title">{{ related_article.title }}</div>
+                <a href="{{ article_in_blog.url }}" class="recipekit-card-title-link">
+                  <div class="recipekit-card-title">{{ article_in_blog.title }}</div>
                 </a>
               </div>
             </div>
-          {%- endif -%}
-        {%- endif -%}
-      {%- endfor -%}
+
+            {% if displayed_count >= 3 %}
+              {% break %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
 
       <!-- View All Card -->
       <div class="recipekit-card-outer view-more-card">
@@ -1142,27 +1107,33 @@
       text-transform: uppercase;
       letter-spacing: 1px;
     }
+
     .main-blog-recipekit-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 20px;
       margin-top: 20px;
     }
+
     .recipekit-card-outer {
       position: relative;
     }
+
     .recipekit-card-link {
       text-decoration: none;
       color: inherit;
     }
+
     .recipekit-card {
       border-radius: 8px;
       overflow: hidden;
       transition: transform 0.3s;
     }
+
     .recipekit-card:hover {
       transform: translateY(-5px);
     }
+
     .recipekit-card-image-wrapper {
       position: relative;
       width: 100%;
@@ -1170,6 +1141,7 @@
       overflow: hidden;
       border-radius: 8px;
     }
+
     .recipekit-card-image {
       position: absolute;
       top: 0;
@@ -1179,18 +1151,22 @@
       object-fit: cover;
       transition: transform 0.3s;
     }
+
     .recipekit-card:hover .recipekit-card-image {
       transform: scale(1.05);
     }
+
     .recipekit-card-meta {
       padding: 12px 0;
     }
+
     .recipekit-card-title {
       font-weight: 600;
       font-size: 16px;
       line-height: 1.4;
       color: rgb(6, 42, 48);
     }
+
     @media screen and (max-width: 767px) {
       .main-blog-recipekit-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -1201,6 +1177,7 @@
         padding: 8px 15px;
       }
     }
+
     @media screen and (max-width: 480px) {
       .main-blog-recipekit-grid {
         grid-template-columns: 1fr;
