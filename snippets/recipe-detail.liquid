@@ -1004,13 +1004,20 @@
   <div class="recipekit-related-recipes page-width">
     <h2 class="recipe-section-title">More {{ selected_product_group.tag }} Recipes</h2>
 
+    <!-- Debug info (hidden) -->
+    <div style="display: none;">Current tag: {{ selected_product_group.tag }} Current article ID: {{ article.id }}</div>
+
     <div class="main-blog-recipekit-grid">
       {% assign displayed_count = 0 %}
-      {% for article_in_blog in blog.articles limit: 10 %}
+      {% assign max_scan = 5 %}
+      {% assign target_tag = selected_product_group.tag %}
+
+      <!-- Only scan the first few articles for efficiency -->
+      {% for article_in_blog in blog.articles limit: max_scan %}
         {% if article_in_blog.id != article.id %}
           {% assign has_matching_tag = false %}
           {% for article_tag in article_in_blog.tags %}
-            {% if article_tag == selected_product_group.tag %}
+            {% if article_tag == target_tag %}
               {% assign has_matching_tag = true %}
               {% break %}
             {% endif %}
@@ -1046,15 +1053,15 @@
               </div>
             </div>
 
-            {% if displayed_count >= 3 %}
+            {% if displayed_count >= 2 %}
               {% break %}
             {% endif %}
           {% endif %}
         {% endif %}
       {% endfor %}
 
-      <!-- View All Card -->
-      <div class="recipekit-card-outer view-more-card">
+      <!-- View All Card - Make more prominent if we have no articles -->
+      <div class="recipekit-card-outer view-more-card {% if displayed_count == 0 %}full-width{% endif %}">
         <a
           href="/blogs/recipes/tagged/{{ selected_product_group.tag | handle }}"
           class="recipekit-card-link"
@@ -1070,7 +1077,7 @@
                 width="300"
                 height="300"
               >
-              <span class="view-all-overlay">View All</span>
+              <span class="view-all-overlay">View All {{ selected_product_group.tag }} Recipes</span>
             </div>
           </div>
         </a>
@@ -1104,6 +1111,10 @@
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 20px;
       margin-top: 20px;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
     }
 
     .recipekit-card-outer {
