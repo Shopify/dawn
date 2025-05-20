@@ -927,34 +927,62 @@
 <!-- Similar Recipes Section -->
 <div class="page-width">
   <h2 class="recipe-section-title">Similar Recipes</h2>
-  <div class="recipe-similar-recipes-grid">
-    {% comment %} Find all recipe tags associated with this article {% endcomment %}
-    {% assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values %}
-    {% assign current_article_id = article.id %}
-    {% assign article_recipe_tags = '' %}
 
-    {% for tag in article.tags %}
-      {% for group in recipe_tag_group %}
-        {% if tag == group.tag %}
-          {% assign article_recipe_tags = article_recipe_tags | append: tag | append: ',' %}
+  <!-- Debug information (temporarily visible) -->
+  <div style="background: #f8f8f8; padding: 10px; margin-bottom: 20px; border-radius: 4px; font-size: 12px;">
+    <p><strong>Current article tags:</strong> {{ article.tags | join: ', ' }}</p>
+    <p>
+      <strong>Available recipe tags:</strong>
+      {% for group in shop.metaobjects.recipe_tag_group.values %}
+        {{ group.tag }},
+      {% endfor %}
+    </p>
+    <p>
+      <strong>Matching recipe tags:</strong>
+      {% assign matching_tags = '' %}
+      {% for article_tag in article.tags %}
+        {% for group in shop.metaobjects.recipe_tag_group.values %}
+          {% if article_tag == group.tag %}
+            {% assign matching_tags = matching_tags | append: article_tag | append: ', ' %}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+      {% if matching_tags != '' %}
+        {% assign matching_tags_length = matching_tags | size | minus: 2 %}
+        {{ matching_tags | slice: 0, matching_tags_length }}
+      {% else %}
+        No matching recipe tags found
+      {% endif %}
+    </p>
+  </div>
+
+  <div class="recipe-similar-recipes-grid">
+    {% assign current_article_id = article.id %}
+    {% assign similar_recipes_count = 0 %}
+    {% assign article_tags = article.tags %}
+    {% assign recipe_tag_groups = shop.metaobjects.recipe_tag_group.values %}
+
+    {% comment %} Extract all valid recipe tags from current article {% endcomment %}
+    {% assign valid_recipe_tags = '' | split: ',' %}
+    {% for article_tag in article_tags %}
+      {% for group in recipe_tag_groups %}
+        {% if article_tag == group.tag %}
+          {% assign valid_recipe_tags = valid_recipe_tags | concat: article_tag | split: ',' %}
           {% break %}
         {% endif %}
       {% endfor %}
     {% endfor %}
 
-    {% assign article_recipe_tags = article_recipe_tags | split: ',' %}
-    {% assign similar_recipes_count = 0 %}
-
-    {% comment %} Look for articles with any matching recipe tag {% endcomment %}
-    {% for similar_article in blog.articles limit: 12 %}
+    {% comment %} First pass: Find articles with matching recipe tags {% endcomment %}
+    {% for similar_article in blog.articles limit: 20 %}
       {% if similar_article.id != current_article_id and similar_recipes_count < 3 %}
         {% assign has_matching_tag = false %}
+        {% assign similar_article_tags = similar_article.tags %}
 
-        {% for similar_tag in similar_article.tags %}
-          {% for current_tag in article_recipe_tags %}
-            {% if current_tag != blank and similar_tag == current_tag %}
+        {% for similar_tag in similar_article_tags %}
+          {% for recipe_tag in valid_recipe_tags %}
+            {% if similar_tag == recipe_tag %}
               {% assign has_matching_tag = true %}
-              {% assign matching_tag = current_tag %}
               {% break %}
             {% endif %}
           {% endfor %}
@@ -965,78 +993,21 @@
         {% endfor %}
 
         {% if has_matching_tag %}
-          {%- assign rk_resource_id_similar = similar_article.id | downcase -%}
-          {%- assign rk_mf_similar = similar_article.metafields.recipekit[rk_resource_id_similar] -%}
-          <div class="recipekit-card-outer">
-            <a
-              href="{{ similar_article.url }}"
-              class="recipekit-card-link"
-              aria-label="{{ similar_article.title | escape }}"
-            >
-              <div class="recipekit-card">
-                <div class="recipekit-card-image-wrapper">
-                  {%- if rk_mf_similar and rk_mf_similar.recipe_image != blank -%}
-                    {%- assign image_url = rk_mf_similar.recipe_image -%}
-                    {%- if image_url contains 'cloudinary.com' -%}
-                      {%- assign rk_last_url = image_url | split: 'upload/' -%}
-                      {%- assign card_image = rk_last_url[1]
-                        | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/t_1x1_recipe_image,f_auto/'
-                      -%}
-                    {%- elsif image_url contains 'backblazeb2.com' -%}
-                      {%- assign rk_last_url = image_url | split: 'backblazeb2.com/file/recipekit-bucket/' -%}
-                      {%- assign card_image = 'https://images.getrecipekit.com/'
-                        | append: rk_last_url[1]
-                        | append: '?aspect_ratio=1:1&quality=90&'
-                      -%}
-                    {%- elsif image_url contains 'cdn.shopify.com' -%}
-                      {%- assign card_image = image_url | append: '&width=300&height=300' -%}
-                    {%- else -%}
-                      {%- assign card_image = image_url -%}
-                    {%- endif -%}
-                    <img
-                      class="recipekit-card-image"
-                      src="{{ card_image }}"
-                      alt="{{ similar_article.title | escape }}"
-                      loading="lazy"
-                      width="300"
-                      height="300"
-                    >
-                  {%- elsif similar_article.image -%}
-                    <img
-                      class="recipekit-card-image"
-                      src="{{ similar_article.image | img_url: width: 300, height: 300, crop: 'center' }}"
-                      alt="{{ similar_article.title | escape }}"
-                      loading="lazy"
-                      width="300"
-                      height="300"
-                    >
-                  {%- else -%}
-                    <svg
-                      class="placeholder-svg recipekit-card-image"
-                      width="300"
-                      height="300"
-                      viewBox="0 0 300 300"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <rect width="300" height="300" style="fill: #f0f0f0;"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="20px" fill="#aaa">No Image</text>
-                    </svg>
-                  {%- endif -%}
-                  {%- if rk_mf_similar and rk_mf_similar.prep_time != blank -%}
-                    <span class="recipekit-prep-time">{{ rk_mf_similar.prep_time }}</span>
-                  {%- endif -%}
-                </div>
-              </div>
-            </a>
-            <div class="recipekit-card-meta">
-              <a href="{{ similar_article.url }}" class="recipekit-card-title-link">
-                <div class="recipekit-card-title">{{ similar_article.title }}</div>
-              </a>
-            </div>
-          </div>
+          {% render 'similar-recipe-card', similar_article: similar_article %}
           {% assign similar_recipes_count = similar_recipes_count | plus: 1 %}
         {% endif %}
       {% endif %}
     {% endfor %}
+
+    {% comment %} Fallback: If no matching tags, show most recent recipes {% endcomment %}
+    {% if similar_recipes_count == 0 %}
+      {% for similar_article in blog.articles limit: 12 %}
+        {% if similar_article.id != current_article_id and similar_recipes_count < 3 %}
+          {% render 'similar-recipe-card', similar_article: similar_article %}
+          {% assign similar_recipes_count = similar_recipes_count | plus: 1 %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
   </div>
 </div>
 
