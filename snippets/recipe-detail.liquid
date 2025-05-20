@@ -12,6 +12,31 @@
   - Social sharing
 {% endcomment %}
 
+{%- assign rk_resource_id = article.id | downcase -%}
+{%- assign rk_mf = article.metafields.recipekit[rk_resource_id] -%}
+{%- assign rk_settings = shop.metafields.recipekit.settings -%}
+{%- assign current_rating = rk_mf.recipe_rating | ceil | default: 5 | at_most: 5 -%}
+{%- assign current_decimal_rating = rk_mf.recipe_rating | round: 1 | default: 5 | at_most: 5 -%}
+{%- assign rating_count = rk_mf.rating_count | default: '1' | at_least: '1' -%}
+{%- if rating_count == '0' -%}
+  {%- assign rating_count = '1' -%}
+{%- endif -%}
+{%- if current_rating == 0 or current_rating == '0' -%}
+  {%- assign current_rating = 5 -%}
+{%- endif -%}
+{%- if current_decimal_rating == 0 -%}
+  {%- assign current_decimal_rating = 5 | round: 1 -%}
+{%- endif -%}
+{%- if current_decimal_rating == 5 -%}
+  {%- assign current_decimal_rating = '5.0' -%}
+{%- endif -%}
+{%- assign current_decimal_rating = current_decimal_rating | round: 1 -%}
+{%- assign rk_lang_rating_count = rk_settings.rk_lang_rating_count
+  | default: 'Rated current_rating stars by rating_count users'
+  | replace: 'current_rating', current_decimal_rating
+  | replace: 'rating_count', rating_count
+-%}
+
 <style>
   /* Recipe Detail Page Styles */
   .recipe-detail-page {
@@ -552,6 +577,44 @@
       <div class="recipe-header-product">
         <div class="recipe-header">
           <h1 class="recipe-title">{{ recipe.title | default: 'Filet Mignon with Herb Butter' }}</h1>
+          {% if rk_mf.enable_rating == true or rk_mf.enable_rating == 'true' %}
+            <div class="rk_rating" style="margin-bottom: 12px;">
+              <div class="stars">
+                <span class="star {% if current_rating == 5 %} is-selected {% endif %}">
+                  <svg>
+                    <use xlink:href="#star"></use>
+                  </svg>
+                </span>
+                <span class="star {% if current_rating == 4 %} is-selected {% endif %}">
+                  <svg>
+                    <use xlink:href="#star"></use>
+                  </svg>
+                </span>
+                <span class="star {% if current_rating == 3 %} is-selected {% endif %}">
+                  <svg>
+                    <use xlink:href="#star"></use>
+                  </svg>
+                </span>
+                <span class="star {% if current_rating == 2 %} is-selected {% endif %}">
+                  <svg>
+                    <use xlink:href="#star"></use>
+                  </svg>
+                </span>
+                <span class="star {% if current_rating == 1 %} is-selected {% endif %}">
+                  <svg>
+                    <use xlink:href="#star"></use>
+                  </svg>
+                </span>
+              </div>
+              <p id="rk_rating_thanks" style="margin: 0; font-size: 14px; color: #888;">{{- rk_lang_rating_count -}}</p>
+            </div>
+            <svg style="display: none;">
+              <symbol id="star" viewBox="0 0 98 92">
+                <title>star</title>
+                <path stroke="#000" stroke-width="5" d="M49 73.5L22.55 87.406l5.05-29.453-21.398-20.86 29.573-4.296L49 6l13.225 26.797 29.573 4.297-21.4 20.86 5.052 29.452z" fill-rule="evenodd"/>
+              </symbol>
+            </svg>
+          {% endif %}
           <p class="recipe-description">
             {{
               recipe.description
@@ -845,3 +908,54 @@
     observer.observe(recs, { childList: true, subtree: true });
   });
 </script>
+
+{% if rk_mf.enable_rating == true %}
+  <script>
+    let recipe_id = {{ rk_mf.recipe_id }};
+    let counter = 0;
+    (function() {
+        let starContainer = document.querySelector('.stars');
+        if (!starContainer) return;
+        let starsNodeList = starContainer.children;
+        let stars = Array.prototype.slice.call(starsNodeList);
+        let totalStars = stars.length;
+        let confirm_rating = '{{ rk_settings.rk_lang.rating_confirmation }}';
+        function rk_rating_success(){
+          var rk_rating_event = new CustomEvent("rk_rating_event");
+          document.dispatchEvent(rk_rating_event);
+        }
+        starContainer.addEventListener('click', function handler(e) {
+            counter++;
+            let index = stars.indexOf(e.target.closest('span'));
+            if (index === -1) return;
+            let user_rating = totalStars - index;
+            stars.forEach(function(el) {
+                el.classList.remove('is-selected')
+            });
+            e.target.closest('span').classList.add('is-selected');
+            if (counter == 1 && confirm_rating) {
+                document.getElementById('rk_rating_thanks').innerHTML = confirm_rating;
+            } else {
+                this.removeEventListener("click", handler);
+                fetch("https://my.recipekit.app/rating", {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    method: "POST",
+                    body: JSON.stringify({
+                        recipe_id: recipe_id,
+                        user_rating: user_rating
+                    })
+                }).then(function(res) {
+                    document.getElementById('rk_rating_thanks').innerHTML = '{{ rk_settings.rk_lang_rating_thanks | default: 'Thanks for rating!' }}';
+                    rk_rating_success(document)
+                }).catch(function(res) {
+                    document.getElementById('rk_rating_thanks').innerHTML = '{{ rk_settings.rk_lang_rating_thanks | default: 'Thanks for rating!' }}';
+                    console.log('Woops! Something went wrong while rating this recipe.')
+                })
+            }
+        })
+    })();
+  </script>
+{% endif %}
