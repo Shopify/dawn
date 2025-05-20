@@ -599,6 +599,31 @@
           </div>
         </div>
 
+        <!-- Find and assign product object -->
+        {%- assign selected_product_group = null -%}
+        {%- assign article_tags = article.tags -%}
+        {%- for group in shop.metaobjects.recipe_tag_group.values -%}
+          {%- if article_tags contains group.tag -%}
+            {%- assign selected_product_group = group -%}
+            {% break %}
+          {%- endif -%}
+        {%- endfor -%}
+
+        {%- assign product_obj = null -%}
+        {%- if selected_product_group and selected_product_group.best_selling_product -%}
+          {%- assign product_gid = selected_product_group.best_selling_product -%}
+          {%- assign product_id_parts = product_gid | split: '/' -%}
+          {%- assign product_id_for_recommendations = product_id_parts | last | plus: 0 -%}
+
+          {%- for product in collections.all.products -%}
+            {%- assign product_id_num = product.id | plus: 0 -%}
+            {%- if product_id_num == product_id_for_recommendations -%}
+              {%- assign product_obj = product -%}
+              {%- break -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+
         {%- if product_obj -%}
           <div class="recipe-product-block">
             <div class="product-image-container">
@@ -694,39 +719,6 @@
           <h2 class="recipe-section-title">You may also like</h2>
           <!-- Debug: List all article tags -->
           <div style="display:none;">Article Tags: {{ article.tags | json }}</div>
-
-          {%- assign selected_product_group = null -%}
-          {%- assign article_tags = article.tags -%}
-          {%- for group in shop.metaobjects.recipe_tag_group.values -%}
-            <!-- Debug: Output each group tag -->
-            <div style="display:none;">Group Tag: {{ group.tag }}</div>
-            {%- if article_tags contains group.tag -%}
-              {%- assign selected_product_group = group -%}
-              {% break %}
-            {%- endif -%}
-          {%- endfor -%}
-
-          <!-- Debug output for the selected product group -->
-          <div style="display:none;">Selected Product Group: {{ selected_product_group | json }}</div>
-
-          {%- if selected_product_group and selected_product_group.best_selling_product -%}
-            <!-- Debug output for the best selling product -->
-            <div style="display:none;">Best Selling Product: {{ selected_product_group.best_selling_product }}</div>
-            {%- assign product_gid = selected_product_group.best_selling_product -%}
-            {%- assign product_id_parts = product_gid | split: '/' -%}
-            {%- assign product_id_for_recommendations = product_id_parts | last | plus: 0 -%}
-            <!-- Debug output for the extracted product ID -->
-            <div style="display:none;">Debug - Product ID: {{ product_id_for_recommendations }}</div>
-          {%- endif -%}
-
-          {%- assign product_obj = null -%}
-          {%- for product in collections.all.products -%}
-            {%- assign product_id_num = product.id | plus: 0 -%}
-            {%- if product_id_num == product_id_for_recommendations -%}
-              {%- assign product_obj = product -%}
-              {%- break -%}
-            {%- endif -%}
-          {%- endfor -%}
 
           {%- if product_obj -%}
             <product-recommendations
