@@ -1019,192 +1019,226 @@
 
   <div class="recipekit-related-recipes page-width" role="region" aria-labelledby="related-recipes-heading">
     <h2 id="related-recipes-heading" class="recipe-section-title">
-      {% if using_fallback %}
-        More Recipes
-      {% else %}
+      {% if selected_product_group and selected_product_group.tag != blank %}
         More {{ selected_product_group.tag }} Recipes
+      {% else %}
+        More Recipes
       {% endif %}
     </h2>
     <div class="main-blog-recipekit-grid grid--4-col-desktop grid--2-col-tablet-down" role="list">
       {%- comment -%}
-        Accessing metaobject fields:
-        - selected_product_group.recipe_1 (handle string, e.g., "recipes/my-recipe")
-        - selected_product_group.recipe_1_img (File (Image) metaobject field)
+        Track displayed recipes and count
       {%- endcomment -%}
-
-      {%- comment -%}Track displayed recipes and count{%- endcomment -%}
       {%- assign displayed_recipes = '' -%}
       {%- assign displayed_count = 0 -%}
+      {%- assign using_fallback = false -%}
 
-      {%- comment -%}Recipe 1{%- endcomment -%}
-      {%- assign handle_str = recipe_1_handle | strip -%}
-      {%- assign img_metaobject_field = recipe_1_img -%}
-      {%- assign clean_handle = handle_str | remove: 'recipes/' | strip -%}
+      {%- if selected_product_group and selected_product_group.tag != blank -%}
+        {%- comment -%}Define handles and images for recipes{%- endcomment -%}
+        {%- assign recipe_1_handle = selected_product_group.recipe_1 -%}
+        {%- assign recipe_1_img = selected_product_group.recipe_1_img -%}
+        {%- assign recipe_2_handle = selected_product_group.recipe_2 -%}
+        {%- assign recipe_2_img = selected_product_group.recipe_2_img -%}
+        {%- assign recipe_3_handle = selected_product_group.recipe_3 -%}
+        {%- assign recipe_3_img = selected_product_group.recipe_3_img -%}
 
-      {%- if clean_handle != blank and img_metaobject_field != blank -%}
-        {%- assign title_temp = clean_handle | replace: '-', ' ' | strip -%}
-        {%- assign title_words = title_temp | split: ' ' -%}
-        {%- assign title_case = '' -%}
-        {%- for word in title_words -%}
-          {%- if word != '' -%}
-            {%- assign word_cap = word | downcase | capitalize -%}
-            {%- assign title_case = title_case | append: word_cap -%}
-            {%- unless forloop.last -%}
-              {%- assign title_case = title_case | append: ' ' -%}
-            {%- endunless -%}
-          {%- endif -%}
-        {%- endfor -%}
-        {%- assign recipe_url = shop.url | append: '/blogs/recipes/' | append: clean_handle -%}
-        {%- assign displayed_recipes = displayed_recipes | append: clean_handle | append: ',' -%}
-        {%- assign displayed_count = displayed_count | plus: 1 -%}
+        {%- comment -%}Check early if we need to use fallback{%- endcomment -%}
+        {%- assign valid_recipes = 0 -%}
 
-        {%- assign image_to_display = img_metaobject_field.value -%}
+        {%- assign handle_str_1 = recipe_1_handle | strip -%}
+        {%- assign clean_handle_1 = handle_str_1 | remove: 'recipes/' | strip -%}
+        {%- if clean_handle_1 != blank and recipe_1_img != blank -%}
+          {%- assign valid_recipes = valid_recipes | plus: 1 -%}
+        {%- endif -%}
 
-        <div class="recipekit-card-outer" role="listitem">
-          <a href="{{ recipe_url }}" class="recipekit-card-link" aria-labelledby="recipe-title-1">
-            <div class="recipekit-card">
-              <div class="recipekit-card-image-wrapper">
-                {%- if image_to_display -%}
-                  <img
-                    class="recipekit-card-image"
-                    src="{{ image_to_display | img_url: '300x300', crop: 'center' }}"
-                    alt="Recipe image for {{ title_case }}"
-                    loading="lazy"
-                    width="300"
-                    height="300"
-                  >
-                {%- else -%}
-                  <div
-                    class="recipekit-card-image placeholder-image"
-                    style="width:300px; height:300px; background-color:#f0f0f0; display:flex; align-items:center; justify-content:center;"
-                    aria-hidden="true"
-                  >
-                    <span>No Image Available</span>
-                  </div>
-                {%- endif -%}
+        {%- assign handle_str_2 = recipe_2_handle | strip -%}
+        {%- assign clean_handle_2 = handle_str_2 | remove: 'recipes/' | strip -%}
+        {%- if clean_handle_2 != blank and recipe_2_img != blank -%}
+          {%- assign valid_recipes = valid_recipes | plus: 1 -%}
+        {%- endif -%}
+
+        {%- assign handle_str_3 = recipe_3_handle | strip -%}
+        {%- assign clean_handle_3 = handle_str_3 | remove: 'recipes/' | strip -%}
+        {%- if clean_handle_3 != blank and recipe_3_img != blank -%}
+          {%- assign valid_recipes = valid_recipes | plus: 1 -%}
+        {%- endif -%}
+
+        {%- if valid_recipes < 3 -%}
+          {%- assign using_fallback = true -%}
+        {%- endif -%}
+
+        {%- comment -%}Recipe 1{%- endcomment -%}
+        {%- assign handle_str = recipe_1_handle | strip -%}
+        {%- assign img_metaobject_field = recipe_1_img -%}
+        {%- assign clean_handle = handle_str | remove: 'recipes/' | strip -%}
+
+        {%- if clean_handle != blank and img_metaobject_field != blank -%}
+          {%- assign title_temp = clean_handle | replace: '-', ' ' | strip -%}
+          {%- assign title_words = title_temp | split: ' ' -%}
+          {%- assign title_case = '' -%}
+          {%- for word in title_words -%}
+            {%- if word != '' -%}
+              {%- assign word_cap = word | downcase | capitalize -%}
+              {%- assign title_case = title_case | append: word_cap -%}
+              {%- unless forloop.last -%}
+                {%- assign title_case = title_case | append: ' ' -%}
+              {%- endunless -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- assign recipe_url = shop.url | append: '/blogs/recipes/' | append: clean_handle -%}
+          {%- assign displayed_recipes = displayed_recipes | append: clean_handle | append: ',' -%}
+          {%- assign displayed_count = displayed_count | plus: 1 -%}
+
+          {%- assign image_to_display = img_metaobject_field.value -%}
+
+          <div class="recipekit-card-outer" role="listitem">
+            <a href="{{ recipe_url }}" class="recipekit-card-link" aria-labelledby="recipe-title-1">
+              <div class="recipekit-card">
+                <div class="recipekit-card-image-wrapper">
+                  {%- if image_to_display -%}
+                    <img
+                      class="recipekit-card-image"
+                      src="{{ image_to_display | img_url: '300x300', crop: 'center' }}"
+                      alt="Recipe image for {{ title_case }}"
+                      loading="lazy"
+                      width="300"
+                      height="300"
+                    >
+                  {%- else -%}
+                    <div
+                      class="recipekit-card-image placeholder-image"
+                      style="width:300px; height:300px; background-color:#f0f0f0; display:flex; align-items:center; justify-content:center;"
+                      aria-hidden="true"
+                    >
+                      <span>No Image Available</span>
+                    </div>
+                  {%- endif -%}
+                </div>
               </div>
-            </div>
-          </a>
-          <div class="recipekit-card-meta">
-            <a href="{{ recipe_url }}" class="recipekit-card-title-link">
-              <div id="recipe-title-1" class="recipekit-card-title">{{ title_case }}</div>
             </a>
+            <div class="recipekit-card-meta">
+              <a href="{{ recipe_url }}" class="recipekit-card-title-link">
+                <div id="recipe-title-1" class="recipekit-card-title">{{ title_case }}</div>
+              </a>
+            </div>
           </div>
-        </div>
-      {%- endif -%}
+        {%- endif -%}
 
-      {%- comment -%}Recipe 2{%- endcomment -%}
-      {%- assign handle_str = recipe_2_handle | strip -%}
-      {%- assign img_metaobject_field = recipe_2_img -%}
-      {%- assign clean_handle = handle_str | remove: 'recipes/' | strip -%}
+        {%- comment -%}Recipe 2{%- endcomment -%}
+        {%- assign handle_str = recipe_2_handle | strip -%}
+        {%- assign img_metaobject_field = recipe_2_img -%}
+        {%- assign clean_handle = handle_str | remove: 'recipes/' | strip -%}
 
-      {%- if clean_handle != blank and img_metaobject_field != blank -%}
-        {%- assign title_temp = clean_handle | replace: '-', ' ' | strip -%}
-        {%- assign title_words = title_temp | split: ' ' -%}
-        {%- assign title_case = '' -%}
-        {%- for word in title_words -%}
-          {%- if word != '' -%}
-            {%- assign word_cap = word | downcase | capitalize -%}
-            {%- assign title_case = title_case | append: word_cap -%}
-            {%- unless forloop.last -%}
-              {%- assign title_case = title_case | append: ' ' -%}
-            {%- endunless -%}
-          {%- endif -%}
-        {%- endfor -%}
-        {%- assign recipe_url = shop.url | append: '/blogs/recipes/' | append: clean_handle -%}
-        {%- assign displayed_recipes = displayed_recipes | append: clean_handle | append: ',' -%}
-        {%- assign displayed_count = displayed_count | plus: 1 -%}
+        {%- if clean_handle != blank and img_metaobject_field != blank -%}
+          {%- assign title_temp = clean_handle | replace: '-', ' ' | strip -%}
+          {%- assign title_words = title_temp | split: ' ' -%}
+          {%- assign title_case = '' -%}
+          {%- for word in title_words -%}
+            {%- if word != '' -%}
+              {%- assign word_cap = word | downcase | capitalize -%}
+              {%- assign title_case = title_case | append: word_cap -%}
+              {%- unless forloop.last -%}
+                {%- assign title_case = title_case | append: ' ' -%}
+              {%- endunless -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- assign recipe_url = shop.url | append: '/blogs/recipes/' | append: clean_handle -%}
+          {%- assign displayed_recipes = displayed_recipes | append: clean_handle | append: ',' -%}
+          {%- assign displayed_count = displayed_count | plus: 1 -%}
 
-        {%- assign image_to_display = img_metaobject_field.value -%}
+          {%- assign image_to_display = img_metaobject_field.value -%}
 
-        <div class="recipekit-card-outer" role="listitem">
-          <a href="{{ recipe_url }}" class="recipekit-card-link" aria-labelledby="recipe-title-2">
-            <div class="recipekit-card">
-              <div class="recipekit-card-image-wrapper">
-                {%- if image_to_display -%}
-                  <img
-                    class="recipekit-card-image"
-                    src="{{ image_to_display | img_url: '300x300', crop: 'center' }}"
-                    alt="Recipe image for {{ title_case }}"
-                    loading="lazy"
-                    width="300"
-                    height="300"
-                  >
-                {%- else -%}
-                  <div
-                    class="recipekit-card-image placeholder-image"
-                    style="width:300px; height:300px; background-color:#f0f0f0; display:flex; align-items:center; justify-content:center;"
-                    aria-hidden="true"
-                  >
-                    <span>No Image Available</span>
-                  </div>
-                {%- endif -%}
+          <div class="recipekit-card-outer" role="listitem">
+            <a href="{{ recipe_url }}" class="recipekit-card-link" aria-labelledby="recipe-title-2">
+              <div class="recipekit-card">
+                <div class="recipekit-card-image-wrapper">
+                  {%- if image_to_display -%}
+                    <img
+                      class="recipekit-card-image"
+                      src="{{ image_to_display | img_url: '300x300', crop: 'center' }}"
+                      alt="Recipe image for {{ title_case }}"
+                      loading="lazy"
+                      width="300"
+                      height="300"
+                    >
+                  {%- else -%}
+                    <div
+                      class="recipekit-card-image placeholder-image"
+                      style="width:300px; height:300px; background-color:#f0f0f0; display:flex; align-items:center; justify-content:center;"
+                      aria-hidden="true"
+                    >
+                      <span>No Image Available</span>
+                    </div>
+                  {%- endif -%}
+                </div>
               </div>
-            </div>
-          </a>
-          <div class="recipekit-card-meta">
-            <a href="{{ recipe_url }}" class="recipekit-card-title-link">
-              <div id="recipe-title-2" class="recipekit-card-title">{{ title_case }}</div>
             </a>
+            <div class="recipekit-card-meta">
+              <a href="{{ recipe_url }}" class="recipekit-card-title-link">
+                <div id="recipe-title-2" class="recipekit-card-title">{{ title_case }}</div>
+              </a>
+            </div>
           </div>
-        </div>
-      {%- endif -%}
+        {%- endif -%}
 
-      {%- comment -%}Recipe 3{%- endcomment -%}
-      {%- assign handle_str = recipe_3_handle | strip -%}
-      {%- assign img_metaobject_field = recipe_3_img -%}
-      {%- assign clean_handle = handle_str | remove: 'recipes/' | strip -%}
+        {%- comment -%}Recipe 3{%- endcomment -%}
+        {%- assign handle_str = recipe_3_handle | strip -%}
+        {%- assign img_metaobject_field = recipe_3_img -%}
+        {%- assign clean_handle = handle_str | remove: 'recipes/' | strip -%}
 
-      {%- if clean_handle != blank and img_metaobject_field != blank -%}
-        {%- assign title_temp = clean_handle | replace: '-', ' ' | strip -%}
-        {%- assign title_words = title_temp | split: ' ' -%}
-        {%- assign title_case = '' -%}
-        {%- for word in title_words -%}
-          {%- if word != '' -%}
-            {%- assign word_cap = word | downcase | capitalize -%}
-            {%- assign title_case = title_case | append: word_cap -%}
-            {%- unless forloop.last -%}
-              {%- assign title_case = title_case | append: ' ' -%}
-            {%- endunless -%}
-          {%- endif -%}
-        {%- endfor -%}
-        {%- assign recipe_url = shop.url | append: '/blogs/recipes/' | append: clean_handle -%}
-        {%- assign displayed_recipes = displayed_recipes | append: clean_handle | append: ',' -%}
-        {%- assign displayed_count = displayed_count | plus: 1 -%}
+        {%- if clean_handle != blank and img_metaobject_field != blank -%}
+          {%- assign title_temp = clean_handle | replace: '-', ' ' | strip -%}
+          {%- assign title_words = title_temp | split: ' ' -%}
+          {%- assign title_case = '' -%}
+          {%- for word in title_words -%}
+            {%- if word != '' -%}
+              {%- assign word_cap = word | downcase | capitalize -%}
+              {%- assign title_case = title_case | append: word_cap -%}
+              {%- unless forloop.last -%}
+                {%- assign title_case = title_case | append: ' ' -%}
+              {%- endunless -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- assign recipe_url = shop.url | append: '/blogs/recipes/' | append: clean_handle -%}
+          {%- assign displayed_recipes = displayed_recipes | append: clean_handle | append: ',' -%}
+          {%- assign displayed_count = displayed_count | plus: 1 -%}
 
-        {%- assign image_to_display = img_metaobject_field.value -%}
+          {%- assign image_to_display = img_metaobject_field.value -%}
 
-        <div class="recipekit-card-outer" role="listitem">
-          <a href="{{ recipe_url }}" class="recipekit-card-link" aria-labelledby="recipe-title-3">
-            <div class="recipekit-card">
-              <div class="recipekit-card-image-wrapper">
-                {%- if image_to_display -%}
-                  <img
-                    class="recipekit-card-image"
-                    src="{{ image_to_display | img_url: '300x300', crop: 'center' }}"
-                    alt="Recipe image for {{ title_case }}"
-                    loading="lazy"
-                    width="300"
-                    height="300"
-                  >
-                {%- else -%}
-                  <div
-                    class="recipekit-card-image placeholder-image"
-                    style="width:300px; height:300px; background-color:#f0f0f0; display:flex; align-items:center; justify-content:center;"
-                    aria-hidden="true"
-                  >
-                    <span>No Image Available</span>
-                  </div>
-                {%- endif -%}
+          <div class="recipekit-card-outer" role="listitem">
+            <a href="{{ recipe_url }}" class="recipekit-card-link" aria-labelledby="recipe-title-3">
+              <div class="recipekit-card">
+                <div class="recipekit-card-image-wrapper">
+                  {%- if image_to_display -%}
+                    <img
+                      class="recipekit-card-image"
+                      src="{{ image_to_display | img_url: '300x300', crop: 'center' }}"
+                      alt="Recipe image for {{ title_case }}"
+                      loading="lazy"
+                      width="300"
+                      height="300"
+                    >
+                  {%- else -%}
+                    <div
+                      class="recipekit-card-image placeholder-image"
+                      style="width:300px; height:300px; background-color:#f0f0f0; display:flex; align-items:center; justify-content:center;"
+                      aria-hidden="true"
+                    >
+                      <span>No Image Available</span>
+                    </div>
+                  {%- endif -%}
+                </div>
               </div>
-            </div>
-          </a>
-          <div class="recipekit-card-meta">
-            <a href="{{ recipe_url }}" class="recipekit-card-title-link">
-              <div id="recipe-title-3" class="recipekit-card-title">{{ title_case }}</div>
             </a>
+            <div class="recipekit-card-meta">
+              <a href="{{ recipe_url }}" class="recipekit-card-title-link">
+                <div id="recipe-title-3" class="recipekit-card-title">{{ title_case }}</div>
+              </a>
+            </div>
           </div>
-        </div>
+        {%- endif -%}
+      {%- else -%}
+        {%- assign using_fallback = true -%}
       {%- endif -%}
 
       {%- comment -%}Fallback: Display recipes from blog if we don't have 3 valid recipes{%- endcomment -%}
