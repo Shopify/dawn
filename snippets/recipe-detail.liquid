@@ -1207,6 +1207,62 @@
         </div>
       {%- endif -%}
 
+      {%- comment -%}Fallback: Display recipes from blog if we don't have 3 valid recipes{%- endcomment -%}
+      {%- if displayed_count < 3 -%}
+        {%- assign using_fallback = true -%}
+        {%- assign card_count = displayed_count -%}
+        {%- assign current_article_id = article.id -%}
+
+        {%- for blog_article in blog.articles limit: 10 -%}
+          {%- if card_count >= 3 -%}
+            {%- break -%}
+          {%- endif -%}
+
+          {%- if blog_article.id != current_article_id -%}
+            {%- assign card_count = card_count | plus: 1 -%}
+            {%- assign card_id = card_count -%}
+
+            <div class="recipekit-card-outer" role="listitem">
+              <a
+                href="{{ blog_article.url }}"
+                class="recipekit-card-link"
+                aria-labelledby="recipe-title-fallback-{{ card_id }}"
+              >
+                <div class="recipekit-card">
+                  <div class="recipekit-card-image-wrapper">
+                    {%- if blog_article.image -%}
+                      <img
+                        class="recipekit-card-image"
+                        src="{{ blog_article.image | img_url: '300x300', crop: 'center' }}"
+                        alt="Recipe image for {{ blog_article.title }}"
+                        loading="lazy"
+                        width="300"
+                        height="300"
+                      >
+                    {%- else -%}
+                      <div
+                        class="recipekit-card-image placeholder-image"
+                        style="width:300px; height:300px; background-color:#f0f0f0; display:flex; align-items:center; justify-content:center;"
+                        aria-hidden="true"
+                      >
+                        <span>No Image Available</span>
+                      </div>
+                    {%- endif -%}
+                  </div>
+                </div>
+              </a>
+              <div class="recipekit-card-meta">
+                <a href="{{ blog_article.url }}" class="recipekit-card-title-link">
+                  <div id="recipe-title-fallback-{{ card_id }}" class="recipekit-card-title">
+                    {{ blog_article.title }}
+                  </div>
+                </a>
+              </div>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+
       <!-- View More Card -->
       <div class="recipekit-card-outer view-more-card" role="listitem">
         <a
@@ -1340,20 +1396,27 @@
     }
   </style>
 {%- else -%}
+  {%- comment -%}Fallback More Recipes when no tags found on article{%- endcomment -%}
   <div class="recipekit-related-recipes page-width" role="region" aria-labelledby="related-recipes-heading">
     <h2 id="related-recipes-heading" class="recipe-section-title">More Recipes</h2>
     <div class="main-blog-recipekit-grid grid--4-col-desktop grid--2-col-tablet-down" role="list">
-      {%- assign card_count = 0 -%}
       {%- assign current_article_id = article.id -%}
+      {%- assign displayed_count = 0 -%}
+
       {%- for blog_article in blog.articles limit: 10 -%}
-        {%- if card_count >= 3 -%}
+        {%- if displayed_count >= 3 -%}
           {%- break -%}
         {%- endif -%}
+
         {%- if blog_article.id != current_article_id -%}
-          {%- assign card_count = card_count | plus: 1 -%}
-          {%- assign card_id = card_count -%}
+          {%- assign displayed_count = displayed_count | plus: 1 -%}
+
           <div class="recipekit-card-outer" role="listitem">
-            <a href="{{ blog_article.url }}" class="recipekit-card-link" aria-labelledby="recipe-title-{{ card_id }}">
+            <a
+              href="{{ blog_article.url }}"
+              class="recipekit-card-link"
+              aria-labelledby="recipe-title-fallback-{{ displayed_count }}"
+            >
               <div class="recipekit-card">
                 <div class="recipekit-card-image-wrapper">
                   {%- if blog_article.image -%}
@@ -1379,15 +1442,22 @@
             </a>
             <div class="recipekit-card-meta">
               <a href="{{ blog_article.url }}" class="recipekit-card-title-link">
-                <div id="recipe-title-{{ card_id }}" class="recipekit-card-title">{{ blog_article.title }}</div>
+                <div id="recipe-title-fallback-{{ displayed_count }}" class="recipekit-card-title">
+                  {{ blog_article.title }}
+                </div>
               </a>
             </div>
           </div>
         {%- endif -%}
       {%- endfor -%}
+
       <!-- View More Card -->
       <div class="recipekit-card-outer view-more-card" role="listitem">
-        <a href="/blogs/recipes" class="recipekit-card-link" aria-labelledby="view-more-title">
+        <a
+          href="/blogs/recipes"
+          class="recipekit-card-link"
+          aria-labelledby="view-more-title"
+        >
           <div class="recipekit-card">
             <div class="recipekit-card-image-wrapper">
               <img
@@ -1404,11 +1474,108 @@
           </div>
         </a>
         <div class="recipekit-card-meta">
-          <a href="/blogs/recipes" class="recipekit-card-title-link">
+          <a
+            href="/blogs/recipes"
+            class="recipekit-card-title-link"
+          >
             <div id="view-more-title" class="recipekit-card-title">See All Recipes</div>
           </a>
         </div>
       </div>
     </div>
   </div>
+
+  <style>
+    .view-all-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(211, 236, 232, 0.9);
+      color: rgb(6, 42, 48);
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+    .main-blog-recipekit-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .recipekit-card-outer {
+      position: relative;
+    }
+    .recipekit-card-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .recipekit-card {
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.3s;
+    }
+    .recipekit-card:hover {
+      transform: translateY(-5px);
+    }
+    .recipekit-card-link:focus {
+      outline: 3px solid rgb(6, 42, 48);
+      border-radius: 8px;
+    }
+    .recipekit-card-link:focus:not(:focus-visible) {
+      outline: none;
+    }
+    .recipekit-card-link:focus-visible {
+      outline: 3px solid rgb(6, 42, 48);
+      border-radius: 8px;
+    }
+    .recipekit-card-image-wrapper {
+      position: relative;
+      width: 100%;
+      padding-bottom: 100%;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+    .recipekit-card-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .recipekit-card:hover .recipekit-card-image {
+      transform: scale(1.05);
+    }
+    .recipekit-card-meta {
+      padding: 12px 0;
+    }
+    .recipekit-card-title {
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 1.4;
+      color: rgb(6, 42, 48);
+    }
+    @media screen and (max-width: 767px) {
+      .main-blog-recipekit-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+      }
+      .view-all-overlay {
+        font-size: 14px;
+        padding: 8px 15px;
+      }
+    }
+    @media screen and (max-width: 480px) {
+      .main-blog-recipekit-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 {%- endif -%}
