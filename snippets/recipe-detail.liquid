@@ -41,6 +41,147 @@
   | replace: 'rating_count', rating_count
 -%}
 
+{% liquid
+  if rk_mf.recipe_image contains 'https://res.cloudinary.com/hsxfx8igq/image/upload/'
+    assign rk_last_url = rk_mf.recipe_image | split: 'https://res.cloudinary.com/hsxfx8igq/image/upload/'
+    assign rk_16_9_recipe_image = rk_last_url[1] | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/t_16x9_recipe_image,f_auto/'
+    assign rk_1_1_recipe_image = rk_last_url[1] | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/t_1x1_recipe_image,f_auto/'
+    assign rk_4_3_recipe_image = rk_last_url[1] | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/t_4x3_recipe_image,f_auto/'
+    assign rk_2_3_recipe_image = rk_last_url[1] | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/ar_2:3,c_limit,f_auto,w_600,q_auto:best/'
+  elsif rk_mf.recipe_image contains 'https://f000.backblazeb2.com/file/recipekit-bucket/'
+    assign rk_last_url = rk_mf.recipe_image | split: 'https://f000.backblazeb2.com/file/recipekit-bucket/'
+    assign rk_16_9_recipe_image = 'https://images.getrecipekit.com/' | append: rk_last_url[1] | append: '?aspect_ratio=16:9&quality=90&'
+    assign rk_1_1_recipe_image = 'https://images.getrecipekit.com/' | append: rk_last_url[1] | append: '?aspect_ratio=1:1&quality=90&'
+    assign rk_4_3_recipe_image = 'https://images.getrecipekit.com/' | append: rk_last_url[1] | append: '?aspect_ratio=4:3&quality=90&'
+    assign rk_2_3_recipe_image = 'https://images.getrecipekit.com/' | append: rk_last_url[1] | append: '?width=650&quality=90&'
+    assign rk_uptown_recipe_image = 'https://images.getrecipekit.com/' | append: rk_last_url[1] | append: '?class=16x9'
+  elsif rk_mf.recipe_image contains 'https://cdn.shopify.com/'
+    assign rk_shopify_image_url = rk_mf.recipe_image
+    assign rk_16_9_recipe_image = rk_shopify_image_url | append: '&width=1600&height=900'
+    assign rk_1_1_recipe_image = rk_shopify_image_url | append: '&width=1000&height=1000'
+    assign rk_4_3_recipe_image = rk_shopify_image_url | append: '&width=800&height=600'
+    assign rk_2_3_recipe_image = rk_shopify_image_url | append: '&width=600&height=900'
+    assign rk_uptown_recipe_image = rk_shopify_image_url | append: '&width=1600&height=900'
+  endif
+
+  if rk_mf.recipe_video contains '/watch?v='
+    assign rk_video_id = rk_mf.recipe_video | split: '/watch?v=' | last | split: '&' | first
+    assign timestamp = rk_mf.recipe_video | split: '&t=' | last
+    assign rk_video_embed_url = 'https://www.youtube-nocookie.com/embed/' | append: rk_video_id | append: '?start=' | append: timestamp
+  elsif rk_mf.recipe_video contains '/shorts/'
+    assign rk_video_split = rk_mf.recipe_video | split: 'shorts/'
+    assign rk_video_id = rk_video_split[1]
+    assign rk_video_embed_url = 'https://www.youtube-nocookie.com/embed/' | append: rk_video_id
+  elsif rk_mf.recipe_video contains 'vimeo'
+    assign rk_video_id = rk_mf.recipe_video | split: '/' | last
+    assign rk_video_embed_url = 'https://player.vimeo.com/video/' | append: rk_video_id
+  elsif rk_mf.recipe_video contains 'tiktok'
+    assign rk_video_embed_url = rk_mf.recipe_video
+  elsif rk_mf.recipe_video contains 'instagram'
+    assign rk_video_embed_url = rk_mf.recipe_video
+  else
+    assign rk_video_id = rk_mf.recipe_video | split: '/' | last
+    assign timestamp = rk_video_id | split: '=' | last
+    assign rk_video_id = rk_video_id | split: '?' | first
+    assign rk_video_embed_url = 'https://www.youtube-nocookie.com/embed/' | append: rk_video_id | append: '?start=' | append: timestamp
+  endif
+%}
+
+{% assign attr = 'type="application/ld+json"' %}
+<script {{ attr }}>
+  {
+    "@context": "https://schema.org/",
+    "@type": "Recipe",
+    "name": "{{- rk_mf.recipe_title | escape -}}",
+    "image": [
+      "{{- rk_16_9_recipe_image -}}",
+      "{{- rk_4_3_recipe_image -}}",
+      "{{- rk_1_1_recipe_image -}}"
+    ],
+    "description": "{{- rk_mf.recipe_description | strip_html | escape -}}",
+    "keywords": [
+      {%- for keyword in rk_mf.recipe_tags -%}
+        "{{- keyword.name -}}"{%- unless forloop.last -%},{%- endunless -%}
+      {%- endfor -%}
+    ],
+    "recipeYield": "{{- rk_mf.serving_size | escape -}}",
+    "author": {
+      "@type": "Person",
+      "name": "{{- rk_mf.recipe_author | strip_html | escape | default: article.author -}}"
+    },
+    "cookTime": "{{- rk_mf.iso_cook_time -}}",
+    "prepTime": "{{- rk_mf.iso_prep_time -}}",
+    "totalTime": "{{- rk_mf.iso_total_time -}}",
+    "recipeCategory": "{{- rk_mf.recipe_category | escape -}}",
+    "recipeIngredient": [
+      {%- capture process_ingredients -%}
+        {%- for ingredient in rk_mf.recipe_ingredients -%}
+          {%- unless ingredient.type == 'heading' -%}
+            ,"{{- ingredient.ingredient | strip_html | escape -}}"
+          {%- endunless -%}
+        {%- endfor -%}
+      {%- endcapture -%}
+      {% assign ingredient_schema = process_ingredients | remove_first: ',' %}
+      {{- ingredient_schema -}}
+    ],
+    "recipeInstructions": [
+      {%- capture process_directions -%}
+        {%- for direction in rk_mf.recipe_directions -%}
+          {%- unless direction.type == 'heading' -%}
+            ,{
+              "@type": "HowToStep",
+              "text": "{{- direction.direction | strip_html | escape -}}",
+              "name": "{{- direction.direction | strip_html | escape -}}",
+              "url": "{{ shop.url }}{{ article.url }}#step-{{- forloop.index -}}"
+              {%- if direction.image != blank -%}
+                ,"image": "{{- direction.image | replace: 'https://f000.backblazeb2.com/file/recipekit-bucket/' ,'https://images.getrecipekit.com/' | append: '?width=700' -}}"
+              {%- endif -%}
+            }
+          {%- endunless -%}
+        {%- endfor -%}
+      {%- endcapture -%}
+      {% assign direction_schema = process_directions | remove_first: ',' %}
+      {{- direction_schema -}}
+    ],
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "servingSize": "{{- rk_mf.serving_size | escape -}}"
+      {%- if rk_mf.recipe_calories != blank -%}
+        ,"calories": "{{- rk_mf.recipe_calories -}}"
+      {%- endif -%}
+      {%- unless nutrition_field.dynamic == true -%}
+        ,"{{- nutrition_field.value -}}": "{{ nutrition_field.content }}"
+      {%- endunless -%}
+    },
+    "recipeCuisine": "{{- rk_mf.recipe_cuisine | strip_html | escape -}}"
+    {%- if rk_mf.enable_rating == true or rk_mf.enable_rating == 'true' -%}
+    ,
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "{{- current_rating | default: '5' -}}",
+      "bestRating": "5",
+      "worstRating": "1",
+      "ratingCount": "{{ rating_count | default: '1' }}"
+    }
+    {% endif -%}
+    {% if rk_mf.recipe_video != blank and rk_mf.recipe_video contains 'youtube' or rk_mf.recipe_video contains 'shorts' or rk_mf.recipe_video contains 'youtu.be' or rk_mf.recipe_video contains 'vimeo' %}
+    ,
+    "video": {
+      "@type": "VideoObject",
+      "name": "{{- rk_mf.recipe_title | escape -}}",
+      "description": "{{- rk_mf.recipe_description | strip_html | escape -}}",
+      "thumbnailUrl": "{{- rk_16_9_recipe_image -}}",
+      "uploadDate": "{{- rk_mf.recipe_date -}}",
+      "contentUrl": "{{- rk_mf.recipe_video -}}"
+    }
+    {%- endif -%}
+  }
+</script>
+
+<meta property="og:title" content="{{- rk_mf.recipe_title -}}">
+<meta property="og:image" content="{{- rk_16_9_recipe_image -}}">
+<meta property="og:description" content="{{- rk_mf.recipe_description | strip_html -}}">
+
 <style>
   /* Recipe Detail Page Styles */
   .recipe-detail-page {
