@@ -85,6 +85,103 @@
     assign rk_video_id = rk_video_id | split: '?' | first
     assign rk_video_embed_url = 'https://www.youtube-nocookie.com/embed/' | append: rk_video_id | append: '?start=' | append: timestamp
   endif
+
+  assign rk_prep_time_split = rk_mf.prep_time | split: ' '
+  assign rk_prep_time_value = rk_prep_time_split | first
+  assign rk_prep_duration = rk_prep_time_split | last
+
+  assign iso_prep_time = 'PT'
+  if rk_prep_duration == 'hours' or rk_prep_duration == 'hour'
+    if rk_prep_time_value contains '.'
+      assign hour_part = rk_prep_time_value | split: '.' | first
+      assign minute_part = rk_prep_time_value | split: '.' | last
+      if hour_part != '0'
+        assign iso_prep_time = iso_prep_time | append: hour_part | append: 'H'
+      endif
+      if minute_part != '0'
+        assign minute_value = minute_part | times: 60 | divided_by: 100 | round
+        assign iso_prep_time = iso_prep_time | append: minute_value | append: 'M'
+      endif
+    else
+      assign iso_prep_time = iso_prep_time | append: rk_prep_time_value | append: 'H'
+    endif
+  elsif rk_prep_duration == 'minutes' or rk_prep_duration == 'minute'
+    assign iso_prep_time = iso_prep_time | append: rk_prep_time_value | append: 'M'
+  else
+    assign iso_prep_time = 'PT'
+  endif
+
+  assign rk_cook_time_split = rk_mf.cook_time | split: ' '
+  assign rk_cook_time_value = rk_cook_time_split | first
+  assign rk_cook_duration = rk_cook_time_split | last
+
+  assign iso_cook_time = 'PT'
+  if rk_cook_duration == 'hours' or rk_cook_duration == 'hour'
+    if rk_cook_time_value contains '.'
+      assign hour_part = rk_cook_time_value | split: '.' | first
+      assign minute_part = rk_cook_time_value | split: '.' | last
+      if hour_part != '0'
+        assign iso_cook_time = iso_cook_time | append: hour_part | append: 'H'
+      endif
+      if minute_part != '0'
+        assign minute_value = minute_part | times: 60 | divided_by: 100 | round
+        assign iso_cook_time = iso_cook_time | append: minute_value | append: 'M'
+      endif
+    else
+      assign iso_cook_time = iso_cook_time | append: rk_cook_time_value | append: 'H'
+    endif
+  elsif rk_cook_duration == 'minutes' or rk_cook_duration == 'minute'
+    assign iso_cook_time = iso_cook_time | append: rk_cook_time_value | append: 'M'
+  else
+    assign iso_cook_time = 'PT'
+  endif
+
+  if iso_prep_time != 'PT' and iso_cook_time != 'PT'
+    if iso_prep_time contains 'H' and iso_cook_time contains 'H'
+      assign prep_hours = iso_prep_time | remove: 'PT' | remove: 'H' | split: 'M' | first
+      assign cook_hours = iso_cook_time | remove: 'PT' | remove: 'H' | split: 'M' | first
+      assign total_hours = prep_hours | plus: cook_hours
+
+      if iso_prep_time contains 'M' and iso_cook_time contains 'M'
+        assign prep_minutes = iso_prep_time | remove: 'PT' | remove: prep_hours | remove: 'H' | remove: 'M'
+        assign cook_minutes = iso_cook_time | remove: 'PT' | remove: cook_hours | remove: 'H' | remove: 'M'
+        assign total_minutes = prep_minutes | plus: cook_minutes
+
+        if total_minutes >= 60
+          assign extra_hours = total_minutes | divided_by: 60
+          assign total_hours = total_hours | plus: extra_hours
+          assign total_minutes = total_minutes | modulo: 60
+        endif
+
+        assign iso_total_time = 'PT' | append: total_hours | append: 'H'
+        if total_minutes > 0
+          assign iso_total_time = iso_total_time | append: total_minutes | append: 'M'
+        endif
+      else
+        assign iso_total_time = 'PT' | append: total_hours | append: 'H'
+      endif
+    elsif iso_prep_time contains 'M' and iso_cook_time contains 'M'
+      assign prep_minutes = iso_prep_time | remove: 'PT' | remove: 'M'
+      assign cook_minutes = iso_cook_time | remove: 'PT' | remove: 'M'
+      assign total_minutes = prep_minutes | plus: cook_minutes
+
+      if total_minutes >= 60
+        assign hours = total_minutes | divided_by: 60
+        assign minutes = total_minutes | modulo: 60
+        assign iso_total_time = 'PT' | append: hours | append: 'H'
+        if minutes > 0
+          assign iso_total_time = iso_total_time | append: minutes | append: 'M'
+        endif
+      else
+        assign iso_total_time = 'PT' | append: total_minutes | append: 'M'
+      endif
+    else
+      assign iso_total_time = iso_prep_time | append: iso_cook_time | remove: 'PT'
+      assign iso_total_time = 'PT' | append: iso_total_time
+    endif
+  else
+    assign iso_total_time = 'PT'
+  endif
 %}
 
 {% assign attr = 'type="application/ld+json"' %}
@@ -109,9 +206,9 @@
       "@type": "Person",
       "name": "{{- rk_mf.recipe_author | strip_html | escape | default: article.author -}}"
     },
-    "cookTime": "{{- rk_mf.iso_cook_time -}}",
-    "prepTime": "{{- rk_mf.iso_prep_time -}}",
-    "totalTime": "{{- rk_mf.iso_total_time -}}",
+    "cookTime": "{{- iso_cook_time -}}",
+    "prepTime": "{{- iso_prep_time -}}",
+    "totalTime": "{{- iso_total_time -}}",
     "recipeCategory": "{{- rk_mf.recipe_category | escape -}}",
     "recipeIngredient": [
       {%- capture process_ingredients -%}
