@@ -17,7 +17,7 @@
   - horizontal_class: {Boolean} Add a card--horizontal class if set to true. Default: false (optional)
   - horizontal_quick_add: {Boolean} Changes the quick add button styles when set to true. Default: false (optional)
   - placeholder_image: {String} The placeholder image to use when no product exists. Default: 'product-apparel-2' (optional)
-  - disabled: {Boolean} Disable the card. Default: 'false'
+  - should_look_disabled: {Boolean} Make the card look disabled / grey out.
 
   Usage:
   {% render 'card-product', show_vendor: section.settings.show_vendor %}
@@ -59,7 +59,7 @@
         {% if extend_height %} card--extend-height{% endif %}
         {% if card_product.featured_media == nil and settings.card_style == 'card' %} ratio{% endif %}
         {% if horizontal_class %} card--horizontal{% endif %}
-        {% if disabled == true %} card--disabled{% endif %}
+        {% if should_look_disabled == true %} card--disabled{% endif %}
       "
       style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%;"
     >
@@ -183,6 +183,13 @@
                     {% endif %}
                   {% endif %}
                 </span>
+              {%- elsif card_variant.available == false and should_look_disabled == false -%}
+                <span
+                  id="NoMediaStandardBadge-{{ section_id }}-{{ card_product.id }}-{{ card_variant.id }}"
+                  class="badge badge--bottom-left color-{{ settings.sold_out_badge_color_scheme }}"
+                >
+                  {{ 'products.product.sold_out' | t }}
+                </span>
               {%- endif -%}
             {%- else -%}
               {%- if card_product.available == true
@@ -204,6 +211,13 @@
                       {{ saving_percentage }}% OFF
                     {% endif %}
                   {% endif %}
+                </span>
+              {% elsif card_product.available == false and should_look_disabled == false %}
+                <span
+                  id="NoMediaStandardBadge-{{ section_id }}-{{ card_product.id }}"
+                  class="badge badge--bottom-left color-{{ settings.sold_out_badge_color_scheme }}"
+                >
+                  {{ 'products.product.sold_out' | t }}
                 </span>
               {% elsif card_product.metafields.custom_but_hidden.product_tag != null %}
                 <span
@@ -631,12 +645,6 @@
         {% endif %}
         <div class="card__badge {{ settings.badge_position }}">
           {%- if card_product.available == false -%}
-            <span
-              id="Badge-{{ section_id }}-{{ card_product.id }}"
-              class="badge badge--bottom-left color-{{ settings.sold_out_badge_color_scheme }}"
-            >
-              {{- 'products.product.sold_out' | t -}}
-            </span>
           {%- elsif card_product.compare_at_price > card_product.price and card_product.available -%}
             <span
               id="Badge-{{ section_id }}-{{ card_product.id }}"
