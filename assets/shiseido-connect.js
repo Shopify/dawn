@@ -14,7 +14,7 @@ async function cpbConnectCheck() {
     body: JSON.stringify({
       site_serial: cpbApiSiteSerial,
       tkisk_cd: '606222',
-      tkisk_ec_id: customerId,
+      tkisk_ec_id: String(customerId),
       target_url: cpbApiCheckIdUrl,
     }),
   });
@@ -46,7 +46,7 @@ async function getCpbConnectOtp() {
     body: JSON.stringify({
       site_serial: cpbApiSiteSerial,
       tkisk_cd: '606222',
-      tkisk_ec_id: customerId,
+      tkisk_ec_id: String(customerId),
       target_url: cpbApiGetOtpUrl,
     }),
   });
