@@ -610,7 +610,7 @@ const OrderDetails: React.FC<{
         <p>Reach out to us on below mentioned channels</p>
       </div>
     </section>
-  ) : null;
+  );
 };
 
 // Main Component
