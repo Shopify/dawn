@@ -71,18 +71,15 @@ if (!customElements.get('product-form')) {
         // check if stringing service is selected
         const frameSelected = document.querySelector('input[name="frame"]:checked')?.id;
         let selectedVariantSku = null;
-        try {
-          selectedVariantSku = JSON.parse(
-            document.querySelector('variant-selects [data-selected-variant]')?.innerHTML,
-          )?.sku;
-        } catch (error) {}
+        // good trick -  document.querySelector('variant-selects [data-selected-variant]')?.innerHTML)?.sku
+        selectedVariantSku = window?.s3_current_variant_sku || '';
         if (frameSelected === 'pro-stringing' && selectedVariantSku) {
           const variantSelected = document.querySelector('input[name="string-variant"]:checked')?.id;
           const stringVariantSku = document.querySelector('input[name="string-variant"]:checked')?.dataset.sku;
           const tensionSelected = document.querySelector('input[name="string-tension"]:checked')?.id;
           const stringingServiceVariantId = window.s3_stringing_service_variant_id;
 
-          if (variantSelected && tensionSelected && stringingServiceVariantId) {
+          if (variantSelected && stringVariantSku && tensionSelected && stringingServiceVariantId) {
             items.push(
               {
                 id: stringingServiceVariantId,
