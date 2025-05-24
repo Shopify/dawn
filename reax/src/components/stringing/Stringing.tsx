@@ -113,7 +113,7 @@ function Stringing({
         {config.stringProduct ? (
           <div>
             <legend className="form__label">
-              <span>Choose the Color</span>
+              <span>Select Color for {config.stringProduct.title} String</span>
             </legend>
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
               {config.stringProduct.variants.nodes
