@@ -122,7 +122,9 @@
                         <td class="cart-item__media" role="cell" headers="CartDrawer-ColumnProductImage">
                           {% assign image = item.image %}
                           {% if item.item_components.size > 0 %}
-                            {% assign image = item.item_components.last.image %}
+                            {% assign bundle_id = item.item_components.first.properties._bundleId | plus: 0 %}
+                            {% assign main_product = item.item_components | where: 'variant_id', bundle_id %}
+                            {% assign image = main_product.first.image %}
                           {% endif %}
                           {% if image %}
                             {% comment %} Leave empty space due to a:empty CSS display: none rule {% endcomment %}
@@ -153,26 +155,94 @@
                             </a>
                           {% endif %}
 
-                          {%- if item.original_price != item.final_price -%}
-                            <div class="cart-item__discounted-prices">
-                              <span class="visually-hidden">
-                                {{ 'products.product.price.regular_price' | t }}
-                              </span>
-                              <s class="cart-item__old-price product-option">
-                                {{- item.original_price | money -}}
-                              </s>
-                              <span class="visually-hidden">
-                                {{ 'products.product.price.sale_price' | t }}
-                              </span>
-                              <strong class="cart-item__final-price product-option">
-                                {{ item.final_price | money }}
-                              </strong>
-                            </div>
-                          {%- else -%}
-                            <div class="product-option">
-                              {{ item.original_price | money }}
-                            </div>
-                          {%- endif -%}
+                          {% comment %}
+                            {%- if item.original_price != item.final_price -%}
+                              <div class="cart-item__discounted-prices">
+                                <span class="visually-hidden">
+                                  {{ 'products.product.price.regular_price' | t }}
+                                </span>
+                                <s class="cart-item__old-price product-option">
+                                  {{- item.original_price | money -}}
+                                </s>
+                                <span class="visually-hidden">
+                                  {{ 'products.product.price.sale_price' | t }}
+                                </span>
+                                <strong class="cart-item__final-price product-option">
+                                  {{ item.final_price | money }}
+                                </strong>
+                              </div>
+                            {%- else -%}
+                              <div class="product-option">
+                                {{ item.original_price | money }}
+                              </div>
+                            {%- endif -%}
+                          {% endcomment %}
+
+                          {% if item.item_components.size > 0 %}
+                            <dl style="display: none; justify-content: space-between; align-items: center; margin-top: 1rem">
+                              <div
+                                class="cart-item__name"
+                                style="
+                                  background: linear-gradient(white, white) padding-box, linear-gradient(45deg, #333, #777) border-box;
+                                  border: 1px solid transparent;
+                                  border-radius: 27px;
+                                  padding: 0.5rem 1rem;
+                                  display: inline-flex;
+                                  align-items: center;
+                                  gap: 0.5rem;
+                                "
+                              >
+                                <svg
+                                  width="20px"
+                                  height="20px"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2333/svg"
+                                  stroke-width="1.8"
+                                  style="fill: url(#gradient); stroke: url(#gradient);"
+                                >
+                                  <defs>
+                                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                      <stop offset="0%" style="stop-color:#333"/>
+                                      <stop offset="50%" style="stop-color:#777"/>
+                                      <stop offset="100%" style="stop-color:#333"/>
+                                    </linearGradient>
+                                  </defs>
+                                  <path d="M8 15C12.8747 15 15 12.949 15 8C15 12.949 17.1104 15 22 15C17.1104 15 15 17.1104 15 22C15 17.1104 12.8747 15 8 15Z" stroke-linejoin="round"></path>
+                                  <path d="M2 6.5C5.13376 6.5 6.5 5.18153 6.5 2C6.5 5.18153 7.85669 6.5 11 6.5C7.85669 6.5 6.5 7.85669 6.5 11C6.5 7.85669 5.13376 6.5 2 6.5Z" stroke-linejoin="round"></path>
+                                </svg>
+                                <span
+                                  style="
+                                    background: linear-gradient(45deg, #333, #777);
+                                    -webkit-background-clip: text;
+                                    background-clip: text;
+                                    -webkit-text-fill-color: transparent;
+                                    color: transparent;
+                                  "
+                                >
+                                  Customisation
+                                </span>
+                              </div>
+
+                              <div>
+                                <cart-remove-button
+                                  id="CartDrawer-Remove-{{ item.index | plus: 1 }}"
+                                  data-index="{{ item.index | plus: 1 }}"
+                                >
+                                  <button
+                                    type="button"
+                                    class="button button--tertiary cart-remove-button"
+                                    aria-label="{{ 'sections.cart.remove_title' | t: title: item.title | escape }}"
+                                    data-variant-id="{{ item.variant.id }}"
+                                  >
+                                    <span class="svg-wrapper">
+                                      {{- 'icon-remove.svg' | inline_asset_content -}}
+                                    </span>
+                                  </button>
+                                </cart-remove-button>
+                              </div>
+                            </dl>
+                          {% endif %}
 
                           {%- if item.product.has_only_default_variant == false
                             or item.properties.size != 0
@@ -182,7 +252,7 @@
                               {%- if item.product.has_only_default_variant == false -%}
                                 {%- for option in item.options_with_values -%}
                                   <div class="product-option">
-                                    <dt>{{ option.name }}:</dt>
+                                    {% comment %} <dt>{{ option.name }}:</dt> {% endcomment %}
                                     <dd>
                                       {{ option.value -}}
                                       {%- unless forloop.last %}, {% endunless %}
@@ -297,7 +367,14 @@
                             <div class="cart-item__quantity-wrapper quantity-popover-wrapper">
                               <div class="quantity-popover-container{% if has_qty_rules or has_vol_pricing %} quantity-popover-container--hover{% endif %}">
                                 <quantity-input class="quantity cart-quantity">
-                                  <button class="quantity__button" name="minus" type="button">
+                                  <button
+                                    {% if item.item_components.size > 0 %}
+                                      disabled
+                                    {% endif %}
+                                    class="quantity__button"
+                                    name="minus"
+                                    type="button"
+                                  >
                                     <span class="visually-hidden">
                                       {{-
                                         'products.product.quantity.decrease'
@@ -310,6 +387,9 @@
                                     </span>
                                   </button>
                                   <input
+                                    {% if item.item_components.size > 0 %}
+                                      disabled
+                                    {% endif %}
                                     class="quantity__input"
                                     type="number"
                                     data-quantity-variant-id="{{ item.variant.id }}"
@@ -328,7 +408,14 @@
                                     id="Drawer-quantity-{{ item.index | plus: 1 }}"
                                     data-index="{{ item.index | plus: 1 }}"
                                   >
-                                  <button class="quantity__button" name="plus" type="button">
+                                  <button
+                                    {% if item.item_components.size > 0 %}
+                                      disabled
+                                    {% endif %}
+                                    class="quantity__button"
+                                    name="plus"
+                                    type="button"
+                                  >
                                     <span class="visually-hidden">
                                       {{-
                                         'products.product.quantity.increase'
@@ -510,7 +597,7 @@
 
           <div class="totals" role="status">
             <h2 class="totals__total">{{ 'sections.cart.estimated_total' | t }}</h2>
-            <p class="totals__total-value">{{ cart.total_price | money_with_currency }}</p>
+            <p class="">{{ cart.total_price | money_with_currency }}</p>
           </div>
 
           <small class="tax-note caption-large rte">
@@ -558,6 +645,7 @@
 
         <div class="cart__ctas" {{ block.shopify_attributes }}>
           <button
+            style="padding: 2.5rem 0"
             type="submit"
             id="CartDrawer-Checkout"
             class="cart__checkout-button button"
