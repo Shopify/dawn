@@ -79,6 +79,9 @@ export interface OrderResponse {
     text: string;
     timestamp: string;
     status_code: string;
+    status_description: string;
+    clickpost_status_bucket: number;
+    clickpost_status_number: number;
   } | null;
   cancelled_at: string | null;
   scans: Array<{
@@ -503,11 +506,11 @@ const OrderDetails: React.FC<{
             gap: '1rem',
           }}
         >
-          <div>
+          <div style={{}}>
             {order.order_id && <p style={{ marginBottom: 0 }}>{order.order_id}</p>}
             {order.order_time && (
-              <p style={{ marginTop: '0.25rem' }}>
-                <span style={{ opacity: 0.6 }}>Order Date</span> {formatDate(order.order_time)}
+              <p style={{ marginTop: '0.25rem', letterSpacing: '0px' }}>
+                <span style={{ opacity: 0.6 }}>Placed on</span> {formatDate(order.order_time)}
               </p>
             )}
           </div>
@@ -537,7 +540,7 @@ const OrderDetails: React.FC<{
         </div>
 
         <OrderProgress orderStatus={order.fulfillment_status || 'UNFULFILLED'} progress={progress} color={colorTheme} />
-        <p>{order.latest_status?.status_code || ''}</p>
+        <p>{order.latest_status?.status_description || ''}</p>
       </div>
 
       <hr style={{ margin: '2rem 0' }} />
