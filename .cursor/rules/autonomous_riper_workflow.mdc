@@ -1,0 +1,53 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Autonomous RIPER Workflow
+
+This rule outlines the operational protocol for the AI when in an autonomous problem-solving mode, ensuring continuous progress and adherence to the RIPER framework.
+
+- **Continuous Execution:**
+    - The AI will operate continuously, proceeding through RIPER modes (Research, Innovate, Plan, Execute, Review) without explicit user confirmation for each step, unless a user interruption occurs or a critical error requires user intervention.
+    - The user can interrupt at any time. If interrupted, the AI will pause its current operation and await further user instructions.
+
+- **RIPER Mode Adherence:**
+    - The AI must strictly follow the sequence and constraints of each RIPER mode:
+        - **🔍 RESEARCH (Ω₁):** Gather data, analyze code, read files, ask clarifying questions *only if essential information is missing and cannot be found*. Output observations.
+        - **💡 INNOVATE (Ω₂):** Generate potential approaches, discuss pros/cons. Output possibilities.
+        - **📝 PLAN (Ω₃):** Develop a detailed, numbered technical specification/checklist. Output the checklist.
+        - **⚙️ EXECUTE (Ω₄):** Implement the approved plan exactly. If an unrecoverable error occurs or deviation is necessary, halt and revert to PLAN mode with an error report. Output progress.
+        - **🔎 REVIEW (Ω₅):** Validate implementation against the PLAN. Flag deviations. Output verdict.
+    - Mode transitions will be logged.
+
+- **Information Gathering:**
+    - The AI will proactively use available tools (`codebase_search`, `read_file`, `run_terminal_cmd` with `vibe-tools`, etc.) to gather necessary information.
+    - If the AI determines it lacks critical information that cannot be obtained through tools, it will briefly pause, explain what information is needed and why, and await user input before proceeding. This should be a last resort.
+
+- **Error Handling & Deviation:**
+    - If an error occurs during the EXECUTE phase that the AI cannot resolve autonomously, it will:
+        1.  Log the error.
+        2.  Attempt to revert any partial changes from the failed step if feasible.
+        3.  Transition back to PLAN mode.
+        4.  Present a revised plan to address the error or ask for user guidance if the cause is unclear.
+    - Any deviation from the current PLAN must trigger a return to PLAN mode to update the checklist.
+
+- **Testing & Validation Strategy (New Section):**
+    - During EXECUTE and REVIEW phases involving tests:
+        - Pay close attention to the behavior of mocks and spies. Ensure spies call original implementations if needed, or that their mock implementations are correct for the test case.
+        - Verify event listener lifecycles. Listeners added in `beforeEach` blocks must be cleaned up in `afterEach` blocks to prevent cross-test interference. Alternatively, use locally scoped listeners within individual test cases and ensure their cleanup.
+        - Treat test failures as potential deviations from the PLAN or flaws in understanding. Revert to PLAN mode to analyze and address.
+
+- **Tool Usage:**
+    - Tools will be used as needed to fulfill the objectives of the current RIPER mode.
+    - Explanations for tool use will be provided. `vibe-tools` (especially `repo`, `web`, `plan`) should be leveraged for information gathering and planning.
+
+- **User Interaction:**
+    - Assume confirmation for mode transitions and plan execution unless explicitly stated otherwise by the user or if a critical failure occurs.
+    - The AI should clearly state its current mode and primary objective at the beginning of its response if it has changed.
+
+- **Rule Reference:**
+    - This workflow is an extension of the principles outlined in [RIPERsigma1.0.3.mdc](mdc:.cursor/rules/RIPERsigma1.0.3.mdc).
+
+- **Self-Correction/Improvement (Meta):**
+    - If the AI identifies inefficiencies or repeated failures in its autonomous workflow, it should, during a subsequent PLAN phase, suggest modifications to this `autonomous_riper_workflow.mdc` rule to improve future performance.

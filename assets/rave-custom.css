@@ -1,6 +1,11 @@
 /* RAVE YOGA CUSTOM STYLES */
 /* Styles for Rave Yoga Shopify Theme - Sprint 1 */
 
+/* Remove top padding from specific product grid section */
+.section-template--25093077074185__product-grid-padding {
+  padding-top: 0 !important;
+}
+
 /* Define custom CSS variables */
 :root {
   --rave-footer-text-color: #3D2120;
@@ -32,142 +37,225 @@ body {
 
 /* 3. Component/Section Specific Styles will be added below as developed */
 
+/* == HOMEPAGE HERO == */
+.main-hero {
+  overflow: hidden;
+  /* Prevent content from spilling out */
+  position: relative;
+  /* For potential absolute positioning of children if needed */
+  width: 100%;
+}
+
+.main-hero__image {
+  display: block;
+  /* Remove extra space below image */
+  width: 100%;
+  /* Make image responsive */
+  height: auto;
+  /* Maintain aspect ratio by default for desktop */
+  max-width: 100%;
+  /* Ensure it doesn't exceed container width */
+  object-fit: cover;
+  /* Cover the area, cropping if necessary */
+}
+
+/* Mobile specific hero styles */
+@media screen and (max-width: 749px) {
+  .main-hero {
+    height: 100vh;
+    /* Make hero full viewport height on mobile */
+    /* If you have a sticky header, you might need to adjust this, e.g., height: calc(100vh - var(--header-height)); */
+  }
+
+  .main-hero__image {
+    height: 100%;
+    /* Make image fill the full height of .main-hero on mobile */
+    width: 100%;
+    object-fit: cover;
+    /* Ensure it covers the area, might crop */
+  }
+}
+
 /* == HOME PAGE == */
 
 /* == COLLECTION PAGE == */
-/* Product Grid & Cards */
+/* Product Grid & Cards - Final Structure */
 .collection .product-grid {
   --grid-desktop-horizontal-spacing: 0px;
   --grid-desktop-vertical-spacing: 0px;
   --grid-mobile-horizontal-spacing: 0px;
   --grid-mobile-vertical-spacing: 0px;
   gap: 0;
-  /* Override default gap for modern browsers */
 }
 
 .collection .grid__item {
   padding: 0;
-  /* Remove padding from grid items to eliminate space */
-  /* Ensure items flow correctly and can be centered if needed */
+  width: 100%;
 }
 
 .collection .card-wrapper {
-  height: 100%;
-  /* Ensure wrapper takes full height for consistent card sizing */
+  /* Outermost custom wrapper */
   border: 1px solid var(--rave-color-primary-text, #3D2120);
-  /* Add border around the product card */
-  display: flex;
-  /* Added to make sure border wraps flex content properly */
-  flex-direction: column;
-  /* Added to stack image and content */
-}
-
-.collection .card {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  height: 100%;
-  /* Ensure card takes full height of wrapper if wrapper has border */
   background-color: transparent !important;
-  /* Override Dawn's card background */
-  box-shadow: none !important;
-  /* Remove Dawn's card shadow */
-  border: none !important;
-  /* Remove Dawn's card border - border is now on card-wrapper */
+  /* Override any theme background */
 }
 
-.collection .card--media .card__inner {
-  overflow: visible;
-  /* Allow image to go full width if parent constrained */
-}
-
-.collection .card__media {
+.collection .card-wrapper>.card {
+  /* The main .card element from Shopify */
+  display: flex;
+  flex-direction: column;
+  /* Stack .card__inner and the main .card__content */
   width: 100%;
-  /* Make media container full width */
-  padding: 0;
-  /* Remove any padding that might constrain the image */
-  border-bottom: 1px solid var(--rave-color-primary-text, #3D2120);
-  /* Add border between image and text */
-  height: 415px;
-  /* Fixed height for the media container, from reference */
-  overflow: hidden;
-  /* Ensure image doesn't overflow its container */
+  flex-grow: 1;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
-.collection .card__media .media img {
-  object-fit: cover;
+/* .card__inner usually contains the media and the problematic first/empty .card__content */
+.collection .card-wrapper>.card>.card__inner {
+  width: 100%;
+  padding: 0 !important;
+  margin: 0 !important;
+  position: relative;
+  /* For .card__media */
+  /* It should not grow beyond its content (.card__media) */
+  /* display: flex; flex-direction: column; might also be useful here if it has multiple children it needs to stack */
+}
+
+/* This is the problematic empty card__content INSIDE card__inner, identified from your screenshot */
+.collection .card-wrapper>.card>.card__inner>.card__content {
+  display: none !important;
+  /* Hide this empty block */
+}
+
+/* Container 1: Image Area (Square) */
+/* .card__media is inside .card__inner */
+.collection .card-wrapper>.card>.card__inner>.card__media {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  /* Make image container square */
+  position: relative;
+  overflow: hidden;
+  border: none !important;
+  display: block;
+}
+
+/* The .media div is the direct parent of the <img> tag */
+.collection .card-wrapper>.card>.card__inner>.card__media>.media {
+  display: block;
+  /* Or 'flex' if it helps center the image, though 100/100 should fill */
   width: 100%;
   height: 100%;
-  /* Make image fill the fixed height of .card__media */
+  /* Make it fill the square card__media */
 }
 
-/* Make .card__content take full width and align its children */
-.collection .card__content {
-  padding: 8px 12px;
-  /* Small top/bottom, decent right padding */
-  display: flex;
-  /* Changed to flex row */
-  justify-content: flex-end;
-  /* Push card_information to the right */
-  align-items: baseline;
-  /* Align items on baseline if card_information is direct child with text */
+.collection .card-wrapper>.card>.card__inner>.card__media>.media>img {
+  display: block;
   width: 100%;
+  height: 100%;
+  /* Critical to fill the square card__media's .media div */
+  object-fit: cover;
+  /* Ensures image covers the square, cropping if necessary */
 }
 
-.collection .card__information {
-  /* This div holds the title and price */
-  /* width: 100%; */
-  /* No longer needed if parent card_content pushes it right */
+/* Container 2: Text Area (Below Image) */
+/* This .card__content is a direct child of .card, and sibling to .card__inner */
+.collection .card-wrapper>.card>.card__content {
+  width: 100%;
+  padding: 8px 12px;
+  /* Standard padding for the text block */
+  border-top: 1px solid var(--rave-color-primary-text, #3D2120);
+  box-sizing: border-box;
+  /* Ensure padding doesn't expand width */
+  /* This is the one that should be visible */
+}
+
+/* The .card__information div is inside the main .card__content (text block) */
+.collection .card-wrapper>.card>.card__content>.card__information {
   display: flex;
-  /* justify-content: flex-end; */
-  /* No longer needed here */
-  align-items: baseline;
-  /* Vertically align title and price on their text baseline */
-  /* gap: 0.5rem; */
-  /* Replaced by margin on heading */
+  justify-content: flex-end;
+  /* Aligns children (heading, nested card-information for price) to the right */
+  align-items: center;
+  /* Vertically aligns if items have different heights */
+  gap: 0.5rem;
+  /* Space between title and price block if they become direct children */
+  font-family: "Inter", sans-serif !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 
-.collection .card__heading {
+/* The h3.card__heading is typically inside the .card__information div */
+.collection .card-wrapper>.card>.card__content>.card__information>.card__heading {
   font-size: 12px;
-  /* Smaller font size */
-  color: var(--rave-color-primary-text, #3D2120);
-  margin: 0 0.5em 0 0;
-  /* Only right margin for spacing from price */
-  text-transform: none;
-  text-align: left;
-  /* Text within heading is left, block is aligned by parent */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  /* flex-grow: 1; */
-  /* Removed flex-grow to let it size to content initially */
-  min-width: 0;
-  /* Important for flex items with overflow:hidden and text-overflow:ellipsis */
-  max-width: 180px;
-  /* Max width to prevent pushing price too much, adjust as needed */
-}
-
-.collection .card__heading a {
-  text-decoration: none;
-  color: inherit;
-}
-
-.collection .card-information .price {
-  font-size: 12px;
-  /* Smaller font size */
   color: var(--rave-color-primary-text, #3D2120);
   margin: 0;
-  /* Remove default margins */
+  text-transform: none;
+  font-weight: normal;
   white-space: nowrap;
-  flex-shrink: 0;
-  /* Price should not shrink */
-  text-align: left;
-  /* Text within price is left, block is aligned by parent */
+  /* Prevents wrapping */
+  overflow: visible;
+  text-align: right;
+  font-family: "Inter", sans-serif !important;
+  flex-shrink: 1;
+  /* Allow heading to shrink if necessary, but nowrap should prevent issues */
+  min-width: 0;
+  /* Allow shrinking */
 }
 
-.collection .card-information .price .price-item {
-  margin: 0 0.25rem;
-  /* Adjust spacing between price items if any */
+.collection .card-wrapper>.card>.card__content>.card__information>.card__heading a {
+  text-decoration: none;
+  color: inherit;
+  font-family: "Inter", sans-serif !important;
+}
+
+/* The price is within a NESTED div.card-information, which is a child of the main div.card__information */
+.collection .card-wrapper>.card>.card__content>.card__information>.card-information {
+  /* This div acts as a container for price and potentially other details like vendor, rating */
+  /* It should align with the heading due to the parent flex settings */
+  display: flex;
+  /* If it contains multiple price items or sale price */
+  align-items: center;
+  justify-content: flex-end;
+  /* Ensure content within this also tends right */
+  gap: 0.25rem;
+  /* Smaller gap if there are multiple price elements */
+  flex-shrink: 0;
+  /* Price should not shrink */
+}
+
+.collection .card-wrapper>.card>.card__content>.card__information>.card-information .price {
+  font-size: 12px;
+  color: var(--rave-color-primary-text, #3D2120);
+  margin: 0;
+  font-weight: normal;
+  white-space: nowrap;
+  text-align: right;
+  font-family: "Inter", sans-serif !important;
+}
+
+.collection .card-wrapper>.card>.card__content>.card__information>.card-information .price .price-item {
+  margin: 0;
+  /* Reset margin on individual price items */
+}
+
+/* Hide "Sold out" badge as requested */
+/* The badge is usually in the first card__content (inside card__inner) which is now hidden */
+/* .collection .card-wrapper > .card > .card__inner > .card__content .card__badge  -- This rule is now redundant */
+
+/* More general rule if its location varies but it's within a card and not the hidden block */
+.collection .card .card__badge {
+  display: none !important;
+}
+
+/* General .badge style if needed elsewhere (e.g. for "Sale" if that's ever re-enabled) */
+.badge {
+  font-family: "Inter", sans-serif !important;
 }
 
 /* Filters and Sorting */
@@ -175,18 +263,17 @@ body {
   /* General container for filters and sorting */
   margin-bottom: 2rem;
   /* Space below the controls */
-  padding-left: 1rem;
-  /* Add some padding to align with content if cards have borders */
-  padding-right: 1rem;
-  /* Add some padding to align with content if cards have borders */
+  padding: 0;
+  /* Remove padding */
 }
 
-/* Style the 'Filter' and 'Sort by' labels and dropdowns */
 .facet-filters__label {
-  font-size: var(--font-body-scale);
+  font-size: 12px;
   color: var(--rave-color-primary-text, #3D2120);
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
+  margin-right: 0.5rem;
+  margin-bottom: 0;
+  font-weight: normal;
+  text-transform: none;
 }
 
 .facet-filters__summary,
@@ -195,108 +282,353 @@ body {
   border: 1px solid var(--rave-color-primary-text, #3D2120);
   border-radius: 0;
   /* Sharp corners */
-  padding: 0.5rem 1rem;
+  padding: 0.25rem 0.5rem;
   color: var(--rave-color-primary-text, #3D2120);
   min-height: auto;
   /* Reset Dawn's min height */
+  font-size: 12px;
 }
 
 .facet-filters__summary .icon-fallback,
-/* For filter icon */
 .select .icon-caret {
-  /* For sort dropdown caret */
   fill: var(--rave-color-primary-text, #3D2120) !important;
   /* Change icon color */
-  height: 1rem;
-  width: 1rem;
+  height: 0.75rem;
+  width: 0.75rem;
 }
 
-.facet-filters.sorting,
-.facet-filters__field {
+.facets-horizontal .facet-filters.sorting,
+.facets-horizontal .facet-filters__field {
   display: flex;
   /* Align label and select */
-  flex-direction: column;
-  /* Stack them */
-  align-items: flex-start;
-  /* Align to the left */
+  align-items: center;
+  /* Center vertically */
+  margin-left: 1rem;
+  /* Add spacing between filter and sort */
 }
 
-@media screen and (min-width: 750px) {
-
-  .facets-horizontal .facet-filters.sorting,
-  .facets-horizontal .facet-filters__field {
-    align-items: center;
-    /* Center label and select on desktop for horizontal layout */
-    flex-direction: row;
-    /* Side by side */
-  }
-
-  .facets-horizontal .facet-filters__label {
-    margin-right: 1rem;
-    margin-bottom: 0;
-  }
+.facets-horizontal .facets__disclosure {
+  margin-right: 1rem;
+  /* Add spacing between disclosure elements */
 }
 
+/* Make sure the sorting is properly aligned */
+.facets-horizontal .facets__form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Style for the active filters area */
 .active-facets {
-  /* Style for active filter pills */
-  margin-top: 1rem;
+  margin-top: 0rem;
+  margin-bottom: 0rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .active-facets__button {
-  background-color: var(--rave-color-accent, #412F26);
-  color: var(--rave-color-button-text, #FFFFFF);
-  border: 1px solid var(--rave-color-accent, #412F26);
+  background-color: var(--rave-color-primary-text, #3D2120);
+  color: var(--rave-color-background-main, #FFFFFF);
+  border: 1px solid var(--rave-color-primary-text, #3D2120);
   border-radius: 0;
-  padding: 0.25rem 0.75rem;
-  font-size: var(--font-body-scale-down-1);
+  padding: 0.25rem 0.5rem;
+  font-size: 12px;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .active-facets__button .icon-close {
-  fill: var(--rave-color-button-text, #FFFFFF) !important;
+  fill: var(--rave-color-background-main, #FFFFFF);
+  height: 0.75rem;
+  width: 0.75rem;
 }
 
-/* Ensure these styles apply correctly on mobile */
+/* Mobile-specific styles */
 @media screen and (max-width: 749px) {
 
   .collection .grid--1-col-tablet-down .grid__item,
   .collection .grid--2-col-tablet-down .grid__item {
-    /* Adjust if needed for 1 or 2 columns on mobile */
+    /* Set grid item to 50% width on mobile with 0 padding */
+    flex-basis: 50%;
+    max-width: 50%;
+    padding: 0;
   }
 
   .collection .card__media .media img {
-    max-height: 300px;
-    /* Potentially smaller max height on mobile */
+    aspect-ratio: 1/1;
+    /* Force square aspect ratio on mobile */
   }
 
-  .facets-sticky-wrapper {
-    /* For mobile filter button */
-    padding: 1rem 0;
+  .facets-container {
+    padding: 0 1rem;
+    /* Add some padding on mobile */
   }
 
   .facets__show-filter button {
-    background-color: var(--rave-color-accent, #412F26) !important;
-    color: var(--rave-color-button-text, #FFFFFF) !important;
-    border-radius: 0 !important;
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: none;
+    border: 1px solid var(--rave-color-primary-text, #3D2120);
+    border-radius: 0;
+    background-color: transparent;
+    color: var(--rave-color-primary-text, #3D2120);
+    font-size: 12px;
+    padding: 0.5rem 1rem;
   }
 
   .drawer__header .drawer__close svg {
     fill: var(--rave-color-primary-text, #3D2120);
+    width: 1rem;
+    height: 1rem;
+  }
+
+  /* Remove horizontal padding for .page-width on collection template for mobile */
+  body.template-collection .main-page-content.page-width,
+  body.template-collection .page-width {
+    /* More general fallback if main-page-content isn't always there */
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Ensure our desktop split nav is hidden (though small-hide/medium-hide should cover it) */
+  .header__inline-menu--left,
+  .header__inline-menu--right {
+    display: none !important;
+    /* Important to override if other rules conflict */
+  }
+
+  /* Adjust logo size if needed for mobile */
+  .header__heading-logo {
+    max-width: 100px;
+    /* Example: Adjust as per design. Current screenshot looks okay. */
+    height: auto;
+  }
+
+  /* Mobile Menu Drawer - Slide from Top */
+  /* Override Dawn's component-menu-drawer.css for slide-in direction */
+  /* Add .js to match specificity of Dawn's rules */
+  .js details[open].menu-opening>#menu-drawer.menu-drawer {
+    transform: translateY(0%);
+    visibility: visible;
+    top: var(--header-bottom-position);
+    height: calc(100vh - var(--header-bottom-position));
+    transition: transform var(--duration-default) ease, visibility 0s ease 0s;
+  }
+
+  /* Base style for the menu drawer */
+  .js #menu-drawer.menu-drawer {
+    position: fixed;
+    top: var(--header-bottom-position);
+    left: 0;
+    width: 100vw;
+    height: auto;
+    /* Allow content to determine height, max-height will control visibility */
+    max-height: 0;
+    /* Closed state */
+    visibility: hidden;
+    z-index: 100;
+    overflow: hidden;
+    /* Important for max-height animation */
+    transition: max-height var(--duration-default) ease, visibility 0s ease var(--duration-default);
+    border-right: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    background-color: var(--rave-color-background-main, #FFFFFF) !important;
+    /* Explicitly white or brand main bg */
+  }
+
+  .js #menu-drawer.menu-drawer .menu-drawer__inner-container {
+    background-color: transparent !important;
+    /* Ensure inner container doesn't add its own bg */
+  }
+
+  /* Open state of the menu drawer */
+  .js details[open].menu-opening>#menu-drawer.menu-drawer {
+    visibility: visible;
+    max-height: calc(100vh - var(--header-bottom-position));
+    /* Expand to fill space */
+    transition: max-height var(--duration-default) ease, visibility 0s ease 0s;
+  }
+
+  /* Hide Dawn's default summary::before overlay when menu is open */
+  .js header-drawer>details[open]>summary.header__icon--menu::before {
+    display: none !important;
+  }
+
+  /* Try to make scrollbar track transparent to address grey box */
+  .js #menu-drawer.menu-drawer::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .js #menu-drawer.menu-drawer::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .js #menu-drawer.menu-drawer::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--color-text), 0.5);
+    border-radius: 4px;
+  }
+
+  /* Ensure inner menu elements also span full width and have no odd padding */
+  .js #menu-drawer.menu-drawer .menu-drawer__inner-container,
+  .js #menu-drawer.menu-drawer .menu-drawer__navigation {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0;
+  }
+
+  /* Style the mobile menu list and items */
+  .js #menu-drawer.menu-drawer ul.menu-drawer__menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .js #menu-drawer.menu-drawer ul.menu-drawer__menu>li {
+    border-bottom: 1px solid var(--rave-color-primary-text, #3D2120);
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .js #menu-drawer.menu-drawer ul.menu-drawer__menu>li:last-child {
+    border-bottom: none;
+  }
+
+  .js #menu-drawer.menu-drawer .menu-drawer__menu-item {
+    padding: 1.5rem 2rem;
+    text-transform: uppercase;
+    font-size: 1em;
+    letter-spacing: 0.05em;
+    color: var(--rave-color-primary-text, #3D2120) !important;
+    text-decoration: none;
+    display: block;
+    background-color: transparent;
+    font-weight: normal;
+  }
+
+  /* Active / Hover / Focus states for mobile menu items */
+  .js #menu-drawer.menu-drawer .menu-drawer__menu-item--active,
+  .js #menu-drawer.menu-drawer .menu-drawer__menu-item:hover,
+  .js #menu-drawer.menu-drawer .menu-drawer__menu-item:focus {
+    color: var(--rave-color-primary-text, #3D2120) !important;
+    background-color: transparent !important;
+    text-decoration: underline !important;
+    text-underline-offset: 0.2em;
+  }
+
+  /* Styling for the X close button in the mobile menu (it is inside #menu-drawer > .menu-drawer__inner-container > summary.header__icon--menu) */
+  /* The actual X is part of the hamburger summary, so it appears at the top of the screen, not within the scrolled menu */
+  /* We already made the hamburger/summary wider. The X icon itself is an SVG. */
+  /* Let's ensure the header itself has a background when menu is open, if X is part of header */
+  header.header.menu-open {
+    /* If header is sticky and menu slides under, ensure header has a background */
+    /* background-color: var(--rave-color-background-main, #FFFFFF); */
+  }
+
+  /* The close button on the live site is within the menu panel. Dawn's is part of the hamburger. */
+  /* For now, we rely on the hamburger toggle. A separate X button within the panel is a larger structural change. */
+
+  /* Ensure the details summary (hamburger) z-index is high enough if menu is fixed */
+  header-drawer>details>summary.header__icon--menu {
+    position: relative;
+    /* Needed for z-index to apply */
+    z-index: 101;
+    /* Higher than the fixed menu when closed, to ensure it's clickable */
+  }
+
+  /* Overlay: default one might be an issue with fixed menu. */
+  /* This is Dawn's overlay, check if it needs adjustment or removal for fixed menu */
+  /* .js menu-drawer > details[open]:not(.menu-opening) > summary::before {} */
+
+  /* Ensure product info flex container allows wrapping on mobile IF NECESSARY */
+  .collection .card-wrapper>.card>.card__content>.card__information {
+    flex-wrap: wrap;
+    /* Allow items (title, price block) to wrap ONLY if they don't fit */
+  }
+
+  /* Ensure the nested card-information (for price) also allows its items to wrap if needed */
+  .collection .card-wrapper>.card>.card__content>.card__information>.card-information {
+    flex-wrap: wrap;
+    /* Allow price items to wrap if there are multiple */
+    justify-content: flex-end;
+    /* Keep price items aligned to the right */
+  }
+
+  /* Ensure price text itself can wrap if individual price components are long */
+  .collection .card-wrapper>.card>.card__content>.card__information>.card-information .price,
+  .collection .card-wrapper>.card>.card__content>.card__information>.card-information .price .price-item {
+    white-space: normal !important;
+    /* Override any nowrap specifically for mobile prices */
+    text-align: right;
+    /* Ensure wrapped price text is right-aligned */
   }
 }
 
-/* Ensure three columns on desktop as per desired image */
+/* Desktop-specific styles */
 @media screen and (min-width: 990px) {
   .grid--3-col-desktop>.grid__item {
-    width: calc(33.333% - var(--grid-desktop-horizontal-spacing) * 2 / 3);
-    max-width: calc(33.333% - var(--grid-desktop-horizontal-spacing) * 2 / 3);
-    /* No margin or padding needed here if product-grid has 0 gap and grid__item has 0 padding */
+    /* Set grid item to 33.33% width on desktop with 0 padding */
+    flex-basis: 33.33%;
+    max-width: 33.33%;
+    padding: 0;
+  }
+
+  .grid--4-col-desktop>.grid__item {
+    /* Set grid item to 25% width on desktop with 0 padding */
+    flex-basis: 25%;
+    max-width: 25%;
+    padding: 0;
   }
 }
 
-/* == PRODUCT PAGE == */
+/* Product count styling */
+.product-count {
+  font-size: 12px;
+  color: var(--rave-color-primary-text, #3D2120);
+}
+
+/* Ensure the filter drawer (mobile) matches the design */
+.facets-container .mobile-facets__wrapper {
+  background-color: var(--rave-color-background-main, #FFFFFF);
+}
+
+.mobile-facets__footer {
+  background-color: var(--rave-color-background-main, #FFFFFF);
+  border-top: 1px solid var(--rave-color-primary-text, #3D2120);
+}
+
+.mobile-facets__close svg {
+  fill: var(--rave-color-primary-text, #3D2120);
+}
+
+/* Style the pagination to match design */
+.pagination {
+  margin-top: 2rem;
+}
+
+.pagination__list {
+  justify-content: center;
+}
+
+.pagination__item {
+  margin: 0 0.25rem;
+}
+
+.pagination__button {
+  color: var(--rave-color-primary-text, #3D2120);
+  border: 1px solid var(--rave-color-primary-text, #3D2120);
+  border-radius: 0;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0.25rem;
+  font-size: 12px;
+}
+
+.pagination__button--current {
+  background-color: var(--rave-color-primary-text, #3D2120);
+  color: var(--rave-color-background-main, #FFFFFF);
+}
 
 /* == HEADER == */
 
@@ -609,402 +941,27 @@ body {
   /* .js menu-drawer > details[open]:not(.menu-opening) > summary::before {} */
 }
 
-/* Header bottom border style - Increased specificity and !important */
-.header-wrapper.header-wrapper--border-bottom {
-  border-bottom: 1px solid var(--rave-color-primary-text, #3D2120) !important;
-  /* Use brand color & !important */
-  position: relative;
-  /* Try to force rendering context */
-  z-index: 50;
-  /* Ensure it's above basic page content but below sticky elements if needed */
-}
+/* Desktop-specific styles */
+@media screen and (min-width: 990px) {
+  .grid--3-col-desktop>.grid__item {
+    /* Set grid item to 33.33% width on desktop with 0 padding */
+    flex-basis: 33.33%;
+    max-width: 33.33%;
+    padding: 0;
+  }
 
-
-
-/* == MISC / SHARED COMPONENTS == */
-
-/* == MAIN HERO SECTION == */
-.main-hero {
-  width: 100%;
-  height: calc(100vh - var(--header-height, 0px));
-  /* Full viewport height minus header */
-  overflow: hidden;
-  position: relative;
-}
-
-.main-hero__link {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.main-hero__image,
-.main-hero__video-wrapper,
-.main-hero__video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /* Ensures the image/video covers the area, might crop */
-  display: block;
-}
-
-.main-hero__video-wrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  overflow: hidden;
-}
-
-.main-hero__video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.main-hero__placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f0f0f0;
-  /* Placeholder background */
-}
-
-.main-hero__placeholder svg {
-  width: 100px;
-  height: 100px;
-}
-
-/* Responsive adjustments if needed, for example: */
-@media (max-width: 749px) {
-  .main-hero {
-    height: calc(80vh - var(--header-height, 0px));
+  .grid--4-col-desktop>.grid__item {
+    /* Set grid item to 25% width on desktop with 0 padding */
+    flex-basis: 25%;
+    max-width: 25%;
+    padding: 0;
   }
 }
 
-
-
-/* --- MOBILE HEADER FIXES --- */
-/* Hide the default semi-transparent overlay shown behind the menu drawer */
-@media (max-width: 989px) {
-
-  /* Target mobile/tablet drawer breakpoint */
-  .js menu-drawer>details[open]>summary::before {
-    background: none !important;
-    /* Remove background */
-    visibility: hidden !important;
-    /* Ensure it's hidden */
-  }
-}
-
-/* Custom Footer Styles */
-.footer__blocks-wrapper {
-  display: grid;
-  padding: 2.5rem 1.5rem;
-  /* Default padding, mobile-first */
-  gap: 1rem 1.5rem;
-  /* row-gap column-gap */
-  align-items: start;
-}
-
-/* Style for all text items within the footer blocks */
-.footer-block--menu ul li a,
-.footer-block:not(.footer-block--menu) .footer-block__details-content.rte {
-  font-family: sans-serif;
-  /* Or your theme's specific sans-serif font */
-  font-size: 0.9rem;
-  /* Mobile-first font size */
-  text-transform: uppercase;
-  color: #3A3A3A;
-  /* Dark charcoal color */
-  text-decoration: none;
-  display: block;
-  line-height: 1.4;
-  margin-bottom: 0.5rem;
-  /* Spacing between items in a list/block */
-  font-weight: normal;
-  /* Ensuring not bold unless specified */
-}
-
-.footer-block--menu ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.footer-block--menu ul li:last-child a,
-.footer__blocks-wrapper>.footer-block:nth-child(4) .footer-block__details-content.rte {
-  margin-bottom: 0;
-  /* Remove margin from the last item in each conceptual column */
-}
-
-/* Desktop layout (screens wider than 749px) */
-@media screen and (min-width: 750px) {
-  .footer__blocks-wrapper {
-    grid-template-columns: auto 1fr;
-    /* First column auto-width, second takes remaining */
-    grid-template-rows: auto auto auto;
-    /* Define rows for stacking on right */
-    gap: 0 2.5rem;
-    /* No row-gap, only column-gap for desktop */
-    padding: 3rem 3rem;
-    /* Desktop padding */
-  }
-
-  .footer-block--menu {
-    grid-column: 1;
-    grid-row: 1 / span 3;
-    /* Menu items span all rows in the first column */
-  }
-
-  /* First text block */
-  .footer__blocks-wrapper>.footer-block:nth-child(2) {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  /* Second text block */
-  .footer__blocks-wrapper>.footer-block:nth-child(3) {
-    grid-column: 2;
-    grid-row: 2;
-  }
-
-  /* Third text block */
-  .footer__blocks-wrapper>.footer-block:nth-child(4) {
-    grid-column: 2;
-    grid-row: 3;
-  }
-
-  .footer-block--menu ul li a,
-  .footer-block:not(.footer-block--menu) .footer-block__details-content.rte {
-    font-size: 1.0rem;
-    /* Slightly larger for desktop, adjust as needed */
-    margin-bottom: 0.65rem;
-  }
-
-  .footer-block--menu ul li:last-child a,
-  .footer__blocks-wrapper>.footer-block:nth-child(4) .footer-block__details-content.rte {
-    margin-bottom: 0;
-  }
-}
-
-/* Mobile layout (screens 749px and narrower) */
-@media screen and (max-width: 749px) {
-
-  /* Mobile Footer Styles */
-  .footer__blocks-wrapper {
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    padding-left: 1rem !important;
-    /* For alignment with header */
-    padding-right: 1rem !important;
-    /* For alignment with header */
-    padding-top: 0 !important;
-    /* Keep from original block */
-    padding-bottom: 2rem;
-    /* Keep from original block, space before payment */
-    row-gap: 0 !important;
-    /* Override grid gap */
-    column-gap: 1rem;
-    /* Space between the two columns */
-    align-items: flex-start !important;
-    /* Align columns to the top */
-    /* Removed: grid-template-columns: 1fr; */
-    /* Removed: gap: 1.5rem; */
-  }
-
-  /* Target footer menu blocks specifically for flex sizing */
-  footer.footer .footer__blocks-wrapper>.footer-block--menu {
-    flex-basis: calc(50% - 0.5rem);
-    /* Each column takes roughly half width, accounting for column-gap */
-    padding-bottom: 0 !important;
-    text-align: left !important;
-    /* Ensures text within this block is left-aligned */
-  }
-
-  /* General rule for text-align in footer blocks on mobile if other non-menu blocks exist */
-  footer.footer .footer-block--menu,
-  footer.footer .footer-block:not(.footer-block--menu) {
-    text-align: left !important;
-  }
-
-  /* Styling for the UL inside each menu column */
-  footer.footer .footer-block--menu ul {
-    display: flex !important;
-    flex-direction: column !important;
-    padding-left: 0 !important;
-    list-style: none !important;
-    margin: 0 !important;
-    align-items: flex-start !important;
-    gap: 0.75rem;
-    /* Vertical space between list items in each column */
-  }
-
-  /* Styling for LI inside each menu column */
-  footer.footer .footer-block--menu ul li {
-    width: 100%;
-    /* Ensure li takes full width of its column */
-  }
-
-  /* Styling for actual links/text (<a>, <span>) inside each list item */
-  footer.footer .footer-block--menu ul li>* {
-    display: block !important;
-    font-size: 0.8125rem !important;
-    line-height: 1.3 !important;
-    /* Adjusted line-height for mobile */
-    font-weight: 400 !important;
-    letter-spacing: 0.05em !important;
-    text-transform: uppercase !important;
-    color: var(--rave-footer-text-color) !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-    /* Rely on 'gap' from UL for spacing */
-    text-align: left !important;
-  }
-
-  /* This existing rule primarily ensures no bottom margin on the very last item, which is fine. */
-  footer.footer .footer-block--menu ul li:last-child>*,
-  footer.footer .footer-block:not(.footer-block--menu):last-of-type .rte p:last-of-type,
-  footer.footer .footer-block:not(.footer-block--menu):last-of-type .rte>a:last-of-type {
-    margin-bottom: 0 !important;
-  }
-
-  /* Ensure payment icons section has adequate spacing from the menu blocks above on mobile */
-  .footer .footer__content-bottom.page-width {
-    padding-top: 2rem !important;
-    /* Add space above payment icons */
-  }
-}
-
-/* Footer Bottom Section (Payment, Copyright) */
-.footer .footer__content-bottom.page-width {
-  padding-top: 1rem;
-  /* Reduced spacing */
-  padding-bottom: 1rem;
-  /* Reduced spacing */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  /* Remove specific mobile/desktop padding overrides here, let this be the base */
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-}
-
-.footer .footer__content-bottom .footer__localization {
-  display: none !important;
-}
-
-.footer .footer__content-bottom .footer__payment ul.list-payment {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 0.5rem 0;
-  /* Reduced margin below payment icons */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.footer .footer__content-bottom .footer__payment li.list-payment__item svg {
-  height: 22px;
-  width: auto;
-  max-width: 35px;
-}
-
-.footer .footer__content-bottom .footer__copyright {
-  font-size: 0.75rem;
-  color: #5c5c5c;
-  line-height: 1.4;
-  font-family: var(--font-body-family, Inter, sans-serif);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  text-align: center;
-  display: none !important;
-  /* Hide copyright and Powered by Shopify */
-}
-
-.footer .footer__content-bottom .footer__copyright small {
-  display: block;
-  /* Stack copyright lines if multiple */
-  margin-bottom: 0.25rem;
-}
-
-.footer .footer__content-bottom .footer__copyright small:last-child {
-  margin-bottom: 0;
-}
-
-/* Desktop specific for footer bottom */
-@media screen and (min-width: 750px) {
-  .footer .footer__content-bottom.page-width {
-    padding-top: 2.5rem;
-    padding-bottom: 2.5rem;
-    display: flex;
-    /* Ensure flex is used */
-    flex-direction: column;
-    /* Stack payment and copyright vertically */
-    align-items: center;
-    /* Center them horizontally */
-    width: 100%;
-    /* justify-content: space-between; /* Not needed for column layout */
-  }
-
-  .footer .footer__content-bottom .footer__payment {
-    /* order: 2; */
-    /* Order not needed for column layout */
-    flex-shrink: 0;
-    margin-bottom: 1rem;
-    /* Add space between payment and copyright */
-  }
-
-  .footer .footer__content-bottom .footer__payment ul.list-payment {
-    margin: 0;
-    justify-content: center;
-    /* Ensure icons are centered within this block */
-    gap: 0.75rem;
-  }
-
-  .footer .footer__content-bottom .footer__payment li.list-payment__item svg {
-    height: 24px;
-    max-width: 40px;
-  }
-
-  .footer .footer__content-bottom .footer__copyright {
-    /* order: 1; */
-    /* Order not needed for column layout */
-    text-align: center;
-    /* Ensure copyright text is centered */
-    flex-grow: 1;
-    /* Not strictly needed, but fine */
-    font-size: 0.8125rem !important;
-    font-weight: 400 !important;
-  }
-
-  .footer .footer__content-bottom .footer__copyright small {
-    display: inline;
-    margin-bottom: 0;
-  }
-
-  .footer .footer__content-bottom .footer__copyright small:not(:last-child)::after {
-    content: ' | ';
-    margin: 0 0.5em;
-    color: #ccc;
-  }
-}
-
-/* General text alignment for footer blocks */
-.footer-block {
-  /* text-align: left; Default for mobile, overridden for desktop right col */
+/* Product count styling */
+.product-count {
+  font-size: 12px;
+  color: var(--rave-color-primary-text, #3D2120);
 }
 
 /* Ensure the custom footer styles properly override any conflicting theme styles */
@@ -1095,6 +1052,7 @@ footer.footer {
     letter-spacing: 0.05em !important;
     text-transform: uppercase !important;
     color: var(--rave-footer-text-color) !important;
+    font-family: "Inter", sans-serif !important;
   }
 
   footer.footer .footer-block--menu ul li:last-child>* {
@@ -1191,6 +1149,7 @@ footer.footer {
     /* Combined padding shorthand */
     margin: 0 !important;
     /* Combined margin shorthand */
+    font-family: "Inter", sans-serif !important;
   }
 
   /* --- Left Menu Column (nth-child(1)) --- */
@@ -1371,7 +1330,89 @@ footer.footer .footer__content-bottom.scroll-trigger.animate--slide-in {
     margin-bottom: 0 !important;
     /* Reset mobile margin-bottom */
     /* Other font properties will be inherited from the general rule or can be specified here if different for desktop */
+    font-family: "Inter", sans-serif !important;
   }
 }
 
 /* == ANNOUNCEMENT BAR == */
+
+/* Global badge font styling to ensure Inter is used everywhere */
+.badge {
+  font-family: "Inter", sans-serif !important;
+  /* Force the Inter font for all badges */
+}
+
+/* Clean up - removed conflicting overrides */
+
+/* Ensure no text wrapping on product prices (globally for collection cards) */
+/* This rule is outside the media query as it should apply to all screen sizes */
+/*
+.collection .card-wrapper > .card > .card__content > .card__information > .card-information .price,
+.collection .card-wrapper > .card > .card__content > .card__information > .card-information .price .price-item {
+  white-space: nowrap !important;
+}
+*/
+
+/* == MOBILE SPECIFIC OVERRIDES (Collection Page & Filters) == */
+
+@media screen and (max-width: 749px) {
+
+  /* Force full width for collection content on mobile */
+  .template-collection .shopify-section>.page-width,
+  .template-collection .shopify-section>div.page-width,
+  div.collection.page-width {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Reduce font size for product card title and price on mobile */
+  .collection .card-wrapper>.card>.card__content>.card__information>.card__heading,
+  .collection .card-wrapper>.card>.card__content>.card__information>.card__heading a,
+  .collection .card-wrapper>.card>.card__content>.card__information>.card-information .price {
+    font-size: 9px !important;
+  }
+
+  /* Specifically target .price--on-sale .price-item--regular for 9px font on mobile */
+  .collection .price--on-sale .price-item--regular {
+    font-size: 9px !important;
+  }
+
+  /* Apply Inter font to filtering options */
+  .facets-container .facet-filters__label,
+  .facets-container .facet-filters__summary,
+  .facets-container .facet-filters__sort,
+  .facets-container .facet-filters details>summary span,
+  .facets-container .facet-filters .select__select,
+  .facets-container .facets__heading,
+  .facets-container .mobile-facets__open span,
+  .facets-container .mobile-facets__label,
+  .facets-container .mobile-facets__arrow,
+  .facets-container .active-facets__button,
+  .facets-container .product-count {
+    font-family: "Inter", sans-serif !important;
+  }
+}
+
+/* Ensure no text wrapping on product prices (globally for collection cards) */
+/* This rule is outside the media query as it should apply to all screen sizes */
+/*
+.collection .card-wrapper > .card > .card__content > .card__information > .card-information .price,
+.collection .card-wrapper > .card > .card__content > .card__information > .card-information .price .price-item {
+  white-space: nowrap !important;
+}
+*/
+
+/* Apply Inter font to filter and sorting text elements (Desktop and common) */
+.facets-container .facet-filters__label,
+.facets-container .facet-filters__summary,
+.facets-container summary.facets__summary.caption-large.focus-offset,
+.facets-container .facet-filters__summary .facets__summary-label,
+.facets-container .facet-filters__sort,
+.facets-container .facet-filters__sort .select__select,
+.facets-container .facet-filters details>summary,
+.facets-container .facet-filters details>summary span,
+.facets-container .active-facets__button,
+.facets-container .facets__heading,
+.facets-container .product-count {
+  font-family: "Inter", sans-serif !important;
+}
