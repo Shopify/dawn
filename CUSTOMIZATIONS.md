@@ -48,6 +48,7 @@ This document tracks all customizations made to the base Dawn theme for the Rave
 ### Collection Page
 
 - (Details to be added)
+- **Badge Styling (2023-09-07)**: Updated "Sold Out" and "On Sale" badges to display as rectangular banners in Rave brown color (#3D2120) with white text. Positioned at the top-left of product images. Implementation in `assets/rave-custom.css`.
 
 ### Product Page
 
