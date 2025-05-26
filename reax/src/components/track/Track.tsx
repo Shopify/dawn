@@ -6,34 +6,113 @@ const API_ENDPOINT = 'https://shopify-server-peach.vercel.app/shipment-updates';
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
 const MOBILE_BREAKPOINT = 768;
 
-// Progress mapping
-const PROGRESS_MAP = {
-  // Completed states
-  FULFILLED: 90,
+enum COLOR {
+  GREEN = 'linear-gradient(to right bottom, rgb(67, 233, 123) 0%, rgb(48, 211, 172) 100%)',
 
-  // In progress states
-  IN_PROGRESS: 75,
-  PARTIALLY_FULFILLED: 60,
-  PENDING_FULFILLMENT: 50,
+  RED = "var('--danger-red')",
+}
 
-  // Early states
-  SCHEDULED: 40,
-  OPEN: 25,
-  UNFULFILLED: 25,
+const getStatus = (bucketNumber: number | undefined, isConfimedByShopify: boolean, isCancelledInShopify: boolean) => {
+  switch (bucketNumber) {
+    case 1:
+      return {
+        status: 'Order Placed',
+        stage: 'Preparing',
+        message: 'We are preparing to dispatch your order.',
+        progress: 52,
+        color: COLOR.GREEN,
+      };
 
-  // Problem states
-  ON_HOLD: 30,
-  REQUEST_DECLINED: 20,
-  RESTOCKED: 10,
+    case 2:
+      return {
+        status: 'Dispatched',
+        stage: 'Shipped',
+        message: 'Your order has been dispatched and is on its way to your destination.',
+        progress: 65,
+        color: COLOR.GREEN,
+      };
 
-  // Default
-  DEFAULT: 25,
+    case 3:
+      return {
+        status: 'On Its Way',
+        stage: 'Shipped',
+        message: 'Your order is on its way to you.',
+        progress: 75,
+        color: COLOR.GREEN,
+      };
+
+    case 4:
+      return {
+        status: 'Out For Delivery',
+        stage: 'Shipped',
+        message: 'Your order should be delivered soon.',
+        progress: 90,
+        color: COLOR.GREEN,
+      };
+
+    case 5:
+      return {
+        status: 'Delivery Failed',
+        stage: 'Cancelled',
+        message: 'We could not deliver your order.',
+        progress: 100,
+        color: COLOR.RED,
+      };
+
+    case 6:
+      return {
+        status: 'Delivered',
+        stage: 'Delivered',
+        message: 'We have successfully delivered your order.',
+        progress: 100,
+        color: COLOR.GREEN,
+      };
+
+    case 7:
+      return {
+        status: 'Returned',
+        stage: 'Cancelled',
+        message: 'The products in this order are on their way back to us.',
+        progress: 100,
+        color: COLOR.RED,
+      };
+
+    default: {
+      if (isConfimedByShopify) {
+        return {
+          status: 'Order Confirmed',
+          stage: 'Preparing',
+          message: 'We have received your order and are now processing it.',
+          progress: 40,
+          color: COLOR.GREEN,
+        };
+      }
+
+      if (isCancelledInShopify) {
+        return {
+          status: 'Order Cancelled',
+          stage: 'Cancelled',
+          message: 'We have gone ahead and cancelled this order.',
+          progress: 100,
+          color: COLOR.RED,
+        };
+      }
+
+      return {
+        status: 'Order Placed',
+        stage: 'Processing',
+        message: 'We are now processing your order.',
+        progress: 25,
+        color: COLOR.GREEN,
+      };
+    }
+  }
 };
 
 // Error messages
 const ERROR_MESSAGES = {
   NETWORK: 'Unable to connect to the server. Please check your connection and try again.',
-  NOT_FOUND: 'Order not found. Please check your order number and email.',
+  NOT_FOUND: 'We could not find this order. Double check the details and try again?',
   INVALID_INPUT: 'Please enter both email and order number.',
   GENERIC: 'Something went wrong. Please try again later.',
 };
@@ -80,10 +159,11 @@ export interface OrderResponse {
     timestamp: string;
     status_code: string;
     status_description: string;
-    clickpost_status_bucket: number;
-    clickpost_status_number: number;
+    status_code_int: number;
+    status_bucket_code_int: number;
   } | null;
   cancelled_at: string | null;
+  confimed: boolean;
   scans: Array<{
     timestamp: string;
     location: string;
@@ -112,7 +192,7 @@ export interface OrderResponse {
 const isMobile = () => window.innerWidth < MOBILE_BREAKPOINT;
 
 const cleanOrderNumber = (orderNumber: string): string => {
-  return orderNumber.replace(/-/g, '').trim().toUpperCase();
+  return orderNumber.trim().toUpperCase();
 };
 
 const getCacheKey = (email: string, orderNumber: string): string => {
@@ -224,12 +304,12 @@ const styles = {
     color: '#000',
   },
   errorBox: {
-    padding: '1rem',
-    backgroundColor: '#fee',
-    border: '1px solid #fcc',
-    borderRadius: '4px',
-    color: '#c00',
-    marginBottom: '1rem',
+    padding: '2rem',
+    border: '1px solid var(--danger-red)',
+    borderRadius: '6px',
+    color: 'var(--danger-red)',
+    marginBottom: '2rem',
+    lineHeight: '1.4',
   },
   loadingContainer: {
     display: 'flex',
@@ -265,18 +345,14 @@ const LoadingSpinner: React.FC = () => (
   </div>
 );
 
-const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
-  <div style={styles.errorBox}>
-    <strong>Error:</strong> {message}
-  </div>
-);
+const ErrorMessage: React.FC<{ message: string }> = ({ message }) => <div style={styles.errorBox}>{message}</div>;
 
-const OrderProgress: React.FC<{ progress: number; color: string; orderStatus: string }> = ({
-  progress,
-  color,
-  orderStatus,
-}) => {
-  console.log({ orderStatus });
+const OrderProgress = ({ progress, color, stage }: { progress: number; color: string; stage: string }) => {
+  const isCancelled = stage.toLowerCase() === 'cancelled';
+  const stageList = isCancelled
+    ? ['REDACTED', 'REDACTED', 'REDACTED', 'Cancelled']
+    : ['Processing', 'Preparing', 'Shipped', 'Delivered'];
+
   return (
     <div>
       <Progress.Root
@@ -296,7 +372,7 @@ const OrderProgress: React.FC<{ progress: number; color: string; orderStatus: st
             display: 'block',
             transform: `translateX(-${100 - progress}%)`,
 
-            background: color || 'red',
+            background: color || 'var(--danger-red)',
             height: '13px',
             borderRadius: '9999px',
             width: '100%',
@@ -305,9 +381,20 @@ const OrderProgress: React.FC<{ progress: number; color: string; orderStatus: st
         />
       </Progress.Root>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
-        {['Processing', 'Preparing', 'Shipped', 'Delivered'].map((stage) => (
-          <p key={stage} style={{ textAlign: 'right', width: '25%', margin: '0.5rem 0' }}>
-            {stage}
+        {stageList.map((x) => (
+          <p
+            key={x}
+            style={{
+              textAlign: 'right',
+              letterSpacing: 0,
+              width: '25%',
+              margin: '0.5rem 0',
+              opacity: x == stage ? 1 : 0.3,
+              color: 'black',
+              fontSize: isMobile() ? '1.3rem' : '1.6rem',
+            }}
+          >
+            {x == 'REDACTED' ? '' : x}
           </p>
         ))}
       </div>
@@ -446,7 +533,7 @@ const OrderForm: React.FC<{
               name="order-number"
               id="order-number"
               value={orderNumber}
-              onInput={(e: any) => setOrderNumber(e.target?.value!)}
+              onInput={(e: any) => setOrderNumber(e.target?.value?.toUpperCase())}
               required
               disabled={isLoading}
               onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -474,14 +561,21 @@ const OrderForm: React.FC<{
   );
 };
 
-const OrderDetails: React.FC<{
+const OrderDetails = ({
+  order,
+  progress,
+  onTrackAnother,
+  cssColor,
+  stage,
+  message,
+}: {
   order: OrderResponse;
   progress: number;
   onTrackAnother: () => void;
-}> = ({ order, progress, onTrackAnother }) => {
-  const isCancelled = Boolean(order.cancelled_at);
-  const colorTheme = isCancelled ? 'red' : 'linear-gradient(to right, #43e97b 0%, #38f9d7 100%)';
-
+  cssColor: string;
+  stage: string;
+  message: string;
+}) => {
   return (
     <section style={{ ...styles.container, maxWidth: '900px' }}>
       <div style={{ marginBottom: '2rem' }}>
@@ -523,7 +617,7 @@ const OrderDetails: React.FC<{
                 display: 'flex',
                 gap: '0.5rem',
                 alignItems: 'center',
-                background: colorTheme,
+                background: cssColor,
                 color: 'white',
                 padding: '1rem 2rem',
                 borderRadius: '100px',
@@ -533,7 +627,7 @@ const OrderDetails: React.FC<{
               target="_blank"
               rel="noopener noreferrer"
             >
-              <span style={{ fontSize: isMobile() ? '1rem' : '1.5rem', letterSpacing: '0px' }}>Track Shipment</span>
+              <span style={{ fontSize: isMobile() ? '1.1rem' : '1.5rem', letterSpacing: '0px' }}>Track Shipment</span>
               <svg width={14} fill="none" strokeWidth={1.5} stroke="currentColor" viewBox="0 0 24 24">
                 <path d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -541,8 +635,8 @@ const OrderDetails: React.FC<{
           ) : null}
         </div>
 
-        <OrderProgress orderStatus={order.fulfillment_status || 'UNFULFILLED'} progress={progress} color={colorTheme} />
-        <p>{order.latest_status?.status_description || ''}</p>
+        <OrderProgress progress={progress} color={cssColor} stage={stage} />
+        <p>{message || ''}</p>
       </div>
 
       <hr style={{ margin: '2rem 0' }} />
@@ -623,6 +717,10 @@ const Track: React.FC = () => {
   const [error, setError] = useState<ErrorState | null>(null);
   const [progress, setProgress] = useState(0);
 
+  const [stage, setStage] = useState('Processing');
+  const [message, setMessage] = useState('');
+  const [cssColor, setCssColor] = useState('#000000');
+
   useEffect(() => {
     // Check for query parameters on mount
     const queryData = getQueryParams();
@@ -631,10 +729,23 @@ const Track: React.FC = () => {
     }
   }, []);
 
-  const calculateProgress = (status: string | null): number => {
-    if (!status) return PROGRESS_MAP.DEFAULT;
-    return PROGRESS_MAP[status as keyof typeof PROGRESS_MAP] || PROGRESS_MAP.DEFAULT;
-  };
+  useEffect(() => {
+    const {
+      progress: progression,
+      stage,
+      message,
+      color,
+    } = getStatus(
+      trackingData?.latest_status?.status_bucket_code_int,
+      trackingData?.confimed || false,
+      Boolean(trackingData?.cancelled_at),
+    );
+
+    setProgress(progression);
+    setStage(stage);
+    setCssColor(color);
+    setMessage(message);
+  }, [trackingData]);
 
   const fetchOrder = async (formData: FormData) => {
     const { email, orderNumber } = formData;
@@ -649,7 +760,6 @@ const Track: React.FC = () => {
     const cached = getFromCache(email, orderNumber);
     if (cached) {
       setTrackingData(cached);
-      setProgress(calculateProgress(cached.fulfillment_status));
       setLoadingState('success');
       setError(null);
 
@@ -690,7 +800,6 @@ const Track: React.FC = () => {
       setCache(email, orderNumber, data);
 
       setTrackingData(data);
-      setProgress(calculateProgress(data.fulfillment_status));
       setLoadingState('success');
 
       // Hide main page title if exists
@@ -727,7 +836,16 @@ const Track: React.FC = () => {
   }
 
   if (trackingData && loadingState === 'success') {
-    return <OrderDetails order={trackingData} progress={progress} onTrackAnother={handleTrackAnother} />;
+    return (
+      <OrderDetails
+        order={trackingData}
+        progress={progress}
+        stage={stage}
+        message={message}
+        cssColor={cssColor}
+        onTrackAnother={handleTrackAnother}
+      />
+    );
   }
 
   return (

@@ -1,11 +1,840 @@
-import{J as L,T as I,u as r,a as H,k as P,h as v,y as z,D as K}from"./vx-hooks.module.js";import{D as N,O as S,p as w,_ as U}from"./vx-compat.module.js";function q(e,t=[]){let i=[];function o(s,c){const a=L(c),l=i.length;i=[...i,c];const u=d=>{var _;const{scope:g,children:y,...f}=d,p=((_=g==null?void 0:g[e])==null?void 0:_[l])||a,x=I(()=>f,Object.values(f));return r(p.Provider,{value:x,children:y})};u.displayName=s+"Provider";function m(d,g){var p;const y=((p=g==null?void 0:g[e])==null?void 0:p[l])||a,f=H(y);if(f)return f;if(c!==void 0)return c;throw new Error(`\`${d}\` must be used within \`${s}\``)}return[u,m]}const n=()=>{const s=i.map(c=>L(c));return function(a){const l=(a==null?void 0:a[e])||s;return I(()=>({[`__scope${e}`]:{...a,[e]:l}}),[a,l])}};return n.scopeName=e,[o,J(n,...t)]}function J(...e){const t=e[0];if(e.length===1)return t;const i=()=>{const o=e.map(n=>({useScope:n(),scopeName:n.scopeName}));return function(s){const c=o.reduce((a,{useScope:l,scopeName:u})=>{const d=l(s)[`__scope${u}`];return{...a,...d}},{});return I(()=>({[`__scope${t.scopeName}`]:c}),[c])}};return i.scopeName=t.scopeName,i}function k(e,t){if(typeof e=="function")return e(t);e!=null&&(e.current=t)}function Q(...e){return t=>{let i=!1;const o=e.map(n=>{const s=k(n,t);return!i&&typeof s=="function"&&(i=!0),s});if(i)return()=>{for(let n=0;n<o.length;n++){const s=o[n];typeof s=="function"?s():k(e[n],null)}}}}function X(e){const t=Z(e),i=N((o,n)=>{const{children:s,...c}=o,a=S.toArray(s),l=a.find(ee);if(l){const u=l.props.children,m=a.map(d=>d===l?S.count(u)>1?S.only(null):w(u)?u.props.children:null:d);return r(t,{...c,ref:n,children:w(u)?U(u,void 0,m):null})}return r(t,{...c,ref:n,children:s})});return i.displayName=`${e}.Slot`,i}function Z(e){const t=N((i,o)=>{const{children:n,...s}=i;if(w(n)){const c=te(n),a=re(s,n.props);return n.type!==P&&(a.ref=o?Q(o,c):c),U(n,a)}return S.count(n)>1?S.only(null):null});return t.displayName=`${e}.SlotClone`,t}var Y=Symbol("radix.slottable");function ee(e){return w(e)&&typeof e.type=="function"&&"__radixId"in e.type&&e.type.__radixId===Y}function re(e,t){const i={...t};for(const o in t){const n=e[o],s=t[o];/^on[A-Z]/.test(o)?n&&s?i[o]=(...a)=>{const l=s(...a);return n(...a),l}:n&&(i[o]=n):o==="style"?i[o]={...n,...s}:o==="className"&&(i[o]=[n,s].filter(Boolean).join(" "))}return{...e,...i}}function te(e){var o,n;let t=(o=Object.getOwnPropertyDescriptor(e.props,"ref"))==null?void 0:o.get,i=t&&"isReactWarning"in t&&t.isReactWarning;return i?e.ref:(t=(n=Object.getOwnPropertyDescriptor(e,"ref"))==null?void 0:n.get,i=t&&"isReactWarning"in t&&t.isReactWarning,i?e.props.ref:e.props.ref||e.ref)}var ne=["a","button","div","form","h2","h3","img","input","label","li","nav","ol","p","select","span","svg","ul"],$=ne.reduce((e,t)=>{const i=X(`Primitive.${t}`),o=N((n,s)=>{const{asChild:c,...a}=n,l=c?i:t;return typeof window<"u"&&(window[Symbol.for("radix-ui")]=!0),r(l,{...a,ref:s})});return o.displayName=`Primitive.${t}`,{...e,[t]:o}},{}),O="Progress",R=100,[oe,Te]=q(O),[ie,se]=oe(O),F=N((e,t)=>{const{__scopeProgress:i,value:o=null,max:n,getValueLabel:s=ae,...c}=e;(n||n===0)&&!D(n)&&console.error(le(`${n}`,"Progress"));const a=D(n)?n:R;o!==null&&!A(o,a)&&console.error(ce(`${o}`,"Progress"));const l=A(o,a)?o:null,u=C(l)?s(l,a):void 0;return r(ie,{scope:i,value:l,max:a,children:r($.div,{"aria-valuemax":a,"aria-valuemin":0,"aria-valuenow":C(l)?l:void 0,"aria-valuetext":u,role:"progressbar","data-state":M(l,a),"data-value":l??void 0,"data-max":a,...c,ref:t})})});F.displayName=O;var W="ProgressIndicator",j=N((e,t)=>{const{__scopeProgress:i,...o}=e,n=se(W,i);return r($.div,{"data-state":M(n.value,n.max),"data-value":n.value??void 0,"data-max":n.max,...o,ref:t})});j.displayName=W;function ae(e,t){return`${Math.round(e/t*100)}%`}function M(e,t){return e==null?"indeterminate":e===t?"complete":"loading"}function C(e){return typeof e=="number"}function D(e){return C(e)&&!isNaN(e)&&e>0}function A(e,t){return C(e)&&!isNaN(e)&&e<=t&&e>=0}function le(e,t){return`Invalid prop \`max\` of value \`${e}\` supplied to \`${t}\`. Only numbers greater than 0 are valid max values. Defaulting to \`${R}\`.`}function ce(e,t){return`Invalid prop \`value\` of value \`${e}\` supplied to \`${t}\`. The \`value\` prop must be:
+import { O as C, _ as M, p as O, D as P } from './vx-compat.module.js';
+import { y as $, h as b, T as R, u as r, k as T, J as W, D as X, a as Y } from './vx-hooks.module.js';
+function Z(e, t = []) {
+  let n = [];
+  function s(i, c) {
+    const a = W(c),
+      l = n.length;
+    n = [...n, c];
+    const d = (p) => {
+      var f;
+      const { scope: h, children: w, ...x } = p,
+        S = ((f = h == null ? void 0 : h[e]) == null ? void 0 : f[l]) || a,
+        y = R(() => x, Object.values(x));
+      return r(S.Provider, { value: y, children: w });
+    };
+    d.displayName = i + 'Provider';
+    function u(p, h) {
+      var S;
+      const w = ((S = h == null ? void 0 : h[e]) == null ? void 0 : S[l]) || a,
+        x = Y(w);
+      if (x) return x;
+      if (c !== void 0) return c;
+      throw new Error(`\`${p}\` must be used within \`${i}\``);
+    }
+    return [d, u];
+  }
+  const o = () => {
+    const i = n.map((c) => W(c));
+    return function (a) {
+      const l = (a == null ? void 0 : a[e]) || i;
+      return R(() => ({ [`__scope${e}`]: { ...a, [e]: l } }), [a, l]);
+    };
+  };
+  return (o.scopeName = e), [s, Q(o, ...t)];
+}
+function Q(...e) {
+  const t = e[0];
+  if (e.length === 1) return t;
+  const n = () => {
+    const s = e.map((o) => ({ useScope: o(), scopeName: o.scopeName }));
+    return function (i) {
+      const c = s.reduce((a, { useScope: l, scopeName: d }) => {
+        const p = l(i)[`__scope${d}`];
+        return { ...a, ...p };
+      }, {});
+      return R(() => ({ [`__scope${t.scopeName}`]: c }), [c]);
+    };
+  };
+  return (n.scopeName = t.scopeName), n;
+}
+function L(e, t) {
+  if (typeof e == 'function') return e(t);
+  e != null && (e.current = t);
+}
+function ee(...e) {
+  return (t) => {
+    let n = !1;
+    const s = e.map((o) => {
+      const i = L(o, t);
+      return !n && typeof i == 'function' && (n = !0), i;
+    });
+    if (n)
+      return () => {
+        for (let o = 0; o < s.length; o++) {
+          const i = s[o];
+          typeof i == 'function' ? i() : L(e[o], null);
+        }
+      };
+  };
+}
+function re(e) {
+  const t = te(e),
+    n = P((s, o) => {
+      const { children: i, ...c } = s,
+        a = C.toArray(i),
+        l = a.find(oe);
+      if (l) {
+        const d = l.props.children,
+          u = a.map((p) => (p === l ? (C.count(d) > 1 ? C.only(null) : O(d) ? d.props.children : null) : p));
+        return r(t, { ...c, ref: o, children: O(d) ? M(d, void 0, u) : null });
+      }
+      return r(t, { ...c, ref: o, children: i });
+    });
+  return (n.displayName = `${e}.Slot`), n;
+}
+function te(e) {
+  const t = P((n, s) => {
+    const { children: o, ...i } = n;
+    if (O(o)) {
+      const c = ie(o),
+        a = se(i, o.props);
+      return o.type !== T && (a.ref = s ? ee(s, c) : c), M(o, a);
+    }
+    return C.count(o) > 1 ? C.only(null) : null;
+  });
+  return (t.displayName = `${e}.SlotClone`), t;
+}
+var ne = Symbol('radix.slottable');
+function oe(e) {
+  return O(e) && typeof e.type == 'function' && '__radixId' in e.type && e.type.__radixId === ne;
+}
+function se(e, t) {
+  const n = { ...t };
+  for (const s in t) {
+    const o = e[s],
+      i = t[s];
+    /^on[A-Z]/.test(s)
+      ? o && i
+        ? (n[s] = (...a) => {
+            const l = i(...a);
+            return o(...a), l;
+          })
+        : o && (n[s] = o)
+      : s === 'style'
+        ? (n[s] = { ...o, ...i })
+        : s === 'className' && (n[s] = [o, i].filter(Boolean).join(' '));
+  }
+  return { ...e, ...n };
+}
+function ie(e) {
+  var s, o;
+  let t = (s = Object.getOwnPropertyDescriptor(e.props, 'ref')) == null ? void 0 : s.get,
+    n = t && 'isReactWarning' in t && t.isReactWarning;
+  return n
+    ? e.ref
+    : ((t = (o = Object.getOwnPropertyDescriptor(e, 'ref')) == null ? void 0 : o.get),
+      (n = t && 'isReactWarning' in t && t.isReactWarning),
+      n ? e.props.ref : e.props.ref || e.ref);
+}
+var ae = [
+    'a',
+    'button',
+    'div',
+    'form',
+    'h2',
+    'h3',
+    'img',
+    'input',
+    'label',
+    'li',
+    'nav',
+    'ol',
+    'p',
+    'select',
+    'span',
+    'svg',
+    'ul',
+  ],
+  V = ae.reduce((e, t) => {
+    const n = re(`Primitive.${t}`),
+      s = P((o, i) => {
+        const { asChild: c, ...a } = o,
+          l = c ? n : t;
+        return typeof window < 'u' && (window[Symbol.for('radix-ui')] = !0), r(l, { ...a, ref: i });
+      });
+    return (s.displayName = `Primitive.${t}`), { ...e, [t]: s };
+  }, {}),
+  k = 'Progress',
+  D = 100,
+  [le, De] = Z(k),
+  [ce, de] = le(k),
+  z = P((e, t) => {
+    const { __scopeProgress: n, value: s = null, max: o, getValueLabel: i = ue, ...c } = e;
+    (o || o === 0) && !U(o) && console.error(me(`${o}`, 'Progress'));
+    const a = U(o) ? o : D;
+    s !== null && !j(s, a) && console.error(pe(`${s}`, 'Progress'));
+    const l = j(s, a) ? s : null,
+      d = I(l) ? i(l, a) : void 0;
+    return r(ce, {
+      scope: n,
+      value: l,
+      max: a,
+      children: r(V.div, {
+        'aria-valuemax': a,
+        'aria-valuemin': 0,
+        'aria-valuenow': I(l) ? l : void 0,
+        'aria-valuetext': d,
+        role: 'progressbar',
+        'data-state': K(l, a),
+        'data-value': l ?? void 0,
+        'data-max': a,
+        ...c,
+        ref: t,
+      }),
+    });
+  });
+z.displayName = k;
+var H = 'ProgressIndicator',
+  G = P((e, t) => {
+    const { __scopeProgress: n, ...s } = e,
+      o = de(H, n);
+    return r(V.div, {
+      'data-state': K(o.value, o.max),
+      'data-value': o.value ?? void 0,
+      'data-max': o.max,
+      ...s,
+      ref: t,
+    });
+  });
+G.displayName = H;
+function ue(e, t) {
+  return `${Math.round((e / t) * 100)}%`;
+}
+function K(e, t) {
+  return e == null ? 'indeterminate' : e === t ? 'complete' : 'loading';
+}
+function I(e) {
+  return typeof e == 'number';
+}
+function U(e) {
+  return I(e) && !isNaN(e) && e > 0;
+}
+function j(e, t) {
+  return I(e) && !isNaN(e) && e <= t && e >= 0;
+}
+function me(e, t) {
+  return `Invalid prop \`max\` of value \`${e}\` supplied to \`${t}\`. Only numbers greater than 0 are valid max values. Defaulting to \`${D}\`.`;
+}
+function pe(e, t) {
+  return `Invalid prop \`value\` of value \`${e}\` supplied to \`${t}\`. The \`value\` prop must be:
   - a positive number
-  - less than the value passed to \`max\` (or ${R} if no \`max\` prop is set)
+  - less than the value passed to \`max\` (or ${D} if no \`max\` prop is set)
   - \`null\` or \`undefined\` if the progress is indeterminate.
 
-Defaulting to \`null\`.`}var de=F,ue=j;const me="https://shopify-server-peach.vercel.app/shipment-updates",pe=30*60*1e3,he=768,T={FULFILLED:90,IN_PROGRESS:75,PARTIALLY_FULFILLED:60,PENDING_FULFILLMENT:50,SCHEDULED:40,OPEN:25,UNFULFILLED:25,ON_HOLD:30,REQUEST_DECLINED:20,RESTOCKED:10,DEFAULT:25},E={NETWORK:"Unable to connect to the server. Please check your connection and try again.",NOT_FOUND:"Order not found. Please check your order number and email.",INVALID_INPUT:"Please enter both email and order number.",GENERIC:"Something went wrong. Please try again later."},b=()=>window.innerWidth<he,V=e=>e.replace(/-/g,"").trim().toUpperCase(),G=(e,t)=>`order_${e}_${V(t)}`,ge=(e,t)=>{try{const i=G(e,t),o=sessionStorage.getItem(i);if(!o)return null;const n=JSON.parse(o);return Date.now()-n.timestamp>pe?(sessionStorage.removeItem(i),null):n.data}catch{return null}},fe=(e,t,i)=>{try{const o=G(e,t),n={data:i,timestamp:Date.now()};sessionStorage.setItem(o,JSON.stringify(n))}catch(o){console.warn("Failed to cache order data:",o)}},B=()=>{try{const e=new URLSearchParams(window.location.search),t=e.get("email"),i=e.get("order");if(t&&i)return{email:t.trim(),orderNumber:i.trim()}}catch{}return null},ye=e=>{if(!e)return"";try{return new Date(e).toLocaleString("en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}catch{return e}},h={container:{maxWidth:"1100px",margin:"0 auto",padding:"2rem"},grid:{display:"grid",gridTemplateColumns:"repeat(12, 1fr)",fontSize:b()?"1.25rem":"1.5rem"},sectionTitle:{fontSize:"1.5rem",textTransform:"uppercase",marginBottom:"1rem"},sectionSubtitle:{marginBottom:"1rem",fontWeight:200,opacity:.7},button:{padding:"0.8rem 1.7rem",borderRadius:"100px",fontSize:b()?"1rem":"1.5rem",border:"none",cursor:"pointer",transition:"opacity 0.2s"},primaryButton:{backgroundColor:"var(--accent-color, #000)",color:"white"},secondaryButton:{backgroundColor:"#f0f0f0",color:"#000"},errorBox:{padding:"1rem",backgroundColor:"#fee",border:"1px solid #fcc",borderRadius:"4px",color:"#c00",marginBottom:"1rem"},loadingContainer:{display:"flex",justifyContent:"center",alignItems:"center",minHeight:"200px"}},be=()=>r("div",{style:h.loadingContainer,children:r("div",{style:{textAlign:"center"},children:[r("div",{style:{width:"40px",height:"40px",border:"3px solid #f3f3f3",borderTop:"3px solid var(--accent-color, #333)",borderRadius:"50%",animation:"spin 1s linear infinite",margin:"0 auto 1rem"}}),r("p",{children:"Loading order details..."}),r("style",{children:`
+Defaulting to \`null\`.`;
+}
+var ge = z,
+  he = G;
+const ye = 'https://shopify-server-peach.vercel.app/shipment-updates',
+  fe = 30 * 60 * 1e3,
+  be = 768,
+  ve = (e, t, n) => {
+    switch (e) {
+      case 1:
+        return {
+          status: 'Order Placed',
+          stage: 'Preparing',
+          message: 'We are preparing to dispatch your order.',
+          progress: 52,
+          color: 'linear-gradient(to right bottom, rgb(67, 233, 123) 0%, rgb(48, 211, 172) 100%)',
+        };
+      case 2:
+        return {
+          status: 'Dispatched',
+          stage: 'Shipped',
+          message: 'Your order has been dispatched and is on its way to your destination.',
+          progress: 65,
+          color: 'linear-gradient(to right bottom, rgb(67, 233, 123) 0%, rgb(48, 211, 172) 100%)',
+        };
+      case 3:
+        return {
+          status: 'On Its Way',
+          stage: 'Shipped',
+          message: 'Your order is on its way to you.',
+          progress: 75,
+          color: 'linear-gradient(to right bottom, rgb(67, 233, 123) 0%, rgb(48, 211, 172) 100%)',
+        };
+      case 4:
+        return {
+          status: 'Out For Delivery',
+          stage: 'Shipped',
+          message: 'Your order should be delivered soon.',
+          progress: 90,
+          color: 'linear-gradient(to right bottom, rgb(67, 233, 123) 0%, rgb(48, 211, 172) 100%)',
+        };
+      case 5:
+        return {
+          status: 'Delivery Failed',
+          stage: 'Cancelled',
+          message: 'We could not deliver your order.',
+          progress: 100,
+          color: "var('--danger-red')",
+        };
+      case 6:
+        return {
+          status: 'Delivered',
+          stage: 'Delivered',
+          message: 'We have successfully delivered your order.',
+          progress: 100,
+          color: 'linear-gradient(to right bottom, rgb(67, 233, 123) 0%, rgb(48, 211, 172) 100%)',
+        };
+      case 7:
+        return {
+          status: 'Returned',
+          stage: 'Cancelled',
+          message: 'The products in this order are on their way back to us.',
+          progress: 100,
+          color: "var('--danger-red')",
+        };
+      default:
+        return t
+          ? {
+              status: 'Order Confirmed',
+              stage: 'Preparing',
+              message: 'We have received your order and are now processing it.',
+              progress: 40,
+              color: 'linear-gradient(to right bottom, rgb(67, 233, 123) 0%, rgb(48, 211, 172) 100%)',
+            }
+          : n
+            ? {
+                status: 'Order Cancelled',
+                stage: 'Cancelled',
+                message: 'We have gone ahead and cancelled this order.',
+                progress: 100,
+                color: "var('--danger-red')",
+              }
+            : {
+                status: 'Order Placed',
+                stage: 'Processing',
+                message: 'We are now processing your order.',
+                progress: 25,
+                color: 'linear-gradient(to right bottom, rgb(67, 233, 123) 0%, rgb(48, 211, 172) 100%)',
+              };
+    }
+  },
+  E = {
+    NETWORK: 'Unable to connect to the server. Please check your connection and try again.',
+    NOT_FOUND: 'We could not find this order. Double check the details and try again?',
+    INVALID_INPUT: 'Please enter both email and order number.',
+    GENERIC: 'Something went wrong. Please try again later.',
+  },
+  v = () => window.innerWidth < be,
+  q = (e) => e.trim().toUpperCase(),
+  J = (e, t) => `order_${e}_${q(t)}`,
+  xe = (e, t) => {
+    try {
+      const n = J(e, t),
+        s = sessionStorage.getItem(n);
+      if (!s) return null;
+      const o = JSON.parse(s);
+      return Date.now() - o.timestamp > fe ? (sessionStorage.removeItem(n), null) : o.data;
+    } catch {
+      return null;
+    }
+  },
+  Se = (e, t, n) => {
+    try {
+      const s = J(e, t),
+        o = { data: n, timestamp: Date.now() };
+      sessionStorage.setItem(s, JSON.stringify(o));
+    } catch (s) {
+      console.warn('Failed to cache order data:', s);
+    }
+  },
+  F = () => {
+    try {
+      const e = new URLSearchParams(window.location.search),
+        t = e.get('email'),
+        n = e.get('order');
+      if (t && n) return { email: t.trim(), orderNumber: n.trim() };
+    } catch {}
+    return null;
+  },
+  _e = (e) => {
+    if (!e) return '';
+    try {
+      return new Date(e).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return e;
+    }
+  },
+  m = {
+    container: { maxWidth: '1100px', margin: '0 auto', padding: '2rem' },
+    grid: { display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', fontSize: v() ? '1.25rem' : '1.5rem' },
+    sectionTitle: { fontSize: '1.5rem', textTransform: 'uppercase', marginBottom: '1rem' },
+    sectionSubtitle: { marginBottom: '1rem', fontWeight: 200, opacity: 0.7 },
+    button: {
+      padding: '0.8rem 1.7rem',
+      borderRadius: '100px',
+      fontSize: v() ? '1rem' : '1.5rem',
+      border: 'none',
+      cursor: 'pointer',
+      transition: 'opacity 0.2s',
+    },
+    primaryButton: { backgroundColor: 'var(--accent-color, #000)', color: 'white' },
+    secondaryButton: { backgroundColor: '#f0f0f0', color: '#000' },
+    errorBox: {
+      padding: '2rem',
+      border: '1px solid var(--danger-red)',
+      borderRadius: '6px',
+      color: 'var(--danger-red)',
+      marginBottom: '2rem',
+      lineHeight: '1.4',
+    },
+    loadingContainer: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' },
+  },
+  we = () =>
+    r('div', {
+      style: m.loadingContainer,
+      children: r('div', {
+        style: { textAlign: 'center' },
+        children: [
+          r('div', {
+            style: {
+              width: '40px',
+              height: '40px',
+              border: '3px solid #f3f3f3',
+              borderTop: '3px solid var(--accent-color, #333)',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 1rem',
+            },
+          }),
+          r('p', { children: 'Loading order details...' }),
+          r('style', {
+            children: `
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
-      `})]})}),ve=({message:e})=>r("div",{style:h.errorBox,children:[r("strong",{children:"Error:"})," ",e]}),xe=({progress:e,color:t,orderStatus:i})=>(console.log({orderStatus:i}),r("div",{children:[r(de,{style:{position:"relative",overflow:"hidden",borderRadius:"9999px",height:"13px",backgroundColor:"#f2f2f2",transform:"translateZ(0)"},value:e,max:100,children:r(ue,{style:{display:"block",transform:`translateX(-${100-e}%)`,background:t||"red",height:"13px",borderRadius:"9999px",width:"100%",transition:"transform 660ms cubic-bezier(0.65, 0, 0.35, 1)"}})}),r("div",{style:{display:"flex",justifyContent:"space-between",marginTop:"0.5rem"},children:["Processing","Preparing","Shipped","Delivered"].map(o=>r("p",{style:{textAlign:"right",width:"25%",margin:"0.5rem 0"},children:o},o))})]})),_e=({products:e,currencyCode:t})=>r("ul",{style:{listStyle:"none",padding:0},children:e.map((i,o)=>r("li",{style:{marginBottom:"1rem"},children:r("div",{style:{...h.grid,alignItems:"center"},children:[r("div",{style:{gridColumn:"1/4",border:"1px solid #e4e4e4",borderRadius:"7px",width:b()?"70px":"90px",height:b()?"70px":"90px",display:"flex",justifyContent:"center",alignItems:"center"},children:i.image?r("img",{width:b()?65:75,height:b()?65:75,src:i.image,alt:i.name}):r("div",{style:{color:"#999"},children:"No image"})}),r("div",{style:{gridColumn:"4/9"},children:r("p",{style:{textTransform:"capitalize",margin:"0"},children:i.name})}),r("div",{style:{gridColumn:"9/13",textAlign:"right"},children:r("p",{style:{margin:"0"},children:[t," ",i.price," × ",i.quantity]})})]})},`${i.sku}-${o}`))}),Se=({onSubmit:e,isLoading:t,error:i,initialData:o})=>{const[n,s]=v((o==null?void 0:o.email)||""),[c,a]=v((o==null?void 0:o.orderNumber)||""),l=m=>{!n||!c||e({email:n,orderNumber:c})},u=b();return r("section",{style:{...u?{padding:"2rem"}:h.grid,...!u&&{...h.container}},children:[r("div",{style:u?{borderBottom:"1px solid #e4e4e4",paddingBottom:"2rem"}:{gridColumn:"1/7",borderRight:"1px solid #e4e4e4",paddingRight:"2rem"},children:[r("h3",{children:"Login to see your orders"}),r("p",{children:["Sign in with your ",window.s3_brand||"store"," account to see all your past orders."]}),r("a",{className:"button button--secondary button--xlarge link",href:"/account/login",children:"LOGIN TO VIEW ORDERS"})]}),r("div",{style:u?{paddingTop:"2rem"}:{gridColumn:"7/12",paddingLeft:"4rem"},children:r("div",{children:[r("h3",{children:"Find a specific order"}),i&&r(ve,{message:i.message}),r("div",{className:"field",style:{marginBottom:"1rem"},children:[r("input",{className:"field__input",placeholder:"Order Email",type:"email",name:"email",id:"order-email",value:n,onInput:m=>s(m.target.value),required:!0,disabled:t,onKeyPress:m=>{m.key==="Enter"&&c&&l()}}),r("label",{className:"field__label",htmlFor:"order-email",children:"Order Email"})]}),r("div",{className:"field",style:{marginBottom:"2rem"},children:[r("input",{className:"field__input",placeholder:"Order Number",type:"text",name:"order-number",id:"order-number",value:c,onInput:m=>{var d;return a((d=m.target)==null?void 0:d.value)},required:!0,disabled:t,onKeyPress:m=>{m.key==="Enter"&&n&&l()}}),r("label",{className:"field__label",htmlFor:"order-number",children:"Order Number"})]}),r("button",{className:"button button--primary button--xlarge button--full-width",onClick:()=>l(),disabled:t,style:{opacity:t?.7:1},children:t?"Tracking...":"Track"})]})})]})},Ne=({order:e,progress:t,onTrackAnother:i})=>{var s;const n=!!e.cancelled_at?"red":"linear-gradient(to right, #43e97b 0%, #38f9d7 100%)";return r("section",{style:{...h.container,maxWidth:"900px"},children:[r("div",{style:{marginBottom:"2rem"},children:r("button",{onClick:i,style:{...h.button,...h.secondaryButton,textTransform:"none",marginBottom:"1rem"},children:"← Track Another Order"})}),r("div",{children:[r("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"1rem"},children:[r("div",{style:{},children:[e.order_id&&r("p",{style:{marginBottom:0},children:e.order_id}),e.order_time&&r("p",{style:{marginTop:"0.25rem",letterSpacing:"0px"},children:[r("span",{style:{opacity:.6},children:"Placed on"})," ",ye(e.order_time)]})]}),e.tracking_link?r("a",{style:{display:"flex",gap:"0.5rem",alignItems:"center",background:n,color:"white",padding:"1rem 2rem",borderRadius:"100px",textDecoration:"none"},href:e.tracking_link,target:"_blank",rel:"noopener noreferrer",children:[r("span",{style:{fontSize:b()?"1rem":"1.5rem",letterSpacing:"0px"},children:"Track Shipment"}),r("svg",{width:14,fill:"none",strokeWidth:1.5,stroke:"currentColor",viewBox:"0 0 24 24",children:r("path",{d:"m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25",strokeLinecap:"round",strokeLinejoin:"round"})})]}):null]}),r(xe,{orderStatus:e.fulfillment_status||"UNFULFILLED",progress:t,color:n}),r("p",{children:((s=e.latest_status)==null?void 0:s.status_description)||""})]}),r("hr",{style:{margin:"2rem 0"}}),e.shipping_address&&r(P,{children:[r("div",{children:[r("h4",{style:h.sectionTitle,children:"Shipping Details"}),r("div",{children:[r("h5",{style:h.sectionSubtitle,children:"Address"}),r("p",{children:[e.shipping_address.name,r("br",{}),e.shipping_address.address1,r("br",{}),e.shipping_address.city,", ",e.shipping_address.zip,r("br",{}),e.shipping_address.country]})]}),e.awb&&e.carrier_name&&r("div",{children:[r("h5",{style:h.sectionSubtitle,children:"Shipment"}),r("p",{children:[e.carrier_name," (AWB: ",e.awb,")"]})]})]}),r("hr",{style:{margin:"2rem 0"}})]}),e.product_details&&e.product_details.length>0&&r(P,{children:[r("div",{children:[r("h4",{style:h.sectionTitle,children:"Products in this order"}),r(_e,{products:e.product_details,currencyCode:e.currency_code||"USD"})]}),r("hr",{style:{margin:"2rem 0"}})]}),e.sub_total!==null&&r(P,{children:[r("div",{children:[r("h4",{style:h.sectionTitle,children:"Order Summary"}),r("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center"},children:[r("p",{children:"Order Total"}),r("p",{style:{fontWeight:"bold"},children:[e.currency_code," ",e.sub_total]})]}),r("p",{style:{marginTop:"-0.5rem",opacity:.7},children:"All prices are tax inclusive."})]}),r("hr",{style:{margin:"2rem 0"}})]}),r("div",{children:[r("h4",{style:h.sectionTitle,children:"Need help with this order?"}),r("p",{children:"Reach out to us on below mentioned channels"})]})]})},Ee=()=>{const[e,t]=v("idle"),[i,o]=v(null),[n,s]=v(null),[c,a]=v(0);z(()=>{const d=B();d&&u(d)},[]);const l=d=>d&&T[d]||T.DEFAULT,u=async d=>{const{email:g,orderNumber:y}=d;if(!g||!y){s({message:E.INVALID_INPUT});return}const f=ge(g,y);if(f){o(f),a(l(f.fulfillment_status)),t("success"),s(null);try{const p=document.getElementsByClassName("main-page-title")[0];p&&(p.style.display="none")}catch{}return}t("loading"),s(null);try{const p=await fetch(me,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({order_id:V(y),email:g.trim()})});if(!p.ok)throw p.status===404?new Error(E.NOT_FOUND):new Error(E.NETWORK);const x=await p.json();fe(g,y,x),o(x),a(l(x.fulfillment_status)),t("success");try{const _=document.getElementsByClassName("main-page-title")[0];_&&(_.style.display="none")}catch{}}catch(p){console.error("Error fetching order:",p),s({message:p instanceof Error?p.message:E.GENERIC}),t("error")}},m=()=>{if(o(null),t("idle"),s(null),a(0),window.history.replaceState){const d=new URL(window.location.href);d.searchParams.delete("order"),d.searchParams.delete("email"),window.history.replaceState({},"",d.toString())}};return e==="loading"?r(be,{}):i&&e==="success"?r(Ne,{order:i,progress:c,onTrackAnother:m}):r(Se,{onSubmit:u,isLoading:e==="loading",error:n,initialData:B()})},Pe=document.getElementById("track-root");K(r(Ee,{}),Pe);
+      `,
+          }),
+        ],
+      }),
+    }),
+  Ce = ({ message: e }) => r('div', { style: m.errorBox, children: e }),
+  Pe = ({ progress: e, color: t, stage: n }) => {
+    const o =
+      n.toLowerCase() === 'cancelled'
+        ? ['REDACTED', 'REDACTED', 'REDACTED', 'Cancelled']
+        : ['Processing', 'Preparing', 'Shipped', 'Delivered'];
+    return r('div', {
+      children: [
+        r(ge, {
+          style: {
+            position: 'relative',
+            overflow: 'hidden',
+            borderRadius: '9999px',
+            height: '13px',
+            backgroundColor: '#f2f2f2',
+            transform: 'translateZ(0)',
+          },
+          value: e,
+          max: 100,
+          children: r(he, {
+            style: {
+              display: 'block',
+              transform: `translateX(-${100 - e}%)`,
+              background: t || 'var(--danger-red)',
+              height: '13px',
+              borderRadius: '9999px',
+              width: '100%',
+              transition: 'transform 660ms cubic-bezier(0.65, 0, 0.35, 1)',
+            },
+          }),
+        }),
+        r('div', {
+          style: { display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' },
+          children: o.map((i) =>
+            r(
+              'p',
+              {
+                style: {
+                  textAlign: 'right',
+                  letterSpacing: 0,
+                  width: '25%',
+                  margin: '0.5rem 0',
+                  opacity: i == n ? 1 : 0.3,
+                  color: 'black',
+                  fontSize: v() ? '1.3rem' : '1.6rem',
+                },
+                children: i == 'REDACTED' ? '' : i,
+              },
+              i,
+            ),
+          ),
+        }),
+      ],
+    });
+  },
+  Ne = ({ products: e, currencyCode: t }) =>
+    r('ul', {
+      style: { listStyle: 'none', padding: 0 },
+      children: e.map((n, s) =>
+        r(
+          'li',
+          {
+            style: { marginBottom: '1rem' },
+            children: r('div', {
+              style: { ...m.grid, alignItems: 'center' },
+              children: [
+                r('div', {
+                  style: {
+                    gridColumn: '1/4',
+                    border: '1px solid #e4e4e4',
+                    borderRadius: '7px',
+                    width: v() ? '70px' : '90px',
+                    height: v() ? '70px' : '90px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  },
+                  children: n.image
+                    ? r('img', { width: v() ? 65 : 75, height: v() ? 65 : 75, src: n.image, alt: n.name })
+                    : r('div', { style: { color: '#999' }, children: 'No image' }),
+                }),
+                r('div', {
+                  style: { gridColumn: '4/9' },
+                  children: r('p', { style: { textTransform: 'capitalize', margin: '0' }, children: n.name }),
+                }),
+                r('div', {
+                  style: { gridColumn: '9/13', textAlign: 'right' },
+                  children: r('p', { style: { margin: '0' }, children: [t, ' ', n.price, ' × ', n.quantity] }),
+                }),
+              ],
+            }),
+          },
+          `${n.sku}-${s}`,
+        ),
+      ),
+    }),
+  Ee = ({ onSubmit: e, isLoading: t, error: n, initialData: s }) => {
+    const [o, i] = b((s == null ? void 0 : s.email) || ''),
+      [c, a] = b((s == null ? void 0 : s.orderNumber) || ''),
+      l = (u) => {
+        !o || !c || e({ email: o, orderNumber: c });
+      },
+      d = v();
+    return r('section', {
+      style: { ...(d ? { padding: '2rem' } : m.grid), ...(!d && { ...m.container }) },
+      children: [
+        r('div', {
+          style: d
+            ? { borderBottom: '1px solid #e4e4e4', paddingBottom: '2rem' }
+            : { gridColumn: '1/7', borderRight: '1px solid #e4e4e4', paddingRight: '2rem' },
+          children: [
+            r('h3', { children: 'Login to see your orders' }),
+            r('p', {
+              children: ['Sign in with your ', window.s3_brand || 'store', ' account to see all your past orders.'],
+            }),
+            r('a', {
+              className: 'button button--secondary button--xlarge link',
+              href: '/account/login',
+              children: 'LOGIN TO VIEW ORDERS',
+            }),
+          ],
+        }),
+        r('div', {
+          style: d ? { paddingTop: '2rem' } : { gridColumn: '7/12', paddingLeft: '4rem' },
+          children: r('div', {
+            children: [
+              r('h3', { children: 'Find a specific order' }),
+              n && r(Ce, { message: n.message }),
+              r('div', {
+                className: 'field',
+                style: { marginBottom: '1rem' },
+                children: [
+                  r('input', {
+                    className: 'field__input',
+                    placeholder: 'Order Email',
+                    type: 'email',
+                    name: 'email',
+                    id: 'order-email',
+                    value: o,
+                    onInput: (u) => i(u.target.value),
+                    required: !0,
+                    disabled: t,
+                    onKeyPress: (u) => {
+                      u.key === 'Enter' && c && l();
+                    },
+                  }),
+                  r('label', { className: 'field__label', htmlFor: 'order-email', children: 'Order Email' }),
+                ],
+              }),
+              r('div', {
+                className: 'field',
+                style: { marginBottom: '2rem' },
+                children: [
+                  r('input', {
+                    className: 'field__input',
+                    placeholder: 'Order Number',
+                    type: 'text',
+                    name: 'order-number',
+                    id: 'order-number',
+                    value: c,
+                    onInput: (u) => {
+                      var p, h;
+                      return a((h = (p = u.target) == null ? void 0 : p.value) == null ? void 0 : h.toUpperCase());
+                    },
+                    required: !0,
+                    disabled: t,
+                    onKeyPress: (u) => {
+                      u.key === 'Enter' && o && l();
+                    },
+                  }),
+                  r('label', { className: 'field__label', htmlFor: 'order-number', children: 'Order Number' }),
+                ],
+              }),
+              r('button', {
+                className: 'button button--primary button--xlarge button--full-width',
+                onClick: () => l(),
+                disabled: t,
+                style: { opacity: t ? 0.7 : 1 },
+                children: t ? 'Tracking...' : 'Track',
+              }),
+            ],
+          }),
+        }),
+      ],
+    });
+  },
+  Te = ({ order: e, progress: t, onTrackAnother: n, cssColor: s, stage: o, message: i }) =>
+    r('section', {
+      style: { ...m.container, maxWidth: '900px' },
+      children: [
+        r('div', {
+          style: { marginBottom: '2rem' },
+          children: r('button', {
+            onClick: n,
+            style: { ...m.button, ...m.secondaryButton, textTransform: 'none', marginBottom: '1rem' },
+            children: '← Track Another Order',
+          }),
+        }),
+        r('div', {
+          children: [
+            r('div', {
+              style: {
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '1rem',
+              },
+              children: [
+                r('div', {
+                  style: {},
+                  children: [
+                    e.order_id && r('p', { style: { marginBottom: 0 }, children: e.order_id }),
+                    e.order_time &&
+                      r('p', {
+                        style: { marginTop: '0.25rem', letterSpacing: '0px' },
+                        children: [
+                          r('span', { style: { opacity: 0.6 }, children: 'Placed on' }),
+                          ' ',
+                          _e(e.order_time),
+                        ],
+                      }),
+                  ],
+                }),
+                e.tracking_link
+                  ? r('a', {
+                      style: {
+                        display: 'flex',
+                        gap: '0.5rem',
+                        alignItems: 'center',
+                        background: s,
+                        color: 'white',
+                        padding: '1rem 2rem',
+                        borderRadius: '100px',
+                        textDecoration: 'none',
+                      },
+                      href: e.tracking_link,
+                      target: '_blank',
+                      rel: 'noopener noreferrer',
+                      children: [
+                        r('span', {
+                          style: { fontSize: v() ? '1.1rem' : '1.5rem', letterSpacing: '0px' },
+                          children: 'Track Shipment',
+                        }),
+                        r('svg', {
+                          width: 14,
+                          fill: 'none',
+                          strokeWidth: 1.5,
+                          stroke: 'currentColor',
+                          viewBox: '0 0 24 24',
+                          children: r('path', {
+                            d: 'm4.5 19.5 15-15m0 0H8.25m11.25 0v11.25',
+                            strokeLinecap: 'round',
+                            strokeLinejoin: 'round',
+                          }),
+                        }),
+                      ],
+                    })
+                  : null,
+              ],
+            }),
+            r(Pe, { progress: t, color: s, stage: o }),
+            r('p', { children: i || '' }),
+          ],
+        }),
+        r('hr', { style: { margin: '2rem 0' } }),
+        e.shipping_address &&
+          r(T, {
+            children: [
+              r('div', {
+                children: [
+                  r('h4', { style: m.sectionTitle, children: 'Shipping Details' }),
+                  r('div', {
+                    children: [
+                      r('h5', { style: m.sectionSubtitle, children: 'Address' }),
+                      r('p', {
+                        children: [
+                          e.shipping_address.name,
+                          r('br', {}),
+                          e.shipping_address.address1,
+                          r('br', {}),
+                          e.shipping_address.city,
+                          ', ',
+                          e.shipping_address.zip,
+                          r('br', {}),
+                          e.shipping_address.country,
+                        ],
+                      }),
+                    ],
+                  }),
+                  e.awb &&
+                    e.carrier_name &&
+                    r('div', {
+                      children: [
+                        r('h5', { style: m.sectionSubtitle, children: 'Shipment' }),
+                        r('p', { children: [e.carrier_name, ' (AWB: ', e.awb, ')'] }),
+                      ],
+                    }),
+                ],
+              }),
+              r('hr', { style: { margin: '2rem 0' } }),
+            ],
+          }),
+        e.product_details &&
+          e.product_details.length > 0 &&
+          r(T, {
+            children: [
+              r('div', {
+                children: [
+                  r('h4', { style: m.sectionTitle, children: 'Products in this order' }),
+                  r(Ne, { products: e.product_details, currencyCode: e.currency_code || 'USD' }),
+                ],
+              }),
+              r('hr', { style: { margin: '2rem 0' } }),
+            ],
+          }),
+        e.sub_total !== null &&
+          r(T, {
+            children: [
+              r('div', {
+                children: [
+                  r('h4', { style: m.sectionTitle, children: 'Order Summary' }),
+                  r('div', {
+                    style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+                    children: [
+                      r('p', { children: 'Order Total' }),
+                      r('p', { style: { fontWeight: 'bold' }, children: [e.currency_code, ' ', e.sub_total] }),
+                    ],
+                  }),
+                  r('p', { style: { marginTop: '-0.5rem', opacity: 0.7 }, children: 'All prices are tax inclusive.' }),
+                ],
+              }),
+              r('hr', { style: { margin: '2rem 0' } }),
+            ],
+          }),
+        r('div', {
+          children: [
+            r('h4', { style: m.sectionTitle, children: 'Need help with this order?' }),
+            r('p', { children: 'Reach out to us on below mentioned channels' }),
+          ],
+        }),
+      ],
+    }),
+  Oe = () => {
+    const [e, t] = b('idle'),
+      [n, s] = b(null),
+      [o, i] = b(null),
+      [c, a] = b(0),
+      [l, d] = b('Processing'),
+      [u, p] = b(''),
+      [h, w] = b('#000000');
+    $(() => {
+      const y = F();
+      y && x(y);
+    }, []),
+      $(() => {
+        var g;
+        const {
+          progress: y,
+          stage: f,
+          message: _,
+          color: N,
+        } = ve(
+          (g = n == null ? void 0 : n.latest_status) == null ? void 0 : g.status_bucket_code_int,
+          (n == null ? void 0 : n.confimed) || !1,
+          !!(n != null && n.cancelled_at),
+        );
+        a(y), d(f), w(N), p(_);
+      }, [n]);
+    const x = async (y) => {
+        const { email: f, orderNumber: _ } = y;
+        if (!f || !_) {
+          i({ message: E.INVALID_INPUT });
+          return;
+        }
+        const N = xe(f, _);
+        if (N) {
+          s(N), t('success'), i(null);
+          try {
+            const g = document.getElementsByClassName('main-page-title')[0];
+            g && (g.style.display = 'none');
+          } catch {}
+          return;
+        }
+        t('loading'), i(null);
+        try {
+          const g = await fetch(ye, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order_id: q(_), email: f.trim() }),
+          });
+          if (!g.ok) throw g.status === 404 ? new Error(E.NOT_FOUND) : new Error(E.NETWORK);
+          const A = await g.json();
+          Se(f, _, A), s(A), t('success');
+          try {
+            const B = document.getElementsByClassName('main-page-title')[0];
+            B && (B.style.display = 'none');
+          } catch {}
+        } catch (g) {
+          console.error('Error fetching order:', g),
+            i({ message: g instanceof Error ? g.message : E.GENERIC }),
+            t('error');
+        }
+      },
+      S = () => {
+        if ((s(null), t('idle'), i(null), a(0), window.history.replaceState)) {
+          const y = new URL(window.location.href);
+          y.searchParams.delete('order'),
+            y.searchParams.delete('email'),
+            window.history.replaceState({}, '', y.toString());
+        }
+      };
+    return e === 'loading'
+      ? r(we, {})
+      : n && e === 'success'
+        ? r(Te, { order: n, progress: c, stage: l, message: u, cssColor: h, onTrackAnother: S })
+        : r(Ee, { onSubmit: x, isLoading: e === 'loading', error: o, initialData: F() });
+  },
+  Ie = document.getElementById('track-root');
+X(r(Oe, {}), Ie);
