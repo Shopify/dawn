@@ -10,23 +10,55 @@
             {% if block.settings.heading != blank %}
               <h1 class="page-block__heading">{{ block.settings.heading }}</h1>
             {% endif %}
-            <div class="archive-events">
-              {% for i in (1..9) %}
-                {% assign event_title_key = 'event' | append: i | append: '_title' %}
-                {% assign event_description_key = 'event' | append: i | append: '_description' %}
-                {% assign event_image_key = 'event' | append: i | append: '_image' %}
+            <div class="page-block__columns">
+              <div class="page-block__column page-block__column--events">
+                <div class="archive-events">
+                  {% for i in (1..9) %}
+                    {% assign event_title_key = 'event' | append: i | append: '_title' %}
+                    {% assign event_description_key = 'event' | append: i | append: '_description' %}
+                    {% assign event_image_key = 'event' | append: i | append: '_image' %}
 
-                {% assign event_title = block.settings[event_title_key] %}
-                {% assign event_description = block.settings[event_description_key] %}
-                {% assign event_image = block.settings[event_image_key] %}
+                    {% assign event_title = block.settings[event_title_key] %}
+                    {% assign event_description = block.settings[event_description_key] %}
+                    {% assign event_image = block.settings[event_image_key] %}
 
-                {% if event_title != blank %}
-                  <div class="archive-event">
-                    <div class="archive-event__title">{{ event_title }}</div>
-                    <div class="archive-event__description">{{ event_description }}</div>
-                  </div>
-                {% endif %}
-              {% endfor %}
+                    {% if event_title != blank %}
+                      <div class="archive-event" data-image-id="Event-Image-{{ i }}-{{ block.id }}">
+                        <div class="archive-event__title">{{ event_title }}</div>
+                        <div class="archive-event__description">{{ event_description }}</div>
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="page-block__column page-block__column--images">
+                <div class="page-block__event-images">
+                  {% for i in (1..9) %}
+                    {% assign event_image_key = 'event' | append: i | append: '_image' %}
+                    {% assign event_title_key = 'event' | append: i | append: '_title' %}
+
+                    {% assign event_image = block.settings[event_image_key] %}
+                    {% assign event_title = block.settings[event_title_key] %}
+
+                    {% if event_image != blank %}
+                      <div
+                        class="page-block__event-image{% if forloop.first %} active{% endif %}"
+                        id="Event-Image-{{ i }}-{{ block.id }}"
+                      >
+                        {% assign img_url = event_image | img_url: '1600x' %}
+                        <img
+                          srcset="{{ img_url }} 1x, {{ event_image | img_url: '1600x', scale: 2 }} 2x"
+                          src="{{ img_url }}"
+                          alt="{{ event_title | escape }}"
+                          loading="lazy"
+                          width="{{ event_image.width }}"
+                          height="{{ event_image.height }}"
+                        >
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -863,6 +895,66 @@
 
       // Start the slideshow interval
       setInterval(nextSlide, speed);
+    });
+
+    // Initialize archive events hover functionality
+    const archiveBlocks = document.querySelectorAll('.page-block--archive-events');
+
+    archiveBlocks.forEach((block) => {
+      const events = block.querySelectorAll('.archive-event');
+      const eventImages = block.querySelectorAll('.page-block__event-image');
+
+      // Show first image by default
+      if (eventImages.length > 0) {
+        eventImages.forEach((img) => {
+          img.classList.remove('active');
+        });
+        eventImages[0].classList.add('active');
+      }
+
+      // Add hover event listeners to events
+      events.forEach((event) => {
+        const imageId = event.getAttribute('data-image-id');
+        const imageElement = imageId ? document.getElementById(imageId) : null;
+
+        event.addEventListener('mouseenter', function () {
+          // Hide all images
+          eventImages.forEach((img) => {
+            img.classList.remove('active');
+          });
+
+          // Show the corresponding image
+          if (imageElement) {
+            imageElement.classList.add('active');
+          } else {
+            // If no image for this event, show the first image
+            if (eventImages.length > 0) {
+              eventImages[0].classList.add('active');
+            }
+          }
+        });
+
+        // When mouse leaves all events, show the first image
+        event.addEventListener('mouseleave', function () {
+          // Delay hiding to avoid flickering when moving between events
+          setTimeout(() => {
+            // Check if mouse is over any event
+            const isHovering = Array.from(events).some((e) => e.matches(':hover'));
+
+            if (!isHovering) {
+              // Hide all images
+              eventImages.forEach((img) => {
+                img.classList.remove('active');
+              });
+
+              // Show the first image
+              if (eventImages.length > 0) {
+                eventImages[0].classList.add('active');
+              }
+            }
+          }, 50);
+        });
+      });
     });
   });
 </script>
