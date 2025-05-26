@@ -1,0 +1,271 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Shopify Custom Block Development
+
+This guide documents the process of creating custom blocks and page templates for the Rave Shopify theme, based on our experience developing the About page with collapsible sections.
+
+## 1. Block Type Structure in Schema
+
+Custom blocks are defined in section files (e.g., [sections/custom-page-blocks.liquid](mdc:sections/custom-page-blocks.liquid)) within the `{% schema %}` JSON object:
+
+```json
+"blocks": [
+  {
+    "type": "about_collapsible",
+    "name": "About with Collapsible",
+    "limit": 1,
+    "settings": [
+      {
+        "type": "text",
+        "id": "heading",
+        "label": "Heading",
+        "default": "About Rave"
+      },
+      {
+        "type": "image_picker",
+        "id": "image1",
+        "label": "Image 1"
+      },
+      // Additional settings...
+    ]
+  }
+]
+```
+
+**Important naming conventions:**
+- Use underscores (`about_collapsible`), not hyphens (`about-collapsible`) for block types
+- Ensure block IDs in templates exactly match the schema type
+
+## 2. Block Implementation in Liquid
+
+Implement the block's HTML structure in the section file using Liquid's `case` statement:
+
+```liquid
+{% for block in section.blocks %}
+  {% case block.type %}
+    {% when 'about_collapsible' %}
+      <div class="page-block page-block--about-collapsible" 
+           {{ block.shopify_attributes }}
+           data-slideshow-speed="{{ block.settings.slideshow_speed }}"
+           data-block-id="{{ block.id }}">
+        <div class="page-block__content">
+          <!-- Block HTML structure -->
+          {% if block.settings.heading != blank %}
+            <h1 class="page-block__heading">{{ block.settings.heading }}</h1>
+          {% endif %}
+          <!-- Additional block content -->
+        </div>
+      </div>
+  {% endcase %}
+{% endfor %}
+```
+
+**Best practices:**
+- Pass block settings to data attributes for JavaScript use
+- Use BEM-style class naming (block__element--modifier)
+- Check if settings are blank before rendering their containers
+
+## 3. Page Template Creation
+
+Create a JSON template file (e.g., [templates/page.about.json](mdc:templates/page.about.json)) to use your custom block:
+
+```json
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "disabled": true,
+      "settings": {
+        "padding_top": 36,
+        "padding_bottom": 0
+      }
+    },
+    "page-blocks": {
+      "type": "custom-page-blocks",
+      "blocks": {
+        "about_collapsible": {
+          "type": "about_collapsible",
+          "settings": {
+            "heading": "COMMUNITY FOCUSSED WELLNESS EXPERIENCES",
+            "image1": "",
+            // Additional settings...
+          }
+        }
+      },
+      "block_order": [
+        "about_collapsible"
+      ],
+      "settings": {}
+    }
+  },
+  "order": [
+    "main",
+    "page-blocks"
+  ]
+}
+```
+
+**Critical requirements:**
+- Block ID must match the schema type exactly (`about_collapsible`, not `about-collapsible`)
+- Block ID must be included in the `block_order` array
+- Required settings should have default values
+
+## 4. CSS Structure and Organization
+
+Organize your CSS in a dedicated file (e.g., [assets/section-custom-page-blocks.css](mdc:assets/section-custom-page-blocks.css)):
+
+```css
+/* Block container */
+.page-block--about-collapsible {
+  /* Base styles */
+}
+
+/* Block components */
+.page-block__column--images {
+  width: 50%;
+  padding: 0;
+  border-right: 1px solid #3D2120;
+  overflow: hidden;
+}
+
+.page-block__column--collapsible {
+  width: 50%;
+  border-top: 0;
+}
+
+/* Responsive styles */
+@media screen and (min-width: 750px) {
+  .page-block__columns {
+    flex-direction: row;
+    min-height: 600px;
+  }
+  /* Desktop styles */
+}
+
+@media screen and (max-width: 749px) {
+  .page-block__column--images {
+    display: none;
+  }
+  /* Mobile styles */
+}
+
+.accordion {
+    margin-top: 0rem;
+    margin-bottom: 0;
+    border-top: 0.1rem solid rgba(var(--color-foreground), 0.08);
+    border-bottom: 0.1rem solid rgba(var(--color-foreground), 0.08);
+}
+```
+
+**CSS best practices:**
+- Follow a mobile-first approach
+- Use the theme's breakpoints (typically 750px for mobile/tablet, 990px for desktop)
+- Use theme color variables instead of hardcoded values when possible
+- Organize styles by component and then by breakpoint
+
+## 5. JavaScript Integration
+
+Add JavaScript at the end of your section file for interactive elements:
+
+```liquid
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize slideshows
+    const slideshows = document.querySelectorAll('.page-block__slideshow');
+    
+    slideshows.forEach(slideshow => {
+      const block = slideshow.closest('.page-block--about-collapsible');
+      const slideItems = slideshow.querySelectorAll('.page-block__slideshow-item');
+      
+      if (slideItems.length <= 1) return; // Don't set up slideshow if only one image
+      
+      // Get settings from data attributes
+      const speed = block && block.hasAttribute('data-block-id') 
+        ? parseInt(block.getAttribute('data-slideshow-speed') || 5) * 1000 
+        : 5000;
+      
+      let currentSlide = 0;
+      
+      // Function to change slides
+      function nextSlide() {
+        // Remove active class from current slide
+        slideItems[currentSlide].classList.remove('active');
+        
+        // Move to next slide or back to first slide
+        currentSlide = (currentSlide + 1) % slideItems.length;
+        
+        // Add active class to new current slide
+        slideItems[currentSlide].classList.add('active');
+      }
+      
+      // Start the slideshow interval
+      setInterval(nextSlide, speed);
+    });
+  });
+</script>
+```
+
+**JavaScript best practices:**
+- Use `DOMContentLoaded` to ensure the DOM is fully loaded
+- Get settings from data attributes rather than hardcoding values
+- Check for element existence before manipulating
+- Use arrow functions and modern JavaScript features
+- Scope functionality to avoid global namespace pollution
+
+## 6. Common Errors and Solutions
+
+### Block ID Mismatch
+**Error:** `Invalid value for type in block 'about-collapsible'. Type must be defined in schema.`
+**Solution:** Ensure block IDs in template JSON files match the type in schema exactly (use underscores, not hyphens)
+
+### Missing CSS File
+**Error:** CSS not loading or linter warnings about missing files
+**Solution:** Create the CSS file and make sure it's referenced in the section file:
+```liquid
+{{ 'section-custom-page-blocks.css' | asset_url | stylesheet_tag }}
+```
+
+### CSS Specificity Issues
+**Problem:** Styles not applying as expected
+**Solution:** Check browser inspector for CSS specificity conflicts and adjust selectors or add `!important` for targeted overrides
+
+### Mobile/Desktop Inconsistencies
+**Problem:** Layout looks good on desktop but breaks on mobile
+**Solution:** Ensure proper media query scoping and mobile-specific styles
+
+## 7. Testing Process
+
+1. Start the Shopify development server:
+   ```bash
+   shopify theme dev --store YOUR_STORE.myshopify.com
+   ```
+
+2. Create a page in Shopify Admin using the new template
+   
+3. Test on multiple devices and screen sizes
+
+4. Verify all interactive elements work correctly
+
+5. If you encounter port conflicts (EADDRINUSE errors), find and kill the existing process:
+   ```bash
+   lsof -i :9292
+   kill -9 [PID]
+   ```
+
+## 8. Version Control Best Practices
+
+1. Create a feature branch for new blocks:
+   ```bash
+   git checkout -b feat/custom-page-block
+   ```
+
+2. Make atomic commits with descriptive messages:
+   ```bash
+   git commit -m "feat: Add about collapsible block and template"
+   git commit -m "style: Fix accordion borders and padding"
+   ```
+
+3. Create a pull request for review before merging to main
