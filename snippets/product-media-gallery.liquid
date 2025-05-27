@@ -98,13 +98,6 @@
             class="product__media-item grid__item slider__slide{% if single_media_visible %} product__media-item--single{% endif %}{% if product.selected_or_first_available_variant.featured_media == nil and forloop.index == 1 %} is-active{% endif %}{% if media.media_type != 'image' %} product__media-item--full{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
             data-media-id="{{ section.id }}-{{ media.id }}"
           >
-            {%- liquid
-              assign media_position = media_position | default: 0 | plus: 1
-              assign lazy_load = false
-              if media_position > 1
-                assign lazy_load = true
-              endif
-            -%}
             {% render 'product-thumbnail',
               media: media,
               media_count: media_count,
@@ -123,6 +116,35 @@
         {%- endunless -%}
       {%- endfor -%}
     </ul>
+    <div class="slider-bullet-nav">
+      <ul class="slider-bullets">
+      {%- if product.selected_or_first_available_variant.featured_media != null -%}
+        {%- assign media_counter = 1 -%}
+        {%- assign media_position = 1 -%}
+        <li class="slider-bullet">
+          <button
+            class="slider-bullet-button active"
+            >View slide 1</button>
+        </li>
+      {%- endif -%}
+      {%- for media in product.media -%}
+        {% if media_position >= limit
+          or media_position >= 1
+          and section.settings.hide_variants
+          and variant_images contains media.src
+        %}
+          {% continue %}
+        {% endif %}
+
+        {%- unless media.id == product.selected_or_first_available_variant.featured_media.id -%}
+          {%- assign media_counter = media_counter | plus: 1 -%}
+          <li class="slider-bullet">
+            <button class="slider-bullet-button">View slide {{ media_counter }}</button>
+          </li>
+        {%- endunless -%}
+      {%- endfor -%}
+      </ul>
+    </div>
     <div class="slider-buttons quick-add-hidden{% if hide_mobile_slider %} small-hide{% endif %}">
       <button
         type="button"

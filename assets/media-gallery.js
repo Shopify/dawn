@@ -7,12 +7,13 @@ if (!customElements.get('media-gallery')) {
         this.elements = {
           liveRegion: this.querySelector('[id^="GalleryStatus"]'),
           viewer: this.querySelector('[id^="GalleryViewer"]'),
-          thumbnails: this.querySelector('[id^="GalleryThumbnails"]'),
+          thumbnails: this.querySelector('[id^="GalleryThumbnails"]')
         };
         this.mql = window.matchMedia('(min-width: 750px)');
         if (!this.elements.thumbnails) return;
 
         this.elements.viewer.addEventListener('slideChanged', debounce(this.onSlideChanged.bind(this), 500));
+        this.elements.viewer.addEventListener('slideChanged', debounce(this.setActiveBullet.bind(this), 100));
         this.elements.thumbnails.querySelectorAll('[data-target]').forEach((mediaToSwitch) => {
           mediaToSwitch
             .querySelector('button')
@@ -26,6 +27,18 @@ if (!customElements.get('media-gallery')) {
           `[data-target="${event.detail.currentElement.dataset.mediaId}"]`
         );
         this.setActiveThumbnail(thumbnail);
+      }
+
+      setActiveBullet(event) {
+        const bullets = this.querySelectorAll('.slider-bullet-button');
+
+        bullets.forEach((el, i) => {
+          el.classList.remove('active');
+
+          if (i + 1 === event.detail.currentPage) {
+            el.classList.add('active');
+          }
+        });
       }
 
       setActiveMedia(mediaId, prepend) {

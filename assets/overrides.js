@@ -117,7 +117,7 @@ var TNB = {
     if (TNB.state.tallSizingActive) {
       $('[data-button-tall]').click();
     }
-  },
+  }
 };
 
 function init() {
