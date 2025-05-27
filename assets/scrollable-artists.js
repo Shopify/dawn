@@ -22,6 +22,24 @@ const createTween = () => {
 
     const flip = Flip.to(flipState, {
       simple: true,
+      onComplete: () => {
+        // Show the overlay text
+        const overlay = document.getElementById('centerpieceOverlay');
+        overlay.classList.add('show');
+
+        // Fade out the 8th image only after text appears
+        const toHide = document.querySelector('.gallery__item--hide-on-complete');
+        if (toHide) {
+          // Optional smooth fade out
+          gsap.to(toHide, {
+            opacity: 0,
+            duration: 0.5,
+            onComplete: () => {
+              toHide.style.pointerEvents = 'none';
+            },
+          });
+        }
+      },
     });
 
     ScrollTrigger.create({
@@ -30,10 +48,34 @@ const createTween = () => {
       end: '+=300%',
       scrub: true,
       pin: galleryElement.parentNode,
-      markers: true,
+      //markers: true,
       animation: flip,
       onEnter: () => {
         galleryElement.parentNode.style.height = window.innerHeight + 'px';
+      },
+      onUpdate: (self) => {
+        const overlay = document.getElementById('centerpieceOverlay');
+        const toHide = document.querySelector('.gallery__item--hide-on-complete');
+
+        // When scrolling forward past 95% of animation
+        if (self.progress > 0.95) {
+          overlay.classList.add('show');
+          gsap.to(toHide, {
+            opacity: 0,
+            duration: 0.3,
+            onComplete: () => (toHide.style.pointerEvents = 'none'),
+          });
+        }
+
+        // When scrolling back above 80%
+        if (self.progress < 0.8) {
+          overlay.classList.remove('show');
+          gsap.to(toHide, {
+            opacity: 1,
+            duration: 0.3,
+            onComplete: () => (toHide.style.pointerEvents = ''),
+          });
+        }
       },
     });
 
