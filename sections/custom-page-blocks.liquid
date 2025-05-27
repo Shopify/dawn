@@ -324,41 +324,82 @@
           </div>
         </div>
       {% when 'logo_grid' %}
-        <div class="page-block page-block--logo-grid" {{ block.shopify_attributes }}>
+        {% assign logo_width = block.settings.logo_width | default: 150 %}
+        {% assign scroll_speed = block.settings.scroll_speed | default: 40 %}
+        <div
+          class="page-block page-block--logo-grid"
+          {{ block.shopify_attributes }}
+          data-logo-width="{{ logo_width }}"
+          data-scroll-speed="{{ scroll_speed }}"
+        >
           <div class="page-block__content">
             {% if block.settings.heading != blank %}
               <h1 class="page-block__heading">{{ block.settings.heading }}</h1>
             {% endif %}
-            <div class="logo-grid">
-              {% for i in (1..12) %}
-                {% assign logo_key = 'logo' | append: i %}
-                {% assign logo_url_key = 'logo' | append: i | append: '_url' %}
-                {% assign logo = block.settings[logo_key] %}
-                {% assign logo_url = block.settings[logo_url_key] %}
+            <div class="logo-grid-wrapper">
+              <div class="logo-grid logo-grid--primary">
+                {% for i in (1..12) %}
+                  {% assign logo_key = 'logo' | append: i %}
+                  {% assign logo_url_key = 'logo' | append: i | append: '_url' %}
+                  {% assign logo = block.settings[logo_key] %}
+                  {% assign logo_url = block.settings[logo_url_key] %}
 
-                {% if logo != blank %}
-                  <div class="logo-grid__item">
-                    {% if logo_url != blank %}
-                      <a href="{{ logo_url }}" class="logo-grid__link" target="_blank" rel="noopener">
-                    {% endif %}
-                    <div class="logo-grid__image-container">
-                      {% assign img_url = logo | img_url: '300x' %}
-                      <img
-                        srcset="{{ img_url }} 1x, {{ logo | img_url: '300x', scale: 2 }} 2x"
-                        src="{{ img_url }}"
-                        alt="{{ logo.alt | escape }}"
-                        loading="lazy"
-                        width="{{ logo.width }}"
-                        height="{{ logo.height }}"
-                        class="logo-grid__image"
-                      >
+                  {% if logo != blank %}
+                    <div class="logo-grid__item" style="width: {{ logo_width }}px;">
+                      {% if logo_url != blank %}
+                        <a href="{{ logo_url }}" class="logo-grid__link" target="_blank" rel="noopener">
+                      {% endif %}
+                      <div class="logo-grid__image-container">
+                        {% assign img_url = logo | img_url: '300x' %}
+                        <img
+                          srcset="{{ img_url }} 1x, {{ logo | img_url: '300x', scale: 2 }} 2x"
+                          src="{{ img_url }}"
+                          alt="{{ logo.alt | escape }}"
+                          loading="lazy"
+                          width="{{ logo.width }}"
+                          height="{{ logo.height }}"
+                          class="logo-grid__image"
+                        >
+                      </div>
+                      {% if logo_url != blank %}
+                        </a>
+                      {% endif %}
                     </div>
-                    {% if logo_url != blank %}
-                      </a>
-                    {% endif %}
-                  </div>
-                {% endif %}
-              {% endfor %}
+                  {% endif %}
+                {% endfor %}
+              </div>
+              <!-- Duplicate logos for seamless scrolling -->
+              <div class="logo-grid logo-grid--secondary">
+                {% for i in (1..12) %}
+                  {% assign logo_key = 'logo' | append: i %}
+                  {% assign logo_url_key = 'logo' | append: i | append: '_url' %}
+                  {% assign logo = block.settings[logo_key] %}
+                  {% assign logo_url = block.settings[logo_url_key] %}
+
+                  {% if logo != blank %}
+                    <div class="logo-grid__item" style="width: {{ logo_width }}px;">
+                      {% if logo_url != blank %}
+                        <a href="{{ logo_url }}" class="logo-grid__link" target="_blank" rel="noopener">
+                      {% endif %}
+                      <div class="logo-grid__image-container">
+                        {% assign img_url = logo | img_url: '300x' %}
+                        <img
+                          srcset="{{ img_url }} 1x, {{ logo | img_url: '300x', scale: 2 }} 2x"
+                          src="{{ img_url }}"
+                          alt="{{ logo.alt | escape }}"
+                          loading="lazy"
+                          width="{{ logo.width }}"
+                          height="{{ logo.height }}"
+                          class="logo-grid__image"
+                        >
+                      </div>
+                      {% if logo_url != blank %}
+                        </a>
+                      {% endif %}
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
             </div>
           </div>
         </div>
@@ -860,6 +901,26 @@
           "default": "TRUSTED BY"
         },
         {
+          "type": "range",
+          "id": "logo_width",
+          "min": 80,
+          "max": 200,
+          "step": 10,
+          "unit": "px",
+          "label": "Logo width",
+          "default": 150
+        },
+        {
+          "type": "range",
+          "id": "scroll_speed",
+          "min": 20,
+          "max": 100,
+          "step": 5,
+          "unit": "sec",
+          "label": "Scrolling speed (higher is slower)",
+          "default": 40
+        },
+        {
           "type": "header",
           "content": "Logos"
         },
@@ -1108,6 +1169,13 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
+    // Initialize logo grid scrolling
+    const logoGrids = document.querySelectorAll('.page-block--logo-grid');
+    logoGrids.forEach((grid) => {
+      const scrollSpeed = grid.getAttribute('data-scroll-speed') || 40;
+      grid.style.setProperty('--scroll-duration', `${scrollSpeed}s`);
+    });
+
     // Initialize slideshows
     const slideshows = document.querySelectorAll('.page-block__slideshow');
 
