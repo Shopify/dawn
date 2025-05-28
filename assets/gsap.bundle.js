@@ -73,89 +73,91 @@ _ScrollSmootherMin["default"].create({
 _gsapMin["default"].registerPlugin(_ScrollTriggerMin["default"]);
 _gsapMin["default"].registerPlugin(_FlipMin["default"]);
 var flipCtx;
-var createTween = function createTween() {
-  var galleryElement = document.querySelector('#gallery-artists');
-  var galleryItems = galleryElement.querySelectorAll('.gallery__item');
+if (document.querySelector('#gallery-artists')) {
+  var createTween = function createTween() {
+    var galleryElement = document.querySelector('#gallery-artists');
+    var galleryItems = galleryElement.querySelectorAll('.gallery__item');
 
-  //cleanup old animation
-  flipCtx && flipCtx.revert();
-  //reset state
-  galleryElement.classList.remove('gallery--final');
-  flipCtx = _gsapMin["default"].context(function () {
-    // Temporarily add the final class to capture the final state
-    galleryElement.classList.add('gallery--final');
-    var flipState = _FlipMin["default"].getState(galleryItems);
+    //cleanup old animation
+    flipCtx && flipCtx.revert();
+    //reset state
     galleryElement.classList.remove('gallery--final');
-    var flip = _FlipMin["default"].to(flipState, {
-      simple: true,
-      onComplete: function onComplete() {
-        // Show the overlay text
-        var overlay = document.getElementById('centerpieceOverlay');
-        overlay.classList.add('show');
-
-        // Fade out the 8th image only after text appears
-        var toHide = document.querySelector('.gallery__item--hide-on-complete');
-        if (toHide) {
-          // Optional smooth fade out
-          _gsapMin["default"].to(toHide, {
-            opacity: 0,
-            duration: 0.5,
-            onComplete: function onComplete() {
-              toHide.style.pointerEvents = 'none';
-            }
-          });
-        }
-      }
-    });
-    _ScrollTriggerMin["default"].create({
-      trigger: galleryElement,
-      start: 'center center',
-      end: '+=300%',
-      scrub: true,
-      pin: galleryElement.parentNode,
-      //markers: true,
-      animation: flip,
-      onEnter: function onEnter() {
-        galleryElement.parentNode.style.height = window.innerHeight + 'px';
-      },
-      onUpdate: function onUpdate(self) {
-        var overlay = document.getElementById('centerpieceOverlay');
-        var toHide = document.querySelector('.gallery__item--hide-on-complete');
-
-        // When scrolling forward past 95% of animation
-        if (self.progress > 0.95) {
+    flipCtx = _gsapMin["default"].context(function () {
+      // Temporarily add the final class to capture the final state
+      galleryElement.classList.add('gallery--final');
+      var flipState = _FlipMin["default"].getState(galleryItems);
+      galleryElement.classList.remove('gallery--final');
+      var flip = _FlipMin["default"].to(flipState, {
+        simple: true,
+        onComplete: function onComplete() {
+          // Show the overlay text
+          var overlay = document.getElementById('centerpieceOverlay');
           overlay.classList.add('show');
-          _gsapMin["default"].to(toHide, {
-            opacity: 0,
-            duration: 0.3,
-            onComplete: function onComplete() {
-              return toHide.style.pointerEvents = 'none';
-            }
-          });
-        }
 
-        // When scrolling back above 80%
-        if (self.progress < 0.8) {
-          overlay.classList.remove('show');
-          _gsapMin["default"].to(toHide, {
-            opacity: 1,
-            duration: 0.3,
-            onComplete: function onComplete() {
-              return toHide.style.pointerEvents = '';
-            }
-          });
+          // Fade out the 8th image only after text appears
+          var toHide = document.querySelector('.gallery__item--hide-on-complete');
+          if (toHide) {
+            // Optional smooth fade out
+            _gsapMin["default"].to(toHide, {
+              opacity: 0,
+              duration: 0.5,
+              onComplete: function onComplete() {
+                toHide.style.pointerEvents = 'none';
+              }
+            });
+          }
         }
-      }
-    });
-    return function () {
-      return _gsapMin["default"].set(galleryItems, {
-        clearProps: 'all'
       });
-    };
-  });
-};
-createTween();
-window.addEventListener('resize', createTween);
+      _ScrollTriggerMin["default"].create({
+        trigger: galleryElement,
+        start: 'center center',
+        end: '+=300%',
+        scrub: true,
+        pin: galleryElement.parentNode,
+        //markers: true,
+        animation: flip,
+        onEnter: function onEnter() {
+          galleryElement.parentNode.style.height = window.innerHeight + 'px';
+        },
+        onUpdate: function onUpdate(self) {
+          var overlay = document.getElementById('centerpieceOverlay');
+          var toHide = document.querySelector('.gallery__item--hide-on-complete');
+
+          // When scrolling forward past 95% of animation
+          if (self.progress > 0.95) {
+            overlay.classList.add('show');
+            _gsapMin["default"].to(toHide, {
+              opacity: 0,
+              duration: 0.3,
+              onComplete: function onComplete() {
+                return toHide.style.pointerEvents = 'none';
+              }
+            });
+          }
+
+          // When scrolling back above 80%
+          if (self.progress < 0.8) {
+            overlay.classList.remove('show');
+            _gsapMin["default"].to(toHide, {
+              opacity: 1,
+              duration: 0.3,
+              onComplete: function onComplete() {
+                return toHide.style.pointerEvents = '';
+              }
+            });
+          }
+        }
+      });
+      return function () {
+        return _gsapMin["default"].set(galleryItems, {
+          clearProps: 'all'
+        });
+      };
+    });
+  };
+  createTween();
+  window.addEventListener('resize', createTween);
+}
 document.addEventListener('DOMContentLoaded', function () {
   var image = document.getElementById('parallax-image');
   if (!image) return;
