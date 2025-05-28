@@ -1,3 +1,17 @@
+import gsap from 'gsap/dist/gsap.min.js';
+import ScrollTrigger from 'gsap/dist/ScrollTrigger.min.js';
+import ScrollSmoother from 'gsap/dist/ScrollSmoother.min.js';
+import Flip from 'gsap/dist/Flip.min.js';
+
+gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
+
+ScrollSmoother.create({
+  wrapper: '#smooth-wrapper',
+  content: '#smooth-content',
+  smooth: 0.5,
+  effects: true,
+});
+
 console.clear();
 
 gsap.registerPlugin(ScrollTrigger);
