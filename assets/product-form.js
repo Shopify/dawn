@@ -18,6 +18,8 @@ if (!customElements.get('product-form')) {
       }
 
       onSubmitHandler(evt) {
+        let selectedVariantSku = window?.s3_current_variant_sku || null;
+
         evt.preventDefault();
 
         // validate the stringing form too, if the validation fails, highlight it and  return early
@@ -70,9 +72,7 @@ if (!customElements.get('product-form')) {
 
         // check if stringing service is selected
         const frameSelected = document.querySelector('input[name="frame"]:checked')?.id;
-        let selectedVariantSku = null;
         // good trick -  document.querySelector('variant-selects [data-selected-variant]')?.innerHTML)?.sku
-        selectedVariantSku = window?.s3_current_variant_sku || '';
         if (frameSelected === 'pro-stringing' && selectedVariantSku) {
           const variantSelected = document.querySelector('input[name="string-variant"]:checked')?.id;
           const stringVariantSku = document.querySelector('input[name="string-variant"]:checked')?.dataset.sku;
@@ -107,7 +107,7 @@ if (!customElements.get('product-form')) {
         // check if remix is selected
         const theSticker = document.getElementById('the-sticker');
 
-        if (theSticker && window.s3_remix_service_variant_id) {
+        if (theSticker && window.s3_remix_service_variant_id && selectedVariantSku) {
           const stickerText = theSticker.innerText;
 
           let textToBeStickered = '';
@@ -127,6 +127,8 @@ if (!customElements.get('product-form')) {
             properties: {
               _stickerText: textToBeStickered,
               _textColor: window.s3_remix_config.stickerTextColor || 'UNKNOWN',
+              _productSKU: window?.s3_current_variant_sku || '',
+              _productName: window?.s3_product_name || '',
               _bundleId: formData.get('id'),
             },
           });
@@ -135,13 +137,15 @@ if (!customElements.get('product-form')) {
         //  check if printing is selected
         const theTshirtText = document.getElementById('the-tshirt-text');
 
-        if (theTshirtText && window.s3_tshirt_printing_service_variant_id) {
+        if (theTshirtText && window.s3_tshirt_printing_service_variant_id && selectedVariantSku) {
           items.push({
             id: window.s3_tshirt_printing_service_variant_id,
             quantity: 1,
             properties: {
               _tshirtText: theTshirtText.innerText,
               _textColor: window.s3_tshirt_printing_config.tshirtTextColor || 'UNKNOWN',
+              _productSKU: window?.s3_current_variant_sku || '',
+              _productName: window?.s3_product_name || '',
               _bundleId: formData.get('id'),
             },
           });
