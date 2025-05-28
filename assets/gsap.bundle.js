@@ -58,6 +58,8 @@ var _ScrollTriggerMin = _interopRequireDefault(require("gsap/dist/ScrollTrigger.
 var _ScrollSmootherMin = _interopRequireDefault(require("gsap/dist/ScrollSmoother.min.js"));
 var _FlipMin = _interopRequireDefault(require("gsap/dist/Flip.min.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
+//smooth scrolling animation
+
 _gsapMin["default"].registerPlugin(_ScrollTriggerMin["default"], _ScrollSmootherMin["default"]);
 _ScrollSmootherMin["default"].create({
   wrapper: '#smooth-wrapper',
@@ -65,7 +67,9 @@ _ScrollSmootherMin["default"].create({
   smooth: 0.5,
   effects: true
 });
-console.clear();
+
+// flip animation for gallery items
+
 _gsapMin["default"].registerPlugin(_ScrollTriggerMin["default"]);
 _gsapMin["default"].registerPlugin(_FlipMin["default"]);
 var flipCtx;
@@ -152,5 +156,19 @@ var createTween = function createTween() {
 };
 createTween();
 window.addEventListener('resize', createTween);
+document.addEventListener('DOMContentLoaded', function () {
+  var image = document.getElementById('parallax-image');
+  if (!image) return;
+  _gsapMin["default"].to(image, {
+    yPercent: -10,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: image,
+      start: 'top bottom',
+      end: 'bottom top',
+      scrub: true
+    }
+  });
+});
 
 },{"gsap/dist/Flip.min.js":1,"gsap/dist/ScrollSmoother.min.js":2,"gsap/dist/ScrollTrigger.min.js":3,"gsap/dist/gsap.min.js":4}]},{},[5]);

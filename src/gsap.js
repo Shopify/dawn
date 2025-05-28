@@ -3,6 +3,8 @@ import ScrollTrigger from 'gsap/dist/ScrollTrigger.min.js';
 import ScrollSmoother from 'gsap/dist/ScrollSmoother.min.js';
 import Flip from 'gsap/dist/Flip.min.js';
 
+//smooth scrolling animation
+
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
 ScrollSmoother.create({
@@ -12,7 +14,7 @@ ScrollSmoother.create({
   effects: true,
 });
 
-console.clear();
+// flip animation for gallery items
 
 gsap.registerPlugin(ScrollTrigger);
 gsap.registerPlugin(Flip);
@@ -99,3 +101,20 @@ const createTween = () => {
 createTween();
 
 window.addEventListener('resize', createTween);
+
+document.addEventListener('DOMContentLoaded', () => {
+  const image = document.getElementById('parallax-image');
+
+  if (!image) return;
+
+  gsap.to(image, {
+    yPercent: -10,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: image,
+      start: 'top bottom',
+      end: 'bottom top',
+      scrub: true,
+    },
+  });
+});
