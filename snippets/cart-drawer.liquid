@@ -11,6 +11,21 @@
 <script src="{{ 'cart.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'quantity-popover.js' | asset_url }}" defer="defer"></script>
 
+<script defer="defer">
+  function toggleBundle(button) {
+    const bundleItems = button.nextElementSibling;
+    const isExpanded = bundleItems.classList.contains('expanded');
+
+    if (isExpanded) {
+      bundleItems.classList.remove('expanded');
+      button.textContent = 'Show bundle';
+    } else {
+      bundleItems.classList.add('expanded');
+      button.textContent = 'Hide bundle';
+    }
+  }
+</script>
+
 <style>
   .drawer {
     visibility: hidden;
@@ -243,6 +258,23 @@
                               </div>
                             </dl>
                           {% endif %}
+
+                          {%- if item.item_components.size > 0 -%}
+                            <span class="bundle-toggle product-option" onclick="toggleBundle(this)"> Show bundle </span>
+                          {%- endif -%}
+
+                          <div class="bundle-items{% if item.item_components.size == 0 %} bundle-items--empty{% endif %}">
+                            {% for component in item.item_components %}
+                              <div>
+                                <span class="bundle-item__name product-option">
+                                  {{ component.product.title | escape }} -
+                                </span>
+                                <span class="bundle-item__price product-option">
+                                  {{ component.original_price | money }}
+                                </span>
+                              </div>
+                            {% endfor %}
+                          </div>
 
                           {%- if item.product.has_only_default_variant == false
                             or item.properties.size != 0

@@ -2,7 +2,7 @@ import * as Progress from '@radix-ui/react-progress';
 import { useEffect, useState } from 'react';
 
 // Constants
-const API_ENDPOINT = 'https://shopify-server-peach.vercel.app/shipment-updates';
+const API_ENDPOINT = 'https://sitemap.hndrd.co/shipment-updates';
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
 const MOBILE_BREAKPOINT = 768;
 
@@ -192,7 +192,21 @@ export interface OrderResponse {
 const isMobile = () => window.innerWidth < MOBILE_BREAKPOINT;
 
 const cleanOrderNumber = (orderNumber: string): string => {
-  return orderNumber.trim().toUpperCase();
+  const trimmed = orderNumber.trim();
+
+  // If there's already a dash anywhere, return as-is
+  if (trimmed.includes('-')) {
+    return trimmed;
+  }
+
+  // Check if it matches pattern: 3 letters followed by digits
+  const match = trimmed.match(/^([A-Z]{3})(\d+)$/);
+  if (match) {
+    return `${match[1]}-${match[2]}`;
+  }
+
+  // If it doesn't match expected pattern, return as-is
+  return trimmed;
 };
 
 const getCacheKey = (email: string, orderNumber: string): string => {
