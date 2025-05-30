@@ -157,17 +157,21 @@ This document tracks all customizations made to the base Dawn theme for the Rave
 - **Cart Drawer:** (2024-12-21)
   - **Purpose:** Replaced notification-style cart with side-sliding cart drawer for better user experience
   - **Files Modified:**
-    - `sections/header.liquid`: Uncommented cart icon to enable clickable cart functionality
+    - `sections/header.liquid`: Uncommented cart icon to enable clickable cart functionality, added floating cart icon
     - `config/settings_schema.json`: Changed default cart type from 'notification' to 'drawer'
-    - `assets/rave-custom.css`: Added comprehensive RAVE brand styling for all cart drawer components
+    - `assets/rave-custom.css`: Added comprehensive RAVE brand styling for all cart drawer components and floating cart icon
   - **Features:**
-    - Cart icon with item count bubble in header (positioned on right)
+    - **Floating Cart Icon**: Fixed position on right side of screen, vertically centered
+    - **Brown Square Design**: 5rem x 5rem brown square with white cart icon (RAVE accent color #412F26)
+    - **Hover Effects**: Transitions to darker brown (#3D2120) with subtle scale animation
+    - **Cart Count Bubble**: Circular badge positioned at top-right corner when items are in cart
     - Side-sliding drawer panel with cart contents
     - Quantity controls with + / - buttons
     - Remove item functionality
     - Checkout button with RAVE brand colors
     - Empty cart state with "Continue Shopping" button
-    - Responsive design for mobile and desktop
+    - **Responsive Design**: Scales appropriately for mobile (4.5rem) and desktop (5rem)
+    - **Hidden Header Icon**: Original header cart icon is hidden to avoid duplication
   - **Styling:** All cart components use RAVE CSS variables for consistent brand colors and typography
   - **Accessibility:** Maintains Dawn's built-in accessibility features including ARIA labels and keyboard navigation
 
