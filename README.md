@@ -76,7 +76,7 @@ git checkout -b feature/your-feature-name
 
 2. Make your changes and test locally:
 ```bash
-shopify theme dev --store=orange-amps.myshopify.com
+shopify theme dev --store=orange-amps-ltd.myshopify.com
 ```
 
 3. Commit your changes:
