@@ -61,24 +61,49 @@
   function initCartDrawerFix() {
     const cartDrawer = document.querySelector('cart-drawer');
     if (cartDrawer) {
+      // Store a bound close function to prevent duplicate listeners
+      if (!cartDrawer._boundCloseFunction) {
+        cartDrawer._boundCloseFunction = cartDrawer.close.bind(cartDrawer);
+      }
+
+      // Override the renderContents method to prevent problematic re-opening
+      const originalRenderContents = cartDrawer.renderContents;
+      cartDrawer.renderContents = function (parsedState) {
+        this.querySelector('.drawer__inner').classList.contains('is-empty') &&
+          this.querySelector('.drawer__inner').classList.remove('is-empty');
+        this.productId = parsedState.id;
+        this.getSectionsToRender().forEach((section) => {
+          const sectionElement = section.selector
+            ? document.querySelector(section.selector)
+            : document.getElementById(section.id);
+
+          if (!sectionElement) return;
+          sectionElement.innerHTML = this.getSectionInnerHTML(parsedState.sections[section.id], section.selector);
+        });
+
+        // Fix: Remove the problematic setTimeout that calls this.open()
+        // Only re-add the overlay event listener without forcing the drawer open
+        setTimeout(() => {
+          const overlay = this.querySelector('#CartDrawer-Overlay');
+          if (overlay) {
+            // Remove any existing listeners first
+            overlay.removeEventListener('click', this._boundCloseFunction);
+            // Add fresh listener with the stored bound function
+            overlay.addEventListener('click', this._boundCloseFunction);
+          }
+          // DON'T call this.open() here - this was causing the double-click issue
+        });
+      };
+
+      // Override the close method for extra safety
       const originalClose = cartDrawer.close;
       cartDrawer.close = function () {
-        // Remove both animate and active classes
+        // Remove both classes immediately
         this.classList.remove('active', 'animate');
         // Call original close method
         if (originalClose) {
           originalClose.call(this);
         }
-        // Ensure visibility is properly hidden
-        this.style.visibility = 'hidden';
-        // Reset any pointer events
-        this.style.pointerEvents = 'none';
-
-        // Reset after a short delay to ensure transition completes
-        setTimeout(() => {
-          this.style.visibility = '';
-          this.style.pointerEvents = '';
-        }, 300);
       };
     }
   }
