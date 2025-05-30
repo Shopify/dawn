@@ -1,8 +1,8 @@
 // RAVE YOGA CUSTOM JAVASCRIPT
 // Custom JS for Rave Yoga Shopify Theme - Sprint 1
 
-(function() {
-  "use strict";
+(function () {
+  'use strict';
 
   /**
    * Debounce function to limit the rate at which a function can fire.
@@ -12,7 +12,7 @@
    */
   function debounce(func, wait) {
     let timeout;
-    return function(...args) {
+    return function (...args) {
       const context = this;
       clearTimeout(timeout);
       timeout = setTimeout(() => func.apply(context, args), wait);
@@ -52,6 +52,41 @@
   //   // }
   // });
 
-  // Add more custom modules and functions below
+  // Additional initialization code can go here
 
-})(); 
+  /**
+   * Cart Drawer Close Fix
+   * Fixes the issue where cart drawer requires two clicks to close
+   */
+  function initCartDrawerFix() {
+    const cartDrawer = document.querySelector('cart-drawer');
+    if (cartDrawer) {
+      const originalClose = cartDrawer.close;
+      cartDrawer.close = function () {
+        // Remove both animate and active classes
+        this.classList.remove('active', 'animate');
+        // Call original close method
+        if (originalClose) {
+          originalClose.call(this);
+        }
+        // Ensure visibility is properly hidden
+        this.style.visibility = 'hidden';
+        // Reset any pointer events
+        this.style.pointerEvents = 'none';
+
+        // Reset after a short delay to ensure transition completes
+        setTimeout(() => {
+          this.style.visibility = '';
+          this.style.pointerEvents = '';
+        }, 300);
+      };
+    }
+  }
+
+  // Initialize cart drawer fix when DOM is ready
+  document.addEventListener('DOMContentLoaded', function () {
+    initCartDrawerFix();
+  });
+
+  // Add more methods as needed for future features
+})();
