@@ -196,36 +196,19 @@ This document tracks all customizations made to the base Dawn theme for the Rave
     - **Performance**: Uses CSS transforms and transitions for smooth animations
   - **Styling:** All cart components use RAVE CSS variables for consistent brand colors and typography
   
-  - **Cart Drawer Layout Optimization (2024-12-21):**
-    - **Issue Identified**: Cart drawer displayed duplicate pricing information and unnecessary table headers
-    - **Problems Solved:**
-      1. **Duplicate Pricing**: Each product showed price twice - once in product details and once in "Total" column
-      2. **Orphaned Headers**: "Product" and "Total" column headers looked cluttered and unnecessary
-      3. **Visual Hierarchy**: Table structure was overly complex for cart display
-    - **CSS Solutions Implemented:**
-      ```css
-      /* Hide entire table header row */
-      .cart-drawer table.cart-items thead { display: none !important; }
-      
-      /* Hide all column headers individually (fallback) */
-      #CartDrawer-ColumnTotal,
-      #CartDrawer-ColumnProduct,
-      #CartDrawer-ColumnProductImage { display: none !important; }
-      
-      /* Hide duplicate totals cell for each cart item */
-      .cart-drawer .cart-item__totals { display: none !important; }
-      
-      /* Adjust grid layout for remaining columns */
-      .cart-drawer .cart-item { grid-template-columns: 1fr 2fr auto !important; }
-      ```
-    - **Final Layout**: Clean, streamlined cart with only essential information:
-      - Product image
-      - Product details (name, price, variants) 
-      - Quantity controls
-    - **User Experience**: Eliminates visual confusion while maintaining all functionality
-    - **Maintenance**: Organized CSS rules for easy future modifications
-  
-  - **Status**: ✅ **COMPLETED** - Successfully merged to main branch with layout optimizations (2024-12-21)
+  - **Layout Optimizations:** (2024-12-21)
+    - **Duplicate Pricing Fix**: Removed redundant total column and price displays
+    - **Header Cleanup**: Removed "Product" header from cart drawer for cleaner appearance
+    - **CSS Optimizations**: Consolidated styling rules for better maintainability
+  - **Completion Status:** ✅ Fully implemented and tested
+  - **Double-Click Close Fix:** (2024-12-21)
+    - **Issue:** Cart drawer required two clicks to close
+    - **Root Cause:** Duplicate cart drawers were being rendered (one in theme.liquid, one in header.liquid)
+    - **Solution:** Removed duplicate cart drawer render from header.liquid
+    - **Additional Changes:** 
+      - Changed floating cart icon from `<a>` to `<button>` for proper semantic HTML
+      - Removed unnecessary JavaScript and CSS workarounds
+    - **Status:** ✅ Fixed - single click now properly closes cart drawer
 
 ## Known Update Risks & Considerations
 
