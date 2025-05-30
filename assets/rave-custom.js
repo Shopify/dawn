@@ -56,102 +56,32 @@
 
   /**
    * Cart Drawer Close Fix
-   * Fixes the issue where cart drawer requires two clicks to close
-   * Uses aggressive event handling to ensure reliability
+   * Simplified fix since the floating cart icon is now a proper button
    */
   function initCartDrawerFix() {
-    // Method 1: Prevent default close behavior and implement our own
+    // Simple approach: ensure close buttons work with single click
     document.addEventListener('click', function (e) {
-      // Check if click is on drawer close button
       if (e.target.closest('.drawer__close')) {
-        e.preventDefault();
         e.stopPropagation();
-
-        const cartDrawer = e.target.closest('cart-drawer');
-        if (cartDrawer) {
-          // Force immediate close
-          cartDrawer.classList.remove('active', 'animate');
-          cartDrawer.style.visibility = 'hidden';
-          document.body.classList.remove('overflow-hidden');
-
-          // Reset visibility after animation
-          setTimeout(() => {
-            cartDrawer.style.visibility = '';
-          }, 300);
-        }
-        return false;
-      }
-
-      // Check if click is on overlay
-      if (e.target.id === 'CartDrawer-Overlay' || e.target.closest('#CartDrawer-Overlay')) {
-        e.preventDefault();
-        e.stopPropagation();
-
         const cartDrawer = document.querySelector('cart-drawer');
-        if (cartDrawer) {
-          // Force immediate close
+        if (cartDrawer && cartDrawer.classList.contains('active')) {
           cartDrawer.classList.remove('active', 'animate');
-          cartDrawer.style.visibility = 'hidden';
           document.body.classList.remove('overflow-hidden');
-
-          // Reset visibility after animation
-          setTimeout(() => {
-            cartDrawer.style.visibility = '';
-          }, 300);
         }
-        return false;
       }
     });
 
-    // Method 2: Use MutationObserver to fix cart drawer whenever it's added/modified
-    const observer = new MutationObserver(function (mutations) {
-      mutations.forEach(function (mutation) {
-        if (mutation.type === 'childList') {
-          const cartDrawer = document.querySelector('cart-drawer');
-          if (cartDrawer && !cartDrawer._raveFixed) {
-            cartDrawer._raveFixed = true;
-
-            // Override the problematic methods
-            if (cartDrawer.renderContents) {
-              const originalRenderContents = cartDrawer.renderContents;
-              cartDrawer.renderContents = function (parsedState) {
-                // Call original method first
-                originalRenderContents.call(this, parsedState);
-
-                // Remove the auto-open behavior by clearing any pending opens
-                this.classList.remove('animate');
-              };
-            }
-          }
+    // Ensure overlay clicks work properly
+    document.addEventListener('click', function (e) {
+      if (e.target.id === 'CartDrawer-Overlay') {
+        e.stopPropagation();
+        const cartDrawer = document.querySelector('cart-drawer');
+        if (cartDrawer && cartDrawer.classList.contains('active')) {
+          cartDrawer.classList.remove('active', 'animate');
+          document.body.classList.remove('overflow-hidden');
         }
-      });
+      }
     });
-
-    // Start observing
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-
-    // Method 3: Also fix any existing onclick handlers
-    setTimeout(() => {
-      const closeButtons = document.querySelectorAll('.drawer__close[onclick]');
-      closeButtons.forEach((button) => {
-        button.removeAttribute('onclick');
-        button.addEventListener('click', function (e) {
-          e.preventDefault();
-          const cartDrawer = this.closest('cart-drawer');
-          if (cartDrawer) {
-            cartDrawer.classList.remove('active', 'animate');
-            cartDrawer.style.visibility = 'hidden';
-            document.body.classList.remove('overflow-hidden');
-            setTimeout(() => {
-              cartDrawer.style.visibility = '';
-            }, 300);
-          }
-        });
-      });
-    }, 100);
   }
 
   // Initialize cart drawer fix when DOM is ready
