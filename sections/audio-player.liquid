@@ -1,0 +1,150 @@
+{{ 'component-audio-player.css' | asset_url | stylesheet_tag }}
+{{ 'component-audio-player-artist-feature.css' | asset_url | stylesheet_tag }}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<section class="audio-slider-wrapper layout-{{ section.settings.layout_style }}">
+  <div class="swiper audio-slider">
+    <div class="swiper-wrapper">
+      {% for block in section.blocks %}
+        {% if block.type == 'track' %}
+          <div class="swiper-slide slide" data-id="{{ block.id }}">
+            <div class="artist-information-container">
+              <div class="artist-information">
+                <h4>{{ block.settings.header_text | escape }}</h4>
+                <h5>{{ block.settings.subheader_text | escape }}</h5>
+              </div>
+              <div class="artist-image">
+                <img
+                  height="60"
+                  width="60"
+                  {% if block.settings.artist_image %}
+                    src="{{ block.settings.artist_image | image_url: width: 120 }}"
+                  {% else %}
+                    src="https://cdn.shopify.com/s/files/1/0894/0280/2509/files/no-image.webp?v=1748514174"
+                  {% endif %}
+                  alt="{{ block.settings.header_text | escape }}"
+                >
+              </div>
+            </div>
+            <div class="audio-container">
+              <h3 class="track-title">{{ block.settings.track_title }}</h3>
+              <div class="custom-controls">
+                <div class="progress-wrapper">
+                  <input type="range" class="progress-bar" value="0" min="0" step="1">
+                  <div class="time">
+                    <span class="current-time">0:00</span>
+                    <span class="duration">0:00</span>
+                  </div>
+                </div>
+                <div class="buttons">
+                  <button class="prev" aria-label="Previous Track">⏮</button>
+                  <button class="play" aria-label="Play/Pause">▶</button>
+                  <button class="next" aria-label="Next Track">⏭</button>
+                </div>
+              </div>
+              <audio src="{{ block.settings.audio_file }}" preload="metadata" hidden></audio>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="swiper-button-prev" aria-label="Previous Slide"></div>
+    <div class="swiper-button-next" aria-label="Next Slide"></div>
+  </div>
+  <div class="custom-slide-progress">
+    <input
+      type="range"
+      class="swiper-progress-bar"
+      min="0"
+      max="{{ section.blocks | size | minus: 1 }}"
+      value="0"
+      step="1"
+    >
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const carouselSlider = new Swiper('.swiper', {
+      effect: 'coverflow',
+      grabCursor: true,
+      centeredSlides: true,
+      slidesPerView: 'auto',
+      coverflowEffect: {
+        rotate: 0,
+        stretch: 50,
+        depth: 275,
+        modifier: 1,
+        slideShadows: true,
+      },
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Audio Player",
+  "tag": "section",
+  "class": "section-audio-player",
+  "settings": [
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Audio Block Layout",
+      "options": [
+        { "value": "artist-feature", "label": "Artist Feature" },
+        { "value": "compact-grid", "label": "Compact Grid" },
+        { "value": "hero-showcase", "label": "Hero Showcase" }
+      ],
+      "default": "artist-feature"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "track",
+      "name": "Track",
+      "settings": [
+        {
+          "type": "text",
+          "id": "track_title",
+          "label": "Track Title",
+          "default": "Demo Track"
+        },
+        {
+          "type": "text",
+          "id": "audio_file",
+          "label": "Audio File URL",
+          "default": "https://cdn.shopify.com/s/files/1/0894/0280/2509/files/sample-track.mp3"
+        },
+        {
+          "type": "text",
+          "id": "header_text",
+          "label": "Header (Artist / Playlist)",
+          "default": "Artist Name / Playlist Header"
+        },
+        {
+          "type": "text",
+          "id": "subheader_text",
+          "label": "Subheader",
+          "default": "Subheader"
+        },
+        {
+          "type": "image_picker",
+          "id": "artist_image",
+          "label": "Artist Image"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Audio Player",
+      "category": "Media",
+      "blocks": [{ "type": "track" }]
+    }
+  ]
+}
+{% endschema %}
