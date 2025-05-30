@@ -57,55 +57,101 @@
   /**
    * Cart Drawer Close Fix
    * Fixes the issue where cart drawer requires two clicks to close
+   * Uses aggressive event handling to ensure reliability
    */
   function initCartDrawerFix() {
-    const cartDrawer = document.querySelector('cart-drawer');
-    if (cartDrawer) {
-      // Store a bound close function to prevent duplicate listeners
-      if (!cartDrawer._boundCloseFunction) {
-        cartDrawer._boundCloseFunction = cartDrawer.close.bind(cartDrawer);
+    // Method 1: Prevent default close behavior and implement our own
+    document.addEventListener('click', function (e) {
+      // Check if click is on drawer close button
+      if (e.target.closest('.drawer__close')) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const cartDrawer = e.target.closest('cart-drawer');
+        if (cartDrawer) {
+          // Force immediate close
+          cartDrawer.classList.remove('active', 'animate');
+          cartDrawer.style.visibility = 'hidden';
+          document.body.classList.remove('overflow-hidden');
+
+          // Reset visibility after animation
+          setTimeout(() => {
+            cartDrawer.style.visibility = '';
+          }, 300);
+        }
+        return false;
       }
 
-      // Override the renderContents method to prevent problematic re-opening
-      const originalRenderContents = cartDrawer.renderContents;
-      cartDrawer.renderContents = function (parsedState) {
-        this.querySelector('.drawer__inner').classList.contains('is-empty') &&
-          this.querySelector('.drawer__inner').classList.remove('is-empty');
-        this.productId = parsedState.id;
-        this.getSectionsToRender().forEach((section) => {
-          const sectionElement = section.selector
-            ? document.querySelector(section.selector)
-            : document.getElementById(section.id);
+      // Check if click is on overlay
+      if (e.target.id === 'CartDrawer-Overlay' || e.target.closest('#CartDrawer-Overlay')) {
+        e.preventDefault();
+        e.stopPropagation();
 
-          if (!sectionElement) return;
-          sectionElement.innerHTML = this.getSectionInnerHTML(parsedState.sections[section.id], section.selector);
-        });
+        const cartDrawer = document.querySelector('cart-drawer');
+        if (cartDrawer) {
+          // Force immediate close
+          cartDrawer.classList.remove('active', 'animate');
+          cartDrawer.style.visibility = 'hidden';
+          document.body.classList.remove('overflow-hidden');
 
-        // Fix: Remove the problematic setTimeout that calls this.open()
-        // Only re-add the overlay event listener without forcing the drawer open
-        setTimeout(() => {
-          const overlay = this.querySelector('#CartDrawer-Overlay');
-          if (overlay) {
-            // Remove any existing listeners first
-            overlay.removeEventListener('click', this._boundCloseFunction);
-            // Add fresh listener with the stored bound function
-            overlay.addEventListener('click', this._boundCloseFunction);
-          }
-          // DON'T call this.open() here - this was causing the double-click issue
-        });
-      };
-
-      // Override the close method for extra safety
-      const originalClose = cartDrawer.close;
-      cartDrawer.close = function () {
-        // Remove both classes immediately
-        this.classList.remove('active', 'animate');
-        // Call original close method
-        if (originalClose) {
-          originalClose.call(this);
+          // Reset visibility after animation
+          setTimeout(() => {
+            cartDrawer.style.visibility = '';
+          }, 300);
         }
-      };
-    }
+        return false;
+      }
+    });
+
+    // Method 2: Use MutationObserver to fix cart drawer whenever it's added/modified
+    const observer = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        if (mutation.type === 'childList') {
+          const cartDrawer = document.querySelector('cart-drawer');
+          if (cartDrawer && !cartDrawer._raveFixed) {
+            cartDrawer._raveFixed = true;
+
+            // Override the problematic methods
+            if (cartDrawer.renderContents) {
+              const originalRenderContents = cartDrawer.renderContents;
+              cartDrawer.renderContents = function (parsedState) {
+                // Call original method first
+                originalRenderContents.call(this, parsedState);
+
+                // Remove the auto-open behavior by clearing any pending opens
+                this.classList.remove('animate');
+              };
+            }
+          }
+        }
+      });
+    });
+
+    // Start observing
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    // Method 3: Also fix any existing onclick handlers
+    setTimeout(() => {
+      const closeButtons = document.querySelectorAll('.drawer__close[onclick]');
+      closeButtons.forEach((button) => {
+        button.removeAttribute('onclick');
+        button.addEventListener('click', function (e) {
+          e.preventDefault();
+          const cartDrawer = this.closest('cart-drawer');
+          if (cartDrawer) {
+            cartDrawer.classList.remove('active', 'animate');
+            cartDrawer.style.visibility = 'hidden';
+            document.body.classList.remove('overflow-hidden');
+            setTimeout(() => {
+              cartDrawer.style.visibility = '';
+            }, 300);
+          }
+        });
+      });
+    }, 100);
   }
 
   // Initialize cart drawer fix when DOM is ready
