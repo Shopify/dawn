@@ -365,7 +365,7 @@ const Remix = () => {
                             ✨ Racket Remix
                           </span>{' '}
                           {` `}
-                          by Studio
+                          by {window.s3_brand}
                         </h3>
                       </div>
                       <svg
