@@ -54,40 +54,5 @@
 
   // Additional initialization code can go here
 
-  /**
-   * Cart Drawer Close Fix
-   * Simplified fix since the floating cart icon is now a proper button
-   */
-  function initCartDrawerFix() {
-    // Simple approach: ensure close buttons work with single click
-    document.addEventListener('click', function (e) {
-      if (e.target.closest('.drawer__close')) {
-        e.stopPropagation();
-        const cartDrawer = document.querySelector('cart-drawer');
-        if (cartDrawer && cartDrawer.classList.contains('active')) {
-          cartDrawer.classList.remove('active', 'animate');
-          document.body.classList.remove('overflow-hidden');
-        }
-      }
-    });
-
-    // Ensure overlay clicks work properly
-    document.addEventListener('click', function (e) {
-      if (e.target.id === 'CartDrawer-Overlay') {
-        e.stopPropagation();
-        const cartDrawer = document.querySelector('cart-drawer');
-        if (cartDrawer && cartDrawer.classList.contains('active')) {
-          cartDrawer.classList.remove('active', 'animate');
-          document.body.classList.remove('overflow-hidden');
-        }
-      }
-    });
-  }
-
-  // Initialize cart drawer fix when DOM is ready
-  document.addEventListener('DOMContentLoaded', function () {
-    initCartDrawerFix();
-  });
-
   // Add more methods as needed for future features
 })();
