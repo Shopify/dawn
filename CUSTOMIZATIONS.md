@@ -28,6 +28,9 @@ This document tracks all customizations made to the base Dawn theme for the Rave
     - Included `assets/rave-custom.js`.
 - **`sections/main-product.liquid` (2024-12-20)**: Enhanced complementary products block with promotional message settings
 - **`templates/product.json` (2024-12-20)**: Added complementary products block configuration as collapsible section
+- **`sections/header.liquid`**: 
+    - Added "Rave Brand Settings" for theme editor color controls.
+    - Uncommented cart icon section to enable cart drawer functionality (2024-12-21).
 
 ## New Custom Files Added
 
@@ -149,6 +152,25 @@ This document tracks all customizations made to the base Dawn theme for the Rave
 - Icon hiding selectors should be checked against Dawn icon structure changes
 - Promotional message styling is self-contained and theme-update safe
 
+### Cart & E-commerce
+
+- **Cart Drawer:** (2024-12-21)
+  - **Purpose:** Replaced notification-style cart with side-sliding cart drawer for better user experience
+  - **Files Modified:**
+    - `sections/header.liquid`: Uncommented cart icon to enable clickable cart functionality
+    - `config/settings_schema.json`: Changed default cart type from 'notification' to 'drawer'
+    - `assets/rave-custom.css`: Added comprehensive RAVE brand styling for all cart drawer components
+  - **Features:**
+    - Cart icon with item count bubble in header (positioned on right)
+    - Side-sliding drawer panel with cart contents
+    - Quantity controls with + / - buttons
+    - Remove item functionality
+    - Checkout button with RAVE brand colors
+    - Empty cart state with "Continue Shopping" button
+    - Responsive design for mobile and desktop
+  - **Styling:** All cart components use RAVE CSS variables for consistent brand colors and typography
+  - **Accessibility:** Maintains Dawn's built-in accessibility features including ARIA labels and keyboard navigation
+
 ## Known Update Risks & Considerations
 
 *(This section will highlight any customizations that might conflict with future Dawn theme updates or require manual review after updates.)*
@@ -176,3 +198,9 @@ This document tracks all customizations made to the base Dawn theme for the Rave
 - Check for console errors in JS.
 - Validate HTML structure.
 - **Product Page Specific**: Test complementary products display, quick-add functionality, and accordion behavior across all devices 
+
+## Configuration Changes
+
+- **`config/settings_schema.json`**: 
+    - Added "Rave Brand Settings" for theme editor color controls.
+    - Changed default cart type from 'notification' to 'drawer' to enable cart drawer (2024-12-21). 
