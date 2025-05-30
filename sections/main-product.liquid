@@ -513,13 +513,13 @@
                   </div>
                 {%- endif -%}
               {%- when 'complementary' -%}
-                <div
+                <product-recommendations
                   class="complementary-products quick-add-hidden{% if block.settings.make_collapsible_row %} is-accordion{% endif %}{% if block.settings.enable_quick_add %} complementary-products-contains-quick-add{% endif %}"
                   data-url="{{ routes.product_recommendations_url }}?limit={{ block.settings.product_list_limit }}&intent=complementary"
                   data-section-id="{{ section.id }}"
                   data-product-id="{{ product.id }}"
                 >
-                  {%- if true -%}
+                  {%- if recommendations.performed and recommendations.products_count > 0 -%}
                     <aside
                       aria-label="{{ 'accessibility.complementary_products' | t }}"
                       {{ block.shopify_attributes -}}
@@ -551,119 +551,110 @@
                             <p>{{ block.settings.promotional_message }}</p>
                           </div>
                         {%- endif -%}
-                        {%- if recommendations.products_count > 0 -%}
-                          <slideshow-component class="slider-mobile-gutter">
-                            {%- assign number_of_slides = recommendations.products_count
-                              | plus: 0.0
-                              | divided_by: block.settings.products_per_page
-                              | ceil
-                            -%}
-                            <div
-                              id="Slider-{{ block.id }}"
-                              class="contains-card contains-card--product complementary-slider grid grid--1-col slider slider--everywhere"
-                              role="list"
-                              {% if number_of_slides > 1 %}
-                                aria-label="{{ 'general.slider.name' | t }}"
-                              {% endif %}
-                            >
-                              {% assign skip_card_product_styles = false %}
-                              {%- for i in (1..number_of_slides) -%}
-                                <div
-                                  id="Slide-{{ block.id }}-{{ forloop.index }}"
-                                  class="complementary-slide complementary-slide--{{ settings.card_style }} grid__item slider__slide slideshow__slide"
-                                  tabindex="-1"
-                                  role="group"
-                                  {% if number_of_slides > 1 %}
-                                    aria-roledescription="{{ 'sections.slideshow.slide' | t }}"
-                                    aria-label="{{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
-                                  {% endif %}
-                                >
-                                  <ul class="list-unstyled" role="list">
-                                    {%- for product in recommendations.products
-                                      limit: block.settings.products_per_page
-                                      offset: continue
-                                    -%}
-                                      <li>
-                                        {%- if block.settings.enable_quick_add -%}
-                                          {% assign quick_add = 'standard' %}
-                                        {%- else -%}
-                                          {% assign quick_add = 'none' %}
-                                        {%- endif -%}
-                                        {% render 'card-product',
-                                          card_product: product,
-                                          media_aspect_ratio: block.settings.image_ratio,
-                                          show_secondary_image: false,
-                                          lazy_load: false,
-                                          skip_styles: skip_card_product_styles,
-                                          quick_add: quick_add,
-                                          section_id: section.id,
-                                          horizontal_class: true,
-                                          horizontal_quick_add: true
-                                        %}
-                                      </li>
-                                      {%- assign skip_card_product_styles = true -%}
-                                    {%- endfor -%}
-                                  </ul>
-                                </div>
-                              {%- endfor -%}
-                            </div>
-                            {%- if number_of_slides > 1 -%}
-                              <div class="slider-buttons">
-                                <button
-                                  type="button"
-                                  class="slider-button slider-button--prev"
-                                  name="previous"
-                                  aria-label="{{ 'general.slider.previous_slide' | t }}"
-                                >
-                                  <span class="svg-wrapper">
-                                    {{- 'icon-caret.svg' | inline_asset_content -}}
-                                  </span>
-                                </button>
-                                <div class="slider-counter slider-counter--{{ block.settings.pagination_style }}{% if block.settings.pagination_style == 'counter' or block.settings.pagination_style == 'numbers' %} caption{% endif %}">
-                                  {%- if block.settings.pagination_style == 'counter' -%}
-                                    <span class="slider-counter--current">1</span>
-                                    <span aria-hidden="true"> / </span>
-                                    <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
-                                    <span class="slider-counter--total">{{ number_of_slides }}</span>
-                                  {%- else -%}
-                                    <div class="slideshow__control-wrapper">
-                                      {%- for i in (1..number_of_slides) -%}
-                                        <button
-                                          class="slider-counter__link slider-counter__link--{{ block.settings.pagination_style }} link"
-                                          aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
-                                          aria-controls="Slider-{{ block.id }}"
-                                        >
-                                          {%- if block.settings.pagination_style == 'numbers' -%}
-                                            {{ forloop.index -}}
-                                          {%- else -%}
-                                            <span class="dot"></span>
-                                          {%- endif -%}
-                                        </button>
-                                      {%- endfor -%}
-                                    </div>
-                                  {%- endif -%}
-                                </div>
-                                <button
-                                  type="button"
-                                  class="slider-button slider-button--next"
-                                  name="next"
-                                  aria-label="{{ 'general.slider.next_slide' | t }}"
-                                >
-                                  <span class="svg-wrapper">
-                                    {{- 'icon-caret.svg' | inline_asset_content -}}
-                                  </span>
-                                </button>
+                        <slideshow-component class="slider-mobile-gutter">
+                          {%- assign number_of_slides = recommendations.products_count
+                            | plus: 0.0
+                            | divided_by: block.settings.products_per_page
+                            | ceil
+                          -%}
+                          <div
+                            id="Slider-{{ block.id }}"
+                            class="contains-card contains-card--product complementary-slider grid grid--1-col slider slider--everywhere"
+                            role="list"
+                            {% if number_of_slides > 1 %}
+                              aria-label="{{ 'general.slider.name' | t }}"
+                            {% endif %}
+                          >
+                            {% assign skip_card_product_styles = false %}
+                            {%- for i in (1..number_of_slides) -%}
+                              <div
+                                id="Slide-{{ block.id }}-{{ forloop.index }}"
+                                class="complementary-slide complementary-slide--{{ settings.card_style }} grid__item slider__slide slideshow__slide"
+                                tabindex="-1"
+                                role="group"
+                                {% if number_of_slides > 1 %}
+                                  aria-roledescription="{{ 'sections.slideshow.slide' | t }}"
+                                  aria-label="{{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
+                                {% endif %}
+                              >
+                                <ul class="list-unstyled" role="list">
+                                  {%- for product in recommendations.products
+                                    limit: block.settings.products_per_page
+                                    offset: continue
+                                  -%}
+                                    <li>
+                                      {%- if block.settings.enable_quick_add -%}
+                                        {% assign quick_add = 'standard' %}
+                                      {%- else -%}
+                                        {% assign quick_add = 'none' %}
+                                      {%- endif -%}
+                                      {% render 'card-product',
+                                        card_product: product,
+                                        media_aspect_ratio: block.settings.image_ratio,
+                                        show_secondary_image: false,
+                                        lazy_load: false,
+                                        skip_styles: skip_card_product_styles,
+                                        quick_add: quick_add,
+                                        section_id: section.id,
+                                        horizontal_class: true,
+                                        horizontal_quick_add: true
+                                      %}
+                                    </li>
+                                    {%- assign skip_card_product_styles = true -%}
+                                  {%- endfor -%}
+                                </ul>
                               </div>
-                            {%- endif -%}
-                          </slideshow-component>
-                        {%- else -%}
-                          <div class="complementary-products__no-products">
-                            <p style="padding: 1rem; font-style: italic; color: #666;">
-                              No complementary products configured for this product yet. This section will show
-                              recommended products once they are set up in Shopify admin.
-                            </p>
+                            {%- endfor -%}
                           </div>
-                        {%- endif -%}
+                          {%- if number_of_slides > 1 -%}
+                            <div class="slider-buttons">
+                              <button
+                                type="button"
+                                class="slider-button slider-button--prev"
+                                name="previous"
+                                aria-label="{{ 'general.slider.previous_slide' | t }}"
+                              >
+                                <span class="svg-wrapper">
+                                  {{- 'icon-caret.svg' | inline_asset_content -}}
+                                </span>
+                              </button>
+                              <div class="slider-counter slider-counter--{{ block.settings.pagination_style }}{% if block.settings.pagination_style == 'counter' or block.settings.pagination_style == 'numbers' %} caption{% endif %}">
+                                {%- if block.settings.pagination_style == 'counter' -%}
+                                  <span class="slider-counter--current">1</span>
+                                  <span aria-hidden="true"> / </span>
+                                  <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+                                  <span class="slider-counter--total">{{ number_of_slides }}</span>
+                                {%- else -%}
+                                  <div class="slideshow__control-wrapper">
+                                    {%- for i in (1..number_of_slides) -%}
+                                      <button
+                                        class="slider-counter__link slider-counter__link--{{ block.settings.pagination_style }} link"
+                                        aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
+                                        aria-controls="Slider-{{ block.id }}"
+                                      >
+                                        {%- if block.settings.pagination_style == 'numbers' -%}
+                                          {{ forloop.index -}}
+                                        {%- else -%}
+                                          <span class="dot"></span>
+                                        {%- endif -%}
+                                      </button>
+                                    {%- endfor -%}
+                                  </div>
+                                {%- endif -%}
+                              </div>
+                              <button
+                                type="button"
+                                class="slider-button slider-button--next"
+                                name="next"
+                                aria-label="{{ 'general.slider.next_slide' | t }}"
+                              >
+                                <span class="svg-wrapper">
+                                  {{- 'icon-caret.svg' | inline_asset_content -}}
+                                </span>
+                              </button>
+                            </div>
+                          {%- endif -%}
+                        </slideshow-component>
                         {%- if block.settings.make_collapsible_row -%}
                           </details>
                         {%- endif -%}
@@ -676,7 +667,7 @@
                     {{ 'quick-add.css' | asset_url | stylesheet_tag }}
                     <script src="{{ 'quick-add.js' | asset_url }}" defer="defer"></script>
                   {%- endif -%}
-                </div>
+                </product-recommendations>
               {%- when 'icon-with-text' -%}
                 {% render 'icon-with-text', block: block %}
             {%- endcase -%}
