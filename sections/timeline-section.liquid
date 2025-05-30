@@ -1,0 +1,130 @@
+{% schema %}
+{
+  "name": "Timeline Section",
+  "settings": [
+    {
+      "type": "color",
+      "id": "line_color",
+      "label": "Timeline line color",
+      "default": "#000000"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Timeline Item",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image (optional)"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Title"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content",
+          "default": "Write your content here"
+        },
+        {
+          "type": "text",
+          "id": "date",
+          "label": "Date",
+          "default": "YYYY-MM-DD"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 10,
+  "presets": [
+    {
+      "name": "Timeline",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}
+
+{% style %}
+  .timeline-section {
+    position: relative;
+    padding: 2rem 0;
+  }
+  .timeline-section__line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: {{ section.settings.line_color }};
+  }
+  .timeline-item {
+    position: relative;
+    width: 45%;
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+  .timeline-item--left {
+    float: left;
+    clear: both;
+    transform: translateX(-100%);
+    text-align: right;
+  }
+  .timeline-item--right {
+    float: right;
+    clear: both;
+    transform: translateX(100%);
+    text-align: left;
+  }
+  .timeline-item__circle {
+    position: absolute;
+    top: 1rem;
+    left: 50%;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background-color: {{ section.settings.line_color }};
+    transform: translateX(-50%);
+  }
+  .timeline-item__content {
+    background: #fff;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+{% endstyle %}
+
+<section class="timeline-section">
+  <div class="timeline-section__line"></div>
+  {% for block in section.blocks %}
+    {% assign side = forloop.index0 | modulo: 2 | times: 1 | default: 0 %}
+    {% if side == 0 %}
+      {% assign classes = 'timeline-item timeline-item--left' %}
+    {% else %}
+      {% assign classes = 'timeline-item timeline-item--right' %}
+    {% endif %}
+    <div class="{{ classes }}">
+      <div class="timeline-item__circle"></div>
+      <div class="timeline-item__content">
+        {% if block.settings.image %}
+          <img
+            src="{{ block.settings.image | img_url: 'medium' }}"
+            width=""
+            height=""
+            alt="{{ block.settings.heading }}"
+          >
+        {% endif %}
+        <h3>{{ block.settings.heading }}</h3>
+        <p>
+          <small>{{ block.settings.date }}</small>
+        </p>
+        {{ block.settings.content }}
+      </div>
+    </div>
+  {% endfor %}
+</section>
