@@ -12,12 +12,12 @@
 - **Product Page Enhancements**: Complementary products with accordion styling
 - **Collection Page**: Product grid with RAVE brand styling and badges
 - **Brand Color System**: Custom CSS variables and theme settings integration
+- **Enhanced Hero Section**: Centered branding elements with customizable logo, subheadline, and dual buttons
 
 ### 🚧 In Progress
 - TBD
 
 ### 📋 Upcoming Features
-- Homepage hero section
 - Footer customizations
 - Additional product page features
 
@@ -65,7 +65,79 @@ This document tracks all customizations made to the base Dawn theme for the Rave
 
 ### Home Page
 
-- **Hero Banner:** (Details to be added)
+#### Enhanced Hero Section (2024-06-13)
+
+**Implementation Summary:**
+- Added centered branding elements to the main hero section
+- Created a semi-transparent overlay for better text visibility
+- Added three customizable elements: logo, subheadline, and dual buttons
+- Implemented responsive behavior for mobile and desktop
+
+**Key Files Modified:**
+- `sections/main-hero.liquid`: Added content overlay with logo, subheadline, and buttons
+- `assets/rave-custom.css`: Added styling for new hero elements using RAVE brand variables
+
+**Shopify Customizer Settings Added:**
+- **Logo**: 
+  - Image picker for hero logo
+  - Width slider (50-400px) for customizable logo size
+- **Subheadline**: 
+  - Text field with default "Welcome to Rave Yoga"
+- **Buttons**:
+  - Button 1: Text and URL fields (default "Shop Now")
+  - Button 2: Text and URL fields (default "Learn More")
+
+**Design Implementation Details:**
+
+1. **Content Overlay Structure**:
+   - Semi-transparent overlay (`rgba(0, 0, 0, 0.3)`) for better text visibility
+   - Centered content container with `flex` layout
+   - Z-index positioning to ensure content appears above background media
+
+2. **Logo Implementation**:
+   - Customizable width via theme settings (50-400px range)
+   - Responsive scaling for different devices
+   - Proper image handling with alt text and lazy loading
+
+3. **Typography & Styling**:
+   - Used RAVE brand font variables (`--rave-font-stack-primary`)
+   - Added text shadow for improved readability on various backgrounds
+   - Maintained consistent vertical spacing between elements
+
+4. **Button Design**:
+   - Primary button: RAVE accent color background with white text
+   - Secondary button: Transparent with white border
+   - Hover states for both button types with smooth transitions
+   - Consistent padding, border-radius, and typography
+
+5. **Responsive Behavior**:
+   - Desktop: Horizontal button layout with flexible spacing
+   - Mobile: Vertical stacked buttons for better tap targets
+   - Font size adjustments for smaller screens
+   - Full-viewport height on mobile for immersive experience
+
+**Technical Implementation:**
+- Used BEM naming convention for all new CSS classes (e.g., `main-hero__logo`)
+- Leveraged existing background handling for images/videos
+- Applied proper event handling with pointer-events for nested links
+- Ensured proper accessibility with semantic HTML structure
+
+**CSS Architecture Decisions:**
+- Used CSS custom properties for consistent styling and easy theme updates
+- Applied mobile-first approach with responsive overrides
+- Implemented flexible layouts that adapt to different content lengths
+- Added fallback colors alongside CSS variables for backward compatibility
+
+**Testing & QA Notes:**
+- Verified rendering on mobile (375px), tablet (750px), and desktop (990px+)
+- Tested with various background types (image, video, placeholder)
+- Confirmed proper button hover/focus states
+- Validated proper overlay visibility with different background colors/images
+
+**Maintenance Considerations:**
+- CSS styling is isolated to dedicated classes to prevent conflicts
+- All new settings are grouped in the theme editor for easy discovery
+- Default values ensure good appearance even without customization
 
 ### Collection Page
 
