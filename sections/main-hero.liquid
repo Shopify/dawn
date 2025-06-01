@@ -4,6 +4,10 @@
 
 {%- liquid
   assign hero_link = section.settings.hero_link
+  assign has_video = false
+  if section.settings.video_file != blank
+    assign has_video = true
+  endif
 -%}
 
 <div class="main-hero">
@@ -11,7 +15,40 @@
     <a href="{{ hero_link }}" class="main-hero__link">
   {%- endif -%}
 
-  {%- if section.settings.video_url != blank -%}
+  <!-- Debug info - will show in HTML comments -->
+  <!-- Video file value: {{ section.settings.video_file | json }} -->
+  <!-- Has video: {{ has_video }} -->
+
+  {%- if has_video -%}
+    <div class="main-hero__video-wrapper">
+      <video
+        class="main-hero__video"
+        autoplay
+        loop
+        muted
+        playsinline
+        preload="auto"
+        {% if section.settings.image_desktop != blank %}
+          poster="{{ section.settings.image_desktop | image_url }}"
+        {% endif %}
+      >
+        {%- assign mp4_sources = section.settings.video_file.sources
+          | where: 'mime_type', 'video/mp4'
+          | sort: 'height'
+          | reverse
+        -%}
+        {%- for source in mp4_sources -%}
+          <source src="https:{{ source.url }}" type="video/mp4">
+        {%- endfor -%}
+        Your browser does not support the video tag.
+      </video>
+      {%- if mp4_sources.size == 0 -%}
+        <div style="color: white; background: red; padding: 10px;">
+          No valid MP4 video sources found in video_file setting.
+        </div>
+      {%- endif -%}
+    </div>
+  {%- elsif section.settings.video_url != blank -%}
     <div class="main-hero__video-wrapper">
       {%- if section.settings.video_url.type == 'youtube' -%}
         <iframe
@@ -77,11 +114,17 @@
       "info": "Optional. Uses Desktop Image if not set."
     },
     {
+      "type": "video",
+      "id": "video_file",
+      "label": "Background Video File",
+      "info": "Upload an MP4 video file directly. This will take priority over Video URL if both are set. Video should be short (< 10MB) for optimal performance."
+    },
+    {
       "type": "video_url",
       "id": "video_url",
       "label": "Background Video URL",
       "accept": ["youtube", "vimeo"],
-      "info": "Optional. Replaces images if a valid URL is provided. Autoplays muted and looped."
+      "info": "Link to YouTube or Vimeo. Used if no direct video file is uploaded."
     },
     {
       "type": "url",
