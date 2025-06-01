@@ -13,6 +13,7 @@
 - **Collection Page**: Product grid with RAVE brand styling and badges
 - **Brand Color System**: Custom CSS variables and theme settings integration
 - **Enhanced Hero Section**: Centered branding elements with customizable logo, subheadline, and dual buttons
+- **Global Button System**: Consistent button styling system with proper hover states and mobile responsiveness
 
 ### 🚧 In Progress
 - TBD
@@ -33,6 +34,7 @@ This document tracks all customizations made to the base Dawn theme for the Rave
 - **Liquid Modifications:** Changes to existing Dawn Liquid files are clearly marked with `<!-- RAVE CUSTOMIZATION START -->` and `<!-- RAVE CUSTOMIZATION END -->` comments. New sections and snippets are created with a `rave-` prefix or a clear custom naming convention.
 - **Localization:** All new user-facing strings are added to `locales/rave-yoga.en.default.json` and referenced in Liquid using the `t:` filter (e.g., `{{ 'sections.custom_hero.title' | t }}`).
 - **Asset Organization:** Custom images and assets are named with a `rave-` prefix and stored in the `assets` directory (e.g., `assets/rave-logo.png`).
+- **Button System:** Consistent global button system defined in `assets/rave-custom.css` with primary and secondary styles and proper hover states.
 
 ## Modified Core Dawn Files
 
@@ -65,13 +67,17 @@ This document tracks all customizations made to the base Dawn theme for the Rave
 
 ### Home Page
 
-#### Enhanced Hero Section (2024-06-13)
+#### Enhanced Hero Section (Updated 2024-06-14)
 
 **Implementation Summary:**
 - Added centered branding elements to the main hero section
 - Created a semi-transparent overlay for better text visibility
 - Added three customizable elements: logo, subheadline, and dual buttons
 - Implemented responsive behavior for mobile and desktop
+- **Updates (2024-06-14)**: 
+  - Fixed vertical centering issue with header offset
+  - Improved button styling with proper hover states
+  - Ensured consistent height calculation (viewport height minus header)
 
 **Key Files Modified:**
 - `sections/main-hero.liquid`: Added content overlay with logo, subheadline, and buttons
@@ -106,15 +112,18 @@ This document tracks all customizations made to the base Dawn theme for the Rave
 
 4. **Button Design**:
    - Primary button: RAVE accent color background with white text
-   - Secondary button: Transparent with white border
-   - Hover states for both button types with smooth transitions
+   - Secondary button: Transparent with white border and rounded corners
+   - Hover states for both button types with smooth transitions:
+     - Primary: Transitions to transparent with white border and text
+     - Secondary: Fills with white and changes text to brown
    - Consistent padding, border-radius, and typography
+   - No box shadows or outlines in any state
 
 5. **Responsive Behavior**:
    - Desktop: Horizontal button layout with flexible spacing
    - Mobile: Vertical stacked buttons for better tap targets
    - Font size adjustments for smaller screens
-   - Full-viewport height on mobile for immersive experience
+   - Height calculated as viewport height minus header height for perfect centering
 
 **Technical Implementation:**
 - Used BEM naming convention for all new CSS classes (e.g., `main-hero__logo`)
@@ -127,17 +136,62 @@ This document tracks all customizations made to the base Dawn theme for the Rave
 - Applied mobile-first approach with responsive overrides
 - Implemented flexible layouts that adapt to different content lengths
 - Added fallback colors alongside CSS variables for backward compatibility
+- Used high-specificity selectors with `!important` to override Dawn's base styles where needed
 
 **Testing & QA Notes:**
 - Verified rendering on mobile (375px), tablet (750px), and desktop (990px+)
 - Tested with various background types (image, video, placeholder)
-- Confirmed proper button hover/focus states
+- Confirmed proper button hover/focus states with no unwanted borders or shadows
 - Validated proper overlay visibility with different background colors/images
+- Verified vertical centering with header offset calculation
 
 **Maintenance Considerations:**
 - CSS styling is isolated to dedicated classes to prevent conflicts
 - All new settings are grouped in the theme editor for easy discovery
 - Default values ensure good appearance even without customization
+- Button styling system was designed for reuse across the site
+
+#### Global Button System (2024-06-14)
+
+**Implementation Summary:**
+- Created a consistent button styling system across the entire theme
+- Defined primary and secondary button styles with proper hover states
+- Ensured buttons maintain brand consistency with proper overrides of Dawn base styles
+
+**Key Files Modified:**
+- `assets/rave-custom.css`: Added comprehensive button system styling
+
+**Button Types and States:**
+
+1. **Primary Button**:
+   - Default: Brown background (#412F26) with white text
+   - Hover: Transparent background with white border and text
+   - Both states have rounded corners (var(--buttons-radius, 3px))
+   - No box shadows or outlines in any state
+
+2. **Secondary Button**:
+   - Default: Transparent background with white border and text
+   - Hover: White background with brown text (#412F26)
+   - Both states have rounded corners (var(--buttons-radius, 3px))
+   - No box shadows or outlines in any state
+
+**Technical Implementation:**
+- Used high-specificity selectors with `!important` to override Dawn's base styles
+- Targeted all button classes used by Dawn theme (.button, .shopify-challenge__button, etc.)
+- Completely removed box shadows and :after pseudo-elements to prevent unwanted borders
+- Reset all button-related CSS variables to ensure consistent appearance
+- Maintained responsive behavior with specific mobile styling
+
+**CSS Architecture Decisions:**
+- Applied consistent class naming for different button types (--primary, --secondary)
+- Used CSS variables for colors to ensure theme-wide consistency
+- Provided appropriate fallback values for all variable-based properties
+- Created a reusable system that can be easily applied to new buttons
+
+**Maintenance Considerations:**
+- Button system is designed to withstand Dawn theme updates
+- All buttons automatically inherit the styling without additional class names
+- Style is maintained across hover, focus, and active states
 
 ### Collection Page
 
