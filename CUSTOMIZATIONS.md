@@ -195,7 +195,7 @@ This document tracks all customizations made to the base Dawn theme for the Rave
 
 ### Collection Page
 
-- (Details to be added)
+- **Product Grid Border Fix (2024-12-21)**: Updated the collection product grid styling to ensure consistent 1px borders between products without overlapping. Implemented using a grid gap approach with the background color matching the border color (var(--rave-color-primary-text)). This creates a visual effect of products with consistent borders while avoiding the double-border effect when products are adjacent to each other.
 - **Badge Styling (2023-09-07)**: Updated "Sold Out" and "On Sale" badges to display as rectangular banners in Rave brown color (#3D2120) with white text. Positioned at the top-left of product images. Implementation in `assets/rave-custom.css`.
 
 ### Product Page
