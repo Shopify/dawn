@@ -1,0 +1,118 @@
+{{ 'product-colours-hero.css' | asset_url | stylesheet_tag }}
+{{ 'swiper-bundle.min.css' | asset_url | stylesheet_tag }}
+<script defer src="{{ 'swiper-bundle.min.js' | asset_url | script_tag }}"></script>
+
+<section class="product-colours-hero">
+  <div class="product-colours-hero__image">
+    <div class="swiper product-colours-swiper">
+      <div class="swiper-wrapper">
+        {% for block in section.blocks %}
+          {% if block.type == 'product' and block.settings.product %}
+            {% assign product = all_products[block.settings.product] %}
+            {% for image in product.images %}
+              <div class="swiper-slide">
+                <img height="100" width="100" src="{{ image | image_url: '800x800' }}" alt="{{ image.alt | escape }}">
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="swiper-pagination"></div>
+    </div>
+  </div>
+
+  <div class="product-colours-hero__content">
+    {% assign first_product_block = section.blocks | where: 'type', 'product' | first %}
+    {% if first_product_block %}
+      {% assign product = all_products[section.settings.product] %}
+      <h2 class="product-title">{{ product.title }}</h2>
+      <hr>
+      <div class="product-description">
+        {{ product.description }}
+      </div>
+    {% endif %}
+    <hr>
+    <div class="product-swatches">
+      {% for block in section.blocks %}
+        {% if block.type == 'swatch' %}
+          <div class="swatch" style="background-color: {{ block.settings.color }}"></div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <hr>
+    <a href="{{ section.settings.button_link }}" class="cta-button">
+      {{ section.settings.button_label }}
+    </a>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    new Swiper('.product-colours-swiper', {
+      loop: true,
+      pagination: {
+        el: '.swiper-pagination',
+      },
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Product Colours Hero",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Select Product"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button Link"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button Label",
+      "default": "Call to Action"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Select Product"
+        }
+      ]
+    },
+    {
+      "type": "swatch",
+      "name": "Colour Swatch",
+      "settings": [
+        {
+          "type": "color",
+          "id": "color",
+          "label": "Colour"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 5,
+  "presets": [
+    {
+      "name": "Product Colours Hero",
+      "blocks": [
+        { "type": "product", "settings": { "product": "" } },
+        { "type": "swatch", "settings": { "color": "#c00" } },
+        { "type": "swatch", "settings": { "color": "#0c0" } },
+        { "type": "swatch", "settings": { "color": "#00c" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
