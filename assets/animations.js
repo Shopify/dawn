@@ -66,7 +66,7 @@ function initializeScrollZoomAnimationTrigger() {
 
         element.style.setProperty('--zoom-in-ratio', 1 + scaleAmount * percentageSeen(element));
       }),
-      { passive: true }
+      { passive: true },
     );
   });
 }

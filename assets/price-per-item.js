@@ -62,27 +62,36 @@ if (!customElements.get('price-per-item')) {
       updatePricePerItem(updatedCartQuantity) {
         if (this.input) {
           this.enteredQty = parseInt(this.input.value);
-          this.step = parseInt(this.input.step)
+          this.step = parseInt(this.input.step);
         }
 
         // updatedCartQuantity is undefined when qty is updated on product page. We need to sum entered qty and current qty in cart.
         // updatedCartQuantity is not undefined when qty is updated in cart. We need to sum qty in cart and min qty for product.
-        this.currentQtyForVolumePricing = updatedCartQuantity === undefined ? this.getCartQuantity(updatedCartQuantity) + this.enteredQty : this.getCartQuantity(updatedCartQuantity) + parseInt(this.step);
+        this.currentQtyForVolumePricing =
+          updatedCartQuantity === undefined
+            ? this.getCartQuantity(updatedCartQuantity) + this.enteredQty
+            : this.getCartQuantity(updatedCartQuantity) + parseInt(this.step);
 
         if (this.classList.contains('variant-item__price-per-item')) {
           this.currentQtyForVolumePricing = this.getCartQuantity(updatedCartQuantity);
         }
         for (let pair of this.qtyPricePairs) {
           if (this.currentQtyForVolumePricing >= pair[0]) {
-            const pricePerItemCurrent = document.querySelector(`price-per-item[id^="Price-Per-Item-${this.dataset.sectionId || this.dataset.variantId}"] .price-per-item span`);
-            this.classList.contains('variant-item__price-per-item') ? pricePerItemCurrent.innerHTML = window.quickOrderListStrings.each.replace('[money]', pair[1]) : pricePerItemCurrent.innerHTML = pair[1];
+            const pricePerItemCurrent = document.querySelector(
+              `price-per-item[id^="Price-Per-Item-${this.dataset.sectionId || this.dataset.variantId}"] .price-per-item span`,
+            );
+            this.classList.contains('variant-item__price-per-item')
+              ? (pricePerItemCurrent.innerHTML = window.quickOrderListStrings.each.replace('[money]', pair[1]))
+              : (pricePerItemCurrent.innerHTML = pair[1]);
             break;
           }
         }
       }
 
       getCartQuantity(updatedCartQuantity) {
-        return (updatedCartQuantity || updatedCartQuantity === 0) ? updatedCartQuantity : parseInt(this.input.dataset.cartQuantity);
+        return updatedCartQuantity || updatedCartQuantity === 0
+          ? updatedCartQuantity
+          : parseInt(this.input.dataset.cartQuantity);
       }
 
       getVolumePricingArray() {
@@ -90,14 +99,14 @@ if (!customElements.get('price-per-item')) {
         this.qtyPricePairs = [];
 
         if (volumePricing) {
-          volumePricing.querySelectorAll('li').forEach(li => {
+          volumePricing.querySelectorAll('li').forEach((li) => {
             const qty = parseInt(li.querySelector('span:first-child').textContent);
-            const price = (li.querySelector('span:not(:first-child):last-child').dataset.text);
+            const price = li.querySelector('span:not(:first-child):last-child').dataset.text;
             this.qtyPricePairs.push([qty, price]);
           });
         }
         this.qtyPricePairs.reverse();
       }
-    }
+    },
   );
 }

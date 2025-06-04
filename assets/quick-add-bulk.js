@@ -73,7 +73,7 @@ if (!customElements.get('quick-add-bulk')) {
           () => {
             event.target.setCustomValidity('');
           },
-          { once: true }
+          { once: true },
         );
       }
 
@@ -180,7 +180,7 @@ if (!customElements.get('quick-add-bulk')) {
           if (elementToReplace) {
             elementToReplace.innerHTML = this.getSectionInnerHTML(
               parsedState.sections[section.section],
-              section.selector
+              section.selector,
             );
           }
         });
@@ -192,6 +192,6 @@ if (!customElements.get('quick-add-bulk')) {
         this.listenForActiveInput();
         this.listenForKeydown();
       }
-    }
+    },
   );
 }

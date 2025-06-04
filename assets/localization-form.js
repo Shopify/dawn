@@ -53,7 +53,7 @@ if (!customElements.get('localization-form')) {
 
       onContainerKeyDown(event) {
         const focusableItems = Array.from(this.querySelectorAll('a')).filter(
-          (item) => !item.parentElement.classList.contains('hidden')
+          (item) => !item.parentElement.classList.contains('hidden'),
         );
         let focusedItemIndex = focusableItems.findIndex((item) => item === document.activeElement);
         let itemToFocus;
@@ -114,7 +114,7 @@ if (!customElements.get('localization-form')) {
         this.elements.panel.toggleAttribute('hidden');
         this.elements.button.setAttribute(
           'aria-expanded',
-          (this.elements.button.getAttribute('aria-expanded') === 'false').toString()
+          (this.elements.button.getAttribute('aria-expanded') === 'false').toString(),
         );
         if (!document.body.classList.contains('overflow-hidden-tablet')) {
           document.body.classList.add('overflow-hidden-mobile');
@@ -171,7 +171,7 @@ if (!customElements.get('localization-form')) {
         if (this.elements.liveRegion) {
           this.elements.liveRegion.innerHTML = window.accessibilityStrings.countrySelectorSearchCount.replace(
             '[count]',
-            visibleCountries
+            visibleCountries,
           );
         }
 
@@ -201,6 +201,6 @@ if (!customElements.get('localization-form')) {
           event.preventDefault();
         }
       }
-    }
+    },
   );
 }

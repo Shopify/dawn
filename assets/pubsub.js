@@ -16,10 +16,9 @@ function subscribe(eventName, callback) {
 
 function publish(eventName, data) {
   if (subscribers[eventName]) {
-    const promises = subscribers[eventName]
-      .map((callback) => callback(data))
+    const promises = subscribers[eventName].map((callback) => callback(data));
     return Promise.all(promises);
   } else {
-    return Promise.resolve()
+    return Promise.resolve();
   }
 }
