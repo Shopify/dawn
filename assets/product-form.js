@@ -35,7 +35,7 @@ if (!customElements.get('product-form')) {
         if (this.cart) {
           formData.append(
             'sections',
-            this.cart.getSectionsToRender().map((section) => section.id)
+            this.cart.getSectionsToRender().map((section) => section.id),
           );
           formData.append('sections_url', window.location.pathname);
           this.cart.setActiveElement(document.activeElement);
@@ -82,16 +82,16 @@ if (!customElements.get('product-form')) {
                 'modalClosed',
                 () => {
                   setTimeout(() => {
-                    CartPerformance.measure("add:paint-updated-sections", () => {
+                    CartPerformance.measure('add:paint-updated-sections', () => {
                       this.cart.renderContents(response);
                     });
                   });
                 },
-                { once: true }
+                { once: true },
               );
               quickAddModal.hide(true);
             } else {
-              CartPerformance.measure("add:paint-updated-sections", () => {
+              CartPerformance.measure('add:paint-updated-sections', () => {
                 this.cart.renderContents(response);
               });
             }
@@ -105,7 +105,7 @@ if (!customElements.get('product-form')) {
             if (!this.error) this.submitButton.removeAttribute('aria-disabled');
             this.querySelector('.loading__spinner').classList.add('hidden');
 
-            CartPerformance.measureFromEvent("add:user-action", evt);
+            CartPerformance.measureFromEvent('add:user-action', evt);
           });
       }
 
@@ -137,6 +137,6 @@ if (!customElements.get('product-form')) {
       get variantIdInput() {
         return this.form.querySelector('[name=id]');
       }
-    }
+    },
   );
 }

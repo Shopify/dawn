@@ -6,9 +6,7 @@ labels: bug
 
 ## Describe the current behavior
 
-
 ## Describe the expected behavior
-
 
 ## Version information (Dawn, browsers and operating systems)
 
@@ -18,7 +16,6 @@ labels: bug
 
 ## Possible solution
 
-
 ## Additional context/screenshots
-<!-- Add any other context about the problem here. If applicable, add screenshots to help explain. -->
 
+<!-- Add any other context about the problem here. If applicable, add screenshots to help explain. -->
