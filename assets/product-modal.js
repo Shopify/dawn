@@ -17,7 +17,7 @@ if (!customElements.get('product-modal')) {
 
       showActiveMedia() {
         this.querySelectorAll(
-          `[data-media-id]:not([data-media-id="${this.openedBy.getAttribute('data-media-id')}"])`
+          `[data-media-id]:not([data-media-id="${this.openedBy.getAttribute('data-media-id')}"])`,
         ).forEach((element) => {
           element.classList.remove('active');
         });
@@ -37,6 +37,6 @@ if (!customElements.get('product-modal')) {
         )
           activeMedia.loadContent();
       }
-    }
+    },
   );
 }

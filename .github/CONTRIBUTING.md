@@ -21,10 +21,10 @@ This Github repository exists for the theme development community to discuss and
 
 Shopify theme development is a big topic and it's completely normal that you will encounter problems which might require you to reach out for help. In fact, we provide several knowledge and support platforms for theme development already:
 
-* [Shopify Development](https://shopify.dev/themes)
-* [Shopify Help Center](https://help.shopify.com/themes)
-* [Shopify Forum](https://ecommerce.shopify.com/forums)
-* [Shopify Experts](https://experts.shopify.com/)
+- [Shopify Development](https://shopify.dev/themes)
+- [Shopify Help Center](https://help.shopify.com/themes)
+- [Shopify Forum](https://ecommerce.shopify.com/forums)
+- [Shopify Experts](https://experts.shopify.com/)
 
 ## Theme code principles
 
@@ -52,10 +52,10 @@ _The principle requirement._
 
 Code must be lean, fast, and reliable. Our targets include:
 
-* Zero [Cumulative Layout Shift](https://web.dev/cls/)
-* No DOM manipulation before user input
-* No render-blocking JavaScript
-* No [long tasks](https://developer.mozilla.org/en-US/docs/Web/API/Long_Tasks_API)
+- Zero [Cumulative Layout Shift](https://web.dev/cls/)
+- No DOM manipulation before user input
+- No render-blocking JavaScript
+- No [long tasks](https://developer.mozilla.org/en-US/docs/Web/API/Long_Tasks_API)
 
 Functionality and design defaults to “no” until it meets this requirement. Code ships on quality.
 
@@ -83,29 +83,37 @@ And since legacy browsers are often the slowest, we don’t burden them with pol
 
 You can follow these steps to go from setting up a store to creating a pull request for Dawn.
 
->:information_source: We'll assume you're already set up with Git and GitHub (if you're not familiar with these, [start with these docs](https://docs.github.com/github/getting-started-with-github/quickstart/set-up-git)).
+> :information_source: We'll assume you're already set up with Git and GitHub (if you're not familiar with these, [start with these docs](https://docs.github.com/github/getting-started-with-github/quickstart/set-up-git)).
 
 1. Set up a [development store](https://shopify.dev/themes/tools/development-stores) so you can test your code changes (assuming you don't already have a store).
 2. Install the [Shopify CLI](https://github.com/Shopify/shopify-cli) by following [these steps](https://shopify.dev/themes/tools/cli/installation).
 3. Fork the repository, clone it and create a new branch:
+
 ```sh
 git clone git@github.com:your-username/dawn.git
 cd dawn
 git checkout -b your-new-branch-name
 ```
+
 4. Launch a development server:
+
 ```sh
 shopify theme serve
 ```
+
 5. Add your changes to the codebase.
 6. Commit your changes:
+
 ```sh
 git commit -a -m="Your commit message"
 ```
+
 7. Push your commit to your forked repository:
+
 ```sh
 git push origin your-new-branch-name
 ```
+
 8. Open a pull request. See [GitHub's official documentation](https://help.github.com/articles/creating-a-pull-request-from-a-fork/) for more details.
 9. Before you can merge your pull request, you must sign Shopify's [Contributor License Agreement (CLA)](https://cla.shopify.com/).
 
@@ -115,12 +123,12 @@ Bugs are tracked as [GitHub issues](https://github.com/Shopify/dawn/issues). Sea
 
 When creating a new issue, please ensure the issue is clear and include additional details to help maintainers reproduce it:
 
-* **Use a clear and descriptive title** for the issue to identify the problem.
-* **Describe the exact steps which reproduce the problem** in as many details as possible.
-* **Provide specific examples to demonstrate the steps.** Include links to files, or copy/pasteable snippets. If you're providing snippets in the issue, use Markdown code blocks.
-* **Describe the behavior you observed** after following the steps and point out what exactly is the problem with that behavior.
-* **Explain which behavior you expected to see** instead and why.
-* **Include screenshots and animated GIFs** where possible.
+- **Use a clear and descriptive title** for the issue to identify the problem.
+- **Describe the exact steps which reproduce the problem** in as many details as possible.
+- **Provide specific examples to demonstrate the steps.** Include links to files, or copy/pasteable snippets. If you're providing snippets in the issue, use Markdown code blocks.
+- **Describe the behavior you observed** after following the steps and point out what exactly is the problem with that behavior.
+- **Explain which behavior you expected to see** instead and why.
+- **Include screenshots and animated GIFs** where possible.
 
 ## Reviewing
 
@@ -135,6 +143,7 @@ We (the Themes team) review every single PR. The purpose of reviews is to create
 You should always review your own PR first.
 
 For code changes, make sure that you:
+
 - [ ] Confirm that the changes meet our [theme code principles](#theme-code-principles).
 - [ ] Check new or updated Liquid docs to confirm that the code used is up to date and isn't deprecated.
 - [ ] If there are any failing checks in your PR, troubleshoot them until they're all passing.

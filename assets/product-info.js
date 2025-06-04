@@ -22,7 +22,7 @@ if (!customElements.get('product-info')) {
 
         this.onVariantChangeUnsubscriber = subscribe(
           PUB_SUB_EVENTS.optionValueSelectionChange,
-          this.handleOptionValueChange.bind(this)
+          this.handleOptionValueChange.bind(this),
         );
 
         this.initQuantityHandlers();
@@ -52,7 +52,9 @@ if (!customElements.get('product-info')) {
 
       initializeProductSwapUtility() {
         this.preProcessHtmlCallbacks.push((html) =>
-          html.querySelectorAll('.scroll-trigger').forEach((element) => element.classList.add('scroll-trigger--cancel'))
+          html
+            .querySelectorAll('.scroll-trigger')
+            .forEach((element) => element.classList.add('scroll-trigger--cancel')),
         );
         this.postProcessHtmlCallbacks.push((newNode) => {
           window?.Shopify?.PaymentButton?.init();
@@ -100,14 +102,14 @@ if (!customElements.get('product-info')) {
               document.querySelector('main'),
               html.querySelector('main'),
               this.preProcessHtmlCallbacks,
-              this.postProcessHtmlCallbacks
+              this.postProcessHtmlCallbacks,
             );
           } else {
             HTMLUpdateUtility.viewTransition(
               this,
               html.querySelector('product-info'),
               this.preProcessHtmlCallbacks,
-              this.postProcessHtmlCallbacks
+              this.postProcessHtmlCallbacks,
             );
           }
         };
@@ -130,9 +132,8 @@ if (!customElements.get('product-info')) {
           })
           .catch((error) => {
             if (error.name === 'AbortError') {
-              console.log('Fetch aborted by user');
-            } else {
-              console.error(error);
+              // console.log('Fetch aborted by user');
+              return;
             }
           });
       }
@@ -198,7 +199,7 @@ if (!customElements.get('product-info')) {
 
           this.productForm?.toggleSubmitButton(
             html.getElementById(`ProductSubmitButton-${this.sectionId}`)?.hasAttribute('disabled') ?? true,
-            window.variantStrings.soldOut
+            window.variantStrings.soldOut,
           );
 
           publish(PUB_SUB_EVENTS.variantChange, {
@@ -213,7 +214,7 @@ if (!customElements.get('product-info')) {
 
       updateVariantInputs(variantId) {
         this.querySelectorAll(
-          `#product-form-${this.dataset.section}, #product-form-installment-${this.dataset.section}`
+          `#product-form-${this.dataset.section}, #product-form-installment-${this.dataset.section}`,
         ).forEach((productForm) => {
           const input = productForm.querySelector('input[name="id"]');
           input.value = variantId ?? '';
@@ -223,7 +224,7 @@ if (!customElements.get('product-info')) {
 
       updateURL(url, variantId) {
         this.querySelector('share-button')?.updateUrl(
-          `${window.shopUrl}${url}${variantId ? `?variant=${variantId}` : ''}`
+          `${window.shopUrl}${url}${variantId ? `?variant=${variantId}` : ''}`,
         );
 
         if (this.dataset.updateUrl === 'false') return;
@@ -250,7 +251,7 @@ if (!customElements.get('product-info')) {
           const mediaGallerySourceItems = Array.from(mediaGallerySource.querySelectorAll('li[data-media-id]'));
           const sourceSet = new Set(mediaGallerySourceItems.map((item) => item.dataset.mediaId));
           const sourceMap = new Map(
-            mediaGallerySourceItems.map((item, index) => [item.dataset.mediaId, { item, index }])
+            mediaGallerySourceItems.map((item, index) => [item.dataset.mediaId, { item, index }]),
           );
           return [mediaGallerySourceItems, sourceSet, sourceMap];
         };
@@ -258,7 +259,7 @@ if (!customElements.get('product-info')) {
         if (mediaGallerySource && mediaGalleryDestination) {
           let [mediaGallerySourceItems, sourceSet, sourceMap] = refreshSourceData();
           const mediaGalleryDestinationItems = Array.from(
-            mediaGalleryDestination.querySelectorAll('li[data-media-id]')
+            mediaGalleryDestination.querySelectorAll('li[data-media-id]'),
           );
           const destinationSet = new Set(mediaGalleryDestinationItems.map(({ dataset }) => dataset.mediaId));
           let shouldRefresh = false;
@@ -289,7 +290,7 @@ if (!customElements.get('product-info')) {
             if (sourceData && sourceData.index !== destinationIndex) {
               mediaGallerySource.insertBefore(
                 sourceData.item,
-                mediaGallerySource.querySelector(`li:nth-of-type(${destinationIndex + 1})`)
+                mediaGallerySource.querySelector(`li:nth-of-type(${destinationIndex + 1})`),
               );
 
               // refresh source now that it has been modified
@@ -301,7 +302,7 @@ if (!customElements.get('product-info')) {
         // set featured media as active in the media gallery
         this.querySelector(`media-gallery`)?.setActiveMedia?.(
           `${this.dataset.section}-${variantFeaturedMediaId}`,
-          true
+          true,
         );
 
         // update media modal
@@ -346,7 +347,7 @@ if (!customElements.get('product-info')) {
             const html = new DOMParser().parseFromString(responseText, 'text/html');
             this.updateQuantityRules(this.dataset.section, html);
           })
-          .catch((e) => console.error(e))
+          .catch(() => {})
           .finally(() => this.querySelector('.quantity__rules-cart .loading__spinner').classList.add('hidden'));
       }
 
@@ -395,7 +396,7 @@ if (!customElements.get('product-info')) {
       get relatedProducts() {
         const relatedProductsSectionId = ThemeSectionId.getIdForSection(
           ThemeSectionId.parseId(this.sectionId),
-          'related-products'
+          'related-products',
         );
         return document.querySelector(`product-recommendations[data-section-id^="${relatedProductsSectionId}"]`);
       }
@@ -403,7 +404,7 @@ if (!customElements.get('product-info')) {
       get quickOrderList() {
         const quickOrderListSectionId = ThemeSectionId.getIdForSection(
           ThemeSectionId.parseId(this.sectionId),
-          'quick_order_list'
+          'quick_order_list',
         );
         return document.querySelector(`quick-order-list[data-id^="${quickOrderListSectionId}"]`);
       }
@@ -411,6 +412,6 @@ if (!customElements.get('product-info')) {
       get sectionId() {
         return this.dataset.originalSection || this.dataset.section;
       }
-    }
+    },
   );
 }
