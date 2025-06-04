@@ -2,6 +2,7 @@ import gsap from 'gsap/dist/gsap.min.js';
 import ScrollTrigger from 'gsap/dist/ScrollTrigger.min.js';
 import ScrollSmoother from 'gsap/dist/ScrollSmoother.min.js';
 import Flip from 'gsap/dist/Flip.min.js';
+import SplitText from 'gsap/dist/SplitText.min.js';
 
 //smooth scrolling animation
 
@@ -119,3 +120,28 @@ document.addEventListener('DOMContentLoaded', () => {
     },
   });
 });
+
+//highlight text animation
+gsap.registerPlugin(SplitText, ScrollTrigger);
+
+const split = new SplitText('.highlight-text-block p', {
+  type: 'words',
+});
+
+const timeline = gsap
+  .timeline({
+    scrollTrigger: {
+      trigger: '.highlight-text-block',
+      start: 'top 75%',
+      end: '+=600',
+      scrub: 0.75,
+    },
+  })
+  .set(
+    split.words,
+    {
+      color: '#272727',
+      stagger: 0.1,
+    },
+    0.1
+  );
