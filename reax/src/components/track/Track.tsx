@@ -539,6 +539,8 @@ const OrderForm: React.FC<{
 
           <div className="field" style={{ marginBottom: '2rem' }}>
             <input
+              //   defaultValue={'SST-1100'}
+              //   defaultValue={'ST1030'}
               className="field__input"
               placeholder="Order Number"
               type="text"
