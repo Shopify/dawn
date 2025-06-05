@@ -1134,7 +1134,7 @@ class ProductRecommendations extends HTMLElement {
   }
 
   connectedCallback() {
-    this.hidden = true;
+    this.classList.add('visibility-hidden');
     this.initializeRecommendations(this.dataset.productId);
   }
 
@@ -1164,7 +1164,7 @@ class ProductRecommendations extends HTMLElement {
 
         if (recommendations?.innerHTML.trim().length) {
           this.innerHTML = recommendations.innerHTML;
-          this.hidden = false;
+          this.classList.remove('visibility-hidden');
           if (html.querySelector('.grid__item')) {
             this.classList.add('product-recommendations--loaded');
           }
