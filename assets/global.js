@@ -1134,6 +1134,7 @@ class ProductRecommendations extends HTMLElement {
   }
 
   connectedCallback() {
+    this.hidden = true;
     this.initializeRecommendations(this.dataset.productId);
   }
 
@@ -1152,7 +1153,10 @@ class ProductRecommendations extends HTMLElement {
 
   loadRecommendations(productId) {
     fetch(`${this.dataset.url}&product_id=${productId}&section_id=${this.dataset.sectionId}`)
-      .then((response) => response.text())
+      .then((response) => {
+        if (!response.ok) throw new Error(response.status);
+        return response.text();
+      })
       .then((text) => {
         const html = document.createElement('div');
         html.innerHTML = text;
@@ -1160,18 +1164,17 @@ class ProductRecommendations extends HTMLElement {
 
         if (recommendations?.innerHTML.trim().length) {
           this.innerHTML = recommendations.innerHTML;
-        }
-
-        if (!this.querySelector('slideshow-component') && this.classList.contains('complementary-products')) {
+          this.hidden = false;
+          if (html.querySelector('.grid__item')) {
+            this.classList.add('product-recommendations--loaded');
+          }
+        } else {
           this.remove();
-        }
-
-        if (html.querySelector('.grid__item')) {
-          this.classList.add('product-recommendations--loaded');
         }
       })
       .catch((e) => {
         console.error(e);
+        this.remove();
       });
   }
 }
