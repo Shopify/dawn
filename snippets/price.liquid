@@ -38,6 +38,38 @@
   if target == product and product.price_varies
     assign money_price = 'products.product.price.from_price_html' | t: price: money_price
   endif
+
+  
+  # Most products in this store are structured as combined listings.
+  # This block determines if the price of a combined listing product
+  # varies from the main product price. e.g. if an item is on sale or not.
+  
+  assign combined_listing_price_varies = false
+  assign combined_listing_price_min = product.price
+  assign keys = 'Color,color,Colour,colour' | split: ','
+    
+  for key in keys
+    if product.options contains key
+      assign color_option = false
+      for option in product.options_with_values
+        if option.name contains key
+          assign color_option = option
+        endif
+      endfor
+    endif
+  endfor
+
+  if color_option
+    for value in color_option.values
+      if value.variant.price != product.price
+        assign combined_listing_price_varies = true
+
+        if value.variant.price < combined_listing_price_min
+          assign combined_listing_price_min = value.variant.price
+        endif
+      endif
+    endfor
+  endif
 -%}
 
 {%- unless target == null and placeholder == null -%}
@@ -88,6 +120,9 @@
           <span class="price-item price-item--regular">
             {{ money_price }}
           </span>
+          {% if combined_listing_price_varies %}
+              <span class="price-item price-item--varies-badge">(Select colors starting at {{ combined_listing_price_min | money }})</span>
+          {% endif %}
         {%- endif -%}
       </div>
       <div class="price__sale">
