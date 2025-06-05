@@ -1173,7 +1173,7 @@ class ProductRecommendations extends HTMLElement {
         }
       })
       .catch((e) => {
-        console.error(e);
+        if (Shopify.designMode) console.error(e);
         this.remove();
       });
   }
