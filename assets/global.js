@@ -1152,29 +1152,33 @@ class ProductRecommendations extends HTMLElement {
   }
 
   loadRecommendations(productId) {
-    fetch(`${this.dataset.url}&product_id=${productId}&section_id=${this.dataset.sectionId}`)
+    const url = `${this.dataset.url}&product_id=${productId}&section_id=${this.dataset.sectionId}`;
+
+    fetch(url)
       .then((response) => {
         if (!response.ok) throw new Error(response.status);
         return response.text();
       })
       .then((text) => {
-        const html = document.createElement('div');
-        html.innerHTML = text;
-        const recommendations = html.querySelector('product-recommendations');
+        try {
+          const html = document.createElement('div');
+          html.innerHTML = text;
+          const recommendations = html.querySelector('product-recommendations');
 
-        if (recommendations?.innerHTML.trim().length) {
-          this.innerHTML = recommendations.innerHTML;
-          this.classList.remove('visibility-hidden');
-          if (html.querySelector('.grid__item')) {
-            this.classList.add('product-recommendations--loaded');
+          if (recommendations?.innerHTML.trim().length) {
+            this.innerHTML = recommendations.innerHTML;
+            if (html.querySelector('.grid__item')) {
+              this.classList.add('product-recommendations--loaded');
+            }
           }
-        } else {
-          this.remove();
+          this.classList.remove('visibility-hidden');
+        } catch (error) {
+          throw new Error(`Parsing error: ${error.message}`);
         }
       })
       .catch((e) => {
-        if (Shopify.designMode) console.error(e);
-        this.remove();
+        console.error(`Failed to load product recommendations from ${url}`, e);
+        this.classList.remove('visibility-hidden');
       });
   }
 }
