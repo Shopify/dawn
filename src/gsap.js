@@ -104,6 +104,7 @@ if (document.querySelector('#gallery-artists')) {
   window.addEventListener('resize', createTween);
 }
 
+// parallax effect for text stack image
 document.addEventListener('DOMContentLoaded', () => {
   const image = document.getElementById('parallax-image');
 
