@@ -276,14 +276,10 @@
     {{ 'rave-custom.css' | asset_url | stylesheet_tag }}
 
     {%- unless settings.type_body_font.system? -%}
-      {% comment %}theme-check-disable AssetPreload{% endcomment %}
       <link rel="preload" as="font" href="{{ settings.type_body_font | font_url }}" type="font/woff2" crossorigin>
-      {% comment %}theme-check-enable AssetPreload{% endcomment %}
     {%- endunless -%}
     {%- unless settings.type_header_font.system? -%}
-      {% comment %}theme-check-disable AssetPreload{% endcomment %}
       <link rel="preload" as="font" href="{{ settings.type_header_font | font_url }}" type="font/woff2" crossorigin>
-      {% comment %}theme-check-enable AssetPreload{% endcomment %}
     {%- endunless -%}
 
     {%- if localization.available_countries.size > 1 or localization.available_languages.size > 1 -%}
@@ -304,6 +300,114 @@
       if (Shopify.designMode) {
         document.documentElement.classList.add('shopify-design-mode');
       }
+    </script>
+
+    <!-- Targeted fix for multicolumn layout issue -->
+    <style>
+      /* Force 3-column layout for the specific multicolumn section */
+      @media screen and (min-width: 750px) {
+        #multicolumn_C4WQAd .multicolumn-list {
+          display: flex !important;
+          flex-wrap: nowrap !important;
+          gap: 20px !important;
+          width: 100% !important;
+        }
+
+        #multicolumn_C4WQAd .multicolumn-list__item {
+          flex: 1 1 31% !important;
+          width: 31% !important;
+          max-width: 31% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        /* Override grid classes */
+        #multicolumn_C4WQAd .grid--3-col-desktop {
+          width: 100% !important;
+        }
+
+        #multicolumn_C4WQAd .grid--3-col-desktop > .grid__item {
+          width: 31% !important;
+          max-width: 31% !important;
+        }
+      }
+    </style>
+
+    <!-- Critical JavaScript fix for multicolumn layout -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // Apply direct fix to ensure 3-column layout
+        function fixMulticolumnLayout() {
+          const container = document.getElementById('multicolumn_C4WQAd');
+          if (!container) return;
+
+          // Find the slider/list element
+          const slider = container.querySelector('.multicolumn-list');
+          if (!slider) return;
+
+          // Force flex layout
+          Object.assign(slider.style, {
+            display: 'flex',
+            flexWrap: 'nowrap',
+            width: '100%',
+            justifyContent: 'space-between',
+            gap: '20px',
+          });
+
+          // Add !important to override any conflicting styles
+          slider.setAttribute(
+            'style',
+            'display: flex !important; flex-wrap: nowrap !important; width: 100% !important; justify-content: space-between !important; gap: 20px !important;'
+          );
+
+          // Find all grid containers that might be affecting layout
+          const gridContainers = container.querySelectorAll('.grid, .grid--3-col-desktop');
+          gridContainers.forEach((grid) => {
+            grid.setAttribute(
+              'style',
+              'display: flex !important; flex-wrap: nowrap !important; width: 100% !important; gap: 20px !important; margin: 0 !important;'
+            );
+          });
+
+          // Find all items
+          const items = slider.querySelectorAll('.multicolumn-list__item, .grid__item');
+          if (!items || items.length < 3) return;
+
+          // Force equal width for all items with !important
+          items.forEach((item) => {
+            item.setAttribute(
+              'style',
+              'flex: 0 0 30% !important; width: 30% !important; max-width: 30% !important; margin: 0 !important; padding: 0 !important; box-sizing: border-box !important; float: none !important;'
+            );
+          });
+
+          console.log('Multicolumn layout fix applied');
+        }
+
+        // Run the fix immediately
+        fixMulticolumnLayout();
+
+        // Run multiple times with increasing delays to ensure it applies after any scripts or lazy-loaded content
+        [100, 500, 1000, 2000].forEach((delay) => {
+          setTimeout(fixMulticolumnLayout, delay);
+        });
+
+        // Also run on window resize
+        window.addEventListener('resize', fixMulticolumnLayout);
+
+        // Create a MutationObserver to watch for DOM changes
+        if (typeof MutationObserver !== 'undefined') {
+          const observer = new MutationObserver((mutations) => {
+            fixMulticolumnLayout();
+          });
+
+          // Start observing the document with the configured parameters
+          const container = document.getElementById('multicolumn_C4WQAd');
+          if (container) {
+            observer.observe(container, { childList: true, subtree: true });
+          }
+        }
+      });
     </script>
   </head>
 
@@ -384,41 +488,41 @@
 
     <script src="{{ 'rave-custom.js' | asset_url }}" defer="defer"></script>
 
-{% comment %} Klaviyo Back In Stock Snippet with Rave styling {% endcomment %}
-<script>
-  var klaviyo = window.klaviyo || [];
-  klaviyo.ready(function() {
-    klaviyo.enable('backinstock', {
-      trigger: {
-        product_page_text: 'Notify me when available',
-        product_page_class: 'button',
-        product_page_text_align: 'center',
-        product_page_margin: '0px',
-        replace_anchor: false,
-      },
-      modal: {
-        headline: '{product_name}',
-        body_content: 'Register to receive a notification when this item comes back in stock.',
-        email_field_label: 'Email',
-        button_label: 'Notify me when available',
-        subscription_success_label: "You're in! We'll let you know when it's back.",
-        newsletter_subscribe_label: 'Yes, I would like to receive notifications when this item is restock.',
-        footer_content: '',
-        additional_styles:
-          "@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');",
-        drop_background_color: '#412F26',
-        background_color: '#FFFFFF',
-        text_color: '#3D2120',
-        button_text_color: '#FFFFFF',
-        button_background_color: '#412F26',
-        close_button_color: '#555555',
-        error_background_color: '#fcd6d7',
-        error_text_color: '#C72E2F',
-        success_background_color: '#412F26',
-        success_text_color: '#FFFFFF',
-      },
-    });
-  });
-</script>
+    {% comment %} Klaviyo Back In Stock Snippet with Rave styling {% endcomment %}
+    <script>
+      var klaviyo = window.klaviyo || [];
+      klaviyo.ready(function () {
+        klaviyo.enable('backinstock', {
+          trigger: {
+            product_page_text: 'Notify me when available',
+            product_page_class: 'button',
+            product_page_text_align: 'center',
+            product_page_margin: '0px',
+            replace_anchor: false,
+          },
+          modal: {
+            headline: '{product_name}',
+            body_content: 'Register to receive a notification when this item comes back in stock.',
+            email_field_label: 'Email',
+            button_label: 'Notify me when available',
+            subscription_success_label: "You're in! We'll let you know when it's back.",
+            newsletter_subscribe_label: 'Yes, I would like to receive notifications when this item is restock.',
+            footer_content: '',
+            additional_styles:
+              "@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');",
+            drop_background_color: '#412F26',
+            background_color: '#FFFFFF',
+            text_color: '#3D2120',
+            button_text_color: '#FFFFFF',
+            button_background_color: '#412F26',
+            close_button_color: '#555555',
+            error_background_color: '#fcd6d7',
+            error_text_color: '#C72E2F',
+            success_background_color: '#412F26',
+            success_text_color: '#FFFFFF',
+          },
+        });
+      });
+    </script>
   </body>
 </html>
