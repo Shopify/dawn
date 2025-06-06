@@ -1,0 +1,115 @@
+{% assign product_handle = section.settings.product %}
+{% assign product = all_products[product_handle] %}
+
+{{ 'section-product-colours-hero.css' | asset_url | stylesheet_tag }}
+{{ 'swiper-bundle.min.css' | asset_url | stylesheet_tag }}
+{{ 'swiper-bundle.min.js' | asset_url | script_tag }}
+
+{% if product_handle != blank and product != null and product.title != blank %}
+  <div class="product-card page-width color-{{ section.settings.color_scheme }}" id="ProductCard-{{ section.id }}">
+    <div class="product-card__layout">
+      {% comment %} swiper {% endcomment %}
+      <div class="product-carousel swiper">
+        <div class="swiper-wrapper">
+          {% assign unique_colors = '' %}
+          {% for variant in product.variants %}
+            {% if variant.featured_image and variant.option1 %}
+              {% unless unique_colors contains variant.option1 %}
+                {% assign unique_colors = unique_colors | append: variant.option1 | append: ',' %}
+                <div class="swiper-slide" data-variant="{{ variant.id }}" data-color="{{ variant.option1 | downcase }}">
+                  <img
+                    src="{{ variant.featured_image | image_url: width: 600 }}"
+                    alt="{{ variant.title }}"
+                    width="600"
+                    height="600"
+                  >
+                </div>
+              {% endunless %}
+            {% endif %}
+          {% endfor %}
+        </div>
+        <div class="swiper-pagination"></div>
+      </div>
+      <div class="product-card__info">
+        <h2 class="product-card__title">{{ product.title }}</h2>
+        <hr>
+        <div class="product-card__description">
+          {{ product.description | strip_html }}
+        </div>
+        <hr>
+        <ul class="color-swatches">
+          {% assign unique_colors = '' %}
+          {% for variant in product.variants %}
+            {% unless unique_colors contains variant.option1 %}
+              {% assign unique_colors = unique_colors | append: variant.option1 | append: ',' %}
+              <li
+                class="color-swatch"
+                data-color="{{ variant.option1 | downcase }}"
+                data-variant="{{ variant.id }}"
+              >
+                <span style="background-color: {{ variant.option1 | downcase }}"></span>
+              </li>
+            {% endunless %}
+          {% endfor %}
+        </ul>
+        <hr>
+        <a href="{{ product.url }}" class="product-card__cta">Call to Action</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const container = document.querySelector('#ProductCard-{{ section.id }}');
+      const swatches = container.querySelectorAll('.color-swatch');
+      const slides = container.querySelectorAll('.swiper-slide');
+
+      const swiper = new Swiper(container.querySelector('.product-carousel'), {
+        loop: false,
+        speed: 400,
+        effect: 'fade',
+        pagination: {
+          el: container.querySelector('.swiper-pagination'),
+          type: 'bullets',
+          dynamicBullets: true,
+        },
+      });
+
+      swatches.forEach((swatch) => {
+        swatch.addEventListener('click', function () {
+          const color = swatch.dataset.color;
+          slides.forEach((slide, index) => {
+            if (slide.dataset.color === color) {
+              swiper.slideTo(index);
+            }
+          });
+        });
+      });
+    });
+  </script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Product Swatch Carousel",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Select product"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Swatch Carousel",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}
