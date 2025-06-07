@@ -1,0 +1,231 @@
+{% comment %}
+  Flash Sale Countdown Timer Section
+
+  Accepts:
+  - section.settings.title: Optional title text
+  - section.settings.end_time: Datetime-local input for sale end time
+  - section.settings.background: Background color
+  - section.settings.text_color: Text color
+{% endcomment %}
+
+{%- liquid
+  assign end_time = section.settings.end_time
+  assign current_time = 'now' | date: '%s'
+  assign end_timestamp = end_time | date: '%s'
+  assign time_remaining = end_timestamp | minus: current_time
+-%}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_top }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- if end_time != blank and time_remaining > 0 -%}
+  <div
+    class="countdown-timer-section section-{{ section.id }}-padding"
+    data-end-time="{{ end_timestamp }}"
+    style="display: none;"
+  >
+    <div class="countdown-container">
+      {%- if section.settings.title != blank -%}
+        <h2 class="countdown-title">{{ section.settings.title }}</h2>
+      {%- endif -%}
+
+      <div class="countdown-display">
+        <div class="countdown-unit">
+          <span class="countdown-number" data-hours>00</span>
+          <span class="countdown-label">Hours</span>
+        </div>
+        <div class="countdown-separator">:</div>
+        <div class="countdown-unit">
+          <span class="countdown-number" data-minutes>00</span>
+          <span class="countdown-label">Minutes</span>
+        </div>
+        <div class="countdown-separator">:</div>
+        <div class="countdown-unit">
+          <span class="countdown-number" data-seconds>00</span>
+          <span class="countdown-label">Seconds</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .countdown-timer-section {
+      background: {{ section.settings.background }};
+      color: {{ section.settings.text_color }};
+      text-align: center;
+    }
+
+    .countdown-container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .countdown-title {
+      font-size: 1.1rem;
+      margin: 0 0 0.8rem 0;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: {{ section.settings.text_color }};
+    }
+
+    .countdown-display {
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .countdown-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 60px;
+    }
+
+    .countdown-number {
+      font-size: 1.8rem;
+      font-weight: bold;
+      line-height: 1;
+      background: {{ section.settings.text_color | color_modify: 'alpha', 0.1 }};
+      border-radius: 8px;
+      padding: 0.5rem;
+      min-width: 60px;
+      display: block;
+      color: {{ section.settings.text_color }};
+    }
+
+    .countdown-label {
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .countdown-separator {
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 0 0.25rem;
+    }
+
+    @media screen and (max-width: 480px) {
+      .countdown-number {
+        font-size: 2rem;
+        min-width: 50px;
+        padding: 0.4rem;
+      }
+
+      .countdown-separator {
+        font-size: 1.5rem;
+      }
+
+      .countdown-title {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+
+  <script>
+    (function () {
+      const section = document.querySelector('.countdown-timer-section');
+      if (!section) return;
+
+      const endTime = parseInt(section.dataset.endTime) * 1000;
+      const hoursEl = section.querySelector('[data-hours]');
+      const minutesEl = section.querySelector('[data-minutes]');
+      const secondsEl = section.querySelector('[data-seconds]');
+
+      function updateCountdown() {
+        const now = Date.now();
+        const timeLeft = endTime - now;
+
+        if (timeLeft <= 0) {
+          section.style.display = 'none';
+          clearInterval(interval);
+          return;
+        }
+
+        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+        hoursEl.textContent = hours.toString().padStart(2, '0');
+        minutesEl.textContent = minutes.toString().padStart(2, '0');
+        secondsEl.textContent = seconds.toString().padStart(2, '0');
+      }
+
+      // Show section only if JavaScript is working
+      section.style.display = 'block';
+
+      // Initial update
+      updateCountdown();
+
+      // Update every second
+      const interval = setInterval(updateCountdown, 1000);
+    })();
+  </script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Countdown Timer",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Flash Sale Ends Soon!"
+    },
+    {
+      "type": "text",
+      "id": "end_time",
+      "label": "Sale End Time",
+      "info": "Enter date and time in format: YYYY-MM-DD HH:MM (24-hour format, store timezone)"
+    },
+    {
+      "type": "color_background",
+      "id": "background",
+      "label": "Background",
+      "default": "linear-gradient(#ffffff, #000000)"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 16
+    }
+  ],
+  "presets": [
+    {
+      "name": "Countdown Timer"
+    }
+  ]
+}
+{% endschema %}
