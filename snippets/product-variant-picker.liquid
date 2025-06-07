@@ -123,8 +123,29 @@
   %}
 {% endif %}
 
+{% comment %} FREEBIES START {% endcomment %}
+
+{% assign free_variants_of_all_offers = '' | split: '' %}
+{% for offer in shop.metaobjects.buy_x_get_y.values %}
+  {% assign free_variants_of_all_offers = free_variants_of_all_offers | concat: offer.free_product.value.variants %}
+{% endfor %}
+
+{% assign free_products_ids_of_all_offers = '' %}
+{% for offer in shop.metaobjects.buy_x_get_y.values %}
+  {% for variant in offer.free_product.value.variants %}
+    {% assign free_products_ids_of_all_offers = free_products_ids_of_all_offers
+      | append: 'PRNX'
+      | append: offer.free_product.value.id
+    %}
+  {% endfor %}
+{% endfor %}
+
+{% assign free_products_ids_of_all_offers = free_products_ids_of_all_offers | split: 'PRNX' %}
+
+{% comment %} FREEBIES END{% endcomment %}
+
 <script defer="defer">
-     // set window vars here
+    // set window vars here
     window.s3_current_variant_sku = '{{ product.selected_or_first_available_variant.sku | escape }}'
     window.s3_product_name = '{{ product.title | escape }}'
 
@@ -138,7 +159,6 @@
      };
   }
 
-    window.s3_buy_x_get_y = JSON.parse('{{ shop.metaobjects.buy_x_get_y.values | json }}')
 
    // sets all the product collections
     window.s3_product_collections = [
@@ -147,4 +167,24 @@
        {%- unless forloop.last -%},{%- endunless -%}
      {%- endfor -%}
    ];
+
+   // freebies below
+
+  try {
+    const productIds = JSON.parse('{{ free_products_ids_of_all_offers | json }}').filter(Boolean);
+
+    const allVariantsData = JSON.parse('{{ free_variants_of_all_offers | json }}');
+
+
+    const finalData = allVariantsData.map((x, i) => ({...x, productId: productIds[i]}))
+
+    console.log({productIds, allVariantsData, finalData})
+
+    window.s3_bxgy = JSON.parse('{{ shop.metaobjects.buy_x_get_y.values | json }}');
+    window.s3_bxgy_variants = finalData;
+    }
+  catch (error) {
+      window.s3_bxgy = null;
+      window.s3_bxgy_variants = null;
+  }
 </script>
