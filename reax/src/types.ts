@@ -7,6 +7,9 @@ declare global {
     s3_product_name: string | undefined;
     s3_brand: string | undefined;
     s3_stringing_service_variant_id: string | undefined;
+    s3_bxgy: unknown;
+    s3_bxgy_variants: unknown;
+    s3_product_collections: string[] | undefined;
     s3_remix_modal_controller:
       | {
           openModal: () => void;

@@ -151,6 +151,32 @@ if (!customElements.get('product-form')) {
           });
         }
 
+        // check for buy X get Y
+        if (window.s3_bxgy_variants && window.s3_bxgy && window.s3_product_collections) {
+          try {
+            const matchingOffer = window.s3_bxgy.find((offer) =>
+              window.s3_product_collections.includes(offer.trigger_collection),
+            );
+
+            if (matchingOffer) {
+              const productToAdd = matchingOffer.free_product.split('/').pop();
+              const variantToAdd = window.s3_bxgy_variants.find((x) => x?.productId == productToAdd && x.available);
+
+              if (variantToAdd) {
+                items.push({
+                  id: variantToAdd.id,
+                  quantity: 1,
+                  properties: {
+                    _offer: matchingOffer.offer_name,
+                    _bundleId: Math.random().toString(36).slice(2),
+                  },
+                });
+              }
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        }
         // Single combined request with sections
         fetch(`${routes.cart_add_url}`, {
           ...config,
