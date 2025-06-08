@@ -1,0 +1,61 @@
+{%- comment -%}
+  Renders a product highlight block
+
+  Accepts:
+  - block: {Object} The block object from section.blocks
+  - product: {Object} The current product object
+
+  Usage:
+  {% render 'product-highlight', block: block, product: product %}
+{%- endcomment -%}
+
+{%- liquid
+  # Get block settings
+  assign highlight_title = block.title
+  assign highlight_description = block.description
+  assign highlight_icon = block.icon
+  assign highlight_collections = block.collections
+
+  # Determine if we should show this highlight
+  assign should_show = false
+
+  # If no collections specified, always show
+  if highlight_collections == blank or highlight_collections.size == 0
+    assign should_show = true
+  else
+    # Check if current product is in any of the selected collections
+    for collection in highlight_collections
+      if product.collections contains collection
+        assign should_show = true
+        break
+      endif
+    endfor
+  endif
+
+  # Only render if we have content AND should show
+  if highlight_title == blank
+    assign should_show = false
+  endif
+-%}
+
+{%- if should_show -%}
+  <div class="product-highlight" {{ block.shopify_attributes }}>
+    {%- if highlight_icon != blank -%}
+      <div class="product-highlight__icon">
+        {{ highlight_icon }}
+      </div>
+    {%- endif -%}
+
+    <div class="product-highlight__content">
+      {%- if highlight_title != blank -%}
+        <h3 class="product-highlight__title">{{ highlight_title }}</h3>
+      {%- endif -%}
+
+      {%- if highlight_description != blank -%}
+        <div class="product-highlight__description">
+          {{ highlight_description }}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
