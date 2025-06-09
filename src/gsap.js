@@ -146,3 +146,18 @@ const timeline = gsap
     },
     0.1
   );
+
+// paragraph usp animate in on scroll
+gsap.utils.toArray('.paragraph-usp-item').forEach((usp) => {
+  gsap.from(usp, {
+    scrollTrigger: {
+      trigger: usp,
+      start: 'top 70%',
+      end: 'bottom 20%',
+      toggleActions: 'play none none reverse',
+    },
+    opacity: 0,
+    y: 50,
+    duration: 0.5,
+  });
+});
