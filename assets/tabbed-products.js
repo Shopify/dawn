@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
-  const tabs = document.querySelectorAll('.product-tab');
-  const grids = document.querySelectorAll('.product-grid');
+  const tabs = document.querySelectorAll('.tabbed-product-tab');
+  const grids = document.querySelectorAll('.tabbed-product-grid');
 
   tabs.forEach((tab) => {
     tab.addEventListener('click', () => {
