@@ -172,6 +172,8 @@ if (document.querySelector('#gallery-artists')) {
   createTween();
   window.addEventListener('resize', createTween);
 }
+
+// parallax effect for text stack image
 document.addEventListener('DOMContentLoaded', function () {
   var image = document.getElementById('parallax-image');
   if (!image) return;
@@ -203,5 +205,20 @@ var timeline = _gsapMin["default"].timeline({
   color: '#272727',
   stagger: 0.1
 }, 0.1);
+
+// paragraph usp animate in on scroll
+_gsapMin["default"].utils.toArray('.paragraph-usp-item').forEach(function (usp) {
+  _gsapMin["default"].from(usp, {
+    scrollTrigger: {
+      trigger: usp,
+      start: 'top 70%',
+      end: 'bottom 20%',
+      toggleActions: 'play none none reverse'
+    },
+    opacity: 0,
+    y: 50,
+    duration: 0.5
+  });
+});
 
 },{"gsap/dist/Flip.min.js":1,"gsap/dist/ScrollSmoother.min.js":2,"gsap/dist/ScrollTrigger.min.js":3,"gsap/dist/SplitText.min.js":4,"gsap/dist/gsap.min.js":5}]},{},[6]);
