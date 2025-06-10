@@ -1,15 +1,32 @@
 {% if product %}
+  {% assign unique_images = '' %}
+  {% assign unique_image_count = 0 %}
+  {% for variant in product.variants %}
+    {% if variant.featured_image %}
+      {% assign image_url = variant.featured_image | image_url: width: 500 %}
+      {% unless unique_images contains image_url %}
+        {% assign unique_images = unique_images | append: image_url | append: ',' %}
+        {% assign unique_image_count = unique_image_count | plus: 1 %}
+      {% endunless %}
+    {% endif %}
+  {% endfor %}
+
+  {% assign use_swiper = false %}
+  {% if unique_image_count > 1 %}
+    {% assign use_swiper = true %}
+  {% endif %}
+
   <a href="{{ product.url }}" class="tabbed-product-card-link">
     <div class="tabbed-product-card">
       <div class="tabbed-product-card__image-wrapper">
-        <div class="swiper tabbed-product-card__slider">
+        <div class="{% if use_swiper %}swiper{% endif %} tabbed-product-card__slider">
           <div class="swiper-wrapper">
-            {% assign unique_images = '' %}
+            {% assign rendered_images = '' %}
             {% for variant in product.variants %}
               {% if variant.featured_image %}
                 {% assign image_url = variant.featured_image | image_url: width: 500 %}
-                {% unless unique_images contains image_url %}
-                  {% assign unique_images = unique_images | append: image_url | append: ',' %}
+                {% unless rendered_images contains image_url %}
+                  {% assign rendered_images = rendered_images | append: image_url | append: ',' %}
                   <div class="swiper-slide">
                     <img
                       class="tabbed-product-card__image"
@@ -37,7 +54,7 @@
           </div>
 
           <div class="tabbed-product-card__information">
-            {% if product.variants.size > 1 %}
+            {% if use_swiper %}
               <div class="swiper-progress-bar"></div>
             {% endif %}
             <div class="tabbed-product-card__content">
@@ -56,16 +73,18 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    new Swiper('.tabbed-product-card__slider', {
-      loop: true,
-      speed: 500,
-      effect: 'fade',
-      simulateTouch: true,
-      pagination: {
-        el: '.swiper-progress-bar',
-        type: 'progressbar',
-        clickable: true,
-      },
-    });
+    if (document.querySelector('.swiper')) {
+      new Swiper('.swiper', {
+        loop: true,
+        speed: 500,
+        effect: 'fade',
+        simulateTouch: true,
+        pagination: {
+          el: '.swiper-progress-bar',
+          type: 'progressbar',
+          clickable: true,
+        },
+      });
+    }
   });
 </script>
