@@ -1,0 +1,790 @@
+
+<script>
+    var anchor = document.getElementsByClassName("rich-text__heading rte inline-richtext h1");
+    anchor = anchor[0];
+    var shop_name = "{{shop.permanent_domain}}".replace('.myshopify.com', '');
+    var custom_domain = "{{shop.domain}}";
+    var filter_no_result_text = "There is NO result matching your filter selection.";
+    var main_search_str = "Click here to search for recipes ➔";
+    var filter_reset_text = "Reset";
+    console.log(shop_name);
+    var huenoresultblogdata = {{ blog.articles | json }};
+    console.log(huenoresultblogdata);
+ 
+  (function() {
+    var po = document.createElement('script');
+    po.type = 'text/javascript';
+    po.async = true;
+    po.id = 'search-jquery';
+    po.src = 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js';
+    var s = document.getElementsByTagName('body')[0];
+    s.appendChild(po);
+})();
+
+if (typeof featured_article_title_str === "undefined") {
+    var featured_article_title_str = "Featured Articles";
+}
+if (typeof result_title_str === "undefined") {
+    var result_title_str = "Top articles most relevant to";
+}
+if (typeof no_result_search_str === "undefined") {
+    var no_result_search_str = "No articles related to";
+}
+
+if (typeof no_result_search_str_2 === "undefined") {
+    var no_result_search_str_2 = ". Checkout our featured articles below instead.";
+}
+if (typeof back_to_top_str === "undefined") {
+    var back_to_top_str = "Back to top";
+}
+
+if (typeof main_search_str === "undefined") {
+    var main_search_str = "Click here to search this blog ➔";
+}
+
+if (typeof search_search_button_string === "undefined") {
+    var search_search_button_string = "Search";
+}
+
+if (typeof search_input_placeholder_str === "undefined") {
+    var search_input_placeholder_str = "Search here";
+}
+
+if (typeof custom_domain === "undefined") {
+    var custom_domain = shop_name;
+}
+
+
+
+var path = window.location.pathname.split('/');
+var loader = document.createElement("DIV");
+var container_div = document.createElement("DIV");
+var span_load = document.createElement("SPAN");
+var span_load2 = document.createElement("SPAN");
+span_load.style.width = '300px';
+span_load.style.height = '2em';
+span_load.style.marginRight = '10px';
+span_load.classList.add('blog-filter-skeleton-box');
+span_load2.style.width = '80px';
+span_load2.style.height = '2em';
+span_load2.classList.add('blog-filter-skeleton-box');
+container_div.classList.add('blog-filter-app-container');
+loader.appendChild(span_load);
+loader.appendChild(span_load2);
+loader.style.marginTop = "10px";
+anchor.appendChild(container_div);
+container_div.appendChild(loader);
+path.shift();
+var articles_data = [];
+var domain = shop_name + '.myshopify.com';
+
+var isSafari = navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
+    navigator.userAgent &&
+    navigator.userAgent.indexOf('CriOS') == -1 &&
+    navigator.userAgent.indexOf('FxiOS') == -1;
+
+if (isSafari) {
+    // Create Promise polyfill script tag
+    var promiseScript = document.createElement("script");
+    promiseScript.type = "text/javascript";
+    promiseScript.src =
+        "https://cdn.jsdelivr.net/npm/promise-polyfill@8.1.3/dist/polyfill.min.js";
+
+    // Create Fetch polyfill script tag
+    var fetchScript = document.createElement("script");
+    fetchScript.type = "text/javascript";
+    fetchScript.src =
+        "https://cdn.jsdelivr.net/npm/whatwg-fetch@3.4.0/dist/fetch.umd.min.js";
+
+    // Add polyfills to head element
+    document.head.appendChild(promiseScript);
+    document.head.appendChild(fetchScript);
+
+
+    setTimeout(function () {
+        fetchBlog(window.fetch);
+    }, 1000);
+}
+else {
+    fetchBlog(fetch);
+}
+
+function selectChange() {
+    var selects = document.getElementsByClassName("blog-filter-app"),
+        str = '',
+        url = '',
+        arr = [];
+    Object.keys(selects).forEach(function(ind, index) {
+        var ele = selects[ind];
+        if (ele.selectedIndex != 0) {
+            if (str == '') {
+                str = ele.value.trim().split(" ").join("-");
+                arr[index] = ele.value
+            }
+            else {
+                str += '+' + ele.value.trim().split(" ").join("-");
+                arr[index] = ele.value
+            }
+        }
+
+    });
+
+    if (arr.length == 0) {
+        url = window.location.origin + '/blogs/' + path[1] + '/' ;
+    }
+    else {
+        url = window.location.origin + '/blogs/' + path[1] + '/tagged/' + str;
+    }
+
+    console.log(url);
+    fetch(url)
+        .then(function(res) {
+            if(res.status === 200) {
+                document.cookie = "blogFilter=" + JSON.stringify(arr) + "; path=/; max-age=" + 30*24*60*60;
+                window.location.href = url;
+            }
+            else {
+                var span = document.getElementsByClassName("blog-filter-error");
+                if (span.length == 0) {
+                    var span = document.createElement("SPAN"),
+                        br = document.createElement("BR"),
+                        br2 = document.createElement("BR");
+
+                    span.classList.add('blog-filter-error');
+                    span.innerHTML = filter_no_result_text ? filter_no_result_text : "There is NO result matching your filter";
+                    span.style.padding = "10px";
+                    span.style.color = "#fff";
+                    span.style.borderRadius = "3px";
+                    span.style.backgroundColor = "#f44336";
+
+                    container_div.appendChild(br2);
+                    container_div.appendChild(br);
+                    container_div.appendChild(span);
+                }
+            }
+
+        });
+
+}
+
+function getCookie(name) {
+    let cookie = {};
+    document.cookie.split(';').forEach(function(el) {
+        let [k,v] = el.split('=');
+        cookie[k.trim()] = v;
+    })
+    return cookie[name];
+}
+
+function resetChange() {
+    window.location.href = window.location.origin + '/blogs/' + path[1] + '/';
+}
+
+function arrangeArray(arr) {
+    var new_array = [];
+    arr.forEach(function (opt) {
+        new_array.push('' + opt.trim().replaceAll('ç', 'c').replaceAll('?', ''));
+    });
+
+    new_array = new_array.sort();
+
+    return new_array;
+
+}
+
+function searchArticles() {
+
+    var modal = document.getElementById('myModal');
+    // Get the main container and the body
+    var body = document.getElementsByTagName('body');
+    // var container = document.getElementById('MainContent');
+    // Get the open button
+    var btnOpen = document.getElementById("myBtn");
+    // Get the close button
+    var btnClose = document.getElementById("closeModal");
+    // Open the modal
+
+    modal.className = "Modal is-visuallyHidden";
+    setTimeout(function() {
+        // container.className = "MainContainer is-blurred";
+        modal.className = "Modal";
+    }, 100);
+    // container.parentElement.className = "ModalOpen";
+    // Close the modal
+    btnClose.onclick = function() {
+        modal.className = "Modal is-hidden is-visuallyHidden";
+        body.className = "";
+        // container.className = "MainContainer";
+        // container.parentElement.className = "";
+    }
+    $('.suggest-anchor').removeClass('direction');
+    var suggest_str = '';
+    var link_path = path.join('/');
+
+    if (link_path.charAt(link_path.length - 1) !== '/') {
+        link_path += '/';
+    }
+    articles_data.forEach(function(val, index) {
+        suggest_str += '<div class="recommend-column"><a style="text-decoration: none;" href="https://' + domain + '/' + link_path + val.handle + '">' +
+            '<h3 class="recommend-title">' + val.title + '</h3>' +
+            '<div><img class="recommend-image" src="'  + ( val.image ?  val.image : 'https://app.hueapps.co/thumbnail-placeholder.jpg') +'"><br><p>' + ( val.html ?  val.html : '') + '</p></div>' +
+            '</a></div>';
+
+    });
+    suggest_str += '</div>';
+
+//     console.log($('body').find('.suggest-anchor'));
+    $('body').find('.suggest-anchor').html($(suggest_str));
+    $('body').find('.title-holder').html(featured_article_title_str);
+}
+
+function fetchBlog(fetch) {
+    fetch('https://app.hueapps.co/filterList?shop=' + shop_name + '&blog=' + path[1])
+        .then(function(e) {
+            return e.json();
+        })
+        .then(function(data) {
+            console.log(data);
+            if (Object.keys(data).length > 0) {
+                var tagged = path[2] === 'tagged',
+                    cookie = getCookie("blogFilter");
+
+                cookie = cookie ? JSON.parse(cookie) : [];
+                console.log(cookie);
+
+                // if (document.getElementsByClassName("blog-filter").length != 0) {
+                //     document.getElementsByClassName("blog-filter")[0].style.display = "none";
+                // }
+
+                // var select = '<select>'
+                if (data.filter.length > 0) {
+                    var filter_label = document.createElement("LABEL");
+                    filter_label.innerHTML = 'Filter Recipes By:';
+                    filter_label.setAttribute("for", "blog-filter-app");
+                    filter_label.style.marginRight = '10px';
+                    filter_label.style.fontSize = '0.35em';
+                    filter_label.style.fontWeight = '200';
+                    filter_label.style.color = '#062a30';
+                    container_div.appendChild(filter_label);
+                    Object.keys(data.filter).forEach(function(obj, ind) {
+                        var select = document.createElement("SELECT");
+
+                        select.style.marginRight = "10px";
+                        select.style.marginTop = "8px";
+                        select.style.padding = "0.6em 0.3em";
+                        select.style.border = "1px solid #dedede";
+                        var option = document.createElement("OPTION");
+                        option.text = data.filter[obj].filter;
+                        option.value = data.filter[obj].filter.toLowerCase();
+                        option.defaultSelected = tagged && cookie[ind] && cookie[ind] == data.filter[obj].filter.toLowerCase() ? false : true;
+                        //         option.disabled = true;
+                        select.add(option);
+                        select.classList.add('blog-filter-app');
+                        select.addEventListener("change", selectChange);
+
+                        Object.keys(data.filter[obj].option).forEach(function(opt) {
+                            option = document.createElement("OPTION");
+                            opt = data.filter[obj].option[opt];
+                            var new_opt = opt.toLowerCase().replace(/!|&|%|'/g, '').replaceAll('+', '').replace(/  +/g, ' ').replaceAll('/', '-').replaceAll(' - ', '-').replaceAll('.', '-').replaceAll('(', '').replaceAll(')', '').trim().replaceAll(' ', '-').replaceAll('--', '-').replaceAll('ł', 'l');
+                            option.text = opt;
+                            option.value = new_opt;
+                            option.defaultSelected = tagged && cookie[ind] && cookie[ind] == new_opt ? true : false;
+                            select.add(option);
+                        });
+
+                        container_div.appendChild(select);
+                    });
+                    var button = document.createElement("BUTTON");
+                    button.addEventListener("click", resetChange);
+                    button.innerHTML = filter_reset_text ? filter_reset_text : 'Reset';
+                    button.style.border = 'none';
+                    button.style.background = '#000';
+                    button.style.color = '#fff';
+                    button.style.padding = '0.75em 1.5em';
+                    button.style.marginTop = '12px';
+                    button.classList.add('blog-filter-reset');
+                    container_div.appendChild(button);
+                }
+
+                console.log(data.statusPublishArticle);
+                if (data.statusPublishArticle) {
+
+                    var search_button_container = document.createElement("DIV");
+                    search_button_container.style.display = 'block';
+                    search_button_container.classList.add('blog-filter-search-button-container');
+
+                    container_div.append(search_button_container);
+
+                    var search_button = document.createElement("A");
+                    search_button.addEventListener("click", searchArticles);
+                    search_button.innerHTML = main_search_str;
+                    search_button.classList.add('blog-filter-search-button');
+
+                    search_button.style.display = 'inline-block';
+                    search_button.style.marginTop = '10px';
+                    search_button.style.color = '#333';
+                    search_button.style.fontSize = '13px';
+                    search_button.style.cursor = 'pointer';
+
+
+                    search_button_container.append(search_button);
+                    if (data.articles && data.articles.length > 0) {
+                        if (data.articles.length > 3) {
+                            var selected_titles = [];
+                            while(articles_data.length < 3) {
+                                var rand = data.articles[Math.floor(Math.random() * data.articles.length)];
+                                if (selected_titles.indexOf(rand.title) === -1) {
+                                    articles_data.push(rand);
+                                    selected_titles.push(rand.title);
+                                }
+                            }
+                        }
+                        else {
+                            articles_data = data.articles;
+                        }
+
+                    }
+                }
+            }
+            loader.style.display = "none";
+        })
+        .catch(function(error) {
+            console.log(error);
+        });
+}
+
+function searchKeyword () {
+    var $input = $('body').find('.article-filter-search'),
+        search = $input.val(),
+        $anchor = $('body').find('.suggest-anchor');
+
+
+    fetch('https://' +  window.location.host  + '/search/suggest.json?q=' + search + '&options[prefix]=last&resources[type]=article')
+        .then(function(e) {
+            return e.json();
+        })
+        .then(function(data) {
+            console.log(data);
+            var result_str = '';
+            if (data.resources.results.articles.length > 0) {
+                var result_str = '<h3 class="result-title">' + result_title_str + ' <i>' + search + '</i>.</h3>';
+                data.resources.results.articles.forEach(function(val) {
+                    if (val.url.indexOf(path[1]) > -1) {
+                        result_str += '<div class="result-column"><a style="text-decoration: none;" href="https://' + domain  + val.url + '">' +
+                            '<img class="result-image" src="'  + ( val.image ?  val.image : 'https://app.hueapps.co/thumbnail-placeholder.jpg') +'">' +
+                            '<div class="next-image-container" style=""><span class="span-h3">' + val.title + '</span><br><p>' + val.summary_html + '</p></div>' +
+                            '</a></div>';
+                    }
+                });
+
+                if (result_str == '') {
+                    var link_path = path.join('/');
+
+                    if (link_path.charAt(link_path.length - 1) !== '/') {
+                        link_path += '/';
+                    }
+
+                    articles_data.forEach(function(val, index) {
+                        result_str += '<div class="recommend-column"><a style="text-decoration: none;" href="https://' + domain + '/' + link_path + val.handle + '">' +
+                            '<h3 class="recommend-title">' + val.title + '</h3>' +
+                            '<div><img class="recommend-image" src="'  + ( val.image ?  val.image : 'https://app.hueapps.co/thumbnail-placeholder.jpg') +'"><br><p>' + ( val.html ?  val.html : '') + '</p></div>' +
+                            '</a></div>';
+
+                    });
+
+                    $('body').find('.suggest-anchor').removeClass('direction');
+                    $('body').find('.title-holder').html(no_result_search_str + ' <i>' + search + '</i>' + no_result_search_str_2);
+                }
+                else {
+                    $anchor.addClass('direction');
+                    result_str += '<span class="hueapps-bottom-container">' + '<a style="text-decoration: none; color: #333;margin: 0 10px;" href="#top">' + back_to_top_str + '</a>' + '<span style="font-size: 11px;color:#3b3b3b;pointer:cursor;"><a style="text-decoration: none; color: #333;margin: 0 10px; display: flex;align-items:end;" href="https://apps.shopify.com/blog-post-article-tag-filter" target="_blank">Search Result by &nbsp;<img style="width: 24px;" src="https://app.hueapps.co/blog-filter-icon.png"></a></span></span>';
+                    $('body').find('.title-holder').html('');
+                }
+            }
+            else {
+                var result_str = '';
+                var link_path = path.join('/');
+
+                if (link_path.charAt(link_path.length - 1) !== '/') {
+                    link_path += '/';
+                }
+
+                articles_data.forEach(function(val, index) {
+                    result_str += '<div class="recommend-column"><a style="text-decoration: none;" href="https://' + domain + '/' + link_path + val.handle + '">' +
+                        '<h3 class="recommend-title">' + val.title + '</h3>' +
+                        '<div><img class="recommend-image" src="'  + ( val.image ?  val.image : 'https://app.hueapps.co/thumbnail-placeholder.jpg') +'"><br><p>' + ( val.html ?  val.html : '') + '</p></div>' +
+                        '</a></div>';
+
+                });
+
+                $('body').find('.suggest-anchor').removeClass('direction');
+                $('body').find('.title-holder').html(no_result_search_str + ' <i>' + search + '</i>' + no_result_search_str_2);
+            }
+
+            $anchor.html($(result_str));
+
+            $anchor.find('a[href="#top"]').click(function(e) {
+                console.log(e);
+                $('#myModal').animate({ scrollTop: 0 }, 'slow');
+                return false
+            });
+
+        })
+        .catch(function(error) {
+            console.log(error);
+        });
+}
+
+function loadModalDomSearch() {
+    var $body = $('body');
+    var $modal_str_dom = $('<div id="myModal" class="Modal is-hidden is-visuallyHidden">' +
+        '<div class="Modal-content">' +
+        '<span id="closeModal" class="Close">&times;</span>' +
+        '<div class="search-container">' +
+        '<div class="search-sub-container"><input placeholder="' + search_input_placeholder_str + '" class="article-filter-search" /><button onclick="searchKeyword()" class="search-button">' + search_search_button_string + '</button></div>' +
+        '</div>' +
+        '<h3 class="title-holder" style="margin-bottom: 0;"></h3>' +
+        '<div class="suggest-anchor">' +
+        '</div>' +
+        '</div>' +
+        '</div>');
+    var $search_css = $('<style>\n' +
+        '  .blog-filter-search-button {\n' +
+        '    color: #333;\n' +
+        '    display: block;\n' +
+        '    margin-top: 10px;\n' +
+        '    font-size: 13px;\n' +
+        '    cursor: pointer;\n' +
+        '  }\n' +
+        '  .title-holder {\n' +
+        '    font-size: 1.2em;\n' +
+        '    margin-top: 15px;\n' +
+        '  }\n' +
+        '  .blog-filter-search-button:hover {\n' +
+        '    color: #818181;\n' +
+        '  }\n' +
+        '  input:focus {\n' +
+        '    outline: none;\n' +
+        '    box-shadow: none;\n' +
+        '  }\n' +
+        '  \n' +
+        '  .article-filter-search {\n' +
+        '    width: 70%;\n' +
+        '    margin-right: 15px;\n' +
+        '    padding: 13px;\n' +
+        '    border: solid 1px #dbdbdb;\n' +
+        '  }\n' +
+        '    .article-filter-search:focus {\n' +
+        '    border: solid 1px #a5a5a5;\n' +
+        '  }\n' +
+        '  \n' +
+        '  .search-container { \n' +
+        '    padding: 25px 10px 40px 0;\n' +
+        '    border-bottom: 1px solid #d1d1d1;\n' +
+        '  }\n' +
+        '  .recommend-column {\n' +
+        '    width: 34%;\n' +
+        '    margin: 10px;\n' +
+        '    display: inline-block;\n' +
+        '/*     flex-direction: column; */\n' +
+        '  }\n' +
+        '  .result-column {\n' +
+        '    max-width:auto;\n' +
+        '    display: block;\n' +
+        '    margin-bottom: 20px;\n' +
+        '    margin: 20px 10px;\n' +
+        '  }\n' +
+        '  .span-h3 {\n' +
+        '    font-size: 22px;\n' +
+        '    font-weight: 550;\n' +
+        '  }\n' +
+        '  .next-image-container {\n' +
+        '    display: inline-block;\n' +
+        '    vertical-align: top;\n' +
+        '    margin-left: 25px;\n' +
+        '    max-width: calc(95% - 9em);\n' +
+        '    color: #333;\n' +
+        '  }\n' +
+        '  .next-image-container:hover {\n' +
+        '    color:#818181;\n' +
+        '  }\n' +
+        '  .recommend-image {\n' +
+        '    width: 100%;\n' +
+        '    object-fit: cover;\n' +
+        '    margin-top: 1em;\n' +
+        '    height: 12.3em;\n' +
+        '  }\n' +
+        '  .result-column > a {\n' +
+        '    text-decoration: none;\n' +
+        '  }\n' +
+        '  .result-column > a {\n' +
+        '    text-decoration: none;\n' +
+        '  }\n' +
+        '  .result-image {\n' +
+        '/*     max-width: 30%; */\n' +
+        '    height: 9em;\n' +
+        '    width: 9em;\n' +
+        '    object-fit: cover;\n' +
+        '  }\n' +
+        '  .suggest-anchor {\n' +
+        '    display: flex;\n' +
+        '    margin: 0 -10px 0 -10px;\n' +
+        '  }\n' +
+        '  .suggest-anchor h3 {\n' +
+        '    font-weight: 700;\n' +
+        '    margin: 1em 0 0 0;\n' +
+        '    font-size: 1.2em;\n' +
+        '  }\n' +
+        '  .suggest-anchor p {\n' +
+        '    font-size: 1em;\n' +
+        '    margin: 0 0 2em 0;\n' +
+        '    color: #333;\n' +
+        '  }\n' +
+        '  .direction {\n' +
+        '    flex-direction: column;\n' +
+        '  }\n' +
+        '  .hueapps-bottom-container {\n' +
+        '    display: flex;\n' +
+        '    justify-content: space-between;\n' +
+        '  }\n' +
+        '  .Modal {\n' +
+        '  display: block;\n' +
+        '  position: fixed;\n' +
+        '  left: 0;\n' +
+        '  top: 0;\n' +
+        '  z-index: 9999;\n' +
+        '  width: 100%;\n' +
+        '  height: 100%;\n' +
+        '  padding-top: 2em;\n' +
+        '  background-color: black;\n' +
+        '  background-color: rgba(0, 0, 0, 0.4);\n' +
+        '  -webkit-transition: 0.5s;\n' +
+        '  overflow: auto;\n' +
+        '  transition: all 0.3s linear;\n' +
+        '}\n' +
+        '.Modal-content {\n' +
+        '  background-color: #fefefe;\n' +
+        '  margin: auto;\n' +
+        '  padding: 20px;\n' +
+        '  border-radius: 4px;\n' +
+        '  max-width: 95%;\n' +
+        '  min-height: 350px;\n' +
+        '  height: auto;\n' +
+        '}\n' +
+        '.ModalOpen { overflow: hidden; }\n' +
+        '.is-hidden { display: none; }\n' +
+        '.is-visuallyHidden { opacity: 0; }\n' +
+        '  \n' +
+        '  .Close {\n' +
+        '  color: #aaaaaa;\n' +
+        '  float: right;\n' +
+        '  font-size: 40px;\n' +
+        '  top: -26px;\n' +
+        '  right: -8px;\n' +
+        '  position: relative;\n' +
+        '}\n' +
+        '.Close:hover, .Close:focus {\n' +
+        '  color: #000;\n' +
+        '  text-decoration: none;\n' +
+        '  cursor: pointer;\n' +
+        '}\n' +
+        '  .is-blurred {\n' +
+        '  filter: blur(2px);\n' +
+        '  -webkit-filter: blur(2px);\n' +
+        '}\n' +
+        '  .search-button {\n' +
+        '    background-color: #000;\n' +
+        '    color: #fff;\n' +
+        '    padding: 13px 22px;\n' +
+        '    border: 0px;\n' +
+        '    font-size: 1em;\n' +
+        '    position: relative;\n' +
+        '    top: 1px;\n' +
+        '    transition: background-color 0.5s ease;\n' +
+        '  }\n' +
+        '    .search-button:hover {\n' +
+        '    background-color: #3a3a3a;\n' +
+        '    cursor: pointer;\n' +
+        '  }\n' +
+        '  .search-button:active {\n' +
+        '    background-color: #3a3a3a;\n' +
+        '    cursor: pointer;\n' +
+        '  }\n' +
+        '  .suggest-anchor .result-title { \n' +
+        '    margin: 1em 10px 0 10px;\n' +
+        '  }\n' +
+        ' \n' +
+        '@media only screen and (max-width: 530px) {\n' +
+        '  .suggest-anchor {\n' +
+        '    flex-direction: column;\n' +
+        '  }\n' +
+        '  .blog-filter-search-button {\n' +
+        '    margin-top: 20px;\n' +
+        '  }\n' +
+        '  .recommend-column {\n' +
+        '    width: 90%;\n' +
+        '  }\n' +
+        '   .result-column {\n' +
+        '    max-width: 90%;\n' +
+        '    margin: 10px;\n' +
+        '  }\n' +
+        '  .next-image-container {\n' +
+        '    margin-left: 0!important;\n' +
+        '    display: block;\n' +
+        '  }\n' +
+        '  .result-image {\n' +
+        '    display: none;\n' +
+        '  }\n' +
+        '  .Modal-content {\n' +
+        '    max-width: 100%;\n' +
+        '    min-height: 100%;\n' +
+        '    border-radius: 0;\n' +
+        '  }\n' +
+        '  .Modal {\n' +
+        '    padding-top: 0;\n' +
+        '  }\n' +
+        '  .article-filter-search {\n' +
+        '    width: 100%;\n' +
+        '    margin-right: 0;\n' +
+        '  }\n' +
+        '  .search-button {\n' +
+        '    width: 100%;\n' +
+        '    margin-top: 10px;\n' +
+        '  }\n' +
+        '  .suggest-anchor h3:not(.recommend-title) { \n' +
+        '    margin: 1em 10px 0 10px;\n' +
+        '  }\n' +
+        '  .suggest-anchor .different-keyword-string { \n' +
+        '    margin: 0 10px 2em 10px;\n' +
+        '  }\n' +
+        '  .search-sub-container { \n' +
+        //             '    display: flex;\n' +
+        '    flex-direction: column;\n' +
+        '  }\n' +
+        '  .next-image-container {\n' +
+        '    max-width: 100%;\n' +
+        '  }\n' +
+        '}\n' +
+        '  \n' +
+        '</style>');
+
+    $body.append($modal_str_dom);
+    $body.append($search_css);
+
+    $(".article-filter-search").keyup(function (event) {
+        if (event.keyCode === 13) {
+            $(".search-button").click();
+        }
+    });
+    $body.find("a[href='#top']").click(function () {
+        $(".Modal-content").animate({scrollTop: 0}, "slow");
+        return false;
+    });
+}
+
+
+window.addEventListener("DOMContentLoaded", function(){
+    if (typeof jQuery != 'undefined') {
+        loadModalDomSearch();
+        console.log('jquery detected');
+    }
+    else {
+        document.getElementById('search-jquery').addEventListener('load', function () {
+            loadModalDomSearch();
+
+        });
+        console.log('loaded here');
+    }
+});
+ </script>
+<!--     <script src="https://app.hueapps.co/script-tag.js"></script> -->
+  
+<style>
+    .blog-filter-app {
+    -webkit-appearance:none;
+    display: inline-block;
+    width: auto;
+    padding: 1.2em 2em 1.2em 1em!important;
+    border-radius: 25px;
+    border: solid 1px #062a30!important;
+    font-size: 0.45em!important;
+}
+    .blog-filter-reset {
+    cursor:pointer;
+    padding: 1.25em 3em!important;
+    color: #062a30!important;
+    border-radius: 25px;
+    font-size: 0.45em;
+    background: #d3ece8!important;
+}
+    .blog-filter-app-container {
+    margin-top: 20px!important;
+}
+  .article-filter-search {
+    border-radius: 25px;
+    border: solid 1px #062a30!important;
+  }
+  .search-button {
+    border-radius: 25px;
+    background: #d3ece8!important;
+    color: #062a30!important;
+    padding: 14px 28px!important;
+    top: 0px!important;
+  }
+  .blog-filter-search-button {
+    color:  #062a30!important;
+  }
+  .Close {
+    top: -36px!important;
+  }
+  .blog-filter-error {
+    background: none!important;
+    color: #95615b!important;
+    font-size: 0.3em!important;
+  }
+    .blog-filter-skeleton-box {
+    display: inline-block;
+    height: 0.8em!important;
+    position: relative;
+    overflow: hidden;
+    background-color: #ededed!important;
+}
+    .blog-filter-skeleton-box::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 40%, rgba(255, 255, 255, 0.5) 90%, rgba(255, 255, 255, 0));
+    -webkit-animation: shimmer 2s infinite;
+    animation: shimmer 2s infinite;
+    content: "";
+}
+    @-webkit-keyframes shimmer {
+    100% {
+        transform: translateX(100%);   
+  }
+}
+    @keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+    @media only screen and (max-width: 700px) {
+    .blog-filter-app {
+    display: block;
+    width: 100%;
+
+}
+
+     
+}
+    @media only screen and (max-width: 430px) {
+    .blog-filter-reset {
+    width: 100%;
+    
+}
+      
+}
+</style>
