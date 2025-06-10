@@ -36,6 +36,9 @@ query getCollectionById($id: ID!) {
         title
         availableForSale
         tags
+        metafield(key: "short_description", namespace:"custom_but_hidden") {
+          value
+        }
         options {
           optionValues {
             name
