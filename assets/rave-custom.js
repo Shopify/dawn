@@ -32,25 +32,54 @@
   // window.addEventListener('scroll', debounce(handleScroll, 100));
 
   /**
+   * Smooth scrolling for anchor links
+   */
+  function initSmoothScrolling() {
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+      anchor.addEventListener('click', function (e) {
+        const targetId = this.getAttribute('href');
+
+        // Skip if it's just "#" or has no length
+        if (!targetId || targetId === '#') return;
+
+        const targetElement = document.querySelector(targetId);
+
+        if (targetElement) {
+          e.preventDefault();
+
+          // Get header height for offset
+          const header = document.querySelector('header.header');
+          const headerHeight = header ? header.offsetHeight : 0;
+
+          // Calculate position
+          const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+          const offsetPosition = targetPosition - headerHeight - 20; // 20px extra padding
+
+          // Smooth scroll
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth',
+          });
+        }
+      });
+    });
+  }
+
+  /**
    * Initialize custom scripts on DOMContentLoaded
    */
-  // document.addEventListener('DOMContentLoaded', function() {
-  //   // Initialize sliders, event listeners, etc.
-  //   console.log("Rave Yoga custom JS initialized.");
-  // });
+  document.addEventListener('DOMContentLoaded', function () {
+    initSmoothScrolling();
+    // console.log("Rave Yoga custom JS initialized.");
+  });
 
   /**
    * Shopify Theme Editor Support
    * - Listen for section load/select events if you need to re-initialize JS for dynamic sections.
    */
-  // document.addEventListener('shopify:section:load', function(event) {
-  //   const sectionId = event.detail.sectionId;
-  //   const sectionElement = event.target;
-  //   // Example: Re-initialize a slider in the loaded section
-  //   // if (sectionElement.querySelector('.my-slider')) {
-  //   //   initializeSlider(sectionElement.querySelector('.my-slider'));
-  //   // }
-  // });
+  document.addEventListener('shopify:section:load', function (event) {
+    initSmoothScrolling();
+  });
 
   // Additional initialization code can go here
 
@@ -125,53 +154,4 @@ document.addEventListener('DOMContentLoaded', function () {
       setTimeout(applyMulticolumnFix, 500);
     });
   }
-});
-
-// Ensure smooth scrolling to booking options section
-document.addEventListener('DOMContentLoaded', function () {
-  // Fix anchor links for the booking section
-  const bookButtons = document.querySelectorAll('a[href="#booking-options-section"]');
-
-  bookButtons.forEach(function (button) {
-    button.addEventListener('click', function (e) {
-      e.preventDefault();
-
-      // Try multiple ways to find the target section
-      let targetSection = document.getElementById('booking-options-section');
-
-      if (!targetSection) {
-        targetSection = document.querySelector('.section-multicolumn_C4WQAd');
-      }
-
-      if (!targetSection) {
-        // Find by heading text as last resort
-        const headings = document.querySelectorAll('.multicolumn .title');
-        for (let i = 0; i < headings.length; i++) {
-          if (headings[i].textContent.trim() === 'BOOKING OPTIONS') {
-            targetSection = headings[i].closest('.shopify-section');
-            break;
-          }
-        }
-      }
-
-      if (targetSection) {
-        // Calculate offset for fixed header
-        const headerOffset = 80;
-        const elementPosition = targetSection.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-        // Smooth scroll to element
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth',
-        });
-
-        // Add highlight effect to indicate where user has scrolled to
-        targetSection.classList.add('highlight-section');
-        setTimeout(function () {
-          targetSection.classList.remove('highlight-section');
-        }, 2000);
-      }
-    });
-  });
 });
