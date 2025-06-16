@@ -266,7 +266,7 @@ const Remix = () => {
 
     if (stickerName) {
       document.getElementById('remix-description')!.innerHTML =
-        `Uniquely Yours — You are making this ${document.title.split('-')[0].split(' –')[0]} truly yours by personalising with <span id="the-sticker" class='emojiFont'>${stickerName}</span>`;
+        `Uniquely Yours — You are making this ${window.s3_product_name} truly yours by personalising with <span id="the-sticker" class='emojiFont'>${stickerName}</span>`;
       document.getElementsByClassName('product-form__submit button')[0]?.classList?.add('glowing');
     } else {
       document.getElementById('remix-description')!.innerHTML = defaultCopy;
