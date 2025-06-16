@@ -21,7 +21,39 @@
 <section class="dynamic-artists-gallery-section section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
   <div class="dynamic-artists-gallery-wrapper gallery-expanded-{{ active_index }}">
     {% for artist in shop.metaobjects.artists.values %}
-      <div class="gallery-item gallery-item-{{ forloop.index }}">
+      {% assign base_grid_areas = '
+        1 / 1 / 2 / 3,
+        2 / 1 / 5 / 2,
+        2 / 2 / 3 / 3,
+        3 / 2 / 5 / 3,
+        5 / 1 / 6 / 3'
+        | split: ','
+      %}
+
+      {% assign index = forloop.index0 %}
+      {% assign relative_index = index | modulo: 5 %}
+      {% assign block = index | divided_by: 5 %}
+      {% assign offset = block | times: 5 %}
+
+      {% assign parts = base_grid_areas[relative_index] | strip | split: ' / ' %}
+      {% assign row_start = parts[0] | plus: offset %}
+      {% assign row_end = parts[2] | plus: offset %}
+      {% assign col_start = parts[1] %}
+      {% assign col_end = parts[3] %}
+
+      {% assign grid_area = row_start
+        | append: ' / '
+        | append: col_start
+        | append: ' / '
+        | append: row_end
+        | append: ' / '
+        | append: col_end
+      %}
+
+      <div
+        class="gallery-item gallery-item-{{ forloop.index }}"
+        style="grid-area: {{ grid_area }};"
+      >
         <img
           width="350"
           height="350"
@@ -48,7 +80,7 @@
                     target="_blank"
                     class="featured-artists-products__apple"
                   >
-                    <img height="100" width="100" src="{{ 'icon-apple-music.svg' | asset_url }}" alt="Apple Music">
+                    {% comment %} <img height="100" width="100" src="{{ 'icon-apple-music.svg' | asset_url }}" alt="Apple Music"> {% endcomment %}
                   </a>
                 {% endif %}
                 {% if artist.artists_website %}
@@ -124,6 +156,10 @@
 {% schema %}
 {
   "name": "Dynamic Artists Gallery",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
   "settings": [
     {
       "type": "color_scheme",
