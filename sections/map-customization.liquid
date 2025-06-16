@@ -1,0 +1,318 @@
+{{ 'map-customization.css' | asset_url | stylesheet_tag }}
+
+<div class="map-customization-section" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="map-customization-wrapper">
+      
+      <!-- Section Header -->
+      {% if section.settings.heading != blank %}
+        <div class="section-header">
+          <h2 class="h1">{{ section.settings.heading }}</h2>
+          {% if section.settings.subheading != blank %}
+            <p class="section-subheading">{{ section.settings.subheading }}</p>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <!-- Map Customization Interface -->
+      <div class="map-customization-interface">
+        
+        <!-- Step 1: Location Input -->
+        <div class="customization-step" id="location-step">
+          <div class="step-header">
+            <h3 class="step-title">{{ section.settings.location_title | default: "Choose Your Location" }}</h3>
+            <p class="step-description">{{ section.settings.location_description | default: "Enter the location for your custom map" }}</p>
+          </div>
+          
+          <div class="location-input-group">
+            <div class="input-wrapper">
+              <label for="location-search" class="visually-hidden">Search Location</label>
+              <input 
+                type="text" 
+                id="location-search" 
+                name="location-search"
+                placeholder="{{ section.settings.location_placeholder | default: 'Search for a location...' }}"
+                class="location-input"
+                autocomplete="off"
+              >
+              <button type="button" class="location-search-btn" aria-label="Search location">
+                <svg class="icon icon-search" aria-hidden="true" focusable="false" viewBox="0 0 64 64">
+                  <path d="M47.16 28.58A18.58 18.58 0 1 1 28.58 10a18.58 18.58 0 0 1 18.58 18.58zM54 54L41.94 42"/>
+                </svg>
+              </button>
+            </div>
+            
+            <!-- Current Location Button -->
+            <button type="button" class="current-location-btn" id="use-current-location">
+              <svg class="icon icon-location" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+              </svg>
+              Use Current Location
+            </button>
+          </div>
+
+          <!-- Coordinates Display -->
+          <div class="coordinates-display" id="coordinates-display" style="display: none;">
+            <div class="coordinate-item">
+              <label>Latitude:</label>
+              <span id="display-latitude">-</span>
+            </div>
+            <div class="coordinate-item">
+              <label>Longitude:</label>
+              <span id="display-longitude">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Map Style Selection -->
+        <div class="customization-step" id="style-step">
+          <div class="step-header">
+            <h3 class="step-title">{{ section.settings.style_title | default: "Choose Map Style" }}</h3>
+            <p class="step-description">{{ section.settings.style_description | default: "Select your preferred map appearance" }}</p>
+          </div>
+          
+          <div class="style-options">
+            {% for block in section.blocks %}
+              {% if block.type == 'map_style' %}
+                <div class="style-option">
+                  <input 
+                    type="radio" 
+                    id="style-{{ block.id }}" 
+                    name="map-style" 
+                    value="{{ block.settings.style_value }}"
+                    class="style-radio"
+                    {% if forloop.first %}checked{% endif %}
+                  >
+                  <label for="style-{{ block.id }}" class="style-label">
+                    {% if block.settings.style_image != blank %}
+                      <div class="style-image">
+                        {{ block.settings.style_image | image_url: width: 200 | image_tag: loading: 'lazy', alt: block.settings.style_name }}
+                      </div>
+                    {% endif %}
+                    <div class="style-info">
+                      <h4 class="style-name">{{ block.settings.style_name }}</h4>
+                      {% if block.settings.style_description != blank %}
+                        <p class="style-description">{{ block.settings.style_description }}</p>
+                      {% endif %}
+                    </div>
+                  </label>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Step 3: Activity/Route Selection (Strava Integration) -->
+        <div class="customization-step" id="activity-step">
+          <div class="step-header">
+            <h3 class="step-title">{{ section.settings.activity_title | default: "Connect Your Activity" }}</h3>
+            <p class="step-description">{{ section.settings.activity_description | default: "Import your route from Strava" }}</p>
+          </div>
+          
+          <div class="strava-connection">
+            <button type="button" class="strava-connect-btn" id="connect-strava">
+              <svg class="icon icon-strava" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+                <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-5.08 10.172h4.118"/>
+              </svg>
+              Connect with Strava
+            </button>
+            
+            <div class="activity-selection" id="activity-selection" style="display: none;">
+              <label for="activity-select">Select Activity:</label>
+              <select id="activity-select" name="activity-select" class="activity-dropdown">
+                <option value="">Choose an activity...</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Map Preview -->
+        <div class="customization-step" id="preview-step">
+          <div class="step-header">
+            <h3 class="step-title">{{ section.settings.preview_title | default: "Preview Your Map" }}</h3>
+            <p class="step-description">{{ section.settings.preview_description | default: "See how your custom map will look" }}</p>
+          </div>
+          
+          <div class="map-preview-container">
+            <div id="map-preview" class="map-preview">
+              <div class="preview-placeholder">
+                <svg class="icon icon-map" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+                  <path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3h-6zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3v6zm6 12l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6h6zm12-6l-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6v-6z"/>
+                </svg>
+                <p>Your map preview will appear here</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hidden inputs for form data -->
+        <div class="hidden-inputs" style="display: none;">
+          <input type="hidden" id="map-latitude" name="properties[Map Latitude]" value="">
+          <input type="hidden" id="map-longitude" name="properties[Map Longitude]" value="">
+          <input type="hidden" id="map-zoom" name="properties[Map Zoom]" value="">
+          <input type="hidden" id="map-style-value" name="properties[Map Style]" value="">
+          <input type="hidden" id="activity-data" name="properties[Activity Data]" value="">
+          <input type="hidden" id="route-polyline" name="properties[Route Polyline]" value="">
+          <input type="hidden" id="map-center-lat" name="properties[Map Center Latitude]" value="">
+          <input type="hidden" id="map-center-lng" name="properties[Map Center Longitude]" value="">
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ 'map-customization.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Map Customization",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Customize Your Map",
+      "label": "Section heading"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "default": "Create a personalized map print of your favorite route or location",
+      "label": "Section subheading"
+    },
+    {
+      "type": "header",
+      "content": "Location Step"
+    },
+    {
+      "type": "text",
+      "id": "location_title",
+      "default": "Choose Your Location",
+      "label": "Location step title"
+    },
+    {
+      "type": "textarea",
+      "id": "location_description",
+      "default": "Enter the location for your custom map",
+      "label": "Location step description"
+    },
+    {
+      "type": "text",
+      "id": "location_placeholder",
+      "default": "Search for a location...",
+      "label": "Location input placeholder"
+    },
+    {
+      "type": "header",
+      "content": "Style Step"
+    },
+    {
+      "type": "text",
+      "id": "style_title",
+      "default": "Choose Map Style",
+      "label": "Style step title"
+    },
+    {
+      "type": "textarea",
+      "id": "style_description",
+      "default": "Select your preferred map appearance",
+      "label": "Style step description"
+    },
+    {
+      "type": "header",
+      "content": "Activity Step"
+    },
+    {
+      "type": "text",
+      "id": "activity_title",
+      "default": "Connect Your Activity",
+      "label": "Activity step title"
+    },
+    {
+      "type": "textarea",
+      "id": "activity_description",
+      "default": "Import your route from Strava",
+      "label": "Activity step description"
+    },
+    {
+      "type": "header",
+      "content": "Preview Step"
+    },
+    {
+      "type": "text",
+      "id": "preview_title",
+      "default": "Preview Your Map",
+      "label": "Preview step title"
+    },
+    {
+      "type": "textarea",
+      "id": "preview_description",
+      "default": "See how your custom map will look",
+      "label": "Preview step description"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "map_style",
+      "name": "Map Style Option",
+      "settings": [
+        {
+          "type": "text",
+          "id": "style_name",
+          "default": "Classic",
+          "label": "Style name"
+        },
+        {
+          "type": "text",
+          "id": "style_value",
+          "default": "classic",
+          "label": "Style value (used in code)"
+        },
+        {
+          "type": "textarea",
+          "id": "style_description",
+          "label": "Style description"
+        },
+        {
+          "type": "image_picker",
+          "id": "style_image",
+          "label": "Style preview image"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Map Customization",
+      "blocks": [
+        {
+          "type": "map_style",
+          "settings": {
+            "style_name": "Classic",
+            "style_value": "classic",
+            "style_description": "Clean and timeless design"
+          }
+        },
+        {
+          "type": "map_style",
+          "settings": {
+            "style_name": "Satellite",
+            "style_value": "satellite",
+            "style_description": "Aerial view with terrain"
+          }
+        },
+        {
+          "type": "map_style",
+          "settings": {
+            "style_name": "Terrain",
+            "style_value": "terrain",
+            "style_description": "Topographic with elevation"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %} 
