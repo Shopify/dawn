@@ -1,5 +1,7 @@
-{{ 'component-product-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-tabbed-product-card.css' | asset_url | stylesheet_tag }}
 {{ 'section-tabbed-products.css' | asset_url | stylesheet_tag }}
+{{ 'swiper-bundle.min.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'swiper-bundle.min.js' | asset_url }}" defer></script>
 <script src="{{ 'tabbed-products.js' | asset_url }}" defer></script>
 
 {%- style -%}
@@ -16,32 +18,28 @@
   }
 {%- endstyle -%}
 
-<div class="best-sellers-block page-width section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
-  <h2 class="best-sellers-intro__title">
-    {{ section.settings['section-title'] }}
-  </h2>
-
-  <p class="best-sellers-intro__description">
-    {{ section.settings['section-paragraph'] }}
-  </p>
-
+<div class="best-sellers-block section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
   <h3 class="best-sellers-subtitle">
     {{ section.settings.title }}
   </h3>
 
-  <ul class="tabbed-product-tabs">
-    {% for block in section.blocks %}
-      {% if block.type == 'collection_tab' and block.settings.collection %}
-        {% assign collection = collections[block.settings.collection.handle] %}
-        <li
-          class="tabbed-product-tab{% if forloop.first %} active{% endif %}"
-          data-tab="{{ collection.handle }}"
-        >
-          {{ collection.title }}
-        </li>
-      {% endif %}
-    {% endfor %}
-  </ul>
+  <div class="tabbed-product-tabs-container">
+    <ul class="tabbed-product-tabs page-width">
+      {% for block in section.blocks %}
+        {% if block.type == 'collection_tab' and block.settings.collection %}
+          {% assign collection = collections[block.settings.collection.handle] %}
+          <li
+            class="tabbed-product-tab{% if forloop.first %} active{% endif %}"
+            data-tab="{{ collection.handle }}"
+            data-collection-title="{{ collection.title }}"
+            data-collection-url="{{ collection.url }}"
+          >
+            {{ collection.title }}
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
 
   <div class="tabbed-product-tab-content">
     {% for block in section.blocks %}
@@ -58,9 +56,24 @@
       {% endif %}
     {% endfor %}
   </div>
-
   <div class="product-section__cta">
-    <a href="">View All Amps</a>
+    <a
+      id="view-all-button"
+      class="button button--primary"
+      href="
+        {% for block in section.blocks -%}
+          {%- if block.type == 'collection_tab' and block.settings.collection and forloop.first -%}
+            {{- collections[block.settings.collection.handle].url -}}
+          {%- endif -%}
+        {%- endfor -%}
+      "
+      >View All
+      {% for block in section.blocks -%}
+        {%- if block.type == 'collection_tab' and block.settings.collection and forloop.first -%}
+          {{- collections[block.settings.collection.handle].title -}}
+        {%- endif -%}
+      {%- endfor -%}
+    </a>
   </div>
 </div>
 
@@ -73,18 +86,6 @@
       "id": "color_scheme",
       "label": "t:sections.all.colors.label",
       "default": "scheme-1"
-    },
-    {
-      "type": "text",
-      "id": "section-title",
-      "label": "Main Heading",
-      "default": "We're obsessed with good music"
-    },
-    {
-      "type": "text",
-      "id": "section-paragraph",
-      "label": "Section Paragraph",
-      "default": "Lorem ipsum dolor sit amet consectetur. Nunc quis felis bibendum magna lorem semper non sed. Euismod nibh arcu turpis ut montes adipiscing. Tristique leo sem lacus elementum nulla. Vestibulum dictum turpis donec neque."
     },
     {
       "type": "text",
