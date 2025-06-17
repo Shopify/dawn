@@ -53,9 +53,9 @@ const getStatus = (bucketNumber: number | undefined, isConfimedByShopify: boolea
     case 5:
       return {
         status: 'Delivery Failed',
-        stage: 'Cancelled',
-        message: 'We could not deliver your order.',
-        progress: 100,
+        stage: 'Shipped',
+        message: 'We could not deliver your order. The delivery may or may not be reattempted tomorrow',
+        progress: 90,
         color: COLOR.RED,
       };
 
