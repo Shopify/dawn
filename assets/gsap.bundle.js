@@ -191,20 +191,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
 //highlight text animation
 _gsapMin["default"].registerPlugin(_SplitTextMin["default"], _ScrollTriggerMin["default"]);
-var split = new _SplitTextMin["default"]('.highlight-text-block p', {
-  type: 'words'
-});
-var timeline = _gsapMin["default"].timeline({
-  scrollTrigger: {
-    trigger: '.highlight-text-block',
-    start: 'top 75%',
-    end: '+=600',
-    scrub: 0.75
-  }
-}).set(split.words, {
-  color: '#272727',
-  stagger: 0.1
-}, 0.1);
+var highlightTextBlock = document.querySelector('.highlight-text-block');
+if (highlightTextBlock) {
+  var split = new _SplitTextMin["default"]('.highlight-text-block p', {
+    type: 'words'
+  });
+  var highlightColor = highlightTextBlock.dataset.highlightColor || '#272727';
+  var defaultTextColor = highlightTextBlock.dataset.defaultTextColor || '#999999';
+
+  // Set initial color to default text color
+  _gsapMin["default"].set(split.words, {
+    color: defaultTextColor
+  });
+  var timeline = _gsapMin["default"].timeline({
+    scrollTrigger: {
+      trigger: '.highlight-text-block',
+      start: 'top 75%',
+      end: '+=600',
+      scrub: 0.75
+    }
+  }).set(split.words, {
+    color: highlightColor,
+    stagger: 0.1
+  }, 0.1);
+}
 
 // paragraph usp animate in on scroll
 _gsapMin["default"].utils.toArray('.paragraph-usp-item').forEach(function (usp) {
