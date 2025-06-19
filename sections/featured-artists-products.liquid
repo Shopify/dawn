@@ -23,11 +23,15 @@
   <div class="page-width">
     <div class="featured-artists-products__header">
       <div class="featured-artists-products__text">
-        <h2>{{ section.settings.artist_name }}</h2>
-        <p>
-          {{ section.settings.genre }}
-        </p>
-        <p>{{ section.settings.bio }}</p>
+        {% if section.settings.artist != blank %}
+          <h2>{{ section.settings.artist.title | default: section.settings.artist_name }}</h2>
+          <p>{{ section.settings.artist.genre | default: section.settings.genre }}</p>
+          <p>{{ section.settings.artist.description | default: section.settings.bio }}</p>
+        {% else %}
+          <h2>{{ section.settings.artist_name }}</h2>
+          <p>{{ section.settings.genre }}</p>
+          <p>{{ section.settings.bio }}</p>
+        {% endif %}
       </div>
     </div>
     {% if section.settings.show_divider %}
@@ -49,12 +53,12 @@
       </div>
     </div>
   </div>
-
   {%- capture streaming_buttons -%}
   <div class="spotify-embed__button-container {% if section.settings.center_buttons %}spotify-embed__button-container-center{% endif %}">
-    {% if section.settings.tidal_url != blank %}
+    {% assign tidal_url = section.settings.artist.tidal | default: section.settings.tidal_url %}
+    {% if tidal_url != blank %}
       <a
-        href="{{ section.settings.tidal_url }}"
+        href="{{ tidal_url }}"
         target="_blank"
         rel="noopener noreferrer"
         class="spotify-embed__button button button--primary"
@@ -71,9 +75,10 @@
         >
       </a>
     {% endif %}
-    {% if section.settings.spotify_url != blank %}
+    {% assign spotify_url = section.settings.artist.spotify | default: section.settings.spotify_url %}
+    {% if spotify_url != blank %}
       <a
-        href="{{ section.settings.spotify_url }}"
+        href="{{ spotify_url }}"
         target="_blank"
         rel="noopener noreferrer"
         class="spotify-embed__button button button--primary"
@@ -90,9 +95,10 @@
         >
       </a>
     {% endif %}
-    {% if section.settings.youtube_url != blank %}
+    {% assign youtube_url = section.settings.artist.youtube | default: section.settings.youtube_url %}
+    {% if youtube_url != blank %}
       <a
-        href="{{ section.settings.youtube_url }}"
+        href="{{ youtube_url }}"
         target="_blank"
         rel="noopener noreferrer"
         class="spotify-embed__button button button--primary"
@@ -115,8 +121,11 @@
   <section class="color-{{ section.settings.color_scheme }}">
     <div class="spotify-embed__main featured-artist-spotify-container">
       <div class="spotify-embed__iframe-container">
-        {% if section.settings.spotify_embed_url != blank %}
-          {{ section.settings.spotify_embed_url }}
+        {% assign spotify_embed = section.settings.artist.spotify_embed_url
+          | default: section.settings.spotify_embed_url
+        %}
+        {% if spotify_embed != blank %}
+          {{ spotify_embed }}
         {% else %}
           <iframe
             style="border-radius:12px"
@@ -147,21 +156,31 @@
       "default": "scheme-1"
     },
     {
+      "type": "metaobject",
+      "id": "artist",
+      "label": "Select Artist",
+      "metaobject_type": "artists",
+      "info": "Choose an artist from the Artists metaobject collection"
+    },
+    {
       "type": "text",
       "id": "artist_name",
-      "label": "Artist Name",
+      "label": "Artist Name (Fallback)",
+      "info": "Only used if no artist metaobject is selected",
       "default": "Artist Name"
     },
     {
       "type": "text",
       "id": "genre",
-      "label": "Genre",
+      "label": "Genre (Fallback)",
+      "info": "Only used if no artist metaobject is selected",
       "default": "Genre"
     },
     {
       "type": "textarea",
       "id": "bio",
-      "label": "Artist Bio",
+      "label": "Artist Bio (Fallback)",
+      "info": "Only used if no artist metaobject is selected",
       "default": "Bio - Lorem ipsum dolor sit amet consectetur. Nunc quis felis bibendum magna lorem semper non sed. Euismod nibh arcu turpis ut montes adipiscing."
     },
     {
@@ -183,26 +202,26 @@
     {
       "type": "textarea",
       "id": "spotify_embed_url",
-      "label": "Spotify Embed Code",
-      "info": "Paste the complete Spotify embed iframe code here. Leave empty to show a default example embed."
+      "label": "Spotify Embed Code (Fallback)",
+      "info": "Only used if no artist metaobject is selected. Paste the complete Spotify embed iframe code here."
     },
     {
       "type": "text",
       "id": "spotify_url",
-      "label": "Spotify URL",
-      "info": "Direct link to your Spotify page"
+      "label": "Spotify URL (Fallback)",
+      "info": "Only used if no artist metaobject is selected. Direct link to your Spotify page"
     },
     {
       "type": "text",
       "id": "tidal_url",
-      "label": "Tidal URL (Optional)",
-      "info": "Direct link to your Tidal page"
+      "label": "Tidal URL (Fallback)",
+      "info": "Only used if no artist metaobject is selected. Direct link to your Tidal page"
     },
     {
       "type": "text",
       "id": "youtube_url",
-      "label": "YouTube URL (Optional)",
-      "info": "Direct link to your YouTube page"
+      "label": "YouTube URL (Fallback)",
+      "info": "Only used if no artist metaobject is selected. Direct link to your YouTube page"
     },
     {
       "type": "checkbox",
