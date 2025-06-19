@@ -19,43 +19,24 @@
 {%- endstyle -%}
 
 <section class="dynamic-artists-gallery-section section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
-  <div class="dynamic-artists-gallery-wrapper gallery-expanded-{{ active_index }}">
+  <div class="dynamic-artists-gallery-wrapper">
     {% for artist in shop.metaobjects.artists.values %}
-      {% assign base_grid_areas = '
-        1 / 1 / 2 / 3,
-        2 / 1 / 5 / 2,
-        2 / 2 / 3 / 3,
-        3 / 2 / 5 / 3,
-        5 / 1 / 6 / 3'
-        | split: ','
-      %}
-
-      {% assign index = forloop.index0 %}
-      {% assign relative_index = index | modulo: 5 %}
-      {% assign block = index | divided_by: 5 %}
-      {% assign offset = block | times: 5 %}
-
-      {% assign parts = base_grid_areas[relative_index] | strip | split: ' / ' %}
-      {% assign row_start = parts[0] | plus: offset %}
-      {% assign row_end = parts[2] | plus: offset %}
-      {% assign col_start = parts[1] %}
-      {% assign col_end = parts[3] %}
-
-      {% assign grid_area = row_start
-        | append: ' / '
-        | append: col_start
-        | append: ' / '
-        | append: row_end
-        | append: ' / '
-        | append: col_end
-      %}
-
-      {% assign expanded_grid_area = row_start | append: ' / 1 / ' | append: row_end | append: ' / 3' %}
-
+      {% assign galleryItemPos = forloop.index0 | modulo: 5 %}
       <div
-        class="gallery-item gallery-item-{{ forloop.index }}"
-        style="grid-area: {{ grid_area }};"
-        data-expanded-area="{{ expanded_grid_area }}"
+        class="
+          gallery-item
+          {% case galleryItemPos %}
+            {% when 0 or 4 %}
+              gallery-item-full-width
+            {% when 1 %}
+              gallery-item-half-width
+            {% when 2 or 3 %}
+              gallery-item-half-width-half-height
+          {% endcase %}
+        "
+        style="--grid-item-order: {{ forloop.index0 }}; --grid-item-open-order: {{ forloop.index0 | plus: 2 }}"
+        data-index="{{ forloop.index0 }}"
+        data-modulo="{{ forloop.index0 | modulo: 5 }}"
       >
         <img
           width="350"
@@ -64,69 +45,74 @@
           alt="{{ artist.title | escape }}"
           loading="lazy"
         >
-        <div class="gallery-info">
-          <div class="featured-artists-products section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
-            <div class="page-width">
-              <div class="featured-artists-products__header">
-                {% if artist.spotify %}
-                  <a
-                    href="{{ artist.spotify }}"
-                    target="_blank"
-                    class="featured-artists-products__spotify"
-                  >
-                    <img height="100" width="100" src="{{ 'icon-spotify.svg' | asset_url }}" alt="Spotify">
-                  </a>
-                {% endif %}
-                {% if artist.apple_music %}
-                  <a
-                    href="{{ artist.apple_music }}"
-                    target="_blank"
-                    class="featured-artists-products__apple"
-                  >
-                    <img height="100" width="100" src="{{ 'icon-apple-music.svg' | asset_url }}" alt="Apple Music">
-                  </a>
-                {% endif %}
-                {% if artist.artists_website %}
-                  <a
-                    href="{{ artist.artists_website }}"
-                    target="_blank"
-                    class="featured-artists-products__spotify"
-                  >
-                    Visit Website
-                  </a>
-                {% endif %}
-                <div class="featured-artists-products__text">
-                  <h2>{{ artist.title }}</h2>
-                  <p>
-                    {{ artist.genre }}
-                  </p>
-                  <p>{{ artist.description }}</p>
 
-                  {% for profile in artist.artists_social_media.value %}
+        {% comment %}
+          Needs this section updating to new block once merged into main
+
+          <div class="gallery-info">
+            <div class="featured-artists-products section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+              <div class="page-width">
+                <div class="featured-artists-products__header">
+                  {% if artist.spotify %}
+                    <a
+                      href="{{ artist.spotify }}"
+                      target="_blank"
+                      class="featured-artists-products__spotify"
+                    >
+                      <img height="100" width="100" src="{{ 'icon-spotify.svg' | asset_url }}" alt="Spotify">
+                    </a>
+                  {% endif %}
+                  {% if artist.apple_music %}
+                    <a
+                      href="{{ artist.apple_music }}"
+                      target="_blank"
+                      class="featured-artists-products__apple"
+                    >
+                      <img height="100" width="100" src="{{ 'icon-apple-music.svg' | asset_url }}" alt="Apple Music">
+                    </a>
+                  {% endif %}
+                  {% if artist.artists_website %}
+                    <a
+                      href="{{ artist.artists_website }}"
+                      target="_blank"
+                      class="featured-artists-products__spotify"
+                    >
+                      Visit Website
+                    </a>
+                  {% endif %}
+                  <div class="featured-artists-products__text">
+                    <h2>{{ artist.title }}</h2>
                     <p>
-                      <a href="{{ profile.url }}" target="_blank" rel="noopener"> Follow on {{ profile.platform }} </a>
+                      {{ artist.genre }}
                     </p>
-                  {% endfor %}
-                </div>
-              </div>
-            </div>
-          </div>
+                    <p>{{ artist.description }}</p>
 
-          {% if artist.products_used %}
-            <div class="featured-artists-products__products">
-              <div>
-                <h3>Products they love</h3>
-                <div class="featured-artists-products__grid">
-                  {% for product in artist.products_used.value %}
-                    <div class="featured-artists-products__card">
-                      {% render 'product-card-multicolour', product: product %}
-                    </div>
-                  {% endfor %}
+                    {% for profile in artist.artists_social_media.value %}
+                      <p>
+                        <a href="{{ profile.url }}" target="_blank" rel="noopener"> Follow on {{ profile.platform }} </a>
+                      </p>
+                    {% endfor %}
+                  </div>
                 </div>
               </div>
             </div>
-          {% endif %}
-        </div>
+
+            {% if artist.products_used %}
+              <div class="featured-artists-products__products">
+                <div>
+                  <h3>Products they love</h3>
+                  <div class="featured-artists-products__grid">
+                    {% for product in artist.products_used.value %}
+                      <div class="featured-artists-products__card">
+                        {% render 'product-card-multicolour', product: product %}
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        {% endcomment %}
       </div>
     {% endfor %}
   </div>
@@ -135,22 +121,26 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const wrapper = document.querySelector('.dynamic-artists-gallery-wrapper');
-    const galleryItems = document.querySelectorAll('.gallery-item');
+    const galleryItems = Array.from(document.querySelectorAll('.gallery-item'));
 
     galleryItems.forEach((item, index) => {
       item.addEventListener('click', function () {
-        // Clear current states
-        galleryItems.forEach((i) => i.classList.remove('active'));
-        wrapper.className = 'dynamic-artists-gallery-wrapper';
+        let parentEl = item.parentElement;
+        const isActive = !item.classList.contains('active');
+        let currentActive = parentEl.querySelectorAll('.gallery-item.active');
+        item.classList.toggle('active', isActive);
+        if (currentActive.length > 0) {
+          for (let i = 0; i < currentActive.length; i++) {
+            currentActive[i].classList.remove('active');
+          }
+        }
 
-        // Activate clicked item
-        item.classList.add('active');
-        wrapper.classList.add('gallery-expanded-' + (index + 1));
-
-        // Optional scroll into view
-        const offset = 80;
-        const top = item.getBoundingClientRect().top + window.pageYOffset - offset;
-        window.scrollTo({ top, behavior: 'smooth' });
+        // Scroll into view
+        if (!isActive) {
+          const offset = 80;
+          const top = item.getBoundingClientRect().top + window.pageYOffset - offset;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
       });
     });
   });
