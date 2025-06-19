@@ -143,7 +143,7 @@ if (highlightTextBlock) {
         trigger: '.highlight-text-block',
         start: 'top 75%',
         end: '+=600',
-        scrub: 0.75,
+        scrub: 2,
       },
     })
     .set(
