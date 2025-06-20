@@ -8,7 +8,7 @@ if (!customElements.get('product-form')) {
         this.form = this.querySelector('form');
         this.variantIdInput.disabled = false;
         this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
-        this.cart = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
+        this.cart = document.querySelector('cart-notification');
         this.submitButton = this.querySelector('.product-form__submit');
         this.submitButtonText = this.submitButton.querySelector('span');
         this.popupNotice = this.querySelector('.popup-notice');
@@ -20,6 +20,15 @@ if (!customElements.get('product-form')) {
           this.submitButton.addEventListener('click', this.handleClickSubmit.bind(this));
 
         this.hideErrors = this.dataset.hideErrors === 'true';
+      }
+
+      initDrawerTest() {
+        console.log('initDrawerTest');
+        this.cart = document.querySelector('cart-drawer');
+
+        if (document.querySelector('cart-drawer')) {
+          this.submitButton.setAttribute('aria-haspopup', 'dialog');
+        }
       }
 
       onSubmitHandler(evt) {

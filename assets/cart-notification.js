@@ -52,6 +52,14 @@ class CartNotification extends HTMLElement {
 
     if (this.header) this.header.reveal();
     this.open();
+    
+    // Dispatch custom event for cart update
+    window.dispatchEvent(new CustomEvent('cart-updated', {
+      detail: {
+        type: 'notification',
+        cartData: parsedState
+      }
+    }));
   }
 
   getSectionsToRender() {

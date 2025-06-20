@@ -5,6 +5,23 @@ class CartDrawer extends HTMLElement {
     this.addEventListener('keyup', (evt) => evt.code === 'Escape' && this.close());
     this.querySelector('#CartDrawer-Overlay').addEventListener('click', this.close.bind(this));
     this.setHeaderCartIconAccessibility();
+
+    // Add MutationObserver to monitor body class changes
+    this.observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          if (this.isOpen && !document.body.classList.contains('cart-drawer-open')) {
+            document.body.classList.add('cart-drawer-open');
+          }
+        }
+      });
+    });
+
+    this.observer.observe(document.body, {
+      attributes: true,
+      attributeOldValue: true,
+      attributeFilter: ['class']
+    });
   }
 
   setHeaderCartIconAccessibility() {
@@ -46,13 +63,17 @@ class CartDrawer extends HTMLElement {
       { once: true }
     );
 
+    this.isOpen = true;
     document.body.classList.add('overflow-hidden');
+    document.body.classList.add('cart-drawer-open');
   }
 
   close() {
+    this.isOpen = false;
     this.classList.remove('active');
     removeTrapFocus(this.activeElement);
     document.body.classList.remove('overflow-hidden');
+    document.body.classList.remove('cart-drawer-open');
   }
 
   setSummaryAccessibility(cartDrawerNote) {
@@ -86,6 +107,14 @@ class CartDrawer extends HTMLElement {
     setTimeout(() => {
       this.querySelector('#CartDrawer-Overlay').addEventListener('click', this.close.bind(this));
       this.open();
+      
+      // Dispatch custom event for cart update
+      window.dispatchEvent(new CustomEvent('cart-updated', {
+        detail: {
+          type: 'drawer',
+          cartData: parsedState
+        }
+      }));
     });
   }
 
