@@ -1,11 +1,204 @@
 {{ 'section-homepage-hero.css' | asset_url | stylesheet_tag }}
+{% if section.settings.enable_slider %}
+  {{ 'swiper-bundle.min.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'swiper-bundle.min.js' | asset_url }}" defer></script>
+{% endif %}
 
 <div class="homepage-hero">
-  <div class="homepage-hero__info-container">
-    <h1 class="homepage-hero__title">{{ section.settings.title }}</h1>
+  <div class="homepage-hero__info-container color-{{ section.settings.color_scheme }}">
+    {% assign featured_product = collections.all.products[section.settings.featured_product]
+      | default: section.settings.featured_product
+    %}
+    <h1 class="homepage-hero__title">{{ section.settings.hero_title | default: 'Featured Product' }}</h1>
+    {% if featured_product %}
+      <h3 class="homepage-hero__product-title">{{ featured_product.title }}</h3>
+      <p class="homepage-hero__product-description">
+        {{
+          featured_product.description
+          | strip_html
+          | truncate: 200
+          | default: 'Discover our amazing product with incredible features and quality.'
+        }}
+      </p>
+      <a href="{{ featured_product.url }}" class="homepage-hero__product-cta button button--primary">
+        {{ section.settings.cta_text | default: 'Shop Now' }}
+      </a>
+    {% else %}
+      <h3 class="homepage-hero__product-title">{{ section.settings.fallback_title | default: 'Amazing Product' }}</h3>
+      <p class="homepage-hero__product-description">
+        {{
+          section.settings.fallback_description
+          | default: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+        }}
+      </p>
+      <a
+        href="{{ section.settings.cta_link | default: '#' }}"
+        class="homepage-hero__product-cta button button--primary"
+      >
+        {{ section.settings.cta_text | default: 'Find Out More' }}
+      </a>
+    {% endif %}
   </div>
-  <div class="homepage-hero__slider-container"></div>
+  {% assign featured_product = collections.all.products[section.settings.featured_product]
+    | default: section.settings.featured_product
+  %}
+  {% if section.settings.enable_slider %}
+    <div class="homepage-hero__slider-container homepage-hero__swiper swiper">
+      <div class="homepage-hero__swiper-wrapper swiper-wrapper">
+        {% if featured_product and featured_product.media.size > 0 %}
+          {% for media in featured_product.media limit: 10 %}
+            <div class="homepage-hero__swiper-slide swiper-slide">
+              {% case media.media_type %}
+                {% when 'video' %}
+                  {{
+                    media
+                    | video_tag:
+                      class: 'homepage-hero__slider-video',
+                      autoplay: true,
+                      muted: true,
+                      loop: true,
+                      controls: false,
+                      playsinline: true
+                  }}
+                {% when 'external_video' %}
+                  <div class="homepage-hero__external-video">
+                    {{ media | external_video_tag: class: 'homepage-hero__slider-video' }}
+                  </div>
+                {% else %}
+                  <img
+                    class="homepage-hero__slider-image"
+                    src="{{ media | image_url: width: 1200 }}"
+                    alt="{{ media.alt | default: featured_product.title }}"
+                    width="1200"
+                    height="600"
+                    loading="lazy"
+                  >
+              {% endcase %}
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="homepage-hero__swiper-slide swiper-slide">
+            <img
+              class="homepage-hero__slider-image"
+              src="{{ 'no-image.webp' | asset_url }}"
+              alt="Hero Image"
+              width="1200"
+              height="600"
+            >
+          </div>
+        {% endif %}
+      </div>
+      {% if featured_product and featured_product.media.size > 1 %}
+        <div class="homepage-hero__swiper-navigation">
+          <div class="homepage-hero__swiper-button-prev">
+            <img height="20" width="20" src="{{ 'icon-arrow-slider.svg' | asset_url }}" alt="Previous">
+          </div>
+          <div class="homepage-hero__swiper-button-next">
+            <img height="20" width="20" src="{{ 'icon-arrow-slider.svg' | asset_url }}" alt="Next">
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="homepage-hero__static-image-container">
+      {% if featured_product and featured_product.media.size > 0 %}
+        {% assign first_media = featured_product.media.first %}
+        {% case first_media.media_type %}
+          {% when 'video' %}
+            {{
+              first_media
+              | video_tag:
+                class: 'homepage-hero__static-video',
+                autoplay: true,
+                muted: true,
+                loop: true,
+                controls: false,
+                playsinline: true
+            }}
+          {% when 'external_video' %}
+            <div class="homepage-hero__external-video">
+              {{ first_media | external_video_tag: class: 'homepage-hero__static-video' }}
+            </div>
+          {% else %}
+            <img
+              class="homepage-hero__static-image"
+              src="{{ first_media | image_url: width: 1200 }}"
+              alt="{{ first_media.alt | default: featured_product.title }}"
+              width="1200"
+              height="600"
+            >
+        {% endcase %}
+      {% else %}
+        <img
+          class="homepage-hero__static-image"
+          src="{{ 'no-image.webp' | asset_url }}"
+          alt="Hero Image"
+          width="1200"
+          height="600"
+        >
+      {% endif %}
+    </div>
+  {% endif %}
 </div>
+
+<script>
+  window.addEventListener('load', function () {
+    // Only initialize Swiper if slider is enabled and the container exists
+    const swiperContainer = document.querySelector('.homepage-hero__swiper');
+
+    if (swiperContainer && {{ section.settings.enable_slider | json }}) {
+      // Check if there are multiple slides
+      const slides = swiperContainer.querySelectorAll('.homepage-hero__swiper-slide');
+
+      if (slides.length > 1) {
+        const swiper = new Swiper('.homepage-hero__swiper', {
+          loop: false,
+          effect: 'fade',
+          navigation: {
+            nextEl: '.homepage-hero__swiper-button-next',
+            prevEl: '.homepage-hero__swiper-button-prev',
+          },
+          autoplay: false,
+          on: {
+            init: function () {
+              updateNavigationVisibility(this);
+            },
+            slideChange: function () {
+              updateNavigationVisibility(this);
+            },
+          },
+        });
+
+        function updateNavigationVisibility(swiperInstance) {
+          const prevButton = document.querySelector('.homepage-hero__swiper-button-prev');
+          const nextButton = document.querySelector('.homepage-hero__swiper-button-next');
+
+          if (prevButton && nextButton) {
+            // Hide prev button if at the beginning
+            if (swiperInstance.isBeginning) {
+              prevButton.style.display = 'none';
+            } else {
+              prevButton.style.display = 'flex';
+            }
+
+            // Hide next button if at the end
+            if (swiperInstance.isEnd) {
+              nextButton.style.display = 'none';
+            } else {
+              nextButton.style.display = 'flex';
+            }
+          }
+        }
+      } else {
+        // Hide navigation if only one slide
+        const navigation = document.querySelector('.homepage-hero__swiper-navigation');
+        if (navigation) {
+          navigation.style.display = 'none';
+        }
+      }
+    }
+  });
+</script>
 
 {% schema %}
 {
@@ -13,15 +206,56 @@
   "tag": "section",
   "settings": [
     {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "product",
+      "id": "featured_product",
+      "label": "Featured Product",
+      "info": "Select a product to display its images and videos in the hero section"
+    },
+    {
       "type": "text",
-      "id": "title",
-      "label": "Title"
+      "id": "hero_title",
+      "label": "Hero Title",
+      "default": "Featured Product"
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "Button Text",
+      "default": "Shop Now"
     },
     {
       "type": "checkbox",
       "id": "enable_slider",
       "label": "Enable Slider",
-      "default": true
+      "default": true,
+      "info": "When disabled, only the first product image/video will be shown"
+    },
+    {
+      "type": "header",
+      "content": "Fallback Content (when no product is selected)"
+    },
+    {
+      "type": "text",
+      "id": "fallback_title",
+      "label": "Fallback Title",
+      "default": "Amazing Product"
+    },
+    {
+      "type": "textarea",
+      "id": "fallback_description",
+      "label": "Fallback Description",
+      "default": "Discover our amazing products with incredible features and quality."
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "Fallback Button Link"
     }
   ],
   "presets": [
