@@ -1,0 +1,138 @@
+{{ 'section-product-category-hero.css' | asset_url | stylesheet_tag }}
+
+<div class="product-category-hero color-{{ section.settings.color_scheme }}">
+  <div class="product-category-hero__main" id="product-category-hero-main">
+    <div class="product-category-hero__nav">
+      <div class="product-category-hero__nav-container">
+        <ul class="product-category-hero__nav-list">
+          {% for collection in collections %}
+            {% unless collection.handle == 'frontpage' %}
+              <li class="product-category-hero__nav-item">
+                <button
+                  class="product-category-hero__nav-button{% if forloop.first %} active{% endif %}"
+                  data-category-index="{{ forloop.index0 }}"
+                  data-category-title="{{ collection.title | escape }}"
+                  data-category-description="{{ collection.description | default: 'Explore our ' | append: collection.title | append: ' collection' | escape }}"
+                  data-category-image="{% if collection.featured_image != blank %}{{ collection.featured_image | image_url: width: 1920 }}{% endif %}"
+                  data-category-image-alt="{{ collection.title | escape }}"
+                  data-button-text="Shop {{ collection.title }}"
+                  data-button-link="{{ collection.url }}"
+                >
+                  <h3 class="product-category-hero__nav-count">({{ collection.products_count }})</h3>
+                  <h4 class="product-category-hero__nav-text">{{ collection.title }}</h4>
+                </button>
+              </li>
+            {% endunless %}
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="product-category-hero__image-container">
+      {% assign first_collection = collections.first %}
+      <img
+        {% if first_collection.featured_image != blank %}
+          src="{{ first_collection.featured_image | image_url: width: 1920 }}"
+        {% else %}
+          src="{{ 'no-image.webp' | asset_url }}"
+        {% endif %}
+        alt="{{ first_collection.title | escape }}"
+        class="product-category-hero__image"
+        loading="eager"
+        width="1920"
+        height="1080"
+      >
+    </div>
+  </div>
+
+  <div class="product-category-hero__content">
+    <div class="product-category-hero__content-inner">
+      {% assign first_collection = collections.first %}
+      <h1 class="product-category-hero__title" id="hero-title">{{ first_collection.title }}</h1>
+      <p class="product-category-hero__description" id="hero-description">
+        {{
+          first_collection.description
+          | default: 'Explore our '
+          | append: first_collection.title
+          | append: ' collection'
+        }}
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const navButtons = document.querySelectorAll('.product-category-hero__nav-button');
+    const heroImage = document.querySelector('.product-category-hero__image');
+    const heroTitle = document.getElementById('hero-title');
+    const heroDescription = document.getElementById('hero-description');
+    const heroCta = document.getElementById('hero-cta');
+
+    navButtons.forEach((button) => {
+      button.addEventListener('click', function () {
+        navButtons.forEach((btn) => btn.classList.remove('active'));
+        this.classList.add('active');
+
+        const categoryTitle = this.dataset.categoryTitle;
+        const categoryDescription = this.dataset.categoryDescription;
+        const categoryImage = this.dataset.categoryImage;
+        const categoryImageAlt = this.dataset.categoryImageAlt;
+        const buttonText = this.dataset.buttonText;
+        const buttonLink = this.dataset.buttonLink;
+
+        if (heroTitle && categoryTitle) {
+          heroTitle.textContent = categoryTitle;
+        }
+
+        if (heroDescription && categoryDescription) {
+          heroDescription.textContent = categoryDescription;
+        }
+
+        if (heroCta) {
+          if (buttonText && buttonLink) {
+            heroCta.textContent = buttonText;
+            heroCta.href = buttonLink;
+            heroCta.style.display = 'inline-block';
+          } else {
+            heroCta.style.display = 'none';
+          }
+        }
+
+        if (heroImage && categoryImage) {
+          heroImage.style.opacity = '0';
+          setTimeout(() => {
+            heroImage.src = categoryImage;
+            heroImage.alt = categoryImageAlt;
+            heroImage.style.opacity = '1';
+          }, 300);
+        }
+      });
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Product Category Hero",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "background-1"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Category Hero",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}
