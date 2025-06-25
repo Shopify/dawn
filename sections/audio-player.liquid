@@ -1,88 +1,233 @@
+{%- liquid
+  assign section_classes = 'section-' | append: section.id | append: '-padding color-' | append: section.settings.color_scheme
+  if settings.animations_reveal_on_scroll
+    assign section_classes = section_classes | append: ' scroll-trigger animate--fade-in'
+  endif
+-%}
+
+{%- capture audio_controls -%}
+  <div class="custom-controls">
+    <div class="progress-wrapper">
+      <input
+        type="range"
+        class="progress-bar"
+        value="0"
+        min="0"
+        max="100"
+        step="1"
+        aria-label="Track progress"
+      >
+      <div class="time">
+        <span class="current-time">0:00</span>
+        <span class="duration">0:00</span>
+      </div>
+    </div>
+    <div class="buttons">
+      <button class="prev" aria-label="Previous Track">⏮</button>
+      <button class="play" aria-label="Play/Pause">▶</button>
+      <button class="next" aria-label="Next Track">⏭</button>
+    </div>
+  </div>
+{%- endcapture -%}
+
+{%- capture streaming_buttons -%}
+  <div class="spotify-embed__button-container {% if section.settings.center_buttons %}spotify-embed__button-container-center{% endif %}">
+    {% if section.settings.tidal_url != blank %}
+      <a
+        href="{{ section.settings.tidal_url }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="spotify-embed__button button button--primary"
+        aria-label="Listen on Tidal"
+      >
+        <span class="button-text">Listen on</span>
+        <img
+          class="spotify-embed__button-logo"
+          height="32"
+          width="32"
+          src="{{ 'tidal.svg' | asset_url }}"
+          alt="Tidal"
+          loading="lazy"
+        >
+      </a>
+    {% endif %}
+    {% if section.settings.spotify_url != blank %}
+      <a
+        href="{{ section.settings.spotify_url }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="spotify-embed__button button button--primary"
+        aria-label="Listen on Spotify"
+      >
+        <span class="button-text">Listen on</span>
+        <img
+          class="spotify-embed__button-logo"
+          height="32"
+          width="32"
+          src="{{ 'spotify.svg' | asset_url }}"
+          alt="Spotify"
+          loading="lazy"
+        >
+      </a>
+    {% endif %}
+    {% if section.settings.youtube_url != blank %}
+      <a
+        href="{{ section.settings.youtube_url }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="spotify-embed__button button button--primary"
+        aria-label="Listen on YouTube"
+      >
+        <span class="button-text">Listen on</span>
+        <img
+          class="spotify-embed__button-logo"
+          height="32"
+          width="32"
+          src="{{ 'youtube.svg' | asset_url }}"
+          alt="YouTube"
+          loading="lazy"
+        >
+      </a>
+    {% endif %}
+  </div>
+{%- endcapture -%}
+
 {{ 'component-audio-player.css' | asset_url | stylesheet_tag }}
 {{ 'component-audio-player-artist-feature.css' | asset_url | stylesheet_tag }}
+{{ 'section-spotify-embed.css' | asset_url | stylesheet_tag }}
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+{% if section.settings.player_type == 'audio-player' %}
+  {{ 'swiper-bundle.min.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'swiper-bundle.min.js' | asset_url }}" defer></script>
+{% endif %}
 
-<section class="audio-slider-wrapper layout-{{ section.settings.layout_style }}">
-  <div class="swiper audio-slider">
-    <div class="swiper-wrapper">
-      {% for block in section.blocks %}
-        {% if block.type == 'track' %}
-          <div class="swiper-slide slide" data-id="{{ block.id }}">
-            <div class="artist-information-container">
-              <div class="artist-information">
-                <h4>{{ block.settings.header_text | escape }}</h4>
-                <h5>{{ block.settings.subheader_text | escape }}</h5>
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{% if section.settings.player_type == 'audio-player' %}
+  <section class="audio-slider-wrapper {{ section_classes }} layout-{{ section.settings.layout_style }}">
+    <div class="swiper audio-player-slider">
+      <div class="swiper-wrapper">
+        {% for block in section.blocks %}
+          {% if block.type == 'track' %}
+            <div class="swiper-slide slide" data-id="{{ block.id }}">
+              <div class="artist-information-container">
+                <div class="artist-information">
+                  <h4>{{ block.settings.header_text | escape }}</h4>
+                  <h5>{{ block.settings.subheader_text | escape }}</h5>
+                </div>
+                <div class="artist-image">
+                  <img
+                    height="60"
+                    width="60"
+                    {% if block.settings.artist_image %}
+                      src="{{ block.settings.artist_image | image_url: width: 120 }}"
+                    {% else %}
+                      src="{{ 'no-image.webp' | asset_url }}"
+                    {% endif %}
+                    alt="{{ block.settings.header_text | escape }}"
+                    loading="lazy"
+                  >
+                </div>
               </div>
-              <div class="artist-image">
-                <img
-                  height="60"
-                  width="60"
-                  {% if block.settings.artist_image %}
-                    src="{{ block.settings.artist_image | image_url: width: 120 }}"
-                  {% else %}
-                    src="https://cdn.shopify.com/s/files/1/0894/0280/2509/files/no-image.webp?v=1748514174"
-                  {% endif %}
-                  alt="{{ block.settings.header_text | escape }}"
-                >
+              <div class="audio-container">
+                <h3 class="track-title">{{ block.settings.track_title }}</h3>
+                {{ audio_controls }}
+                <audio
+                  src="{{ block.settings.audio_file }}"
+                  preload="metadata"
+                  hidden
+                  aria-label="{{ block.settings.track_title | escape }} by {{ block.settings.header_text | escape }}"
+                ></audio>
               </div>
             </div>
-            <div class="audio-container">
-              <h3 class="track-title">{{ block.settings.track_title }}</h3>
-              <div class="custom-controls">
-                <div class="progress-wrapper">
-                  <input type="range" class="progress-bar" value="0" min="0" step="1">
-                  <div class="time">
-                    <span class="current-time">0:00</span>
-                    <span class="duration">0:00</span>
-                  </div>
-                </div>
-                <div class="buttons">
-                  <button class="prev" aria-label="Previous Track">⏮</button>
-                  <button class="play" aria-label="Play/Pause">▶</button>
-                  <button class="next" aria-label="Next Track">⏭</button>
-                </div>
-              </div>
-              <audio src="{{ block.settings.audio_file }}" preload="metadata" hidden></audio>
-            </div>
-          </div>
-        {% endif %}
-      {% endfor %}
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <div class="swiper-button-prev audio-player-prev" aria-label="Previous Slide"></div>
+      <div class="swiper-button-next audio-player-next" aria-label="Next Slide"></div>
     </div>
-
-    <div class="swiper-button-prev" aria-label="Previous Slide"></div>
-    <div class="swiper-button-next" aria-label="Next Slide"></div>
-  </div>
-  <div class="custom-slide-progress">
-    <input
-      type="range"
-      class="swiper-progress-bar"
-      min="0"
-      max="{{ section.blocks | size | minus: 1 }}"
-      value="0"
-      step="1"
-    >
-  </div>
-</section>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const carouselSlider = new Swiper('.swiper', {
-      effect: 'coverflow',
-      grabCursor: true,
-      centeredSlides: true,
-      slidesPerView: 'auto',
-      coverflowEffect: {
-        rotate: 0,
-        stretch: 50,
-        depth: 275,
-        modifier: 1,
-        slideShadows: true,
-      },
+    <div class="audio-player-slide-progress">
+      <input
+        type="range"
+        class="audio-player-slide-progress-bar"
+        min="0"
+        max="{{ section.blocks | size | minus: 1 }}"
+        value="0"
+        step="1"
+        aria-label="Slide progress"
+      >
+    </div>
+  </section>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const swiperElement = document.querySelector('.audio-player-slider');
+      if (swiperElement && typeof Swiper !== 'undefined') {
+        new Swiper('.audio-player-slider', {
+          effect: 'coverflow',
+          grabCursor: true,
+          centeredSlides: true,
+          slidesPerView: 'auto',
+          coverflowEffect: {
+            rotate: 0,
+            stretch: 50,
+            depth: 275,
+            modifier: 1,
+            slideShadows: true,
+          },
+          navigation: {
+            nextEl: '.audio-player-next',
+            prevEl: '.audio-player-prev',
+          },
+          keyboard: {
+            enabled: true,
+            onlyInViewport: true,
+          },
+        });
+      }
     });
-  });
-</script>
+  </script>
+
+{% elsif section.settings.player_type == 'spotify-embed' %}
+  <section class="{% unless section.settings.full_width %}page-width{% endunless %} {{ section_classes }}">
+    <header class="spotify-embed__header">
+      <h2>{{ section.settings.block_title }}</h2>
+      <p>{{ section.settings.block_description }}</p>
+    </header>
+    <div class="spotify-embed__main">
+      <div class="spotify-embed__iframe-container">
+        {% if section.settings.spotify_embed_url != blank %}
+          {{ section.settings.spotify_embed_url }}
+        {% else %}
+          <iframe
+            style="border-radius:12px"
+            src="https://open.spotify.com/embed/track/1Df4urfsVBB0CGQVBPIFHi?utm_source=generator"
+            width="100%"
+            height="352"
+            frameBorder="0"
+            allowfullscreen=""
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+          >
+          </iframe>
+        {% endif %}
+      </div>
+      {{ streaming_buttons }}
+    </div>
+  </section>
+{% endif %}
 
 {% schema %}
 {
@@ -92,49 +237,152 @@
   "settings": [
     {
       "type": "select",
+      "id": "player_type",
+      "label": "Player Type",
+      "info": "Choose between an interactive audio player or Spotify embed",
+      "options": [
+        { "value": "audio-player", "label": "Audio Player" },
+        { "value": "spotify-embed", "label": "Spotify Embed" }
+      ],
+      "default": "audio-player"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color Scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Audio Player Settings"
+    },
+    {
+      "type": "select",
       "id": "layout_style",
       "label": "Audio Block Layout",
+      "info": "Only applies when Player Type is set to Audio Player",
       "options": [
         { "value": "artist-feature", "label": "Artist Feature" },
-        { "value": "compact-grid", "label": "Compact Grid" },
-        { "value": "hero-showcase", "label": "Hero Showcase" }
+        { "value": "compact-grid", "label": "Compact Grid" }
       ],
       "default": "artist-feature"
+    },
+    {
+      "type": "header",
+      "content": "Spotify Embed Settings"
+    },
+    {
+      "type": "text",
+      "id": "block_title",
+      "label": "Block Title",
+      "info": "Only applies when Player Type is set to Spotify Embed",
+      "default": "Orange Artists"
+    },
+    {
+      "type": "textarea",
+      "id": "block_description",
+      "label": "Block Description",
+      "info": "Only applies when Player Type is set to Spotify Embed",
+      "default": "Lorem ipsum dolor sit amet consectetur. Feugiat egestas sit sapien in. Quisque volutpat mattis non posuere sit leo libero. Et blandit iaculis convallis sit duis a nulla elementum. Neque ante ultricies aliquam turpis morbi dictum vel non at. Nibh laoreet duis lectus tortor augue felis nec. Massa turpis vitae pulvinar nunc feugiat non neque."
+    },
+    {
+      "type": "textarea",
+      "id": "spotify_embed_url",
+      "label": "Spotify Embed Code",
+      "info": "Paste the complete Spotify embed iframe code here. Leave empty to show a default example embed."
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full Width",
+      "info": "Make the Spotify embed section full width"
+    },
+    {
+      "type": "text",
+      "id": "spotify_url",
+      "label": "Spotify URL",
+      "info": "Direct link to your Spotify page"
+    },
+    {
+      "type": "text",
+      "id": "tidal_url",
+      "label": "Tidal URL (Optional)",
+      "info": "Direct link to your Tidal page"
+    },
+    {
+      "type": "text",
+      "id": "youtube_url",
+      "label": "YouTube URL (Optional)",
+      "info": "Direct link to your YouTube page"
+    },
+    {
+      "type": "checkbox",
+      "id": "center_buttons",
+      "label": "Center Buttons",
+      "info": "Center the streaming platform buttons"
+    },
+    {
+      "type": "header",
+      "content": "Section Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Bottom",
+      "default": 36
     }
   ],
   "blocks": [
     {
       "type": "track",
-      "name": "Track",
+      "name": "Audio Track",
       "settings": [
         {
           "type": "text",
           "id": "track_title",
           "label": "Track Title",
+          "info": "The name of the song or audio track",
           "default": "Demo Track"
         },
         {
-          "type": "text",
+          "type": "url",
           "id": "audio_file",
           "label": "Audio File URL",
-          "default": "https://cdn.shopify.com/s/files/1/0894/0280/2509/files/sample-track.mp3"
+          "info": "Upload your audio file to Shopify Files and paste the URL here"
         },
         {
           "type": "text",
           "id": "header_text",
-          "label": "Header (Artist / Playlist)",
-          "default": "Artist Name / Playlist Header"
+          "label": "Artist Name",
+          "info": "The name of the artist or playlist",
+          "default": "Artist Name"
         },
         {
           "type": "text",
           "id": "subheader_text",
-          "label": "Subheader",
-          "default": "Subheader"
+          "label": "Additional Info",
+          "info": "Album name, genre, or other details",
+          "default": "Album Name"
         },
         {
           "type": "image_picker",
           "id": "artist_image",
-          "label": "Artist Image"
+          "label": "Artist/Album Image",
+          "info": "Upload an image for the artist or album cover"
         }
       ]
     }
@@ -142,7 +390,7 @@
   "presets": [
     {
       "name": "Audio Player",
-      "category": "Media",
+      "category": "Custom",
       "blocks": [{ "type": "track" }]
     }
   ]

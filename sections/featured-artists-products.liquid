@@ -1,42 +1,148 @@
 {{ 'section-featured-artists-products.css' | asset_url | stylesheet_tag }}
-{{ 'component-product-card.css' | asset_url | stylesheet_tag }}
-
+{{ 'component-featured-artist-card.css' | asset_url | stylesheet_tag }}
+{{ 'section-spotify-embed.css' | asset_url | stylesheet_tag }}
 {{ 'swiper-bundle.min.css' | asset_url | stylesheet_tag }}
-{{ 'swiper-bundle.min.js' | asset_url | script_tag }}
+<script src="{{ 'swiper-bundle.min.js' | asset_url }}" defer></script>
+<script src="{{ 'card-swiper.js' | asset_url }}" defer></script>
 
-<div class="featured-artists-products color-{{ section.settings.color_scheme }}">
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="featured-artists-products section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
   <div class="page-width">
     <div class="featured-artists-products__header">
-      {% if section.settings.spotify_url %}
-        <a href="{{ section.settings.spotify_url }}" target="_blank" class="featured-artists-products__spotify">
-          <img height="100" width="100" src="{{ 'icon-spotify.svg' | asset_url }}" alt="Spotify">
-        </a>
-      {% endif %}
       <div class="featured-artists-products__text">
-        <h2>{{ section.settings.artist_name }}</h2>
-        <p>
-          {{ section.settings.genre }}
-        </p>
-        <p>{{ section.settings.bio }}</p>
+        {% if section.settings.artist != blank %}
+          <h2>{{ section.settings.artist.title | default: section.settings.artist_name }}</h2>
+          <p>{{ section.settings.artist.genre | default: section.settings.genre }}</p>
+          <p>{{ section.settings.artist.description | default: section.settings.bio }}</p>
+        {% else %}
+          <h2>{{ section.settings.artist_name }}</h2>
+          <p>{{ section.settings.genre }}</p>
+          <p>{{ section.settings.bio }}</p>
+        {% endif %}
       </div>
     </div>
+    {% if section.settings.show_divider %}
+      <hr class="featured-artists-products__divider">
+    {% endif %}
   </div>
 
-  <div class="featured-artists-products__products color-{{ section.settings.color_scheme_lower }}">
-    <div class="page-width">
-      <h3>Products they love</h3>
+  <div class="featured-artists-products__products">
+    <div>
+      <h4 class="featured-artists-products__subtitle">{{ section.settings.subtitle }}</h4>
       <div class="featured-artists-products__grid">
         {% for block in section.blocks %}
-          {% assign product = block.settings.product %}
-          {% if product != blank %}
+          {% if block.settings.product %}
             <div class="featured-artists-products__card">
-              {% render 'product-card-multicolour', product: product %}
+              {% render 'product-card-featured-artists', product: block.settings.product %}
             </div>
           {% endif %}
         {% endfor %}
       </div>
     </div>
   </div>
+  {%- capture streaming_buttons -%}
+  <div class="spotify-embed__button-container {% if section.settings.center_buttons %}spotify-embed__button-container-center{% endif %}">
+    {% assign tidal_url = section.settings.artist.tidal | default: section.settings.tidal_url %}
+    {% if tidal_url != blank %}
+      <a
+        href="{{ tidal_url }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="spotify-embed__button button button--primary"
+        aria-label="Listen on Tidal"
+      >
+        <span class="button-text">Listen on</span>
+        <img
+          class="spotify-embed__button-logo"
+          height="32"
+          width="32"
+          src="{{ 'tidal.svg' | asset_url }}"
+          alt="Tidal"
+          loading="lazy"
+        >
+      </a>
+    {% endif %}
+    {% assign spotify_url = section.settings.artist.spotify | default: section.settings.spotify_url %}
+    {% if spotify_url != blank %}
+      <a
+        href="{{ spotify_url }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="spotify-embed__button button button--primary"
+        aria-label="Listen on Spotify"
+      >
+        <span class="button-text">Listen on</span>
+        <img
+          class="spotify-embed__button-logo"
+          height="32"
+          width="32"
+          src="{{ 'spotify.svg' | asset_url }}"
+          alt="Spotify"
+          loading="lazy"
+        >
+      </a>
+    {% endif %}
+    {% assign youtube_url = section.settings.artist.youtube | default: section.settings.youtube_url %}
+    {% if youtube_url != blank %}
+      <a
+        href="{{ youtube_url }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="spotify-embed__button button button--primary"
+        aria-label="Listen on YouTube"
+      >
+        <span class="button-text">Listen on</span>
+        <img
+          class="spotify-embed__button-logo"
+          height="32"
+          width="32"
+          src="{{ 'youtube.svg' | asset_url }}"
+          alt="YouTube"
+          loading="lazy"
+        >
+      </a>
+    {% endif %}
+  </div>
+{%- endcapture -%}
+
+  <section class="color-{{ section.settings.color_scheme }}">
+    <div class="spotify-embed__main featured-artist-spotify-container">
+      <div class="spotify-embed__iframe-container">
+        {% assign spotify_embed = section.settings.artist.spotify_embed_url
+          | default: section.settings.spotify_embed_url
+        %}
+        {% if spotify_embed != blank %}
+          {{ spotify_embed }}
+        {% else %}
+          <iframe
+            style="border-radius:12px"
+            src="https://open.spotify.com/embed/track/1Df4urfsVBB0CGQVBPIFHi?utm_source=generator"
+            width="100%"
+            height="352"
+            frameBorder="0"
+            allowfullscreen=""
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+          >
+          </iframe>
+        {% endif %}
+      </div>
+      {{ streaming_buttons }}
+    </div>
+  </section>
 </div>
 
 {% schema %}
@@ -50,33 +156,102 @@
       "default": "scheme-1"
     },
     {
+      "type": "metaobject",
+      "id": "artist",
+      "label": "Select Artist",
+      "metaobject_type": "artists",
+      "info": "Choose an artist from the Artists collection"
+    },
+    {
       "type": "text",
       "id": "artist_name",
-      "label": "Artist Name",
+      "label": "Artist Name (Fallback)",
+      "info": "Only used if no artist is selected",
       "default": "Artist Name"
     },
     {
       "type": "text",
       "id": "genre",
-      "label": "Genre",
+      "label": "Genre (Fallback)",
+      "info": "Only used if no artist is selected",
       "default": "Genre"
     },
     {
       "type": "textarea",
       "id": "bio",
-      "label": "Artist Bio",
+      "label": "Artist Bio (Fallback)",
+      "info": "Only used if no artist is selected",
       "default": "Bio - Lorem ipsum dolor sit amet consectetur. Nunc quis felis bibendum magna lorem semper non sed. Euismod nibh arcu turpis ut montes adipiscing."
     },
     {
-      "type": "url",
-      "id": "spotify_url",
-      "label": "Spotify URL"
+      "type": "checkbox",
+      "id": "show_divider",
+      "label": "Show Divider",
+      "default": true
     },
     {
-      "type": "color_scheme",
-      "id": "color_scheme_lower",
-      "label": "t:sections.all.colors.label",
-      "default": "scheme-1"
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "They love"
+    },
+    {
+      "type": "header",
+      "content": "Spotify Embed Settings"
+    },
+    {
+      "type": "textarea",
+      "id": "spotify_embed_url",
+      "label": "Spotify Embed Code (Fallback)",
+      "info": "Only used if no artist is selected. Paste the complete Spotify embed iframe code here."
+    },
+    {
+      "type": "text",
+      "id": "spotify_url",
+      "label": "Spotify URL (Fallback)",
+      "info": "Only used if no artist is selected. Direct link to their Spotify page"
+    },
+    {
+      "type": "text",
+      "id": "tidal_url",
+      "label": "Tidal URL (Fallback)",
+      "info": "Only used if no artist is selected. Direct link to their Tidal page"
+    },
+    {
+      "type": "text",
+      "id": "youtube_url",
+      "label": "YouTube URL (Fallback)",
+      "info": "Only used if no artist is selected. Direct link to their YouTube page"
+    },
+    {
+      "type": "checkbox",
+      "id": "center_buttons",
+      "label": "Center Buttons",
+      "info": "Center the streaming platform buttons"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
     }
   ],
   "blocks": [
@@ -92,11 +267,12 @@
       ]
     }
   ],
-  "max_blocks": 8,
+  "max_blocks": 3,
   "presets": [
     {
       "name": "Featured Artist Products",
-      "category": "Custom"
+      "category": "Custom",
+      "blocks": [{ "type": "product" }, { "type": "product" }, { "type": "product" }]
     }
   ]
 }

@@ -125,27 +125,36 @@ document.addEventListener('DOMContentLoaded', () => {
 //highlight text animation
 gsap.registerPlugin(SplitText, ScrollTrigger);
 
-const split = new SplitText('.highlight-text-block p', {
-  type: 'words',
-});
+const highlightTextBlock = document.querySelector('.highlight-text-block');
+if (highlightTextBlock) {
+  const split = new SplitText('.highlight-text-block p', {
+    type: 'words',
+  });
 
-const timeline = gsap
-  .timeline({
-    scrollTrigger: {
-      trigger: '.highlight-text-block',
-      start: 'top 75%',
-      end: '+=600',
-      scrub: 0.75,
-    },
-  })
-  .set(
-    split.words,
-    {
-      color: '#272727',
-      stagger: 0.1,
-    },
-    0.1
-  );
+  const highlightColor = highlightTextBlock.dataset.highlightColor || '#272727';
+  const defaultTextColor = highlightTextBlock.dataset.defaultTextColor || '#999999';
+
+  // Set initial color to default text color
+  gsap.set(split.words, { color: defaultTextColor });
+
+  const timeline = gsap
+    .timeline({
+      scrollTrigger: {
+        trigger: '.highlight-text-block',
+        start: 'top 75%',
+        end: '+=600',
+        scrub: 2,
+      },
+    })
+    .set(
+      split.words,
+      {
+        color: highlightColor,
+        stagger: 0.1,
+      },
+      0.1
+    );
+}
 
 // paragraph usp animate in on scroll
 gsap.utils.toArray('.paragraph-usp-item').forEach((usp) => {
