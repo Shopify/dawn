@@ -1,63 +1,73 @@
 {{ 'section-product-category-hero.css' | asset_url | stylesheet_tag }}
-<script src="{{ 'product-category.js' | asset_url }}" defer></script>
 
 <div class="product-category-hero color-{{ section.settings.color_scheme }}">
   <div class="product-category-hero__main" id="product-category-hero-main">
     <div class="product-category-hero__nav">
       <div class="product-category-hero__nav-container">
         <ul class="product-category-hero__nav-list">
-          {% for collection in collections %}
-            {% unless collection.handle == 'frontpage' %}
+          {% for nav_collection in collections %}
+            {% unless nav_collection.handle == 'frontpage' %}
               <li class="product-category-hero__nav-item">
-                <button
-                  class="product-category-hero__nav-button{% if forloop.first %} active{% endif %}"
-                  data-category-index="{{ forloop.index0 }}"
-                  data-category-title="{{ collection.title | escape }}"
-                  data-category-description="{{ collection.description | default: 'Explore our ' | append: collection.title | append: ' collection' | escape }}"
-                  data-category-image="{% if collection.featured_image != blank %}{{ collection.featured_image | image_url: width: 1920 }}{% endif %}"
-                  data-category-image-alt="{{ collection.title | escape }}"
-                  data-button-text="Shop {{ collection.title }}"
-                  data-button-link="{{ collection.url }}"
+                <a
+                  href="{{ nav_collection.url }}"
+                  class="product-category-hero__nav-button{% if collection and nav_collection.handle == collection.handle %} active{% endif %}"
                 >
-                  <h3 class="product-category-hero__nav-count">({{ collection.products_count }})</h3>
-                  <h4 class="product-category-hero__nav-text">{{ collection.title }}</h4>
-                </button>
+                  <h3 class="product-category-hero__nav-count">({{ nav_collection.products_count }})</h3>
+                  <h4 class="product-category-hero__nav-text">{{ nav_collection.title }}</h4>
+                </a>
               </li>
             {% endunless %}
           {% endfor %}
         </ul>
       </div>
     </div>
-
     <div class="product-category-hero__image-container">
-      {% assign first_collection = collections.first %}
-      <img
-        {% if first_collection.featured_image != blank %}
-          src="{{ first_collection.featured_image | image_url: width: 1920 }}"
-        {% else %}
+      {% if collection and collection.featured_image != blank %}
+        <img
+          src="{{ collection.featured_image | image_url: width: 1920 }}"
+          alt="{{ collection.title | escape }}"
+          class="product-category-hero__image"
+          loading="eager"
+          width="1920"
+          height="1080"
+        >
+      {% elsif collection and collection.products.first.featured_image != blank %}
+        <img
+          src="{{ collection.products.first.featured_image | image_url: width: 1920 }}"
+          alt="{{ collection.title | escape }}"
+          class="product-category-hero__image"
+          loading="eager"
+          width="1920"
+          height="1080"
+        >
+      {% else %}
+        <img
           src="{{ 'no-image.webp' | asset_url }}"
-        {% endif %}
-        alt="{{ first_collection.title | escape }}"
-        class="product-category-hero__image"
-        loading="eager"
-        width="1920"
-        height="1080"
-      >
+          alt="Collection"
+          class="product-category-hero__image"
+          loading="eager"
+          width="1920"
+          height="1080"
+        >
+      {% endif %}
     </div>
   </div>
 
   <div class="product-category-hero__content">
     <div class="product-category-hero__content-inner">
-      {% assign first_collection = collections.first %}
-      <h1 class="product-category-hero__title" id="hero-title">{{ first_collection.title }}</h1>
-      <p class="product-category-hero__description" id="hero-description">
-        {{
-          first_collection.description
-          | default: 'Explore our '
-          | append: first_collection.title
-          | append: ' collection'
-        }}
-      </p>
+      {% if collection %}
+        <h1 class="product-category-hero__title">{{ collection.title }}</h1>
+        <p class="product-category-hero__description">
+          {% if collection.description != blank %}
+            {{ collection.description }}
+          {% else %}
+            Explore our {{ collection.title }} collection
+          {% endif %}
+        </p>
+      {% else %}
+        <h1 class="product-category-hero__title">Our Collections</h1>
+        <p class="product-category-hero__description">Discover our range of premium products</p>
+      {% endif %}
     </div>
   </div>
 </div>
