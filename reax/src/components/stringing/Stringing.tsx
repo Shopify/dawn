@@ -10,7 +10,7 @@ function Stringing({
   stringingCollectionId: string | null;
   maxTension: string | null;
 }) {
-  const maxTensionPounds = parseInt((maxTension || '69').replace(/[^\d.]/g, ''));
+  const maxTensionPounds = parseInt(maxTension?.match(/\d+/g)?.pop() || '69');
   const [stringingProducts, setStringingProducts] = useState<ProductNodes>([]);
   const [config, setConfig] = useState<TConfig>({
     stringProduct: null,
