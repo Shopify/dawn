@@ -86,7 +86,7 @@ You can follow these steps to go from setting up a store to creating a pull requ
 >:information_source: We'll assume you're already set up with Git and GitHub (if you're not familiar with these, [start with these docs](https://docs.github.com/github/getting-started-with-github/quickstart/set-up-git)).
 
 1. Set up a [development store](https://shopify.dev/themes/tools/development-stores) so you can test your code changes (assuming you don't already have a store).
-2. Install the [Shopify CLI](https://github.com/Shopify/shopify-cli) by following [these steps](https://shopify.dev/themes/tools/cli/installation).
+2. Install the [Shopify CLI](https://github.com/Shopify/cli) by following [these steps](https://shopify.dev/themes/tools/cli/installation).
 3. Fork the repository, clone it and create a new branch:
 ```sh
 git clone git@github.com:your-username/dawn.git
@@ -95,7 +95,7 @@ git checkout -b your-new-branch-name
 ```
 4. Launch a development server:
 ```sh
-shopify theme serve
+shopify theme dev
 ```
 5. Add your changes to the codebase.
 6. Commit your changes:
