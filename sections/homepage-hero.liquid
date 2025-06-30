@@ -1,0 +1,243 @@
+{{ 'section-homepage-hero.css' | asset_url | stylesheet_tag }}
+{% if section.settings.enable_slider %}
+  {{ 'swiper-bundle.min.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'swiper-bundle.min.js' | asset_url }}" defer></script>
+{% endif %}
+
+<div class="homepage-hero">
+  <div class="homepage-hero__info-container color-{{ section.settings.color_scheme }}">
+    {% for block in section.blocks %}
+      <div
+        class="homepage-hero__slide-content"
+        {% if section.settings.enable_slider %}
+          {% unless forloop.first %}style="opacity: 0; pointer-events: none;"{% endunless %}
+        {% else %}
+          {% unless forloop.first %}style="opacity: 0; pointer-events: none;"{% endunless %}
+        {% endif %}
+      >
+        {% if block.settings.slide_title != blank %}
+          <h1 class="homepage-hero__title">{{ block.settings.slide_title }}</h1>
+        {% endif %}
+        {% if block.settings.slide_subtitle != blank %}
+          <h3 class="homepage-hero__subtitle">{{ block.settings.slide_subtitle }}</h3>
+        {% endif %}
+        {% if block.settings.slide_description != blank %}
+          <p class="homepage-hero__description">{{ block.settings.slide_description }}</p>
+        {% endif %}
+        {% if block.settings.slide_button_text != blank %}
+          <a href="{{ block.settings.slide_button_link }}" class="homepage-hero__cta button button--primary">
+            {{ block.settings.slide_button_text }}
+          </a>
+        {% endif %}
+      </div>
+      {% unless section.settings.enable_slider %}{% break %}{% endunless %}
+    {% endfor %}
+  </div>
+
+  {% if section.settings.enable_slider %}
+    <div class="homepage-hero__slider swiper">
+      <div class="swiper-wrapper">
+        {% for block in section.blocks %}
+          <div class="swiper-slide" {{ block.shopify_attributes }}>
+            {% if block.settings.slide_video != blank %}
+              <video
+                class="homepage-hero__video"
+                autoplay
+                muted
+                loop
+                playsinline
+                width="1200"
+                height="600"
+              >
+                {% for source in block.settings.slide_video.sources %}
+                  <source src="{{ source.url }}" type="{{ source.mime_type }}">
+                {% endfor %}
+              </video>
+            {% else %}
+              <img
+                class="homepage-hero__image"
+                src="{{ block.settings.slide_image | image_url: width: 1200 }}"
+                alt="{{ block.settings.slide_image.alt | default: block.settings.slide_title }}"
+                width="1200"
+                height="600"
+                loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+              >
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+      {% if section.blocks.size > 1 %}
+        <div class="homepage-hero__navigation">
+          <button class="homepage-hero__nav-button homepage-hero__nav-prev">
+            <img src="{{ 'icon-arrow-slider.svg' | asset_url }}" alt="Previous" width="20" height="20">
+          </button>
+          <button class="homepage-hero__nav-button homepage-hero__nav-next">
+            <img src="{{ 'icon-arrow-slider.svg' | asset_url }}" alt="Next" width="20" height="20">
+          </button>
+        </div>
+        <div class="homepage-hero__pagination swiper-pagination"></div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="homepage-hero__static">
+      {% assign first_block = section.blocks.first %}
+      {% if first_block.settings.slide_video != blank %}
+        <video
+          class="homepage-hero__video"
+          autoplay
+          muted
+          loop
+          playsinline
+          width="1200"
+          height="600"
+        >
+          {% for source in first_block.settings.slide_video.sources %}
+            <source src="{{ source.url }}" type="{{ source.mime_type }}">
+          {% endfor %}
+        </video>
+      {% else %}
+        <img
+          class="homepage-hero__image"
+          src="{{ first_block.settings.slide_image | image_url: width: 1200 }}"
+          alt="{{ first_block.settings.slide_image.alt | default: first_block.settings.slide_title }}"
+          width="1200"
+          height="600"
+          loading="eager"
+        >
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  window.addEventListener('load', function() {
+    const slider = document.querySelector('.homepage-hero__slider');
+    if (slider && {{ section.settings.enable_slider | json }}) {
+      const swiper = new Swiper(slider, {
+        effect: 'fade',
+        fadeEffect: { crossFade: true },
+        speed: 400,
+        navigation: {
+          nextEl: '.homepage-hero__nav-next',
+          prevEl: '.homepage-hero__nav-prev',
+        },
+        pagination: {
+          el: '.homepage-hero__pagination',
+          clickable: true,
+        },
+        on: {
+          init: function() {
+            updateNavigationVisibility(this);
+          },
+          slideChange: function() {
+            updateNavigationVisibility(this);
+            updateSlideContent(this.activeIndex);
+          }
+        }
+      });
+
+      function updateNavigationVisibility(swiperInstance) {
+        const prevButton = document.querySelector('.homepage-hero__nav-prev');
+        const nextButton = document.querySelector('.homepage-hero__nav-next');
+        if (prevButton && nextButton) {
+          prevButton.style.opacity = swiperInstance.isBeginning ? '0' : '1';
+          prevButton.style.pointerEvents = swiperInstance.isBeginning ? 'none' : 'auto';
+          nextButton.style.opacity = swiperInstance.isEnd ? '0' : '1';
+          nextButton.style.pointerEvents = swiperInstance.isEnd ? 'none' : 'auto';
+        }
+      }
+
+      function updateSlideContent(activeIndex) {
+        const content = document.querySelectorAll('.homepage-hero__slide-content');
+        content.forEach((el, i) => {
+          if (i === activeIndex) {
+            el.style.opacity = '1';
+            el.style.pointerEvents = 'auto';
+          } else {
+            el.style.opacity = '0';
+            el.style.pointerEvents = 'none';
+          }
+        });
+      }
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Homepage Hero",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_slider",
+      "label": "Enable Slider",
+      "info": "When disabled, only the first slide will be shown",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "slide_image",
+          "label": "Slide Image"
+        },
+        {
+          "type": "video",
+          "id": "slide_video",
+          "label": "Slide Video"
+        },
+        {
+          "type": "text",
+          "id": "slide_title",
+          "label": "Slide Title",
+          "default": "Block Header"
+        },
+        {
+          "type": "text",
+          "id": "slide_subtitle",
+          "label": "Slide Subtitle",
+          "default": "Product Name"
+        },
+        {
+          "type": "textarea",
+          "id": "slide_description",
+          "label": "Slide Description",
+          "default": "Lorem ipsum dolor sit amet consectetur. At posuere sed pellentesque elit lectus nisi nibh in dis. Ut fringilla in in arcu urna nisl..."
+        },
+        {
+          "type": "text",
+          "id": "slide_button_text",
+          "label": "Button Text",
+          "default": "Find Out More"
+        },
+        {
+          "type": "url",
+          "id": "slide_button_link",
+          "label": "Button Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Homepage Hero",
+      "category": "Custom",
+      "blocks": [
+        {
+          "type": "slide"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
