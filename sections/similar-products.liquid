@@ -18,81 +18,104 @@
 
 <div class="similar-products section-{{ section.id }}-padding color-{{ section.settings.color_scheme }}">
   <div class="page-width">
-    <h4 class="similar-products__title">{{ section.settings.heading | default: 'Similar Products' }}</h4>
+    <div
+      id="similar-products-{{ section.id }}"
+      data-url="{{ routes.product_recommendations_url }}?limit={{ section.settings.products_to_show | default: 8 }}&intent=related"
+      data-section-id="{{ section.id }}"
+      data-product-id="{{ product.id }}"
+    >
+      {%- if recommendations.performed and recommendations.products_count > 0 -%}
+        <h4 class="similar-products__title">{{ section.settings.heading | default: 'Similar Products' }}</h4>
 
-    <div class="similar-products__swiper-container">
-      <!-- Swiper -->
-      <div class="swiper similar-products-swiper">
-        <div class="swiper-wrapper">
-          <!-- Dummy cards -->
-          <div class="swiper-slide">
-            {% render 'similar-products-card', product_name: 'PRODUCT NAME', product_price: '£239' %}
-          </div>
-
-          <div class="swiper-slide">
-            {% render 'similar-products-card', product_name: 'PRODUCT NAME', product_price: '£239' %}
-          </div>
-
-          <div class="swiper-slide">
-            {% render 'similar-products-card', product_name: 'PRODUCT NAME', product_price: '£239' %}
-          </div>
-
-          <div class="swiper-slide">
-            {% render 'similar-products-card', product_name: 'PRODUCT NAME', product_price: '£239' %}
-          </div>
-
-          <div class="swiper-slide">
-            {% render 'similar-products-card', product_name: 'PRODUCT NAME', product_price: '£239' %}
-          </div>
-
-          <div class="swiper-slide">
-            {% render 'similar-products-card', product_name: 'PRODUCT NAME', product_price: '£239' %}
+        <div class="similar-products__swiper-container">
+          <!-- Swiper -->
+          <div class="swiper similar-products-swiper">
+            <div class="swiper-wrapper">
+              {%- for recommended_product in recommendations.products -%}
+                <div class="swiper-slide">
+                  {% render 'similar-products-card', product: recommended_product %}
+                </div>
+              {%- endfor -%}
+            </div>
           </div>
         </div>
-      </div>
+        <div class="similar-products-swiper-next">
+          <img src="{{ 'icon-arrow-slider.svg' | asset_url }}" alt="Next" width="20" height="20">
+        </div>
+        <div class="similar-products-swiper-prev">
+          <img src="{{ 'icon-arrow-slider.svg' | asset_url }}" alt="Previous" width="20" height="20">
+        </div>
+        <div class="swiper-pagination similar-products-swiper-pagination"></div>
+      {%- endif -%}
     </div>
-    <div class="swiper-button-next similar-products-swiper-next">
-      <img src="{{ 'icon-arrow-slider.svg' | asset_url }}" alt="Previous" width="20" height="20">
-    </div>
-    <div class="swiper-button-prev similar-products-swiper-prev">
-      <img src="{{ 'icon-arrow-slider.svg' | asset_url }}" alt="Previous" width="20" height="20">
-    </div>
-    <div class="swiper-pagination similar-products-swiper-pagination"></div>
   </div>
 </div>
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    const swiper = new Swiper('.similar-products-swiper', {
-      slidesPerView: 4,
-      spaceBetween: 20,
-      navigation: {
-        nextEl: '.similar-products-swiper-next',
-        prevEl: '.similar-products-swiper-prev',
-      },
-      pagination: {
-        el: '.similar-products-swiper-pagination',
-        clickable: true,
-      },
-      breakpoints: {
-        320: {
-          slidesPerView: 1,
-          spaceBetween: 10,
-        },
-        640: {
-          slidesPerView: 2,
-          spaceBetween: 15,
-        },
-        768: {
-          slidesPerView: 3,
-          spaceBetween: 20,
-        },
-        1024: {
+    const productRecommendations = document.querySelector('#similar-products-{{ section.id }}');
+
+    function initializeSimilarProductsSwiper() {
+      const swiperContainer = document.querySelector('.similar-products-swiper');
+      if (swiperContainer && typeof Swiper !== 'undefined') {
+        if (swiperContainer.swiper) {
+          swiperContainer.swiper.destroy(true, true);
+        }
+
+        const swiper = new Swiper('.similar-products-swiper', {
           slidesPerView: 4,
           spaceBetween: 20,
-        },
-      },
-    });
+          navigation: {
+            nextEl: '.similar-products-swiper-next',
+            prevEl: '.similar-products-swiper-prev',
+          },
+          pagination: {
+            el: '.similar-products-swiper-pagination',
+            clickable: true,
+          },
+          breakpoints: {
+            320: {
+              slidesPerView: 1,
+              spaceBetween: 10,
+            },
+            640: {
+              slidesPerView: 2,
+              spaceBetween: 15,
+            },
+            768: {
+              slidesPerView: 3,
+              spaceBetween: 20,
+            },
+            1024: {
+              slidesPerView: 4,
+              spaceBetween: 20,
+            },
+          },
+        });
+      }
+    }
+
+    if (productRecommendations && productRecommendations.innerHTML.trim() !== '') {
+      initializeSimilarProductsSwiper();
+    }
+
+    if (productRecommendations) {
+      const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+            const swiperExists = productRecommendations.querySelector('.similar-products-swiper');
+            if (swiperExists) {
+              setTimeout(initializeSimilarProductsSwiper, 100);
+            }
+          }
+        });
+      });
+
+      observer.observe(productRecommendations, {
+        childList: true,
+        subtree: true,
+      });
+    }
   });
 </script>
 
@@ -102,12 +125,24 @@
   "tag": "section",
   "class": "section similar-products-section",
   "limit": 1,
+  "enabled_on": {
+    "templates": ["product"]
+  },
   "settings": [
     {
       "type": "text",
       "id": "heading",
       "label": "Heading",
       "default": "Similar Products"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "default": 8,
+      "label": "Number of products to show"
     },
     {
       "type": "color_scheme",
@@ -143,7 +178,7 @@
   "presets": [
     {
       "name": "Similar Products",
-      "category": "Custom"
+      "category": "Product"
     }
   ]
 }
