@@ -1,0 +1,123 @@
+{{ 'flicker-slider.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'flicker-slider.js' | asset_url }}" defer></script>
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<section
+  class="flicker-carousel-section section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+  id="flicker-{{ section.id }}"
+  data-id="{{ section.id }}"
+>
+  <div
+    class="flicker-carousel flicker-{{ section.settings.image_position }}"
+  >
+    <div class="flicker-images">
+      {% for block in section.blocks %}
+        <div
+          class="flicker-image-wrapper {% if forloop.first %}active{% endif %}"
+          style="z-index: {% if forloop.first %}2{% else %}1{% endif %}; transform: rotate({{ forloop.index0 | modulo:2 | times:4 | minus:2 }}deg);"
+        >
+          {% if block.settings.image %}
+            <img
+              width="471"
+              height="647"
+              {% if block.settings.image != blank %}
+                src="{{ block.settings.image | img_url: 'master' }}"
+                alt="{{ block.settings.title }}"
+              {% else %}
+                src="{{ 'no-image.webp' | asset_url }}"
+              {% endif %}
+              loading="lazy"
+            >
+          {% endif %}
+          <p class="flicker-year">{{ block.settings.year }}</p>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="flicker-text-block">
+      {% for block in section.blocks %}
+        <div class="flicker-text-slide {% if forloop.first %}active{% endif %}">
+          <h2>{{ block.settings.title }}</h2>
+          <h3>{{ block.settings.subtitle }}</h3>
+          <p>{{ block.settings.description }}</p>
+        </div>
+      {% endfor %}
+      <button class="flicker-next-btn button button--primary">Read More</button>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Flicker Carousel",
+  "settings": [
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image Position",
+      "default": "left",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ]
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Slide Image" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Creating the sound" },
+        { "type": "text", "id": "subtitle", "label": "Subtitle", "default": "Evolution of Orange sound" },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description",
+          "default": "Lorem ipsum dolor sit amet consectetur. Turpis sed ornare mi pellentesque eu porta porta enim.Lorem ipsum dolor sit amet consectetur. Turpis sed ornare mi pellentesque eu porta porta enim."
+        },
+        { "type": "text", "id": "year", "label": "Year", "default": "2025" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Flicker Carousel", "category": "Custom" }]
+}
+{% endschema %}
