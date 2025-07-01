@@ -155,7 +155,7 @@ class CartItems extends HTMLElement {
     });
     const eventTarget = event.currentTarget instanceof CartRemoveButton ? 'clear' : 'change';
 
-    fetch(`${routes.cart_change_url}`, { ...fetchConfig(), ...{ body } })
+    fetch(`${routes.cart_change_url}.js`, { ...fetchConfig(), ...{ body } })
       .then((response) => {
         return response.text();
       })
@@ -284,7 +284,7 @@ if (!customElements.get('cart-note')) {
           'input',
           debounce((event) => {
             const body = JSON.stringify({ note: event.target.value });
-            fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } })
+            fetch(`${routes.cart_update_url}.js`, { ...fetchConfig(), ...{ body } })
               .then(() => CartPerformance.measureFromEvent('note-update:user-action', event));
           }, ON_CHANGE_DEBOUNCE_TIMER)
         );

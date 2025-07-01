@@ -121,7 +121,7 @@ if (!customElements.get('quick-add-bulk')) {
           sections_url: this.getSectionsUrl(),
         });
 
-        fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } })
+        fetch(`${routes.cart_update_url}.js`, { ...fetchConfig(), ...{ body } })
           .then((response) => {
             return response.text();
           })
