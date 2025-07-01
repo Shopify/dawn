@@ -1,0 +1,112 @@
+
+  {% if shop.metafields.pagefly.acceptTracking and shop.metafields.pagefly.measurementId %}
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ shop.metafields.pagefly.measurementId }}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '{{ shop.metafields.pagefly.measurementId }}', { groups: 'pagefly' });
+    window.pfPageInfo = Object.assign(window.pfPageInfo || {})
+
+    document.addEventListener("PageFlyHelperContentLoaded", () => {
+      
+    let pageId = window.__pagefly_setting__?.pageId
+    let pageTitle = window.__pagefly_setting__?.pageTitle
+    let pageType = window.__pagefly_setting__?.pageType
+
+    if(window.__pagefly_page_setting__) {
+      pageId = window.__pagefly_page_setting__.pageId
+      pageTitle = window.__pagefly_page_setting__.pageTitle
+      pageType = window.__pagefly_page_setting__.pageType
+    }
+  
+
+      window.pfPageInfo = Object.assign(window.pfPageInfo || {}, {
+        pf_page_id: pageId,
+        pf_page_name: pageTitle,
+        pf_page_type: pageType,
+        pf_page_subject_id: '{{ page.id }}',
+        {% if template.name == 'product' %}
+          
+    {% assign initial_image_url = product.featured_image | img_url %}
+    {% assign dynamic_image_path = initial_image_url %}
+    {% assign BASE_URL = "//cdn.shopify.com/s/files/" %}
+    {% if initial_image_url and initial_image_url contains BASE_URL %}
+      {% assign image_paths = initial_image_url | split: BASE_URL %}
+      {% assign dynamic_image_path = image_paths[1] | default: "" %}
+    {% endif %}
+  
+          pf_product_name: '{{ product.title }}',
+          pf_product_id: '{{ product.id }}',
+          pf_product_page_image: '{{ dynamic_image_path }}',
+        {% endif %}
+        {% if template.name == 'collection' %}
+          
+    {% assign initial_image_url = collection.featured_image | img_url %}
+    {% assign dynamic_image_path = initial_image_url %}
+    {% assign BASE_URL = "//cdn.shopify.com/s/files/" %}
+    {% if initial_image_url and initial_image_url contains BASE_URL %}
+      {% assign image_paths = initial_image_url | split: BASE_URL %}
+      {% assign dynamic_image_path = image_paths[1] | default: "" %}
+    {% endif %}
+  
+          pf_collection_name: '{{ collection.title }}',
+          pf_collection_id: '{{ collection.id }}',
+          pf_collection_page_image: '{{ dynamic_image_path }}',
+        {% endif %}
+      });
+      setTimeout(function() {
+        gtag('event', 'pf_view_page', Object.assign({
+          pf_view_page: 1,
+          send_to: 'pagefly',
+          pf_event: 'view_page'
+        }, window.pfPageInfo))
+      }, 500);
+
+      {% if template.name == 'product' %}
+        setTimeout(() => {
+          gtag('event', 'pf_view_product', Object.assign(
+            {
+              send_to: 'pagefly',
+              pf_view_product: 1,
+              pf_event: 'view_product',
+            },
+              window.pfPageInfo)
+            )
+        }, 500)
+      {% endif %}
+
+    window.__pagefly_analytics_settings__={
+      acceptNewTracking: true,
+      enableTrackingRevenue: {{shop.metafields.pagefly.enableTrackingRevenue | default: false}},
+      sessionTimeout: {{ shop.metafields.pagefly.sessionTimeout | default: 30 }},
+      timezoneOffset: {{ shop.metafields.pagefly.timezoneOffset | default: 0 }}
+    };
+    if(typeof analyticsSrc === 'undefined'){
+      let analyticsSrc = "https://cdn.pagefly.io/pagefly/core/analytics.js";
+      const scriptPFAnalytic = document.createElement('script');
+      scriptPFAnalytic.src = analyticsSrc;
+      scriptPFAnalytic.async = true;
+      scriptPFAnalytic.defer = false;
+      scriptPFAnalytic.onload = () => {
+        console.log("load analytics new version successfully")
+      };
+      scriptPFAnalytic.onerror = () => {
+        console.log("load analytics new version unsuccessfully")
+      };
+      document.body.appendChild(scriptPFAnalytic);
+    }
+  }, { once: true });
+  </script>
+  {% endif %}
+  <script>
+    window.addEventListener('load', () => {
+      // fallback for gtag when not initialized
+      if(typeof window.gtag !== 'function') {
+        window.gtag = (str1, str2, obj) => {
+        }
+      }
+    }) 
+  </script>
+  
