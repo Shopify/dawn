@@ -118,8 +118,19 @@
 
                   <tbody role="rowgroup">
                     {%- for item in cart.items -%}
-                      <tr id="CartDrawer-Item-{{ item.index | plus: 1 }}" class="cart-item" role="row">
-                        <td class="cart-item__media" role="cell" headers="CartDrawer-ColumnProductImage">
+                      <tr
+                        id="CartDrawer-Item-{{ item.index | plus: 1 }}"
+                        class="cart-item{% if item.parent_relationship.parent != null %} cart-item__nested-line{% endif %}"
+                        role="row"
+                        {% if item.parent_relationship.parent != null %}
+                          aria-label="{{- 'products.product.nested_label' | t: title: item.product.title, parent_title: item.parent_relationship.parent.title | escape -}}"
+                        {% endif %}
+                      >
+                        <td
+                          class="cart-item__media"
+                          role="cell"
+                          headers="CartDrawer-ColumnProductImage"
+                        >
                           {% if item.image %}
                             {% comment %} Leave empty space due to a:empty CSS display: none rule {% endcomment %}
                             <a href="{{ item.url }}" class="cart-item__link" tabindex="-1" aria-hidden="true"> </a>
@@ -271,7 +282,14 @@
                             <div class="cart-item__quantity-wrapper quantity-popover-wrapper">
                               <div class="quantity-popover-container{% if has_qty_rules or has_vol_pricing %} quantity-popover-container--hover{% endif %}">
                                 <quantity-input class="quantity cart-quantity">
-                                  <button class="quantity__button" name="minus" type="button">
+                                  <button
+                                    class="quantity__button"
+                                    name="minus"
+                                    type="button"
+                                    {% if item.instructions and item.instructions.can_update_quantity == false %}
+                                      disabled
+                                    {% endif %}
+                                  >
                                     <span class="visually-hidden">
                                       {{-
                                         'products.product.quantity.decrease'
@@ -301,8 +319,18 @@
                                     aria-label="{{ 'products.product.quantity.input_label' | t: product: item.product.title | escape }}"
                                     id="Drawer-quantity-{{ item.index | plus: 1 }}"
                                     data-index="{{ item.index | plus: 1 }}"
+                                    {% if item.instructions and item.instructions.can_update_quantity == false %}
+                                      disabled
+                                    {% endif %}
                                   >
-                                  <button class="quantity__button" name="plus" type="button">
+                                  <button
+                                    class="quantity__button"
+                                    name="plus"
+                                    type="button"
+                                    {% if item.instructions and item.instructions.can_update_quantity == false %}
+                                      disabled
+                                    {% endif %}
+                                  >
                                     <span class="visually-hidden">
                                       {{-
                                         'products.product.quantity.increase'
@@ -325,6 +353,9 @@
                                   class="button button--tertiary cart-remove-button"
                                   aria-label="{{ 'sections.cart.remove_title' | t: title: item.title | escape }}"
                                   data-variant-id="{{ item.variant.id }}"
+                                  {% if item.instructions and item.instructions.can_remove == false %}
+                                    class="hidden"
+                                  {% endif %}
                                 >
                                   <span class="svg-wrapper">
                                     {{- 'icon-remove.svg' | inline_asset_content -}}
