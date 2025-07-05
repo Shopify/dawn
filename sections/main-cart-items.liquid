@@ -64,7 +64,7 @@
   }
 
   .bdcart-item__price {
-    font-size: clamp(12px, 1.5vw, 16px);
+    font-size: clamp(12px, 1.5vw, 20px);
     font-weight: 300;
     color: var(--onyx);
   }
@@ -76,7 +76,7 @@
   }
 
   .bdcart-item_title {
-    font-size: clamp(12px, 2vw, 16px);
+    font-size: clamp(12px, 1.5vw, 20px);
     font-weight: 500;
     color: var(--onyx);
     text-decoration: none;
@@ -90,10 +90,19 @@
     border-radius: 4px;
   }
 
+  .bdcart__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+  }
+
   .bdcart__quantity-selector {
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    border: 2px solid var(--dark-vanilla);
+    border-radius: 24px;
   }
 
   .quantity-btn {
@@ -103,18 +112,13 @@
     justify-content: center;
     align-items: center;
     background: none;
-    border: 1px solid var(--dark-vanilla);
+    border: none;
     padding: 10px;
     border-radius: 32px;
     font-size: 24px;
     cursor: pointer;
-    color: var(--dark-vanilla);
+    color: var(--onyx);
     transition: background-color 0.3s ease, color 0.3s ease;
-
-    &:hover {
-      background-color: var(--dark-vanilla);
-      color: var(--snow);
-    }
   }
 
   .bdcart__quantity-input {
@@ -186,6 +190,22 @@
     font-weight: 500;
   }
 
+  .bdcart__progress-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .bdcart__progress-text {
+    font-size: 14px;
+    color: var(--onyx);
+    margin-bottom: 4px;
+    text-align: center;
+  }
+
   /* Responsive grid */
   @media screen and (max-width: 768px) {
     .bdcart__grid {
@@ -227,6 +247,16 @@
   }
 {%- endstyle -%}
 
+{%- assign free_shipping_threshold = 6399 -%}
+{%- assign cart_total = cart.total_price -%}
+{%- assign remaining = free_shipping_threshold | minus: cart_total -%}
+{%- assign progress = cart_total | times: 100 | divided_by: free_shipping_threshold | round -%}
+{%- if progress > 100 -%}
+  {%- assign clamped_percent = 100 -%}
+{%- else -%}
+  {%- assign clamped_percent = progress -%}
+{%- endif -%}
+
 <cart-items class="bdcart" id="cart-container">
   <div class="bdcart__titles">
     <h2 class="bdcart__title">{{ 'sections.cart.title' | t }}</h2>
@@ -234,11 +264,21 @@
       {{ 'general.continue_shopping' | t }}
     </a>
   </div>
+  <div class="bdcart__progress-wrapper">
+    <div class="bdcart__progress-text">
+      {% if cart_total > free_shipping_threshold %}
+        <p>🎉 You are eligible for free shipping.</p>
+      {% else %}
+        <p>
+          🚚 Spend <strong>{{ remaining | money_with_currency }}</strong> more to reach free shipping!
+        </p>
+      {% endif %}
+    </div>
+  </div>
   <form action="{{ routes.cart_url }}" method="post" id="cart" class="bdcart__grid-mobile">
     <div class="bdcart__grid-header">
       <p>{{ 'sections.cart.headings.product' | t }}s</p>
     </div>
-
     {%- for item in cart.items -%}
       <div
         class="bdcart__grid-row"
@@ -248,11 +288,11 @@
         <!-- Product Info -->
         <div class="bdcart-item__productinfo">
           <img
-            src="{{ item.image | image_url: width: 110 }}"
+            src="{{ item.image | image_url: width: 150 }}"
             class="bdcart-item__image"
             alt="{{ item.image.alt | escape }}"
             loading="lazy"
-            width="110"
+            width="150"
             height="150"
           >
           <div class="bdcart-item__productinfo-text">
@@ -266,41 +306,47 @@
             {%- if item.product.has_only_default_variant == false -%}
               <p class="bdcart-item__variant"><strong>Style:</strong> {{ item.variant.title }}</p>
             {%- endif -%}
-            <div class="bdcart__quantity-selector">
-              <button type="button" name="minus" class="quantity-btn">
-                <span class="visually-hidden">
-                  {{- 'products.product.quantity.decrease' | t: product: item.product.title | escape -}}
-                </span>
-                <i data-lucide="minus"></i>
-              </button>
-              <input type="hidden" name="id" id="itemId" value="{{ item.variant.id }}">
-              <input
-                type="number"
-                id="Quantity-{{ item.index | plus: 1 }}"
-                data-index="{{ item.index | plus: 1 }}"
-                data-quantity-variant-id="{{ item.variant.id }}"
-                data-cart-quantity="{{ cart | item_count_for_variant: item.variant.id }}"
-                aria-label="{{ 'products.product.quantity.input_label' | t: product: item.product.title | escape }}"
-                name="updates[]"
-                class="bdcart__quantity-input"
-                min="1"
-                step="1"
-                value="{{ item.quantity }}"
-                readonly
-              >
-              <button type="button" name="plus" class="quantity-btn">
-                <span class="visually-hidden">
-                  {{- 'products.product.quantity.increase' | t: product: item.product.title | escape -}}
-                </span>
-                <i data-lucide="plus"></i>
-              </button>
-              <a
-                href="{{ item.url_to_remove }}"
-                class="bdbutton"
-                aria-label="{{ 'sections.cart.remove_title' | t: title: item.title | escape }}"
-              >
-                <span class="svg-wrapper"><i data-lucide="trash"></i></span>
-              </a>
+            <!-- Quantity Selector -->
+            <div class="bdcart__actions">
+              <div class="bdcart__quantity-selector">
+                <button type="button" name="minus" class="quantity-btn">
+                  <span class="visually-hidden">
+                    {{- 'products.product.quantity.decrease' | t: product: item.product.title | escape -}}
+                  </span>
+                  <i data-lucide="minus"></i>
+                </button>
+                <input type="hidden" name="id" id="itemId" value="{{ item.variant.id }}">
+                <input
+                  type="number"
+                  id="Quantity-{{ item.index | plus: 1 }}"
+                  data-index="{{ item.index | plus: 1 }}"
+                  data-quantity-variant-id="{{ item.variant.id }}"
+                  data-cart-quantity="{{ cart | item_count_for_variant: item.variant.id }}"
+                  aria-label="{{ 'products.product.quantity.input_label' | t: product: item.product.title | escape }}"
+                  name="updates[]"
+                  class="bdcart__quantity-input"
+                  min="1"
+                  step="1"
+                  value="{{ item.quantity }}"
+                  readonly
+                >
+                <button type="button" name="plus" class="quantity-btn">
+                  <span class="visually-hidden">
+                    {{- 'products.product.quantity.increase' | t: product: item.product.title | escape -}}
+                  </span>
+                  <i data-lucide="plus"></i>
+                </button>
+              </div>
+              <cart-remove-button>
+                <a
+                  href="{{ item.url_to_remove }}"
+                  class="button button--tertiary"
+                  aria-label="{{ 'sections.cart.remove_title' | t: title: item.title | escape }}"
+                  style="margin-left: 15px; text-decoration: underline; font-family: var(--font-ltcushion), sans-serif;"
+                >
+                  Remove
+                </a>
+              </cart-remove-button>
             </div>
           </div>
         </div>
@@ -323,14 +369,15 @@
         <!-- Product Info -->
         <div class="bdcart-item__productinfo">
           <img
-            src="{{ item.image | image_url: width: 110 }}"
+            src="{{ item.image | image_url: width: 150 }}"
             class="bdcart-item__image"
             alt="{{ item.image.alt | escape }}"
             loading="lazy"
-            width="110"
+            width="150"
             height="150"
           >
           <div class="bdcart-item__productinfo-text">
+            <a href="{{ item.url }}" class="bdcart-item_title">{{ item.product.title | escape }}</a>
             {% if item.product.compare_at_price > item.product.price %}
               <div class="bdcart-item__pricing">
                 <h4 class="bdcart-item__price">{{ item.product.compare_at_price | money }}</h4>
@@ -339,7 +386,6 @@
             {% else %}
               <h4 class="bdcart-item__price">{{ item.price | money }}</h4>
             {% endif %}
-            <a href="{{ item.url }}" class="bdcart-item_title">{{ item.product.title | escape }}</a>
             {%- if item.product.has_only_default_variant == false -%}
               <p class="bdcart-item__variant"><strong>Style:</strong> {{ item.variant.title }}</p>
             {%- endif -%}
@@ -347,34 +393,36 @@
         </div>
 
         <!-- Quantity Selector -->
-        <div class="bdcart__quantity-selector">
-          <button type="button" name="minus" class="quantity-btn">
-            <span class="visually-hidden">
-              {{- 'products.product.quantity.decrease' | t: product: item.product.title | escape -}}
-            </span>
-            <i data-lucide="minus"></i>
-          </button>
-          <input type="hidden" name="id" id="itemId" value="{{ item.variant.id }}">
-          <input
-            type="number"
-            id="Quantity-{{ item.index | plus: 1 }}"
-            data-index="{{ item.index | plus: 1 }}"
-            data-quantity-variant-id="{{ item.variant.id }}"
-            data-cart-quantity="{{ cart | item_count_for_variant: item.variant.id }}"
-            aria-label="{{ 'products.product.quantity.input_label' | t: product: item.product.title | escape }}"
-            name="updates[]"
-            class="bdcart__quantity-input"
-            min="1"
-            step="1"
-            value="{{ item.quantity }}"
-            readonly
-          >
-          <button type="button" name="plus" class="quantity-btn">
-            <span class="visually-hidden">
-              {{- 'products.product.quantity.increase' | t: product: item.product.title | escape -}}
-            </span>
-            <i data-lucide="plus"></i>
-          </button>
+        <div class="bdcart__actions">
+          <div class="bdcart__quantity-selector">
+            <button type="button" name="minus" class="quantity-btn">
+              <span class="visually-hidden">
+                {{- 'products.product.quantity.decrease' | t: product: item.product.title | escape -}}
+              </span>
+              <i data-lucide="minus"></i>
+            </button>
+            <input type="hidden" name="id" id="itemId" value="{{ item.variant.id }}">
+            <input
+              type="number"
+              id="Quantity-{{ item.index | plus: 1 }}"
+              data-index="{{ item.index | plus: 1 }}"
+              data-quantity-variant-id="{{ item.variant.id }}"
+              data-cart-quantity="{{ cart | item_count_for_variant: item.variant.id }}"
+              aria-label="{{ 'products.product.quantity.input_label' | t: product: item.product.title | escape }}"
+              name="updates[]"
+              class="bdcart__quantity-input"
+              min="1"
+              step="1"
+              value="{{ item.quantity }}"
+              readonly
+            >
+            <button type="button" name="plus" class="quantity-btn">
+              <span class="visually-hidden">
+                {{- 'products.product.quantity.increase' | t: product: item.product.title | escape -}}
+              </span>
+              <i data-lucide="plus"></i>
+            </button>
+          </div>
           <cart-remove-button>
             <a
               href="{{ item.url_to_remove }}"
@@ -402,26 +450,24 @@
   </form>
 </cart-items>
 
-<script>
+{%- javascript -%}
   async function updateCartItem(id, quantity) {
     try {
-      const response = await fetch('/cart/change', {
+      const response = await fetch('/cart/change.js', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify({
-          id: id,
-          quantity: quantity,
-        }),
+        body: JSON.stringify({ id, quantity }),
       });
+
       if (!response.ok) throw new Error('There was an error updating your cart.');
 
-      //const cartData = await response.json();
-      //return cartData;
+      const cart = await fetch('/cart.js').then((res) => res.json());
+      renderCart(cart);
     } catch (error) {
-      console.error('There was an error updating your cart.', error);
+      console.error("Error: We can't update your cart.");
     }
   }
 
@@ -458,4 +504,4 @@
       });
     });
   });
-</script>
+{%- endjavascript -%}
