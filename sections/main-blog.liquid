@@ -405,9 +405,27 @@
       </div>
     {% else %}
       <div class="main-blog-recipekit-grid">
-        {%- for article in blog.articles -%}
-          {%- assign rk_resource_id = article.id | downcase -%}
-          {%- assign rk_mf = article.metafields.recipekit[rk_resource_id] -%}
+        {%- if current_tags.size > 0 -%}
+          {%- assign all_articles = blogs[blog.handle].articles -%}
+        {%- else -%}
+          {%- assign all_articles = blog.articles -%}
+        {%- endif -%}
+
+        {%- for article in all_articles -%}
+          {%- assign show_article = true -%}
+          {%- if current_tags.size > 0 -%}
+            {%- assign show_article = false -%}
+            {%- for tag in current_tags -%}
+              {%- if article.tags contains tag -%}
+                {%- assign show_article = true -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+
+          {%- if show_article -%}
+            {%- assign rk_resource_id = article.id | downcase -%}
+            {%- assign rk_mf = article.metafields.recipekit[rk_resource_id] -%}
           <div class="recipekit-card-outer">
             <a href="{{ article.url }}" class="recipekit-card-link" aria-label="{{ article.title | escape }}">
               <div class="recipekit-card">
@@ -461,6 +479,7 @@
               </a>
             </div>
           </div>
+          {%- endif -%}
         {%- endfor -%}
       </div>
       {%- if paginate.pages > 1 -%}
