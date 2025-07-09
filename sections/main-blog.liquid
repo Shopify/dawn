@@ -469,56 +469,81 @@
     {% endif %}
 
     {% if current_tags != blank and current_tags.size > 0 %}
-      {% comment %}Filter articles that contain ALL tags in current_tags{% endcomment %}
-      {% assign filtered_articles = '' %}
-      {% for article in blog.articles %}
-        {% assign has_all_tags = true %}
-        {% for tag in current_tags %}
-          {% unless article.tags contains tag %}
-            {% assign has_all_tags = false %}
-          {% endunless %}
-        {% endfor %}
-        {% if has_all_tags %}
-          {% if filtered_articles == '' %}
-            {% assign filtered_articles = article.id | append: '' %}
-          {% else %}
-            {% assign filtered_articles = filtered_articles | append: ',' | append: article.id %}
-          {% endif %}
+      {% comment %}Find the matching metaobject for the current tag{% endcomment %}
+      {% assign matching_tag_obj = null %}
+      {% assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values %}
+      {% for tag_obj in recipe_tag_group %}
+        {% if current_tags contains tag_obj.tag %}
+          {% assign matching_tag_obj = tag_obj %}
+          {% break %}
         {% endif %}
       {% endfor %}
-      {% assign filtered_article_ids = filtered_articles | split: ',' %}
-      <div class="main-blog-recipekit-grid">
-        {% for article in blog.articles %}
-          {% if filtered_article_ids contains article.id %}
-            {%- assign rk_resource_id = article.id | downcase -%}
-            {%- assign rk_mf = article.metafields.recipekit[rk_resource_id] -%}
-            <div class="recipekit-card-outer">
-              <a href="{{ article.url }}" class="recipekit-card-link" aria-label="{{ article.title | escape }}">
-                <div class="recipekit-card">
-                  <div class="recipekit-card-image-wrapper">
-                    {%- if rk_mf and rk_mf.recipe_image != blank -%}
-                      {%- assign image_url = rk_mf.recipe_image -%}
-                      {%- if image_url contains 'cloudinary.com' -%}
-                        {%- assign rk_last_url = image_url | split: 'upload/' -%}
-                        {%- assign card_image = rk_last_url[1]
-                          | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/t_1x1_recipe_image,f_auto/' -%}
-                        <img class="recipekit-card-image" src="{{ card_image }}" alt="{{ article.title | escape }}" loading="lazy">
-                      {%- else -%}
-                        <img class="recipekit-card-image" src="{{ image_url }}" alt="{{ article.title | escape }}" loading="lazy">
-                      {%- endif -%}
-                    {%- else -%}
-                      <img class="recipekit-card-image" src="https://cdn.shopify.com/s/files/1/0173/8181/8422/files/Dash_Pattern_Icon_ca6e694e-c077-41e3-bfcb-71692f0d98f4.png?v=1746822390" alt="{{ article.title | escape }}" loading="lazy">
-                    {%- endif -%}
-                  </div>
-                  <div class="recipekit-card-meta">
-                    <div class="recipekit-card-title">{{ article.title }}</div>
-                  </div>
-                </div>
-              </a>
-            </div>
-          {% endif %}
-        {% endfor %}
-      </div>
+
+      {% comment %}Extract product ID from best_selling_product field{% endcomment %}
+      {% assign product_id = '' %}
+      {% comment %}Default fallback: blank{% endcomment %}
+      {% if matching_tag_obj != null and matching_tag_obj.best_selling_product != blank %}
+        {% assign best_selling_product = matching_tag_obj.best_selling_product | strip %}
+        {% comment %}Extract numeric ID from gid format if needed{% endcomment %}
+        {% if best_selling_product contains 'gid://' %}
+          {% assign product_id_parts = best_selling_product | split: '/' %}
+          {% assign product_id = product_id_parts | last %}
+        {% else %}
+          {% assign product_id = best_selling_product %}
+        {% endif %}
+      {% endif %}
+
+      <!-- Product Recommendations Section -->
+      <product-recommendations
+        class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+        data-product-id="{{ product_id }}"
+        data-url="/recommendations/products?limit=4"
+        data-section-id="related-products"
+      >
+        {% if recommendations.performed and recommendations.products_count > 0 and product_id %}
+          <h2 class="related-products__heading inline-richtext main-blog-category-header">You might also like</h2>
+          <ul
+            class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
+            role="list"
+          >
+            {% assign skip_card_product_styles = false %}
+            {% for product in recommendations.products %}
+              <li class="grid__item">
+                {% render 'card-product',
+                  card_product: product,
+                  media_aspect_ratio: square,
+                  show_secondary_image: true,
+                  show_vendor: false,
+                  show_rating: false,
+                  skip_styles: skip_card_product_styles
+                %}
+              </li>
+              {%- assign skip_card_product_styles = true -%}
+            {% endfor %}
+          </ul>
+        {% else %}
+          <h2 class="related-products__heading inline-richtext main-blog-category-header">Popular Products</h2>
+          <ul
+            class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
+            role="list"
+          >
+            {% assign skip_card_product_styles = false %}
+            {% for product in collections.all.products limit: 4 %}
+              <li class="grid__item">
+                {% render 'card-product',
+                  card_product: product,
+                  media_aspect_ratio: square,
+                  show_secondary_image: true,
+                  show_vendor: false,
+                  show_rating: false,
+                  skip_styles: skip_card_product_styles
+                %}
+              </li>
+              {%- assign skip_card_product_styles = true -%}
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </product-recommendations>
     {% endif %}
   </div>
 {%- endpaginate -%}
