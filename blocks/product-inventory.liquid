@@ -1,0 +1,184 @@
+{% # import schema from '../schemas/blocks/product-inventory' %}
+
+{%- liquid
+  assign variant = closest.product.selected_or_first_available_variant
+  if variant.inventory_management == 'shopify'
+    assign inventory_managed = true
+  endif
+  assign inventory_quantity = variant.inventory_quantity
+  assign inventory_policy = variant.inventory_policy
+  assign threshold = block.settings.inventory_threshold
+
+  if inventory_managed
+    if inventory_quantity > 0
+      if inventory_quantity <= threshold
+        assign status = 'low'
+        assign show_quantity = block.settings.show_inventory_quantity
+        if show_quantity == false
+          assign translation_key = 'content.inventory_low_stock'
+        endif
+      else
+        assign status = 'in_stock'
+        assign translation_key = 'content.inventory_in_stock'
+      endif
+    else
+      if inventory_policy == 'continue'
+        assign status = 'in_stock'
+        assign translation_key = 'content.inventory_in_stock'
+      else
+        assign status = 'out_of_stock'
+        assign translation_key = 'content.inventory_out_of_stock'
+      endif
+    endif
+  else
+    if closest.product.selected_or_first_available_variant != null
+      assign status = 'in_stock'
+      assign translation_key = 'content.inventory_in_stock'
+    else
+      assign status = 'out_of_stock'
+      assign translation_key = 'content.inventory_out_of_stock'
+    endif
+  endif
+-%}
+
+<product-inventory
+  class="
+    product-inventory spacing-style
+    {% if block.settings.type_preset != '' %}{{ block.settings.type_preset }}{% endif%}
+  "
+  style="{% render 'spacing-style', settings: block.settings %}"
+  {{ block.shopify_attributes }}
+  data-product-id="{{ product.id }}"
+>
+  <span
+    class="product-inventory__status"
+  >
+    <span
+      class="svg-wrapper product-inventory__icon product-inventory__icon-{{ status }}"
+    >
+      {{ 'icon-inventory.svg' | inline_asset_content }}
+    </span>
+    <span
+      class="product-inventory__text"
+      id="Inventory-{{ section.id }}"
+      role="status"
+      aria-label="{{ 'accessibility.inventory_status' | t }}"
+    >
+      {%- if show_quantity -%}
+        {{ 'content.inventory_low_stock_show_count' | t: count: inventory_quantity }}
+      {%- else -%}
+        {{- translation_key | t -}}
+      {%- endif -%}
+    </span>
+  </span>
+</product-inventory>
+
+{% stylesheet %}
+  .product-inventory__status {
+    display: flex;
+    align-items: center;
+    font-size: var(--font-paragraph--size);
+    line-height: var(--font-paragraph--line-height);
+    gap: var(--padding-xs);
+  }
+
+  .product-inventory__icon,
+  .product-inventory__icon svg {
+    width: var(--icon-size-sm);
+    height: var(--icon-size-sm);
+  }
+
+  .product-inventory__icon-low {
+    color: var(--color-lowstock);
+  }
+
+  .product-inventory__icon-in_stock {
+    color: var(--color-instock);
+  }
+
+  .product-inventory__icon-out_of_stock {
+    color: var(--color-outofstock);
+  }
+
+  .product-inventory__icon circle:first-of-type {
+    opacity: 0.3;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.product_inventory",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:content.resource_reference_product_inventory"
+    },
+    {
+      "type": "range",
+      "id": "inventory_threshold",
+      "label": "t:settings.inventory_threshold",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 10
+    },
+    {
+      "type": "checkbox",
+      "id": "show_inventory_quantity",
+      "label": "t:settings.show_inventory_quantity",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.product_inventory",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

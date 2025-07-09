@@ -1,0 +1,220 @@
+{%- doc -%}
+  Renders the facets actions
+
+  @param {string} results_url - the url to remove the filters
+  @param {boolean} is_active - whether the clear all button is active
+  @param {number} products_count - the number of products in the results
+  @param {string} [form_component] - the form component to use for the clear all button
+  @param {boolean} [should_show_clear_all] - whether to show the clear all button
+  @param {number} [shadow_opacity] - the opacity of the shadow for the sticky action bar
+{%- enddoc -%}
+
+<div
+  class="facets__actions{% if is_active %} facets__actions--active{% endif %}"
+  style="--color-shadow: rgb(from var(--color-foreground) r g b / {{ shadow_opacity | default: 1.0 }});"
+>
+  {% if should_show_clear_all %}
+    <facet-remove-component
+      data-url="{{ results_url }}"
+    >
+      <button
+        type="button"
+        class="button button-secondary facets__clear-all{% if is_active %} active{% endif %}"
+        ref="clearButton"
+        {% if form_component != blank %}
+          on:click="/removeFilter?form={{ form_component }}"
+          on:keydown="/removeFilter?form={{ form_component }}"
+        {% else %}
+          on:click="/removeFilter?form="
+          on:keydown="/removeFilter?form="
+        {% endif %}
+      >
+        {{- 'actions.clear_all' | t -}}
+      </button>
+    </facet-remove-component>
+  {% endif %}
+
+  {% if products_count > 0 %}
+    <button
+      class="button button-primary facets__see-results"
+      type="button"
+      on:click="dialog-component/closeDialog"
+    >
+      {{- 'actions.see_items' | t: count: products_count -}}
+    </button>
+  {% endif %}
+</div>
+
+{% stylesheet %}
+  /* Facets - Actions */
+  .facets__actions {
+    --to-top-gradient-background: linear-gradient(
+      to top,
+      rgb(from var(--color-background) r g b / 90%),
+      rgb(from var(--color-background) r g b / 80%),
+      rgb(from var(--color-background) r g b / 40%),
+      transparent
+    );
+
+    order: 1;
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: var(--gap-sm);
+    background-image: var(--to-top-gradient-background);
+    z-index: var(--facets-sticky-z-index);
+    padding-block-start: var(--padding-xs);
+    padding-block-end: var(--padding-md);
+    padding-inline: var(--padding-lg);
+    margin-top: auto;
+  }
+
+  .facets:not(.facets--drawer) .facets__actions {
+    @media screen and (min-width: 750px) {
+      position: static;
+    }
+  }
+
+  .facets--vertical .facets__actions {
+    padding-inline: 0;
+    justify-content: center;
+  }
+
+  .facets--horizontal .facets__actions {
+    @media screen and (min-width: 750px) {
+      order: 0;
+      bottom: auto;
+      position: static;
+      padding: 0;
+      z-index: var(--layer-flat);
+      flex-shrink: 0;
+      align-items: center;
+      margin-top: initial;
+      background-image: none;
+    }
+  }
+
+  .facets--horizontal .facets__actions--active::before {
+    @media screen and (min-width: 750px) {
+      content: '';
+      border-inline-start: var(--style-border-width) solid var(--color-border);
+      height: var(--font-paragraph--size);
+      position: absolute;
+    }
+  }
+
+  /* Clear button */
+  .facets__clear {
+    display: none;
+  }
+
+  .facets--horizontal .facets__clear {
+    @media screen and (min-width: 750px) {
+      width: 100%;
+      justify-content: flex-end;
+      padding: 0 var(--facets-clear-padding) var(--facets-clear-padding) 0;
+      cursor: pointer;
+    }
+  }
+
+  .facets__clear--active {
+    @media screen and (min-width: 750px) {
+      display: flex;
+    }
+  }
+
+  .clear-filter:hover {
+    text-decoration: underline;
+    background-color: transparent;
+  }
+
+  /* Clear all button */
+  .facets__clear-all {
+    display: none;
+    cursor: pointer;
+    min-width: var(--facets-clear-all-min-width);
+    transition: transform var(--animation-values), opacity var(--animation-values);
+    opacity: 0;
+    transform: translateY(100%);
+    flex-grow: 1;
+    padding-block: var(--padding-lg);
+  }
+
+  .facets:not(.facets--drawer) .facets__clear-all {
+    box-shadow: none;
+  }
+
+  .facets--horizontal .facets__clear-all {
+    @media screen and (min-width: 750px) {
+      --facets-clear-all-min-width: var(--minimum-touch-target);
+      --button-color: var(--color-primary);
+
+      text-decoration: underline transparent 0.075em;
+      text-underline-offset: 0.125em;
+      width: auto;
+      transform: none;
+      opacity: 1;
+      height: var(--minimum-touch-target);
+      align-items: center;
+      flex-grow: 0;
+      transition: text-decoration-color var(--animation-speed) var(--animation-easing);
+    }
+  }
+
+  .facets--horizontal .facets__clear-all:hover {
+    @media screen and (min-width: 750px) {
+      --button-color: var(--color-primary-hover);
+    }
+  }
+
+  @starting-style {
+    .facets__clear-all {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .facets__clear-all.active {
+    transform: translateY(0);
+    opacity: 1;
+    display: grid;
+  }
+
+  .facets--horizontal .facets__clear-all.active {
+    @media screen and (min-width: 750px) {
+      padding-block: 0;
+      padding-inline: var(--facets-form-horizontal-gap);
+      background-color: transparent;
+      position: static;
+      transform: none;
+    }
+  }
+
+  @starting-style {
+    .facets__clear-all.active {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+
+    .facets--horizontal .facets__clear-all.active {
+      @media screen and (min-width: 750px) {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  }
+
+  .facets__see-results {
+    min-width: var(--facets-see-results-min-width);
+    flex-grow: 1;
+    padding-block: var(--padding-lg);
+  }
+
+  .facets:not(.facets--drawer) .facets__see-results {
+    @media screen and (min-width: 750px) {
+      display: none;
+    }
+  }
+{% endstylesheet %}

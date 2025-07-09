@@ -1,0 +1,63 @@
+{% # import schema from '../schemas/sections/section-rendering-product-card.js' %}
+
+{% liquid
+  if product == blank
+    assign product = closest.product
+  endif
+
+  if settings.transition_to_main_product
+    assign featured_media_url = product.selected_or_first_available_variant.featured_image | image_url: width: 500
+    if featured_media_url == blank
+      assign featured_media_url = product.featured_media.preview_image | image_url: width: 500
+    endif
+  endif
+
+  assign url = product.selected_or_first_available_variant.url
+  unless url
+    assign url = product.first_available_variant.url
+  endunless
+  unless url
+    assign url = product.url
+  endunless
+%}
+
+{%- if settings.transition_to_main_product -%}
+  <product-card-link
+    data-product-id="{{ product.id }}"
+    data-featured-media-url="{{ featured_media_url }}"
+    data-product-transition="{{ settings.transition_to_main_product }}"
+  >
+{%- endif -%}
+
+<product-card>
+  <a
+    href="{{ url }}"
+    ref="productCardLink"
+  >
+    {% render 'variant-quick-add', product_resource: product %}
+    {% render 'variant-swatches', product_resource: product %}
+
+    <product-price>
+      {% render 'price', product_resource: product, show_unit_price: true %}
+    </product-price>
+  </a>
+</product-card>
+{%- if settings.transition_to_main_product -%}
+  </product-card-link>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:names.product_card_rendering",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "t:settings.product"
+    }
+  ]
+}
+{% endschema %}

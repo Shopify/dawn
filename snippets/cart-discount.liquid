@@ -1,0 +1,231 @@
+{%- doc -%}
+  Renders a cart discount form.
+
+  @param {string} section_id - The section ID
+{%- enddoc -%}
+
+{% liquid
+  assign discount_codes = cart.cart_level_discount_applications | where: 'type', 'discount_code' | map: 'title'
+  for item in cart.items
+    for allocation in item.line_level_discount_allocations
+      if allocation.discount_application.type == 'discount_code'
+        assign discount_codes = item.line_level_discount_allocations | slice: forloop.index0 | map: 'discount_application' | map: 'title' | concat: discount_codes
+      endif
+    endfor
+  endfor
+
+  assign discount_codes = discount_codes | uniq
+%}
+
+<cart-discount-component
+  data-section-id="{{ section_id }}"
+>
+  <accordion-custom class="cart-discount">
+    <details
+      class="details discount-details"
+      {% if discount_codes.size > 0 %}
+        open
+      {% endif %}
+      declarative-open
+    >
+      <summary class="cart-discount__summary">
+        <span class="cart-discount__label h6">{{ 'content.discount' | t }}</span>
+
+        <span class="svg-wrapper icon-plus">
+          {{- 'icon-plus.svg' | inline_asset_content -}}
+        </span>
+      </summary>
+
+      <div class="details-content">
+        <div class="cart-discount__content">
+          <form
+            on:submit="/applyDiscount"
+            onsubmit="return false;"
+            class="cart-discount__form"
+          >
+            <label
+              for="cart-discount"
+              class="visually-hidden"
+            >
+              {{- 'accessibility.discount' | t -}}
+            </label>
+            <input
+              id="cart-discount"
+              class="cart-discount__input"
+              name="discount"
+              placeholder="{{ 'content.discount_code' | t }}"
+            >
+            <button
+              type="submit"
+              class="button button--primary cart-discount__button"
+            >
+              {{ 'actions.apply' | t }}
+            </button>
+          </form>
+        </div>
+        <div
+          class="cart-discount__error hidden"
+          role="alert"
+          ref="cartDiscountError"
+        >
+          <span class="svg-wrapper">
+            {{- 'icon-error.svg' | inline_asset_content -}}
+          </span>
+          <small
+            class="cart-discount__error-text cart-primary-typography hidden"
+            ref="cartDiscountErrorDiscountCode"
+          >
+            {{ 'content.discount_code_error' | t: code: 'test' }}
+          </small>
+          <small
+            class="cart-discount__error-text cart-primary-typography hidden"
+            ref="cartDiscountErrorShipping"
+          >
+            {{ 'content.shipping_discount_error' | t }}
+          </small>
+        </div>
+        <ul class="cart-discount__codes">
+          {% for discount_code in discount_codes %}
+            <li
+              class="cart-discount__pill"
+              data-discount-code="{{ discount_code }}"
+              aria-label="{{ 'accessibility.discount_applied' | t: code: discount_code }}"
+            >
+              <p class="cart-discount__pill-code">
+                {{ discount_code }}
+              </p>
+              <button
+                type="button"
+                on:click="/removeDiscount"
+                class="cart-discount__pill-remove svg-wrapper svg-wrapper--smaller button-unstyled"
+                aria-label="{{ 'actions.remove_discount' | t: code: discount_code }}"
+              >
+                {{- 'icon-filters-close.svg' | inline_asset_content -}}
+              </button>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </details>
+  </accordion-custom>
+</cart-discount-component>
+
+{% stylesheet %}
+  .cart-discount__input {
+    background-color: var(--color-input-background);
+    color: var(--color-input-text);
+    border-width: var(--style-border-width-inputs);
+    border-color: var(--color-input-border);
+    border-style: solid;
+    border-radius: var(--style-border-radius-inputs);
+    padding: var(--padding-sm) var(--padding-md);
+    height: 100%;
+    flex-grow: 1;
+    min-width: 0;
+  }
+
+  .cart-discount__input::placeholder {
+    color: rgba(from var(--color-input-text) r g b / var(--opacity-subdued-text));
+  }
+
+  .cart-discount__label {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--gap-2xs);
+    font-size: var(--cart-font-size--sm);
+  }
+
+  .cart-discount__pill-code {
+    overflow: hidden;
+    max-width: 100px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin: 0;
+  }
+
+  .cart-discount {
+    width: 100%;
+  }
+
+  .cart-discount__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .cart-discount__summary:hover {
+    color: rgb(from var(--color-foreground) r g b / var(--opacity-subdued-text));
+  }
+
+  .cart-discount__codes {
+    display: none;
+    gap: var(--padding-xs);
+    flex-wrap: wrap;
+    list-style: none;
+    padding-inline: 0;
+    margin: 0;
+  }
+
+  .cart-discount__codes:has(.cart-discount__pill) {
+    display: flex;
+  }
+
+  .cart-discount__button {
+    height: 100%;
+  }
+
+  .cart-discount__content {
+    height: calc(var(--button-size) + var(--padding-2xs) + var(--padding-sm));
+  }
+
+  .cart-discount__pill {
+    display: flex;
+    color: var(--color-foreground);
+    gap: var(--padding-xs);
+    align-items: center;
+    padding: var(--padding-xs) var(--padding-sm);
+    border-radius: var(--style-border-radius-pills);
+    background-color: var(--color-input-background);
+    text-transform: uppercase;
+  }
+
+  .cart-discount__form {
+    display: flex;
+    gap: var(--padding-md);
+    align-items: center;
+    height: 100%;
+    padding-block: var(--padding-2xs) var(--padding-sm);
+  }
+
+  :is(.cart-discount__pill-remove, .cart-discount__pill-remove:hover) {
+    --close-icon-opacity: 0.4;
+
+    color: var(--color-foreground);
+    background-color: transparent;
+    pointer-events: all;
+    cursor: pointer;
+    height: 100%;
+  }
+
+  .cart-discount__error {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding-block: var(--padding-2xs) var(--padding-sm);
+  }
+
+  .cart-discount__error .svg-wrapper {
+    flex-shrink: 0;
+    width: var(--icon-size-xs);
+    height: var(--icon-size-xs);
+    margin-inline: var(--margin-3xs) var(--margin-xs);
+  }
+
+  .cart-discount__error-text {
+    margin-block-start: var(--margin-3xs);
+  }
+
+  cart-discount-component {
+    display: flex;
+  }
+{% endstylesheet %}

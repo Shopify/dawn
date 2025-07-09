@@ -1,0 +1,265 @@
+{% # import schema from '../schemas/blocks/popup-link' %}
+
+<script
+  src="{{ 'dialog.js' | asset_url }}"
+  type="module"
+></script>
+
+<dialog-component
+  class="popup-link"
+  {{ block.shopify_attributes }}
+>
+  <button
+    on:click="/showDialog"
+    class="button button-unstyled popup-link__button text-left spacing-style {{ block.settings.type_preset }}"
+    style="{% render 'spacing-style', settings: block.settings %}"
+  >
+    {{- block.settings.heading }}
+    {{- 'icon-external.svg' | inline_asset_content -}}
+  </button>
+
+  <dialog
+    ref="dialog"
+    class="popup-link__content dialog-modal color-{{ settings.popover_color_scheme }}{% if block.settings.behavior == 'drawer' %} popup-link__content--drawer dialog-drawer{% endif %}"
+    scroll-lock
+  >
+    <div class="popup-link__inner">
+      {% content_for 'blocks' %}
+    </div>
+    <button
+      ref="closeButton"
+      on:click="/closeDialog"
+      class="button popup-link__close"
+      aria-label="{{ 'accessibility.close_dialog' | t }}"
+    >
+      {{- 'icon-close.svg' | inline_asset_content -}}
+    </button>
+  </dialog>
+</dialog-component>
+
+{% stylesheet %}
+  .popup-link__button svg {
+    display: inline-block;
+    position: relative;
+    top: var(--margin-2xs);
+  }
+
+  .popup-link__content {
+    box-shadow: var(--shadow-popover);
+    border: var(--style-border-popover);
+    border-radius: var(--style-border-radius-popover);
+    background-color: var(--color-background);
+    padding: var(--padding-4xl) var(--padding-xl) var(--padding-xl);
+    max-width: var(--normal-content-width);
+    max-height: var(--modal-max-height);
+
+    @media screen and (min-width: 750px) {
+      padding: var(--padding-5xl);
+    }
+  }
+
+  .popup-link__content[open] {
+    animation: modalSlideInTop var(--animation-speed) var(--animation-easing) forwards;
+  }
+
+  .popup-link__content.dialog-closing {
+    animation: modalSlideOutTop var(--animation-speed) var(--animation-easing) forwards;
+  }
+
+  .popup-link__content--drawer {
+    position: fixed;
+    border-radius: 0;
+    width: var(--sidebar-width);
+    max-width: 95vw;
+    height: 100%;
+    margin: 0 0 0 auto;
+  }
+
+  /* Needed to ensure the drawer is full height */
+  .popup-link__content--drawer:modal {
+    max-height: 100dvh;
+  }
+
+  .popup-link__close {
+    position: absolute;
+    top: var(--margin-2xs);
+    right: var(--margin-2xs);
+    width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+    color: var(--color-foreground);
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .popup-link__close {
+    background-color: transparent;
+    opacity: 0.8;
+  }
+
+  .popup-link__close svg {
+    width: var(--icon-size-xs);
+    height: var(--icon-size-xs);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.popup_link",
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:content.popup"
+    },
+    {
+      "type": "select",
+      "id": "behavior",
+      "label": "t:settings.behavior",
+      "options": [
+        {
+          "value": "default",
+          "label": "t:options.default"
+        },
+        {
+          "value": "drawer",
+          "label": "t:options.drawer"
+        }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "header",
+      "content": "t:content.link"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:settings.text",
+      "default": "t:text_defaults.popup_link"
+    },
+    {
+      "type": "select",
+      "id": "type_preset",
+      "label": "t:settings.preset",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.default"
+        },
+        {
+          "value": "paragraph",
+          "label": "t:options.paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "t:options.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:options.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:options.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:options.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:options.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:options.h6"
+        }
+      ],
+      "default": "",
+      "info": "t:info.edit_presets_in_theme_settings"
+    },
+    {
+      "type": "header",
+      "content": "t:content.link_padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.popup_link",
+      "category": "t:categories.links",
+      "settings": {
+        "heading": "Learn more"
+      },
+      "blocks": {
+        "text_pexwUk": {
+          "type": "text",
+          "settings": {
+            "text": "<h2>What is the return policy?</h2>",
+            "alignment": "left",
+            "padding-block-end": 16
+          }
+        },
+        "text_g7mEh7": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Our goal is for every customer to be totally satisfied with their purchase. If this isn’t the case, let us know and we’ll do our best to work with you to make it right.</p>",
+            "alignment": "left"
+          }
+        }
+      },
+      "block_order": ["text_pexwUk", "text_g7mEh7"]
+    }
+  ]
+}
+{% endschema %}

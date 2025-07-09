@@ -1,0 +1,73 @@
+{%- doc -%}
+  Renders the account popover for desktop users, which appears when clicking the account icon. It contains links for account actions like login, logout, and viewing account details.
+
+  @param {object} [settings] - The theme-level settings.
+
+  @param {string} [settings.popover_color_scheme] - The color scheme for the popover panel.
+{%- enddoc -%}
+
+<details
+  class="account-popover mobile:hidden"
+  data-auto-close-details="desktop"
+>
+  <summary class="account-popover__summary">
+    {% render 'account-button', tag: 'span' %}
+  </summary>
+  <floating-panel-component
+    class="account-popover__panel details-content color-{{ settings.popover_color_scheme }}"
+  >
+    {% render 'account-actions' %}
+  </floating-panel-component>
+</details>
+
+{% stylesheet %}
+  .account-popover {
+    --account-popover-layer: var(--layer-temporary);
+    --account-popover-min-width: 22rem;
+    --account-actions-max-width: 22rem;
+    --account-popover-transition-opacity: 0;
+    --account-popover-transition-transform: translateY(-20px);
+    --account-popover-transition-visibility: hidden;
+
+    position: relative;
+
+    &[open] {
+      --account-popover-transition-opacity: 1;
+      --account-popover-transition-transform: translateY(0);
+      --account-popover-transition-visibility: visible;
+    }
+
+    &::details-content {
+      transition: content-visibility 0.3s ease-in-out;
+      transition-behavior: allow-discrete;
+      content-visibility: var(--account-popover-transition-visibility);
+    }
+  }
+
+  .account-popover__summary {
+    padding: 0;
+
+    &:hover {
+      color: var(--color-foreground);
+    }
+  }
+
+  .account-popover__panel {
+    border-radius: var(--style-border-radius-popover);
+    position: absolute;
+
+    /* Override the default offset. This needs to always be fixed to the parent element in this way. */
+    inset-block-start: calc(100% + 10px) !important;
+    inset-inline-end: 0;
+    width: max-content;
+    min-width: var(--account-popover-min-width);
+    z-index: var(--account-popover-layer);
+    box-shadow: var(--shadow-popover);
+    border: var(--style-border-popover);
+    background-color: var(--color-background);
+    overflow-y: hidden;
+    opacity: var(--account-popover-transition-opacity);
+    transform: var(--account-popover-transition-transform);
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  }
+{% endstylesheet %}

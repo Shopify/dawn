@@ -1,0 +1,127 @@
+{% # import schema from '../schemas/blocks/_blog-post-image' %}
+
+{%- doc -%}
+  Renders the blog post image block.
+
+  @param {object} image - The image object
+{%- enddoc -%}
+
+<img
+  srcset="
+    {% if image.width >= 350 %}{{ image | image_url: width: 350 }} 350w,{% endif %}
+    {% if image.width >= 750 %}{{ image | image_url: width: 750 }} 750w,{% endif %}
+    {% if image.width >= 1100 %}{{ image | image_url: width: 1100 }} 1100w,{% endif %}
+    {% if image.width >= 1500 %}{{ image | image_url: width: 1500 }} 1500w,{% endif %}
+    {{ image | image_url }} {{ image.width }}w
+  "
+  src="{{ image | image_url: width: 1100 }}"
+  loading="eager"
+  fetchpriority="high"
+  width="{{ image.width }}"
+  height="{{ image.height }}"
+  alt="{{ image.alt | escape }}"
+  class="
+    border-style
+    blog-post-card__image
+    blog-post-card__image--{{ block.settings.height }}
+  "
+  style="{% render 'border-override', settings: block.settings %}"
+>
+
+{% stylesheet %}
+  .blog-post-card__image {
+    width: 100%;
+    object-fit: cover;
+    object-position: center center;
+    height: calc(var(--blog-post-card-img-height) * var(--blog-post-card-scale));
+  }
+
+  .blog-post-card__image--small {
+    --blog-post-card-img-height: 280px;
+  }
+
+  .blog-post-card__image--medium {
+    --blog-post-card-img-height: 340px;
+  }
+
+  .blog-post-card__image--large {
+    --blog-post-card-img-height: 400px;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.image",
+  "blocks": [],
+  "settings": [
+    {
+      "type": "select",
+      "id": "height",
+      "label": "t:settings.height",
+      "options": [
+        {
+          "value": "small",
+          "label": "t:options.small"
+        },
+        {
+          "value": "medium",
+          "label": "t:options.medium"
+        },
+        {
+          "value": "large",
+          "label": "t:options.large"
+        }
+      ],
+      "default": "large"
+    },
+    {
+      "type": "select",
+      "id": "border",
+      "label": "t:settings.border",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.none"
+        },
+        {
+          "value": "solid",
+          "label": "t:options.solid"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 0,
+      "max": 10,
+      "step": 0.5,
+      "unit": "px",
+      "label": "t:settings.border_width",
+      "default": 1,
+      "visible_if": "{{ block.settings.border != 'none' }}"
+    },
+    {
+      "type": "range",
+      "id": "border_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "t:settings.border_opacity",
+      "default": 100,
+      "visible_if": "{{ block.settings.border != 'none' }}"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "t:settings.corner_radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ]
+}
+{% endschema %}

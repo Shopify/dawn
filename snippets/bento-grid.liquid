@@ -1,0 +1,210 @@
+{%- doc -%}
+  Takes an array of HTML strings and positions them in a bento box grid layout.
+  Bento boxes can hold up to 12 items; when more items are provided, a new box is created to maintain the layout structure.
+
+  @param {string[]} items - An array of HTML strings, where each string is a collection list item.
+{%- enddoc -%}
+
+{% liquid
+  assign odd_item_check = items.size | modulo: 12
+  if odd_item_check == 1
+    assign first_box_size = 11
+  else
+    assign first_box_size = 12
+  endif
+%}
+
+{% for item in items %}
+  {% liquid
+    if first_box_size == 11
+      assign item_modulo = forloop.index | modulo: 11
+      if forloop.index == 12
+        # Close the box and for a new one to start
+        assign item_modulo = forloop.index | modulo: 12
+        assign item_modulo = 1
+      endif
+    else
+      assign item_modulo = forloop.index | modulo: 12
+    endif
+  %}
+
+  {% # theme-check-disable UnclosedHTMLElement %}
+  {% if forloop.first or item_modulo == 1 %}
+    <div
+      class="bento-box"
+      data-testid="bento-box"
+    >
+  {% endif %}
+  {% # theme-check-disable UnclosedHTMLElement %}
+
+  <div class="bento-box__item">
+    {{ item }}
+  </div>
+
+  {% if forloop.last or item_modulo == 0 %}
+    </div>
+  {% endif %}
+{% endfor %}
+
+{% stylesheet %}
+  .bento-box {
+    display: grid;
+    column-gap: var(--bento-gap);
+    row-gap: calc(var(--bento-gap) * 1.5);
+    width: 100%;
+  }
+
+  .bento-box:has(.collection-card--image-bg) {
+    row-gap: var(--bento-gap);
+  }
+
+  .bento-box ~ .bento-box {
+    padding-block-start: var(--bento-gap);
+  }
+
+  @media (max-width: 900px) {
+    .bento-box {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bento-box__item:nth-child(3n + 1) {
+      grid-column: span 1;
+    }
+
+    .bento-box__item:nth-child(3n + 2) {
+      grid-column: span 1;
+    }
+
+    .bento-box__item:nth-child(3n + 3) {
+      grid-column: span 2;
+    }
+
+    /* Ensure last items create a full row */
+    .bento-box__item:last-child:nth-child(3n + 5) {
+      grid-column: span 1;
+    }
+
+    .bento-box__item:last-child:nth-child(3n + 4) {
+      grid-column: span 2;
+    }
+  }
+
+  @media (min-width: 901px) {
+    .bento-box {
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-areas:
+        'A A A B B B B B B C C C'
+        'D D D D D D E E E F F F'
+        'G G G H H H I I I I I I'
+        'J J J J K K K K L L L L';
+    }
+
+    .bento-box__item:nth-child(1) {
+      grid-area: A;
+    }
+
+    .bento-box__item:nth-child(2) {
+      grid-area: B;
+    }
+
+    .bento-box__item:nth-child(3) {
+      grid-area: C;
+    }
+
+    .bento-box__item:nth-child(4) {
+      grid-area: D;
+    }
+
+    .bento-box__item:nth-child(5) {
+      grid-area: E;
+    }
+
+    .bento-box__item:nth-child(6) {
+      grid-area: F;
+    }
+
+    .bento-box__item:nth-child(7) {
+      grid-area: G;
+    }
+
+    .bento-box__item:nth-child(8) {
+      grid-area: H;
+    }
+
+    .bento-box__item:nth-child(9) {
+      grid-area: I;
+    }
+
+    .bento-box__item:nth-child(10) {
+      grid-area: J;
+    }
+
+    .bento-box__item:nth-child(11) {
+      grid-area: K;
+    }
+
+    .bento-box__item:nth-child(12) {
+      grid-area: L;
+    }
+
+    /* === Overrides for specific cases === */
+
+    /* Exactly 1 item */
+    .bento-box:has(.bento-box__item:first-child:nth-last-child(1)) {
+      grid-template-areas: 'A A A A A A A A A A A A';
+    }
+
+    /* Exactly 2 items */
+    .bento-box:has(.bento-box__item:first-child:nth-last-child(2)) {
+      grid-template-areas: 'A A A A A A B B B B B B';
+    }
+
+    /* Exactly 4 items */
+    .bento-box:has(.bento-box__item:first-child:nth-last-child(4)) {
+      grid-template-areas:
+        'A A A A B B B B B B B B'
+        'C C C C C C C C D D D D';
+    }
+
+    /* Exactly 5 items */
+    .bento-box:has(.bento-box__item:first-child:nth-last-child(5)) {
+      grid-template-areas:
+        'A A A B B B B B B C C C'
+        'D D D D D D E E E E E E';
+    }
+
+    /* Exactly 7 items */
+    .bento-box:has(.bento-box__item:first-child:nth-last-child(7)) {
+      grid-template-areas:
+        'A A A B B B B B B C C C'
+        'D D D D D D D D D E E E'
+        'F F F F F F G G G G G G';
+    }
+
+    /* Exactly 8 items */
+    .bento-box:has(.bento-box__item:first-child:nth-last-child(8)) {
+      grid-template-areas:
+        'A A A B B B B B B C C C'
+        'D D D D D D E E E F F F'
+        'G G G H H H H H H H H H';
+    }
+
+    /* Exactly 10 items */
+    .bento-box:has(.bento-box__item:first-child:nth-last-child(10)) {
+      grid-template-areas:
+        'A A A B B B B B B C C C'
+        'D D D D D D E E E F F F'
+        'G G G G G G G G G H H H'
+        'I I I J J J J J J J J J';
+    }
+
+    /* Exactly 11 items */
+    .bento-box:has(.bento-box__item:first-child:nth-last-child(11)) {
+      grid-template-areas:
+        'A A A B B B B B B C C C'
+        'D D D D D D E E E F F F'
+        'G G G H H H I I I I I I'
+        'J J J J K K K K K K K K';
+    }
+  }
+{% endstylesheet %}

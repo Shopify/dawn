@@ -1,0 +1,360 @@
+{%- doc -%}
+  Displays product images in a carousel.
+  Settings allow for a full slideshow, showing only the first image, or showing the second image when hovering.
+  Note: When the product card itself is in a carousel layout, the card-gallery's carousel is disabled with JavaScript.
+
+  @param [children] - Additional content rendered below the card gallery
+  @param [section] - The section object the snippet is rendered in
+  @param [block] - The block object the snippet is rendered in
+{%- enddoc -%}
+
+{% liquid
+  assign image_sizes = '(min-width: 750px) 50vw, 100vw'
+  # if the card-gallery has a section.settings.product_card_size:
+  # assume grid-template autofill(card-size, 1fr) and calculate the sizes attribute based on the minimum card size
+
+  # if section has section.settings.columns:
+  # assume grid-template repeat(column-count, 1fr) and calculate the sizes attribute based on the number of columns
+%}
+
+{% if section.settings.product_card_size %}
+  {% capture card_size %}
+    {% render 'util-product-grid-card-size' section: section %}
+  {% endcapture %}
+  {% assign card_size = card_size | strip | replace: 'px', '' | plus: 0 %}
+  {% capture sizes_attribute %}
+    {% render 'util-autofill-img-size-attr' card_size: card_size, card_gap: section.settings.columns_gap_horizontal %}
+  {% endcapture %}
+  {% assign image_sizes = sizes_attribute | strip %}
+{% elsif section.settings.columns and section.settings.layout_type != 'editorial' %}
+  {% assign viewport_width = 100.0 | divided_by: section.settings.columns %}
+  {% assign sizes_attribute = '(min-width: 750px) [viewport_width]vw, 100vw'
+    | replace: '[viewport_width]', viewport_width
+  %}
+  {% assign image_sizes = sizes_attribute | strip %}
+{% endif %}
+
+{% liquid
+  assign product = closest.product
+
+  assign lazy_image_sizes = 'auto, ' | append: image_sizes
+
+  assign image_ratio_setting = block.settings.image_ratio
+  assign temp_ratio = 1
+
+  if image_ratio_setting == 'landscape'
+    assign temp_ratio = '16 / 9'
+  elsif image_ratio_setting == 'portrait'
+    assign temp_ratio = '4 / 5'
+  elsif image_ratio_setting == 'square'
+    assign temp_ratio = '1'
+  elsif image_ratio_setting == 'adapt'
+    if product != blank
+      assign current_featured_image_for_ratio = product.featured_image
+      if current_featured_image_for_ratio == blank and product.featured_media.preview_image != blank
+        assign current_featured_image_for_ratio = product.featured_media.preview_image
+      endif
+
+      if current_featured_image_for_ratio != blank and current_featured_image_for_ratio.aspect_ratio != null and current_featured_image_for_ratio.aspect_ratio > 0
+        assign temp_ratio = current_featured_image_for_ratio.aspect_ratio
+      endif
+    endif
+  endif
+
+  if temp_ratio != blank and temp_ratio != 0 and temp_ratio != ''
+    assign ratio = temp_ratio
+  else
+    assign ratio = 1
+  endif
+
+  assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src'
+  assign selected_variant_image = product.selected_or_first_available_variant.image.src
+
+  assign hover_behavior = 'carousel'
+
+  if block.settings.image_ratio == 'adapt' and block.settings.constrain_to_viewport
+    if block.settings.constrain_to_viewport != ''
+      assign constrain_to_viewport = true
+      assign media_fit = block.settings.constrain_to_viewport
+    endif
+  endif
+%}
+
+<div
+  ref="cardGallery"
+  class="
+    card-gallery card-gallery-{{ block.id }} spacing-style border-style
+    {% if closest.product == blank and request.design_mode == false %}hidden{% endif %}
+  "
+  style="
+    {% render 'border-override', settings: block.settings %}
+    {% render 'spacing-style', settings: block.settings %}
+    --gallery-aspect-ratio: {{ ratio }};
+  "
+  data-product-id="{{ product.id }}"
+  {% if settings.show_second_image_on_hover %}
+    on:pointerenter="/previewImage"
+    on:pointerleave="/resetImage"
+  {% endif %}
+  {% if settings.transition_to_main_product %}
+    data-view-transition-to-main-product
+  {% endif %}
+  data-image-ratio="{{ block.settings.image_ratio }}"
+  {{ block.shopify_attributes }}
+>
+  {% liquid
+    assign all_media = product.media
+
+    # For combined listings: make sure to include the featured media of the color variants so that the swatch picker
+    # works as expected.
+    for product_option in product.options_with_values
+      for product_option_value in product_option.values
+        if product_option_value.swatch
+          assign featured_media = product_option_value.variant.featured_media
+
+          # If the variant has no featured media, and we have a combined listing product, then fall back to using the
+          # featured media of the child product that is linked to this option value.
+
+          if featured_media == blank and product_option_value.product_url
+            assign featured_media = product_option_value.variant.product.featured_media
+          endif
+
+          assign existing_media = all_media | has: 'id', featured_media.id
+          unless existing_media
+            assign variant_featured_media = product_option_value.variant.product.media | where: 'id', featured_media.id
+            assign all_media = all_media | concat: variant_featured_media
+          endunless
+        endif
+      endfor
+    endfor
+
+    # Sort media so selected variant image comes first
+    assign selected_media = all_media | where: 'src', selected_variant_image
+    assign other_media = all_media | reject: 'src', selected_variant_image
+    assign all_media_sorted = selected_media | concat: other_media
+    # Check if there are generic media that are not variant images
+    assign has_generic_media = false
+    if all_media_sorted.size > variant_images.size
+      assign has_generic_media = true
+    endif
+  %}
+
+  {%- if all_media.size > 0 -%}
+    {% if all_media.size > 2 and hover_behavior == 'carousel' %}
+      {% assign show_arrows = true %}
+    {% endif %}
+
+    {% capture slides %}
+      {% for media in all_media_sorted %}
+        {% assign loading = 'lazy' %}
+        {% assign sizes = lazy_image_sizes %}
+
+        {% if forloop.first and section.index == nil or section.index < 5 %}
+          {% assign loading = 'eager' %}
+          {% assign sizes = image_sizes %}
+        {% endif %}
+
+        {% assign attributes = '' %}
+        {% capture slideshow_children %}
+          {%- render 'product-media', media: media, sizes: sizes, loading: loading, preview_image_only: true -%}
+        {% endcapture %}
+        {% capture class %}
+          product-media-container media-fit product-media-container--{{ media.media_type }}{% if constrain_to_viewport %} constrain-height{% endif %}
+        {% endcapture %}
+        {% assign hidden = false %}
+        {% if variant_images contains media.src %}
+          {% assign attributes = 'variant-image' %}
+          {% unless forloop.first and media.src == selected_variant_image or has_generic_media == false %}
+            {% assign hidden = true %}
+          {% endunless %}
+        {% endif %}
+        {% render 'slideshow-slide', slide_id: media.id, index: forloop.index, children: slideshow_children, class: class, attributes: attributes, hidden: hidden, media_fit: media_fit %}
+      {% endfor %}
+    {% endcapture %}
+
+    {% assign slideshow_attributes = '' %}
+    {% if hover_behavior == 'none' or settings.product_card_carousel == false %}
+      {% assign slideshow_attributes = 'disabled="true"' %}
+    {% endif %}
+    {% render 'slideshow',
+      ref: 'slideshow',
+      initial_slide: 0,
+      slides: slides,
+      slide_count: all_media.size,
+      show_arrows: show_arrows,
+      attributes: slideshow_attributes
+    %}
+  {% elsif product != blank and product.media.size == 0 %}
+    <product-title class="product-card-gallery__title-placeholder">
+      <span class="title-text">{{- product.title -}}</span>
+    </product-title>
+  {% elsif product == blank %}
+    {% capture placeholder_image %}
+      <placeholder-image data-block-id="{{ section.id }}-{{ block.id }}" data-type="product"></placeholder-image>
+    {% endcapture %}
+    {% capture placeholder_slide %}
+      {% render 'slideshow-slide', index: 1, children: placeholder_image, class: 'product-media-container card-gallery__placeholder' %}
+    {% endcapture %}
+    {% capture slideshow_placeholder %}
+      {% render 'slideshow', ref: 'slideshow', slides: placeholder_slide, slide_count: 1, attributes: 'disabled="true"' %}
+    {% endcapture %}
+    {{ slideshow_placeholder }}
+  {%- endif -%}
+  {{ children }}
+</div>
+
+{% stylesheet %}
+  .card-gallery {
+    overflow: hidden;
+    container-type: inline-size; /* Make card-gallery a container */
+    container-name: card-gallery-container; /* Optional: name the container */
+  }
+
+  .card-gallery__placeholder svg {
+    height: 100%;
+    width: 100%;
+  }
+
+  .card-gallery placeholder-image {
+    aspect-ratio: var(--gallery-aspect-ratio, var(--ratio));
+  }
+
+  .product-card-gallery__title-placeholder {
+    padding: var(--padding-md);
+    font-size: var(--font-size--2xl);
+    line-height: var(--line-height--display-loose);
+    word-break: break-word;
+    color: var(--color-foreground);
+    background-color: rgb(from var(--color-foreground) r g b / 5%);
+    aspect-ratio: var(--gallery-aspect-ratio);
+    border-radius: var(--product-corner-radius);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  @media screen and (min-width: 750px) {
+    .product-grid[data-product-card-size='extra-large'] .product-card-gallery__title-placeholder {
+      padding: var(--padding-3xl);
+      font-size: var(--font-size--3xl);
+    }
+
+    .product-grid[data-product-card-size='large'] .product-card-gallery__title-placeholder {
+      padding: var(--padding-2xl);
+      font-size: var(--font-size--2xl);
+    }
+
+    .product-grid[data-product-card-size='medium'] .product-card-gallery__title-placeholder {
+      padding: var(--padding-xl);
+      font-size: var(--font-size--xl);
+    }
+
+    .product-grid[data-product-card-size='small'] .product-card-gallery__title-placeholder {
+      padding: var(--padding-sm);
+      font-size: var(--font-size--lg);
+    }
+
+    .product-grid[data-product-card-size='extra-large']
+      .card-gallery:has(.product-badges--top-right .product-badges__badge)
+      .product-card-gallery__title-placeholder {
+      padding-right: calc(var(--padding-3xl) + 50px);
+    }
+
+    .product-grid[data-product-card-size='large']
+      .card-gallery:has(.product-badges--top-right .product-badges__badge)
+      .product-card-gallery__title-placeholder {
+      padding-right: calc(var(--padding-2xl) + 50px);
+    }
+
+    .product-grid[data-product-card-size='medium']
+      .card-gallery:has(.product-badges--top-right .product-badges__badge)
+      .product-card-gallery__title-placeholder {
+      padding-right: calc(var(--padding-xl) + 50px);
+    }
+
+    .product-grid[data-product-card-size='small']
+      .card-gallery:has(.product-badges--top-right .product-badges__badge)
+      .product-card-gallery__title-placeholder {
+      padding-right: calc(var(--padding-sm) + 50px);
+    }
+
+    .product-grid[data-product-card-size='extra-large']
+      .card-gallery:has(.product-badges--top-left .product-badges__badge)
+      .product-card-gallery__title-placeholder {
+      padding-top: calc(var(--padding-3xl) + 40px);
+    }
+
+    .product-grid[data-product-card-size='large']
+      .card-gallery:has(.product-badges--top-left .product-badges__badge)
+      .product-card-gallery__title-placeholder {
+      padding-top: calc(var(--padding-2xl) + 40px);
+    }
+
+    .product-grid[data-product-card-size='medium']
+      .card-gallery:has(.product-badges--top-left .product-badges__badge)
+      .product-card-gallery__title-placeholder {
+      padding-top: calc(var(--padding-xl) + 40px);
+    }
+
+    .product-grid[data-product-card-size='small']
+      .card-gallery:has(.product-badges--top-left .product-badges__badge)
+      .product-card-gallery__title-placeholder {
+      padding-top: calc(var(--padding-sm) + 40px);
+    }
+
+    .product-grid[data-product-card-size='extra-large']
+      .card-gallery:has(.product-badges--bottom-left .product-badges__badge)
+      .product-card-gallery__title-placeholder {
+      padding-bottom: calc(var(--padding-3xl) + 40px);
+    }
+
+    .product-grid[data-product-card-size='large']
+      .card-gallery:has(.product-badges--bottom-left .product-badges__badge)
+      .product-card-gallery__title-placeholder {
+      padding-bottom: calc(var(--padding-2xl) + 40px);
+    }
+
+    .product-grid[data-product-card-size='medium']
+      .card-gallery:has(.product-badges--bottom-left .product-badges__badge)
+      .product-card-gallery__title-placeholder {
+      padding-bottom: calc(var(--padding-xl) + 40px);
+    }
+
+    .product-grid[data-product-card-size='small']
+      .card-gallery:has(.product-badges--bottom-left .product-badges__badge)
+      .product-card-gallery__title-placeholder {
+      padding-bottom: calc(var(--padding-sm) + 40px);
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .product-card-gallery__title-placeholder {
+      font-size: var(--font-size--xl);
+      padding: var(--padding-md);
+    }
+
+    .product-grid[data-product-card-size]
+      .card-gallery:has(.product-badges--top-right .product-badges__badge)
+      .product-card-gallery__title-placeholder {
+      padding-right: calc(var(--padding-sm) + 50px);
+    }
+
+    .product-grid[data-product-card-size]
+      .card-gallery:has(.product-badges--top-left .product-badges__badge)
+      .product-card-gallery__title-placeholder {
+      padding-top: calc(var(--padding-sm) + 40px);
+    }
+
+    .product-grid[data-product-card-size]
+      .card-gallery:has(.product-badges--bottom-left .product-badges__badge)
+      .product-card-gallery__title-placeholder {
+      padding-bottom: calc(var(--padding-sm) + 40px);
+    }
+  }
+
+  [product-grid-view='zoom-out'] .card-gallery .product-card-gallery__title-placeholder {
+    padding: var(--padding-xs) !important;
+    font-size: var(--font-size--xs);
+  }
+{% endstylesheet %}

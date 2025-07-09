@@ -1,0 +1,162 @@
+{% # import schema from '../schemas/blocks/_collection-link' %}
+
+{%- doc -%}
+  Renders a collection link block.
+
+  @param {number} index
+  @param {boolean} [current]
+  @param {boolean} [image_only]
+{%- enddoc -%}
+
+{% unless current %}
+  {% assign loading = 'lazy' %}
+{% endunless %}
+
+{% if block.settings.show_count %}
+  {% assign count = closest.collection.all_products_count %}
+  {%- capture count -%}
+    &nbsp;<sup class="collection-links__count">{{ count }}</sup>
+  {%- endcapture -%}
+
+  {% if closest.collection == empty %}
+    {%- capture count -%}
+      &nbsp;<sup class="collection-links__count">5</sup>
+    {%- endcapture -%}
+  {% endif %}
+{% endif %}
+
+{% capture title_block %}
+  {% content_for 'block', type: '_inline-collection-title', id: 'title', suffix: count %}
+{% endcapture %}
+
+{% capture image_block %}
+  {% content_for 'block', type: '_image', id: 'image', loading: loading %}
+{% endcapture %}
+
+{% if image_only %}
+  <a
+    href="{{ closest.collection.url }}"
+    class="collection-links__image"
+    size="{{ section.settings.image_height }}"
+  >
+    {{ image_block }}
+  </a>
+{% else %}
+  <a
+    href="{{ closest.collection.url }}"
+    class="collection-links__link"
+    ref="links[]"
+    on:pointerenter="/select/{{ index }}"
+    on:focus="/select/{{ index }}"
+    aria-current="{{ current }}"
+    {{ block.shopify_attributes }}
+  >
+    {{ title_block }}
+
+    {% if section.settings.layout == 'text' %}
+      <div
+        class="collection-links__image"
+        ref="images[]"
+        hidden
+      >
+        {{ image_block }}
+      </div>
+    {% endif %}
+  </a>
+{% endif %}
+
+{% stylesheet %}
+  .collection-links__link {
+    --min-font-size: var(--font-size--4xl);
+    --max-font-size: var(--font-size--6xl);
+
+    display: flex;
+    color: inherit;
+    text-decoration: none;
+    text-wrap: pretty;
+    font-size: clamp(var(--min-font-size), 4.5vw, var(--max-font-size));
+
+    @media (hover: hover) {
+      opacity: var(--disabled-opacity);
+    }
+
+    [layout='spotlight'] & {
+      opacity: var(--disabled-opacity);
+    }
+
+    &[aria-current='true'] {
+      opacity: 1;
+    }
+
+    .text-block {
+      display: inline-block;
+    }
+
+    @media (max-width: 749px) {
+      --min-font-size: var(--font-size--3xl);
+      --max-font-size: var(--font-size--5xl);
+
+      [layout='spotlight'] & {
+        white-space: nowrap;
+        scroll-snap-align: start;
+
+        span {
+          text-wrap: nowrap;
+        }
+      }
+    }
+  }
+
+  .collection-links__count {
+    font-size: 0.5em;
+    opacity: var(--disabled-opacity);
+    font-weight: var(--font-paragraph--weight);
+  }
+
+  .collection-links__image {
+    align-items: center;
+    justify-content: center;
+
+    &:not([hidden]) {
+      display: flex;
+    }
+
+    &[reveal] {
+      --offset: 15px;
+
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: var(--layer-temporary);
+      display: block;
+      translate: calc(var(--x) + var(--offset)) calc(var(--y) + var(--offset));
+      pointer-events: none;
+      width: auto;
+
+      image-block {
+        --image-height-basis: 5rem;
+
+        height: var(--image-height);
+      }
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.collection",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:content.resource_reference_collection_card"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_count",
+      "label": "t:settings.show_count",
+      "default": true
+    }
+  ]
+}
+{% endschema %}

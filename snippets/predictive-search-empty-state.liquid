@@ -1,0 +1,36 @@
+{% comment %}
+  Renders the predictive search empty state
+
+  Accepts:
+  - empty_state_collection: @object - collection object
+  - shadow_opacity: @number - shadow opacity
+  - products_test_id: @string - a playwright test id, used to differentiate empty state from 'real' search results
+{% endcomment %}
+<div
+  id="predictive-search-results"
+  class="predictive-search-dropdown"
+  role="listbox"
+  aria-expanded="true"
+  style="--color-shadow: rgb(from var(--color-foreground) r g b / {{ shadow_opacity }});"
+>
+  <div class="predictive-search-results__inner">
+    {% liquid
+      assign products = settings.empty_state_collection.products | default: collections.all.products
+      assign default_title = 'content.search_results_resource_products' | t
+      assign title = settings.empty_state_collection.title | default: default_title
+    %}
+    {% comment %} Only show products section if there are products to display {% endcomment %}
+    {% if products.size > 0 %}
+      {% render 'predictive-search-products-list',
+        products_test_id: products_test_id,
+        title: title,
+        products: products,
+        limit: 4
+      %}
+    {% else %}
+      <div class="predictive-search-results__no-results">
+        <p>{{ 'content.no_products_found' | t }}</p>
+      </div>
+    {% endif %}
+  </div>
+</div>

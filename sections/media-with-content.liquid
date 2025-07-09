@@ -1,0 +1,434 @@
+{% # import schema from '../schemas/sections/media-with-content' %}
+
+{% liquid
+  assign media_class_modifier = 'media-with-content--' | append: section.settings.media_width
+
+  if section.settings.extend_media and section.settings.section_width == 'page-width'
+    assign media_class_modifier = media_class_modifier | append: ' media-with-content--media-extend'
+  endif
+
+  if section.settings.media_position == 'right'
+    assign media_class_modifier = media_class_modifier | append: ' media-with-content--media-right'
+  endif
+%}
+
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
+<div
+  class="section section--{{ section.settings.section_width }} disable-section-top-offset media-with-content color-{{ section.settings.color_scheme }} spacing-style {{ media_class_modifier }}"
+  data-testid="media-with-content"
+  style="
+    {%- render 'spacing-style', settings: section.settings %}
+    {% render 'border-override', settings: section.settings %}
+    --media-height: {{ section.settings.media_height }};
+    {%- case section.settings.media_height %}
+      {% when '50svh' %}
+        --media-height-mobile: 30svh;
+      {% when '60svh' %}
+        --media-height-mobile: 50svh;
+      {% when '80svh' %}
+        --media-height-mobile: 70svh;
+      {% when '100svh' %}
+        --media-height-mobile: 100svh;
+      {% else %}
+        --media-height-mobile: auto;
+    {% endcase -%}
+
+    {% if section.settings.media_height != 'auto' %}
+     --section-preview-height: 600px;
+     {% endif %}
+  "
+  {% if request.visual_preview_mode %}
+    data-shopify-visual-preview
+  {% endif %}
+>
+  {% content_for 'block', type: '_media-without-appearance', id: 'media' %}
+
+  {% content_for 'block', type: '_content-without-appearance', id: 'content' %}
+</div>
+
+{% stylesheet %}
+  .section--page-width {
+    &.media-with-content {
+      grid-template-areas: 'margin-left media margin-right' 'margin-left content margin-right';
+
+      @media screen and (min-width: 750px) {
+        /* Wide proportion is media 3.5 parts, content 2.5 parts. Which equals 7|5. So divide the central column by 7+5 and multiply accordingly */
+        --media-with-content-grid-columns: var(--full-page-grid-margin)
+          calc((var(--full-page-grid-central-column-width) / 12) * 7)
+          calc((var(--full-page-grid-central-column-width) / 12) * 5) var(--full-page-grid-margin);
+
+        grid-template-areas: 'margin-left media content margin-right';
+      }
+    }
+
+    &.media-with-content--media-right {
+      @media screen and (min-width: 750px) {
+        --media-with-content-grid-columns: var(--full-page-grid-margin)
+          calc((var(--full-page-grid-central-column-width) / 12) * 5)
+          calc((var(--full-page-grid-central-column-width) / 12) * 7) var(--full-page-grid-margin);
+
+        grid-template-areas: 'margin-left content media margin-right';
+      }
+    }
+
+    &.media-with-content--medium {
+      @media screen and (min-width: 750px) {
+        --media-with-content-grid-columns: var(--full-page-grid-margin)
+          repeat(2, calc(var(--full-page-grid-central-column-width) / 2)) var(--full-page-grid-margin);
+      }
+    }
+
+    &.media-with-content--narrow.media-with-content--media-right {
+      @media screen and (min-width: 750px) {
+        --media-with-content-grid-columns: var(--full-page-grid-margin)
+          calc((var(--full-page-grid-central-column-width) / 3) * 2)
+          calc(var(--full-page-grid-central-column-width) / 3) var(--full-page-grid-margin);
+      }
+    }
+
+    &.media-with-content--narrow {
+      @media screen and (min-width: 750px) {
+        --media-with-content-grid-columns: var(--full-page-grid-margin)
+          calc(var(--full-page-grid-central-column-width) / 3)
+          calc((var(--full-page-grid-central-column-width) / 3) * 2) var(--full-page-grid-margin);
+      }
+    }
+  }
+
+  .section--full-width {
+    &.media-with-content--media-right {
+      @media screen and (min-width: 750px) {
+        --media-with-content-grid-columns: 2.5fr 3.5fr;
+
+        grid-template-areas: 'content media';
+      }
+    }
+
+    &.media-with-content--medium {
+      @media screen and (min-width: 750px) {
+        --media-with-content-grid-columns: 1fr 1fr;
+      }
+    }
+
+    &.media-with-content--narrow {
+      @media screen and (min-width: 750px) {
+        --media-with-content-grid-columns: 2fr 4fr;
+      }
+    }
+
+    &.media-with-content--narrow.media-with-content--media-right {
+      @media screen and (min-width: 750px) {
+        --media-with-content-grid-columns: 4fr 2fr;
+      }
+    }
+  }
+
+  /* Keep the CSS specificity lower assuming that liquid won't assign this class with a full width section */
+  .media-with-content.media-with-content--media-extend {
+    grid-template-columns: var(--media-with-content-grid-columns);
+    grid-template-areas: 'media media media' 'margin-left content margin-right';
+
+    @media screen and (min-width: 750px) {
+      grid-template-areas: 'media media content margin-right';
+    }
+  }
+
+  .media-with-content--media-extend.media-with-content--media-right {
+    @media screen and (min-width: 750px) {
+      grid-template-areas: 'margin-left content media media';
+    }
+  }
+
+  .media-with-content--media-right {
+    @media screen and (min-width: 750px) {
+      grid-template-areas: 'margin-left content media media';
+    }
+  }
+
+  .media-with-content {
+    --media-with-content-grid-columns: var(--full-page-grid-with-margins);
+
+    grid-template-columns: var(--media-with-content-grid-columns);
+    grid-template-areas: 'media media media' 'content content content';
+
+    @media screen and (min-width: 750px) {
+      --media-with-content-grid-columns: 3.5fr 2.5fr;
+
+      /* Default desktop layout is wide media, on the left, in full page section */
+      grid-template-areas: 'media content';
+    }
+
+    .media-block {
+      grid-area: media;
+    }
+
+    .media-with-content__content {
+      grid-area: content;
+    }
+
+    /* Inner blocks spacing */
+    .media-with-content__content > .group-block-content {
+      padding-inline: var(--page-margin);
+      padding-block: calc(2 * var(--page-margin));
+
+      @media screen and (min-width: 750px) {
+        padding-block: var(--page-margin);
+      }
+    }
+
+    &.section--page-width .media-with-content__content > .group-block-content {
+      padding-inline: 0;
+
+      @media screen and (min-width: 750px) {
+        padding-inline-start: var(--page-margin);
+      }
+    }
+
+    &.section--page-width.media-with-content--media-right .media-with-content__content > .group-block-content {
+      padding-inline-end: var(--page-margin);
+      padding-inline-start: 0;
+    }
+  }
+
+  .media-with-content[data-shopify-visual-preview] {
+    --hero-min-height: 500px;
+
+    min-height: 500px;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.media_with_text",
+  "disabled_on": {
+    "groups": ["header"]
+  },
+  "settings": [
+    {
+      "type": "select",
+      "id": "media_position",
+      "label": "t:settings.media_position",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "media_width",
+      "label": "t:settings.media_width",
+      "options": [
+        {
+          "value": "narrow",
+          "label": "t:options.narrow"
+        },
+        {
+          "value": "medium",
+          "label": "t:options.medium"
+        },
+        {
+          "value": "wide",
+          "label": "t:options.wide"
+        }
+      ],
+      "default": "wide"
+    },
+    {
+      "type": "select",
+      "id": "media_height",
+      "label": "t:settings.media_height",
+      "options": [
+        {
+          "value": "auto",
+          "label": "t:options.auto"
+        },
+        {
+          "value": "50svh",
+          "label": "t:options.small"
+        },
+        {
+          "value": "60svh",
+          "label": "t:options.medium"
+        },
+        {
+          "value": "80svh",
+          "label": "t:options.large"
+        },
+        {
+          "value": "100svh",
+          "label": "t:options.full_screen"
+        }
+      ],
+      "default": "80svh"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.section_width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "full-width"
+    },
+    {
+      "type": "checkbox",
+      "id": "extend_media",
+      "label": "t:settings.extend_media_to_screen_edge",
+      "default": true,
+      "visible_if": "{{ section.settings.section_width == 'page-width' }}"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-3"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.editorial",
+      "category": "t:categories.storytelling",
+      "settings": {
+        "media_width": "medium",
+        "media_height": "60svh",
+        "color_scheme": "scheme-4"
+      },
+      "blocks": {
+        "media": {
+          "type": "_media-without-appearance",
+          "static": true
+        },
+        "content": {
+          "type": "_content-without-appearance",
+          "static": true,
+          "settings": {
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "space-between"
+          },
+          "blocks": {
+            "caption": {
+              "type": "text",
+              "name": "t:names.caption",
+              "settings": {
+                "text": "<p>Bestseller</p>",
+                "type_preset": "h6"
+              }
+            },
+            "group": {
+              "type": "group",
+              "settings": {
+                "height": "fit"
+              },
+              "blocks": {
+                "heading": {
+                  "type": "text",
+                  "name": "t:names.heading",
+                  "settings": {
+                    "text": "<h2>Our signature product</h2>",
+                    "type_preset": "h3"
+                  }
+                },
+                "text": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Made with care and unconditionally loved by our customers, this signature bestseller exceeds all expectations.</p>",
+                    "max_width": "narrow",
+                    "type_preset": "rte"
+                  }
+                }
+              },
+              "block_order": ["heading", "text"]
+            },
+            "button": {
+              "type": "button",
+              "settings": {
+                "label": "Shop now",
+                "link": "shopify://collections/all",
+                "style_class": "link"
+              }
+            }
+          },
+          "block_order": ["caption", "group", "button"]
+        }
+      }
+    },
+    {
+      "name": "t:names.editorial_jumbo_text",
+      "category": "t:categories.storytelling",
+      "settings": {
+        "media_position": "right",
+        "media_width": "medium",
+        "media_height": "60svh",
+        "color_scheme": "scheme-3"
+      },
+      "blocks": {
+        "media": {
+          "type": "_media-without-appearance",
+          "static": true
+        },
+        "content": {
+          "type": "_content-without-appearance",
+          "static": true,
+          "settings": {
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "flex-end"
+          },
+          "blocks": {
+            "caption": {
+              "type": "jumbo-text",
+              "name": "t:names.jumbo_text",
+              "settings": {
+                "text": "Up\nThe\nAnte",
+                "font": "heading",
+                "alignment": "right",
+                "line_height": "0.8",
+                "letter_spacing": "-0.03em",
+                "case": "uppercase"
+              }
+            }
+          },
+          "block_order": ["caption"]
+        }
+      }
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,155 @@
+{% # import schema from '../schemas/blocks/_blog-post-info-text' %}
+{%- doc -%}
+  Renders the blog post info text block.
+
+  @param {object} [article] - The article object
+  @param {string} [alignment] - The alignment of the text. Defaults to the block's alignment setting.
+{%- enddoc -%}
+
+{% assign alignment = alignment | default: block.settings.alignment %}
+
+{%- if block.settings.show_date or block.settings.show_author -%}
+  <div
+    class="
+      blog-post-details
+      spacing-style
+      justify-{{ alignment }}
+      {% if block.settings.type_preset != '' %}{{ block.settings.type_preset }}{% endif%}
+    "
+    style="{% render 'spacing-style', settings: block.settings %}"
+  >
+    {%- if block.settings.show_date -%}
+      <span>{{- article.published_at | time_tag: format: 'date' -}}</span>
+    {%- endif -%}
+
+    {%- if block.settings.show_date and block.settings.show_author -%}
+      <span>{{ 'content.blog_details_separator' | t }}</span>
+    {%- endif -%}
+
+    {%- if block.settings.show_author -%}
+      <span>{{ article.author }}</span>
+    {%- endif -%}
+  </div>
+{% endif %}
+
+{% stylesheet %}
+  .blog-post-details {
+    display: flex;
+    gap: var(--gap-sm);
+    font-size: var(--font-size--paragraph);
+    color: rgb(from var(--color-foreground) r g b / var(--opacity-subdued-text));
+    white-space: nowrap;
+  }
+
+  .blog-post-details > span {
+    text-overflow: clip;
+    overflow: hidden;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.details",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "t:settings.show_date",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "t:settings.show_author",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:content.typography"
+    },
+    {
+      "type": "select",
+      "id": "type_preset",
+      "label": "t:settings.preset",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.default"
+        },
+        {
+          "value": "paragraph",
+          "label": "t:options.paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "t:options.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:options.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:options.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:options.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:options.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:options.h6"
+        }
+      ],
+      "default": "",
+      "info": "t:info.edit_presets_in_theme_settings"
+    },
+    {
+      "type": "text_alignment",
+      "id": "alignment",
+      "label": "t:settings.alignment",
+      "visible_if": "{{ block.settings.show_alignment != false }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_alignment",
+      "label": "t:settings.show_alignment",
+      "default": true,
+      "visible_if": "{{ false }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.details"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,32 @@
+{%- doc -%}
+  Renders the <img> element using provided image object
+
+  @param {object} image - image object
+  @param {number} [height] - custom image height
+  @param {string} [class] - additional classes
+  @param {string} [text_fallback] - text to display if image is blank
+  @param {boolean} [unset_image_tag] - if true, ignores the image focal point
+  @param {string} [style] - additional styles
+
+  @example
+  {% render 'image', image: product.featured_image, height: 300, class: 'product-image' %}
+{%- enddoc -%}
+{% if image != blank %}
+  {% assign image_height = height | default: image.height %}
+  {% assign image_height_2x = height | default: image_height | times: 2 %}
+  {% assign image_height_3x = height | default: image_height | times: 3 %}
+
+  {% capture image_srcset -%}
+    {{ image | image_url: height: image_height }} 1x, {{ image | image_url: height: image_height_2x }} 2x, {{ image | image_url: height: image_height_3x }} 3x
+  {%- endcapture %}
+
+  {% assign style_value = style | default: '' %}
+
+  {% if unset_image_tag %}
+    {% assign style_value = style_value | append: 'object-position: inherit;' %}
+  {% endif %}
+
+  {{ image | image_url: height: image_height | image_tag: class: class, srcset: image_srcset, style: style_value }}
+{% elsif text_fallback %}
+  {{ text_fallback }}
+{% endif %}

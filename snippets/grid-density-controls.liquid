@@ -1,0 +1,179 @@
+{%- doc -%}
+  Renders the grid density controls.
+
+  @param {string} viewport - The viewport to render the controls for, either 'mobile' or 'desktop'.
+
+  @example
+  {% render 'grid-density-controls', viewport: 'desktop' %}
+{%- enddoc -%}
+
+<div class="column-options-wrapper">
+  <fieldset class="column-options">
+    <legend class="column-options__legend visually-hidden">
+      {{ 'content.grid_view.grid_fieldset' | t }}
+    </legend>
+
+    {% if viewport == 'mobile' %}
+      <label class="column-options__option">
+        <input
+          type="radio"
+          name="grid-mobile"
+          value="mobile-single"
+          class="column-options__option-input"
+          aria-label="{{ 'content.grid_view.single_item' | t }}"
+          on:change="results-list/updateLayout"
+        >
+        <span class="column-picker column-picker-mobile--single">
+          {{- 'icon-one-col-mobile.svg' | inline_asset_content -}}
+        </span>
+      </label>
+
+      <label class="column-options__option">
+        <input
+          type="radio"
+          class="column-options__option-input"
+          name="grid-mobile"
+          value="default"
+          checked
+          aria-label="{{ 'content.grid_view.default_view' | t }}"
+          data-grid-layout="mobile-option"
+          on:change="results-list/updateLayout"
+        >
+        <span class="column-picker column-picker-mobile--double">
+          {{- 'icon-grid-default.svg' | inline_asset_content -}}
+        </span>
+      </label>
+
+    {% elsif viewport == 'desktop' %}
+      <label class="column-options__option">
+        <input
+          type="radio"
+          name="grid"
+          value="default"
+          class="column-options__option-input"
+          checked
+          aria-label="{{ 'content.grid_view.default_view' | t }}"
+          data-grid-layout="desktop-default-option"
+          on:change="results-list/updateLayout"
+          data-skip-node-update
+        >
+        <span class="column-picker column-picker--default">
+          {{- 'icon-grid-default.svg' | inline_asset_content -}}
+        </span>
+      </label>
+
+      <label class="column-options__option">
+        <input
+          type="radio"
+          name="grid"
+          value="zoom-out"
+          class="column-options__option-input"
+          aria-label="{{ 'content.grid_view.zoom_out' | t }}"
+          on:change="results-list/updateLayout"
+          data-skip-node-update
+        >
+        <span class="column-picker column-picker--zoom-out">
+          {{- 'icon-grid-dense.svg' | inline_asset_content -}}
+        </span>
+      </label>
+    {% endif %}
+  </fieldset>
+</div>
+
+{% stylesheet %}
+  .column-options-wrapper {
+    --icon-offset: -3px;
+
+    display: flex;
+    gap: var(--gap-sm);
+    min-width: fit-content;
+    justify-content: flex-end;
+    height: var(--minimum-touch-target);
+    align-items: center;
+    margin-right: var(--icon-offset);
+  }
+
+  .column-options-wrapper:only-child {
+    margin-left: auto;
+  }
+
+  .facets__form-wrapper > .column-options-wrapper:first-child {
+    margin-left: auto;
+  }
+
+  .facets .column-options-wrapper {
+    display: none;
+
+    @media screen and (min-width: 750px) {
+      display: flex;
+    }
+  }
+
+  .column-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-xs);
+    margin: 0;
+    padding: 0;
+    border: none;
+
+    @media screen and (min-width: 750px) {
+      gap: var(--gap-2xs);
+    }
+  }
+
+  .column-options__option {
+    display: none;
+    position: relative;
+  }
+
+  .column-options__option:has(.column-picker-mobile--single),
+  .column-options__option:has(.column-picker-mobile--double) {
+    @media screen and (max-width: 749px) {
+      display: flex;
+    }
+  }
+
+  .column-options__option:has(.column-picker--default),
+  .column-options__option:has(.column-picker--zoom-out) {
+    @media screen and (min-width: 750px) {
+      display: flex;
+    }
+  }
+
+  .column-options__legend {
+    padding: 0;
+    margin: 0;
+  }
+
+  .column-options__option-input {
+    /* this is a repeating pattern a bit with the variant picker buttons */
+
+    /* remove the checkbox from the page flow */
+    position: absolute;
+
+    /* set the dimensions to match those of the label */
+    inset: 0;
+
+    /* hide it */
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .column-picker {
+    color: rgba(from var(--color-foreground) r g b / 50%);
+    padding: var(--padding-2xs);
+    border-radius: var(--style-border-radius-xs);
+    transition: background-color var(--animation-speed) ease, color var(--animation-speed) ease;
+  }
+
+  .column-options__option:hover .column-picker {
+    background-color: rgba(from var(--color-foreground) r g b / 4%);
+  }
+
+  .column-options__option-input:checked ~ .column-picker {
+    color: rgba(from var(--color-foreground) r g b / 100%);
+    background-color: rgba(from var(--color-foreground) r g b / 6%);
+  }
+{% endstylesheet %}

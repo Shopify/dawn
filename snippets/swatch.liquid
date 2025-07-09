@@ -1,32 +1,41 @@
-{% comment %}
-  Renders a swatch component.
-  Accepts:
-  - swatch: {Object} a swatch object
-  - shape: {String} swatch shape. Accepts 'square', defaults to circle.
+{%- doc -%}
+  Renders a swatch
 
-  Usage:
-  {% render 'swatch',
-    swatch: value.swatch
-    shape: 'square'
-  %}
-{% endcomment %}
+  @param {object} swatch - a swatch object
+  @param {object} [variant_image] - an alternate image
+  @param {string} [mode] - one of 'unscaled' or 'filter'
 
-{%- liquid
+  @example
+  {% render 'swatch', swatch: swatch, variant_image: variant_image, mode: 'unscaled' %}
+{%- enddoc -%}
+
+{% liquid
   assign swatch_value = null
-  if swatch.image
-    assign image_url = swatch.image | image_url: width: 50
-    assign swatch_value = 'url(' | append: image_url | append: ')'
-    assign swatch_focal_point = swatch.image.presentation.focal_point
+  if settings.show_variant_image and variant_image
+    assign swatch_image_width = settings.variant_swatch_width | times: 2
+    assign swatch_image_url = variant_image | image_url: width: swatch_image_width
+    assign swatch_value = 'url(' | append: swatch_image_url | append: ')'
+  elsif swatch.image
+    assign swatch_image_url = swatch.image | image_url: width: 80
+    assign swatch_value = 'url(' | append: swatch_image_url | append: ')'
   elsif swatch.color
     assign swatch_value = 'rgb(' | append: swatch.color.rgb | append: ')'
   endif
--%}
+  assign classes =
+  case mode
+    when 'unscaled'
+      assign extra_classes = ' swatch--unscaled'
+    when 'filter'
+      assign extra_classes = ' swatch--filter'
+    when 'pill'
+      assign extra_classes = ' swatch--pill'
+    else
+      assign extra_classes = ''
+  endcase
+%}
 
 <span
-  {% if swatch_value %}
-    class="swatch{% if shape == 'square' %} swatch--square{% endif %}"
-    style="--swatch--background: {{ swatch_value }};{% if swatch_focal_point %} --swatch-focal-point: {{ swatch_focal_point }};{% endif %}"
-  {% else %}
-    class="swatch swatch--unavailable{% if shape == 'square' %} swatch--square{% endif %}"
-  {% endif %}
-></span>
+  class="swatch{{ extra_classes }}{% if swatch_value == null %} swatch--unavailable{% endif %}"
+  style="--swatch-background: {{ swatch_value }};{% if swatch.image and settings.show_variant_image == false %} --swatch-focal-point: {{ swatch.image.presentation.focal_point }};{% endif %}"
+>
+</span>

@@ -1,0 +1,189 @@
+{%- doc -%}
+  Renders controls for a slider component
+
+  @param {string} [style] - { 'dots' | 'counter' | 'thumbnails' | 'none' } The display style of the controls
+  @param {boolean} [autoplay] - Whether the controls will display an autoplay option
+  @param {number} [item_count] - The total number of slides
+  @param {boolean} [show_arrows] - Whether the controls will display arrows
+  @param {boolean} [arrows_on_media] - Whether the controls will display as floating icons on the media
+  @param {boolean} [controls_on_media] - Whether the controls will display as floating controls on the media
+  @param {media[]} [thumbnails] - Array of media to be displayed as thumbnails, sorted.
+  @param {string} [pagination_position] - { 'left' | 'center' | 'right' } Sets the pagination position, defaults to 'center' if none passed
+  @param {string} [icon_style] - The style of the icon, defaults to 'arrow'
+  @param {string} [shape] - The shape of the control, defaults to 'square'
+  @param {string} [aspect_ratio] - The aspect ratio of thumbnails, if applicable. defaults to 'adapt'
+  @param {string} [class] - Additional classes to apply to the controls
+  @param {boolean} [secondary] - Whether the controls are secondary
+
+  @example
+  {%- render 'slideshow-controls', style: 'dots', item_count: 10 -%}
+{%- enddoc -%}
+
+{%- liquid
+  if aspect_ratio == null
+    assign aspect_ratio = 'adapt'
+  endif
+
+  if pagination_position == null
+    assign pagination_position = 'center'
+  endif
+
+  assign show_arrows_separately = false
+  if style == 'thumbnails' and arrows_on_media == false
+    assign show_arrows_separately = true
+    # Specific case - we want to show the arrows with the thumbnails if everything is off media and centered.
+    if controls_on_media == false and pagination_position == 'center'
+      assign show_arrows_separately = false
+    endif
+  elsif controls_on_media == true and arrows_on_media == false
+    assign show_arrows_separately = true
+  endif
+
+  if pagination_position == 'left' or pagination_position == 'right'
+    assign scroll_mode = 'vertical'
+  else
+    assign scroll_mode = 'horizontal'
+  endif
+-%}
+
+<slideshow-controls
+  {% unless secondary %}
+    ref="slideshowControls"
+  {% endunless %}
+  pagination-position="{{ pagination_position }}"
+  scroll-mode="{{ scroll_mode }}"
+  {% if controls_on_media %}
+    controls-on-media
+  {% endif %}
+  {% if arrows_on_media or icon_style == 'none' %}
+    icons-on-media
+  {% endif %}
+  {% if style == 'thumbnails' %}
+    thumbnails
+  {% endif %}
+  {% if class %}
+    class="{{ class }}"
+  {% endif %}
+>
+  {% if show_arrows_separately == false and show_arrows and pagination_position != 'left' %}
+    <div class="slideshow-controls__arrows">
+      {%- render 'slideshow-arrow', action: 'previous', icon_style: icon_style, icon_shape: shape -%}
+
+      {% if pagination_position == 'right' %}
+        {%- render 'slideshow-arrow', action: 'next', icon_style: icon_style, icon_shape: shape -%}
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if autoplay %}
+    <button
+      type="button"
+      class="slideshow-control button-secondary button-unstyled icon-pause"
+      aria-label="{{ 'accessibility.slideshow_pause' | t }}"
+      on:click="/pause"
+    >
+      {{- 'icon-pause.svg' | inline_asset_content -}}
+    </button>
+    <button
+      type="button"
+      class="slideshow-control button-secondary button-unstyled icon-play"
+      aria-label="{{ 'accessibility.slideshow_play' | t }}"
+      on:click="/play"
+    >
+      {{- 'icon-play.svg' | inline_asset_content -}}
+    </button>
+  {% endif %}
+
+  {% case style %}
+    {% when 'thumbnails' %}
+      <scroll-hint
+        ref="thumbnailsContainer"
+        class="slideshow-controls__thumbnails-container"
+      >
+        <div class="slideshow-controls__thumbnails">
+          {% for media in thumbnails %}
+            <button
+              class="slideshow-control button button-unstyled slideshow-controls__thumbnail"
+              aria-label="{{ 'accessibility.slide_status' | t: index: forloop.index, length: forloop.length }}"
+              on:click="/select/{{ forloop.index0 }}"
+              style="--aspect-ratio: {% if aspect_ratio == 'adapt' %}{{ media.preview_image.aspect_ratio | default: 1.0 }}{% else %}{{ aspect_ratio }}{% endif %};"
+              ref="thumbnails[]"
+              {% if forloop.first %}
+                aria-selected="true"
+              {% endif %}
+            >
+              {{
+                media.preview_image
+                | image_url: width: 1024
+                | image_tag:
+                  loading: 'lazy',
+                  sizes: 'auto, 110, (min-width: 750px) 160',
+                  widths: '300, 375, 450, 525, 600, 675, 750, 768, 850, 900, 1024',
+                  alt: media.alt
+                | escape
+              }}
+
+              {% if media.media_type == 'video' or media.media_type == 'external_video' %}
+                <span class="slideshow-controls__thumbnail-badge">
+                  {{ 'icon-play.svg' | inline_asset_content }}
+                </span>
+              {% elsif media.media_type == 'model' %}
+                <span class="slideshow-controls__thumbnail-badge">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                    focusable="false"
+                    class="icon icon-3d-model"
+                    fill="none"
+                    viewBox="0 0 18 21"
+                  >
+                    {% render 'icon', icon: '3d-model' %}
+                  </svg>
+                </span>
+              {% endif %}
+            </button>
+          {% endfor %}
+        </div>
+      </scroll-hint>
+    {% when 'counter' %}
+      <div class="slideshow-controls__counter">
+        <span ref="current">1</span><span class="slash">/</span>{{ item_count -}}
+      </div>
+    {% when 'dots' %}
+      <ol class="slideshow-controls__{{ style }}">
+        {% for i in (1..item_count) %}
+          <li>
+            <button
+              class="slideshow-control button button-unstyled"
+              style="animation-timeline: --slide-{{ forloop.index }}"
+              aria-label="{{ 'accessibility.slide_status' | t: index: forloop.index, length: forloop.length }}"
+              on:click="/select/{{ forloop.index0 }}"
+              ref="dots[]"
+              {% if forloop.first %}
+                aria-selected="true"
+              {% endif %}
+            >
+              {{ forloop.index }}
+            </button>
+          </li>
+        {% endfor %}
+      </ol>
+  {% endcase %}
+
+  {% if show_arrows_separately == false and show_arrows and pagination_position != 'right' %}
+    <div class="slideshow-controls__arrows">
+      {% if pagination_position == 'left' %}
+        {%- render 'slideshow-arrow', action: 'previous', icon_style: icon_style, icon_shape: shape -%}
+      {% endif %}
+
+      {%- render 'slideshow-arrow', action: 'next', icon_style: icon_style, icon_shape: shape -%}
+    </div>
+  {% endif %}
+</slideshow-controls>
+
+{% if show_arrows_separately and show_arrows %}
+  <div class="slideshow-controls__arrows">
+    {%- render 'slideshow-arrow', action: 'previous', icon_style: icon_style, icon_shape: shape -%}
+    {%- render 'slideshow-arrow', action: 'next', icon_style: icon_style, icon_shape: shape -%}
+  </div>
+{% endif %}

@@ -1,0 +1,80 @@
+/**
+ * @type {import('../schema').Preset}
+ */
+export const contactForm = {
+  name: 't:names.contact_form',
+  category: 't:categories.forms',
+  blocks: {
+    text: {
+      type: 'text',
+      settings: {
+        text: '<h2>Contact us</h2>',
+        type_preset: 'rte',
+        font: 'var(--font-body--family)',
+        font_size: '',
+        line_height: 'normal',
+        letter_spacing: 'normal',
+        case: 'none',
+        wrap: 'pretty',
+        width: '100%',
+        max_width: 'normal',
+        alignment: 'center',
+        'padding-block-start': 0,
+        'padding-block-end': 0,
+      },
+    },
+    contact_form: {
+      type: 'contact-form',
+      settings: {
+        width: 'custom',
+        custom_width: 50,
+        width_mobile: 'custom',
+        custom_width_mobile: 100,
+        inherit_color_scheme: true,
+        color_scheme: '',
+        'padding-block-start': 0,
+        'padding-block-end': 0,
+        'padding-inline-start': 0,
+        'padding-inline-end': 0,
+      },
+      blocks: {
+        'submit-button': {
+          type: 'contact-form-submit-button',
+          static: true,
+          settings: {
+            label: 'Submit',
+            style_class: 'button',
+            width: 'fit-content',
+            custom_width: 100,
+            width_mobile: 'fit-content',
+            custom_width_mobile: 100,
+          },
+        },
+      },
+      block_order: [],
+    },
+  },
+  block_order: ['text', 'contact_form'],
+  settings: {
+    content_direction: 'column',
+    vertical_on_mobile: true,
+
+    horizontal_alignment: 'flex-start',
+    vertical_alignment: 'center',
+    horizontal_alignment_flex_direction_column: 'center',
+    vertical_alignment_flex_direction_column: 'center',
+    gap: 32,
+    section_width: 'page-width',
+    section_height: '',
+    color_scheme: 'scheme-1',
+    background_media: 'none',
+    video_position: 'cover',
+    background_image_position: 'cover',
+    border: 'none',
+    border_width: 1,
+    border_opacity: 100,
+    border_radius: 0,
+    'padding-block-start': 32,
+    'padding-block-end': 32,
+  },
+};

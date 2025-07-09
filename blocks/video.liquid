@@ -1,0 +1,254 @@
+{% # import schema from '../schemas/blocks/video.js' %}
+
+{% capture video_style %}
+  {%  render 'spacing-style', settings: block.settings %}
+  {% render 'border-override', settings: block.settings %}
+   --size-style-width: {{ block.settings.custom_width }}%; --size-style-width-mobile: {{ block.settings.custom_width_mobile }}%;
+   --size-style-aspect-ratio: {% if block.settings.source == 'uploaded' %}{{ block.settings.video.aspect_ratio | default: 'auto' }}{% elsif block.settings.cover_image == blank %}{{ block.settings.aspect_ratio }}{% else %}auto{% endif %};
+{% endcapture %}
+
+{% if block.settings.source == 'uploaded' %}
+  {% render 'video',
+    video: block.settings.video,
+    video_class: 'spacing-style size-style border-style',
+    video_loop: block.settings.video_loop,
+    video_style: video_style,
+    video_preview_image: block.settings.video.preview_image,
+    additional_attributes: block.shopify_attributes,
+    section_id: section.id
+  %}
+{% else %}
+  {% render 'video',
+    video_from_url: true,
+    video: block.settings.video_url.id,
+    video_class: 'spacing-style size-style border-style',
+    video_type: block.settings.video_url.type,
+    video_style: video_style,
+    video_alt: block.settings.alt,
+    video_preview_image: block.settings.cover_image,
+    additional_attributes: block.shopify_attributes,
+    section_id: section.id
+  %}
+{% endif %}
+
+{% stylesheet %}
+  .placeholder-video {
+    aspect-ratio: 5 / 3;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.video",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "source",
+      "label": "t:settings.video_source",
+      "options": [
+        {
+          "value": "uploaded",
+          "label": "t:options.video_uploaded"
+        },
+        {
+          "value": "url",
+          "label": "t:options.video_external_url"
+        }
+      ],
+      "default": "uploaded"
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "t:settings.video",
+      "visible_if": "{{ block.settings.source == 'uploaded' }}"
+    },
+    {
+      "type": "video_url",
+      "id": "video_url",
+      "label": "t:settings.video_external_url",
+      "info": "t:info.video_external",
+      "accept": ["youtube", "vimeo"],
+      "visible_if": "{{ block.settings.source == 'url' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "video_autoplay",
+      "label": "t:settings.video_autoplay",
+      "info": "t:info.video_autoplay",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "video_loop",
+      "label": "t:settings.video_loop",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "cover_image",
+      "label": "t:settings.cover_image",
+      "visible_if": "{{ block.settings.source == 'url' and block.settings.video_autoplay == false }}"
+    },
+    {
+      "type": "text",
+      "id": "alt",
+      "label": "t:settings.video_alt_text",
+      "info": "t:info.video_alt_text",
+      "visible_if": "{{ block.settings.source == 'url' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.size"
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "t:settings.width",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "custom_width_mobile",
+      "label": "t:settings.width_mobile",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "select",
+      "id": "aspect_ratio",
+      "label": "t:settings.aspect_ratio",
+      "visible_if": "{{ block.settings.source == 'url' and block.settings.cover_image == blank }}",
+      "options": [
+        {
+          "value": "auto",
+          "label": "t:options.auto"
+        },
+        {
+          "value": "9/16",
+          "label": "t:options.portrait"
+        },
+        {
+          "value": "1/1",
+          "label": "t:options.square"
+        },
+        {
+          "value": "16/9",
+          "label": "t:options.landscape"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "header",
+      "content": "t:content.borders"
+    },
+    {
+      "type": "select",
+      "id": "border",
+      "label": "t:settings.style",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.none"
+        },
+        {
+          "value": "solid",
+          "label": "t:options.solid"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "label": "t:settings.thickness",
+      "default": 1,
+      "visible_if": "{{ block.settings.border != 'none' }}"
+    },
+    {
+      "type": "range",
+      "id": "border_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "t:settings.opacity",
+      "default": 100,
+      "visible_if": "{{ block.settings.border != 'none' }}"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "t:settings.border_radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.video",
+      "category": "t:categories.basic"
+    }
+  ]
+}
+{% endschema %}

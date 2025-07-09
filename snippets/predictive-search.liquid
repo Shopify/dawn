@@ -1,0 +1,135 @@
+{%- doc -%}
+  Renders the predictive search input and results.
+
+  @param {string} [class] - Additional classes to add to the component.
+  @param {string} [search_position] - Lateral position of the search component in the header ('left' or 'right').
+  @param {string} [search_test_id] - A Playwright test ID for differentiating search components.
+  @param {string} [input_id] - The ID for the search input element.
+  @param {string} [products_test_id] - A Playwright test ID for differentiating products.
+
+  @example
+  {% render 'predictive-search', search_position: 'left', search_test_id: 'header-search' %}
+{%- enddoc -%}
+
+<script
+  src="{{ 'predictive-search.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
+
+<predictive-search-component
+  class="predictive-search{% if class != blank %} {{ class | strip }}{% endif %}{% if search_position != blank %} predictive-search--{{ search_position }}{% endif %}"
+  style="--product-corner-radius: {{ settings.product_corner_radius | default: 8 | append: 'px' }}; --card-corner-radius: {{ settings.card_corner_radius | default: 8 | append: 'px' }};{% if settings.card_title_case == 'uppercase' %} --title-case: uppercase;{% endif %}"
+  data-section-id="predictive-search"
+  data-search-position="{{ search_position }}"
+  data-testid="{{ search_test_id }}"
+  data-active-color-scheme="{{ settings.popover_color_scheme }}"
+  role="search"
+  aria-label="{{ 'content.search_input_label' | t }}"
+>
+  <form
+    action="{{ routes.search_url }}"
+    method="get"
+    role="search"
+    class="predictive-search-form"
+    ref="form"
+    on:keydown="/onSearchKeyDown"
+  >
+    <div
+      class="predictive-search-form__header"
+    >
+      <div class="predictive-search-form__header-inner">
+        <label
+          for="{{ input_id | default: 'Search' }}"
+          class="visually-hidden"
+        >
+          {{- 'content.search_input_label' | t -}}
+        </label>
+        <input
+          class="search-input"
+          id="{{ input_id | default: 'Search' }}"
+          type="search"
+          name="q"
+          role="combobox"
+          aria-expanded="false"
+          aria-owns="predictive-search-results"
+          aria-controls="predictive-search-results"
+          aria-haspopup="listbox"
+          aria-autocomplete="list"
+          autocomplete="off"
+          placeholder="{{ 'content.search_input_placeholder' | t }}"
+          ref="searchInput"
+          on:input="/search"
+          on:keydown="/onSearchKeyDown"
+          on:focus="/expandSearch"
+        >
+        <input
+          name="options[prefix]"
+          type="hidden"
+          value="last"
+        >
+        <span class="svg-wrapper predictive-search__icon">
+          {{ 'icon-search.svg' | inline_asset_content }}
+        </span>
+        <button
+          type="button"
+          class="button-unstyled predictive-search__reset-button"
+          aria-label="{{ 'accessibility.reset_search' | t }}"
+          ref="resetButton"
+          hidden
+          on:click="/resetSearch"
+        >
+          <span class="svg-wrapper predictive-search__reset-button-icon">
+            {{ 'icon-reset.svg' | inline_asset_content }}
+          </span>
+          <span class="predictive-search__reset-button-text">{{ 'actions.clear' | t }}</span>
+        </button>
+      </div>
+      <button
+        type="button"
+        class="button predictive-search__close-modal-button"
+        aria-label="{{ 'accessibility.close_dialog' | t }}"
+        on:click="dialog-component/closeDialog"
+        ref="closeModalButton"
+      >
+        <span class="svg-wrapper">
+          {{ 'icon-close.svg' | inline_asset_content }}
+        </span>
+      </button>
+    </div>
+
+    <div class="predictive-search-form__content-wrapper">
+      <div
+        class="predictive-search-form__content"
+        tabindex="-1"
+        ref="predictiveSearchResults"
+        on:click="/handleModalClick"
+      >
+        {% render 'predictive-search-empty-state', products_test_id: products_test_id %}
+      </div>
+
+      <div class="predictive-search-form__footer">
+        <button
+          class="button button-primary predictive-search__search-button"
+          ref="viewAllButton"
+        >
+          {{ 'content.search_results_view_all' | t }}
+        </button>
+      </div>
+    </div>
+  </form>
+</predictive-search-component>
+
+{% stylesheet %}
+  predictive-search-component {
+    &:has([data-search-results]):not(:has(.predictive-search-results__no-results)) {
+      .predictive-search-form__footer {
+        display: block;
+      }
+    }
+  }
+
+  .predictive-search-form__footer {
+    display: none;
+  }
+{% endstylesheet %}

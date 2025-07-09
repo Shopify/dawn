@@ -1,0 +1,131 @@
+{%- doc -%}
+  Renders the predictive search products list for empty state and recently viewed products
+
+  @param {string} title - title of the result list
+  @param {object[]} products - array of products
+  @param {string[]} [order_ids] - array of product ids
+  @param {number} [limit] - limit of products to display
+  @param {string} [products_test_id] - a playwright test id, used to differentiate empty state from 'real' search results
+{%- enddoc -%}
+{%- liquid
+  assign recently_viewed_title_text = 'content.recently_viewed_products' | t
+-%}
+<div
+  id="predictive-search-products"
+  {% if products_test_id %}
+    data-testid="{{ products_test_id }}"
+  {% endif %}
+>
+  {% if title == recently_viewed_title_text %}
+    <div
+      class="recently-viewed-wrapper"
+      ref="recentlyViewedWrapper"
+    >
+      <span
+        class="predictive-search-results__title"
+        ref="recentlyViewedTitle[]"
+      >
+        {{ title }}
+        <button
+          class="predictive-search-results__clear button button-unstyled"
+          type="button"
+          on:click="/clearRecentlyViewedProducts"
+        >
+          {{ 'actions.clear' | t }}
+        </button>
+      </span>
+      <ul
+        class="predictive-search-results__list predictive-search-results__wrapper-products list-unstyled"
+        role="listbox"
+        aria-label="{{ title }}"
+      >
+        {% liquid
+          assign limit = limit | default: 8
+        %}
+        {% comment %}
+          If we're searching for recently viewed products by id, we need to reorder the products.
+          The order here comes from the search terms, and we display the products in the order of the ids.
+        {% endcomment %}
+        {% if order_ids != blank %}
+          {% for _id in order_ids %}
+            {% assign int_id = _id | times: 1 %}
+            {% assign product = products | find: 'id', int_id %}
+            <li
+              class="predictive-search-results__card predictive-search-results__card--product"
+              ref="recentlyViewedItems[]"
+            >
+              {% render 'resource-card',
+                resource_type: 'product',
+                resource: product,
+                image_width: 500,
+                image_hover: true,
+                image_aspect_ratio: '4 / 5'
+              %}
+            </li>
+          {% endfor %}
+        {% else %}
+          {% for product in products limit: limit %}
+            <li
+              class="predictive-search-results__card predictive-search-results__card--product"
+              ref="recentlyViewedItems[]"
+            >
+              {% render 'resource-card',
+                resource_type: 'product',
+                resource: product,
+                image_width: 500,
+                image_hover: true,
+                image_aspect_ratio: '4 / 5'
+              %}
+            </li>
+          {% endfor %}
+        {% endif %}
+      </ul>
+    </div>
+  {% else %}
+    <span class="predictive-search-results__title">
+      {{ title }}
+    </span>
+    <ul
+      class="predictive-search-results__list predictive-search-results__wrapper-products list-unstyled"
+      role="listbox"
+      aria-label="{{ title }}"
+    >
+      {% liquid
+        assign limit = limit | default: 8
+      %}
+      {% if order_ids != blank %}
+        {% for _id in order_ids %}
+          {% assign int_id = _id | times: 1 %}
+          {% assign product = products | find: 'id', int_id %}
+          <li
+            class="predictive-search-results__card predictive-search-results__card--product"
+            ref="resultsItems[]"
+          >
+            {% render 'resource-card',
+              resource_type: 'product',
+              resource: product,
+              image_width: 500,
+              image_hover: true,
+              image_aspect_ratio: '4 / 5'
+            %}
+          </li>
+        {% endfor %}
+      {% else %}
+        {% for product in products limit: limit %}
+          <li
+            class="predictive-search-results__card predictive-search-results__card--product"
+            ref="resultsItems[]"
+          >
+            {% render 'resource-card',
+              resource_type: 'product',
+              resource: product,
+              image_width: 500,
+              image_hover: true,
+              image_aspect_ratio: '4 / 5'
+            %}
+          </li>
+        {% endfor %}
+      {% endif %}
+    </ul>
+  {% endif %}
+</div>

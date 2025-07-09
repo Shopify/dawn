@@ -1,0 +1,242 @@
+{% # import schema from '../schemas/blocks/_cart-summary.js' %}
+
+{%- capture cart_summary_inner_class -%}
+  cart__summary-inner
+  {% if block.settings.extend_summary == false and block.settings.inherit_color_scheme == false -%}
+    color-{{ block.settings.color_scheme }} inherit-parent-scheme--mobile
+  {%- endif %}
+  {% if block.settings.extend_summary == false and block.settings.border_radius > 0 -%}
+    has-border-radius
+  {%- endif -%}
+{%- endcapture -%}
+
+{% if block.settings.extend_summary %}
+  <div
+    class="section-background {% if block.settings.inherit_color_scheme == false %} color-{{ block.settings.color_scheme }} inherit-parent-scheme--mobile{% endif %}"
+  ></div>
+{% endif %}
+<div
+  class="cart__summary-container border-style{% if block.settings.extend_summary == true %} cart__container--extend {% if block.settings.inherit_color_scheme == false %} color-{{ block.settings.color_scheme }} inherit-parent-scheme--mobile{% endif %}{% endif %}{% if block.settings.border_radius > 0 %} has-border-radius{% endif %}"
+  style="{% render 'border-override', settings: block.settings %}"
+  {{ block.shopify_attributes }}
+>
+  <div class="{{ cart_summary_inner_class }}">
+    {% render 'cart-summary' %}
+  </div>
+</div>
+
+{% stylesheet %}
+  .cart__summary-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .cart__summary-item.tax-note {
+    font-size: var(--cart-font-size--sm);
+  }
+
+  .cart__discount-label {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-2xs);
+  }
+
+  .cart__total {
+    align-items: baseline;
+    font-weight: var(--font-weight-bold);
+  }
+
+  .cart__tax-note {
+    color: rgb(from var(--color-foreground) r g b / var(--opacity-subdued-text));
+  }
+
+  .cart__discount-label svg {
+    width: var(--icon-size-sm);
+    height: var(--icon-size-sm);
+    display: inline-block;
+  }
+
+  .cart__summary-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--gap-2xl);
+    container-type: inline-size;
+    padding: 0;
+    position: sticky;
+    top: 0;
+    align-self: start;
+
+    @media screen and (min-width: 750px) {
+      padding: var(--padding-5xl);
+      grid-row: 1 / -1;
+    }
+  }
+
+  body:has(> #header-group .header[sticky]) .cart__summary-inner {
+    top: var(--header-height, 0);
+  }
+
+  .cart__summary-container {
+    @media screen and (max-width: 749px) {
+      border: none;
+    }
+
+    @media screen and (min-width: 750px) {
+      display: grid;
+      grid-template-rows: subgrid;
+      grid-row: 1 / -1;
+    }
+  }
+
+  .cart__summary-container:not(.cart__container--extend),
+  .cart__summary-container:not(.cart__container--extend) .cart__summary-inner {
+    height: auto;
+  }
+
+  .cart__container--extend {
+    height: 100%;
+
+    @media screen and (min-width: 750px) {
+      border-right: none;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+
+  /* If extend is on, only include top and bottom borders when the border radius is 0. */
+  .cart__container--extend:not(.has-border-radius) {
+    @media screen and (min-width: 750px) {
+      border-top: none;
+      border-bottom: none;
+    }
+  }
+
+  .cart__container--extend .cart__summary-inner {
+    height: 100%;
+    padding: var(--padding-md) 0 var(--padding-4xl);
+
+    @media screen and (min-width: 750px) {
+      grid-row: 2 / -1;
+      padding-inline: var(--page-margin);
+      width: var(--sidebar-width);
+    }
+  }
+
+  /* If extend is off, apply the border radius to the inner summary container */
+  .cart__summary-inner.has-border-radius {
+    border-radius: var(--border-radius);
+  }
+
+  @media screen and (max-width: 749px) {
+    .inherit-parent-scheme--mobile {
+      --color-background: inherit;
+      --color-foreground: inherit;
+      --color-primary: inherit;
+      --color-primary-hover: inherit;
+      --color-border: inherit;
+      --color-shadow: inherit;
+      --color-foreground-heading: inherit;
+      --color-primary-button-text: inherit;
+      --color-primary-button-background: inherit;
+      --color-primary-button-border: inherit;
+      --color-primary-button-hover-text: inherit;
+      --color-primary-button-hover-background: inherit;
+      --color-primary-button-hover-border: inherit;
+      --color-secondary-button-text: inherit;
+      --color-secondary-button-background: inherit;
+      --color-secondary-button-border: inherit;
+      --color-secondary-button-hover-text: inherit;
+      --color-secondary-button-hover-background: inherit;
+      --color-secondary-button-hover-border: inherit;
+      --color-input-text: inherit;
+      --color-input-background: inherit;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.summary",
+  "tag": null,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "extend_summary",
+      "label": "t:settings.extend_summary",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "inherit_color_scheme",
+      "label": "t:settings.inherit_color_scheme",
+      "default": false
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-3",
+      "visible_if": "{{ block.settings.inherit_color_scheme == false }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.borders"
+    },
+    {
+      "type": "select",
+      "id": "border",
+      "label": "t:settings.style",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.none"
+        },
+        {
+          "value": "solid",
+          "label": "t:options.solid"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "label": "t:settings.thickness",
+      "default": 1,
+      "visible_if": "{{ block.settings.border != 'none' }}"
+    },
+    {
+      "type": "range",
+      "id": "border_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "t:settings.opacity",
+      "default": 100,
+      "visible_if": "{{ block.settings.border != 'none' }}"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "t:settings.border_radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.summary"
+    }
+  ]
+}
+{% endschema %}

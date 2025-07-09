@@ -1,0 +1,178 @@
+{%- doc -%}
+  Renders filter remove buttons.
+
+  Accepts:
+
+  @param {object} filters - The filters to render
+  @param {boolean} show_filter_label - Whether to show the filter label
+  @param {string} results_url - The results URL
+  @param {boolean} should_show_clear_all - Whether to show the clear all button
+{%- enddoc -%}
+
+<div class="facets-remove facets-remove--mobile-and-vertical">
+  {%- for filter in filters -%}
+    {%- liquid
+      assign is_first_filter = forloop.first
+    -%}
+    {% if filter.type == 'price_range' and filter.min_value.value != null or filter.max_value.value != null %}
+      {%- liquid
+        assign is_active = true
+      -%}
+      <facet-remove-component
+        class="
+          pills__pill
+          pills__pill--desktop-small
+          facets-remove__pill
+        "
+        data-url="{{ filter.url_to_remove }}"
+        tabindex="0"
+        role="button"
+        on:click="/removeFilter?form="
+        on:keydown="/removeFilter?form="
+        {% if is_first_filter and forloop.first %}
+          autofocus
+        {% endif %}
+      >
+        {%- if filter.min_value.value != null and filter.max_value.value != null %}
+          {{- filter.min_value.value | money -}}
+          –
+          {{- filter.max_value.value | money -}}
+        {%- elsif filter.min_value.value != null -%}
+          {{ filter.min_value.value | money }}–{{ filter.range_max | money }}
+        {%- elsif filter.max_value.value != null -%}
+          {{- 0 | money -}}
+          –
+          {{- filter.max_value.value | money -}}
+        {%- endif -%}
+        <span class="svg-wrapper svg-wrapper--smaller">
+          {{- 'icon-filters-close.svg' | inline_asset_content -}}
+        </span>
+        <span class="visually-hidden">{{ 'actions.remove' | t }}</span>
+      </facet-remove-component>
+    {% else %}
+      {%- for value in filter.active_values -%}
+        {%- liquid
+          assign is_active = true
+        -%}
+        <facet-remove-component
+          class="
+            pills__pill
+            pills__pill--desktop-small
+            facets-remove__pill
+            {% if value.swatch %}pills__pill--swatch{% endif %}
+          "
+          data-url="{{ value.url_to_remove }}"
+          tabindex="0"
+          role="button"
+          on:click="/removeFilter?form="
+          on:keydown="/removeFilter?form="
+          {% if is_first_filter and forloop.first %}
+            autofocus
+          {% endif %}
+        >
+          {% if value.swatch %}
+            {% render 'swatch', swatch: value.swatch, mode: 'pill' %}
+          {% endif %}
+
+          {% if filter.type == 'boolean' or show_filter_label %}
+            {{ filter.label | escape }}: {{ value.label | escape }}
+          {% else %}
+            {{ value.label | escape }}
+          {% endif %}
+
+          <span class="svg-wrapper svg-wrapper--smaller">
+            {{- 'icon-filters-close.svg' | inline_asset_content -}}
+          </span>
+          <span class="visually-hidden">{{ 'actions.remove' | t }}</span>
+        </facet-remove-component>
+      {%- endfor -%}
+    {% endif %}
+  {%- endfor -%}
+  {% if should_show_clear_all and is_active %}
+    <facet-remove-component
+      data-url="{{ results_url }}"
+    >
+      <button
+        type="button"
+        class="button-unstyled facets__clear-all-link facets__clear-all{% if is_active %} active{% endif %}"
+        ref="clearButton"
+        on:click="/removeFilter?form="
+        on:keydown="/removeFilter?form="
+      >
+        {{- 'actions.clear_all' | t -}}
+      </button>
+    </facet-remove-component>
+  {% endif %}
+</div>
+
+{% stylesheet %}
+  /* Facets - Remove buttons */
+  .facets-remove {
+    --variant-picker-swatch-width: 20px;
+    --variant-picker-swatch-height: 20px;
+
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--gap-xs);
+    padding: 0 var(--drawer-padding);
+    margin-block-start: var(--margin-2xs);
+    margin-block-end: var(--margin-md);
+
+    @media screen and (min-width: 750px) {
+      --variant-picker-swatch-width: 16px;
+      --variant-picker-swatch-height: 16px;
+
+      gap: var(--gap-2xs);
+    }
+  }
+
+  .facets__clear-all-link {
+    --button-color: var(--color-primary);
+
+    border: none;
+    background-color: transparent;
+    padding: var(--padding-xs);
+    min-width: fit-content;
+    color: var(--button-color);
+    transition: text-decoration-color var(--animation-speed) var(--animation-easing),
+      color var(--animation-speed) var(--animation-easing);
+  }
+
+  .facets__clear-all-link:hover {
+    --button-color: var(--color-primary-hover);
+
+    color: var(--button-color);
+    text-decoration-color: var(--button-color);
+  }
+
+  .facets:not(.facets--drawer) .facets-remove--mobile-and-vertical {
+    @media screen and (min-width: 750px) {
+      padding: 0;
+    }
+  }
+
+  .facets--horizontal .facets-remove--mobile-and-vertical {
+    @media screen and (min-width: 750px) {
+      display: none;
+    }
+  }
+
+  .facets-remove:not(:has(facet-remove-component)) {
+    display: none;
+    margin: 0;
+  }
+
+  .facets-remove__pill {
+    .svg-wrapper,
+    .swatch {
+      flex-shrink: 0;
+    }
+  }
+
+  .facets--horizontal .facets-remove {
+    @media screen and (min-width: 750px) {
+      display: none;
+    }
+  }
+{% endstylesheet %}

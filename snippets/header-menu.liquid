@@ -1,0 +1,90 @@
+{% liquid
+  assign menu_content_type = block.settings.menu_style | default: 'text'
+  assign image_border_radius = block.settings.image_border_radius
+  assign color_scheme_classes = ''
+  assign color_scheme_setting_id = 'color_scheme_' | append: section.settings.menu_row
+  assign current_color_scheme = block.settings.color_scheme
+  assign parent_color_scheme = section.settings[color_scheme_setting_id]
+
+  if parent_color_scheme.id != current_color_scheme.id
+    assign color_scheme_classes = ' color-' | append: current_color_scheme
+  endif
+
+  # Check if header and menu colors match. This is used to apply different padding styles in css
+  if parent_color_scheme.settings.background.rgb == current_color_scheme.settings.background.rgb
+    assign color_scheme_classes = color_scheme_classes | append: ' color-scheme-matches-parent'
+  endif
+
+  if block.settings.menu_style == 'featured_collections'
+    assign ratio = block.settings.featured_collections_aspect_ratio
+  elsif block.settings.menu_style == 'featured_products'
+    assign ratio = block.settings.featured_products_aspect_ratio
+  endif
+%}
+
+{% capture children %}
+  {% for link in block.settings.menu.links %}
+    <li
+      role="presentation"
+      class="menu-list__list-item"
+      on:focus="/activate"
+      on:blur="/deactivate"
+      on:pointerenter="/activate"
+      on:pointerleave="/deactivate"
+    >
+      <a
+        href="{{ link.url }}"
+        class="menu-list__link{% if link.active %} menu-list__link--active{% endif %}"
+        {%- if link.links != blank -%}
+          aria-controls="submenu-{{ forloop.index }}"
+          aria-haspopup="true"
+          aria-expanded="false"
+        {%- endif -%}
+        ref="menuitem"
+      >
+        <span class="menu-list__link-title">{{- link.title -}}</span>
+      </a>
+      {%- if link.links != blank -%}
+        <div class="menu-list__submenu{{ color_scheme_classes }}" ref="submenu[]">
+          <div
+            id="submenu-{{ forloop.index }}"
+            class="menu-list__submenu-inner"
+            style="{% render 'submenu-font-styles', settings: block.settings %}"
+          >
+            {% assign list_id = 'MegaMenuList-' | append: forloop.index %}
+            {% render 'mega-menu',
+              parent_link: link,
+              id: list_id,
+              menu_content_type: menu_content_type,
+              content_aspect_ratio: ratio,
+              image_border_radius: image_border_radius
+            %}
+          </div>
+        </div>
+      {%- endif -%}
+    </li>
+  {% endfor %}
+  <li
+    class="menu-list__list-item"
+    role="presentation"
+    slot="more"
+    on:focus="/activate"
+    on:blur="/deactivate"
+    on:pointerenter="/activate"
+    on:pointerleave="/deactivate"
+  >
+    <button role="menuitem" class="button menu-list__link button-unstyled">
+      <span class="menu-list__link-title">{{ 'actions.more' | t }}</span>
+    </button>
+  </li>
+{% endcapture %}
+
+<nav header-menu>
+  <div
+    class="menu-list"
+    style="{% render 'menu-font-styles', settings: block.settings %}"
+  >
+    {% assign class = 'overflow-menu' | append: color_scheme_classes %}
+    {% render 'overflow-list', class: class, ref: 'overflowMenu', children: children, minimum-items: 2 %}
+  </div>
+</nav>

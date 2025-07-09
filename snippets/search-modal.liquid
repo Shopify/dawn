@@ -1,0 +1,108 @@
+<script
+  src="{{ 'dialog.js' | asset_url }}"
+  type="module"
+></script>
+
+<dialog-component
+  id="search-modal"
+  class="search-modal"
+  {{ block.shopify_attributes }}
+>
+  <dialog
+    ref="dialog"
+    on:click="/closeDialogOnClickOutside"
+    on:keydown="/closeDialogOnEscapePress"
+    class="search-modal__content dialog-modal"
+    scroll-lock
+  >
+    {% render 'predictive-search',
+      input_id: 'cmdk-input',
+      search_test_id: 'search-component--modal',
+      products_test_id: 'products-list-default--modal'
+    %}
+  </dialog>
+</dialog-component>
+
+{% stylesheet %}
+  /* Search modal style */
+  .search-modal {
+    --search-border-radius: var(--style-border-radius-popover);
+    --search-border-width: var(--style-border-width);
+  }
+
+  .search-modal__button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .search-modal__content {
+    /* Approx set the top so when the content is at max height, the modal is centered */
+    --modal-top-margin: calc(50dvh - var(--modal-max-height) / 2 - 2rem);
+    --modal-width: 66dvw;
+
+    padding: 0;
+
+    @media screen and (min-width: 750px) {
+      width: var(--modal-width);
+      margin-block-start: var(--modal-top-margin);
+      overflow: hidden;
+    }
+  }
+
+  /* Hide the default dialog backdrop on small screens */
+  @media screen and (max-width: 749px) {
+    .search-modal__content::backdrop {
+      display: none;
+    }
+  }
+
+  .dialog-modal[open].search-modal__content {
+    transform-origin: bottom center;
+    animation: search-element-slide-in-bottom 300ms var(--ease-out-quad) forwards;
+    border-radius: var(--search-border-radius);
+    box-shadow: var(--shadow-popover);
+
+    @media screen and (max-width: 749px) {
+      border-radius: 0;
+    }
+  }
+
+  .dialog-modal.search-modal__content.dialog-closing {
+    animation: search-element-slide-out-bottom 200ms var(--ease-out-quad) forwards;
+  }
+
+  .search-modal__content[open] {
+    display: flex;
+  }
+
+  .search-modal__content :is(.predictive-search-dropdown, .predictive-search-form__content-wrapper) {
+    position: relative;
+  }
+
+  /* Predictive search header tweaks for small screens */
+  @media screen and (max-width: 749px) {
+    .dialog-modal
+      .predictive-search-form__header:has(
+        .predictive-search__reset-button:not(.predictive-search__reset-button[hidden])
+      )::before {
+      content: '';
+      position: absolute;
+      right: calc(var(--padding-sm) + var(--minimum-touch-target));
+      top: 0;
+      bottom: 0;
+      width: var(--border-width-sm);
+      background-color: var(--color-border);
+    }
+
+    .dialog-modal
+      .predictive-search-form__header:has(
+        .predictive-search__reset-button:not(.predictive-search__reset-button[hidden])
+      )
+      > .predictive-search__close-modal-button {
+      &::before {
+        content: none;
+      }
+    }
+  }
+{% endstylesheet %}

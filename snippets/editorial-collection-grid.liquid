@@ -1,0 +1,117 @@
+{%- doc -%}
+  Renders a grid and places items inside of it using an editorial layout.
+
+  @param {object} items - An array of HTML strings for the collection list items
+
+  @example
+  {% render 'editorial-collection-grid', items: items %}
+{%- enddoc -%}
+
+<div class="editorial-collection__grid">
+  <div class="editorial-collection__spacer"></div>
+
+  {% for item in items %}
+    {% liquid
+      assign current_grid_index = forloop.index0 | divided_by: 8
+      assign current_item_index = forloop.index0 | modulo: 8
+
+      case current_item_index
+        when 0
+          assign grid_column = '2 / span 4'
+          assign grid_row = 1
+          assign grid_row_span = 5
+        when 1
+          assign grid_column = '7 / span 5'
+          assign grid_row = 3
+          assign grid_row_span = 5
+        when 2
+          assign grid_column = '1 / span 8'
+          assign grid_row = 9
+          assign grid_row_span = 6
+        when 3
+          assign grid_column = '3 / span 8'
+          assign grid_row = 16
+          assign grid_row_span = 6
+        when 4
+          assign grid_column = '7 / span 5'
+          assign grid_row = 23
+          assign grid_row_span = 5
+        when 5
+          assign grid_column = '2 / span 4'
+          assign grid_row = 25
+          assign grid_row_span = 5
+        when 6
+          assign grid_column = '5 / span 8'
+          assign grid_row = 31
+          assign grid_row_span = 6
+        when 7
+          assign grid_column = '2 / span 8'
+          assign grid_row = 38
+          assign grid_row_span = 6
+      endcase
+
+      assign full_grid_rows = current_grid_index | times: 44
+      assign grid_row = grid_row | plus: full_grid_rows
+    %}
+    <div
+      class="editorial-collection__item-{{ forloop.index0 | modulo: 4 }}"
+      style="grid-column: {{ grid_column }}; grid-row: {{ grid_row }} / span {{ grid_row_span }};"
+    >
+      {{ item }}
+    </div>
+  {% endfor %}
+</div>
+
+{% stylesheet %}
+  .editorial-collection__grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-auto-rows: 1fr;
+    gap: var(--gap-xl);
+
+    .resource-list__item,
+    .collection-card {
+      height: 100%;
+    }
+  }
+
+  .editorial-collection__spacer {
+    aspect-ratio: 1;
+  }
+
+  @media (max-width: 768px) {
+    .editorial-collection__grid {
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap-2xl);
+    }
+
+    .editorial-collection__spacer {
+      display: none;
+    }
+
+    .editorial-collection__item-0 {
+      width: 66%;
+      align-self: flex-start;
+      aspect-ratio: 4 / 5;
+    }
+
+    .editorial-collection__item-1 {
+      width: 83%;
+      align-self: flex-end;
+      aspect-ratio: 5 / 5;
+    }
+
+    .editorial-collection__item-2 {
+      width: 83%;
+      align-self: flex-start;
+      aspect-ratio: 8 / 6;
+    }
+
+    .editorial-collection__item-3 {
+      width: 100%;
+      align-self: center;
+      aspect-ratio: 8 / 6;
+    }
+  }
+{% endstylesheet %}

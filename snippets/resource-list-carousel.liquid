@@ -1,0 +1,59 @@
+{%- doc -%}
+  Renders a carousel of predictive search results cards
+
+  @param {string} ref - The ref of the slideshow
+  @param {object} slides - An array of HTML for the slides to display in the carousel
+  @param {number} slide_count - The number of slides to display in the carousel
+  @param {object} settings - The block or sections settings from the parent block/section.
+  @param {string} [slide_width_max] - The maximum width of the slides in the carousel.
+
+  @example
+  {% render 'resource-list-carousel', slides: slides, slide_count: slide_count, settings: block.settings %}
+{%- enddoc -%}
+
+{% liquid
+  assign slideshow_ref = ref | default: 'resourceListCarousel'
+  if settings.section_width == 'page-width'
+    assign slideshow_gutters = 'start end'
+  else
+    assign slideshow_gutters = null
+  endif
+%}
+
+{% capture slides %}
+  {% for item in slides limit: slides.size %}
+    {% render 'slideshow-slide'
+      index : forloop.index0,
+      children : item,
+      class : 'resource-list__slide'
+    %}
+  {% endfor %}
+{% endcapture %}
+
+{% capture slideshow_arrows %}
+  {% render 'slideshow-arrows', icon_style: settings.icons_style, icon_shape: settings.icons_shape %}
+{% endcapture %}
+
+<div
+  class="resource-list__carousel"
+  style="
+    {% if settings.section_width == 'page-width' %}
+      --gutter-slide-width: var(--util-page-margin-offset);
+    {% elsif settings.section_width == 'full-width' %}
+      --gutter-slide-width: 0px;
+    {% endif %}
+    --slide-width-max: {{ slide_width_max | default: '300px' }};
+  "
+>
+  {% render 'slideshow',
+    ref: slideshow_ref,
+    class: 'resource-list__carousel',
+    slides: slides,
+    slideshow_arrows: slideshow_arrows,
+    auto_hide_controls: false,
+    infinite: false,
+    initial_slide: 0,
+    slide_count: slide_count,
+    slideshow_gutters: slideshow_gutters
+  %}
+</div>

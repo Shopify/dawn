@@ -1,0 +1,262 @@
+{% # import schema from '../schemas/blocks/_collection-card-image' %}
+
+{%- doc -%}
+  Display an image of a collection inside a collection card.
+  Intended for collection-card.liquid block.
+
+  @param {string} parent_block_id - The block.id of the collection-card block
+
+  @example
+  {% content_for 'block', type: '_collection-card-image', id: 'collection-card-image', parent_block_id: block.id %}
+{%- enddoc -%}
+
+{% liquid
+  assign collection = closest.collection
+-%}
+
+{% liquid
+  assign image_source = collection.image
+  if image_source == blank
+    assign image_source = collection.products.first.featured_image
+  endif
+
+  assign ratio = 1
+
+  case block.settings.image_ratio
+    when 'landscape'
+      assign ratio = '16 / 9'
+    when 'portrait'
+      assign ratio = '4 / 5'
+    when 'adapt'
+      assign ratio = image_source.aspect_ratio
+  endcase
+
+  if ratio == 0 or ratio == null
+    assign ratio = 1
+  endif
+%}
+
+{% liquid
+  assign sizes = '(min-width: 750px) 50vw, 100vw'
+  assign lazy_sizes = 'auto, ' | append: sizes
+  assign loading = 'eager'
+
+  # when _collection-card-image is inside a Collection List section, specific layout types
+  # can determine the `sizes` and `loading` attributes
+
+  case section.settings.layout_type
+    when 'grid', 'carousel'
+      assign calculated_width = 100 | divided_by: section.settings.columns | append: 'vw'
+      assign sizes = '(min-width: 750px) [calc-width], 100vw' | replace: '[calc-width]', calculated_width
+    when 'editorial', 'bento'
+      assign loading = 'lazy'
+      assign sizes = lazy_sizes
+  endcase
+
+  assign widths = '300, 450, 600, 750, 900, 1050, 1200, 1350, 1500, 1650, 1800, 1950, 2000, 2500, 3000, 3500, 4000, 5000'
+%}
+
+{% style %}
+  .collection-card[data-block-id="{{ parent_block_id }}"] {
+    --ratio: {{ ratio }};
+  }
+{% endstyle %}
+
+{% if image_source != blank %}
+  <div
+    class="
+      image-block
+      collection-card__image
+      border-style
+      {% if block.settings.inherit_color_scheme == false %} color-{{ block.settings.color_scheme }}{% endif %}
+    "
+    style="{% render 'border-override', settings: block.settings %}"
+  >
+    {%- if block.settings.toggle_overlay -%}
+      {% render 'overlay', settings: block.settings %}
+    {%- endif -%}
+
+    {{
+      image_source
+      | image_url: width: 3840
+      | image_tag:
+        width: block.settings.image.width,
+        widths: widths,
+        height: block.settings.image.height,
+        class: 'image-block__image',
+        sizes: sizes,
+        loading: loading
+    }}
+  </div>
+{% else %}
+  <div
+    class="
+      image-block
+      collection-card__image
+      collection-card__image--placeholder
+      border-style
+      {% if block.settings.inherit_color_scheme == false %} color-{{ block.settings.color_scheme }}{% endif %}
+    "
+    style="{% render 'border-override', settings: block.settings %}"
+  >
+    <placeholder-image
+      data-block-id="{{ block.id }}"
+      data-type="general"
+    ></placeholder-image>
+  </div>
+{% endif %}
+
+{% stylesheet %}
+  .collection-card__image {
+    position: relative;
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: var(--ratio);
+    z-index: var(--layer-base);
+    overflow: hidden;
+  }
+
+  .collection-card__image--placeholder {
+    width: 100%;
+    height: 100%;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.collection_card_image",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:content.resource_reference_collection_card_image"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "t:settings.aspect_ratio",
+      "info": "t:info.aspect_ratio_adjusted",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "t:options.auto"
+        },
+        {
+          "value": "portrait",
+          "label": "t:options.portrait"
+        },
+        {
+          "value": "square",
+          "label": "t:options.square"
+        },
+        {
+          "value": "landscape",
+          "label": "t:options.landscape"
+        }
+      ],
+      "default": "portrait"
+    },
+    {
+      "type": "checkbox",
+      "id": "toggle_overlay",
+      "label": "t:settings.media_overlay"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "t:settings.overlay_color",
+      "alpha": true,
+      "default": "#00000026",
+      "visible_if": "{{ block.settings.toggle_overlay }}"
+    },
+    {
+      "type": "select",
+      "id": "overlay_style",
+      "label": "t:settings.overlay_style",
+      "options": [
+        {
+          "value": "solid",
+          "label": "t:options.solid"
+        },
+        {
+          "value": "gradient",
+          "label": "t:options.gradient"
+        }
+      ],
+      "default": "solid",
+      "visible_if": "{{ block.settings.toggle_overlay }}"
+    },
+    {
+      "type": "select",
+      "id": "gradient_direction",
+      "label": "t:settings.gradient_direction",
+      "options": [
+        {
+          "value": "to top",
+          "label": "t:options.up"
+        },
+        {
+          "value": "to bottom",
+          "label": "t:options.down"
+        }
+      ],
+      "default": "to top",
+      "visible_if": "{{ block.settings.toggle_overlay and block.settings.overlay_style == 'gradient' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.borders"
+    },
+    {
+      "type": "select",
+      "id": "border",
+      "label": "t:settings.style",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.none"
+        },
+        {
+          "value": "solid",
+          "label": "t:options.solid"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "label": "t:settings.thickness",
+      "default": 1,
+      "visible_if": "{{ block.settings.border != 'none' }}"
+    },
+    {
+      "type": "range",
+      "id": "border_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "t:settings.opacity",
+      "default": 100,
+      "visible_if": "{{ block.settings.border != 'none' }}"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "t:settings.border_radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ]
+}
+{% endschema %}

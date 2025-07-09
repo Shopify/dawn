@@ -1,0 +1,373 @@
+{% # import schema from '../schemas/sections/product-information' %}
+
+{% liquid
+  if section.settings.desktop_media_position == 'left'
+    assign render_order = 'media,product-details'
+  else
+    assign render_order = 'product-details,media'
+  endif
+
+  assign product_has_media = true
+  if closest.product.media.size == 0
+    assign product_has_media = false
+  endif
+
+  assign product_grid_class = 'product-information__grid'
+
+  if product_has_media == false
+    assign product_grid_class = product_grid_class | append: ' product-information--media-none'
+  elsif section.settings.desktop_media_position == 'right'
+    assign product_grid_class = product_grid_class | append: ' product-information--media-right'
+  else
+    assign product_grid_class = product_grid_class | append: ' product-information--media-left'
+  endif
+
+  if section.settings.equal_columns
+    assign product_grid_class = product_grid_class | append: ' product-information__grid--half'
+
+    if section.settings.limit_details_width
+      assign product_grid_class = product_grid_class | append: ' product-information__grid--limit-details'
+    endif
+  endif
+
+  case section.settings.content_width
+    when 'content-center-aligned'
+      assign content_width = 'page-width'
+    when 'content-full-width'
+      assign content_width = 'full-width'
+  endcase
+%}
+
+<script type="application/ld+json">
+  {{ closest.product | structured_data }}
+</script>
+
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
+<div
+  class="product-information section section--{{ content_width }} spacing-style color-{{ section.settings.color_scheme }} relative"
+  style="{% render 'spacing-style', settings: section.settings %} --gap: {{ section.settings.gap }}px;"
+>
+  {% if section.settings.desktop_media_position == 'left' and product_has_media %}
+    {% assign product_href = '#ProductInformation-' | append: section.id %}
+    {% render 'skip-to-content-link', href: product_href, text: 'accessibility.skip_to_product_info' %}
+  {% endif %}
+  <div
+    class="{{ product_grid_class }}"
+    data-product-grid-content
+  >
+    {% assign render_order_array = render_order | split: ',' %}
+    {% capture media %}
+      <div
+        class="product-information__media"
+        data-testid="product-information-media"
+      >
+        {%- content_for 'block',
+          type: '_product-media-gallery',
+          id: 'media-gallery',
+          closest.product: closest.product
+        -%}
+      </div>
+    {% endcapture %}
+
+    {% capture details %}
+      {% content_for 'block',
+        type: '_product-details',
+        id: 'product-details',
+        closest.product: closest.product
+      %}
+    {% endcapture %}
+
+    {% for block in render_order_array %}
+      {% if block == 'media' and product_has_media %}
+        {{ media }}
+      {% elsif block == 'product-details' %}
+        {{ details }}
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {% content_for 'blocks' %}
+</div>
+
+{% stylesheet %}
+  .product-information {
+    gap: var(--gap) 0;
+  }
+
+  /* Base grid layout */
+  .product-information__grid {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+  }
+
+  /* Default column positions */
+  .product-details {
+    order: 1;
+  }
+
+  .product-information__media {
+    order: 0;
+    width: 0;
+    min-width: 100%;
+  }
+
+  /* Mobile styles */
+  @media screen and (max-width: 749px) {
+    .product-information__media {
+      grid-column: 1 / -1;
+    }
+
+    .product-details {
+      grid-column: 2 / 3;
+    }
+  }
+
+  /* Desktop styles */
+  @media screen and (min-width: 750px) {
+    .product-information__grid {
+      grid-column: 2;
+    }
+
+    /* Position when there is no media */
+    .product-information__grid.product-information--media-none,
+    .product-information__grid:has(.product-information__media:empty) {
+      .product-details {
+        width: var(--narrow-content-width);
+        margin: 0 auto;
+      }
+    }
+
+    /* Position when there is media */
+    .product-information__grid:not(:has(.product-information__media:empty)) {
+      /* Media on the left side */
+      &.product-information--media-left {
+        grid-template-columns: 1fr min(50vw, var(--sidebar-width));
+
+        .product-information__media {
+          padding-right: calc(var(--gap, 0) / 2);
+        }
+
+        .product-details {
+          padding-left: calc(var(--gap, 0) / 2);
+        }
+
+        &:has(.media-gallery--extend) {
+          grid-column: 1 / 3;
+        }
+      }
+
+      /* Media on the right side */
+      &.product-information--media-right {
+        grid-template-columns: min(50vw, var(--sidebar-width)) 1fr;
+
+        .product-information__media {
+          padding-left: calc(var(--gap, 0) / 2);
+          order: 1;
+        }
+
+        .product-details {
+          padding-right: calc(var(--gap, 0) / 2);
+          order: 0;
+        }
+
+        &:has(.media-gallery--extend) {
+          grid-column: 2 / -1;
+        }
+      }
+
+      /* Equal width columns */
+      &.product-information__grid--half,
+      &.product-information__grid--half:has(.media-gallery--extend) {
+        grid-column: 1 / -1;
+        grid-template-columns:
+          var(--full-page-grid-margin) calc(var(--full-page-grid-central-column-width) / 2) calc(
+            var(--full-page-grid-central-column-width) / 2
+          )
+          var(--full-page-grid-margin);
+
+        &.product-information--media-left {
+          .product-information__media {
+            grid-column: 2 / 3;
+
+            &:has(.media-gallery--extend) {
+              grid-column: 1 / 3;
+            }
+          }
+
+          .product-details {
+            grid-column: 3 / 4;
+          }
+        }
+
+        &.product-information--media-right {
+          .product-information__media {
+            grid-column: 3 / 4;
+
+            &:has(.media-gallery--extend) {
+              grid-column: 3 / -1;
+            }
+          }
+
+          .product-details {
+            grid-column: 2 / 3;
+          }
+        }
+      }
+    }
+
+    /* Handle full width section */
+    .section--full-width {
+      .product-information__grid:not(:has(.product-information__media:empty)),
+      .product-information__grid:not(:has(.product-information__media:empty)) {
+        &.product-information--media-left,
+        &.product-information--media-right {
+          grid-column: 1 / -1;
+        }
+
+        &.product-information--media-left .product-details {
+          padding-inline-end: var(--padding-lg);
+        }
+
+        &.product-information--media-right .product-details {
+          padding-inline-start: var(--padding-lg);
+        }
+
+        &.product-information__grid--half.product-information--media-left {
+          .product-information__media {
+            grid-column: 1 / 3;
+          }
+
+          .product-details {
+            grid-column: 3 / -1;
+          }
+        }
+
+        &.product-information__grid--half.product-information--media-right {
+          .product-information__media {
+            grid-column: 3 / -1;
+          }
+
+          .product-details {
+            grid-column: 1 / 3;
+          }
+        }
+      }
+    }
+  }
+
+  .product-information__grid--limit-details .product-details > .group-block {
+    max-width: var(--sidebar-width);
+  }
+
+  /* If the header is sticky, make product details content stick underneath the header */
+  body:has(#header-group #header-component[data-sticky-state='active']) .product-details.sticky-content--desktop {
+    --sticky-header-offset: var(--header-height);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.product_information",
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "content-center-aligned",
+          "label": "t:options.page"
+        },
+        {
+          "value": "content-full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "content-center-aligned"
+    },
+    {
+      "type": "select",
+      "id": "desktop_media_position",
+      "label": "t:settings.media_position",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "checkbox",
+      "id": "equal_columns",
+      "label": "t:settings.equal_columns",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "limit_details_width",
+      "label": "t:settings.limit_product_details_width",
+      "default": false,
+      "visible_if": "{{ section.settings.equal_columns }}"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "t:settings.gap",
+      "min": 0,
+      "max": 48,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": []
+}
+{% endschema %}

@@ -1,0 +1,186 @@
+{%- doc -%}
+  Renders text that stretches to fit the full width of its container.
+
+  @param {string} [text] - The text to be rendered.
+
+  @example
+  {% render 'jumbo-text', text: block.settings.text %}
+{%- enddoc -%}
+
+{% liquid
+  assign shown_text = text | default: block.settings.text
+  assign descenders = 'alphabetic'
+  assign trim = 'trim-both'
+
+  unless block.settings.case == 'uppercase'
+    if shown_text contains 'g' or shown_text contains 'j' or shown_text contains 'p' or shown_text contains 'q' or shown_text contains 'y'
+      assign descenders = 'text'
+    endif
+  endunless
+
+  assign text_trim = trim | append: ' cap ' | append: descenders
+  assign shown_text_with_line_breaks = shown_text | newline_to_br
+  assign text_with_lines = shown_text_with_line_breaks | split: '<br />'
+  assign nudge = '-0.04em'
+%}
+
+{% capture attributes %}
+  style="
+    --font-family: var(--font-{{ block.settings.font | default: 'accent'}}--family);
+    --font-weight: var(--font-{{ block.settings.font | default: 'accent'}}--weight);
+    {% if block.settings.font == 'body' %}
+      --color: var(--color-foreground);
+    {% else %}
+      --color: var(--color-foreground-heading);
+    {% endif %}
+    --text-align: {{ block.settings.alignment | default: 'left' }};
+    {% if block.settings.alignment == "left" %}
+      --margin-left-nudge: {{nudge}};
+    {% elsif block.settings.alignment == "right" %}
+      --margin-right-nudge: {{nudge}};
+    {% endif %}
+    --line-height: {{ block.settings.line_height | default: '1' }};
+    --letter-spacing: {{ block.settings.letter_spacing | default: '-0.03em' }};
+    --text-transform: {{ block.settings.case | default: 'none' }};
+    --text-trim: {{text_trim}};
+  "
+  {{ block.shopify_attributes }}
+{% endcapture %}
+
+{% comment %}
+  If the jumbo text is not wrapped inside its own container, the overflow calculation does not always work correctly
+  (looks like some weird off-by-one error when comparing sizes).
+{% endcomment %}
+<div class="jumbo-text__container">
+  {% if text != blank %}
+    <jumbo-text {{ attributes }}>{{ text }}</jumbo-text>
+  {% else %}
+    <span class="visually-hidden">{{ shown_text }}</span>
+    <jumbo-text
+      {{ attributes }}
+      data-text-effect="{{ block.settings.text_effect }}"
+      data-animation-repeat="{{ block.settings.animation_repeat }}"
+    >
+      {%- assign char_index = 0 -%}
+      {%- for line in text_with_lines -%}
+        {%- if forloop.index > 1 -%}
+          <br>
+        {%- endif -%}
+        <span
+          class="jumbo-text-line"
+          style="--line-index: {{ forloop.index }};"
+          data-testid="jumbo-text-line"
+          aria-hidden="true"
+        >
+          {%- assign chars = line | split: ' ' | join: ' ' | split: '' -%}
+          {%- for char in chars -%}
+            {%- if char == ' ' -%}
+              <span
+                class="jumbo-text-space"
+                aria-hidden="true"
+              >
+                {{ char }}
+              </span>
+            {%- else -%}
+              <span
+                class="jumbo-text-char"
+                style="--char-index: {{ char_index }};"
+                aria-hidden="true"
+              >
+                <span class="jumbo-text-char-inner">{{ char }}</span>
+              </span>
+              {%- assign char_index = char_index | plus: 1 -%}
+            {%- endif -%}
+          {%- endfor -%}
+        </span>
+      {%- endfor -%}
+    </jumbo-text>
+  {% endif %}
+</div>
+
+<script
+  src="{{ 'jumbo-text.js' | asset_url }}"
+  type="module"
+></script>
+
+{% stylesheet %}
+  .jumbo-text__container {
+    width: 100%;
+  }
+
+  jumbo-text {
+    display: block;
+    font-family: var(--font-family, inherit);
+    font-style: var(--font-style, normal);
+    color: var(--color, inherit);
+    font-weight: var(--font-weight, inherit);
+    letter-spacing: var(--letter-spacing, -0.02em);
+    line-height: var(--line-height, 1);
+    opacity: 0;
+    text-align: var(--text-align);
+    text-box: var(--text-trim, trim-end cap text);
+    text-transform: var(--text-transform, none);
+    transition: opacity 0.3s ease;
+    white-space: pre;
+    width: 100%;
+    will-change: font-size;
+    margin-left: var(--margin-left-nudge, 0);
+    margin-right: var(--margin-right-nudge, 0);
+    overflow: visible;
+  }
+
+  jumbo-text.ready {
+    opacity: 1;
+  }
+
+  jumbo-text[data-cap-text='true'] {
+    text-box-edge: cap text;
+  }
+
+  .jumbo-text-space {
+    display: inline-flex;
+    width: 0.5ch;
+  }
+
+  :is(.jumbo-text-char, .jumbo-text-line) {
+    display: inline-flex;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Blur effect */
+    [data-text-effect='blur'] {
+      filter: blur(20px);
+      opacity: 0.5;
+      scale: 1.05;
+      transition: filter 1.6s var(--animation-timing-fade-in), opacity 1.3s var(--animation-timing-fade-in),
+        scale 1.6s var(--animation-timing-fade-in);
+    }
+
+    .jumbo-text-visible[data-text-effect='blur'] {
+      filter: blur(0);
+      opacity: 1;
+      scale: 1;
+    }
+
+    /* Reveal effect */
+    .ready[data-text-effect='reveal'],
+    .ready[data-text-effect='reveal'] .jumbo-text-line {
+      overflow: hidden;
+    }
+
+    .ready[data-text-effect='reveal'] .jumbo-text-char {
+      transform: translateY(100%);
+    }
+
+    .jumbo-text-visible[data-text-effect='reveal'] .jumbo-text-char {
+      transition: transform 0.5s var(--animation-timing-fade-in) calc(var(--line-index) * 0.05s);
+      transform: translateY(0);
+    }
+
+    .jumbo-text-visible[data-text-effect='reveal'],
+    .jumbo-text-visible[data-text-effect='reveal'] .jumbo-text-line {
+      overflow: visible;
+      transition: overflow 0s linear 0.75s;
+    }
+  }
+{% endstylesheet %}

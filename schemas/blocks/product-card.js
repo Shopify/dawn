@@ -1,0 +1,151 @@
+import { padding } from 'utils/padding';
+
+/**
+ * @type {import('../schema').Schema}
+ */
+export default {
+  name: 't:names.product_card',
+  blocks: [
+    {
+      type: '_product-card-group',
+    },
+    {
+      type: 'text',
+    },
+    {
+      type: 'image',
+    },
+    {
+      type: 'price',
+    },
+    {
+      type: 'review',
+    },
+    {
+      type: 'swatches',
+    },
+    {
+      type: '_product-card-gallery',
+    },
+    {
+      type: 'product-title',
+    },
+    {
+      type: '@app',
+    },
+  ],
+  tag: null,
+  settings: [
+    {
+      type: 'product',
+      id: 'product',
+      label: 't:settings.product',
+    },
+    {
+      type: 'range',
+      id: 'product_card_gap',
+      label: 't:settings.vertical_gap',
+      min: 0,
+      max: 50,
+      step: 1,
+      unit: 'px',
+      default: 16,
+    },
+    {
+      type: 'checkbox',
+      id: 'inherit_color_scheme',
+      label: 't:settings.inherit_color_scheme',
+      default: true,
+    },
+    {
+      type: 'color_scheme',
+      id: 'color_scheme',
+      label: 't:settings.color_scheme',
+      default: 'scheme-1',
+      visible_if: '{{ block.settings.inherit_color_scheme == false }}',
+    },
+    {
+      type: 'header',
+      content: 't:content.borders',
+    },
+    {
+      type: 'select',
+      id: 'border',
+      label: 't:settings.style',
+      options: [
+        {
+          value: 'none',
+          label: 't:options.none',
+        },
+        {
+          value: 'solid',
+          label: 't:options.solid',
+        },
+      ],
+      default: 'none',
+    },
+    {
+      type: 'range',
+      id: 'border_width',
+      min: 0,
+      max: 100,
+      step: 1,
+      unit: 'px',
+      label: 't:settings.thickness',
+      default: 1,
+      visible_if: "{{ block.settings.border != 'none' }}",
+    },
+    {
+      type: 'range',
+      id: 'border_opacity',
+      min: 0,
+      max: 100,
+      step: 1,
+      unit: '%',
+      label: 't:settings.opacity',
+      default: 100,
+      visible_if: "{{ block.settings.border != 'none' }}",
+    },
+    {
+      type: 'range',
+      id: 'border_radius',
+      label: 't:settings.border_radius',
+      min: 0,
+      max: 32,
+      step: 1,
+      default: 0,
+    },
+    ...padding({ max: 50 }),
+  ],
+  presets: [
+    {
+      name: 't:names.product_card',
+      category: 't:categories.product',
+      blocks: {
+        'product-card-gallery': {
+          type: '_product-card-gallery',
+        },
+        group: {
+          type: '_product-card-group',
+          settings: {
+            content_direction: 'column',
+          },
+          blocks: {
+            product_title: {
+              type: 'product-title',
+              settings: {
+                width: '100%',
+                type_preset: 'h5',
+              },
+            },
+            price: {
+              type: 'price',
+            },
+          },
+          block_order: ['product_title', 'price'],
+        },
+      },
+      block_order: ['product-card-gallery', 'group'],
+    },
+  ],
+};

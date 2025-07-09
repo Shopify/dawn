@@ -1,0 +1,172 @@
+{% # import schema from '../schemas/blocks/_image' %}
+
+{%- doc -%}
+  Renders an image block.
+
+  @param {string} [loading] - The html loading attribute
+{%- enddoc -%}
+
+{% assign image = closest.collection.featured_image | default: closest.product.featured_image %}
+{% assign alt = closest.collection.title | default: closest.product.title %}
+
+{% liquid
+  assign width = '100%'
+  assign media_width_desktop = '100vw'
+  assign media_width_mobile = '100vw'
+  assign sizes = 'auto, (min-width: 750px) ' | append: media_width_desktop | append: ', ' | append: media_width_mobile
+  assign widths = '450, 750, 1200, 1800, 2000'
+%}
+
+{% if image %}
+  <image-block
+    ratio="{{ block.settings.ratio }}"
+    height="{{ block.settings.height }}"
+    style="--border-radius: {{ block.settings.border_radius }}px;"
+    {{ block.shopify_attributes }}
+  >
+    {{
+      image
+      | image_url: width: 2000
+      | image_tag: width: width, widths: widths, sizes: sizes, loading: loading, alt: alt
+    }}
+  </image-block>
+{% else %}
+  <image-block
+    ratio="{{ block.settings.ratio }}"
+    height="{{ block.settings.height }}"
+    style="--border-radius: {{ block.settings.border_radius }}px;"
+    {{ block.shopify_attributes }}
+  >
+    <placeholder-image
+      data-block-id="{{ block.id }}"
+      data-type="general"
+    ></placeholder-image>
+  </image-block>
+{% endif %}
+
+{% stylesheet %}
+  image-block {
+    --image-height-basis: 10rem;
+    --image-height-small: calc(var(--image-height-basis) * 2);
+    --image-height-medium: calc(var(--image-height-basis) * 3);
+    --image-height-large: calc(var(--image-height-basis) * 4);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: var(--ratio);
+    width: 100%;
+    max-width: calc(var(--image-height) * var(--ratio));
+    height: var(--image-height);
+    overflow: hidden;
+
+    @media screen and (min-width: 750px) {
+      --image-height-small: calc(var(--image-height-basis) * 2.5);
+      --image-height-medium: calc(var(--image-height-basis) * 3.5);
+      --image-height-large: calc(var(--image-height-basis) * 4.5);
+    }
+
+    @media screen and (max-width: 749px) {
+      height: auto;
+    }
+
+    &[height='small'] {
+      --image-height: var(--image-height-small);
+    }
+
+    &[height='medium'] {
+      --image-height: var(--image-height-medium);
+    }
+
+    &[height='large'] {
+      --image-height: var(--image-height-large);
+    }
+
+    &[ratio='portrait'] {
+      --ratio: 4 / 5;
+    }
+
+    &[ratio='square'] {
+      --ratio: 1 / 1;
+
+      @media screen and (min-width: 750px) {
+        max-width: var(--image-height);
+      }
+    }
+
+    &[ratio='landscape'] {
+      --ratio: 16 / 9;
+    }
+
+    img {
+      object-fit: cover;
+      width: 100%;
+      height: auto;
+      aspect-ratio: var(--ratio);
+      border-radius: var(--border-radius);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.image",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:content.resource_reference_collection_card_image"
+    },
+    {
+      "type": "select",
+      "id": "height",
+      "label": "t:settings.height",
+      "options": [
+        {
+          "value": "small",
+          "label": "t:options.small"
+        },
+        {
+          "value": "medium",
+          "label": "t:options.medium"
+        },
+        {
+          "value": "large",
+          "label": "t:options.large"
+        }
+      ],
+      "default": "large"
+    },
+    {
+      "type": "select",
+      "id": "ratio",
+      "label": "t:settings.ratio",
+      "options": [
+        {
+          "value": "portrait",
+          "label": "t:options.portrait"
+        },
+        {
+          "value": "square",
+          "label": "t:options.square"
+        },
+        {
+          "value": "landscape",
+          "label": "t:options.landscape"
+        }
+      ],
+      "default": "portrait"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "t:settings.border_radius",
+      "min": 0,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ]
+}
+{% endschema %}

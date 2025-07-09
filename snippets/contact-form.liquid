@@ -1,0 +1,170 @@
+{%- doc -%}
+  Renders a contact form with name, email, phone, and comment fields.
+
+  @param {object} settings - Block settings, required for the 'spacing-style' and 'size-style' snippets.
+  @param {string} submit_button - HTML for the submit button, rendered via a `content_for` block.
+
+  @example
+  {% render 'contact-form', settings: block.settings, submit_button: content_for_submit_button %}
+{%- enddoc -%}
+
+<div
+  class="
+    contact-form
+    spacing-style size-style
+    {% if settings.inherit_color_scheme == false %}color-{{ settings.color_scheme }}{% endif %}
+  "
+  style="
+    {% render 'spacing-style', settings: settings %}
+    {% render 'size-style', settings: settings %}
+  "
+  {{ block.shopify_attributes }}
+>
+  {% assign form_id = block.id | default: section.id | prepend: 'ContactForm-' %}
+
+  {%- form 'contact', id: form_id, class: 'contact-form__form' -%}
+    {%- if form.errors -%}
+      <div
+        class="contact-form__error"
+        tabindex="-1"
+        autofocus
+      >
+        {{- 'icon-error.svg' | inline_asset_content -}}
+
+        {{- form.errors.translated_fields.email | capitalize }}
+        {{ form.errors.messages.email -}}
+      </div>
+    {%- endif -%}
+
+    {%- if form.posted_successfully? -%}
+      <div
+        class="contact-form__success"
+        tabindex="-1"
+        autofocus
+      >
+        {{- 'icon-checkmark.svg' | inline_asset_content -}}
+        {{- 'blocks.contact_form.post_success' | t -}}
+      </div>
+    {%- endif -%}
+
+    <div class="contact-form__form-row">
+      <label
+        class="visually-hidden"
+        for="ContactForm-name"
+      >
+        {{- 'blocks.contact_form.name' | t -}}
+      </label>
+      <input
+        type="text"
+        id="ContactForm-name"
+        class="contact-form__input"
+        autocomplete="name"
+        name="contact[name]"
+        value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}"
+        placeholder="{{ 'blocks.contact_form.name' | t }}"
+      >
+
+      <label
+        class="visually-hidden"
+        for="ContactForm-email"
+      >
+        {{- 'blocks.contact_form.email' | t -}}
+        <span aria-hidden="true">*</span></label
+      >
+      <input
+        type="email"
+        id="ContactForm-email"
+        class="contact-form__input"
+        autocomplete="email"
+        name="contact[email]"
+        spellcheck="false"
+        autocapitalize="off"
+        value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+        aria-required="true"
+        {% if form.errors contains 'email' %}
+          aria-invalid="true"
+          aria-describedby="ContactForm-email-error"
+        {% endif %}
+        placeholder="{{ 'blocks.contact_form.email' | t }}"
+      >
+    </div>
+
+    <label
+      class="visually-hidden"
+      for="ContactForm-phone"
+    >
+      {{- 'blocks.contact_form.phone' | t -}}
+    </label>
+    <input
+      type="tel"
+      id="ContactForm-phone"
+      class="contact-form__input"
+      autocomplete="tel"
+      name="contact[phone]"
+      pattern="[0-9\-]*"
+      value="{% if form.phone %}{{ form.phone }}{% elsif customer %}{{ customer.phone }}{% endif %}"
+      placeholder="{{ 'blocks.contact_form.phone' | t }}"
+    >
+
+    <label
+      class="visually-hidden"
+      for="ContactForm-body"
+    >
+      {{- 'blocks.contact_form.comment' | t -}}
+    </label>
+    <textarea
+      rows="10"
+      id="ContactForm-body"
+      class="contact-form__input contact-form__input--textarea"
+      name="contact[body]"
+      placeholder="{{ 'blocks.contact_form.comment' | t }}"
+    >
+      {{- form.body -}}
+    </textarea>
+
+    {{ submit_button }}
+  {%- endform -%}
+</div>
+
+{% stylesheet %}
+  .contact-form__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-md);
+  }
+
+  .contact-form__form-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-md);
+
+    @media screen and (min-width: 750px) {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+
+  .contact-form__input {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--color-foreground);
+    background-color: var(--color-input-background);
+    padding: var(--padding-lg) var(--padding-xl);
+    border-radius: var(--style-border-radius-inputs);
+    border: var(--style-border-width-inputs) solid var(--color-input-border);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .contact-form__input--textarea {
+    resize: vertical;
+    min-height: var(--input-textarea-min-height);
+  }
+
+  .contact-form__error,
+  .contact-form__success {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-xs);
+  }
+{% endstylesheet %}

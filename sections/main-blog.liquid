@@ -1,142 +1,205 @@
-{{ 'component-article-card.css' | asset_url | stylesheet_tag }}
-{{ 'component-card.css' | asset_url | stylesheet_tag }}
-{{ 'section-main-blog.css' | asset_url | stylesheet_tag }}
+{% # import schema from '../schemas/sections/main-blog' %}
 
-{%- style -%}
-  .section-{{ section.id }}-padding {
-    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
-    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+<script
+  src="{{ 'blog-posts-list.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
+
+<blog-posts-list section-id="{{ section.id }}">
+  <div class="section-background color-{{ section.settings.color_scheme }}"></div>
+  <div
+    class="
+      section
+      color-{{ section.settings.color_scheme }}
+      blog-posts
+      spacing-style
+      size-style
+    "
+    style="{% render 'spacing-style', settings: section.settings %}"
+  >
+    {% content_for 'blocks' %}
+
+    {%- paginate blog.articles by 12 -%}
+      <span ref="viewMorePrevious"></span>
+      <div
+        ref="grid"
+        class="blog-posts-container"
+        data-last-page="{{ paginate.pages }}"
+      >
+        {% for article in blog.articles %}
+          <div
+            class="blog-post-item"
+            ref="cards[]"
+            data-page="{{ paginate.current_page }}"
+          >
+            {% content_for 'block', id: 'static-blog-post-card', type: '_blog-post-card', article: article %}
+          </div>
+        {% endfor %}
+      </div>
+      <span ref="viewMoreNext"></span>
+    {%- endpaginate -%}
+  </div>
+</blog-posts-list>
+
+{% stylesheet %}
+  /**
+   * Blog posts page layout
+   */
+  .blog-posts {
+    --page-content-width: var(--narrow-page-width);
+    --page-width: calc(var(--page-content-width) + (var(--page-margin) * 2));
+    --columns-gap: 36px;
+    --rows-gap: 36px;
   }
 
-  @media screen and (min-width: 750px) {
-    .section-{{ section.id }}-padding {
-      padding-top: {{ section.settings.padding_top }}px;
-      padding-bottom: {{ section.settings.padding_bottom }}px;
+  .blog-posts-container {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
+    width: 100%;
+    column-gap: var(--columns-gap);
+    row-gap: var(--rows-gap);
+  }
+
+  /**
+   * Apart from the first and second rows in the grid, all remaining blog posts
+   * are arranged in a three-column layout:
+   * +------------+------------+-------------+
+   * |            |            |             |
+   * |  (span 2)  |  (span 2)  |  (span 2)   |
+   * |            |            |             |
+   * +------------+------------+-------------+
+   */
+  .blog-post-item {
+    --blog-post-card-scale: 0.6;
+
+    grid-column: span 2;
+
+    @media screen and (max-width: 749px) {
+      --blog-post-card-scale: 0.5;
+
+      grid-column: span 6;
     }
   }
-{%- endstyle -%}
 
-{%- paginate blog.articles by 6 -%}
-  <div class="main-blog page-width section-{{ section.id }}-padding">
-    <h1 class="title--primary{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
-      {{ blog.title | escape }}
-    </h1>
+  /**
+   * The second row of blog posts has two columns:
+   * +-------------------+-------------------+
+   * |                   |                   |
+   * |  (column span 3)  |  (column span 3)  |
+   * |                   |                   |
+   * +-------------------+-------------------+
+   */
+  .blog-post-item:nth-child(2),
+  .blog-post-item:nth-child(3) {
+    --blog-post-card-scale: 0.8;
 
-    <div class="blog-articles {% if section.settings.layout == 'collage' %}blog-articles--collage{% endif %}">
-      {%- for article in blog.articles -%}
-        <div
-          class="blog-articles__article article{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-          {% if settings.animations_reveal_on_scroll %}
-            data-cascade
-            style="--animation-order: {{ forloop.index }};"
-          {% endif %}
-        >
-          {%- render 'article-card',
-            article: article,
-            media_height: section.settings.image_height,
-            media_aspect_ratio: article.image.aspect_ratio,
-            show_image: section.settings.show_image,
-            show_date: section.settings.show_date,
-            show_author: section.settings.show_author,
-            show_excerpt: true
-          -%}
-        </div>
-      {%- endfor -%}
-    </div>
+    grid-column: span 3;
 
-    {%- if paginate.pages > 1 -%}
-      {%- render 'pagination', paginate: paginate -%}
-    {%- endif -%}
-  </div>
-{%- endpaginate -%}
+    @media screen and (max-width: 749px) {
+      --blog-post-card-scale: 0.5;
+
+      grid-column: span 6;
+    }
+  }
+
+  /**
+   * The first row of blog posts has only one column:
+   * +---------------------------------------+
+   * |                                       |
+   * |           (1 column span 6)           |
+   * |                                       |
+   * +---------------------------------------+
+   */
+  .blog-post-item:first-child {
+    --blog-post-card-scale: 1;
+
+    grid-column: span 6;
+  }
+
+  /**
+   * When there's no image, the blog post item has a border.
+   */
+  .blog-post-item {
+    border: 1px solid rgba(from var(--color-foreground) r g b / 0.2);
+    padding: 0 1rem 1rem;
+  }
+
+  .blog-post-item:has(.blog-post-card__image-container) {
+    border: none;
+    padding: 0;
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
-  "name": "t:sections.main-blog.name",
-  "tag": "section",
-  "class": "section",
+  "name": "t:names.blog_posts",
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    },
+    {
+      "type": "text"
+    },
+    {
+      "type": "icon"
+    },
+    {
+      "type": "image"
+    },
+    {
+      "type": "button"
+    },
+    {
+      "type": "video"
+    },
+    {
+      "type": "group"
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "_divider"
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header"]
+  },
   "settings": [
     {
-      "type": "select",
-      "id": "layout",
-      "options": [
-        {
-          "value": "grid",
-          "label": "t:sections.main-blog.settings.layout.options__1.label"
-        },
-        {
-          "value": "collage",
-          "label": "t:sections.main-blog.settings.layout.options__2.label"
-        }
-      ],
-      "default": "collage",
-      "label": "t:sections.main-blog.settings.layout.label"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_image",
-      "default": true,
-      "label": "t:sections.main-blog.settings.show_image.label"
-    },
-    {
-      "type": "select",
-      "id": "image_height",
-      "options": [
-        {
-          "value": "adapt",
-          "label": "t:sections.main-blog.settings.image_height.options__1.label"
-        },
-        {
-          "value": "small",
-          "label": "t:sections.main-blog.settings.image_height.options__2.label"
-        },
-        {
-          "value": "medium",
-          "label": "t:sections.main-blog.settings.image_height.options__3.label"
-        },
-        {
-          "value": "large",
-          "label": "t:sections.main-blog.settings.image_height.options__4.label"
-        }
-      ],
-      "default": "medium",
-      "label": "t:sections.main-blog.settings.image_height.label"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_date",
-      "default": true,
-      "label": "t:sections.main-blog.settings.show_date.label"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_author",
-      "default": false,
-      "label": "t:sections.main-blog.settings.show_author.label"
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-1"
     },
     {
       "type": "header",
-      "content": "t:sections.all.padding.section_padding_heading"
+      "content": "t:content.padding"
     },
     {
       "type": "range",
-      "id": "padding_top",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
       "min": 0,
       "max": 100,
-      "step": 4,
+      "step": 1,
       "unit": "px",
-      "label": "t:sections.all.padding.padding_top",
-      "default": 36
+      "default": 0
     },
     {
       "type": "range",
-      "id": "padding_bottom",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
       "min": 0,
       "max": 100,
-      "step": 4,
+      "step": 1,
       "unit": "px",
-      "label": "t:sections.all.padding.padding_bottom",
-      "default": 36
+      "default": 0
     }
   ]
 }

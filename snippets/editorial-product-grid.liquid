@@ -1,0 +1,124 @@
+{%- doc -%}
+  Renders a grid and places items inside of it using an editorial layout.
+
+  @param {object} items - An array of HTML strings for the product list items
+
+  @example
+  {% render 'editorial-product-grid', items: items %}
+{%- enddoc -%}
+
+<div class="editorial-product__grid">
+  <div class="editorial-product__spacer"></div>
+
+  {% for item in items %}
+    {% liquid
+      assign current_grid_index = forloop.index0 | divided_by: 8
+      assign current_item_index = forloop.index0 | modulo: 8
+
+      case current_item_index
+        when 0
+          assign grid_column = '1 / span 7'
+          assign grid_row = 1
+          assign grid_row_span = 6
+        when 1
+          assign grid_column = '9 / span 4'
+          assign grid_row = 5
+          assign grid_row_span = 5
+        when 2
+          assign grid_column = '2 / span 5'
+          assign grid_row = 8
+          assign grid_row_span = 5
+        when 3
+          assign grid_column = '5 / span 8'
+          assign grid_row = 14
+          assign grid_row_span = 6
+        when 4
+          assign grid_column = '1 / span 7'
+          assign grid_row = 21
+          assign grid_row_span = 6
+        when 5
+          assign grid_column = '9 / span 4'
+          assign grid_row = 25
+          assign grid_row_span = 5
+        when 6
+          assign grid_column = '2 / span 5'
+          assign grid_row = 28
+          assign grid_row_span = 5
+        when 7
+          assign grid_column = '3 / span 8'
+          assign grid_row = 34
+          assign grid_row_span = 6
+      endcase
+
+      assign full_grid_rows = current_grid_index | times: 40
+      assign grid_row = grid_row | plus: full_grid_rows
+    %}
+    <div
+      class="editorial-product__item-{{ forloop.index0 | modulo: 4 }}"
+      style="grid-column: {{ grid_column }}; grid-row: {{ grid_row }} / span {{ grid_row_span }};"
+    >
+      {{ item }}
+    </div>
+  {% endfor %}
+</div>
+
+{% stylesheet %}
+  .editorial-product__grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-auto-rows: 1fr;
+    gap: var(--gap-xl);
+
+    /* Make the aspect ratio super high on width, then increase the height of
+     * slideshow containers until they fill all the available space */
+    .card-gallery {
+      --gallery-aspect-ratio: 99 !important;
+    }
+
+    .card-gallery,
+    slideshow-component,
+    slideshow-container,
+    slideshow-slides {
+      height: 100%;
+    }
+  }
+
+  .editorial-product__spacer {
+    aspect-ratio: 1;
+  }
+
+  @media (max-width: 768px) {
+    .editorial-product__grid {
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap-2xl);
+    }
+
+    .editorial-product__spacer {
+      display: none;
+    }
+
+    .editorial-product__item-0 {
+      width: 83%;
+      align-self: flex-start;
+      aspect-ratio: 7 / 6;
+    }
+
+    .editorial-product__item-1 {
+      width: 83%;
+      align-self: flex-end;
+      aspect-ratio: 4 / 5;
+    }
+
+    .editorial-product__item-2 {
+      width: 66%;
+      align-self: flex-start;
+      aspect-ratio: 5 / 5;
+    }
+
+    .editorial-product__item-3 {
+      width: 100%;
+      aspect-ratio: 8 / 6;
+    }
+  }
+{% endstylesheet %}

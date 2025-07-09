@@ -1,0 +1,101 @@
+{%- doc -%}
+  Renders a quick-add variant picker, used to display the variant picker in the quick-add modal.
+
+  @param {object} product_resource - The product object.
+{%- enddoc -%}
+
+<variant-picker
+  data-product-id="{{ product_resource.id }}"
+  data-product-url="{{ product_resource.url }}"
+  class="variant-picker"
+>
+  {%- for product_option in product_resource.options_with_values -%}
+    {%- liquid
+      assign swatch_count = product_option.values | map: 'swatch' | compact | size
+      assign variant_style = ''
+
+      if swatch_count > 0
+        assign variant_style = 'swatch'
+      else
+        assign fieldset_id = section.id | append: '-' | append: product_resource.id | append: '-' | append: product_option.name | handleize
+        assign option_id_attribute = 'data-option-id="' | append: fieldset_id | append: '"'
+        assign longest_value = 0
+      endif
+    -%}
+
+    <fieldset
+      class="variant-option variant-option--buttons {% if variant_style == 'swatch' %}variant-option--swatches{% endif %}"
+      {{ option_id_attribute }}
+    >
+      <legend>
+        {{ product_option.name | escape -}}
+        {%- if variant_style == 'swatch' and product_resource.options_with_values.size > 1 -%}
+          <span class="variant-option__swatch-value">{{ product_option.selected_value }}</span>
+        {%- endif %}
+      </legend>
+      {%- for product_option_value in product_option.values -%}
+        {% if product_option_value.size > longest_value and option_id_attribute %}
+          {% assign longest_value = product_option_value.size %}
+        {% endif %}
+
+        {% liquid
+          assign featured_media = product_option_value.variant.featured_media
+
+          # If the variant has no featured media, and we have a combined listing product, then fall back to using the
+          # featured media of the child product that is linked to this option value.
+          if featured_media == blank and product_option_value.product_url
+            assign featured_media = product_option_value.variant.product.featured_media
+          endif
+        %}
+
+        <label
+          data-media-id="{{ featured_media.id }}"
+          class="variant-option__button-label{% if variant_style == 'swatch' %} variant-option__button-label--has-swatch{% endif %}"
+          {% if variant_style == 'swatch' %}
+            on:pointerenter="product-card/previewVariant/{{ featured_media.id }}"
+            on:pointerleave="product-card/resetVariant"
+          {% endif %}
+        >
+          <input
+            type="radio"
+            name="{{ product_option.name | escape }}-{{ block.id }}-{{ product_resource.id }}"
+            value="{{ product_option_value | escape }}"
+            aria-label="{{ product_option_value.name }}"
+            data-input-id="{{ product_option.position }}-{{ forloop.index0 }}"
+            data-option-value-id="{{ product_option_value.id }}"
+            data-option-media-id="{{ featured_media.id }}"
+            data-option-available="{{ product_option_value.available }}"
+            data-connected-product-url="{{ product_option_value.product_url }}"
+            form="{{ block.id }}"
+            {% if product_option_value.available == false %}
+              disabled
+            {% endif %}
+            {% if product_option_value.variant.id %}
+              data-variant-id="{{ product_option_value.variant.id }}"
+            {% endif %}
+            {% if product_option_value.selected %}
+              checked
+            {% endif %}
+          >
+          {% if variant_style == 'swatch' %}
+            {% render 'swatch', swatch: product_option_value.swatch, variant_image: featured_media %}
+          {% else %}
+            <span>{{ product_option_value | escape }}</span>
+          {% endif %}
+          {% render 'strikethrough-variant', product_option: product_option_value %}
+        </label>
+      {%- endfor -%}
+      {% if option_id_attribute %}
+        {% style %}
+          [data-option-id="{{ fieldset_id }}"] {
+            --variant-ch: {{ longest_value }}ch;
+          }
+        {% endstyle %}
+      {% endif %}
+    </fieldset>
+  {%- endfor -%}
+
+  <script type="application/json">
+    {{ product_resource.selected_or_first_available_variant | json }}
+  </script>
+</variant-picker>

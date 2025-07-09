@@ -1,0 +1,171 @@
+{% # import schema from '../schemas/sections/main-blog-post.js' %}
+
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
+<div class="section color-{{ section.settings.color_scheme }}">
+  <div
+    class="
+      spacing-style
+      layout-panel-flex
+      layout-panel-flex--column
+      section-content-wrapper
+      mobile-column
+    "
+    style="
+      {% render 'layout-panel-style', settings: section.settings %}
+      {% render 'spacing-style', settings: section.settings %}
+    "
+  >
+    <header>
+      {%- content_for 'block', id: 'blog-post-title', type: 'text' %}
+      {%- content_for 'block', id: 'blog-post-details', type: '_blog-post-info-text' %}
+    </header>
+
+    {%- content_for 'block', id: 'blog-post-image', type: 'image' %}
+    {%- content_for 'block', id: 'blog-post-content', type: '_blog-post-content' %}
+
+    {% if blog.comments_enabled? %}
+      <div class="blog-post-comments-container">
+        <h2 class="h3">{{- 'blogs.article.comments_heading' | t: count: article.comments_count -}}</h2>
+
+        <div class="blog-post-comments">
+          {% paginate article.comments by 10 %}
+            {% for comment in article.comments %}
+              <div class="blog-post-comment">
+                {{ comment.content }}
+                <div class="blog-post-comment__author">
+                  <span class="blog-post-comment__author-name">{{- comment.author -}}</span>
+                  <span>{{- 'blogs.article.comment_author_separator' | t -}}</span>
+                  <span class="blog-post-comment__date">
+                    {{- comment.created_at | time_tag: format: 'date' -}}
+                  </span>
+                </div>
+              </div>
+            {% endfor %}
+
+            <div class="blog-post-comments-pagination">
+              {{- paginate | default_pagination -}}
+            </div>
+          {% endpaginate %}
+        </div>
+
+        {% render 'blog-comment-form', article: article, section_id: section.id %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script type="application/ld+json">
+  {{ article | structured_data }}
+</script>
+
+{% stylesheet %}
+  .blog-post-comments-container {
+    width: 100%;
+    max-width: var(--normal-content-width);
+    margin: 0 auto;
+  }
+
+  .blog-post-comments {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-3xl);
+  }
+
+  .blog-post-comment__author {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-2xs);
+    margin-top: var(--margin-md);
+    font-size: var(--font-size--body-sm);
+    color: rgb(from var(--color-foreground) r g b / var(--opacity-subdued-text));
+  }
+
+  .blog-post-comments-pagination {
+    display: flex;
+    justify-content: center;
+    gap: var(--gap-2xs);
+  }
+
+  .blog-post-comments-pagination,
+  .blog-post-comments-pagination a {
+    color: var(--color-foreground);
+  }
+
+  .blog-post-comments-pagination .current {
+    color: var(--color-foreground);
+  }
+
+  .blog-post-comments-pagination .current,
+  .blog-post-comments-pagination a {
+    display: block;
+    padding: var(--padding-2xs) var(--padding-xs);
+  }
+
+  .blog-post-comments-pagination .current,
+  .blog-post-comments-pagination a:hover {
+    border-bottom: 1px solid var(--color-foreground);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.blog_post",
+  "class": "section-wrapper",
+  "settings": [
+    {
+      "type": "select",
+      "id": "content_direction",
+      "label": "t:settings.direction",
+      "options": [
+        {
+          "value": "column",
+          "label": "t:options.vertical"
+        }
+      ],
+      "default": "column",
+      "visible_if": "{{ section.settings.gap < 0 }}"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "t:settings.gap",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": []
+}
+{% endschema %}

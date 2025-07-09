@@ -1,0 +1,833 @@
+{%- doc -%}
+  Renders either a country selector, language selector, or both.
+
+  @param {boolean} show_country - Whether to show the country selector
+  @param {boolean} show_language - Whether to show the language selector
+  @param {string} block_id - The block ID
+  @param {string} [form_style] - The style tag string to be applied to the form
+  @param {string} [localization_style] - The style of the localization form
+
+  @example
+  {% render 'localization-form', show_country: true, show_language: true, block_id: block.id %}
+{%- enddoc -%}
+
+{%- liquid
+  comment
+    From Tyler in July: Noting here that it might make sense for us to just be able to get localization.available_currencies and localization.popular_countries instead of needing this esoteric logic.
+  endcomment
+  assign currencies = localization.available_countries | map: 'currency' | map: 'iso_code' | uniq
+  assign popular_countries = localization.available_countries | where: 'popular?' | sort: 'name'
+
+  assign show_country_filter = false
+  if localization.available_countries.size > 9
+    assign show_country_filter = true
+  endif
+
+  assign show_popular_countries = false
+  if localization.available_countries.size > 9 and popular_countries.size > 1
+    assign show_popular_countries = true
+  endif
+
+  assign show_currencies = false
+  if currencies.size > 1
+    assign show_currencies = true
+  endif
+
+  assign aliases_us = 'us,usa,america,united states of america'
+  assign aliases_uk = 'uk,gb,great britain'
+%}
+<localization-form-component
+  ref="localizationForm"
+  data-label-results-count="{{ 'accessibility.country_results_count' | t: count: '[count]' }}"
+  data-show-filter="{{ show_country_filter }}"
+  style="{{ form_style }}"
+>
+  {% assign localization_label = 'content.localization_region_and_language' | t %}
+
+  {%- form 'localization',
+    id: 'LocalizationForm',
+    class: 'localization-form',
+    ref: 'form',
+    aria-label: localization_label
+  -%}
+    {% if show_country %}
+      {% if show_country_filter %}
+        <div class="country-filter">
+          <div class="field">
+            <div class="country-filter__search-icon field__button motion-reduce">
+              <span class="svg-wrapper">
+                {{ 'icon-search.svg' | inline_asset_content }}
+              </span>
+            </div>
+            <input
+              class="country-filter__input"
+              id="country-filter-input"
+              type="search"
+              name="country_filter"
+              value=""
+              placeholder="{{ 'placeholders.search' | t }}"
+              role="combobox"
+              aria-owns="country-results"
+              aria-controls="country-results"
+              aria-haspopup="listbox"
+              aria-autocomplete="list"
+              aria-label="{{ 'accessibility.find_country' | t }}"
+              autocorrect="off"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+              ref="search"
+              on:keyup="/filterCountries"
+            >
+            <label
+              class="field__label visually-hidden"
+              for="country-filter-input"
+            >
+              {{- 'content.search' | t -}}
+            </label>
+            <button
+              type="reset"
+              class="button button-unstyled country-filter__reset-button field__button"
+              aria-label="{{ 'actions.reset' | t }}"
+              ref="resetButton"
+              hidden
+              on:click="/resetCountriesFilter"
+            >
+              <span class="svg-wrapper">
+                {{ 'icon-reset.svg' | inline_asset_content }}
+              </span>
+            </button>
+          </div>
+        </div>
+      {% endif %}
+      <div class="country-selector-form__wrapper">
+        <h2
+          class="visually-hidden"
+          id="{{ localization_style }}-CountryLabel"
+        >
+          Country/Region
+        </h2>
+        {% if show_country_filter %}
+          <div
+            id="sr-country-search-results-{{ block_id }}"
+            class="visually-hidden"
+            aria-live="polite"
+            ref="liveRegion"
+          ></div>
+        {% endif %}
+        <div
+          class="localization-form__list country-selector__list{% if show_currencies %} country-selector__list--with-multiple-currencies{% endif %}"
+          id="{{ localization_style }}-country-results"
+          ref="countryList"
+        >
+          {% if show_popular_countries %}
+            <ul
+              role="list"
+              class="list-unstyled popular-countries"
+              aria-label="{{ 'accessibility.country_region' | t }}"
+              ref="popularCountries"
+            >
+              {%- for country in popular_countries -%}
+                {% liquid
+                  assign aliases = ''
+                  case country.iso_code
+                    when 'US'
+                      assign aliases = aliases_us
+                    when 'GB'
+                      assign aliases = aliases_uk
+                  endcase
+                %}
+                <li
+                  class="localization-form__list-item"
+                  {% if country.iso_code == localization.country.iso_code %}
+                    aria-current="true"
+                  {% endif %}
+                  data-value="{{ country.iso_code }}"
+                  {% if aliases %}
+                    data-aliases="{{ aliases }}"
+                  {% endif %}
+                  id="{{ country.name }}"
+                  aria-label="{{ country.name }}"
+                  role="option"
+                  tabindex="-1"
+                  ref="countryListItems[]"
+                  on:click="/selectCountry/{{ country.iso_code }}"
+                >
+                  <span class="svg-wrapper icon-checkmark">
+                    {{- 'icon-checkmark.svg' | inline_asset_content -}}
+                  </span>
+                  <span class="country">{{- country.name }}</span>
+                  <span
+                    class="localization-form__currency motion-reduce"
+                    {% unless show_currencies %}
+                      hidden
+                    {% endunless %}
+                  >
+                    {{ country.currency.iso_code }}
+                    {{ country.currency.symbol -}}
+                  </span>
+                </li>
+              {%- endfor -%}
+            </ul>
+          {% endif %}
+          <ul
+            role="list"
+            class="list-unstyled countries"
+          >
+            <span
+              class="localization-form__list-item localization-form__list-item-disabled"
+              id="no-results-message"
+              ref="noResultsMessage"
+              hidden
+            >
+              {{- 'content.no_results_found' | t -}}
+            </span>
+            {%- for country in localization.available_countries -%}
+              {% liquid
+                assign aliases = ''
+                case country.iso_code
+                  when 'US'
+                    assign aliases = aliases_us
+                  when 'GB'
+                    assign aliases = aliases_uk
+                endcase
+              %}
+              <li
+                class="localization-form__list-item"
+                {% if country.iso_code == localization.country.iso_code %}
+                  aria-current="true"
+                {% endif %}
+                data-value="{{ country.iso_code }}"
+                {% if aliases %}
+                  data-aliases="{{ aliases }}"
+                {% endif %}
+                id="{{ country.name }}"
+                aria-label="{{ country.name }}"
+                role="option"
+                tabindex="-1"
+                ref="countryListItems[]"
+                on:click="/selectCountry/{{ country.iso_code }}"
+              >
+                <span class="svg-wrapper icon-checkmark">
+                  {{- 'icon-checkmark.svg' | inline_asset_content -}}
+                </span>
+                <span class="country">{{- country.name }}</span>
+                <span
+                  class="localization-form__currency motion-reduce"
+                  {% unless show_currencies %}
+                    hidden
+                  {% endunless %}
+                >
+                  {{ country.currency.iso_code }}
+                  {{ country.currency.symbol -}}
+                </span>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+        <div class="country-selector__overlay"></div>
+        <input
+          type="hidden"
+          name="country_code"
+          value="{{ localization.country.iso_code }}"
+          ref="countryInput"
+        >
+      </div>
+    {% endif %}
+
+    {% if show_language %}
+      <div class="language-selector{% if show_country %} top-shadow{% else %} language-selector--collapse-space{% endif %}{% if show_country == false and localization_style == 'drawer' %} h5{% endif %}">
+        <h2
+          class="visually-hidden"
+          id="{{ localization_style }}-LanguageLabel"
+        >
+          {{ 'content.language' | t }}
+        </h2>
+        {% if show_country == true %}
+          <span class="language-selector__label">{{ 'content.language' | t }}</span>
+        {% endif %}
+        <select
+          id="{{ localization_style }}Select"
+          class="localization-form__select"
+          name="language_code"
+          aria-label="{{ 'content.language' | t }}"
+          ref="languageInput"
+          on:change="/changeLanguage"
+        >
+          {%- for language in localization.available_languages -%}
+            <option
+              value="{{ language.iso_code }}"
+              lang="{{ language.iso_code }}"
+              {% if language.iso_code == localization.language.iso_code %}
+                selected
+              {% endif %}
+            >
+              {{ language.endonym_name | capitalize }}
+            </option>
+          {%- endfor -%}
+        </select>
+        <span class="svg-wrapper icon-caret">
+          {{- 'icon-caret.svg' | inline_asset_content -}}
+        </span>
+      </div>
+    {% endif %}
+  {%- endform -%}
+</localization-form-component>
+
+{% stylesheet %}
+  /* Localization */
+  localization-form-component {
+    display: flex;
+    width: var(--width, auto);
+
+    @media screen and (min-width: 750px) {
+      position: relative;
+    }
+  }
+
+  localization-form-component[data-show-filter='false'] .country-selector-form__wrapper {
+    padding-block-start: var(--padding-xs);
+  }
+
+  .localization-form {
+    width: 100%;
+  }
+
+  localization-form-component .button:is(:not(.country-filter__reset-button)) {
+    --button-color: var(--color-primary);
+    --button-background-color: var(--language-button-background-color, var(--color-background));
+    --button-border-color: var(--language-button-border-color, var(--color-border));
+
+    text-decoration-color: transparent;
+    text-decoration-thickness: 0.075em;
+    text-underline-offset: 0.125em;
+    transition: text-decoration-color var(--animation-speed) var(--animation-easing);
+  }
+
+  localization-form-component .button:is(:not(.country-filter__reset-button)):hover,
+  .localization-form__list-item:hover,
+  .localization-form__list-item:focus {
+    --button-color: var(--color-primary-hover);
+
+    background-color: rgb(from var(--color-primary-hover) r g b / 8%);
+  }
+
+  .localization-form__list-item[aria-current='true'] {
+    --button-color: var(--color-primary-active);
+
+    background-color: rgb(from var(--color-primary-hover) r g b / 10%);
+  }
+
+  .localization-form__list-item-disabled {
+    pointer-events: none;
+  }
+
+  .localization-form__list-item:focus-visible {
+    outline: none;
+  }
+
+  localization-form-component .localization-selector {
+    display: flex;
+    align-items: center;
+    gap: var(--margin-2xs);
+  }
+
+  localization-form-component .country-filter__search-icon {
+    left: 8px;
+    right: auto;
+    color: var(--color-foreground-muted);
+    pointer-events: none;
+  }
+
+  .country-filter__search-icon .svg-wrapper svg {
+    width: var(--icon-size-sm);
+    height: var(--icon-size-sm);
+  }
+
+  .disclosure {
+    width: 100%;
+  }
+
+  .dropdown-localization__button {
+    display: flex;
+    position: relative;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--menu-localization-font);
+    font-size: var(--menu-localization-font-size);
+    font-weight: var(--menu-top-level-font-weight);
+    padding-inline: var(--padding-2xs);
+    margin-inline: calc(-1 * var(--padding-2xs));
+  }
+
+  .dropdown-localization__button .icon-caret {
+    height: var(--icon-size-xs);
+    width: var(--icon-size-xs);
+    right: var(--margin-xs);
+    top: calc(50% - var(--padding-2xs));
+    flex-shrink: 0;
+    transition: transform var(--animation-speed) var(--animation-easing);
+  }
+
+  .drawer-localization__button .icon-flag,
+  .dropdown-localization__button .icon-flag {
+    width: var(--menu-localization-font-size, var(--icon-size-sm));
+    height: var(--menu-localization-font-size, var(--icon-size-sm));
+    clip-path: circle(50%); /* stylelint-disable-line */
+    background-position: center;
+    background-size: cover;
+    margin-inline-end: 4px;
+    position: relative;
+  }
+
+  .icon-flag::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 var(--size-shadow) var(--color-shadow);
+    border-radius: 50%;
+  }
+
+  .dropdown-localization__button[aria-expanded='true'] .icon-caret svg {
+    transform: rotate(180deg);
+  }
+
+  .dropdown-localization__button,
+  .dropdown-localization__button:hover {
+    box-shadow: none;
+    background-color: transparent;
+    border-color: transparent;
+    color: var(--color-foreground);
+  }
+
+  .localization-form__list {
+    position: relative;
+    width: 100%;
+    padding-block: 0 var(--padding-xs);
+    font-size: var(--font-size-lg);
+    scroll-padding: var(--padding-xs) 0;
+    overflow-y: auto;
+    white-space: nowrap;
+
+    /* Hide scrollbar which would cause extra right padding in Safari */
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  dropdown-localization-component .localization-form__list {
+    max-height: 20.5rem;
+  }
+
+  .localization-wrapper {
+    position: fixed;
+    z-index: var(--layer-raised);
+    border-radius: var(--style-border-radius-popover);
+    animation: localization-slide-down 0.3s ease-in-out;
+  }
+
+  .localization-wrapper:not([hidden]) {
+    animation: localization-slide-up 0.3s ease-in-out;
+  }
+
+  @keyframes localization-slide-up {
+    from {
+      display: none;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes localization-slide-down {
+    from {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    to {
+      display: none;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+  }
+
+  .localization-form__list-item:not([hidden]) {
+    margin-block-end: var(--margin-3xs);
+    display: flex;
+    gap: var(--margin-sm);
+    padding: 8px;
+    border-radius: 8px;
+    line-height: var(--font-line-height-md);
+    align-items: center;
+    text-align: start;
+    cursor: pointer;
+    transition: background-color var(--animation-speed) var(--animation-easing);
+
+    .country {
+      flex: 1;
+      color: var(--color-foreground);
+    }
+
+    &:hover {
+      background-color: rgb(from var(--color-foreground) r g b / 8%);
+    }
+
+    &[aria-current='true'] {
+      .country {
+        font-weight: 500;
+      }
+    }
+  }
+
+  .localization-form__list-item#no-results-message {
+    grid-template-columns: 1fr;
+    text-align: center;
+    color: rgb(from var(--color-foreground) r g b / var(--opacity-subdued-text));
+  }
+
+  .is-searching .localization-form__list-item .country {
+    color: rgb(from var(--color-foreground) r g b / 80%);
+  }
+
+  .localization-form__list-item .country mark {
+    font-weight: 500;
+    background: none;
+    color: var(--color-foreground);
+  }
+
+  .country-filter {
+    position: relative;
+    padding: var(--padding-xs);
+    border-bottom: var(--style-border-width) solid transparent;
+    transition: border-color var(--animation-values);
+  }
+
+  .country-filter.is-scrolled {
+    border-color: var(--color-border);
+  }
+
+  .drawer-localization .country-filter {
+    padding-block: 8px;
+  }
+
+  dropdown-localization-component .country-filter {
+    position: relative;
+    padding: 8px;
+  }
+
+  .country-selector-form__wrapper {
+    overflow-y: auto;
+    max-height: 100%;
+    flex-grow: 1;
+  }
+
+  .language-selector {
+    display: flex;
+    gap: var(--gap-xs);
+    padding: var(--padding-md) var(--padding-lg);
+    position: relative;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .language-selector__label {
+    flex-shrink: 0;
+    color: rgb(from var(--color-foreground) r g b / var(--opacity-subdued-text));
+  }
+
+  .localization-form__select {
+    border: none;
+    color: var(--color-foreground);
+    appearance: none;
+    background-color: var(--color-input-background);
+    padding-block: var(--padding-3xs);
+    padding-inline: var(--padding-xs) calc(var(--icon-size-xs) + var(--padding-xs));
+    text-align: right;
+    cursor: pointer;
+    max-width: 40vw;
+    text-overflow: ellipsis;
+
+    &:focus-visible {
+      outline: var(--focus-outline-width) solid currentcolor;
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  #header-component[transparent] localization-form-component .localization-form .localization-form__select {
+    background-color: transparent;
+  }
+
+  .localization-form__select option {
+    background-color: var(--color-input-background);
+    color: var(--color-input-text);
+  }
+
+  dropdown-localization-component .localization-form__select:hover {
+    background-color: rgb(from var(--color-primary-hover) r g b / 8%);
+  }
+
+  .language-selector .svg-wrapper.icon-caret {
+    width: var(--icon-size-xs);
+    height: var(--icon-size-xs);
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+  }
+
+  .language-selector--collapse-space {
+    padding-inline-end: var(--padding-2xs);
+  }
+
+  .language-selector--collapse-space .localization-form__select {
+    padding-inline-end: var(--icon-size-xs);
+  }
+
+  .language-selector--collapse-space .svg-wrapper.icon-caret {
+    right: 0;
+  }
+
+  .localization-form .icon-checkmark {
+    width: var(--icon-size-xs);
+    height: var(--icon-size-xs);
+  }
+
+  .localization-form .svg-wrapper.icon-checkmark {
+    visibility: hidden;
+  }
+
+  .localization-form__list-item[aria-current='true'] .svg-wrapper.icon-checkmark {
+    visibility: visible;
+  }
+
+  .country-filter__input {
+    width: 100%;
+    height: 44px;
+    font-size: var(--font-size-lg);
+    padding: var(--padding-md) var(--padding-lg) var(--padding-md) calc(var(--margin-md) + var(--padding-xl));
+    border: 1px solid var(--color-foreground);
+    color: var(--color-input-text);
+    background-color: var(--color-input-background);
+    outline-offset: -1px;
+
+    @media screen and (min-width: 750px) {
+      height: 36px;
+    }
+  }
+
+  .country-filter__input::placeholder {
+    color: inherit;
+  }
+
+  .country-filter .field {
+    position: relative;
+  }
+
+  .country-filter .field__label {
+    font-size: var(--font-size-lg);
+    left: var(--margin-2xl);
+    top: var(--margin-xl);
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .country-filter__input:focus ~ .field__label,
+  .country-filter__input:not(:placeholder-shown) ~ .field__label,
+  .country-filter__input:-webkit-autofill ~ .field__label {
+    font-size: var(--font-size-xs);
+    top: var(--margin-xs);
+  }
+
+  .country-filter .field__button:not([hidden]) {
+    display: flex;
+    height: fit-content;
+    position: absolute;
+    padding: 0;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    align-items: center;
+    background-color: transparent;
+    color: var(--color-input-text);
+    border: 0;
+  }
+
+  input[type='search']::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
+  .country-selector__close-button {
+    display: none;
+  }
+
+  .drawer-localization .drawer-localization__button {
+    display: flex;
+    padding: 0;
+    position: relative;
+    text-decoration: none;
+    height: 44px;
+
+    &:hover {
+      color: var(--color-foreground);
+    }
+  }
+
+  .drawer-localization .drawer-localization__button .icon-caret {
+    width: fit-content;
+    height: fit-content;
+    margin: 0;
+    padding: var(--padding-xl) var(--padding-xl) var(--padding-xl) var(--padding-xs);
+  }
+
+  dropdown-localization-component {
+    position: relative;
+    background-color: transparent;
+  }
+
+  dropdown-localization-component .country-filter__input {
+    border: none;
+  }
+
+  dropdown-localization-component .localization-form__list-item {
+    margin-inline: 8px;
+  }
+
+  dropdown-localization-component .localization-wrapper {
+    box-shadow: var(--shadow-popover);
+    border: var(--style-border-popover);
+    background-color: var(--color-background);
+    max-height: 27.5rem;
+    position: absolute;
+    top: calc(100% + 10px);
+    z-index: calc(var(--layer-header-menu) + 1);
+  }
+
+  dropdown-localization-component .localization-wrapper.right-bound {
+    right: 0;
+    left: unset;
+  }
+
+  dropdown-localization-component .localization-wrapper.left-bound {
+    left: -8px;
+    right: unset;
+  }
+
+  /* Additional specificity due to dropdown-localization-component getting a low score */
+  dropdown-localization-component .language-selector.language-selector {
+    padding: 10px 8px 10px 16px;
+  }
+
+  dropdown-localization-component .localization-form__currency {
+    width: max-content;
+    opacity: 0;
+    visibility: hidden;
+    transition: none;
+  }
+
+  dropdown-localization-component
+    :is(
+      .localization-form__list-item:hover,
+      .localization-form__list-item[aria-selected='true'],
+      .localization-form__list-item[aria-current='true']
+    )
+    .localization-form__currency {
+    opacity: 1;
+    color: var(--color-foreground-muted);
+    transition: opacity var(--animation-speed-slow) var(--animation-easing);
+    visibility: visible;
+  }
+
+  .dropdown-localization .language-selector:where(:not(.top-shadow)) {
+    font-weight: var(--menu-top-level-font-weight);
+  }
+
+  .dropdown-localization:not(dropdown-localization-component) .language-selector,
+  .menu-drawer__localization:not(drawer-localization-component) .language-selector {
+    font-family: var(--menu-localization-font);
+    font-size: var(--menu-localization-font-size);
+  }
+
+  .menu-drawer__localization .language-selector.h5 {
+    padding-inline-start: 0;
+  }
+
+  .header__column .localization-form__select {
+    background-color: var(--header-bg-color);
+  }
+
+  .drawer-localization {
+    display: contents;
+    color: var(--color-foreground);
+  }
+
+  .drawer-localization localization-form-component {
+    position: relative;
+    height: 100%;
+  }
+
+  .drawer-localization .mobile-localization,
+  .drawer-localization .drawer-localization__button--label {
+    display: flex;
+    gap: var(--gap-xs);
+    margin-block: 0;
+    align-items: center;
+  }
+
+  .drawer-localization__button--label.h6 {
+    font-family: var(--menu-localization-font);
+  }
+
+  .drawer-localization img {
+    width: var(--icon-size-sm);
+  }
+
+  .drawer-localization .localization-button__icon,
+  .drawer-localization .localization-button__icon svg {
+    width: var(--icon-size-xs);
+    height: var(--icon-size-xs);
+  }
+
+  .drawer-localization summary.is-disabled {
+    pointer-events: none;
+  }
+
+  .drawer-localization .localization-wrapper {
+    width: 100%;
+  }
+
+  .drawer-localization .localization-form {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .drawer-localization .localization-form > * {
+    padding-inline: var(--padding-xl);
+  }
+
+  .drawer-localization .language-selector .svg-wrapper.icon-caret {
+    transform: translateY(-50%) rotate(0deg);
+  }
+
+  .drawer-localization .language-selector .svg-wrapper.icon-caret svg {
+    transform: none;
+  }
+{% endstylesheet %}

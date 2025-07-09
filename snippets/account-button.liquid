@@ -1,0 +1,83 @@
+{%- doc -%}
+  Renders an account button.
+
+  @param {string} [tag] - The tag to use
+  @param {string} [attributes] - Additional attributes to add to the tag
+{%- enddoc -%}
+
+{%- assign tag = tag | default: 'button' -%}
+<{{ tag }}
+  class="account-button header-actions__action"
+  aria-label="{{ 'accessibility.account' | t }}"
+  {{ attributes }}
+>
+  {%- if customer.has_avatar? -%}
+    {{ customer | avatar }}
+  {%- elsif customer.first_name or customer.email -%}
+    {%- liquid
+      assign initial = customer.email | first
+
+      if customer.first_name != blank
+        assign initial = customer.first_name | first
+      endif
+    -%}
+    <span
+      class="account-button__avatar"
+      aria-hidden="true"
+    >
+      {{- initial -}}
+    </span>
+  {%- else -%}
+    <span
+      class="account-button__icon"
+      aria-hidden="true"
+    >
+      {{- 'icon-account.svg' | inline_asset_content -}}
+    </span>
+  {%- endif -%}
+</{{ tag }}>
+
+{% stylesheet %}
+  .account-button {
+    color: var(--color-foreground);
+    appearance: none;
+    border: none;
+    background: none;
+    height: var(--button-size);
+    width: var(--button-size);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
+    transition: color var(--animation-speed) var(--animation-easing);
+  }
+
+  .account-button__avatar {
+    --account-button-size: 1.625rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--account-button-size);
+    height: var(--account-button-size);
+    border-radius: var(--style-border-radius-50);
+    background-color: var(--color-primary-button-background);
+    font-size: var(--font-size--sm);
+    font-weight: 500;
+    color: var(--color-primary-button-text);
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .account-button__icon {
+    color: currentColor;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* The shop avatar doesn't bubble the click event up to our button, so we need to prevent that or the button doesn't work */
+  .account-button shop-user-avatar {
+    pointer-events: none;
+  }
+{% endstylesheet %}

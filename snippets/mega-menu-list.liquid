@@ -1,0 +1,276 @@
+{%- doc -%}
+  Renders mega menu list markup and optional featured content.
+
+  @param {object} parent_link - The linklist to render.
+  @param {string} id - Unique ID to assign to the `<ul>` element.
+  @param {number} [grid_columns_count] - Number of grid columns for the mega menu.
+  @param {number} [grid_columns_count_tablet] - Number of grid columns for the mega menu on tablets.
+  @param {number} [grid_columns_count_collection_images] - Number of grid columns when `menu_content_type` is 'collection_images'.
+  @param {string} [menu_content_type] - Type of content: 'featured_products', 'featured_collections', 'collection_images', or 'text'.
+  @param {number} [content_aspect_ratio] - Aspect ratio for content images.
+  @param {number} [image_border_radius] - Border radius for content images.
+
+  @example
+  {% render 'mega-menu-list', parent_link: link, id: 'MegaMenuList-1', grid_columns_count: 6, menu_content_type: 'featured_products' %}
+{%- enddoc -%}
+
+{% liquid
+  comment
+    open_column_span tracks when a vertical column in the mega menu is open. Links will be stacked
+    in the column until the code closes the column span.
+  endcomment
+  assign open_column_span = false
+  assign column_count = 0
+  assign links_before_wrap = 10
+  assign max_menu_columns = grid_columns_count | default: 6
+  assign max_menu_columns_tablet = grid_columns_count_tablet | default: 4
+
+  if menu_content_type == 'collection_images'
+    assign collection_links = parent_link.links | where: 'type', 'collection_link'
+    if collection_links.size != parent_link.links.size
+      assign menu_content_type = 'text'
+    endif
+  endif
+
+  if menu_content_type == 'featured_collections'
+    if parent_link.type == 'collection_link'
+      assign collection_handles = parent_link.object.handle | append: ','
+    endif
+    assign collection_links = parent_link.links | where: 'type', 'collection_link'
+    for collection_link in collection_links
+      assign collection_handles = collection_handles | append: collection_link.object.handle | append: ','
+    endfor
+  endif
+
+  if menu_content_type == 'featured_products'
+    if parent_link.type == 'collection_link'
+      assign collection_object = parent_link.object
+    else
+      assign menu_content_type = 'text'
+    endif
+  endif
+%}
+<ul
+  data-menu-list-id="{{ id }}"
+  class="mega-menu__list list-unstyled"
+  style="--menu-image-border-radius: {{ image_border_radius }}px;"
+>
+  {% for link in parent_link.links %}
+    {% liquid
+      # Decide whether to open a column span, and how many columns of the grid to span
+      if forloop.first or open_column_span == false
+        assign open_column_span = true
+
+        # Don't allow orphan links in a column
+        assign break_after_modulo = link.links.size | modulo: links_before_wrap
+        if break_after_modulo == 1
+          assign links_before_wrap = links_before_wrap | minus: 1
+        endif
+        assign break_after_float = links_before_wrap | times: 1.0
+        assign column_span = link.links.size | divided_by: break_after_float | ceil | at_least: 1
+        assign column_count = column_count | plus: column_span
+        assign should_break_columns = true
+        assign span_class = 'mega-menu__column mega-menu__column--span-' | append: column_span
+        if menu_content_type == 'collection_images'
+          assign should_break_columns = false
+          # temporary fix to use 8 column grid (spanning 2) when fewer than 5 collection image links
+          if parent_link.links.size < 5
+            assign span_class = span_class | append: ' mega-menu__column--collection-image'
+          endif
+        endif
+        echo '<li class="' | append: span_class | append: '">'
+      endif
+    %}
+    <div>
+      <a
+        href="{{ link.url }}"
+        class="mega-menu__link {% if link.links != blank %}mega-menu__link--parent{% endif %}"
+      >
+        {% if menu_content_type == 'collection_images' %}
+          {{
+            link.object.featured_image
+            | image_url: width: 1024
+            | image_tag: loading: 'lazy', class: 'mega-menu__link-image', sizes: 'auto'
+          }}
+        {% endif %}
+        <span
+          class="mega-menu__link-title"
+        >
+          {{- link.title -}}
+        </span>
+      </a>
+      {% if link.links != blank %}
+        <ul
+          class="list-unstyled"
+          {% if should_break_columns %}
+            style="column-count: {{ column_span }};"
+          {% endif %}
+        >
+          {% for childLink in link.links %}
+            {% assign break_after_modulo = forloop.index | modulo: links_before_wrap %}
+            <li
+              {% if break_after_modulo == 0 and should_break_columns %}
+                style="break-after: column;"
+              {% endif %}
+            >
+              <a
+                href="{{ childLink.url }}"
+                class="mega-menu__link"
+              >
+                <span class="mega-menu__link-title">{{- childLink.title -}}</span>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    {% liquid
+      # Check conditions for closing the span at the end of each iteration, then close the span if needed
+      assign next_linklist = parent_link.links[forloop.index]
+
+      if forloop.last
+        assign open_column_span = false
+      elsif menu_content_type == 'collection_images'
+        assign open_column_span = false
+      elsif next_linklist.links != blank
+        assign open_column_span = false
+      elsif link.links != blank and next_linklist.links == blank
+        assign open_column_span = false
+      endif
+
+      if open_column_span == false
+        echo '</li>'
+      endif
+    %}
+  {% endfor %}
+</ul>
+
+{% liquid
+  # decide how many grid columns are needed for the menu list, and how many columns are needed for the featured content
+  # prioritize a minimum of 1 featured_collection (2 columns), and minimum 2 featured_products (2 columns)
+  assign min_products = 2
+  assign max_products = 3
+  assign min_products_tablet = 1
+  assign max_products_tablet = 3
+  assign min_collections = 1
+
+  if menu_content_type == 'featured_products'
+    # desktop breakpoint
+    assign temp_column_count = column_count | plus: min_products
+
+    if temp_column_count > max_menu_columns
+      assign max_product_columns = 2
+    else
+      assign max_product_columns = max_menu_columns | minus: column_count | at_most: max_products
+    endif
+
+    assign max_product_columns = max_product_columns | at_most: collection_object.products.size
+
+    assign max_featured_products = max_product_columns
+    assign max_menu_columns = max_menu_columns | minus: max_product_columns
+
+    # tablet breakpoint
+    assign temp_column_count = column_count | plus: min_products_tablet
+
+    if temp_column_count > max_menu_columns_tablet
+      assign max_product_columns_tablet = 1
+    else
+      assign max_product_columns_tablet = max_menu_columns_tablet | minus: column_count | at_most: max_products_tablet
+    endif
+
+    assign max_product_columns_tablet = max_product_columns_tablet | at_most: collection_object.products.size
+
+    assign max_featured_products_tablet = max_product_columns_tablet
+    assign max_menu_columns_tablet = max_menu_columns_tablet | minus: max_product_columns_tablet
+  endif
+
+  if menu_content_type == 'featured_collections'
+    # desktop breakpoint
+    assign min_featured_collection_columns = min_collections | times: 2
+    assign temp_column_count = column_count | plus: min_featured_collection_columns
+
+    if temp_column_count > max_menu_columns
+      assign max_collection_columns = 2
+    else
+      assign max_collection_columns = max_menu_columns | minus: column_count
+    endif
+
+    assign max_featured_collections = max_collection_columns | divided_by: 2 | floor
+    assign max_menu_columns = max_menu_columns | minus: max_collection_columns
+
+    # tablet breakpoint
+    assign max_collection_columns_tablet = 2
+    assign max_featured_collections_tablet = 1
+    assign max_menu_columns_tablet = max_menu_columns_tablet | minus: max_collection_columns_tablet
+  endif
+%}
+
+{% style %}
+  [data-menu-grid-id="{{ id }}"] {
+    {% if menu_content_type == 'collection_images' and parent_link.links.size < 5 %}
+      --menu-columns-desktop: {{ grid_columns_count_collection_images }};
+      --menu-columns-tablet: {{ grid_columns_count_tablet }};
+    {% else %}
+      --menu-columns-desktop: {{ grid_columns_count }};
+      --menu-columns-tablet: {{ grid_columns_count_tablet }};
+    {% endif %}
+  }
+
+  [data-menu-list-id="{{ id }}"] {
+    {% if menu_content_type == 'collection_images' and parent_link.links.size < 5 %}
+      --menu-columns-desktop: {{ grid_columns_count_collection_images }};
+      --menu-columns-tablet: {{ max_menu_columns_tablet }};
+    {% else %}
+      --menu-columns-desktop: {{ max_menu_columns }};
+      --menu-columns-tablet: {{ max_menu_columns_tablet }};
+    {% endif %}
+  }
+{% endstyle %}
+
+{% case menu_content_type %}
+  {% when 'featured_products' %}
+    <span
+      class="mega-menu__content"
+      style="--menu-content-columns-desktop: {{ max_product_columns }}; --menu-content-columns-tablet: {{ max_product_columns_tablet }}; --resource-card-corner-radius: {{ image_border_radius }}px;"
+    >
+      <ul
+        class="mega-menu__content-list mega-menu__content-list--products list-unstyled"
+      >
+        {% paginate collection_object.products by max_featured_products %}
+          {% for item in collection_object.products %}
+            <li class="mega-menu__content-list-item {% if forloop.index > max_featured_products_tablet %} mega-menu__content-list-item--hidden-tablet{% endif %}">
+              {% render 'resource-card',
+                resource: item,
+                resource_type: 'product',
+                image_hover: true,
+                image_aspect_ratio: content_aspect_ratio
+              %}
+            </li>
+          {% endfor %}
+        {% endpaginate %}
+      </ul>
+    </span>
+  {% when 'featured_collections' %}
+    {% assign collection_handles = collection_handles | split: ',' | uniq %}
+    <span
+      class="mega-menu__content"
+      style="--menu-content-columns-desktop: {{ max_collection_columns }}; --menu-content-columns-tablet: {{ max_collection_columns_tablet }}; --resource-card-corner-radius: {{ image_border_radius }}px;"
+    >
+      <ul
+        class="mega-menu__content-list mega-menu__content-list--collections list-unstyled"
+        style="--menu-content-columns-desktop: {{ max_featured_collections }}; --menu-content-columns-tablet: {{ max_featured_collections_tablet }};"
+      >
+        {% for handle in collection_handles limit: max_featured_collections %}
+          <li class="mega-menu__content-list-item{% if forloop.index > max_featured_collections_tablet %} mega-menu__content-list-item--hidden-tablet{% endif %}">
+            {% render 'resource-card',
+              resource: collections[handle],
+              resource_type: 'collection',
+              style: 'overlay',
+              image_aspect_ratio: content_aspect_ratio
+            %}
+          </li>
+        {% endfor %}
+      </ul>
+    </span>
+{% endcase %}

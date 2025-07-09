@@ -1,0 +1,206 @@
+{%- doc -%}
+  Renders a comment form for a blog post.
+
+  @param {object} [form] - The form object
+  @param {object} [article] - The article object
+  @param {string} [section_id] - The section ID
+{%- enddoc -%}
+
+{% form 'new_comment', article %}
+  <div class="blog-post-comments__form-container">
+    <h2 class="h3">{{- 'blogs.comment_form.heading' | t -}}</h2>
+
+    {%- if form.errors -%}
+      <p
+        class="blog-post-comments__form-message"
+        role="alert"
+      >
+        {{- 'icon-error.svg' | inline_asset_content -}}
+
+        {{- 'blogs.comment_form.error' | t -}}
+      </p>
+
+      <ul class="">
+        {%- for field in form.errors -%}
+          <li>
+            {%- if form.errors.translated_fields[field] contains 'author' -%}
+              <span id="blog-post-comment-author-error">
+                {{- 'blogs.comment_form.name' | t -}}
+              </span>
+            {%- elsif form.errors.translated_fields[field] contains 'body' -%}
+              <span id="blog-post-comment-body-error">
+                {{- 'blogs.comment_form.message' | t -}}
+              </span>
+            {%- else -%}
+              <span id="{{ form.errors.translated_fields[field] | handleize }}-error">
+                {{- form.errors.translated_fields[field] | capitalize -}}
+              </span>
+            {%- endif -%}
+            {{ form.errors.messages[field] }}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- elsif form.posted_successfully? -%}
+      <p
+        class="blog-post-comments__form-message"
+        role="alert"
+      >
+        {{- 'icon-checkmark.svg' | inline_asset_content -}}
+
+        {%- liquid
+          assign post_message = 'blogs.comment_form.success'
+          if blog.moderated? and comment.status == 'unapproved'
+            assign post_message = 'blogs.comment_form.success_moderated'
+          endif
+        -%}
+
+        {{ post_message | t }}
+      </p>
+    {%- endif -%}
+
+    <div class="blog-post-comments__form">
+      <div class="field">
+        <label
+          class="visually-hidden"
+          for="{{ section_id }}-blog-post-comment-author"
+        >
+          {{ 'blogs.comment_form.name' | t }}
+        </label>
+
+        <input
+          type="text"
+          name="comment[author]"
+          id="{{ section_id }}-blog-post-comment-author"
+          class="blog-post-comments__form-input field__input"
+          autocomplete="name"
+          value="{{- form.author -}}"
+          aria-required="true"
+          placeholder="{{ 'blogs.comment_form.name' | t }}"
+          required
+          {% if form.errors contains 'author' %}
+            aria-invalid="true"
+            aria-describedby="blog-post-comment-author-error"
+          {% endif %}
+        >
+      </div>
+
+      <div class="field">
+        <label
+          class="visually-hidden"
+          for="{{ section_id }}-blog-post-comment-email"
+        >
+          {{ 'blogs.comment_form.email' | t }}
+        </label>
+
+        <input
+          type="email"
+          name="comment[email]"
+          id="{{ section_id }}-blog-post-comment-email"
+          autocomplete="email"
+          class="blog-post-comments__form-input field__input"
+          value="{{ form.email }}"
+          autocorrect="off"
+          autocapitalize="off"
+          aria-required="true"
+          placeholder="{{ 'blogs.comment_form.email' | t }}"
+          required
+          {% if form.errors contains 'email' %}
+            aria-invalid="true"
+            aria-describedby="blog-post-comment-email-error"
+          {% endif %}
+        >
+      </div>
+
+      <div class="field blog-post-comments__form-body">
+        <label
+          class="visually-hidden"
+          for="{{ section_id }}-blog-post-comment-body"
+        >
+          {{ 'blogs.comment_form.message' | t }}
+        </label>
+
+        <textarea
+          rows="5"
+          name="comment[body]"
+          id="{{ section_id }}-blog-post-comment-body"
+          class="blog-post-comments__form-input blog-post-comments__form-input--textarea field__input"
+          aria-required="true"
+          placeholder="{{ 'blogs.comment_form.message' | t }}"
+          required
+          {% if form.errors contains 'body' %}
+            aria-invalid="true"
+            aria-describedby="blog-post-comment-body-error"
+          {% endif %}
+        >
+          {{- form.body -}}
+        </textarea>
+      </div>
+    </div>
+
+    {% if blog.moderated? %}
+      <p class="blog-post-comments__form-moderated">
+        {{- 'blogs.comment_form.moderated' | t -}}
+      </p>
+    {% endif %}
+
+    <button
+      class="button blog-post-comments__form-submit"
+      type="submit"
+    >
+      {{ 'blogs.comment_form.post' | t }}
+    </button>
+  </div>
+{% endform %}
+
+{% stylesheet %}
+  .blog-post-comments__form-container {
+    --comment-form-gap: var(--gap-md);
+
+    width: 100%;
+    max-width: var(--normal-content-width);
+    margin: var(--margin-4xl) auto 0;
+  }
+
+  .blog-post-comments__form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--comment-form-gap);
+
+    @media screen and (min-width: 750px) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .blog-post-comments__form-input {
+    padding: var(--padding-lg) var(--padding-xl);
+    border: var(--style-border-width-inputs) solid var(--color-input-border);
+  }
+
+  .blog-post-comments__form-input--textarea {
+    resize: vertical;
+    min-height: var(--input-textarea-min-height);
+  }
+
+  .blog-post-comments__form-message {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-xs);
+  }
+
+  .blog-post-comments__form-body {
+    grid-column: 1 / -1;
+  }
+
+  .blog-post-comments__form-input:focus-visible {
+    outline: var(--focus-outline-width) solid currentcolor;
+    outline-offset: var(--focus-outline-offset);
+  }
+
+  .blog-post-comments__form-moderated {
+    font-size: var(--font-size--xs);
+  }
+
+  .blog-post-comments__form-submit {
+    margin-block-start: var(--comment-form-gap);
+  }
+{% endstylesheet %}

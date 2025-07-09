@@ -1,0 +1,273 @@
+{%- doc -%}
+  Renders a card for displaying various resource types (products, collections, articles, pages).
+
+  @param {object} resource - The product or collection resource to render
+  @param {string} resource_type - The type of resource to render.
+  @param {string} [collection_thumbnails] - The style of the collection card. Can be 'single' or 'multiple'. Defaults to 'single'
+  @param {string} [style] - The style of the card. Can be 'default' or 'overlay'
+  @param {number} [image_width] - The maximum width of the image, value influences the srcset attribute. Defaults to 1200px.
+  @param {string} [image_aspect_ratio] - The aspect ratio to display the image. Defaults to image's natural ratio
+  @param {boolean} [image_hover] - Whether to show a secondary image on hover and focus
+{%- enddoc -%}
+
+{% liquid
+  if image_aspect_ratio == blank or image_aspect_ratio == 'adapt'
+    assign ratio = resource.featured_image.aspect_ratio
+  else
+    assign ratio = image_aspect_ratio
+  endif
+  assign image_width = image_width | default: 1200
+  assign widths = '300, 450, 600, 750, 900, 1050, 1200'
+  assign single_thumbnail_collection = false
+  if resource_type == 'collection' and collection_thumbnails != 'multiple'
+    assign single_thumbnail_collection = true
+  endif
+
+  if resource_type == 'product' and settings.transition_to_main_product
+    assign featured_media_url = resource.selected_or_first_available_variant.featured_image | image_url: width: image_width
+    if featured_media_url == blank
+      assign featured_media_url = resource.featured_media.preview_image | image_url: width: image_width
+    endif
+  endif
+%}
+
+{%- if resource_type == 'product' and settings.transition_to_main_product -%}
+  <product-card-link
+    data-product-id="{{ resource.id }}"
+    data-featured-media-url="{{ featured_media_url }}"
+    data-product-transition="{{ settings.transition_to_main_product }}"
+  >
+{%- endif -%}
+<div
+  class="resource-card{% if style == 'overlay' %} resource-card--overlay{% endif %}"
+  href="{{ resource.url }}"
+  data-resource-type="{{ resource_type }}"
+>
+  <a
+    class="resource-card__link"
+    href="{{ resource.url }}"
+  >
+    <span class="visually-hidden">
+      {{ resource.title }}
+    </span>
+  </a>
+  <div
+    class="resource-card__media"
+    style="--resource-card-aspect-ratio: {{ ratio }};"
+    {% if resource_type == 'product' and settings.transition_to_main_product %}
+      data-view-transition-to-main-product
+    {% endif %}
+  >
+    {%- if resource_type == 'product' or single_thumbnail_collection -%}
+      {% assign featured_image = resource.featured_image | default: resource.featured_media.preview_image %}
+
+      {%- if featured_image != blank -%}
+        {{
+          featured_image
+          | image_url: width: image_width
+          | image_tag:
+            loading: 'lazy',
+            class: 'resource-card__image',
+            widths: widths,
+            sizes: 'auto',
+            transitionToProduct: settings.transition_to_main_product,
+            data-media-id: featured_image.id
+        }}
+        {%- if image_hover and resource.media.size > 1 -%}
+          {{
+            resource.media[1]
+            | image_url: width: image_width
+            | image_tag:
+              loading: 'lazy',
+              class: 'resource-card__image resource-card__image--secondary',
+              widths: widths,
+              sizes: 'auto',
+              transitionToProduct: settings.transition_to_main_product,
+              data-media-id: resource.media[1].id
+          }}
+        {%- endif -%}
+      {%- else -%}
+        <div
+          aria-hidden="true"
+          class="resource-card__image-placeholder"
+        >
+          {{- resource.title | truncate: 60 -}}
+        </div>
+      {%- endif -%}
+    {%- elsif resource_type == 'collection' -%}
+      {%- if resource.products.size > 0 -%}
+        <div class="resource-card__image-wrapper">
+          {% assign resource_products = resource.products | where: 'featured_image' %}
+          {% for product in resource_products limit: 4 %}
+            {{
+              product.featured_image
+              | image_url: width: image_width
+              | image_tag: loading: 'lazy', class: 'resource-card__collection-image', sizes: 'auto', widths: widths
+            }}
+          {% endfor %}
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+
+  <div class="resource-card__content">
+    <p class="resource-card__title{% if style == 'overlay' %} h5{%else %} paragraph{% endif %}">
+      {{- resource.title -}}
+    </p>
+
+    {% if resource_type == 'product' %}
+      {% render 'price', product_resource: resource, show_unit_price: true %}
+    {% elsif resource_type == 'collection' and single_thumbnail_collection == false %}
+      <p class="resource-card__subtext paragraph">
+        {{- 'content.search_results_resource_products_count' | t: count: resource.all_products_count -}}
+      </p>
+    {% else %}
+      <p class="resource-card__subtext paragraph">
+        {{- resource.excerpt | default: resource.content | strip_html | truncate: 65 -}}
+      </p>
+    {% endif %}
+  </div>
+</div>
+{%- if resource_type == 'product' and settings.transition_to_main_product -%}
+  </product-card-link>
+{%- endif -%}
+
+{% stylesheet %}
+  .resource-card {
+    --resource-card-secondary-image-opacity: 0;
+    --resource-card-primary-image-opacity: calc(1 - var(--resource-card-secondary-image-opacity));
+
+    display: flex;
+    flex-direction: column;
+    row-gap: var(--padding-xs);
+    position: relative;
+    text-decoration: none;
+    height: 100%;
+    opacity: 0;
+    animation: fadeIn var(--animation-speed-medium) var(--animation-timing-fade-in) forwards;
+  }
+
+  .resource-card__link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .resource-card__content {
+    display: flex;
+    flex-direction: column;
+    color: var(--color-foreground);
+    gap: var(--padding-3xs);
+
+    .price {
+      font-weight: 500;
+    }
+  }
+
+  .resource-card[data-resource-type='article'] .resource-card__content,
+  .resource-card[data-resource-type='page'] .resource-card__content {
+    gap: var(--padding-xs);
+  }
+
+  .resource-card__image {
+    aspect-ratio: var(--resource-card-aspect-ratio, auto);
+    object-fit: cover;
+    border-radius: var(--resource-card-corner-radius);
+    opacity: var(--resource-card-primary-image-opacity);
+  }
+
+  .resource-card__image--secondary {
+    position: absolute;
+    top: 0;
+    opacity: var(--resource-card-secondary-image-opacity);
+    border-radius: var(--resource-card-corner-radius);
+  }
+
+  .resource-card__media:empty {
+    display: none;
+  }
+
+  .resource-card__image-placeholder {
+    padding: var(--padding-sm);
+    font-size: var(--font-size--lg);
+    line-height: var(--line-height--display-loose);
+    word-break: break-word;
+    background-color: rgb(from var(--color-foreground) r g b / 5%);
+    aspect-ratio: var(--resource-card-aspect-ratio, auto);
+    border-radius: var(--resource-card-corner-radius);
+    color: var(--color-foreground);
+  }
+
+  .resource-card__title {
+    margin-block: 0;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    line-height: 1.3;
+  }
+
+  .resource-card__title.paragraph {
+    line-height: 1.3;
+  }
+
+  .resource-card--overlay {
+    height: 100%;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 50% 0 0;
+      background: var(--gradient-image-overlay);
+      border-radius: var(--resource-card-corner-radius);
+      pointer-events: none;
+      z-index: var(--layer-flat);
+    }
+  }
+
+  .resource-card--overlay .resource-card__image {
+    height: 100%;
+  }
+
+  .resource-card--overlay .resource-card__content {
+    position: absolute;
+    inset: auto 0 0;
+    padding: var(--padding-lg) var(--padding-lg) var(--padding-sm);
+    z-index: var(--layer-raised);
+  }
+
+  .resource-card--overlay .resource-card__title {
+    color: var(--color-white);
+  }
+
+  /* Collection images */
+  .resource-card__image-wrapper {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--gap-2xs);
+  }
+
+  .resource-card__collection-image {
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: calc(var(--card-corner-radius) - (var(--padding-xs) / 2));
+  }
+
+  .resource-card__subtext {
+    color: rgba(from var(--color-foreground) r g b / var(--opacity-subdued-text));
+    margin-block-start: 0;
+  }
+
+  .resource-card__subtext.paragraph {
+    font-size: var(--font-size--body-sm);
+    line-height: var(--line-height--body-tight);
+    color: rgba(from var(--color-foreground) r g b / var(--opacity-subdued-text));
+  }
+
+  .resource-card:has(.resource-card__image--secondary) {
+    &:hover,
+    &:focus {
+      --resource-card-secondary-image-opacity: 1;
+    }
+  }
+{% endstylesheet %}

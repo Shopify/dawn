@@ -1,0 +1,194 @@
+<div class="account-actions">
+  <div class="account-actions__main-menu">
+    <header class="account-actions__header">
+      <span class="account-actions__title h5">
+        {% if customer and customer.first_name != blank %}
+          {{ 'content.account_title_personalized' | t: first_name: customer.first_name }}
+        {% else %}
+          {{ 'content.account_title' | t }}
+        {% endif %}
+      </span>
+      {% if customer %}
+        <span class="account-actions__email">
+          {% if customer.email %}
+            {{ customer.email }}
+          {% elsif customer.phone %}
+            {{ customer.phone }}
+          {% endif %}
+        </span>
+      {% endif %}
+    </header>
+
+    {% unless customer %}
+      <div class="account-actions__sign-ins">
+        <script
+          src="{{ 'account-login-actions.js' | asset_url }}"
+          type="module"
+          fetchpriority="low"
+        ></script>
+        <account-login-actions class="account-actions__shop-login">
+          {{ shop | login_button }}
+        </account-login-actions>
+
+        <a
+          href="{% if request.design_mode %}{{ routes.account_url }}{% else %}{{ routes.storefront_login_url }}{% endif %}"
+          class="account-actions__link button"
+          {% if autofocus_enabled %}
+            autofocus
+          {% endif %}
+        >
+          <span class="account-actions__sign-in-text">
+            {{ 'actions.sign_in_options' | t }}
+          </span>
+          <span class="account-actions__fallback-text">
+            {{ 'actions.log_in' | t }}
+          </span>
+        </a>
+      </div>
+    {% endunless %}
+
+    <nav class="account-actions__nav">
+      <ul class="account-actions__list">
+        <li class="account-actions__list-item">
+          <a
+            href="{{ routes.account_url }}"
+            class="account-actions__link button-secondary"
+            {% if autofocus_enabled and customer %}
+              autofocus
+            {% endif %}
+          >
+            <span
+              class="account-actions__icon"
+              aria-hidden="true"
+            >
+              {{- 'icon-orders.svg' | inline_asset_content -}}
+            </span>
+            {{ 'content.account_orders' | t }}
+          </a>
+        </li>
+        <li class="account-actions__list-item">
+          <a
+            href="{{ routes.account_addresses_url }}"
+            class="account-actions__link button-secondary"
+          >
+            <span
+              class="account-actions__icon"
+              aria-hidden="true"
+            >
+              {{- 'icon-account.svg' | inline_asset_content -}}
+            </span>
+            {{ 'content.account_profile' | t }}
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
+
+{% stylesheet %}
+  .account-actions {
+    background-color: var(--color-background);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: height var(--animation-values);
+
+    &:has([data-active]) .account-actions__main-menu {
+      visibility: hidden;
+    }
+  }
+
+  .account-actions__header {
+    padding: var(--padding-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-2xs);
+  }
+
+  .account-actions__title {
+    /* Ideally we set the font-size here, but specificity issues make this necessary */
+    --font-h5--size: var(--font-size--lg);
+
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .account-actions__email {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-2xs);
+    color: rgb(from var(--color-foreground) r g b / 60%);
+    max-width: var(--account-actions-max-width);
+    word-break: break-all;
+  }
+
+  .account-actions__sign-ins {
+    padding: var(--padding-xl);
+    padding-block-start: 0;
+    padding-block-end: var(--padding-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-sm);
+  }
+
+  .account-actions__sign-in-text {
+    display: inline;
+  }
+
+  .account-actions__fallback-text {
+    display: none;
+  }
+
+  .account-actions__sign-ins:not(:has(shop-login-button)) {
+    gap: 0;
+
+    .account-actions__sign-in-text {
+      display: none;
+    }
+
+    .account-actions__fallback-text {
+      display: block;
+    }
+  }
+
+  /* Makes the shop login button radius match the theme settings */
+  .account-actions__shop-login {
+    --buttons-radius: var(--style-border-radius-buttons-primary);
+  }
+
+  .account-actions__nav {
+    padding: var(--padding-xl);
+    padding-block-start: 0;
+  }
+
+  .account-actions__list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gap-sm);
+    width: 100%;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    @media screen and (max-width: 300px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .account-actions__link {
+    width: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--gap-2xs);
+  }
+
+  .account-actions__icon {
+    display: flex;
+    width: var(--icon-size-sm);
+    height: var(--icon-size-sm);
+    margin-block: -4px;
+  }
+{% endstylesheet %}

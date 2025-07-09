@@ -1,0 +1,122 @@
+{%- doc -%}
+  Renders media block contents (used in _media and _media-without-appearance blocks)
+
+  @param {string} section_id - The section ID
+  @param {object} [block] - The block object
+  @param {boolean} [unset_image_tag] - if true, ignores the image focal point in the image
+{%- enddoc -%}
+
+{% liquid
+  assign show_image = false
+  assign show_video = false
+
+  if block.settings.media_type == 'image'
+    assign show_image = true
+  endif
+
+  if block.settings.media_type == 'video'
+    assign show_video = true
+  endif
+%}
+
+<div
+  class="
+    media-block
+    spacing-style
+    {% if block.settings.inherit_color_scheme == false %} color-{{ block.settings.color_scheme }}{% endif %}
+    {% if show_image and block.settings.image_position == 'contain' or show_video and block.settings.video_position == 'contain' %}
+      media-block--contain
+    {% endif %}
+  "
+  style="
+    {% render 'border-override', settings: block.settings %}
+    {% render 'spacing-style', settings: block.settings %}
+    --image-position: {{ block.settings.image_position }};
+    --video-position: {{ block.settings.video_position }};
+  "
+  {{ block.shopify_attributes }}
+>
+  {%- if show_image -%}
+    {% capture image_tag %}
+      {% if block.settings.image != blank %}
+        {% render 'image',
+          image: block.settings.image,
+          class: 'media-block__media border-style',
+          unset_image_tag: unset_image_tag
+        %}
+      {% else %}
+        <div class="placeholder-image media-block__media border-style">
+          <placeholder-image
+            data-block-id="{{ section_id }}-{{ block.id }}"
+            data-type="general"
+          ></placeholder-image>
+        </div>
+      {% endif %}
+    {% endcapture %}
+
+    {% if block.settings.link != blank %}
+      <a
+        href="{{ block.settings.link }}"
+        class="media-block__media-link"
+      >
+        {{ image_tag }}
+      </a>
+    {% else %}
+      {{ image_tag }}
+    {% endif %}
+  {%- elsif show_video -%}
+    {% render 'video',
+      video: block.settings.video,
+      video_autoplay: block.settings.video_autoplay,
+      video_loop: block.settings.video_loop,
+      video_class: 'media-block__media media-block__media--video border-style',
+      section_id: section_id
+    %}
+  {%- else -%}
+    <div class="placeholder-image media-block__media border-style">
+      <placeholder-image
+        data-block-id="{{ section_id }}-{{ block.id }}"
+        data-type="general"
+      ></placeholder-image>
+    </div>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .media-block {
+    overflow: hidden;
+    position: relative;
+
+    @media screen and (min-width: 750px) {
+      min-height: var(--media-height);
+    }
+  }
+
+  .media-block__media {
+    height: var(--media-height-mobile, auto);
+    object-fit: var(--image-position, 'cover');
+    object-position: center center;
+    width: 100%;
+
+    @media screen and (min-width: 750px) {
+      height: 100%;
+      position: absolute;
+    }
+  }
+
+  deferred-media[class].media-block__media
+    :is(.deferred-media__poster-button img, .deferred-media__poster-button ~ video) {
+    object-fit: var(--video-position, 'cover');
+  }
+
+  /* This is to support corner radius on video and align the video to the center of the block */
+  .media-block__media--video {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @media screen and (max-width: 749px) {
+      --media-height-mobile: auto;
+    }
+  }
+{% endstylesheet %}

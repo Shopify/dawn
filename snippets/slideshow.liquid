@@ -1,0 +1,73 @@
+{%- doc -%}
+  Renders a slideshow component.
+  Condiional <slideshow-arrows> component and slideshow controls.
+
+  @param {object[]} slides - the slides of the slideshow
+  @param {string} [ref] - the ref of the slideshow component
+  @param {string} [class] - HTML class attribute of the slideshow component
+  @param {string} [controls] - the controls of the slideshow component
+  @param {string} [style] - HTML style attribute of the slideshow component
+  @param {boolean} [autoplay] - whether the slideshow will autoplay
+  @param {number} [autoplay_speed] - the speed of the slideshow autoplay
+  @param {boolean} [auto_hide_controls] - whether to hide slideshow-controls when the scroller is smaller than the viewport
+  @param {boolean} [infinite] - whether the slideshow will loop
+  @param {number} [initial_slide] - the 0-based index of the initial slide, defaults to 0
+  @param {string} [slideshow_gutters] - the gutter positions to render. Set width with CSS variables --gutter-slide-width
+  @param {number} [slide_count] - the total number of slides
+  @param {string} [slide_size] - the height of the slides
+  @param {boolean} [show_arrows] - whether the slideshow will render a slideshow-arrows component
+  @param {string} [slideshow_arrows] - a custom slideshow-arrows component to render instead of the default
+  @param {string} [icon_style] - The style of the icon, defaults to 'arrow'
+  @param {string} [arrows_position] - The position of the arrows, defaults to 'bottom'
+  @param {string} [attributes] - Additional attributes to add to the slideshow component
+
+  @example
+  {% render 'slideshow', slides: slides, slide_count: collection.products.size, ref: 'mobileSlideshow' %}
+{%- enddoc -%}
+
+{% assign class = class | strip %}
+{% assign style = style | strip %}
+
+<slideshow-component
+  {% if ref != blank %}
+    ref="{{ ref }}"
+  {% endif %}
+  {% if class != blank %}
+    class="{{ class }}"
+  {% endif %}
+  style="--slideshow-timeline: {% render 'timeline-scope', count: slide_count, prefix: 'slide' %};{{ style }}"
+  {% if autoplay == true %}
+    autoplay="{{ autoplay_speed }}" aria-live="polite"
+  {% endif %}
+  initial-slide="{{ initial_slide | default: 0 }}"
+  {% if auto_hide_controls %}
+    auto-hide-controls
+  {% endif %}
+  {% unless infinite == false %}
+    infinite
+  {% endunless %}
+
+  {{ attributes }}
+>
+  <slideshow-container ref="slideshowContainer">
+    {% if show_arrows and disabled != true %}
+      {% render 'slideshow-arrows', icon_style: icon_style, arrows_position: arrows_position %}
+    {% endif %}
+    {% if slideshow_arrows and disabled != true %}
+      {{ slideshow_arrows }}
+    {% endif %}
+    <slideshow-slides
+      tabindex="-1"
+      ref="scroller"
+      {% if slide_size %}
+        size="{{ slide_size }}"
+      {% endif %}
+      {% if slideshow_gutters %}
+        gutters="{{ slideshow_gutters }}"
+      {% endif %}
+    >
+      {{ slides }}
+    </slideshow-slides>
+  </slideshow-container>
+  {{ controls }}
+</slideshow-component>

@@ -1,0 +1,74 @@
+{%- doc -%}
+  This snippet is used to render the quantity selector for a product.
+  It is used in the product page and the cart page.
+
+  @param {object} product - the product to render the quantity selector for
+  @param {number} [in_cart_quantity] - the quantity in the cart to set the input value
+  @param {number} [line_index] - the index of the forloop representing the line on which the quantity selector is rendered
+  @param {number} [min] - the minimum quantity the input supports
+  @param {string} [class] - custom class for the quantity selector, optional
+  @param {boolean} [can_update_quantity] - whether the quantity can be updated, defaults to true
+{%- enddoc -%}
+
+{% liquid
+  assign variant = product.selected_or_first_available_variant
+%}
+
+<quantity-selector-component
+  class="quantity-selector{% if class %} {{ class }}{% endif %}"
+  {% if line_index == null %}
+    {{- block.shopify_attributes -}}
+  {% endif %}
+  ref="quantitySelectors[]"
+>
+  <button
+    class="button quantity-minus button-unstyled"
+    type="button"
+    name="minus"
+    on:click="/decreaseQuantity"
+    ref="quantityButtons[]"
+    {% if can_update_quantity == false %}
+      disabled
+    {% endif %}
+  >
+    <span class="visually-hidden">{{ 'accessibility.decrease_quantity' | t }}</span
+    ><span class="svg-wrapper icon-plus">
+      {{- 'icon-minus.svg' | inline_asset_content -}}
+    </span>
+  </button>
+  <input
+    type="number"
+    name="{% if line_index %}updates[]{% else %}quantity{% endif %}"
+    value="{{ in_cart_quantity | default: 1 }}"
+    min="{{ min | default: 1 }}"
+    on:blur="/setQuantity"
+    on:focus="/selectInputValue"
+    ref="quantityInput"
+    aria-label="{{ 'accessibility.quantity' | t }}"
+    {% if line_index %}
+      data-cart-line="{{ line_index | plus: 1 }}"
+    {% endif %}
+    {% if variant.quantity_rule.max %}
+      max="{{ variant.quantity_rule.max }}"
+    {% endif %}
+    step="{{ variant.quantity_rule.increment | default: 1 }}"
+    {% if can_update_quantity == false or variant.available == false %}
+      disabled
+    {% endif %}
+  >
+  <button
+    class="button quantity-plus button-unstyled"
+    type="button"
+    name="plus"
+    on:click="/increaseQuantity"
+    ref="quantityButtons[]"
+    {% if can_update_quantity == false %}
+      disabled
+    {% endif %}
+  >
+    <span class="visually-hidden">{{ 'accessibility.increase_quantity' | t }}</span
+    ><span class="svg-wrapper icon-plus">
+      {{- 'icon-plus.svg' | inline_asset_content -}}
+    </span>
+  </button>
+</quantity-selector-component>

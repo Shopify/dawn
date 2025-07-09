@@ -1,0 +1,283 @@
+{%- doc -%}
+  Renders a quick add component.
+
+  @param {object} product - The product object
+  @param {string} section_id - The section ID
+  @param {object} [block] - The block object
+{%- enddoc -%}
+
+{% liquid
+  assign product_form_id = 'QuickAdd-ProductForm-' | append: product.id | append: '-' | append: block.id
+  assign add_to_cart_text = 'actions.add' | t
+
+  if closest.product.selected_or_first_available_variant.available
+    assign can_add_to_cart = true
+  else
+    assign can_add_to_cart = false
+  endif
+%}
+
+<quick-add-component
+  class="quick-add color-{{ settings.quick_add_color_scheme }} "
+  ref="quickAdd"
+  data-product-title="{{ product.title }}"
+>
+  <product-form-component
+    data-section-id="{{ section_id }}"
+    data-product-id="{{ product.id }}"
+    on:submit="/handleSubmit"
+    class="
+      quick-add__product-form-component
+      {% if product.options.size == 1 %} quick-add__product-form-component--single-option {% else %} quick-add__product-form-component--multi-option {% endif %}
+      {% if product.variants.size == 1 %} quick-add__product-form-component--single-variant {% else %} quick-add__product-form-component--multi-variant {% endif %}
+    "
+  >
+    <div
+      class="visually-hidden"
+      aria-live="assertive"
+      role="status"
+      aria-atomic="true"
+      ref="liveRegion"
+    ></div>
+    {%- form 'product', product, id: product_form_id, novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+      <input
+        type="hidden"
+        name="id"
+        ref="variantId"
+        value="{{ product.selected_or_first_available_variant.id }}"
+        {% if product.selected_or_first_available_variant.available == false %}
+          disabled
+        {% endif %}
+      >
+      <input
+        type="hidden"
+        name="quantity"
+        value="{% if product.selected_or_first_available_variant.quantity_rule.min %}{{ product.selected_or_first_available_variant.quantity_rule.min }}{% else %}1{% endif %}"
+      >
+      {% comment %} If there is one variant option but it's swatches or if it's a single variant product, then use add to cart button {% endcomment %}
+      {%- if product.variants.size == 1 or product.options.size == 1 -%}
+        {% render 'add-to-cart-button',
+          add_to_cart_text: add_to_cart_text,
+          class: 'button quick-add__button quick-add__button--add',
+          can_add_to_cart: can_add_to_cart,
+          icon_only_on_mobile: true,
+          product: product
+        %}
+      {%- endif -%}
+      {%- if product.variants.size > 1 -%}
+        <button
+          class="button quick-add__button quick-add__button--choose"
+          {% comment %} type="submit" is the default, so we explicitly set it to "button" to prevent the ProductFormComponent.handleSubmit from being triggered {% endcomment %}
+          type="button"
+          name="add"
+          on:click="quick-add-component/handleClick"
+        >
+          <span
+            class="add-to-cart-text"
+          >
+            <span
+              class="svg-wrapper add-to-cart-icon"
+            >
+              {{- 'icon-add-to-cart.svg' | inline_asset_content -}}
+            </span>
+            <span class="add-to-cart-text__content is-visually-hidden-mobile">
+              {{ add_to_cart_text }}
+            </span>
+          </span>
+        </button>
+      {%- endif -%}
+    {%- endform -%}
+  </product-form-component>
+</quick-add-component>
+
+{% stylesheet %}
+  /* Quick Add */
+  .quick-add {
+    --quick-add-offset: var(--padding-sm);
+    --quick-add-top: calc(var(--quick-add-offset) + var(--padding-block-start));
+    --quick-add-right: calc(var(--quick-add-offset) + var(--padding-inline-end));
+    --quick-add-bottom: calc(var(--quick-add-offset) + var(--padding-block-end));
+    --quick-add-left: calc(var(--quick-add-offset) + var(--padding-inline-end));
+
+    position: absolute;
+    display: var(--quick-add-mobile-display, none);
+    flex-direction: column;
+    justify-content: flex-end;
+    inset: max(var(--quick-add-top), calc((var(--border-radius) + var(--quick-add-top)) * (1 - cos(45deg))))
+      max(var(--quick-add-right), calc((var(--border-radius) + var(--quick-add-right)) * (1 - cos(45deg))))
+      max(var(--quick-add-bottom), calc((var(--border-radius) + var(--quick-add-bottom)) * (1 - cos(45deg))))
+      max(var(--quick-add-left), calc((var(--border-radius) + var(--quick-add-left)) * (1 - cos(45deg))));
+    width: auto;
+    height: auto;
+    z-index: var(--layer-raised);
+    cursor: default;
+    pointer-events: none;
+
+    @media screen and (min-width: 750px) {
+      --quick-add-offset: var(--padding-md);
+
+      display: var(--quick-add-display, flex);
+    }
+  }
+
+  .quick-add .variant-option__button-label input[data-option-available='false'] {
+    cursor: not-allowed;
+  }
+
+  .quick-add[class*='color-scheme-'] {
+    background-color: transparent;
+  }
+
+  .quick-add__button {
+    display: grid;
+    padding: var(--padding-xs);
+    align-items: center;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    border-color: transparent;
+    box-shadow: var(--shadow-popover);
+    pointer-events: all;
+    position: relative;
+    overflow: hidden;
+    border-radius: 100px;
+
+    @media screen and (min-width: 750px) {
+      display: none;
+      padding: var(--padding-xs) var(--padding-sm);
+    }
+
+    .quick-add[stay-visible] & {
+      display: grid;
+    }
+  }
+
+  .quick-add__button .add-to-cart-text {
+    gap: 0;
+    line-height: 1;
+    grid-row: 1 / span 1;
+    grid-column: 1 / span 1;
+    animation: none;
+
+    @media screen and (min-width: 750px) {
+      /* offset button padding to show a round button in a collapsed state */
+      margin-inline: calc(var(--padding-sm) * -1);
+      padding-inline: var(--padding-xs);
+    }
+  }
+
+  .quick-add__button .add-to-cart-text--added {
+    position: relative;
+    grid-row: 1 / span 1;
+    grid-column: 1 / span 1;
+    justify-self: end;
+    line-height: 1;
+
+    @media screen and (min-width: 750px) {
+      width: 0;
+    }
+  }
+
+  .quick-add__button .add-to-cart-text__content {
+    width: 0;
+    opacity: 0;
+    transform: translateX(1em);
+    transition: width var(--animation-speed) ease-in-out, opacity var(--animation-speed) ease-in-out,
+      transform var(--animation-speed) ease-in-out;
+    interpolate-size: allow-keywords;
+    will-change: width, opacity, transform;
+  }
+
+  @container (min-width: 99px) {
+    .quick-add[stay-visible] .add-to-cart-text,
+    .quick-add__button:is(:focus, :hover) .add-to-cart-text {
+      gap: var(--gap-2xs);
+
+      @media screen and (min-width: 750px) {
+        /* offset button padding to show a round button in a collapsed state */
+        margin-inline: 0;
+        padding-inline: 0;
+      }
+    }
+
+    .quick-add[stay-visible] .add-to-cart-text__content,
+    .quick-add__button:is(:focus, :hover) .add-to-cart-text__content {
+      width: fit-content;
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .quick-add__button.atc-added .add-to-cart-text {
+    opacity: 0;
+  }
+
+  .quick-add__button.atc-added .add-to-cart-text--added {
+    opacity: 1;
+    width: auto;
+
+    @supports (width: calc-size(auto, size)) {
+      width: calc-size(auto, size);
+    }
+  }
+
+  .quick-add__button.atc-added .add-to-cart-text {
+    animation-name: atc-fade-out;
+  }
+
+  .quick-add__button.atc-added .add-to-cart-text--added {
+    animation-name: atc-fade-in;
+  }
+
+  .quick-add__product-form-component {
+    height: 100%;
+  }
+
+  .quick-add__product-form-component .shopify-product-form {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    container-type: inline-size;
+    height: 100%;
+  }
+
+  .quick-add-modal .product-media {
+    width: 100%;
+    height: 100%;
+  }
+
+  .quick-add-modal deferred-media {
+    display: none;
+  }
+
+  .quick-add-modal .media-gallery--carousel slideshow-component {
+    --cursor: default;
+  }
+
+  @keyframes atc-fade-in {
+    from {
+      opacity: 0;
+      transform: translateX(1em);
+      position: absolute;
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+      position: inherit;
+    }
+  }
+
+  @keyframes atc-fade-out {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+      position: inherit;
+    }
+
+    to {
+      opacity: 0;
+      transform: translateX(-1em);
+      position: absolute;
+    }
+  }
+{% endstylesheet %}

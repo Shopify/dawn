@@ -1,0 +1,65 @@
+{% # import schema from '../schemas/blocks/accelerated-checkout.js' %}
+
+{%- doc -%}
+  This block is used to display the accelerated checkout button.
+  Intended for product-form.liquid block.
+
+  @param {string} can_add_to_cart - Whether the product can be added to the cart
+
+  @example
+  {% content_for 'block', type: 'accelerated-checkout', id: 'accelerated-checkout', can_add_to_cart: can_add_to_cart %}
+{%- enddoc -%}
+
+{% liquid
+  assign product = closest.product
+  if request.visual_preview_mode and product == blank
+    assign product = collections.all.products.first
+  endif
+%}
+
+<div
+  class="accelerated-checkout-block"
+  ref="acceleratedCheckoutButtonContainer"
+  {{ block.shopify_attributes }}
+  {% if request.visual_preview_mode %}
+    data-shopify-visual-preview
+  {% endif %}
+  {% unless can_add_to_cart %}
+    hidden
+  {% endunless %}
+>
+  {% if product != blank %}
+    {%- form 'product', product -%}
+      {{ form | payment_button }}
+    {%- endform -%}
+  {% endif %}
+</div>
+
+{% stylesheet %}
+  .accelerated-checkout-block[data-shopify-visual-preview] {
+    width: 300px;
+  }
+
+  more-payment-options-link {
+    font-size: smaller;
+  }
+
+  more-payment-options-link a {
+    --button-color: var(--color-primary);
+  }
+
+  more-payment-options-link a:hover {
+    --button-color: var(--color-primary-hover);
+  }
+
+  .shopify-payment-button__more-options[aria-hidden='true'] {
+    display: none;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.accelerated_checkout",
+  "tag": null
+}
+{% endschema %}

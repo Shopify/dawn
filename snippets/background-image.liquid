@@ -1,0 +1,39 @@
+{%- doc -%}
+  Renders a background image
+
+  @param {object} background_image - The background image
+  @param {string} background_image_position - The background image position
+  @param {string} section_id - The section ID
+  @param {string} block_id - The block ID
+  @param {number} [height] - The height of the background image
+{%- enddoc -%}
+
+<div
+  class="background-image-container{% if background_image_position == 'fit' %} background-image-fit{% endif %}"
+>
+  {% liquid
+    assign media_width_desktop = '100vw'
+    assign media_width_mobile = '100vw'
+    assign sizes = '(min-width: 750px) ' | append: media_width_desktop | append: ', ' | append: media_width_mobile
+    assign widths = '300, 450, 600, 750, 900, 1050, 1200, 1350, 1500, 1650, 1800, 1950, 2000, 2500, 3000, 3500, 4000, 5000'
+  %}
+
+  {%- if background_image != blank -%}
+    {% liquid
+      assign fetch_priority = 'auto'
+      if section and section.index == 1
+        assign fetch_priority = 'high'
+      endif
+    %}
+    {{
+      background_image
+      | image_url: width: 3840
+      | image_tag: height: height, sizes: sizes, widths: widths, loading: 'eager', fetchpriority: fetch_priority
+    }}
+  {%- else -%}
+    <placeholder-image
+      data-block-id="{{ section_id }}-{{ block_id }}"
+      data-type="general"
+    ></placeholder-image>
+  {%- endif -%}
+</div>

@@ -1,0 +1,341 @@
+{% # import schema from '../schemas/blocks/menu.js' %}
+
+{% liquid
+  assign menu = block.settings.menu
+  assign heading = block.settings.heading
+  assign color_scheme = block.settings.color_scheme
+  assign show_as_accordion = block.settings.show_as_accordion
+  if show_as_accordion == true and block.settings.accordion_dividers == true
+    assign dividers_enabled = true
+  endif
+%}
+
+{% if menu != blank or heading != blank %}
+  <accordion-custom
+    class="
+      menu
+      {% if show_as_accordion == true %} menu--accordion menu--{{ block.settings.accordion_icon }}{% endif %}
+      {% if dividers_enabled == true %} menu--dividers{% endif %}
+    "
+    data-disable-on-desktop="true"
+    open-by-default-on-desktop
+    {% if show_as_accordion == false %}
+      data-disable-on-mobile="true"
+      open-by-default-on-mobile
+    {% endif %}
+  >
+    <details
+      class="
+        menu__details
+        spacing-style
+        {% if block.settings.inherit_color_scheme == false %} color-{{ color_scheme }}{% endif %}
+      "
+      data-testid="menu-details"
+      style="
+        --spacing--size: {{ block.settings.menu_spacing }}px;
+        {% render 'spacing-style', settings: block.settings %}
+      "
+      {{ block.shopify_attributes }}
+    >
+      <summary class="menu__heading{% if heading == blank %} menu__heading--empty{% endif %} {{ block.settings.heading_preset }}">
+        <span class="menu__heading__default">{{ heading }}</span>
+        <span class="menu__heading__accordion">
+          {{ heading | default: menu.title }}
+          <span class="menu__heading__toggle svg-wrapper icon-caret icon-animated">
+            {{- 'icon-caret.svg' | inline_asset_content -}}
+          </span>
+          <span class="menu__heading__toggle svg-wrapper icon-plus">
+            {{- 'icon-plus.svg' | inline_asset_content -}}
+          </span>
+        </span>
+      </summary>
+
+      <div class="details-content">
+        {% if menu %}
+          <ul class="list-unstyled">
+            {% for link in menu.links %}
+              <li class="menu__item {{ block.settings.link_preset }}">
+                <a href="{{ link.url }}">
+                  {{ link.title }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+    </details>
+  </accordion-custom>
+{% endif %}
+
+{% stylesheet %}
+  .menu {
+    width: 100%;
+  }
+
+  .menu:not(:has(.menu__heading--empty)) .details-content {
+    margin-block-start: var(--spacing--size);
+  }
+
+  .menu__item + .menu__item {
+    margin-block-start: var(--spacing--size);
+  }
+
+  .menu .menu__heading--empty {
+    display: none;
+  }
+
+  .menu__heading__default {
+    display: contents;
+  }
+
+  .menu__heading__accordion {
+    display: none;
+  }
+
+  @media screen and (max-width: 749px) {
+    /* Always show the fallback heading on mobile when accordion is enabled */
+    .menu--accordion .menu__heading--empty {
+      display: flex;
+    }
+
+    .menu--accordion .menu__heading__accordion {
+      display: contents;
+    }
+
+    .menu--accordion .menu__heading__default {
+      display: none;
+    }
+
+    .menu--accordion .details-content {
+      margin-block-start: var(--spacing--size);
+    }
+
+    .menu--accordion .menu__details {
+      padding-inline: 0;
+    }
+
+    .menu--dividers .menu__details {
+      border-block-end: var(--style-border-width) solid var(--color-border);
+    }
+
+    .menu--dividers .details-content {
+      padding-block-end: var(--padding-sm);
+    }
+  }
+
+  .menu--caret .icon-plus,
+  .menu--plus .icon-caret {
+    display: none;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.menu",
+  "tag": null,
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "t:settings.menu",
+      "default": "main-menu"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:settings.heading"
+    },
+    {
+      "type": "header",
+      "content": "t:content.appearance"
+    },
+    {
+      "type": "range",
+      "id": "menu_spacing",
+      "label": "t:settings.vertical_gap",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "checkbox",
+      "id": "show_as_accordion",
+      "label": "t:settings.show_as_accordion",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "accordion_icon",
+      "label": "t:settings.icon",
+      "options": [
+        {
+          "value": "caret",
+          "label": "t:options.caret"
+        },
+        {
+          "value": "plus",
+          "label": "t:options.plus"
+        }
+      ],
+      "default": "caret",
+      "visible_if": "{{ block.settings.show_as_accordion == true }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "accordion_dividers",
+      "label": "t:settings.dividers",
+      "default": false,
+      "visible_if": "{{ block.settings.show_as_accordion == true }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "inherit_color_scheme",
+      "label": "t:settings.inherit_color_scheme",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-1",
+      "visible_if": "{{ block.settings.inherit_color_scheme == false }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.typography"
+    },
+    {
+      "type": "select",
+      "id": "heading_preset",
+      "label": "t:settings.heading_preset",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.default"
+        },
+        {
+          "value": "paragraph",
+          "label": "t:options.paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "t:options.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:options.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:options.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:options.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:options.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:options.h6"
+        }
+      ],
+      "default": "h3"
+    },
+    {
+      "type": "select",
+      "id": "link_preset",
+      "label": "t:settings.link_preset",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.default"
+        },
+        {
+          "value": "paragraph",
+          "label": "t:options.paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "t:options.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:options.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:options.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:options.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:options.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:options.h6"
+        }
+      ],
+      "default": "paragraph"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.menu",
+      "category": "t:categories.links"
+    }
+  ]
+}
+{% endschema %}

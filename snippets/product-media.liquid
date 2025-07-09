@@ -1,120 +1,208 @@
-{% comment %}
-  Renders product media
+{%- doc -%}
+  Renders a product media component.
 
-  Accepts:
-  - media: {Object} Product Media object
-  - loop: {Boolean} Enable video looping (optional)
-  - variant_image: {Boolean} Whether or not media is associated with a variant
+  @param {object} media - The product media object.
+  @param {boolean} [preview_image_only] - Renders only the preview image without controls.
+  @param {string} [widths] - Image widths for responsive images.
+  @param {string} [sizes] - Image sizes for responsive images.
+  @param {string} [loading] - The loading attribute for the image.
+  @param {object} [block] - The block object.
+  @param {object} [section] - The section object.
+  @param {object} [selected_product] - The currently selected product.
+  @param {boolean} [first_3d_model] - Indicates if this is the first 3D model.
+  @param {boolean} [is_main_product_media] - Indicates if this is the main product image.
 
-  Usage:
-  {% render 'product-media',
-    media: media,
-    loop: section.settings.enable_video_looping,
-    variant_image: true
+  @example
+  {% render 'product-media', media: media, preview_image_only: false, loading: 'lazy' %}
+{%- enddoc -%}
+
+{% liquid
+  assign widths = widths | default: '300, 450, 600, 750, 900, 1050, 1200, 1350, 1500, 1650, 1800, 1950, 2000, 2500, 3000, 3500, 4000, 5000'
+%}
+
+<div
+  class="product-media"
+  style="--ratio: {{ media.aspect_ratio }}"
+  data-media-id="{{ media.id }}"
+>
+  {% liquid
+    assign high_res_url = media.preview_image | image_url: width: 3840
+    assign fetch_priority = 'auto'
+    if is_main_product_media
+      assign fetch_priority = 'high'
+    endif
   %}
-{% endcomment %}
+  {{
+    media.preview_image
+    | image_url: width: 1946
+    | image_tag:
+      widths: widths,
+      alt: media.alt,
+      sizes: sizes,
+      loading: loading,
+      class: 'product-media__image',
+      transitionToProduct: settings.transition_to_main_product,
+      data_max_resolution: high_res_url,
+      fetchpriority: fetch_priority
+  }}
 
-{%- if media.media_type == 'image' -%}
-  <img
-    class="global-media-settings global-media-settings--no-shadow{% if variant_image %} product__media-item--variant{% endif %}"
-    srcset="
-      {%- if media.preview_image.width >= 550 -%}{{ media.preview_image | image_url: width: 550 }} 550w,{%- endif -%}
-      {%- if media.preview_image.width >= 1100 -%}{{ media.preview_image | image_url: width: 1100 }} 1100w,{%- endif -%}
-      {%- if media.preview_image.width >= 1445 -%}{{ media.preview_image | image_url: width: 1445 }} 1445w,{%- endif -%}
-      {%- if media.preview_image.width >= 1680 -%}{{ media.preview_image | image_url: width: 1680 }} 1680w,{%- endif -%}
-      {%- if media.preview_image.width >= 2048 -%}{{ media.preview_image | image_url: width: 2048 }} 2048w,{%- endif -%}
-      {%- if media.preview_image.width >= 2200 -%}{{ media.preview_image | image_url: width: 2200 }} 2200w,{%- endif -%}
-      {%- if media.preview_image.width >= 2890 -%}{{ media.preview_image | image_url: width: 2890 }} 2890w,{%- endif -%}
-      {%- if media.preview_image.width >= 4096 -%}{{ media.preview_image | image_url: width: 4096 }} 4096w,{%- endif -%}
-      {{ media.preview_image | image_url }} {{ media.preview_image.width }}w
-    "
-    sizes="(min-width: 750px) calc(100vw - 22rem), 1100px"
-    src="{{ media.preview_image | image_url: width: 1445 }}"
-    alt="{{ media.alt | escape }}"
-    loading="lazy"
-    width="1100"
-    height="{{ 1100 | divided_by: media.preview_image.aspect_ratio | ceil }}"
-    data-media-id="{{ media.id }}"
-  >
-{%- else -%}
-  {%- if media.media_type == 'model' -%}
-    <div class="product-media-modal__model" data-media-id="{{ media.id }}">
-      <product-model
-        class="deferred-media media media--transparent global-media-settings global-media-settings--no-shadow"
-        style="padding-top: min(calc(100vh - 12rem), 100%)"
-      >
-  {%- else -%}
-    <deferred-media
-      class="deferred-media media global-media-settings global-media-settings--no-shadow"
-      style="padding-top: min(calc(100vh - 12rem), {{ 1 | divided_by: media.aspect_ratio | times: 100 }}%)"
-      data-media-id="{{ media.id }}"
-    >
-  {%- endif -%}
-
-  <button id="Deferred-Poster-Modal-{{ media.id }}" class="deferred-media__poster" type="button">
-    <span class="deferred-media__poster-button motion-reduce">
-      {%- if media.media_type == 'model' -%}
-        <span class="svg-wrapper">{{ 'icon-3d-model' | inline_asset_content }}</span>
-      {%- else -%}
-        <span class="svg-wrapper">{{ 'icon-play.svg' | inline_asset_content }}</span>
-      {%- endif -%}
-    </span>
-    <img
-      srcset="
-        {% if media.preview_image.width >= 288 %}{{ media.preview_image | image_url: width: 288 }} 288w,{% endif %}
-        {% if media.preview_image.width >= 576 %}{{ media.preview_image | image_url: width: 576 }} 576w,{% endif %}
-        {% if media.preview_image.width >= 550 %}{{ media.preview_image | image_url: width: 550 }} 550w,{% endif %}
-        {% if media.preview_image.width >= 1100 %}{{ media.preview_image | image_url: width: 1100 }} 1100w,{% endif %}
-        {{ media.preview_image | image_url }} {{ media.preview_image.width }}w
-      "
-      src="{{ media | image_url: width: 550, height: 550 }}"
-      sizes="(min-width: 1200px) calc((1200px - 10rem) / 2), (min-width: 750px) calc((100vw - 11.5rem) / 2), calc(100vw - 4rem)"
-      loading="lazy"
-      width="576"
-      height="{{ 576 | divided_by: media.preview_image.aspect_ratio }}"
-      alt="{{ media.preview_image.alt | escape }}"
-    >
-  </button>
-  <template>
+  {% unless preview_image_only %}
     {%- case media.media_type -%}
-      {%- when 'external_video' -%}
-        {%- assign video_class = 'js-' | append: media.host -%}
-        {%- if media.host == 'youtube' -%}
-          {{
-            media
-            | external_video_url: autoplay: true, loop: loop, playlist: media.external_id
-            | external_video_tag: class: video_class, loading: 'lazy'
-          }}
-        {%- else -%}
-          {{
-            media
-            | external_video_url: autoplay: true, loop: loop
-            | external_video_tag: class: video_class, loading: 'lazy'
-          }}
-        {%- endif -%}
-      {%- when 'video' -%}
-        {{ media | media_tag: image_size: '2048x', autoplay: true, loop: loop, controls: true, preload: 'none' }}
-      {%- when 'model' -%}
-        {{ media | media_tag: image_size: '2048x', toggleable: true }}
-    {%- endcase -%}
-  </template>
+      {% when 'model' %}
+        <product-model
+          class="product-model-wrapper"
+          data-media-id="{{ media.id }}"
+        >
+          <button
+            class="button deferred-media__poster-button button-unstyled"
+            ref="deferredMediaPlayButton"
+            on:click="/showDeferredMedia"
+          >
+            {{
+              media.preview_image
+              | image_url: width: 1946
+              | image_tag:
+                widths: widths,
+                alt: media.alt,
+                sizes: sizes,
+                loading: loading,
+                class: 'deferred-media__poster-image'
+            }}
+            <span class="deferred-media__poster-icon">
+              <span class="visually-hidden">{{ 'accessibility.play_model' | t }}</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+                focusable="false"
+                class="icon icon-3d-model"
+                fill="none"
+                viewBox="0 0 18 21"
+              >
+                {% render 'icon', icon: '3d-model' %}
+              </svg>
+            </span>
+          </button>
 
-  {%- if media.media_type == 'model' -%}
-    </product-model>
-    <button
-      class="button button--full-width product__xr-button"
-      type="button"
-      aria-label="{{ 'products.product.xr_button_label' | t }}"
-      data-shopify-xr
-      data-shopify-model3d-id="{{ media.id }}"
-      data-shopify-title="title"
-      data-shopify-xr-hidden
-    >
-      <span class="svg-wrapper">{{ 'icon-3d-model' | inline_asset_content }}</span>
-      {{ 'products.product.xr_button' | t }}
-    </button>
-    </div>
-  {%- else -%}
-    </deferred-media>
-  {%- endif -%}
-{%- endif -%}
+          <template>
+            {% # Should I be using media_tag here instead like on Dawn? 🤔 %}
+            {{ media | model_viewer_tag }}
+          </template>
+        </product-model>
+        <button
+          class="button button-secondary button-shopify-xr"
+          type="button"
+          data-shopify-xr
+          data-shopify-model3d-id="{{ media.id }}"
+          data-shopify-title="{{ selected_product.title | escape }}"
+          data-shopify-xr-hidden
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+            focusable="false"
+            class="icon icon-3d-model"
+            fill="none"
+            viewBox="0 0 18 21"
+          >
+            {% render 'icon', icon: '3d-model' %}
+          </svg>
+          {{ 'actions.view_in_your_space' | t }}
+        </button>
+
+        {%- if first_3d_model -%}
+          <script
+            type="application/json"
+            id="ProductModelJSON-{{ selected_product.id }}"
+          >
+            {{ selected_product.media | where: 'media_type', 'model' | json }}
+          </script>
+        {%- endif -%}
+      {% when 'video', 'external_video' %}
+        {%- render 'video',
+          video: media,
+          video_loop: block.settings.video_loop,
+          widths: widths,
+          sizes: sizes,
+          loading: loading,
+          disable_controls: true,
+          section_id: section.id
+        -%}
+    {% endcase %}
+  {% endunless %}
+</div>
+
+{% stylesheet %}
+  .product-media {
+    aspect-ratio: var(--gallery-aspect-ratio, var(--ratio));
+    min-height: 0;
+    min-width: 0;
+  }
+
+  /*** Media border-radius feature ****/
+  @media screen and (min-width: 750px) {
+    .media-gallery--carousel slideshow-container,
+    .media-gallery--grid .product-media > * {
+      border-radius: var(--media-radius, 0);
+      overflow: hidden;
+    }
+
+    /* When the CAROUSEL is on the LEFT side */
+    .product-information:not(.product-information--media-right)
+      .media-gallery--carousel.media-gallery--extend
+      slideshow-container {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    /* When the CAROUSEL is on the RIGHT side */
+    .product-information.product-information--media-right
+      .media-gallery--carousel.media-gallery--extend
+      slideshow-container {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    /* When the GRID is on the LEFT side */
+    .product-information:not(.product-information--media-right) {
+      /* One column */
+      .media-gallery--grid.media-gallery--extend:not(.media-gallery--two-column) .product-media > *,
+      /* Two column, small first image */
+      .media-gallery--grid.media-gallery--extend.media-gallery--two-column:not(.media-gallery--large-first-image)
+        .product-media-container:nth-of-type(odd)
+        .product-media
+        > *,
+      /* Two column, large first image */
+      .media-gallery--grid.media-gallery--extend.media-gallery--two-column.media-gallery--large-first-image
+        .product-media-container:is(:first-of-type, :nth-of-type(even))
+        .product-media
+        > * {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+    }
+
+    /* When the GRID is on the RIGHT side */
+    .product-information.product-information--media-right {
+      /* One column */
+      .media-gallery--grid.media-gallery--extend:not(.media-gallery--two-column) .product-media > *,
+      /* Two column, small first image */
+      .media-gallery--grid.media-gallery--extend.media-gallery--two-column:not(.media-gallery--large-first-image)
+        .product-media-container:nth-of-type(even)
+        .product-media
+        > *,
+      /* Two column, large first image */
+      .media-gallery--grid.media-gallery--extend.media-gallery--two-column.media-gallery--large-first-image
+        .product-media-container:is(:first-of-type, :nth-of-type(odd))
+        .product-media
+        > * {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+    }
+  }
+
+  ::view-transition-old(gallery-item),
+  ::view-transition-new(gallery-item) {
+    animation-duration: 0ms;
+  }
+{% endstylesheet %}

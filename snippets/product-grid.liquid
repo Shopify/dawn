@@ -1,0 +1,207 @@
+{%- doc -%}
+  This snippet is used to render the product grid on collection and search pages.
+
+  @param {object} section - The section object
+  @param {object} paginate - Pagination object
+  @param {object} products - Array of product objects
+  @param {string} [title] - Header of the collection or search results
+  @param {string} children - List or grid of product cards
+{%- enddoc -%}
+
+{% capture product_card_size %}
+  {% render 'util-product-grid-card-size' section: section %}
+{% endcapture %}
+{% assign product_card_size = product_card_size | strip %}
+
+{% style %}
+  @media (min-width: 750px) {
+    {% case section.settings.layout_type %}
+      {% when 'grid' %}
+        .product-grid--{{ section.id }}:is(.product-grid--grid) {
+          --product-grid-columns-desktop: repeat(auto-fill, minmax({{ product_card_size }}, 1fr));
+        }
+      {% when 'organic' %}
+        {% assign large_span = 2 %}
+        {% assign row_cycle = 3 %}
+        {% assign product_cycle = row_cycle | times: 2 %}
+        {% assign right_large_start_col = 3 %}
+        .product-grid--{{ section.id }}:not([product-grid-view='zoom-out']):is(.product-grid--organic) .product-grid__item:nth-child({{ product_cycle }}n + 1) {
+          grid-column: 1 / span {{ large_span }};
+        }
+
+        .product-grid--{{ section.id }}:not([product-grid-view='zoom-out']):is(.product-grid--organic) .product-grid__item:nth-child({{ product_cycle }}n + 2),
+        .product-grid--{{ section.id }}:not([product-grid-view='zoom-out']):is(.product-grid--organic) .product-grid__item:nth-child({{ product_cycle }}n + 5) {
+          align-self: end;
+        }
+
+        .product-grid--{{ section.id }}:not([product-grid-view='zoom-out']):is(.product-grid--organic) .product-grid__item:nth-child({{ product_cycle }}n + {{ product_cycle }}) {
+          grid-column: {{ right_large_start_col }} / span {{ large_span }};
+        }
+
+        .product-grid--{{ section.id }}:not([product-grid-view='zoom-out']):is(.product-grid--organic) {
+          --product-grid-columns-desktop: repeat(4, 1fr);
+        }
+    {% endcase %}
+
+    /* This logic helps prevent displaying one column for an large or extra-large product card size on a small screen. We want it to display at least two columns. */
+    {% case section.settings.product_card_size %}
+      {% when 'extra-large' or 'large' %}
+        @container product-grid (max-width: calc({{ product_card_size }} * 3 + {{ section.settings.columns_gap_horizontal }}px * 2)) {
+          .product-grid--{{ section.id }}:is(.product-grid--grid) {
+            --product-grid-columns-desktop: repeat(2, 1fr);
+          }
+        }
+    {% endcase %}
+
+    /* When zoomed out, fit as many 100px-wide columns as possible */
+    .product-grid--{{ section.id }}:is([product-grid-view='zoom-out']) {
+      --product-grid-columns-desktop: repeat(auto-fill, minmax(6.25rem, 1fr));
+    }
+
+    .product-grid--{{ section.id }}:is([product-grid-view='zoom-out']) .product-grid-view-zoom-out--details {
+      display: block;
+    }
+
+    .product-grid--{{ section.id }}:is([product-grid-view='zoom-out']) .product-grid__card {
+      padding-inline-start: var(--zoom-out-padding-inline-start, 0);
+      padding-inline-end: var(--zoom-out-padding-inline-end, 0);
+      padding-block-start: var(--zoom-out-padding-block-start, 0);
+      padding-block-end: var(--zoom-out-padding-block-end, 0);
+    }
+  }
+{% endstyle %}
+
+<div
+  id="ResultsList"
+  class="
+    grid main-collection-grid
+    {%- if section.settings.inherit_color_scheme == false %} color-{{ section.settings.color_scheme }}{% endif %}
+    {%- if section.settings.product_grid_width == 'full-width' %} collection-wrapper--full-width{% endif %}
+    {%- if section.settings.full_width_on_mobile == true %} collection-wrapper--full-width-on-mobile{% endif %}
+    spacing-style
+  "
+
+  style="
+    --grid--margin--mobile: 0{% if section.settings.product_grid_width == 'centered' and section.settings.full_width_on_mobile == false %} var(--margin-lg){% else %} 0{% endif %};
+    --grid-column--desktop: var(--{% if section.settings.product_grid_width == 'centered' %}centered{% else %}full-width{% endif %});
+    --grid-column--mobile: var(--{% if section.settings.full_width_on_mobile %}full-width{% else %}{% if section.settings.product_grid_width == 'centered' %}centered{% else %}full-width{% endif %}{% endif %});
+    --padding-inline-start: {{ section.settings.padding-inline-start }}px;
+    --padding-inline-end: {{ section.settings.padding-inline-end }}px;
+  "
+>
+  <div
+    style="
+      grid-column: var(--full-width);
+      --product-grid-gap-mobile: {{ section.settings.columns_gap_vertical | at_most: 12 }}px {{ section.settings.columns_gap_horizontal | at_most: 12 }}px;
+      --product-grid-gap-desktop: {{ section.settings.columns_gap_vertical }}px {{ section.settings.columns_gap_horizontal }}px;
+      container-type: inline-size;
+      container-name: product-grid;
+    "
+  >
+    {% if products.size == 0 %}
+      <div class="main-collection-grid__empty">
+        <h2 class="main-collection-grid__empty-title h2">
+          {{ 'content.no_products_found' | t }}
+        </h2>
+        <p>
+          {{ 'content.use_fewer_filters_html' | t: link: collection.url, class: 'main-collection-grid__empty-link' }}
+        </p>
+      </div>
+    {% else %}
+      <span ref="viewMorePrevious"></span>
+
+      {% if title %}
+        <h4 class="main-collection-grid__title">{{ title }}</h4>
+      {% endif %}
+      <ul
+        class="product-grid product-grid--{{ section.id }} product-grid--{{ section.settings.layout_type }} {% if section.settings.mobile_product_card_size == 'large' %} product-grid-mobile--large{% endif %}"
+        product-grid-view="default"
+        ref="grid"
+        role="list"
+        data-last-page="{{ paginate.pages }}"
+        data-product-card-size="{{ section.settings.product_card_size }}"
+      >
+        {{ children }}
+      </ul>
+      <span ref="viewMoreNext"></span>
+    {% endif %}
+  </div>
+</div>
+
+{% comment %}
+  This script is used to set the grid view on the product grid stored in sessionStorage. Keeping it here helps us prevent seeing the default state.
+{% endcomment %}
+{% unless request.design_mode %}
+  <script>
+    (() => {
+      const grid = document.querySelector('.product-grid');
+
+      if (grid) {
+        const currentDevice = window.innerWidth >= 750 ? 'desktop' : 'mobile';
+        const storedLayout = sessionStorage.getItem(`product-grid-view-${currentDevice}`);
+
+        if (storedLayout) {
+          const options = document.querySelectorAll(`input[type="radio"][name="grid"]`);
+
+          grid.setAttribute('product-grid-view', storedLayout);
+
+          for (const option of options) {
+            option.checked = option.value === storedLayout;
+          }
+        }
+      }
+    })();
+  </script>
+{% endunless %}
+
+{% stylesheet %}
+  .product-grid {
+    --product-grid-gap: var(--product-grid-gap-mobile);
+
+    isolation: isolate;
+
+    @media screen and (min-width: 750px) {
+      --product-grid-gap: var(--product-grid-gap-desktop);
+    }
+  }
+
+  .product-grid slideshow-arrows .slideshow-control {
+    display: none;
+
+    @media screen and (min-width: 750px) {
+      display: grid;
+    }
+  }
+
+  .main-collection-grid {
+    padding: var(--grid--margin--mobile);
+
+    @media screen and (min-width: 750px) {
+      padding: var(--padding-block-start) var(--padding-inline-end) var(--padding-block-end) var(--padding-inline-start);
+    }
+  }
+
+  .main-collection-grid__empty {
+    padding-block: var(--padding-6xl);
+    padding-inline: var(--page-margin);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--padding-sm);
+  }
+
+  .main-collection-grid__empty-title {
+    margin: 0;
+  }
+
+  .collection-wrapper--full-width .main-collection-grid__title {
+    margin-left: var(--page-margin);
+  }
+
+  .collection-wrapper--full-width-on-mobile .main-collection-grid__title {
+    @media screen and (max-width: 749px) {
+      margin-left: var(--page-margin);
+    }
+  }
+{% endstylesheet %}

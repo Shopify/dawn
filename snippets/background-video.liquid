@@ -1,0 +1,56 @@
+{%- doc -%}
+  Renders a video as a background for a section or block, with a fallback to a placeholder image if no video is provided.
+
+  @param {object} background_video - The video object to be used as the background.
+  @param {string} background_video_position - The position of the video, e.g., 'center-center'.
+  @param {string} section_id - The ID of the parent section.
+  @param {string} block_id - The ID of the parent block, if applicable.
+{%- enddoc -%}
+
+{% liquid
+  assign video_classes = 'video-background video-background--' | append: background_video_position
+%}
+
+{%- if background_video != blank -%}
+  <video-background-component
+    class="{{ video_classes }}"
+  >
+    {% liquid
+      assign media_width_desktop = 100 | append: 'vw'
+      assign media_width_mobile = '100vw'
+      assign sizes = '(min-width: 750px) ' | append: media_width_desktop | append: ', ' | append: media_width_mobile
+      assign widths = '300, 450, 600, 750, 900, 1050, 1200, 1350, 1500, 1650, 1800, 1950, 2000, 2500, 3000, 3500, 4000, 5000'
+    %}
+    {{ background_video.preview_image | image_url: width: 3840 | image_tag: width: 1100, widths: widths, sizes: sizes }}
+    <video
+      playsinline
+      muted
+      autoplay
+      loop
+      ref="videoElement"
+    >
+      {%- for sourceElement in background_video.sources -%}
+        <source
+          data-video-source="{{ sourceElement.url }}"
+          type="{{ sourceElement.mime_type }}"
+          ref="videoSources[]"
+        >
+      {%- endfor -%}
+    </video>
+  </video-background-component>
+{%- else -%}
+  <div class="{{ video_classes }}">
+    <placeholder-image
+      data-block-id="{{ section_id }}-{{ block_id }}"
+      data-type="general"
+    ></placeholder-image>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  @media (prefers-reduced-motion: reduce) {
+    video-background-component video {
+      display: none;
+    }
+  }
+{% endstylesheet %}

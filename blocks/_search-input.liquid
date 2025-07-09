@@ -1,0 +1,249 @@
+{% # import schema from '../schemas/blocks/_search-input' %}
+
+<script
+  src="{{ 'search-page-input.js' | asset_url }}"
+  defer
+  type="module"
+></script>
+
+{% if block.settings.inherit_color_scheme == false %}
+  {% assign color_scheme = block.settings.color_scheme | prepend: ' color-' %}
+{% endif %}
+
+<form
+  action="{{ routes.search_url }}"
+  method="get"
+  role="search"
+  class="search-page-input__parent"
+>
+  <search-page-input-component
+    style="{% render 'size-style', settings: block.settings %}{% render 'spacing-style', settings: block.settings %}"
+    {{ block.shopify_attributes }}
+  >
+    <label
+      for="SearchPageInput--{{ block.id }}"
+      class="visually-hidden"
+    >
+      {{ 'content.search_input_label' | t }}
+    </label>
+    <span class="svg-wrapper search__icon{{ color_scheme }}">
+      {{ 'icon-search.svg' | inline_asset_content }}
+    </span>
+    <input
+      name="type"
+      value="product"
+      type="hidden"
+    >
+    <input
+      class="search-page-input{{ color_scheme }}"
+      id="SearchPageInput--{{ block.id }}"
+      type="search"
+      name="q"
+      ref="searchPageInput"
+      on:keydown="/handleKeyDown"
+      value="{{ search.terms | escape }}"
+      placeholder="{{ 'content.search_input_placeholder' | t }}"
+    >
+    <button
+      type="button"
+      name="reset"
+      class="button-unstyled search__reset-button{{ color_scheme }}"
+      aria-label="{{ 'accessibility.reset_search' | t }}"
+      on:click="/handleClearClick"
+    >
+      <span class="svg-wrapper search__reset-button-icon">
+        {{ 'icon-reset.svg' | inline_asset_content }}
+      </span>
+      <span class="search__reset-button-text">
+        {{ 'actions.clear' | t }}
+      </span>
+    </button>
+  </search-page-input-component>
+
+  {% if search.results.size == 0 and search.terms != blank %}
+    <div class="search-results__no-results">
+      <p>
+        {{ 'content.search_results_no_results_check_spelling' | t: terms: search.terms }}
+      </p>
+    </div>
+  {% endif %}
+</form>
+
+{% stylesheet %}
+  .search-page-input {
+    width: 100%;
+    color: var(--color-input-text);
+    background-color: var(--color-input-background);
+    padding-block: var(--padding-lg);
+    padding-inline: calc(var(--icon-size-lg) + var(--margin-xl) * 1.5);
+    text-overflow: ellipsis;
+    overflow: hidden;
+    border-radius: var(--style-border-radius-inputs);
+    border: var(--style-border-width-inputs) solid var(--color-input-border);
+
+    @media screen and (max-width: 749px) {
+      padding-inline: calc(var(--margin-xs) + var(--icon-size-lg) + var(--padding-md));
+    }
+  }
+
+  .search-page-input::placeholder {
+    color: rgba(from var(--color-input-text) r g b / var(--opacity-subdued-text));
+  }
+
+  .search-page-input__parent {
+    display: flex;
+    flex-direction: column;
+    align-items: var(--horizontal-alignment);
+  }
+
+  .search-results__no-results {
+    opacity: var(--opacity-subdued-text);
+  }
+
+  search-page-input-component {
+    position: relative;
+    width: 100%;
+    display: flex;
+    top: 0;
+    max-width: var(--size-style-width);
+    align-items: center;
+    background-color: var(--color-background);
+    margin: var(--margin-2xl) 0 var(--margin-md);
+
+    @media screen and (max-width: 749px) {
+      max-width: 100%;
+    }
+  }
+
+  search-page-input-component .search__icon,
+  search-page-input-component .search__icon:hover,
+  search-page-input-component .search__reset-button,
+  search-page-input-component .search__reset-button:hover {
+    background: transparent;
+    position: absolute;
+    top: auto;
+    width: var(--icon-size-lg);
+    height: var(--icon-size-lg);
+  }
+
+  search-page-input-component .search__icon svg,
+  search-page-input-component .search__reset-button svg {
+    width: var(--icon-size-md);
+    height: var(--icon-size-md);
+  }
+
+  search-page-input-component .search__icon svg {
+    color: var(--color-input-text);
+  }
+
+  search-page-input-component .search__icon {
+    left: var(--margin-lg);
+
+    @media screen and (max-width: 749px) {
+      left: var(--margin-md);
+    }
+  }
+
+  search-page-input-component .search__reset-button {
+    border-radius: 100%;
+    color: var(--color-input-text);
+    right: var(--margin-lg);
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--animation-speed) var(--animation-easing),
+      visibility var(--animation-speed) var(--animation-easing);
+
+    @media screen and (max-width: 749px) {
+      right: var(--margin-md);
+    }
+  }
+
+  search-page-input-component:has(.search-page-input:not(:placeholder-shown)) .search__reset-button {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  search-page-input-component .search__reset-button-icon {
+    vertical-align: middle;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--icon-size-lg);
+    height: var(--icon-size-lg);
+    transition: transform var(--animation-speed) var(--animation-easing);
+  }
+
+  search-page-input-component .search__reset-button:active .search__reset-button-icon {
+    transform: scale(0.9);
+  }
+
+  search-page-input-component .search__reset-button-icon svg {
+    width: var(--icon-size-md);
+    height: var(--icon-size-md);
+  }
+
+  search-page-input-component .search__reset-button--hidden {
+    cursor: default;
+    opacity: 0;
+    transition: opacity var(--animation-speed) var(--animation-easing);
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  search-page-input-component .search__reset-button-text {
+    display: none;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.search_input",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "fill",
+          "label": "t:options.fill"
+        },
+        {
+          "value": "custom",
+          "label": "t:options.custom"
+        }
+      ],
+      "default": "custom"
+    },
+    {
+      "type": "range",
+      "id": "custom_width",
+      "label": "t:settings.custom_width",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50,
+      "visible_if": "{{ block.settings.width == \"custom\" }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "inherit_color_scheme",
+      "label": "t:settings.inherit_color_scheme",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-1",
+      "visible_if": "{{ block.settings.inherit_color_scheme == false }}"
+    }
+  ],
+  "presets": []
+}
+{% endschema %}

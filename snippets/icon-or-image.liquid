@@ -1,0 +1,40 @@
+{%- doc -%}
+  Renders either an SVG icon or an uploaded image based on block settings.
+
+  @param {string} icon - The icon name from block.settings.icon
+  @param {object} image_upload - The uploaded image from block.settings.image_upload
+  @param {number} width - The width setting from block.settings.width
+  @param {string} class_name - CSS class name for the rendered element
+  @param {object} [attributes] - Additional HTML attributes to add to the element
+{%- enddoc -%}
+
+{%- if icon != 'none' and image_upload == blank -%}
+  <svg
+    class="{{ class_name }}"
+    aria-hidden="true"
+    focusable="false"
+    xmlns="http://www.w3.org/2000/svg"
+    width="{{ width }}"
+    height="{{ width }}"
+    viewBox="0 0 20 20"
+    {% if attributes %}
+      {{ attributes }}
+    {% endif %}
+  >
+    {%- render 'icon', icon: icon -%}
+  </svg>
+{%- elsif image_upload != blank -%}
+  {% liquid
+    assign media_width_desktop = '100vw'
+    assign media_width_mobile = '100vw'
+    assign sizes = '(min-width: 1024px) 1024px, ' | append: media_width_desktop | append: ', ' | append: media_width_mobile
+    assign widths = '300, 375, 450, 525, 600, 675, 750, 768, 850, 900, 1024'
+  %}
+
+  {% assign image_style = 'width: ' | append: width | append: 'px;' %}
+  {{
+    image_upload
+    | image_url: width: 1024
+    | image_tag: widths: widths, class: class_name, style: image_style, sizes: sizes
+  }}
+{%- endif -%}

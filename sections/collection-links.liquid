@@ -1,0 +1,376 @@
+{% # import schema from '../schemas/sections/collection-links.js' %}
+
+{% liquid
+  assign collection_list = section.settings.collection_list
+
+  if collection_list == blank
+    assign limit = 4
+
+    for i in (1..4)
+      assign collection_list = collection_list | append: ', '
+    endfor
+
+    assign collection_list = collection_list | split: ','
+  endif
+
+  assign active_collection = collection_list | find: 'id', collection.id | default: collection_list.first
+%}
+
+<script
+  src="{{ 'collection-links.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
+
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
+<div
+  class="
+    section section--{{ section.settings.section_width }} color-{{ section.settings.color_scheme }} spacing-style
+    {% if section.settings.collection_list == blank and request.design_mode == false %}
+      in-onboarding-state
+    {% endif %}
+  "
+  style="{% render 'spacing-style', settings: section.settings %}"
+>
+  <collection-links-component
+    layout="{{ section.settings.layout }}"
+    alignment="{{ section.settings.alignment }}"
+    {% if section.settings.image_position == 'left' %}
+      reverse
+    {% endif %}
+  >
+    <div
+      class="collection-links__container"
+      ref="container"
+    >
+      {% for collection in collection_list limit: limit %}
+        {% liquid
+          assign current = false
+
+          if collection.id == active_collection.id
+            assign current = true
+          endif
+        %}
+        {% content_for 'block',
+          type: '_collection-link',
+          id: 'link',
+          closest.collection: collection,
+          index: forloop.index0,
+          current: current
+        %}
+      {% endfor %}
+    </div>
+
+    {% case section.settings.layout %}
+      {% when 'spotlight' %}
+        {% capture slides %}
+          {% for collection in collection_list limit: limit %}
+          {% liquid
+            assign current = false
+
+            if collection.id == active_collection.id
+              assign current = true
+            endif
+          %}
+
+          {% capture slide %}
+            {% # theme-check-disable UniqueStaticBlockId %}
+            {% content_for 'block',
+              type: '_collection-link',
+              id: 'link',
+              closest.collection: collection,
+              index: forloop.index0,
+              current: current,
+              image_only: true
+            %}
+            {% # theme-check-enable UniqueStaticBlockId %}
+          {% endcapture %}
+
+          {% render 'slideshow-slide', children: slide, index: forloop.index0 %}
+        {% endfor %}
+      {% endcapture %}
+
+        {% render 'slideshow',
+          slides: slides,
+          slide_count: collection_list.size,
+          class: 'collection-links__images',
+          ref: 'slideshow'
+        %}
+    {% endcase %}
+  </collection-links-component>
+</div>
+
+{% # theme-check-disable ValidBlockTarget %}
+{% stylesheet %}
+  collection-links-component {
+    --alignment: flex-start;
+
+    display: grid;
+    align-items: center;
+    grid-gap: var(--gap-3xl);
+
+    &:has([ratio='portrait']) {
+      --template-column-ratio: 0.8fr;
+    }
+
+    &:has([ratio='square']) {
+      --template-column-ratio: 1fr;
+    }
+
+    &:has([ratio='landscape']) {
+      --template-column-ratio: 1.4fr;
+    }
+
+    &[alignment='center'] {
+      --alignment: center;
+
+      .text-block {
+        text-align: center;
+      }
+    }
+
+    &[alignment='right'] {
+      --alignment: flex-end;
+
+      .text-block {
+        text-align: right;
+      }
+    }
+
+    &[layout='spotlight'] {
+      position: relative;
+      grid-template-columns: 1fr var(--template-column-ratio);
+      grid-template-areas: 'text image';
+
+      &[reverse] {
+        grid-template-areas: 'image text';
+        grid-template-columns: var(--template-column-ratio) 1fr;
+      }
+
+      .collection-links__container {
+        align-items: var(--alignment);
+      }
+
+      @media (max-width: 749px) {
+        grid-template-columns: 1fr;
+        grid-template-areas: 'text' 'image';
+        grid-gap: var(--gap-2xl);
+
+        .collection-links__container {
+          gap: clamp(var(--gap-xs), 1vw, var(--gap-xl)) var(--gap-2xl);
+          justify-content: var(--alignment);
+        }
+      }
+    }
+
+    &[layout='text'] {
+      grid-gap: 0;
+      grid-template-areas: 'text';
+
+      .collection-links__container {
+        gap: clamp(var(--gap-xs), 1vw, var(--gap-xl)) var(--gap-2xl);
+        flex-wrap: wrap;
+        flex-direction: row;
+        justify-content: var(--alignment);
+      }
+    }
+  }
+
+  .collection-links__container {
+    display: flex;
+    gap: var(--gap-md);
+    flex-direction: column;
+  }
+
+  .collection-links__images {
+    overflow: hidden;
+    grid-area: image;
+
+    @media (max-width: 749px) {
+      image-block {
+        max-width: 100%;
+      }
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.collection_links",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "collection_list",
+      "id": "collection_list",
+      "label": "t:settings.collection_list"
+    },
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "t:settings.layout",
+      "options": [
+        {
+          "value": "spotlight",
+          "label": "t:options.spotlight"
+        },
+        {
+          "value": "text",
+          "label": "t:options.text"
+        }
+      ],
+      "default": "spotlight"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:settings.alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "center",
+          "label": "t:options.center"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "t:settings.image_position",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "right",
+      "visible_if": "{{ section.settings.layout == \"spotlight\" }}"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 40
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.collection_links_spotlight",
+      "category": "t:categories.collections",
+      "blocks": {
+        "link": {
+          "type": "_collection-link",
+          "static": true,
+          "blocks": {
+            "title": {
+              "type": "_inline-collection-title",
+              "name": "t:names.title",
+              "static": true,
+              "settings": {
+                "font": "var(--font-subheading--family)"
+              }
+            },
+            "image": {
+              "type": "_image",
+              "static": true,
+              "settings": {
+                "height": "large",
+                "ratio": "square"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "t:names.collection_links_text",
+      "category": "t:categories.collections",
+      "settings": {
+        "layout": "text",
+        "alignment": "center"
+      },
+      "blocks": {
+        "link": {
+          "type": "_collection-link",
+          "static": true,
+          "blocks": {
+            "title": {
+              "type": "_inline-collection-title",
+              "name": "t:names.title",
+              "static": true,
+              "settings": {
+                "font": "var(--font-subheading--family)"
+              }
+            },
+            "image": {
+              "type": "_image",
+              "static": true,
+              "settings": {
+                "height": "medium"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
+{% endschema %}
+{% # theme-check-enable ValidBlockTarget %}

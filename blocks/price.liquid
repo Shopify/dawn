@@ -1,0 +1,438 @@
+{% # import schema from '../schemas/blocks/price.js' %}
+
+{%- liquid
+  assign product_resource = closest.product
+  assign selected_variant = product_resource.selected_or_first_available_variant
+-%}
+
+{% liquid
+  if block.settings.type_preset == 'rte' or block.settings.type_preset == 'paragraph'
+    assign is_rte = true
+  endif
+
+  capture text_block_classes
+    if block.settings.width == '100%'
+      echo 'text-block--align-' | append: block.settings.alignment
+      if block.settings.max_width == 'none'
+        echo ' text-block--full-width'
+      endif
+    endif
+    if block.settings.type_preset == 'custom'
+      echo ' custom-typography'
+      if block.settings.font_size != ''
+        echo ' custom-font-size'
+      endif
+      if block.settings.color != ''
+        echo ' custom-color'
+      endif
+    endif
+    if block.settings.background
+      echo ' text-block--background'
+    endif
+    if is_rte
+      echo ' rte'
+    endif
+  endcapture
+%}
+
+<product-price
+  class="text-block {{ text_block_classes }} text-{{ block.settings.alignment }} {{ block.settings.type_preset | default: 'paragraph' }} spacing-style{% if closest.product == blank and request.design_mode == false %} hidden{% endif %}"
+  data-block-id="{{ block.id }}"
+  data-product-id="{{ product_resource.id }}"
+  style="
+    {% render 'typography-style', settings: block.settings %}
+    {% render 'spacing-style', settings: block.settings %}
+    --width: {{ block.settings.width }};
+  "
+  {{ block.shopify_attributes }}
+>
+  {% render 'price',
+    show_unit_price: true,
+    product_resource: product_resource,
+    show_sale_price_first: block.settings.show_sale_price_first
+  %}
+
+  {% if block.settings.show_tax_info %}
+    <div class="tax-note">
+      {%- if cart.duties_included and cart.taxes_included -%}
+        {{ 'content.duties_and_taxes_included' | t }}
+      {%- elsif cart.taxes_included -%}
+        {{ 'content.taxes_included' | t }}
+      {%- elsif cart.duties_included -%}
+        {{ 'content.duties_included' | t }}
+      {%- endif -%}
+
+      {%- if shop.shipping_policy.body != blank -%}
+        {{ 'content.shipping_policy' | t }}
+      {%- endif -%}
+    </div>
+  {% endif %}
+
+  {%- if selected_variant != blank and block.settings.show_installments -%}
+    <div class="installments">
+      {%- assign product_form_installment_id = 'product-form-installment-' | append: block.id -%}
+      {%- form 'product', product_resource, id: product_form_installment_id, class: 'payment-terms' -%}
+        <input
+          type="hidden"
+          name="id"
+          value="{{ selected_variant.id }}"
+        >
+        {{ form | payment_terms }}
+      {%- endform -%}
+    </div>
+  {%- endif -%}
+</product-price>
+
+{% # theme-check-disable %}
+{% stylesheet %}
+  .tax-note:empty {
+    display: none;
+  }
+
+  form.payment-terms {
+    padding-top: 0.5em;
+  }
+
+  .installments:not(:has(shopify-payment-terms)) {
+    display: none;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.product_price",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:content.resource_reference_product_price"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:content.edit_price_in_theme_settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sale_price_first",
+      "label": "t:settings.show_sale_price_first",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_installments",
+      "label": "t:settings.installments",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tax_info",
+      "label": "t:settings.show_tax_info",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:content.typography"
+    },
+    {
+      "type": "select",
+      "id": "type_preset",
+      "label": "t:settings.preset",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.default"
+        },
+        {
+          "value": "paragraph",
+          "label": "t:options.paragraph"
+        },
+        {
+          "value": "h1",
+          "label": "t:options.h1"
+        },
+        {
+          "value": "h2",
+          "label": "t:options.h2"
+        },
+        {
+          "value": "h3",
+          "label": "t:options.h3"
+        },
+        {
+          "value": "h4",
+          "label": "t:options.h4"
+        },
+        {
+          "value": "h5",
+          "label": "t:options.h5"
+        },
+        {
+          "value": "h6",
+          "label": "t:options.h6"
+        },
+        {
+          "value": "custom",
+          "label": "t:options.custom"
+        }
+      ],
+      "info": "t:info.edit_presets_in_theme_settings"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "fit-content",
+          "label": "t:options.fit_content"
+        },
+        {
+          "value": "100%",
+          "label": "t:options.fill"
+        }
+      ],
+      "default": "100%"
+    },
+    {
+      "type": "text_alignment",
+      "id": "alignment",
+      "label": "t:settings.alignment",
+      "default": "left",
+      "visible_if": "{{ block.settings.width != 'fit-content' }}"
+    },
+    {
+      "type": "select",
+      "id": "font",
+      "label": "t:settings.font",
+      "options": [
+        {
+          "value": "var(--font-body--family)",
+          "label": "t:options.body"
+        },
+        {
+          "value": "var(--font-subheading--family)",
+          "label": "t:options.subheading"
+        },
+        {
+          "value": "var(--font-heading--family)",
+          "label": "t:options.heading"
+        },
+        {
+          "value": "var(--font-accent--family)",
+          "label": "t:options.accent"
+        }
+      ],
+      "default": "var(--font-body--family)",
+      "visible_if": "{{ block.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "font_size",
+      "label": "t:settings.size",
+      "options": [
+        {
+          "value": "",
+          "label": "t:options.default"
+        },
+        {
+          "value": "0.625rem",
+          "label": "10px"
+        },
+        {
+          "value": "0.75rem",
+          "label": "12px"
+        },
+        {
+          "value": "0.875rem",
+          "label": "14px"
+        },
+        {
+          "value": "1rem",
+          "label": "16px"
+        },
+        {
+          "value": "1.125rem",
+          "label": "18px"
+        },
+        {
+          "value": "1.25rem",
+          "label": "20px"
+        },
+        {
+          "value": "1.5rem",
+          "label": "24px"
+        },
+        {
+          "value": "2rem",
+          "label": "32px"
+        },
+        {
+          "value": "2.5rem",
+          "label": "40px"
+        },
+        {
+          "value": "3rem",
+          "label": "48px"
+        },
+        {
+          "value": "3.5rem",
+          "label": "56px"
+        },
+        {
+          "value": "4.5rem",
+          "label": "72px"
+        },
+        {
+          "value": "5.5rem",
+          "label": "88px"
+        },
+        {
+          "value": "7.5rem",
+          "label": "120px"
+        },
+        {
+          "value": "9.5rem",
+          "label": "152px"
+        },
+        {
+          "value": "11.5rem",
+          "label": "184px"
+        }
+      ],
+      "default": "1rem",
+      "visible_if": "{{ block.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "line_height",
+      "label": "t:settings.line_height",
+      "options": [
+        {
+          "value": "tight",
+          "label": "t:options.tight"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "loose",
+          "label": "t:options.loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ block.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "letter_spacing",
+      "label": "t:settings.letter_spacing",
+      "options": [
+        {
+          "value": "tight",
+          "label": "t:options.tight"
+        },
+        {
+          "value": "normal",
+          "label": "t:options.normal"
+        },
+        {
+          "value": "loose",
+          "label": "t:options.loose"
+        }
+      ],
+      "default": "normal",
+      "visible_if": "{{ block.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "case",
+      "label": "t:settings.case",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.default"
+        },
+        {
+          "value": "uppercase",
+          "label": "t:options.uppercase"
+        }
+      ],
+      "default": "none",
+      "visible_if": "{{ block.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "color",
+      "label": "t:settings.color",
+      "options": [
+        {
+          "value": "var(--color-foreground)",
+          "label": "t:options.text"
+        },
+        {
+          "value": "var(--color-foreground-heading)",
+          "label": "t:options.heading"
+        },
+        {
+          "value": "var(--color-primary)",
+          "label": "t:options.link"
+        }
+      ],
+      "default": "var(--color-foreground)",
+      "visible_if": "{{ block.settings.type_preset != 'rte' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.product_price",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}
+{% # theme-check-enable %}

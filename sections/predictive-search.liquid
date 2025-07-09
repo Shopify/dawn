@@ -1,262 +1,1221 @@
-{% comment %}theme-check-disable ImgLazyLoading{% endcomment %}
-{%- if predictive_search.performed -%}
-  {% assign first_column_results_size = predictive_search.resources.queries.size
-    | plus: predictive_search.resources.collections.size
-    | plus: predictive_search.resources.pages.size
-    | plus: predictive_search.resources.articles.size
-  %}
-  <div id="predictive-search-results" role="listbox">
-    {%- if first_column_results_size > 0 or predictive_search.resources.products.size > 0 -%}
+{% # import schema from '../schemas/sections/predictive-search.js' %}
+
+{%- if predictive_search.performed or search.performed -%}
+  <div
+    id="predictive-search-results"
+    class="predictive-search-dropdown"
+    role="listbox"
+    aria-label="{{ 'content.search_results_label' | t }}"
+    aria-expanded="true"
+    data-transition-container
+    style="--color-shadow: rgb(from var(--color-foreground) r g b / var(--opacity-10-25));"
+  >
+    <div
+      class="predictive-search-results__inner"
+      data-search-results
+    >
+      {% if predictive_search.performed %}
+        {% assign search_results_count = predictive_search.resources.products.size
+          | plus: predictive_search.resources.pages.size
+          | plus: predictive_search.resources.articles.size
+          | plus: predictive_search.resources.collections.size
+          | plus: predictive_search.resources.queries.size
+        %}
+      {% else %}
+        {% assign search_results_count = search.results_count %}
+      {% endif %}
+
       <div
-        id="predictive-search-results-groups-wrapper"
-        class="predictive-search__results-groups-wrapper{% unless predictive_search.resources.products.size > 0 %} predictive-search__results-groups-wrapper--no-products{% endunless %}{% unless predictive_search.resources.queries.size > 0 or predictive_search.resources.collections.size > 0 %} predictive-search__results-groups-wrapper--no-suggestions{% endunless %}"
+        class="visually-hidden"
+        role="status"
+        aria-live="polite"
       >
-    {%- endif -%}
-    {%- if first_column_results_size > 0 -%}
-      <div class="predictive-search__result-group">
-    {%- endif -%}
-    {%- if predictive_search.resources.queries.size > 0 or predictive_search.resources.collections.size > 0 -%}
-      <div>
-        <h2 id="predictive-search-queries" class="predictive-search__heading text-body caption-with-letter-spacing">
-          {{- 'templates.search.suggestions' | t -}}
-        </h2>
-        <ul
-          id="predictive-search-results-queries-list"
-          class="predictive-search__results-list list-unstyled"
-          role="group"
-          aria-labelledby="predictive-search-queries"
-        >
-          {%- for query in predictive_search.resources.queries -%}
-            <li
-              id="predictive-search-option-query-{{ forloop.index }}"
-              class="predictive-search__list-item"
-              role="option"
-              aria-selected="false"
-            >
-              <a href="{{ query.url }}" class="predictive-search__item link link--text" tabindex="-1">
-                <div class="predictive-search__item-content predictive-search__item-content--centered">
-                  <p
-                    class="predictive-search__item-heading predictive-search__item-query-result h5"
-                    aria-label="{{ query.text }}"
-                  >
-                    {{ query.styled_text }}
-                  </p>
-                </div>
-              </a>
-            </li>
-          {%- endfor -%}
-          {%- for collection in predictive_search.resources.collections -%}
-            <li
-              id="predictive-search-option-collection-{{ forloop.index }}"
-              class="predictive-search__list-item"
-              role="option"
-              aria-selected="false"
-            >
-              <a href="{{ collection.url }}" class="predictive-search__item link link--text" tabindex="-1">
-                <div class="predictive-search__item-content predictive-search__item-content--centered">
-                  <p class="predictive-search__item-heading h5">{{ collection.title | escape }}</p>
-                </div>
-              </a>
-            </li>
-          {%- endfor -%}
-        </ul>
+        {%- if predictive_search.performed and search_results_count > 0 -%}
+          {{ 'accessibility.search_results_count' | t: count: search_results_count, query: predictive_search.terms }}
+        {%- elsif predictive_search.performed and search_results_count == 0 -%}
+          {{ 'accessibility.search_results_no_results' | t: query: predictive_search.terms }}
+        {%- endif -%}
       </div>
-    {%- endif -%}
-    {%- if predictive_search.resources.articles.size > 0 or predictive_search.resources.pages.size > 0 -%}
-      <div class="predictive-search__pages-wrapper">
-        <h2
-          id="predictive-search-pages-desktop"
-          class="predictive-search__heading text-body caption-with-letter-spacing"
-        >
-          {{- 'templates.search.pages' | t -}}
-        </h2>
-        <ul
-          id="predictive-search-results-pages-list-desktop"
-          class="predictive-search__results-list list-unstyled"
-          role="group"
-          aria-labelledby="predictive-search-pages-desktop"
-        >
-          {%- for page in predictive_search.resources.pages -%}
-            <li
-              id="predictive-search-option-page-desktop-{{ forloop.index }}"
-              class="predictive-search__list-item"
-              role="option"
-              aria-selected="false"
-            >
-              <a href="{{ page.url }}" class="predictive-search__item link link--text" tabindex="-1">
-                <div class="predictive-search__item-content predictive-search__item-content--centered">
-                  <p class="predictive-search__item-heading h5">{{ page.title | escape }}</p>
-                </div>
-              </a>
-            </li>
-          {%- endfor -%}
-          {%- for article in predictive_search.resources.articles -%}
-            <li
-              id="predictive-search-option-article-desktop-{{ forloop.index }}"
-              class="predictive-search__list-item"
-              role="option"
-              aria-selected="false"
-            >
-              <a href="{{ article.url }}" class="predictive-search__item link link--text" tabindex="-1">
-                <div class="predictive-search__item-content predictive-search__item-content--centered">
-                  <p class="predictive-search__item-heading h5">{{ article.title | escape }}</p>
-                </div>
-              </a>
-            </li>
-          {%- endfor -%}
-        </ul>
-      </div>
-    {%- endif -%}
-    {%- if first_column_results_size > 0 -%}
-      </div>
-    {%- endif -%}
-    {%- if predictive_search.resources.products.size > 0
-      or predictive_search.resources.articles.size > 0
-      or predictive_search.resources.pages.size > 0
-    -%}
-      <div class="predictive-search__result-group">
-        {%- if predictive_search.resources.products.size > 0 -%}
-          <div>
-            <h2
-              id="predictive-search-products"
-              class="predictive-search__heading text-body caption-with-letter-spacing"
-            >
-              {{- 'templates.search.products' | t -}}
-            </h2>
+
+      {% if predictive_search.performed %}
+        {%- if search_results_count > 0 -%}
+          {% assign shared_results_index = 0 %}
+          {% if predictive_search.resources.queries.size > 0 %}
+            {% assign shared_results_index = shared_results_index
+              | plus: predictive_search.resources.collections.size
+            %}
             <ul
-              id="predictive-search-results-products-list"
-              class="predictive-search__results-list list-unstyled"
-              role="group"
-              aria-labelledby="predictive-search-products"
+              class="predictive-search-results__list predictive-search-results__wrapper predictive-search-results__wrapper-queries list-unstyled"
+              role="listbox"
+              aria-labelledby="predictive-search-queries"
             >
-              {%- for product in predictive_search.resources.products -%}
+              {%- for resource in predictive_search.resources.queries -%}
                 <li
-                  id="predictive-search-option-product-{{ forloop.index }}"
-                  class="predictive-search__list-item"
-                  role="option"
-                  aria-selected="false"
+                  class="predictive-search-results__card--query"
+                  ref="resultsItems[]"
+                  data-search-result-index="search-results-{{ shared_results_index | plus: forloop.index }}"
+                  on:keydown="/onSearchKeyDown"
                 >
                   <a
-                    href="{{ product.url }}"
-                    class="predictive-search__item predictive-search__item--link-with-thumbnail link link--text"
-                    tabindex="-1"
+                    class="pills__pill predictive-search-results__pill"
+                    href="{{ resource.url }}"
                   >
-                    {%- if product.featured_media != blank -%}
-                      <img
-                        class="predictive-search__image"
-                        src="{{ product.featured_media | image_url: width: 150 }}"
-                        alt="{{ product.featured_media.alt | escape }}"
-                        width="50"
-                        height="{{ 50 | divided_by: product.featured_media.preview_image.aspect_ratio }}"
-                      >
-                    {%- endif -%}
-                    <div class="predictive-search__item-content{% unless settings.predictive_search_show_vendor or settings.predictive_search_show_price %} predictive-search__item-content--centered{% endunless %}">
-                      {%- if settings.predictive_search_show_vendor -%}
-                        <span class="visually-hidden">{{ 'accessibility.vendor' | t }}</span>
-                        <div class="predictive-search__item-vendor caption-with-letter-spacing">
-                          {{ product.vendor }}
-                        </div>
-                      {%- endif -%}
-                      <p class="predictive-search__item-heading h5">{{ product.title | escape }}</p>
-                      {%- if settings.predictive_search_show_price -%}
-                        {% render 'price', product: product, use_variant: true, show_badges: false %}
-                      {%- endif -%}
-                    </div>
+                    <span
+                      aria-label="{{ resource.text }}"
+                    >
+                      {{ resource.styled_text }}
+                    </span>
                   </a>
                 </li>
-              {%- endfor -%}
+              {% endfor %}
             </ul>
-          </div>
-        {%- endif -%}
-        {%- if predictive_search.resources.articles.size > 0 or predictive_search.resources.pages.size > 0 -%}
-          <div class="predictive-search__pages-wrapper">
-            <h2
-              id="predictive-search-pages-mobile"
-              class="predictive-search__heading text-body caption-with-letter-spacing"
-            >
-              {{- 'templates.search.pages' | t -}}
-            </h2>
-            <ul
-              id="predictive-search-results-pages-list-mobile"
-              class="predictive-search__results-list list-unstyled"
-              role="group"
-              aria-labelledby="predictive-search-pages-mobile"
-            >
-              {%- for page in predictive_search.resources.pages -%}
-                <li
-                  id="predictive-search-option-page-mobile-{{ forloop.index }}"
-                  class="predictive-search__list-item"
-                  role="option"
-                  aria-selected="false"
-                >
-                  <a href="{{ page.url }}" class="predictive-search__item link link--text" tabindex="-1">
-                    <div class="predictive-search__item-content predictive-search__item-content--centered">
-                      <p class="predictive-search__item-heading h5">{{ page.title | escape }}</p>
-                    </div>
-                  </a>
-                </li>
-              {%- endfor -%}
-              {%- for article in predictive_search.resources.articles -%}
-                <li
-                  id="predictive-search-option-article-mobile-{{ forloop.index }}"
-                  class="predictive-search__list-item"
-                  role="option"
-                  aria-selected="false"
-                >
-                  <a href="{{ article.url }}" class="predictive-search__item link link--text" tabindex="-1">
-                    <div class="predictive-search__item-content predictive-search__item-content--centered">
-                      <p class="predictive-search__item-heading h5">{{ article.title | escape }}</p>
-                    </div>
-                  </a>
-                </li>
-              {%- endfor -%}
-            </ul>
-          </div>
-        {%- endif -%}
-      </div>
-    {%- endif -%}
-    {%- if first_column_results_size > 0 or predictive_search.resources.products.size > 0 -%}
-      </div>
-    {%- endif -%}
+          {% endif %}
+          {% if predictive_search.resources.products.size > 0 %}
+            {%- liquid
+              assign title = 'content.search_results_resource_products' | t
+              assign products = predictive_search.resources.products
+              render 'predictive-search-products-list', title: title, products: products
+            -%}
+          {% endif %}
 
-    {%- render 'loading-spinner', class: 'predictive-search__loading-state' -%}
+          {% if predictive_search.resources.collections.size > 0 %}
+            {% assign shared_results_index = shared_results_index | plus: predictive_search.resources.articles.size %}
+            {% assign resource_title = 'content.search_results_resource_collections' | t %}
 
-    <div id="predictive-search-option-search-keywords" class="predictive-search__search-for-button">
-      <button
-        class="predictive-search__item predictive-search__item--term link link--text h5 animate-arrow"
-        tabindex="-1"
-        role="option"
-        aria-selected="false"
-      >
-        <span data-predictive-search-search-for-text>
-          {{- 'templates.search.search_for' | t: terms: predictive_search.terms -}}
-        </span>
-        <span class="svg-wrapper">
-          {{- 'icon-arrow.svg' | inline_asset_content -}}
-        </span>
-      </button>
+            {% render 'predictive-search-resource-carousel',
+              title: resource_title,
+              resource_type: 'collection',
+              resources: predictive_search.resources.collections
+            %}
+          {% endif %}
+
+          {% if predictive_search.resources.pages.size > 0 %}
+            {% assign shared_results_index = shared_results_index | plus: predictive_search.resources.products.size %}
+            {% assign resource_title = 'content.search_results_resource_pages' | t %}
+
+            {% render 'predictive-search-resource-carousel',
+              title: resource_title,
+              resource_type: 'page',
+              resources: predictive_search.resources.pages
+            %}
+          {% endif %}
+
+          {% if predictive_search.resources.articles.size > 0 %}
+            {% assign shared_results_index = shared_results_index | plus: predictive_search.resources.pages.size %}
+            {% assign resource_title = 'content.search_results_resource_articles' | t %}
+
+            {% render 'predictive-search-resource-carousel',
+              title: resource_title,
+              resource_type: 'article',
+              resources: predictive_search.resources.articles
+            %}
+          {% endif %}
+        {% else %}
+          <p class="predictive-search-results__no-results">
+            {{ 'content.search_results_no_results' | t: terms: predictive_search.terms }}
+          </p>
+        {% endif %}
+      {% else %}
+        {% assign shared_results_index = 0 %}
+        {%- liquid
+          assign title = 'content.recently_viewed_products' | t
+          assign products = search.results
+
+          comment
+            Searching for recently viewed products by id doesn't preserve the order of the products.
+            To work around this, we get the product ids into an array then use that to reorder them.
+          endcomment
+          if search.terms contains 'id:'
+            assign new_products_ids = search.terms | replace: 'id:', '' | split: ' OR '
+          endif
+          render 'predictive-search-products-list', title: title, products: products, order_ids: new_products_ids, limit: 4
+        -%}
+      {% endif %}
+
+      {% if predictive_search.performed %}
+        {%- if search_results_count > 0 -%}
+          {% assign total_results = predictive_search.resources.products.size
+            | plus: predictive_search.resources.collections.size
+            | plus: predictive_search.resources.pages.size
+            | plus: predictive_search.resources.articles.size
+          %}
+          {% assign single_result_url = null %}
+          {% if total_results == 1 %}
+            {% if predictive_search.resources.products.size == 1 %}
+              {% assign single_result_url = predictive_search.resources.products.first.url %}
+            {% elsif predictive_search.resources.collections.size == 1 %}
+              {% assign single_result_url = predictive_search.resources.collections.first.url %}
+            {% elsif predictive_search.resources.pages.size == 1 %}
+              {% assign single_result_url = predictive_search.resources.pages.first.url %}
+            {% elsif predictive_search.resources.articles.size == 1 %}
+              {% assign single_result_url = predictive_search.resources.articles.first.url %}
+            {% endif %}
+          {% endif %}
+
+          {% if single_result_url %}
+            <div data-single-result-url="{{ single_result_url }}"></div>
+          {% endif %}
+        {% endif %}
+      {% endif %}
     </div>
   </div>
-
-  <span class="hidden" data-predictive-search-live-region-count-value>
-    {% liquid
-      assign total_results = predictive_search.resources.products.size | plus: first_column_results_size
-      if total_results == 0
-        echo 'templates.search.no_results' | t: terms: predictive_search.terms
-      else
-        echo 'templates.search.results_with_count' | t: count: total_results | append: ': '
-        if predictive_search.resources.queries.size > 0
-          assign count = predictive_search.resources.queries.size | plus: predictive_search.resources.collections.size
-          echo 'templates.search.results_suggestions_with_count' | t: count: count | append: ', '
-        endif
-        if predictive_search.resources.pages.size > 0
-          assign count = predictive_search.resources.pages.size | plus: predictive_search.resources.articles.size
-          echo 'templates.search.results_pages_with_count' | t: count: count | append: ', '
-        endif
-        if predictive_search.resources.products.size > 0
-          echo 'templates.search.results_products_with_count' | t: count: predictive_search.resources.products.size
-        endif
-      endif
-    %}
-  </span>
 {%- endif -%}
+
+{% stylesheet %}
+  predictive-search-component {
+    --resource-card-corner-radius: var(--product-corner-radius);
+
+    display: flex;
+    width: 100%;
+    position: relative;
+    margin-inline: auto;
+    align-items: center;
+    background-color: var(--color-background);
+    z-index: var(--layer-heightened);
+  }
+
+  .predictive-search-dropdown {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--layer-base);
+  }
+
+  :not(:is(dialog)) > predictive-search-component {
+    @media screen and (min-width: 750px) {
+      max-width: min(40dvw, 650px);
+    }
+  }
+
+  :not(:is(dialog)) > predictive-search-component .predictive-search__close-modal-button {
+    display: none;
+  }
+
+  .search-action .predictive-search {
+    z-index: calc(var(--layer-header-menu) + 2);
+  }
+
+  .search-action .search-modal .predictive-search {
+    z-index: var(--layer-window-overlay);
+  }
+
+  .predictive-search--right {
+    margin-right: 0;
+    margin-left: auto;
+  }
+
+  .predictive-search--left {
+    margin-right: auto;
+    margin-left: 0;
+  }
+
+  :not(:is(dialog)) > predictive-search-component.predictive-search--floating {
+    width: min(40dvw, 650px);
+    position: absolute;
+    top: var(--search-top, unset);
+    right: var(--search-right, unset);
+    left: var(--search-left, unset);
+  }
+
+  .predictive-search-form {
+    position: relative;
+    width: 100%;
+    align-self: flex-start;
+  }
+
+  .predictive-search-form__content-wrapper {
+    position: absolute;
+    top: 100%;
+    width: 100%;
+    left: 0;
+    z-index: var(--layer-raised);
+    display: flex;
+    flex-direction: column;
+    border-radius: 0 0 var(--search-border-radius) var(--search-border-radius);
+    transition: box-shadow var(--animation-speed) var(--animation-easing);
+    transform: translateZ(0);
+    will-change: transform, opacity;
+    overflow: hidden;
+
+    @media screen and (max-width: 749px) {
+      border-radius: 0;
+    }
+
+    @media screen and (min-width: 750px) {
+      max-height: var(--modal-max-height);
+      height: var(--predictive-search-results-height, auto);
+    }
+  }
+
+  /* Add new rule to apply bottom padding only when search button exists */
+  .predictive-search-form__content-wrapper:has([data-search-results]):not(:has(.predictive-search-results__no-results))
+    > .predictive-search-form__content {
+    padding-block-end: var(--padding-6xl);
+  }
+
+  .header__column--right .predictive-search-form__content-wrapper {
+    right: 0;
+    left: unset;
+  }
+
+  .search-modal .predictive-search-form__content-wrapper {
+    width: 100%;
+  }
+
+  :not(:is(dialog))
+    > predictive-search-component:not(.predictive-search--expanded)
+    .predictive-search-form__content-wrapper {
+    display: none;
+  }
+
+  .predictive-search-form__header-inner:has(.search-input:focus-visible) {
+    outline: var(--focus-outline-width) solid var(--color-foreground);
+    outline-offset: calc(var(--focus-outline-offset) * -1);
+  }
+
+  .predictive-search-results__inner {
+    --title-font-size: var(--font-size--md);
+    --title-margin-block: var(--margin-xs);
+    --list-item-padding-block: var(--padding-sm);
+
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-block: var(--padding-lg);
+    container-type: inline-size;
+    color: var(--color-foreground);
+  }
+
+  .predictive-search-results__inner > * {
+    padding-inline: var(--padding-xl);
+  }
+
+  .predictive-search-results__list {
+    --slide-width: 27.5%;
+    --slideshow-gap: var(--gap-md);
+
+    /* Make space for the outline to be visible */
+    padding-block-start: var(--border-width-sm);
+  }
+
+  .predictive-search-results__list:last-child {
+    margin-block-end: 0;
+  }
+
+  .predictive-search-results__resource-header {
+    display: flex;
+    padding-inline: var(--padding-xl);
+    justify-content: space-between;
+    align-items: center;
+    height: 32px;
+  }
+
+  .predictive-search-results__resource-header .svg-wrapper {
+    width: var(--icon-size-xs);
+  }
+
+  .predictive-search-results__list-item {
+    padding-inline: var(--padding-sm);
+    padding-block: var(--list-item-padding-block);
+    border-radius: var(--style-border-radius-popover);
+    scroll-margin-block: var(--padding-xl);
+
+    &:first-child {
+      /* scroll-margin to match font + padding + margin on .predictive-search-results__title */
+      scroll-margin-block-start: calc(
+        var(--title-font-size) + var(--title-margin-block) + var(--list-item-padding-block)
+      );
+    }
+
+    &:not(:has(.predictive-search-results__list-item-link--pill))[aria-selected='true'].keyboard-focus {
+      background-color: rgba(from var(--color-primary) r g b / 20%);
+      transform: translateY(0);
+    }
+  }
+
+  .predictive-search-results__list-item:has(.predictive-search-results__list-item-link--pill) {
+    width: fit-content;
+    padding: 0;
+  }
+
+  .predictive-search-results__list-item-link {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-column-gap: var(--gap-xl);
+    align-items: center;
+  }
+
+  .predictive-search-results__list-item-link--pill {
+    display: block;
+    padding: var(--padding-2xs) var(--padding-sm);
+  }
+
+  .predictive-search-results__list-item[aria-selected='true'] .predictive-search-results__list-item-link--pill {
+    background-color: rgba(from var(--color-primary) r g b / 20%);
+  }
+
+  .predictive-search-results__list-item-link--no-media {
+    grid-template-columns: 1fr;
+  }
+
+  .predictive-search-results__list-item-image,
+  .predictive-search-results__list-item-icon {
+    width: 100%;
+    border-radius: var(--product-corner-radius);
+    background-color: rgb(from var(--color-primary) r g b / 20%);
+    margin: auto;
+    object-fit: cover;
+  }
+
+  .predictive-search-results__list-item-details {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    overflow: hidden;
+  }
+
+  .predictive-search-results__list-item-content {
+    font-size: var(--font-size-xs);
+    color: rgba(from var(--color-primary) r g b / var(--opacity-subdued-text));
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-wrap: nowrap;
+  }
+
+  .header[transparent] :is(.predictive-search):not(:focus-within) {
+    background-color: transparent;
+  }
+
+  .header[transparent] .predictive-search-form__header-inner {
+    border-color: var(--color-foreground);
+  }
+
+  .predictive-search-form__header .search-input {
+    border-radius: var(--style-border-radius-inputs);
+    padding-block: var(--padding-sm);
+    font-size: var(--font-size--md);
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+
+  .predictive-search__icon {
+    position: absolute;
+    left: var(--margin-xl);
+    top: auto;
+    width: var(--icon-size-lg);
+    height: var(--icon-size-lg);
+    color: rgb(from var(--color-foreground) r g b / 60%);
+
+    @media screen and (min-width: 750px) {
+      left: var(--margin-md);
+    }
+  }
+
+  .predictive-search__icon > svg {
+    width: var(--icon-size-md);
+    height: var(--icon-size-md);
+  }
+
+  .predictive-search__reset-button {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+    padding: 0;
+    background: transparent;
+    color: var(--color-foreground);
+    opacity: 1;
+    transition: opacity var(--animation-speed) var(--animation-easing),
+      visibility var(--animation-speed) var(--animation-easing);
+
+    &:hover {
+      color: var(--color-foreground);
+    }
+
+    &:active {
+      transform: scale(0.9);
+      transition: transform 100ms var(--animation-timing-active);
+    }
+
+    @media screen and (max-width: 749px) {
+      margin-right: var(--margin-md);
+    }
+  }
+
+  .predictive-search__reset-button[hidden] {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .predictive-search__reset-button-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--icon-size-lg);
+    height: var(--icon-size-lg);
+    transition: background-color var(--animation-speed-medium) ease-in-out,
+      transform var(--animation-speed-medium) var(--animation-timing-bounce);
+    border-radius: 50%;
+
+    &:hover {
+      background-color: rgb(from var(--color-primary-hover) r g b / 8%);
+    }
+  }
+
+  .predictive-search__reset-button:active .predictive-search__reset-button-icon {
+    transform: scale(0.85);
+    transition-timing-function: var(--animation-timing-active);
+    transition-duration: 100ms;
+  }
+
+  .predictive-search__reset-button svg {
+    width: var(--icon-size-md);
+    height: var(--icon-size-md);
+  }
+
+  .predictive-search__reset-button-text {
+    display: none;
+  }
+
+  .predictive-search-form__content {
+    max-height: 50dvh;
+    overflow-y: auto;
+    background-color: var(--color-background);
+
+    /* Firefox */
+    scrollbar-width: none;
+
+    /* Webkit browsers */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .search-modal__content .predictive-search-form__content {
+    max-height: var(--modal-max-height);
+  }
+
+  .predictive-search-results__no-results:last-child {
+    margin-block: var(--margin-lg);
+    text-align: center;
+  }
+
+  .predictive-search__search-button {
+    margin: auto;
+    z-index: var(--layer-raised);
+    transition: transform var(--animation-speed-medium) var(--animation-timing-bounce),
+      box-shadow var(--animation-speed-medium) var(--animation-timing-hover);
+    transform-origin: center;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgb(0 0 0 / 0.05);
+    }
+
+    &:active {
+      transform: scale(0.97);
+      transition: transform 100ms var(--animation-timing-active);
+      box-shadow: none;
+    }
+  }
+
+  .predictive-search:has(.predictive-search-dropdown) .search-input {
+    outline-color: transparent;
+  }
+
+  .predictive-search-form__header {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: var(--layer-heightened);
+    width: 100%;
+    align-items: center;
+    background-color: var(--color-input-background);
+    border-radius: var(--style-border-radius-inputs);
+
+    @media screen and (max-width: 749px) {
+      padding: var(--padding-2xs) var(--padding-sm);
+    }
+  }
+
+  .predictive-search-form__header-inner {
+    background: var(--color-background);
+    border: var(--search-border-width) solid var(--color-border);
+    color: var(--color-foreground);
+    border-radius: var(--style-border-radius-popover);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+
+    @media screen and (max-width: 749px) {
+      border-radius: var(--style-border-radius-inputs);
+      border: none;
+    }
+  }
+
+  .predictive-search-form__header-inner:focus-within {
+    outline: 0;
+    outline-offset: var(--focus-outline-offset);
+
+    @media screen and (min-width: 750px) {
+      outline: var(--focus-outline-width) solid var(--color-primary);
+    }
+  }
+
+  .predictive-search:has(.predictive-search-dropdown) .predictive-search-form__header-inner:focus-within {
+    border-top-color: transparent;
+    border-right-color: transparent;
+    border-left-color: transparent;
+
+    @media screen and (max-width: 749px) {
+      border-bottom-color: transparent;
+    }
+  }
+
+  .predictive-search:has(.predictive-search-dropdown[aria-expanded='true'])
+    .predictive-search-form__header-inner:focus-within {
+    border-top-color: transparent;
+    border-right-color: transparent;
+    border-left-color: transparent;
+    border-radius: var(--search-border-radius);
+
+    @media screen and (max-width: 749px) {
+      border-radius: var(--style-border-radius-inputs);
+    }
+  }
+
+  .search-action .predictive-search:has(.predictive-search-dropdown) .predictive-search-form__header:focus-within {
+    border-radius: var(--search-border-radius) var(--search-border-radius) 0 0;
+    transition: box-shadow var(--animation-speed) var(--animation-easing);
+    background-color: var(--color-background);
+
+    @media screen and (max-width: 749px) {
+      border-radius: var(--style-border-radius-inputs) var(--style-border-radius-inputs) 0 0;
+    }
+  }
+
+  .predictive-search__close-modal-button:hover {
+    --button-color: var(--color-foreground);
+    --button-background-color: transparent;
+  }
+
+  .predictive-search__close-modal-button {
+    --button-color: var(--color-foreground);
+    --button-background-color: transparent;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+    margin-inline-start: var(--margin-sm);
+    padding: 0;
+    box-shadow: none;
+
+    &:active {
+      transform: scale(0.8);
+      transition: transform 100ms var(--animation-timing-active);
+    }
+
+    .svg-wrapper,
+    svg {
+      width: var(--icon-size-xs);
+      height: var(--icon-size-xs);
+    }
+
+    @media screen and (min-width: 750px) {
+      display: none;
+    }
+  }
+
+  .predictive-search-form__footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    @media screen and (min-width: 750px) {
+      --to-top-gradient-background: linear-gradient(
+        to top,
+        rgb(from var(--color-background) r g b / 90%),
+        rgb(from var(--color-background) r g b / 80%),
+        rgb(from var(--color-background) r g b / 40%),
+        transparent
+      );
+
+      padding-block: var(--padding-xs) var(--padding-lg);
+      background-image: var(--to-top-gradient-background);
+    }
+  }
+
+  .dialog-modal .predictive-search-form__header {
+    border: 0;
+    border-radius: 0;
+    background-color: var(--color-background);
+    border-bottom: var(--style-border-width) solid var(--color-border);
+
+    @media screen and (min-width: 750px) {
+      padding: var(--padding-2xs) var(--padding-2xs) 0;
+      border-bottom: var(--search-border-width) solid var(--color-border);
+    }
+
+    @media screen and (max-width: 749px) {
+      transition: box-shadow 0.2s ease;
+      box-shadow: none;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .dialog-modal .predictive-search__close-modal-button {
+      padding-inline-start: var(--margin-xs);
+      margin-inline-start: 0;
+    }
+  }
+
+  .dialog-modal[open] {
+    @media screen and (max-width: 749px) {
+      border-radius: 0;
+
+      .dialog-modal_content {
+        border-radius: 0;
+      }
+    }
+  }
+
+  .dialog-modal .predictive-search-form__header:has(.predictive-search-form__header-inner:focus-within) {
+    @media screen and (min-width: 750px) {
+      border-bottom-color: transparent;
+    }
+  }
+
+  .dialog-modal .predictive-search-form__header-inner {
+    @media screen and (min-width: 750px) {
+      border: 0;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .dialog-modal {
+      .predictive-search__reset-button-icon {
+        display: none;
+      }
+
+      .predictive-search__reset-button-text {
+        display: block;
+      }
+
+      .predictive-search-form__content {
+        /* The parent has overflow auto, we want to prevent a double scrollbar during animation */
+        max-height: 100%;
+      }
+
+      .predictive-search-form__content-wrapper {
+        box-shadow: none;
+      }
+
+      .predictive-search-form__header {
+        box-shadow: none;
+      }
+
+      .predictive-search-form__footer {
+        padding-block: var(--padding-2xl);
+      }
+    }
+  }
+
+  /* Styles for the snippets */
+
+  .predictive-search-results__pill mark {
+    background-color: transparent;
+    font-weight: 200;
+    color: rgb(from var(--color-foreground) r g b / 80%);
+  }
+
+  .predictive-search-results__pill:focus,
+  .predictive-search-results__pill:hover,
+  .predictive-search-results__card--query:is([aria-selected='true'], :focus-within) .predictive-search-results__pill {
+    --pill-background-color: rgb(from var(--color-foreground) r g b / 8%);
+
+    background-color: var(--pill-background-color);
+    outline: var(--border-width-sm) solid var(--color-border);
+    border: var(--border-width-sm);
+    text-decoration: none;
+  }
+
+  .predictive-search-results__pill {
+    font-weight: 500;
+    white-space: nowrap;
+    color: var(--color-foreground);
+  }
+
+  .predictive-search-results__title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--font-size--body-md);
+    font-weight: 500;
+    margin-block: var(--margin-sm) var(--margin-xs);
+    width: 100%;
+    text-transform: var(--title-case);
+
+    &:first-of-type {
+      margin-block-start: 0;
+    }
+
+    @media screen and (max-width: 749px) {
+      margin-block: var(--margin-lg) var(--margin-sm);
+    }
+  }
+
+  .predictive-search-results__resource-header .predictive-search-results__title {
+    margin-block-end: 0;
+  }
+
+  .predictive-search-results__resource-header:has(slideshow-controls) .predictive-search-results__title {
+    margin-block-end: 0;
+  }
+
+  .predictive-search-results__wrapper {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-block-end: var(--padding-sm);
+    padding-inline: 0;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 var(--padding-xl);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .predictive-search-results__wrapper slideshow-slides {
+    --gutter-slide-width: var(--padding-xl);
+
+    padding-block: var(--padding-3xs);
+    gap: var(--gap-md);
+  }
+
+  .predictive-search-results__wrapper-products {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    padding-block-end: var(--padding-sm);
+    gap: var(--gap-md);
+    transition: height var(--animation-speed-medium) var(--animation-easing);
+
+    @container (min-width: 550px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .predictive-search-results__wrapper-products:last-child {
+    padding-block-end: var(--padding-lg);
+
+    @media screen and (min-width: 750px) {
+      padding-block-end: var(--padding-sm);
+    }
+  }
+
+  .predictive-search-results__wrapper-queries {
+    margin-bottom: var(--margin-lg);
+    padding-inline: var(--padding-xl);
+    gap: var(--gap-2xs);
+  }
+
+  .predictive-search-results__card {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    scroll-margin-block: calc(var(--title-font-size) + var(--title-margin-block) + var(--padding-sm))
+      calc(var(--padding-xl) + var(--button-padding-block) * 2);
+    transition: transform var(--animation-speed-medium) var(--animation-timing-default),
+      background-color var(--animation-speed-medium) var(--animation-timing-hover),
+      border-color var(--animation-speed-medium) var(--animation-timing-hover);
+
+    &:nth-last-child(3) {
+      scroll-snap-align: end;
+    }
+
+    &:active {
+      transform: scale(0.97);
+      transition: transform 100ms var(--animation-timing-active);
+    }
+  }
+
+  .predictive-search-results__card--product,
+  .recently-viewed-wrapper .predictive-search-results__card--product {
+    &:hover {
+      background-color: var(--card-bg-hover);
+      border-radius: var(--product-corner-radius);
+      padding: calc(var(--padding-2xs) + 2px);
+      margin: calc((var(--padding-2xs) + 2px) * -1);
+    }
+
+    &:is([aria-selected='true'].keyboard-focus, &:focus-visible, &:has(.resource-card:focus-visible)) {
+      background-color: var(--card-bg-hover);
+      padding: calc(var(--padding-2xs) + 1px);
+      margin: calc((var(--padding-2xs) + 1px) * -1);
+      outline: var(--border-width-sm) solid var(--color-border);
+      border-radius: calc(var(--product-corner-radius) + 1px);
+      border-color: var(--card-border-focus);
+    }
+
+    &:active {
+      transform: scale(0.97);
+      transition: transform 100ms var(--animation-timing-active);
+    }
+  }
+
+  .predictive-search-results__card:not(.predictive-search-results__card--product) {
+    padding: var(--padding-sm);
+    border: var(--border-width-sm) solid var(--color-border);
+    border-radius: var(--card-corner-radius);
+    width: 60cqi;
+    content-visibility: visible;
+
+    @media screen and (min-width: 750px) {
+      width: 27.5cqi;
+    }
+
+    &:hover {
+      border-color: var(--card-border-hover);
+      background-color: var(--card-bg-hover);
+    }
+
+    &[aria-selected='true'].keyboard-focus {
+      border-color: var(--card-border-hover);
+      background-color: var(--card-bg-hover);
+    }
+
+    &:active {
+      transform: scale(0.97);
+      transition: transform var(--animation-speed-medium) var(--animation-timing-active);
+    }
+  }
+
+  @keyframes search-element-scale-in {
+    0% {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+
+    40% {
+      opacity: 1;
+    }
+
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes search-element-scale-out {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    100% {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+  }
+
+  @keyframes search-element-slide-in-top {
+    from {
+      margin-top: calc(var(--modal-top-margin) + var(--padding-sm));
+      opacity: 0;
+    }
+
+    to {
+      margin-top: var(--modal-top-margin);
+      opacity: 1;
+    }
+  }
+
+  @keyframes search-element-slide-out-top {
+    from {
+      margin-top: var(--modal-top-margin);
+      opacity: 1;
+    }
+
+    to {
+      margin-top: calc(var(--modal-top-margin) + var(--padding-sm));
+      opacity: 0;
+    }
+  }
+
+  @keyframes content-slide {
+    from {
+      transform: translateY(var(--slide-from, 0));
+      opacity: var(--slide-opacity-from, 1);
+    }
+
+    to {
+      transform: translateY(var(--slide-to, 0));
+      opacity: var(--slide-opacity-to, 1);
+    }
+  }
+
+  .recently-viewed-wrapper .predictive-search-results__card {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .recently-viewed-wrapper.removing .predictive-search-results__card {
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+  }
+
+  .predictive-search-results__resource-header slideshow-controls {
+    @media screen and (max-width: 749px) {
+      display: none;
+    }
+  }
+
+  .predictive-search-results__list slideshow-arrows {
+    @media screen and (max-width: 749px) {
+      display: none;
+    }
+  }
+
+  .predictive-search-dropdown .predictive-search-results__list-item-image,
+  .predictive-search-dropdown .predictive-search-results__list-item-icon {
+    width: 100%;
+    border-radius: var(--product-corner-radius);
+    background-color: rgb(from var(--color-primary) r g b / 20%);
+    margin: auto;
+    object-fit: cover;
+  }
+
+  .predictive-search-results__list-item,
+  .predictive-search-results__no-results,
+  .predictive-search-results__wrapper,
+  .predictive-search-results__wrapper-products .predictive-search-results__card {
+    animation: search-element-slide-up var(--animation-speed-medium) var(--animation-timing-bounce) backwards;
+  }
+
+  slideshow-slide .resource-card {
+    animation-delay: 0ms !important;
+  }
+
+  .predictive-search-results__wrapper-products .predictive-search-results__card:nth-child(1) {
+    animation-delay: 30ms;
+  }
+
+  .predictive-search-results__wrapper-products .predictive-search-results__card:nth-child(2) {
+    animation-delay: 60ms;
+  }
+
+  .predictive-search-results__wrapper-products .predictive-search-results__card:nth-child(3) {
+    animation-delay: 90ms;
+  }
+
+  .predictive-search-results__wrapper-products .predictive-search-results__card:nth-child(4) {
+    animation-delay: 120ms;
+  }
+
+  .predictive-search-results__wrapper-products .predictive-search-results__card:nth-child(n + 5) {
+    animation-delay: 150ms;
+  }
+
+  .predictive-search-results__list,
+  .predictive-search-results__wrapper {
+    animation-duration: var(--animation-speed-medium);
+  }
+
+  .predictive-search-results__list-item {
+    animation-delay: calc(30ms * var(--nth-child, 1) + 50ms);
+  }
+
+  .predictive-search-results__wrapper-queries {
+    animation-delay: 50ms;
+  }
+
+  .predictive-search-results__wrapper-products {
+    animation-delay: 50ms;
+  }
+
+  .predictive-search-results__list:nth-of-type(2) {
+    animation-delay: 150ms;
+  }
+
+  .predictive-search-results__list:nth-of-type(3) {
+    animation-delay: 200ms;
+  }
+
+  .predictive-search-results__list:nth-of-type(4) {
+    animation-delay: 250ms;
+  }
+
+  [data-resource-type] {
+    animation-delay: 0ms !important;
+  }
+
+  .predictive-search-results__no-results {
+    animation-delay: 100ms;
+  }
+
+  .predictive-search-results__list-item.removing,
+  .predictive-search-results__no-results.removing,
+  .predictive-search-results__wrapper.removing {
+    animation: search-element-slide-down var(--animation-speed-medium) var(--animation-timing-fade-out) forwards;
+  }
+
+  .predictive-search-results__card.removing {
+    animation: fadeOut var(--animation-speed-medium) var(--animation-timing-fade-out) forwards;
+  }
+
+  .predictive-search-results__wrapper {
+    transition: opacity var(--animation-speed-medium) var(--animation-timing-fade-in);
+  }
+
+  .predictive-search__reset-button {
+    transition: opacity var(--animation-speed-medium) var(--animation-timing-fade-out),
+      visibility var(--animation-speed-medium) var(--animation-timing-fade-out);
+  }
+
+  .predictive-search-results__no-results {
+    transition: opacity var(--animation-speed-medium) var(--animation-timing-fade-in);
+  }
+
+  @keyframes search-element-slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes search-element-slide-down {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    to {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  .recently-viewed-wrapper {
+    display: grid;
+    grid-template-rows: auto auto;
+    max-height: 1000px;
+    opacity: 1;
+    overflow: visible;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top center;
+    transform: translateY(0);
+  }
+
+  .recently-viewed-wrapper.removing {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
+
+  .recently-viewed-wrapper.removing .predictive-search-results__card {
+    transition: none;
+    transform: none;
+    opacity: 1;
+  }
+
+  .recently-viewed-wrapper > * {
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .predictive-search-results__clear.button-unstyled {
+    color: var(--color-foreground);
+    opacity: 0.5;
+    transition: opacity var(--animation-speed-medium) var(--animation-easing);
+    padding: 0;
+    margin-left: var(--margin-sm);
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  .search-input,
+  .search-input:is(:focus, :focus-visible, :focus-within),
+  .predictive-search-form__header *:is(:focus, :focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  .predictive-search-form__header-inner:has(.search-input:is(:focus, :focus-visible)),
+  .predictive-search-form__header:focus-within,
+  .predictive-search-form__header-inner:focus-within {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: var(--color-border) !important;
+  }
+
+  .predictive-search:has(.predictive-search-dropdown) .predictive-search-form__header-inner:focus-within {
+    border-top-color: transparent;
+    border-right-color: transparent;
+    border-left-color: transparent;
+
+    @media screen and (max-width: 749px) {
+      border-bottom-color: transparent;
+    }
+  }
+
+  .predictive-search-form__header {
+    border-radius: var(--style-border-radius-inputs);
+    border: var(--search-border-width) solid var(--color-border);
+  }
+
+  .predictive-search-results__card--query {
+    transition: transform var(--animation-speed-medium) var(--animation-timing-bounce);
+    transform-origin: center;
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+
+  .predictive-search-results__pill {
+    transition: background-color var(--animation-speed-medium) var(--animation-timing-hover),
+      box-shadow var(--animation-speed-medium) var(--animation-timing-bounce),
+      transform var(--animation-speed-medium) var(--animation-timing-bounce);
+    margin: 2px;
+
+    &:hover {
+      transform: scale(1.03);
+      box-shadow: 0 2px 5px rgb(0 0 0 / 0.07);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.predictive_search",
+  "settings": [],
+  "blocks": [
+    {
+      "type": "@theme"
+    }
+  ]
+}
+{% endschema %}

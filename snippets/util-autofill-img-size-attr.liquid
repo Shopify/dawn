@@ -1,0 +1,75 @@
+{%- doc -%}
+  Echo a sizes attribute for an <img> tag based on a minimum image size.
+
+  @param {number} card_size - The minimum pixel-width of the product card.
+  @param {number} [card_gap] - The pixel-width of the gap between product cards.
+  @param {number} [max_breakpoint] - The maximum pixel-width to calculate breakpoints for.
+  @param {number} [min_breakpoint] - The minimum pixel-width before defaulting to 50vw.
+
+  @example
+  {% capture size_attribute %}
+    {% render 'util-autofill-img-size-attr' card_size: 400 %}
+  {% endcapture %}
+  {% assign size_attribute = size_attribute | strip %}
+  {{ image_url | image_tag: sizes: size_attribute }}
+{%- enddoc -%}
+
+{% liquid
+  # Defense: ensure card_size and card_gap are numbers
+  assign card_size = card_size | strip | replace: 'px', '' | plus: 0
+
+  if card_gap
+    assign card_gap = card_gap | strip | replace: 'px', '' | plus: 0
+  else
+    assign card_gap = 0
+  endif
+
+  assign card_size_with_gap = card_size | plus: card_gap
+
+  assign max_breakpoint = max_breakpoint | default: 2000
+
+  assign min_breakpoint = min_breakpoint | default: 750
+
+  # Calculate maximum number of columns at max width
+  assign max_cols = max_breakpoint | divided_by: card_size_with_gap | floor
+
+  assign sizes_attr = ''
+
+  # Calculate breakpoints dynamically based on card size
+  # Start with max columns and work down
+  for i in (1..max_cols)
+    # Current number of columns we're calculating for
+    assign current_cols = max_cols | minus: i | plus: 1
+
+    # Skip if we're down to 1 column
+    if current_cols < 2
+      break
+    endif
+
+    # Calculate the minimum width needed for this many columns
+    assign min_width_needed = current_cols | times: card_size_with_gap
+
+    if min_width_needed < min_breakpoint
+      break
+    endif
+
+    assign percentage = 100 | divided_by: current_cols
+
+    # Build up the sizes attribute
+    if sizes_attr != ''
+      assign sizes_attr = sizes_attr | append: ', '
+    endif
+    assign sizes_attr = sizes_attr | append: '(min-width: ' | append: min_width_needed | append: 'px) ' | append: percentage | append: 'vw'
+  endfor
+
+  # Add tablet size (50vw) and mobile size (100vw) fallbacks
+  if sizes_attr != ''
+    assign sizes_attr = sizes_attr | append: ', '
+  endif
+  assign sizes_attr = sizes_attr | append: '(min-width: ' | append: min_breakpoint | append: 'px) 50vw'
+
+  assign sizes_attr = sizes_attr | append: ', 100vw'
+
+  # Echo the sizes attribute
+  echo sizes_attr
+%}

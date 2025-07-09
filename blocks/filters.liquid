@@ -1,0 +1,1236 @@
+{% # import schema from '../schemas/blocks/filters' %}
+{%- doc -%}
+  Renders the facet filtering component
+
+  @param {object} results - The search results object
+  @param {number} results_size - The number of products in the search results
+  @param {object} [filters] - The filters object
+{%- enddoc -%}
+
+<script
+  src="{{ 'facets.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
+
+{%- liquid
+  assign products_count = results_size
+  assign sort_by = results.sort_by | default: results.default_sort_by
+  assign filters = filters | default: results.filters
+  assign total_active_values = 0
+
+  # Calculate facets margin style
+  capture facets_margin_style
+    echo '--facets-margin: 0px '
+    if block.settings.filter_style == 'vertical'
+      echo block.settings.facets_margin_right | append: 'px' | append: ' 0px'
+    else
+      echo ' 0px ' | append: block.settings.facets_margin_bottom | append: 'px'
+    endif
+    echo ' 0px;'
+  endcapture
+
+  for filter in filters
+    case filter.type
+      when 'price_range'
+        if filter.min_value.value != null or filter.max_value.value != null
+          assign total_active_values = total_active_values | plus: 1
+        endif
+      when 'boolean'
+        if filter.active_values[0].value
+          assign total_active_values = total_active_values | plus: 1
+        endif
+      else
+        assign active_value_count = filter.active_values | size
+        assign total_active_values = total_active_values | plus: active_value_count
+    endcase
+  endfor
+
+  if results.url
+    assign results_url = results.url
+  else
+    assign terms = results.terms | escape
+    assign results_url = '?q=' | append: terms | append: '&options%5Bprefix%5D=last&sort_by=' | append: sort_by
+  endif
+
+  assign is_active = false
+  assign should_show_pane = true
+  if block.settings.filter_style == 'vertical'
+    assign should_show_pane = block.settings.enable_filtering
+  endif
+
+  assign should_use_select_on_mobile = true
+  if block.settings.enable_filtering == false and block.settings.enable_sorting
+    assign should_use_select_on_mobile = false
+  endif
+
+  assign should_show_vertical_clear_all = true
+  if block.settings.filter_style == 'vertical'
+    assign should_show_vertical_clear_all = false
+  endif
+-%}
+
+{% if block.settings.enable_filtering or block.settings.enable_sorting or block.settings.enable_grid_density %}
+  {% if block.settings.filter_style == 'vertical' %}
+    {% # These elements are always rendered in the horizontal bar that's why we apply the .facets--horizontal class %}
+    <div
+      class="facets facets--horizontal facets-controls-wrapper spacing-style"
+      style="{% render 'spacing-style', settings: block.settings %}{% if block.settings.text_label_case == 'uppercase' %} --facet-label-transform: uppercase;{% endif %}"
+    >
+      {% if block.settings.enable_filtering %}
+        <h4 class="facets--filters-title">{{ 'content.filters' | t }}</h4>
+      {% endif %}
+
+      <div class="products-count-wrapper">
+        <span title="{{ 'content.product_count' | t }}">
+          {{- 'content.item_count' | t: count: products_count -}}
+        </span>
+      </div>
+
+      {% if block.settings.enable_sorting %}
+        {% render 'sorting',
+          results: results,
+          sort_by: sort_by,
+          filter_style: block.settings.filter_style,
+          suffix: 'desktop',
+          sort_position: 'desktop',
+          should_use_select_on_mobile: false,
+          section_id: section.id
+        %}
+      {% endif %}
+
+      {% if block.settings.enable_grid_density %}
+        {% render 'grid-density-controls', viewport: 'desktop' %}
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <div
+    class="
+      {% if should_show_pane == false %}
+        hidden
+      {% endif %}
+      facets-block-wrapper
+      facets-block-wrapper--{{ block.settings.filter_style }}
+      {%- if block.settings.inherit_color_scheme == false %} color-{{ block.settings.color_scheme }}{% endif %}
+      {%- if block.settings.filter_width == 'full-width' %} facets-block-wrapper--full-width{% endif %}
+    "
+    style="
+      --grid-column--desktop:
+        {%- if block.settings.filter_style == 'horizontal' -%}
+          var(--{{ block.settings.filter_width }})
+        {%- else -%}
+          2 / var(--facets-vertical-col-width)
+        {%- endif -%};
+      {{ facets_margin_style }}
+      --facets-inner-padding-block: {{ block.settings.padding-block-start }}px {{ block.settings.padding-block-end }}px;
+      --facets-inner-padding-inline: var(--padding-lg);
+    "
+    {{ block.shopify_attributes }}
+  >
+    <div
+      class="facets facets--{{ block.settings.filter_style }} spacing-style"
+      style="{% render 'spacing-style', settings: block.settings %}{% if block.settings.text_label_case == 'uppercase' %} --facet-label-transform: uppercase;{% endif %}"
+      aria-label="{{ 'accessibility.filters' | t }}"
+    >
+      <facets-form-component
+        class="facets__form-wrapper"
+        section-id="{{ section.id }}"
+        form-style="{{ block.settings.filter_style }}"
+      >
+        <form
+          action="{{ results_url }}"
+          id="FacetFiltersForm--{{ section.id }}-desktop"
+          class="facets__form"
+          ref="facetsForm"
+        >
+          {% if should_show_pane %}
+            {% render 'filter-remove-buttons',
+              filters: filters,
+              results_url: results_url,
+              show_filter_label: block.settings.show_filter_label,
+              should_show_clear_all: true
+            %}
+
+            {% if block.settings.enable_filtering %}
+              {% assign total_active_values = 0 %}
+
+              {% capture rendered_filters %}
+                {%- for filter in filters -%}
+                  {% case filter.type %}
+                    {% when 'price_range' %}
+                      {%- liquid
+                        if filter.min_value.value != null or filter.max_value.value != null
+                          assign total_active_values = total_active_values | plus: 1
+                          assign is_active = true
+                        endif
+
+                        if block.settings.filter_style != 'vertical'
+                          assign should_render_clear = true
+                        else
+                          assign should_render_clear = false
+                        endif
+
+                        render 'price-filter', filter: filter, filter_style: block.settings.filter_style, should_render_clear: should_render_clear
+                      -%}
+                    {% else %}
+                      {% liquid
+                        if filter.active_values.size > 0
+                          assign is_active = true
+                        endif
+
+                        assign active_value_count = filter.active_values | size
+                        assign total_active_values = total_active_values | plus: active_value_count
+                        if block.settings.filter_style != 'vertical'
+                          assign should_render_clear = true
+                        else
+                          assign should_render_clear = false
+                        endif
+                        render 'list-filter', filter: filter, filter_style: block.settings.filter_style, active_value_count: active_value_count, should_render_clear: should_render_clear, show_swatch_label: block.settings.show_swatch_label, sectionId: section.id
+                      %}
+                  {% endcase %}
+                {%- endfor -%}
+              {% endcapture %}
+
+              <div class="facets__filters-wrapper">
+                {% if block.settings.filter_style == 'horizontal' %}
+                  {% liquid
+                    assign more_attributes = 'on:click="#filters-drawer/showDialog"'
+                    if block.settings.text_label_case == 'uppercase'
+                      assign more_attributes = more_attributes | append: ' style="--text-transform: uppercase;"'
+                    endif
+                  %}
+                  {% render 'overflow-list',
+                    class: 'facets__overflow-list',
+                    children: rendered_filters,
+                    more-attributes: more_attributes,
+                    minimum-items: 2
+                  %}
+                {% else %}
+                  {{ rendered_filters }}
+                {% endif %}
+              </div>
+
+              {% render 'facets-actions',
+                results_url: results_url,
+                is_active: is_active,
+                products_count: products_count,
+                should_show_clear_all: should_show_vertical_clear_all
+              %}
+            {% endif %}
+            {% if block.settings.filter_style == 'horizontal' %}
+              <div class="products-count-wrapper">
+                <span title="{{ 'content.product_count' | t }}">
+                  {{- 'content.item_count' | t: count: products_count -}}
+                </span>
+              </div>
+
+              {% if block.settings.enable_sorting %}
+                {% render 'sorting',
+                  results: results,
+                  sort_by: sort_by,
+                  filter_style: block.settings.filter_style,
+                  suffix: 'desktop',
+                  sort_position: 'desktop',
+                  should_use_select_on_mobile: false,
+                  section_id: section.id
+                %}
+              {% endif %}
+
+              {% if block.settings.enable_grid_density %}
+                {% render 'grid-density-controls', viewport: 'desktop' %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        </form>
+      </facets-form-component>
+    </div>
+  </div>
+
+  <div
+    class="facets-toggle{% if block.settings.enable_filtering == false %} facets-toggle--no-filters{% endif %}{% if block.settings.filter_style == 'horizontal' and block.settings.inherit_color_scheme == false %} color-{{ block.settings.color_scheme }}{% endif %}"
+    style="
+      --facets-inner-padding-block: {{ block.settings.padding-block-start }}px {{ block.settings.padding-block-end }}px; --facets-inner-padding-inline: var(--padding-lg);
+      {{ facets_margin_style }}
+    "
+  >
+    {% if block.settings.enable_filtering %}
+      <div class="facets-toggle__wrapper">
+        <button
+          class="button facets-toggle__button button-unstyled button-unstyled--with-icon"
+          on:click="#filters-drawer/showDialog"
+          type="button"
+        >
+          <span class="svg-wrapper">
+            {{ 'icon-filter.svg' | inline_asset_content }}
+          </span>
+
+          {{ 'actions.show_filters' | t }}
+
+          {% if total_active_values > 0 %}
+            <div
+              id="filter-count-bubble-toggle"
+              class="filter-count-bubble"
+              aria-label="{{ 'accessibility.filter_count' | t: count: total_active_values }}"
+            >
+              <span class="filter-count-bubble__background"></span>
+
+              <span
+                ref="cartBubbleText"
+                class="filter-count-bubble__text"
+                aria-hidden="true"
+              >
+                {{ total_active_values }}
+              </span>
+            </div>
+          {% endif %}
+        </button>
+      </div>
+    {% endif %}
+
+    <div class="facets-mobile-wrapper facets-controls-wrapper">
+      {% if block.settings.enable_filtering == false and block.settings.enable_sorting %}
+        <facets-form-component
+          section-id="{{ section.id }}"
+          id="FacetFiltersForm--{{ section.id }}-mobile-sorting-only"
+        >
+          <form
+            action="{{ results_url }}"
+            id="FacetFiltersForm--{{ section.id }}-mobile-sorting-only"
+            ref="facetsForm"
+          >
+            {% render 'sorting',
+              results: results,
+              sort_by: sort_by,
+              filter_style: block.settings.filter_style,
+              sort_position: 'mobile',
+              should_use_select_on_mobile: should_use_select_on_mobile,
+              section_id: section.id
+            %}
+          </form>
+        </facets-form-component>
+      {% endif %}
+      {% if block.settings.enable_grid_density %}
+        {% render 'grid-density-controls', viewport: 'mobile' %}
+      {% endif %}
+    </div>
+  </div>
+{% else %}
+  <div></div>
+{% endif %}
+
+{% if block.settings.enable_filtering %}
+  <dialog-component
+    id="filters-drawer"
+    class="facets-block-wrapper facets-block-wrapper--vertical facets-block-wrapper--drawer color-{{ settings.drawer_color_scheme }}"
+  >
+    <dialog
+      ref="dialog"
+      class="facets facets--drawer dialog-modal drawer dialog-drawer dialog-drawer--right spacing-style"
+      style="{% render 'spacing-style', settings: block.settings %}"
+      scroll-lock
+    >
+      {% assign form_component = 'FacetFiltersFormComponent--' | append: section.id | append: '-overflow' %}
+
+      <facets-form-component
+        class="facets__form-wrapper"
+        section-id="{{ section.id }}"
+        id="{{ form_component }}"
+      >
+        <form
+          action="{{ results_url }}"
+          id="FacetFiltersForm--{{ section.id }}-overflow"
+          class="facets__form"
+          ref="facetsForm"
+        >
+          <div
+            class="facets__title-wrapper"
+            style="--color-shadow: rgb(from var(--color-foreground) r g b / var(--opacity-10-25));"
+          >
+            <h2 class="facets-drawer__title h3">
+              {{ 'blocks.filter' | t }}
+
+              {% if total_active_values > 0 %}
+                <span
+                  class="bubble facets__bubble"
+                  aria-hidden="true"
+                >
+                  {{ total_active_values }}
+                </span>
+                <span class="visually-hidden">
+                  {{ 'accessibility.filter_count' | t: count: total_active_values }}
+                </span>
+              {% endif %}
+            </h2>
+            <button
+              class="button facets-drawer__close button-unstyled"
+              on:click="dialog-component/closeDialog"
+              type="button"
+            >
+              <span
+                class="svg-wrapper svg-wrapper--small"
+                title="{{ 'actions.close' | t }}"
+              >
+                {{ 'icon-close.svg' | inline_asset_content }}
+              </span>
+            </button>
+          </div>
+
+          {% if block.settings.enable_filtering %}
+            {% render 'filter-remove-buttons',
+              filters: filters,
+              results_url: results_url,
+              show_filter_label: block.settings.show_filter_label,
+              should_show_clear_all: false
+            %}
+
+            <div class="facets__filters-wrapper">
+              {% assign total_active_values = 0 %}
+              {% assign is_active = false %}
+
+              {%- for filter in filters -%}
+                {%- liquid
+                  assign should_autofocus = false
+                  if forloop.first and total_active_values == 0
+                    assign should_autofocus = true
+                  endif
+                %}
+                {% case filter.type %}
+                  {% when 'price_range' %}
+                    {%- liquid
+                      if filter.min_value.value != null or filter.max_value.value != null
+                        assign total_active_values = total_active_values | plus: 1
+                        assign is_active = true
+                      endif
+
+                      render 'price-filter', filter: filter, filter_style: 'vertical', should_render_clear: false, autofocus: should_autofocus
+                    -%}
+                  {% else %}
+                    {% liquid
+                      if filter.active_values.size > 0
+                        assign is_active = true
+                      endif
+
+                      assign active_value_count = filter.active_values | size
+                      assign total_active_values = total_active_values | plus: active_value_count
+                      render 'list-filter', filter: filter, filter_style: 'vertical', active_value_count: active_value_count, should_render_clear: false, autofocus: should_autofocus, in_drawer: true, sectionId: section.id
+                    %}
+                {% endcase %}
+              {%- endfor -%}
+            </div>
+          {% endif %}
+
+          {% if block.settings.enable_sorting %}
+            {% render 'sorting',
+              results: results,
+              sort_by: sort_by,
+              filter_style: block.settings.filter_style,
+              suffix: 'overflow',
+              should_use_select_on_mobile: should_use_select_on_mobile,
+              section_id: section.id
+            %}
+          {% endif %}
+        </form>
+      </facets-form-component>
+
+      {% render 'facets-actions',
+        results_url: results_url,
+        is_active: is_active,
+        products_count: products_count,
+        form_component: form_component,
+        should_show_clear_all: true
+      %}
+    </dialog>
+  </dialog-component>
+{% endif %}
+
+{% stylesheet %}
+  .collection-wrapper {
+    @media screen and (min-width: 750px) {
+      --facets-vertical-col-width: 6;
+    }
+
+    @media screen and (min-width: 990px) {
+      --facets-vertical-col-width: 5;
+    }
+  }
+
+  .facets-block-wrapper {
+    @media screen and (min-width: 750px) {
+      margin: var(--facets-margin);
+      grid-column: var(--grid-column--desktop);
+    }
+  }
+
+  .facets-block-wrapper--vertical {
+    @media screen and (min-width: 750px) {
+      grid-column: var(--grid-column--desktop);
+    }
+  }
+
+  .facets-block-wrapper--vertical + .facets-toggle {
+    @media screen and (max-width: 749px) {
+      margin: 0;
+    }
+  }
+
+  .facets-mobile-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-sm);
+    justify-content: flex-end;
+  }
+
+  .facets-mobile-wrapper:has(> :nth-child(2)) {
+    justify-content: space-between;
+  }
+
+  dialog-component.facets-block-wrapper:not(:has(.facets--drawer[open])) {
+    @media screen and (min-width: 750px) {
+      display: none;
+    }
+  }
+
+  .variant-option__swatch-wrapper {
+    position: relative;
+    overflow: visible;
+    border-radius: var(--options-border-radius);
+  }
+
+  .variant-option--swatches-disabled .variant-option__swatch-wrapper {
+    overflow: hidden;
+  }
+
+  .facets {
+    --facets-form-horizontal-gap: 20px;
+    --facets-horizontal-max-input-wrapper-height: 230px;
+    --facets-upper-z-index: var(--layer-raised);
+    --facets-open-z-index: var(--layer-heightened);
+    --facets-sticky-z-index: var(--layer-sticky);
+    --facets-panel-min-width: 120px;
+    --facets-panel-height: 300px;
+    --facets-grid-panel-width: 300px;
+    --facets-clear-padding: var(--padding-md);
+    --facets-clear-shadow: 0 -4px 14px 0 rgba(from var(--color-foreground) r g b / var(--facets-low-opacity));
+    --facets-input-label-color: rgb(from var(--color-input-text) r g b / 60%);
+    --facets-clear-all-min-width: 120px;
+    --facets-see-results-min-width: 55%;
+    --facets-mobile-gap: 22px;
+    --facets-low-opacity: 10%;
+    --facets-hover-opacity: 75%;
+
+    top: auto;
+    bottom: 0;
+    height: var(--drawer-height);
+    max-height: var(--drawer-height);
+    width: var(--drawer-width);
+    max-width: var(--drawer-max-width);
+    box-shadow: none;
+    padding-block: 0;
+
+    &:not(.facets--drawer) {
+      @media screen and (min-width: 750px) {
+        padding-inline: var(--padding-inline-start) var(--padding-inline-end);
+        width: 100%;
+        max-width: 100%;
+      }
+    }
+  }
+
+  .facets--horizontal {
+    display: none;
+
+    @media screen and (min-width: 750px) {
+      padding-block: var(--padding-block-start) var(--padding-block-end);
+      display: flex;
+      align-items: center;
+      position: relative;
+      z-index: var(--facets-upper-z-index);
+      border: none;
+      height: auto;
+      top: initial;
+      bottom: initial;
+      max-height: none;
+      width: auto;
+      overflow: visible;
+    }
+  }
+
+  .facets--vertical {
+    display: none;
+
+    @media screen and (min-width: 750px) {
+      padding-block: 0 var(--padding-block-end);
+      display: block;
+      position: static;
+      top: auto;
+      bottom: auto;
+      height: auto;
+      max-height: none;
+      width: auto;
+      overflow: visible;
+    }
+  }
+
+  .collection-wrapper:has(.collection-wrapper--full-width) .facets--vertical:not(.facets--drawer) {
+    @media screen and (min-width: 750px) {
+      padding-inline-start: max(var(--padding-sm), var(--padding-inline-start));
+    }
+  }
+
+  .facets--drawer {
+    border-radius: 0;
+    border-right: var(--style-border-drawer);
+    box-shadow: var(--shadow-drawer);
+    padding-inline: 0;
+  }
+
+  .facets--drawer[open] {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .facets.facets-controls-wrapper {
+    @media screen and (min-width: 750px) {
+      grid-column: column-1 / column-12;
+      color: rgb(from var(--color-foreground) r g b / 70%);
+      gap: 0 var(--facets-form-horizontal-gap);
+      padding-bottom: var(--padding-xs);
+    }
+  }
+
+  .collection-wrapper:has(.product-grid-mobile--large) .facets-mobile-wrapper.facets-controls-wrapper {
+    @media screen and (max-width: 749px) {
+      display: none;
+    }
+  }
+
+  .facets__inputs {
+    display: flex;
+    flex-direction: column;
+    gap: var(--padding-lg);
+    width: 100%;
+  }
+
+  :is(.facets--drawer, .facets--vertical) .facets__inputs:not(:has(.show-more)) {
+    padding-block-end: var(--padding-sm);
+  }
+
+  /* Facets - Form */
+  .facets__form-wrapper {
+    display: flex;
+    flex-direction: column;
+    color: var(--color-foreground-muted);
+    width: 100%;
+  }
+
+  .facets--horizontal .facets__form-wrapper {
+    @media screen and (min-width: 750px) {
+      flex-direction: row;
+      height: auto;
+    }
+  }
+
+  .facets__form {
+    display: flex;
+    flex-flow: column;
+    width: 100%;
+    height: 100%;
+  }
+
+  .facets--horizontal .facets__form {
+    @media screen and (min-width: 750px) {
+      flex-flow: row nowrap;
+      height: auto;
+    }
+  }
+
+  .facets:not(.facets--drawer) .facets__filters-wrapper {
+    @media screen and (min-width: 750px) {
+      margin-inline-end: var(--margin-md);
+    }
+  }
+
+  .facets--horizontal .facets__filters-wrapper {
+    @media screen and (min-width: 750px) {
+      max-width: 60%;
+      display: flex;
+      flex-wrap: wrap;
+      column-gap: var(--gap-xl);
+      margin-inline-end: 0;
+    }
+  }
+
+  /* Facets - Summary */
+  .facets__summary {
+    --variant-picker-swatch-width: 32px;
+    --variant-picker-swatch-height: 32px;
+    --icon-opacity: 0.5;
+
+    @media screen and (min-width: 750px) {
+      --variant-picker-swatch-width: 26px;
+      --variant-picker-swatch-height: 26px;
+    }
+
+    font-size: var(--font-h4--size);
+    display: flex;
+    justify-content: space-between;
+
+    &:hover {
+      --icon-opacity: 1;
+    }
+  }
+
+  .facets__filters-wrapper:hover .facets__summary,
+  .facets__filters-wrapper:has(.facets__panel[open]) .facets__summary {
+    opacity: var(--facets-hover-opacity);
+  }
+
+  .facets__filters-wrapper .facets__summary:hover,
+  .facets__filters-wrapper .facets__panel[open] .facets__summary {
+    opacity: 1;
+  }
+
+  .facets--horizontal .facets__summary {
+    @media screen and (min-width: 750px) {
+      font-size: var(--font-paragraph--size);
+      justify-content: flex-start;
+      height: var(--minimum-touch-target);
+    }
+  }
+
+  .facets__summary .icon-caret {
+    height: var(--icon-size-xs);
+    width: var(--icon-size-xs);
+    color: rgb(from var(--color-foreground) r g b / var(--icon-opacity));
+    margin-block: var(--margin-2xs);
+    transition: color var(--animation-speed) var(--animation-easing);
+  }
+
+  .facets--drawer .facets__summary .icon-caret {
+    margin-inline-start: var(--margin-2xs);
+  }
+
+  /* Facets - Bubble */
+  .facets__bubble {
+    display: inline-flex;
+    font-family: var(--font-paragraph--family);
+    font-weight: var(--font-paragraph--weight);
+    aspect-ratio: 1 / 1;
+  }
+
+  /* Facets - Inputs */
+  .facets__inputs-wrapper {
+    margin-block: var(--padding-xs) var(--padding-xs);
+  }
+
+  .facets__inputs .show-more {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-xl);
+    margin-block-end: var(--padding-xl);
+  }
+
+  .facets:not(.facets--drawer) .facets__inputs-wrapper {
+    @media screen and (min-width: 750px) {
+      gap: var(--gap-sm);
+    }
+  }
+
+  .facets--horizontal .facets__inputs .show-more {
+    @media screen and (min-width: 750px) {
+      display: contents;
+    }
+  }
+
+  .facets--horizontal .facets__inputs-wrapper {
+    @media screen and (min-width: 750px) {
+      max-height: var(--facets-horizontal-max-input-wrapper-height);
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      overflow-x: auto;
+      padding: var(--padding-md);
+      margin-block: 0;
+    }
+  }
+
+  .facets--vertical .facets__inputs:has(.show-more) .facets__inputs-wrapper {
+    padding-block: var(--padding-sm);
+    padding-inline: var(--padding-sm);
+    margin-block: calc(var(--padding-sm) * -1);
+    margin-inline: calc(var(--padding-sm) * -1);
+  }
+
+  @media screen and (max-width: 749px) {
+    .facets__inputs:has(.show-more) .facets__inputs-wrapper {
+      padding-block: var(--padding-sm);
+      padding-inline: var(--padding-sm);
+      margin-block: calc(var(--padding-sm) * -1);
+      margin-inline: calc(var(--padding-sm) * -1);
+    }
+  }
+
+  .facets__inputs-wrapper:not(:has(.facets__inputs-list)),
+  .facets__inputs-wrapper .facets__inputs-list {
+    display: flex;
+    gap: var(--facets-mobile-gap);
+    flex-direction: column;
+
+    @media screen and (min-width: 750px) {
+      gap: var(--gap-sm);
+    }
+  }
+
+  @media screen and (min-width: 750px) {
+    .facets--vertical .facets__inputs-wrapper .facets__inputs-list--swatches {
+      gap: var(--gap-sm);
+    }
+
+    .facets--horizontal
+      .facets__inputs-wrapper
+      .facets__inputs-list--swatches:not(.facets__inputs-list--swatches-grid) {
+      display: grid;
+      grid-template-columns: repeat(var(--swatch-columns, 4), 1fr);
+    }
+  }
+
+  .facets__inputs-wrapper .facets__inputs-list--swatches {
+    --facets-mobile-gap: var(--gap-sm);
+  }
+
+  .facets__inputs-wrapper .facets__inputs-list--grid {
+    --min-column-width: 20%;
+
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--min-column-width), 1fr));
+    gap: var(--gap-sm);
+
+    @media screen and (min-width: 750px) {
+      --min-column-width: 50px;
+    }
+  }
+
+  .facets-block-wrapper:not(.facets-block-wrapper--vertical) .facets__inputs-list--grid {
+    @media screen and (min-width: 750px) {
+      width: var(--facets-grid-panel-width);
+    }
+  }
+
+  .facets__inputs-wrapper--row:not(:has(.facets__inputs-list)),
+  .facets__inputs-wrapper--row .facets__inputs-list {
+    flex-wrap: wrap;
+    flex-direction: row;
+  }
+
+  .facets__inputs .show-more__button {
+    --show-more-icon-size: 22px;
+    --show-more-gap: 8px;
+
+    gap: var(--show-more-gap);
+
+    @media screen and (min-width: 750px) {
+      --show-more-icon-size: 16px;
+      --show-more-gap: 6px;
+    }
+  }
+
+  .facets__inputs .show-more__button .icon-plus {
+    width: var(--show-more-icon-size);
+    height: var(--show-more-icon-size);
+
+    svg {
+      width: var(--icon-size-xs);
+      height: var(--icon-size-xs);
+    }
+  }
+
+  /* Facets - Panel */
+  .facets__panel {
+    padding: 0 var(--drawer-padding);
+  }
+
+  .facets:not(.facets--drawer) .facets__panel,
+  .facets-controls-wrapper .facets__panel {
+    @media screen and (min-width: 750px) {
+      padding: 0;
+    }
+  }
+
+  .facets--horizontal .facets__panel {
+    @media screen and (min-width: 750px) {
+      position: relative;
+    }
+  }
+
+  .facets-mobile-wrapper .facets__panel-content {
+    border-radius: var(--style-border-radius-popover);
+  }
+
+  .facets-mobile-wrapper {
+    --facets-upper-z-index: var(--layer-raised);
+    --facets-panel-min-width: 120px;
+    --facets-panel-height: 300px;
+  }
+
+  .facets--horizontal .facets__panel-content,
+  .sorting-filter__options {
+    @media screen and (min-width: 750px) {
+      border-radius: var(--style-border-radius-popover);
+      position: absolute;
+      top: 100%;
+      width: max-content;
+      min-width: var(--facets-panel-min-width);
+      max-width: var(--facets-panel-width);
+      max-height: var(--facets-panel-height);
+      z-index: var(--facets-upper-z-index);
+      box-shadow: var(--shadow-popover);
+      border: var(--style-border-popover);
+      background-color: var(--color-background);
+      overflow-y: hidden;
+      gap: 0;
+    }
+  }
+
+  :is(.facets--drawer, .facets--vertical) :is(.facets__item, .sorting-filter)::before {
+    content: '';
+    display: block;
+    height: 0;
+    width: calc(100% - var(--drawer-padding) * 2);
+    border-top: var(--style-border-width) solid var(--color-border);
+    margin: 0 auto;
+  }
+
+  @media screen and (min-width: 750px) {
+    .facets:not(.facets--drawer) :is(.facets__item, .sorting-filter)::before {
+      width: 100%;
+    }
+
+    .facets--horizontal .facets__item:not(:first-of-type)::before,
+    .facets--horizontal .sorting-filter::before {
+      content: none;
+    }
+  }
+
+  @media screen and (min-width: 750px) {
+    .facets--vertical .facets__item:not(:first-of-type)::before,
+    .facets--vertical .sorting-filter::before {
+      content: '';
+    }
+  }
+
+  /* Facets - Text */
+  .facets__label,
+  .facets__clear-all,
+  .clear-filter {
+    text-decoration-color: transparent;
+    text-decoration-thickness: 0.075em;
+    text-underline-offset: 0.125em;
+    transition: text-decoration-color var(--animation-speed) var(--animation-easing);
+  }
+
+  .facets__label,
+  .products-count-wrapper {
+    text-transform: var(--facet-label-transform);
+  }
+
+  .clear-filter {
+    background-color: transparent;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  /* Facets - Label */
+  .facets__label {
+    color: var(--color-foreground);
+    cursor: pointer;
+
+    @media screen and (min-width: 750px) {
+      margin-inline-end: var(--margin-2xs);
+    }
+  }
+
+  /* Products count */
+  .products-count-wrapper {
+    display: none;
+  }
+
+  .facets--horizontal .products-count-wrapper {
+    @media screen and (min-width: 750px) {
+      display: flex;
+      margin-left: auto;
+      flex-shrink: 0;
+      align-items: center;
+      height: var(--minimum-touch-target);
+    }
+  }
+
+  /* Mobile specific components */
+  .facets__title-wrapper {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    position: sticky;
+    top: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-block: var(--padding-xs);
+    padding-inline-start: var(--drawer-padding);
+    padding-inline-end: var(--padding-2xs);
+    z-index: var(--facets-sticky-z-index);
+  }
+
+  :is(.facets--horizontal, .facets--vertical) .facets__title-wrapper {
+    @media screen and (min-width: 750px) {
+      display: none;
+    }
+  }
+
+  .facets-drawer__title {
+    --variant-picker-swatch-width: 32px;
+    --variant-picker-swatch-height: 32px;
+
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--gap-xs);
+
+    @media screen and (min-width: 750px) {
+      --variant-picker-swatch-width: 26px;
+      --variant-picker-swatch-height: 26px;
+    }
+  }
+
+  .facets-drawer__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+    box-shadow: none;
+  }
+
+  /* Status */
+  .facets__status:not(:empty) {
+    width: max-content;
+    display: flex;
+    margin-inline-start: auto;
+    font-weight: 500;
+    color: var(--color-foreground);
+  }
+
+  .facets__panel[open] .facets__status {
+    display: none;
+  }
+
+  .facets--filters-title {
+    margin-block-end: 0;
+    color: var(--color-foreground);
+    height: fit-content;
+
+    @media screen and (max-width: 749px) {
+      display: none;
+    }
+  }
+
+  .facets--horizontal .facets__panel .facets__status:has(:not(:empty)) {
+    @media screen and (min-width: 750px) {
+      display: flex;
+      margin-inline-start: var(--margin-xs);
+      margin-inline-end: var(--margin-xs);
+    }
+  }
+
+  /* Horizontal filter style */
+  .facets--horizontal .facets__form {
+    @media screen and (min-width: 750px) {
+      gap: 0 var(--facets-form-horizontal-gap);
+    }
+  }
+
+  .collection-wrapper:has(> .facets--horizontal) .facets__panel[open] {
+    @media screen and (min-width: 750px) {
+      z-index: var(--facets-open-z-index);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.filters",
+  "tag": null,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_filtering",
+      "label": "t:settings.enable_filtering",
+      "info": "t:info.enable_filtering_info",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "filter_style",
+      "label": "t:settings.direction",
+      "options": [
+        {
+          "value": "horizontal",
+          "label": "t:options.horizontal"
+        },
+        {
+          "value": "vertical",
+          "label": "t:options.vertical"
+        }
+      ],
+      "default": "horizontal",
+      "visible_if": "{{ block.settings.enable_filtering == true }}"
+    },
+    {
+      "type": "select",
+      "id": "filter_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "centered",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "centered",
+      "visible_if": "{{ block.settings.enable_filtering == true and block.settings.filter_style == 'horizontal' }}"
+    },
+    {
+      "type": "select",
+      "id": "text_label_case",
+      "label": "t:settings.text_label_case",
+      "options": [
+        {
+          "value": "default",
+          "label": "t:options.default"
+        },
+        {
+          "value": "uppercase",
+          "label": "t:options.uppercase"
+        }
+      ],
+      "default": "default",
+      "visible_if": "{{ block.settings.enable_filtering == true }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_swatch_label",
+      "label": "t:settings.show_swatch_label",
+      "default": false,
+      "visible_if": "{{ block.settings.enable_filtering == true }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_filter_label",
+      "label": "t:settings.show_filter_label",
+      "default": false,
+      "visible_if": "{{ block.settings.enable_filtering == true }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sorting",
+      "label": "t:settings.enable_sorting",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_grid_density",
+      "label": "t:settings.enable_grid_density",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "inherit_color_scheme",
+      "label": "t:settings.inherit_color_scheme",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-1",
+      "visible_if": "{{ block.settings.inherit_color_scheme == false }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "t:content.margin"
+    },
+    {
+      "type": "range",
+      "id": "facets_margin_bottom",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 8,
+      "visible_if": "{{ block.settings.filter_style == 'horizontal' }}"
+    },
+    {
+      "type": "range",
+      "id": "facets_margin_right",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 20,
+      "visible_if": "{{ block.settings.filter_style == 'vertical' }}"
+    }
+  ]
+}
+{% endschema %}
