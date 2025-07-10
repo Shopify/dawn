@@ -156,11 +156,26 @@
 
           {%- for tag_obj in sorted_tags -%}
             {%- assign tag = tag_obj.tag -%}
+
+            {%- comment -%}
+              Determine if the tag should be hidden by default.
+              It's hidden only if it's NOT a top category AND it's NOT currently active.
+            {%- endcomment -%}
+            {%- assign is_top_category = false -%}
+            {%- if tag_obj.top_category == true or tag_obj.top_category == 'true' -%}
+              {%- assign is_top_category = true -%}
+            {%- endif -%}
+
+            {%- assign is_active_tag = false -%}
+            {%- if current_tags contains tag -%}
+              {%- assign is_active_tag = true -%}
+            {%- endif -%}
+
             <a
-              href="{% if current_tags contains tag %}/blogs/recipes{% else %}/blogs/recipes/tagged/{{ tag | handle }}{% endif %}"
-              class="blog-filter__item{% if current_tags contains tag %} blog-filter__item--active{% endif %}{% if tag_obj.top_category != true and tag_obj.top_category != 'true' and current_tags contains tag == false %} blog-filter__item--additional{% endif %}"
+              href="{% if is_active_tag %}/blogs/recipes{% else %}/blogs/recipes/tagged/{{ tag | handle }}{% endif %}"
+              class="blog-filter__item{% if is_active_tag %} blog-filter__item--active{% endif %}{% if is_top_category == false and is_active_tag == false %} blog-filter__item--additional{% endif %}"
               role="tab"
-              aria-selected="{% if current_tags contains tag %}true{% else %}false{% endif %}"
+              aria-selected="{{ is_active_tag }}"
               aria-label="Filter recipes by {{ tag }}"
               tabindex="0"
             >
