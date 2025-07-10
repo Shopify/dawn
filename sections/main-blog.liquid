@@ -152,15 +152,17 @@
             Popular 👩‍🍳
           </a>
 
-          {%- assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values -%}
-
-          {%- comment -%}Render high-traffic categories (top_category = true){%- endcomment -%}
-          {%- for tag_obj in recipe_tag_group -%}
-            {%- if tag_obj.top_category == true or tag_obj.top_category == 'true' -%}
+          {%- assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values | sort: "tag" -%}
+          <div class="blog-filter__all-pills">
+            {%- for tag_obj in recipe_tag_group -%}
               {%- assign tag = tag_obj.tag -%}
+              {%- assign is_high_traffic = false -%}
+              {%- if tag_obj.top_category == true or tag_obj.top_category == 'true' -%}
+                {%- assign is_high_traffic = true -%}
+              {%- endif -%}
               <a
                 href="{% if current_tags contains tag %}/blogs/recipes{% else %}/blogs/recipes/tagged/{{ tag | handle }}{% endif %}"
-                class="blog-filter__item{% if current_tags contains tag %} blog-filter__item--active{% endif %}"
+                class="blog-filter__item{% if current_tags contains tag %} blog-filter__item--active{% endif %}{% unless is_high_traffic %} blog-filter__item--hidden{% endunless %}"
                 role="tab"
                 aria-selected="{% if current_tags contains tag %}true{% else %}false{% endif %}"
                 aria-label="Filter recipes by {{ tag }}"
@@ -168,32 +170,35 @@
               >
                 {{ tag }}
               </a>
-            {%- endif -%}
-          {%- endfor -%}
-
-          {%- comment -%}Low-traffic categories hidden by default{%- endcomment -%}
-          <div class="blog-filter__additional">
-            {%- for tag_obj in recipe_tag_group -%}
-              {%- unless tag_obj.top_category == true or tag_obj.top_category == 'true' -%}
-                {%- assign tag = tag_obj.tag -%}
-                <a
-                  href="{% if current_tags contains tag %}/blogs/recipes{% else %}/blogs/recipes/tagged/{{ tag | handle }}{% endif %}"
-                  class="blog-filter__item{% if current_tags contains tag %} blog-filter__item--active{% endif %}"
-                  role="tab"
-                  aria-selected="{% if current_tags contains tag %}true{% else %}false{% endif %}"
-                  aria-label="Filter recipes by {{ tag }}"
-                  tabindex="0"
-                >
-                  {{ tag }}
-                </a>
-              {%- endunless -%}
             {%- endfor -%}
           </div>
 
-          {%- comment -%}Toggle button to reveal additional categories{%- endcomment -%}
           <button id="view-all-tags" class="blog-filter__view-all" type="button" aria-expanded="false">
             View All
           </button>
+
+          <style>
+            .blog-filter__item--hidden {
+              display: none;
+            }
+            .blog-filter__all-pills.is-expanded .blog-filter__item--hidden {
+              display: inline-block;
+            }
+          </style>
+          <script>
+            document.addEventListener('DOMContentLoaded', function () {
+              var viewAllBtn = document.getElementById('view-all-tags');
+              var allPills = document.querySelector('.blog-filter__all-pills');
+              if (viewAllBtn && allPills) {
+                viewAllBtn.addEventListener('click', function () {
+                  var expanded = viewAllBtn.getAttribute('aria-expanded') === 'true';
+                  allPills.classList.toggle('is-expanded');
+                  viewAllBtn.setAttribute('aria-expanded', (!expanded).toString());
+                  viewAllBtn.textContent = expanded ? 'View All' : 'View Less';
+                });
+              }
+            });
+          </script>
         </div>
 
         <style>
