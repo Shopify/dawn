@@ -96,8 +96,12 @@
   endif
   assign rk_prep_duration = rk_prep_time_split | last
 
+  assign hours_label = 'recipe.hours' | t
+  assign hour_label = 'recipe.hour' | t
+  assign minutes_label = 'recipe.minutes' | t
+  assign minute_label = 'recipe.minute' | t
   assign iso_prep_time = 'PT'
-  if rk_prep_duration == ('recipe.hours' | t) or rk_prep_duration == ('recipe.hour' | t)
+  if rk_prep_duration == hours_label or rk_prep_duration == hour_label
     if rk_prep_time_value contains '.'
       assign hour_part = rk_prep_time_value | split: '.' | first
       assign minute_part = rk_prep_time_value | split: '.' | last
@@ -111,13 +115,45 @@
     else
       assign iso_prep_time = iso_prep_time | append: rk_prep_time_value | append: 'H'
     endif
-  elsif rk_prep_duration == ('recipe.minutes' | t) or rk_prep_duration == ('recipe.minute' | t)
+  elsif rk_prep_duration == minutes_label or rk_prep_duration == minute_label
     assign iso_prep_time = iso_prep_time | append: rk_prep_time_value | append: 'M'
   else
     assign iso_prep_time = 'PT'
   endif
 
   assign rk_cook_time_split = rk_mf.cook_time | split: ' '
+  assign rk_cook_time_value_raw = rk_cook_time_split | first
+  assign rk_cook_time_value = rk_cook_time_value_raw
+  if rk_cook_time_value_raw contains '-' 
+    assign rk_cook_time_value = rk_cook_time_value_raw | split: '-' | first
+  endif
+  assign rk_cook_duration = rk_cook_time_split | last
+
+  assign cook_hours_label = 'recipe.hours' | t
+  assign cook_hour_label = 'recipe.hour' | t
+  assign cook_minutes_label = 'recipe.minutes' | t
+  assign cook_minute_label = 'recipe.minute' | t
+
+  assign iso_cook_time = 'PT'
+  if rk_cook_duration == cook_hours_label or rk_cook_duration == cook_hour_label
+    if rk_cook_time_value contains '.'
+      assign hour_part = rk_cook_time_value | split: '.' | first
+      assign minute_part = rk_cook_time_value | split: '.' | last
+      if hour_part != '0'
+        assign iso_cook_time = iso_cook_time | append: hour_part | append: 'H'
+      endif
+      if minute_part != '0'
+        assign minute_value = minute_part | times: 60 | divided_by: 100 | round
+        assign iso_cook_time = iso_cook_time | append: minute_value | append: 'M'
+      endif
+    else
+      assign iso_cook_time = iso_cook_time | append: rk_cook_time_value | append: 'H'
+    endif
+  elsif rk_cook_duration == cook_minutes_label or rk_cook_duration == cook_minute_label
+    assign iso_cook_time = iso_cook_time | append: rk_cook_time_value | append: 'M'
+  else
+    assign iso_cook_time = 'PT'
+  endif
   assign rk_cook_time_value_raw = rk_cook_time_split | first
   assign rk_cook_time_value = rk_cook_time_value_raw
   if rk_cook_time_value_raw contains '-' 
