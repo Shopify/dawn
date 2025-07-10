@@ -263,7 +263,12 @@
           </localization-form>
         {%- endif -%}
 
-        {%- if section.settings.enable_language_selector and localization.available_languages.size > 1 and canonical_url contains "blogs/recipes" -%}
+        {%-
+          if section.settings.enable_language_selector
+          and localization.available_languages.size > 1
+          and (canonical_url contains "blogs/recipes"
+          or localization.language.iso_code != 'en')
+        -%}
           <localization-form>
             {%- form 'localization', id: 'FooterLanguageForm', class: 'localization-form' -%}
               <div>
@@ -293,9 +298,7 @@
     </div>
     <div class="footer__content-bottom-wrapper page-width{% if section.settings.enable_country_selector == false and section.settings.enable_language_selector == false %} footer__content-bottom-wrapper--center{% endif %}">
       <div class="footer__copyright caption">
-        <small class="copyright__content"
-          >&copy; {{ 'now' | date: '%Y' }}, StoreBound LLC
-        </small>
+        <small class="copyright__content">&copy; {{ 'now' | date: '%Y' }}, StoreBound LLC </small>
         {% comment %}<small class="copyright__content">{{ powered_by_link }}</small>{% endcomment %}
         {%- if section.settings.show_policy -%}
           <ul class="policies list-unstyled">
@@ -310,9 +313,15 @@
             {%- endfor -%}
           </ul>
         {%- endif -%}
-        {% if canonical_url contains "apps/product-registration" %}
+        {% if canonical_url contains 'apps/product-registration' %}
           <br>
-          <small class="copyright__content">* Offer valid on online purchases at bydash.com. Expires 6 months after issued. Cannot be combined with any other coupons, discounts, offers, or promotions. Offer valid for one-time use only. Subject to product availability, no rain checks issued. Not redeemable for gift card purchase. Void if altered, copied, transferred, or sold. Sales tax and shipping & handling do not qualify toward the minimum purchase amount. Cannot be used for prior purchases. Other restrictions may apply. No cash value.</small>
+          <small class="copyright__content"
+            >* Offer valid on online purchases at bydash.com. Expires 6 months after issued. Cannot be combined with any
+            other coupons, discounts, offers, or promotions. Offer valid for one-time use only. Subject to product
+            availability, no rain checks issued. Not redeemable for gift card purchase. Void if altered, copied,
+            transferred, or sold. Sales tax and shipping & handling do not qualify toward the minimum purchase amount.
+            Cannot be used for prior purchases. Other restrictions may apply. No cash value.</small
+          >
         {%- endif -%}
       </div>
     </div>
@@ -569,78 +578,80 @@
 
 {% comment %}custom collasible footer{% endcomment %}
 <style>
-@media (max-width: 749px) {
-  .grid .footer-block.grid__item {
-    margin: 0;
+  @media (max-width: 749px) {
+    .grid .footer-block.grid__item {
+      margin: 0;
+    }
+    .grid .footer-block__heading {
+      position: relative;
+      margin: 0;
+      padding: 1.5rem 0;
+      cursor: pointer;
+    }
+    .grid .footer-block__heading::after {
+      content: '+';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      text-align: center;
+    }
+    .grid .footer-block__heading:not(.block-collapsed)::after {
+      content: '-';
+    }
+    .grid .footer-block__heading.block-collapsed + .footer-block__details-content {
+      visibility: hidden;
+      opacity: 0;
+      height: 0;
+      margin: 0;
+      padding: 0;
+      transition: all 0.2s ease-out;
+      overflow: hidden;
+    }
+    .grid .footer-block__heading + .footer-block__details-content {
+      visibility: visible;
+      opacity: 1;
+      height: auto;
+      transition: all 0.2s ease-out;
+      overflow: hidden;
+      margin-bottom: 3rem;
+    }
   }
-  .grid .footer-block__heading {
-    position: relative;
-    margin: 0;
-    padding: 1.5rem 0;
-    cursor: pointer;
-  }
-  .grid .footer-block__heading::after {
-    content: "+";
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 20px;
-    text-align: center;
-  }
-  .grid .footer-block__heading:not(.block-collapsed)::after {
-    content: "-";
-  }
-  .grid .footer-block__heading.block-collapsed + .footer-block__details-content {
-    visibility: hidden;
-    opacity: 0;
-    height: 0;
-    margin: 0;
-    padding: 0;
-    transition: all .2s ease-out;
-    overflow: hidden;
-  }
-  .grid .footer-block__heading + .footer-block__details-content {
-    visibility: visible;
-    opacity: 1;
-    height: auto;
-    transition: all .2s ease-out;
-    overflow: hidden;
-    margin-bottom: 3rem;
-  }
-
-}
 </style>
 
 <script>
-window.addEventListener('DOMContentLoaded', () => {
-  if (window.matchMedia('(min-width: 750px)').matches) {
-    return
-  }
-
-  const handleCollapse = (heading) => {
-    if (heading.classList.contains('block-collapsed')) {
-      heading.classList.remove('block-collapsed')
-      heading.setAttribute('aria-expanded', 'true')
-    } else {
-      heading.classList.add('block-collapsed')
-      heading.setAttribute('aria-expanded', 'false')
+  window.addEventListener('DOMContentLoaded', () => {
+    if (window.matchMedia('(min-width: 750px)').matches) {
+      return;
     }
-  }
-  
-  document.querySelectorAll('.grid .footer-block__heading').forEach((heading, index) => {
-    heading.classList.add('block-collapsed')
-    heading.setAttribute('role', 'button')
-    heading.setAttribute('aria-expanded', 'false')
-    heading.setAttribute('tabindex', '0')
 
-    heading.nextElementSibling.setAttribute('id', `footer-block-index-${index}`)
-    heading.setAttribute('aria-controls', `footer-block-index-${index}`)
+    const handleCollapse = (heading) => {
+      if (heading.classList.contains('block-collapsed')) {
+        heading.classList.remove('block-collapsed');
+        heading.setAttribute('aria-expanded', 'true');
+      } else {
+        heading.classList.add('block-collapsed');
+        heading.setAttribute('aria-expanded', 'false');
+      }
+    };
 
-    heading.addEventListener('click', () => { handleCollapse(heading) })
-    heading.addEventListener('keypress',  () => { handleCollapse(heading) })
-  })
+    document.querySelectorAll('.grid .footer-block__heading').forEach((heading, index) => {
+      heading.classList.add('block-collapsed');
+      heading.setAttribute('role', 'button');
+      heading.setAttribute('aria-expanded', 'false');
+      heading.setAttribute('tabindex', '0');
 
-})
+      heading.nextElementSibling.setAttribute('id', `footer-block-index-${index}`);
+      heading.setAttribute('aria-controls', `footer-block-index-${index}`);
+
+      heading.addEventListener('click', () => {
+        handleCollapse(heading);
+      });
+      heading.addEventListener('keypress', () => {
+        handleCollapse(heading);
+      });
+    });
+  });
 </script>
 {% comment %}end of custom collasible footer{% endcomment %}
