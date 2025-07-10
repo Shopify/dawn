@@ -408,16 +408,23 @@
     {%- if localization.language.iso_code != 'en' and should_switch -%}
       <script>
         document.addEventListener('DOMContentLoaded', function() {
-          // List all your non-English locale prefixes here:
-          var localePrefixes = ['/es/', '/fr/', '/de/', '/it/', '/pt/']; // Add more as needed
+          var localePrefixes = ['/es/', '/fr/', '/de/', '/it/', '/pt/'];
+          var homepagePrefixes = ['/es', '/fr', '/de', '/it', '/pt'];
           var path = window.location.pathname;
           var foundPrefix = localePrefixes.find(function(prefix) {
             return path.startsWith(prefix);
           });
+          if (!foundPrefix) {
+            foundPrefix = homepagePrefixes.find(function(prefix) {
+              return path === prefix;
+            });
+          }
           if (foundPrefix) {
-            var newPath = path.replace(foundPrefix, '/');
-            // Ensure no double slashes
-            newPath = newPath.replace(/^\/+/,'/');
+            var newPath = '/';
+            if (!homepagePrefixes.includes(foundPrefix)) {
+              newPath = path.replace(foundPrefix, '/');
+              newPath = newPath.replace(/^\/+/,'/');
+            }
             var newUrl = window.location.origin + newPath + window.location.search + window.location.hash;
             if (window.location.href !== newUrl) {
               window.location.href = newUrl;
