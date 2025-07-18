@@ -1,6 +1,8 @@
-Dawn 15.3.0 adds pagination to the quick order list, updates settings labels, and introduces a few bug fixes.
+Dawn 15.4.0 introduces support for nested cart lines, accessibility improvements, performance enhancements, and bug fixes.
+
+### Added
+- Added support for nested cart lines. Cart now properly displays nested  items( like product add-ons) with improved styling and accessibility labels
+- Improved accessibility with added ARIA labels for product quantity inputs
+
 ### Changed
-- Quick order list paginates product variants, improving buyer experience for products containing many variants.
-- Theme setting labels were updated across all surfaces to make them less crowded and easier to scan.
-### Fixes and improvements
-- Fix issue where quick order list displayed the remove all button on small windows, even if no variants were in the cart.
+ - Improved performance by removing lazy loading of images above the fold in the Featured collection section
