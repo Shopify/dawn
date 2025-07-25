@@ -1,0 +1,131 @@
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+  .media-section {
+    width: 100%;
+    display: block;
+  }
+
+  .media-section__image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+  }
+{%- endstyle -%}
+
+<section class="media-section section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}">
+  {% if section.settings.desktop_image != blank or section.settings.mobile_image != blank %}
+    {% assign fetch_priority = 'auto' %}
+    {% assign loading = 'lazy' %}
+    {% if section.index0 == 0 %}
+      {% assign fetch_priority = 'high' %}
+      {% assign loading = 'eager' %}
+    {% endif %}
+
+    <picture>
+      {% if section.settings.mobile_image != blank %}
+        <source
+          media="(max-width: 749px)"
+          srcset="{{ section.settings.mobile_image | image_url: width: 750 }} 750w, {{ section.settings.mobile_image | image_url: width: 1500 }} 1500w"
+          sizes="100vw"
+        >
+      {% endif %}
+      
+      {% if section.settings.desktop_image != blank %}
+        <source
+          media="(min-width: 750px)"
+          srcset="{{ section.settings.desktop_image | image_url: width: 1920 }} 1920w, {{ section.settings.desktop_image | image_url: width: 2560 }} 2560w, {{ section.settings.desktop_image | image_url: width: 3840 }} 3840w"
+          sizes="100vw"
+        >
+      {% endif %}
+
+      {% assign fallback_image = section.settings.desktop_image | default: section.settings.mobile_image %}
+      {% if fallback_image != blank %}
+        {{
+          fallback_image
+          | image_url: width: 3840
+          | image_tag:
+            class: 'media-section__image',
+            sizes: '100vw',
+            width: fallback_image.width,
+            height: fallback_image.height,
+            loading: loading,
+            fetchpriority: fetch_priority
+        }}
+      {% endif %}
+    </picture>
+  {% endif %}
+</section>
+
+{% schema %}
+{
+  "name": "Media",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "desktop_image",
+      "label": "Desktop Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile Image"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Section Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Media"
+    }
+  ]
+}
+{% endschema %}
