@@ -1,0 +1,120 @@
+{% comment %}
+  Renders combined product options for similar products
+
+  Accepts:
+  - product: {Object} current product object
+  - block: {Object} block object (optional)
+
+  Usage:
+  {% render 'combined-products-options', product: product, block: block %}
+
+  Requires:
+  - product.metafields.custom_but_hidden.combined_products metafield pointing to combined_product_group metaobject
+  - Metaobject fields: option_label, products (list), option_values (list)
+{% endcomment %}
+
+{% assign combined_group = product.metafields.custom_but_hidden.combined_products.value %}
+
+{% assign product_count = 0 %}
+{% for test_product in combined_group.products.value %}
+  {% assign product_count = product_count | plus: 1 %}
+{% endfor %}
+
+{% if combined_group and product_count > 1 %}
+  <style>
+    .combined-radio {
+      clip: rect(0, 0, 0, 0);
+      overflow: hidden;
+      position: absolute;
+      height: 1px;
+      width: 1px;
+    }
+    .combined-label {
+      background-color: rgb(var(--color-background));
+      border-radius: var(--variant-pills-radius);
+      color: rgb(var(--color-foreground));
+      display: inline-block;
+      margin: 0.7rem 0.5rem 0.2rem 0;
+      padding: 1.4rem 2.4rem;
+      font-size: 1.5rem;
+      line-height: 1;
+      text-align: center;
+      transition: border var(--duration-short) ease;
+      cursor: pointer;
+      position: relative;
+      box-shadow: 0 0 #0000, 0 0 #0000, 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    }
+    .combined-label:before {
+      content: '';
+      position: absolute;
+      top: calc(var(--variant-pills-border-width, 0px) * -1);
+      right: calc(var(--variant-pills-border-width, 0px) * -1);
+      bottom: calc(var(--variant-pills-border-width, 0px) * -1);
+      left: calc(var(--variant-pills-border-width, 0px) * -1);
+      z-index: -1;
+      border-radius: var(--variant-pills-radius);
+      box-shadow: var(--variant-pills-shadow-horizontal-offset, 0px) var(--variant-pills-shadow-vertical-offset, 0px)
+        var(--variant-pills-shadow-blur-radius, 0px) rgba(var(--color-shadow), var(--variant-pills-shadow-opacity, 0));
+    }
+    .combined-label:hover {
+      border-color: rgb(var(--color-foreground));
+    }
+    .combined-radio:checked + .combined-label {
+      color: rgb(var(--color-foreground));
+      outline: 2px solid var(--accent-color);
+    }
+    .combined-radio:focus-visible + .combined-label {
+      box-shadow: 0 0 0 0.3rem rgb(var(--color-background)), 0 0 0 0.5rem rgba(var(--color-foreground), 0.55);
+    }
+    .combined-label.unavailable {
+      opacity: 0.5;
+      pointer-events: none;
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+  </style>
+
+  <fieldset class="js product-form__input product-form__input--pill combined-products-fieldset">
+    <legend class="form__label">
+      {{ combined_group.option_label }}
+    </legend>
+
+    {% for group_product in combined_group.products.value %}
+      {% assign option_value = combined_group.option_values.value[forloop.index0] %}
+      {% unless option_value %}
+        {% assign option_value = group_product.title %}
+      {% endunless %}
+      {% if group_product.id == product.id %}
+        {% assign is_current = true %}
+      {% else %}
+        {% assign is_current = false %}
+      {% endif %}
+
+      <input
+        type="radio"
+        id="combined-option-{{ section.id }}-{{ forloop.index0 }}"
+        name="Combined-{{ forloop.index }}"
+        value="{{ option_value | escape }}"
+        form="product-form-{{ section.id }}"
+        class="combined-radio"
+        {% if is_current %}
+          checked
+        {% endif %}
+        {% unless is_current %}
+          onclick="window.location.href='{{ group_product.url }}'"
+        {% endunless %}
+      >
+      <label
+        for="combined-option-{{ section.id }}-{{ forloop.index0 }}"
+        class="combined-label{% unless group_product.available %} unavailable{% endunless %}"
+      >
+        {{ option_value }}
+        {% unless group_product.available %}
+          <span class="visually-hidden label-unavailable">
+            {{ 'products.product.variant_sold_out_or_unavailable' | t }}
+          </span>
+        {% endunless %}
+      </label>
+    {% endfor %}
+  </fieldset>
+{% endif %}

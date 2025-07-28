@@ -43,6 +43,15 @@ This is a hybrid Shopify Dawn theme that integrates React components for enhance
 - **React Components**: Built separately in `/reax/` and compiled to `/assets/` with `vx-` prefix
 - **Service Integration**: Custom services (stringing, remix, tshirt-printing) embedded via Liquid snippets
 
+  - Flexbox-based, NOT CSS Grid - Dawn uses display: flex with percentage widths
+  - Responsive breakpoints: 750px (tablet), 990px (desktop)
+  - Grid columns: Calculated with calc() formulas accounting for spacing variables
+  - Classes: .grid--3-col-desktop, .grid--4-col-desktop, etc.
+
+  - Sections cannot access other sections in Liquid - major limitation discovered
+  - Blocks within sections work perfectly - self-contained approach is best
+  - Schema-driven configuration - extensive use of Shopify section settings
+
 ### Data Flow
 
 - **Liquid → JavaScript**: Global variables set in templates expose Shopify data to React components
@@ -96,3 +105,4 @@ Multi-brand architecture with conditional logic based on `window.s3_brand` and d
 - **Work WITH existing code structure**, don't rebuild it
 - **Leverage existing functionality** instead of replacing it
 - **Add minimal changes** to achieve the desired result
+- Always check the existing patterns in the codebase first, respect the framework's limitations

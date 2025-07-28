@@ -1,0 +1,237 @@
+{% comment %}
+  Collection Merchandising Item Snippet
+
+  Renders a single merchandising item within the collection product grid.
+
+  Accepts:
+  - block: {Object} The merchandising block containing all settings
+  - section_id: {String} The ID of the parent section for unique styling
+  - lazy_load: {Boolean} Whether to lazy load the image (default: true)
+{% endcomment %}
+
+{%- unless lazy_load == false -%}
+  {%- assign lazy_load = true -%}
+{%- endunless -%}
+
+{%- liquid
+  assign orientation_class = ''
+  if block.settings.orientation == 'landscape'
+    assign orientation_class = 'merchandising-item--landscape'
+  else
+    assign orientation_class = 'merchandising-item--portrait'
+  endif
+-%}
+
+<div class="merchandising-item {{ orientation_class }} color-{{ block.settings.color_scheme }} gradient">
+  <div class="merchandising-item__inner">
+    {%- if block.settings.image != blank -%}
+      <div class="merchandising-item__media">
+        <div class="merchandising-item__image-container">
+          {{
+            block.settings.image
+            | image_url: width: 1200
+            | image_tag:
+              class: 'merchandising-item__image',
+              sizes: '(min-width: 990px) 50vw, 100vw',
+              widths: '375, 550, 750, 1100, 1500, 1780, 2000, 3000',
+              loading: lazy_load,
+              width: block.settings.image.width,
+              height: block.settings.image.height
+          }}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if block.settings.title != blank or block.settings.subtitle != blank or block.settings.cta_text != blank -%}
+      <div class="merchandising-item__content merchandising-item__content--{{ block.settings.text_position }}">
+        <div class="merchandising-item__text">
+          {%- if block.settings.subtitle != blank -%}
+            <p class="merchandising-item__subtitle">{{ block.settings.subtitle }}</p>
+          {%- endif -%}
+
+          {%- if block.settings.title != blank -%}
+            <h3 class="merchandising-item__title">{{ block.settings.title }}</h3>
+          {%- endif -%}
+
+          {%- if block.settings.cta_text != blank and block.settings.cta_url != blank -%}
+            <a href="{{ block.settings.cta_url }}" class="merchandising-item__cta button button--primary">
+              {{ block.settings.cta_text }}
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} If no CTA button but there's a URL, make the entire item clickable {%- endcomment -%}
+    {%- if block.settings.cta_text == blank and block.settings.cta_url != blank -%}
+      <a
+        href="{{ block.settings.cta_url }}"
+        class="merchandising-item__link-overlay"
+        aria-label="{{ block.settings.title | default: 'View featured content' }}"
+      ></a>
+    {%- endif -%}
+  </div>
+</div>
+
+<style>
+  .merchandising-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    height: 100%;
+    min-height: 300px;
+    filter: brightness(0.9);
+  }
+
+  .merchandising-item__inner {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .merchandising-item__media {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  .merchandising-item__image-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .merchandising-item__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .merchandising-item__content {
+    position: relative;
+    z-index: 3;
+    padding: 2rem;
+    height: 100%;
+    display: flex;
+    pointer-events: none;
+  }
+
+  .merchandising-item__content--top-left {
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+  .merchandising-item__content--top-center {
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .merchandising-item__content--top-right {
+    align-items: flex-start;
+    justify-content: flex-end;
+  }
+  .merchandising-item__content--center-left {
+    align-items: center;
+    justify-content: flex-start;
+  }
+  .merchandising-item__content--center-center {
+    align-items: center;
+    justify-content: center;
+  }
+  .merchandising-item__content--center-right {
+    align-items: center;
+    justify-content: flex-end;
+  }
+  .merchandising-item__content--bottom-left {
+    align-items: flex-end;
+    justify-content: flex-start;
+  }
+  .merchandising-item__content--bottom-center {
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .merchandising-item__content--bottom-right {
+    align-items: flex-end;
+    justify-content: flex-end;
+  }
+
+  .merchandising-item__text {
+    text-align: left;
+    pointer-events: auto;
+  }
+
+  .merchandising-item__content--top-center .merchandising-item__text,
+  .merchandising-item__content--center-center .merchandising-item__text,
+  .merchandising-item__content--bottom-center .merchandising-item__text {
+    text-align: center;
+  }
+
+  .merchandising-item__content--top-right .merchandising-item__text,
+  .merchandising-item__content--center-right .merchandising-item__text,
+  .merchandising-item__content--bottom-right .merchandising-item__text {
+    text-align: right;
+  }
+
+  .merchandising-item__subtitle {
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin: 0 0 0.5rem 0;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .merchandising-item__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 1rem 0;
+    color: rgb(255, 255, 255);
+  }
+
+  .merchandising-item__cta {
+    margin-top: 1rem;
+    pointer-events: auto;
+  }
+
+  .merchandising-item__link-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 4;
+    text-decoration: none;
+  }
+
+  /* Larger title for landscape orientation */
+  @media screen and (min-width: 750px) {
+    .merchandising-item--landscape .merchandising-item__title {
+      font-size: 2rem;
+    }
+  }
+
+  /* On mobile, all items take full width */
+  @media screen and (max-width: 749px) {
+    .merchandising-item__content {
+      padding: 1.5rem;
+    }
+
+    .merchandising-item__title {
+      font-size: 1.25rem;
+    }
+  }
+
+  /* Hover effects */
+  .merchandising-item:hover .merchandising-item__image {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+  }
+
+  .merchandising-item__image {
+    transition: transform 0.3s ease;
+  }
+</style>

@@ -29,6 +29,12 @@
   unless lazy_load == false
     assign lazy = 'lazy'
   endunless
+  
+  if lazy_load == false
+    assign fetch_priority = 'high'
+  else
+    assign fetch_priority = 'auto'
+  endif
 
   assign desktop_columns = 1
   if desktop_layout == 'columns' and media_count > 1
@@ -79,17 +85,39 @@
       </span>
     {% endcomment %}
     {%- unless media.media_type == 'video' -%}
-      {%- render 'loading-spinner' -%}
+      <div class="simple-spinner">
+        {% render 'loading-spinner-two' %}
+      </div>
       <div class="product__media media media--transparent">
-        {{
-          media.preview_image
-          | image_url: width: 1946
-          | image_tag:
-            class: image_class,
-            loading: lazy,
-            sizes: sizes,
-            widths: '246, 493, 600, 713, 823, 990, 1100, 1206, 1346, 1426, 1646, 1946'
-        }}
+        <img
+          src="{{ media.preview_image | image_url: width: 3000 }}"
+          srcset="
+            {{ media.preview_image | image_url: width: 246 }} 246w,
+            {{ media.preview_image | image_url: width: 493 }} 493w,
+            {{ media.preview_image | image_url: width: 600 }} 600w,
+            {{ media.preview_image | image_url: width: 713 }} 713w,
+            {{ media.preview_image | image_url: width: 823 }} 823w,
+            {{ media.preview_image | image_url: width: 990 }} 990w,
+            {{ media.preview_image | image_url: width: 1100 }} 1100w,
+            {{ media.preview_image | image_url: width: 1206 }} 1206w,
+            {{ media.preview_image | image_url: width: 1346 }} 1346w,
+            {{ media.preview_image | image_url: width: 1426 }} 1426w,
+            {{ media.preview_image | image_url: width: 1646 }} 1646w,
+            {{ media.preview_image | image_url: width: 1946 }} 1946w,
+            {{ media.preview_image | image_url: width: 2200 }} 2200w,
+            {{ media.preview_image | image_url: width: 2600 }} 2600w,
+            {{ media.preview_image | image_url: width: 3000 }} 3000w
+          "
+          sizes="{{ sizes }}"
+          class="{{ image_class }}"
+          loading="{{ lazy }}"
+          fetchpriority="{{ fetch_priority }}"
+          style="opacity: 0; transform: scale(1.04); transition: opacity 0.3s ease-out, transform 0.3s ease-out;"
+          onload="this.style.opacity=1; this.style.transform='scale(1)'; var spinner=this.parentElement.parentElement.querySelector('.simple-spinner'); if(spinner) spinner.style.display='none';"
+          alt="{{ media.alt | escape }}"
+          width="{{ media.preview_image.width }}"
+          height="{{ media.preview_image.height }}"
+        >
       </div>
       <button
         class="product__media-toggle quick-add-hidden product__media-zoom-{{ section.settings.image_zoom }}"
@@ -127,6 +155,9 @@
     {%- else -%}
       <deferred-media class="deferred-media media media--transparent" data-media-id="{{ media.id }}">
     {%- endif -%}
+    <div class="simple-spinner">
+      {% render 'loading-spinner-two' %}
+    </div>
     <button id="Deferred-Poster-Modal-{{ media.id }}" class="deferred-media__poster" type="button">
       <span class="deferred-media__poster-button motion-reduce">
         {%- if media.media_type == 'model' -%}
@@ -141,14 +172,34 @@
           </span>
         {%- endif -%}
       </span>
-      {{
-        media.preview_image
-        | image_url: width: 1946
-        | image_tag:
-          loading: lazy,
-          sizes: sizes,
-          widths: '246, 493, 600, 713, 823, 990, 1100, 1206, 1346, 1426, 1646, 1946'
-      }}
+      <img
+        src="{{ media.preview_image | image_url: width: 3000 }}"
+        srcset="
+          {{ media.preview_image | image_url: width: 246 }} 246w,
+          {{ media.preview_image | image_url: width: 493 }} 493w,
+          {{ media.preview_image | image_url: width: 600 }} 600w,
+          {{ media.preview_image | image_url: width: 713 }} 713w,
+          {{ media.preview_image | image_url: width: 823 }} 823w,
+          {{ media.preview_image | image_url: width: 990 }} 990w,
+          {{ media.preview_image | image_url: width: 1100 }} 1100w,
+          {{ media.preview_image | image_url: width: 1206 }} 1206w,
+          {{ media.preview_image | image_url: width: 1346 }} 1346w,
+          {{ media.preview_image | image_url: width: 1426 }} 1426w,
+          {{ media.preview_image | image_url: width: 1646 }} 1646w,
+          {{ media.preview_image | image_url: width: 1946 }} 1946w,
+          {{ media.preview_image | image_url: width: 2200 }} 2200w,
+          {{ media.preview_image | image_url: width: 2600 }} 2600w,
+          {{ media.preview_image | image_url: width: 3000 }} 3000w
+        "
+        sizes="{{ sizes }}"
+        loading="lazy"
+        fetchpriority="{{ fetch_priority }}"
+        style="opacity: 0; transform: scale(1.04); transition: opacity 0.3s ease-out, transform 0.3s ease-out;"
+        onload="this.style.opacity=1; this.style.transform='scale(1)'; var spinner=this.closest('.deferred-media').querySelector('.simple-spinner'); if(spinner) spinner.style.display='none';"
+        alt="{{ media.preview_image.alt | escape }}"
+        width="{{ media.preview_image.width }}"
+        height="{{ media.preview_image.height }}"
+      >
     </button>
     <template>
       {%- liquid
