@@ -1,11 +1,22 @@
 <!doctype html>
 <html class="js" lang="{{ request.locale.iso_code }}">
   <head>
+    <script>
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const savedTheme = localStorage.getItem('theme');
+
+      if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
+
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="">
     <link rel="canonical" href="{{ canonical_url }}">
+
+    <link href="{{ 'dark-mode.css' | asset_url }}" rel="stylesheet">
 
     {%- if settings.favicon != blank -%}
       <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
@@ -298,7 +309,10 @@
     </script>
   </head>
 
-  <body class="gradient{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}">
+  <body
+    class="dark-theme"
+    class="gradient{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}"
+  >
     <a class="skip-to-content-link button visually-hidden" href="#MainContent">
       {{ 'accessibility.skip_to_text' | t }}
     </a>
@@ -372,5 +386,36 @@
     {%- if settings.cart_type == 'drawer' -%}
       <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
+
+    <script>
+      const toggle = document.getElementById('dark-mode-toggle');
+      const html = document.documentElement;
+      const moon = document.getElementById('moon-icon');
+      const sun = document.getElementById('sun-icon');
+
+      function setThemeMode(mode) {
+        if (mode === 'dark') {
+          html.classList.add('dark');
+          moon.style.display = 'none';
+          sun.style.display = 'inline';
+        } else {
+          html.classList.remove('dark');
+          moon.style.display = 'inline';
+          sun.style.display = 'none';
+        }
+      }
+
+      // Initial load
+      const saved = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setThemeMode(saved || (prefersDark ? 'dark' : 'light'));
+
+      // Toggle button click
+      toggle?.addEventListener('click', () => {
+        const isDark = html.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        setThemeMode(isDark ? 'dark' : 'light');
+      });
+    </script>
   </body>
 </html>
