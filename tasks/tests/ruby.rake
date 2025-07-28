@@ -4,8 +4,6 @@ namespace :test do
 
     desc 'RuboCop'
     RuboCop::RakeTask.new(:rubocop) do |task|
-      Shared::ConsoleOutputs.header
-      Shared::ConsoleOutputs.sub_header('RuboCop')
       task.options << '--display-cop-names'
     end
   end

@@ -9,48 +9,39 @@ module Shared
     end
 
     def self.run_command(command)
-      # Will not show output until completed which sucks if want to watch the progress.
       require 'open3'
       require 'shellwords'
-      # will run sh by default
-      # out, err, status = Open3.capture3(command)
       out, err, status = Open3.capture3("bash -c #{Shellwords.escape(command)}")
 
       successful = status.success?
-      Shared::ConsoleOutputs.debug_message_item('[Shared::Shell.run_command] Shell Command', command)
-      Shared::ConsoleOutputs.debug_message_item('[Shared::Shell.run_command] Status', status)
-      Shared::ConsoleOutputs.debug_message_item('[Shared::Shell.run_command] Standard Out', out)
-      Shared::ConsoleOutputs.debug_message_item('[Shared::Shell.run_command] Successful?', successful)
-      unless successful
-        Shared::ConsoleOutputs.error_message('[Shared::Shell.run_command] Unsuccessful Command!')
-        Shared::ConsoleOutputs.error_message_item('[Shared::Shell.run_command] Error Out', err)
-      end
-      successful
+      $logger.debug("[Shared::Shell.run_command] Shell Command: #{command}")
+      $logger.debug("[Shared::Shell.run_command] Status: #{status}")
+      $logger.debug("[Shared::Shell.run_command] Standard Out: #{out}")
+      $logger.debug("[Shared::Shell.run_command] Successful? #{successful}")
+      $logger.error("[Shared::Shell.run_command] Unsuccessful Command! #{err}") unless successful
     end
 
+    # rubocop:disable Naming/PredicateMethod
     def self.run_command_no_output(command)
-      # Will not show output, but will return boolean for success or fail.
-      # i.e. We are using this to run a Terraform command with an expected error that we want to hide.
       require 'open3'
       require 'shellwords'
-      # _out, _err, status = Open3.capture3(command))
       _out, _err, status = Open3.capture3("bash -c #{Shellwords.escape(command)}")
       status.success?
     end
+    # rubocop:enable Naming/PredicateMethod
 
     def self.run_command_strout(command)
-      # Will not show output until completed which sucks if want to watch the progress.
       require 'open3'
       require 'shellwords'
       out, err, status = Open3.capture3("bash -c #{Shellwords.escape(command)}")
       successful = status.success?
-      Shared::ConsoleOutputs.debug_message_item('[Shared::Shell.run_command_strout] Shell Command', command)
-      Shared::ConsoleOutputs.debug_message_item('[Shared::Shell.run_command_strout] Status', status)
-      # Shared::ConsoleOutputs.debug_message_item('Standard Out', out)
-      Shared::ConsoleOutputs.debug_message_item('[Shared::Shell.run_command_strout] Successful?', successful)
+      $logger.debug("[Shared::Shell.run_command_strout] Shell Command: #{command}")
+      $logger.debug("[Shared::Shell.run_command_strout] Status: #{status}")
+      # $logger.debug("[Shared::Shell.run_command_strout] Standard Out: #{out}")
+      $logger.debug("[Shared::Shell.run_command_strout] Successful? #{successful}")
       unless successful
-        Shared::ConsoleOutputs.error_message('[Shared::Shell.run_command_strout] Unsuccessful Command!')
-        Shared::ConsoleOutputs.error_message_item('[Shared::Shell.run_command_strout] Error Out', err)
+        $logger.error('[Shared::Shell.run_command_strout] Unsuccessful Command!')
+        $logger.error("[Shared::Shell.run_command_strout] Error Out: #{err}")
       end
       out
     end

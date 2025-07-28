@@ -4,6 +4,7 @@ $VERBOSE = nil
 require 'colorize'
 require 'fileutils'
 require 'highline/import'
+require 'logger'
 require 'rubocop-rake'
 
 # Load Ruby Libraries
@@ -16,6 +17,10 @@ Dir.glob('tasks/**/*.rake').each do |task_file|
   load task_file
 end
 
-# Default Rake Task (rake <enter>) - Auto Correct Ruby Style and Format
-desc 'Alias (test:style:ruby:auto_correct test:yaml:lint)'
-task default: %w[test:ruby:rubocop:auto_correct test:yaml:lint]
+# Default Rake Task (rake <enter>) - List all available tasks
+task :default do
+  system('rake -T')
+end
+
+$logger = Logger.new($stdout)
+$logger.formatter = proc { |_severity, _datetime, _progname, msg| "#{msg}\n" }

@@ -4,13 +4,13 @@ namespace :test do
 
     desc 'yaml linter'
     task :lint do
-      Shared::ConsoleOutputs.header
-      Shared::ConsoleOutputs.sub_header('Yaml Lint')
-
-      command = "yamllint -c #{$project_vars['shared']['shared_path']}/.yamllint #{$project_vars['shared']['shared_path']}"
+      $logger.info('')
+      $logger.info('Running YAML Linter')
+      $logger.info('----------------------------------')
+      command = 'yamllint -c .yamllint .'
 
       success = system(command)
-      Shared::ConsoleOutputs.message('No Offenses') if success
+      $logger.info('No Offenses') if success
     end
   end
 end

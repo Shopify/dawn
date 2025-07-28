@@ -4,7 +4,7 @@
 
 
 ### Purpose
-Ruby CLI Wrapper for AWS, Docker, Terraform, Helm and Kubectl. Used to build the AWS infrastructure and basic Kubernetes Cluster (EKS) setup. Including ArgoCD, external dns, aws load balancer controller and Sealed Secrets. The rest of the Kubernetes environment is set up and maintained by ArgoCD and GitOps workflow from the [argocd_deployments](https://github.com/bonusbits/argocd_deployments) repository.
+A fork of the original Shopify Dawn Theme [Shopify Dawn Theme](https://github.com/Shopify/dawn) repository that is customized for the Fireball Enterprise web site.
 
 ### [Documentation](./docs)
 * [Local Setup](./docs/howto/setup/local_setup.md)
