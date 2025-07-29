@@ -30,6 +30,12 @@
     assign lazy = 'lazy'
   endunless
 
+  if lazy_load == false
+    assign fetch_priority = 'high'
+  else
+    assign fetch_priority = 'auto'
+  endif
+
   assign desktop_columns = 1
   if desktop_layout == 'columns' and media_count > 1
     assign desktop_columns = 2
@@ -79,17 +85,25 @@
       </span>
     {% endcomment %}
     {%- unless media.media_type == 'video' -%}
-      {%- render 'loading-spinner' -%}
-      <div class="product__media media media--transparent">
-        {{
-          media.preview_image
-          | image_url: width: 1946
-          | image_tag:
-            class: image_class,
-            loading: lazy,
-            sizes: sizes,
-            widths: '246, 493, 600, 713, 823, 990, 1100, 1206, 1346, 1426, 1646, 1946'
-        }}
+      <div class="product__media media media--transparent product-thumbnail-skeleton">
+        <img
+          src="{{ media.preview_image | image_url: width: 600 }}"
+          srcset="
+            {{ media.preview_image | image_url: width: 400 }} 400w,
+            {{ media.preview_image | image_url: width: 600 }} 600w,
+            {{ media.preview_image | image_url: width: 900 }} 900w,
+            {{ media.preview_image | image_url: width: 1200 }} 1200w
+          "
+          sizes="{{ sizes }}"
+          class="{{ image_class }}"
+          loading="{{ lazy }}"
+          fetchpriority="{{ fetch_priority }}"
+          style="opacity: 0; transform: scale(1.04); transition: opacity 0.2s ease-out, transform 0.2s ease-out;"
+          onload="this.style.opacity='1'; this.style.transform='scale(1)'; this.parentElement.classList.remove('product-thumbnail-skeleton');"
+          alt="{{ media.alt | escape }}"
+          width="{{ media.preview_image.width }}"
+          height="{{ media.preview_image.height }}"
+        >
       </div>
       <button
         class="product__media-toggle quick-add-hidden product__media-zoom-{{ section.settings.image_zoom }}"
@@ -123,9 +137,9 @@
   {%- elsif media.media_type != 'image' -%}
     {%- comment -%} Keep deferred loading for external videos and 3D models {%- endcomment -%}
     {%- if media.media_type == 'model' -%}
-      <product-model class="deferred-media media media--transparent" data-media-id="{{ media.id }}">
+      <product-model class="deferred-media media media--transparent product-thumbnail-skeleton" data-media-id="{{ media.id }}">
     {%- else -%}
-      <deferred-media class="deferred-media media media--transparent" data-media-id="{{ media.id }}">
+      <deferred-media class="deferred-media media media--transparent product-thumbnail-skeleton" data-media-id="{{ media.id }}">
     {%- endif -%}
     <button id="Deferred-Poster-Modal-{{ media.id }}" class="deferred-media__poster" type="button">
       <span class="deferred-media__poster-button motion-reduce">
@@ -141,14 +155,23 @@
           </span>
         {%- endif -%}
       </span>
-      {{
-        media.preview_image
-        | image_url: width: 1946
-        | image_tag:
-          loading: lazy,
-          sizes: sizes,
-          widths: '246, 493, 600, 713, 823, 990, 1100, 1206, 1346, 1426, 1646, 1946'
-      }}
+      <img
+        src="{{ media.preview_image | image_url: width: 600 }}"
+        srcset="
+          {{ media.preview_image | image_url: width: 400 }} 400w,
+          {{ media.preview_image | image_url: width: 600 }} 600w,
+          {{ media.preview_image | image_url: width: 900 }} 900w,
+          {{ media.preview_image | image_url: width: 1200 }} 1200w
+        "
+        sizes="{{ sizes }}"
+        loading="lazy"
+        fetchpriority="{{ fetch_priority }}"
+        style="opacity: 0; transform: scale(1.04); transition: opacity 0.2s ease-out, transform 0.2s ease-out;"
+        onload="this.style.opacity='1'; this.style.transform='scale(1)'; this.closest('.deferred-media').classList.remove('product-thumbnail-skeleton');"
+        alt="{{ media.preview_image.alt | escape }}"
+        width="{{ media.preview_image.width }}"
+        height="{{ media.preview_image.height }}"
+      >
     </button>
     <template>
       {%- liquid
