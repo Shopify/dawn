@@ -14,26 +14,21 @@
 {%- endunless -%}
 
 {%- liquid
-  assign orientation_class = ''
-  if block.settings.orientation == 'landscape'
-    assign orientation_class = 'merchandising-item--landscape'
-  else
-    assign orientation_class = 'merchandising-item--portrait'
-  endif
+  assign ratio = 1
 -%}
 
-<div class="merchandising-item {{ orientation_class }} color-{{ block.settings.color_scheme }} gradient">
-  <div class="merchandising-item__inner">
+<div class="merchandising-item " style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%;">
+  <div class="merchandising-item__inner ratio" style="--ratio-percent: {{ 1 | divided_by: ratio | times: 100 }}%;">
     {%- if block.settings.image != blank -%}
       <div class="merchandising-item__media">
-        <div class="merchandising-item__image-container">
+        <div class="media media--transparent">
           {{
             block.settings.image
-            | image_url: width: 1200
+            | image_url: width: 800
             | image_tag:
-              class: 'merchandising-item__image',
-              sizes: '(min-width: 990px) 50vw, 100vw',
-              widths: '375, 550, 750, 1100, 1500, 1780, 2000, 3000',
+              class: 'motion-reduce',
+              sizes: '(min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)',
+              widths: '300, 450, 600, 800',
               loading: lazy_load,
               width: block.settings.image.width,
               height: block.settings.image.height
@@ -62,13 +57,13 @@
       </div>
     {%- endif -%}
 
-    {%- comment -%} If no CTA button but there's a URL, make the entire item clickable {%- endcomment -%}
-    {%- if block.settings.cta_text == blank and block.settings.cta_url != blank -%}
+    {%- comment -%} If there's a URL, make the entire item clickable {%- endcomment -%}
+    {%- if block.settings.cta_url != blank -%}
       <a
         href="{{ block.settings.cta_url }}"
         class="merchandising-item__link-overlay"
         aria-label="{{ block.settings.title | default: 'View featured content' }}"
-      ></a>
+      >&nbsp;</a>
     {%- endif -%}
   </div>
 </div>
@@ -77,17 +72,23 @@
   .merchandising-item {
     position: relative;
     overflow: hidden;
-    border-radius: 0.5rem;
+    border-radius: var(--border-radius);
     height: 100%;
-    min-height: 300px;
     filter: brightness(0.9);
   }
 
   .merchandising-item__inner {
     position: relative;
-    height: 100%;
+    width: 100%;
     display: flex;
-    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .merchandising-item__inner::before {
+    content: '';
+    width: 0;
+    height: 0;
+    padding-bottom: var(--ratio-percent);
   }
 
   .merchandising-item__media {
@@ -99,17 +100,18 @@
     z-index: 1;
   }
 
-  .merchandising-item__image-container {
-    position: relative;
+  .merchandising-item__media .media {
+    bottom: 0;
+    position: absolute;
+    top: 0;
     width: 100%;
-    height: 100%;
   }
 
-  .merchandising-item__image {
-    width: 100%;
+  .merchandising-item__media .media img {
     height: 100%;
     object-fit: cover;
-    display: block;
+    object-position: center center;
+    width: 100%;
   }
 
   .merchandising-item__content {
@@ -203,18 +205,11 @@
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 4;
+    z-index: 10;
     text-decoration: none;
   }
 
-  /* Larger title for landscape orientation */
-  @media screen and (min-width: 750px) {
-    .merchandising-item--landscape .merchandising-item__title {
-      font-size: 2rem;
-    }
-  }
-
-  /* On mobile, all items take full width */
+  /* Responsive adjustments */
   @media screen and (max-width: 749px) {
     .merchandising-item__content {
       padding: 1.5rem;
@@ -225,13 +220,19 @@
     }
   }
 
+  @media screen and (min-width: 750px) {
+    .merchandising-item__title {
+      font-size: 1.5rem;
+    }
+  }
+
   /* Hover effects */
-  .merchandising-item:hover .merchandising-item__image {
+  .merchandising-item:hover .merchandising-item__media .media img {
     transform: scale(1.05);
     transition: transform 0.3s ease;
   }
 
-  .merchandising-item__image {
+  .merchandising-item__media .media img {
     transition: transform 0.3s ease;
   }
 </style>
