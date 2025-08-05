@@ -1,0 +1,299 @@
+{% comment %}
+  Collection Showcase Section
+  Features:
+  - Displays 4 collections in a 2x2 grid
+  - Customizable collection selection
+  - Only buttons are clickable (images are not clickable)
+  - Responsive design
+{% endcomment %}
+
+{{ 'section-collection-showcase.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="collection-showcase section-{{ section.id }}-padding">
+  <div class="page-width">
+    <div class="collection-showcase__grid">
+      {%- for block in section.blocks -%}
+        {%- assign collection = collections[block.settings.collection] -%}
+        {%- if collection != blank -%}
+          <div class="collection-showcase__item" {{ block.shopify_attributes }}>
+            <div class="collection-showcase__content">
+              {%- if collection.featured_image -%}
+                <div class="collection-showcase__image">
+                  {{-
+                    collection.featured_image
+                    | image_url: width: 600
+                    | image_tag: loading: 'lazy', alt: collection.featured_image.alt
+                    | default: collection.title
+                  -}}
+                </div>
+              {%- endif -%}
+
+              <div class="collection-showcase__text-overlay">
+                <h3 class="collection-showcase__title">
+                  {{ block.settings.title | default: collection.title }}
+                </h3>
+
+                {%- if block.settings.subtitle != blank -%}
+                  <p class="collection-showcase__subtitle">
+                    {{ block.settings.subtitle }}
+                  </p>
+                {%- endif -%}
+
+                <a href="{{ collection.url }}" class="collection-showcase__button button">
+                  {{ block.settings.button_text | default: 'Shop Now' }}
+                </a>
+              </div>
+            </div>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+<style>
+  .collection-showcase {
+    margin: 0;
+  }
+
+  .collection-showcase__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+  }
+
+  @media screen and (max-width: 749px) {
+    .collection-showcase__grid {
+      width: calc(200vw - 4rem);
+      gap: 1.5rem;
+      padding-right: 2rem;
+    }
+
+    .collection-showcase {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .collection-showcase::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .collection-showcase::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+
+    .collection-showcase::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+
+    .collection-showcase::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  @media screen and (min-width: 750px) {
+    .collection-showcase__grid {
+      gap: 3rem;
+      width: 100%;
+      overflow-x: visible;
+    }
+  }
+
+  .collection-showcase__item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    min-height: 300px;
+  }
+
+  .collection-showcase__content {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .collection-showcase__image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  .collection-showcase__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .collection-showcase__text-overlay {
+    position: relative;
+    z-index: 2;
+    padding: 2rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3), transparent);
+    width: 100%;
+    color: white;
+  }
+
+  .collection-showcase__title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.2;
+  }
+
+  .collection-showcase__subtitle {
+    font-size: 1rem;
+    margin: 0 0 1.5rem 0;
+    opacity: 0.9;
+  }
+
+  .collection-showcase__button {
+    display: inline-block;
+    background-color: #1976d2;
+    color: white;
+    padding: 12px 24px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    border: none;
+  }
+
+  .collection-showcase__button:hover {
+    background-color: #1565c0;
+    color: white;
+  }
+
+  @media screen and (max-width: 749px) {
+    .collection-showcase__title {
+      font-size: 1.5rem;
+    }
+
+    .collection-showcase__text-overlay {
+      padding: 1.5rem;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Collection Showcase",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Collection",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Custom title",
+          "info": "Leave blank to use collection title"
+        },
+        {
+          "type": "text",
+          "id": "subtitle",
+          "label": "Subtitle"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button text",
+          "default": "Shop Now"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection Showcase",
+      "blocks": [
+        {
+          "type": "collection",
+          "settings": {
+            "title": "GrimmSpeed BB500 Turbo",
+            "subtitle": "In Stock NOW",
+            "button_text": "Shop Now"
+          }
+        },
+        {
+          "type": "collection",
+          "settings": {
+            "title": "FactionFab",
+            "subtitle": "Shop All FactionFab Parts",
+            "button_text": "Shop Now"
+          }
+        },
+        {
+          "type": "collection",
+          "settings": {
+            "title": "OLM Evolution Taillights",
+            "subtitle": "Upgrade Them Here!",
+            "button_text": "Shop Now"
+          }
+        },
+        {
+          "type": "collection",
+          "settings": {
+            "title": "IAG Performance",
+            "subtitle": "Shop IAG Performance",
+            "button_text": "Shop Now"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
