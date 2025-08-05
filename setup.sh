@@ -21,3 +21,4 @@ bundle binstubs --all --path=.bin                 # generate binstubs for all ge
 export PATH="$PWD/.bin:$PATH"
 echo "INFO: Ruby Version: $(ruby -v)"
 echo "INFO: Bundler Version: $(bundle -v)"
+echo 'RUN: export PATH="$PWD/.bin:$PATH"'
