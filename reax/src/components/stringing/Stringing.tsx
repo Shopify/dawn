@@ -61,8 +61,9 @@ function Stringing({
               type="button"
               onClick={() => setIsStringGuideOpen(true)}
               style={{
-                background: 'none',
+                fontFamily: 'inherit',
                 border: 'none',
+                background: 'transparent',
                 padding: 0,
                 marginBottom: '0.6rem',
                 whiteSpace: 'nowrap',
