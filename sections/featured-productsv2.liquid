@@ -1,0 +1,434 @@
+{%- comment -%}
+  Product Carousel Section
+  Shows a horizontal scrolling carousel of products with navigation arrows
+{%- endcomment -%}
+
+<div class="product-carousel-wrapper">
+  <div class="container">
+    {% if section.settings.heading != blank %}
+      <h2 class="carousel-heading">{{ section.settings.heading }}</h2>
+    {% endif %}
+
+    <div class="carousel-container">
+      <button class="carousel-arrow carousel-arrow--prev" aria-label="Previous products">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div class="carousel-track-container">
+        <div class="carousel-track">
+          {% for product in collections[section.settings.collection].products
+            limit: section.settings.products_to_show
+          %}
+            <div class="product-card">
+              <div class="product-card__image-container">
+                <button class="product-card__wishlist" aria-label="Add to wishlist">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20.84 4.61C20.3292 4.099 19.7228 3.69364 19.0554 3.41708C18.3879 3.14052 17.6725 2.99817 16.95 2.99817C16.2275 2.99817 15.5121 3.14052 14.8446 3.41708C14.1772 3.69364 13.5708 4.099 13.06 4.61L12 5.67L10.94 4.61C9.9083 3.5783 8.50903 2.9987 7.05 2.9987C5.59096 2.9987 4.19169 3.5783 3.16 4.61C2.1283 5.6417 1.5487 7.04097 1.5487 8.5C1.5487 9.95903 2.1283 11.3583 3.16 12.39L4.22 13.45L12 21.23L19.78 13.45L20.84 12.39C21.351 11.8792 21.7563 11.2728 22.0329 10.6053C22.3095 9.93789 22.4518 9.22248 22.4518 8.5C22.4518 7.77752 22.3095 7.06211 22.0329 6.39467C21.7563 5.72723 21.351 5.1208 20.84 4.61V4.61Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+
+                {% if product.featured_image %}
+                  <img
+                    src="{{ product.featured_image | img_url: '300x300' }}"
+                    alt="{{ product.featured_image.alt | escape }}"
+                    class="product-card__image"
+                  >
+                {% else %}
+                  <div class="product-card__image product-card__image--placeholder"></div>
+                {% endif %}
+
+                {% if product.available %}
+                  <div class="product-card__stock">
+                    {{ product.variants.first.inventory_quantity | default: 50 }} In Stock
+                  </div>
+                {% endif %}
+              </div>
+
+              <div class="product-card__info">
+                <div class="product-card__sku">{{ product.variants.first.sku | default: product.id }}</div>
+                <h3 class="product-card__title">
+                  <a href="{{ product.url }}">{{ product.title }}</a>
+                </h3>
+
+                <div class="product-card__rating">
+                  {% assign rating = product.metafields.reviews.rating.value | default: 4.5 %}
+                  {% assign rating_count = product.metafields.reviews.rating_count.value | default: 50 %}
+                  <div class="stars">
+                    {% for i in (1..5) %}
+                      {% if i <= rating %}
+                        <span class="star star--filled">★</span>
+                      {% else %}
+                        <span class="star">★</span>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                  <span class="rating-text">{{ rating }} ({{ rating_count }})</span>
+                </div>
+
+                <div class="product-card__price">
+                  {% if product.compare_at_price > product.price %}
+                    <span class="price price--sale">{{ product.price | money }}</span>
+                    <span class="price price--compare">{{ product.compare_at_price | money }}</span>
+                  {% else %}
+                    <span class="price">{{ product.price | money }}</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <button class="carousel-arrow carousel-arrow--next" aria-label="Next products">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .product-carousel-wrapper {
+    padding: 2rem 0;
+    background: #f8f9fa;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .carousel-heading {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    color: #333;
+  }
+
+  .carousel-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .carousel-arrow {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 2;
+    flex-shrink: 0;
+  }
+
+  .carousel-arrow:hover {
+    background: #f0f0f0;
+    border-color: #bbb;
+  }
+
+  .carousel-arrow.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .carousel-track-container {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .carousel-track {
+    display: flex;
+    gap: 1rem;
+    transition: transform 0.3s ease;
+  }
+
+  .product-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    min-width: 220px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+
+  .product-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .product-card__image-container {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+  }
+
+  .product-card__wishlist {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1;
+  }
+
+  .product-card__wishlist:hover {
+    background: #f0f0f0;
+  }
+
+  .product-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .product-card__image--placeholder {
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .product-card__stock {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+  }
+
+  .product-card__info {
+    padding: 1rem;
+  }
+
+  .product-card__sku {
+    font-size: 0.75rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+  }
+
+  .product-card__title {
+    margin: 0 0 0.75rem 0;
+    line-height: 1.3;
+  }
+
+  .product-card__title a {
+    color: #333;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .product-card__title a:hover {
+    color: #0066cc;
+  }
+
+  .product-card__rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .stars {
+    display: flex;
+    gap: 2px;
+  }
+
+  .star {
+    color: #ddd;
+    font-size: 1rem;
+  }
+
+  .star--filled {
+    color: #ffc107;
+  }
+
+  .rating-text {
+    font-size: 0.8rem;
+    color: #666;
+  }
+
+  .product-card__price {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .price {
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+
+  .price--sale {
+    color: #dc3545;
+  }
+
+  .price--compare {
+    text-decoration: line-through;
+    color: #666;
+    font-weight: normal;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 768px) {
+    .product-card {
+      min-width: 180px;
+    }
+
+    .carousel-arrow {
+      width: 40px;
+      height: 40px;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Use a more specific selector to handle multiple carousels on the same page
+    const carousels = document.querySelectorAll('.carousel-container');
+
+    carousels.forEach(function (carouselContainer) {
+      const track = carouselContainer.querySelector('.carousel-track');
+      const prevButton = carouselContainer.querySelector('.carousel-arrow--prev');
+      const nextButton = carouselContainer.querySelector('.carousel-arrow--next');
+      const trackContainer = carouselContainer.querySelector('.carousel-track-container');
+
+      if (!track || !prevButton || !nextButton || !trackContainer) return;
+
+      let currentTranslateX = 0;
+
+      function getCardWidth() {
+        const firstCard = track.querySelector('.product-card');
+        if (!firstCard) return 236; // fallback
+        const cardStyle = getComputedStyle(firstCard);
+        const cardWidth = firstCard.offsetWidth;
+        const marginRight = parseInt(cardStyle.marginRight) || 0;
+        const gap = 16; // gap from CSS
+        return cardWidth + gap;
+      }
+
+      function updateArrowVisibility() {
+        const trackWidth = track.scrollWidth;
+        const containerWidth = trackContainer.offsetWidth;
+        const maxTranslate = Math.max(0, trackWidth - containerWidth);
+
+        // Show/hide prev arrow
+        if (currentTranslateX >= 0) {
+          prevButton.style.opacity = '0';
+          prevButton.style.pointerEvents = 'none';
+        } else {
+          prevButton.style.opacity = '1';
+          prevButton.style.pointerEvents = 'auto';
+        }
+
+        // Show/hide next arrow
+        if (Math.abs(currentTranslateX) >= maxTranslate || maxTranslate <= 0) {
+          nextButton.style.opacity = '0';
+          nextButton.style.pointerEvents = 'none';
+        } else {
+          nextButton.style.opacity = '1';
+          nextButton.style.pointerEvents = 'auto';
+        }
+      }
+
+      function slide(direction) {
+        const containerWidth = trackContainer.offsetWidth;
+        const trackWidth = track.scrollWidth;
+        const maxTranslate = Math.max(0, trackWidth - containerWidth);
+        const cardWidth = getCardWidth();
+        const moveAmount = cardWidth * 2; // Move 2 cards at a time
+
+        if (direction === 'next') {
+          const newTranslate = currentTranslateX - moveAmount;
+          currentTranslateX = Math.max(newTranslate, -maxTranslate);
+        } else {
+          const newTranslate = currentTranslateX + moveAmount;
+          currentTranslateX = Math.min(newTranslate, 0);
+        }
+
+        track.style.transform = `translateX(${currentTranslateX}px)`;
+        updateArrowVisibility();
+      }
+
+      // Add click event listeners
+      nextButton.addEventListener('click', function (e) {
+        e.preventDefault();
+        slide('next');
+      });
+
+      prevButton.addEventListener('click', function (e) {
+        e.preventDefault();
+        slide('prev');
+      });
+
+      // Initialize arrow visibility after a short delay to ensure elements are rendered
+      setTimeout(function () {
+        updateArrowVisibility();
+      }, 100);
+
+      // Update on window resize
+      let resizeTimeout;
+      window.addEventListener('resize', function () {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function () {
+          currentTranslateX = 0; // Reset position on resize
+          track.style.transform = `translateX(0px)`;
+          updateArrowVisibility();
+        }, 250);
+      });
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Product Carousel",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Best Sellers"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 4,
+      "max": 20,
+      "step": 1,
+      "unit": "products",
+      "label": "Products to show",
+      "default": 10
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Carousel"
+    }
+  ]
+}
+{% endschema %}
