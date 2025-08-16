@@ -1,0 +1,204 @@
+{% comment %}
+  Renders a custom megamenu component.
+
+  Usage:
+  {% render 'header-custom-menu' %}
+{% endcomment %}
+
+{% liquid
+  assign by_artist = 'Shop By Artist'
+  assign by_subject = 'Shop By Subject'
+%}
+
+<nav class="header__inline-menu">
+  <ul class="list-menu list-menu--inline" role="list">
+    {%- for link in section.settings.menu.links -%}
+      <li>
+        {%- if link.links != blank -%}
+          <details-disclosure>
+            <details id="Details-HeaderMenu-{{ forloop.index }}">
+              <summary class="header__menu-item list-menu__item link focus-inset">
+                <span
+                  {%- if link.child_active %}
+                    class="header__active-menu-item"
+                  {% endif %}
+                >
+                  {{- link.title | escape -}}
+                  {% render 'icon-caret' %}
+                </span>
+                {% comment %} {{- 'icon-caret.svg' | inline_asset_content -}} {% endcomment %}
+              </summary>
+              <ul
+                id="HeaderMenu-MenuList-{{ forloop.index }}"
+                class="header__submenu list-menu list-menu--disclosure caption-large motion-reduce"
+                role="list"
+                tabindex="-1"
+              >
+                {%- for childlink in link.links -%}
+                  <li>
+                    {%- if childlink.links == blank -%}
+                      <a
+                        href="{{ childlink.url }}"
+                        class="header__menu-item list-menu__item link link--text focus-inset caption-large{% if childlink.current %} list-menu__item--active{% endif %}"
+                        {% if childlink.current %}
+                          aria-current="page"
+                        {% endif %}
+                      >
+                        {{ childlink.title | escape }}
+                      </a>
+                    {%- else -%}
+                      <details id="Details-HeaderSubMenu-{{ forloop.index }}">
+                        <summary class="header__menu-item link link--text list-menu__item focus-inset caption-large">
+                          <span>{{ childlink.title | escape }} </span>
+                          {% render 'icon-caret' %}
+                        </summary>
+                        <ul
+                          id="HeaderMenu-SubMenuList-{{ forloop.index }}"
+                          class="header__submenu list-menu motion-reduce"
+                        >
+                          {%- for grandchildlink in childlink.links -%}
+                            <li>
+                              <a
+                                href="{{ grandchildlink.url }}"
+                                class="header__menu-item list-menu__item link link--text focus-inset caption-large{% if grandchildlink.current %} list-menu__item--active{% endif %}"
+                                {% if grandchildlink.current %}
+                                  aria-current="page"
+                                {% endif %}
+                              >
+                                {{ grandchildlink.title | escape }}
+                              </a>
+                            </li>
+                          {%- endfor -%}
+                        </ul>
+                      </details>
+                    {%- endif -%}
+                  </li>
+                {%- endfor -%}
+              </ul>
+            </details>
+          </details-disclosure>
+        {%- else -%}
+          <a
+            href="{{ link.url }}"
+            class="header__menu-item header__menu-item list-menu__item link link--text focus-inset"
+            {% if link.current %}
+              aria-current="page"
+            {% endif %}
+          >
+            <span
+              {%- if link.current %}
+                class="header__active-menu-item"
+              {% endif %}
+            >
+              {{- link.title | escape -}}
+            </span>
+          </a>
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+
+    <li class="hoverable">
+      <button
+        id="dropdown-hover01"
+        type="button"
+        class="header__menu-item list-menu__item link focus-inset"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        <span class="tw-inline-flex tw-justify-center tw-w-full tw-align-middle">Wall Art</span>
+        {% render 'icon-caret' %}
+      </button>
+      <div class="custom-menu custom-menu-padding">
+        <div class="custom-menu-container">
+          <div class="custom-menu-left">
+            <ul id="wall-art-by_artist" class="custom-menu-column">
+              <div class="custom-menu-item">
+                <h3 class="custom-menu-title">{{ by_artist }}</h3>
+              </div>
+              <div class="custom-menu-list">
+                {%- assign artist_count = 0 -%}
+                {%- for collection in collections -%}
+                  {%- if collection.metafields.collection.is_nav == true
+                    and collection.metafields.collection.by_artist == true
+                  -%}
+                    {%- assign artist_count = artist_count | plus: 1 -%}
+                    {%- if artist_count <= 10 -%}
+                      <div class="custom-menu-item">
+                        <a
+                          href="{{ collection.url }}"
+                          class="custom-menu-link{% if collection.current %} menu-drawer__menu-item--active{% endif %}"
+                          {% if collection.current %}
+                            aria-current="page"
+                          {% endif %}
+                        >
+                          {{ collection.title | escape }}
+                        </a>
+                      </div>
+                    {%- endif -%}
+                  {%- endif -%}
+                {%- endfor -%}
+                {%- if artist_count > 10 -%}
+                  <a href="/collections/artists" class="custom-menu-cta">
+                    View All Artists
+                    <span class="custom-menu-cta-count">{{ artist_count | minus: 10 }}+</span>
+                  </a>
+                {%- endif -%}
+              </div>
+            </ul>
+
+            <ul id="wall-art-by_subject" class="custom-menu-column">
+              <div class="custom-menu-item">
+                <h3 class="custom-menu-title">{{ by_subject }}</h3>
+              </div>
+              <div class="custom-menu-list">
+                {%- assign subject_count = 0 -%}
+                {%- for collection in collections -%}
+                  {%- if collection.metafields.collection.is_nav == true
+                    and collection.metafields.collection.by_subject == true
+                  -%}
+                    {%- assign subject_count = subject_count | plus: 1 -%}
+                    {%- if subject_count <= 10 -%}
+                      <div class="custom-menu-item">
+                        <a
+                          href="{{ collection.url }}"
+                          class="custom-menu-link{% if collection.current %} menu-drawer__menu-item--active{% endif %}"
+                          {% if collection.current %}
+                            aria-current="page"
+                          {% endif %}
+                        >
+                          {{ collection.title | escape }}
+                        </a>
+                      </div>
+                    {%- endif -%}
+                  {%- endif -%}
+                {%- endfor -%}
+                {%- if subject_count > 10 -%}
+                  <a href="/collections/subjects" class="custom-menu-cta">
+                    View All Subjects
+                    <span class="custom-menu-cta-count">{{ subject_count | minus: 10 }}+</span>
+                  </a>
+                {%- endif -%}
+              </div>
+            </ul>
+          </div>
+          <div class="custom-menu-right">
+            <ul id="wall-art-featured" class="collection-list grid grid--2-col" role="list">
+              {%- for collection in collections -%}
+                {%- if collection.metafields.collection.is_nav == true
+                  and collection.metafields.collection.is_featured == true
+                -%}
+                  <li class="collection-list__item grid__item">
+                    {% render 'card-collection',
+                      card_collection: collection,
+                      media_aspect_ratio: section.settings.image_ratio
+                    %}
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </li>
+  </ul>
+</nav>
