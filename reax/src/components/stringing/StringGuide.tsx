@@ -93,7 +93,9 @@ const getProductStats = (product: ProductNodes[number]) => {
 
   // Check if metafields exist and extract performance data
   if ((product as any).metafields && Array.isArray((product as any).metafields)) {
-    const metafieldMap = new Map((product as any).metafields.map((m: any) => [m.key, parseInt(m.value) || 0]));
+    const metafieldMap = new Map(
+      (product as any).metafields.filter((x: any) => Boolean(x)).map((m: any) => [m.key, parseInt(m.value) || 0]),
+    );
 
     // Map metafield keys to display names and extract values
     const statMappings = [
@@ -120,8 +122,11 @@ const getProductMaterials = (product: ProductNodes[number]) => {
   const materials: { name: string; value: string }[] = [];
 
   // Check if metafields exist and extract material data
+  console.log((product as any).metafields.filter((x: any) => Boolean(x)));
   if ((product as any).metafields && Array.isArray((product as any).metafields)) {
-    const metafieldMap = new Map((product as any).metafields.map((m: any) => [m.key, m.value]));
+    const metafieldMap = new Map(
+      (product as any).metafields.filter((x: any) => Boolean(x)).map((m: any) => [m.key, m.value]),
+    );
 
     // Map metafield keys to display names
     const materialMappings = [
