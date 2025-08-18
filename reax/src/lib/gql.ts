@@ -39,6 +39,22 @@ query getCollectionById($id: ID!) {
         metafield(key: "short_description", namespace:"custom_but_hidden") {
           value
         }
+        productTagMetafield: metafield(key: "product_tag", namespace:"custom_but_hidden") {
+          value
+        }
+        metafields(identifiers: [
+          {namespace: "custom", key: "durability"}
+          {namespace: "custom", key: "control"}
+          {namespace: "custom", key: "repulsion_power"}
+          {namespace: "custom", key: "hitting_sound"}
+          {namespace: "custom", key: "shock_absorption"}
+          {namespace: "custom", key: "core_material"}
+          {namespace: "custom", key: "outer_material"}
+        ]) {
+          namespace
+          key
+          value
+        }
         options {
           optionValues {
             name
