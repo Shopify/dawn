@@ -26,6 +26,7 @@ const Remix = () => {
   const threeModelPath = window?.s3_remix_config?.modelPath;
   const productType = window?.s3_product_type;
   const shortType = productType === 'Badminton Racket' ? 'Racket' : productType === 'Pickleball Paddle' ? 'Paddle' : '';
+  const maxStickerLength = productType === 'Pickleball Paddle' ? 12 : 8;
   const inputRef = useRef<HTMLInputElement>(null);
   const cursorPositionRef = useRef<number | null>(null);
 
@@ -217,7 +218,7 @@ const Remix = () => {
                   default:
                     return {
                       start: new Vector3(0, 15, 2),
-                      end: new Vector3(-3, 0, 0),
+                      end: new Vector3(-1.35, 0, 2.5),
                     };
                 }
               };
@@ -509,7 +510,7 @@ const Remix = () => {
                                   emoji,
                                   ...graphemes.slice(inputRef.current?.selectionStart!),
                                 ]
-                                  .slice(0, 8)
+                                  .slice(0, maxStickerLength)
                                   .join('');
 
                                 cursorPositionRef.current = inputRef.current?.selectionStart! + 2;
@@ -591,7 +592,7 @@ const Remix = () => {
                           const filteredValue = splitter
                             .splitGraphemes(inputValue)
                             .filter((grapheme) => validEmojis.includes(grapheme) || isCharAlphanumeric(grapheme))
-                            .slice(0, 8)
+                            .slice(0, maxStickerLength)
                             .join('')
                             .toUpperCase();
 
