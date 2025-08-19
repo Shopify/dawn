@@ -218,7 +218,7 @@ const Remix = () => {
                   default:
                     return {
                       start: new Vector3(0, 15, 2),
-                      end: new Vector3(-3, 0, 0),
+                      end: new Vector3(-1.35, 0, 2.5),
                     };
                 }
               };
