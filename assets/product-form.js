@@ -122,7 +122,12 @@ if (!customElements.get('product-form')) {
           }
 
           items.push({
-            id: window.s3_remix_service_variant_id,
+            id:
+              window.s3_product_type === 'Pickleball Paddle'
+                ? window.s3_paddle_remix_service_variant_id
+                : window.s3_product_type === 'Badminton Racket'
+                  ? window.s3_remix_service_variant_id
+                  : window.s3_remix_service_variant_id,
             quantity: 1,
             properties: {
               _stickerText: textToBeStickered,
