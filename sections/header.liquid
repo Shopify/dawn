@@ -180,69 +180,15 @@
       {%- endif -%}
     {%- endif -%}
 
-    <div
-      class="search-modal__content{% if settings.inputs_shadow_vertical_offset != 0 and settings.inputs_shadow_vertical_offset < 0 %} search-modal__content-top{% else %} search-modal__content-bottom{% endif %}"
-      tabindex="-1"
-    >
-      {%- if settings.predictive_search_enabled -%}
-        <predictive-search class="search-modal__form" data-loading-text="{{ 'accessibility.loading' | t }}">
-      {%- else -%}
-        <search-form class="search-modal__form">
-      {%- endif -%}
-      <form action="{{ routes.search_url }}" method="get" role="search" class="search search-modal__form">
-        <div class="field">
-          <input
-            class="search__input field__input"
-            id="{{ input_id }}"
-            type="search"
-            name="q"
-            value="{{ search.terms | escape }}"
-            placeholder="{{ 'general.search.search' | t }}"
-            {%- if settings.predictive_search_enabled -%}
-              role="combobox"
-              aria-expanded="false"
-              aria-owns="predictive-search-results"
-              aria-controls="predictive-search-results"
-              aria-haspopup="listbox"
-              aria-autocomplete="list"
-              autocorrect="off"
-              autocomplete="off"
-              autocapitalize="off"
-              spellcheck="false"
-            {%- endif -%}
-          >
-          <label class="field__label" for="{{ input_id }}">{{ 'general.search.search' | t }}</label>
-          <input type="hidden" name="options[prefix]" value="last">
-          <button
-            type="reset"
-            class="reset__button field__button{% if search.terms == blank %} hidden{% endif %}"
-            aria-label="{{ 'general.search.reset' | t }}"
-          >
-            <span class="svg-wrapper">
-              {{- 'icon-reset.svg' | inline_asset_content -}}
-            </span>
-          </button>
-          <button class="search__button field__button" aria-label="{{ 'general.search.search' | t }}">
-            <span class="svg-wrapper">
-              {{- 'icon-search.svg' | inline_asset_content -}}
-            </span>
-          </button>
-        </div>
-
-        {%- if settings.predictive_search_enabled -%}
-          <div class="predictive-search predictive-search--header" tabindex="-1" data-predictive-search>
-            {%- render 'loading-spinner', class: 'predictive-search__loading-state' -%}
-          </div>
-
-          <span class="predictive-search-status visually-hidden" role="status" aria-hidden="true"></span>
-        {%- endif -%}
-      </form>
-      {%- if settings.predictive_search_enabled -%}
-        </predictive-search>
-      {%- else -%}
-        </search-form>
-      {%- endif -%}
-    </div>
+    {%- liquid
+      if section.settings.menu != blank
+        if section.settings.menu_type_desktop == 'dropdown'
+          render 'header-dropdown-menu'
+        elsif section.settings.menu_type_desktop != 'drawer'
+          render 'header-mega-menu'
+        endif
+      endif
+    %}
 
     {%- if section.settings.logo_position == 'middle-center' -%}
       {%- if request.page_type == 'index' -%}
@@ -278,6 +224,31 @@
     {%- endif -%}
 
     <div class="header__icons{% if section.settings.enable_country_selector or section.settings.enable_language_selector %} header__icons--localization header-localization{% endif %}">
+      <div class="desktop-localization-wrapper">
+        {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
+          <localization-form class="small-hide medium-hide" data-prevent-hide>
+            {%- form 'localization', id: 'HeaderCountryForm', class: 'localization-form' -%}
+              <div>
+                <h2 class="visually-hidden" id="HeaderCountryLabel">{{ 'localization.country_label' | t }}</h2>
+                {%- render 'country-localization', localPosition: 'HeaderCountry' -%}
+              </div>
+            {%- endform -%}
+          </localization-form>
+        {% endif %}
+
+        {%- if section.settings.enable_language_selector and localization.available_languages.size > 1 -%}
+          <localization-form class="small-hide medium-hide" data-prevent-hide>
+            {%- form 'localization', id: 'HeaderLanguageForm', class: 'localization-form' -%}
+              <div>
+                <h2 class="visually-hidden" id="HeaderLanguageLabel">{{ 'localization.language_label' | t }}</h2>
+                {%- render 'language-localization', localPosition: 'HeaderLanguage' -%}
+              </div>
+            {%- endform -%}
+          </localization-form>
+        {%- endif -%}
+      </div>
+      {% render 'header-search', input_id: 'Search-In-Modal' %}
+
       {%- if shop.customer_accounts_enabled -%}
         <a
           href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}"
