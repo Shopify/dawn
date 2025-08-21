@@ -55,12 +55,4 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   });
-
-  // Keep main variant in sync
-  const mainVariantInput = productForm.querySelector('input[name="items[][id]"], input[name="id"]');
-  document.addEventListener('change', (e) => {
-    if (e.target.matches("select[name='id']")) {
-      mainVariantInput.value = e.target.value;
-    }
-  });
 });
