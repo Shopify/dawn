@@ -81,11 +81,13 @@ const Remix = () => {
         renderer = new WebGLRenderer({ antialias: true });
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.shadowMap.enabled = true;
-        renderer.setSize(window.innerWidth, window.innerHeight);
 
         const rootElement = document.getElementById('model');
         if (rootElement) {
           rootElement.innerHTML = ''; // Clear previous renderers
+          rootElement.style.height = '100vh';
+          rootElement.style.width = '100vw';
+          renderer.setSize(window.innerWidth, window.innerHeight);
           rootElement.appendChild(renderer.domElement);
         }
 
@@ -434,9 +436,10 @@ const Remix = () => {
                     style={{
                       color: window.s3_remix_config?.stickerTextColor || '#fff',
                       position: 'absolute',
-                      width: '100%',
-                      inset: 0,
-                      height: '100%',
+                      width: '100vw',
+                      height: '100vh',
+                      top: 0,
+                      left: 0,
                       margin: 0,
                       display: 'flex',
                       justifyContent: 'center',
@@ -465,7 +468,8 @@ const Remix = () => {
                       justifyContent: 'center',
                       alignItems: 'center',
                       position: 'absolute',
-                      bottom: '10rem',
+                      bottom: '9rem',
+                      padding: '0 3px',
                       width: '100%',
                       transition: 'opacity 0.5s ease',
                       opacity: isAnimating ? 0 : 1,
@@ -493,6 +497,7 @@ const Remix = () => {
                               border: 'none',
                               fontSize: '2.5rem',
                               margin: '0 0.4rem',
+                              cursor: 'pointer',
                             }}
                             key={emoji}
                             onClick={() => {
