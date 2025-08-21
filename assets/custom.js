@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
   const productForm = document.querySelector('product-form').querySelector('form[action="/cart/add"]');
   if (!productForm) return;
-  console.log(productForm);
 
   const upsells = document.querySelectorAll('upsell-item');
 
