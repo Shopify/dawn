@@ -15,6 +15,7 @@
   {{ 'component-slider.css' | asset_url | stylesheet_tag }}
   {{ 'component-rating.css' | asset_url | stylesheet_tag }}
   {{ 'component-deferred-media.css' | asset_url | stylesheet_tag }}
+  {{ 'custom.css' | asset_url | stylesheet_tag }}
 
   {% unless product.has_only_default_variant %}
     {{ 'component-product-variant-picker.css' | asset_url | stylesheet_tag }}
@@ -41,6 +42,7 @@
 
   <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'custom.js' |  asset_url }}" defer="defer"></script>
   {%- if product.quantity_price_breaks_configured? -%}
     <script src="{{ 'show-more.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'price-per-item.js' | asset_url }}" defer="defer"></script>
@@ -674,6 +676,35 @@
                 </product-recommendations>
               {%- when 'icon-with-text' -%}
                 {% render 'icon-with-text', block: block %}
+              {% when 'upsell_item' %}
+                {% assign upsell_product = all_products[block.settings.upsell_product] %}
+                {% if upsell_product and upsell_product.available %}
+                  <upsell-item class="upsell-item" data-variant-id="{{ upsell_product.selected_or_first_available_variant.id }}">
+                    <label>
+                      <div class="upsell-image">
+                        <img
+                          src="{{ upsell_product.featured_image | image_url }}"
+                          width="100%"
+                          height="auto"
+                          role="presentation"
+                          loading="lazy"
+                          alt="{{ upsell_product.title }}"
+                        >
+                      </div>
+                      <div class="upsell-content">
+                        <div class="upsell-title">
+                          {{ block.settings.title | default: upsell_product.title }}
+                        </div>
+                        <div>
+                          <input type="checkbox" class="upsell-checkbox">
+                          <span class="upsell-add">
+                            {{ block.settings.add_to_cart_text | default: 'Add' }}
+                          </span>
+                        </div>
+                      </div>
+                    </label>
+                  </upsell-item>
+                {% endif %}
             {%- endcase -%}
           {%- endfor -%}
           <a href="{{ product.url }}" class="link product__view-details animate-arrow">
@@ -2086,6 +2117,29 @@
           "info": "t:sections.main-product.blocks.icon_with_text.settings.heading.info"
         }
       ]
+    },
+    {
+      "type": "upsell_item",
+      "name": "Upsell Item",
+      "settings": [
+        {
+          "type": "product",
+          "id": "upsell_product",
+          "label": "Upsell Product"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Upsell Title"
+        },
+        {
+          "type": "text",
+          "id": "add_to_cart_text",
+          "label": "Add to Cart Button Text",
+          "default": "Add"
+        }
+      ],
+      "limit": 1
     }
   ],
   "settings": [
