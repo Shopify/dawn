@@ -1,0 +1,96 @@
+{% comment %}
+  Renders a mobile megamenu for "Shop By Artist" collections.
+{% endcomment %}
+
+{%- liquid
+  assign by_artist = 'sections.header.custom_menu.by_artist' | t
+-%}
+
+<details id="Details-menu-drawer-artists">
+  <summary
+    id="HeaderDrawer-artists"
+    class="menu-drawer__menu-item link link--text focus-inset"
+  >
+    {{ by_artist }}
+    <span class="svg-wrapper">
+      {{- 'icon-arrow.svg' | inline_asset_content -}}
+    </span>
+    <span class="svg-wrapper">
+      {{- 'icon-caret.svg' | inline_asset_content -}}
+    </span>
+  </summary>
+  <div
+    id="link-artists"
+    class="menu-drawer__submenu has-submenu gradient motion-reduce"
+    tabindex="-1"
+  >
+    <div class="menu-drawer__inner-submenu">
+      <button class="menu-drawer__close-button link link--text focus-inset" aria-expanded="true">
+        <span class="svg-wrapper">
+          {{- 'icon-arrow.svg' | inline_asset_content -}}
+        </span>
+        {{ by_artist }}
+      </button>
+      <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
+        {%- assign artist_count = 0 -%}
+        {%- for collection in collections -%}
+          {%- if collection.metafields.collection.is_nav == true
+            and collection.metafields.collection.by_artist == true
+          -%}
+            {%- assign artist_count = artist_count | plus: 1 -%}
+            <li>
+              <a
+                href="{{ collection.url }}"
+                class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if collection.current %} menu-drawer__menu-item--active{% endif %}"
+                {% if collection.current %}
+                  aria-current="page"
+                {% endif %}
+              >
+                {{ collection.title | escape }}
+              </a>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+        {%- if artist_count > 20 -%}
+          <li>
+            <a
+              href="/collections/artists"
+              class="menu-drawer__menu-item link link--text list-menu__item focus-inset"
+            >
+              View All Artists
+              <span class="custom-menu-cta-count">{{ artist_count | minus: 20 }}+</span>
+            </a>
+          </li>
+        {%- endif -%}
+      </ul>
+
+      <!-- Featured Artist Collections -->
+      <div class="menu-drawer__featured">
+        <h3 class="menu-drawer__featured-title">Featured Artists</h3>
+        <div class="menu-drawer__featured-grid">
+          {%- for collection in collections -%}
+            {%- if collection.metafields.collection.is_nav == true
+              and collection.metafields.collection.is_featured == true
+            -%}
+              <div class="menu-drawer__featured-item">
+                <a href="{{ collection.url }}" class="menu-drawer__featured-link">
+                  {%- if collection.image -%}
+                    <img
+                      src="{{ collection.image | image_url: width: 200 }}"
+                      alt="{{ collection.title | escape }}"
+                      class="menu-drawer__featured-image"
+                      loading="lazy"
+                      width="200"
+                      height="160"
+                    >
+                  {%- endif -%}
+                  <span class="menu-drawer__featured-title">{{ collection.title | escape }}</span>
+                </a>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</details>

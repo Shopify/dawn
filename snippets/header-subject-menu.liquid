@@ -1,0 +1,76 @@
+{% comment %}
+  Renders a megamenu for "Shop By Subject" collections.
+{% endcomment %}
+
+{%- liquid
+  assign by_subject = 'sections.header.custom_menu.by_subject' | t
+-%}
+
+<li class="hoverable">
+  <button
+    id="dropdown-hover-subjects"
+    type="button"
+    class="header__menu-item list-menu__item link focus-inset"
+    aria-haspopup="true"
+    aria-expanded="false"
+  >
+    <span class="custom-menu-caret">
+      {{ by_subject }}
+      {% render 'icon-caret' %}
+    </span>
+  </button>
+  <div class="custom-menu custom-menu-padding">
+    <div class="custom-menu-container">
+      <div class="custom-menu-left">
+        <ul id="subjects-menu" class="custom-menu-column">
+          <div class="custom-menu-item">
+            <h3 class="custom-menu-title">{{ by_subject }}</h3>
+          </div>
+          <div class="custom-menu-list">
+            {%- assign subject_count = 0 -%}
+            {%- for collection in collections -%}
+              {%- if collection.metafields.collection.is_nav == true
+                and collection.metafields.collection.by_subject == true
+              -%}
+                {%- assign subject_count = subject_count | plus: 1 -%}
+                <div class="custom-menu-item">
+                  <a
+                    href="{{ collection.url }}"
+                    class="custom-menu-link{% if collection.current %} menu-drawer__menu-item--active{% endif %}"
+                    {% if collection.current %}
+                      aria-current="page"
+                    {% endif %}
+                  >
+                    {{ collection.title | escape }}
+                  </a>
+                </div>
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if subject_count > 20 -%}
+              <a href="/collections/subjects" class="custom-menu-cta">
+                View All Subjects
+                <span class="custom-menu-cta-count">{{ subject_count | minus: 20 }}+</span>
+              </a>
+            {%- endif -%}
+          </div>
+        </ul>
+      </div>
+      <div class="custom-menu-right">
+        <ul id="subjects-featured" class="collection-list grid grid--2-col" role="list">
+          {%- for collection in collections -%}
+            {%- if collection.metafields.collection.is_nav == true
+              and collection.metafields.collection.is_featured == true
+            -%}
+              <li class="collection-list__item grid__item">
+                {% render 'card-collection',
+                  card_collection: collection,
+                  media_aspect_ratio: section.settings.image_ratio
+                %}
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </div>
+    </div>
+  </div>
+</li>
