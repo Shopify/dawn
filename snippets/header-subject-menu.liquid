@@ -46,17 +46,16 @@
                 </div>
               {%- endif -%}
             {%- endfor -%}
-            {%- if subject_count > 20 -%}
-              <a href="/collections/subjects" class="custom-menu-cta">
-                View All Subjects
-                <span class="custom-menu-cta-count">{{ subject_count | minus: 20 }}+</span>
-              </a>
-            {%- endif -%}
+            <a href="/collections/subjects" class="custom-menu-cta">
+              View All Subjects
+              <span class="custom-menu-cta-count">+</span>
+            </a>
           </div>
         </ul>
       </div>
       <div class="custom-menu-right">
         <ul id="subjects-featured" class="collection-list grid grid--2-col" role="list">
+          {%- assign featured_count = 0 -%}
           {%- for collection in collections -%}
             {%- if collection.metafields.collection.is_nav == true
               and collection.metafields.collection.is_featured == true
@@ -67,8 +66,25 @@
                   media_aspect_ratio: section.settings.image_ratio
                 %}
               </li>
+              {%- assign featured_count = featured_count | plus: 1 -%}
             {%- endif -%}
           {%- endfor -%}
+
+          {%- if featured_count == 0 -%}
+            {%- assign shown = 0 -%}
+            {%- for collection in collections -%}
+              {%- if collection.metafields.collection.is_nav == true and collection.image -%}
+                <li class="collection-list__item grid__item">
+                  {% render 'card-collection',
+                    card_collection: collection,
+                    media_aspect_ratio: section.settings.image_ratio
+                  %}
+                </li>
+                {%- assign shown = shown | plus: 1 -%}
+                {%- if shown == 2 -%}{% break %}{%- endif -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
         </ul>
       </div>
     </div>

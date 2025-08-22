@@ -46,17 +46,16 @@
                 </div>
               {%- endif -%}
             {%- endfor -%}
-            {%- if artist_count > 20 -%}
-              <a href="/collections/artists" class="custom-menu-cta">
-                View All Artists
-                <span class="custom-menu-cta-count">{{ artist_count | minus: 20 }}+</span>
-              </a>
-            {%- endif -%}
+            <a href="/collections/artists" class="custom-menu-cta">
+              View All Artists
+              <span class="custom-menu-cta-count">+</span>
+            </a>
           </div>
         </ul>
       </div>
       <div class="custom-menu-right">
         <ul id="artists-featured" class="collection-list grid grid--2-col" role="list">
+          {%- assign featured_count = 0 -%}
           {%- for collection in collections -%}
             {%- if collection.metafields.collection.is_nav == true
               and collection.metafields.collection.is_featured == true
@@ -67,10 +66,56 @@
                   media_aspect_ratio: section.settings.image_ratio
                 %}
               </li>
+              {%- assign featured_count = featured_count | plus: 1 -%}
             {%- endif -%}
           {%- endfor -%}
+
+          {%- if featured_count == 0 -%}
+            {%- assign shown = 0 -%}
+            {%- for collection in collections -%}
+              {%- if collection.metafields.collection.is_nav == true and collection.image -%}
+                <li class="collection-list__item grid__item">
+                  {% render 'card-collection',
+                    card_collection: collection,
+                    media_aspect_ratio: section.settings.image_ratio
+                  %}
+                </li>
+                {%- assign shown = shown | plus: 1 -%}
+                {%- if shown == 2 -%}{% break %}{%- endif -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
         </ul>
       </div>
     </div>
   </div>
 </li>
+
+<script>
+  (function () {
+    if (window.__customMenuOverflowInit) return;
+    window.__customMenuOverflowInit = true;
+
+    function updateOverflow(container) {
+      if (!container) return;
+      container.querySelectorAll('.custom-menu-list').forEach(function (listEl) {
+        var hasOverflow = listEl.scrollHeight > listEl.clientHeight;
+        listEl.classList.toggle('has-overflow', !!hasOverflow);
+      });
+    }
+
+    document.querySelectorAll('.hoverable').forEach(function (hoverEl) {
+      hoverEl.addEventListener('mouseenter', function () {
+        var menu = hoverEl.querySelector('.custom-menu');
+        if (!menu) return;
+        requestAnimationFrame(function () {
+          updateOverflow(menu);
+        });
+      });
+    });
+
+    window.addEventListener('resize', function () {
+      document.querySelectorAll('.custom-menu').forEach(updateOverflow);
+    });
+  })();
+</script>
