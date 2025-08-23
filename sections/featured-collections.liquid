@@ -1,8 +1,9 @@
 {% comment %}
   Collection Showcase Section
   Features:
-  - Displays 4 collections in a 2x2 grid
-  - Customizable collection selection
+  - Displays 4 showcase items in a 2x2 grid
+  - Can link to collections, pages, products, or any URL
+  - Custom image upload option for each item
   - Only buttons are clickable (images are not clickable)
   - Responsive design
 {% endcomment %}
@@ -28,15 +29,26 @@
     <div class="collection-showcase__grid">
       {%- for block in section.blocks -%}
         {%- assign collection = collections[block.settings.collection] -%}
-        {%- if collection != blank -%}
+        {%- comment -%} Determine link URL - custom URL takes priority, then collection URL {%- endcomment -%}
+        {%- assign link_url = block.settings.custom_url -%}
+        {%- if link_url == blank and collection != blank -%}
+          {%- assign link_url = collection.url -%}
+        {%- endif -%}
+
+        {%- comment -%} Show block if we have either a collection or custom content {%- endcomment -%}
+        {%- if collection != blank or block.settings.custom_image != blank or block.settings.title != blank -%}
           <div class="collection-showcase__item" {{ block.shopify_attributes }}>
             <div class="collection-showcase__content">
-              {%- if collection.featured_image -%}
+              {%- comment -%} Use custom image if provided, otherwise fallback to collection featured image {%- endcomment -%}
+              {%- assign display_image = block.settings.custom_image | default: collection.featured_image -%}
+
+              {%- if display_image -%}
                 <div class="collection-showcase__image">
                   {{-
-                    collection.featured_image
+                    display_image
                     | image_url: width: 600
-                    | image_tag: loading: 'lazy', alt: collection.featured_image.alt
+                    | image_tag: loading: 'lazy', alt: display_image.alt
+                    | default: block.settings.title
                     | default: collection.title
                   -}}
                 </div>
@@ -53,9 +65,11 @@
                   </p>
                 {%- endif -%}
 
-                <a href="{{ collection.url }}" class="collection-showcase__button button">
-                  {{ block.settings.button_text | default: 'Shop Now' }}
-                </a>
+                {%- if link_url != blank -%}
+                  <a href="{{ link_url }}" class="collection-showcase__button button">
+                    {{ block.settings.button_text | default: 'Shop Now' }}
+                  </a>
+                {%- endif -%}
               </div>
             </div>
           </div>
@@ -234,20 +248,45 @@
   ],
   "blocks": [
     {
-      "type": "collection",
-      "name": "Collection",
+      "type": "showcase_item",
+      "name": "Showcase Item",
       "limit": 4,
       "settings": [
         {
+          "type": "header",
+          "content": "Content Source"
+        },
+        {
           "type": "collection",
           "id": "collection",
-          "label": "Collection"
+          "label": "Collection",
+          "info": "Optional: Select a collection to pull default title and image from"
+        },
+        {
+          "type": "header",
+          "content": "Link Destination"
+        },
+        {
+          "type": "url",
+          "id": "custom_url",
+          "label": "Custom link",
+          "info": "Link to any page, product, or URL. If left blank and a collection is selected, will link to the collection."
+        },
+        {
+          "type": "header",
+          "content": "Visual & Text"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_image",
+          "label": "Custom image",
+          "info": "Upload a custom image. If left blank and a collection is selected, will use the collection's featured image."
         },
         {
           "type": "text",
           "id": "title",
-          "label": "Custom title",
-          "info": "Leave blank to use collection title"
+          "label": "Title",
+          "info": "Custom title. If left blank and a collection is selected, will use collection title."
         },
         {
           "type": "text",
@@ -268,7 +307,7 @@
       "name": "Collection Showcase",
       "blocks": [
         {
-          "type": "collection",
+          "type": "showcase_item",
           "settings": {
             "title": "GrimmSpeed BB500 Turbo",
             "subtitle": "In Stock NOW",
@@ -276,7 +315,7 @@
           }
         },
         {
-          "type": "collection",
+          "type": "showcase_item",
           "settings": {
             "title": "FactionFab",
             "subtitle": "Shop All FactionFab Parts",
@@ -284,7 +323,7 @@
           }
         },
         {
-          "type": "collection",
+          "type": "showcase_item",
           "settings": {
             "title": "OLM Evolution Taillights",
             "subtitle": "Upgrade Them Here!",
@@ -292,7 +331,7 @@
           }
         },
         {
-          "type": "collection",
+          "type": "showcase_item",
           "settings": {
             "title": "IAG Performance",
             "subtitle": "Shop IAG Performance",
