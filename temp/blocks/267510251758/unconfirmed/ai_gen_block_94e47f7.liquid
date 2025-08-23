@@ -1,6 +1,504 @@
+{% doc %}
+  @prompt
+    a collections list for all collections with the metafield by artist set to true
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-artist-collections-{{ ai_gen_id }} {
+    padding: {{ block.settings.section_padding }}px 0;
+  }
+
+  .ai-artist-collections__container-{{ ai_gen_id }} {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .ai-artist-collections__header-{{ ai_gen_id }} {
+    text-align: {{ block.settings.text_alignment }};
+    margin-bottom: {{ block.settings.spacing_below_header }}px;
+  }
+
+  .ai-artist-collections__title-{{ ai_gen_id }} {
+    color: {{ block.settings.heading_color }};
+    font-size: {{ block.settings.heading_size }}px;
+    margin: 0 0 {{ block.settings.spacing_below_title }}px;
+  }
+
+  .ai-artist-collections__description-{{ ai_gen_id }} {
+    color: {{ block.settings.text_color }};
+    font-size: {{ block.settings.description_size }}px;
+    margin: 0;}
+
+  .ai-artist-collections__grid-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: repeat({{ block.settings.columns_desktop }}, 1fr);
+    gap: {{ block.settings.grid_gap }}px;
+  }
+
+  .ai-artist-collections__item-{{ ai_gen_id }} {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s ease;
+  }
+
+  .ai-artist-collections__item-{{ ai_gen_id }}:hover {
+    transform: translateY(-4px);
+  }
+
+  .ai-artist-collections__image-wrapper-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    aspect-ratio: {{ block.settings.image_aspect_ratio }};
+    overflow: hidden;
+    border-radius: {{ block.settings.image_border_radius }}px;
+    margin-bottom: {{ block.settings.spacing_below_image }}px;
+  }
+
+  .ai-artist-collections__image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .ai-artist-collections__item-{{ ai_gen_id }}:hover .ai-artist-collections__image-{{ ai_gen_id }} {
+    transform: scale(1.05);
+  }
+
+  .ai-artist-collections__image-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .ai-artist-collections__image-placeholder-{{ ai_gen_id }} svg {
+    width: 60%;
+    height: 60%;
+    opacity: 0.3;
+  }
+
+  .ai-artist-collections__content-{{ ai_gen_id }} {
+    text-align: {{ block.settings.text_alignment }};
+  }
+
+  .ai-artist-collections__collection-title-{{ ai_gen_id }} {
+    color: {{ block.settings.collection_title_color }};
+    font-size: {{ block.settings.collection_title_size }}px;
+    margin: 0 0 {{ block.settings.spacing_below_collection_title }}px;
+    font-weight: 600;
+  }
+
+  .ai-artist-collections__artist-name-{{ ai_gen_id }} {
+    color: {{ block.settings.artist_name_color }};
+    font-size: {{ block.settings.artist_name_size }}px;
+    margin: 0 0 {{ block.settings.spacing_below_artist_name }}px;
+    font-style: italic;
+  }
+
+  .ai-artist-collections__product-count-{{ ai_gen_id }} {
+    color: {{ block.settings.product_count_color }};
+    font-size: {{ block.settings.product_count_size }}px;
+    margin: 0;
+  }
+
+  .ai-artist-collections__empty-state-{{ ai_gen_id }} {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+  }
+
+  .ai-artist-collections__empty-state-title-{{ ai_gen_id }} {
+    font-size: 24px;
+    margin: 0 0 16px;
+    color: #999;
+  }
+
+  .ai-artist-collections__empty-state-text-{{ ai_gen_id }} {
+    font-size: 16px;
+    margin: 0;
+  }
+
+  @media screen and (max-width: 990px) {
+    .ai-artist-collections__grid-{{ ai_gen_id }} {
+      grid-template-columns: repeat({{ block.settings.columns_tablet }}, 1fr);
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-artist-collections__grid-{{ ai_gen_id }} {
+      grid-template-columns: repeat({{ block.settings.columns_mobile }}, 1fr);
+    }
+
+    .ai-artist-collections__container-{{ ai_gen_id }} {
+      padding: 0 16px;
+    }
+  }
+{% endstyle %}
+
+<div class="ai-artist-collections-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-artist-collections__container-{{ ai_gen_id }}">
+    {% if block.settings.heading != blank or block.settings.description != blank %}
+      <div class="ai-artist-collections__header-{{ ai_gen_id }}">
+        {% if block.settings.heading != blank %}
+          <h2 class="ai-artist-collections__title-{{ ai_gen_id }}">{{ block.settings.heading }}</h2>
+        {% endif %}
+        {% if block.settings.description != blank %}
+          <div class="ai-artist-collections__description-{{ ai_gen_id }}">{{ block.settings.description }}</div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% assign artist_collections = collections | where: 'metafields.custom.by_artist', true %}
+    {% if artist_collections.size > 0 %}
+      <div class="ai-artist-collections__grid-{{ ai_gen_id }}">
+        {% for collection in artist_collections limit: block.settings.collections_limit %}
+          <a href="{{ collection.url }}" class="ai-artist-collections__item-{{ ai_gen_id }}">
+            <div class="ai-artist-collections__image-wrapper-{{ ai_gen_id }}">
+              {% if collection.featured_image %}
+                <img
+                  src="{{ collection.featured_image | image_url: width: 600 }}"
+                  alt="{{ collection.featured_image.alt | escape }}"
+                  class="ai-artist-collections__image-{{ ai_gen_id }}"loading="lazy"
+                  width="{{ collection.featured_image.width }}"
+                  height="{{ collection.featured_image.height }}"
+                >
+              {% else %}
+                <div class="ai-artist-collections__image-placeholder-{{ ai_gen_id }}">
+                  {{ 'collection-1' | placeholder_svg_tag }}
+                </div>
+              {% endif %}
+            </div>
+            <div class="ai-artist-collections__content-{{ ai_gen_id }}">
+              <h3 class="ai-artist-collections__collection-title-{{ ai_gen_id }}">{{ collection.title }}</h3>
+              
+              {% if collection.metafields.custom.artist_name != blank %}
+                <p class="ai-artist-collections__artist-name-{{ ai_gen_id }}">by {{ collection.metafields.custom.artist_name }}</p>
+              {% endif %}
+              
+              {% if block.settings.show_product_count %}
+                <p class="ai-artist-collections__product-count-{{ ai_gen_id }}">
+                  {{ collection.products_count }}{% if collection.products_count == 1 %}
+                    product
+                  {% else %}
+                    products
+                  {% endif %}
+                </p>
+              {% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="ai-artist-collections__empty-state-{{ ai_gen_id }}">
+        <h3 class="ai-artist-collections__empty-state-title-{{ ai_gen_id }}">No artist collections found</h3>
+        <p class="ai-artist-collections__empty-state-text-{{ ai_gen_id }}">Create collections and set the "by_artist" metafield to true to display them here.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
 {% schema %}
- {
-   "name": "AI_Block",
-   "tag": "shopify-ai-generated-block"
- }
+{
+  "name": "Artist collections",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Artist Collections"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Discover unique collections curated by talented artists</p>"
+    },
+    {
+      "type": "range",
+      "id": "collections_limit",
+      "min": 4,
+      "max": 50,
+      "step": 2,
+      "label": "Maximum collections to show",
+      "default": 12
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_count",
+      "label": "Show product count",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "label": "Columns on desktop",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "label": "Columns on tablet",
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Columns on mobile",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "select",
+      "id": "image_aspect_ratio",
+      "label": "Image aspect ratio",
+      "options": [
+        {
+          "value": "1/1",
+          "label": "Square"
+        },
+        {
+          "value": "4/3",
+          "label": "Landscape"
+        },
+        {
+          "value": "3/4",
+          "label": "Portrait"
+        },
+        {
+          "value": "16/9",
+          "label": "Widescreen"
+        }
+      ],
+      "default": "4/3"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Section padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "min": 8,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "label": "Grid gap",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "spacing_below_header",
+      "min": 16,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Space below header",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "spacing_below_title",
+      "min": 8,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "label": "Space below title",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "spacing_below_image",
+      "min": 8,
+      "max": 32,
+      "step": 4,
+      "unit": "px",
+      "label": "Space below image",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "spacing_below_collection_title",
+      "min": 4,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Space below collection title",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "spacing_below_artist_name",
+      "min": 4,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Space below artist name",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Image border radius",
+      "default": 8
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Description color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "collection_title_color",
+      "label": "Collection title color",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "artist_name_color",
+      "label": "Artist name color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "product_count_color",
+      "label": "Product count color",
+      "default": "#999999"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 20,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Description size",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "collection_title_size",
+      "min": 14,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "label": "Collection title size",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "artist_name_size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Artist name size",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "product_count_size",
+      "min": 10,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "label": "Product count size",
+      "default": 12
+    }
+  ],
+  "presets": [
+    {
+      "name": "Artist collections"
+    }
+  ]
+}
 {% endschema %}
