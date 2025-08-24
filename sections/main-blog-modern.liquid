@@ -1,0 +1,563 @@
+{{ 'component-article-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-blog-modern.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- paginate blog.articles by section.settings.posts_per_page -%}
+  <div class="modern-blog page-width section-{{ section.id }}-padding">
+    <!-- Blog Header -->
+    <header class="modern-blog__header">
+      <div class="modern-blog__header-content">
+        <h1 class="modern-blog__title{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+          {{ blog.title | escape }}
+        </h1>
+        {% if blog.summary != blank %}
+          <p class="modern-blog__description{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+            {{ blog.summary }}
+          </p>
+        {% endif %}
+      </div>
+
+      {% if section.settings.show_search %}
+        <div class="modern-blog__search{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+          <form action="{{ routes.search_url }}" method="get" class="search-form">
+            <input type="hidden" name="type" value="article">
+            <input type="hidden" name="q" value="blog:{{ blog.handle }}">
+            <div class="search-input-wrapper">
+              <input
+                type="text"
+                name="q"
+                placeholder="Search articles..."
+                class="search-input"
+                value="{{ search.terms | escape }}"
+              >
+              <button type="submit" class="search-button">
+                <span class="visually-hidden">{{ 'general.search.search' | t }}</span>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path d="M12.5 11H11.71L11.43 10.73C12.41 9.59 13 8.11 13 6.5C13 2.91 10.09 0 6.5 0C2.91 0 0 2.91 0 6.5C0 10.09 2.91 13 6.5 13C8.11 13 9.59 12.41 10.73 11.43L11 11.71V12.5L16 17.49L17.49 16L12.5 11ZM6.5 11C4.01 11 2 8.99 2 6.5C2 4.01 4.01 2 6.5 2C8.99 2 11 4.01 11 6.5C11 8.99 8.99 11 6.5 11Z" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+      {% endif %}
+    </header>
+
+    <!-- Featured Article -->
+    {% if section.settings.show_featured and blog.articles.size > 0 %}
+      {% assign featured_article = blog.articles.first %}
+      <section class="modern-blog__featured{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+        <article class="featured-article">
+          {% if featured_article.image and section.settings.show_image %}
+            <div class="featured-article__image">
+              <a href="{{ featured_article.url }}">
+                <img
+                  srcset="
+                    {% if featured_article.image.width >= 550 %}{{ featured_article.image | image_url: width: 550 }} 550w,{% endif %}
+                    {% if featured_article.image.width >= 750 %}{{ featured_article.image | image_url: width: 750 }} 750w,{% endif %}
+                    {% if featured_article.image.width >= 1100 %}{{ featured_article.image | image_url: width: 1100 }} 1100w,{% endif %}
+                    {% if featured_article.image.width >= 1500 %}{{ featured_article.image | image_url: width: 1500 }} 1500w,{% endif %}
+                    {{ featured_article.image | image_url }} {{ featured_article.image.width }}w
+                  "
+                  sizes="(min-width: 750px) calc(100vw - 100px), 100vw"
+                  src="{{ featured_article.image | image_url: width: 1100 }}"
+                  loading="lazy"
+                  width="{{ featured_article.image.width }}"
+                  height="{{ featured_article.image.height }}"
+                  alt="{{ featured_article.image.alt | escape }}"
+                >
+              </a>
+            </div>
+          {% endif %}
+
+          <div class="featured-article__content">
+            <div class="featured-article__meta">
+              {% if section.settings.show_date %}
+                <time datetime="{{ featured_article.published_at | date: '%Y-%m-%d' }}">
+                  {{ featured_article.published_at | date: '%B %d, %Y' }}
+                </time>
+              {% endif %}
+              {% if section.settings.show_author and featured_article.author != blank %}
+                <span class="featured-article__author">By {{ featured_article.author }}</span>
+              {% endif %}
+            </div>
+
+            <h2 class="featured-article__title">
+              <a href="{{ featured_article.url }}">{{ featured_article.title | escape }}</a>
+            </h2>
+
+            {% if featured_article.excerpt != blank %}
+              <div class="featured-article__excerpt">
+                {{ featured_article.excerpt | strip_html | truncatewords: 40 }}
+              </div>
+            {% elsif featured_article.content != blank %}
+              <div class="featured-article__excerpt">
+                {{ featured_article.content | strip_html | truncatewords: 40 }}
+              </div>
+            {% endif %}
+
+            <a href="{{ featured_article.url }}" class="featured-article__link">
+              Read More
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 0L6.59 1.41L12.17 7H0V9H12.17L6.59 14.59L8 16L16 8L8 0Z" fill="currentColor"/>
+              </svg>
+            </a>
+          </div>
+        </article>
+      </section>
+    {% endif %}
+
+    <!-- Main Content with Optional Sidebar -->
+    <div class="modern-blog__container{% if section.settings.show_sidebar %} modern-blog__container--with-sidebar modern-blog__container--sidebar-{{ section.settings.sidebar_position }}{% endif %}">
+      <!-- Main Content -->
+      <main class="modern-blog__main">
+        <!-- Blog Grid -->
+        <section class="modern-blog__grid">
+          {% if section.settings.show_featured and blog.articles.size > 1 %}
+            {% assign grid_articles = blog.articles | offset: 1 %}
+          {% else %}
+            {% assign grid_articles = blog.articles %}
+          {% endif %}
+
+          <div class="blog-articles modern-blog__articles{% if section.settings.layout == 'masonry' %} blog-articles--masonry{% endif %}">
+            {%- for article in grid_articles -%}
+              <article
+                class="blog-article{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+                {% if settings.animations_reveal_on_scroll %}
+                  data-cascade
+                  style="--animation-order: {{ forloop.index }};"
+                {% endif %}
+              >
+                {%- render 'article-card-modern',
+                  article: article,
+                  media_height: section.settings.image_height,
+                  media_aspect_ratio: article.image.aspect_ratio,
+                  show_image: section.settings.show_image,
+                  show_date: section.settings.show_date,
+                  show_author: section.settings.show_author,
+                  show_excerpt: section.settings.show_excerpt,
+                  show_read_time: section.settings.show_read_time
+                -%}
+              </article>
+            {%- endfor -%}
+          </div>
+        </section>
+
+        <!-- Pagination -->
+        {%- if paginate.pages > 1 -%}
+          <div class="modern-blog__pagination{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+            {%- render 'pagination', paginate: paginate -%}
+          </div>
+        {%- endif -%}
+      </main>
+
+      <!-- Sidebar -->
+      {% if section.settings.show_sidebar %}
+        <aside class="modern-blog__sidebar{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+          <!-- Categories -->
+          {% if section.settings.sidebar_show_categories %}
+            <div class="sidebar-widget sidebar-widget--categories">
+              <h3 class="sidebar-widget__title">
+                {{ section.settings.sidebar_categories_title | default: 'Categories' }}
+              </h3>
+              <div class="sidebar-widget__content">
+                <ul class="sidebar-categories">
+                  {% for category in blog.tags %}
+                    {% assign category_url = blog.url | append: '/tagged/' | append: category | handle %}
+                    <li class="sidebar-categories__item">
+                      <a href="{{ category_url }}" class="sidebar-categories__link">
+                        {{ category }}
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- Recent Posts -->
+          {% if section.settings.sidebar_show_recent_posts %}
+            <div class="sidebar-widget sidebar-widget--recent-posts">
+              <h3 class="sidebar-widget__title">
+                {{ section.settings.sidebar_recent_posts_title | default: 'Recent Posts' }}
+              </h3>
+              <div class="sidebar-widget__content">
+                {% assign recent_articles = blog.articles | limit: section.settings.sidebar_recent_posts_count %}
+                <ul class="sidebar-recent-posts">
+                  {% for article in recent_articles %}
+                    <li class="sidebar-recent-posts__item">
+                      <article class="sidebar-recent-post">
+                        {% if article.image and section.settings.show_image %}
+                          <div class="sidebar-recent-post__image">
+                            <a href="{{ article.url }}">
+                              <img
+                                src="{{ article.image | image_url: width: 80 }}"
+                                alt="{{ article.image.alt | escape }}"
+                                width="80"
+                                height="80"
+                                loading="lazy"
+                              >
+                            </a>
+                          </div>
+                        {% endif %}
+                        <div class="sidebar-recent-post__content">
+                          <h4 class="sidebar-recent-post__title">
+                            <a href="{{ article.url }}">{{ article.title | escape }}</a>
+                          </h4>
+                          {% if section.settings.show_date %}
+                            <time
+                              class="sidebar-recent-post__date"
+                              datetime="{{ article.published_at | date: '%Y-%m-%d' }}"
+                            >
+                              {{ article.published_at | date: '%B %d, %Y' }}
+                            </time>
+                          {% endif %}
+                        </div>
+                      </article>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          {% endif %}
+
+          {% if section.settings.sidebar_show_categories %}
+            <div class="sidebar-widget sidebar-widget--categories">
+              <h3 class="sidebar-widget__title">
+                {{ section.settings.sidebar_categories_title | default: 'Categories' }}
+              </h3>
+              <div class="sidebar-widget__content">
+                {% if section.settings.sidebar_categories_menu != blank %}
+                  <ul class="sidebar-categories">
+                    {% for link in linklists[section.settings.sidebar_categories_menu].links %}
+                      <li class="sidebar-categories__item">
+                        <a class="sidebar-categories__link" href="{{ link.url }}">{{ link.title }}</a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  <ul class="sidebar-categories">
+                    {% for tag in blog.tags %}
+                      {% assign tag_url = blog.url | append: '/tagged/' | append: tag | handle %}
+                      <li class="sidebar-categories__item">
+                        <a href="{{ tag_url }}" class="sidebar-categories__link">{{ tag }}</a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- Tags -->
+          {% if section.settings.sidebar_show_tags %}
+            <div class="sidebar-widget sidebar-widget--tags">
+              <h3 class="sidebar-widget__title">{{ section.settings.sidebar_tags_title | default: 'Tags' }}</h3>
+              <div class="sidebar-widget__content">
+                <div class="sidebar-tags">
+                  {% for tag in blog.tags %}
+                    {% assign tag_url = blog.url | append: '/tagged/' | append: tag | handle %}
+                    <a href="{{ tag_url }}" class="sidebar-tags__tag">{{ tag }}</a>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </aside>
+      {% endif %}
+    </div>
+
+    <!-- Newsletter Signup -->
+    {% if section.settings.show_newsletter %}
+      <section class="modern-blog__newsletter{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+        <div class="newsletter-signup">
+          <h3>{{ section.settings.newsletter_title | default: 'Stay Updated' }}</h3>
+          <p>
+            {{
+              section.settings.newsletter_text
+              | default: 'Subscribe to get the latest articles delivered to your inbox.'
+            }}
+          </p>
+          {% form 'customer', class: 'newsletter-form' %}
+            <div class="newsletter-input-wrapper">
+              <input
+                type="email"
+                name="contact[email]"
+                placeholder="{{ 'newsletter.label' | t }}"
+                class="newsletter-input"
+                required
+              >
+              <button type="submit" class="newsletter-button">
+                {{ 'newsletter.button_label' | t }}
+              </button>
+            </div>
+          {% endform %}
+        </div>
+      </section>
+    {% endif %}
+  </div>
+{%- endpaginate -%}
+
+{% schema %}
+{
+  "name": "Modern Blog",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "options": [
+        {
+          "value": "grid",
+          "label": "Grid"
+        },
+        {
+          "value": "masonry",
+          "label": "Masonry"
+        }
+      ],
+      "default": "grid",
+      "label": "Blog layout"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sidebar",
+      "default": false,
+      "label": "Show sidebar"
+    },
+    {
+      "type": "checkbox",
+      "id": "sidebar_show_categories",
+      "default": true,
+      "label": "Show categories"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_categories_title",
+      "default": "Categories",
+      "label": "Categories title"
+    },
+    {
+      "type": "link_list",
+      "id": "sidebar_categories_menu",
+      "label": "Categories menu (optional)"
+    },
+    {
+      "type": "select",
+      "id": "sidebar_position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "right",
+      "label": "Sidebar position"
+    },
+    {
+      "type": "range",
+      "id": "posts_per_page",
+      "min": 6,
+      "max": 24,
+      "step": 3,
+      "default": 12,
+      "label": "Posts per page"
+    },
+    {
+      "type": "header",
+      "content": "Featured Article"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_featured",
+      "default": true,
+      "label": "Show featured article"
+    },
+    {
+      "type": "header",
+      "content": "Article Display"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "default": true,
+      "label": "Show article images"
+    },
+    {
+      "type": "select",
+      "id": "image_height",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        },
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        }
+      ],
+      "default": "medium",
+      "label": "Image height"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "default": true,
+      "label": "Show publish date"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "default": true,
+      "label": "Show author"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_excerpt",
+      "default": true,
+      "label": "Show article excerpt"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_read_time",
+      "default": true,
+      "label": "Show reading time"
+    },
+    {
+      "type": "header",
+      "content": "Search"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "default": true,
+      "label": "Show search bar"
+    },
+    {
+      "type": "header",
+      "content": "Sidebar Content"
+    },
+    {
+      "type": "checkbox",
+      "id": "sidebar_show_categories",
+      "default": true,
+      "label": "Show categories"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_categories_title",
+      "default": "Categories",
+      "label": "Categories title"
+    },
+    {
+      "type": "checkbox",
+      "id": "sidebar_show_recent_posts",
+      "default": true,
+      "label": "Show recent posts"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_recent_posts_title",
+      "default": "Recent Posts",
+      "label": "Recent posts title"
+    },
+    {
+      "type": "range",
+      "id": "sidebar_recent_posts_count",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "default": 5,
+      "label": "Number of recent posts"
+    },
+    {
+      "type": "checkbox",
+      "id": "sidebar_show_tags",
+      "default": true,
+      "label": "Show tags"
+    },
+    {
+      "type": "text",
+      "id": "sidebar_tags_title",
+      "default": "Tags",
+      "label": "Tags title"
+    },
+    {
+      "type": "header",
+      "content": "Newsletter"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_newsletter",
+      "default": true,
+      "label": "Show newsletter signup"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_title",
+      "default": "Stay Updated",
+      "label": "Newsletter title"
+    },
+    {
+      "type": "textarea",
+      "id": "newsletter_text",
+      "default": "Subscribe to get the latest articles delivered to your inbox.",
+      "label": "Newsletter description"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 60
+    }
+  ]
+}
+{% endschema %}

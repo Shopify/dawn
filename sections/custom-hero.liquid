@@ -1,0 +1,284 @@
+{{ 'section-custom-hero.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign content_bg_opacity = section.settings.content_bg_opacity | default: 0
+  assign content_bg_alpha = content_bg_opacity | times: 0.01
+  assign overlay_theme = section.settings.overlay_theme | default: 'light'
+  assign overlay_classes = ''
+  if section.settings.enable_backdrop
+    assign overlay_classes = overlay_classes | append: ' has-backdrop'
+    assign overlay_classes = overlay_classes | append: ' backdrop-' | append: section.settings.backdrop_style
+    assign overlay_classes = overlay_classes | append: ' backdrop-dir-' | append: section.settings.backdrop_direction
+    assign overlay_classes = overlay_classes | append: ' backdrop-' | append: section.settings.backdrop_strength
+  endif
+
+  assign radius_class = ''
+  case section.settings.corner_radius
+    when 'none'
+      assign radius_class = 'hero-radius-none'
+    when 'small'
+      assign radius_class = 'hero-radius-sm'
+    when 'medium'
+      assign radius_class = 'hero-radius-md'
+    when 'large'
+      assign radius_class = 'hero-radius-lg'
+    when 'full'
+      assign radius_class = 'hero-radius-full'
+  endcase
+
+  assign pos_class = 'overlay-pos-' | append: section.settings.position
+  assign pad_class = 'overlay-pad-' | append: section.settings.content_padding
+  assign width_class = 'overlay-width-' | append: section.settings.content_max_width
+  assign height_class = 'custom-hero--' | append: section.settings.height
+-%}
+
+<section class="custom-hero {{ height_class }} color-{{ section.settings.color_scheme }}">
+  <div class="custom-hero__media {{ radius_class }}">
+    {%- if section.settings.image != blank -%}
+      {%- assign img = section.settings.image -%}
+      <img
+        class="custom-hero__image"
+        srcset="
+          {%- if img.width >= 550 -%}{{ img | image_url: width: 550 }} 550w,{%- endif -%}
+          {%- if img.width >= 750 -%}{{ img | image_url: width: 750 }} 750w,{%- endif -%}
+          {%- if img.width >= 1100 -%}{{ img | image_url: width: 1100 }} 1100w,{%- endif -%}
+          {%- if img.width >= 1500 -%}{{ img | image_url: width: 1500 }} 1500w,{%- endif -%}
+          {%- if img.width >= 2200 -%}{{ img | image_url: width: 2200 }} 2200w,{%- endif -%}
+          {{ img | image_url }} {{ img.width }}w
+        "
+        sizes="(min-width: 990px) 100vw, 100vw"
+        src="{{ img | image_url: width: 1500 }}"
+        alt="{{ img.alt | escape }}"
+        width="{{ img.width }}"
+        height="{{ img.height }}"
+        loading="lazy"
+      >
+    {%- else -%}
+      <div class="custom-hero__placeholder"></div>
+    {%- endif -%}
+
+    <div class="custom-hero__overlay {{ pos_class }} {{ overlay_classes }}">
+      <div
+        class="custom-hero__content {{ width_class }} {{ pad_class }} overlay-theme-{{ overlay_theme }}"
+        style="{% if section.settings.content_bg_opacity > 0 %}{% if overlay_theme == 'dark' %}background-color: rgba(0,0,0,{{ content_bg_alpha }});{% else %}background-color: rgba(255,255,255,{{ content_bg_alpha }});{% endif %}{% endif %}"
+      >
+        {%- if section.settings.kicker != blank -%}
+          <p class="custom-hero__kicker">{{ section.settings.kicker }}</p>
+        {%- endif -%}
+
+        {%- assign clamp_class = '' -%}
+        {%- case section.settings.heading_line_clamp -%}
+          {%- when '1' -%}
+            {%- assign clamp_class = 'text-line-clamp-1' -%}
+          {%- when '2' -%}
+            {%- assign clamp_class = 'text-line-clamp-2' -%}
+          {%- when '3' -%}
+            {%- assign clamp_class = 'text-line-clamp-3' -%}
+        {%- endcase -%}
+
+        {%- if section.settings.heading != blank -%}
+          <h2 class="custom-hero__heading {{ clamp_class }}">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+
+        {%- if section.settings.subheading != blank -%}
+          <div class="custom-hero__subheading rte">{{ section.settings.subheading }}</div>
+        {%- endif -%}
+
+        {%- if section.settings.primary_label != blank or section.settings.secondary_label != blank -%}
+          <div class="custom-hero__buttons">
+            {%- if section.settings.primary_label != blank -%}
+              <a class="button button--primary" href="{{ section.settings.primary_link | default: '#' }}">
+                {{- section.settings.primary_label -}}
+              </a>
+            {%- endif -%}
+            {%- if section.settings.secondary_label != blank -%}
+              <a class="button button--secondary" href="{{ section.settings.secondary_link | default: '#' }}">
+                {{- section.settings.secondary_label -}}
+              </a>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Custom hero",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    { "type": "color_scheme", "id": "color_scheme", "label": "Colors", "default": "scheme-1" },
+    { "type": "image_picker", "id": "image", "label": "Background image" },
+
+    { "type": "header", "content": "Layout" },
+    {
+      "type": "select",
+      "id": "height",
+      "label": "Section height",
+      "default": "medium",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" },
+        { "value": "full", "label": "Full viewport" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "corner_radius",
+      "label": "Corner radius",
+      "default": "medium",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" },
+        { "value": "full", "label": "Full" }
+      ]
+    },
+
+    { "type": "header", "content": "Overlay" },
+    {
+      "type": "select",
+      "id": "position",
+      "label": "Content position",
+      "default": "center",
+      "options": [
+        { "value": "top-left", "label": "Top left" },
+        { "value": "top-center", "label": "Top center" },
+        { "value": "top-right", "label": "Top right" },
+        { "value": "center", "label": "Center" },
+        { "value": "bottom-left", "label": "Bottom left" },
+        { "value": "bottom-center", "label": "Bottom center" },
+        { "value": "bottom-right", "label": "Bottom right" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "overlay_theme",
+      "label": "Overlay theme",
+      "default": "light",
+      "options": [
+        { "value": "light", "label": "Light" },
+        { "value": "dark", "label": "Dark" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "content_max_width",
+      "label": "Content width",
+      "default": "wide",
+      "options": [
+        { "value": "narrow", "label": "Narrow" },
+        { "value": "normal", "label": "Normal" },
+        { "value": "wide", "label": "Wide" },
+        { "value": "full", "label": "Full width" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "content_padding",
+      "label": "Content padding",
+      "default": "medium",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "content_bg_opacity",
+      "label": "Content background opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 0
+    },
+
+    { "type": "header", "content": "Backdrop gradient" },
+    { "type": "checkbox", "id": "enable_backdrop", "label": "Enable gradient backdrop", "default": true },
+    {
+      "type": "select",
+      "id": "backdrop_style",
+      "label": "Backdrop style",
+      "default": "dark",
+      "options": [
+        { "value": "dark", "label": "Dark" },
+        { "value": "light", "label": "Light" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "backdrop_direction",
+      "label": "Backdrop direction",
+      "default": "bottom",
+      "options": [
+        { "value": "bottom", "label": "Bottom" },
+        { "value": "top", "label": "Top" },
+        { "value": "full", "label": "Full tint" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "backdrop_strength",
+      "label": "Backdrop strength",
+      "default": "medium",
+      "options": [
+        { "value": "subtle", "label": "Subtle" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "strong", "label": "Strong" }
+      ]
+    },
+
+    { "type": "header", "content": "Text" },
+    { "type": "text", "id": "kicker", "label": "Kicker" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Your hero headline" },
+    {
+      "type": "select",
+      "id": "heading_line_clamp",
+      "label": "Heading line clamp",
+      "default": "none",
+      "options": [
+        { "value": "none", "label": "No clamp" },
+        { "value": "1", "label": "1 line" },
+        { "value": "2", "label": "2 lines" },
+        { "value": "3", "label": "3 lines" }
+      ]
+    },
+    { "type": "richtext", "id": "subheading", "label": "Subheading" },
+
+    { "type": "header", "content": "Buttons" },
+    { "type": "text", "id": "primary_label", "label": "Primary button label" },
+    { "type": "url", "id": "primary_link", "label": "Primary button link" },
+    { "type": "text", "id": "secondary_label", "label": "Secondary button label" },
+    { "type": "url", "id": "secondary_link", "label": "Secondary button link" },
+
+    { "type": "header", "content": "Padding" },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 36
+    }
+  ],
+  "presets": [{ "name": "Custom hero", "category": "Image" }]
+}
+{% endschema %}

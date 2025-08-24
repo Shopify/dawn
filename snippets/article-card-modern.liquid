@@ -1,0 +1,117 @@
+{% comment %}
+  Modern article card for blog listings with enhanced design and features.
+
+  Accepts:
+  - article: {Object} Article object
+  - media_aspect_ratio: {String} The setting changes the aspect ratio of the article image, if shown
+  - media_height: {String} The setting changes the height of the article image. Overrides media_aspect_ratio.
+  - show_image: {String} The setting either show the article image or not. If it's not included it will show the image by default
+  - show_date: {String} The setting either show the article date or not. If it's not included it will not show the image by default
+  - show_author: {String} The setting either show the article author or not. If it's not included it will not show the author by default
+  - show_excerpt: {Boolean} Show article excerpt
+  - show_read_time: {Boolean} Show estimated reading time
+  - lazy_load: {Boolean} Image should be lazy loaded. Default: true (optional)
+
+  Usage:
+  {% render 'article-card-modern', article: article, show_image: section.settings.show_image %}
+{% endcomment %}
+
+{%- if article and article != empty -%}
+  {%- liquid
+    assign ratio = 1
+    if media_aspect_ratio != null
+      assign ratio = media_aspect_ratio
+    endif
+
+    # Calculate reading time (average 200 words per minute)
+    assign content_length = article.content | strip_html | size
+    assign read_time = content_length | divided_by: 1000 | plus: 1
+    if read_time > 10
+      assign read_time = 10
+    endif
+  -%}
+
+  <div class="modern-article-card">
+    {%- if show_image == true and article.image -%}
+      <div class="modern-article-card__image">
+        <a href="{{ article.url }}" class="modern-article-card__image-link">
+          <img
+            srcset="
+              {%- if article.image.width >= 300 -%}{{ article.image | image_url: width: 300 }} 300w,{%- endif -%}
+              {%- if article.image.width >= 400 -%}{{ article.image | image_url: width: 400 }} 400w,{%- endif -%}
+              {%- if article.image.width >= 600 -%}{{ article.image | image_url: width: 600 }} 600w,{%- endif -%}
+              {%- if article.image.width >= 800 -%}{{ article.image | image_url: width: 800 }} 800w,{%- endif -%}
+              {{ article.image | image_url }} {{ article.image.width }}w
+            "
+            sizes="(min-width: 990px) 400px, (min-width: 750px) calc(50vw - 100px), calc(100vw - 40px)"
+            src="{{ article.image | image_url: width: 400 }}"
+            alt="{{ article.image.alt | escape }}"
+            class="modern-article-card__img"
+            {% unless lazy_load == false %}
+              loading="lazy"
+            {% endunless %}
+            width="{{ article.image.width }}"
+            height="{{ article.image.height }}"
+          >
+        </a>
+      </div>
+    {%- endif -%}
+
+    <div class="modern-article-card__content">
+      <!-- Meta Information -->
+      <div class="modern-article-card__meta">
+        {%- if show_date -%}
+          <time class="modern-article-card__date" datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
+            {{ article.published_at | date: '%b %d, %Y' }}
+          </time>
+        {%- endif -%}
+
+        {%- if show_read_time -%}
+          <span class="modern-article-card__read-time"> {{ read_time }} min read </span>
+        {%- endif -%}
+
+        {%- if show_author and article.author != blank -%}
+          <span class="modern-article-card__author">
+            {{ article.author }}
+          </span>
+        {%- endif -%}
+      </div>
+
+      <!-- Title -->
+      <h3 class="modern-article-card__title">
+        <a href="{{ article.url }}" class="modern-article-card__title-link">
+          {{ article.title | escape }}
+        </a>
+      </h3>
+
+      <!-- Excerpt -->
+      {%- if show_excerpt -%}
+        {%- if article.excerpt.size > 0 or article.content.size > 0 -%}
+          <div class="modern-article-card__excerpt">
+            {%- if article.excerpt.size > 0 -%}
+              {{ article.excerpt | strip_html | truncatewords: 25 }}
+            {%- else -%}
+              {{ article.content | strip_html | truncatewords: 25 }}
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      {%- endif -%}
+
+      <!-- Read More Link -->
+      <div class="modern-article-card__footer">
+        <a href="{{ article.url }}" class="modern-article-card__read-more">
+          Read More
+          <svg class="modern-article-card__arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 0L6.59 1.41L12.17 7H0V9H12.17L6.59 14.59L8 16L16 8L8 0Z" fill="currentColor"/>
+          </svg>
+        </a>
+
+        {%- if article.comments_count > 0 and blog.comments_enabled? -%}
+          <span class="modern-article-card__comments">
+            {{ 'blogs.article.comments' | t: count: article.comments_count }}
+          </span>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+{%- endif -%}

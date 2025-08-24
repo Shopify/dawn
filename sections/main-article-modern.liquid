@@ -1,0 +1,744 @@
+{{ 'section-blog-post-modern.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  # Calculate reading time (average 200 words per minute)
+  assign content_length = article.content | strip_html | size
+  assign read_time = content_length | divided_by: 1000 | plus: 1
+  if read_time > 15
+    assign read_time = 15
+  endif
+-%}
+
+<article class="modern-article">
+  {%- for block in section.blocks -%}
+    {%- case block.type -%}
+      {%- when '@app' -%}
+        <div class="page-width page-width--narrow">
+          {% render block %}
+        </div>
+
+      {%- when 'breadcrumb' -%}
+        <div
+          class="modern-article__breadcrumb page-width{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+          {{ block.shopify_attributes }}
+        >
+          <nav aria-label="Breadcrumb">
+            <ol class="breadcrumb-list">
+              <li class="breadcrumb-item">
+                <a href="{{ routes.root_url }}">Home</a>
+              </li>
+              <li class="breadcrumb-item">
+                <a href="{{ blog.url }}">{{ blog.title | escape }}</a>
+              </li>
+              <li class="breadcrumb-item" aria-current="page">
+                {{ article.title | escape }}
+              </li>
+            </ol>
+          </nav>
+        </div>
+
+      {%- when 'featured_image' -%}
+        {%- if article.image -%}
+          <div
+            class="modern-article__hero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+            {{ block.shopify_attributes }}
+          >
+            {% liquid
+              assign radius_class = ''
+              case block.settings.corner_radius
+                when 'none'
+                  assign radius_class = 'hero-radius-none'
+                when 'small'
+                  assign radius_class = 'hero-radius-sm'
+                when 'medium'
+                  assign radius_class = 'hero-radius-md'
+                when 'large'
+                  assign radius_class = 'hero-radius-lg'
+                when 'full'
+                  assign radius_class = 'hero-radius-full'
+              endcase
+            %}
+            <div class="modern-article__hero-image modern-article__hero-{{ block.settings.image_height }} {{ radius_class }}{% if block.settings.overlay_title %} has-overlay{% endif %}">
+              <img
+                srcset="
+                  {% if article.image.width >= 550 %}{{ article.image | image_url: width: 550 }} 550w,{% endif %}
+                  {% if article.image.width >= 750 %}{{ article.image | image_url: width: 750 }} 750w,{% endif %}
+                  {% if article.image.width >= 1100 %}{{ article.image | image_url: width: 1100 }} 1100w,{% endif %}
+                  {% if article.image.width >= 1500 %}{{ article.image | image_url: width: 1500 }} 1500w,{% endif %}
+                  {% if article.image.width >= 2200 %}{{ article.image | image_url: width: 2200 }} 2200w,{% endif %}
+                  {{ article.image | image_url }} {{ article.image.width }}w
+                "
+                sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 }}px, (min-width: 750px) calc(100vw - 10rem), 100vw"
+                src="{{ article.image | image_url: width: 1100 }}"
+                loading="eager"
+                fetchpriority="high"
+                width="{{ article.image.width }}"
+                height="{{ article.image.height }}"
+                alt="{{ article.image.alt | escape }}"
+                class="modern-article__hero-img"
+              >
+              {% if block.settings.overlay_title %}
+                <div class="modern-article__hero-overlay overlay-pos-{{ block.settings.overlay_position }} overlay-theme-{{ block.settings.overlay_theme }}">
+                  <div class="modern-article__overlay-inner">
+                    <h1 class="modern-article__title modern-article__title--overlay">{{ article.title | escape }}</h1>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {%- endif -%}
+
+      {%- when 'title' -%}
+        {% liquid
+          assign overlay_enabled = false
+          for b in section.blocks
+            if b.type == 'featured_image' and b.settings.overlay_title
+              assign overlay_enabled = true
+            endif
+          endfor
+        %}
+        {% unless overlay_enabled %}
+          <header
+            class="modern-article__header page-width page-width--narrow{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+            {{ block.shopify_attributes }}
+          >
+            <div class="modern-article__meta">
+              {%- if block.settings.blog_show_date -%}
+                <time class="modern-article__date" datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
+                  {{ article.published_at | date: '%B %d, %Y' }}
+                </time>
+              {%- endif -%}
+
+              {%- if block.settings.blog_show_author and article.author != blank -%}
+                <span class="modern-article__author"> By {{ article.author }} </span>
+              {%- endif -%}
+
+              {%- if block.settings.show_read_time -%}
+                <span class="modern-article__read-time"> {{ read_time }} min read </span>
+              {%- endif -%}
+            </div>
+
+            <h1 class="modern-article__title">
+              {{ article.title | escape }}
+            </h1>
+
+            {%- if article.excerpt != blank and block.settings.show_excerpt -%}
+              <div class="modern-article__excerpt">
+                {{ article.excerpt }}
+              </div>
+            {%- endif -%}
+          </header>
+        {% endunless %}
+
+      {%- when 'content' -%}
+        <div
+          class="modern-article__container page-width{% if section.settings.show_sidebar %} modern-article__container--with-sidebar modern-article__container--sidebar-{{ section.settings.sidebar_position }}{% endif %}"
+          {{ block.shopify_attributes }}
+        >
+          <main class="modern-article__main{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+            <div class="modern-article__content">
+              <div class="rte rte--article">
+                {{ article.content }}
+              </div>
+            </div>
+          </main>
+          {% if section.settings.show_sidebar %}
+            <aside class="modern-article__sidebar{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+              {% if section.settings.sidebar_show_recent_posts %}
+                <div class="sidebar-widget sidebar-widget--recent-posts">
+                  <h3 class="sidebar-widget__title">
+                    {{ section.settings.sidebar_recent_posts_title | default: 'Recent Posts' }}
+                  </h3>
+                  <div class="sidebar-widget__content">
+                    {% assign recent_articles = blog.articles | limit: section.settings.sidebar_recent_posts_count %}
+                    <ul class="sidebar-recent-posts">
+                      {% for recent in recent_articles %}
+                        {% if recent.id != article.id %}
+                          <li class="sidebar-recent-posts__item">
+                            <article class="sidebar-recent-post">
+                              {% if recent.image %}
+                                <div class="sidebar-recent-post__image">
+                                  <a href="{{ recent.url }}">
+                                    <img
+                                      src="{{ recent.image | image_url: width: 80 }}"
+                                      alt="{{ recent.image.alt | escape }}"
+                                      width="80"
+                                      height="80"
+                                      loading="lazy"
+                                    >
+                                  </a>
+                                </div>
+                              {% endif %}
+                              <div class="sidebar-recent-post__content">
+                                <h4 class="sidebar-recent-post__title">
+                                  <a href="{{ recent.url }}">{{ recent.title | escape }}</a>
+                                </h4>
+                                {% if section.settings.show_date %}
+                                  <time
+                                    class="sidebar-recent-post__date"
+                                    datetime="{{ recent.published_at | date: '%Y-%m-%d' }}"
+                                  >
+                                    {{ recent.published_at | date: '%B %d, %Y' }}
+                                  </time>
+                                {% endif %}
+                              </div>
+                            </article>
+                          </li>
+                        {% endif %}
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+              {% endif %}
+
+              {% if section.settings.sidebar_show_categories %}
+                <div class="sidebar-widget sidebar-widget--categories">
+                  <h3 class="sidebar-widget__title">
+                    {{ section.settings.sidebar_categories_title | default: 'Categories' }}
+                  </h3>
+                  <div class="sidebar-widget__content">
+                    {% if section.settings.sidebar_categories_menu != blank %}
+                      <ul class="sidebar-categories">
+                        {% for link in linklists[section.settings.sidebar_categories_menu].links %}
+                          <li class="sidebar-categories__item">
+                            <a class="sidebar-categories__link" href="{{ link.url }}">{{ link.title }}</a>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    {% else %}
+                      <ul class="sidebar-categories">
+                        {% for tag in blog.tags %}
+                          {% assign tag_url = blog.url | append: '/tagged/' | append: tag | handle %}
+                          <li class="sidebar-categories__item">
+                            <a href="{{ tag_url }}" class="sidebar-categories__link">{{ tag }}</a>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endif %}
+
+              {% if section.settings.sidebar_show_tags and article.tags.size > 0 %}
+                <div class="sidebar-widget sidebar-widget--tags">
+                  <h3 class="sidebar-widget__title">{{ section.settings.sidebar_tags_title | default: 'Tags' }}</h3>
+                  <div class="sidebar-widget__content">
+                    <div class="sidebar-tags">
+                      {% for tag in article.tags %}
+                        {% assign tag_url = blog.url | append: '/tagged/' | append: tag | handle %}
+                        <a href="{{ tag_url }}" class="sidebar-tags__tag">{{ tag }}</a>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+              {% endif %}
+            </aside>
+          {% endif %}
+        </div>
+
+      {%- when 'share' -%}
+        <div
+          class="modern-article__social page-width page-width--narrow{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+          {{ block.shopify_attributes }}
+        >
+          {% assign share_url = request.origin | append: article.url %}
+          <div class="social-sharing">
+            <h3 class="social-sharing__title">{{ block.settings.share_label | default: 'Share this article' }}</h3>
+            <div class="social-sharing__buttons">
+              <a
+                href="https://www.facebook.com/sharer.php?u={{ share_url | url_encode }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-sharing__button social-sharing__button--facebook"
+                aria-label="Share on Facebook"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+              </a>
+
+              <a
+                href="https://twitter.com/intent/tweet?url={{ share_url | url_encode }}&text={{ article.title | url_encode }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-sharing__button social-sharing__button--twitter"
+                aria-label="Share on Twitter"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                </svg>
+              </a>
+
+              <a
+                href="https://www.pinterest.com/pin/create/button/?url={{ share_url | url_encode }}&description={{ article.title | url_encode }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-sharing__button social-sharing__button--pinterest"
+                aria-label="Share on Pinterest"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.404-5.959 1.404-5.959s-.359-.219-.359-1.219c0-1.14.66-1.979 1.48-1.979.699 0 1.039.219 1.039 1.179 0 .719-.219 1.799-.359 2.799-.199.959.48 1.219 1.219 1.219 1.399 0 2.558-1.47 2.558-3.588 0-1.879-1.339-3.199-3.279-3.199-2.238 0-3.558 1.68-3.558 3.418 0 .679.259 1.399.579 1.799.06.079.06.119.06.179-.06.259-.179.719-.219.899-.06.159-.179.199-.299.119-1.059-.5-1.719-2.078-1.719-3.338 0-2.738 1.979-5.256 5.736-5.256 3.019 0 5.376 2.159 5.376 5.037 0 3.008-1.879 5.416-4.496 5.416-.879 0-1.719-.46-2.018-1.019 0 0-.459 1.759-.559 2.138-.219.819-.719 1.879-1.099 2.518.819.259 1.719.399 2.638.399 6.624 0 11.99-5.367 11.99-11.987C24.007 5.367 18.641.001 12.017.001z"/>
+                </svg>
+              </a>
+
+              <button
+                class="social-sharing__button social-sharing__button--copy"
+                onclick="navigator.clipboard.writeText('{{ share_url }}'); this.textContent = 'Copied!'; setTimeout(() => this.innerHTML = 'Copy Link', 2000)"
+                aria-label="Copy link"
+              >
+                Copy Link
+              </button>
+            </div>
+          </div>
+        </div>
+
+      {%- when 'tags' -%}
+        {%- if article.tags.size > 0 -%}
+          <div
+            class="modern-article__tags page-width page-width--narrow{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+            {{ block.shopify_attributes }}
+          >
+            <div class="article-tags">
+              <h3 class="article-tags__title">Tags</h3>
+              <ul class="article-tags__list">
+                {%- for tag in article.tags -%}
+                  <li class="article-tags__item">
+                    <a href="{{ blog.url }}/tagged/{{ tag | handle }}" class="article-tags__link"> #{{ tag }} </a>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            </div>
+          </div>
+        {%- endif -%}
+
+      {%- when 'author_bio' -%}
+        {%- if article.author != blank and block.settings.show_author_bio -%}
+          <div
+            class="modern-article__author-bio page-width page-width--narrow{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+            {{ block.shopify_attributes }}
+          >
+            <div class="author-bio">
+              <h3 class="author-bio__title">About {{ article.author }}</h3>
+              <div class="author-bio__content">
+                {% if block.settings.author_bio_text != blank %}
+                  <p>{{ block.settings.author_bio_text }}</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {%- endif -%}
+    {%- endcase -%}
+  {%- endfor -%}
+
+  <!-- Navigation -->
+  <div class="modern-article__navigation page-width page-width--narrow{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+    <div class="article-navigation">
+      {% if blog.previous_article %}
+        <a href="{{ blog.previous_article.url }}" class="article-navigation__link article-navigation__link--prev">
+          <span class="article-navigation__label">Previous Post</span>
+          <span class="article-navigation__title">{{ blog.previous_article.title | truncate: 50 }}</span>
+        </a>
+      {% endif %}
+
+      <a href="{{ blog.url }}" class="article-navigation__link article-navigation__link--back">
+        <span class="article-navigation__icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 0L9.41 1.41L3.83 7H16V9H3.83L9.41 14.59L8 16L0 8L8 0Z" fill="currentColor"/>
+          </svg>
+        </span>
+        {{ 'blogs.article.back_to_blog' | t: title: blog.title }}
+      </a>
+
+      {% if blog.next_article %}
+        <a href="{{ blog.next_article.url }}" class="article-navigation__link article-navigation__link--next">
+          <span class="article-navigation__label">Next Post</span>
+          <span class="article-navigation__title">{{ blog.next_article.title | truncate: 50 }}</span>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Comments -->
+  {%- if blog.comments_enabled? -%}
+    <div class="modern-article__comments">
+      <div class="page-width page-width--narrow{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+        {%- if article.comments_count > 0 -%}
+          <h2 id="Comments-{{ article.id }}" class="comments-title">
+            {{ 'blogs.article.comments' | t: count: article.comments_count }}
+          </h2>
+
+          {% paginate article.comments by 5 %}
+            <div class="comments-list">
+              {%- for comment in article.comments -%}
+                <article class="comment" id="{{ comment.id }}">
+                  <div class="comment__content">
+                    {{ comment.content }}
+                  </div>
+                  <footer class="comment__meta">
+                    <span class="comment__author">{{ comment.author }}</span>
+                    <time class="comment__date" datetime="{{ comment.created_at | date: '%Y-%m-%d' }}">
+                      {{ comment.created_at | date: '%B %d, %Y' }}
+                    </time>
+                  </footer>
+                </article>
+              {%- endfor -%}
+            </div>
+            {% render 'pagination', paginate: paginate, anchor: '#Comments-' | append: article.id %}
+          {% endpaginate %}
+        {%- endif -%}
+
+        <!-- Comment Form -->
+        {% form 'new_comment', article, class: 'comment-form' %}
+          <h2 class="comment-form__title">{{ 'blogs.article.comment_form_title' | t }}</h2>
+
+          {%- if form.errors -%}
+            <div class="form__message form__message--error">
+              {{ 'templates.contact.form.error_heading' | t }}
+            </div>
+          {%- elsif form.posted_successfully? -%}
+            <div class="form__message form__message--success">
+              {{ 'blogs.article.success' | t }}
+            </div>
+          {%- endif -%}
+
+          <div class="comment-form__fields">
+            <div class="field">
+              <label for="CommentForm-author" class="field__label">{{ 'blogs.article.name' | t }} *</label>
+              <input
+                type="text"
+                name="comment[author]"
+                id="CommentForm-author"
+                class="field__input"
+                required
+                value="{{ form.author }}"
+              >
+            </div>
+
+            <div class="field">
+              <label for="CommentForm-email" class="field__label">{{ 'blogs.article.email' | t }} *</label>
+              <input
+                type="email"
+                name="comment[email]"
+                id="CommentForm-email"
+                class="field__input"
+                required
+                value="{{ form.email }}"
+              >
+            </div>
+
+            <div class="field field--textarea">
+              <label for="CommentForm-body" class="field__label">{{ 'blogs.article.message' | t }} *</label>
+              <textarea
+                name="comment[body]"
+                id="CommentForm-body"
+                class="field__input"
+                rows="5"
+                required
+              >{{ form.body }}</textarea>
+            </div>
+
+            <button type="submit" class="button button--primary">
+              {{ 'blogs.article.post' | t }}
+            </button>
+          </div>
+        {% endform %}
+      </div>
+    </div>
+  {%- endif -%}
+</article>
+
+<script type="application/ld+json">
+  {{ article | structured_data }}
+</script>
+
+{% schema %}
+{
+  "name": "Modern Article",
+  "tag": "section",
+  "class": "section",
+  "blocks": [
+    {
+      "type": "@app"
+    },
+    {
+      "type": "breadcrumb",
+      "name": "Breadcrumb",
+      "limit": 1
+    },
+    {
+      "type": "featured_image",
+      "name": "Featured image",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "image_height",
+          "options": [
+            {
+              "value": "adapt",
+              "label": "Adapt to image"
+            },
+            {
+              "value": "small",
+              "label": "Small"
+            },
+            {
+              "value": "medium",
+              "label": "Medium"
+            },
+            {
+              "value": "large",
+              "label": "Large"
+            }
+          ],
+          "default": "large",
+          "label": "Image height"
+        },
+        {
+          "type": "select",
+          "id": "corner_radius",
+          "label": "Corner radius",
+          "default": "medium",
+          "options": [
+            { "value": "none", "label": "None" },
+            { "value": "small", "label": "Small" },
+            { "value": "medium", "label": "Medium" },
+            { "value": "large", "label": "Large" },
+            { "value": "full", "label": "Full" }
+          ]
+        },
+        {
+          "type": "checkbox",
+          "id": "overlay_title",
+          "default": false,
+          "label": "Show title as overlay"
+        },
+        {
+          "type": "select",
+          "id": "overlay_position",
+          "label": "Overlay position",
+          "default": "center",
+          "options": [
+            { "value": "top-left", "label": "Top left" },
+            { "value": "top-center", "label": "Top center" },
+            { "value": "top-right", "label": "Top right" },
+            { "value": "center", "label": "Center" },
+            { "value": "bottom-left", "label": "Bottom left" },
+            { "value": "bottom-center", "label": "Bottom center" },
+            { "value": "bottom-right", "label": "Bottom right" }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "overlay_theme",
+          "label": "Overlay theme",
+          "default": "light",
+          "options": [
+            { "value": "light", "label": "Light" },
+            { "value": "dark", "label": "Dark" }
+          ]
+        },
+        {
+          "type": "header",
+          "content": "Overlay content"
+        },
+        {
+          "type": "checkbox",
+          "id": "overlay_show_date",
+          "default": true,
+          "label": "Show publish date"
+        },
+        {
+          "type": "checkbox",
+          "id": "overlay_show_author",
+          "default": true,
+          "label": "Show author"
+        },
+        {
+          "type": "checkbox",
+          "id": "overlay_show_read_time",
+          "default": true,
+          "label": "Show reading time"
+        },
+        {
+          "type": "checkbox",
+          "id": "overlay_show_excerpt",
+          "default": false,
+          "label": "Show article excerpt"
+        },
+        {
+          "type": "header",
+          "content": "Overlay layout"
+        },
+        {
+          "type": "select",
+          "id": "overlay_max_width",
+          "label": "Overlay max width",
+          "default": "wide",
+          "options": [
+            { "value": "narrow", "label": "Narrow" },
+            { "value": "normal", "label": "Normal" },
+            { "value": "wide", "label": "Wide" },
+            { "value": "full", "label": "Full width" }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "overlay_padding",
+          "label": "Overlay padding",
+          "default": "medium",
+          "options": [
+            { "value": "small", "label": "Small" },
+            { "value": "medium", "label": "Medium" },
+            { "value": "large", "label": "Large" }
+          ]
+        },
+        {
+          "type": "header",
+          "content": "Overlay backdrop"
+        },
+        {
+          "type": "checkbox",
+          "id": "overlay_backdrop",
+          "default": true,
+          "label": "Enable gradient backdrop"
+        },
+        {
+          "type": "select",
+          "id": "overlay_backdrop_style",
+          "label": "Backdrop style",
+          "default": "dark",
+          "options": [
+            { "value": "dark", "label": "Dark" },
+            { "value": "light", "label": "Light" }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "overlay_backdrop_direction",
+          "label": "Backdrop direction",
+          "default": "bottom",
+          "options": [
+            { "value": "bottom", "label": "Bottom" },
+            { "value": "top", "label": "Top" },
+            { "value": "full", "label": "Full tint" }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "overlay_backdrop_strength",
+          "label": "Backdrop strength",
+          "default": "medium",
+          "options": [
+            { "value": "subtle", "label": "Subtle" },
+            { "value": "medium", "label": "Medium" },
+            { "value": "strong", "label": "Strong" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "title",
+      "name": "Title",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "blog_show_date",
+          "default": true,
+          "label": "Show publish date"
+        },
+        {
+          "type": "checkbox",
+          "id": "blog_show_author",
+          "default": true,
+          "label": "Show author"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_read_time",
+          "default": true,
+          "label": "Show reading time"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_excerpt",
+          "default": false,
+          "label": "Show article excerpt"
+        }
+      ]
+    },
+    {
+      "type": "content",
+      "name": "Content",
+      "limit": 1
+    },
+    {
+      "type": "share",
+      "name": "Share",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "share_label",
+          "label": "Share label",
+          "default": "Share this article"
+        }
+      ]
+    },
+    {
+      "type": "tags",
+      "name": "Tags",
+      "limit": 1
+    },
+    {
+      "type": "author_bio",
+      "name": "Author bio",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_author_bio",
+          "default": false,
+          "label": "Show author bio"
+        },
+        {
+          "type": "textarea",
+          "id": "author_bio_text",
+          "label": "Author bio text"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    { "type": "checkbox", "id": "show_sidebar", "default": false, "label": "Show sidebar" },
+    {
+      "type": "select",
+      "id": "sidebar_position",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "right",
+      "label": "Sidebar position"
+    },
+    { "type": "header", "content": "Sidebar Content" },
+    { "type": "checkbox", "id": "sidebar_show_categories", "default": true, "label": "Show categories" },
+    { "type": "text", "id": "sidebar_categories_title", "default": "Categories", "label": "Categories title" },
+    { "type": "link_list", "id": "sidebar_categories_menu", "label": "Categories menu (optional)" },
+    { "type": "checkbox", "id": "sidebar_show_recent_posts", "default": true, "label": "Show recent posts" },
+    { "type": "text", "id": "sidebar_recent_posts_title", "default": "Recent Posts", "label": "Recent posts title" },
+    {
+      "type": "range",
+      "id": "sidebar_recent_posts_count",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "default": 5,
+      "label": "Number of recent posts"
+    },
+    { "type": "checkbox", "id": "sidebar_show_tags", "default": true, "label": "Show tags" },
+    { "type": "text", "id": "sidebar_tags_title", "default": "Tags", "label": "Tags title" }
+  ]
+}
+{% endschema %}
