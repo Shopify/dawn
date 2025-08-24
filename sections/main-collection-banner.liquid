@@ -4,8 +4,48 @@
 {%- style -%}
   @media screen and (max-width: 749px) {
     .collection-hero--with-image .collection-hero__inner {
-      padding-bottom: calc({{ settings.media_shadow_vertical_offset | at_least: 0 }}px + 2rem);
+      padding-bottom: calc({{settings.media_shadow_vertical_offset | at_least: 0}}px + 2rem);
     }
+  }
+
+  .collection-description {
+    position: relative;
+  }
+
+  .collection-description.truncated {
+    max-height: 7.6em; /* Approximately 3 lines */
+    overflow: hidden;
+  }
+
+  .collection-description.truncated::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 50px;
+    height: 1.2em;
+    background: linear-gradient(to right, transparent, var(--gradient-background));
+  }
+
+  .read-more-btn {
+    width: 87px;
+    height: 28px;
+    background: none;
+    border: none;
+    color: rgb(var(--color-foreground));
+    cursor: pointer;
+    font-size: inherit;
+    padding: 0;
+    margin-top: 0.5rem;
+    font-family: inherit;
+    position: absolute;
+    right: 50%;
+    border-radius: 999px;
+    border: 1px solid rgb(229, 231, 235);
+  }
+
+  .read-more-btn:hover {
+    opacity: 0.7;
   }
 {%- endstyle -%}
 
@@ -17,8 +57,16 @@
         {{- collection.title | escape -}}
       </h1>
 
-      {%- if section.settings.show_collection_description -%}
-        <div class="">{{ collection.description }}</div>
+      {%- if section.settings.show_collection_description and collection.description != blank -%}
+        <div class="collection-description truncated" id="collection-description">
+          {{ collection.description }}
+        </div>
+        {%- assign description_length = collection.description | strip_html | size -%}
+        {%- if description_length > 150 -%}
+          <button class="read-more-btn" id="read-more-btn" onclick="toggleDescription()">
+            {{ section.settings.read_more_text | default: 'Read more' }}
+          </button>
+        {%- endif -%}
       {%- endif -%}
     </div>
 
@@ -45,6 +93,21 @@
   </div>
 </div>
 
+<script>
+  function toggleDescription() {
+    const description = document.getElementById('collection-description');
+    const button = document.getElementById('read-more-btn');
+
+    if (description.classList.contains('truncated')) {
+      description.classList.remove('truncated');
+      button.textContent = '{{ section.settings.read_less_text | default: "Read less" }}';
+    } else {
+      description.classList.add('truncated');
+      button.textContent = '{{ section.settings.read_more_text | default: "Read more" }}';
+    }
+  }
+</script>
+
 {% schema %}
 {
   "name": "t:sections.main-collection-banner.name",
@@ -65,6 +128,18 @@
       "id": "show_collection_image",
       "default": false,
       "label": "t:sections.main-collection-banner.settings.show_collection_image.label"
+    },
+    {
+      "type": "text",
+      "id": "read_more_text",
+      "default": "Read more",
+      "label": "Read More Button Text"
+    },
+    {
+      "type": "text",
+      "id": "read_less_text",
+      "default": "Read less",
+      "label": "Read Less Button Text"
     },
     {
       "type": "color_scheme",
