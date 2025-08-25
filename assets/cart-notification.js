@@ -35,12 +35,18 @@ class CartNotification extends HTMLElement {
   }
 
   renderContents(parsedState) {
-    this.cartItemKey = parsedState.key;
+    const keys = parsedState.items ? parsedState.items.map(({ key }) => key) : [parsedState.key];
     this.getSectionsToRender().forEach((section) => {
-      document.getElementById(section.id).innerHTML = this.getSectionInnerHTML(
-        parsedState.sections[section.id],
-        section.selector
-      );
+      if (typeof section.selector === 'function') {
+        document.getElementById(section.id).innerHTML = keys
+          .map((key) => this.getSectionOuterHTML(parsedState.sections[section.id], section?.selector(key)))
+          .join('');
+      } else {
+        document.getElementById(section.id).innerHTML = this.getSectionInnerHTML(
+          parsedState.sections[section.id],
+          section.selector?.(keys[0])
+        );
+      }
     });
 
     if (this.header) this.header.reveal();
@@ -51,7 +57,7 @@ class CartNotification extends HTMLElement {
     return [
       {
         id: 'cart-notification-product',
-        selector: `[id="cart-notification-product-${this.cartItemKey}"]`,
+        selector: (key) => `[id="cart-notification-product-${key}"]`,
       },
       {
         id: 'cart-notification-button',
