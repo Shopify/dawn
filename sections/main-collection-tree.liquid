@@ -14,12 +14,18 @@
   {%- assign nodes = collection_tree_value.nodes -%}
   {%- assign collection_id = collection.id | append: '' -%}
 
+  {%- if collection_tree_value.parentChildren[collection_id] -%}
+    <h3 class="collection-tree__title center">
+      {{ 'sections.collection_template.shop_upgrades_by_category' | t: collection_title: collection.title }}
+    </h3>
+  {%- endif -%}
+
   <div class="collection-tree__parent">
     {% assign subcollections_ids = collection_tree_value.parentChildren[collection_id] %}
     {%- for id in subcollections_ids -%}
       {%- assign subcollection_id = id | append: '' -%}
       {%- assign subcollection = nodes[subcollection_id] -%}
-      <div class="collection-tree__child">
+      <div class="collection-tree__child center">
         {%- if subcollection.i -%}
           <img
             src="{{ subcollection.i }}"
@@ -28,9 +34,36 @@
             width="120"
             height="120"
           >
-        {% endif %}
-        <p>{{ subcollection.t }}</p>
-        <a href="{{ routes.collections_url }}/{{ collection.handle }}/{{ subcollection.h }}">{{ subcollection.t }}</a>
+        {%- endif -%}
+        {%- unless collection_tree_value.parentChildren[subcollection_id] -%}
+          <a
+            href="{{ routes.collections_url }}/{{ collection.handle }}/{{ subcollection.h }}"
+            class="full-unstyled-link font-body-bold"
+          >
+            {{- subcollection.t -}}
+          </a>
+        {%- else -%}
+          <p class="subcollection__title font-body-bold">{{ subcollection.t }}</p>
+          <div
+            class="collection-tree__grandchildren center"
+            style="--link-primary-color: {{ section.settings.link_primary_color }}"
+          >
+            {%- for child_id in collection_tree_value.parentChildren[subcollection_id] limit: 5 -%}
+              {%- assign child_collection = nodes[child_id] -%}
+              <a
+                href="{{ routes.collections_url }}/{{ collection.handle }}/{{ subcollection.h }}/{{ child_collection.h }}"
+                class="full-unstyled-link"
+              >
+                {{- child_collection.t -}}
+              </a>
+            {%- endfor -%}
+          </div>
+          <a
+            href="{{ routes.collections_url }}/{{ collection.handle }}/{{ subcollection.h }}"
+            class="full-unstyled-link font-body-bold"
+            >Shop All</a
+          >
+        {%- endunless -%}
         {% comment %} {{ collection_tree_value.parentChildren[subcollection_id] }} {% endcomment %}
       </div>
     {%- endfor -%}
@@ -43,20 +76,10 @@
   "class": "section",
   "settings": [
     {
-      "type": "paragraph",
-      "content": "t:sections.main-collection-tree.settings.paragraph.content"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_collection_description",
-      "default": true,
-      "label": "t:sections.main-collection-tree.settings.show_collection_description.label"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_collection_image",
-      "default": false,
-      "label": "t:sections.main-collection-tree.settings.show_collection_image.label"
+      "type": "color",
+      "id": "link_primary_color",
+      "label": "t:sections.main-collection-tree.settings.link_primary_color.label",
+      "default": "#000"
     }
   ]
 }
