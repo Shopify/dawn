@@ -1,0 +1,178 @@
+{%- comment -%}
+  Hero Video — Parabellum
+  - Vídeo 9:16 (autoplay/muted/loop + poster)
+  - Tipografia inicial + fade→logo + frase curta
+  - Rodapé estilo pôster (linha 1px + 3 colunas)
+{%- endcomment -%}
+
+<section class="hero-video-container" role="banner" aria-label="Hero Parabellum">
+  <video
+    class="hero-video"
+    playsinline
+    autoplay
+    muted
+    loop
+    {% if section.settings.poster != blank %}
+      poster="{{ section.settings.poster | image_url: width: 1080, height: 1920 }}"
+    {% endif %}
+  >
+    {% if section.settings.webm_url != blank %}
+      <source src="{{ section.settings.webm_url }}" type="video/webm">
+    {% endif %}
+    {% if section.settings.mp4_url != blank %}
+      <source src="{{ section.settings.mp4_url }}" type="video/mp4">
+    {% endif %}
+    {{ 'Your browser does not support the video tag.' | escape }}
+  </video>
+
+  <div class="hero-overlay">
+    <h1 class="hero-text">{{ section.settings.hero_text | default: 'PASSE POR CIMA DE TUDO.' }}</h1>
+    <div class="hero-logo-fade" aria-hidden="true">
+      {% if section.settings.logo_svg != blank %}
+        <img src="{{ section.settings.logo_svg | image_url: width: 320 }}" alt="Parabellum">
+      {% else %}
+        <img src="{{ 'logo.svg' | asset_url }}" alt="Parabellum">
+      {% endif %}
+      <p class="hero-subtext">{{ section.settings.subtext | default: 'Streetwear Tático' }}</p>
+    </div>
+  </div>
+
+  <div class="hero-footer" aria-hidden="true">
+    <div class="footer-line"></div>
+    <div class="footer-content">
+      <div class="footer-left">{{ section.settings.left_info | default: 'DROP: CHOQUE' }}</div>
+      <div class="footer-center">{{ section.settings.center_info | default: 'PARABELLUM / 2025' }}</div>
+      <div class="footer-right">{{ section.settings.right_info | default: 'DURAÇÃO 00:07 • MUDO' }}</div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero-video-container {
+    position: relative;
+    overflow: hidden;
+    background: #0b0b0c;
+    color: #f2f2f2;
+  }
+  .hero-video {
+    width: 100%;
+    height: auto;
+    max-height: 100vh;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto;
+  }
+  @media (min-width: 990px) {
+    .hero-video {
+      width: auto;
+      height: 100vh;
+    }
+  }
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    pointer-events: none;
+    padding: 16px;
+  }
+  .hero-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    font-size: 40px;
+  }
+  @media (min-width: 990px) {
+    .hero-text {
+      font-size: 72px;
+    }
+  }
+  .hero-logo-fade {
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+  }
+  .hero-logo-fade img {
+    width: 120px;
+    height: auto;
+    filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.35));
+  }
+  .hero-subtext {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 14px;
+    opacity: 0.9;
+    margin: 0;
+  }
+  .hero-footer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+  .footer-line {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.6);
+  }
+  .footer-content {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(11, 11, 12, 0.9);
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  @media (min-width: 990px) {
+    .footer-content {
+      padding: 16px 20px;
+      font-size: 14px;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const hero = document.querySelector('.hero-video');
+    const logo = document.querySelector('.hero-logo-fade');
+    const title = document.querySelector('.hero-text');
+    if (!logo) return;
+    const showLogo = () => {
+      logo.style.opacity = '1';
+      if (title) {
+        title.style.opacity = '0';
+      }
+    };
+    if (hero) {
+      hero.addEventListener('ended', showLogo, { once: true });
+    }
+    setTimeout(showLogo, 6500); // fallback pra 7s de vídeo
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Hero Video",
+  "settings": [
+    { "type": "text", "id": "hero_text", "label": "Texto principal", "default": "PASSE POR CIMA DE TUDO." },
+    { "type": "text", "id": "subtext", "label": "Frase curta", "default": "Streetwear Tático" },
+    { "type": "text", "id": "left_info", "label": "Rodapé (esquerda)", "default": "DROP: CHOQUE" },
+    { "type": "text", "id": "center_info", "label": "Rodapé (centro)", "default": "PARABELLUM / 2025" },
+    { "type": "text", "id": "right_info", "label": "Rodapé (direita)", "default": "DURAÇÃO 00:07 • MUDO" },
+    { "type": "image_picker", "id": "logo_svg", "label": "Logo (SVG/PNG claro)" },
+    { "type": "image_picker", "id": "poster", "label": "Pôster do vídeo (1080×1920)" },
+    { "type": "url", "id": "mp4_url", "label": "URL MP4 (opcional)" },
+    { "type": "url", "id": "webm_url", "label": "URL WEBM (opcional)" }
+  ],
+  "presets": [{ "name": "Hero Video", "category": "Custom" }]
+}
+{% endschema %}
