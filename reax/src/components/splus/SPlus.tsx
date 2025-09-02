@@ -261,7 +261,6 @@ const SPlusContent = ({ referenceIds }: TProps) => {
                   {comp.fields.find((x) => x.key === 'title')?.value}
                 </h3>
                 <div
-                  className={'no-scrollbar'}
                   style={{
                     display: 'flex',
                     gap: '1.5rem',

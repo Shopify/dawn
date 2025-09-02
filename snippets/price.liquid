@@ -14,6 +14,11 @@
 {% endcomment %}
 
 {% assign belongs_to_sale_collection = product.collections | where: 'handle', 'sale' | first %}
+{%- comment -%}
+  Explicit flag to show savings percent text next to price.
+  Default is false so cards/sections don't render it unless opted in.
+{%- endcomment -%}
+{% if show_savings_percent == nil %}{% assign show_savings_percent = false %}{% endif %}
 
 {%- liquid
   if use_variant
@@ -130,7 +135,7 @@
         </span>
       </small>
     </div>
-    {%- if belongs_to_sale_collection and template.name == 'product' -%}
+    {%- if show_savings_percent and belongs_to_sale_collection -%}
       <span
         style="margin-left: 1rem;"
         id="NoMediaStandardBadge-{{ section_id }}-{{ card_product.id }}-{{ card_variant.id }}"
@@ -149,7 +154,7 @@
         {% endif %}
       </span>
       {% comment %} dont show percent off in UAE {% endcomment %}
-    {% elsif template.name == 'product' %}
+    {% elsif show_savings_percent %}
       {% unless shop.currency == 'AED' %}
         <div style="" class="price-item">
           {% assign saving_percentage = product.compare_at_price

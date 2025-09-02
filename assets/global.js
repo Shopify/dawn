@@ -825,8 +825,10 @@ class SliderComponent extends HTMLElement {
   }
 
   setSlidePosition(position) {
+    const behavior = 'smooth';
     this.slider.scrollTo({
       left: position,
+      behavior,
     });
   }
 }
@@ -919,8 +921,10 @@ class SlideshowComponent extends SliderComponent {
   setSlidePosition(position) {
     if (this.setPositionTimeout) clearTimeout(this.setPositionTimeout);
     this.setPositionTimeout = setTimeout(() => {
+      const behavior = 'smooth';
       this.slider.scrollTo({
         left: position,
+        behavior,
       });
     }, this.announcerBarAnimationDelay);
   }

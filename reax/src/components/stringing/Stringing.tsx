@@ -12,6 +12,9 @@ function Stringing({
   stringingCollectionId: string | null;
   maxTension: string | null;
 }) {
+  // Thresholds (tunable)
+  const POWER_THRESHOLD = 9.5;
+  const DURABLE_THRESHOLD = 9.5;
   const maxTensionPounds = parseInt(maxTension?.match(/\d+/g)?.pop() || '69');
   const [stringingProducts, setStringingProducts] = useState<ProductNodes>([]);
   const [config, setConfig] = useState<TConfig>({
@@ -21,6 +24,61 @@ function Stringing({
   });
 
   const [isStringGuideOpen, setIsStringGuideOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<'All' | 'Power' | 'Durable' | 'Balanced'>('All');
+
+  // Helpers to read numeric metrics from metafields
+  const getMetricMap = (p: ProductNodes[number]) => {
+    const map = new Map<string, number>();
+    const entries = (p as any)?.metafields as Array<{ key: string; value: string }> | undefined;
+    if (entries && Array.isArray(entries)) {
+      for (const m of entries) {
+        if (!m) continue;
+        // Robustly parse first numeric token (handles "8.5/10", "9 / 10", etc.)
+        const raw = (m.value as any) ?? '';
+        const match = typeof raw === 'string' ? raw.match(/\d+(?:\.\d+)?/) : null;
+        const val = match ? parseFloat(match[0]) : NaN;
+        if (!Number.isNaN(val)) map.set(m.key, val);
+      }
+    }
+    return {
+      durability: map.get('durability') ?? 0,
+      control: map.get('control') ?? 0,
+      repulsion: map.get('repulsion_power') ?? 0,
+      sound: map.get('hitting_sound') ?? 0,
+      shock: map.get('shock_absorption') ?? 0,
+    };
+  };
+
+  // Classification helpers
+  const isPower = (p: ProductNodes[number]) => getMetricMap(p).repulsion >= POWER_THRESHOLD;
+  const isDurable = (p: ProductNodes[number]) => getMetricMap(p).durability >= DURABLE_THRESHOLD;
+
+  // Balanced is now purely a fallback grouping implemented in getFilteredProducts.
+
+  const getFilteredProducts = () => {
+    const available = stringingProducts.filter((y) => y.availableForSale);
+    switch (activeFilter) {
+      case 'Power':
+        return available.filter((p) => isPower(p));
+      case 'Durable':
+        return available.filter((p) => isDurable(p));
+      case 'Balanced':
+        // Balanced is a fallback: everything that is neither Power nor Durable
+        return available.filter((p) => !isPower(p) && !isDurable(p));
+      case 'All':
+      default:
+        return available;
+    }
+  };
+
+  // Simple counts for CSS-based hiding (no JS resets)
+  const availableProducts = stringingProducts.filter((y) => y.availableForSale);
+  const counts = {
+    All: availableProducts.length,
+    Power: availableProducts.filter((p) => isPower(p)).length,
+    Durable: availableProducts.filter((p) => isDurable(p)).length,
+    Balanced: availableProducts.filter((p) => !isPower(p) && !isDurable(p)).length,
+  } as const;
 
   useEffect(() => {
     (async () => {
@@ -77,110 +135,148 @@ function Stringing({
               Strings Guide
             </button>
           </div>
-          {stringingProducts
-            .filter((y) => y.availableForSale)
-            .map((string) => {
-              const id = string?.id.split('/').pop();
-              return (
-                <label
-                  className="sheet"
-                  key={id}
-                  htmlFor={id}
+          <div
+            style={{
+              marginTop: '1.5rem',
+            }}
+          >
+            <style>{`
+              .stringing-pills [data-count="0"]:not([data-key="All"]) { display: none; }
+            `}</style>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginBottom: '1rem',
+                fontSize: '1.4rem',
+              }}
+              className="stringing-pills"
+            >
+              {(['All', 'Power', 'Durable', 'Balanced'] as const).map((x) => {
+                const isActive = activeFilter === x;
+                return (
+                  <div
+                    key={x}
+                    data-key={x}
+                    data-count={(counts as any)[x] ?? 0}
+                    onClick={() => setActiveFilter(x)}
+                    style={{
+                      cursor: 'pointer',
+                      borderRadius: '20px',
+                      padding: '0.2rem 1.5rem',
+                      background: isActive ? 'var(--accent-color, #000)' : '#efefef',
+                      color: isActive ? '#fff' : 'inherit',
+                      border: 'none',
+                    }}
+                  >
+                    {x}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          {getFilteredProducts().map((string) => {
+            const id = string?.id.split('/').pop();
+            return (
+              <label
+                className="sheet"
+                key={id}
+                htmlFor={id}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  alignItems: 'center',
+                  margin: '1.5rem 0',
+                  justifyContent: 'space-between',
+                  paddingRight: '1rem',
+                  overflow: 'hidden',
+                  transition: 'all 0.3s',
+                  outline:
+                    config.stringProduct?.id === string.id ? '2px solid var(--accent-color)' : '2px solid transparent',
+                }}
+              >
+                <input
+                  disabled={string?.availableForSale === false}
+                  onChange={(_) => {
+                    setConfig({
+                      stringProduct: string!,
+                      stringVariant: null,
+                      tension: null,
+                    });
+                    scrollTo('string-variants-container');
+                  }}
+                  required
+                  type="radio"
+                  name="string-product"
+                  id={id}
+                />
+                <div
                   style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    display: 'flex',
                     alignItems: 'center',
-                    margin: '1.5rem 0',
-                    justifyContent: 'space-between',
-                    paddingRight: '1rem',
-                    overflow: 'hidden',
-                    transition: 'all 0.3s',
-                    outline:
-                      config.stringProduct?.id === string.id
-                        ? '2px solid var(--accent-color)'
-                        : '2px solid transparent',
+                    gridColumn: '1/12',
+                    padding: '6px 0',
+                    fontSize: '1.4rem',
                   }}
                 >
-                  <input
-                    disabled={string?.availableForSale === false}
-                    onChange={(_) => {
-                      setConfig({
-                        stringProduct: string!,
-                        stringVariant: null,
-                        tension: null,
-                      });
-                      scrollTo('string-variants-container');
-                    }}
-                    required
-                    type="radio"
-                    name="string-product"
-                    id={id}
+                  <img
+                    width={80}
+                    height={80}
+                    src={string.featuredImage?.url}
+                    alt={string.featuredImage?.altText || ''}
                   />
                   <div
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gridColumn: '1/12',
-                      padding: '6px 0',
-                      fontSize: '1.4rem',
+                      width: '100%',
+                      letterSpacing: '0px',
                     }}
                   >
-                    <img
-                      width={80}
-                      height={80}
-                      src={string.featuredImage?.url}
-                      alt={string.featuredImage?.altText || ''}
-                    />
                     <div
                       style={{
-                        width: '100%',
-                        letterSpacing: '0px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                       }}
                     >
-                      <div
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <p style={{ color: 'var(--gray-90)', margin: '0' }}>{string?.title}</p>
+                        {(string as any)?.productTagMetafield?.value && (
+                          <span
+                            style={{
+                              fontSize: '12px',
+                              color: '#333',
+                              padding: '0 8px',
+                              borderRadius: '99px',
+                              border: '1px solid #999',
+                            }}
+                          >
+                            {(string as any).productTagMetafield.value}
+                          </span>
+                        )}
+                      </div>
+                      <span style={{ color: 'var(--gray-60)', fontSize: '1.25rem' }}>
+                        {parseInt(string.priceRange.minVariantPrice.amount)}{' '}
+                        {string.priceRange.minVariantPrice.currencyCode}
+                      </span>
+                    </div>
+                    {string?.metafield?.value ? (
+                      <p
                         style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
+                          margin: '0',
+                          lineHeight: '1.4',
+                          color: 'var(--gray-60)',
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <p style={{ color: 'var(--gray-90)', margin: '0' }}>{string?.title}</p>
-                          {(string as any)?.productTagMetafield?.value && (
-                            <span
-                              style={{
-                                fontSize: '12px',
-                                color: '#333',
-                                padding: '0 8px',
-                                borderRadius: '99px',
-                                border: '1px solid #999',
-                              }}
-                            >
-                              {(string as any).productTagMetafield.value}
-                            </span>
-                          )}
-                        </div>
-                        <span style={{ color: 'var(--gray-60)', fontSize: '1.25rem' }}>
-                          {parseInt(string.priceRange.minVariantPrice.amount)}{' '}
-                          {string.priceRange.minVariantPrice.currencyCode}
-                        </span>
-                      </div>
-                      {string?.metafield?.value ? (
-                        <p
-                          style={{
-                            margin: '0',
-                            lineHeight: '1.4',
-                            color: 'var(--gray-60)',
-                          }}
-                        >
-                          {string?.metafield?.value}
-                        </p>
-                      ) : null}
-                    </div>
+                        {string?.metafield?.value}
+                      </p>
+                    ) : null}
                   </div>
-                </label>
-              );
-            })}
+                </div>
+              </label>
+            );
+          })}
+          {null}
         </div>
 
         <div

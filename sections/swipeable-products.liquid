@@ -1,7 +1,7 @@
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
-
-<script src="{{ 'swipeable-products.js' | asset_url }}" defer="defer"></script>
+{{ 'component-slider.css' | asset_url | stylesheet_tag }}
+{{ 'recs-slider.css' | asset_url | stylesheet_tag }}
 
 {%- style -%}
   .section-{{ section.id }}-padding {
@@ -15,171 +15,83 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
-
-  /* Custom styles for swipeable products */
-  .swipeable-products-container {
-    position: relative;
-    overflow-x: scroll;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-    scroll-padding-left: 5rem;
-  }
-
-  .swipeable-products-wrapper {
-    display: flex;
-    transition: transform 0.3s ease-in-out;
-    gap: 20px;
-    padding-left: 5rem;
-    padding-right: 5rem;
-  }
-
-  .swipeable-product-card {
-    flex: 0 0 auto;
-    width: calc(33.333% - 30px);
-    min-width: 250px;
-    scroll-snap-align: start;
-  }
-
-
-  .swipeable-navigation {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 4rem;
-    pointer-events: none;
-    z-index: 5;
-  }
-
-   @media screen and (max-width: 700px) {
-    .swipeable-product-card {
-      width: calc(100% - 35px);
-    }
-     .swipeable-products-wrapper {
-      padding-left: 1.5rem;
-      padding-right: 1.5rem;
-    }
-
-    .swipeable-products-container {
-      scroll-padding-left: 1.5rem;
-    }
-
-    .swipeable-navigation {
-      display: none;
-    }
-  }
-
-  .nav-arrow {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    pointer-events: auto;
-    border: 1px solid var(--gray-40);)
-  }
-
-  .nav-arrow.prev {
-    margin-left: 10px;
-  }
-
-  .nav-arrow.next {
-    margin-right: 10px;
-  }
-
-  .nav-arrow svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  .nav-arrow.prev svg {
-    transform: rotate(180deg);
-  }
 {%- endstyle -%}
 
 <div class="section-{{ section.id }}-padding color-{{ section.settings.color_scheme }} isolate gradient">
-  <div
-    data-swipeable-products
-    class="swipeable-products section-{{ section.id }}-padding"
-    id="swipeable-products-{{ section.id }}"
-  >
-    <div class=" page-width" style="display: flex; justify-content: space-between; align-items: center;">
-      <div class="title-wrapper">
-        {%- if section.settings.title != blank -%}
-          <h2
-            style="
-              font-weight: 800;
-              font-size: 2.5rem;
-              text-transform: capitalize;
-              letter-spacing: -1px;
-            "
-            class="title inline-richtext {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+  <div class="section-{{ section.id }}-padding">
+    <slider-component class="slider-mobile-gutter" style="--desktop-margin-left-first-item: 0;">
+      <div class="page-width recs-slider__header">
+        <h2 class="related-products__heading inline-richtext h2">
+          {{ section.settings.title }}
+        </h2>
+        <div class="recs-slider__controls">
+          <button
+            type="button"
+            class="slider-button recs-slider__btn recs-slider__btn--prev"
+            name="previous"
+            aria-label="{{ 'general.slider.previous_slide' | t }}"
           >
-            {{ section.settings.title }}
-          </h2>
-        {%- endif -%}
-      </div>
-      <div class="swipeable-navigation">
-        <button class="nav-arrow prev" data-nav-prev aria-label="{{ 'general.slider.previous_slide' | t }}">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-        <button class="nav-arrow next" data-nav-next aria-label="{{ 'general.slider.next_slide' | t }}">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <div class="">
-      <div class="swipeable-products-container no-scrollbar">
-        <div class="swipeable-products-wrapper" data-products-wrapper>
-          {%- for product in section.settings.products -%}
-            <div class="swipeable-product-card">
-              {% render 'card-product',
-                card_product: product,
-                media_aspect_ratio: 'adapt',
-                image_shape: 'default',
-                show_secondary_image: false,
-                show_rating: false
-              %}
-            </div>
-            {% if section.settings.show_color_variants == true %}
-              {% assign colors_seen = '' | split: ',' %}
-              {% assign first_color = product.variants.first.options.first | downcase %}
-              {% assign colors_seen = colors_seen | append: first_color %}
-
-              {%- for variant in product.variants -%}
-                {%- assign current_color = variant.options.first | downcase -%}
-
-                {%- unless colors_seen contains current_color -%}
-                  {%- if variant.available == true -%}
-                    {% assign colors_seen = colors_seen | append: current_color %}
-                    <div class="swipeable-product-card">
-                      {% render 'card-product',
-                        card_product: product,
-                        card_variant: variant,
-                        media_aspect_ratio: 'adapt',
-                        image_shape: 'default',
-                        show_secondary_image: false,
-                        show_rating: false
-                      %}
-                    </div>
-                  {%- endif -%}
-                {%- endunless -%}
-              {%- endfor -%}
-            {% endif %}
-          {% else %}
-          {%- endfor -%}
+            <span class="svg-wrapper">{{ 'icon-arrow.svg' | inline_asset_content }}</span>
+          </button>
+          <button
+            type="button"
+            class="slider-button recs-slider__btn recs-slider__btn--next"
+            name="next"
+            aria-label="{{ 'general.slider.next_slide' | t }}"
+          >
+            <span class="svg-wrapper">{{ 'icon-arrow.svg' | inline_asset_content }}</span>
+          </button>
         </div>
       </div>
-    </div>
+      <ul
+        id="Slider-{{ section.id }}"
+        data-id="{{ section.id }}"
+        class="grid product-grid contains-card contains-card--product slider slider--everywhere grid--peek recs-slider swipeable-recs page-width"
+        role="list"
+        aria-label="{{ 'general.slider.name' | t }}"
+      >
+        {% assign skip_card_product_styles = false %}
+        {%- for product in section.settings.products -%}
+          <li id="Slide-{{ section.id }}-{{ forloop.index }}" class="grid__item slider__slide">
+            {% render 'card-product',
+              card_product: product,
+              media_aspect_ratio: 'adapt',
+              image_shape: 'default',
+              show_secondary_image: false,
+              show_rating: false,
+              skip_styles: skip_card_product_styles,
+              section_id: section.id
+            %}
+          </li>
+          {% assign skip_card_product_styles = true %}
+          {% if section.settings.show_color_variants == true %}
+            {% assign colors_seen = '' | split: ',' %}
+            {% assign first_color = product.variants.first.options.first | downcase %}
+            {% assign colors_seen = colors_seen | append: first_color %}
+            {%- for variant in product.variants -%}
+              {%- assign current_color = variant.options.first | downcase -%}
+              {%- unless colors_seen contains current_color -%}
+                {%- if variant.available == true -%}
+                  {% assign colors_seen = colors_seen | append: current_color %}
+                  <li id="Slide-{{ section.id }}-{{ forloop.index0 | plus: 1000 }}" class="grid__item slider__slide">
+                    {% render 'card-product',
+                      card_product: product,
+                      card_variant: variant,
+                      media_aspect_ratio: 'adapt',
+                      image_shape: 'default',
+                      show_secondary_image: false,
+                      show_rating: false,
+                      skip_styles: skip_card_product_styles,
+                      section_id: section.id
+                    %}
+                  </li>
+                {%- endif -%}
+              {%- endunless -%}
+            {%- endfor -%}
+          {% endif %}
+        {%- endfor -%}
+      </ul>
+    </slider-component>
   </div>
 </div>
 
@@ -229,7 +141,7 @@
       "step": 4,
       "unit": "px",
       "label": "Padding top",
-      "default": 0
+      "default": 20
     },
     {
       "type": "range",
@@ -239,7 +151,7 @@
       "step": 4,
       "unit": "px",
       "label": "Padding bottom",
-      "default": 0
+      "default": 20
     }
   ],
   "presets": [
