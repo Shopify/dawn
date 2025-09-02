@@ -1,15 +1,39 @@
 {% comment %}
   Product Description Section
-  Displays the product description on the product page.
+  Displays the product description on the product page with read more functionality.
 {% endcomment %}
 
 {% if section.settings.show_description and product %}
   <section class="product-description-section">
-    <div class="product-description">
-      {{ product.description }}
-    </div>
+    <h2>Product Description</h2>
+    {%- if product.description != blank -%}
+      <div class="product-description truncated" id="product-description">
+        {{ product.description }}
+      </div>
+      {%- assign description_length = product.description | strip_html | size -%}
+      {%- if description_length > 150 -%}
+        <button class="read-more-btn" id="read-more-btn" onclick="toggleProductDescription()">
+          {{ section.settings.read_more_text | default: 'Read more' }}
+        </button>
+      {%- endif -%}
+    {%- endif -%}
   </section>
 {% endif %}
+
+<script>
+  function toggleProductDescription() {
+    const description = document.getElementById('product-description');
+    const button = document.getElementById('read-more-btn');
+
+    if (description.classList.contains('truncated')) {
+      description.classList.remove('truncated');
+      button.textContent = '{{ section.settings.read_less_text | default: "Read less" }}';
+    } else {
+      description.classList.add('truncated');
+      button.textContent = '{{ section.settings.read_more_text | default: "Read more" }}';
+    }
+  }
+</script>
 
 {% schema %}
 {
@@ -20,6 +44,18 @@
       "id": "show_description",
       "label": "Show product description",
       "default": true
+    },
+    {
+      "type": "text",
+      "id": "read_more_text",
+      "default": "Read more",
+      "label": "Read More Button Text"
+    },
+    {
+      "type": "text",
+      "id": "read_less_text",
+      "default": "Read less",
+      "label": "Read Less Button Text"
     }
   ],
   "presets": [
@@ -29,10 +65,53 @@
   ]
 }
 {% endschema %}
+
 <style>
   .product-description-section {
     max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
+    position: relative;
+    padding-bottom: 10rem;
+  }
+
+  .product-description {
+    position: relative;
+  }
+
+  .product-description.truncated {
+    max-height: 7.6em; /* Approximately 3 lines */
+    overflow: hidden;
+  }
+
+  .product-description.truncated::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 50px;
+    height: 1.2em;
+    background: linear-gradient(to right, transparent, var(--gradient-background));
+  }
+
+  .read-more-btn {
+    width: 87px;
+    height: 28px;
+    background: none;
+    border: none;
+    color: rgb(var(--color-foreground));
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    margin-top: 0.5rem;
+    font-family: inherit;
+    position: absolute;
+    right: 50%;
+    border-radius: 999px;
+    border: 1px solid rgb(229, 231, 235);
+  }
+
+  .read-more-btn:hover {
+    opacity: 0.7;
   }
 </style>
