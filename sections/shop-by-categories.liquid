@@ -1,17 +1,11 @@
 {% comment %}
   Auto Parts Categories Section
-  Displays product categories in a grid layout with featured images and subcategories
+  Displays product categories in a grid layout with featured images and up to 4 subcategories
+  Subcategories are dynamically pulled from a collection_tree metafield
 {% endcomment %}
 
 <div class="auto-parts-categories" id="section-{{ section.id }}">
-  <div class="page-width">
-    {%- if section.settings.background_color != blank -%}
-      <style>
-        #section-{{ section.id }} {
-          background-color: {{ section.settings.background_color }};
-        }
-      </style>
-    {%- endif -%}
+  <div class="container">
     {% if section.settings.section_title != blank %}
       <div class="section-header">
         <h2 class="section-title">{{ section.settings.section_title }}</h2>
@@ -19,6 +13,8 @@
     {% endif %}
 
     <div class="categories-grid">
+      {% assign collection_tree_value = shop.metafields.collection_tree.collection_tree.value %}
+      {% assign nodes = collection_tree_value.nodes %}
       {% for block in section.blocks %}
         {% assign collection = collections[block.settings.collection] %}
         {% if collection and collection != empty %}
@@ -27,7 +23,7 @@
               {% if block.settings.featured_image != blank %}
                 <img
                   src="{{ block.settings.featured_image | img_url: '600x300' }}"
-                  alt="{{ collection.title }}"
+                  alt="{{ collection.title | escape }}"
                   loading="lazy"
                   width="600"
                   height="300"
@@ -35,7 +31,7 @@
               {% elsif collection.featured_image %}
                 <img
                   src="{{ collection.featured_image | img_url: '600x300' }}"
-                  alt="{{ collection.title }}"
+                  alt="{{ collection.title | escape }}"
                   loading="lazy"
                   width="600"
                   height="300"
@@ -52,17 +48,24 @@
                 <a href="{{ collection.url }}">{{ collection.title }}</a>
               </h3>
 
-              {% if block.settings.subcategories != blank %}
+              {% assign collection_id = collection.id | append: '' %}
+              {% assign subcollections_ids = collection_tree_value.parentChildren[collection_id] %}
+              {% if subcollections_ids %}
                 <div class="subcategories">
-                  {% assign subcategories = block.settings.subcategories | split: ',' %}
-                  {% for subcategory in subcategories %}
-                    {% assign subcategory_trimmed = subcategory | strip %}
-                    <a href="{{ collection.url }}" class="subcategory-link">
-                      {{ subcategory_trimmed }}
-                      <svg class="arrow-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </a>
+                  {% for id in subcollections_ids limit: 4 %}
+                    {% assign subcollection_id = id | append: '' %}
+                    {% assign subcollection = nodes[subcollection_id] %}
+                    {% if subcollection %}
+                      <a
+                        href="{{ routes.collections_url }}/{{ collection.handle }}/{{ subcollection.h }}"
+                        class="subcategory-link"
+                      >
+                        {{ subcollection.t }}
+                        <svg class="arrow-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </a>
+                    {% endif %}
                   {% endfor %}
                 </div>
               {% endif %}
@@ -80,6 +83,12 @@
     background-color: {{ section.settings.background_color }};
   }
 
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
   .section-header {
     text-align: center;
     margin-bottom: 40px;
@@ -94,8 +103,8 @@
 
   .categories-grid {
     display: grid;
-    grid-template-columns: auto auto auto auto;
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
     margin-bottom: 20px;
   }
 
@@ -170,13 +179,12 @@
   .subcategory-link {
     color: {{ section.settings.subcategory_color }};
     text-decoration: none;
-    font-size: 14px;
+    font-size: 0.95rem;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: space-between;
     padding: 5px 0;
     transition: color 0.3s ease;
-    font-weight: 700;
   }
 
   .subcategory-link:hover {
@@ -220,7 +228,7 @@
       gap: 15px;
     }
 
-    .page-width {
+    .container {
       padding: 0 15px;
     }
 
@@ -308,13 +316,6 @@
           "id": "featured_image",
           "label": "Featured Image",
           "info": "Optional. If not selected, collection's featured image will be used."
-        },
-        {
-          "type": "textarea",
-          "id": "subcategories",
-          "label": "Subcategories",
-          "info": "Enter subcategories separated by commas (e.g., Exhausts, Engine Management, Air Induction)",
-          "placeholder": "Exhausts, Engine Management, Air Induction"
         }
       ]
     }
@@ -324,52 +325,28 @@
       "name": "Auto Parts Categories",
       "blocks": [
         {
-          "type": "category",
-          "settings": {
-            "subcategories": "Exhausts, Engine Management, Air Induction, Turbochargers and Superchargers"
-          }
+          "type": "category"
         },
         {
-          "type": "category",
-          "settings": {
-            "subcategories": "Chassis Bracing, Steering, Suspension Bushings, Suspension Height Adjustment"
-          }
+          "type": "category"
         },
         {
-          "type": "category",
-          "settings": {
-            "subcategories": "Brake Kits, Brake Pads, Brake Rotors, Brake System"
-          }
+          "type": "category"
         },
         {
-          "type": "category",
-          "settings": {
-            "subcategories": "Axles and Driveshafts, Clutches, Differentials, Drivetrain Mounts and Bushings"
-          }
+          "type": "category"
         },
         {
-          "type": "category",
-          "settings": {
-            "subcategories": "Gauges, Interior Trim and Accessories, Seats, Seat Harnesses and Accessories"
-          }
+          "type": "category"
         },
         {
-          "type": "category",
-          "settings": {
-            "subcategories": "Aero, Body Components, Bumpers, Exterior Accessories"
-          }
+          "type": "category"
         },
         {
-          "type": "category",
-          "settings": {
-            "subcategories": "Brand Merchandise, Safety Gear, Vehicle Care, Lifestyle Package Deals"
-          }
+          "type": "category"
         },
         {
-          "type": "category",
-          "settings": {
-            "subcategories": "Wheels & Accessories"
-          }
+          "type": "category"
         }
       ]
     }
