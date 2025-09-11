@@ -15,6 +15,10 @@
   {{ 'component-slider.css' | asset_url | stylesheet_tag }}
   {{ 'component-rating.css' | asset_url | stylesheet_tag }}
   {{ 'component-deferred-media.css' | asset_url | stylesheet_tag }}
+  {{ 'component-trustpilot.css' | asset_url | stylesheet_tag }}
+  
+  <script src="{{ 'delivery-calculator.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'accordion.js' | asset_url }}" defer="defer"></script>
 
   {% unless product.has_only_default_variant %}
     {{ 'component-product-variant-picker.css' | asset_url | stylesheet_tag }}
@@ -74,7 +78,7 @@
 
   {% assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src' %}
   <div class="page-width">
-    <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} product--mobile-{{ section.settings.mobile_thumbnails }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
+    <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} product--mobile-{{ section.settings.mobile_thumbnails }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}" style="--mobile-padding-top: {{ section.settings.mobile_padding_top | default: 0 }}px; --mobile-padding-bottom: {{ section.settings.mobile_padding_bottom | default: 20 }}px;">
       <div class="grid__item product__media-wrapper">
         {% render 'product-media-gallery', variant_images: variant_images %}
       </div>
@@ -89,6 +93,7 @@
             {%- case block.type -%}
               {%- when '@app' -%}
                 {% render block %}
+
               {%- when 'text' -%}
                 <p
                   class="product__text inline-richtext{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}"
@@ -96,50 +101,30 @@
                 >
                   {{- block.settings.text -}}
                 </p>
+
               {%- when 'title' -%}
-                <div class="product__title" {{ block.shopify_attributes }}>
-                  <h1>{{ product.title | escape }}</h1>
-                  <a href="{{ product.url }}" class="product__title">
-                    <h2 class="h1">
-                      {{ product.title | escape }}
-                    </h2>
-                  </a>
+                <div class="product__title-wrapper title-margin" {{ block.shopify_attributes }} style="margin-top: {{ block.settings.title_margin_top_desktop | default: '' }}px; margin-bottom: {{ block.settings.title_margin_bottom_desktop | default: '' }}px; --title-margin-top-mobile: {{ block.settings.title_margin_top_mobile | default: '' }}px; --title-margin-bottom-mobile: {{ block.settings.title_margin_bottom_mobile | default: '' }}px;">
+                  <div class="product__title">
+                    <h1>{{ product.title | escape }}</h1>
+                    <a href="{{ product.url }}" class="product__title">
+                      <h2 class="h1">
+                        {{ product.title | escape }}
+                      </h2>
+                    </a>
+                  </div>
+                  <div class="product__price-inline" id="price-{{ section.id }}" role="status">
+                    {%- render 'price',
+                      product: product,
+                      use_variant: true,
+                      show_badges: true,
+                      price_class: 'price--large'
+                    -%}
+                  </div>
                 </div>
+
               {%- when 'price' -%}
-                <div id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
-                  {%- render 'price',
-                    product: product,
-                    use_variant: true,
-                    show_badges: true,
-                    price_class: 'price--large'
-                  -%}
-                </div>
-                {%- if product.quantity_price_breaks_configured? -%}
-                  <div class="volume-pricing-note" id="Volume-Note-{{ section.id }}">
-                    <span>{{ 'products.product.volume_pricing.note' | t }}</span>
-                  </div>
-                {%- endif -%}
-                {%- if cart.taxes_included or cart.duties_included or shop.shipping_policy.body != blank -%}
-                  <div class="product__tax caption rte">
-                    {%- if cart.duties_included and cart.taxes_included -%}
-                      {{ 'products.product.duties_and_taxes_included' | t }}
-                    {%- elsif cart.taxes_included -%}
-                      {{ 'products.product.taxes_included' | t }}
-                    {%- elsif cart.duties_included -%}
-                      {{ 'products.product.duties_included' | t }}
-                    {%- endif -%}
-                    {%- if shop.shipping_policy.body != blank -%}
-                      {{ 'products.product.shipping_policy_html' | t: link: shop.shipping_policy.url }}
-                    {%- endif -%}
-                  </div>
-                {%- endif -%}
-                <div {{ block.shopify_attributes }}>
-                  {%- assign product_form_installment_id = 'product-form-installment-' | append: section.id -%}
-                  {%- form 'product', product, id: product_form_installment_id, class: 'installment caption-large' -%}
-                    <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
-                    {{ form | payment_terms }}
-                  {%- endform -%}
-                </div>
+                {%- comment -%} Prix maintenant intégré dans le bloc titre {%- endcomment -%}
+
               {%- when 'inventory' -%}
                 <p
                   class="product__inventory{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}{% if product.selected_or_first_available_variant.inventory_management != 'shopify' %} visibility-hidden{% endif %}"
@@ -191,12 +176,14 @@
                     {%- endif -%}
                   {%- endif -%}
                 </p>
+
               {%- when 'description' -%}
                 {%- if product.description != blank -%}
                   <div class="product__description rte quick-add-hidden" {{ block.shopify_attributes }}>
                     {{ product.description }}
                   </div>
                 {%- endif -%}
+
               {%- when 'sku' -%}
                 <p
                   class="product__sku{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}{% if product.selected_or_first_available_variant.sku.size == 0 %} visibility-hidden{% endif %}"
@@ -207,8 +194,10 @@
                   <span class="visually-hidden">{{ 'products.product.sku' | t }}:</span>
                   {{- product.selected_or_first_available_variant.sku -}}
                 </p>
+
               {%- when 'custom_liquid' -%}
                 {{ block.settings.custom_liquid }}
+
               {%- when 'collapsible_tab' -%}
                 <div class="product__accordion accordion quick-add-hidden" {{ block.shopify_attributes }}>
                   <details id="Details-{{ block.id }}-{{ section.id }}">
@@ -227,6 +216,7 @@
                     </div>
                   </details>
                 </div>
+
               {%- when 'quantity_selector' -%}
                 <div
                   id="Quantity-Form-{{ section.id }}"
@@ -454,6 +444,7 @@
                     </volume-pricing>
                   {%- endif -%}
                 </div>
+
               {%- when 'popup' -%}
                 <modal-opener
                   class="product-popup-modal__opener quick-add-hidden"
@@ -469,6 +460,7 @@
                     {{ block.settings.text | default: block.settings.page.title | escape }}
                   </button>
                 </modal-opener>
+
               {%- when 'share' -%}
                 {% liquid
                   assign share_url = product.selected_variant.url | default: product.url | prepend: request.origin
@@ -477,6 +469,77 @@
 
               {%- when 'variant_picker' -%}
                 {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
+
+              {%- when 'product_accordion' -%}
+                <div class="product-accordion-container" {{ block.shopify_attributes }} style="margin-top: {{ block.settings.accordion_margin_top | default: 0 }}px; --accordion-spacing-desktop: {{ block.settings.accordion_spacing_desktop | default: 12 }}px; --accordion-spacing-mobile: {{ block.settings.accordion_spacing_mobile | default: 8 }}px;">
+
+                  {% if block.settings.accordion1_title != blank %}
+                  <div class="product-accordion-item{% if block.settings.accordion_first_open %} active{% endif %}">
+                    <span class="product-accordion-header" data-accordion-toggle>
+                      {{ block.settings.accordion1_title }}
+                    </span>
+                    <div class="product-accordion-content">
+                      <div class="product-accordion-content-inner">
+                        {{ block.settings.accordion1_content }}
+                      </div>
+                    </div>
+                  </div>
+                  {% endif %}
+
+                  {% if block.settings.accordion2_title != blank %}
+                  <div class="product-accordion-item">
+                    <span class="product-accordion-header" data-accordion-toggle>
+                      {{ block.settings.accordion2_title }}
+                    </span>
+                    <div class="product-accordion-content">
+                      <div class="product-accordion-content-inner">
+                        {{ block.settings.accordion2_content }}
+                      </div>
+                    </div>
+                  </div>
+                  {% endif %}
+
+                  {% if block.settings.accordion3_title != blank %}
+                  <div class="product-accordion-item">
+                    <span class="product-accordion-header" data-accordion-toggle>
+                      {{ block.settings.accordion3_title }}
+                    </span>
+                    <div class="product-accordion-content">
+                      <div class="product-accordion-content-inner">
+                        {{ block.settings.accordion3_content }}
+                      </div>
+                    </div>
+                  </div>
+                  {% endif %}
+
+                  {% if block.settings.accordion4_title != blank %}
+                  <div class="product-accordion-item">
+                    <span class="product-accordion-header" data-accordion-toggle>
+                      {{ block.settings.accordion4_title }}
+                    </span>
+                    <div class="product-accordion-content">
+                      <div class="product-accordion-content-inner">
+                        {{ block.settings.accordion4_content }}
+                      </div>
+                    </div>
+                  </div>
+                  {% endif %}
+
+                  {% if block.settings.accordion5_title != blank %}
+                  <div class="product-accordion-item">
+                    <span class="product-accordion-header" data-accordion-toggle>
+                      {{ block.settings.accordion5_title }}
+                    </span>
+                    <div class="product-accordion-content">
+                      <div class="product-accordion-content-inner">
+                        {{ block.settings.accordion5_content }}
+                      </div>
+                    </div>
+                  </div>
+                  {% endif %}
+
+                </div>
+
               {%- when 'buy_buttons' -%}
                 {%- render 'buy-buttons',
                   block: block,
@@ -485,6 +548,7 @@
                   section_id: section.id,
                   show_pickup_availability: true
                 -%}
+
               {%- when 'rating' -%}
                 {%- if product.metafields.reviews.rating.value != blank -%}
                   <div class="rating-wrapper">
@@ -523,6 +587,7 @@
                     </p>
                   </div>
                 {%- endif -%}
+
               {%- when 'complementary' -%}
                 <product-recommendations
                   class="complementary-products quick-add-hidden{% if block.settings.make_collapsible_row %} is-accordion{% endif %}{% if block.settings.enable_quick_add %} complementary-products-contains-quick-add{% endif %}"
@@ -646,6 +711,7 @@
                                   </div>
                                 {%- endif -%}
                               </div>
+                              
                               <button
                                 type="button"
                                 class="slider-button slider-button--next"
@@ -672,8 +738,88 @@
                     <script src="{{ 'quick-add.js' | asset_url }}" defer="defer"></script>
                   {%- endif -%}
                 </product-recommendations>
+
               {%- when 'icon-with-text' -%}
                 {% render 'icon-with-text', block: block %}
+
+              {%- when 'reviews-trust' -%}
+                <div class="trustpilot-reviews" {{ block.shopify_attributes }}>
+                  <div class="trustpilot-content">
+                    <span class="trustpilot-text">{{ block.settings.rating_text | default: 'Excellent' }}</span>
+                    <div class="trustpilot-stars">
+                      <img 
+                        src="https://cdn.shopify.com/s/files/1/0692/0074/0641/files/Trustpilot_-_etoiles.png?v=1757335674" 
+                        alt="4.5 étoiles Trustpilot" 
+                        class="trustpilot-stars-img"
+                        width="100"
+                        height="20"
+                        loading="lazy"
+                      >
+                    </div>
+                    <span class="trustpilot-count">{{ block.settings.review_count | default: '17.102 avis' }}</span>
+                    <div class="trustpilot-logo">
+                      <img 
+                        src="https://cdn.shopify.com/s/files/1/0692/0074/0641/files/Trustpilot_-_logo.png?v=1757335674" 
+                        alt="Trustpilot" 
+                        class="trustpilot-logo-img"
+                        width="80"
+                        height="16"
+                        loading="lazy"
+                      >
+                    </div>
+                  </div>
+                </div>
+
+              {%- when 'product-benefits' -%}
+                <div class="product-benefits" {{ block.shopify_attributes }}>
+                  <ul class="benefits-list">
+                    {%- for i in (1..6) -%}
+                      {%- assign benefit_text = 'benefit_' | append: i | append: '_text' -%}
+                      {%- assign benefit_value = block.settings[benefit_text] -%}
+                      {%- if benefit_value != blank -%}
+                        <li class="benefit-item">
+                          {%- if block.settings.custom_icon != blank -%}
+                            <img 
+                              src="{{ block.settings.custom_icon | image_url: width: 32 }}"
+                              alt="✓" 
+                              class="benefit-icon"
+                              width="16"
+                              height="16"
+                              loading="lazy"
+                            >
+                          {%- else -%}
+                            <img 
+                              src="https://cdn.shopify.com/s/files/1/0692/0074/0641/files/Check_icon_4d558bf2-90a7-4e4e-b948-63f4a2b75a79.png?v=1757334971" 
+                              alt="✓" 
+                              class="benefit-icon"
+                              width="16"
+                              height="16"
+                              loading="lazy"
+                            >
+                          {%- endif -%}
+                          <span class="benefit-text">{{ benefit_value }}</span>
+                        </li>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </ul>
+                </div>
+
+              {%- when 'delivery-estimate' -%}
+                <div 
+                  class="delivery-estimate delivery-estimate--{{ block.settings.alignment }}" 
+                  {{ block.shopify_attributes }}
+                  data-block-id="{{ block.id }}"
+                  data-delivery-days="{{ block.settings.delivery_days | default: 2 }}"
+                  data-exclude-weekends="{{ block.settings.exclude_weekends | default: true }}"
+                  data-holidays="{{ block.settings.holidays | default: '' }}"
+                >
+                  <div class="delivery-estimate__content">
+                    <span class="delivery-estimate__status">{{ block.settings.status_text | default: 'En stock' }}</span>
+                    <span class="delivery-estimate__text delivery-estimate__text--desktop">{{ block.settings.delivery_text_desktop | default: ', commandez maintenant' }}</span>
+                    <span class="delivery-estimate__text delivery-estimate__text--mobile">{{ block.settings.delivery_text_mobile | default: ', commandez et soyez livré le' }}</span>
+                    <span class="delivery-estimate__date" id="delivery-date-{{ block.id }}"></span>
+                  </div>
+                </div>
             {%- endcase -%}
           {%- endfor -%}
           <a href="{{ product.url }}" class="link product__view-details animate-arrow">
@@ -782,7 +928,57 @@
     {
       "type": "title",
       "name": "t:sections.main-product.blocks.title.name",
-      "limit": 1
+      "limit": 1,
+      "settings": [
+        {
+          "type": "header",
+          "content": "Marges ordinateur"
+        },
+        {
+          "type": "range",
+          "id": "title_margin_top_desktop",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "px",
+          "default": 0,
+          "label": "Marge du haut du titre (ordinateur)"
+        },
+        {
+          "type": "range",
+          "id": "title_margin_bottom_desktop",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "px",
+          "default": 0,
+          "label": "Marge du bas du titre (ordinateur)"
+        },
+        {
+          "type": "header",
+          "content": "Marges mobile"
+        },
+        {
+          "type": "range",
+          "id": "title_margin_top_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "px",
+          "default": 0,
+          "label": "Marge du haut du titre (mobile)"
+        },
+        {
+          "type": "range",
+          "id": "title_margin_bottom_mobile",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "px",
+          "default": 0,
+          "label": "Marge du bas du titre (mobile)"
+        }
+      ]
     },
     {
       "type": "price",
@@ -904,6 +1100,164 @@
             }
           ],
           "default": "circle"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_variant_title",
+          "default": true,
+          "label": "Afficher le titre des variantes"
+        },
+        {
+          "type": "text",
+          "id": "variant_title",
+          "label": "Titre des variantes",
+          "default": "Quantité",
+          "info": "Laissez vide pour utiliser le nom de l'option par défaut"
+        },
+        {
+          "type": "text",
+          "id": "first_variant_price_text",
+          "label": "Texte prix première variante",
+          "default": "Soit 1€ / jour"
+        },
+        {
+          "type": "text",
+          "id": "second_variant_price_text",
+          "label": "Texte prix deuxième variante",
+          "default": "Soit 2€ / jour"
+        },
+        {
+          "type": "text",
+          "id": "discount_text",
+          "label": "Texte de réduction",
+          "default": "-10%"
+        },
+        {
+          "type": "text",
+          "id": "discovery_badge_text",
+          "label": "Texte du badge Découverte",
+          "default": "Découverte"
+        },
+        {
+          "type": "text",
+          "id": "best_offer_badge_text",
+          "label": "Texte du badge Meilleure offre",
+          "default": "Meilleure offre"
+        }
+      ]
+    },
+    {
+      "type": "product_accordion",
+      "name": "Accordéon produit",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "header",
+          "content": "Comportement"
+        },
+        {
+          "type": "checkbox",
+          "id": "accordion_first_open",
+          "label": "Ouvrir le premier onglet par défaut",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Paramètres d'espacement"
+        },
+        {
+          "type": "range",
+          "id": "accordion_margin_top",
+          "label": "Espacement du haut du bloc accordion",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "px",
+          "default": 0
+        },
+        {
+          "type": "range",
+          "id": "accordion_spacing_desktop",
+          "label": "Espacement entre les accordions (Desktop)",
+          "min": 0,
+          "max": 50,
+          "step": 1,
+          "unit": "px",
+          "default": 12
+        },
+        {
+          "type": "range",
+          "id": "accordion_spacing_mobile",
+          "label": "Espacement entre les accordions (Mobile)",
+          "min": 0,
+          "max": 30,
+          "step": 1,
+          "unit": "px",
+          "default": 8
+        },
+        {
+          "type": "header",
+          "content": "Contenu des accordions"
+        },
+        {
+          "type": "text",
+          "id": "accordion1_title",
+          "label": "Titre accordion 1",
+          "default": "Bienfaits et Efficacité"
+        },
+        {
+          "type": "richtext",
+          "id": "accordion1_content",
+          "label": "Contenu accordion 1",
+          "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p><p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>"
+        },
+        {
+          "type": "text",
+          "id": "accordion2_title",
+          "label": "Titre accordion 2",
+          "default": "Ingrédients"
+        },
+        {
+          "type": "richtext",
+          "id": "accordion2_content",
+          "label": "Contenu accordion 2",
+          "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>"
+        },
+        {
+          "type": "text",
+          "id": "accordion3_title",
+          "label": "Titre accordion 3",
+          "default": "Utilisation & Précautions"
+        },
+        {
+          "type": "richtext",
+          "id": "accordion3_content",
+          "label": "Contenu accordion 3",
+          "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>"
+        },
+        {
+          "type": "text",
+          "id": "accordion4_title",
+          "label": "Titre accordion 4",
+          "default": "Certificats & Études"
+        },
+        {
+          "type": "richtext",
+          "id": "accordion4_content",
+          "label": "Contenu accordion 4",
+          "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>"
+        },
+        {
+          "type": "text",
+          "id": "accordion5_title",
+          "label": "Titre accordion 5",
+          "default": "Livraison & Retour"
+        },
+        {
+          "type": "richtext",
+          "id": "accordion5_content",
+          "label": "Contenu accordion 5",
+          "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>"
         }
       ]
     },
@@ -2086,6 +2440,131 @@
           "info": "t:sections.main-product.blocks.icon_with_text.settings.heading.info"
         }
       ]
+    },
+    {
+      "type": "reviews-trust",
+      "name": "Avis Trustpilot",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "rating_text",
+          "label": "Texte de la note",
+          "default": "Excellent"
+        },
+        {
+          "type": "text",
+          "id": "review_count",
+          "label": "Nombre d'avis",
+          "default": "17.102 avis"
+        }
+      ]
+    },
+    {
+      "type": "product-benefits",
+      "name": "Bénéfices produit",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "custom_icon",
+          "label": "Icône personnalisée",
+          "info": "Laissez vide pour utiliser l'icône check par défaut"
+        },
+        {
+          "type": "text",
+          "id": "benefit_1_text",
+          "label": "Bénéfice 1",
+          "default": "Lorem ipsum dolor sit amet"
+        },
+        {
+          "type": "text",
+          "id": "benefit_2_text",
+          "label": "Bénéfice 2",
+          "default": "Lorem ipsum dolor sit amet"
+        },
+        {
+          "type": "text",
+          "id": "benefit_3_text",
+          "label": "Bénéfice 3",
+          "default": "Lorem ipsum dolor sit amet"
+        },
+        {
+          "type": "text",
+          "id": "benefit_4_text",
+          "label": "Bénéfice 4"
+        },
+        {
+          "type": "text",
+          "id": "benefit_5_text",
+          "label": "Bénéfice 5"
+        },
+        {
+          "type": "text",
+          "id": "benefit_6_text",
+          "label": "Bénéfice 6"
+        }
+      ]
+    },
+    {
+      "type": "delivery-estimate",
+      "name": "Délai de livraison",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "alignment",
+          "label": "Alignement",
+          "options": [
+            {
+              "value": "left",
+              "label": "Gauche"
+            },
+            {
+              "value": "center",
+              "label": "Centre"
+            }
+          ],
+          "default": "center"
+        },
+        {
+          "type": "text",
+          "id": "status_text",
+          "label": "Statut du stock",
+          "default": "En stock"
+        },
+        {
+          "type": "text",
+          "id": "delivery_text_desktop",
+          "label": "Texte de livraison (Desktop)",
+          "default": ", commandez maintenant"
+        },
+        {
+          "type": "text",
+          "id": "delivery_text_mobile",
+          "label": "Texte de livraison (Mobile)",
+          "default": ", commandez et soyez livré le"
+        },
+        {
+          "type": "number",
+          "id": "delivery_days",
+          "label": "Délai de livraison (jours)",
+          "default": 2,
+          "info": "Nombre de jours ouvrables pour la livraison"
+        },
+        {
+          "type": "checkbox",
+          "id": "exclude_weekends",
+          "label": "Exclure les week-ends",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "holidays",
+          "label": "Jours fériés",
+          "info": "Séparez les dates par des virgules (ex: 25/12/2024, 01/01/2025)"
+        }
+      ]
     }
   ],
   "settings": [
@@ -2193,6 +2672,22 @@
     },
     {
       "type": "select",
+      "id": "mobile_slider_style",
+      "options": [
+        {
+          "value": "default",
+          "label": "Compteur par défaut"
+        },
+        {
+          "value": "progress_bar",
+          "label": "Barre de progression"
+        }
+      ],
+      "default": "default",
+      "label": "Style du slider mobile"
+    },
+    {
+      "type": "select",
       "id": "media_position",
       "options": [
         {
@@ -2240,6 +2735,19 @@
       "label": "t:sections.main-product.settings.enable_video_looping.label"
     },
     {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Texte du badge produit",
+      "default": "Hautement dosé",
+      "info": "Laissez vide pour masquer le badge"
+    },
+    {
+      "type": "color",
+      "id": "badge_color",
+      "label": "Couleur du badge produit",
+      "default": "#F0F3E2"
+    },
+    {
       "type": "header",
       "content": "t:sections.all.padding.section_padding_heading"
     },
@@ -2262,6 +2770,26 @@
       "unit": "px",
       "label": "t:sections.all.padding.padding_bottom",
       "default": 36
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_top",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "label": "Remplissage mobile (haut)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_bottom",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "label": "Remplissage mobile (bas)",
+      "default": 20
     }
   ]
 }

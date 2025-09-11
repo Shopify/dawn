@@ -88,7 +88,13 @@
               {%- elsif product.selected_or_first_available_variant.available == false or quantity_rule_soldout -%}
                 {{ 'products.product.sold_out' | t }}
               {%- else -%}
-                {{ 'products.product.add_to_cart' | t }}
+                {%- comment -%}
+                  Bouton "Ajouter au panier" avec prix de la variante sélectionnée
+                  Format: "Ajouter au panier | Prix"
+                {%- endcomment -%}
+                <span class="button-text">
+                  {{ 'products.product.add_to_cart' | t }} | <span class="price-item price-item--regular">{{ product.selected_or_first_available_variant.price | money }}</span>
+                </span>
               {%- endif -%}
             </span>
             {%- render 'loading-spinner' -%}
@@ -149,3 +155,58 @@
     <script src="{{ 'pickup-availability.js' | asset_url }}" defer="defer"></script>
   {%- endif -%}
 </div>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  window.productVariants = {{ product.variants | json }};
+  window.theme = window.theme || {};
+  window.theme.moneyFormat = {{ shop.money_format | json }};
+  
+  const submitButton = document.querySelector('#ProductSubmitButton-{{ section_id }}');
+  const variantIdInput = document.querySelector('.product-variant-id');
+  
+  if (submitButton && variantIdInput) {
+    function updateButtonPrice() {
+      const variantId = variantIdInput.value;
+      const variant = window.productVariants.find(v => v.id == variantId);
+      const buttonText = submitButton.querySelector('span');
+      
+      if (variant && variant.available && buttonText && !submitButton.disabled) {
+        const formattedPrice = typeof Shopify !== 'undefined' && Shopify.formatMoney 
+          ? Shopify.formatMoney(variant.price, window.theme.moneyFormat)
+          : (variant.price / 100).toLocaleString(undefined, {style: 'currency', currency: '{{ shop.currency }}'});
+        
+        // Vérifier si le texte contient déjà "Add to cart" sans prix
+        if (buttonText.textContent.includes('{{ "products.product.add_to_cart" | t }}') && 
+            !buttonText.innerHTML.includes('price-item')) {
+          buttonText.innerHTML = `{{ "products.product.add_to_cart" | t }} | <span class="price-item price-item--regular">${formattedPrice}</span>`;
+        }
+      }
+    }
+    
+  
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' || mutation.type === 'childList') {
+          updateButtonPrice();
+        }
+      });
+    });
+    
+    observer.observe(submitButton, {
+      attributes: true,
+      childList: true,
+      subtree: true
+    });
+    
+
+    variantIdInput.addEventListener('change', updateButtonPrice);
+    
+
+    updateButtonPrice();
+  }
+});
+</script>

@@ -1,0 +1,397 @@
+{{ 'tableau-comparaison.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  .comparaison-rows-body + .active {
+    background: {{ section.settings.color1rstcol }};
+    border-top: 1px solid {{ section.settings.bordercolonne1 }};
+  }
+
+  .comparaison-rows-body {
+    border-top: 1px solid {{ section.settings.borderallcol }};
+    border-left: 1px solid {{ section.settings.borderallcol }};
+  }
+
+  .comparaison-rows-body-active {
+    background: {{ section.settings.color1rstcol }};
+    border-top: 1px solid {{ section.settings.borderallcol }};
+    border-left: 1px solid {{ section.settings.borderallcol }};
+    border-top-left-radius: {{ section.settings.bradius }}px;
+  }
+
+  .comparaison-grid:last-child .comparaison-rows-body {
+    border-bottom: 1px solid {{ section.settings.borderallcol }};
+  }
+
+.comparaison-rows-body-active h3 {
+  color:{{ section.settings.colortitle }}
+}
+
+.comparaison-rows-body h3 {
+  color:{{ section.settings.colortitlecol2 }}
+}
+
+.comparaison-rows-body:last-child {
+  border-right: 1px solid {{ section.settings.borderallcol }};
+  background: {{ section.settings.backgroundcol2 }};
+}
+
+  .comparaison-header .comparaison-rows-body:last-child {
+  border-top-right-radius: {{ section.settings.bradius }}px;
+  background: {{ section.settings.backgroundcol2 }};
+}
+
+  .comparaison-grid:last-child .comparaison-rows-body:first-child {
+  border-bottom-left-radius: {{ section.settings.bradius }}px;
+}
+
+.comparaison-grid:last-child .comparaison-rows-body:last-child {
+  border-bottom-right-radius: {{ section.settings.bradius }}px;
+}
+
+.comparaison-grid .comparaison-rows-body:first-child {
+  background: {{ section.settings.backgroundcol2 }};
+}
+
+.flex-section .heading-tableau, .grid-section .heading-tableau {
+  align-items: {{ section.settings.align-content }};
+  text-align: {{ section.settings.align-content }}
+}
+
+.position-button {
+  justify-content: {{ section.settings.align-content }}
+}
+
+.content-tableau {
+  justify-content: {{ section.settings.vertical-pos }}
+}
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%} 
+
+{% capture button %}
+  {% if section.settings.textbouton != blank %}
+    <div class="collection__view-all position-button">
+      <a href="{{ section.settings.linkurl }}" class="{% if section.settings.view_all_style == 'link' %}link underlined-link{% elsif section.settings.view_all_style == 'solid' %}button{% else %}button button--secondary{% endif %}">
+      {{ section.settings.textbouton }} 
+      </a>
+    </div>
+  {% endif %}
+{% endcapture %}
+
+
+<div class="color-{{ section.settings.color_scheme }} isolate gradient">
+  <div class="section-{{ section.id }}-padding page-width">
+    {% if section.settings.titresection or section.settings.content != blank %}
+    <div class="{% if section.settings.position-content ==  'left' %}grid-section{% else %}flex-section{% endif %}">
+      <div class="content-tableau">
+        <div class="heading-tableau">
+          <h2>{{ section.settings.titresection }}</h2>
+          {{ section.settings.content }}
+        </div>
+        {% if section.settings.position-content == 'left' %}
+            {{ button }}
+        {% endif %}
+      </div>
+      {% endif %}
+      <div class="comparaison-tableau">
+        <div class="comparaison-header">
+          <div class="comparaison-rows-body"> </div>
+          <div class="comparaison-rows-body-active">
+            <h3>{{ section.settings.title_colonne1 }}</h3>
+          </div>
+          <div class="comparaison-rows-body">
+            <h3>{{ section.settings.title_colonne2 }}</h3>
+          </div>
+        </div>
+        
+        {% for blocks in section.blocks %}
+          <div class="comparaison-grid">
+            <div class="comparaison-rows-body">{{ blocks.settings.avantages }}</div>
+            <div class="comparaison-rows-body active">
+              {% if blocks.settings.img != blank %}
+                <img src="{{ blocks.settings.img.src | image_url: width: blocks.settings.width }}" alt="{{ block.settings.img.alt }}">
+              {% else %}
+               ✅
+              {% endif %}
+            </div>
+            <div class="comparaison-rows-body">
+              {% if blocks.settings.img2 != blank %}
+                <img src="{{ blocks.settings.img2.src | image_url: width: blocks.settings.width }}" alt="{{ block.settings.img2.alt }}">
+              {% else %}
+                ❌ 
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% if section.settings.position-content == 'dessus' %}
+      {{ button }}
+    {% endif %}
+   </div>
+  </div>
+</div>
+    
+{% schema %}
+{
+  "name": "Tableau Comparaison",
+  "tag": "section",
+  "class": "section",
+  "max_blocks": 6,
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [    
+    {
+      "type": "text",
+      "id": "titresection",
+      "label": "Titre de la section",
+      "default": "Titre de la section"
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": "Contenu de la section",
+      "default": "<p>Vestibulum sit amet metus in dolor pretium tempor nec sit amet diam. Praesent a ligula dui. Duis blandit ligula non sapien volutpat, sit amet varius sapien placerat. Aliquam quis nisi semper turpis placerat pellentesque. Maecenas tincidunt leo ac enim vehicula, nec tempor ante molestie.</p>"
+    },
+    {
+      "type": "select",
+      "id": "position-content",
+      "label": "Position du contenu sur desktop",
+      "options": [
+        {
+          "value": "left",
+          "label": "Gauche"
+        },
+        {
+          "value": "dessus",
+          "label": "Au dessus"
+        },
+      ],
+      "default": "dessus"
+    },
+    {
+      "type": "select",
+      "id": "align-content",
+      "label": "Alignement du contenu",
+      "options": [
+        {
+          "value": "left",
+          "label": "Gauche"
+        },
+        {
+          "value": "center",
+          "label": "Au centre"
+        },
+      ],
+      "default": "center"
+    },    
+    {
+      "type": "select",
+      "id": "vertical-pos",
+      "label": "Alignement vertical du contenu",
+      "info": "Uniquement si le contenu est à gauche sur desktop",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "En haut"
+        },
+        {
+          "value": "center",
+          "label": "Au centre"
+        },
+      ],
+      "default": "flex-start"
+    },
+    {
+      "type": "text",
+      "id": "textbouton",
+      "label":"Texte du bouton",
+      "default": "Voir plus"
+    },
+    {
+      "type": "url",
+      "id": "linkurl",
+      "label": "Lien du bouton"
+    },
+    {
+      "type" :"select",
+      "label": "Style du lien",
+      "id": "view_all_style",
+      "options": [
+        {
+          "value": "solid",
+          "label": "Bouton plein"
+        },
+        {
+          "value": "outline",
+          "label": "Bouton"
+        },
+        {
+          "value": "link",
+          "label": "Lien"
+        }
+      ],
+      "default":"solid"
+    },
+    {
+      "type":"header",
+      "content": "COLONNE 1"
+    },
+    {
+      "type": "text",
+      "id": "title_colonne1",
+      "label": "Titre de la 1ère colonne",
+      "default": "Colonne 1"
+    },
+    {
+      "type": "color",
+      "id": "color1rstcol",
+      "label": "Couleur de fond la colonne 1",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "bordercolonne1",
+      "label": "Couleur de bordure colonne 1",
+      "default": "#bbbbbb"
+    },
+    {
+      "type": "color",
+      "id": "colortitle",
+      "label": "Couleur du titre de la 1ère colonne",
+      "default": "#fff"
+    },
+    {
+      "type":"header",
+      "content": "COLONNE 2"
+    },
+    {
+      "type": "text",
+      "id": "title_colonne2",
+      "label": "Titre de la 2ème colonne",
+      "default": "Colonne 2"
+    },
+    {
+      "type": "color",
+      "id": "backgroundcol2",
+      "label": "Couleur de fond la colonne 2",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "colortitlecol2",
+      "label": "Couleur du titre de la colonne 2",
+      "default": "#000000"
+    },
+    {
+      "type":"header",
+      "content": "PARAMETRES GENERAUX"
+    },
+    {
+      "type": "color",
+      "id": "borderallcol",
+      "label": "Couleur des bordures du tableau",
+      "default": "#737373"
+    },
+    {
+      "type": "range",
+      "id": "bradius",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Arrondi des bordures",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "info": "t:sections.all.colors.has_cards_info",
+      "default": "scheme-1"
+    }
+  ],
+  "blocks": [
+    {
+    "name":"Colonne",
+    "type" :"Select",
+    "settings":[
+      {
+        "type": "text",
+        "id":"avantages",
+        "label":"Titre",
+        "default":"Avantage"        
+      },
+      {
+        "type": "image_picker",
+        "id": "img",
+        "label": "Icone 1ère colonne",
+        "info": "Format de l'image recommandé 100x100"
+      },
+      {
+        "type": "image_picker",
+        "id": "img2",
+        "label": "Icone 2ème colonne",
+        "info": "Format de l'image recommandé 100x100"
+      },
+      {
+        "type": "range",
+        "id": "width",
+        "min": 20,
+        "max": 40,
+        "step": 1,
+        "unit": "px",
+        "label": "Taille de l'icone",
+        "default": 30
+      }      
+     ] 
+    }
+  ],
+  "presets": [
+    {
+      "name": "Tableau Comparaison",
+      "blocks": [
+        {
+          "type": "Select"
+        },
+        {
+          "type": "Select"
+        },
+        {
+          "type": "Select"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
