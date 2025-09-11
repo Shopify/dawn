@@ -145,9 +145,6 @@ class CartItems extends HTMLElement {
   }
 
   updateQuantity(line, quantity, event, name, variantId) {
-    const eventTarget = event.currentTarget instanceof CartRemoveButton ? 'clear' : 'change';
-    const cartPerformanceUpdateMarker = CartPerformance.createStartingMarker(`${eventTarget}:user-action`);
-
     this.enableLoading(line);
 
     const body = JSON.stringify({
@@ -156,6 +153,7 @@ class CartItems extends HTMLElement {
       sections: this.getSectionsToRender().map((section) => section.section),
       sections_url: window.location.pathname,
     });
+    const eventTarget = event.currentTarget instanceof CartRemoveButton ? 'clear' : 'change';
 
     fetch(`${routes.cart_change_url}`, { ...fetchConfig(), ...{ body } })
       .then((response) => {
@@ -164,7 +162,7 @@ class CartItems extends HTMLElement {
       .then((state) => {
         const parsedState = JSON.parse(state);
 
-        CartPerformance.measure(`${eventTarget}:paint-updated-sections`, () => {
+        CartPerformance.measure(`${eventTarget}:paint-updated-sections"`, () => {
           const quantityElement =
             document.getElementById(`Quantity-${line}`) || document.getElementById(`Drawer-quantity-${line}`);
           const items = document.querySelectorAll('.cart-item');
@@ -184,8 +182,7 @@ class CartItems extends HTMLElement {
 
           this.getSectionsToRender().forEach((section) => {
             const elementToReplace =
-              document.getElementById(section.id).querySelector(section.selector) ||
-              document.getElementById(section.id);
+              document.getElementById(section.id).querySelector(section.selector) || document.getElementById(section.id);
             elementToReplace.innerHTML = this.getSectionInnerHTML(
               parsedState.sections[section.section],
               section.selector
@@ -215,6 +212,8 @@ class CartItems extends HTMLElement {
           }
         });
 
+        CartPerformance.measureFromEvent(`${eventTarget}:user-action`, event);
+
         publish(PUB_SUB_EVENTS.cartUpdate, { source: 'cart-items', cartData: parsedState, variantId: variantId });
       })
       .catch(() => {
@@ -224,7 +223,6 @@ class CartItems extends HTMLElement {
       })
       .finally(() => {
         this.disableLoading(line);
-        CartPerformance.measureFromMarker(`${eventTarget}:user-action`, cartPerformanceUpdateMarker);
       });
   }
 
@@ -286,9 +284,8 @@ if (!customElements.get('cart-note')) {
           'input',
           debounce((event) => {
             const body = JSON.stringify({ note: event.target.value });
-            fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } }).then(() =>
-              CartPerformance.measureFromEvent('note-update:user-action', event)
-            );
+            fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } })
+              .then(() => CartPerformance.measureFromEvent('note-update:user-action', event));
           }, ON_CHANGE_DEBOUNCE_TIMER)
         );
       }
