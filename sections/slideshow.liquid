@@ -2,13 +2,20 @@
 {{ 'component-slider.css' | asset_url | stylesheet_tag }}
 {{ 'component-slideshow.css' | asset_url | stylesheet_tag }}
 
-{%- if section.settings.slide_height == 'adapt_image' and section.blocks.first.settings.image != blank -%}
+{%- liquid
+  assign first_block_image = section.blocks.first.settings.image
+  if section.blocks.first.settings.featured_product != blank
+    assign first_block_image = section.blocks.first.settings.featured_product.featured_media
+  endif
+-%}
+
+{%- if section.settings.slide_height == 'adapt_image' and first_block_image != blank -%}
   {%- style -%}
     @media screen and (max-width: 749px) {
       #Slider-{{ section.id }}::before,
       #Slider-{{ section.id }} .media::before,
       #Slider-{{ section.id }}:not(.banner--mobile-bottom) .banner__content::before {
-        padding-bottom: {{ 1 | divided_by: section.blocks.first.settings.image.aspect_ratio | times: 100 }}%;
+        padding-bottom: {{ 1 | divided_by: first_block_image.aspect_ratio | times: 100 }}%;
         content: '';
         display: block;
       }
@@ -17,7 +24,7 @@
     @media screen and (min-width: 750px) {
       #Slider-{{ section.id }}::before,
       #Slider-{{ section.id }} .media::before {
-        padding-bottom: {{ 1 | divided_by: section.blocks.first.settings.image.aspect_ratio | times: 100 }}%;
+        padding-bottom: {{ 1 | divided_by: first_block_image.aspect_ratio | times: 100 }}%;
         content: '';
         display: block;
       }
@@ -98,7 +105,7 @@
   {%- endif -%}
 
   <div
-    class="slideshow banner banner--{{ section.settings.slide_height }} grid grid--1-col slider slider--everywhere{% if section.settings.show_text_below %} banner--mobile-bottom{% endif %}{% if section.blocks.first.settings.image == blank %} slideshow--placeholder{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+    class="slideshow banner banner--{{ section.settings.slide_height }} grid grid--1-col slider slider--everywhere{% if section.settings.show_text_below %} banner--mobile-bottom{% endif %}{% if first_block_image == blank %} slideshow--placeholder{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
     id="Slider-{{ section.id }}"
     aria-live="polite"
     aria-atomic="true"
@@ -106,6 +113,22 @@
     data-speed="{{ section.settings.change_slides_speed }}"
   >
     {%- for block in section.blocks -%}
+      {%- liquid
+        assign slide_image = block.settings.image
+        assign slide_heading = block.settings.heading
+        assign slide_subheading = block.settings.subheading
+        assign slide_link = block.settings.link
+        assign slide_button_label = block.settings.button_label
+
+        if block.settings.featured_product != blank
+          assign slide_image = block.settings.featured_product.featured_media
+          assign slide_heading = block.settings.featured_product.title
+          assign slide_link = block.settings.featured_product.url
+          if slide_button_label == blank
+            assign slide_button_label = 'Shop Now'
+          endif
+        endif
+      -%}
       <style>
         #Slide-{{ section.id }}-{{ forloop.index }} .banner__media::after {
           opacity: {{ block.settings.image_overlay_opacity | divided_by: 100.0 }};
@@ -120,10 +143,10 @@
         aria-label="{{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
         tabindex="-1"
       >
-        <div class="slideshow__media banner__media media{% if block.settings.image == blank %} placeholder{% endif %}{% if section.settings.image_behavior != 'none' %} animate--{{ section.settings.image_behavior }}{% endif %}">
-          {%- if block.settings.image -%}
+        <div class="slideshow__media banner__media media{% if slide_image == blank %} placeholder{% endif %}{% if section.settings.image_behavior != 'none' %} animate--{{ section.settings.image_behavior }}{% endif %}">
+          {%- if slide_image -%}
             {%- liquid
-              assign height = block.settings.image.width | divided_by: block.settings.image.aspect_ratio | round
+              assign height = slide_image.width | divided_by: slide_image.aspect_ratio | round
               if section.settings.image_behavior == 'ambient'
                 assign sizes = '120vw'
                 assign widths = '450, 660, 900, 1320, 1800, 2136, 2400, 3600, 7680'
@@ -138,13 +161,13 @@
             -%}
             {%- if forloop.first %}
               {{
-                block.settings.image
+                slide_image
                 | image_url: width: 3840
                 | image_tag: height: height, sizes: sizes, widths: widths, fetchpriority: fetch_priority
               }}
             {%- else -%}
               {{
-                block.settings.image
+                slide_image
                 | image_url: width: 3840
                 | image_tag: loading: 'lazy', height: height, sizes: sizes, widths: widths
               }}
@@ -160,27 +183,27 @@
         </div>
         <div class="slideshow__text-wrapper banner__content banner__content--{{ block.settings.box_align }} page-width{% if block.settings.show_text_box == false %} banner--desktop-transparent{% endif %}{% if settings.animations_reveal_on_scroll and forloop.index == 1 %} scroll-trigger animate--slide-in{% endif %}">
           <div class="slideshow__text banner__box content-container content-container--full-width-mobile color-{{ block.settings.color_scheme }} gradient slideshow__text--{{ block.settings.text_alignment }} slideshow__text-mobile--{{ block.settings.text_alignment_mobile }}">
-            {%- if block.settings.heading != blank -%}
+            {%- if slide_heading != blank -%}
               <h2 class="banner__heading inline-richtext {{ block.settings.heading_size }}">
-                {{ block.settings.heading }}
+                {{ slide_heading }}
               </h2>
             {%- endif -%}
-            {%- if block.settings.subheading != blank -%}
+            {%- if slide_subheading != blank -%}
               <div class="banner__text rte">
-                <p>{{ block.settings.subheading }}</p>
+                <p>{{ slide_subheading }}</p>
               </div>
             {%- endif -%}
-            {%- if block.settings.button_label != blank -%}
+            {%- if slide_button_label != blank -%}
               <div class="banner__buttons">
                 <a
-                  {% if block.settings.link %}
-                    href="{{ block.settings.link }}"
+                  {% if slide_link %}
+                    href="{{ slide_link }}"
                   {% else %}
                     role="link" aria-disabled="true"
                   {% endif %}
                   class="button {% if block.settings.button_style_secondary %}button--secondary{% else %}button--primary{% endif %}"
                 >
-                  {{- block.settings.button_label | escape -}}
+                  {{- slide_button_label | escape -}}
                 </a>
               </div>
             {%- endif -%}
@@ -391,6 +414,12 @@
       "limit": 5,
       "settings": [
         {
+          "type": "product",
+          "id": "featured_product",
+          "label": "Product",
+          "info": "If a product is selected, its image, title, and link will be used, overriding the manual settings below."
+        },
+        {
           "type": "image_picker",
           "id": "image",
           "label": "t:sections.slideshow.blocks.slide.settings.image.label"
@@ -452,12 +481,12 @@
         {
           "type": "header",
           "content": "t:sections.slideshow.blocks.slide.settings.header_button.content"
-        },        
+        },
         {
           "type": "text",
           "id": "button_label",
           "default": "t:sections.slideshow.blocks.slide.settings.button_label.default",
-          "label": "t:sections.slideshow.blocks.slide.settings.button_label.label", 
+          "label": "t:sections.slideshow.blocks.slide.settings.button_label.label",
           "info": "t:sections.slideshow.blocks.slide.settings.button_label.info"
         },
         {
@@ -474,7 +503,7 @@
         {
           "type": "header",
           "content": "t:sections.slideshow.blocks.slide.settings.header_layout.content"
-        },         
+        },
         {
           "type": "checkbox",
           "id": "show_text_box",
@@ -564,7 +593,7 @@
           ],
           "default": "center",
           "label": "t:sections.slideshow.blocks.slide.settings.text_alignment_mobile.label"
-        },        
+        },
         {
           "type": "color_scheme",
           "id": "color_scheme",
