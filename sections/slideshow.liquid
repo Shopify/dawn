@@ -1,19 +1,37 @@
+{% comment %}
+  MODIFIED CODE:
+  - Added a product picker to dynamically pull product images.
+  - Set auto-rotate to 'true' by default.
+  - Linked entire slide to the product page.
+  - Added a direct "Add to Cart" button with an icon on each slide.
+  - Removed static text and button settings for a cleaner, product-focused look.
+{% endcomment %}
+
 {{ 'section-image-banner.css' | asset_url | stylesheet_tag }}
 {{ 'component-slider.css' | asset_url | stylesheet_tag }}
 {{ 'component-slideshow.css' | asset_url | stylesheet_tag }}
 
 {%- liquid
-  assign first_block_product = section.blocks.first.settings.product
-  assign first_block_image = first_block_product.featured_image
+  assign first_product_image = ''
+  for block in section.blocks
+    if block.settings.product.featured_image != blank
+      assign first_product_image = block.settings.product.featured_image
+      break
+    endif
+  endfor
+
+  if section.settings.slide_height == 'adapt_image' and first_product_image != blank
+    assign first_image_aspect_ratio = first_product_image.aspect_ratio
+  endif
 -%}
 
-{%- if section.settings.slide_height == 'adapt_image' and first_block_image != blank -%}
+{%- if section.settings.slide_height == 'adapt_image' and first_product_image != blank -%}
   {%- style -%}
     @media screen and (max-width: 749px) {
       #Slider-{{ section.id }}::before,
       #Slider-{{ section.id }} .media::before,
       #Slider-{{ section.id }}:not(.banner--mobile-bottom) .banner__content::before {
-        padding-bottom: {{ 1 | divided_by: first_block_image.aspect_ratio | times: 100 }}%;
+        padding-bottom: {{ 1 | divided_by: first_image_aspect_ratio | times: 100 }}%;
         content: '';
         display: block;
       }
@@ -22,13 +40,51 @@
     @media screen and (min-width: 750px) {
       #Slider-{{ section.id }}::before,
       #Slider-{{ section.id }} .media::before {
-        padding-bottom: {{ 1 | divided_by: first_block_image.aspect_ratio | times: 100 }}%;
+        padding-bottom: {{ 1 | divided_by: first_image_aspect_ratio | times: 100 }}%;
         content: '';
         display: block;
       }
     }
   {%- endstyle -%}
 {%- endif -%}
+
+<style>
+  .slideshow__add-to-cart {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    z-index: 3;
+  }
+  .slideshow__add-to-cart .cart-button {
+    background-color: rgba(var(--color-background), 0.75);
+    color: rgb(var(--color-foreground));
+    border: 1px solid rgba(var(--color-foreground), 0.1);
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  .slideshow__add-to-cart .cart-button:hover {
+    transform: scale(1.1);
+  }
+  .slideshow__add-to-cart .cart-button .icon-cart {
+    width: 20px;
+    height: 20px;
+  }
+  .slideshow__slide a.slideshow__slide-link {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+</style>
 
 <slideshow-component
   class="slider-mobile-gutter{% if section.settings.layout == 'grid' %} page-width{% endif %}"
@@ -46,10 +102,10 @@
         aria-controls="Slider-{{ section.id }}"
       >
         <span class="svg-wrapper">
-          {{- 'icon-caret.svg' | inline_asset_content -}}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 12" fill="none" class="icon icon-caret" focusable="false" aria-hidden="true"><path d="M9 1.5 4.5 6l4.5 4.5" stroke="currentColor" stroke-width="1.5"/></svg>
         </span>
       </button>
-      <div class="slider-counter slider-counter--{{ section.settings.slider_visual }}{% if section.settings.slider_visual == 'counter' or section.settings.slider_visual == 'numbers' %} caption{% endif %}">
+      <div class="slider-counter slider-counter--{{ section.settings.slider_visual }}">
         {%- if section.settings.slider_visual == 'counter' -%}
           <span class="slider-counter--current">1</span>
           <span aria-hidden="true"> / </span>
@@ -81,21 +137,17 @@
         aria-controls="Slider-{{ section.id }}"
       >
         <span class="svg-wrapper">
-          {{- 'icon-caret.svg' | inline_asset_content -}}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 12" fill="none" class="icon icon-caret" focusable="false" aria-hidden="true"><path d="m1 1.5 4.5 6-4.5 4.5" stroke="currentColor" stroke-width="1.5"/></svg>
         </span>
       </button>
 
       {%- if section.settings.auto_rotate -%}
-        <button
-          type="button"
-          class="slideshow__autoplay slider-button"
-          aria-label="{{ 'sections.slideshow.pause_slideshow' | t }}"
-        >
+        <button type="button" class="slideshow__autoplay slider-button" aria-label="{{ 'sections.slideshow.pause_slideshow' | t }}">
           <span class="svg-wrapper">
-            {{- 'icon-pause.svg' | inline_asset_content -}}
+            {{- 'icon-pause.svg' | asset_url | img_tag: '', 'icon-pause' -}}
           </span>
           <span class="svg-wrapper">
-            {{- 'icon-play.svg' | inline_asset_content -}}
+            {{- 'icon-play.svg' | asset_url | img_tag: '', 'icon-play' -}}
           </span>
         </button>
       {%- endif -%}
@@ -103,7 +155,7 @@
   {%- endif -%}
 
   <div
-    class="slideshow banner banner--{{ section.settings.slide_height }} grid grid--1-col slider slider--everywhere{% if first_block_image == blank %} slideshow--placeholder{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+    class="slideshow banner banner--{{ section.settings.slide_height }} grid grid--1-col slider slider--everywhere{% if section.blocks.first.settings.product.featured_image == blank %} slideshow--placeholder{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
     id="Slider-{{ section.id }}"
     aria-live="polite"
     aria-atomic="true"
@@ -112,12 +164,6 @@
   >
     {%- for block in section.blocks -%}
       {%- assign product = block.settings.product -%}
-      {%- assign slide_image = product.featured_image -%}
-      <style>
-        #Slide-{{ section.id }}-{{ forloop.index }} .banner__media::after {
-          opacity: {{ block.settings.image_overlay_opacity | divided_by: 100.0 }};
-        }
-      </style>
       <div
         class="slideshow__slide grid__item grid--1-col slider__slide"
         id="Slide-{{ section.id }}-{{ forloop.index }}"
@@ -127,38 +173,47 @@
         aria-label="{{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
         tabindex="-1"
       >
-        <a href="{{ product.url | default: '#' }}" class="slideshow__link">
-          <div class="slideshow__media banner__media media{% if slide_image == blank %} placeholder{% endif %}{% if section.settings.image_behavior != 'none' %} animate--{{ section.settings.image_behavior }}{% endif %}">
-            {%- if slide_image -%}
-              {%- liquid
-                assign height = slide_image.width | divided_by: slide_image.aspect_ratio | round
-                if section.settings.image_behavior == 'ambient'
-                  assign sizes = '120vw'
-                  assign widths = '450, 660, 900, 1320, 1800, 2136, 2400, 3600, 7680'
-                else
-                  assign sizes = '100vw'
-                  assign widths = '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840'
-                endif
-                assign fetch_priority = 'auto'
-                if section.index == 1 and forloop.first
-                  assign fetch_priority = 'high'
-                endif
-              -%}
-              {{
-                slide_image
-                | image_url: width: 3840
-                | image_tag: loading: 'lazy', height: height, sizes: sizes, widths: widths, fetchpriority: fetch_priority
-              }}
-            {%- else -%}
-              {%- assign placeholder_slide = forloop.index | modulo: 2 -%}
-              {%- if placeholder_slide == 1 -%}
-                {{ 'hero-apparel-2' | placeholder_svg_tag: 'placeholder-svg' }}
-              {%- else -%}
-                {{ 'hero-apparel-1' | placeholder_svg_tag: 'placeholder-svg' }}
-              {%- endif -%}
-            {%- endif -%}
-          </div>
+        <a {% if product != blank %}href="{{ product.url }}"{% else %}role="link" aria-disabled="true"{% endif %} class="slideshow__slide-link">
+          <span class="visually-hidden">{{ product.title | default: "Slide" }}</span>
         </a>
+
+        <div class="slideshow__media banner__media media{% if product.featured_image == blank %} placeholder{% endif %}">
+          {%- if product.featured_image -%}
+            {%- liquid
+              assign height = product.featured_image.width | divided_by: product.featured_image.aspect_ratio | round
+              assign sizes = '100vw'
+              assign widths = '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840'
+              assign fetch_priority = 'auto'
+              if forloop.first
+                assign fetch_priority = 'high'
+              endif
+            -%}
+            {{ product.featured_image | image_url: width: 3840 | image_tag:
+              loading: 'lazy',
+              height: height,
+              sizes: sizes,
+              widths: widths,
+              fetchpriority: fetch_priority
+            }}
+          {%- else -%}
+            {{ 'lifestyle-2' | placeholder_svg_tag: 'placeholder-svg' }}
+          {%- endif -%}
+        </div>
+
+        {%- if product != blank -%}
+          <div class="slideshow__add-to-cart">
+            <form method="post" action="/cart/add" accept-charset="UTF-8" enctype="multipart/form-data" novalidate="novalidate">
+              <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+              <input type="hidden" name="quantity" value="1">
+              <button type="submit" class="cart-button" aria-label="{{ 'products.product.add_to_cart' | t | escape }}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-cart">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c.51 0 .962-.343 1.087-.835l1.838-6.837a1.125 1.125 0 00-1.087-1.415H4.874c-.612 0-1.125.513-1.125 1.125L3.375 14.25zM7.5 14.25h11.218M15 18a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm-7.5 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                </svg>
+              </button>
+            </form>
+          </div>
+        {%- endif -%}
+
       </div>
     {%- endfor -%}
   </div>
@@ -254,22 +309,6 @@
       "default": 5
     },
     {
-      "type": "select",
-      "id": "image_behavior",
-      "options": [
-        {
-          "value": "none",
-          "label": "t:sections.all.animation.image_behavior.options__1.label"
-        },
-        {
-          "value": "ambient",
-          "label": "t:sections.all.animation.image_behavior.options__2.label"
-        }
-      ],
-      "default": "none",
-      "label": "t:sections.all.animation.image_behavior.label"
-    },
-    {
       "type": "header",
       "content": "t:sections.slideshow.settings.accessibility.content"
     },
@@ -293,14 +332,10 @@
           "label": "Product"
         },
         {
-          "type": "range",
-          "id": "image_overlay_opacity",
-          "min": 0,
-          "max": 100,
-          "step": 10,
-          "unit": "%",
-          "label": "t:sections.slideshow.blocks.slide.settings.image_overlay_opacity.label",
-          "default": 0
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "t:sections.all.colors.label",
+          "default": "scheme-1"
         }
       ]
     }
