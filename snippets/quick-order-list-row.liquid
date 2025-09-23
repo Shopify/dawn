@@ -17,7 +17,6 @@
   class="variant-item{% unless show_image %} variant-item--no-media{% endunless %}{% if item.available and item.unit_price_measurement %} variant-item--unit-price{% endif %}"
   id="Variant-{{ variant.id }}"
   data-variant-id="{{ variant.id }}"
-  data-cart-qty="{{ cart_qty }}"
 >
   <td class="variant-item__inner{% unless sku and show_sku %} variant-item__inner--no-sku{% endunless %}">
     {%- if show_image -%}
@@ -146,16 +145,7 @@
     {%- endif -%}
 
     {%- if item.available and item.unit_price_measurement -%}
-      <div class="unit-price caption">
-        <span class="visually-hidden">{{ 'products.product.price.unit_price' | t }}</span>
-        {{ item.unit_price | money }}
-        <span aria-hidden="true">/</span>
-        <span class="visually-hidden">&nbsp;{{ 'accessibility.unit_price_separator' | t }}&nbsp;</span>
-        {%- if item.unit_price_measurement.reference_value != 1 -%}
-          {{- item.unit_price_measurement.reference_value -}}
-        {%- endif -%}
-        {{ item.unit_price_measurement.reference_unit }}
-      </div>
+      {% render 'unit-price', price: item.unit_price, measurement: item.unit_price_measurement %}
     {%- endif -%}
   </td>
 
@@ -216,7 +206,7 @@
               "
               class="quantity-popover__info-button quantity-popover__info-button--icon-only button button--tertiary small-hide medium-hide no-js-hidden"
             >
-              {% render 'icon-info' %}
+              {{- 'icon-info.svg' | inline_asset_content -}}
             </button>
             <div
               class="global-settings-popup quantity-popover__info"
@@ -249,7 +239,7 @@
                 type="button"
                 aria-label="{{ 'accessibility.close' | t }}"
               >
-                {%- render 'icon-close' -%}
+                {{- 'icon-close.svg' | inline_asset_content -}}
               </button>
               {%- if variant.quantity_price_breaks.size > 0 -%}
                 <volume-pricing class="parent-display">
@@ -285,18 +275,21 @@
           {%- endif -%}
         </div>
         {% if cart_qty > 0 %}
-          <quick-order-list-remove-button
+          <div
             id="Remove-{{ variant.id }}"
+            class="quick-order-list-remove-button"
             data-index="{{ variant.id }}"
           >
-            <a
-              href="{{ item.url_to_remove }}"
+            <button
               class="button button--tertiary"
               aria-label="{{ 'sections.cart.remove_title' | t: title: item.title }}"
+              data-target="remove-{{ variant.id }}"
             >
-              {% render 'icon-remove' %}
-            </a>
-          </quick-order-list-remove-button>
+              <span class="svg-wrapper">
+                {{- 'icon-remove.svg' | inline_asset_content -}}
+              </span>
+            </button>
+          </div>
         {% endif %}
       </div>
       {%- if has_popover -%}
@@ -305,7 +298,7 @@
           class="quantity-popover__info-button quantity-popover__info-button--icon-with-label button button--tertiary large-up-hide"
           aria-expanded="false"
         >
-          {% render 'icon-info' %}
+          {{- 'icon-info.svg' | inline_asset_content -}}
           <span>
             {%- if has_vol_pricing -%}
               {{ 'products.product.volume_pricing.note' | t }}
@@ -321,17 +314,9 @@
         role="alert"
       >
         <small class="variant-item__error-text"></small>
-        <svg
-          aria-hidden="true"
-          focusable="false"
-          class="icon icon-error"
-          viewBox="0 0 13 13"
-        >
-          <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
-          <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
-          <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
-          <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
-        </svg>
+        <span class="svg-wrapper">
+          {{- 'icon-error.svg' | inline_asset_content -}}
+        </span>
       </div>
     </quantity-popover>
   </td>
@@ -423,16 +408,7 @@
     {%- endif -%}
 
     {%- if item.available and item.unit_price_measurement -%}
-      <div class="unit-price caption">
-        <span class="visually-hidden">{{ 'products.product.price.unit_price' | t }}</span>
-        {{ item.unit_price | money }}
-        <span aria-hidden="true">/</span>
-        <span class="visually-hidden">&nbsp;{{ 'accessibility.unit_price_separator' | t }}&nbsp;</span>
-        {%- if item.unit_price_measurement.reference_value != 1 -%}
-          {{- item.unit_price_measurement.reference_value -}}
-        {%- endif -%}
-        {{ item.unit_price_measurement.reference_unit }}
-      </div>
+      {% render 'unit-price', price: item.unit_price, measurement: item.unit_price_measurement %}
     {%- endif -%}
   </td>
   <td class="variant-item__totals right small-hide medium-hide">
@@ -448,17 +424,7 @@
   <td>
     <div class="variant-item__error" id="Quick-order-list-item-error-desktop-{{ variant.id }}" role="alert">
       <small class="variant-item__error-text"></small>
-      <svg
-        aria-hidden="true"
-        focusable="false"
-        class="icon icon-error"
-        viewBox="0 0 13 13"
-      >
-        <circle cx="6.5" cy="6.50049" r="5.5" stroke="white" stroke-width="2"/>
-        <circle cx="6.5" cy="6.5" r="5.5" fill="#EB001B" stroke="#EB001B" stroke-width="0.7"/>
-        <path d="M5.87413 3.52832L5.97439 7.57216H7.02713L7.12739 3.52832H5.87413ZM6.50076 9.66091C6.88091 9.66091 7.18169 9.37267 7.18169 9.00504C7.18169 8.63742 6.88091 8.34917 6.50076 8.34917C6.12061 8.34917 5.81982 8.63742 5.81982 9.00504C5.81982 9.37267 6.12061 9.66091 6.50076 9.66091Z" fill="white"/>
-        <path d="M5.87413 3.17832H5.51535L5.52424 3.537L5.6245 7.58083L5.63296 7.92216H5.97439H7.02713H7.36856L7.37702 7.58083L7.47728 3.537L7.48617 3.17832H7.12739H5.87413ZM6.50076 10.0109C7.06121 10.0109 7.5317 9.57872 7.5317 9.00504C7.5317 8.43137 7.06121 7.99918 6.50076 7.99918C5.94031 7.99918 5.46982 8.43137 5.46982 9.00504C5.46982 9.57872 5.94031 10.0109 6.50076 10.0109Z" fill="white" stroke="#EB001B" stroke-width="0.7">
-      </svg>
+      <span class="svg-wrapper">{{ 'icon-error.svg' | inline_asset_content }}</span>
     </div>
   </td>
   <td></td>

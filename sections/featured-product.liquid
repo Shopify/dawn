@@ -172,9 +172,20 @@
                       | item_count_for_variant: product.selected_or_first_available_variant.id
                     -%}
                     {% # theme-check-enable %}
-                    <label class="quantity__label form__label" for="Quantity-{{ section.id }}">
-                      {{ 'products.product.quantity.label' | t }}
-                      <span class="quantity__rules-cart{% if cart_qty == 0 %} hidden{% endif %}">
+                    <span class="visually-hidden" id="quantity-label-{{ section.id }}">
+                      {%- if cart_qty > 0 -%}
+                        {{- 'products.product.quantity.in_cart_aria_label' | t: quantity: cart_qty -}}
+                      {%- else -%}
+                        {{- 'products.product.quantity.label' | t -}}
+                      {%- endif -%}
+                    </span>
+                    <label
+                      class="quantity__label form__label"
+                      for="Quantity-{{ section.id }}"
+                      aria-labelledby="quantity-label-{{ section.id }}"
+                    >
+                      <span aria-hidden="true">{{ 'products.product.quantity.label' | t }}</span>
+                      <span class="quantity__rules-cart{% if cart_qty == 0 %} hidden{% endif %}" aria-hidden="true">
                         {%- render 'loading-spinner' -%}
                         <span
                           >(
@@ -189,7 +200,9 @@
                           <span class="visually-hidden">
                             {{- 'products.product.quantity.decrease' | t: product: product.title | escape -}}
                           </span>
-                          {% render 'icon-minus' %}
+                          <span class="svg-wrapper">
+                            {{- 'icon-minus.svg' | inline_asset_content -}}
+                          </span>
                         </button>
                         <input
                           class="quantity__input"
@@ -211,7 +224,9 @@
                           <span class="visually-hidden">
                             {{- 'products.product.quantity.increase' | t: product: product.title | escape -}}
                           </span>
-                          {% render 'icon-plus' %}
+                          <span class="svg-wrapper">
+                            {{- 'icon-plus.svg' | inline_asset_content -}}
+                          </span>
                         </button>
                       </quantity-input>
                       {%- liquid
@@ -247,7 +262,7 @@
                                   | money_with_currency
                                 -%}
                                 <span class="price-per-item--current">
-                                  {{- 'products.product.volume_pricing.price_at_each' | t: price: variant_price -}}
+                                  {{- 'products.product.volume_pricing.price_at_each_html' | t: price: variant_price -}}
                                 </span>
                               {%- else -%}
                                 {%- for price_break in volume_pricing_array -%}
@@ -255,7 +270,7 @@
                                     {%- assign price_break_price = price_break.price | money_with_currency -%}
                                     <span class="price-per-item--current">
                                       {{-
-                                        'products.product.volume_pricing.price_at_each'
+                                        'products.product.volume_pricing.price_at_each_html'
                                         | t: price: price_break_price
                                       -}}
                                     </span>
@@ -285,13 +300,16 @@
                                   </dt>
                                   <dd>
                                     <span class="price-per-item--current">
-                                      {{- 'products.product.volume_pricing.price_at_each' | t: price: variant_price -}}
+                                      {{-
+                                        'products.product.volume_pricing.price_at_each_html'
+                                        | t: price: variant_price
+                                      -}}
                                     </span>
                                   </dd>
                                 </dl>
                               {%- else -%}
                                 <span class="price-per-item--current">
-                                  {{- 'products.product.volume_pricing.price_at_each' | t: price: variant_price -}}
+                                  {{- 'products.product.volume_pricing.price_at_each_html' | t: price: variant_price -}}
                                 </span>
                               {%- endif -%}
                             </div>
@@ -335,7 +353,7 @@
                               {%- assign price = product.selected_or_first_available_variant.price
                                 | money_with_currency
                               -%}
-                              <span data-text="{{ 'products.product.volume_pricing.price_at_each' | t: price: variant_price }}">
+                              <span data-text="{{ 'products.product.volume_pricing.price_at_each_html' | t: price: variant_price }}">
                                 {{ 'sections.quick_order_list.each' | t: money: price -}}
                               </span>
                             </li>
@@ -347,7 +365,7 @@
                                   <span aria-hidden="true">+</span></span
                                 >
                                 {%- assign price = price_break.price | money_with_currency -%}
-                                <span data-text="{{ 'products.product.volume_pricing.price_at_each' | t: price: price_break_price }}">
+                                <span data-text="{{ 'products.product.volume_pricing.price_at_each_html' | t: price: price_break_price }}">
                                   {{ 'sections.quick_order_list.each' | t: money: price -}}
                                 </span>
                               </li>
@@ -441,7 +459,7 @@
               class="link product__view-details animate-arrow"
             >
               {{ 'products.product.view_full_details' | t }}
-              {% render 'icon-arrow' %}
+              {{- 'icon-arrow.svg' | inline_asset_content -}}
             </a>
           </section>
         </div>
@@ -674,14 +692,6 @@
           "id": "share_label",
           "label": "t:sections.featured-product.blocks.share.settings.text.label",
           "default": "t:sections.featured-product.blocks.share.settings.text.default"
-        },
-        {
-          "type": "paragraph",
-          "content": "t:sections.featured-product.blocks.share.settings.featured_image_info.content"
-        },
-        {
-          "type": "paragraph",
-          "content": "t:sections.featured-product.blocks.share.settings.title_info.content"
         }
       ]
     },
@@ -1344,8 +1354,7 @@
     },
     {
       "type": "header",
-      "content": "t:sections.featured-product.settings.header.content",
-      "info": "t:sections.featured-product.settings.header.info"
+      "content": "t:sections.featured-product.settings.header.content"
     },
     {
       "type": "select",
@@ -1365,8 +1374,7 @@
         }
       ],
       "default": "medium",
-      "label": "t:sections.main-product.settings.media_size.label",
-      "info": "t:sections.main-product.settings.media_size.info"
+      "label": "t:sections.main-product.settings.media_size.label"
     },
     {
       "type": "checkbox",
@@ -1404,8 +1412,7 @@
         }
       ],
       "default": "left",
-      "label": "t:sections.featured-product.settings.media_position.label",
-      "info": "t:sections.featured-product.settings.media_position.info"
+      "label": "t:sections.featured-product.settings.media_position.label"
     },
     {
       "type": "select",
@@ -1425,8 +1432,7 @@
         }
       ],
       "default": "lightbox",
-      "label": "t:sections.main-product.settings.image_zoom.label",
-      "info": "t:sections.main-product.settings.image_zoom.info"
+      "label": "t:sections.main-product.settings.image_zoom.label"
     },
     {
       "type": "checkbox",

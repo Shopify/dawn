@@ -1,6 +1,8 @@
-Dawn 15.0.1 introduces a few bug fixes.
-### Fixes and improvements
-- Fix issues where when the header section is hidden, some functionalities were broken.
-- Update cart errors to be output as a string rather than a HTML element.
-- Escape variant option names so that when an option includes quotation marks it doesn’t cause undesired effects.
-- Fix placeholder product cards that were not showing a default price and make the check more robust.
+Dawn 15.4.0 introduces support for nested cart lines, accessibility improvements, performance enhancements, and bug fixes.
+
+### Added
+- Added support for nested cart lines. Cart now properly displays nested  items( like product add-ons) with improved styling and accessibility labels
+- Improved accessibility with added ARIA labels for product quantity inputs
+
+### Changed
+ - Improved performance by removing lazy loading of images above the fold in the Featured collection section

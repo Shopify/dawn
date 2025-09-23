@@ -287,6 +287,7 @@ function debounce(fn, wait) {
   };
 }
 
+
 function throttle(fn, delay) {
   let lastCall = 0;
   return function (...args) {
@@ -619,6 +620,7 @@ class ModalDialog extends HTMLElement {
   connectedCallback() {
     if (this.moved) return;
     this.moved = true;
+    this.dataset.section = this.closest('.shopify-section').id.replace('shopify-section-', '');
     document.body.appendChild(this);
   }
 
@@ -710,6 +712,13 @@ class DeferredMedia extends HTMLElement {
         // force autoplay for safari
         deferredElement.play();
       }
+
+      // Workaround for safari iframe bug
+      const formerStyle = deferredElement.getAttribute('style');
+      deferredElement.setAttribute('style', 'display: block;');
+      window.setTimeout(() => {
+        deferredElement.setAttribute('style', formerStyle);
+      }, 0);
     }
   }
 }
@@ -1189,15 +1198,18 @@ class AccountIcon extends HTMLElement {
 customElements.define('account-icon', AccountIcon);
 
 class BulkAdd extends HTMLElement {
+  static ASYNC_REQUEST_DELAY = 250;
+
   constructor() {
     super();
     this.queue = [];
-    this.requestStarted = false;
+    this.setRequestStarted(false);
     this.ids = [];
   }
 
   startQueue(id, quantity) {
     this.queue.push({ id, quantity });
+
     const interval = setInterval(() => {
       if (this.queue.length > 0) {
         if (!this.requestStarted) {
@@ -1206,18 +1218,27 @@ class BulkAdd extends HTMLElement {
       } else {
         clearInterval(interval);
       }
-    }, 250);
+    }, BulkAdd.ASYNC_REQUEST_DELAY);
   }
 
   sendRequest(queue) {
-    this.requestStarted = true;
+    this.setRequestStarted(true);
     const items = {};
+
     queue.forEach((queueItem) => {
       items[parseInt(queueItem.id)] = queueItem.quantity;
     });
     this.queue = this.queue.filter((queueElement) => !queue.includes(queueElement));
-    const quickBulkElement = this.closest('quick-order-list') || this.closest('quick-add-bulk');
-    quickBulkElement.updateMultipleQty(items);
+
+    this.updateMultipleQty(items);
+  }
+
+  setRequestStarted(requestStarted) {
+    this._requestStarted = requestStarted;
+  }
+
+  get requestStarted() {
+    return this._requestStarted;
   }
 
   resetQuantityInput(id) {
@@ -1246,15 +1267,8 @@ class BulkAdd extends HTMLElement {
     } else {
       event.target.setCustomValidity('');
       event.target.reportValidity();
+      event.target.setAttribute('value', inputValue);
       this.startQueue(index, inputValue);
-    }
-  }
-
-  getSectionsUrl() {
-    if (window.pageNumber) {
-      return `${window.location.pathname}?page=${window.pageNumber}`;
-    } else {
-      return `${window.location.pathname}`;
     }
   }
 
@@ -1265,4 +1279,54 @@ class BulkAdd extends HTMLElement {
 
 if (!customElements.get('bulk-add')) {
   customElements.define('bulk-add', BulkAdd);
+}
+
+class CartPerformance {
+  static #metric_prefix = "cart-performance"
+
+  static createStartingMarker(benchmarkName) {
+    const metricName = `${CartPerformance.#metric_prefix}:${benchmarkName}`
+    return performance.mark(`${metricName}:start`);
+  }
+
+  static measureFromEvent(benchmarkName, event) {
+    const metricName = `${CartPerformance.#metric_prefix}:${benchmarkName}`
+    const startMarker = performance.mark(`${metricName}:start`, {
+      startTime: event.timeStamp
+    });
+
+    const endMarker = performance.mark(`${metricName}:end`);
+
+    performance.measure(
+      metricName,
+      `${metricName}:start`,
+      `${metricName}:end`
+    );
+  }
+
+  static measureFromMarker(benchmarkName, startMarker) {
+    const metricName = `${CartPerformance.#metric_prefix}:${benchmarkName}`
+    const endMarker = performance.mark(`${metricName}:end`);
+
+    performance.measure(
+      metricName,
+      startMarker.name,
+      `${metricName}:end`
+    );
+  }
+
+  static measure(benchmarkName, callback) {
+    const metricName = `${CartPerformance.#metric_prefix}:${benchmarkName}`
+    const startMarker = performance.mark(`${metricName}:start`);
+
+    callback();
+
+    const endMarker = performance.mark(`${metricName}:end`);
+
+    performance.measure(
+      metricName,
+      `${metricName}:start`,
+      `${metricName}:end`
+    );
+  }
 }
