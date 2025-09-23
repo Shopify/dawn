@@ -133,6 +133,7 @@
                     {%- endif -%}
                   </div>
                 {%- endif -%}
+              {% unless product.tags contains 'noshoppay' %}
                 <div {{ block.shopify_attributes }}>
                   {%- assign product_form_installment_id = 'product-form-installment-' | append: section.id -%}
                   {%- form 'product', product, id: product_form_installment_id, class: 'installment caption-large' -%}
@@ -140,6 +141,7 @@
                     {{ form | payment_terms }}
                   {%- endform -%}
                 </div>
+                 {% endunless %}
               {%- when 'inventory' -%}
                 <p
                   class="product__inventory{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}{% if product.selected_or_first_available_variant.inventory_management != 'shopify' %} visibility-hidden{% endif %}"
@@ -192,9 +194,13 @@
                   {%- endif -%}
                 </p>
               {%- when 'description' -%}
-                {%- if product.description != blank -%}
+                {%- if product.description != blank or product.metafields.ns_.romance != blank -%}
                   <div class="product__description rte quick-add-hidden" {{ block.shopify_attributes }}>
-                    {{ product.description }}
+                      {%- if product.metafields.ns_.romance != blank -%}
+                        {{ product.metafields.ns_.romance | newline_to_br}}
+                      {% else %}
+                        {{ product.description }}
+                       {% endif %}
                   </div>
                 {%- endif -%}
               {%- when 'sku' -%}
@@ -204,7 +210,7 @@
                   role="status"
                   {{ block.shopify_attributes }}
                 >
-                  <span class="visually-hidden">{{ 'products.product.sku' | t }}:</span>
+                  SKU: <span class="visually-hidden">{{ 'products.product.sku' | t }}:</span>
                   {{- product.selected_or_first_available_variant.sku -}}
                 </p>
               {%- when 'custom_liquid' -%}
@@ -222,8 +228,98 @@
                       {{- 'icon-caret.svg' | inline_asset_content -}}
                     </summary>
                     <div class="accordion__content rte" id="ProductAccordion-{{ block.id }}-{{ section.id }}">
-                      {{ block.settings.content }}
-                      {{ block.settings.page.content }}
+                  {% if block.settings.heading == 'Recipes, Manual & Warranty' %}
+                    {% unless product.metafields.custom.product_manual == blank %}
+                    <a href="{{ product.metafields.custom.product_manual | file_url }}">Download Manual and Recipe Guide</a><br />
+                    {% endunless %}
+                    {% unless product.metafields.custom.quick_start_guide == blank %}
+                    <a href="{{ product.metafields.custom.quick_start_guide | file_url }}">Download Quick Start Guide</a><br />
+                    {% endunless %}
+                    {{ 'Warranty Information' | link_to: '/pages/warranty' }}
+{% comment %}
+                     {% if product.metafields.custom.recipieblogtagplaceholder != blank %}
+                    {% render 'mini-blog' %} 
+                     {%- endif -%} 
+                    {% endcomment %}                    
+                  {% elsif block.settings.heading == 'Features & Benefits' and product.metafields.ns_.features != blank  %}
+
+                    {% comment %}
+                        <div class="product_points">
+                          <ul>
+                          {% for feature_list in product.metafields.custom.feature_list.value  %}
+                            <li>{{ feature_list }}</li>
+                          {% endfor %}
+                          </ul>
+                        </div>
+                    {% endcomment %}
+
+{% assign paragraphs = product.metafields.ns_.features  | strip | newline_to_br | strip_newlines | split: "<br />" %}
+                        <div class="product_points">
+                          <ul>
+{% for paragraph in paragraphs %}<li>{{ paragraph }}</li>{% endfor %}
+                                              </ul>
+                        </div>
+
+                    
+               
+                  {% elsif block.settings.heading == 'Parts & Accessories' %}
+
+                <ul id="product-grid" data-id="{{ section.id }}" class="
+                    grid product-grid grid--{{ section.settings.columns_mobile }}-col-tablet-down
+                    grid--{{ section.settings.columns_desktop }}-col-desktop">
+                    {%- for product in product.metafields.custom.parts.value -%}
+                      {% assign lazy_load = false %}
+                      {%- if forloop.index > 2 -%}
+                        {%- assign lazy_load = true -%}
+                      {%- endif -%}
+                      <li class="grid__item">
+                        {% render 'card-product',
+                          card_product: product,
+                          media_aspect_ratio: section.settings.image_ratio,
+                          show_secondary_image: section.settings.show_secondary_image,
+                          show_vendor: section.settings.show_vendor,
+                          show_rating: section.settings.show_rating,
+                          lazy_load: lazy_load,
+                          show_quick_add: section.settings.enable_quick_add,
+                          section_id: section.id
+
+                        %}
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+
+                  {% elsif block.settings.heading == 'Specifications' %}
+
+                  {%- if product.metafields.ns_.width != blank or product.metafields.ns_.height != blank or product.metafields.ns_.length != blank -%}
+                  <div>
+                  Dimensions: {{product.metafields.ns_.height}}" x {{product.metafields.ns_.width}}" x {{product.metafields.ns_.length}}"
+                  </div>
+                  {% endif %}
+                  {%- if product.metafields.ns_.weight != blank -%}
+                    <div>
+                    Weight: {{product.metafields.ns_.weight}} lbs
+                    </div>
+                  {% endif %}
+                    {{ block.settings.content }}
+                    {{ block.settings.page.content }}            
+        {% comment %}  Warnings {% endcomment %}
+        {% for tag in product.tags %}
+        {% if tag contains 'p65b' %}
+          <div>&nbsp;</div>    
+          <div> <span role="img" aria-label=“Warning icon”>&#9888;&#65039;</span><strong>WARNING</strong> This product can expose you to Bisphenol A, which is known to the State of California to cause reproductive harm. For more information go to <a href="https://www.p65warnings.ca.gov/" target="_blank">www.P65Warnings.ca.gov/</a>.</div>
+        {% endif %}
+        {% endfor %}
+        {% for tag in product.tags %}
+        {% if tag contains 'ptfe' %}
+          <div>&nbsp;</div>    
+          <div>This product contains PTFE for its non-stick properties. For more information about chemicals in this product, visit <a href="https://bydash.com/nonstick" target="_blank">bydash.com/nonstick</a> </div>
+        {% endif %}
+        {% endfor %}
+                    {% else %}
+                    {{ block.settings.content }}
+                    {{ block.settings.page.content }}
+
+                  {% endif %}
                     </div>
                   </details>
                 </div>

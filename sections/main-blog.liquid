@@ -1,6 +1,8 @@
 {{ 'component-article-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
 {{ 'section-main-blog.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-blog-recipekit.css' | asset_url | stylesheet_tag }}
 
 {%- style -%}
   .section-{{ section.id }}-padding {
@@ -16,39 +18,863 @@
   }
 {%- endstyle -%}
 
-{%- paginate blog.articles by 6 -%}
+{%- if current_tags == blank or current_tags.size == 0 -%}
+  {%- assign pagination_count = 1000 -%}
+{%- else -%}
+  {%- assign pagination_count = 16 -%}
+{%- endif -%}
+
+{%- paginate blog.articles by pagination_count -%}
   <div class="main-blog page-width section-{{ section.id }}-padding">
-    <h1 class="title--primary{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
-      {{ blog.title | escape }}
-    </h1>
+    {%- if request.path contains '/blogs/recipes' -%}
+    {% else %}
+      <h1 class="title--primary{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+        {{ blog.title | escape }}
+      </h1>
+    {% endif %}
+    {%- if request.path contains '/blogs/recipes' -%}
+      {%- assign active_block = null -%}
+      {% for block in section.blocks %}
+        {% if current_tags contains block.settings.tag %}
+          {% assign active_block = block %}
+        {% endif %}
+      {% endfor %}
+      {% assign banner_image = section.settings.default_banner_image %}
+      {% assign banner_headline = section.settings.default_banner_headline %}
+      {% if active_block != null and active_block.settings.banner_image != blank %}
+        {% assign display_image = active_block.settings.banner_image %}
+      {% else %}
+        {% assign display_image = banner_image %}
+      {% endif %}
+      {% if display_image == blank %}
+        {% assign display_image = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80' %}
+      {% endif %}
+      {%- comment -%}
+        If Default Banner Headline is blank, do not fall back to a hardcoded string.
+        Only use the Default Banner Headline (even if blank) or the selected block's headline if a tag is active.
+      {%- endcomment -%}
+      {% if active_block != null and active_block.settings.headline != blank %}
+        {% assign display_headline = active_block.settings.headline %}
+      {% else %}
+        {% assign display_headline = banner_headline %}
+      {% endif %}
 
-    <div class="blog-articles {% if section.settings.layout == 'collage' %}blog-articles--collage{% endif %}">
-      {%- for article in blog.articles -%}
-        <div
-          class="blog-articles__article article{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-          {% if settings.animations_reveal_on_scroll %}
-            data-cascade
-            style="--animation-order: {{ forloop.index }};"
+      <!-- Accessible Breadcrumbs -->
+      <nav class="blog-breadcrumbs" aria-label="Breadcrumb">
+        <ol class="blog-breadcrumbs__list">
+          <li class="blog-breadcrumbs__item">
+            <a class="blog-breadcrumbs__link" href="/">Home</a>
+          </li>
+          <li class="blog-breadcrumbs__item">
+            <a class="blog-breadcrumbs__link" href="{{ blog.url }}">{{ blog.title }}</a>
+          </li>
+          {% if current_tags and current_tags.size > 0 %}
+            <li class="blog-breadcrumbs__item" aria-current="page">
+              {{ current_tags | join: ' + ' }}
+            </li>
           {% endif %}
-        >
-          {%- render 'article-card',
-            article: article,
-            media_height: section.settings.image_height,
-            media_aspect_ratio: article.image.aspect_ratio,
-            show_image: section.settings.show_image,
-            show_date: section.settings.show_date,
-            show_author: section.settings.show_author,
-            show_excerpt: true
-          -%}
-        </div>
-      {%- endfor -%}
-    </div>
+        </ol>
+      </nav>
 
-    {%- if paginate.pages > 1 -%}
-      {%- render 'pagination', paginate: paginate -%}
+      <style>
+        .blog-breadcrumbs {
+          margin: 0 0 0.75em 0;
+          font-size: 0.7em;
+          color: rgb(6, 42, 48);
+          font-family: inherit;
+          text-transform: uppercase;
+        }
+        .blog-breadcrumbs__list {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+        .blog-breadcrumbs__item {
+          display: flex;
+          align-items: center;
+          font-weight: 500;
+          color: rgb(6, 42, 48);
+        }
+        .blog-breadcrumbs__item:not(:last-child)::after {
+          content: '›';
+          margin: 0 0.5em;
+          color: rgb(6, 42, 48);
+          opacity: 0.6;
+          font-size: 1.1em;
+        }
+        .blog-breadcrumbs__link {
+          color: rgb(6, 42, 48);
+          text-decoration: none;
+          transition: text-decoration 0.2s;
+        }
+        .blog-breadcrumbs__link:focus,
+        .blog-breadcrumbs__link:hover {
+          text-decoration: underline;
+          outline: none;
+        }
+        .blog-breadcrumbs__item[aria-current='page'] {
+          font-weight: 600;
+          color: rgb(6, 42, 48);
+          text-decoration: none;
+          pointer-events: none;
+        }
+      </style>
+      <div class="blog-banner">
+        <div class="blog-banner-image">
+          <img src="{{ display_image | img_url: '2000x' }}" alt="{{ display_headline }}" height="180">
+
+          <div class="blog-banner-text">
+            <h1 class="blog-banner-headline">{{ display_headline }}</h1>
+            {% if section.settings.secondary_banner_headline != blank %}
+              <div class="blog-banner-subheadline">{{ section.settings.secondary_banner_headline }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="blog-filter-wrapper">
+        <!-- Desktop/Tablet Filter List -->
+        <div class="blog-filter blog-filter-list">
+          {%- comment -%}
+            Construct absolute base URL that includes domain and locale path.
+          {%- endcomment -%}
+          {%- assign base_url_prefix = shop.url | append: request.locale.root_url -%}
+          {%- assign base_last = base_url_prefix | slice: -1 -%}
+          {%- if base_last != '/' -%}
+            {%- assign base_url_prefix = base_url_prefix | append: '/' -%}
+          {%- endif -%}
+          {% assign all_active = false %}
+          {% if current_tags == blank or current_tags.size == 0 %}
+            {% assign all_active = true %}
+          {% endif %}
+          {% if all_active %}
+           <span
+             class="blog-filter__item blog-filter__item--active"
+             role="tab"
+             aria-selected="true"
+             aria-label="Show popular recipes"
+             tabindex="-1"
+           >
+             {{ 'sections.main_blog.popular_recipes' | t }}
+           </span>
+           {% else %}
+           <a
+             href="{{ base_url_prefix }}blogs/recipes"
+             class="blog-filter__item"
+             role="tab"
+             aria-selected="false"
+             aria-label="Show popular recipes"
+             tabindex="0"
+           >
+             {{ 'sections.main_blog.popular_recipes' | t }}
+           </a>
+           {% endif %}
+
+          {%- assign sorted_tags = shop.metaobjects.recipe_tag_group.values | sort: 'tag' -%}
+
+          {%- for tag_obj in sorted_tags -%}
+            {%- assign tag = tag_obj.tag -%}
+
+            {%- comment -%}
+              Determine if the tag should be hidden by default.
+              It's hidden only if it's NOT a top category AND it's NOT currently active.
+            {%- endcomment -%}
+            {%- assign is_top_category = false -%}
+            {%- if tag_obj.top_category == true or tag_obj.top_category == 'true' -%}
+              {%- assign is_top_category = true -%}
+            {%- endif -%}
+
+            {%- assign is_active_tag = false -%}
+            {%- if current_tags contains tag -%}
+              {%- assign is_active_tag = true -%}
+            {%- endif -%}
+
+            {% if is_active_tag %}
+             <span
+               class="blog-filter__item blog-filter__item--active"
+               role="tab"
+               aria-selected="true"
+               aria-label="Filter recipes by {{ tag }}"
+               tabindex="-1"
+             >
+               {%- if tag_obj.display_tag != blank -%}
+                 {{ tag_obj.display_tag }}
+               {%- else -%}
+                 {{ tag }}
+               {%- endif -%}
+             </span>
+             {% else %}
+             <a
+               href="{{ base_url_prefix }}blogs/recipes/tagged/{{ tag | handle }}"
+               class="blog-filter__item{% if is_top_category == false %} blog-filter__item--additional{% endif %}"
+               role="tab"
+               aria-selected="false"
+               aria-label="Filter recipes by {{ tag }}"
+               tabindex="0"
+             >
+               {%- if tag_obj.display_tag != blank -%}
+                 {{ tag_obj.display_tag }}
+               {%- else -%}
+                 {{ tag }}
+               {%- endif -%}
+             </a>
+             {% endif %}
+          {%- endfor -%}
+
+          <button
+            id="view-all-tags"
+            class="blog-filter__view-all"
+            type="button"
+            aria-expanded="false"
+            data-view-all="{{ 'sections.main_blog.view_all' | t }}"
+            data-view-less="{{ 'sections.main_blog.view_less' | t }}"
+          >
+            {{ 'sections.main_blog.view_all' | t }}
+          </button>
+        </div>
+
+        <style>
+          .blog-filter-list:not(.is-expanded) .blog-filter__item--additional {
+            display: none;
+          }
+          .blog-filter__view-all {
+            background: none;
+            border: none;
+            color: rgb(6, 42, 48);
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.5rem;
+          }
+        </style>
+        <script>
+          document.addEventListener('DOMContentLoaded', function () {
+            var viewAllBtn = document.getElementById('view-all-tags');
+            var filterList = document.querySelector('.blog-filter-list');
+
+            if (viewAllBtn && filterList) {
+              viewAllBtn.addEventListener('click', function () {
+                var isExpanded = filterList.classList.toggle('is-expanded');
+                viewAllBtn.setAttribute('aria-expanded', isExpanded.toString());
+                viewAllBtn.textContent = isExpanded ? viewAllBtn.dataset.viewLess : viewAllBtn.dataset.viewAll;
+              });
+            }
+          });
+        </script>
+        <!-- Mobile Dropdown Filter -->
+        <div class="blog-filter-dropdown">
+          <select onchange="if(this.value) window.location.href=this.value;">
+            <option value="">Select Category</option>
+            <option
+              value="{{ base_url_prefix }}blogs/recipes"
+              {% if all_active %}
+                selected
+              {% endif %}
+            >
+              {{ 'sections.main_blog.popular_recipes' | t }}
+            </option>
+            {% assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values %}
+            {% for tag_obj in recipe_tag_group %}
+              {% assign tag = tag_obj.tag %}
+              {% assign is_active = false %}
+              {% if current_tags contains tag %}
+                {% assign is_active = true %}
+              {% endif %}
+              <option
+                value="{% if is_active %}{{ base_url_prefix }}blogs/recipes{% else %}{{ base_url_prefix }}blogs/recipes/tagged/{{ tag | handle }}{% endif %}"
+                {% if is_active %}
+                  selected
+                {% endif %}
+              >
+                {%- if tag_obj.display_tag != blank -%}
+                  {{ tag_obj.display_tag }}
+                {%- else -%}
+                  {{ tag }}
+                {%- endif -%}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        {% comment %}
+          {% for block in section.blocks %}
+            {% if current_tags contains block.settings.tag %}
+              <div class="blog-filter__banner" style="background-color: {{ block.settings.banner_color }};">
+                {% if block.settings.banner_image != blank %}
+                  <img src="{{ block.settings.banner_image | img_url: 'master' }}" alt="{{ block.settings.tag }}">
+                {% endif %}
+                <h2>{{ block.settings.headline }}</h2>
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% endcomment %}
+      </div>
     {%- endif -%}
+    {%- assign tag_color_map = '' -%}
+    {%- for block in section.blocks -%}
+      {%- if block.settings.tag != blank and block.settings.banner_color != blank -%}
+        {%- assign tag_color_map = tag_color_map
+          | append: block.settings.tag
+          | append: ':'
+          | append: block.settings.banner_color
+          | append: ','
+        -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {% if current_tags == blank or current_tags.size == 0 %}
+      <div class="grouped-by-category">
+        {% assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values %}
+        {% for block in section.blocks %}
+          {% assign block_tag = block.settings.tag %}
+          {% assign matching_metaobject = null %}
+          {% for tag_obj in recipe_tag_group %}
+            {% if tag_obj.tag == block_tag %}
+              {% assign matching_metaobject = tag_obj %}
+            {% endif %}
+          {% endfor %}
+          {% if matching_metaobject %}
+            {%- assign display_title = block_tag -%}
+            {%- if matching_metaobject.display_tag != blank -%}
+              {%- assign display_title = matching_metaobject.display_tag -%}
+            {%- endif -%}
+            <div class="main-blog-category-group">
+              <h2 class="main-blog-category-header">{{ display_title }}</h2>
+              <div class="main-blog-recipekit-grid">
+                {% assign handles_string = matching_metaobject.recipe_1
+                  | append: ','
+                  | append: matching_metaobject.recipe_2
+                  | append: ','
+                  | append: matching_metaobject.recipe_3
+                %}
+                {% assign handles_array = handles_string | split: ',' %}
+
+                {% comment %}Count valid articles from metaobject handles{% endcomment %}
+                {% assign valid_articles_count = 0 %}
+                {% assign valid_articles = '' %}
+                {% for recipe_handle in handles_array %}
+                  {% assign recipe_handle = recipe_handle | strip %}
+                  {% if recipe_handle != blank %}
+                    {% assign article = blog.articles | where: 'handle', recipe_handle | first %}
+                    {% if article %}
+                      {% assign valid_articles_count = valid_articles_count | plus: 1 %}
+                      {% assign valid_articles = valid_articles | append: article.handle | append: ',' %}
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+
+                {% comment %}Determine how many articles to show based on double_articles setting{% endcomment %}
+                {% assign target_article_count = 3 %}
+                {% if block.settings.double_articles %}
+                  {% assign target_article_count = 7 %}
+                {% endif %}
+
+                {% comment %}Get recent articles from this category if needed{% endcomment %}
+                {% assign articles_needed = target_article_count | minus: valid_articles_count %}
+                {% if articles_needed > 0 %}
+                  {% comment %}Debug info{% endcomment %}
+                  {% assign added_articles = 0 %}
+                  {% for cat_article in blog.articles %}
+                    {% assign has_tag = false %}
+                    {% for article_tag in cat_article.tags %}
+                      {% if article_tag == block_tag %}
+                        {% assign has_tag = true %}
+                        {% break %}
+                      {% endif %}
+                    {% endfor %}
+
+                    {% if has_tag %}
+                      {% unless valid_articles contains cat_article.handle %}
+                        {% assign valid_articles = valid_articles | append: cat_article.handle | append: ',' %}
+                        {% assign added_articles = added_articles | plus: 1 %}
+                        {% if added_articles >= articles_needed %}
+                          {% break %}
+                        {% endif %}
+                      {% endunless %}
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+
+                {% comment %}Display all collected articles{% endcomment %}
+                {% assign final_handles = valid_articles | split: ',' %}
+                {% for recipe_handle in final_handles %}
+                  {% assign recipe_handle = recipe_handle | strip %}
+                  {% if recipe_handle != blank %}
+                    {% assign article = blog.articles | where: 'handle', recipe_handle | first %}
+                    {% if article %}
+                      {%- assign rk_resource_id = article.id | downcase -%}
+                      {%- assign rk_mf = article.metafields.recipekit[rk_resource_id] -%}
+                      <div class="recipekit-card-outer">
+                        <a
+                          href="{{ article.url }}"
+                          class="recipekit-card-link"
+                          aria-label="{{ article.title | escape }}"
+                        >
+                          <div class="recipekit-card">
+                            <div class="recipekit-card-image-wrapper">
+                              {%- if rk_mf and rk_mf.recipe_image != blank -%}
+                                {%- assign image_url = rk_mf.recipe_image -%}
+                                {%- if image_url contains 'cloudinary.com' -%}
+                                  {%- assign rk_last_url = image_url | split: 'upload/' -%}
+                                  {%- assign card_image = rk_last_url[1]
+                                    | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/t_1x1_recipe_image,f_auto/'
+                                  -%}
+                                {%- elsif image_url contains 'backblazeb2.com' -%}
+                                  {%- assign rk_last_url = image_url
+                                    | split: 'backblazeb2.com/file/recipekit-bucket/'
+                                  -%}
+                                  {%- assign card_image = 'https://images.getrecipekit.com/'
+                                    | append: rk_last_url[1]
+                                    | append: '?aspect_ratio=1:1&quality=90&'
+                                  -%}
+                                {%- elsif image_url contains 'cdn.shopify.com' -%}
+                                  {%- assign card_image = image_url | append: '&width=1000&height=1000' -%}
+                                {%- else -%}
+                                  {%- assign card_image = image_url -%}
+                                {%- endif -%}
+                                <img
+                                  class="recipekit-card-image"
+                                  src="{{ card_image }}"
+                                  alt="{{ article.title | escape }}"
+                                  loading="lazy"
+                                >
+                              {%- elsif article.image -%}
+                                <img
+                                  class="recipekit-card-image"
+                                  src="{{ article.image | img_url: '1000x1000', scale: 2 }}"
+                                  alt="{{ article.title | escape }}"
+                                  loading="lazy"
+                                >
+                              {%- endif -%}
+                              {%- assign recipe_rating_num = rk_mf.recipe_rating | plus: 0 -%}
+                              {%- assign rating_count_num = rk_mf.rating_count | plus: 0 -%}
+                              {% if recipe_rating_num > 4 and rating_count_num > 4 %}
+                                <span class="recipekit-top-rated-badge">Top Rated</span>
+                              {% endif %}
+                              {%- if rk_mf and rk_mf.prep_time != blank -%}
+                                <span class="recipekit-prep-time">{{ rk_mf.prep_time }}</span>
+                              {%- endif -%}
+                            </div>
+                          </div>
+                        </a>
+                        <div class="recipekit-card-meta">
+                          <a href="{{ article.url }}" class="recipekit-card-title-link">
+                            <div class="recipekit-card-title">{{ article.title }}</div>
+                          </a>
+                        </div>
+                      </div>
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+                <!-- View More Card -->
+                <div class="recipekit-card-outer view-more-card">
+                  <a
+                    href="{{ base_url_prefix }}blogs/recipes/tagged/{{ block_tag | handle }}"
+                    class="recipekit-card-link"
+                    aria-label="{{ 'sections.main_blog.view_more_in' | t: category: display_title }}"
+                  >
+                    <div class="recipekit-card">
+                      <div class="recipekit-card-image-wrapper">
+                        {% if block.settings.view_more_image != blank %}
+                          <img
+                            class="recipekit-card-image"
+                            src="{{ block.settings.view_more_image | img_url: '600x600', crop: 'center' }}"
+                            alt="View More"
+                            loading="lazy"
+                          >
+                        {% else %}
+                          <img
+                            class="recipekit-card-image"
+                            src="https://cdn.shopify.com/s/files/1/0173/8181/8422/files/Dash_Pattern_Icon_ca6e694e-c077-41e3-bfcb-71692f0d98f4.png?v=1746822390"
+                            alt="View More"
+                            loading="lazy"
+                          >
+                        {% endif %}
+                      </div>
+                    </div>
+                  </a>
+                  <div class="recipekit-card-meta">
+                    <a href="{{ base_url_prefix }}blogs/recipes/tagged/{{ block_tag | handle }}" class="recipekit-card-title-link">
+                                            <div class="recipekit-card-title">{{ 'sections.main_blog.view_more_recipes' | t: category: display_title }}</div>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="main-blog-recipekit-grid">
+        {%- for article in blog.articles -%}
+          {%- assign rk_resource_id = article.id | downcase -%}
+          {%- assign rk_mf = article.metafields.recipekit[rk_resource_id] -%}
+          <div class="recipekit-card-outer">
+            <a href="{{ article.url }}" class="recipekit-card-link" aria-label="{{ article.title | escape }}">
+              <div class="recipekit-card">
+                <div class="recipekit-card-image-wrapper">
+                  {%- if rk_mf and rk_mf.recipe_image != blank -%}
+                    {%- assign image_url = rk_mf.recipe_image -%}
+                    {%- if image_url contains 'cloudinary.com' -%}
+                      {%- assign rk_last_url = image_url | split: 'upload/' -%}
+                      {%- assign card_image = rk_last_url[1]
+                        | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/t_1x1_recipe_image,f_auto/'
+                      -%}
+                    {%- elsif image_url contains 'backblazeb2.com' -%}
+                      {%- assign rk_last_url = image_url | split: 'backblazeb2.com/file/recipekit-bucket/' -%}
+                      {%- assign card_image = 'https://images.getrecipekit.com/'
+                        | append: rk_last_url[1]
+                        | append: '?aspect_ratio=1:1&quality=90&'
+                      -%}
+                    {%- elsif image_url contains 'cdn.shopify.com' -%}
+                      {%- assign card_image = image_url | append: '&width=1000&height=1000' -%}
+                    {%- else -%}
+                      {%- assign card_image = image_url -%}
+                    {%- endif -%}
+                    <img
+                      class="recipekit-card-image"
+                      src="{{ card_image }}"
+                      alt="{{ article.title | escape }}"
+                      loading="lazy"
+                    >
+                  {%- elsif article.image -%}
+                    <img
+                      class="recipekit-card-image"
+                      src="{{ article.image | img_url: '1000x1000', scale: 2 }}"
+                      alt="{{ article.title | escape }}"
+                      loading="lazy"
+                    >
+                  {%- endif -%}
+                  {%- assign recipe_rating_num = rk_mf.recipe_rating | plus: 0 -%}
+                  {%- assign rating_count_num = rk_mf.rating_count | plus: 0 -%}
+                  {% if recipe_rating_num > 4 and rating_count_num > 4 %}
+                    <span class="recipekit-top-rated-badge">Top Rated</span>
+                  {% endif %}
+                  {%- if rk_mf and rk_mf.prep_time != blank -%}
+                    <span class="recipekit-prep-time">{{ rk_mf.prep_time }}</span>
+                  {%- endif -%}
+                </div>
+              </div>
+            </a>
+            <div class="recipekit-card-meta">
+              <a href="{{ article.url }}" class="recipekit-card-title-link">
+                <div class="recipekit-card-title">{{ article.title }}</div>
+              </a>
+            </div>
+          </div>
+        {%- endfor -%}
+      </div>
+      {%- if paginate.pages > 1 -%}
+        {%- render 'pagination', paginate: paginate -%}
+      {%- endif -%}
+    {% endif %}
+
+    {% if current_tags != blank and current_tags.size > 0 %}
+      {% comment %}Find the matching metaobject for the current tag{% endcomment %}
+      {% assign matching_tag_obj = null %}
+      {% assign recipe_tag_group = shop.metaobjects.recipe_tag_group.values %}
+      {% for tag_obj in recipe_tag_group %}
+        {% if current_tags contains tag_obj.tag %}
+          {% assign matching_tag_obj = tag_obj %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+
+      {% comment %}Extract product ID from best_selling_product field{% endcomment %}
+      {% assign product_id = '' %}
+      {% comment %}Default fallback: blank{% endcomment %}
+      {% if matching_tag_obj != null and matching_tag_obj.best_selling_product != blank %}
+        {% assign best_selling_product = matching_tag_obj.best_selling_product | strip %}
+        {% comment %}Extract numeric ID from gid format if needed{% endcomment %}
+        {% if best_selling_product contains 'gid://' %}
+          {% assign product_id_parts = best_selling_product | split: '/' %}
+          {% assign product_id = product_id_parts | last %}
+        {% else %}
+          {% assign product_id = best_selling_product %}
+        {% endif %}
+      {% endif %}
+
+      <!-- Product Recommendations Section -->
+      <product-recommendations
+        class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+        data-product-id="{{ product_id }}"
+        data-url="/recommendations/products?limit=4"
+        data-section-id="related-products"
+      >
+        {% if recommendations.performed and recommendations.products_count > 0 and product_id %}
+          <h2 class="related-products__heading inline-richtext main-blog-category-header">You might also like</h2>
+          <ul
+            class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
+            role="list"
+          >
+            {% assign skip_card_product_styles = false %}
+            {% for product in recommendations.products %}
+              <li class="grid__item">
+                {% render 'card-product',
+                  card_product: product,
+                  media_aspect_ratio: square,
+                  show_secondary_image: true,
+                  show_vendor: false,
+                  show_rating: false,
+                  skip_styles: skip_card_product_styles
+                %}
+              </li>
+              {%- assign skip_card_product_styles = true -%}
+            {% endfor %}
+          </ul>
+        {% else %}
+                    <h2 class="related-products__heading inline-richtext main-blog-category-header">{{ 'sections.main_blog.popular_products' | t }}</h2>
+          <ul
+            class="grid product-grid grid--4-col-desktop grid--2-col-tablet-down"
+            role="list"
+          >
+            {% assign skip_card_product_styles = false %}
+            {% for product in collections.all.products limit: 4 %}
+              <li class="grid__item">
+                {% render 'card-product',
+                  card_product: product,
+                  media_aspect_ratio: square,
+                  show_secondary_image: true,
+                  show_vendor: false,
+                  show_rating: false,
+                  skip_styles: skip_card_product_styles
+                %}
+              </li>
+              {%- assign skip_card_product_styles = true -%}
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </product-recommendations>
+    {% endif %}
   </div>
 {%- endpaginate -%}
+
+<style>
+  .blog-banner {
+    width: 100%;
+    margin-bottom: 32px;
+  }
+  .blog-banner-image {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    border-radius: 16px;
+  }
+  .blog-banner-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    text-align: center;
+    z-index: 2;
+    color: #fff;
+    padding: 0 32px;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .blog-banner-headline {
+    text-align: center;
+    font-size: 2.8em;
+    font-weight: 700;
+    margin-bottom: -0.3em;
+    color: rgb(6, 42, 48);
+
+    z-index: 2;
+    position: relative;
+  }
+  .blog-banner-subheadline {
+    text-align: center;
+    font-size: 1.3em;
+    font-weight: 400;
+    color: rgb(6, 42, 48);
+    margin-bottom: 0.25em;
+    z-index: 2;
+    position: relative;
+
+  }
+
+  @media screen and (max-width: 600px) {
+    .blog-banner-headline {
+      font-size: 1.4em;
+      margin-bottom: 0.3em;
+    }
+    .blog-banner-subheadline {
+      font-size: 1em;
+      margin-bottom: 0.6em;
+    }
+  }
+
+  .blog-banner-image {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    border-radius: 16px;
+  }
+  .blog-banner-image img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+  }
+  /* .blog-banner-overlay removed */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.38) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .blog-banner-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    text-align: center;
+    z-index: 2;
+    color: #fff;
+    padding: 0 32px;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .blog-filter-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+
+  .blog-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .blog-filter__item {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 18px;
+    border-radius: 20px;
+    background: #f5f5f8;
+    color: rgba(6, 42, 48, 0.8);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+    transition: background 0.15s, color 0.15s, outline 0.15s;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .blog-filter__item:hover {
+    background: rgba(211, 236, 232, 0.5);
+    color: rgb(6, 42, 48);
+  }
+
+  .blog-filter__item:focus-visible {
+    outline: 3px solid rgba(6, 42, 48, 0.3);
+    outline-offset: 2px;
+    z-index: 2;
+  }
+
+  .blog-filter__item--active {
+    background: rgb(211, 236, 232);
+    color: rgb(6, 42, 48);
+    border-color: transparent;
+    font-weight: 600;
+  }
+
+  .blog-filter__item--active:focus-visible {
+    outline: 3px solid rgba(6, 42, 48, 0.4);
+    outline-offset: 2px;
+    z-index: 2;
+  }
+
+
+  .blog-filter__item:not(.blog-filter__item--active):hover {
+    background: rgba(211, 236, 232, 0.5);
+    color: rgb(6, 42, 48);
+    border-color: rgba(6, 42, 48, 0.1);
+  }
+
+  .blog-filter__item--active {
+    background: rgb(211, 236, 232);
+    color: rgb(6, 42, 48);
+    border-color: transparent;
+    font-weight: 600;
+  }
+
+  .blog-filter__item--active span {
+    color: rgb(6, 42, 48);
+  }
+
+  .main-blog-category-group {
+    margin-bottom: 40px;
+  }
+
+  .main-blog-category-header {
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    color: rgb(6, 42, 48);
+  }
+
+  .main-blog-category-articles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  @media screen and (max-width: 768px) {
+    .main-blog-category-articles {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .main-blog-category-articles {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .blog-filter__banner {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 28px;
+    padding: 18px 28px;
+    border-radius: 12px;
+    background: #f5f5f8;
+  }
+
+  .blog-filter__banner img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .blog-filter__banner h2 {
+    margin: 0;
+    font-size: 1.5em;
+    font-weight: 700;
+    color: #3d174f;
+  }
+</style>
 
 {% schema %}
 {
@@ -56,6 +882,27 @@
   "tag": "section",
   "class": "section",
   "settings": [
+    {
+      "type": "image_picker",
+      "id": "default_banner_image",
+      "label": "Default Banner Image"
+    },
+    {
+      "type": "text",
+      "id": "default_banner_headline",
+      "label": "Default Banner Headline",
+      "default": "Coffee Drinks with Smooth, Rich and Complex Flavors"
+    },
+    {
+      "type": "text",
+      "id": "secondary_banner_headline",
+      "label": "Secondary Banner Headline",
+      "default": "from the Dash Test Kitchen"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.main-blog.settings.header.content"
+    },
     {
       "type": "select",
       "id": "layout",
@@ -137,6 +984,52 @@
       "unit": "px",
       "label": "t:sections.all.padding.padding_bottom",
       "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "filter",
+      "name": "Filter Tag",
+      "settings": [
+        {
+          "type": "text",
+          "id": "tag",
+          "label": "Tag"
+        },
+        {
+          "type": "image_picker",
+          "id": "banner_image",
+          "label": "Banner Image"
+        },
+        {
+          "type": "color",
+          "id": "banner_color",
+          "label": "Banner Color"
+        },
+        {
+          "type": "text",
+          "id": "headline",
+          "label": "Headline"
+        },
+        {
+          "type": "image_picker",
+          "id": "view_more_image",
+          "label": "View More Card Image",
+          "info": "Image for the 'View More' card in this filter category. If blank, a default image will be used."
+        },
+        {
+          "type": "checkbox",
+          "id": "double_articles",
+          "label": "2x Articles",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "max_blocks": 20,
+  "presets": [
+    {
+      "name": "Main Blog"
     }
   ]
 }

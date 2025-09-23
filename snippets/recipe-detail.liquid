@@ -1,0 +1,2061 @@
+{% comment %}
+  Recipe Detail Page Snippet
+
+
+  This snippet creates a responsive recipe detail page with placeholder content
+  It includes:
+  - Recipe header with title, description, and timing info
+  - Recipe ingredients
+  - Recipe instructions
+  - Recipe tips
+  - Product recommendation
+  - Social sharing
+{% endcomment %}
+
+{{ 'section-main-blog-recipekit.css' | asset_url | stylesheet_tag }}
+
+{%- assign rk_resource_id = article.id | downcase -%}
+{%- assign rk_mf = article.metafields.recipekit[rk_resource_id] -%}
+{%- assign rk_settings = shop.metafields.recipekit.settings -%}
+{%- assign enable_rating_downcase = rk_mf.enable_rating | downcase -%}
+<div style="display:none">enable_rating: {{ rk_mf.enable_rating | json }}</div>
+{%- assign current_rating = rk_mf.recipe_rating | ceil | default: 5 | at_most: 5 -%}
+{%- assign current_decimal_rating = rk_mf.recipe_rating | round: 1 | default: 5 | at_most: 5 -%}
+{%- assign rating_count = rk_mf.rating_count | default: '1' | at_least: '1' -%}
+{%- if rating_count == '0' -%}
+  {%- assign rating_count = '1' -%}
+{%- endif -%}
+{%- if current_rating == 0 or current_rating == '0' -%}
+  {%- assign current_rating = 5 -%}
+{%- endif -%}
+{%- if current_decimal_rating == 0 -%}
+  {%- assign current_decimal_rating = 5 | round: 1 -%}
+{%- endif -%}
+{%- if current_decimal_rating == 5 -%}
+  {%- assign current_decimal_rating = '5.0' -%}
+{%- endif -%}
+{%- assign current_decimal_rating = current_decimal_rating | round: 1 -%}
+{%- assign rk_lang_rating_count = 'recipe.rating_text' | t: current_rating: current_decimal_rating, rating_count: rating_count -%}
+{%- assign servings_array = rk_mf.serving_size | split: ' ' -%}
+{%- assign json_serving_size = servings_array[0] -%}
+
+{% liquid
+  if rk_mf.recipe_image contains 'https://res.cloudinary.com/hsxfx8igq/image/upload/'
+    assign rk_last_url = rk_mf.recipe_image | split: 'https://res.cloudinary.com/hsxfx8igq/image/upload/'
+    assign rk_16_9_recipe_image = rk_last_url[1] | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/t_16x9_recipe_image,f_auto/'
+    assign rk_1_1_recipe_image = rk_last_url[1] | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/t_1x1_recipe_image,f_auto/'
+    assign rk_4_3_recipe_image = rk_last_url[1] | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/t_4x3_recipe_image,f_auto/'
+    assign rk_2_3_recipe_image = rk_last_url[1] | prepend: 'https://res.cloudinary.com/hsxfx8igq/image/upload/ar_2:3,c_limit,f_auto,w_600,q_auto:best/'
+  elsif rk_mf.recipe_image contains 'https://f000.backblazeb2.com/file/recipekit-bucket/'
+    assign rk_last_url = rk_mf.recipe_image | split: 'https://f000.backblazeb2.com/file/recipekit-bucket/'
+    assign rk_16_9_recipe_image = 'https://images.getrecipekit.com/' | append: rk_last_url[1] | append: '?aspect_ratio=16:9&quality=90&'
+    assign rk_1_1_recipe_image = 'https://images.getrecipekit.com/' | append: rk_last_url[1] | append: '?aspect_ratio=1:1&quality=90&'
+    assign rk_4_3_recipe_image = 'https://images.getrecipekit.com/' | append: rk_last_url[1] | append: '?aspect_ratio=4:3&quality=90&'
+    assign rk_2_3_recipe_image = 'https://images.getrecipekit.com/' | append: rk_last_url[1] | append: '?width=650&quality=90&'
+    assign rk_uptown_recipe_image = 'https://images.getrecipekit.com/' | append: rk_last_url[1] | append: '?class=16x9'
+  elsif rk_mf.recipe_image contains 'https://cdn.shopify.com/'
+    assign rk_shopify_image_url = rk_mf.recipe_image
+    assign rk_16_9_recipe_image = rk_shopify_image_url | append: '&width=1600&height=900'
+    assign rk_1_1_recipe_image = rk_shopify_image_url | append: '&width=1000&height=1000'
+    assign rk_4_3_recipe_image = rk_shopify_image_url | append: '&width=800&height=600'
+    assign rk_2_3_recipe_image = rk_shopify_image_url | append: '&width=600&height=900'
+    assign rk_uptown_recipe_image = rk_shopify_image_url | append: '&width=1600&height=900'
+  endif
+
+  if rk_mf.recipe_video contains '/watch?v='
+    assign rk_video_id = rk_mf.recipe_video | split: '/watch?v=' | last | split: '&' | first
+    assign timestamp = rk_mf.recipe_video | split: '&t=' | last
+    assign rk_video_embed_url = 'https://www.youtube-nocookie.com/embed/' | append: rk_video_id | append: '?start=' | append: timestamp
+  elsif rk_mf.recipe_video contains '/shorts/'
+    assign rk_video_split = rk_mf.recipe_video | split: 'shorts/'
+    assign rk_video_id = rk_video_split[1]
+    assign rk_video_embed_url = 'https://www.youtube-nocookie.com/embed/' | append: rk_video_id
+  elsif rk_mf.recipe_video contains 'vimeo'
+    assign rk_video_id = rk_mf.recipe_video | split: '/' | last
+    assign rk_video_embed_url = 'https://player.vimeo.com/video/' | append: rk_video_id
+  elsif rk_mf.recipe_video contains 'tiktok'
+    assign rk_video_embed_url = rk_mf.recipe_video
+  elsif rk_mf.recipe_video contains 'instagram'
+    assign rk_video_embed_url = rk_mf.recipe_video
+  else
+    assign rk_video_id = rk_mf.recipe_video | split: '/' | last
+    assign timestamp = rk_video_id | split: '=' | last
+    assign rk_video_id = rk_video_id | split: '?' | first
+    assign rk_video_embed_url = 'https://www.youtube-nocookie.com/embed/' | append: rk_video_id | append: '?start=' | append: timestamp
+  endif
+
+  assign rk_prep_time_split = rk_mf.prep_time | split: ' '
+  assign rk_prep_time_value_raw = rk_prep_time_split | first
+  assign rk_prep_time_value = rk_prep_time_value_raw
+  if rk_prep_time_value_raw contains '-' 
+    assign rk_prep_time_value = rk_prep_time_value_raw | split: '-' | first
+  endif
+  assign rk_prep_duration = rk_prep_time_split | last
+
+  assign hours_label = 'recipe.hours' | t
+  assign hour_label = 'recipe.hour' | t
+  assign minutes_label = 'recipe.minutes' | t
+  assign minute_label = 'recipe.minute' | t
+  assign iso_prep_time = 'PT'
+  if rk_prep_duration == hours_label or rk_prep_duration == hour_label
+    if rk_prep_time_value contains '.'
+      assign hour_part = rk_prep_time_value | split: '.' | first
+      assign minute_part = rk_prep_time_value | split: '.' | last
+      if hour_part != '0'
+        assign iso_prep_time = iso_prep_time | append: hour_part | append: 'H'
+      endif
+      if minute_part != '0'
+        assign minute_value = minute_part | times: 60 | divided_by: 100 | round
+        assign iso_prep_time = iso_prep_time | append: minute_value | append: 'M'
+      endif
+    else
+      assign iso_prep_time = iso_prep_time | append: rk_prep_time_value | append: 'H'
+    endif
+  elsif rk_prep_duration == minutes_label or rk_prep_duration == minute_label
+    assign iso_prep_time = iso_prep_time | append: rk_prep_time_value | append: 'M'
+  else
+    assign iso_prep_time = 'PT'
+  endif
+
+  assign rk_cook_time_split = rk_mf.cook_time | split: ' '
+  assign rk_cook_time_value_raw = rk_cook_time_split | first
+  assign rk_cook_time_value = rk_cook_time_value_raw
+  if rk_cook_time_value_raw contains '-' 
+    assign rk_cook_time_value = rk_cook_time_value_raw | split: '-' | first
+  endif
+  assign rk_cook_duration = rk_cook_time_split | last
+
+  assign cook_hours_label = 'recipe.hours' | t
+  assign cook_hour_label = 'recipe.hour' | t
+  assign cook_minutes_label = 'recipe.minutes' | t
+  assign cook_minute_label = 'recipe.minute' | t
+
+  assign iso_cook_time = 'PT'
+  if rk_cook_duration == cook_hours_label or rk_cook_duration == cook_hour_label
+    if rk_cook_time_value contains '.'
+      assign hour_part = rk_cook_time_value | split: '.' | first
+      assign minute_part = rk_cook_time_value | split: '.' | last
+      if hour_part != '0'
+        assign iso_cook_time = iso_cook_time | append: hour_part | append: 'H'
+      endif
+      if minute_part != '0'
+        assign minute_value = minute_part | times: 60 | divided_by: 100 | round
+        assign iso_cook_time = iso_cook_time | append: minute_value | append: 'M'
+      endif
+    else
+      assign iso_cook_time = iso_cook_time | append: rk_cook_time_value | append: 'H'
+    endif
+  elsif rk_cook_duration == cook_minutes_label or rk_cook_duration == cook_minute_label
+    assign iso_cook_time = iso_cook_time | append: rk_cook_time_value | append: 'M'
+  else
+    assign iso_cook_time = 'PT'
+  endif
+  assign rk_cook_time_value_raw = rk_cook_time_split | first
+  assign rk_cook_time_value = rk_cook_time_value_raw
+  if rk_cook_time_value_raw contains '-' 
+    assign rk_cook_time_value = rk_cook_time_value_raw | split: '-' | first
+  endif
+  assign rk_cook_duration = rk_cook_time_split | last
+
+  assign iso_cook_time = 'PT'
+  if rk_cook_duration == 'hours' or rk_cook_duration == 'hour'
+    if rk_cook_time_value contains '.'
+      assign hour_part = rk_cook_time_value | split: '.' | first
+      assign minute_part = rk_cook_time_value | split: '.' | last
+      if hour_part != '0'
+        assign iso_cook_time = iso_cook_time | append: hour_part | append: 'H'
+      endif
+      if minute_part != '0'
+        assign minute_value = minute_part | times: 60 | divided_by: 100 | round
+        assign iso_cook_time = iso_cook_time | append: minute_value | append: 'M'
+      endif
+    else
+      assign iso_cook_time = iso_cook_time | append: rk_cook_time_value | append: 'H'
+    endif
+  elsif rk_cook_duration == 'minutes' or rk_cook_duration == 'minute'
+    assign iso_cook_time = iso_cook_time | append: rk_cook_time_value | append: 'M'
+  else
+    assign iso_cook_time = 'PT'
+  endif
+
+  if iso_prep_time != 'PT' and iso_cook_time != 'PT'
+    if iso_prep_time contains 'H' and iso_cook_time contains 'H'
+      assign prep_hours = iso_prep_time | remove: 'PT' | remove: 'H' | split: 'M' | first
+      assign cook_hours = iso_cook_time | remove: 'PT' | remove: 'H' | split: 'M' | first
+      assign total_hours = prep_hours | plus: cook_hours
+
+      if iso_prep_time contains 'M' and iso_cook_time contains 'M'
+        assign prep_minutes = iso_prep_time | remove: 'PT' | remove: prep_hours | remove: 'H' | remove: 'M'
+        assign cook_minutes = iso_cook_time | remove: 'PT' | remove: cook_hours | remove: 'H' | remove: 'M'
+        assign total_minutes = prep_minutes | plus: cook_minutes
+
+        if total_minutes >= 60
+          assign extra_hours = total_minutes | divided_by: 60
+          assign total_hours = total_hours | plus: extra_hours
+          assign total_minutes = total_minutes | modulo: 60
+        endif
+
+        assign iso_total_time = 'PT' | append: total_hours | append: 'H'
+        if total_minutes > 0
+          assign iso_total_time = iso_total_time | append: total_minutes | append: 'M'
+        endif
+      else
+        assign iso_total_time = 'PT' | append: total_hours | append: 'H'
+      endif
+    elsif iso_prep_time contains 'M' and iso_cook_time contains 'M'
+      assign prep_minutes = iso_prep_time | remove: 'PT' | remove: 'M'
+      assign cook_minutes = iso_cook_time | remove: 'PT' | remove: 'M'
+      assign total_minutes = prep_minutes | plus: cook_minutes
+
+      if total_minutes >= 60
+        assign hours = total_minutes | divided_by: 60
+        assign minutes = total_minutes | modulo: 60
+        assign iso_total_time = 'PT' | append: hours | append: 'H'
+        if minutes > 0
+          assign iso_total_time = iso_total_time | append: minutes | append: 'M'
+        endif
+      else
+        assign iso_total_time = 'PT' | append: total_minutes | append: 'M'
+      endif
+    else
+      assign iso_total_time = iso_prep_time | append: iso_cook_time | remove: 'PT'
+      assign iso_total_time = 'PT' | append: iso_total_time
+    endif
+  else
+    assign iso_total_time = 'PT'
+  endif
+%}
+
+{% assign attr = 'type="application/ld+json"' %}
+<script {{ attr }}>
+  {
+    "@context": "https://schema.org/",
+    "@type": "Recipe",
+    "name": "{{- rk_mf.recipe_title | escape -}}",
+    "image": [
+      "{{- rk_16_9_recipe_image -}}",
+      "{{- rk_4_3_recipe_image -}}",
+      "{{- rk_1_1_recipe_image -}}"
+    ],
+    "description": "{{- rk_mf.recipe_description | strip_html | escape -}}",
+    "keywords": [
+      {%- for keyword in rk_mf.recipe_tags -%}
+        "{{- keyword.name -}}"{%- unless forloop.last -%},{%- endunless -%}
+      {%- endfor -%}
+    ],
+    "recipeYield": "{{- json_serving_size | escape -}}",
+    "author": {
+      "@type": "Person",
+      "name": "{{- rk_mf.recipe_author | strip_html | escape | default: article.author -}}"
+    },
+    "cookTime": "{{- iso_cook_time -}}",
+    "prepTime": "{{- iso_prep_time -}}",
+    "totalTime": "{{- iso_total_time -}}",
+    "recipeCategory": "{{- rk_mf.recipe_category | escape -}}",
+    "recipeIngredient": [
+      {%- capture process_ingredients -%}
+        {%- for ingredient in rk_mf.recipe_ingredients -%}
+          {%- unless ingredient.type == 'heading' -%}
+            ,"{{- ingredient.ingredient | strip_html | escape -}}"
+          {%- endunless -%}
+        {%- endfor -%}
+      {%- endcapture -%}
+      {% assign ingredient_schema = process_ingredients | remove_first: ',' %}
+      {{- ingredient_schema -}}
+    ],
+    "recipeInstructions": [
+      {%- capture process_directions -%}
+        {%- for direction in rk_mf.recipe_directions -%}
+          {%- unless direction.type == 'heading' -%}
+            ,{
+              "@type": "HowToStep",
+              "text": "{{- direction.direction | strip_html | escape -}}",
+              "name": "{{- direction.direction | strip_html | escape -}}",
+              "url": "{{ shop.url }}{{ article.url }}#step-{{- forloop.index -}}"
+              {%- if direction.image != blank -%}
+                ,"image": "{{- direction.image | replace: 'https://f000.backblazeb2.com/file/recipekit-bucket/' ,'https://images.getrecipekit.com/' | append: '?width=700' -}}"
+              {%- endif -%}
+            }
+          {%- endunless -%}
+        {%- endfor -%}
+      {%- endcapture -%}
+      {% assign direction_schema = process_directions | remove_first: ',' %}
+      {{- direction_schema -}}
+    ],
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "servingSize": "{{- rk_mf.serving_size | escape -}}"
+      {%- if rk_mf.recipe_calories != blank -%}
+        ,"calories": "{{- rk_mf.recipe_calories -}}"
+      {%- endif -%}
+      {%- unless nutrition_field.dynamic == true -%}
+        ,"{{- nutrition_field.value -}}": "{{ nutrition_field.content }}"
+      {%- endunless -%}
+    },
+    "recipeCuisine": "{{- rk_mf.recipe_cuisine | strip_html | escape -}}"
+    {%- if rk_mf.enable_rating == true or rk_mf.enable_rating == 'true' -%}
+    ,
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "{{- current_rating | default: '5' -}}",
+      "bestRating": "5",
+      "worstRating": "1",
+      "ratingCount": "{{ rating_count | default: '1' }}"
+    }
+    {% endif -%}
+    {% if rk_mf.recipe_video != blank and rk_mf.recipe_video contains 'youtube' or rk_mf.recipe_video contains 'shorts' or rk_mf.recipe_video contains 'youtu.be' or rk_mf.recipe_video contains 'vimeo' %}
+    ,
+    "video": {
+      "@type": "VideoObject",
+      "name": "{{- rk_mf.recipe_title | escape -}}",
+      "description": "{{- rk_mf.recipe_description | strip_html | escape -}}",
+      "thumbnailUrl": "{{- rk_16_9_recipe_image -}}",
+      "uploadDate": "{{- rk_mf.recipe_date -}}",
+      "contentUrl": "{{- rk_mf.recipe_video -}}"
+    }
+    {%- endif -%}
+  }
+</script>
+
+<meta property="og:title" content="{{- rk_mf.recipe_title -}}">
+<meta property="og:image" content="{{- rk_16_9_recipe_image -}}">
+<meta property="og:description" content="{{- rk_mf.recipe_description | strip_html -}}">
+
+<style>
+  /* Recipe Detail Page Styles */
+  .recipe-detail-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px 20px 20px;
+    font-family: var(--font-body-family);
+    color: #333;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .recipe-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  @media screen and (max-width: 768px) {
+    .recipe-detail-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .recipe-column-one,
+    .recipe-column-two,
+    .recipe-column-one-lower {
+      width: 100%;
+      grid-column: 1;
+    }
+  }
+
+  /* Ensure all content containers respect the width */
+  .recipe-header,
+  .recipe-ingredients,
+  .recipe-instructions,
+  .recipe-tips,
+  .recipe-meta,
+  .recipe-social-share {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  /* Quadrant 1: Top left - Header and Product Block */
+  .recipe-header-product {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .recipe-header {
+    text-align: center;
+    margin-bottom: 0; /* Removed bottom margin */
+  }
+
+  .recipe-title {
+    font-size: 40px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+
+  .recipe-description {
+    font-size: 18px;
+    line-height: 1.5;
+    margin: 0 auto 30px;
+  }
+
+  .recipe-meta {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 40px;
+    margin-bottom: 30px;
+  }
+
+  .recipe-meta-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .meta-icon-background {
+    width: 32px; /* Adjusted for a 20px icon + padding */
+    height: 32px; /* Adjusted for a 20px icon + padding */
+    background-color: rgb(211, 236, 232);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px; /* Moved from .meta-icon */
+  }
+
+  .meta-label {
+    font-size: 14px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #666;
+  }
+
+  .meta-value {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .meta-icon {
+    width: 20px; /* Adjusted to fit in the background */
+    height: 20px; /* Adjusted to fit in the background */
+    fill: #333; /* Changed from rgb(211, 236, 232) */
+    margin-bottom: 0; /* Moved to .meta-icon-background */
+  }
+
+  .recipe-product-block {
+    border-radius: 8px;
+    padding: 0;
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 0;
+    align-items: center;
+    overflow: hidden;
+    border: 4px solid #f8f8f8;
+    order: 3;
+    color: #333;
+    height: auto;
+  }
+
+  .product-image-container {
+    width: 180px;
+    height: 110px;
+    overflow: hidden;
+    background-color: white;
+    padding: 0;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0 0 0 4px;
+  }
+
+  .product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .product-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 110px;
+    align-items: center;
+    background-color: #f8f8f8;
+    padding: 12px 0;
+    box-sizing: border-box;
+  }
+
+  .product-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    line-height: 1.3;
+    color: #333;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .product-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: inherit;
+    margin-right: 10px;
+  }
+
+  .product-cta {
+    display: inline-block;
+    background-color: rgb(211, 236, 232);
+    color: #333;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 12px;
+    text-decoration: none;
+    text-align: center;
+    transition: background-color 0.3s;
+    width: auto;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .product-cta:hover {
+    background-color: rgb(190, 215, 210);
+  }
+
+  .product-price-cta-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+  }
+
+  /* Quadrant 2: Top right - Product Image */
+  .recipe-image-container {
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    aspect-ratio: 1 / 1; /* Make it a square */
+  }
+
+  .recipe-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  /* New wrapper for ingredients and recommendations */
+  .recipe-column-one-lower {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Controls space between ingredients and recommendations */
+    align-self: start; /* Ensure this column doesn't stretch if instructions are shorter */
+  }
+
+  /* New section for recommendations */
+  .recipe-recommendations {
+    /* grid-column: 1; */ /* No longer a direct grid item for desktop */
+    /* grid-row: 3; */ /* No longer a direct grid item for desktop */
+  }
+
+  /* Quadrant 4: Bottom right - Instructions */
+  .recipe-instructions {
+    grid-column: 2;
+    grid-row: 2; /* Was 2 / span 2 */
+    align-self: start; /* Ensure instructions don't stretch if col 1 is shorter */
+  }
+
+  .recipe-section-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+  }
+
+  .ingredients-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .ingredient-item {
+    margin-bottom: 12px;
+    font-size: 16px;
+    line-height: 1.5;
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .ingredient-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 8px;
+    height: 8px;
+    background-color: #333;
+    border-radius: 50%;
+  }
+
+  .ingredient-heading {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 20px 0 10px 0;
+  }
+
+  .instructions-list {
+    counter-reset: step-counter;
+    list-style: none;
+    padding: 0;
+  }
+
+  .instruction-item {
+    margin-bottom: 30px;
+    position: relative;
+    padding-left: 40px;
+  }
+
+  .instruction-item::before {
+    content: counter(step-counter);
+    counter-increment: step-counter;
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 30px;
+    height: 30px;
+    background-color: rgb(211, 236, 232);
+    color: #333;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+  }
+
+  .instruction-text {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .recipe-tips {
+    margin-top: 40px;
+    background-color: #f9f9f9;
+    padding: 8px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
+  .tips-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 15px;
+  }
+
+  .tips-text {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .recipe-social-share {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .share-button {
+    background-color: #f0f0f0;
+    color: #333;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.3s;
+  }
+
+  .share-button:hover {
+    background-color: #e0e0e0;
+  }
+
+  .share-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Responsive Styles */
+  @media screen and (max-width: 991px) {
+    .recipe-title {
+      font-size: 32px;
+    }
+
+    /* 
+      The following rules are removed to prevent single-column layout before 767px:
+      .recipe-detail-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto;
+      }
+      .recipe-header-product {
+        grid-column: 1;
+        grid-row: 1;
+      }
+      .recipe-image-container {
+        grid-column: 1;
+        grid-row: 2;
+      }
+      .recipe-ingredients {
+        grid-column: 1;
+        grid-row: 3;
+      }
+      .recipe-instructions {
+        grid-column: 1;
+        grid-row: 4;
+      }
+    */
+  }
+
+  @media screen and (max-width: 767px) {
+    .recipe-detail-grid {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto auto auto auto auto; /* Reduced to 6 rows */
+      gap: 20px;
+    }
+
+    .recipe-header-product {
+      display: contents;
+    }
+
+    .recipe-image-container {
+      grid-row: 1;
+      grid-column: 1;
+      margin: 0 0 20px 0;
+    }
+
+    .recipe-header {
+      grid-row: 2;
+      grid-column: 1;
+    }
+
+    .recipe-product-block {
+      grid-row: 3;
+      grid-column: 1;
+      grid-template-columns: 180px 1fr;
+      max-height: none;
+      gap: 0;
+    }
+
+    .recipe-social-share {
+      grid-row: 4;
+      grid-column: 1;
+    }
+
+    .recipe-column-one-lower {
+      /* Added for mobile */
+      grid-row: 5;
+      grid-column: 1;
+      /* Flex direction column and gap from desktop rule will apply */
+    }
+
+    .recipe-ingredients {
+      /* grid-row: 5; */ /* Handled by recipe-column-one-lower */
+      /* grid-column: 1; */
+    }
+
+    .recipe-recommendations {
+      /* Added for mobile */
+      /* grid-row: 6; */ /* Handled by recipe-column-one-lower */
+      /* grid-column: 1; */
+    }
+
+    .recipe-instructions {
+      grid-row: 6; /* Was row 7 */
+      grid-column: 1;
+    }
+
+    .recipe-title {
+      font-size: 28px;
+    }
+
+    .recipe-meta {
+      gap: 20px;
+    }
+
+    .product-details {
+      height: auto;
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .recipe-title {
+      font-size: 24px;
+    }
+
+    .recipe-description {
+      font-size: 16px;
+    }
+
+    .meta-value {
+      font-size: 16px;
+    }
+
+    .recipe-section-title {
+      font-size: 20px;
+    }
+  }
+
+  .blog-breadcrumbs {
+    margin: 0 0 0.75em 0;
+    padding: 0 20px 0 20px;
+    font-size: 0.7em;
+    color: rgb(6, 42, 48);
+    font-family: inherit;
+    text-transform: uppercase;
+  }
+  .blog-breadcrumbs__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .blog-breadcrumbs__item {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    color: rgb(6, 42, 48);
+  }
+  .blog-breadcrumbs__item:not(:last-child)::after {
+    content: '›';
+    margin: 0 0.5em;
+    color: rgb(6, 42, 48);
+    opacity: 0.6;
+    font-size: 1.1em;
+  }
+  .blog-breadcrumbs__link {
+    color: rgb(6, 42, 48);
+    text-decoration: none;
+    transition: text-decoration 0.2s;
+  }
+  .blog-breadcrumbs__link:focus,
+  .blog-breadcrumbs__link:hover {
+    text-decoration: underline;
+    outline: none;
+  }
+  .blog-breadcrumbs__item[aria-current='page'] {
+    font-weight: 600;
+    color: rgb(6, 42, 48);
+    text-decoration: none;
+    pointer-events: none;
+  }
+  .related-products__heading {
+    display: none !important;
+  }
+
+  /* --- Star Rating Styles (from Recipe Kit, customized) --- */
+  .rk_rating {
+    display: inline-flex;
+    align-items: center;
+  }
+  .rk_rating .stars {
+    display: flex;
+    flex-flow: row-reverse;
+    justify-content: flex-end;
+    cursor: pointer;
+    margin-right: 8px;
+  }
+  .rk_rating .star {
+    display: inline-block;
+    cursor: pointer;
+  }
+  .rk_rating .star svg {
+    width: 1.2em;
+    height: 1em;
+    fill: #f0f0f0;
+    pointer-events: none;
+    transition: fill 0.2s, opacity 0.2s;
+  }
+  .rk_rating .star.is-selected svg,
+  .rk_rating .star.is-selected ~ .star svg {
+    fill: #333;
+  }
+  .rk_rating .star:hover svg,
+  .rk_rating .star:hover ~ .star svg {
+    opacity: 1;
+    fill: rgb(211, 236, 232);
+  }
+  .rk_rating #rk_rating_thanks {
+    margin: 0 0 0 10px;
+    padding: 0;
+    font-size: 14px;
+    color: #888;
+    text-align: left;
+  }
+
+  /* Fix styling for social share buttons that are now links */
+  .recipe-social-share .share-button {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    font-size: 13px;
+    color: #333;
+    background-color: #f0f0f0;
+    padding: 8px 13px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    margin-right: 4px;
+    font-family: inherit;
+    line-height: normal;
+    transition: background-color 0.3s;
+    white-space: nowrap;
+  }
+
+  .recipe-social-share .share-button:hover {
+    background-color: #e0e0e0;
+  }
+
+  .recipe-social-share .share-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .recipe-social-share {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 20px;
+  }
+
+  @media screen and (max-width: 767px) {
+    .main-blog-recipekit-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+    .recipe-social-share {
+      flex-wrap: wrap;
+    }
+    .view-all-overlay {
+      font-size: 14px;
+      padding: 8px 15px;
+    }
+  }
+
+  .instruction-heading {
+    text-transform: uppercase;
+  }
+
+  .recipe-description p {
+    margin: 0 0 1em 0;
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+  /* Mobile-specific adjustments */
+  @media screen and (max-width: 768px) {
+    .recipe-product-block {
+      padding-top: 0;
+      grid-template-columns: 1fr 2fr; /* Image column 1/3, text column 2/3 */
+      /* You might want to adjust the gap for mobile if the default is too large */
+      /* gap: 10px; */ 
+    }
+
+    .recipe-product-block .product-image-container {
+      width: 100%; /* Container takes full width of its new smaller grid cell */
+      height: auto; /* Adjust height automatically */
+      padding: 0; /* Reset padding if necessary */
+    }
+
+    .recipe-product-block .product-image { /* Targeting the image specifically */
+      width: 100%;    /* Image fills its container */
+      max-width: 100%; /* Ensure it doesn't overflow if somehow larger than container */
+      height: auto;     /* Maintain aspect ratio */
+      display: block;   /* Consistent rendering, removes bottom space if inline */
+    }
+
+    .recipe-meta {
+      padding-bottom: 0;
+    }
+  }
+</style>
+
+<div class="page-width">
+  <nav class="blog-breadcrumbs" aria-label="Breadcrumb">
+    <ol class="blog-breadcrumbs__list">
+      <li class="blog-breadcrumbs__item">
+        <a class="blog-breadcrumbs__link" href="/">Home</a>
+      </li>
+      <li class="blog-breadcrumbs__item">
+        {% comment %}
+          Assuming 'blog.title' and 'blog.url' are available in the context where this snippet is used.
+          If this recipe detail is part of a specific blog (e.g., "Recipes"),
+          these variables should be populated by Shopify.
+          Providing a fallback if not.
+        {% endcomment %}
+        {% if blog.url and blog.title %}
+          <a class="blog-breadcrumbs__link" href="{{ blog.url }}">{{ blog.title }}</a>
+        {% else %}
+          <a class="blog-breadcrumbs__link" href="/blogs/recipes">Recipes</a> {# Fallback link #}
+        {% endif %}
+      </li>
+      <li class="blog-breadcrumbs__item" aria-current="page">
+        {% comment %}
+          'recipe.title' is from the snippet's passed parameters.
+          'article.title' is the standard Shopify object for the current article/recipe title.
+        {% endcomment %}
+        {{ recipe.title | default: article.title | default: 'Recipe Detail' }}
+      </li>
+    </ol>
+  </nav>
+</div>
+<div class="page-width">
+  <div class="recipe-detail-page">
+    <div class="recipe-detail-grid">
+      <!-- Quadrant 1: Top left - Header and Product Block -->
+      <div class="recipe-header-product">
+        <div class="recipe-header">
+          <h1 class="recipe-title">{{ rk_mf.recipe_title | default: article.title }}</h1>
+          {% if rk_mf.enable_rating == true or enable_rating_downcase == 'true' %}
+            <div class="rk_rating" style="margin-bottom: 12px;">
+              <div class="stars">
+                <span class="star {% if current_rating == 5 %} is-selected {% endif %}">
+                  <svg>
+                    <use xlink:href="#star"></use>
+                  </svg>
+                </span>
+                <span class="star {% if current_rating == 4 %} is-selected {% endif %}">
+                  <svg>
+                    <use xlink:href="#star"></use>
+                  </svg>
+                </span>
+                <span class="star {% if current_rating == 3 %} is-selected {% endif %}">
+                  <svg>
+                    <use xlink:href="#star"></use>
+                  </svg>
+                </span>
+                <span class="star {% if current_rating == 2 %} is-selected {% endif %}">
+                  <svg>
+                    <use xlink:href="#star"></use>
+                  </svg>
+                </span>
+                <span class="star {% if current_rating == 1 %} is-selected {% endif %}">
+                  <svg>
+                    <use xlink:href="#star"></use>
+                  </svg>
+                </span>
+              </div>
+              <p id="rk_rating_thanks" style="margin: 0; font-size: 14px; color: #888;">{{- rk_lang_rating_count -}}</p>
+            </div>
+            <svg style="display: none;">
+              <symbol id="star" viewBox="0 0 98 92">
+                <title>star</title>
+                <path stroke="#000" stroke-width="5" d="M49 73.5L22.55 87.406l5.05-29.453-21.398-20.86 29.573-4.296L49 6l13.225 26.797 29.573 4.297-21.4 20.86 5.052 29.452z" fill-rule="evenodd"/>
+              </symbol>
+            </svg>
+          {% endif %}
+          <div class="recipe-description">
+            {{
+              rk_mf.recipe_description
+              | replace_first: '<p> </p>', ''
+              | replace_first: '<p></p>', ''
+              | replace_first: '<p>     </p>', ''
+              | replace_first: '<p>
+</p>', ''
+              | replace_first: '<p>
+
+
+
+
+
+
+
+</p>', ''
+            }}
+          </div>
+
+          <div class="recipe-meta">
+            <div class="recipe-meta-item">
+              <div class="meta-icon-background">
+                <svg class="meta-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                </svg>
+              </div>
+              <span class="meta-label">{{ 'recipe.prep_time' | t }}</span>
+              <span class="meta-value">{{ rk_prep_time | default: rk_mf.prep_time }}</span>
+            </div>
+            <div class="recipe-meta-item">
+              <div class="meta-icon-background">
+                <svg class="meta-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22C17.5 22 22 17.5 22 12S17.5 2 12 2M12.5 13H7V11.5H11V7H12.5V13Z" />
+                </svg>
+              </div>
+              <span class="meta-label">{{ 'recipe.cook_time' | t }}</span>
+              <span class="meta-value">{{ rk_cook_time | default: rk_mf.cook_time }}</span>
+            </div>
+
+            <div class="recipe-meta-item">
+              <div class="meta-icon-background">
+                <svg class="meta-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                  <path d="M12,5.5A3.5,3.5 0 0,1 15.5,9A3.5,3.5 0 0,1 12,12.5A3.5,3.5 0 0,1 8.5,9A3.5,3.5 0 0,1 12,5.5M5,8C5.56,8 6.08,8.15 6.53,8.42C6.38,9.85 6.8,11.27 7.66,12.38C7.16,13.34 6.16,14 5,14A3,3 0 0,1 2,11A3,3 0 0,1 5,8M19,8A3,3 0 0,1 22,11A3,3 0 0,1 19,14C17.84,14 16.84,13.34 16.34,12.38C17.2,11.27 17.62,9.85 17.47,8.42C17.92,8.15 18.44,8 19,8M5.5,18.25C5.5,16.18 8.41,14.5 12,14.5C15.59,14.5 18.5,16.18 18.5,18.25V20H5.5V18.25M0,20V18.5C0,17.11 1.89,15.94 4.45,15.6C3.86,16.28 3.5,17.22 3.5,18.25V20H0M24,20H20.5V18.25C20.5,17.22 20.14,16.28 19.55,15.6C22.11,15.94 24,17.11 24,18.5V20Z"/>
+                </svg>
+              </div>
+              <span class="meta-label">{{ 'recipe.servings' | t }}</span>
+              <span class="meta-value">{{ rk_mf.serving_size }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Find and assign product object -->
+        {%- assign selected_product_group = null -%}
+        {%- assign article_tags = article.tags -%}
+        {%- for group in shop.metaobjects.recipe_tag_group.values -%}
+          {%- if article_tags contains group.tag -%}
+            {%- assign selected_product_group = group -%}
+            {% break %}
+          {%- endif -%}
+        {%- endfor -%}
+
+        {%- assign product_obj = null -%}
+        {%- if selected_product_group and selected_product_group.best_selling_product -%}
+          {%- assign product_obj = selected_product_group.best_selling_product.value -%}
+        {%- endif -%}
+        {%- if product_obj -%}
+          {%- assign product_id_for_recommendations = product_obj.id -%}
+        {%- endif -%}
+
+        {%- if product_obj -%}
+          <div class="recipe-product-block">
+            <div class="product-image-container">
+              <img
+                class="product-image"
+                src="{{ product_obj.featured_image | img_url: '400x400' }}"
+                alt="{{ product_obj.title }}"
+                width="400"
+                height="400"
+              >
+            </div>
+            <div class="product-details">
+              <h3 class="product-title">{{ product_obj.title }}</h3>
+              <div class="product-price-cta-wrapper">
+                <p class="product-price">{{ product_obj.price | money }}</p>
+                <a href="{{ product_obj.url }}" class="product-cta">{{ 'recipe.shop_now' | t }}</a>
+              </div>
+            </div>
+          </div>
+        {%- endif -%}
+
+        <div class="recipe-social-share">
+          <button class="share-button" onclick="rk_print_function()">
+            <svg class="share-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+              <path d="M399.95 160h-287.9C76.7 160 48 188.79 48 224v136c0 13.25 10.75 24 24 24h16v-64h320v64h16c13.25 0 24-10.75 24-24V224c0-35.21-28.7-64-64.05-64zM352 256c-17.67 0-32-14.33-32-32s14.33-32 32-32 32 14.33 32 32-14.33 32-32 32zm-32-160H192v128h128V96zM48 384h416v64c0 35.21-28.7 64-64.05 64H112.05C76.7 512 48 483.21 48 448v-64z"/>
+            </svg>
+            {{ 'recipe.print' | t }}
+          </button>
+          <a
+            class="share-button"
+            target="_blank"
+            href="//twitter.com/share?text={{- rk_mf.recipe_title | url_param_escape -}}&amp;url={{- shop.url -}}{{- article.url -}}"
+          >
+            <svg class="share-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+              <path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/>
+            </svg>
+            Tweet
+          </a>
+          <a
+            class="share-button"
+            target="_blank"
+            href="//www.facebook.com/sharer.php?u={{- shop.url -}}{{- article.url -}}"
+          >
+            <svg class="share-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+              <path d="M279.14 288l14.22-92.66h-88.91v-60.13c0-25.35 12.42-50.06 52.24-50.06h40.42V6.26S260.43 0 225.36 0c-73.22 0-121.08 44.38-121.08 124.72v70.62H22.89V288h81.39v224h100.17V288z"/>
+            </svg>
+            Share
+          </a>
+          <a
+            class="share-button"
+            target="_blank"
+            href="//pinterest.com/pin/create/button/?url={{- shop.url -}}{{- article.url -}}&amp;media={{- rk_mf.recipe_image -}}&amp;description={{- rk_mf.recipe_title | url_param_escape -}}"
+          >
+            <svg class="share-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+              <path d="M204 6.5C101.4 6.5 0 74.9 0 185.6 0 256 39.6 296 63.6 296c9.9 0 15.6-27.6 15.6-35.4 0-9.3-23.7-29.1-23.7-67.8 0-80.4 61.2-137.4 140.4-137.4 68.1 0 118.5 38.7 118.5 109.8 0 53.1-21.3 152.7-90.3 152.7-24.9 0-46.2-18-46.2-43.8 0-37.8 26.4-74.4 26.4-113.4 0-66.2-93.9-54.2-93.9 25.8 0 16.8 2.1 35.4 9.6 50.7-13.8 59.4-42 147.9-42 209.1 0 18.9 2.7 37.5 4.5 56.4 3.4 3.8 1.7 3.4 6.9 1.5 50.4-69 48.6-82.5 71.4-172.8 12.3 23.4 44.1 36 69.3 36 106.2 0 153.9-103.5 153.9-196.8C384 71.3 298.2 6.5 204 6.5z"/>
+            </svg>
+            Pin
+          </a>
+          <a
+            class="share-button"
+            target="_blank"
+            href="https://api.whatsapp.com/send?text={{- shop.url -}}{{- article.url -}}"
+          >
+            <svg class="share-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+              <path d="M380.9 97.1C346.6 62.8 297.1 42.3 242.4 42.3C130.5 42.3 39.2 133.5 39.2 245.4C39.2 293.3 52.1 339.2 75.3 379.1L43.1 450.3L119.2 431.4C155.8 450.3 197.6 460.3 242.4 460.3H242.5C354.4 460.3 445.6 369.1 445.6 257.2C445.6 202.4 425.2 152.9 390.9 118.6L380.9 97.1ZM242.4 418.5C201.4 418.5 162.5 408.2 128.9 387.4L123.7 384.3L74.5 398.4L88.5 351.1L85.2 344.9C61.6 309.6 49.2 269.1 49.2 226.9C49.2 149.3 100.2 86.8 188.4 86.8C232.5 86.8 274.3 104.2 304.9 134.8C335.6 165.5 352.9 207.2 352.9 251.4C352.9 328.9 301.8 391.4 213.7 391.4L242.4 418.5Z"/> <!-- Using a generic WhatsApp path, consider a more brand-aligned one if available -->
+            </svg>
+            WhatsApp
+          </a>
+        </div>
+      </div>
+
+      <!-- Quadrant 2: Top right - Product Image -->
+      <div class="recipe-image-container">
+        <img
+          class="recipe-image"
+          src="{{ rk_16_9_recipe_image | default: rk_mf.recipe_image }}"
+          alt="{% if rk_mf.recipe_image_alt_text != blank %}{{ rk_mf.recipe_image_alt_text }}{% else %}Image of {{ rk_mf.recipe_title | default: article.title }}{% endif %}"
+          width="1200"
+          height="1200"
+        >
+      </div>
+
+      <!-- New Wrapper for Column 1 Lower Content -->
+      <div class="recipe-column-one-lower">
+        <!-- Quadrant 3: Bottom left - Ingredients -->
+        <div class="recipe-ingredients">
+          <h2 class="recipe-section-title">{{ 'recipe.ingredients' | t }}</h2>
+
+          {%- assign is_first_item = true -%}
+          {%- for ingredient in rk_mf.recipe_ingredients -%}
+            {%- if ingredient.type == 'heading' -%}
+              {%- unless is_first_item -%}
+                </ul>
+              {%- endunless -%}
+
+              <h4 class="ingredient-heading">{{- ingredient.heading_text -}}</h4>
+              <ul class="ingredients-list">
+                {%- assign is_first_item = false -%}
+            {%- else -%}
+              {%- if is_first_item -%}
+                <ul class="ingredients-list">
+                  {%- assign is_first_item = false -%}
+              {%- endif -%}
+
+              <li class="ingredient-item">{{ ingredient.ingredient }}</li>
+            {%- endif -%}
+          {%- endfor -%}
+
+          {%- unless is_first_item -%}
+            </ul>
+          {%- endunless -%}
+        </div>
+
+        <!-- You May Also Like Section -->
+        <div class="recipe-recommendations">
+          <h2 class="recipe-section-title">{{ 'recipe.you_may_also_like' | t }}</h2>
+          <!-- Debug: List all article tags -->
+          <div style="display:none;">Article Tags: {{ article.tags | json }}</div>
+
+          {%- if product_obj -%}
+            <product-recommendations
+              class="related-products page-width isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+              data-product-id="{{ product_id_for_recommendations }}"
+              data-url="/recommendations/products?limit=2"
+              data-section-id="related-products"
+            >
+              {% if recommendations.performed and recommendations.products_count > 0 %}
+                <ul class="grid product-grid grid--2-col-desktop grid--2-col-tablet-down" role="list">
+                  {%- for recommended_product in recommendations.products -%}
+                    <li class="grid__item">
+                      {% render 'card-product',
+                        card_product: recommended_product,
+                        media_aspect_ratio: 'square',
+                        show_secondary_image: true,
+                        show_vendor: false,
+                        show_rating: false
+                      %}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+            </product-recommendations>
+          {%- else -%}
+            <ul class="grid product-grid grid--2-col-desktop grid--2-col-tablet-down" role="list">
+              {%- assign displayed_count = 0 -%}
+              {%- for product in collections.all.products limit: 12 -%}
+                {%- if product.id != product_obj.id and displayed_count < 3 -%}
+                  {%- assign displayed_count = displayed_count | plus: 1 -%}
+                  <li class="grid__item">
+                    {% render 'card-product',
+                      card_product: product,
+                      media_aspect_ratio: 'square',
+                      show_secondary_image: true,
+                      show_vendor: false,
+                      show_rating: false
+                    %}
+                  </li>
+                {%- endif -%}
+                {%- if displayed_count >= 2 -%}
+                  {%- break -%}
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <!-- Quadrant 4: Bottom right - Instructions -->
+      <div class="recipe-instructions">
+        <h2 class="recipe-section-title">{{ 'recipe.instructions' | t }}</h2>
+        <ol class="instructions-list">
+          {%- for direction in rk_mf.recipe_directions -%}
+            {%- if direction.type == 'heading' -%}
+              </ol>
+              <h4 class="instruction-heading">{{- direction.heading_text -}}</h4>
+              <ol class="instructions-list">
+            {%- else -%}
+              <li class="instruction-item">
+                <p class="instruction-text">{{ direction.direction }}</p>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ol>
+
+        {% if rk_mf.recipe_note != blank %}
+          <div class="recipe-tips">
+            <h3 class="tips-title">Chef's Tips</h3>
+            <p class="tips-text">
+              {{ rk_mf.recipe_note }}
+            </p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Listen for DOM changes inside product-recommendations
+    var recs = document.querySelector('.related-products');
+    if (!recs) return;
+
+    // Use MutationObserver to watch for the grid being injected
+    var observer = new MutationObserver(function (mutations) {
+      var grid = recs.querySelector('ul.product-grid');
+      if (grid) {
+        // Remove any grid--*-col-* classes except the ones we want
+        grid.className = grid.className
+          .replace(/grid--\d-col-desktop/g, '')
+          .replace(/grid--\d-col-tablet-down/g, '')
+          .trim();
+        // Add the desired classes
+        grid.classList.add('grid--2-col-desktop', 'grid--2-col-tablet-down');
+        observer.disconnect(); // Stop observing once done
+      }
+    });
+
+    observer.observe(recs, { childList: true, subtree: true });
+  });
+</script>
+
+{% if rk_mf.enable_rating == true %}
+  <script>
+    let recipe_id = {{ rk_mf.recipe_id }};
+    let counter = 0;
+    (function() {
+        let starContainer = document.querySelector('.stars');
+        if (!starContainer) return;
+        let starsNodeList = starContainer.children;
+        let stars = Array.prototype.slice.call(starsNodeList);
+        let totalStars = stars.length;
+        let confirm_rating = '{{ rk_settings.rk_lang.rating_confirmation }}';
+        function rk_rating_success(){
+          var rk_rating_event = new CustomEvent("rk_rating_event");
+          document.dispatchEvent(rk_rating_event);
+        }
+        starContainer.addEventListener('click', function handler(e) {
+            counter++;
+            let index = stars.indexOf(e.target.closest('span'));
+            if (index === -1) return;
+            let user_rating = totalStars - index;
+            stars.forEach(function(el) {
+                el.classList.remove('is-selected')
+            });
+            e.target.closest('span').classList.add('is-selected');
+            if (counter == 1 && confirm_rating) {
+                document.getElementById('rk_rating_thanks').innerHTML = confirm_rating;
+            } else {
+                this.removeEventListener("click", handler);
+                fetch("https://my.recipekit.app/rating", {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    method: "POST",
+                    body: JSON.stringify({
+                        recipe_id: recipe_id,
+                        user_rating: user_rating
+                    })
+                }).then(function(res) {
+                    document.getElementById('rk_rating_thanks').innerHTML = '{{ rk_settings.rk_lang_rating_thanks | default: 'Thanks for rating!' }}';
+                    rk_rating_success(document)
+                }).catch(function(res) {
+                    document.getElementById('rk_rating_thanks').innerHTML = '{{ rk_settings.rk_lang_rating_thanks | default: 'Thanks for rating!' }}';
+                    console.log('Woops! Something went wrong while rating this recipe.')
+                })
+            }
+        })
+    })();
+  </script>
+{% endif %}
+
+{%- if selected_product_group and selected_product_group.tag != blank -%}
+  {%- comment -%}Define handles and images for recipes{%- endcomment -%}
+  {%- assign recipe_1_handle = selected_product_group.recipe_1 -%}
+  {%- assign recipe_1_img = selected_product_group.recipe_1_img -%}
+  {%- assign recipe_2_handle = selected_product_group.recipe_2 -%}
+  {%- assign recipe_2_img = selected_product_group.recipe_2_img -%}
+  {%- assign recipe_3_handle = selected_product_group.recipe_3 -%}
+  {%- assign recipe_3_img = selected_product_group.recipe_3_img -%}
+
+  {%- comment -%}Check early if we need to use fallback{%- endcomment -%}
+  {%- assign valid_recipes = 0 -%}
+  {%- assign using_fallback = false -%}
+
+  {%- assign handle_str_1 = recipe_1_handle | strip -%}
+  {%- assign clean_handle_1 = handle_str_1 | remove: 'recipes/' | strip -%}
+  {%- if clean_handle_1 != blank and recipe_1_img != blank -%}
+    {%- assign valid_recipes = valid_recipes | plus: 1 -%}
+  {%- endif -%}
+
+  {%- assign handle_str_2 = recipe_2_handle | strip -%}
+  {%- assign clean_handle_2 = handle_str_2 | remove: 'recipes/' | strip -%}
+  {%- if clean_handle_2 != blank and recipe_2_img != blank -%}
+    {%- assign valid_recipes = valid_recipes | plus: 1 -%}
+  {%- endif -%}
+
+  {%- assign handle_str_3 = recipe_3_handle | strip -%}
+  {%- assign clean_handle_3 = handle_str_3 | remove: 'recipes/' | strip -%}
+  {%- if clean_handle_3 != blank and recipe_3_img != blank -%}
+    {%- assign valid_recipes = valid_recipes | plus: 1 -%}
+  {%- endif -%}
+
+  {%- if valid_recipes < 3 -%}
+    {%- assign using_fallback = true -%}
+  {%- endif -%}
+
+  <div class="recipekit-related-recipes page-width" role="region" aria-labelledby="related-recipes-heading">
+    <h2 id="related-recipes-heading" class="recipe-section-title">
+      {% if using_fallback %}
+        {{ 'recipe.more_recipes' | t }}
+      {% else %}
+        {{ 'recipe.more_tag_recipes' | t: tag: selected_product_group.display_tag }}
+      {% endif %}
+    </h2>
+    <div class="main-blog-recipekit-grid" role="list">
+      {%- comment -%}
+        Accessing metaobject fields:
+        - selected_product_group.recipe_1 (handle string, e.g., "recipes/my-recipe")
+        - selected_product_group.recipe_1_img (File (Image) metaobject field)
+      {%- endcomment -%}
+
+      {%- comment -%}Track displayed recipes and count{%- endcomment -%}
+      {%- assign displayed_recipes = '' -%}
+      {%- assign displayed_count = 0 -%}
+
+      {%- comment -%}Recipe 1{%- endcomment -%}
+      {%- assign handle_str = recipe_1_handle | strip -%}
+      {%- assign img_metaobject_field = recipe_1_img -%}
+      {%- assign clean_handle = handle_str | remove: 'recipes/' | strip -%}
+
+      {%- if clean_handle != blank and img_metaobject_field != blank -%}
+        {%- assign title_temp = clean_handle | replace: '-', ' ' | strip -%}
+        {%- assign title_words = title_temp | split: ' ' -%}
+        {%- assign title_case = '' -%}
+        {%- for word in title_words -%}
+          {%- if word != '' -%}
+            {%- assign word_cap = word | downcase | capitalize -%}
+            {%- assign title_case = title_case | append: word_cap -%}
+            {%- unless forloop.last -%}
+              {%- assign title_case = title_case | append: ' ' -%}
+            {%- endunless -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- assign recipe_url = shop.url | append: '/blogs/recipes/' | append: clean_handle -%}
+        {%- assign displayed_recipes = displayed_recipes | append: clean_handle | append: ',' -%}
+        {%- assign displayed_count = displayed_count | plus: 1 -%}
+
+        {%- assign image_to_display = img_metaobject_field.value -%}
+
+        <div class="recipekit-card-outer" role="listitem">
+          <a href="{{ recipe_url }}" class="recipekit-card-link" aria-labelledby="recipe-title-1">
+            <div class="recipekit-card">
+              <div class="recipekit-card-image-wrapper">
+                {%- if image_to_display -%}
+                  <img
+                    class="recipekit-card-image"
+                    src="{{ image_to_display | img_url: '300x300', crop: 'center' }}"
+                    alt="Recipe image for {{ title_case }}"
+                    loading="lazy"
+                    width="300"
+                    height="300"
+                  >
+                {%- else -%}
+                  <div
+                    class="recipekit-card-image placeholder-image"
+                    style="width:300px; height:300px; background-color:#f0f0f0; display:flex; align-items:center; justify-content:center;"
+                    aria-hidden="true"
+                  >
+                    <span>No Image Available</span>
+                  </div>
+                {%- endif -%}
+              </div>
+            </div>
+          </a>
+          <div class="recipekit-card-meta">
+            <a href="{{ recipe_url }}" class="recipekit-card-title-link">
+              <div id="recipe-title-1" class="recipekit-card-title">{{ title_case }}</div>
+            </a>
+          </div>
+        </div>
+      {%- endif -%}
+
+      {%- comment -%}Recipe 2{%- endcomment -%}
+      {%- assign handle_str = recipe_2_handle | strip -%}
+      {%- assign img_metaobject_field = recipe_2_img -%}
+      {%- assign clean_handle = handle_str | remove: 'recipes/' | strip -%}
+
+      {%- if clean_handle != blank and img_metaobject_field != blank -%}
+        {%- assign title_temp = clean_handle | replace: '-', ' ' | strip -%}
+        {%- assign title_words = title_temp | split: ' ' -%}
+        {%- assign title_case = '' -%}
+        {%- for word in title_words -%}
+          {%- if word != '' -%}
+            {%- assign word_cap = word | downcase | capitalize -%}
+            {%- assign title_case = title_case | append: word_cap -%}
+            {%- unless forloop.last -%}
+              {%- assign title_case = title_case | append: ' ' -%}
+            {%- endunless -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- assign recipe_url = shop.url | append: '/blogs/recipes/' | append: clean_handle -%}
+        {%- assign displayed_recipes = displayed_recipes | append: clean_handle | append: ',' -%}
+        {%- assign displayed_count = displayed_count | plus: 1 -%}
+
+        {%- assign image_to_display = img_metaobject_field.value -%}
+
+        <div class="recipekit-card-outer" role="listitem">
+          <a href="{{ recipe_url }}" class="recipekit-card-link" aria-labelledby="recipe-title-2">
+            <div class="recipekit-card">
+              <div class="recipekit-card-image-wrapper">
+                {%- if image_to_display -%}
+                  <img
+                    class="recipekit-card-image"
+                    src="{{ image_to_display | img_url: '300x300', crop: 'center' }}"
+                    alt="Recipe image for {{ title_case }}"
+                    loading="lazy"
+                    width="300"
+                    height="300"
+                  >
+                {%- else -%}
+                  <div
+                    class="recipekit-card-image placeholder-image"
+                    style="width:300px; height:300px; background-color:#f0f0f0; display:flex; align-items:center; justify-content:center;"
+                    aria-hidden="true"
+                  >
+                    <span>No Image Available</span>
+                  </div>
+                {%- endif -%}
+              </div>
+            </div>
+          </a>
+          <div class="recipekit-card-meta">
+            <a href="{{ recipe_url }}" class="recipekit-card-title-link">
+              <div id="recipe-title-2" class="recipekit-card-title">{{ title_case }}</div>
+            </a>
+          </div>
+        </div>
+      {%- endif -%}
+
+      {%- comment -%}Recipe 3{%- endcomment -%}
+      {%- assign handle_str = recipe_3_handle | strip -%}
+      {%- assign img_metaobject_field = recipe_3_img -%}
+      {%- assign clean_handle = handle_str | remove: 'recipes/' | strip -%}
+
+      {%- if clean_handle != blank and img_metaobject_field != blank -%}
+        {%- assign title_temp = clean_handle | replace: '-', ' ' | strip -%}
+        {%- assign title_words = title_temp | split: ' ' -%}
+        {%- assign title_case = '' -%}
+        {%- for word in title_words -%}
+          {%- if word != '' -%}
+            {%- assign word_cap = word | downcase | capitalize -%}
+            {%- assign title_case = title_case | append: word_cap -%}
+            {%- unless forloop.last -%}
+              {%- assign title_case = title_case | append: ' ' -%}
+            {%- endunless -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- assign recipe_url = shop.url | append: '/blogs/recipes/' | append: clean_handle -%}
+        {%- assign displayed_recipes = displayed_recipes | append: clean_handle | append: ',' -%}
+        {%- assign displayed_count = displayed_count | plus: 1 -%}
+
+        {%- assign image_to_display = img_metaobject_field.value -%}
+
+        <div class="recipekit-card-outer" role="listitem">
+          <a href="{{ recipe_url }}" class="recipekit-card-link" aria-labelledby="recipe-title-3">
+            <div class="recipekit-card">
+              <div class="recipekit-card-image-wrapper">
+                {%- if image_to_display -%}
+                  <img
+                    class="recipekit-card-image"
+                    src="{{ image_to_display | img_url: '300x300', crop: 'center' }}"
+                    alt="Recipe image for {{ title_case }}"
+                    loading="lazy"
+                    width="300"
+                    height="300"
+                  >
+                {%- else -%}
+                  <div
+                    class="recipekit-card-image placeholder-image"
+                    style="width:300px; height:300px; background-color:#f0f0f0; display:flex; align-items:center; justify-content:center;"
+                    aria-hidden="true"
+                  >
+                    <span>No Image Available</span>
+                  </div>
+                {%- endif -%}
+              </div>
+            </div>
+          </a>
+          <div class="recipekit-card-meta">
+            <a href="{{ recipe_url }}" class="recipekit-card-title-link">
+              <div id="recipe-title-3" class="recipekit-card-title">{{ title_case }}</div>
+            </a>
+          </div>
+        </div>
+      {%- endif -%}
+
+      {%- comment -%}Fallback: Display recipes from blog if we don't have 3 valid recipes{%- endcomment -%}
+      {%- if displayed_count < 3 -%}
+        {%- assign using_fallback = true -%}
+        {%- assign card_count = displayed_count -%}
+        {%- assign current_article_id = article.id -%}
+
+        {%- for blog_article in blog.articles limit: 10 -%}
+          {%- if card_count >= 3 -%}
+            {%- break -%}
+          {%- endif -%}
+
+          {%- if blog_article.id != current_article_id -%}
+            {%- assign card_count = card_count | plus: 1 -%}
+            {%- assign card_id = card_count -%}
+
+            <div class="recipekit-card-outer" role="listitem">
+              <a
+                href="{{ blog_article.url }}"
+                class="recipekit-card-link"
+                aria-labelledby="recipe-title-fallback-{{ card_id }}"
+              >
+                <div class="recipekit-card">
+                  <div class="recipekit-card-image-wrapper">
+                    {%- if blog_article.image -%}
+                      <img
+                        class="recipekit-card-image"
+                        src="{{ blog_article.image | img_url: '300x300', crop: 'center' }}"
+                        alt="Recipe image for {{ blog_article.title }}"
+                        loading="lazy"
+                        width="300"
+                        height="300"
+                      >
+                    {%- else -%}
+                      <div
+                        class="recipekit-card-image placeholder-image"
+                        style="width:300px; height:300px; background-color:#f0f0f0; display:flex; align-items:center; justify-content:center;"
+                        aria-hidden="true"
+                      >
+                        <span>No Image Available</span>
+                      </div>
+                    {%- endif -%}
+                  </div>
+                </div>
+              </a>
+              <div class="recipekit-card-meta">
+                <a href="{{ blog_article.url }}" class="recipekit-card-title-link">
+                  <div id="recipe-title-fallback-{{ card_id }}" class="recipekit-card-title">
+                    {{ blog_article.title }}
+                  </div>
+                </a>
+              </div>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+
+      <!-- View More Card -->
+      <div class="recipekit-card-outer view-more-card" role="listitem">
+        <a
+          href="{% if using_fallback %}/blogs/recipes{% else %}/blogs/recipes/tagged/{{ selected_product_group.tag | handle }}{% endif %}"
+          class="recipekit-card-link"
+          aria-labelledby="view-more-title"
+        >
+          <div class="recipekit-card">
+            <div class="recipekit-card-image-wrapper">
+              <img
+                class="recipekit-card-image"
+                src="https://cdn.shopify.com/s/files/1/0173/8181/8422/files/Dash_Pattern_Icon_ca6e694e-c077-41e3-bfcb-71692f0d98f4.png?v=1746822390"
+                alt=""
+                loading="lazy"
+                width="300"
+                height="300"
+                aria-hidden="true"
+              >
+              <span class="view-all-overlay">{{ 'recipe.view_more' | t }}</span>
+            </div>
+          </div>
+        </a>
+        <div class="recipekit-card-meta">
+          <a
+            href="{% if using_fallback %}/blogs/recipes{% else %}/blogs/recipes/tagged/{{ selected_product_group.tag | handle }}{% endif %}"
+            class="recipekit-card-title-link"
+          >
+            <div id="view-more-title" class="recipekit-card-title">
+              {% if using_fallback %}
+                {{ 'recipe.see_all_recipes' | t }}
+              {% else %}
+                {{ 'recipe.see_all_tag_recipes' | t: tag: selected_product_group.display_tag }}
+              {% endif %}
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <style>
+    .view-all-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(211, 236, 232, 0.9);
+      color: rgb(6, 42, 48);
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+    .main-blog-recipekit-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .recipekit-card-outer {
+      position: relative;
+    }
+    .recipekit-card-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .recipekit-card {
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.3s;
+    }
+    .recipekit-card:hover {
+      transform: translateY(-5px);
+    }
+    .recipekit-card-link:focus {
+      outline: 3px solid rgb(6, 42, 48);
+      border-radius: 8px;
+    }
+    .recipekit-card-link:focus:not(:focus-visible) {
+      outline: none;
+    }
+    .recipekit-card-link:focus-visible {
+      outline: 3px solid rgb(6, 42, 48);
+      border-radius: 8px;
+    }
+    .recipekit-card-image-wrapper {
+      position: relative;
+      width: 100%;
+      padding-bottom: 100%;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+    .recipekit-card-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .recipekit-card:hover .recipekit-card-image {
+      transform: scale(1.05);
+    }
+    .recipekit-card-meta {
+      padding: 12px 0;
+    }
+    .recipekit-card-title {
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 1.4;
+      color: rgb(6, 42, 48);
+    }
+    @media screen and (max-width: 767px) {
+      .main-blog-recipekit-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+      }
+      .view-all-overlay {
+        font-size: 14px;
+        padding: 8px 15px;
+      }
+    }
+    @media screen and (max-width: 480px) {
+      /* grid-template-columns: 1fr; */ /* Removed to allow 2 columns from main CSS */
+    }
+  </style>
+{%- else -%}
+  {%- comment -%}Fallback More Recipes when no tags found on article{%- endcomment -%}
+  <div class="recipekit-related-recipes page-width" role="region" aria-labelledby="related-recipes-heading">
+    <h2 id="related-recipes-heading" class="recipe-section-title">More Recipes</h2>
+    <div class="main-blog-recipekit-grid" role="list">
+      {%- assign current_article_id = article.id -%}
+      {%- assign displayed_count = 0 -%}
+
+      {%- for blog_article in blog.articles limit: 10 -%}
+        {%- if displayed_count >= 3 -%}
+          {%- break -%}
+        {%- endif -%}
+
+        {%- if blog_article.id != current_article_id -%}
+          {%- assign displayed_count = displayed_count | plus: 1 -%}
+
+          <div class="recipekit-card-outer" role="listitem">
+            <a
+              href="{{ blog_article.url }}"
+              class="recipekit-card-link"
+              aria-labelledby="recipe-title-fallback-{{ displayed_count }}"
+            >
+              <div class="recipekit-card">
+                <div class="recipekit-card-image-wrapper">
+                  {%- if blog_article.image -%}
+                    <img
+                      class="recipekit-card-image"
+                      src="{{ blog_article.image | img_url: '300x300', crop: 'center' }}"
+                      alt="Recipe image for {{ blog_article.title }}"
+                      loading="lazy"
+                      width="300"
+                      height="300"
+                    >
+                  {%- else -%}
+                    <div
+                      class="recipekit-card-image placeholder-image"
+                      style="width:300px; height:300px; background-color:#f0f0f0; display:flex; align-items:center; justify-content:center;"
+                      aria-hidden="true"
+                    >
+                      <span>No Image Available</span>
+                    </div>
+                  {%- endif -%}
+                </div>
+              </div>
+            </a>
+            <div class="recipekit-card-meta">
+              <a href="{{ blog_article.url }}" class="recipekit-card-title-link">
+                <div id="recipe-title-fallback-{{ displayed_count }}" class="recipekit-card-title">
+                  {{ blog_article.title }}
+                </div>
+              </a>
+            </div>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+
+      <!-- View More Card -->
+      <div class="recipekit-card-outer view-more-card" role="listitem">
+        <a
+          href="/blogs/recipes"
+          class="recipekit-card-link"
+          aria-labelledby="view-more-title"
+        >
+          <div class="recipekit-card">
+            <div class="recipekit-card-image-wrapper">
+              <img
+                class="recipekit-card-image"
+                src="https://cdn.shopify.com/s/files/1/0173/8181/8422/files/Dash_Pattern_Icon_ca6e694e-c077-41e3-bfcb-71692f0d98f4.png?v=1746822390"
+                alt=""
+                loading="lazy"
+                width="300"
+                height="300"
+                aria-hidden="true"
+              >
+              <span class="view-all-overlay">{{ 'recipe.view_more' | t }}</span>
+            </div>
+          </div>
+        </a>
+        <div class="recipekit-card-meta">
+          <a
+            href="/blogs/recipes"
+            class="recipekit-card-title-link"
+          >
+            <div id="view-more-title" class="recipekit-card-title">{{ 'recipe.see_all_recipes' | t }}</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .view-all-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(211, 236, 232, 0.9);
+      color: rgb(6, 42, 48);
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+    .main-blog-recipekit-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .recipekit-card-outer {
+      position: relative;
+    }
+    .recipekit-card-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .recipekit-card {
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.3s;
+    }
+    .recipekit-card:hover {
+      transform: translateY(-5px);
+    }
+    .recipekit-card-link:focus {
+      outline: 3px solid rgb(6, 42, 48);
+      border-radius: 8px;
+    }
+    .recipekit-card-link:focus:not(:focus-visible) {
+      outline: none;
+    }
+    .recipekit-card-link:focus-visible {
+      outline: 3px solid rgb(6, 42, 48);
+      border-radius: 8px;
+    }
+    .recipekit-card-image-wrapper {
+      position: relative;
+      width: 100%;
+      padding-bottom: 100%;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+    .recipekit-card-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .recipekit-card:hover .recipekit-card-image {
+      transform: scale(1.05);
+    }
+    .recipekit-card-meta {
+      padding: 12px 0;
+    }
+    .recipekit-card-title {
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 1.4;
+      color: rgb(6, 42, 48);
+    }
+    @media screen and (max-width: 767px) {
+      .main-blog-recipekit-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+      }
+      .view-all-overlay {
+        font-size: 14px;
+        padding: 8px 15px;
+      }
+    }
+    @media screen and (max-width: 480px) {
+      /* grid-template-columns: 1fr; */ /* Removed to allow 2 columns from main CSS */
+    }
+  </style>
+{%- endif -%}
+
+<script>
+  // Custom print function for recipe printing
+  function rk_print_function() {
+    const popup = window.open('', 'popup', 'width=1200,height=800');
+    popup.addEventListener('afterprint', (event) => {
+      popup.close();
+    });
+
+    const content = document.querySelector('.recipe-detail-page');
+    popup.document.head.innerHTML = document.head.innerHTML;
+    popup.document.head.insertAdjacentHTML(
+      'beforeend',
+      `<style>
+        .recipe-social-share, .recipe-recommendations, .recipekit-related-recipes { display: none; }
+        @media print {
+          body { font-size: 12pt; }
+          .recipe-detail-page { max-width: 100%; padding: 0; }
+          .recipe-detail-grid { display: block; }
+          .recipe-image-container { display: none; } /* Hide the recipe image */
+          .recipe-meta { gap: 20px; }
+          .recipe-product-block { display: none; }
+          a { text-decoration: none; color: #000; }
+          
+          /* Hide meta icons and star ratings when printing */
+          .meta-icon-background, .meta-icon { 
+            display: none; 
+          }
+          .meta-label, .meta-value {
+            margin: 0;
+            padding: 0;
+          }
+          .recipe-meta-item {
+            display: inline-block;
+            margin-right: 15px;
+          }
+          .rk_rating, .stars, .star { 
+            display: none; 
+          }
+        }
+      </style>`
+    );
+
+    popup.document.body.innerHTML = content.outerHTML;
+
+    setTimeout(() => {
+      popup.print();
+      setTimeout(() => {
+        popup.close();
+      }, 500);
+    }, 500);
+  }
+
+  // Update the print button to use the custom print function
+  document.addEventListener('DOMContentLoaded', function () {
+    const printButton = document.querySelector('.recipe-social-share .share-button:first-child');
+    if (printButton) {
+      printButton.setAttribute('onclick', 'rk_print_function()');
+    }
+  });
+</script>

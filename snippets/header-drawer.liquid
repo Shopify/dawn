@@ -20,22 +20,46 @@
       <div class="menu-drawer__inner-container">
         <div class="menu-drawer__navigation-container">
           <nav class="menu-drawer__navigation">
+              {% capture megamenu %}{% endcapture %}
             <ul class="menu-drawer__menu has-submenu list-menu" role="list">
               {%- for link in section.settings.menu.links -%}
+                      {% assign menu_item = "" %}
+                      {% if link.title contains "||||++|" %}
+                      {% assign menu_item = link.title | split: "||||++|" %}
+                      {% capture megamenu %}
+                        {{ megamenu }}
+                        <div class="megamenu__cat_item">
+                          <a href="{{ link.url }}" class="mega-menu__link">
+                            {% if menu_item[1] != blank %}
+                            <img src="{{ menu_item[1] }}" loading="lazy" alt="{% if menu_item[2] != blank %}{{ menu_item[2] }}{% else %}{{ menu_item[0] }}{% endif %}" />
+                            {% endif %}
+                            {% if menu_item[0] != blank %}
+                            <span>{{ menu_item[0] | escape }}</span>
+                            {% endif %}
+                          </a>
+                        </div>
+                      {% endcapture %}
+                      {% else %}
+                      {% if link.title contains "||||" %}
+                        {% assign menu_item = link.title | split: "||||" %}
+                      {% endif %}              
                 <li>
                   {%- if link.links != blank -%}
+                     {% capture child_megamenu %}{% endcapture %}
                     <details id="Details-menu-drawer-menu-item-{{ forloop.index }}">
                       <summary
                         id="HeaderDrawer-{{ link.handle }}"
                         class="menu-drawer__menu-item list-menu__item link link--text focus-inset{% if link.child_active %} menu-drawer__menu-item--active{% endif %}"
                       >
+                        {% if menu_item[0] != blank %}
+                        {{ menu_item[0] | replace: "~~|", "" | replace: "--|", "" | escape }}
+                        {% else %}
                         {{ link.title | escape }}
-                        <span class="svg-wrapper">
-                          {{- 'icon-arrow.svg' | inline_asset_content -}}
-                        </span>
-                        <span class="svg-wrapper">
-                          {{- 'icon-caret.svg' | inline_asset_content -}}
-                        </span>
+
+                        {% endif %}
+                        {% render 'icon-arrow' %}
+                        {% render 'icon-caret' %}
+
                       </summary>
                       <div
                         id="link-{{ link.handle | escape }}"
@@ -44,38 +68,66 @@
                       >
                         <div class="menu-drawer__inner-submenu">
                           <button class="menu-drawer__close-button link link--text focus-inset" aria-expanded="true">
-                            <span class="svg-wrapper">
-                              {{- 'icon-arrow.svg' | inline_asset_content -}}
-                            </span>
+
+                            {% render 'icon-arrow' %}
+                            {% if menu_item[0] != blank %}
+                            {{ menu_item[0] | replace: "~~|", "" | replace: "--|", "" | escape }}
+                             {% else %}
+
                             {{ link.title | escape }}
+                            {% endif %}
                           </button>
                           <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
                             {%- for childlink in link.links -%}
+                              {% assign menu_item = "" %}
                               <li>
                                 {%- if childlink.links == blank -%}
-                                  <a
-                                    id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}"
-                                    href="{{ childlink.url }}"
-                                    class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if childlink.current %} menu-drawer__menu-item--active{% endif %}"
-                                    {% if childlink.current %}
-                                      aria-current="page"
+                                   {% if childlink.title contains "||||~~|" %}
+                                        <a href="{{ childlink.url }}" class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if childlink.current %} menu-drawer__menu-item--active{% endif %} megamenu__link-img"{% if childlink.current %} aria-current="page"{% endif %}>
+                                          {% assign menu_item = childlink.title | split: "||||~~|" %}
+                                          {% if menu_item[1] != blank %}
+                                          <div class="megamenu__link-img_img">
+                                            <img src="{{ menu_item[1] }}" loading="lazy" alt="{% if menu_item[2] != blank %}{{ menu_item[2] }}{% else %}{{ menu_item[0] }}{% endif %}" />
+                                          </div>
+                                          {% endif %}
+                                          <div class="megamenu__link-img_text">
+                                            {{ menu_item[0] | escape }}
+                                          </div>
+                                        </a>
+                                        {% elsif childlink.title contains "||||++|" %}
+                                          {% assign menu_item = childlink.title | split: "||||++|" %}
+                                          {% capture child_megamenu %}
+                                            {{ child_megamenu }}
+                                            <div class="megamenu__cat_item">
+                                              <a href="{{ childlink.url }}" class="mega-menu__link">
+                                                {% if menu_item[1] != blank %}
+                                                <img src="{{ menu_item[1] }}" loading="lazy" alt="{% if menu_item[2] != blank %}{{ menu_item[2] }}{% else %}{{ menu_item[0] }}{% endif %}" />
+                                                {% endif %}
+                                                {% if menu_item[0] != blank %}
+                                                <span>{{ menu_item[0] | escape }}</span>
                                     {% endif %}
-                                  >
-                                    {{ childlink.title | escape }}
-                                  </a>
+                                              </a>
+                                            </div>
+                                          {% endcapture %}
+                                        {% else %}
+                                        {% assign menu_item = childlink.title | split: "||||" %}
+                                        <a href="{{ childlink.url }}" class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if childlink.current %} menu-drawer__menu-item--active{% endif %}"{% if childlink.current %} aria-current="page"{% endif %}>
+                                          {{ menu_item[0] | replace: "~~|", "" | replace: "--|", "" | escape }}
+                                        </a>
+                                  {% endif %}
                                 {%- else -%}
-                                  <details id="Details-menu-drawer-{{ link.handle }}-{{ childlink.handle }}">
-                                    <summary
-                                      id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}"
-                                      class="menu-drawer__menu-item link link--text list-menu__item focus-inset"
-                                    >
+                                        {% capture grandchild_megamenu %}{% endcapture %}
+                                        {% assign menu_item = childlink.title | split: "||||--|" %}
+                                        <details id="Details-menu-drawer-submenu-{{ forloop.index }}">
+                                          <summary class="menu-drawer__menu-item link link--text list-menu__item focus-inset">
+                                            {% if menu_item[0] != blank %}
+                                            {{ menu_item[0] | escape }}
+                                            {% else %}
                                       {{ childlink.title | escape }}
-                                      <span class="svg-wrapper">
-                                        {{- 'icon-arrow.svg' | inline_asset_content -}}
-                                      </span>
-                                      <span class="svg-wrapper">
-                                        {{- 'icon-caret.svg' | inline_asset_content -}}
-                                      </span>
+
+                                      {% endif %}
+                                      {% render 'icon-arrow' %}
+                                      {% render 'icon-caret' %}
                                     </summary>
                                     <div
                                       id="childlink-{{ childlink.handle | escape }}"
@@ -85,10 +137,14 @@
                                         class="menu-drawer__close-button link link--text focus-inset"
                                         aria-expanded="true"
                                       >
-                                        <span class="svg-wrapper">
-                                          {{- 'icon-arrow.svg' | inline_asset_content -}}
-                                        </span>
+
+                                        {% render 'icon-arrow' %}
+                                              {% if menu_item[0] != blank %}
+                                              {{ menu_item[0] | escape }}
+                                              {% else %}                                        
+
                                         {{ childlink.title | escape }}
+                                         {% endif %}
                                       </button>
                                       <ul
                                         class="menu-drawer__menu list-menu"
@@ -96,7 +152,38 @@
                                         tabindex="-1"
                                       >
                                         {%- for grandchildlink in childlink.links -%}
-                                          <li>
+                                                {% assign menu_item = "" %}
+                                                {% if grandchildlink.title contains "||||++|" %}
+                                                  {% assign menu_item = grandchildlink.title | split: "||||++|" %}
+                                                  {% capture grandchild_megamenu %}
+                                                    {{ grandchild_megamenu }}
+                                                    <div class="megamenu__cat_item">
+                                                      <a href="{{ grandchildlink.url }}" class="mega-menu__link">
+                                                        {% if menu_item[1] != blank %}
+                                                        <img src="{{ menu_item[1] }}" loading="lazy" alt="{% if menu_item[2] != blank %}{{ menu_item[2] }}{% else %}{{ menu_item[0] }}{% endif %}" />
+                                                        {% endif %}
+                                                        {% if menu_item[0] != blank %}
+                                                        <span>{{ menu_item[0] | escape }}</span>
+                                                        {% endif %}
+                                                      </a>
+                                                    </div>
+                                                  {% endcapture %}
+                                                {% elsif grandchildlink.title contains "||||~~|" %}
+                                                {% assign menu_item = grandchildlink.title | split: "||||~~|" %}
+                                                  <a href="{{ grandchildlink.url }}" class="menu-drawer__menu-item link link--text list-menu__item focus-inset{% if grandchildlink.current %} menu-drawer__menu-item--active{% endif %} megamenu__link-img"{% if grandchildlink.current %} aria-current="page"{% endif %}>
+                                                    {% assign menu_item = grandchildlink.title | split: "||||~~|" %}
+                                                    {% if menu_item[1] != blank %}
+                                                    <div class="megamenu__link-img_img">
+                                                      <img src="{{ menu_item[1] }}" loading="lazy" alt="{% if menu_item[2] != blank %}{{ menu_item[2] }}{% else %}{{ menu_item[0] }}{% endif %}" />
+                                                    </div>
+                                                    {% endif %}
+                                                    <div class="megamenu__link-img_text">
+                                                      {{ menu_item[0] | escape }}
+                                                    </div>
+                                                  </a>
+                                                {% else %}
+                                                {% assign menu_item = grandchildlink.title | split: "||||--|" %}
+                                                <li>
                                             <a
                                               id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
                                               href="{{ grandchildlink.url }}"
@@ -105,17 +192,32 @@
                                                 aria-current="page"
                                               {% endif %}
                                             >
-                                              {{ grandchildlink.title | escape }}
+                                                    {% if menu_item[0] != blank %}
+                                                    {{ menu_item[0] | escape }}
+                                                    {% else %}
+                                                    {{ grandchildlink.title | escape }}                                            
+                                              {% endif %}
                                             </a>
                                           </li>
+                                          {% endif %}
                                         {%- endfor -%}
                                       </ul>
+                                          {% if grandchild_megamenu != blank %}
+                                            <div class="megamenu__cat_wrap">
+                                              {{ grandchild_megamenu }}
+                                            </div>
+                                          {% endif %}                                      
                                     </div>
                                   </details>
                                 {%- endif -%}
                               </li>
                             {%- endfor -%}
                           </ul>
+                              {% if child_megamenu != blank %}
+                                <div class="megamenu__cat_wrap">
+                                  {{ child_megamenu }}
+                                </div>
+                              {% endif %}                          
                         </div>
                       </div>
                     </details>
@@ -132,9 +234,15 @@
                     </a>
                   {%- endif -%}
                 </li>
+                 {%- endif -%}
               {%- endfor -%}
             </ul>
-          </nav>
+                  {% if megamenu != blank %}
+                  <div class="megamenu__cat_wrap">
+                    {{ megamenu }}
+                  </div>
+                  {% endif %}
+                </nav>
           <div class="menu-drawer__utility-links">
             {%- if shop.customer_accounts_enabled -%}
               <a
