@@ -1,0 +1,224 @@
+{{ 'section-quiz.css' | asset_url | stylesheet_tag }}
+
+<section
+  class="quiz-section"
+  data-section-id="{{ section.id }}"
+  data-hm="{{ section.settings.heading_size_mobile }}"
+  data-hd="{{ section.settings.heading_size_desktop }}"
+  data-qm="{{ section.settings.question_size_mobile }}"
+  data-qd="{{ section.settings.question_size_desktop }}"
+  style="
+    --pt-mobile: {{ section.settings.padding_top_mobile }}px;
+    --pb-mobile: {{ section.settings.padding_bottom_mobile }}px;
+    --pt-desktop: {{ section.settings.padding_top_desktop }}px;
+    --pb-desktop: {{ section.settings.padding_bottom_desktop }}px;
+  "
+>
+  <div class="page-width">
+    <quiz-form
+      id="quiz-{{ section.id }}"
+      data-collection-path="/collections/all"
+      data-error-message="{{ section.settings.error_message | escape }}"
+      data-results-label="{{ section.settings.results_button_label | escape }}"
+      data-inline-results="{{ section.settings.enable_inline_results }}"
+      data-product-grid-handle="{{ section.settings.product_grid_section_handle | escape }}"
+      data-results-heading="{{ section.settings.results_heading | escape }}"
+    >
+      {% for block in section.blocks %}
+        {% if block.type == 'question' %}
+          <quiz-question id="q-{{ block.id }}" {{ block.shopify_attributes }}>
+            <div class="question" role="group" aria-labelledby="q-title-{{ block.id }}">
+              <div class="question__header">
+                <h3 id="q-title-{{ block.id }}">{{ block.settings.question_title | escape }}</h3>
+              </div>
+
+              <div class="question__body">
+                <div class="question__options">
+                  <label class="question__option">
+                    <input type="radio" name="q-{{ block.id }}" value="{{ block.settings.answer_1_tag | handleize }}">
+                    <span>{{ block.settings.answer_1_label | escape }}</span>
+                  </label>
+
+                  <label class="question__option">
+                    <input type="radio" name="q-{{ block.id }}" value="{{ block.settings.answer_2_tag | handleize }}">
+                    <span>{{ block.settings.answer_2_label | escape }}</span>
+                  </label>
+                </div>
+
+                <div class="quiz__error" aria-live="polite"></div>
+
+                <button type="button" class="button question__next">
+                  {{ block.settings.next_label | escape }}
+                </button>
+              </div>
+            </div>
+          </quiz-question>
+        {% endif %}
+      {% endfor %}
+
+      <div class="quiz__final" hidden>
+        <a class="button quiz__results-link" href="#" rel="nofollow">
+          {{ section.settings.results_button_label | escape }}
+        </a>
+
+        {% if section.settings.enable_inline_results %}
+          <h3 class="quiz__results-heading">{{ section.settings.results_heading | escape }}</h3>
+          <div class="quiz__results" data-state="idle" aria-live="polite"></div>
+        {% endif %}
+      </div>
+    </quiz-form>
+  </div>
+</section>
+
+<script src="{{ 'section-quiz.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+  "name": "Quiz – Multi-step",
+  "tag": "section",
+  "class": "section quiz-section",
+  "max_blocks": 10,
+  "blocks": [
+    {
+      "type": "question",
+      "name": "Question",
+      "settings": [
+        { "type": "text", "id": "question_title", "label": "Question title", "default": "What do you prefer?" },
+
+        { "type": "text", "id": "answer_1_label", "label": "Answer 1 – label", "default": "Option A" },
+        { "type": "text", "id": "answer_1_tag", "label": "Answer 1 – tag", "default": "tag-a" },
+
+        { "type": "text", "id": "answer_2_label", "label": "Answer 2 – label", "default": "Option B" },
+        { "type": "text", "id": "answer_2_tag", "label": "Answer 2 – tag", "default": "tag-b" },
+
+        { "type": "text", "id": "next_label", "label": "Next button label", "default": "Next" }
+      ]
+    }
+  ],
+  "settings": [
+    { "type": "text", "id": "results_button_label", "label": "Results button label", "default": "See results" },
+    {
+      "type": "text",
+      "id": "error_message",
+      "label": "Error message (required selection)",
+      "default": "Please select an answer to continue."
+    },
+
+    { "type": "checkbox", "id": "enable_inline_results", "label": "Enable inline results (AJAX)", "default": true },
+    { "type": "text", "id": "results_heading", "label": "Inline results heading", "default": "Results" },
+    {
+      "type": "text",
+      "id": "product_grid_section_handle",
+      "label": "Product grid section handle (for Section Rendering API)",
+      "default": "main-collection-product-grid"
+    },
+
+    { "type": "header", "content": "Typography" },
+    {
+      "type": "select",
+      "id": "heading_size_mobile",
+      "label": "Heading font size (mobile)",
+      "default": "lg",
+      "options": [
+        { "value": "xs", "label": "XS" },
+        { "value": "sm", "label": "SM" },
+        { "value": "base", "label": "Base" },
+        { "value": "lg", "label": "LG" },
+        { "value": "xl", "label": "XL" },
+        { "value": "2xl", "label": "2XL" },
+        { "value": "3xl", "label": "3XL" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "heading_size_desktop",
+      "label": "Heading font size (desktop)",
+      "default": "2xl",
+      "options": [
+        { "value": "xs", "label": "XS" },
+        { "value": "sm", "label": "SM" },
+        { "value": "base", "label": "Base" },
+        { "value": "lg", "label": "LG" },
+        { "value": "xl", "label": "XL" },
+        { "value": "2xl", "label": "2XL" },
+        { "value": "3xl", "label": "3XL" }
+      ]
+    },
+
+    {
+      "type": "select",
+      "id": "question_size_mobile",
+      "label": "Question text size (mobile)",
+      "default": "base",
+      "options": [
+        { "value": "xs", "label": "XS" },
+        { "value": "sm", "label": "SM" },
+        { "value": "base", "label": "Base" },
+        { "value": "lg", "label": "LG" },
+        { "value": "xl", "label": "XL" },
+        { "value": "2xl", "label": "2XL" },
+        { "value": "3xl", "label": "3XL" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "question_size_desktop",
+      "label": "Question text size (desktop)",
+      "default": "lg",
+      "options": [
+        { "value": "xs", "label": "XS" },
+        { "value": "sm", "label": "SM" },
+        { "value": "base", "label": "Base" },
+        { "value": "lg", "label": "LG" },
+        { "value": "xl", "label": "XL" },
+        { "value": "2xl", "label": "2XL" },
+        { "value": "3xl", "label": "3XL" }
+      ]
+    },
+
+    { "type": "header", "content": "Spacing" },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Padding top (mobile)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Padding bottom (mobile)",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_top_desktop",
+      "label": "Padding top (desktop)",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_desktop",
+      "label": "Padding bottom (desktop)",
+      "min": 0,
+      "max": 200,
+      "step": 4,
+      "default": 64
+    }
+  ],
+  "presets": [
+    {
+      "name": "Quiz – Multi-step",
+      "blocks": [{ "type": "question" }, { "type": "question" }, { "type": "question" }]
+    }
+  ]
+}
+{% endschema %}
