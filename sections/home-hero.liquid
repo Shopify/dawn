@@ -1,0 +1,212 @@
+{% comment %}
+  Custom hero section inspired by GETCH landing hero: supports background image, overlay,
+  main headline and list of highlight bullet points.
+{% endcomment %}
+
+{% liquid
+  assign bg_image = section.settings.background_image
+  assign overlay_color = section.settings.overlay_color | default: '#000000'
+  assign overlay_opacity = section.settings.overlay_opacity | divided_by: 100.0
+%}
+
+<section class="home-hero color-{{ section.settings.color_scheme }} gradient">
+  <div class="home-hero__media">
+    {% if bg_image != blank %}
+      {%- capture sizes -%}
+        (min-width: 1200px) 1200px, 100vw
+      {%- endcapture -%}
+      {{
+        bg_image
+        | image_url: width: 2400
+        | image_tag:
+            class: 'home-hero__image',
+            sizes: sizes,
+            widths: '750, 1100, 1500, 1800, 2100, 2400',
+            loading: 'lazy'
+      }}
+    {% else %}
+      <div class="home-hero__image-placeholder"></div>
+    {% endif %}
+    <div class="home-hero__overlay" style="background-color: {{ overlay_color }}; opacity: {{ overlay_opacity }};"></div>
+  </div>
+  <div class="home-hero__content">
+    <div class="home-hero__inner">
+      {% if section.settings.preheading != blank %}
+        <p class="home-hero__eyebrow">{{ section.settings.preheading }}</p>
+      {% endif %}
+      {% if section.settings.heading != blank %}
+        <h1 class="home-hero__heading">{{ section.settings.heading }}</h1>
+      {% endif %}
+      {% if section.settings.description != blank %}
+        <div class="home-hero__description rte">{{ section.settings.description }}</div>
+      {% endif %}
+      {% if section.settings.primary_button_label != blank or section.settings.secondary_button_label != blank %}
+        <div class="home-hero__actions">
+          {% if section.settings.primary_button_label != blank %}
+            <a
+              {% if section.settings.primary_button_link == blank %}
+                role="link" aria-disabled="true"
+              {% else %}
+                href="{{ section.settings.primary_button_link }}"
+              {% endif %}
+              class="button button--primary"
+            >
+              {{ section.settings.primary_button_label | escape }}
+            </a>
+          {% endif %}
+          {% if section.settings.secondary_button_label != blank %}
+            <a
+              {% if section.settings.secondary_button_link == blank %}
+                role="link" aria-disabled="true"
+              {% else %}
+                href="{{ section.settings.secondary_button_link }}"
+              {% endif %}
+              class="button button--secondary"
+            >
+              {{ section.settings.secondary_button_label | escape }}
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+      {% if section.blocks.size > 0 %}
+        <div class="home-hero__highlights" role="list">
+          {% for block in section.blocks %}
+            {% if block.type == 'highlight' %}
+              <div class="home-hero__highlight" role="listitem" {{ block.shopify_attributes }}>
+                {% if block.settings.icon != blank %}
+                  {{
+                    block.settings.icon
+                    | image_url: width: 80
+                    | image_tag:
+                        class: 'home-hero__highlight-icon',
+                        loading: 'lazy',
+                        alt: block.settings.icon_alt | default: block.settings.title
+                  }}
+                {% endif %}
+                <div class="home-hero__highlight-text">
+                  {% if block.settings.title != blank %}
+                    <p class="home-hero__highlight-title">{{ block.settings.title }}</p>
+                  {% endif %}
+                  {% if block.settings.text != blank %}
+                    <p class="home-hero__highlight-subtext">{{ block.settings.text }}</p>
+                  {% endif %}
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Home hero",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "preheading",
+      "label": "Pre heading",
+      "default": "Sistema digital"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Únicos proveedores de insumos premium para grabar patentes"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Descripción",
+      "default": "<p>Automatiza el grabado de patentes con nuestra plataforma GETCH® y entrega resultados consistentes en minutos.</p>"
+    },
+    {
+      "type": "text",
+      "id": "primary_button_label",
+      "label": "Etiqueta botón principal",
+      "default": "Ver planes"
+    },
+    {
+      "type": "url",
+      "id": "primary_button_link",
+      "label": "Enlace botón principal"
+    },
+    {
+      "type": "text",
+      "id": "secondary_button_label",
+      "label": "Etiqueta botón secundario"
+    },
+    {
+      "type": "url",
+      "id": "secondary_button_link",
+      "label": "Enlace botón secundario"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Imagen de fondo"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Color de overlay",
+      "default": "#141414"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Opacidad del overlay",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "default": 60
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Esquema de color",
+      "default": "scheme-3"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "highlight",
+      "name": "Resaltado",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "icon",
+          "label": "Icono"
+        },
+        {
+          "type": "text",
+          "id": "icon_alt",
+          "label": "Texto alternativo icono"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Título",
+          "default": "Envíos a todo Chile"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Texto complementario"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 5,
+  "presets": [
+    {
+      "name": "Home hero",
+      "category": "GETCH"
+    }
+  ]
+}
+{% endschema %}
