@@ -1,0 +1,167 @@
+{% comment %} TF • Header {% endcomment %}
+{% if tf_header_css_once == blank %}
+    {%- assign tf_header_css_once = true -%}
+    {{ 'tf-header.css' | asset_url | stylesheet_tag }}
+{% endif %}
+
+<header class="tf-topbar" role="banner" style="{% if section.settings.transparent %}background:transparent;{% endif %}">
+    <div class="tf-topbar__row">
+        <!-- Left: Logo -->
+        <a class="tf-topbar__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name }}">
+            {% if section.settings.logo != blank %}
+                <img src="{{ section.settings.logo | image_url: width: 240 }}"
+                     alt="{{ shop.name }}"
+                     class="tf-topbar__logo-img">
+            {% else %}
+                <span class="tf-topbar__logo-text font-{{ section.settings.font_size_variant }}">{{ shop.name }}</span>
+            {% endif %}
+        </a>
+
+        <!-- Center: Menu button -->
+        <button class="tf-topbar__menu-btn font-{{ section.settings.font_size_variant }}"
+                id="tf-menu-open-{{ section.id }}"
+                aria-haspopup="dialog"
+                aria-controls="tf-menu-overlay-{{ section.id }}"
+                aria-expanded="false">
+            {{ section.settings.menu_label }}
+        </button>
+
+        <!-- Right: Cart -->
+        <div class="tf-topbar__utils">
+            <a class="tf-topbar__link tf-cart font-{{ section.settings.font_size_variant }}" href="{{ routes.cart_url }}" aria-label="{{ 'sections.cart.title' | t }}">
+                {{ 'templates.cart.cart' | t | default: 'Cart' }}
+                {% if cart != empty and cart.item_count > 0 %}
+                    <span class="tf-cart__count" aria-live="polite">{{ cart.item_count }}</span>
+                {% endif %}
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- Overlay -->
+<div id="tf-menu-overlay-{{ section.id }}" class="tf-menu-overlay" hidden>
+    <div class="tf-menu-overlay__inner" role="dialog" aria-modal="true" aria-labelledby="tf-menu-title-{{ section.id }}">
+        {% comment %}<div class="tf-menu-overlay__header">{% endcomment %}
+            {% comment %}<button class="tf-menu-overlay__close font-{{ section.settings.font_size_variant }}" type="button" aria-label="Close">{{ section.settings.close_label }}</button>{% endcomment %}
+        {% comment %}</div>{% endcomment %}
+
+        <div class="tf-menu-overlay__header">
+            <span class="tf-menu-overlay__first-item font-{{ section.settings.overlay_font_size_variant }}">
+                {% if section.settings.menu.links.first %}
+                    <a href="{{ section.settings.menu.links.first.url }}">{{ section.settings.menu.links.first.title }}</a>
+                {% endif %}
+            </span>
+            <button class="tf-menu-overlay__close font-{{ section.settings.font_size_variant }}" type="button" aria-label="Close">{{ section.settings.close_label }}</button>
+        </div>
+
+        <nav class="tf-menu-overlay__nav" aria-label="Main">
+            <ul class="tf-menu-list">
+                {% assign menu = section.settings.menu %}
+                {% for link in section.settings.menu.links offset: 1 %}
+                    {% assign child_count = link.links | size %}
+
+                    <li class="tf-menu-item font-{{ section.settings.overlay_font_size_variant }} {% if child_count > 0 %}has-children{% endif %}">
+                        <a href="{{ link.url }}" {% if child_count > 0 %}data-toggle{% endif %}>{{ link.title }}</a>
+
+                        {% if child_count > 0 %}
+                            <span class="tf-caret">▾</span>
+                            <ul class="tf-submenu">
+                                {% for sub in link.links %}
+                                    <li><a href="{{ sub.url }}">{{ sub.title }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const openBtn = document.getElementById('tf-menu-open-{{ section.id }}');
+    const overlay = document.getElementById('tf-menu-overlay-{{ section.id }}');
+    const panel   = overlay?.querySelector('.tf-menu-overlay__inner');
+    const closeBtn = overlay?.querySelector('.tf-menu-overlay__close');
+
+    const open = () => {
+      overlay.hidden = false;
+      requestAnimationFrame(() => {
+        overlay.classList.add('is-open');
+      });
+      openBtn.setAttribute('aria-expanded', 'true');
+      document.documentElement.style.overflow = 'hidden';
+      const firstLink = overlay.querySelector('.tf-menu-list a');
+      (firstLink || closeBtn).focus({ preventScroll: true });
+    };
+
+    const close = () => {
+      overlay.classList.remove('is-open');
+      setTimeout(() => {
+        overlay.hidden = true;
+      }, 300); // Match transition duration
+      openBtn.setAttribute('aria-expanded', 'false');
+      document.documentElement.style.overflow = '';
+      openBtn.focus({ preventScroll: true });
+    };
+
+    openBtn?.addEventListener('click', open);
+    closeBtn?.addEventListener('click', close);
+    overlay?.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !overlay.hidden) close(); });
+
+    overlay?.querySelectorAll('[data-toggle]').forEach(a => {
+      a.addEventListener('click', (e) => {
+        const li = e.currentTarget.closest('.tf-menu-item');
+        if (li?.classList.contains('has-children')) {
+          e.preventDefault();
+          li.classList.toggle('is-open');
+        }
+      });
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "TF • Header",
+  "tag": "header",
+  "settings": [
+    { "type": "image_picker", "id": "logo", "label": "Logo" },
+    { "type": "text", "id": "menu_label", "label": "Closed state label", "default": "Menu" },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
+    { "type": "text", "id": "close_label", "label": "Close button label", "default": "Close" },
+    { "type": "checkbox", "id": "transparent", "label": "Transparent top bar", "default": true },
+    {
+      "type": "select",
+      "id": "font_size_variant",
+      "label": "Font size",
+      "default": "base",
+      "options": [
+        { "value": "xs", "label": "Extra Small" },
+        { "value": "sm", "label": "Small" },
+        { "value": "base", "label": "Base" },
+        { "value": "lg", "label": "Large" },
+        { "value": "xl", "label": "Extra Large" },
+        { "value": "xxl", "label": "XXL" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "overlay_font_size_variant",
+      "label": "Overlay font size",
+      "default": "base",
+      "options": [
+        { "value": "xs", "label": "Extra Small" },
+        { "value": "sm", "label": "Small" },
+        { "value": "base", "label": "Base" },
+        { "value": "lg", "label": "Large" },
+        { "value": "xl", "label": "Extra Large" },
+        { "value": "xxl", "label": "XXL" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "TF • Header" }]
+}
+{% endschema %}
