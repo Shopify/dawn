@@ -1,0 +1,103 @@
+{% comment %} TF • Collections Feature {% endcomment %}
+{% if tf_collections_feature_css_once == blank %}
+    {% assign tf_collections_feature_css_once = true %}
+    {{ 'tf-collections-feature.css' | asset_url | stylesheet_tag }}
+{% endif %}
+
+{% assign col = section.settings.collection %}
+
+<section class="tf-collection-feature" style="--cols: {{ section.settings.columns_desktop }}">
+    <div class="tf-collection-feature__inner">
+        {% if section.settings.heading != blank %}
+            <h2 class="tf-collection-feature__heading font-{{ section.settings.font_size_variant_heading }}">{{ section.settings.heading }}</h2>
+        {% endif %}
+
+        <ul class="tf-collection-feature__grid" role="list">
+            {% if col != blank %}
+                {% for product in col.products limit: section.settings.products_to_show %}
+                    <li class="tf-collection-feature__item">
+                        <a href="{{ product.url }}" class="tf-card">
+                            {% if product.featured_image %}
+                                {{ product.featured_image
+                                | image_url: width: 1000
+                                | image_tag:
+                                class: 'tf-card__img',
+                                loading: 'lazy',
+                                sizes: '20vw',
+                                widths: '320,480,640,800,1000' }}
+                            {% else %}
+                                <div class="tf-card__img tf-card__img--placeholder"></div>
+                            {% endif %}
+
+                            <div class="tf-card__meta">
+                                <h3 class="tf-card__title">{{ product.title }}</h3>
+                                <div class="tf-card__price">
+                                    {{ product.price | money }}
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                {% endfor %}
+            {% endif %}
+        </ul>
+
+        {% if section.settings.show_view_all and col != blank %}
+            <div class="tf-collection-feature__cta">
+                <a class="tf-collection-feature__view-all font-{{ section.settings.font_size_variant_cta }}" href="{{ col.url }}">{{ section.settings.view_all_label }}</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+{% schema %}
+{
+  "name": "TF • Collections feature",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Shop Our Collections" },
+    {
+      "type": "select",
+      "id": "font_size_variant_heading",
+      "label": "Font size heading",
+      "default": "base",
+      "options": [
+        { "value": "xs",  "label": "Extra Small" },
+        { "value": "sm",  "label": "Small" },
+        { "value": "base","label": "Base" },
+        { "value": "lg",  "label": "Large" },
+        { "value": "xl",  "label": "Extra Large" },
+        { "value": "xxl", "label": "XXL" }
+      ]
+    },
+    { "type": "collection", "id": "collection", "label": "Collection" },
+    { "type": "range", "id": "products_to_show", "label": "Products to show", "min": 1, "max": 24, "step": 1, "default": 10 },
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "label": "Columns on desktop",
+      "default": "5",
+      "options": [
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" },
+        { "value": "5", "label": "5" }
+      ]
+    },
+    { "type": "checkbox", "id": "show_view_all", "label": "Show “Shop All” link", "default": true },
+    { "type": "text", "id": "view_all_label", "label": "View-all label", "default": "Shop All" },
+    {
+      "type": "select",
+      "id": "font_size_variant_cta",
+      "label": "Font size cta label",
+      "default": "base",
+      "options": [
+        { "value": "xs",  "label": "Extra Small" },
+        { "value": "sm",  "label": "Small" },
+        { "value": "base","label": "Base" },
+        { "value": "lg",  "label": "Large" },
+        { "value": "xl",  "label": "Extra Large" },
+        { "value": "xxl", "label": "XXL" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "TF • Collections feature" }]
+}
+{% endschema %}
