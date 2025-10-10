@@ -1,0 +1,157 @@
+{% comment %} THE FALL – FAQ {% endcomment %}
+{{ 'tf-faq.css' | asset_url | stylesheet_tag }}
+
+<section class="tf-faq">
+  <div class="tf-faq__container">
+
+    <div class="tf-faq__heading font-sm">{{ section.settings.heading }}</div>
+    <div class="tf-faq__body">
+      <ul class="tf-faq__list">
+        {% assign index = 0 %}
+        {% for block in section.blocks %}
+          {% if block.settings.faq_group == 'general' %}
+            {% assign index = index | plus: 1 %}
+            <li class="tf-faq__item" data-faq-item>
+              <div class="tf-faq__item-header" data-faq-toggle>
+                <div class="tf-faq__item-number font-xs">{{ index | prepend: '0' }}</div>
+                <div class="tf-faq__item-title font-base">{{ block.settings.title }}</div>
+                <div class="tf-faq__item-icon" aria-hidden="true">+</div>
+              </div>
+              <div class="tf-faq__item-body">
+                <p class="tf-faq__item-subtext font-sm">{{ block.settings.description }}</p>
+              </div>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="tf-faq__heading font-sm">{{ section.settings.heading_2 }}</div>
+    <div class="tf-faq__body">
+      <ul class="tf-faq__list">
+        {% assign index = 0 %}
+        {% for block in section.blocks %}
+          {% if block.settings.faq_group == 'resale' %}
+            {% assign index = index | plus: 1 %}
+            <li class="tf-faq__item" data-faq-item>
+              <div class="tf-faq__item-header" data-faq-toggle>
+                <div class="tf-faq__item-number font-xs">{{ index | prepend: '0' }}</div>
+                <div class="tf-faq__item-title font-base">{{ block.settings.title }}</div>
+                <div class="tf-faq__item-icon" aria-hidden="true">+</div>
+              </div>
+              <div class="tf-faq__item-body">
+                <p class="tf-faq__item-subtext font-sm">{{ block.settings.description }}</p>
+              </div>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const faqToggles = document.querySelectorAll('[data-faq-toggle]');
+
+    faqToggles.forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        const item = toggle.closest('[data-faq-item]');
+        const content = item.querySelector('[data-faq-content]');
+        const icon = toggle.querySelector('.tf-faq__item-icon');
+        const isOpen = item.classList.contains('tf-faq__item--active');
+
+        // Close all other items
+        document.querySelectorAll('[data-faq-item]').forEach(el => {
+          el.classList.remove('tf-faq__item--active');
+          const btn = el.querySelector('[data-faq-toggle]');
+          const elIcon = el.querySelector('.tf-faq__item-icon');
+          if (btn) btn.setAttribute('aria-expanded', 'false');
+          if (elIcon) elIcon.textContent = '+';
+        });
+
+        // Toggle current item
+        if (!isOpen) {
+          item.classList.add('tf-faq__item--active');
+          toggle.setAttribute('aria-expanded', 'true');
+          icon.textContent = '+';
+        }
+      });
+    });
+  });
+</script>
+
+
+{% schema %}
+{
+  "name": "TF • FAQ",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "General FAQs Heading",
+      "default": "GENERAL FAQs"
+    },
+    {
+      "type": "text",
+      "id": "heading_2",
+      "label": "Resale FAQs Heading",
+      "default": "RESALE FAQs"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "faq",
+      "name": "FAQ Item",
+      "settings": [
+        {
+          "type": "select",
+          "id": "faq_group",
+          "label": "FAQ Group",
+          "options": [
+            { "value": "general", "label": "General" },
+            { "value": "resale", "label": "Resale" }
+          ],
+          "default": "general"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Sample question"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Answer",
+          "default": "Sample answer content."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "TF • FAQ",
+      "blocks": [
+        {
+          "type": "faq",
+          "settings": {
+            "faq_group": "general",
+            "title": "When should I start shopping?",
+            "description": "We recommend starting shopping up to a year prior..."
+          }
+        },
+        {
+          "type": "faq",
+          "settings": {
+            "faq_group": "resale",
+            "title": "Is resale right for me?",
+            "description": "Resale dresses are perfect if you're looking for value and sustainability."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
