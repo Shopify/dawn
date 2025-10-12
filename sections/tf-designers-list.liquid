@@ -1,12 +1,57 @@
-<section>
-    <div class="grid">
+{% comment %} THE FALL – Designers List {% endcomment %}
+{{ 'tf-designers-list.css' | asset_url | stylesheet_tag }}
+
+<section class="tf-designers" id="tf-designers">
+    <div class="tf-designers__container">
         {% for page in pages %}
             {% if page.template_suffix == 'designer' %}
-                <a href="{{ page.url }}">
-                    <img src="{{ page.metafields.custom.designer_image | image_url: width: 400 }}">
-                    <h2>{{ page.title }}</h2>
+                <a
+                        href="{{ page.url }}"
+                        class="tf-designers__item"
+                        data-image="{{ page.metafields.custom.designer_thumbnail | image_url }}"
+                >
+                    <div>
+                        {% if page.metafields.custom.designer_thumbnail %}
+                            <img
+                                    src="{{ page.metafields.custom.designer_thumbnail | image_url: width: 168, height: 240, crop: 'center' }}"
+                                    alt="{{ page.title }}"
+                                    class="tf-designers__image"
+                                    loading="lazy"
+                            >
+                        {% endif %}
+                        <div class="tf-designers__name">{{ page.title }}</div>
+                    </div>
                 </a>
             {% endif %}
         {% endfor %}
     </div>
+
+    <!-- 👇 Preload background images (hidden) -->
+    <div style="display: none;">
+        {% for page in pages %}
+            {% if page.template_suffix == 'designer' and page.metafields.custom.designer_thumbnail %}
+                <img src="{{ page.metafields.custom.designer_thumbnail | image_url }}" alt="">
+            {% endif %}
+        {% endfor %}
+    </div>
 </section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const container = document.getElementById('tf-designers');
+    const items = container.querySelectorAll('.tf-designers__item');
+
+    items.forEach(item => {
+      item.addEventListener('mouseenter', () => {
+        const bg = item.getAttribute('data-image');
+        container.style.backgroundImage = `url('${bg}')`;
+        container.classList.add('hovering');
+      });
+
+      item.addEventListener('mouseleave', () => {
+        container.style.backgroundImage = '';
+        container.classList.remove('hovering');
+      });
+    });
+  });
+</script>
