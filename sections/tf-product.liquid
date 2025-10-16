@@ -1,0 +1,135 @@
+{% comment %} THE FALL – Product Template {% endcomment %}
+{{ 'tf-product.css' | asset_url | stylesheet_tag }}
+
+<section class="tf-product">
+    <div class="tf-product__container">
+
+        <!-- Images Section -->
+        <div class="tf-product__images">
+            <!-- Main Image -->
+            <div class="tf-product__main-image">
+                {% if product.featured_image %}
+                    <img id="main-product-image"
+                         src="{{ product.featured_image | image_url: width: 800 }}"
+                         alt="{{ product.title }}"
+                         class="tf-product__image">
+                {% endif %}
+            </div>
+
+            <!-- Thumbnail Images -->
+            {% if product.images.size > 1 %}
+                <div class="tf-product__thumbnails">
+                    {% for image in product.images %}
+                        <img src="{{ image | image_url: width: 200 }}"
+                             alt="{{ product.title }}"
+                             class="tf-product__thumbnail {% if forloop.first %}active{% endif %}"
+                             data-image-src="{{ image | image_url: width: 800 }}">
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Product Info Section -->
+        <div class="tf-product__info">
+            <h1 class="tf-product__title font-base">{{ product.title }}</h1>
+
+            <div class="tf-product__price font-sm">
+                {{ product.price | money }}
+            </div>
+
+            {% if product.description != blank %}
+                <div class="tf-product__description">
+                    {{ product.description }}
+                </div>
+            {% endif %}
+
+            {% form 'product', product %}
+                <!-- Quantity -->
+                <div class="tf-product__quantity">
+                    <label class="tf-product__label">QUANTITY</label>
+                    <div class="tf-product__quantity-input">
+                        <button type="button" class="tf-product__qty-btn" data-action="decrease">-</button>
+                        <input type="number"
+                               name="quantity"
+                               id="quantity"
+                               value="1"
+                               min="1"
+                               class="tf-product__qty-value">
+                        <button type="button" class="tf-product__qty-btn" data-action="increase">+</button>
+                    </div>
+                </div>
+
+                <!-- Size Selector (if product has variants) -->
+                {% if product.variants.size > 1 %}
+                    <div class="tf-product__size">
+                        <label class="tf-product__label">SIZE</label>
+                        <select name="id" class="tf-product__size-select">
+                            {% for variant in product.variants %}
+                                <option value="{{ variant.id }}"
+                                        {% if variant.available %}{% else %}disabled{% endif %}>
+                                    {{ variant.title }} {% unless variant.available %}(Sold Out){% endunless %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% else %}
+                    <input type="hidden" name="id" value="{{ product.variants.first.id }}">
+                {% endif %}
+
+                <!-- Add to Bag Button -->
+                <button type="submit"
+                        class="tf-product__add-btn"
+                        {% unless product.available %}disabled{% endunless %}>
+                    {% if product.available %}
+                        Add to Bag
+                    {% else %}
+                        Sold Out
+                    {% endif %}
+                </button>
+            {% endform %}
+        </div>
+
+    </div>
+</section>
+
+<script>
+  (function() {
+    // Thumbnail image switching
+    const mainImage = document.getElementById('main-product-image');
+    const thumbnails = document.querySelectorAll('.tf-product__thumbnail');
+
+    thumbnails.forEach(thumb => {
+      thumb.addEventListener('click', function() {
+        // Update main image
+        mainImage.src = this.dataset.imageSrc;
+
+        // Update active state
+        thumbnails.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // Quantity controls
+    const qtyInput = document.getElementById('quantity');
+    const qtyBtns = document.querySelectorAll('.tf-product__qty-btn');
+
+    qtyBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const currentValue = parseInt(qtyInput.value);
+
+        if (this.dataset.action === 'increase') {
+          qtyInput.value = currentValue + 1;
+        } else if (this.dataset.action === 'decrease' && currentValue > 1) {
+          qtyInput.value = currentValue - 1;
+        }
+      });
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "TF • Product Template",
+  "settings": []
+}
+{% endschema %}
