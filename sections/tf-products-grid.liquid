@@ -1,69 +1,116 @@
 {% comment %} THE FALL – Collection Template {% endcomment %}
 {{ 'tf-products-grid.css' | asset_url | stylesheet_tag }}
 
-<section class="tf-products" data-section-id="{{ section.id }}">
+{% paginate collection.products by 16 %}
 
-    <!-- Collection Links Navigation -->
-    <div class="tf-products__filters">
-        <a href="/collections/all"
-           class="tf-products__filter-btn {% if collection.handle == 'all' %}active{% endif %}">
-            ALL
-        </a>
-        <a href="/collections/digital-downloads"
-           class="tf-products__filter-btn {% if collection.handle == 'digital-downloads' %}active{% endif %}">
-            DIGITAL DOWNLOADS
-        </a>
-        <a href="/collections/accessories-veils"
-           class="tf-products__filter-btn {% if collection.handle == 'accessories-veils' %}active{% endif %}">
-            ACCESSORIES & VEILS
-        </a>
-        <a href="/collections/jewellery"
-           class="tf-products__filter-btn {% if collection.handle == 'jewellery' %}active{% endif %}">
-            JEWELLERY
-        </a>
-        <a href="/collections/shoes-bags"
-           class="tf-products__filter-btn {% if collection.handle == 'shoes-bags' %}active{% endif %}">
-            SHOES & BAGS
-        </a>
-    </div>
+    <section class="tf-products" data-section-id="{{ section.id }}">
 
-    <!-- Products Grid -->
-    <div class="tf-products__grid">
-        {% for product in collection.products %}
-            <a href="{{ product.url }}"
-               class="tf-products__item">
+        <!-- Collection Links Navigation -->
+        <div class="tf-products__filters">
+            <a href="/collections/all-products"
+               class="tf-products__filter-btn {% if collection.handle == 'all-products' %}active{% endif %}">
+                ALL
+            </a>
+            <a href="/collections/digital-downloads"
+               class="tf-products__filter-btn {% if collection.handle == 'digital-downloads' %}active{% endif %}">
+                DIGITAL DOWNLOADS
+            </a>
+            <a href="/collections/accessories-veils"
+               class="tf-products__filter-btn {% if collection.handle == 'accessories-veils' %}active{% endif %}">
+                ACCESSORIES & VEILS
+            </a>
+            <a href="/collections/jewellery"
+               class="tf-products__filter-btn {% if collection.handle == 'jewellery' %}active{% endif %}">
+                JEWELLERY
+            </a>
+            <a href="/collections/shoes-bags"
+               class="tf-products__filter-btn {% if collection.handle == 'shoes-bags' %}active{% endif %}">
+                SHOES & BAGS
+            </a>
+        </div>
 
-                {% if product.featured_image %}
-                    {{ product.featured_image
-                    | image_url: width: 500
-                    | image_tag:
-                    class: 'tf-products__image',
-                    loading: 'lazy',
-                    alt: product.title,
-                    sizes: '(max-width: 768px) 50vw, 242px',
-                    widths: '242, 320, 484, 500'
-                    }}
+        <!-- Products Grid -->
+        <div class="tf-products__grid">
+            {% for product in collection.products %}
+                <a href="{{ product.url }}"
+                   class="tf-products__item">
+
+                    {% if product.featured_image %}
+                        {{ product.featured_image
+                        | image_url: width: 500
+                        | image_tag:
+                        class: 'tf-products__image',
+                        loading: 'lazy',
+                        alt: product.title,
+                        sizes: '(max-width: 768px) 50vw, 242px',
+                        widths: '242, 320, 484, 500'
+                        }}
+                    {% else %}
+                        <div class="tf-products__image"></div>
+                    {% endif %}
+
+                    <div class="tf-products__meta">
+                        <h3 class="tf-products__title">{{ product.title }}</h3>
+                        <div class="tf-products__price">
+                            {{ product.price | money }}
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+
+        {% if collection.products.size == 0 %}
+            <div class="tf-products__empty">
+                No products found in this collection.
+            </div>
+        {% endif %}
+
+        <!-- Pagination -->
+        {% if paginate.pages > 1 %}
+            <div class="tf-pagination">
+                {% if paginate.previous %}
+                    <a href="{{ paginate.previous.url }}" class="tf-pagination__btn tf-pagination__btn--prev">
+                        ← BACK
+                    </a>
                 {% else %}
-                    <div class="tf-products__image"></div>
+                    <span class="tf-pagination__btn tf-pagination__btn--prev tf-pagination__btn--disabled">
+                    ← BACK
+                </span>
                 {% endif %}
 
-                <div class="tf-products__meta">
-                    <h3 class="tf-products__title">{{ product.title }}</h3>
-                    <div class="tf-products__price">
-                        {{ product.price | money }}
-                    </div>
+                <div class="tf-pagination__numbers">
+                    {% for part in paginate.parts %}
+                        {% if part.is_link %}
+                            <a href="{{ part.url }}" class="tf-pagination__number">
+                                {{ part.title }}
+                            </a>
+                        {% elsif part.title == paginate.current_page %}
+                            <span class="tf-pagination__number tf-pagination__number--active">
+                            {{ part.title }}
+                        </span>
+                        {% else %}
+                            <span class="tf-pagination__number tf-pagination__number--hellip">
+                            {{ part.title }}
+                        </span>
+                        {% endif %}
+                    {% endfor %}
                 </div>
-            </a>
-        {% endfor %}
-    </div>
 
-    {% if collection.products.size == 0 %}
-        <div class="tf-products__empty">
-            No products found in this collection.
-        </div>
-    {% endif %}
+                {% if paginate.next %}
+                    <a href="{{ paginate.next.url }}" class="tf-pagination__btn tf-pagination__btn--next">
+                        NEXT →
+                    </a>
+                {% else %}
+                    <span class="tf-pagination__btn tf-pagination__btn--next tf-pagination__btn--disabled">
+                    NEXT →
+                </span>
+                {% endif %}
+            </div>
+        {% endif %}
 
-</section>
+    </section>
+
+{% endpaginate %}
 
 {% schema %}
 {
