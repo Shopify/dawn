@@ -1,0 +1,253 @@
+{% comment %} THE FALL – Cart Items {% endcomment %}
+{% if tf_cart_items_css_once == blank %}
+    {% assign tf_cart_items_css_once = true %}
+    {{ 'tf-cart-items.css' | asset_url | stylesheet_tag }}
+{% endif %}
+
+<section class="tf-cart-items">
+    <div class="tf-cart-items__inner">
+
+        <h1 class="tf-cart-items__heading font-sm">CART</h1>
+
+        {% if cart.item_count > 0 %}
+            <form action="{{ routes.cart_url }}" method="post" novalidate id="cart">
+                <div class="tf-cart-items__wrapper">
+
+                    <div class="tf-cart-items__container">
+
+                        <!-- Table Header -->
+                        <div class="tf-cart-items__header font-sm">
+                            <div class="tf-cart-items__header-product">Product</div>
+                            <div class="tf-cart-items__header-price">Price</div>
+                            <div class="tf-cart-items__header-quantity">Quantity</div>
+                            <div class="tf-cart-items__header-total">Total</div>
+                        </div>
+
+                        <!-- Cart Items -->
+                        <div class="tf-cart-items__list">
+                            {%- for item in cart.items -%}
+                                <div class="tf-cart-items__item" data-line="{{ forloop.index }}" id="CartItem-{{ item.index | plus: 1 }}">
+
+                                    <!-- Product Image & Info -->
+                                    <div class="tf-cart-items__item-product">
+                                        {% if item.image %}
+                                            <a href="{{ item.url }}">
+                                                <img src="{{ item.image | image_url: width: 200 }}"
+                                                     alt="{{ item.title | escape }}"
+                                                     class="tf-cart-items__item-image"
+                                                     width="120"
+                                                     height="172"
+                                                     loading="lazy">
+                                            </a>
+                                        {% endif %}
+                                        <div class="tf-cart-items__item-details">
+                                            <a href="{{ item.url }}" class="tf-cart-items__item-title-link">
+                                                <h3 class="tf-cart-items__item-title font-xs">
+                                                    {{ item.product.title | escape }}
+                                                </h3>
+                                            </a>
+                                            {%- if item.product.has_only_default_variant == false -%}
+                                                {%- for option in item.options_with_values -%}
+                                                    <p class="tf-cart-items__item-variant font-xs">
+                                                        {{ option.name }}: {{ option.value }}
+                                                    </p>
+                                                {%- endfor -%}
+                                            {%- endif -%}
+                                        </div>
+                                    </div>
+
+                                    <!-- Price -->
+                                    <div class="tf-cart-items__item-price font-xs">
+                                        {%- if item.original_price != item.final_price -%}
+                                            <span class="tf-cart-items__old-price">
+                                                {{ item.original_price | money }}
+                                            </span>
+                                        {%- endif -%}
+                                        <span>{{ item.final_price | money }}</span>
+                                    </div>
+
+                                    <!-- Quantity -->
+                                    <div class="tf-cart-items__item-quantity">
+                                        <div class="tf-cart-items__qty-controls">
+                                            <button class="tf-cart-items__qty-btn font-xs"
+                                                    type="button"
+                                                    data-action="decrease"
+                                                    data-line="{{ forloop.index }}"
+                                                    aria-label="{{ 'products.product.quantity.decrease' | t: product: item.product.title | escape }}">
+                                                -
+                                            </button>
+                                            <input class="tf-cart-items__qty-input font-xs"
+                                                   type="number"
+                                                   name="updates[]"
+                                                   value="{{ item.quantity }}"
+                                                   min="0"
+                                                   data-line="{{ forloop.index }}"
+                                                   data-index="{{ item.index | plus: 1 }}"
+                                                   id="Quantity-{{ item.index | plus: 1 }}"
+                                                   aria-label="{{ 'products.product.quantity.input_label' | t: product: item.product.title | escape }}">
+                                            <button class="tf-cart-items__qty-btn font-xs"
+                                                    type="button"
+                                                    data-action="increase"
+                                                    data-line="{{ forloop.index }}"
+                                                    aria-label="{{ 'products.product.quantity.increase' | t: product: item.product.title | escape }}">
+                                                +
+                                            </button>
+                                        </div>
+                                        <button type="button"
+                                                class="tf-cart-items__remove font-xs"
+                                                data-line="{{ forloop.index }}"
+                                                aria-label="{{ 'sections.cart.remove_title' | t: title: item.title | escape }}">
+                                            Remove
+                                        </button>
+
+                                        <!-- Error Message -->
+                                        <div class="tf-cart-items__error" id="Line-item-error-{{ item.index | plus: 1 }}" role="alert">
+                                            <small class="tf-cart-items__error-text font-xs"></small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Line Total -->
+                                    <div class="tf-cart-items__item-total font-xs">
+                                        {%- if item.original_line_price != item.final_line_price -%}
+                                            <span class="tf-cart-items__old-price">
+                                                {{ item.original_line_price | money }}
+                                            </span>
+                                        {%- endif -%}
+                                        <span>{{ item.final_line_price | money }}</span>
+                                    </div>
+
+                                </div>
+                            {%- endfor -%}
+                        </div>
+
+                    </div>
+
+                    <!-- Subtotal Sidebar -->
+                    <div class="tf-cart-items__sidebar">
+                        <div class="tf-cart-items__subtotal-row">
+                            <span class="tf-cart-items__subtotal-label font-sm">Subtotal</span>
+                            <span class="tf-cart-items__subtotal-value font-sm">{{ cart.total_price | money }}</span>
+                        </div>
+
+                        <button type="submit"
+                                name="checkout"
+                                class="tf-cart-items__checkout-btn font-xs">
+                            Checkout
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+        {% else %}
+            <!-- Empty Cart -->
+            <div class="tf-cart-items__empty">
+                <p class="font-sm">Your cart is empty.</p>
+                <a href="/collections/all" class="tf-cart-items__continue-btn font-xs">Continue Shopping</a>
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+
+<script>
+  (function() {
+    // Quantity buttons
+    document.querySelectorAll('.tf-cart-items__qty-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const line = this.dataset.line;
+        const input = document.querySelector(`.tf-cart-items__qty-input[data-line="${line}"]`);
+        const previousQty = parseInt(input.value);
+        let qty = previousQty;
+
+        if (this.dataset.action === 'increase') {
+          qty++;
+        } else if (this.dataset.action === 'decrease' && qty > 1) {
+          qty--;
+        }
+
+        input.value = qty;
+        updateCart(line, qty, previousQty, input);
+      });
+    });
+
+    // Quantity input change
+    document.querySelectorAll('.tf-cart-items__qty-input').forEach(input => {
+      let previousValue = input.value;
+
+      input.addEventListener('focus', function() {
+        previousValue = this.value;
+      });
+
+      input.addEventListener('change', function() {
+        const line = this.dataset.line;
+        let qty = parseInt(this.value);
+
+        if (isNaN(qty) || qty < 0) qty = 0;
+        this.value = qty;
+
+        updateCart(line, qty, previousValue, this);
+      });
+    });
+
+    // Remove buttons
+    document.querySelectorAll('.tf-cart-items__remove').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const line = this.dataset.line;
+        const input = document.querySelector(`.tf-cart-items__qty-input[data-line="${line}"]`);
+        const previousQty = parseInt(input.value);
+        updateCart(line, 0, previousQty, input);
+      });
+    });
+
+    // Update cart via Shopify API
+    function updateCart(line, quantity, previousQty, inputElement) {
+      const errorContainer = document.querySelector(`#Line-item-error-${line}`);
+      const errorText = errorContainer?.querySelector('.tf-cart-items__error-text');
+
+      // Clear previous errors
+      if (errorContainer) {
+        errorContainer.classList.remove('active');
+        if (errorText) errorText.textContent = '';
+      }
+
+      fetch('/cart/change.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ line: line, quantity: quantity })
+      })
+        .then(res => {
+          if (!res.ok) {
+            return res.json().then(err => { throw err; });
+          }
+          return res.json();
+        })
+        .then(() => window.location.reload())
+        .catch(err => {
+          console.error('Cart update error:', err);
+
+          // Revert to previous quantity on error
+          if (inputElement) {
+            inputElement.value = previousQty;
+          }
+
+          // Show error message
+          if (errorContainer && errorText) {
+            errorText.textContent = err.message || err.description || 'Unable to update cart';
+            errorContainer.classList.add('active');
+          }
+        });
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "TF • Cart items",
+  "settings": [],
+  "presets": [
+    {
+      "name": "TF • Cart items"
+    }
+  ]
+}
+{% endschema %}
