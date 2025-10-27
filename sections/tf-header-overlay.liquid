@@ -1,37 +1,35 @@
 {% comment %} TF • Header {% endcomment %}
-{% if tf_header_css_once == blank %}
-    {%- assign tf_header_css_once = true -%}
-    {{ 'tf-header.css' | asset_url | stylesheet_tag }}
-{% endif %}
 
-<header class="tf-topbar" role="banner" style="{% if section.settings.transparent %}background:transparent;{% endif %}">
-    <div class="tf-topbar__row">
-        <!-- Left: Logo -->
-        <a class="tf-topbar__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name }}" data-tf-header-logo>
+<header class="fixed top-0 left-0 right-0 z-[60] mix-blend-difference" role="banner" style="{% if section.settings.transparent %}background:transparent;{% endif %}">
+    <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 grid-rows-1 px-[20px] md:px-[30px] lg:px-[50px] gap-[15px] md:gap-[20px] lg:gap-[40px] py-3 items-center text-white mix-blend-difference pt-[40px]">
+
+        <!-- Logo - left side -->
+        <a class="col-span-1 text-white no-underline" href="{{ routes.root_url }}" aria-label="{{ shop.name }}">
             {% if section.settings.logo != blank %}
                 <img src="{{ section.settings.logo | image_url: width: 240 }}"
                      alt="{{ shop.name }}"
-                     class="tf-topbar__logo-img">
+                     class="max-h-[25px] md:max-h-[40px] h-auto block">
             {% else %}
-                <span class="tf-topbar__logo-text font-{{ section.settings.font_size_variant }}">{{ shop.name }}</span>
+                <span class="text-[2rem] font-bold tracking-wider font-{{ section.settings.font_size_variant }}">{{ shop.name }}</span>
             {% endif %}
         </a>
 
-        <!-- Center: Menu button -->
-        <button class="tf-topbar__menu-btn font-{{ section.settings.font_size_variant }}"
-                id="tf-menu-open-{{ section.id }}"
-                aria-haspopup="dialog"
-                aria-controls="tf-menu-overlay-{{ section.id }}"
-                aria-expanded="false">
-            {{ section.settings.menu_label }}
-        </button>
+        <!-- Right side container for Menu + Cart on mobile -->
+        <div class="col-span-1 flex justify-end gap-4 md:contents">
+            <!-- Menu button - always at start of column 5 (second half) -->
+            <button class="md:col-start-3 md:justify-self-start lg:col-start-4 xl:col-start-5 bg-transparent border-0 px-2 py-1 cursor-pointer text-white font-{{ section.settings.font_size_variant }}"
+                    id="tf-menu-open-{{ section.id }}"
+                    aria-haspopup="dialog"
+                    aria-controls="tf-menu-overlay-{{ section.id }}"
+                    aria-expanded="false">
+                {{ section.settings.menu_label }}
+            </button>
 
-        <!-- Right: Cart -->
-        <div class="tf-topbar__utils">
-            <a class="tf-topbar__link tf-cart font-{{ section.settings.font_size_variant }}" href="{{ routes.cart_url }}" aria-label="{{ 'sections.cart.title' | t }}">
+            <!-- Cart -->
+            <a class="md:col-start-4 lg:col-start-6 xl:col-start-8 md:justify-self-end relative text-white no-underline font-{{ section.settings.font_size_variant }}" href="{{ routes.cart_url }}" aria-label="{{ 'sections.cart.title' | t }}">
                 {{ 'templates.cart.cart' | t | default: 'Cart' }}
                 {% if cart != empty and cart.item_count > 0 %}
-                    <span class="tf-cart__count" aria-live="polite">{{ cart.item_count }}</span>
+                    <span class="absolute -top-3.5 -right-3.5 min-w-[1.2rem] h-[1.2rem] text-white text-sm leading-[1.2rem] text-center" aria-live="polite">{{ cart.item_count }}</span>
                 {% endif %}
             </a>
         </div>
@@ -39,82 +37,145 @@
 </header>
 
 <!-- Overlay -->
-<div id="tf-menu-overlay-{{ section.id }}" class="tf-menu-overlay" hidden>
-    <div class="tf-menu-overlay__inner" role="dialog" aria-modal="true" aria-labelledby="tf-menu-title-{{ section.id }}">
-        {% comment %}<div class="tf-menu-overlay__header">{% endcomment %}
-            {% comment %}<button class="tf-menu-overlay__close font-{{ section.settings.font_size_variant }}" type="button" aria-label="Close">{{ section.settings.close_label }}</button>{% endcomment %}
-        {% comment %}</div>{% endcomment %}
+<div id="tf-menu-overlay-{{ section.id }}" class="tf-overlay" hidden>
+    <!-- Grid wrapper to match header - but remove right padding -->
+    <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 h-full gap-[15px] md:gap-[20px] lg:gap-[40px] pointer-events-none">
+        <!-- Panel covers RIGHT half and extends to screen edge -->
+        <div id="tf-menu-panel-{{ section.id }} "
+             class="tf-panel col-span-1 md:col-span-2 md:col-start-3 lg:col-span-3 lg:col-start-4 xl:col-span-4 xl:col-start-5 pointer-events-auto"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="tf-menu-title-{{ section.id }}">
 
-        <div class="tf-menu-overlay__header">
-            <span class="tf-menu-overlay__first-item font-{{ section.settings.overlay_font_size_variant }}">
-                {% if section.settings.menu.links.first %}
-                    <a href="{{ section.settings.menu.links.first.url }}">{{ section.settings.menu.links.first.title }}</a>
-                {% endif %}
-            </span>
-            <button class="tf-menu-overlay__close font-{{ section.settings.font_size_variant }}" type="button" aria-label="Close">{{ section.settings.close_label }}</button>
+            <div class="pt-[18px] px-[0px] md:px-[10px] lg:px-[40px] flex items-center justify-between pb-[1.35rem]">
+                <span class="font-{{ section.settings.overlay_font_size_variant }} text-white mix-blend-difference py-2.5">
+                    {% if section.settings.menu.links.first %}
+                        <a href="{{ section.settings.menu.links.first.url }}" class="no-underline text-white">{{ section.settings.menu.links.first.title }}</a>
+                    {% endif %}
+                </span>
+                <button class="bg-transparent border-0 text-white cursor-pointer mix-blend-difference font-{{ section.settings.font_size_variant }}"
+                        type="button"
+                        aria-label="Close">{{ section.settings.close_label }}</button>
+            </div>
+
+            <nav aria-label="Main">
+                <ul class="list-none m-0 p-0 px-[0px] md:px-[10px] lg:px-[40px]">
+                    {% for link in section.settings.menu.links offset: 1 %}
+                        {% assign child_count = link.links | size %}
+
+                        <li class="font-{{ section.settings.overlay_font_size_variant }} {% if child_count > 0 %}group{% endif %}">
+                            <a href="{{ link.url }}"
+                               class="block py-[1.35rem] no-underline text-white mix-blend-difference {% if child_count > 0 %}relative pr-6{% endif %}"
+                               {% if child_count > 0 %}data-toggle{% endif %}>
+                                {{ link.title }}
+                                {% if child_count > 0 %}
+                                    <span class="absolute right-0 top-1/2 -translate-y-1/2">▾</span>
+                                {% endif %}
+                            </a>
+
+                            {% if child_count > 0 %}
+                                <ul class="list-none m-0 py-1 pb-3 hidden group-[.is-open]:block">
+                                    {% for sub in link.links %}
+                                        <li><a href="{{ sub.url }}" class="block py-2 pl-4 opacity-90 no-underline text-white">{{ sub.title }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </nav>
         </div>
-
-        <nav class="tf-menu-overlay__nav" aria-label="Main">
-            <ul class="tf-menu-list">
-                {% assign menu = section.settings.menu %}
-                {% for link in section.settings.menu.links offset: 1 %}
-                    {% assign child_count = link.links | size %}
-
-                    <li class="tf-menu-item font-{{ section.settings.overlay_font_size_variant }} {% if child_count > 0 %}has-children{% endif %}">
-                        <a href="{{ link.url }}" {% if child_count > 0 %}data-toggle{% endif %}>{{ link.title }}</a>
-
-                        {% if child_count > 0 %}
-                            <span class="tf-caret">▾</span>
-                            <ul class="tf-submenu">
-                                {% for sub in link.links %}
-                                    <li><a href="{{ sub.url }}">{{ sub.title }}</a></li>
-                                {% endfor %}
-                            </ul>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
-        </nav>
     </div>
 </div>
+
+<style>
+    button,
+    a {
+        font-family: 'PPRadioGrotesk', sans-serif;
+    }
+
+    .tf-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 80;
+        background: rgba(0, 0, 0, 0);
+        transition: background 0.3s ease;
+        pointer-events: none;
+    }
+
+    .tf-overlay:not([hidden]) {
+        display: block;
+    }
+
+    .tf-overlay.is-open {
+        background: rgba(0, 0, 0, 0.28);
+        pointer-events: auto;
+    }
+
+    .tf-panel {
+        background: #252525;
+        color: #e9e9e9;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        padding: 1.25rem;
+        padding-bottom: 1rem;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        height: 100%;
+    }
+
+    .tf-overlay.is-open .tf-panel {
+        transform: translateX(0);
+    }
+</style>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const openBtn = document.getElementById('tf-menu-open-{{ section.id }}');
     const overlay = document.getElementById('tf-menu-overlay-{{ section.id }}');
-    const panel   = overlay?.querySelector('.tf-menu-overlay__inner');
-    const closeBtn = overlay?.querySelector('.tf-menu-overlay__close');
+    const panel   = overlay?.querySelector('[role="dialog"]');
+    const closeBtn = overlay?.querySelector('[aria-label="Close"]');
+
+    console.log('Menu elements:', { openBtn, overlay, panel, closeBtn }); // Debug
 
     const open = () => {
+      console.log('Opening menu'); // Debug
       overlay.hidden = false;
+      // Force reflow
+      void overlay.offsetHeight;
       requestAnimationFrame(() => {
         overlay.classList.add('is-open');
+        console.log('Added is-open class'); // Debug
       });
       openBtn.setAttribute('aria-expanded', 'true');
       document.documentElement.style.overflow = 'hidden';
-      const firstLink = overlay.querySelector('.tf-menu-list a');
-      (firstLink || closeBtn).focus({ preventScroll: true });
+      const firstLink = overlay.querySelector('nav a');
+      (firstLink || closeBtn)?.focus({ preventScroll: true });
     };
 
     const close = () => {
+      console.log('Closing menu'); // Debug
       overlay.classList.remove('is-open');
       setTimeout(() => {
         overlay.hidden = true;
-      }, 300); // Match transition duration
+      }, 300);
       openBtn.setAttribute('aria-expanded', 'false');
       document.documentElement.style.overflow = '';
-      openBtn.focus({ preventScroll: true });
+      openBtn?.focus({ preventScroll: true });
     };
 
-    openBtn?.addEventListener('click', open);
+    openBtn?.addEventListener('click', (e) => {
+      console.log('Menu button clicked'); // Debug
+      open();
+    });
     closeBtn?.addEventListener('click', close);
     overlay?.addEventListener('click', (e) => { if (e.target === overlay) close(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !overlay.hidden) close(); });
 
     overlay?.querySelectorAll('[data-toggle]').forEach(a => {
       a.addEventListener('click', (e) => {
-        const li = e.currentTarget.closest('.tf-menu-item');
-        if (li?.classList.contains('has-children')) {
+        const li = e.currentTarget.closest('li');
+        if (li?.classList.contains('group')) {
           e.preventDefault();
           li.classList.toggle('is-open');
         }
