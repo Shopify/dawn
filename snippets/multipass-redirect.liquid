@@ -1,0 +1,42 @@
+{%- comment -%}
+  Multipass Redirect Snippet
+  
+  This snippet redirects users to the frontend app's multipass authentication.
+  It preserves the intended destination URL so users can return after authentication.
+  
+  Parameters:
+    - shopify_url (optional): The Shopify URL where the user should return after authentication.
+                             If not provided, defaults to the account page.
+                             For account pages, use routes.account_url, routes.account_addresses_url, etc.
+  
+  Usage:
+    {% render 'multipass-redirect', shopify_url: routes.account_url %}
+    {% render 'multipass-redirect' %} (defaults to account page)
+{%- endcomment -%}
+
+{%- liquid
+  assign frontend_url = 'https://staging-shopify.modhealth.ai'
+
+  # Determine the destination Shopify URL
+  if shopify_url != blank
+    assign destination_url = shopify_url
+  else
+    # Default to account page
+    assign destination_url = routes.account_url
+  endif
+
+  # Build full URL if it's a relative path
+  unless destination_url contains '://'
+    assign shop_domain = shop.permanent_domain | default: shop.domain
+    assign destination_url = 'https://' | append: shop_domain | append: destination_url
+  endunless
+
+  # Build the multipass redirect URL with shopify_url parameter
+  assign encoded_url = destination_url | url_encode
+  assign multipass_url = frontend_url | append: '/auth/multipass?shopify_url=' | append: encoded_url
+-%}
+
+<script>
+  window.location.href = '{{ multipass_url }}';
+</script>
+

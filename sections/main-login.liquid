@@ -14,6 +14,43 @@
   }
 {%- endstyle -%}
 
+{%- comment -%}
+  Redirect to multipass authentication.
+  Preserve the return_to URL so users can return to their intended destination after login.
+  Shopify automatically adds a return_to query parameter when redirecting to login from protected pages.
+{%- endcomment -%}
+{%- liquid
+  # Check if there's a return_to parameter (from Shopify's auth redirect)
+  # Shopify automatically adds this when redirecting from protected pages
+  assign return_to = blank
+  assign query_string = request.query_string
+
+  # Extract return_to from query string
+  if query_string contains 'return_to='
+    assign query_parts = query_string | split: 'return_to='
+    if query_parts.size > 1
+      assign return_to_part = query_parts[1]
+      # Handle case where there might be additional query params after return_to
+      if return_to_part contains '&'
+        assign return_to = return_to_part | split: '&' | first
+      else
+        assign return_to = return_to_part
+      endif
+      # URL decode the return_to value
+      assign return_to = return_to | url_decode
+    endif
+  endif
+
+  if return_to != blank
+    # User was redirected from a protected page - use that as destination
+    assign shopify_url = return_to
+  else
+    # Default to account page (most common case for login)
+    assign shopify_url = routes.account_url
+  endif
+-%}
+{% render 'multipass-redirect', shopify_url: shopify_url %}
+
 {%- if section.settings.enable_shop_login_button == false -%}
   {%- assign hide_shop_login_button = true -%}
 {%- endif -%}
