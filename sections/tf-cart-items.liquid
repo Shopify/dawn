@@ -1,82 +1,88 @@
 {% comment %} THE FALL – Cart Items {% endcomment %}
-{% if tf_cart_items_css_once == blank %}
-    {% assign tf_cart_items_css_once = true %}
-    {{ 'tf-cart-items.css' | asset_url | stylesheet_tag }}
-{% endif %}
 
-<section class="tf-cart-items">
-    <div class="tf-cart-items__inner">
+<section class="w-full min-h-screen pb-16 px-5 md:px-[30px] lg:px-[50px]" style="margin-top: 130px;" >
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-[15px] md:gap-5 lg:gap-10">
 
-        <h1 class="tf-cart-items__heading font-sm">CART</h1>
+        <!-- Heading spans full width -->
+        <div class="col-span-2 md:col-span-4 lg:col-span-6 xl:col-span-8 mb-8">
+            <h1 class="font-sm uppercase font-normal">CART</h1>
+        </div>
 
         {% if cart.item_count > 0 %}
-            <form action="{{ routes.cart_url }}" method="post" novalidate id="cart">
-                <div class="tf-cart-items__wrapper">
+            <!-- Cart Items - Takes up most columns -->
+            <div class="col-span-2 md:col-span-4 lg:col-span-4 xl:col-span-5">
+                <form action="{{ routes.cart_url }}" method="post" novalidate id="cart">
+                    <!-- Desktop Table Header (hidden on mobile) -->
+                    <div class="hidden lg:grid grid-cols-12 gap-4 pb-4 border-b border-black mb-4">
+                        <div class="col-span-5 font-sm">Product</div>
+                        <div class="col-span-2 font-sm">Price</div>
+                        <div class="col-span-3 font-sm">Quantity</div>
+                        <div class="col-span-2 font-sm text-right">Total</div>
+                    </div>
 
-                    <div class="tf-cart-items__container">
+                    <!-- Mobile Table Header (visible only on mobile) -->
+                    <div class="grid lg:hidden grid-cols-3 gap-4 pb-4 border-b border-black mb-6">
+                        <div class="font-sm">Product</div>
+                        <div class="font-sm">Information</div>
+                        <div class="font-sm text-right">Total</div>
+                    </div>
 
-                        <!-- Table Header -->
-                        <div class="tf-cart-items__header font-sm">
-                            <div class="tf-cart-items__header-product">Product</div>
-                            <div class="tf-cart-items__header-price">Price</div>
-                            <div class="tf-cart-items__header-quantity">Quantity</div>
-                            <div class="tf-cart-items__header-total">Total</div>
-                        </div>
+                    <!-- Cart Items List -->
+                    <div class="space-y-6">
+                        {%- for item in cart.items -%}
+                            <!-- Desktop Layout -->
+                            <div class="hidden lg:grid grid-cols-12 gap-4 pb-6 border-b border-black items-center"
+                                 data-line="{{ forloop.index }}"
+                                 id="CartItem-{{ item.index | plus: 1 }}">
 
-                        <!-- Cart Items -->
-                        <div class="tf-cart-items__list">
-                            {%- for item in cart.items -%}
-                                <div class="tf-cart-items__item" data-line="{{ forloop.index }}" id="CartItem-{{ item.index | plus: 1 }}">
-
-                                    <!-- Product Image & Info -->
-                                    <div class="tf-cart-items__item-product">
-                                        {% if item.image %}
-                                            <a href="{{ item.url }}">
-                                                <img src="{{ item.image | image_url: width: 200 }}"
-                                                     alt="{{ item.title | escape }}"
-                                                     class="tf-cart-items__item-image"
-                                                     width="120"
-                                                     height="172"
-                                                     loading="lazy">
-                                            </a>
-                                        {% endif %}
-                                        <div class="tf-cart-items__item-details">
-                                            <a href="{{ item.url }}" class="tf-cart-items__item-title-link">
-                                                <h3 class="tf-cart-items__item-title font-xs">
-                                                    {{ item.product.title | escape }}
-                                                </h3>
-                                            </a>
-                                            {%- if item.product.has_only_default_variant == false -%}
-                                                {%- for option in item.options_with_values -%}
-                                                    <p class="tf-cart-items__item-variant font-xs">
-                                                        {{ option.name }}: {{ option.value }}
-                                                    </p>
-                                                {%- endfor -%}
-                                            {%- endif -%}
-                                        </div>
-                                    </div>
-
-                                    <!-- Price -->
-                                    <div class="tf-cart-items__item-price font-xs">
-                                        {%- if item.original_price != item.final_price -%}
-                                            <span class="tf-cart-items__old-price">
-                                                {{ item.original_price | money }}
-                                            </span>
+                                <!-- Product (Image + Details) -->
+                                <div class="col-span-5 flex gap-4">
+                                    {% if item.image %}
+                                        <a href="{{ item.url }}" class="flex-shrink-0">
+                                            <img src="{{ item.image | image_url: width: 200 }}"
+                                                 alt="{{ item.title | escape }}"
+                                                 class="h-auto object-cover"
+                                                 loading="lazy">
+                                        </a>
+                                    {% endif %}
+                                    <div class="flex flex-col justify-center">
+                                        <a href="{{ item.url }}" class="no-underline">
+                                            <h3 class="font-xs font-normal mb-2">
+                                                {{ item.product.title | escape }}
+                                            </h3>
+                                        </a>
+                                        {%- if item.product.has_only_default_variant == false -%}
+                                            {%- for option in item.options_with_values -%}
+                                                <p class="font-xs text-gray-600">
+                                                    {{ option.name }}: {{ option.value }}
+                                                </p>
+                                            {%- endfor -%}
                                         {%- endif -%}
-                                        <span>{{ item.final_price | money }}</span>
                                     </div>
+                                </div>
 
-                                    <!-- Quantity -->
-                                    <div class="tf-cart-items__item-quantity">
-                                        <div class="tf-cart-items__qty-controls">
-                                            <button class="tf-cart-items__qty-btn font-xs"
+                                <!-- Price -->
+                                <div class="col-span-2">
+                                    {%- if item.original_price != item.final_price -%}
+                                        <span class="line-through text-gray-500 font-xs mr-2">
+                                            {{ item.original_price | money }}
+                                        </span>
+                                    {%- endif -%}
+                                    <span class="font-xs">{{ item.final_price | money }}</span>
+                                </div>
+
+                                <!-- Quantity Controls -->
+                                <div class="col-span-3">
+                                    <div class="flex items-center gap-3 mb-2 -ml-[10px]">
+                                        <div class="flex items-center">
+                                            <button class="w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer font-xs hover:opacity-60 transition-opacity"
                                                     type="button"
                                                     data-action="decrease"
                                                     data-line="{{ forloop.index }}"
-                                                    aria-label="{{ 'products.product.quantity.decrease' | t: product: item.product.title | escape }}">
+                                                    aria-label="Decrease quantity">
                                                 -
                                             </button>
-                                            <input class="tf-cart-items__qty-input font-xs"
+                                            <input class="w-12 h-8 text-center border-0 border-b border-black font-xs mx-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                    type="number"
                                                    name="updates[]"
                                                    value="{{ item.quantity }}"
@@ -84,65 +90,169 @@
                                                    data-line="{{ forloop.index }}"
                                                    data-index="{{ item.index | plus: 1 }}"
                                                    id="Quantity-{{ item.index | plus: 1 }}"
-                                                   aria-label="{{ 'products.product.quantity.input_label' | t: product: item.product.title | escape }}">
-                                            <button class="tf-cart-items__qty-btn font-xs"
+                                                   aria-label="Quantity">
+                                            <button class="w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer font-xs hover:opacity-60 transition-opacity"
                                                     type="button"
                                                     data-action="increase"
                                                     data-line="{{ forloop.index }}"
-                                                    aria-label="{{ 'products.product.quantity.increase' | t: product: item.product.title | escape }}">
+                                                    aria-label="Increase quantity">
+                                                +
+                                            </button>
+                                            <button type="button"
+                                                    class="font-xs underline bg-transparent border-none cursor-pointer p-0 hover:opacity-60 transition-opacity"
+                                                    data-line="{{ forloop.index }}"
+                                                    aria-label="Remove item">
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+
+
+                                    <!-- Error Message -->
+                                    <div class="mt-2 opacity-0 max-h-0 overflow-hidden transition-all duration-300"
+                                         id="Line-item-error-{{ item.index | plus: 1 }}"
+                                         role="alert">
+                                        <small class="font-xs text-red-600 block"></small>
+                                    </div>
+                                </div>
+
+                                <!-- Line Total -->
+                                <div class="col-span-2 text-right">
+                                    {%- if item.original_line_price != item.final_line_price -%}
+                                        <span class="line-through text-gray-500 font-xs mr-2">
+                                            {{ item.original_line_price | money }}
+                                        </span>
+                                    {%- endif -%}
+                                    <span class="font-xs font-medium">{{ item.final_line_price | money }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Mobile Layout (3 columns like screenshot) -->
+                            <div class="grid lg:hidden grid-cols-3 gap-4 pb-6 border-b border-black items-start"
+                                 data-line="{{ forloop.index }}"
+                                 id="CartItem-mobile-{{ item.index | plus: 1 }}">
+
+                                <!-- Column 1: Product Image -->
+                                <div>
+                                    {% if item.image %}
+                                        <a href="{{ item.url }}">
+                                            <img src="{{ item.image | image_url: width: 300 }}"
+                                                 alt="{{ item.title | escape }}"
+                                                 class="w-full h-auto object-cover"
+                                                 loading="lazy">
+                                        </a>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Column 2: Information (Title, Variant, Price, Quantity) -->
+                                <div class="flex flex-col justify-between h-full">
+                                    <div>
+                                        <a href="{{ item.url }}" class="no-underline">
+                                            <h3 class="font-xs font-normal mb-1">
+                                                {{ item.product.title | escape }}
+                                            </h3>
+                                        </a>
+                                        {%- if item.product.has_only_default_variant == false -%}
+                                            {%- for option in item.options_with_values -%}
+                                                <p class="font-xs text-gray-600">
+                                                    {{ option.value }}
+                                                </p>
+                                            {%- endfor -%}
+                                        {%- endif -%}
+                                    </div>
+
+                                    <div class="font-xs">
+                                        {%- if item.original_price != item.final_price -%}
+                                            <span class="line-through text-gray-500 mr-2">
+                    {{ item.original_price | money }}
+                </span>
+                                        {%- endif -%}
+                                        <span>{{ item.final_price | money }}</span>
+                                    </div>
+
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex items-center border-b border-black">
+                                            <button class="w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer font-xs hover:opacity-60 transition-opacity"
+                                                    type="button"
+                                                    data-action="decrease"
+                                                    data-line="{{ forloop.index }}"
+                                                    aria-label="Decrease quantity">
+                                                -
+                                            </button>
+                                            <input class="w-12 h-8 text-center border-0 font-xs mx-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                   type="number"
+                                                   name="updates[]"
+                                                   value="{{ item.quantity }}"
+                                                   min="0"
+                                                   data-line="{{ forloop.index }}"
+                                                   data-index="{{ item.index | plus: 1 }}"
+                                                   id="Quantity-mobile-{{ item.index | plus: 1 }}"
+                                                   aria-label="Quantity">
+                                            <button class="w-8 h-8 flex items-center justify-center border-none bg-transparent cursor-pointer font-xs hover:opacity-60 transition-opacity"
+                                                    type="button"
+                                                    data-action="increase"
+                                                    data-line="{{ forloop.index }}"
+                                                    aria-label="Increase quantity">
                                                 +
                                             </button>
                                         </div>
                                         <button type="button"
-                                                class="tf-cart-items__remove font-xs"
+                                                class="font-xs underline bg-transparent border-none cursor-pointer p-0 hover:opacity-60 transition-opacity"
                                                 data-line="{{ forloop.index }}"
-                                                aria-label="{{ 'sections.cart.remove_title' | t: title: item.title | escape }}">
+                                                aria-label="Remove item">
                                             Remove
                                         </button>
-
-                                        <!-- Error Message -->
-                                        <div class="tf-cart-items__error" id="Line-item-error-{{ item.index | plus: 1 }}" role="alert">
-                                            <small class="tf-cart-items__error-text font-xs"></small>
-                                        </div>
                                     </div>
 
-                                    <!-- Line Total -->
-                                    <div class="tf-cart-items__item-total font-xs">
-                                        {%- if item.original_line_price != item.final_line_price -%}
-                                            <span class="tf-cart-items__old-price">
-                                                {{ item.original_line_price | money }}
-                                            </span>
-                                        {%- endif -%}
-                                        <span>{{ item.final_line_price | money }}</span>
+                                    <!-- Error Message -->
+                                    <div class="opacity-0 max-h-0 overflow-hidden transition-all duration-300"
+                                         id="Line-item-error-mobile-{{ item.index | plus: 1 }}"
+                                         role="alert">
+                                        <small class="font-xs text-red-600 block"></small>
                                     </div>
-
                                 </div>
-                            {%- endfor -%}
-                        </div>
 
+                                <!-- Column 3: Total -->
+                                <div class="text-right font-xs">
+                                    {%- if item.original_line_price != item.final_line_price -%}
+                                        <span class="line-through text-gray-500 block mb-1">
+                {{ item.original_line_price | money }}
+            </span>
+                                    {%- endif -%}
+                                    <span class="font-medium">{{ item.final_line_price | money }}</span>
+                                </div>
+                            </div>
+                        {%- endfor -%}
                     </div>
+                </form>
+            </div>
 
-                    <!-- Subtotal Sidebar -->
-                    <div class="tf-cart-items__sidebar">
-                        <div class="tf-cart-items__subtotal-row">
-                            <span class="tf-cart-items__subtotal-label font-sm">Subtotal</span>
-                            <span class="tf-cart-items__subtotal-value font-sm">{{ cart.total_price | money }}</span>
+            <!-- Sidebar - Subtotal & Checkout (outside form, now sticky works!) -->
+            <div class="col-span-2 md:col-span-4 lg:col-span-2 xl:col-span-3">
+                <div class="lg:sticky lg:top-[130px]">
+                    <div class="flex flex-col gap-8">
+                        <div class="flex justify-between items-center pb-4 border-b border-black">
+                            <span class="font-sm font-medium uppercase">Subtotal</span>
+                            <span class="font-sm font-medium">{{ cart.total_price | money }}</span>
                         </div>
-
                         <button type="submit"
+                                form="cart"
                                 name="checkout"
-                                class="tf-cart-items__checkout-btn font-xs">
+                                class="w-full py-5 px-8 font-xs font-normal uppercase bg-black text-white border-none cursor-pointer hover:bg-gray-800 transition-colors">
                             Checkout
                         </button>
                     </div>
-
                 </div>
-            </form>
+            </div>
+
         {% else %}
             <!-- Empty Cart -->
-            <div class="tf-cart-items__empty">
-                <p class="font-sm">Your cart is empty.</p>
-                <a href="/collections/all" class="tf-cart-items__continue-btn font-xs">Continue Shopping</a>
+            <div class="col-span-2 md:col-span-4 lg:col-span-6 xl:col-span-8 text-center py-16">
+                <p class="font-sm mb-8">Your cart is empty.</p>
+                <a href="/collections/all"
+                   class="inline-block py-4 px-8 font-xs font-normal uppercase bg-black text-white no-underline hover:bg-gray-800 transition-colors">
+                    Continue Shopping
+                </a>
             </div>
         {% endif %}
 
@@ -152,10 +262,10 @@
 <script>
   (function() {
     // Quantity buttons
-    document.querySelectorAll('.tf-cart-items__qty-btn').forEach(btn => {
+    document.querySelectorAll('[data-action]').forEach(btn => {
       btn.addEventListener('click', function() {
         const line = this.dataset.line;
-        const input = document.querySelector(`.tf-cart-items__qty-input[data-line="${line}"]`);
+        const input = document.querySelector(`input[data-line="${line}"]`);
         const previousQty = parseInt(input.value);
         let qty = previousQty;
 
@@ -171,7 +281,7 @@
     });
 
     // Quantity input change
-    document.querySelectorAll('.tf-cart-items__qty-input').forEach(input => {
+    document.querySelectorAll('input[type="number"][data-line]').forEach(input => {
       let previousValue = input.value;
 
       input.addEventListener('focus', function() {
@@ -190,23 +300,28 @@
     });
 
     // Remove buttons
-    document.querySelectorAll('.tf-cart-items__remove').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const line = this.dataset.line;
-        const input = document.querySelector(`.tf-cart-items__qty-input[data-line="${line}"]`);
-        const previousQty = parseInt(input.value);
-        updateCart(line, 0, previousQty, input);
-      });
+    document.querySelectorAll('button[type="button"]:not([data-action])').forEach(btn => {
+      if (btn.textContent.trim() === 'Remove') {
+        btn.addEventListener('click', function() {
+          const line = this.dataset.line;
+          const input = document.querySelector(`input[data-line="${line}"]`);
+          const previousQty = parseInt(input.value);
+          updateCart(line, 0, previousQty, input);
+        });
+      }
     });
 
-    // Update cart via Shopify API
+
     function updateCart(line, quantity, previousQty, inputElement) {
-      const errorContainer = document.querySelector(`#Line-item-error-${line}`);
-      const errorText = errorContainer?.querySelector('.tf-cart-items__error-text');
+      const dataIndex = inputElement.dataset.index;
+      const errorContainer = document.querySelector(`#Line-item-error-${dataIndex}`) ||
+        document.querySelector(`#Line-item-error-mobile-${dataIndex}`);
+      const errorText = errorContainer?.querySelector('small');
 
       // Clear previous errors
       if (errorContainer) {
-        errorContainer.classList.remove('active');
+        errorContainer.classList.remove('opacity-100', 'max-h-24');
+        errorContainer.classList.add('opacity-0', 'max-h-0');
         if (errorText) errorText.textContent = '';
       }
 
@@ -233,7 +348,8 @@
           // Show error message
           if (errorContainer && errorText) {
             errorText.textContent = err.message || err.description || 'Unable to update cart';
-            errorContainer.classList.add('active');
+            errorContainer.classList.remove('opacity-0', 'max-h-0');
+            errorContainer.classList.add('opacity-100', 'max-h-24');
           }
         });
     }
