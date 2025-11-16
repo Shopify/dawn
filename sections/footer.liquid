@@ -4,11 +4,13 @@
 {{ 'component-list-menu.css' | asset_url | stylesheet_tag }}
 {{ 'component-list-payment.css' | asset_url | stylesheet_tag }}
 {{ 'component-list-social.css' | asset_url | stylesheet_tag }}
+{{ 'component-collapsible-content.css' | asset_url | stylesheet_tag }}
 
 {%- style -%}
   .footer {
     margin-top: {{ section.settings.margin_top | times: 0.75 | round: 0 }}px;
   }
+
 
   .section-{{ section.id }}-padding {
     padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
@@ -32,6 +34,26 @@
     list-style: none;
     padding: 0;
     margin: 0;
+  }
+
+  .footer .collapsible-content {
+    margin-bottom: 0;
+    height: 0px;
+  }
+
+  .footer .collapsible-content[open] {
+    margin-bottom: 1rem;
+    height: auto;
+  }
+
+  @media screen and (min-width: 750px) {
+    .footer .collapsible-content summary {
+      pointer-events: none;
+    }
+
+    .footer .collapsible-content__icon {
+      display: none;
+    }
   }
 {%- endstyle -%}
 
@@ -83,31 +105,68 @@
                   style="--animation-order: {{ forloop.index }};"
                 {% endif %}
               >
-                {%- if block.settings.heading != blank -%}
-                  <h2 class="footer-block__heading inline-richtext">{{- block.settings.heading -}}</h2>
-                {%- endif -%}
-
                 {%- case block.type -%}
                   {%- when '@app' -%}
                     {% render block %}
                   {%- when 'text' -%}
-                    <div class="footer-block__details-content rte">
-                      {{ block.settings.subtext }}
-                    </div>
+                    {%- if block.settings.heading != blank -%}
+                      <details class="collapsible-content">
+                        <summary class="collapsible-content__toggle">
+                          <h2 class="footer-block__heading inline-richtext">{{- block.settings.heading -}}</h2>
+                          <span class="collapsible-content__icon">
+                            {{ 'icon-caret.svg' | inline_asset_content }}
+                          </span>
+                        </summary>
+                        <div class="collapsible-content__content">
+                          <div class="footer-block__details-content rte">
+                            {{ block.settings.subtext }}
+                          </div>
+                        </div>
+                      </details>
+                    {%- else -%}
+                      <div class="footer-block__details-content rte">
+                        {{ block.settings.subtext }}
+                      </div>
+                    {%- endif -%}
                   {%- when 'link_list' -%}
                     {%- if block.settings.menu != blank -%}
-                      <ul class="footer-block__details-content list-unstyled">
-                        {%- for link in block.settings.menu.links -%}
-                          <li>
-                            <a
-                              href="{{ link.url }}"
-                              class="link link--text list-menu__item list-menu__item--link{% if link.active %} list-menu__item--active{% endif %}"
-                            >
-                              {{ link.title | escape }}
-                            </a>
-                          </li>
-                        {%- endfor -%}
-                      </ul>
+                      {%- if block.settings.heading != blank -%}
+                        <details class="collapsible-content">
+                          <summary class="collapsible-content__toggle">
+                            <h2 class="footer-block__heading inline-richtext">{{- block.settings.heading -}}</h2>
+                            <span class="collapsible-content__icon">
+                              {{ 'icon-caret.svg' | inline_asset_content }}
+                            </span>
+                          </summary>
+                          <div class="collapsible-content__content">
+                            <ul class="footer-block__details-content list-unstyled">
+                              {%- for link in block.settings.menu.links -%}
+                                <li>
+                                  <a
+                                    href="{{ link.url }}"
+                                    class="link link--text list-menu__item list-menu__item--link{% if link.active %} list-menu__item--active{% endif %}"
+                                  >
+                                    {{ link.title | escape }}
+                                  </a>
+                                </li>
+                              {%- endfor -%}
+                            </ul>
+                          </div>
+                        </details>
+                      {%- else -%}
+                        <ul class="footer-block__details-content list-unstyled">
+                          {%- for link in block.settings.menu.links -%}
+                            <li>
+                              <a
+                                href="{{ link.url }}"
+                                class="link link--text list-menu__item list-menu__item--link{% if link.active %} list-menu__item--active{% endif %}"
+                              >
+                                {{ link.title | escape }}
+                              </a>
+                            </li>
+                          {%- endfor -%}
+                        </ul>
+                      {%- endif -%}
                     {%- endif -%}
                   {%- when 'brand_information' -%}
                     <div class="footer-block__brand-info">
@@ -141,26 +200,59 @@
                       {%- endif -%}
                     </div>
                   {%- when 'image' -%}
-                    <div class="footer-block__details-content footer-block-image {{ block.settings.alignment }}">
-                      {%- if block.settings.image != blank -%}
-                        {%- assign image_size_2x = block.settings.image_width | times: 2 | at_most: 5760 -%}
-                        <div
-                          class="footer-block__image-wrapper"
-                          style="max-width: min(100%, {{ block.settings.image_width }}px);"
-                        >
-                          <img
-                            srcset="{{ block.settings.image | image_url: width: block.settings.image_width }}, {{ block.settings.image | image_url: width: image_size_2x }} 2x"
-                            src="{{ block.settings.image | image_url: width: 760 }}"
-                            alt="{{ block.settings.image.alt | escape }}"
-                            loading="lazy"
-                            width="{{ block.settings.image.width }}"
-                            height="{{ block.settings.image.height }}"
-                          >
+                    {%- if block.settings.heading != blank -%}
+                      <details class="collapsible-content">
+                        <summary class="collapsible-content__toggle">
+                          <h2 class="footer-block__heading inline-richtext">{{- block.settings.heading -}}</h2>
+                          <span class="collapsible-content__icon">
+                            {{ 'icon-caret.svg' | inline_asset_content }}
+                          </span>
+                        </summary>
+                        <div class="collapsible-content__content">
+                          <div class="footer-block__details-content footer-block-image {{ block.settings.alignment }}">
+                            {%- if block.settings.image != blank -%}
+                              {%- assign image_size_2x = block.settings.image_width | times: 2 | at_most: 5760 -%}
+                              <div
+                                class="footer-block__image-wrapper"
+                                style="max-width: min(100%, {{ block.settings.image_width }}px);"
+                              >
+                                <img
+                                  srcset="{{ block.settings.image | image_url: width: block.settings.image_width }}, {{ block.settings.image | image_url: width: image_size_2x }} 2x"
+                                  src="{{ block.settings.image | image_url: width: 760 }}"
+                                  alt="{{ block.settings.image.alt | escape }}"
+                                  loading="lazy"
+                                  width="{{ block.settings.image.width }}"
+                                  height="{{ block.settings.image.height }}"
+                                >
+                              </div>
+                            {%- else -%}
+                              {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                            {%- endif -%}
+                          </div>
                         </div>
-                      {%- else -%}
-                        {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
-                      {%- endif -%}
-                    </div>
+                      </details>
+                    {%- else -%}
+                      <div class="footer-block__details-content footer-block-image {{ block.settings.alignment }}">
+                        {%- if block.settings.image != blank -%}
+                          {%- assign image_size_2x = block.settings.image_width | times: 2 | at_most: 5760 -%}
+                          <div
+                            class="footer-block__image-wrapper"
+                            style="max-width: min(100%, {{ block.settings.image_width }}px);"
+                          >
+                            <img
+                              srcset="{{ block.settings.image | image_url: width: block.settings.image_width }}, {{ block.settings.image | image_url: width: image_size_2x }} 2x"
+                              src="{{ block.settings.image | image_url: width: 760 }}"
+                              alt="{{ block.settings.image.alt | escape }}"
+                              loading="lazy"
+                              width="{{ block.settings.image.width }}"
+                              height="{{ block.settings.image.height }}"
+                            >
+                          </div>
+                        {%- else -%}
+                          {{ 'image' | placeholder_svg_tag: 'placeholder-svg placeholder' }}
+                        {%- endif -%}
+                      </div>
+                    {%- endif -%}
                 {%- endcase -%}
               </div>
             {%- endfor -%}
@@ -316,6 +408,27 @@
       </div>
     </div>
   </div>
+
+  <script>
+    function updateFooterCollapsibleState() {
+      const isDesktop = window.innerWidth >= 750;
+      const footerDetails = document.querySelectorAll('.footer .collapsible-content');
+
+      footerDetails.forEach(details => {
+        if (isDesktop) {
+          details.setAttribute('open', '');
+        } else {
+          details.removeAttribute('open');
+        }
+      });
+    }
+
+    // Run on page load
+    document.addEventListener('DOMContentLoaded', updateFooterCollapsibleState);
+
+    // Run on window resize
+    window.addEventListener('resize', updateFooterCollapsibleState);
+  </script>
 </footer>
 
 {% schema %}
