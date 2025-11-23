@@ -41,27 +41,41 @@
 
     {{ content_for_header }}
 
-   {%- assign fonts = 
-    '
-    heading:enable_custom_heading_font:heading_font_url:heading_font_family,
-    body:enable_custom_body_font:body_font_url:body_font_family
-    ' | split: ',' -%}
-
-    {% for font in fonts %}
-      {% assign parts = font | strip | split: ':' %}
-      {% assign enabled = settings[parts[1]] %}
-      {% assign font_url = settings[parts[2]] %}
-      {% assign font_family = settings[parts[3]] %}
-      
-      {% if enabled and font_url != blank %}
-        {% if font_url contains '.woff2' %}
+   {%- assign fonts = '
+      heading:enable_custom_heading_font:heading_font_url:heading_font_family,
+      body:enable_custom_body_font:body_font_url:body_font_family
+      '
+      | split: ','
+    -%}
+    {%- for font in fonts -%}
+      {%- assign parts = font | strip | split: ':' -%}
+      {%- assign enabled = settings[parts[1]] -%}
+      {%- assign font_url = settings[parts[2]] -%}
+      {%- assign font_family = settings[parts[3]] -%}
+      {%- if enabled and font_url != blank -%}
+        {%- if font_url contains '.woff2' -%}
           <style>
-          {% assign full_url = font_url | split:'?' | first %}
-          {% assign file_name = full_url | split:'/' | last %}
-          {% assign file_base = file_name | split:'.' | first %}
-          {% assign file_path = full_url | remove: file_name %}
-
-          {%- assign font_variants = "
+            {%- assign full_url = font_url | split:'?' | first -%}
+            {%- assign file_name = full_url | split:'/' | last -%}
+            {%- assign file_base = file_name | split:'.' | first -%}
+            {%- assign file_path = full_url | remove: file_name -%}
+            {%- assign parts_arr = file_base | split: '-' -%}
+            {%- assign prefix = '' -%}
+            {%- if parts_arr.size > 1 -%}
+              {%- for p in parts_arr -%}
+                {%- if forloop.last == false -%}
+                  {%- if prefix == '' -%}
+                    {%- assign prefix = p -%}
+                  {%- else -%}
+                    {%- assign prefix = prefix | append: '-' | append: p -%}
+                  {%- endif -%}
+                {%- endif -%}
+              {%- endfor -%}
+            {%- endif -%}
+            {%- if prefix == '' -%}
+              {%- assign prefix = file_base -%}
+            {%- endif -%}
+            {%- assign font_variants = "
             Thin:100:normal,ThinItalic:100:italic,
             ExtraLight:200:normal,ExtraLightItalic:200:italic,
             Light:300:normal,LightItalic:300:italic,
@@ -71,27 +85,40 @@
             Bold:700:normal,BoldItalic:700:italic,
             ExtraBold:800:normal,ExtraBoldItalic:800:italic,
             Black:900:normal,BlackItalic:900:italic
-          " | split: ',' -%}
-
-          {% for variant in font_variants %}
-            {% assign v = variant | strip | split: ':' %}
-            {% assign name = v[0] %}
-            {% assign weight = v[1] %}
-            {% assign style = v[2] %}
-
-            @font-face {
-              font-family: '{{ font_family }}';
-              src: url('{{ file_path }}{{ file_base }}.woff2') format('woff2');
-              font-weight: {{ weight }};
-              font-style: {{ style }};
-            }
-          {% endfor %}
-        </style>
-        {% else %}
-          <link href="{{ font_url }}" rel="stylesheet">
-        {% endif %}
-      {% endif %}
-    {% endfor %}
+            " | split: ',' -%}
+            {% for variant in font_variants -%}
+              {%- assign v = variant | strip | split: ':' -%}
+              {%- assign name = v[0] -%}
+              {%- assign weight = v[1] -%}
+              {%- assign style = v[2] -%}
+              {%- assign name_dash = name | replace: 'Italic', '-Italic' -%}
+              {%- assign name_camel = name -%}
+              {%- assign name_plain = name | replace: 'Italic', '' -%}
+              {%- assign cand1 = file_base | append: '.woff2' -%}
+              {%- assign cand2 = prefix | append: '-' | append: name_dash | append: '.woff2' -%}
+              {%- assign cand3 = prefix | append: '-' | append: name_camel | append: '.woff2' -%}
+              {%- assign cand4 = prefix | append: '-' | append: name_plain | append: '.woff2' -%}
+              {%- assign cand5 = prefix | append: '-Italic.woff2' -%}
+              {%- assign cand6 = prefix | append: '.woff2' -%}
+              {%- assign sources = cand1 | append: ',' | append: cand2 | append: ',' | append: cand3 | append: ',' | append: cand4 | append: ',' | append: cand5 | append: ',' | append: cand6 -%}
+              {%- assign sources_list = sources | split: ',' -%}
+              @font-face {
+                font-family: '{{ font_family }}';
+                src:
+                {%- for s in sources_list %}
+                  url('{{ file_path }}{{ s }}') format('woff2'){%- if forloop.last == false -%},{%- endif -%}
+                {% endfor -%};
+                font-weight: {{ weight }};
+                font-style: {{ style }};
+                font-display: swap;
+              }
+            {% endfor %}
+          </style>
+        {%- else -%}
+          <link href="{{ font_url | asset_url }}" rel="stylesheet">
+        {%- endif -%}
+      {%- endif -%}
+    {%- endfor -%}
 
     {%- liquid
       assign body_font_bold = settings.type_body_font | font_modify: 'weight', 'bold'
