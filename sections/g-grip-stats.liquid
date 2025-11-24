@@ -1,0 +1,233 @@
+{% schema %}
+{
+  "name": "G-Grip Stats Grid",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Main Phone Image"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Train Like You Play – Perform When It Counts."
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Sub-heading",
+      "default": "Immediate Insights at Your Fingertips"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "stat_block",
+      "name": "Stat Block",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "icon",
+          "label": "Icon Image"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Text Label",
+          "default": "Stat Label"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "G-Grip Stats Grid",
+      "blocks": [
+        {
+          "type": "stat_block",
+          "settings": { "label": "Swing Speed" }
+        },
+        {
+          "type": "stat_block",
+          "settings": { "label": "Tempo" }
+        },
+        {
+          "type": "stat_block",
+          "settings": { "label": "Face Angle" }
+        },
+        {
+          "type": "stat_block",
+          "settings": { "label": "Path" }
+        },
+        {
+          "type": "stat_block",
+          "settings": { "label": "Impact" }
+        },
+        {
+          "type": "stat_block",
+          "settings": { "label": "Consistency" }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+
+{% style %}
+  .section-{{ section.id }}-padding {
+    padding-top: 60px;
+    padding-bottom: 60px;
+    background-color: #000000;
+  }
+
+  .g-stats-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .g-stats-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .g-stats-layout {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+
+  .g-stats-left {
+    width: 100%;
+  }
+
+  .g-stats-right {
+    width: 100%;
+  }
+
+  @media screen and (min-width: 750px) {
+    .g-stats-left {
+      width: 40%;
+    }
+    .g-stats-right {
+      width: 60%;
+    }
+  }
+
+  .g-stats-phone-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px; /* Consistent with other images/cards if needed, though not explicitly asked for phone image, good practice */
+  }
+
+  .g-stats-subheading {
+    color: #FF5733;
+    font-size: 1.4rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+
+  .g-stats-heading {
+    color: #FFFFFF;
+    font-size: 3.2rem;
+    font-weight: bold;
+    margin-top: 0;
+    margin-bottom: 30px;
+    line-height: 1.2;
+  }
+
+  .g-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  @media screen and (min-width: 480px) {
+    .g-stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* Spec says 2 columns x 3 rows generic grid. Mobile might stack to 1, but let's keep it responsive. */
+
+  .g-stat-item {
+    background-color: #111111;
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 1px solid #333; /* Implicit separation border from global rules */
+  }
+
+  .g-stat-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  /* Placeholder for icon if missing */
+  .g-stat-icon-placeholder {
+    width: 24px;
+    height: 24px;
+    background-color: #333;
+    border-radius: 50%;
+  }
+
+  .g-stat-text {
+    color: #FFFFFF; /* Assuming white text for visibility on #111111 */
+    font-size: 1.6rem;
+    font-weight: 500;
+  }
+
+{% endstyle %}
+
+<div class="section-{{ section.id }}-padding">
+  <div class="g-stats-container">
+    <div class="g-stats-layout">
+      <div class="g-stats-left">
+        {% if section.settings.image != blank %}
+          {{ section.settings.image | image_url: width: 600 | image_tag:
+            loading: 'lazy',
+            class: 'g-stats-phone-image',
+            sizes: '(min-width: 750px) 40vw, 100vw'
+          }}
+        {% else %}
+          {{ 'product-1' | placeholder_svg_tag: 'g-stats-phone-image' }}
+        {% endif %}
+      </div>
+      <div class="g-stats-right">
+        {% if section.settings.subheading != blank %}
+          <div class="g-stats-subheading">{{ section.settings.subheading }}</div>
+        {% endif %}
+        {% if section.settings.heading != blank %}
+          <h2 class="g-stats-heading">{{ section.settings.heading }}</h2>
+        {% endif %}
+
+        <div class="g-stats-grid">
+          {% for block in section.blocks %}
+            <div class="g-stat-item" {{ block.shopify_attributes }}>
+              {% if block.settings.icon != blank %}
+                {{ block.settings.icon | image_url: width: 48 | image_tag:
+                  loading: 'lazy',
+                  class: 'g-stat-icon'
+                }}
+              {% else %}
+                <div class="g-stat-icon-placeholder"></div>
+              {% endif %}
+              {% if block.settings.label != blank %}
+                <span class="g-stat-text">{{ block.settings.label }}</span>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

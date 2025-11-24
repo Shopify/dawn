@@ -1,0 +1,136 @@
+{% schema %}
+{
+  "name": "G-Grip Film Strip",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "badge_image",
+      "label": "Badge Image"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "strip_image",
+      "name": "Strip Image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "G-Grip Film Strip",
+      "blocks": [
+        {
+          "type": "strip_image"
+        },
+        {
+          "type": "strip_image"
+        },
+        {
+          "type": "strip_image"
+        },
+        {
+          "type": "strip_image"
+        },
+        {
+          "type": "strip_image"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+
+{% style %}
+  .section-{{ section.id }}-container {
+    background-color: #000000;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    padding: 20px 0; /* Slight padding to avoid cutting off content if needed, but request implies full width strip */
+    padding: 0; /* Resetting padding to adhere strictly to "The Strip" description if needed, let's stick to tight */
+  }
+
+  .g-film-strip-wrapper {
+    display: flex;
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE 10+ */
+    width: 100%;
+  }
+
+  .g-film-strip-wrapper::-webkit-scrollbar {
+    display: none; /* WebKit */
+  }
+
+  .g-film-strip-item {
+    flex: 0 0 auto;
+    height: 300px;
+    aspect-ratio: 9 / 16;
+    position: relative;
+  }
+
+  /* Ensure image fills the item container properly while maintaining aspect ratio or covering */
+  .g-film-strip-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(100%);
+      display: block;
+  }
+
+  .g-badge-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    pointer-events: none; /* Allow clicking through if needed, though usually badges are just visual */
+    max-width: 200px; /* Reasonable default max width for a badge */
+    width: 30%; /* Responsive width */
+  }
+
+  .g-badge-image {
+      width: 100%;
+      height: auto;
+      display: block;
+  }
+
+  @media screen and (min-width: 750px) {
+    .g-film-strip-item {
+      height: 400px;
+    }
+  }
+{% endstyle %}
+
+<div class="section-{{ section.id }}-container">
+  {% if section.settings.badge_image != blank %}
+    <div class="g-badge-overlay">
+       {{ section.settings.badge_image | image_url: width: 400 | image_tag:
+         loading: 'lazy',
+         class: 'g-badge-image'
+       }}
+    </div>
+  {% endif %}
+
+  <div class="g-film-strip-wrapper">
+    {% for block in section.blocks %}
+      <div class="g-film-strip-item" {{ block.shopify_attributes }}>
+        {% if block.settings.image != blank %}
+          {{ block.settings.image | image_url: height: 800 | image_tag:
+            loading: 'lazy',
+            class: 'g-film-strip-image'
+          }}
+        {% else %}
+           {{ 'image' | placeholder_svg_tag: 'g-film-strip-image' }}
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
