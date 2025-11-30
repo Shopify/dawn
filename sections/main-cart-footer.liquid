@@ -51,7 +51,13 @@
                         <li class="discounts__discount discounts__discount--position">
                           {{- 'icon-discount.svg' | inline_asset_content -}}
                           {{ discount.title | escape }}
-                          (-{{ discount.total_allocated_amount | money }})
+                          (-
+                          {%- if settings.currency_code_enabled -%}
+                            {{ discount.total_allocated_amount | money_with_currency }}
+                          {%- else -%}
+                            {{ discount.total_allocated_amount | money_without_currency | prepend: cart.currency.symbol }}
+                          {%- endif -%}
+                          )
                         </li>
                       {%- endfor -%}
                     </ul>
@@ -60,7 +66,13 @@
 
                 <div class="totals">
                   <h2 class="totals__total">{{ 'sections.cart.estimated_total' | t }}</h2>
-                  <p class="totals__total-value">{{ cart.total_price | money_with_currency }}</p>
+                  <p class="totals__total-value">
+                    {% if settings.currency_code_enabled %}
+                      {{ cart.total_price | money_with_currency }}
+                    {% else %}
+                      {{ cart.total_price | money_without_currency | prepend: cart.currency.symbol }}
+                    {% endif %}
+                  </p>
                 </div>
 
                 <small class="tax-note caption-large rte">
