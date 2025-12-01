@@ -1330,3 +1330,39 @@ class CartPerformance {
     );
   }
 }
+// Wishlist Feature
+function loadWishlist() {
+  return JSON.parse(localStorage.getItem("wishlist")) || [];
+}
+
+function saveWishlist(list) {
+  localStorage.setItem("wishlist", JSON.stringify(list));
+}
+
+document.addEventListener("click", function (e) {
+  if (e.target.classList.contains("wishlist-btn")) {
+    const id = e.target.dataset.productId;
+    let wishlist = loadWishlist();
+
+    if (wishlist.includes(id)) {
+      wishlist = wishlist.filter(w => w != id);
+      e.target.classList.remove("active");
+    } else {
+      wishlist.push(id);
+      e.target.classList.add("active");
+    }
+
+    saveWishlist(wishlist);
+  }
+});
+
+// Highlight active items on page load
+document.addEventListener("DOMContentLoaded", () => {
+  const wishlist = loadWishlist();
+  document.querySelectorAll(".wishlist-btn").forEach(btn => {
+    if (wishlist.includes(btn.dataset.productId)) {
+      btn.classList.add("active");
+    }
+  });
+});
+
