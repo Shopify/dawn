@@ -1,1 +1,1 @@
-Dawn 15.4.1 introduces important bug fixes and improvements to ensure continued smooth functionality and performance.
+Dawn 15.4.1 introduces improvements for performance monitoring.
