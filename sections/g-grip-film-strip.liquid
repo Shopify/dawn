@@ -1,0 +1,158 @@
+{% schema %}
+{
+  "name": "G-Grip Film Strip",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "badge_image",
+      "label": "Badge Image"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "strip_image",
+      "name": "Strip Image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "G-Grip Film Strip",
+      "blocks": [
+        {
+          "type": "strip_image"
+        },
+        {
+          "type": "strip_image"
+        },
+        {
+          "type": "strip_image"
+        },
+        {
+          "type": "strip_image"
+        },
+        {
+          "type": "strip_image"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+
+{% style %}
+  .section-{{ section.id }}-container {
+    background-color: #000000;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  /* Container: display: flex; flex-wrap: nowrap; overflow-x: auto; width: 100%; */
+  .g-film-strip-wrapper {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: 100%;
+
+    /* Hide scrollbars for cleanliness */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    /* Ensure no gaps */
+    gap: 0;
+  }
+
+  .g-film-strip-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* The Images (Item Wrapper) */
+  .g-film-strip-item {
+    /* Crucial: Set flex: 0 0 auto; */
+    flex: 0 0 auto;
+
+    /* Mobile Height: 250px */
+    height: 250px;
+    width: auto;
+
+    position: relative;
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+
+  /* The Image itself */
+  .g-film-strip-image {
+      height: 100%;
+      width: auto; /* Allow width to adjust based on aspect ratio */
+      object-fit: cover; /* or contain, depending on if we want full bleed. Cover is safer for "strip" effect usually, but width: auto on container implies we want natural ratio. */
+      display: block;
+      filter: grayscale(100%);
+  }
+
+  /* If the image is loaded via lazy loading/sizes, width: auto might need max-width: none to prevent constraint */
+  .g-film-strip-image {
+      max-width: none;
+      opacity: 0.6; /* Dimmed background */
+  }
+
+  /* Badge: Ensure the badge overlay is position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); */
+  .g-badge-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    pointer-events: none;
+    max-width: 150px;
+    width: 30%;
+  }
+
+  .g-badge-image {
+      width: 100%;
+      height: auto;
+      display: block;
+  }
+
+  /* Desktop Height: 400px */
+  @media screen and (min-width: 750px) {
+    .g-film-strip-item {
+      height: 400px;
+    }
+  }
+{% endstyle %}
+
+<div class="section-{{ section.id }}-container">
+  {% if section.settings.badge_image != blank %}
+    <div class="g-badge-overlay">
+       {{ section.settings.badge_image | image_url: width: 400 | image_tag:
+         loading: 'lazy',
+         class: 'g-badge-image'
+       }}
+    </div>
+  {% endif %}
+
+  <div class="g-film-strip-wrapper">
+    {% for block in section.blocks %}
+      <div class="g-film-strip-item" {{ block.shopify_attributes }}>
+        {% if block.settings.image != blank %}
+          {{ block.settings.image | image_url: height: 800 | image_tag:
+            loading: 'lazy',
+            class: 'g-film-strip-image'
+          }}
+        {% else %}
+           {{ 'image' | placeholder_svg_tag: 'g-film-strip-image' }}
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</div>

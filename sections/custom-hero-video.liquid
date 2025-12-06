@@ -1,0 +1,184 @@
+{% comment %}
+  File: sections/hero-video-custom.liquid
+  Purpose: Full screen background video with centered text, strictly following SGLAB design system.
+{% endcomment %}
+
+<style>
+  #shopify-section-{{ section.id }} .hero-video-section {
+    position: relative;
+    width: 100%;
+    height: 100vh; /* Forces full screen height */
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #ffffff;
+    background-color: #000000; /* Fallback for True Black */
+  }
+
+  #shopify-section-{{ section.id }} .hero-video-bg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: 1;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+  }
+
+  #shopify-section-{{ section.id }} .hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, {{ section.settings.overlay_opacity | divided_by: 100.0 }});
+    z-index: 2;
+  }
+
+  #shopify-section-{{ section.id }} .hero-content {
+    position: relative;
+    z-index: 3;
+    max-width: 800px;
+    padding: 20px;
+  }
+
+  #shopify-section-{{ section.id }} .hero-content h1 {
+    font-size: 60px;
+    margin-bottom: 20px;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: bold;
+    line-height: 1.2;
+  }
+
+  #shopify-section-{{ section.id }} .hero-content p {
+    font-size: 24px;
+    color: #ffffff;
+    margin-bottom: 30px;
+    line-height: 1.5;
+  }
+
+  #shopify-section-{{ section.id }} .hero-btn {
+    display: inline-block;
+    padding: 15px 40px;
+    background: #ff7700; /* Primary Accent Orange */
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 5px;
+    text-transform: uppercase;
+    transition: background 0.3s ease, transform 0.2s ease;
+    border: none;
+    cursor: pointer;
+  }
+
+  #shopify-section-{{ section.id }} .hero-btn:hover {
+    background: #e66b00; /* Slightly darker shade for hover */
+    transform: translateY(-2px);
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    #shopify-section-{{ section.id }} .hero-content h1 { font-size: 36px; }
+    #shopify-section-{{ section.id }} .hero-content p { font-size: 18px; }
+    #shopify-section-{{ section.id }} .hero-btn { padding: 12px 30px; font-size: 14px; }
+  }
+</style>
+
+<div class="hero-video-section">
+  <!-- Video Background -->
+  {% if section.settings.video_url != blank %}
+    <video class="hero-video-bg" autoplay muted loop playsinline poster="{{ section.settings.fallback_image | image_url: width: 1920 }}">
+      <source src="{{ section.settings.video_url }}" type="video/mp4">
+    </video>
+  {% elsif section.settings.fallback_image != blank %}
+     <img src="{{ section.settings.fallback_image | image_url: width: 1920 }}" 
+          class="hero-video-bg" 
+          alt="{{ section.settings.heading | escape }}"
+          loading="eager" 
+          width="1920" 
+          height="1080">
+  {% endif %}
+
+  <!-- Dark Overlay -->
+  <div class="hero-overlay"></div>
+
+  <!-- Text Content -->
+  <div class="hero-content">
+    {% if section.settings.heading != blank %}
+      <h1>{{ section.settings.heading }}</h1>
+    {% endif %}
+    
+    {% if section.settings.subheading != blank %}
+      <p>{{ section.settings.subheading }}</p>
+    {% endif %}
+    
+    {% if section.settings.btn_text != blank and section.settings.btn_link != blank %}
+      <a href="{{ section.settings.btn_link }}" class="hero-btn">{{ section.settings.btn_text }}</a>
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Custom Hero Video",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "The World's First Intelligent Golf Club."
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Master Your Swing, Own Your Game"
+    },
+    {
+      "type": "text",
+      "id": "video_url",
+      "label": "Video URL (Paste from Content > Files)",
+      "info": "Upload .mp4 to Content > Files and paste link here."
+    },
+    {
+      "type": "image_picker",
+      "id": "fallback_image",
+      "label": "Fallback Image / Poster",
+      "info": "Shown while video loads or if no video is provided."
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 90,
+      "step": 10,
+      "unit": "%",
+      "label": "Overlay Opacity",
+      "default": 30
+    },
+    {
+      "type": "text",
+      "id": "btn_text",
+      "label": "Button Text",
+      "default": "Pre-Order Now"
+    },
+    {
+      "type": "url",
+      "id": "btn_link",
+      "label": "Button Link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom Hero Video"
+    }
+  ]
+}
+{% endschema %}
