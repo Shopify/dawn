@@ -1,0 +1,124 @@
+{% comment %}
+  Cyber sale popup announcing 20% off. Appears once per session.
+{% endcomment %}
+
+{%- if section.settings.enable_popup -%}
+  <div class="cyber-popup" id="cyber-popup-{{ section.id }}" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="cyber-popup__overlay" data-cyber-popup-close></div>
+    <div class="cyber-popup__dialog" tabindex="-1">
+      <button type="button" class="cyber-popup__close" data-cyber-popup-close aria-label="{{ 'general.close' | t }}">
+        &times;
+      </button>
+      {%- if section.settings.badge_text != blank -%}
+        <p class="cyber-popup__badge">{{ section.settings.badge_text }}</p>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="cyber-popup__heading">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+      {%- if section.settings.message != blank -%}
+        <div class="cyber-popup__message rte">{{ section.settings.message }}</div>
+      {%- endif -%}
+      {%- if section.settings.button_label != blank -%}
+        <a
+          {% if section.settings.button_link == blank %}
+            role="link" aria-disabled="true"
+          {% else %}
+            href="{{ section.settings.button_link }}"
+          {% endif %}
+          class="button button--primary cyber-popup__cta"
+        >
+          {{ section.settings.button_label | escape }}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var popupId = 'cyber-popup-{{ section.id }}';
+      var storageKey = 'getch_cyber_popup_{{ section.settings.popup_identifier | default: '2024' }}';
+      var popup = document.getElementById(popupId);
+      if (!popup) return;
+
+      var hasShown = sessionStorage.getItem(storageKey);
+      if (!hasShown) {
+        window.setTimeout(function () {
+          popup.setAttribute('aria-hidden', 'false');
+          popup.classList.add('is-visible');
+          sessionStorage.setItem(storageKey, 'true');
+        }, {{ section.settings.delay_ms | default: 500 }});
+      }
+
+      popup.addEventListener('click', function (event) {
+        if (event.target.matches('[data-cyber-popup-close]')) {
+          popup.classList.remove('is-visible');
+          popup.setAttribute('aria-hidden', 'true');
+        }
+      });
+    });
+  </script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Cyber promo popup",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_popup",
+      "label": "Enable popup",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Badge text",
+      "default": "CYBER EN CHILE"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "20% OFF en GETCH® por el Cyber"
+    },
+    {
+      "type": "richtext",
+      "id": "message",
+      "label": "Message",
+      "default": "<p>Aprovecha el 20% de descuento en toda la tienda durante el Cyber en Chile. Cupos limitados.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Ver ofertas"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link",
+      "default": "/collections/all"
+    },
+    {
+      "type": "text",
+      "id": "popup_identifier",
+      "label": "Popup identifier",
+      "default": "cyber-2024",
+      "info": "Used for session storage so the popup only appears once per visit. Change this value to show again."
+    },
+    {
+      "type": "number",
+      "id": "delay_ms",
+      "label": "Delay before showing (ms)",
+      "default": 800
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cyber promo popup"
+    }
+  ]
+}
+{% endschema %}
