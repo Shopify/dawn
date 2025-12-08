@@ -4,6 +4,14 @@ if (!customElements.get('product-modal')) {
     class ProductModal extends ModalDialog {
       constructor() {
         super();
+
+        // ✅ FIX: Attach click event listener to media toggles
+        document.querySelectorAll('.product__media-toggle').forEach((toggle) => {
+          toggle.addEventListener('click', (event) => {
+            event.preventDefault();
+            this.show(toggle); // open modal with clicked element
+          });
+        });
       }
 
       hide() {
@@ -40,3 +48,4 @@ if (!customElements.get('product-modal')) {
     }
   );
 }
+
