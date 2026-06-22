@@ -1,0 +1,30 @@
+{% comment %}
+  Get Yours — Sale Badge (Discount Percentage)
+  Renders a discount percentage badge when compare_at_price > price.
+
+  Accepts:
+  - product: {Object} Product Liquid object (required)
+  - variant: {Object} Variant object (optional, defaults to selected_or_first_available_variant)
+  - position_class: {String} Additional CSS classes for positioning (optional)
+
+  Usage:
+  {% render 'getyours-sale-badge', product: card_product %}
+{% endcomment %}
+
+{%- liquid
+  assign target_variant = variant | default: product.selected_or_first_available_variant
+  assign compare_at = target_variant.compare_at_price
+  assign current_price = target_variant.price
+  assign discount_percent = 0
+
+  if compare_at > current_price
+    assign discount_amount = compare_at | minus: current_price
+    assign discount_percent = discount_amount | times: 100 | divided_by: compare_at
+  endif
+-%}
+
+{%- if discount_percent > 0 -%}
+  <span class="gy-sale-badge {{ position_class }}">
+    -{{ discount_percent }}%
+  </span>
+{%- endif -%}
