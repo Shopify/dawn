@@ -1,0 +1,128 @@
+{% comment %}
+  Renders a cart disclosure indicator when the product has a disclosure configured for the cart surface.
+
+  Accepts:
+  - product: {Object} Product object
+  - modal_id: {String} Unique modal id for this cart line
+{% endcomment %}
+
+{%- liquid
+  assign disclosures = product.metafields.shopify.disclosure.value
+  assign cart_disclosures_count = 0
+
+  if disclosures != blank
+    for disclosure in disclosures
+      assign surfaces = disclosure.display_preferences.value.surfaces
+
+      if surfaces contains 'cart'
+        assign cart_disclosures_count = cart_disclosures_count | plus: 1
+      endif
+    endfor
+  endif
+-%}
+
+{%- if cart_disclosures_count > 0 and modal_id != blank -%}
+  {%- capture cart_disclosure_rows -%}
+    {%- for disclosure in disclosures -%}
+      {%- assign surfaces = disclosure.display_preferences.value.surfaces -%}
+
+      {%- if surfaces contains 'cart' -%}
+        {%- assign title = disclosure.title.value -%}
+        {%- assign symbol = disclosure.symbol.value -%}
+
+        <span class="cart-item__disclosure-tooltip-row">
+          <span class="cart-item__disclosure-tooltip-symbol-slot">
+            {%- if symbol != blank -%}
+              <img
+                src="{{ symbol | image_url: width: 32 }}"
+                alt=""
+                class="cart-item__disclosure-tooltip-symbol"
+                width="40"
+                height="31"
+                loading="lazy"
+              >
+            {%- endif -%}
+          </span>
+          <span class="cart-item__disclosure-tooltip-title">
+            {{- title | escape -}}
+          </span>
+        </span>
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+
+  <button
+    type="button"
+    class="cart-item__disclosure"
+    aria-controls="{{ modal_id }}-dialog"
+    aria-expanded="false"
+    aria-haspopup="dialog"
+    aria-label="{{ 'sections.cart.product_disclosure' | t }}"
+  >
+    <span class="cart-item__disclosure-indicator svg-wrapper" aria-hidden="true">
+      {{- 'icon-warning.svg' | inline_asset_content -}}
+    </span>
+    <span class="cart-item__disclosure-tooltip" aria-hidden="true">
+      {{- cart_disclosure_rows -}}
+    </span>
+  </button>
+
+  <cart-disclosure-modal id="{{ modal_id }}" class="cart-disclosure-modal">
+    <div
+      id="{{ modal_id }}-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="{{ modal_id }}-title"
+      class="cart-disclosure-modal__content"
+      tabindex="-1"
+    >
+      <button
+        type="button"
+        class="cart-disclosure-modal__close"
+        data-cart-disclosure-close
+        aria-label="{{ 'accessibility.close' | t }}"
+      >
+        {{- 'icon-close.svg' | inline_asset_content -}}
+      </button>
+      <h2 id="{{ modal_id }}-title" class="cart-disclosure-modal__title">
+        {{- 'sections.cart.product_disclosures' | t -}}
+      </h2>
+      <div class="cart-disclosure-modal__items">
+        {%- for disclosure in disclosures -%}
+          {%- assign surfaces = disclosure.display_preferences.value.surfaces -%}
+
+          {%- if surfaces contains 'cart' -%}
+            {%- assign title = disclosure.title.value -%}
+            {%- assign symbol = disclosure.symbol.value -%}
+            {%- assign content = disclosure.content -%}
+
+            <div class="cart-disclosure-modal__item">
+              {%- if title != blank or symbol != blank -%}
+                <div class="cart-disclosure-modal__item-header">
+                  <span class="cart-disclosure-modal__symbol-slot">
+                    {%- if symbol != blank -%}
+                      <img
+                        src="{{ symbol | image_url: width: 40 }}"
+                        alt=""
+                        class="cart-disclosure-modal__symbol"
+                        width="40"
+                        height="31"
+                        loading="lazy"
+                      >
+                    {%- endif -%}
+                  </span>
+                  {%- if title != blank -%}
+                    <h3 class="cart-disclosure-modal__item-title">{{ title | escape }}</h3>
+                  {%- endif -%}
+                </div>
+              {%- endif -%}
+              <div class="cart-disclosure-modal__item-content">
+                {{ content | metafield_tag }}
+              </div>
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  </cart-disclosure-modal>
+{%- endif -%}
