@@ -24,7 +24,7 @@ If you received an order number or payment reference and need help, contact Cust
 
 ## Refunds
 
-Approved refunds are handled through the original payment method where possible, subject to the final Returns/Refund Policy and payment-provider processes.
+Approved refunds are handled through the original payment method where possible, subject to the final Returns & Refunds information and policy and payment-provider processes.
 
 [CONFIRM BEFORE LAUNCH] Confirm refund process.
 

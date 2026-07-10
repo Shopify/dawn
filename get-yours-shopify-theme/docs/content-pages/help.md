@@ -16,7 +16,7 @@ Get Yours brings together practical finds for home, desk, travel and daily routi
 2. Review the quantity, delivery details and total at checkout.
 3. Enter an accurate delivery address and contact information.
 4. Choose an available payment method and complete checkout.
-5. Look out for your order confirmation email.
+5. You should receive an order confirmation email after checkout.
 
 ## Payment
 
@@ -37,6 +37,8 @@ Get Yours is launching with delivery within South Africa.
 
 [CONFIRM BEFORE LAUNCH] Confirm delivery estimates.
 
+[CONFIRM BEFORE LAUNCH] Confirm tracking process.
+
 ## Returns & Refunds
 
 If there is a problem with an item, contact us first so we can review the order and the next steps.
@@ -56,4 +58,4 @@ For help with an order, delivery, payment or product issue, contact customer sup
 - FAQ: `/pages/faq`
 - Contact: `/pages/contact`
 
-[CONFIRM BEFORE LAUNCH] Confirm the support email address.
+[CONFIRM BEFORE LAUNCH] Confirm support email address.

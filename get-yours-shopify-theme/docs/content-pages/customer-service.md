@@ -28,7 +28,7 @@ Contact us before sending an item back or starting a refund request. We will rev
 
 ## Contact Details
 
-- Support email: [CONFIRM BEFORE LAUNCH] Confirm the support email address.
+- Support email: [CONFIRM BEFORE LAUNCH] Confirm support email address.
 - Support hours: [CONFIRM BEFORE LAUNCH] Confirm support hours.
 - Contact form: `/pages/contact`
 

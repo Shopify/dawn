@@ -4,7 +4,7 @@ The existing contact page should remain simple: name, email, phone number, messa
 
 ## Before Publishing
 
-- Add the approved support email: [CONFIRM BEFORE LAUNCH] Confirm the support email address.
+- Add the approved support email: [CONFIRM BEFORE LAUNCH] Confirm support email address.
 - Add approved support hours: [CONFIRM BEFORE LAUNCH] Confirm support hours.
 - Confirm the Shopify contact-form recipient inbox is monitored.
 - Add calm response-time wording only after the operational target is confirmed: [CONFIRM BEFORE LAUNCH] Confirm response-time wording.
