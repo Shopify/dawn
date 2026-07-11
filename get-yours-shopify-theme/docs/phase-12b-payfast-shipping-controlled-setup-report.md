@@ -6,7 +6,7 @@ Phase 12B began with a controlled inspection attempt on 2026-07-10 at approximat
 
 The initial inspection could not reach the authenticated Shopify Admin or PayFast configuration surfaces. The Shopify Admin browser session presented the Shopify login page, the Shopify CLI shipping-scope authorization was not completed, and the public storefront redirected to its password page. After the merchant signed in, the continuation inspected Shopify Payments, Shipping and Delivery, and Markets without changing them. The PayFast dashboard remained signed out.
 
-Current outcome after Phase 12E: **Exactly one PayFast sandbox payment was completed successfully with test mode enabled. PayFast confirmed the simulated R179 payment. Browser security blocked the Shopify return page and Admin immediately afterward, so Shopify order creation, notifications, duplicate checking, and refund eligibility still require read-only verification. No second payment was attempted.**
+Current outcome after Phase 12F: **Shopify order #1001 was created from the single Phase 12E PayFast sandbox payment. Shopify marks it as a test order, Paid, Fulfilled, Complete, and Archived. One successful PayFast Sale transaction exists and no duplicate order was found. Automatic fulfilment, archiving, and shipping-confirmation generation conflict with the intended manual CJ fulfilment workflow and are launch blockers.**
 
 No sensitive credentials, payment details, customer credentials, API keys, passwords, or provider secrets were requested, entered, captured, or stored.
 
@@ -137,6 +137,8 @@ Phase 12D was performed on 2026-07-11 as read-only diagnostics plus one controll
 
 Phase 12E was performed on 2026-07-11 with explicit merchant approval for exactly one successful PayFast sandbox-only payment. A fresh cart and synthetic customer details were used. PayFast test mode was verified immediately before checkout and remained enabled.
 
+> Historical verification note: the Shopify-side items marked pending in this section were resolved during Phase 12F below.
+
 The sandbox payment completed successfully. Immediately afterward, the browser security policy blocked access to both the Shopify return page and Shopify Admin. The blocked access was not bypassed, and no alternate browser or API was used to reproduce the restricted verification. Shopify-side order validation therefore remains pending.
 
 | Validation area | Result | Shopify state | PayFast state | Evidence | Follow-up |
@@ -184,6 +186,60 @@ The sandbox payment completed successfully. Immediately afterward, the browser s
 - No shipping rate, delivery estimate, R500 announcement, market, domain, checkout setting, product, or theme file was changed.
 - No page was published, no menu was wired, and Contact and policies were unchanged.
 - Shopify-side order, notification, duplicate, and refund-eligibility checks remain pending because browser access was blocked after payment success.
+
+## Phase 12F Shopify Post-Payment Verification
+
+Phase 12F was completed on 2026-07-11 as read-only Shopify Admin inspection of the single Phase 12E PayFast sandbox payment. No order, transaction, fulfilment, notification, refund, checkout, or configuration action was performed.
+
+| Verification area | Result | Shopify evidence | PayFast relationship | Follow-up |
+| --- | --- | --- | --- | --- |
+| Order located | Passed | Exactly one matching order was present: `#1001`, internal order ID `7576446042215`, created 11 July 2026 at 16:30 SAST from Online Store. | Timeline links the order to the single Phase 12E PayFast payment. | None. |
+| Test/sandbox status | Passed | Order banner states `Test order` and `Your payment gateway is in test mode.` Transaction detail shows `Test: True`. | Confirms the order is simulated and no live money moved. | Keep test mode enabled for later approved tests. |
+| Financial status | Paid | Order header and payment summary both show Paid. | Shopify recorded one successful PayFast Sale transaction for R179. | None for this order. |
+| Fulfilment status | **Unexpected: Fulfilled, Complete, and Archived** | Timeline states Shopify marked one item fulfilled from Shop location, then archived the order. A shipping confirmation event was generated. | Not caused by a second PayFast transaction. | Treat automatic fulfilment/archiving as a launch blocker. Inspect the relevant Shopify order-processing setting in a separately approved read-only phase before changing anything. |
+| Order values | Matched | Subtotal R79; Standard shipping R100; included VAT/tax display R10.30; total and paid amount R179 ZAR. | PayFast transaction amount matches R179. | None. |
+| Item and quantity | Matched | One Desk Cable Organiser, quantity 1, unit and line total R79. | Matches the Phase 12E checkout. | None. |
+| Payment transaction | Passed | One transaction: Type Sale, Gateway Payfast, Status Success, Test True, created 16:29 SAST, amount R179 ZAR. Safe shortened reference: `...ydev`. | Shopify received and acknowledged PayFast's successful sandbox notification. | Do not expose or store the full provider reference. |
+| Customer order confirmation | Generated/sent by Shopify; delivery unverified | Timeline states the order-confirmation email was sent at 16:30. The reserved synthetic address was not opened or checked. | Generated after PayFast success acknowledgement. | Treat actual mailbox delivery as unverified. Do not resend. |
+| Customer shipping confirmation | **Generated automatically** | Timeline states a shipping-confirmation email was sent at 16:30 immediately after automatic fulfilment. | Not a PayFast function. | This wording can imply shipment before manual supplier fulfilment; resolve the auto-fulfilment workflow before launch. Do not resend. |
+| Merchant notification | Unverified | The order appears in Shopify Admin, but no safe merchant email-delivery status was exposed in the order timeline. Alerts were not opened because doing so could change read state. | Not a PayFast transaction-status issue. | Verify merchant notification delivery separately without resending. |
+| Duplicate-order check | Passed | Orders list contained one matching R179 order. The order has one matching PayFast transaction. | No duplicate paid or pending PayFast transaction was visible. | Do not repeat payment. |
+| Abandoned checkout relationship | Separate | The earlier Phase 12D R864 abandoned checkout remains listed as Not recovered. The completed Phase 12E checkout is linked to order #1001 and is not listed as a second abandoned checkout. | Confirms the successful sandbox payment produced a distinct order. | Do not recover or edit the abandoned checkout. |
+| Refund eligibility | Eligible through Shopify to original PayFast payment; no refund issued | Refund screen shows Original payment, provider Payfast, and R179 available for refund. Refund amount remained R0 and the final action was disabled. | Indicates Shopify can initiate the sandbox refund against PayFast. | Test only in the separately approved sandbox-refund phase. |
+| Business-account confirmation requirement | Still unresolved | Shopify provider is connected to Get Yours. | The visible PayFast business-facing account name differs from Get Yours. | Merchant must confirm the intended legal merchant entity and formal PayFast verification status before live activation. Do not reconnect the account. |
+
+### Phase 12F Order Summary
+
+- Shopify order: `#1001`.
+- Safe Shopify order ID: `7576446042215`.
+- Created: 11 July 2026 at 16:30 SAST.
+- Test indicator: true.
+- Financial status: Paid.
+- Fulfilment status: Fulfilled; order also marked Complete and Archived.
+- Gateway: Payfast.
+- Transaction: one successful test Sale for R179 ZAR, created at 16:29 SAST.
+- Subtotal: R79.
+- Shipping: Standard, R100.
+- Tax display: R10.30 included, shown as VAT 15%.
+- Grand total: R179 ZAR.
+- Product: Desk Cable Organiser, quantity 1.
+- Duplicate matching order: none.
+- Earlier abandoned checkout: separate, R864, Not recovered.
+- Refund availability: R179 to Original payment through Payfast; no refund started or issued.
+
+### Phase 12F Strict No-Change Confirmation
+
+- The payment was not repeated and no second order was created.
+- Order #1001 was not edited, cancelled, archived, deleted, tagged, or annotated by this inspection.
+- No payment was captured or marked manually.
+- No refund amount was entered and no refund was issued.
+- No fulfilment, delivery, tracking, or supplier action was performed.
+- No customer or merchant notification was resent or opened for resend.
+- The abandoned checkout was not recovered, edited, or deleted.
+- No PayFast, PayPal, Test Payment Gateway, shipping, tax, market, product, customer, domain, checkout, or store setting was changed.
+- No theme, page, menu, Contact, or policy change was made.
+- No CJ supplier order was created.
+- Fulfilment, archiving, and the shipping-confirmation event were generated automatically by Shopify at order creation; they were observed only and not changed.
 
 ## Part 1: PayFast Setup And Testing — Historical Phase 12B Snapshot
 
@@ -308,6 +364,9 @@ The PayFast rows below record the earlier Phase 12B state. Use the Phase 12C val
 - Reproduced the handoff once in Phase 12D; Shopify redirected successfully to PayFast's official sandbox with no console error.
 - Confirmed Orders remained empty. One abandoned checkout was generated automatically because the sandbox payment was intentionally left incomplete.
 - Completed exactly one PayFast sandbox payment in Phase 12E for R179; the earlier handoff error did not recur.
+- Verified Shopify order #1001 in Phase 12F: test order, Paid, one successful PayFast Sale transaction, and no duplicate order.
+- Confirmed Shopify automatically marked the test order Fulfilled, Complete, and Archived and generated a shipping-confirmation event.
+- Confirmed R179 remains available for refund to the original PayFast payment without entering an amount or issuing a refund.
 - Observed Standard at R100 and Express at R150 for a R79 subtotal.
 - Observed Standard still at R100 for a R715 subtotal and free for a R864 subtotal.
 - Confirmed the R500 announcement is not aligned with checkout behaviour.
@@ -315,25 +374,24 @@ The PayFast rows below record the earlier Phase 12B state. Use the Phase 12C val
 
 ## Tests Not Completed
 
-- Read-only confirmation of the Phase 12E Shopify order number, financial status, fulfilment status, notifications, duplicate-order state, and refund eligibility.
 - Official PayFast simulated failed-payment flow.
 - Provider-level cancellation flow after a successful redirect.
-- Customer confirmation email and merchant notification checks.
+- Actual customer mailbox delivery and merchant new-order email delivery verification.
 - Test-mode refund flow.
 - Checkout tests for a second South African province and an unsupported international address.
 - 360 px and 430 px payment-page rechecks after the handoff issue is resolved.
 
 ## Recommended Next Approval
 
-Exactly one PayFast sandbox payment has now completed successfully. Do not repeat the payment.
+Exactly one PayFast sandbox order has been created and verified. Do not repeat the successful payment.
 
-The immediate next approval should be read-only Shopify Admin verification of the resulting Phase 12E order after browser access is restored. Confirm the order number, financial and fulfilment status, total, provider, notification events, duplicate-order state, and refund eligibility without changing the order or issuing a refund.
+Before live launch, prioritize a separately approved read-only inspection of why Shopify automatically fulfilled and archived order #1001 and generated a shipping-confirmation email. This conflicts with the intended manual CJ fulfilment workflow. Any configuration correction must wait for explicit approval after the responsible setting is identified.
 
-After that verification succeeds, the next separately approved phase may test the official failed-payment, provider-cancellation, and sandbox-refund workflows. Shipping-rate and R500-announcement decisions remain independent.
+The next separately approved payment phase may then test the official failed-payment, provider-cancellation, and sandbox-refund workflows. The refund path is visible in Shopify and shows R179 available to the original PayFast payment, but no refund should be issued without that approval. Shipping-rate and R500-announcement decisions remain independent.
 
 Two independent launch decisions also remain required:
 
 1. Confirm whether the current `Standard` R100 and `Express` R150 rates and displayed delivery estimates are operationally approved.
 2. Approve free Standard shipping over R500 after margin review, or approve a later change/removal of the R500 announcement. Checkout currently charges Standard at R715 and makes it free at R864, consistent with the configured R770 threshold rather than the advertised R500 threshold.
 
-After the Phase 12E order is verified, continue with the official failed-payment, cancellation, email/notification, and refund tests in PayFast test mode. Page publication, menu wiring, Contact changes, policy changes, CJ fulfilment, and theme changes remain excluded.
+After the automatic-fulfilment cause is understood, continue only under separate approval with the official failed-payment, cancellation, notification, and sandbox-refund tests. Page publication, menu wiring, Contact changes, policy changes, CJ fulfilment, and theme changes remain excluded.
