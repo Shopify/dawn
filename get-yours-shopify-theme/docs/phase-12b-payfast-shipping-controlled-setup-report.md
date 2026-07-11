@@ -6,11 +6,13 @@ Phase 12B began with a controlled inspection attempt on 2026-07-10 at approximat
 
 The initial inspection could not reach the authenticated Shopify Admin or PayFast configuration surfaces. The Shopify Admin browser session presented the Shopify login page, the Shopify CLI shipping-scope authorization was not completed, and the public storefront redirected to its password page. After the merchant signed in, the continuation inspected Shopify Payments, Shipping and Delivery, and Markets without changing them. The PayFast dashboard remained signed out.
 
-Current outcome after continuation: **Shopify Admin inspection completed; PayFast dashboard inspection remains authentication-blocked**.
+Current outcome after Phase 12C: **PayFast is active, connected to the Get Yours store, and in test mode. Checkout displays PayFast, but the attempted test payment failed before redirecting to PayFast, so no test transaction or order was created.**
 
 No sensitive credentials, payment details, customer credentials, API keys, passwords, or provider secrets were requested, entered, captured, or stored.
 
 ## Authenticated Inspection — 2026-07-11
+
+> Historical note: this inspection records the Shopify configuration visible at approximately 04:45 SAST, before the later Phase 12C verification. The current PayFast state is documented in the Phase 12C section below and supersedes the earlier inactive-provider findings.
 
 Authenticated Shopify Admin inspection was completed on 2026-07-11 at approximately 04:45 SAST. The PayFast dashboard at `my.payfast.io` presented its login page and was not authenticated, so private PayFast merchant verification, settlement, fee, and refund details were not inspected.
 
@@ -28,7 +30,65 @@ Authenticated Shopify Admin inspection was completed on 2026-07-11 at approximat
 | International rates | Configured but not market-enabled | International zone covers 28 countries with an R310 rate. Shopify says countries must be added to a market; Markets shows only South Africa active. | Review required; no customer-enabled international market is currently active. | Approval required before removing the dormant rate or activating any international market. |
 | R500 announcement alignment | **Not aligned** | Announcement promises free standard shipping over R500; configured Standard becomes free only from R770. | Yes, before launch. | Approve either a tested R500 threshold or a later announcement change. No change was made here. |
 
-## Part 1: PayFast Setup And Testing
+## Phase 12C PayFast Test-Mode Validation
+
+Phase 12C was performed on 2026-07-11 using the authenticated internal storefront route and PayFast test mode only. No live payment credentials or real financial details were used.
+
+### Current PayFast State
+
+- Status: **Active**.
+- Store connection: **Connected to the Get Yours Shopify store**.
+- Mode: **Test mode enabled**. Shopify states that all transactions are simulated and customers cannot make real purchases through PayFast while this mode is active.
+- Enabled PayFast methods: Visa, Mastercard, PayFast Instant EFT, Zapper, and Payflex.
+- Disabled PayFast method: Mobicred.
+- PayPal remains active as a separate provider and was not changed.
+- Shopify's separate Test Payment Gateway also remains visible and was not changed.
+
+### Validation Results
+
+| Test | Result | Shopify state | PayFast state | Evidence | Follow-up |
+| --- | --- | --- | --- | --- | --- |
+| Checkout provider visibility | Passed | Checkout displayed Test Payment Gateway, PayPal, and `Payfast, zapper and payflex` as separate options. | PayFast option showed Visa, Mastercard, Instant EFT, and two additional enabled methods; Mobicred was absent. | Observed at checkout with synthetic test customer details. | No presentation change required. Review whether the separate Test Payment Gateway should remain active before launch. |
+| Successful test payment | Blocked / failed before provider handoff | Shopify displayed `There was an issue processing your payment. Try again or use a different payment method.` No order was created. | No redirect occurred and no PayFast test transaction was created. | Orders and abandoned checkouts both remained empty after the attempt. | Investigate the PayFast test-mode handoff and connection without running a live transaction. |
+| Cancelled checkout | Partial verification | Checkout was exited after the failed handoff. No order, abandoned checkout, paid state, or cancellation email was recorded. | No PayFast transaction existed to cancel. | Shopify Orders and Abandoned checkouts showed no records. | Repeat a provider-level cancellation test only after the handoff works. |
+| Failed payment | Provider failure procedure not reached | The checkout showed an unexpected processing error and did not create a paid order. | No official PayFast simulated failure screen or transaction was reached. | Failure occurred before redirect to PayFast. | After handoff repair, use only PayFast's official test-mode failure procedure. |
+| Customer confirmation email | Not generated / not verifiable | No Shopify order was created. | No PayFast transaction was created. | Synthetic checkout email was used; no order confirmation event existed. | Verify after a successful simulated order. |
+| Merchant notification | Not triggered | No order or payment notification event was created. | No provider transaction existed. | Shopify Orders remained empty. | Verify after a successful simulated order. |
+| Refund test | Not available | No successful test order existed to refund. | No PayFast test transaction existed. | Refund controls could not be evaluated against an order. | Inspect and test only after a successful test-mode payment. Do not substitute a live refund. |
+| Desktop presentation | Passed | Provider options, explanatory text, and shipping rates were readable at desktop width. | PayFast branding and enabled-method summary were legible. | Visual checkout inspection. | None identified. |
+| Mobile presentation | Passed | Payment choices and content remained readable at 400 x 800 with no observed overlap. | PayFast option remained identifiable and usable. | Responsive checkout inspection. | A 360 px recheck can follow after the payment handoff is repaired. |
+| Shipping rates observed | Passed | At R79 subtotal, Standard was R100 and Express was R150. Standard showed 3–5 business days; Express showed 1–2 business days. | Not applicable. | South African Cape Town address used in checkout. | Delivery estimates still require operational confirmation before launch. |
+| R500 threshold observed | **Not aligned** | At R715 subtotal, Standard still cost R100. At R864 subtotal, Standard was free. Express remained R150. | Not applicable. | Two controlled checkout observations using the same South African address. | Approve either an actual R500 free-shipping threshold or a future announcement change. |
+
+### Test Evidence Summary
+
+- Test date: 2026-07-11 SAST.
+- Product/cart used below threshold: Desk Cable Organiser, R79 subtotal.
+- Product/cart used above R500: four Desk Cable Organisers plus one Rolling Storage Cart, R715 subtotal.
+- Product/cart used above the configured threshold: the R715 cart plus one Adjustable Drawer Divider Set, R864 subtotal.
+- Shipping destination used: Cape Town, Western Cape, South Africa, with synthetic test customer details.
+- Shopify test order number: None; no order was created.
+- Payment reference: None; no PayFast transaction was created.
+- Shopify payment status: Not applicable; payment failed before order creation.
+- PayFast transaction status: Not created.
+- No credentials, OTPs, provider secrets, card details, bank details, or personal financial information were recorded.
+
+### Phase 12C Strict No-Change Confirmation
+
+- No live money moved.
+- No real card, bank account, Zapper, Payflex, or customer financial details were used.
+- PayFast test mode was not disabled.
+- Mobicred was not activated.
+- PayPal was not changed.
+- Shipping settings and rates were not changed.
+- The R500 announcement was not changed.
+- No support page was published and no menu was wired.
+- Contact, policies, and theme files were not changed.
+- No CJ supplier order was created.
+
+## Part 1: PayFast Setup And Testing — Historical Phase 12B Snapshot
+
+The following table records the earlier Phase 12B state and is superseded by the Phase 12C current-state section above.
 
 | Check | Status | Evidence / notes |
 | --- | --- | --- |
@@ -108,7 +168,9 @@ The configured Standard rate becomes free for orders of R770 and up, while the a
 
 The announcement and theme were not changed in this phase.
 
-## Part 4: Launch Blocker Update
+## Part 4: Launch Blocker Update — Historical Phase 12B Snapshot
+
+The PayFast rows below record the earlier Phase 12B state. Use the Phase 12C validation table for the current provider and testing status.
 
 | Area | Status | Evidence | Remaining blocker | Recommended next action |
 | --- | --- | --- | --- | --- |
@@ -134,40 +196,39 @@ The announcement and theme were not changed in this phase.
 | Shopify policies changed | No | Privacy, Terms, Refund Policy, and Shipping Policy were untouched. |
 | PayPal activated | No action taken | PayPal was already active before inspection; it was not activated, deactivated, or reconfigured. |
 | CJ supplier order created | No | No supplier, product, fulfilment, or payment action was run. |
-| Live payment completed | No | No checkout or payment was reached. |
+| Live payment completed | No | Checkout was reached in PayFast test mode, but no order or provider transaction was created and no live money moved. |
 | Shipping setting changed | No | No zone, rate, origin, market, or delivery profile was changed. |
 
 ## Tests Completed
 
-- Completed authenticated Shopify Admin Payments inspection.
-- Confirmed PayFast is not active or attached and is unavailable in Shopify's visible provider search.
-- Confirmed Shopify Test payment gateway and PayPal are active.
-- Confirmed the separate PayFast dashboard is not signed in, without entering credentials.
-- Completed authenticated Shipping and Delivery inspection.
-- Confirmed Shop location in South Africa, one General profile covering all products, domestic and international zones, and current rates/conditions.
-- Confirmed South Africa is the only active market.
-- Classified the R500 announcement as not aligned with the configured R770 threshold.
-- Validated a read-only Admin GraphQL query for shipping origins, delivery zones, rates, and price conditions.
-- Attempted read-only shipping inspection and recorded the access denial caused by incomplete scope authorization.
-- Confirmed the customer storefront is password-protected and checkout is not currently reachable without approved access.
-- Confirmed no live payment, shipping configuration, or external order was created.
+- Confirmed PayFast is active, connected to the Get Yours store, and in test mode.
+- Confirmed Visa, Mastercard, PayFast Instant EFT, Zapper, and Payflex are enabled; Mobicred is disabled.
+- Confirmed PayFast, PayPal, and the Test Payment Gateway appear separately at checkout.
+- Confirmed checkout payment presentation is readable on desktop and at 400 x 800 mobile size.
+- Attempted one PayFast test-mode payment; Shopify failed before provider redirect and created no order or transaction.
+- Confirmed Orders and Abandoned checkouts remained empty after the failed attempt and checkout exit.
+- Observed Standard at R100 and Express at R150 for a R79 subtotal.
+- Observed Standard still at R100 for a R715 subtotal and free for a R864 subtotal.
+- Confirmed the R500 announcement is not aligned with checkout behaviour.
+- Confirmed no live payment, configuration change, page publication, menu wiring, or external order occurred.
 
 ## Tests Not Completed
 
-- PayFast merchant-dashboard verification and supported integration confirmation.
-- PayFast sandbox/test-mode verification.
-- Checkout payment-method display review.
-- Successful, failed, cancelled, and refund payment flows.
-- Below-R500, above-R500, two-province, and unsupported-international checkout tests.
-- Checkout confirmation of the shipping thresholds and international rejection.
+- Successful PayFast simulated payment and test order creation.
+- Official PayFast simulated failed-payment flow.
+- Provider-level cancellation flow after a successful redirect.
+- Customer confirmation email and merchant notification checks.
+- Test-mode refund flow.
+- Checkout tests for a second South African province and an unsupported international address.
+- 360 px and 430 px payment-page rechecks after the handoff issue is resolved.
 
 ## Recommended Next Approval
 
-Shopify Admin inspection is complete. If PayFast remains the launch choice, the merchant should sign in to the PayFast dashboard without sharing credentials in chat or the repository, then authorize read-only PayFast merchant-status inspection.
+Approve a controlled, read-only investigation of the PayFast test-mode handoff failure. The immediate objective is to determine why Shopify cannot redirect to PayFast even though the provider is active and in test mode. Do not approve a live payment as a workaround, and do not change provider configuration without a separate explicit approval after the cause is known.
 
-If configuration is missing after inspection, obtain two explicit decisions before making changes:
+Two independent launch decisions also remain required:
 
-1. The exact South Africa Standard shipping amount and customer-facing name. Current state is `Standard`, R100, with a displayed 3–5 business-day estimate.
-2. Whether free standard shipping over R500 is approved after margin review. Current free threshold is R770.
+1. Confirm whether the current `Standard` R100 and `Express` R150 rates and displayed delivery estimates are operationally approved.
+2. Approve free Standard shipping over R500 after margin review, or approve a later change/removal of the R500 announcement. Checkout currently charges Standard at R715 and makes it free at R864, consistent with the configured R770 threshold rather than the advertised R500 threshold.
 
-If the eventual supported PayFast integration has no sandbox mode, obtain explicit approval for the exact low-value live payment amount and payment method before creating a test order. Also obtain a separate decision on the already-active PayPal provider; do not change it without approval. Page publication, menu wiring, Contact changes, policy changes, CJ fulfilment, and theme changes remain excluded.
+After the handoff issue is resolved, repeat the successful, official failed-payment, cancellation, email/notification, and refund tests in PayFast test mode. Page publication, menu wiring, Contact changes, policy changes, CJ fulfilment, and theme changes remain excluded.
