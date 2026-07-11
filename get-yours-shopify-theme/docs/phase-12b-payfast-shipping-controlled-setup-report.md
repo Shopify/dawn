@@ -6,7 +6,7 @@ Phase 12B began with a controlled inspection attempt on 2026-07-10 at approximat
 
 The initial inspection could not reach the authenticated Shopify Admin or PayFast configuration surfaces. The Shopify Admin browser session presented the Shopify login page, the Shopify CLI shipping-scope authorization was not completed, and the public storefront redirected to its password page. After the merchant signed in, the continuation inspected Shopify Payments, Shipping and Delivery, and Markets without changing them. The PayFast dashboard remained signed out.
 
-Current outcome after Phase 12C: **PayFast is active, connected to the Get Yours store, and in test mode. Checkout displays PayFast, but the attempted test payment failed before redirecting to PayFast, so no test transaction or order was created.**
+Current outcome after Phase 12D: **PayFast is active in Shopify and test mode is enabled. The earlier handoff failure did not recur: one controlled reproduction redirected successfully to PayFast's official sandbox. The sandbox payment was intentionally left incomplete, so no order, paid transaction, or live payment was created.**
 
 No sensitive credentials, payment details, customer credentials, API keys, passwords, or provider secrets were requested, entered, captured, or stored.
 
@@ -85,6 +85,53 @@ Phase 12C was performed on 2026-07-11 using the authenticated internal storefron
 - No support page was published and no menu was wired.
 - Contact, policies, and theme files were not changed.
 - No CJ supplier order was created.
+
+## Phase 12D PayFast Handoff Investigation
+
+Phase 12D was performed on 2026-07-11 as read-only diagnostics plus one controlled PayFast test-mode handoff reproduction. The reproduction reached PayFast's official sandbox successfully. The sandbox payment was not completed or cancelled.
+
+| Diagnostic area | Result | Evidence | Root-cause relevance | Change required? |
+| --- | --- | --- | --- | --- |
+| PayFast merchant status | Operational dashboard access confirmed; formal verification status not confirmed | The authenticated dashboard loaded and exposed normal account and transaction surfaces without a visible restriction banner. The verification detail route subsequently required a fresh login, so verified/pending status was not safely established. | No evidence of an account restriction causing the handoff failure, but formal verification remains unknown. | No configuration change. Merchant should confirm the PayFast verification status directly in the dashboard before launch. |
+| PayFast live/test capability | Test processing confirmed; live-payment permission not assessed | Shopify states PayFast test mode is on and that transactions are simulated. The reproduction reached `sandbox.payfast.co.za`. | Confirms the integration can initiate a test transaction. It does not prove live-payment readiness. | No change for this diagnostic phase. Keep test mode enabled. |
+| Shopify integration status | Active and ready | Shopify's PayFast provider page showed `Active`, `Test mode is on`, and `This page is ready`. The Save button was disabled. | Strong evidence that Shopify considers provider setup complete and has no unsaved configuration. | No. |
+| Store association | Connected inside the Get Yours Shopify Admin; PayFast legal-account association needs merchant confirmation | The provider page was opened under the Get Yours store. The authenticated PayFast dashboard displayed a different business-facing account name, which may be the legal merchant entity but was not independently confirmed. | Not implicated in the successful sandbox handoff, but the merchant-account association must be confirmed before live launch. | No automatic change. Merchant confirmation is required; reconnecting is explicitly out of scope. |
+| Provider warnings | No setup, reconnect, permission, or authorization warning visible | The Shopify provider detail page showed Active/test mode and enabled methods only. No complete-setup or reconnect action was shown. | Makes an incomplete Shopify provider installation less likely. | No. |
+| ZAR and South Africa market context | Correct for the reproduced checkout | Checkout displayed total currency ZAR, South Africa as the delivery country, and available South African shipping rates. | Makes a currency or active-market mismatch unlikely. | No. |
+| Test product availability | Available in the active checkout context | The selected demo products were present in checkout and shipping methods loaded for the South African address. | Product or market availability did not block provider handoff. | No. |
+| Handoff reproduction | Passed | One PayFast test-mode attempt progressed from Shopify processing to PayFast's official sandbox payment page. | The original failure was not reproducible during Phase 12D. | No configuration correction is justified from this result alone. |
+| Network request | No failing request observed | The browser navigated from the Shopify checkout to `sandbox.payfast.co.za` on a sanitized payment-processing path. The available diagnostic interface did not expose a safe HTTP status or request identifier. | Confirms PayFast received the handoff; provides no failing request to classify. | No. If the error recurs, capture the timestamp and safe provider/support reference without recording payloads or credentials. |
+| HTTP/error classification | No HTTP error reproduced | The sandbox page loaded and presented the simulated payment controls. No safe HTTP error code was available. | Does not support a persistent Shopify or PayFast request failure classification. | No. |
+| Browser console | No warnings or errors captured | Console warning/error count was zero before and after the handoff. | No evidence of JavaScript, CSP, blocked-request, or browser-side app failure. | No. |
+| PayFast logs | PayFast receipt confirmed by sandbox page; no completed transaction log | The official sandbox created a payment-processing session. The payment was intentionally left incomplete, and no completed PayFast transaction was created. | Confirms the handoff reached PayFast. It does not explain the earlier transient failure. | No. PayFast support is only indicated if the failure recurs. |
+| Shopify/app logs | Shopify handoff confirmed; no provider error or safe request ID surfaced | Shopify created an abandoned checkout after redirect. Orders remained empty because the sandbox payment was not completed. No app diagnostic warning or safe request identifier was visible. | Confirms Shopify attempted the provider handoff successfully in this run. | No. |
+| Root-cause classification | **G. Root cause still unknown** | The earlier failure could not be reproduced; current provider state is ready and the same checkout context reached PayFast sandbox without console errors. | A transient provider/network condition is possible, but there is insufficient evidence to classify it conclusively as F. | No configuration change should be made based on this evidence. |
+| Confidence level | Medium | Current-state evidence is consistent across Shopify and the sandbox, but the original failing request was not captured. | Supports ruling out an obvious persistent setup, currency, market, or browser error; does not identify the original cause. | No. |
+| Recommended corrective action | Do not change configuration. Run one separately approved end-to-end sandbox payment on a fresh low-value cart. If the failure recurs, stop and contact PayFast support with the timestamp and sanitized checkout context. | A completed sandbox test is still required to validate order creation, notifications, and refund eligibility. | This is validation rather than a configuration correction. | Merchant approval is required before creating the simulated test order. PayFast support is required only if the handoff error recurs or the sandbox transaction cannot complete. |
+
+### Phase 12D Safe Diagnostic Summary
+
+- PayFast received the reproduced attempt: **Yes**, through the official sandbox payment page.
+- Safe HTTP/error status: **No failing HTTP status or provider error was reproduced or exposed**.
+- Browser console: no warnings or errors captured.
+- Shopify state after stopping: no order; one automatically generated abandoned checkout; no paid status.
+- PayFast state after stopping: sandbox session opened; payment incomplete; no completed transaction.
+- Selected root-cause classification: **G. Root cause still unknown**.
+- Confidence: **Medium**.
+- No configuration change is supported by the current evidence.
+
+### Phase 12D Strict No-Change Confirmation
+
+- No live payment or movement of money occurred.
+- No real card, bank, Zapper, Payflex, or customer financial credentials were used.
+- No provider was activated, deactivated, reinstalled, uninstalled, reconnected, or reconfigured.
+- PayFast test mode and payment-method selections were not changed.
+- No credential, key, passphrase, permission, or scope was changed or regenerated.
+- PayPal and Shopify Test Payment Gateway were unchanged.
+- No shipping, market, currency, domain, product, checkout setting, or theme file was changed.
+- No page was published, no menu was wired, and Contact and policies were unchanged.
+- No Shopify order, refund, or CJ supplier order was created.
+- One abandoned checkout record was created automatically when Shopify handed the incomplete test checkout to PayFast sandbox; it was not edited or recovered.
 
 ## Part 1: PayFast Setup And Testing — Historical Phase 12B Snapshot
 
@@ -205,8 +252,9 @@ The PayFast rows below record the earlier Phase 12B state. Use the Phase 12C val
 - Confirmed Visa, Mastercard, PayFast Instant EFT, Zapper, and Payflex are enabled; Mobicred is disabled.
 - Confirmed PayFast, PayPal, and the Test Payment Gateway appear separately at checkout.
 - Confirmed checkout payment presentation is readable on desktop and at 400 x 800 mobile size.
-- Attempted one PayFast test-mode payment; Shopify failed before provider redirect and created no order or transaction.
-- Confirmed Orders and Abandoned checkouts remained empty after the failed attempt and checkout exit.
+- Recorded the original Phase 12C PayFast processing failure, which occurred before provider redirect.
+- Reproduced the handoff once in Phase 12D; Shopify redirected successfully to PayFast's official sandbox with no console error.
+- Confirmed Orders remained empty. One abandoned checkout was generated automatically because the sandbox payment was intentionally left incomplete.
 - Observed Standard at R100 and Express at R150 for a R79 subtotal.
 - Observed Standard still at R100 for a R715 subtotal and free for a R864 subtotal.
 - Confirmed the R500 announcement is not aligned with checkout behaviour.
@@ -224,11 +272,15 @@ The PayFast rows below record the earlier Phase 12B state. Use the Phase 12C val
 
 ## Recommended Next Approval
 
-Approve a controlled, read-only investigation of the PayFast test-mode handoff failure. The immediate objective is to determine why Shopify cannot redirect to PayFast even though the provider is active and in test mode. Do not approve a live payment as a workaround, and do not change provider configuration without a separate explicit approval after the cause is known.
+The read-only handoff investigation is complete. No configuration correction is currently justified because the failure did not recur and the controlled attempt reached PayFast sandbox successfully.
+
+The next approval should authorize one end-to-end PayFast **sandbox-only** payment using a fresh low-value cart and synthetic customer details. That test would be allowed to create one simulated Shopify order so order status, customer and merchant notifications, and test refund eligibility can be verified. It must not disable test mode or use live payment credentials.
+
+If the handoff error recurs, stop immediately and contact PayFast support with the timestamp, store domain, and sanitized checkout context. Do not send request payloads, authorization data, merchant credentials, or customer details.
 
 Two independent launch decisions also remain required:
 
 1. Confirm whether the current `Standard` R100 and `Express` R150 rates and displayed delivery estimates are operationally approved.
 2. Approve free Standard shipping over R500 after margin review, or approve a later change/removal of the R500 announcement. Checkout currently charges Standard at R715 and makes it free at R864, consistent with the configured R770 threshold rather than the advertised R500 threshold.
 
-After the handoff issue is resolved, repeat the successful, official failed-payment, cancellation, email/notification, and refund tests in PayFast test mode. Page publication, menu wiring, Contact changes, policy changes, CJ fulfilment, and theme changes remain excluded.
+After a successful sandbox order, continue with the official failed-payment, cancellation, email/notification, and refund tests in PayFast test mode. Page publication, menu wiring, Contact changes, policy changes, CJ fulfilment, and theme changes remain excluded.
