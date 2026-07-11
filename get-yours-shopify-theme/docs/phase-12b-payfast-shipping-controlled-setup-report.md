@@ -6,7 +6,7 @@ Phase 12B began with a controlled inspection attempt on 2026-07-10 at approximat
 
 The initial inspection could not reach the authenticated Shopify Admin or PayFast configuration surfaces. The Shopify Admin browser session presented the Shopify login page, the Shopify CLI shipping-scope authorization was not completed, and the public storefront redirected to its password page. After the merchant signed in, the continuation inspected Shopify Payments, Shipping and Delivery, and Markets without changing them. The PayFast dashboard remained signed out.
 
-Current outcome after Phase 12F: **Shopify order #1001 was created from the single Phase 12E PayFast sandbox payment. Shopify marks it as a test order, Paid, Fulfilled, Complete, and Archived. One successful PayFast Sale transaction exists and no duplicate order was found. Automatic fulfilment, archiving, and shipping-confirmation generation conflict with the intended manual CJ fulfilment workflow and are launch blockers.**
+Current outcome after Phase 12G: **The automatic behaviour is caused by three enabled Shopify General > Order processing settings: automatically fulfil paid order line items, notify customers of shipment, and automatically archive fulfilled-and-paid orders. Order #1001 used Shopify's Manual fulfilment service at Shop location; no app, Flow, PayFast, product, or custom fulfilment service caused the event. These settings affect future eligible paid orders store-wide and conflict with the intended manual CJ workflow.**
 
 No sensitive credentials, payment details, customer credentials, API keys, passwords, or provider secrets were requested, entered, captured, or stored.
 
@@ -241,6 +241,67 @@ Phase 12F was completed on 2026-07-11 as read-only Shopify Admin inspection of t
 - No CJ supplier order was created.
 - Fulfilment, archiving, and the shipping-confirmation event were generated automatically by Shopify at order creation; they were observed only and not changed.
 
+## Phase 12G Automatic Fulfilment Investigation
+
+Phase 12G was completed on 2026-07-11 as a read-only investigation of order #1001, Shopify order-processing settings, product and variant configuration, locations, installed apps, and automation surfaces. No setting, order, product, app, workflow, or notification was changed.
+
+| Investigation area | Current state | Evidence | Root-cause relevance | Change required? |
+| --- | --- | --- | --- | --- |
+| Order timeline | Payment at 16:29 SAST; order, fulfilment, shipping-confirmation, completion state, and archive at 16:30 SAST | Timeline records one successful PayFast Sale, Shopify fulfilment, shipping-confirmation generation, and a separate archive event. No separate completion event is shown; Complete is the resulting state after all line items were fulfilled. | Sequence matches Shopify's configured post-payment processing exactly. | No order change. Future processing settings require correction before launch. |
+| Fulfilment actor/source | Shopify | Timeline states `Shopify marked 1 item as fulfilled from Shop location.` Expanded event shows Service `Manual` and fulfilment location `Shop location`. | Rules out merchant user, PayFast, Flow, API, and third-party fulfilment service as the event actor. | No. |
+| Tracking/carrier | None | Order still offers `Add tracking`; no tracking number or carrier is attached. | Confirms Shopify marked fulfilment without supplier or shipment evidence. | No change to #1001. Future paid orders must remain unfulfilled until tracking is available. |
+| Automatic fulfilment setting | **Enabled** | General > Order processing has `Automatically fulfill the order's line items` selected under `After an order has been paid`. | Primary cause of the immediate fulfilment. | Yes. Proposed future correction: select `Don't fulfill any of the order's line items automatically`. Requires explicit merchant approval and Save. |
+| High-risk fulfilment option | Disabled | `Automatically fulfill all orders, even those with a high risk of fraud` is unchecked. | Normal-risk paid orders are affected; high-risk orders may be excluded by Shopify. | No separate change required if automatic line-item fulfilment is disabled. |
+| Shipment notification setting | **Enabled** | Nested `Notify customers of their shipment` checkbox is checked beneath automatic fulfilment. | Direct cause of the shipping-confirmation email when Shopify auto-fulfilled #1001. It is downstream from the automatic-fulfilment choice. | Correcting automatic fulfilment prevents this premature trigger. The notification setting can remain relevant for later legitimate manual fulfilment, subject to merchant review. |
+| Automatic archive setting | **Enabled** | `Automatically archive the order` is checked for orders that are fulfilled and paid or fully refunded. | Downstream cause of the archive event after automatic fulfilment made the paid order complete. Disabling archive alone would leave future orders incorrectly fulfilled. | Merchant decision required after automatic fulfilment is corrected. |
+| Product requires shipping | Yes | Desk Cable Organiser has `Physical product` checked. | Rules out a non-shipping/digital product classification. | No. |
+| Inventory management | Shopify-tracked at Shop location | Inventory tracking is enabled and the variant has stock at Shop location. | Normal store-managed physical inventory; not an app-managed product. | No. |
+| Variant fulfilment service | Manual | Order fulfilment event identifies Service `Manual`. | Rules out automatic app/custom fulfilment service assignment. | No. |
+| Sample product comparison | Same store-managed physical pattern | Laundry Hamper is also a physical product with Shopify-tracked inventory at Shop location. Product list shows demo inventory managed at the store location. | Indicates the root setting is store-wide rather than Desk Cable Organiser-specific. | No product changes. |
+| Fulfilment locations | One active location | Locations shows one active location: Shop location, South Africa. No app-managed or custom fulfilment location is listed. | Rules out PayFast or another app location initiating fulfilment. | No. |
+| Installed apps | No fulfilment app identified | Installed apps are Shopify CLI Connector, Shopify ChatGPT MCP, three wishlist/loyalty apps, and Messaging. No CJ app or dedicated fulfilment app is installed. | No app matches the order actor; timeline explicitly attributes fulfilment to Shopify. | No app changes. |
+| Shopify Flow | Not installed | Shopify Flow does not appear in the installed apps list, and no Flow workflow or run is exposed. | Rules out a Flow `order paid -> fulfil order` workflow. | No. |
+| API/app fulfilment evidence | None | Timeline identifies Shopify, Manual service, and Shop location; no app/API actor or custom service appears. | Makes third-party or API fulfilment unsupported by the evidence. | No. |
+| Notification trigger | Automatic Shopify fulfilment | Shipping confirmation appears in the same 16:30 sequence immediately after Shopify marked the item fulfilled. The shipment-notification checkbox is enabled. | Confirms the email was a downstream consequence of the automatic fulfilment, not PayFast or a manual resend. | Fix the underlying fulfilment setting before retesting. |
+| Store-wide impact | Eligible paid orders store-wide | The responsible setting is under global General > Order processing, not a product, gateway, or location rule. | Future normal-risk paid orders through PayFast or other gateways are likely to be fulfilled automatically. | Launch blocker until corrected and retested. |
+| Root-cause classification | **I. Multiple interacting settings** | Automatic fulfilment is the primary trigger; shipment notification and auto-archive are enabled downstream behaviours. | Fully explains Fulfilled, Complete, shipping confirmation, and Archived states. | Yes, but no mutation is authorized in Phase 12G. |
+| Confidence | **High** | Current settings and the order timeline align exactly; product, location, app, Flow, service, and gateway alternatives were ruled out. | Root cause is established. | No further diagnostic order is required. |
+| Proposed correction | Disable automatic line-item fulfilment for paid orders; separately decide whether automatic archive should remain enabled | Desired manual CJ workflow requires paid orders to remain Unfulfilled. | Prevents premature fulfilment and shipping confirmation. Auto-archive becomes irrelevant until a merchant legitimately fulfils an order. | Explicit merchant approval required to change General > Order processing and Save. |
+| Retest requirement | One separately approved PayFast sandbox order after correction | Must verify Paid, Unfulfilled, operationally visible/open, no shipping-confirmation email, no tracking, and no CJ order. | Confirms the corrected workflow before manual fulfilment testing. | Separate approval required; do not retest in Phase 12G. |
+
+### Phase 12G Root-Cause Decision
+
+- Classification: **I. Multiple interacting settings**.
+- Primary responsible setting: `Automatically fulfill the order's line items` is selected.
+- Downstream notification setting: `Notify customers of their shipment` is checked.
+- Downstream archive setting: `Automatically archive the order` is checked.
+- Fulfilment actor: Shopify.
+- Fulfilment service: Manual.
+- Fulfilment location: Shop location.
+- Tracking: none.
+- PayFast role: payment success only; not the fulfilment actor.
+- Scope: future eligible normal-risk paid orders store-wide, not only PayFast, test orders, or Desk Cable Organiser.
+- Confidence: high.
+
+### Proposed Correction And Retest Plan
+
+1. With explicit merchant approval, change General > Order processing from `Automatically fulfill the order's line items` to `Don't fulfill any of the order's line items automatically`, then Save.
+2. Decide separately whether `Automatically archive the order` should remain enabled. Leaving it enabled is compatible with manual fulfilment because archiving would occur only after the merchant later fulfils the paid order; disabling it may keep completed orders visible longer.
+3. Confirm the shipment-notification setting is used only when a legitimate manual fulfilment is created. Correcting automatic fulfilment should prevent premature shipping confirmation.
+4. Create one separately approved PayFast sandbox retest order.
+5. Verify the retest remains Paid, Unfulfilled, operationally visible/open, without tracking, without shipping confirmation, and without a CJ supplier order.
+6. In a later separate phase, test the intended manual fulfilment, tracking, and customer notification workflow.
+
+### Phase 12G Strict No-Change Confirmation
+
+- Order #1001 was not edited, unarchived, cancelled, refunded, fulfilled, delivered, tagged, annotated, or given tracking.
+- No notification was opened for resend or resent.
+- No product, variant, inventory, location, fulfilment service, app, or Shopify Flow setting was changed.
+- No Shopify order-processing, automatic fulfilment, notification, or archive setting was changed or saved.
+- No PayFast, PayPal, Test Payment Gateway, shipping, tax, market, policy, page, menu, Contact, checkout, domain, or theme setting was changed.
+- No payment or order was repeated or created.
+- No CJ supplier order was created.
+
 ## Part 1: PayFast Setup And Testing — Historical Phase 12B Snapshot
 
 The following table records the earlier Phase 12B state and is superseded by the Phase 12C current-state section above.
@@ -367,6 +428,9 @@ The PayFast rows below record the earlier Phase 12B state. Use the Phase 12C val
 - Verified Shopify order #1001 in Phase 12F: test order, Paid, one successful PayFast Sale transaction, and no duplicate order.
 - Confirmed Shopify automatically marked the test order Fulfilled, Complete, and Archived and generated a shipping-confirmation event.
 - Confirmed R179 remains available for refund to the original PayFast payment without entering an amount or issuing a refund.
+- Identified the Phase 12G root cause: global automatic line-item fulfilment, shipment notification, and automatic archive settings are enabled.
+- Confirmed fulfilment actor Shopify, service Manual, location Shop location, and no tracking.
+- Ruled out PayFast, product classification, app-managed fulfilment, Shopify Flow, custom locations, and Desk Cable Organiser-specific configuration.
 - Observed Standard at R100 and Express at R150 for a R79 subtotal.
 - Observed Standard still at R100 for a R715 subtotal and free for a R864 subtotal.
 - Confirmed the R500 announcement is not aligned with checkout behaviour.
@@ -385,7 +449,15 @@ The PayFast rows below record the earlier Phase 12B state. Use the Phase 12C val
 
 Exactly one PayFast sandbox order has been created and verified. Do not repeat the successful payment.
 
-Before live launch, prioritize a separately approved read-only inspection of why Shopify automatically fulfilled and archived order #1001 and generated a shipping-confirmation email. This conflicts with the intended manual CJ fulfilment workflow. Any configuration correction must wait for explicit approval after the responsible setting is identified.
+The read-only automatic-fulfilment investigation is complete. The exact responsible settings are identified under General > Order processing.
+
+The next approval should authorize this specific correction only:
+
+1. Select `Don't fulfill any of the order's line items automatically` instead of `Automatically fulfill the order's line items`.
+2. Save the General settings change.
+3. Leave the existing order, product, apps, providers, shipping, notifications, and all unrelated settings unchanged.
+
+The merchant should separately decide whether `Automatically archive the order` remains enabled. Disabling archive alone is not a fix because it would leave future paid orders incorrectly fulfilled.
 
 The next separately approved payment phase may then test the official failed-payment, provider-cancellation, and sandbox-refund workflows. The refund path is visible in Shopify and shows R179 available to the original PayFast payment, but no refund should be issued without that approval. Shipping-rate and R500-announcement decisions remain independent.
 
@@ -394,4 +466,4 @@ Two independent launch decisions also remain required:
 1. Confirm whether the current `Standard` R100 and `Express` R150 rates and displayed delivery estimates are operationally approved.
 2. Approve free Standard shipping over R500 after margin review, or approve a later change/removal of the R500 announcement. Checkout currently charges Standard at R715 and makes it free at R864, consistent with the configured R770 threshold rather than the advertised R500 threshold.
 
-After the automatic-fulfilment cause is understood, continue only under separate approval with the official failed-payment, cancellation, notification, and sandbox-refund tests. Page publication, menu wiring, Contact changes, policy changes, CJ fulfilment, and theme changes remain excluded.
+After the correction, create one separately approved PayFast sandbox retest order and verify it remains Paid and Unfulfilled without tracking or shipping confirmation. Only after that should the official failed-payment, cancellation, notification, sandbox-refund, and manual-fulfilment tests proceed under separate approvals. Page publication, menu wiring, Contact changes, policy changes, CJ fulfilment, and theme changes remain excluded.
