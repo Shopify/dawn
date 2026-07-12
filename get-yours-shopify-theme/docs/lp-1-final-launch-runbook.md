@@ -16,18 +16,19 @@ No launch action is authorized by this runbook. Each step needs recorded evidenc
 | 10. Tax/VAT | Adviser review | Confirm tax display, invoices, refunds | Uncertain treatment | Written professional advice | Merchant / adviser | Merchant |
 | 11. Product approval | CJ mapping and economics | Approve initial 10-20 products | Any mapping/cost/restriction gap | Product audit | Merchant / fulfilment | Merchant |
 | 12. Legal/support approval | Operations facts fixed | Approve policy and support copy | Unresolved legal/operational claim | Review record | Merchant / legal | Merchant |
-| 13. Publish pages | Step 12 complete | Publish approved support/legal pages | Placeholder or policy gap | Live URLs | Merchant | Separate approval |
-| 14. Wire menus | Pages/policies live | Apply approved navigation structure | Broken/unpublished links | Desktop/mobile link QA | Merchant | Separate approval |
-| 15. Contact readiness | Inbox confirmed | Test form with synthetic data | Recipient/acknowledgement failure | Controlled test | Support | Separate approval |
-| 16. Final QA | Content/data finalized | Responsive, accessibility, links, cart, search QA | P0/P1 issue | QA report | Theme owner | Merchant |
-| 17. Test gateway decision | Payment QA complete | Decide whether to remove Shopify Test Payment Gateway | Unverified live checkout | Decision record | Merchant | Merchant |
-| 18. PayPal decision | PayPal process reviewed | Retain or disable after approval | Unverified provider process | Decision record | Merchant | Merchant |
-| 19. PayFast live decision | All payment gates complete | Approve live mode activation | Any payment blocker | Approval record | Merchant | Separate approval |
-| 20. Publish theme | All P0/P1 closed | Publish approved theme | Unresolved blocker | Theme/version record | Merchant | Separate approval |
-| 21. Remove password | Theme published and smoke plan ready | Remove storefront password | Any public readiness gap | Public access check | Merchant | Separate approval |
-| 22. Public smoke test | Store public | Check home, collection, product, cart, checkout handoff, policies | P0 customer issue | Smoke-test log | Theme/ops | Merchant |
-| 23. First-order monitoring | Store public | Manually inspect every early order | Payment, risk, stock, or margin exception | Order tracker | Operations | Merchant |
-| 24. Daily reconciliation | First orders received | Reconcile Shopify, PayFast, CJ, refunds, and reserve | Mismatch/unresolved refund | Daily reconciliation log | Operations / finance | Merchant |
+| 13. Publish pages | Step 12 complete | Publish only approved support pages | Placeholder or policy gap | Live URLs | Merchant | Separate approval |
+| 14. Confirm legal policies | Step 12 complete | Approve/configure policy content and URLs | Legal or operational wording gap | Four verified policy URLs | Merchant / legal | Separate approval |
+| 15. Wire menus | Pages/policies live | Apply the LP-3B-approved navigation structure | Broken/unpublished links or unsupported category | Desktop/mobile link QA | Merchant | Separate approval |
+| 16. Contact readiness | Inbox confirmed | Test form with synthetic data | Recipient/acknowledgement failure | Controlled test | Support | Separate approval |
+| 17. Final QA | Content/data finalized | Responsive, accessibility, links, cart, search QA | P0/P1 issue | QA report | Theme owner | Merchant |
+| 18. Test gateway decision | Payment QA complete | Decide whether to remove Shopify Test Payment Gateway | Unverified live checkout | Decision record | Merchant | Merchant |
+| 19. PayPal decision | PayPal process reviewed | Retain or disable after approval | Unverified provider process | Decision record | Merchant | Merchant |
+| 20. PayFast live decision | All payment gates complete | Approve live mode activation | Any payment blocker | Approval record | Merchant | Separate approval |
+| 21. Publish theme | All P0/P1 closed | Publish approved theme | Unresolved blocker | Theme/version record | Merchant | Separate approval |
+| 22. Remove password | Theme published and smoke plan ready | Remove storefront password | Any public readiness gap | Public access check | Merchant | Separate approval |
+| 23. Public smoke test | Store public | Check home, collection, product, cart, checkout handoff, policies | P0 customer issue | Smoke-test log | Theme/ops | Merchant |
+| 24. First-order monitoring | Store public | Manually inspect every early order | Payment, risk, stock, or margin exception | Order tracker | Operations | Merchant |
+| 25. Daily reconciliation | First orders received | Reconcile Shopify, PayFast, CJ, refunds, and reserve | Mismatch/unresolved refund | Daily reconciliation log | Operations / finance | Merchant |
 
 ## Stop Rules
 

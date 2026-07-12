@@ -107,3 +107,11 @@ No theme code, Shopify Admin setting, live-store setting, checkout, payment, ord
 - PayPal accelerated checkout remains visible because PayPal is active. Its final launch inclusion remains a merchant decision. Payflex is held pending margin review; Mobicred remains disabled; no payment-provider setting changed.
 - Unpublished support-page drafts may still contain historic/conditional R500 wording and must be deliberately aligned before publication.
 - Retest the announcement, product, cart drawer and cart page in the development theme after the authorised theme push/preview refresh. Also verify checkout independently after any future Admin rate or provider change.
+
+## LP-3B Navigation And Contact Readiness
+
+- Current header: Home, Catalog and Contact. `Catalog` has the correct `/collections/all` target but should be renamed to Shop in a separately approved menu mutation.
+- Footer Shop currently mirrors `main-menu`; Support and Legal both point to Search. These are P1 launch-content defects, not theme rendering defects.
+- Search passed prior QA. Account remains ready after account-flow testing; Wishlist is not implemented; Cart remains ready after final checkout handoff testing.
+- Contact is published and its labelled Shopify form rendered without horizontal overflow at 360px. Recipient configuration and acknowledgement are unverified because no form submission was authorized.
+- LP-3B did not modify a menu, page, policy, Contact, theme source or Shopify Admin setting. See `docs/lp-3b-navigation-content-readiness.md` for the LP-3C execution matrix.

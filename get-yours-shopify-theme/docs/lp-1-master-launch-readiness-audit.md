@@ -16,8 +16,8 @@ This is a documentation-only launch preparation audit. Shopify, PayFast, CJ, pro
 | Tax/VAT | Pending professional confirmation | Test order displayed R10.30 included VAT/tax; treatment is not approved. |
 | Customer support | Drafted but unpublished | Six support pages exist as unpublished drafts; inbox, owner, and mailbox tests are unconfirmed. |
 | Legal content | Pending professional confirmation | Policy copy and operational rules need South African legal review. |
-| Menus | Drafted but unpublished | Main and footer plan exists; support pages remain unpublished and menus unwired. |
-| Contact | Pending merchant decision | Existing Contact page is unchanged; recipient and response process are unverified. |
+| Menus | Planned; not yet authorized | LP-3B verified the current menus are incomplete and documented a separate LP-3C mutation plan. Support pages remain unpublished and menus unwired. |
+| Contact | Published form; not operationally ready | Contact form renders without mobile overflow, but recipient, owner, acknowledgement, privacy wording and controlled form delivery are unverified. |
 | Notifications | Pending merchant decision | Order confirmation event exists; refund and merchant-mail delivery are unverified. |
 | Domain | Deferred until live-launch approval | Public domain is known; password removal, redirects, sender domain, and public smoke test remain gated. |
 | Theme | Preview operational; final issues pending correction | Hosted development preview is operational. Theme Check has 8 inherited Dawn warnings and no errors; fix or formally accept the LP-QA-1 P0/P1 issues before final acceptance. |

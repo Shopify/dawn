@@ -15,10 +15,11 @@
 | LP1-08 | Payments QA | Failed-payment and cancellation tests paused | P1 | Pending refund safeguard | Resume only after LP1-01 terminal state | Payments owner | LP1-01 | Deferred until refund terminal state |
 | LP1-09 | Fulfilment QA | Manual fulfilment/tracking test paused | P1 | Correct setting exists but workflow untested | Run controlled test later | Fulfilment owner | LP1-01 | Deferred until refund terminal state |
 | LP1-10 | Legal | Policy and support content need approval/review | P0 | Draft pages and policy gaps | Merchant approval and South African legal review | Merchant / legal | Operations decisions | Pending professional confirmation |
-| LP1-11 | Pages/menus | Pages unpublished; menus unwired; Contact unchanged | P1 | Phase 11F Option B | Publish/wire only after content approval | Merchant | LP1-10 | Drafted but unpublished |
+| LP1-11 | Pages/menus | Support pages are unpublished; Support/Legal menus contain Search; Shop mirrors main navigation | P1 | LP-3B read-only navigation audit | Execute the separately approved LP-3C publication/policy/menu plan | Merchant | LP1-10, LP1-03b/c/d | Planned; not authorized |
 | LP1-12 | Products | Initial catalogue is demo/draft data; costs and supplier facts unverified | P0 | Local demo catalogue rows are Draft | Approve verified launch shortlist | Merchant / fulfilment | LP1-07 | Pending merchant decision |
 | LP1-13 | Launch controls | Test gateway, PayPal, PayFast live mode, password removal and theme publication undecided | P0 | Launch settings not approved | Decide after final tests | Merchant | All P0/P1 | Deferred until live-launch approval |
 | LP1-14 | Domain/monitoring | Public smoke test and first-order monitoring not prepared | P1 | No approved runbook execution | Approve runbook and owners | Merchant / operations | LP1-13 | Deferred until live-launch approval |
+| LP1-15 | Contact operations | Contact form is published but recipient, owner, acknowledgement and spam process are unverified | P1 | LP-3B storefront inspection | Confirm operations and run one separately approved controlled form test | Support owner | LP1-06 | Pending merchant decision |
 
 ## Prioritized Action Order
 
