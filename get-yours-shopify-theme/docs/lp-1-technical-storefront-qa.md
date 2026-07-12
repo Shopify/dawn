@@ -16,7 +16,7 @@ The Shopify Theme Access credential was supplied through the local `SHOPIFY_CLI_
 | Homepage navigation | P1 follow-up | Main navigation currently exposes Home, Catalog and Contact only; planned collection and Help links remain unwired. |
 | Footer navigation | P1 follow-up | Shop links are present; Support and Legal still expose only Search because their menus have not been wired. |
 | Payment-logo review | P1 follow-up | Footer renders several payment logos, including PayPal. Confirm that every displayed method is intentionally customer-facing before launch. |
-| R500 announcement alignment | P0 blocker | Storefront wording promises free standard shipping above R500 while the currently observed checkout configuration is R770. |
+| R770 announcement alignment | P1 checkout verification | LP-3A aligned development-theme wording and the hosted preview passed at five widths; controlled checkout verification remains required. |
 | Auxiliary storefront request | Monitor | A GET request to `/sf_private_access_tokens` returned HTTP 400 without a visible storefront failure. Monitor it; investigate only if a related feature fails. |
 
 This was read-only preview QA. No theme, store, payment, shipping, page, menu, policy, product, order or customer data was changed.
@@ -36,7 +36,7 @@ This was read-only preview QA. No theme, store, payment, shipping, page, menu, p
 
 ## Known Expectation Risks
 
-- Announcement promises R500 free shipping while configured checkout threshold is R770.
+- Development-theme copy now promises free Standard shipping on orders of R770 or more; Shopify Admin rate wording and checkout behaviour still require a controlled retest.
 - Account, wishlist, reviews/stars, delivery wording, and payment logos must not imply unavailable features, data, or methods.
 - South Africa is the active market; no international customer wording should appear.
 - The storefront password must remain until final launch approval.
@@ -61,7 +61,7 @@ The initial local-preview attempt was unavailable to this isolated QA process. T
 | Collection/catalog | 360, 1200px | Pass with P1 follow-up | P1 | Catalog showed 20 products; Home Organisation showed 8 cards with images/prices. Mobile filter drawer opened without overflow. Sorting works but redirected to `getyours.online`. | Keep preview navigation on the preview host or document that stateful preview QA must use another route. |
 | Product pages | 360, 1200px | Pass with P1 follow-ups | P1 | Tested Desk Cable Organiser (R79), Ergonomic Aluminium Laptop Stand sale (R399/R289), and Kitchen Sink Organizer (R99). Titles, prices, image access, quantities, descriptions, trust content and related products rendered. | Verify supplier material/performance claims, stock and delivery/return wording before launch. |
 | Search | Mobile and desktop route checks | Pass with P1 follow-up | P1 | Predictive exact search returned Desk Cable Organiser; generic `organizer` search returned relevant products; no-result state gave useful browsing guidance; Escape closed the modal. Search results redirected to `getyours.online`. | Resolve or document hosted-preview routing before final acceptance. |
-| Cart | Mobile cart-only interaction | Pass with P0/P1 follow-ups | P0/P1 | Added Desk Cable Organiser and Travel Pouch Set, increased quantity, saw R254 then R429 totals, removed both, and confirmed the empty-cart state. Checkout was not clicked. Cart updates redirected to `getyours.online`. | Correct R500/R770 conflict and isolate preview-cart routing before launch QA sign-off. |
+| Cart | Mobile cart-only interaction | Pass with P1 follow-ups | P1 | LP-QA-1 validated cart interaction. LP-3A visually confirmed the R770 reassurance in the cart drawer and cart page, then removed its test item. Checkout was not clicked. Cart updates redirect to `getyours.online`. | Verify checkout threshold and isolate preview-cart routing before launch QA sign-off. |
 | Navigation/footer | Desktop and mobile | P1 follow-up | P1 | Header controls have accessible names. Footer Shop has Home/Catalog/Contact; Support and Legal each expose only Search. | Publish approved pages and wire menus only after operational approval. |
 | Payment logos | Desktop and mobile | P1 follow-up | P1 | Footer renders Visa, Mastercard, American Express, PayPal, Diners Club and Discover. Product/cart pages render PayPal accelerated checkout. | Merchant must confirm the live payment set and remove any unsupported logo or express-payment control. |
 | Accessibility | Mobile and desktop structural pass | P1 follow-up | P1 | Skip link, headings, named controls, labelled quantity inputs, search dialog, Escape close, and named cart controls were observed. Full keyboard tab order, visible focus and drawer focus trapping were not reliably verifiable in browser automation. | Complete a manual keyboard-only pass; do not claim WCAG conformance. |
@@ -86,7 +86,7 @@ The initial local-preview attempt was unavailable to this isolated QA process. T
 
 | Severity | Issue | Exact recommended correction | Owner / decision |
 | --- | --- | --- | --- |
-| P0 | Storefront, product and cart copy promise free standard shipping above R500 while observed configuration remains free Standard above R770. | Configure and test R500 free Standard shipping, or change/remove every R500 promise before launch. | Merchant shipping decision. |
+| P1 | Former development-theme R500 promises were aligned to R770 in LP-3A and previewed successfully; checkout confirmation remains outstanding. | Verify the exact R770-inclusive wording against the configured checkout threshold before launch. | Merchant / QA owner. |
 | P1 | Hosted development preview sends sort, full search and cart update flows to `getyours.online`. | Resolve preview-host/canonical routing or use a controlled alternative for final stateful development-theme QA. | Theme/store-domain review. |
 | P1 | Main nav and footer Support/Legal menus are incomplete. | Publish approved content pages only after launch blockers are resolved, then wire the approved menus. | Merchant approval. |
 | P1 | Payment logos and PayPal accelerated checkout are visible while payment-method launch presentation still needs confirmation. | Confirm the final enabled payment methods, then align product/cart controls and footer logos. | Merchant payment decision. |
@@ -96,3 +96,14 @@ The initial local-preview attempt was unavailable to this isolated QA process. T
 | P2 | Wishlist was not present in the observed header. | Do not imply wishlist functionality in customer-facing copy unless a supported implementation is enabled. | Merchant decision. |
 
 No theme code, Shopify Admin setting, live-store setting, checkout, payment, order, refund, fulfilment, inventory, tracking, CJ action, page, menu or policy was changed during LP-QA-1. Cart-only test items were removed and the cart ended empty.
+
+## LP-3A Approved Promise Alignment
+
+- The approved customer-facing free Standard threshold is **R770**, inclusive: `FREE STANDARD SHIPPING ON ORDERS OF R770 OR MORE`.
+- Corrected theme-controlled R500 occurrences: the announcement-bar setting, product reassurance block and shared cart reassurance locale string.
+- Replaced generic product delivery timing copy with: `Delivery timing depends on the product, destination and available shipping route.` No exact customer-facing delivery estimate exists in the theme after this change.
+- The Standard R100 and Express R150 names, checkout estimates and R770 rate condition remain Shopify Admin-controlled and were not changed.
+- Footer payment icons are dynamically generated from `shop.enabled_payment_types`; no hard-coded Visa, Mastercard, American Express, Diners Club or Discover icons were found. Final visible icons depend on the enabled provider configuration.
+- PayPal accelerated checkout remains visible because PayPal is active. Its final launch inclusion remains a merchant decision. Payflex is held pending margin review; Mobicred remains disabled; no payment-provider setting changed.
+- Unpublished support-page drafts may still contain historic/conditional R500 wording and must be deliberately aligned before publication.
+- Retest the announcement, product, cart drawer and cart page in the development theme after the authorised theme push/preview refresh. Also verify checkout independently after any future Admin rate or provider change.

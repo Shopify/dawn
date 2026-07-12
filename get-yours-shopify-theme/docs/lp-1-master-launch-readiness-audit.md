@@ -6,13 +6,13 @@ This is a documentation-only launch preparation audit. Shopify, PayFast, CJ, pro
 
 | Area | Classification | Evidence and next gate |
 | --- | --- | --- |
-| Storefront | Homepage preview passed; full journey QA outcome recorded | LP-QA-1 completed browser-only homepage, collection, product, search and cart checks through the hosted development preview. P0 shipping-copy mismatch, P1 preview routing and navigation/payment follow-ups remain. |
+| Storefront | Homepage preview passed; full journey QA outcome recorded | LP-QA-1 completed browser-only homepage, collection, product, search and cart checks through the hosted development preview. LP-3A aligned development-theme copy to R770; P1 preview routing, navigation, payment and shipping retesting remain. |
 | Products | Pending merchant decision | Shopify currently has 20 Active Get Yours products with one variant, SKU, inventory, price, and featured media each; supplier economics and restrictions remain unverified. |
 | Payments | Blocked | PayFast is in test mode. Successful test payment passed; existing sandbox refund is pending. |
 | Refunds | Deferred until refund terminal state | #1002 has one pending R179 PayFast refund; do not retry. |
 | Fulfilment | Configured; end-to-end test pending | Automatic fulfilment was disabled; paid orders can remain unfulfilled. Manual fulfilment test is paused pending the terminal result of the existing refund. |
 | CJ operations | Pending merchant decision | No SKU mapping, supplier stock, costs, or working-capital reserve is confirmed. |
-| Shipping | Blocked | Standard is R100 and free from R770, while the announcement promises R500. Delivery estimates are unverified. |
+| Shipping | Partially corrected | Development-theme copy is aligned to R770 and passed a hosted-preview retest. Shopify Admin rate wording, checkout estimates and unpublished support-page copy still require controlled updates and verification. |
 | Tax/VAT | Pending professional confirmation | Test order displayed R10.30 included VAT/tax; treatment is not approved. |
 | Customer support | Drafted but unpublished | Six support pages exist as unpublished drafts; inbox, owner, and mailbox tests are unconfirmed. |
 | Legal content | Pending professional confirmation | Policy copy and operational rules need South African legal review. |
@@ -27,7 +27,8 @@ This is a documentation-only launch preparation audit. Shopify, PayFast, CJ, pro
 
 - South Africa is the active market; dormant international R310 shipping configuration is not market-enabled.
 - Standard is R100; Express is R150; configured free Standard threshold is R770.
-- The theme announcement says `FREE STANDARD SHIPPING ON ORDERS OVER R500`.
+- The development-theme announcement is set to `FREE STANDARD SHIPPING ON ORDERS OF R770 OR MORE`. The configured Standard rate is R100 and becomes free from R770; Shopify Admin rate wording and estimates are unchanged.
+- LP-3A confirmed the R770 wording in the hosted development preview at 360, 400, 430, 768 and 1200px, plus the product and cart surfaces. Controlled checkout verification remains outstanding.
 - PayFast is active in test mode. PayPal was already active separately and requires a later launch decision.
 - Order #1002 is a test order, Paid and Unfulfilled. Its single R179 PayFast refund remains pending and is a launch blocker.
 - Six support pages exist in Shopify Admin as unpublished drafts: Help, Customer Service, Shipping Information, Returns & Refunds, Payment Information, and FAQ.
