@@ -8,15 +8,15 @@ Get Yours is launching with delivery within South Africa. Available shipping opt
 
 Standard shipping is planned for launch. The final shipping charge is shown at checkout for your delivery address and order.
 
-Where enabled, free standard shipping may apply to qualifying orders over R500.
+Free Standard shipping applies to qualifying orders of R770 or more.
 
 [CONFIRM BEFORE LAUNCH] Confirm shipping rates.
 
-[CONFIRM BEFORE LAUNCH] Confirm whether free shipping over R500 is enabled.
+[CONFIRM BEFORE LAUNCH] Confirm that free Standard shipping applies to qualifying orders of R770 or more.
 
 ## Delivery Timing
 
-Delivery timing can vary by product, delivery address, courier route and fulfilment process. Please refer to the delivery information shown for your order.
+Delivery timing depends on the product, destination and available shipping route. Please refer to the delivery information shown for your order.
 
 [CONFIRM BEFORE LAUNCH] Confirm delivery estimates.
 
@@ -25,6 +25,10 @@ Delivery timing can vary by product, delivery address, courier route and fulfilm
 Where tracking is available, we will share the tracking information after it has been provided for your order.
 
 [CONFIRM BEFORE LAUNCH] Confirm tracking process.
+
+[CONFIRM BEFORE LAUNCH] Confirm tax/VAT treatment before publication.
+
+[CONFIRM BEFORE LAUNCH] Confirm customs/import treatment before publication.
 
 ## Fulfilment And Delays
 

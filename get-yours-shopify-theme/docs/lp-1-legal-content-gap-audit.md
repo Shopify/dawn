@@ -4,9 +4,9 @@
 
 | Page | Source/status | Key gap and dependency |
 | --- | --- | --- |
-| Help | Admin-ready draft; unpublished | R770 offer, tracking process, and support channel must match operations. |
+| Help | Admin-ready draft; unpublished | Copy is aligned to R770; tracking process and support channel must match operations. |
 | Customer Service | Admin-ready draft; unpublished | Support inbox, owner, hours, and cancellation/refund process unconfirmed. |
-| Shipping Information | Admin-ready draft; unpublished | Must align to R770 wording; delivery timing remains route-dependent and unverified. |
+| Shipping Information | Admin-ready draft; unpublished | Copy is aligned to R770; delivery timing remains route-dependent and unverified. |
 | Returns & Refunds | Admin-ready draft; unpublished | Reporting window, return eligibility, exclusions, and processing policy need approval. |
 | Payment Information | Admin-ready draft; unpublished | Public provider wording must match checkout; PayFast test/live and PayPal decision unresolved. |
 | FAQ | Admin-ready draft; unpublished | Rates, free-shipping threshold, delivery, cancellations, and payment answers need operational confirmation. |

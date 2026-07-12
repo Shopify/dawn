@@ -14,11 +14,11 @@ Available shipping options and charges are shown at checkout.
 
 ## Do you offer free shipping?
 
-Where enabled, free standard shipping may apply to qualifying orders over R500.
+Free Standard shipping applies to qualifying orders of R770 or more.
 
 ## How long does delivery take?
 
-Delivery timing can vary by item, delivery address and fulfilment route. Refer to the information available for your order.
+Delivery timing depends on the product, destination and available shipping route. Refer to the information available for your order.
 
 ## How do I track my order?
 
@@ -52,7 +52,7 @@ Some items may be fulfilled through supplier partners. Availability and fulfilme
 
 ## Why can delivery time vary?
 
-Delivery timing can depend on product availability, fulfilment, courier routing and delivery address.
+Delivery timing depends on the product, destination and available shipping route.
 
 ## How do I contact support?
 

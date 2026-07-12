@@ -25,7 +25,7 @@ Contact Get Yours before returning an item. Return eligibility, instructions and
 
 ## Refunds
 
-If a refund is approved, it will be handled through the original payment method where possible, subject to the Returns & Refunds information and policy and payment-provider processes.
+If a refund is approved, it will be handled through the original payment method where possible, subject to the Returns & Refunds information and policy and payment-provider processes. After a refund is submitted, it may remain pending with the payment provider before it is settled. We cannot guarantee immediate refund settlement.
 
 ## Items That May Not Be Returnable
 

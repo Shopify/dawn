@@ -96,6 +96,10 @@ All current collections returned no collection featured image in the read-only c
 
 No unpublished support page is safe for a customer-visible menu until its content is approved and it is separately published.
 
+LP-3B.1 aligned repository-held support drafts to the approved R770 threshold, route-dependent delivery wording and provider-neutral payment language. The pages remain operationally blocked and unpublished; see `docs/lp-3b-1-content-contact-readiness.md` for the Contact decision register.
+
+LP-3B.2 audited all six support-page drafts and produced the final LP-3C publication matrix in `docs/lp-3b-2-support-page-publication-matrix.md`.
+
 ## Approved Footer Legal Menu
 
 | Intended label | Source | Intended URL | Current readiness | Required approval |

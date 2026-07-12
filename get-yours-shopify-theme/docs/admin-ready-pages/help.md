@@ -24,9 +24,9 @@ Available payment methods are shown at checkout. If a payment does not go throug
 
 ## Shipping And Tracking
 
-Get Yours is launching in South Africa. Shipping options and charges are shown at checkout. Where enabled, free standard shipping may apply to qualifying orders over R500.
+Get Yours is launching in South Africa. Shipping options and charges are shown at checkout. Free Standard shipping applies to qualifying orders of R770 or more.
 
-Delivery and tracking availability can vary by item, delivery address and fulfilment route. Where tracking is available, we will share tracking information after it is available for your order.
+Delivery timing depends on the product, destination and available shipping route. Where tracking is available, we will share tracking information after it is available for your order.
 
 ## Returns & Refunds
 

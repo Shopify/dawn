@@ -6,11 +6,11 @@ Get Yours is launching with delivery within South Africa. Available shipping opt
 
 ## Shipping Charges
 
-The shipping charge for your delivery address and order is shown at checkout. Where enabled, free standard shipping may apply to qualifying orders over R500.
+The shipping charge for your delivery address and order is shown at checkout. Free Standard shipping applies to qualifying orders of R770 or more.
 
 ## Delivery And Tracking
 
-Delivery and tracking availability can vary by product, delivery address, courier route and fulfilment process. Where tracking is available, we will share tracking information after it is available for your order.
+Delivery timing depends on the product, destination and available shipping route. Where tracking is available, we will share tracking information after it is available for your order.
 
 ## Fulfilment And Delays
 

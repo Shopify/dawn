@@ -2,11 +2,11 @@
 
 ## Paying For Your Order
 
-Available payment methods are shown at checkout before you place an order. Use the payment option that is available for your order and complete checkout using the secure checkout process.
+Available payment methods are shown at checkout before you place an order. Only the methods shown for your order are available. Use an available option to complete checkout using the secure checkout process.
 
 ## Secure Checkout
 
-Payment is processed through Shopify checkout and the available payment provider. Get Yours does not ask customers to send card or account details by email, social media or the contact form.
+Payment is processed through Shopify checkout and the payment provider selected at checkout. Get Yours does not ask customers to send card or account details by email, social media or the contact form.
 
 ## Failed Or Cancelled Payments
 
@@ -16,7 +16,7 @@ If you received an order number or payment reference and need help, contact Cust
 
 ## Refunds
 
-Approved refunds are handled through the original payment method where possible, subject to the Returns & Refunds information and policy and payment-provider processes.
+Approved refunds are handled through the original payment method where possible, subject to the Returns & Refunds information and policy and payment-provider processes. After a refund is submitted, it may remain pending with the payment provider before it is settled. We cannot guarantee immediate refund settlement.
 
 ## Need Help?
 

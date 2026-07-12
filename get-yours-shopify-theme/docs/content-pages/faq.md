@@ -16,13 +16,13 @@ Available shipping options and charges are shown at checkout.
 
 ## Do you offer free shipping?
 
-Where enabled, free standard shipping may apply to qualifying orders over R500.
+Free Standard shipping applies to qualifying orders of R770 or more.
 
 [CONFIRM BEFORE LAUNCH] Confirm whether free shipping is enabled.
 
 ## How long does delivery take?
 
-Delivery timing can vary by item, delivery address and fulfilment route.
+Delivery timing depends on the product, destination and available shipping route.
 
 [CONFIRM BEFORE LAUNCH] Confirm delivery estimates.
 
@@ -34,7 +34,7 @@ Where tracking is available, we will share tracking information after it has bee
 
 Contact Customer Service as soon as possible with your order number. Cancellation options depend on the order stage and the approved policy.
 
-[CONFIRM BEFORE LAUNCH] Confirm cancellation rules.
+[CONFIRM BEFORE LAUNCH] Confirm cancellation cutoff and rules.
 
 ## Can I return an item?
 
@@ -62,7 +62,7 @@ Some items may be fulfilled through supplier partners. Availability and fulfilme
 
 ## Why can delivery time vary?
 
-Delivery timing can depend on product availability, fulfilment, courier routing and delivery address.
+Delivery timing depends on the product, destination and available shipping route.
 
 ## How do I contact support?
 

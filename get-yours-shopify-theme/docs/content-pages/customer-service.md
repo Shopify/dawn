@@ -16,7 +16,7 @@ Including the right details helps us review your request efficiently:
 
 ## Delivery And Tracking Queries
 
-We can check the order status and any tracking information available for your delivery. Delivery timing may vary by item, address and fulfilment route.
+We can check the order status and any tracking information available for your delivery. Delivery timing depends on the product, destination and available shipping route.
 
 [CONFIRM BEFORE LAUNCH] Confirm delivery estimates.
 
@@ -30,6 +30,7 @@ Contact us before sending an item back or starting a refund request. We will rev
 
 - Support email: [CONFIRM BEFORE LAUNCH] Confirm support email address.
 - Support hours: [CONFIRM BEFORE LAUNCH] Confirm support hours.
+- Response target: [CONFIRM BEFORE LAUNCH] Confirm response target.
 - Contact form: `/pages/contact`
 
 Please do not send card or account details by email or contact form.

@@ -31,8 +31,8 @@ If a payment does not go through, check the details with your payment provider a
 Get Yours is launching with delivery within South Africa.
 
 - Shipping options and charges are shown at checkout.
-- Where enabled, free standard shipping may apply to qualifying orders over R500.
-- Delivery timing and tracking availability can vary by item, address and fulfilment route.
+- Free Standard shipping applies to qualifying orders of R770 or more.
+- Delivery timing depends on the product, destination and available shipping route.
 - We will share tracking information when it is available for your order.
 
 [CONFIRM BEFORE LAUNCH] Confirm delivery estimates.

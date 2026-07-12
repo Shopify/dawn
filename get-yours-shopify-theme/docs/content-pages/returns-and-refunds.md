@@ -19,7 +19,7 @@ Please include:
 
 Contact us as soon as possible if an item arrives damaged or is not what you ordered. Photos of the item and packaging may help us assess the issue and advise on the next steps.
 
-[CONFIRM BEFORE LAUNCH] Confirm damaged or incorrect item reporting window.
+[CONFIRM BEFORE LAUNCH] Confirm damaged or incorrect item reporting window and evidence requirements.
 
 ## Change-of-Mind Returns
 
@@ -29,7 +29,7 @@ Eligibility, return instructions and any costs for change-of-mind returns must b
 
 ## Refunds
 
-If a refund is approved, it will be handled through the original payment method where possible, subject to the final policy and payment-provider processes.
+If a refund is approved, it will be handled through the original payment method where possible, subject to the final policy and payment-provider processes. After a refund is submitted, it may remain pending with the payment provider before it is settled. We cannot guarantee immediate refund settlement.
 
 [CONFIRM BEFORE LAUNCH] Confirm refund processing times.
 
