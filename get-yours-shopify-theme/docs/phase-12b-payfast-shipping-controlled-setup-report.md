@@ -6,7 +6,7 @@ Phase 12B began with a controlled inspection attempt on 2026-07-10 at approximat
 
 The initial inspection could not reach the authenticated Shopify Admin or PayFast configuration surfaces. The Shopify Admin browser session presented the Shopify login page, the Shopify CLI shipping-scope authorization was not completed, and the public storefront redirected to its password page. After the merchant signed in, the continuation inspected Shopify Payments, Shipping and Delivery, and Markets without changing them. The PayFast dashboard remained signed out.
 
-Current outcome after Phase 12I: **The global post-payment setting remains `Don't fulfill any of the order's line items automatically`. The approved PayFast sandbox retest created order #1002, which Shopify recorded as Paid and Unfulfilled, with no tracking and no shipping-confirmation event. The order remained operationally visible for manual CJ review. Automatic archiving remains enabled but did not apply because the order was not fulfilled. Order #1001 remains unchanged.**
+Current outcome after Phase 12J: **The global post-payment setting remains `Don't fulfill any of the order's line items automatically`. The approved PayFast sandbox refund request for order #1002 created one R179 PayFast refund transaction, currently Pending. The order remains Paid and Unfulfilled while the provider-side sandbox refund is unresolved. No tracking, fulfilment, shipping-confirmation event, CJ order, or live-money movement occurred. Order #1001 remains unchanged.**
 
 No sensitive credentials, payment details, customer credentials, API keys, passwords, or provider secrets were requested, entered, captured, or stored.
 
@@ -375,6 +375,37 @@ Phase 12I was completed on 2026-07-12 with the one explicitly approved PayFast s
 - No automatic-fulfilment, archive, notification, provider, shipping, tax, market, product, page, menu, Contact, policy, app, or theme setting was changed.
 - PayFast test mode remained enabled. PayPal and all other payment settings were unchanged.
 
+## Phase 12J PayFast Sandbox Refund Validation
+
+Phase 12J was continued on 2026-07-12 after Shopify CLI authorization was completed against the permanent store domain. Shopify pre-refund verification passed: `#1002` was a test order, Paid, Unfulfilled, refundable for R179, and had one successful PayFast Sale. The Desk Cable Organiser line was refundable at quantity 1, and `Shop location` was available for the approved restock.
+
+The first mutation attempt was rejected before execution because the current Shopify Admin API requires an `@idempotent` key for `refundCreate`. It created no refund. The second, schema-validated request used a unique idempotency key and created exactly one Shopify refund record and one corresponding R179 PayFast refund transaction. The provider transaction is currently `PENDING`; Shopify therefore continues to show the order as Paid and total refunded as R0. No second refund was attempted.
+
+| Validation area | Before | Action | After | Result | Follow-up |
+| --- | --- | --- | --- | --- | --- |
+| Pre-refund financial state | Paid; R179 total; R0 refunded | Read-only Shopify Admin and API verification | Paid before submission | Passed | None. |
+| Refundable amount | R179 available | Verified against the order record | Refundable before submission; no longer refundable after the one request | Passed | Do not submit another refund. |
+| Refund composition | One R79 Desk Cable Organiser plus R100 Standard shipping | Submitted one full-refund request with full shipping and quantity 1 | One R179 PayFast refund transaction created | Submitted; pending provider completion | Await PayFast sandbox finalization; do not retry. |
+| Refund destination | Original successful PayFast test Sale | Submitted with the original Sale as parent transaction | One PayFast refund transaction references the original payment | Passed; pending | None. |
+| Shopify refund transaction | None | `refundCreate` submitted once with a unique idempotency key | One R179 PayFast Refund transaction, status `PENDING` | Created | Do not issue a second refund. |
+| PayFast refund relationship | One original sandbox Sale; no refund | Requested refund through original PayFast payment | One Sale and one pending Refund appear in Shopify | Pending | Confirm completion through Shopify/PayFast before treating the refund as final. |
+| Final financial state | Paid | One refund request submitted | Paid; total refunded R0 while provider refund is pending | Pending | Re-check only after PayFast updates the transaction. |
+| Fulfilment and tracking | Unfulfilled; no tracking | No fulfilment or tracking action | Unfulfilled; no tracking | Passed | None. |
+| Inventory restock | No restock yet | Restock at Shop location requested with `CANCEL` restock type | Shopify marked the line non-refundable; inventory quantity could not be independently read because the CLI token lacks `read_products` | Partially verified | Do not change inventory. Reauthorize with `read_products` only if an independent inventory read is required. |
+| Customer refund notification | None | Normal customer notification requested | Notification event not independently verified | Pending verification | Do not resend. |
+| Archive state | Operationally visible | No manual archive action | Paid and Unfulfilled; no archive action observed | Passed | A later archive caused by a final full refund would be downstream behaviour, not a manual action. |
+| Duplicate-refund check | No refund exists | One idempotent request submitted | One refund record and one pending Refund transaction | Passed | None. |
+| CJ workflow state | No CJ action | No supplier or fulfilment activity | No CJ action | Passed | None. |
+| Live-money confirmation | No live money | PayFast test-mode refund request only | No live money moved | Passed | None. |
+
+### Phase 12J Strict No-Change Confirmation
+
+- Only one approved R179 PayFast sandbox refund request was submitted. The initial non-idempotent API request was rejected before execution; the idempotent request created one Pending refund transaction.
+- No new order or payment was created.
+- No fulfilment, cancellation, tracking, CJ order, or notification resend occurred.
+- No provider, shipping, tax, market, product-policy, inventory-policy, page, menu, Contact, app, policy, or theme setting changed.
+- No live money moved and no financial credentials were used or stored.
+
 ## Part 1: PayFast Setup And Testing — Historical Phase 12B Snapshot
 
 The following table records the earlier Phase 12B state and is superseded by the Phase 12C current-state section above.
@@ -509,6 +540,9 @@ The PayFast rows below record the earlier Phase 12B state. Use the Phase 12C val
 - Completed the approved Phase 12I post-correction PayFast sandbox retest: Shopify created exactly one new test order, `#1002`, for R179 and recorded it as Paid and Unfulfilled.
 - Confirmed the Phase 12I order remains operationally visible, has no tracking, has no shipping-confirmation event, and has one matching PayFast payment event.
 - Confirmed the corrected manual CJ pre-fulfilment workflow passes: payment is captured while the physical item remains available for manual review.
+- Completed Shopify CLI authorization against the permanent store domain `tdaqk1-nv.myshopify.com` for the approved order and inventory workflow.
+- Submitted one idempotent Phase 12J PayFast sandbox refund request for R179, covering the Desk Cable Organiser and Standard shipping. Shopify created one refund record and one PayFast Refund transaction.
+- Confirmed the Phase 12J refund transaction is Pending, not duplicated; the order remains Paid and Unfulfilled, with no tracking or CJ action.
 - Observed Standard at R100 and Express at R150 for a R79 subtotal.
 - Observed Standard still at R100 for a R715 subtotal and free for a R864 subtotal.
 - Confirmed the R500 announcement is not aligned with checkout behaviour.
@@ -519,7 +553,9 @@ The PayFast rows below record the earlier Phase 12B state. Use the Phase 12C val
 - Official PayFast simulated failed-payment flow.
 - Provider-level cancellation flow after a successful redirect.
 - Actual customer mailbox delivery and merchant new-order email delivery verification.
-- Test-mode refund flow.
+- Completion of the submitted PayFast sandbox refund. It remains Pending, so Shopify has not yet marked the order Refunded or reported R179 as settled.
+- Independent inventory readback after the requested restock; the current CLI authorization lacks `read_products`.
+- Customer refund-notification event and controlled mailbox delivery verification.
 - PayFast sandbox return/redirect behaviour after a successful payment; Shopify recorded the result even though the sandbox browser page remained processing.
 - A separately approved manual fulfilment, tracking, and legitimate shipping-notification workflow test.
 - Checkout tests for a second South African province and an unsupported international address.
@@ -531,7 +567,7 @@ Exactly one PayFast sandbox post-correction retest order has been created and ve
 
 The Phase 12H correction is complete: `Don't fulfill any of the order's line items automatically` remains selected after reload. Automatic archive remains enabled; it is not a substitute for fulfilment and should remain unchanged unless separately approved.
 
-The corrected manual CJ pre-fulfilment workflow has passed: `#1002` is Paid and Unfulfilled, has no tracking, has no premature shipping-confirmation event, and created no CJ supplier order. Do not issue a refund, fulfil the order, change shipping, or modify any other configuration without separate approval.
+The corrected manual CJ pre-fulfilment workflow has passed: `#1002` is Paid and Unfulfilled, has no tracking, has no premature shipping-confirmation event, and created no CJ supplier order. Its one approved sandbox refund is now Pending with PayFast. Do not issue another refund, fulfil the order, change shipping, or modify any other configuration.
 
 After the retest, the official failed-payment, provider-cancellation, and sandbox-refund workflows each require their own approval. Shipping-rate and R500-announcement decisions remain independent.
 
@@ -540,4 +576,4 @@ Two independent launch decisions also remain required:
 1. Confirm whether the current `Standard` R100 and `Express` R150 rates and displayed delivery estimates are operationally approved.
 2. Approve free Standard shipping over R500 after margin review, or approve a later change/removal of the R500 announcement. Checkout currently charges Standard at R715 and makes it free at R864, consistent with the configured R770 threshold rather than the advertised R500 threshold.
 
-The next separately approved payment phase should use only the official PayFast sandbox failed-payment, provider-cancellation, or refund workflow. A manual fulfilment, tracking, and customer shipping-notification test also remains separate. Page publication, menu wiring, Contact changes, policy changes, CJ fulfilment, and theme changes remain excluded.
+First, use a read-only follow-up to confirm whether PayFast finalizes the existing Pending refund. Do not resubmit it. After it reaches a terminal state, the official failed-payment, provider-cancellation, and any remaining refund workflow each require separate approval. A manual fulfilment, tracking, and customer shipping-notification test also remains separate. Page publication, menu wiring, Contact changes, policy changes, CJ fulfilment, and theme changes remain excluded.
