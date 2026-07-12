@@ -6,11 +6,11 @@ This is a documentation-only launch preparation audit. Shopify, PayFast, CJ, pro
 
 | Area | Classification | Evidence and next gate |
 | --- | --- | --- |
-| Storefront | Ready with launch follow-ups | Dawn shell and custom homepage sections render successfully on the local development preview; final authenticated collection/product/cart/search and accessibility QA remains required. |
+| Storefront | Homepage preview passed; full journey QA outcome recorded | LP-QA-1 completed browser-only homepage, collection, product, search and cart checks through the hosted development preview. P0 shipping-copy mismatch, P1 preview routing and navigation/payment follow-ups remain. |
 | Products | Pending merchant decision | Shopify currently has 20 Active Get Yours products with one variant, SKU, inventory, price, and featured media each; supplier economics and restrictions remain unverified. |
 | Payments | Blocked | PayFast is in test mode. Successful test payment passed; existing sandbox refund is pending. |
 | Refunds | Deferred until refund terminal state | #1002 has one pending R179 PayFast refund; do not retry. |
-| Fulfilment | Ready | Automatic fulfilment was disabled; paid orders can remain unfulfilled. Manual fulfilment test is paused. |
+| Fulfilment | Configured; end-to-end test pending | Automatic fulfilment was disabled; paid orders can remain unfulfilled. Manual fulfilment test is paused pending the terminal result of the existing refund. |
 | CJ operations | Pending merchant decision | No SKU mapping, supplier stock, costs, or working-capital reserve is confirmed. |
 | Shipping | Blocked | Standard is R100 and free from R770, while the announcement promises R500. Delivery estimates are unverified. |
 | Tax/VAT | Pending professional confirmation | Test order displayed R10.30 included VAT/tax; treatment is not approved. |
@@ -20,7 +20,7 @@ This is a documentation-only launch preparation audit. Shopify, PayFast, CJ, pro
 | Contact | Pending merchant decision | Existing Contact page is unchanged; recipient and response process are unverified. |
 | Notifications | Pending merchant decision | Order confirmation event exists; refund and merchant-mail delivery are unverified. |
 | Domain | Deferred until live-launch approval | Public domain is known; password removal, redirects, sender domain, and public smoke test remain gated. |
-| Theme | Ready | Theme source is unchanged in LP-1; final responsive and accessibility QA remains required. |
+| Theme | Preview operational; final issues pending correction | Hosted development preview is operational. Theme Check has 8 inherited Dawn warnings and no errors; fix or formally accept the LP-QA-1 P0/P1 issues before final acceptance. |
 | Launch monitoring | Pending merchant decision | First-order monitoring and reconciliation procedures are defined in the runbook. |
 
 ## Current Observed Store Facts
