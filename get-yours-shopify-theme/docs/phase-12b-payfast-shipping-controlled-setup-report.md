@@ -6,7 +6,7 @@ Phase 12B began with a controlled inspection attempt on 2026-07-10 at approximat
 
 The initial inspection could not reach the authenticated Shopify Admin or PayFast configuration surfaces. The Shopify Admin browser session presented the Shopify login page, the Shopify CLI shipping-scope authorization was not completed, and the public storefront redirected to its password page. After the merchant signed in, the continuation inspected Shopify Payments, Shipping and Delivery, and Markets without changing them. The PayFast dashboard remained signed out.
 
-Current outcome after Phase 12J: **The global post-payment setting remains `Don't fulfill any of the order's line items automatically`. The approved PayFast sandbox refund request for order #1002 created one R179 PayFast refund transaction, currently Pending. The order remains Paid and Unfulfilled while the provider-side sandbox refund is unresolved. No tracking, fulfilment, shipping-confirmation event, CJ order, or live-money movement occurred. Order #1001 remains unchanged.**
+Current outcome after Phase 12L: **The global post-payment setting remains `Don't fulfill any of the order's line items automatically`. The one approved PayFast sandbox refund request for order #1002 remains Pending in Shopify after approximately 10 hours and 56 minutes, based on the Shopify transaction timestamp. The order remains open, Paid, and Unfulfilled. No duplicate refund, tracking, fulfilment, shipping-confirmation event, CJ order, or live-money movement occurred. Order #1001 remains unchanged.**
 
 No sensitive credentials, payment details, customer credentials, API keys, passwords, or provider secrets were requested, entered, captured, or stored.
 
@@ -436,6 +436,39 @@ Phase 12K was completed on 2026-07-12 at approximately 12:58 SAST as a read-only
 - No additional API scope authorization was requested.
 - No payment or order was created and no CJ supplier order was created.
 - No provider, shipping, product, tax, page, menu, Contact, policy, app, or theme setting changed.
+- No live money moved.
+
+## Phase 12L Refund Terminal-State Follow-up
+
+Phase 12L was completed on 2026-07-12 at approximately 23:45 SAST as a read-only follow-up. Shopify records the PayFast Refund transaction at `2026-07-12T10:49:24Z` (12:49 SAST) with no later provider or order event. The elapsed time at inspection was approximately 10 hours and 56 minutes. The PayFast dashboard was not separately available in this phase, so its status is represented by Shopify's linked Payfast gateway transaction.
+
+**Final classification: B. Still pending.** The existing refund has not reached a terminal state, but it has not failed or duplicated. It has been pending for less than 24 hours, so a PayFast support escalation is not yet required.
+
+| Area | Phase 12K state | Current state | Result | Follow-up |
+| --- | --- | --- | --- | --- |
+| Elapsed time | Approximately 2 hours 9 minutes pending | Approximately 10 hours 56 minutes from the Shopify Refund timestamp | Still pending, under 24 hours | Wait; do not retry. |
+| Shopify financial status | Paid | Paid | Still pending | None. |
+| Refunded amount | R0 settled | R0 settled | Still pending | Re-check after the existing transaction becomes terminal. |
+| PayFast refund status | Pending through Shopify gateway evidence | One linked R179 Payfast Refund remains `PENDING`; no newer update or safe error is visible | Still pending | Direct PayFast dashboard status remains unverified in this phase. |
+| Sale and Refund transaction counts | One Sale; one Refund | One successful R179 Sale and one linked R179 pending Refund | Passed | No duplicate or follow-up transaction exists. |
+| Duplicate check | One refund record | One refund record and one Refund transaction | Passed | None. |
+| Refund eligibility | Order not refundable; line quantity 0 | Unchanged | Passed | Do not create a replacement refund. |
+| Notification | No refund-notification event | No refund-notification event appeared; actual mailbox delivery remains unverified | Unverified | Do not resend. |
+| Fulfilment | Unfulfilled | Unfulfilled; no fulfilment or shipping-confirmation event appeared | Passed | None. |
+| Tracking | None | None | Passed | None. |
+| Restock | Timeline recorded one item restocked at one location | Restock event remains present | Passed from order timeline | Quantity readback remains out of scope. |
+| Archive state | Open | Open (`closed: false`; no archive event) | Passed | Do not archive manually. |
+| CJ state | No CJ action | No CJ supplier, fulfilment, or tracking action | Passed | None. |
+| Live-money confirmation | Sandbox only | Test order and test gateway transaction only | Passed | No live money moved. |
+| Support escalation requirement | Not required | Not required while pending for less than 24 hours | No escalation yet | At 24 hours, prepare sanitized PayFast support evidence only; do not submit it without approval. |
+| Final classification | B. Still pending | **B. Still pending** | Stop | Failed-payment, customer-cancellation, and manual fulfilment/tracking tests remain paused. |
+
+### Phase 12L Strict No-Change Confirmation
+
+- No refund was submitted, retried, replaced, reversed, or canceled.
+- No order was edited and no payment or order was created.
+- No fulfilment, tracking, notification resend, inventory adjustment, or CJ action occurred.
+- No provider or store configuration changed.
 - No live money moved.
 
 ## Part 1: PayFast Setup And Testing — Historical Phase 12B Snapshot
