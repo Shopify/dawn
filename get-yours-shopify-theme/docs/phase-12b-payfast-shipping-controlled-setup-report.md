@@ -6,7 +6,7 @@ Phase 12B began with a controlled inspection attempt on 2026-07-10 at approximat
 
 The initial inspection could not reach the authenticated Shopify Admin or PayFast configuration surfaces. The Shopify Admin browser session presented the Shopify login page, the Shopify CLI shipping-scope authorization was not completed, and the public storefront redirected to its password page. After the merchant signed in, the continuation inspected Shopify Payments, Shipping and Delivery, and Markets without changing them. The PayFast dashboard remained signed out.
 
-Current outcome after Phase 12H: **The global post-payment setting is now `Don't fulfill any of the order's line items automatically`. The saved state was verified after reload. Automatic archiving remains enabled. The shipment-notification control was enabled before the change and is conditionally hidden while automatic fulfilment is disabled; it was not changed. Future paid orders should remain Unfulfilled for the intended manual CJ review workflow. Order #1001 remains unchanged.**
+Current outcome after Phase 12I: **The global post-payment setting remains `Don't fulfill any of the order's line items automatically`. The approved PayFast sandbox retest created order #1002, which Shopify recorded as Paid and Unfulfilled, with no tracking and no shipping-confirmation event. The order remained operationally visible for manual CJ review. Automatic archiving remains enabled but did not apply because the order was not fulfilled. Order #1001 remains unchanged.**
 
 No sensitive credentials, payment details, customer credentials, API keys, passwords, or provider secrets were requested, entered, captured, or stored.
 
@@ -324,6 +324,57 @@ Phase 12H was completed on 2026-07-12 using explicit approval to change only the
 - No PayFast, PayPal, Shopify Test Payment Gateway, shipping, tax, market, product, variant, inventory, location, policy, page, menu, Contact, theme, static-prototype, app, or Shopify Flow setting changed.
 - No live money moved.
 
+## Phase 12I Post-Correction Sandbox Retest
+
+Phase 12I was completed on 2026-07-12 with the one explicitly approved PayFast sandbox checkout. A fresh cart and synthetic customer details were used. PayFast test mode was confirmed before checkout and remained enabled. After the single sandbox completion action, the PayFast browser page remained on its processing state; Shopify Admin is the authoritative result for this retest and recorded one successful simulated payment and one new order.
+
+| Validation area | Expected | Actual | Result | Follow-up |
+| --- | --- | --- | --- | --- |
+| Corrected setting pre-check | Manual fulfilment selected; automatic archive remains enabled; no unsaved settings | `Don't fulfill any of the order's line items automatically` remained selected. Automatic archive remained enabled. | Passed | None. |
+| Sandbox payment | One PayFast sandbox-only success; no live money or real credentials | One R179 PayFast sandbox payment was completed through the official sandbox flow. | Passed | PayFast browser return remained processing after completion; do not retry. Investigate the return behaviour separately if needed. |
+| Shopify order creation | Exactly one new test order | Shopify created `#1002` (safe ID `7578508296295`) on 2026-07-12 at approximately 18:19 SAST. The order banner identifies it as a test order. | Passed | None. |
+| Financial status | Paid | Shopify shows Paid for R179 ZAR. | Passed | None. |
+| Fulfilment status | Unfulfilled | Shopify shows `Unfulfilled` with no fulfilment action taken. | Passed | Keep unfulfilled until a future, separately approved manual fulfilment test. |
+| Open/archive state | Operationally visible and not prematurely archived | `#1002` remained visible in Shopify Orders and was not archived. Shopify also displays its standard `Complete` header state alongside Paid, while the fulfilment state remains explicitly Unfulfilled. | Passed | No completion or archive action was taken; use the explicit fulfilment status for the manual-CJ decision. |
+| Tracking | No tracking | No tracking number or carrier was present. | Passed | None. |
+| Order confirmation | Customer order-confirmation event generated | Shopify timeline states that an order-confirmation email was sent. Actual mailbox delivery was not inspected. | Passed | Verify controlled mailbox delivery separately if required; do not resend. |
+| Shipping confirmation | No shipping-confirmation event | No shipping-confirmation event appeared in the Shopify timeline. | Passed | None. |
+| PayFast transaction | Exactly one matching successful sandbox transaction | Shopify timeline records one R179 payment processed on Payfast. | Passed | Do not expose or store the provider reference. |
+| Duplicate-order check | No duplicate paid or pending order | Orders index showed the one new `#1002` test order; no second Phase 12I order or payment attempt was made. Historical `#1001` remained separate. | Passed | None. |
+| Abandoned-checkout separation | Earlier abandoned checkout remains separate and unrecovered | The retest used a new checkout that produced `#1002`; no abandoned checkout was recovered or altered. | Passed | No further action in this phase. |
+| CJ workflow readiness | Paid, Unfulfilled, no tracking, no premature shipping confirmation, and available for manual review | `#1002` meets the required pre-CJ manual-review state. No CJ supplier order or fulfilment service action occurred. | Passed | Manual supplier fulfilment, tracking, and shipping-notification testing each require separate approval. |
+
+### Phase 12I Order Summary
+
+- Shopify order: `#1002`.
+- Safe Shopify order ID: `7578508296295`.
+- Created: 2026-07-12 at approximately 18:19 SAST.
+- Test indicator: true.
+- Product: Desk Cable Organiser, quantity 1.
+- Financial status: Paid.
+- Fulfilment status: Unfulfilled.
+- Operational state: visible in Shopify Orders; not prematurely archived. Shopify displays a `Complete` header state, but the separate fulfilment state is explicitly Unfulfilled.
+- Gateway: Payfast in test mode.
+- Transaction evidence: one successful simulated Payfast payment for R179 ZAR.
+- Subtotal: R79.
+- Shipping: Standard, R100.
+- Tax display: R10.30 included, shown as VAT 15%.
+- Total: R179 ZAR.
+- Tracking: none.
+- Customer order confirmation: generated in the Shopify timeline; delivery unverified.
+- Customer shipping confirmation: not generated.
+
+### Phase 12I Strict No-Change Confirmation
+
+- Exactly one simulated Shopify order, `#1002`, was created under the explicit approval.
+- No live money moved and no real financial credentials were used.
+- Order `#1001` was not edited, unarchived, cancelled, refunded, fulfilled, tagged, annotated, or otherwise changed.
+- No manual fulfilment, delivery, shipping, completion, archive, cancellation, refund, or tracking action was taken on order `#1002`. Shopify's displayed `Complete` header state was observed alongside its explicit Unfulfilled fulfilment status.
+- No notification was resent and no message body or mailbox was opened.
+- No CJ supplier order was created.
+- No automatic-fulfilment, archive, notification, provider, shipping, tax, market, product, page, menu, Contact, policy, app, or theme setting was changed.
+- PayFast test mode remained enabled. PayPal and all other payment settings were unchanged.
+
 ## Part 1: PayFast Setup And Testing — Historical Phase 12B Snapshot
 
 The following table records the earlier Phase 12B state and is superseded by the Phase 12C current-state section above.
@@ -455,6 +506,9 @@ The PayFast rows below record the earlier Phase 12B state. Use the Phase 12C val
 - Ruled out PayFast, product classification, app-managed fulfilment, Shopify Flow, custom locations, and Desk Cable Organiser-specific configuration.
 - Corrected the global automatic line-item fulfilment setting in Phase 12H and verified after reload that `Don't fulfill any of the order's line items automatically` remains selected.
 - Confirmed automatic archive remains enabled. The shipment-notification control was unchanged and is conditionally hidden while automatic fulfilment is disabled.
+- Completed the approved Phase 12I post-correction PayFast sandbox retest: Shopify created exactly one new test order, `#1002`, for R179 and recorded it as Paid and Unfulfilled.
+- Confirmed the Phase 12I order remains operationally visible, has no tracking, has no shipping-confirmation event, and has one matching PayFast payment event.
+- Confirmed the corrected manual CJ pre-fulfilment workflow passes: payment is captured while the physical item remains available for manual review.
 - Observed Standard at R100 and Express at R150 for a R79 subtotal.
 - Observed Standard still at R100 for a R715 subtotal and free for a R864 subtotal.
 - Confirmed the R500 announcement is not aligned with checkout behaviour.
@@ -466,16 +520,18 @@ The PayFast rows below record the earlier Phase 12B state. Use the Phase 12C val
 - Provider-level cancellation flow after a successful redirect.
 - Actual customer mailbox delivery and merchant new-order email delivery verification.
 - Test-mode refund flow.
+- PayFast sandbox return/redirect behaviour after a successful payment; Shopify recorded the result even though the sandbox browser page remained processing.
+- A separately approved manual fulfilment, tracking, and legitimate shipping-notification workflow test.
 - Checkout tests for a second South African province and an unsupported international address.
 - 360 px and 430 px payment-page rechecks after the handoff issue is resolved.
 
 ## Recommended Next Approval
 
-Exactly one PayFast sandbox order has been created and verified. Do not repeat the successful payment without separate approval.
+Exactly one PayFast sandbox post-correction retest order has been created and verified. Do not repeat a successful payment without separate approval.
 
 The Phase 12H correction is complete: `Don't fulfill any of the order's line items automatically` remains selected after reload. Automatic archive remains enabled; it is not a substitute for fulfilment and should remain unchanged unless separately approved.
 
-The next approval should authorize exactly one new PayFast sandbox retest order only. The retest must confirm that the order is Paid and remains Unfulfilled, has no tracking, has no premature shipping-confirmation email, and creates no CJ supplier order. Do not issue a refund, fulfil the order, change shipping, or modify any other configuration in that retest phase unless separately approved.
+The corrected manual CJ pre-fulfilment workflow has passed: `#1002` is Paid and Unfulfilled, has no tracking, has no premature shipping-confirmation event, and created no CJ supplier order. Do not issue a refund, fulfil the order, change shipping, or modify any other configuration without separate approval.
 
 After the retest, the official failed-payment, provider-cancellation, and sandbox-refund workflows each require their own approval. Shipping-rate and R500-announcement decisions remain independent.
 
@@ -484,4 +540,4 @@ Two independent launch decisions also remain required:
 1. Confirm whether the current `Standard` R100 and `Express` R150 rates and displayed delivery estimates are operationally approved.
 2. Approve free Standard shipping over R500 after margin review, or approve a later change/removal of the R500 announcement. Checkout currently charges Standard at R715 and makes it free at R864, consistent with the configured R770 threshold rather than the advertised R500 threshold.
 
-After the correction, create one separately approved PayFast sandbox retest order and verify it remains Paid and Unfulfilled without tracking or shipping confirmation. Only after that should the official failed-payment, cancellation, notification, sandbox-refund, and manual-fulfilment tests proceed under separate approvals. Page publication, menu wiring, Contact changes, policy changes, CJ fulfilment, and theme changes remain excluded.
+The next separately approved payment phase should use only the official PayFast sandbox failed-payment, provider-cancellation, or refund workflow. A manual fulfilment, tracking, and customer shipping-notification test also remains separate. Page publication, menu wiring, Contact changes, policy changes, CJ fulfilment, and theme changes remain excluded.
