@@ -406,6 +406,38 @@ The first mutation attempt was rejected before execution because the current Sho
 - No provider, shipping, tax, market, product-policy, inventory-policy, page, menu, Contact, app, policy, or theme setting changed.
 - No live money moved and no financial credentials were used or stored.
 
+## Phase 12K Pending Refund Finalization Check
+
+Phase 12K was completed on 2026-07-12 at approximately 12:58 SAST as a read-only verification of the one existing Phase 12J refund. The refund request was created at approximately 10:49 SAST, so it had remained pending for approximately two hours and nine minutes at the point of this check.
+
+**Final classification: B. Still pending.** Shopify shows one original successful PayFast Sale and one linked PayFast Refund for R179, with the Refund transaction still `PENDING`. There is no duplicate refund and no conflicting Shopify state. The authenticated PayFast dashboard was not available for a separate provider-side inspection in this phase; Shopify's gateway transaction status is the available evidence.
+
+| Verification area | Phase 12J state | Current state | Result | Follow-up |
+| --- | --- | --- | --- | --- |
+| Shopify financial status | Paid | Paid | Still pending | Do not retry or submit another refund. |
+| Shopify refunded amount | R0 settled while refund was pending | R0 settled | Still pending | Re-check only after the existing PayFast Refund reaches a terminal state. |
+| PayFast refund status | One R179 Refund, Pending | One R179 PayFast Refund, `PENDING` | Still pending | Await PayFast sandbox finalization. |
+| Transaction count | One Sale; one Refund | One successful Sale and one linked pending Refund | Passed | No duplicate or follow-up transaction exists. |
+| Duplicate-refund check | One refund record | One refund record and one Refund transaction | Passed | None. |
+| Remaining refundable amount | Line no longer refundable | Order is not refundable; line refundable quantity remains 0 | Passed | Do not create a replacement refund. |
+| Notification event | Not independently verified | No customer refund-notification event appears in the available order events; actual mailbox delivery remains unverified | Pending verification | Do not resend. |
+| Fulfilment and tracking | Unfulfilled; no tracking | Unfulfilled; no shipping or fulfilment event appeared in the order events | Passed | None. |
+| Inventory restock | Requested, not independently read | Shopify order event records that one item was restocked at one location | Passed from order timeline | Quantity readback remains out of scope because no additional product scope was requested. |
+| Archive state | Open | Open (`closed: false`; no archive event) | Passed | Do not archive manually. |
+| CJ workflow state | No CJ action | No CJ supplier order, fulfilment, or tracking event | Passed | None. |
+| Live-money confirmation | Sandbox only | Test order and PayFast test transaction only; no live-money movement | Passed | None. |
+| Final classification | Pending | **B. Still pending** | Stop | Failed-payment, customer-cancellation, and manual fulfilment/tracking tests remain paused. |
+
+### Phase 12K Strict No-Change Confirmation
+
+- No refund was submitted, retried, canceled, reversed, or otherwise changed.
+- No order was edited, fulfilled, canceled, archived, unarchived, or given tracking.
+- No notification was resent and no inventory adjustment was made manually.
+- No additional API scope authorization was requested.
+- No payment or order was created and no CJ supplier order was created.
+- No provider, shipping, product, tax, page, menu, Contact, policy, app, or theme setting changed.
+- No live money moved.
+
 ## Part 1: PayFast Setup And Testing — Historical Phase 12B Snapshot
 
 The following table records the earlier Phase 12B state and is superseded by the Phase 12C current-state section above.
