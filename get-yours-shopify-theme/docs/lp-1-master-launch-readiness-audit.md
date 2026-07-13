@@ -2,11 +2,11 @@
 
 ## Baseline
 
-This is a documentation-only launch preparation audit. Shopify, PayFast, CJ, products, menus, pages, policies, theme source, and the pending refund were not changed.
+This audit now includes the completed PR-1 private-staging implementation. PR-1 created isolated launch menus and updated only the development-theme navigation, footer and Contact copy. It did not publish the theme, pages or policies or alter payments, shipping, orders, refunds, fulfilment or CJ.
 
 | Area | Classification | Evidence and next gate |
 | --- | --- | --- |
-| Storefront | Homepage preview passed; full journey QA outcome recorded | LP-QA-1 completed browser-only homepage, collection, product, search and cart checks through the hosted development preview. LP-3A aligned and preview-verified development-theme copy at R770; navigation, payment and controlled checkout verification remain. |
+| Storefront | Development preview passes; publication blocked | PR-1 verified the final header, Shop hierarchy, footer and Contact copy locally and through the hosted development preview at five widths. Publication was withheld because password protection is off. |
 | Products | Pending merchant decision | Shopify currently has 20 Active Get Yours products with one variant, SKU, inventory, price, and featured media each; supplier economics and restrictions remain unverified. |
 | Payments | Blocked | PayFast is in test mode. Successful test payment passed; existing sandbox refund is pending. |
 | Refunds | Deferred until refund terminal state | #1002 has one pending R179 PayFast refund; do not retry. |
@@ -16,11 +16,11 @@ This is a documentation-only launch preparation audit. Shopify, PayFast, CJ, pro
 | Tax/VAT | Pending professional confirmation | Test order displayed R10.30 included VAT/tax; treatment is not approved. |
 | Customer support | Partial operational approval; unpublished | LP-3B.4 approves the public/recipient mailbox, Store Owner escalation model, hours, cadence and selected customer-safety rules. Shopify Contact-form delivery, controlled mailbox test and professional gates remain open. |
 | Legal content | Pending professional confirmation | LP-3B.2/3B.3 separate legal/tax questions from recommended operations; policy copy and operational rules still need South African legal review. |
-| Menus | Planned; not yet authorized | LP-3B verified the current menus are incomplete and documented a separate LP-3C mutation plan. Support pages remain unpublished and menus unwired. |
-| Contact | Hosted submission passed; routing misaligned | LP-3B.5C confirmed that Shopify routes the native form to a different private Sender email rather than `info@getyours.online`. Theme implementation is native and valid. Destination alignment, branded sender/authentication, delivery retest, acknowledgement correction and privacy review remain open. |
+| Menus | Launch Shop menus implemented in development | PR-1 created isolated Main and Footer Shop menus and assigned them to development theme `141697089639`. Unapproved Support and Legal groups are hidden; support pages remain unpublished. |
+| Contact | Copy corrected; routing misaligned | PR-1 applied the approved acknowledgement and sensitive-information warning. Shopify still routes the native form to a different private Sender email rather than `info@getyours.online`; destination/sender alignment, delivery retest and privacy review remain open. |
 | Notifications | Pending merchant decision | Order confirmation event exists; refund and merchant-mail delivery are unverified. |
-| Domain | Deferred until live-launch approval | Public domain is known; password removal, redirects, sender domain, and public smoke test remain gated. |
-| Theme | Preview operational; final issues pending correction | Hosted development preview is operational. Theme Check has 8 inherited Dawn warnings and no errors; fix or formally accept the LP-QA-1 P0/P1 issues before final acceptance. |
+| Domain | Password-protected staging blocked | Shopify Preferences showed password protection off. The development theme cannot be published under the approved private-staging authorization until protection is enabled and verified. |
+| Theme | Development candidate ready; not published | Theme `141697089639` contains the PR-1 changes and passed hosted/local changed-component QA. Theme Check has 8 inherited warnings and no errors. Active rollback theme remains Dawn `141692731495`. |
 | Launch monitoring | Pending merchant decision | First-order monitoring and reconciliation procedures are defined in the runbook. |
 
 ## Current Observed Store Facts
@@ -32,7 +32,8 @@ This is a documentation-only launch preparation audit. Shopify, PayFast, CJ, pro
 - PayFast is active in test mode. PayPal was already active separately and requires a later launch decision.
 - Order #1002 is a test order, Paid and Unfulfilled. Its single R179 PayFast refund remains pending and is a launch blocker.
 - Six support pages exist in Shopify Admin as unpublished drafts: Help, Customer Service, Shipping Information, Returns & Refunds, Payment Information, and FAQ.
-- On 2026-07-13, the development theme preview returned HTTP 200 and the homepage had no measured horizontal overflow at 360, 400, 430, 768 or 1200px. The planned navigation and footer menus remain unwired.
+- On 2026-07-13, PR-1 assigned the approved launch menus to development theme `141697089639`; the hosted and local previews had no measured horizontal overflow at 360, 400, 430, 768 or 1200px.
+- Password protection was off, so theme `141697089639` was not published. Active theme Dawn `141692731495` remains unchanged.
 - An auxiliary `GET /sf_private_access_tokens` returned HTTP 400 during local preview without a visible storefront defect. This is monitoring-only unless related behaviour fails.
 
 ## Evidence Limitations

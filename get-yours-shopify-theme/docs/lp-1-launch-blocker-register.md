@@ -15,11 +15,11 @@
 | LP1-08 | Payments QA | Failed-payment and cancellation tests paused | P1 | Pending refund safeguard | Resume only after LP1-01 terminal state | Payments owner | LP1-01 | Deferred until refund terminal state |
 | LP1-09 | Fulfilment QA | Manual fulfilment/tracking test paused | P1 | Correct setting exists but workflow untested | Run controlled test later | Fulfilment owner | LP1-01 | Deferred until refund terminal state |
 | LP1-10 | Legal | Policies and support content need approval/review | P0 | LP-3B.2 tax/legal dependency register and LP-3B.3 review briefs | Merchant approval, accountant/tax-practitioner confirmation and South African legal review | Merchant / legal | Operations decisions | Pending professional confirmation |
-| LP1-11 | Pages/menus | Support pages are unpublished; Support/Legal menus contain Search; Shop mirrors main navigation | P1 | LP-3B read-only navigation audit | Execute the separately approved LP-3C publication/policy/menu plan | Merchant | LP1-10, LP1-03b/c/d | Planned; not authorized |
+| LP1-11 | Pages/menus | Development header and Footer Shop are wired; support pages remain unpublished and Support/Legal groups remain intentionally hidden | P1 | PR-1 created isolated launch menus and removed Search placeholders from the development footer | Approve/publish support and legal content before creating and assigning those footer groups | Merchant | LP1-10, LP1-03b/c/d | Shop navigation resolved; content menus deferred |
 | LP1-12 | Products | Twenty active products exist, but CJ mapping, supplier cost, shipping route, restrictions and contribution margin remain unverified | P0 | Shopify catalogue inspection confirmed 20 active products with SKUs, prices, inventory and media | Complete LP-2 supplier mapping and approve the initial launch shortlist | Merchant / fulfilment | LP1-07 | Pending merchant decision |
-| LP1-13 | Launch controls | Test gateway, PayPal, PayFast live mode, password removal and theme publication undecided | P0 | Launch settings not approved | Decide after final tests | Merchant | All P0/P1 | Deferred until live-launch approval |
+| LP1-13 | Launch controls | Storefront password protection is off; test gateway, PayPal, PayFast live mode and public launch remain unresolved | P0 | PR-1 Shopify Preferences inspection and payment review | Enable and verify password protection before separately approving development-theme publication; resolve payment gates before public launch | Merchant | All P0/P1 | Private-staging publication blocked |
 | LP1-14 | Domain/monitoring | Public smoke testing and first-order monitoring are documented but not authorized or executed | P1 | LP-1 Final Launch Runbook steps 23–25 | Assign owners and execute after public-launch approval | Merchant / operations | LP1-13 | Deferred until live-launch approval |
-| LP1-15 | Contact operations | Native form and hosted success state pass; destination differs from the approved public mailbox, sender fallback warning is visible and acknowledgement copy is misaligned | P1 | LP-3B.5B/5C evidence | Separately approve destination/sender correction, locale-copy alignment and hosted delivery retest; complete privacy/legal review | Store Owner | LP1-06, legal review | Pending merchant, technical and professional confirmation |
+| LP1-15 | Contact operations | Native form and corrected success/safety copy pass; destination still differs from the approved public mailbox and the sender fallback warning remains | P1 | LP-3B.5B/5C and PR-1 preview evidence | Align destination/sender, complete hosted delivery retest and privacy/legal review | Store Owner | LP1-06, legal review | Theme copy resolved; routing pending |
 
 ## Prioritized Action Order
 
@@ -27,6 +27,7 @@
 2. Complete supplier mapping, landed-cost model, and a 10-20 product launch shortlist.
 3. Verify the R770 checkout threshold and Shopify Admin rate wording, then close the support-page operational and legal gates before any customer-facing content is published.
 4. Obtain tax/VAT and legal-policy confirmation.
-5. Confirm support channels and controlled mailbox test plan.
+5. Enable and verify storefront password protection before any private-staging theme publication.
+6. Align the Shopify Contact sender/destination and rerun one controlled hosted delivery test.
 
 Deferred tests are paused, not failed, until the refund reaches a terminal state.
