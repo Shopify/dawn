@@ -62,6 +62,12 @@ The merchant confirmed that no LP-3B.5 test message was received at `info@getyou
 3. A future controlled test should use an approved Shopify-hosted storefront path or normal merchant browser context and still stop if Shopify presents another verification barrier.
 4. Keep Contact and support-page publication blocked pending a completed controlled form test and privacy/legal review.
 
+## LP-3B.5B Handoff
+
+The merchant later completed one hosted storefront submission successfully. Shopify displayed a success acknowledgement, but no message was found at the target mailbox. See `docs/lp-3b-5b-hosted-contact-form-verification.md`. The local-proxy limitation remains useful QA evidence but is not itself a launch defect.
+
+LP-3B.5C later established that Shopify's native Contact destination is a different private Sender email. See `docs/lp-3b-5c-contact-routing-inspection.md`.
+
 ## Strict No-Change Confirmation
 
 LP-3B.5 performed two separately approved synthetic storefront attempts: the initial hCaptcha-blocked attempt and one human-hCaptcha follow-up that Shopify connection verification blocked through the local proxy. No Contact POST was accepted, and no Shopify configuration, content, menu, policy, payment, shipping, order, refund, fulfilment, CJ, theme or live-store mutation occurred.

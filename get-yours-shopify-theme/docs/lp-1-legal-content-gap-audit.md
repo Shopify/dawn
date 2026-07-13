@@ -14,7 +14,7 @@
 | Terms of Use | Shopify policy reference | Requires South African legal review and merchant approval. |
 | Refund Policy | Shopify policy reference | Must align with Returns & Refunds process and payment-provider handling. |
 | Shipping Policy | Shopify policy reference | Must align with approved rates, destinations, and delivery wording. |
-| Contact | Existing page unchanged | Public address, recipient mailbox and acknowledgement wording are approved. Form delivery, storefront success behaviour, spam routing and privacy wording still require controlled verification/review. |
+| Contact | Existing page unchanged | Hosted submission works, but Shopify's configured native destination differs from the approved public mailbox and the Dawn acknowledgement differs from approved wording. Destination correction, delivery retest and privacy review remain open. |
 
 ## Mandatory Decision Register
 

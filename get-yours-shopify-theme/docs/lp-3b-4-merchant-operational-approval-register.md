@@ -23,7 +23,7 @@ This is an internal register. It does not publish customer-facing rules, determi
 | Recommendation | Current status | Required input or next step |
 | --- | --- | --- |
 | Publish only a monitored public support address. | Approved | `info@getyours.online` is approved for public use. |
-| Route Contact messages to a monitored recipient mailbox. | Approved | `info@getyours.online` is the confirmed recipient mailbox. Manual Outlook send/receive capability was verified; Shopify Contact-form delivery remains a separate controlled test. |
+| Route Contact messages to a monitored recipient mailbox. | Approved with amendment | `info@getyours.online` is the merchant-approved recipient and is functional, but LP-3B.5C found Shopify's current native Contact destination is a different private Sender email. Admin alignment requires separate approval. |
 | Assign one primary support owner. | Approved | Store Owner. |
 | Assign a backup support owner for absence and escalations. | Approved with amendment | Unassigned for launch; Store Owner accepts the temporary single-owner operational risk. |
 | Review inboxes at least twice each business day. | Approved | Internal minimum cadence; no guaranteed customer response time. |
@@ -114,11 +114,11 @@ Internal baseline: cancellation is most likely before a supplier order is placed
 | Recommendation | Current status | Required input or confirmation |
 | --- | --- | --- |
 | Confirm recipient mailbox and primary/backup owners. | Approved with amendment | Recipient is `info@getyours.online`; primary owner is Store Owner. Backup is unassigned for launch, with temporary single-owner risk accepted. Shopify Contact-form delivery remains untested. |
-| Approve acknowledgement wording without a guaranteed response time. | Approved | Approved text is retained in the Contact launch gate below; do not add a response-time promise. |
+| Approve acknowledgement wording without a guaranteed response time. | Approved | Approved text is retained below. LP-3B.5B showed Shopify's current message says `We'll get back to you as soon as possible`; implementation alignment remains open. |
 | Approve privacy wording and an approved Privacy Policy link. | Professional legal confirmation required | South African legal review and merchant approval. |
 | Document spam filtering and escalation route. | Approved | Daily spam review; payment, fulfilment, refund and privacy escalation owner is Store Owner. |
 | Define a synthetic Contact test identity and expected results. | Merchant input still required | Test plan details remain open; do not submit yet. |
-| Run a synthetic Contact test. | Deferred pending controlled technical test | LP-3B.5 was environment-blocked by Shopify connection verification through `127.0.0.1`. A merchant-operated hosted submission is required to test delivery and routing. |
+| Run a synthetic Contact test. | Deferred pending controlled technical test | LP-3B.5B hosted submission was accepted. LP-3B.5C found it was routed to a different configured private Sender email; destination alignment and a later retest remain open. |
 
 ## Professional And External Confirmation Register
 
