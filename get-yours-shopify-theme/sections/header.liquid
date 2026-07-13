@@ -128,13 +128,13 @@
   -%}
   <header class="gy-header">
     <div class="gy-header__main-row">
-      <div class="header gy-header__main-row-inner header--{{ section.settings.logo_position }} header--mobile-{{ section.settings.mobile_logo_position }} page-width{% if section.settings.menu_type_desktop == 'drawer' %} drawer-menu{% endif %}{% if section.settings.menu != blank %} header--has-menu{% endif %}{% if has_app_block %} header--has-app{% endif %}{% if social_links %} header--has-social{% endif %}{% if shop.customer_accounts_enabled %} header--has-account{% endif %}{% if localization_forms %} header--has-localizations{% endif %}">
+      <div class="header gy-header__main-row-inner header--{{ section.settings.logo_position }} header--mobile-{{ section.settings.mobile_logo_position }} page-width{% if section.settings.menu_type_desktop == 'drawer' %} drawer-menu{% endif %}{% if section.settings.primary_navigation_menu != blank %} header--has-menu{% endif %}{% if has_app_block %} header--has-app{% endif %}{% if social_links %} header--has-social{% endif %}{% if shop.customer_accounts_enabled %} header--has-account{% endif %}{% if localization_forms %} header--has-localizations{% endif %}">
     {%- liquid
-      if section.settings.menu != blank
-        render 'header-drawer'
+      if section.settings.primary_navigation_menu != blank
+        render 'header-drawer', menu: section.settings.primary_navigation_menu, menu_type_desktop: section.settings.menu_type_desktop, menu_color_scheme: section.settings.menu_color_scheme, enable_customer_avatar: section.settings.enable_customer_avatar
       endif
 
-      if section.settings.logo_position == 'top-center' or section.settings.menu == blank
+      if section.settings.logo_position == 'top-center' or section.settings.primary_navigation_menu == blank
         render 'header-search', input_id: 'Search-In-Modal-1'
       endif
     -%}
@@ -183,7 +183,6 @@
 
     {% render 'gy-header-search',
       input_id: 'GyDesktopSearch',
-      category_menu: section.settings.menu,
       class: 'gy-header-search--desktop'
     %}
 
@@ -325,7 +324,6 @@
 
     {% render 'gy-header-search',
       input_id: 'GyMobileSearch',
-      category_menu: section.settings.menu,
       class: 'gy-header-search--mobile'
     %}
       </div>
@@ -339,13 +337,13 @@
             <span>{{ section.settings.browse_categories_label | escape }}</span>
           </summary>
           <ul class="gy-browse-categories__menu list-menu" role="list">
-            <li><a href="{{ routes.all_products_collection_url }}" class="gy-browse-categories__link link link--text focus-inset">Shop All</a></li>
-            <li><a href="{{ collections['home-organisation'].url }}" class="gy-browse-categories__link link link--text focus-inset">Home Organisation</a></li>
-            <li><a href="{{ collections['office-desk-essentials'].url }}" class="gy-browse-categories__link link link--text focus-inset">Office &amp; Desk Essentials</a></li>
-            <li><a href="{{ collections['kitchen-storage'].url }}" class="gy-browse-categories__link link link--text focus-inset">Kitchen &amp; Storage</a></li>
-            <li><a href="{{ collections['lifestyle'].url }}" class="gy-browse-categories__link link link--text focus-inset">Lifestyle</a></li>
-            <li><a href="{{ collections['travel'].url }}" class="gy-browse-categories__link link link--text focus-inset">Travel</a></li>
-            <li><a href="{{ collections['tech-accessories'].url }}" class="gy-browse-categories__link link link--text focus-inset">Tech Accessories</a></li>
+            <li><a href="{{ routes.all_products_collection_url }}" class="gy-browse-categories__link link link--text focus-inset">{{ 'sections.header.shop_all' | t }}</a></li>
+            <li><a href="{{ collections['home-organisation'].url }}" class="gy-browse-categories__link link link--text focus-inset">{{ 'sections.header.home_organisation' | t }}</a></li>
+            <li><a href="{{ collections['office-desk-essentials'].url }}" class="gy-browse-categories__link link link--text focus-inset">{{ 'sections.header.office_desk_essentials' | t }}</a></li>
+            <li><a href="{{ collections['kitchen-storage'].url }}" class="gy-browse-categories__link link link--text focus-inset">{{ 'sections.header.kitchen_storage' | t }}</a></li>
+            <li><a href="{{ collections['lifestyle'].url }}" class="gy-browse-categories__link link link--text focus-inset">{{ 'sections.header.lifestyle' | t }}</a></li>
+            <li><a href="{{ collections['travel'].url }}" class="gy-browse-categories__link link link--text focus-inset">{{ 'sections.header.travel' | t }}</a></li>
+            <li><a href="{{ collections['tech-accessories'].url }}" class="gy-browse-categories__link link link--text focus-inset">{{ 'sections.header.tech_accessories' | t }}</a></li>
           </ul>
         </details>
 
@@ -487,17 +485,50 @@
 
   customElements.define('sticky-header', StickyHeader);
 
-  document.querySelectorAll('[data-gy-category-navigator]').forEach((select) => {
-    select.addEventListener('change', (event) => {
-      if (event.target.value) window.location.assign(event.target.value);
-    });
-  });
+  const gyHeaderDisclosures = document.querySelectorAll('[data-gy-header-disclosure]');
 
-  document.querySelectorAll('.gy-browse-categories').forEach((details) => {
+  gyHeaderDisclosures.forEach((details) => {
+    const summary = details.querySelector('summary');
+
+    const syncExpandedState = () => {
+      summary?.setAttribute('aria-expanded', details.open ? 'true' : 'false');
+    };
+
+    details.addEventListener('toggle', () => {
+      syncExpandedState();
+      if (!details.open) return;
+
+      gyHeaderDisclosures.forEach((otherDetails) => {
+        if (otherDetails !== details) otherDetails.removeAttribute('open');
+      });
+
+      document.querySelectorAll('.gy-header header-menu details[open]').forEach((menuDetails) => {
+        menuDetails.removeAttribute('open');
+      });
+    });
+
     details.addEventListener('keydown', (event) => {
       if (event.key !== 'Escape') return;
       details.removeAttribute('open');
-      details.querySelector('summary')?.focus();
+      syncExpandedState();
+      summary?.focus();
+    });
+
+    details.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        details.removeAttribute('open');
+        syncExpandedState();
+      });
+    });
+
+    syncExpandedState();
+  });
+
+  document.addEventListener('click', (event) => {
+    gyHeaderDisclosures.forEach((details) => {
+      if (!details.open || details.contains(event.target)) return;
+      details.removeAttribute('open');
+      details.querySelector('summary')?.setAttribute('aria-expanded', 'false');
     });
   });
 {% endjavascript %}
@@ -588,12 +619,6 @@
       ],
       "default": "center",
       "label": "t:sections.header.settings.mobile_logo_position.label"
-    },
-    {
-      "type": "link_list",
-      "id": "menu",
-      "default": "main-menu",
-      "label": "Mobile navigation menu"
     },
     {
       "type": "link_list",
