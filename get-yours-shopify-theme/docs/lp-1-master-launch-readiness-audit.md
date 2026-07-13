@@ -6,7 +6,7 @@ This is a documentation-only launch preparation audit. Shopify, PayFast, CJ, pro
 
 | Area | Classification | Evidence and next gate |
 | --- | --- | --- |
-| Storefront | Homepage preview passed; full journey QA outcome recorded | LP-QA-1 completed browser-only homepage, collection, product, search and cart checks through the hosted development preview. LP-3A aligned development-theme copy to R770; P1 preview routing, navigation, payment and shipping retesting remain. |
+| Storefront | Homepage preview passed; full journey QA outcome recorded | LP-QA-1 completed browser-only homepage, collection, product, search and cart checks through the hosted development preview. LP-3A aligned and preview-verified development-theme copy at R770; navigation, payment and controlled checkout verification remain. |
 | Products | Pending merchant decision | Shopify currently has 20 Active Get Yours products with one variant, SKU, inventory, price, and featured media each; supplier economics and restrictions remain unverified. |
 | Payments | Blocked | PayFast is in test mode. Successful test payment passed; existing sandbox refund is pending. |
 | Refunds | Deferred until refund terminal state | #1002 has one pending R179 PayFast refund; do not retry. |
@@ -14,8 +14,8 @@ This is a documentation-only launch preparation audit. Shopify, PayFast, CJ, pro
 | CJ operations | Pending merchant decision | No SKU mapping, supplier stock, costs, or working-capital reserve is confirmed. |
 | Shipping | Partially corrected | Development-theme and support-page copy are aligned to R770. Shopify Admin rate wording and checkout behaviour still require controlled verification before publication. |
 | Tax/VAT | Pending professional confirmation | Test order displayed R10.30 included VAT/tax; treatment is not approved. |
-| Customer support | Publication decision package complete; unpublished | LP-3B.1/3B.2 aligned support drafts and recorded page, returns, cancellation and Contact publication gates. Inbox, owner, controlled mailbox test and merchant/legal approvals remain unconfirmed. |
-| Legal content | Pending professional confirmation | LP-3B.2 records tax/legal dependencies; policy copy and operational rules still need South African legal review. |
+| Customer support | Operating model drafted; unpublished | LP-3B.1/3B.2 aligned support drafts and recorded publication gates; LP-3B.3 recommends a starter model. Inbox, owner assignments, controlled mailbox test and merchant approvals remain unconfirmed. |
+| Legal content | Pending professional confirmation | LP-3B.2/3B.3 separate legal/tax questions from recommended operations; policy copy and operational rules still need South African legal review. |
 | Menus | Planned; not yet authorized | LP-3B verified the current menus are incomplete and documented a separate LP-3C mutation plan. Support pages remain unpublished and menus unwired. |
 | Contact | Published form; not operationally ready | Contact form renders without mobile overflow, but recipient, owner, acknowledgement, privacy wording and controlled form delivery are unverified. |
 | Notifications | Pending merchant decision | Order confirmation event exists; refund and merchant-mail delivery are unverified. |

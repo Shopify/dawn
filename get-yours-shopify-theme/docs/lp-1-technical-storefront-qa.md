@@ -105,8 +105,8 @@ No theme code, Shopify Admin setting, live-store setting, checkout, payment, ord
 - The Standard R100 and Express R150 names, checkout estimates and R770 rate condition remain Shopify Admin-controlled and were not changed.
 - Footer payment icons are dynamically generated from `shop.enabled_payment_types`; no hard-coded Visa, Mastercard, American Express, Diners Club or Discover icons were found. Final visible icons depend on the enabled provider configuration.
 - PayPal accelerated checkout remains visible because PayPal is active. Its final launch inclusion remains a merchant decision. Payflex is held pending margin review; Mobicred remains disabled; no payment-provider setting changed.
-- Unpublished support-page drafts may still contain historic/conditional R500 wording and must be deliberately aligned before publication.
-- Retest the announcement, product, cart drawer and cart page in the development theme after the authorised theme push/preview refresh. Also verify checkout independently after any future Admin rate or provider change.
+- Unpublished support-page drafts were later aligned to R770 in LP-3B.1. Their remaining gates are operational, tax and legal approval, not copy alignment.
+- The development-theme R770 preview retest passed. Verify checkout independently after any future Shopify Admin rate or provider change.
 
 ## LP-3B Navigation And Contact Readiness
 

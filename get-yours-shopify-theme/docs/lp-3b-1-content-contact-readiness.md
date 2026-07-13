@@ -48,6 +48,10 @@ Historical Phase 12 and earlier operating documents may retain the superseded R5
 
 The expanded returns, cancellation, shipping, payment, Customer Service, Contact, tax and legal decision package is in `docs/lp-3b-2-support-page-publication-matrix.md`. It does not close the recipient, owner, acknowledgement, privacy, spam or controlled-test decisions in this register.
 
+## LP-3B.3 Operational Handoff
+
+`docs/lp-3b-3-merchant-operational-decisions.md` recommends an internal solo-founder support model and case-handling procedures. It does not assign an actual recipient, owner or public response promise, and it does not authorize a Contact-form submission.
+
 ## Publication Gate
 
 The support pages remain unpublished. They are not ready for customer-visible menus until the remaining shipping, payment, legal and support-operation decisions are resolved and each page is separately approved for publication.

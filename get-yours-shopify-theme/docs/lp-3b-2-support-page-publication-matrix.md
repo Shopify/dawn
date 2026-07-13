@@ -143,6 +143,19 @@ Recommended acknowledgement baseline:
 
 All six support pages are **A: Draft aligned; merchant review required**, with additional C/D blockers as recorded above. Contact and all four policy destinations are F: Blocked. No destination is E: Ready for LP-3C publication.
 
+## LP-3B.3 Operational-Decision Impact
+
+LP-3B.3 provides recommended internal starter procedures for support ownership, cancellations, returns, damaged/incorrect items, tracking, delivery exceptions, refund authority, payment support and Contact operations. It closes no publication gate by itself: all merchant assignments and approvals remain outstanding, supplier/CJ facts require case-specific confirmation, payment-provider matters require provider evidence, and tax/legal matters require professional review. See `docs/lp-3b-3-merchant-operational-decisions.md`.
+
+| Publication blocker group | LP-3B.3 result | Remaining gate |
+| --- | --- | --- |
+| Support and Contact workflow | Recommended internal model documented. | Merchant must assign mailbox, owners, cadence, escalation, privacy treatment and controlled-test approval. |
+| Cancellations, returns and remedies | Recommended case-handling and authority model documented. | Merchant approval, supplier-return facts and South African legal review. |
+| Damaged, incorrect, missing and delivery cases | Evidence and escalation SOP documented. | Supplier/carrier case evidence, merchant authority and legal review. |
+| Tracking and delivery exceptions | Neutral operating process documented. | Supplier/CJ route facts, carrier evidence and merchant cost decisions. |
+| Payment support and refunds | Duplicate/pending/refund monitoring procedure documented. | Provider confirmation, refund terminal state, merchant authority and later controlled tests. |
+| Tax, imports and legal policies | Professional questions separated from merchant operations. | Accountant/tax-practitioner confirmation and South African legal review. |
+
 ## LP-3C Controlled Publication Sequence
 
 LP-3C requires separate explicit approval and must execute in this order:

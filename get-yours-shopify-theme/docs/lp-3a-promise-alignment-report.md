@@ -18,21 +18,21 @@ Customer shipping charges are not supplier shipping costs. CJ route cost and tra
 | `templates/product.json` | `trust_reassurance` | `Free standard shipping over R500` | Yes | `Free standard shipping on orders of R770 or more` |
 | `locales/en.default.json` | `sections.cart.free_shipping_reassurance` | `Free standard shipping on orders over R500.` | Yes | `Free standard shipping on orders of R770 or more.` |
 | Phase 12 and earlier audit docs | historical evidence | R500/R770 mismatch history | No | Preserved as historical evidence |
-| Support-page drafts | unpublished content | conditional/historic R500 references | Not currently live | Controlled content update before publication |
+| Support-page drafts | unpublished content | conditional/historic R500 references at the time of LP-3A | Not currently live | Historical snapshot; later aligned to R770 in LP-3B.1 |
 
 ## Results
 
 | Area | Before | Approved state | Files changed | Remaining dependency | Result |
 | --- | --- | --- | --- | --- | --- |
-| Announcement | R500 promise | R770 inclusive wording | `sections/header-group.json` | Development-theme preview refresh | Changed |
-| Homepage | No separate R500 copy found outside announcement | Inherits corrected announcement | None | Preview retest | No direct change required |
+| Announcement | R500 promise | R770 inclusive wording | `sections/header-group.json` | None for theme copy; checkout verification remains separate | Changed and preview-verified |
+| Homepage | No separate R500 copy found outside announcement | Inherits corrected announcement | None | None for theme copy | No direct change required; preview-verified |
 | Product | R500 reassurance; generic delivery wording | R770 reassurance; route-dependent delivery wording | `templates/product.json` | Supplier route validation | Changed |
-| Cart and drawer | R500 locale reassurance | R770 inclusive locale reassurance | `locales/en.default.json` | Preview and checkout retest | Changed |
+| Cart and drawer | R500 locale reassurance | R770 inclusive locale reassurance | `locales/en.default.json` | Checkout verification remains separate | Changed and preview-verified |
 | Footer | Payment icons observed as Visa, Mastercard, American Express, PayPal, Diners Club and Discover | Dynamic `shop.enabled_payment_types` output retained | None | Final provider configuration determines visible icons | No hard-coded change |
 | Delivery wording | No exact delivery duration in theme source; product copy was generic | Neutral route-dependent wording | `templates/product.json` | CJ SKU mapping and route evidence | Changed conservatively |
 | Payment logos | No hard-coded brand icons found | Dynamic Dawn payment loop retained | None | Remove unsupported provider types through approved Shopify Admin configuration later | Documented |
 | Accelerated PayPal | PayPal accelerated checkout visible | Left unchanged because PayPal is currently active | None | Final merchant PayPal decision | Unchanged |
-| Support-page dependency | Drafts may retain R500 wording | Not changed in LP-3A | None | Controlled update before pages are published | Outstanding |
+| Support-page dependency | Drafts may retain R500 wording | Later aligned to R770 in LP-3B.1 | `docs/admin-ready-pages/` and `docs/content-pages/` | Operational, tax and legal publication gates | Content alignment complete; publication blocked |
 | Shopify Admin dependency | R100 Standard, R150 Express, R770 condition and displayed estimates | Not changed | None | Future controlled Admin review and checkout verification | Outstanding |
 
 ## Delivery-Time Classification
@@ -67,7 +67,7 @@ The hosted development preview for theme `141697089639` was available after the 
 ## Remaining Admin And Content Work
 
 1. In a separately approved Admin phase, review Standard/Express names and estimates, then conduct a controlled checkout test below R770 and at R770 or more.
-2. Before support pages are published, replace draft R500 references with the approved R770 wording or remove the offer where not appropriate.
+2. Support-page drafts were later aligned to R770 in LP-3B.1. Before publication, close their operational, tax and legal gates.
 3. Before live launch, make a final PayPal decision and ensure enabled payment providers match all customer-facing logos and accelerated checkout controls.
 
 ## No-Change Confirmation

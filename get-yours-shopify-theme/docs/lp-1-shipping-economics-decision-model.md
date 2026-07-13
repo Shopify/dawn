@@ -1,5 +1,7 @@
 # LP-1 Shipping Economics Decision Model
 
+> Historical decision-model snapshot: the R500 options below were superseded by the approved R770 starter-launch threshold. They remain as margin-analysis history only and are not current customer policy.
+
 ## Observed Shipping State
 
 | Item | Observed state | Launch status |

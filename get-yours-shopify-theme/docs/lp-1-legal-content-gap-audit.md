@@ -28,7 +28,7 @@
 | VAT, customs, and import wording | Requires professional confirmation | Accountant / legal |
 | Support inbox, hours, and response wording | Requires merchant approval | Support owner |
 
-The expanded LP-3B.2 package records the publication gates for tax, imported-goods, consumer-rights, cancellation, privacy, electronic communications and legal business-identity wording. No item is treated as legally approved.
+The expanded LP-3B.2 package records the publication gates for tax, imported-goods, consumer-rights, cancellation, privacy, electronic communications and legal business-identity wording. LP-3B.3 separates recommended operational procedures from the professional review questions. No item is treated as legally approved.
 
 ## Wording Risks
 
