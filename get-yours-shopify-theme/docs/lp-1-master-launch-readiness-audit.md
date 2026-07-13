@@ -12,10 +12,10 @@ This is a documentation-only launch preparation audit. Shopify, PayFast, CJ, pro
 | Refunds | Deferred until refund terminal state | #1002 has one pending R179 PayFast refund; do not retry. |
 | Fulfilment | Configured; end-to-end test pending | Automatic fulfilment was disabled; paid orders can remain unfulfilled. Manual fulfilment test is paused pending the terminal result of the existing refund. |
 | CJ operations | Pending merchant decision | No SKU mapping, supplier stock, costs, or working-capital reserve is confirmed. |
-| Shipping | Partially corrected | Development-theme copy is aligned to R770 and passed a hosted-preview retest. Shopify Admin rate wording, checkout estimates and unpublished support-page copy still require controlled updates and verification. |
+| Shipping | Partially corrected | Development-theme and support-page copy are aligned to R770. Shopify Admin rate wording and checkout behaviour still require controlled verification before publication. |
 | Tax/VAT | Pending professional confirmation | Test order displayed R10.30 included VAT/tax; treatment is not approved. |
-| Customer support | Copy aligned; unpublished | LP-3B.1 aligned repository support drafts to R770, route-dependent delivery wording and provider-neutral payment language. Inbox, owner and controlled mailbox tests remain unconfirmed. |
-| Legal content | Pending professional confirmation | Policy copy and operational rules need South African legal review. |
+| Customer support | Publication decision package complete; unpublished | LP-3B.1/3B.2 aligned support drafts and recorded page, returns, cancellation and Contact publication gates. Inbox, owner, controlled mailbox test and merchant/legal approvals remain unconfirmed. |
+| Legal content | Pending professional confirmation | LP-3B.2 records tax/legal dependencies; policy copy and operational rules still need South African legal review. |
 | Menus | Planned; not yet authorized | LP-3B verified the current menus are incomplete and documented a separate LP-3C mutation plan. Support pages remain unpublished and menus unwired. |
 | Contact | Published form; not operationally ready | Contact form renders without mobile overflow, but recipient, owner, acknowledgement, privacy wording and controlled form delivery are unverified. |
 | Notifications | Pending merchant decision | Order confirmation event exists; refund and merchant-mail delivery are unverified. |

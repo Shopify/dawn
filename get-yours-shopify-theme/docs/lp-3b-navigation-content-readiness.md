@@ -86,9 +86,9 @@ All current collections returned no collection featured image in the read-only c
 
 | Page title | Intended label | Handle | Publication | Content readiness | Dependencies and correction required |
 | --- | --- | --- | --- | --- | --- |
-| Help | Help Centre | `help` | Unpublished | Not ready live | Replace or approve R770 shipping wording; confirm support channel and tracking process. |
+| Help | Help Centre | `help` | Unpublished | Not ready live | R770 wording is aligned; confirm support channel and tracking process. |
 | Customer Service | Customer Service | `customer-service` | Unpublished | Not ready live | Confirm inbox, owner, support hours, response wording, cancellation/refund workflow. |
-| Shipping Information | Shipping Information | `shipping-information` | Unpublished | Not ready live | Align with R770, R100 Standard/R150 Express wording, route-dependent timing and South Africa-only operation. |
+| Shipping Information | Shipping Information | `shipping-information` | Unpublished | Not ready live | R770 copy is aligned; approve rate presentation, route-dependent timing and South Africa-only operation. |
 | Returns & Refunds | Returns & Refunds | `returns-and-refunds` | Unpublished | Not ready live | Approve reporting window, eligibility, exclusions, refund process and legal wording. |
 | Payment Information | Payment Information | `payment-information` | Unpublished | Not ready live | Confirm final PayFast/PayPal/Test Gateway public presentation; do not promise settlement or refund timing. |
 | FAQ | FAQ | `faq` | Unpublished | Not ready live | Align shipping, payment, returns and support answers with approved operations. |
@@ -98,7 +98,7 @@ No unpublished support page is safe for a customer-visible menu until its conten
 
 LP-3B.1 aligned repository-held support drafts to the approved R770 threshold, route-dependent delivery wording and provider-neutral payment language. The pages remain operationally blocked and unpublished; see `docs/lp-3b-1-content-contact-readiness.md` for the Contact decision register.
 
-LP-3B.2 audited all six support-page drafts and produced the final LP-3C publication matrix in `docs/lp-3b-2-support-page-publication-matrix.md`.
+LP-3B.2 completed the support-page publication-readiness and operational-policy decision package in `docs/lp-3b-2-support-page-publication-matrix.md`. No page or policy is approved for publication; LP-3C requires separate explicit approval.
 
 ## Approved Footer Legal Menu
 

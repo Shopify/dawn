@@ -12,10 +12,10 @@ No launch action is authorized by this runbook. Each step needs recorded evidenc
 | 6. Merchant verification | Provider records available | Confirm legal entity and PayFast verification | Name/entity mismatch unresolved | Merchant confirmation | Merchant | Merchant |
 | 7. Settlement and fees | Provider documentation | Confirm payout, fee, refund, reserve process | Working capital insufficient | Finance register | Merchant / finance | Merchant |
 | 8. Working capital | Costs confirmed | Set supplier and refund reserves | Reserve below stop threshold | Signed operating policy | Merchant | Merchant |
-| 9. Shipping decision | Margin model complete | Approve rates, threshold, and wording | R500/R770 mismatch | Checkout tests | Merchant / finance | Merchant |
+| 9. Shipping decision | Margin model complete | Approve rates, threshold, and wording | R770 copy is aligned, but Admin-rate and checkout verification remain | Checkout tests | Merchant / finance | Merchant |
 | 10. Tax/VAT | Adviser review | Confirm tax display, invoices, refunds | Uncertain treatment | Written professional advice | Merchant / adviser | Merchant |
 | 11. Product approval | CJ mapping and economics | Approve initial 10-20 products | Any mapping/cost/restriction gap | Product audit | Merchant / fulfilment | Merchant |
-| 12. Legal/support approval | Operations facts fixed | Approve policy and support copy | Unresolved legal/operational claim | Review record | Merchant / legal | Merchant |
+| 12. Legal/support approval | LP-3B.2 decision package complete | Close returns, cancellation, shipping, payment, Contact, tax and policy decisions; approve support copy | Unresolved legal/operational claim | Recorded merchant/professional approvals | Merchant / legal | Merchant |
 | 13. Publish pages | Step 12 complete | Publish only approved support pages | Placeholder or policy gap | Live URLs | Merchant | Separate approval |
 | 14. Confirm legal policies | Step 12 complete | Approve/configure policy content and URLs | Legal or operational wording gap | Four verified policy URLs | Merchant / legal | Separate approval |
 | 15. Wire menus | Pages/policies live | Apply the LP-3B-approved navigation structure | Broken/unpublished links or unsupported category | Desktop/mobile link QA | Merchant | Separate approval |

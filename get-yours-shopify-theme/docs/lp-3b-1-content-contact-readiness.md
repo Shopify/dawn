@@ -44,6 +44,10 @@ Historical Phase 12 and earlier operating documents may retain the superseded R5
 | Escalation process | Define the handoff for payment, delivery, damaged-item, return/refund and supplier issues. | Merchant / support owner | Written escalation route | Pending |
 | Controlled form test | Submit one synthetic test only after separate approval; confirm recipient, acknowledgement, spam behaviour and escalation handoff. | Support owner | Sanitized test evidence | Not authorized |
 
+## LP-3B.2 Handoff
+
+The expanded returns, cancellation, shipping, payment, Customer Service, Contact, tax and legal decision package is in `docs/lp-3b-2-support-page-publication-matrix.md`. It does not close the recipient, owner, acknowledgement, privacy, spam or controlled-test decisions in this register.
+
 ## Publication Gate
 
 The support pages remain unpublished. They are not ready for customer-visible menus until the remaining shipping, payment, legal and support-operation decisions are resolved and each page is separately approved for publication.
