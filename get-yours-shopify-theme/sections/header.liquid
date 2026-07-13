@@ -126,7 +126,9 @@
       assign localization_forms = true
     endif
   -%}
-  <header class="header header--{{ section.settings.logo_position }} header--mobile-{{ section.settings.mobile_logo_position }} page-width{% if section.settings.menu_type_desktop == 'drawer' %} drawer-menu{% endif %}{% if section.settings.menu != blank %} header--has-menu{% endif %}{% if has_app_block %} header--has-app{% endif %}{% if social_links %} header--has-social{% endif %}{% if shop.customer_accounts_enabled %} header--has-account{% endif %}{% if localization_forms %} header--has-localizations{% endif %}">
+  <header class="gy-header">
+    <div class="gy-header__main-row">
+      <div class="header gy-header__main-row-inner header--{{ section.settings.logo_position }} header--mobile-{{ section.settings.mobile_logo_position }} page-width{% if section.settings.menu_type_desktop == 'drawer' %} drawer-menu{% endif %}{% if section.settings.menu != blank %} header--has-menu{% endif %}{% if has_app_block %} header--has-app{% endif %}{% if social_links %} header--has-social{% endif %}{% if shop.customer_accounts_enabled %} header--has-account{% endif %}{% if localization_forms %} header--has-localizations{% endif %}">
     {%- liquid
       if section.settings.menu != blank
         render 'header-drawer'
@@ -184,53 +186,6 @@
       category_menu: section.settings.menu,
       class: 'gy-header-search--desktop'
     %}
-
-    {%- if section.settings.menu != blank -%}
-      <details class="gy-browse-categories small-hide medium-hide">
-        <summary class="gy-browse-categories__summary focus-inset">
-          <span class="svg-wrapper">{{- 'icon-hamburger.svg' | inline_asset_content -}}</span>
-          <span>{{ section.settings.browse_categories_label | escape }}</span>
-          <span class="svg-wrapper gy-browse-categories__caret">{{- 'icon-caret.svg' | inline_asset_content -}}</span>
-        </summary>
-        <ul class="gy-browse-categories__menu list-menu" role="list">
-          {%- for link in section.settings.menu.links -%}
-            <li>
-              <a href="{{ link.url }}" class="gy-browse-categories__link link link--text focus-inset">
-                {{ link.title | escape }}
-              </a>
-              {%- if link.links != blank -%}
-                <ul class="list-menu" role="list">
-                  {%- for child_link in link.links -%}
-                    <li>
-                      <a href="{{ child_link.url }}" class="gy-browse-categories__link gy-browse-categories__link--child link link--text focus-inset">
-                        {{ child_link.title | escape }}
-                      </a>
-                    </li>
-                  {%- endfor -%}
-                </ul>
-              {%- endif -%}
-            </li>
-          {%- endfor -%}
-        </ul>
-      </details>
-    {%- endif -%}
-
-    {%- liquid
-      if section.settings.menu != blank
-        if section.settings.menu_type_desktop == 'dropdown'
-          render 'header-dropdown-menu'
-        elsif section.settings.menu_type_desktop != 'drawer'
-          render 'header-mega-menu'
-        endif
-      endif
-    %}
-
-    {%- if section.settings.promotion_text != blank and section.settings.promotion_link != blank -%}
-      <a class="gy-header-promotion small-hide medium-hide link link--text focus-inset" href="{{ section.settings.promotion_link }}">
-        <span aria-hidden="true">⚡</span>
-        {{ section.settings.promotion_text | escape }}
-      </a>
-    {%- endif -%}
 
     {%- if section.settings.logo_position == 'middle-center' -%}
       {%- if request.page_type == 'index' -%}
@@ -373,6 +328,42 @@
       category_menu: section.settings.menu,
       class: 'gy-header-search--mobile'
     %}
+      </div>
+    </div>
+
+    <div class="gy-header__navigation-row small-hide medium-hide">
+      <div class="gy-header__navigation-row-inner page-width">
+        <details class="gy-browse-categories" data-gy-header-disclosure>
+          <summary class="gy-browse-categories__summary focus-inset">
+            <span class="svg-wrapper">{{- 'icon-hamburger.svg' | inline_asset_content -}}</span>
+            <span>{{ section.settings.browse_categories_label | escape }}</span>
+          </summary>
+          <ul class="gy-browse-categories__menu list-menu" role="list">
+            <li><a href="{{ routes.all_products_collection_url }}" class="gy-browse-categories__link link link--text focus-inset">Shop All</a></li>
+            <li><a href="{{ collections['home-organisation'].url }}" class="gy-browse-categories__link link link--text focus-inset">Home Organisation</a></li>
+            <li><a href="{{ collections['office-desk-essentials'].url }}" class="gy-browse-categories__link link link--text focus-inset">Office &amp; Desk Essentials</a></li>
+            <li><a href="{{ collections['kitchen-storage'].url }}" class="gy-browse-categories__link link link--text focus-inset">Kitchen &amp; Storage</a></li>
+            <li><a href="{{ collections['lifestyle'].url }}" class="gy-browse-categories__link link link--text focus-inset">Lifestyle</a></li>
+            <li><a href="{{ collections['travel'].url }}" class="gy-browse-categories__link link link--text focus-inset">Travel</a></li>
+            <li><a href="{{ collections['tech-accessories'].url }}" class="gy-browse-categories__link link link--text focus-inset">Tech Accessories</a></li>
+          </ul>
+        </details>
+
+        {%- if section.settings.primary_navigation_menu != blank -%}
+          {% render 'header-dropdown-menu',
+            menu: section.settings.primary_navigation_menu,
+            menu_color_scheme: section.settings.menu_color_scheme
+          %}
+        {%- endif -%}
+
+        {%- if section.settings.promotion_text != blank and section.settings.promotion_link != blank -%}
+          <a class="gy-header-promotion link link--text focus-inset" href="{{ section.settings.promotion_link }}">
+            <span aria-hidden="true">⚡</span>
+            {{ section.settings.promotion_text | escape }}
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
   </header>
 </{{ header_tag }}>
 
@@ -602,7 +593,13 @@
       "type": "link_list",
       "id": "menu",
       "default": "main-menu",
-      "label": "t:sections.header.settings.menu.label"
+      "label": "Mobile navigation menu"
+    },
+    {
+      "type": "link_list",
+      "id": "primary_navigation_menu",
+      "default": "main-menu",
+      "label": "Primary navigation menu"
     },
     {
       "type": "text",
