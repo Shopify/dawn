@@ -77,12 +77,8 @@
 </style>
 
 {%- style -%}
-  .header {
-    padding: {{ section.settings.padding_top | times: 0.5 | round: 0 }}px 3rem {{ section.settings.padding_bottom | times: 0.5 | round: 0 }}px 3rem;
-  }
-
   .section-header {
-    position: sticky; /* This is for fixing a Safari z-index issue. PR #2147 */
+    position: sticky;
     margin-bottom: {{ section.settings.margin_bottom | times: 0.75 | round: 0 }}px;
   }
 
@@ -92,12 +88,6 @@
     }
   }
 
-  @media screen and (min-width: 990px) {
-    .header {
-      padding-top: {{ section.settings.padding_top }}px;
-      padding-bottom: {{ section.settings.padding_bottom }}px;
-    }
-  }
 {%- endstyle -%}
 
 <script src="{{ 'cart-notification.js' | asset_url }}" defer="defer"></script>
@@ -189,6 +179,42 @@
       {%- endif -%}
     {%- endif -%}
 
+    {% render 'gy-header-search',
+      input_id: 'GyDesktopSearch',
+      category_menu: section.settings.menu,
+      class: 'gy-header-search--desktop'
+    %}
+
+    {%- if section.settings.menu != blank -%}
+      <details class="gy-browse-categories small-hide medium-hide">
+        <summary class="gy-browse-categories__summary focus-inset">
+          <span class="svg-wrapper">{{- 'icon-hamburger.svg' | inline_asset_content -}}</span>
+          <span>{{ section.settings.browse_categories_label | escape }}</span>
+          <span class="svg-wrapper gy-browse-categories__caret">{{- 'icon-caret.svg' | inline_asset_content -}}</span>
+        </summary>
+        <ul class="gy-browse-categories__menu list-menu" role="list">
+          {%- for link in section.settings.menu.links -%}
+            <li>
+              <a href="{{ link.url }}" class="gy-browse-categories__link link link--text focus-inset">
+                {{ link.title | escape }}
+              </a>
+              {%- if link.links != blank -%}
+                <ul class="list-menu" role="list">
+                  {%- for child_link in link.links -%}
+                    <li>
+                      <a href="{{ child_link.url }}" class="gy-browse-categories__link gy-browse-categories__link--child link link--text focus-inset">
+                        {{ child_link.title | escape }}
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </details>
+    {%- endif -%}
+
     {%- liquid
       if section.settings.menu != blank
         if section.settings.menu_type_desktop == 'dropdown'
@@ -198,6 +224,13 @@
         endif
       endif
     %}
+
+    {%- if section.settings.promotion_text != blank and section.settings.promotion_link != blank -%}
+      <a class="gy-header-promotion small-hide medium-hide link link--text focus-inset" href="{{ section.settings.promotion_link }}">
+        <span aria-hidden="true">⚡</span>
+        {{ section.settings.promotion_text | escape }}
+      </a>
+    {%- endif -%}
 
     {%- if section.settings.logo_position == 'middle-center' -%}
       {%- if request.page_type == 'index' -%}
@@ -270,7 +303,7 @@
       {%- if shop.customer_accounts_enabled -%}
         <a
           href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}"
-          class="header__icon header__icon--account link focus-inset{% if section.settings.menu != blank %} small-hide{% endif %}"
+          class="header__icon header__icon--account link focus-inset"
           rel="nofollow"
         >
           {%- if section.settings.enable_customer_avatar -%}
@@ -292,6 +325,16 @@
                 echo 'customer.log_in' | t
               endif
             -%}
+          </span>
+          <span class="gy-header-account__text small-hide medium-hide">
+            <small>{{ 'sections.header.welcome' | t }}</small>
+            <strong>
+              {%- if customer -%}
+                {{- 'customer.account_fallback' | t -}}
+              {%- else -%}
+                {{- 'sections.header.login_register' | t -}}
+              {%- endif -%}
+            </strong>
           </span>
         </a>
       {%- endif -%}
@@ -318,8 +361,18 @@
             <span class="visually-hidden">{{ 'sections.header.cart_count' | t: count: cart.item_count }}</span>
           </div>
         {%- endif -%}
+        <span class="gy-header-cart__text small-hide medium-hide">
+          <small>{{ 'sections.header.cart_label' | t }}</small>
+          <strong>{{ cart.total_price | money }}</strong>
+        </span>
       </a>
     </div>
+
+    {% render 'gy-header-search',
+      input_id: 'GyMobileSearch',
+      category_menu: section.settings.menu,
+      class: 'gy-header-search--mobile'
+    %}
   </header>
 </{{ header_tag }}>
 
@@ -442,6 +495,20 @@
   }
 
   customElements.define('sticky-header', StickyHeader);
+
+  document.querySelectorAll('[data-gy-category-navigator]').forEach((select) => {
+    select.addEventListener('change', (event) => {
+      if (event.target.value) window.location.assign(event.target.value);
+    });
+  });
+
+  document.querySelectorAll('.gy-browse-categories').forEach((details) => {
+    details.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      details.removeAttribute('open');
+      details.querySelector('summary')?.focus();
+    });
+  });
 {% endjavascript %}
 
 <script type="application/ld+json">
@@ -538,6 +605,12 @@
       "label": "t:sections.header.settings.menu.label"
     },
     {
+      "type": "text",
+      "id": "browse_categories_label",
+      "label": "Browse categories label",
+      "default": "Browse Categories"
+    },
+    {
       "type": "select",
       "id": "menu_type_desktop",
       "options": [
@@ -586,6 +659,16 @@
       "id": "show_line_separator",
       "default": true,
       "label": "t:sections.header.settings.show_line_separator.label"
+    },
+    {
+      "type": "text",
+      "id": "promotion_text",
+      "label": "Optional promotion message"
+    },
+    {
+      "type": "url",
+      "id": "promotion_link",
+      "label": "Promotion link"
     },
     {
       "type": "header",
