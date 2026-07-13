@@ -16,13 +16,13 @@ Free Standard shipping applies to qualifying orders of R770 or more.
 
 ## Delivery Timing
 
-Delivery timing depends on the product, destination and available shipping route. Please refer to the delivery information shown for your order.
+Delivery timing depends on the product, destination and available shipping route. Where tracking is available, we will share it once the supplier or carrier provides a valid tracking reference.
 
 [CONFIRM BEFORE LAUNCH] Confirm delivery estimates.
 
 ## Tracking
 
-Where tracking is available, we will share the tracking information after it has been provided for your order.
+Where tracking is available, we will share it once the supplier or carrier provides a valid tracking reference.
 
 [CONFIRM BEFORE LAUNCH] Confirm tracking process.
 

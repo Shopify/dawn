@@ -33,4 +33,4 @@ Contact us before sending an item back or starting a refund request. We will rev
 - Response target: [CONFIRM BEFORE LAUNCH] Confirm response target.
 - Contact form: `/pages/contact`
 
-Please do not send card or account details by email or contact form.
+Please do not send card details, banking passwords, one-time PINs, account passwords or other sensitive payment information by email, social media or the contact form.

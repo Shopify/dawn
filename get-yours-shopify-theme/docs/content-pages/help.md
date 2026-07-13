@@ -16,7 +16,7 @@ Get Yours brings together practical finds for home, desk, travel and daily routi
 2. Review the quantity, delivery details and total at checkout.
 3. Enter an accurate delivery address and contact information.
 4. Choose an available payment method and complete checkout.
-5. You should receive an order confirmation email after checkout.
+5. After your order is successfully placed, you should receive an order confirmation email.
 
 ## Payment
 
@@ -24,7 +24,9 @@ Available payment methods are shown at checkout.
 
 [CONFIRM BEFORE LAUNCH] Confirm active payment methods.
 
-If a payment does not go through, check the details with your payment provider and try again. If the issue continues, contact support with any order or payment reference you received.
+If a payment appears not to have completed, first check whether you received an order confirmation and whether a charge appears on your payment method.
+
+Only try checkout again after confirming that the original attempt did not create an order or charge. Contact Customer Service if you are unsure.
 
 ## Delivery And Tracking
 
@@ -32,8 +34,7 @@ Get Yours is launching with delivery within South Africa.
 
 - Shipping options and charges are shown at checkout.
 - Free Standard shipping applies to qualifying orders of R770 or more.
-- Delivery timing depends on the product, destination and available shipping route.
-- We will share tracking information when it is available for your order.
+- Delivery timing depends on the product, destination and available shipping route. Where tracking is available, we will share it once the supplier or carrier provides a valid tracking reference.
 
 [CONFIRM BEFORE LAUNCH] Confirm delivery estimates.
 
@@ -49,7 +50,7 @@ Read the Returns & Refunds information page before requesting a return or refund
 
 ## Get Support
 
-For help with an order, delivery, payment or product issue, contact customer support with as much useful detail as possible.
+For help with an order, delivery, payment or product issue, contact customer support with as much useful detail as possible. Do not send card details, banking passwords, one-time PINs, account passwords or other sensitive payment information by email, social media or the contact form.
 
 - Customer Service: `/pages/customer-service`
 - Shipping Information: `/pages/shipping-information`

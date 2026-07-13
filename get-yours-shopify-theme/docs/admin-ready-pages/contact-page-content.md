@@ -16,7 +16,7 @@ Including the right details helps us review your request:
 
 ## Keep Your Details Safe
 
-Do not send card or account details by email, social media or the contact form. Payment details should only be entered through the secure checkout process.
+Do not send card details, banking passwords, one-time PINs, account passwords or other sensitive payment information by email, social media or the contact form. Payment details should only be entered through the secure checkout process.
 
 ## Related Help
 

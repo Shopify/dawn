@@ -26,7 +26,7 @@ Please do not send an item back before receiving return instructions from Get Yo
 
 ## Contact Us
 
-Use the Contact page to send your request. Do not send card or account details by email, social media or the contact form.
+Use the Contact page to send your request. Do not send card details, banking passwords, one-time PINs, account passwords or other sensitive payment information by email, social media or the contact form.
 
 - Contact: `/pages/contact`
 - Help: `/pages/help`

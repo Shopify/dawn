@@ -10,7 +10,7 @@ This pass only cleaned up repository hygiene for the Dawn workspace and document
 
 Parent repo:
 
-- Path: `/Users/thabisoradebe/Developer/projects/getyours`
+- Path: `/Users/thabisoradebe/Developer/projects/GetYours`
 - Branch: `shopify-dawn-conversion`
 
 Current parent repo status summary:

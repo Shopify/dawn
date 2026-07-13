@@ -28,7 +28,7 @@ Delivery timing depends on the product, destination and available shipping route
 
 ## How do I track my order?
 
-Where tracking is available, we will share tracking information after it has been provided for your order.
+Where tracking is available, we will share it once the supplier or carrier provides a valid tracking reference.
 
 ## Can I cancel an order?
 

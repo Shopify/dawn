@@ -6,13 +6,13 @@ Available payment methods are shown at checkout before you place an order. Only 
 
 ## Secure Checkout
 
-Payment is processed through Shopify checkout and the payment provider selected at checkout. Get Yours does not ask customers to send card or account details by email, social media or the contact form.
+Payment is processed through Shopify checkout and the payment provider selected at checkout. Get Yours does not ask customers to send card details, banking passwords, one-time PINs, account passwords or other sensitive payment information by email, social media or the contact form.
 
 ## Failed Or Cancelled Payments
 
-If your payment fails or is cancelled, your order may not be completed. Check the details with your payment provider, then try checkout again if appropriate.
+If a payment fails or is cancelled, an order might not be completed. Before trying again, check whether you received an order confirmation or whether a charge appears on your payment method.
 
-If you received an order number or payment reference and need help, contact Customer Service with those details.
+Contact Customer Service if the payment and order status are unclear.
 
 ## Refunds
 

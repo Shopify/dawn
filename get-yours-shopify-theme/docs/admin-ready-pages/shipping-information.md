@@ -10,7 +10,7 @@ The shipping charge for your delivery address and order is shown at checkout. Fr
 
 ## Delivery And Tracking
 
-Delivery timing depends on the product, destination and available shipping route. Where tracking is available, we will share tracking information after it is available for your order.
+Delivery timing depends on the product, destination and available shipping route. Where tracking is available, we will share it once the supplier or carrier provides a valid tracking reference.
 
 ## Fulfilment And Delays
 

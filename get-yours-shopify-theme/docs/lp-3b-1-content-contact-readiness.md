@@ -15,6 +15,8 @@ LP-3B.1 updates repository-held support-page drafts only. It does not publish pa
 
 The customer-facing copies do not name PayFast, PayPal, Payflex, Mobicred, Visa, Mastercard, Instant EFT or Zapper. This avoids publication of a provider promise while the store is still in test mode and the final customer-facing payment configuration is pending.
 
+Historical Phase 12 and earlier operating documents may retain the superseded R500 decision and related test evidence. Treat those references as **historical value — superseded by the approved R770 starter-launch threshold**. They are not current customer policy.
+
 ## Internal Payment Status Register
 
 | Item | Current internal state | Customer-facing treatment | Decision required before publication |

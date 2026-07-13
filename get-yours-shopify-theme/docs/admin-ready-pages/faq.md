@@ -22,7 +22,7 @@ Delivery timing depends on the product, destination and available shipping route
 
 ## How do I track my order?
 
-Where tracking is available, we will share tracking information after it is available for your order.
+Where tracking is available, we will share it once the supplier or carrier provides a valid tracking reference.
 
 ## Can I cancel an order?
 
@@ -56,7 +56,7 @@ Delivery timing depends on the product, destination and available shipping route
 
 ## How do I contact support?
 
-Use the Contact page or Customer Service page and include your order number if you have one. Do not send card or account details by email, social media or the contact form.
+Use the Contact page or Customer Service page and include your order number if you have one. Do not send card details, banking passwords, one-time PINs, account passwords or other sensitive payment information by email, social media or the contact form.
 
 - Contact: `/pages/contact`
 - Customer Service: `/pages/customer-service`
