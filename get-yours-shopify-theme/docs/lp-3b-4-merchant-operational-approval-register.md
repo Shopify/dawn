@@ -2,7 +2,7 @@
 
 ## Scope And Current State
 
-LP-3B.4 records the approval state of the LP-3B.3 recommendations. The merchant approved selected launch-period operating rules. `info@getyours.online` is both the approved public support address and the confirmed recipient mailbox; manual Outlook send/receive capability has been verified. Only the Shopify Contact-form delivery route remains untested.
+LP-3B.4 records the approval state of the LP-3B.3 recommendations. The merchant approved selected launch-period operating rules. `info@getyours.online` is both the approved public support address and the confirmed recipient mailbox; manual Outlook send/receive capability has been verified. LP-3B.5 was environment-blocked because Shopify connection verification rejected the local proxy after human hCaptcha completion; neither the mailbox nor the Contact form is classified as failed.
 
 This is an internal register. It does not publish customer-facing rules, determine statutory rights, or authorize Shopify changes.
 
@@ -118,7 +118,7 @@ Internal baseline: cancellation is most likely before a supplier order is placed
 | Approve privacy wording and an approved Privacy Policy link. | Professional legal confirmation required | South African legal review and merchant approval. |
 | Document spam filtering and escalation route. | Approved | Daily spam review; payment, fulfilment, refund and privacy escalation owner is Store Owner. |
 | Define a synthetic Contact test identity and expected results. | Merchant input still required | Test plan details remain open; do not submit yet. |
-| Run a synthetic Contact test. | Deferred pending controlled technical test | Requires separate explicit approval after mailbox and wording gates close. |
+| Run a synthetic Contact test. | Deferred pending controlled technical test | LP-3B.5 was environment-blocked by Shopify connection verification through `127.0.0.1`. A merchant-operated hosted submission is required to test delivery and routing. |
 
 ## Professional And External Confirmation Register
 

@@ -19,7 +19,7 @@ No launch action is authorized by this runbook. Each step needs recorded evidenc
 | 13. Publish pages | Step 12 complete | Publish only approved support pages | Placeholder or policy gap | Live URLs | Merchant | Separate approval |
 | 14. Confirm legal policies | Step 12 complete | Approve/configure policy content and URLs | Legal or operational wording gap | Four verified policy URLs | Merchant / legal | Separate approval |
 | 15. Wire menus | Pages/policies live | Apply the LP-3B-approved navigation structure | Broken/unpublished links or unsupported category | Desktop/mobile link QA | Merchant | Separate approval |
-| 16. Contact readiness | Inbox confirmed | Test form with synthetic data | Recipient/acknowledgement failure | Controlled test | Support | Separate approval |
+| 16. Contact readiness | Mailbox verified; LP-3B.5 local-preview test was environment-blocked at Shopify connection verification | Run one separately approved merchant-operated Shopify-hosted/normal-browser test | Submission not accepted, no acknowledgement, delivery not found, or privacy issue | LP-3B.5/3B.5B record and merchant mailbox observation | Store Owner | Separate approval |
 | 17. Final QA | Content/data finalized | Responsive, accessibility, links, cart, search QA | P0/P1 issue | QA report | Theme owner | Merchant |
 | 18. Test gateway decision | Payment QA complete | Decide whether to remove Shopify Test Payment Gateway | Unverified live checkout | Decision record | Merchant | Merchant |
 | 19. PayPal decision | PayPal process reviewed | Retain or disable after approval | Unverified provider process | Decision record | Merchant | Merchant |
