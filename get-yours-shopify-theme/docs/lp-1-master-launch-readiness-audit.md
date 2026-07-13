@@ -14,7 +14,7 @@ This is a documentation-only launch preparation audit. Shopify, PayFast, CJ, pro
 | CJ operations | Pending merchant decision | No SKU mapping, supplier stock, costs, or working-capital reserve is confirmed. |
 | Shipping | Partially corrected | Development-theme and support-page copy are aligned to R770. Shopify Admin rate wording and checkout behaviour still require controlled verification before publication. |
 | Tax/VAT | Pending professional confirmation | Test order displayed R10.30 included VAT/tax; treatment is not approved. |
-| Customer support | Operating model drafted; unpublished | LP-3B.1/3B.2 aligned support drafts and recorded publication gates; LP-3B.3 recommends a starter model. Inbox, owner assignments, controlled mailbox test and merchant approvals remain unconfirmed. |
+| Customer support | Operating model drafted; approvals pending | LP-3B.1/3B.2 aligned support drafts and recorded publication gates; LP-3B.3 recommends a starter model and LP-3B.4 records the missing adoptions. Inbox, owner assignments, controlled mailbox test and merchant approvals remain unconfirmed. |
 | Legal content | Pending professional confirmation | LP-3B.2/3B.3 separate legal/tax questions from recommended operations; policy copy and operational rules still need South African legal review. |
 | Menus | Planned; not yet authorized | LP-3B verified the current menus are incomplete and documented a separate LP-3C mutation plan. Support pages remain unpublished and menus unwired. |
 | Contact | Published form; not operationally ready | Contact form renders without mobile overflow, but recipient, owner, acknowledgement, privacy wording and controlled form delivery are unverified. |

@@ -205,6 +205,10 @@ Request South African legal review of the following; this document does not reac
 - Contact requires a monitored recipient, owners, privacy treatment and separately approved synthetic test.
 - R770, Standard/Express and delivery wording require controlled checkout and supplier-route confirmation.
 
+## LP-3B.4 Approval Handoff
+
+The formal approval state for these recommendations is recorded in `docs/lp-3b-4-merchant-operational-approval-register.md`. No recommendation becomes adopted until the merchant records an explicit decision; professional and supplier/provider gates remain separate.
+
 ## Strict No-Change Confirmation
 
 LP-3B.3 changes local planning documentation only. No Shopify page, policy, menu, Contact form, payment, shipping, order, refund, fulfilment, CJ, product, theme or live-store mutation occurred.

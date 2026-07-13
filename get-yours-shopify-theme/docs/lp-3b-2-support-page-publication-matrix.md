@@ -156,6 +156,8 @@ LP-3B.3 provides recommended internal starter procedures for support ownership, 
 | Payment support and refunds | Duplicate/pending/refund monitoring procedure documented. | Provider confirmation, refund terminal state, merchant authority and later controlled tests. |
 | Tax, imports and legal policies | Professional questions separated from merchant operations. | Accountant/tax-practitioner confirmation and South African legal review. |
 
+LP-3B.4 records that no recommendation has yet been formally adopted because merchant inputs and external confirmations have not been supplied. See `docs/lp-3b-4-merchant-operational-approval-register.md`. No destination advances to E: Ready for LP-3C publication.
+
 ## LP-3C Controlled Publication Sequence
 
 LP-3C requires separate explicit approval and must execute in this order:
