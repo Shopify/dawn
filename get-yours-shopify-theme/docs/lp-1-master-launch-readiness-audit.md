@@ -14,10 +14,10 @@ This is a documentation-only launch preparation audit. Shopify, PayFast, CJ, pro
 | CJ operations | Pending merchant decision | No SKU mapping, supplier stock, costs, or working-capital reserve is confirmed. |
 | Shipping | Partially corrected | Development-theme and support-page copy are aligned to R770. Shopify Admin rate wording and checkout behaviour still require controlled verification before publication. |
 | Tax/VAT | Pending professional confirmation | Test order displayed R10.30 included VAT/tax; treatment is not approved. |
-| Customer support | Operating model drafted; approvals pending | LP-3B.1/3B.2 aligned support drafts and recorded publication gates; LP-3B.3 recommends a starter model and LP-3B.4 records the missing adoptions. Inbox, owner assignments, controlled mailbox test and merchant approvals remain unconfirmed. |
+| Customer support | Partial operational approval; unpublished | LP-3B.4 approves the public/recipient mailbox, Store Owner escalation model, hours, cadence and selected customer-safety rules. Shopify Contact-form delivery, controlled mailbox test and professional gates remain open. |
 | Legal content | Pending professional confirmation | LP-3B.2/3B.3 separate legal/tax questions from recommended operations; policy copy and operational rules still need South African legal review. |
 | Menus | Planned; not yet authorized | LP-3B verified the current menus are incomplete and documented a separate LP-3C mutation plan. Support pages remain unpublished and menus unwired. |
-| Contact | Published form; not operationally ready | Contact form renders without mobile overflow, but recipient, owner, acknowledgement, privacy wording and controlled form delivery are unverified. |
+| Contact | Published form; partially approved, not operationally ready | Public address, recipient mailbox, Store Owner ownership, hours and acknowledgement are approved. Form delivery, storefront success behaviour, spam routing and final privacy wording remain unverified. |
 | Notifications | Pending merchant decision | Order confirmation event exists; refund and merchant-mail delivery are unverified. |
 | Domain | Deferred until live-launch approval | Public domain is known; password removal, redirects, sender domain, and public smoke test remain gated. |
 | Theme | Preview operational; final issues pending correction | Hosted development preview is operational. Theme Check has 8 inherited Dawn warnings and no errors; fix or formally accept the LP-QA-1 P0/P1 issues before final acceptance. |

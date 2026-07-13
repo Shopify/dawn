@@ -207,7 +207,7 @@ Request South African legal review of the following; this document does not reac
 
 ## LP-3B.4 Approval Handoff
 
-The formal approval state for these recommendations is recorded in `docs/lp-3b-4-merchant-operational-approval-register.md`. No recommendation becomes adopted until the merchant records an explicit decision; professional and supplier/provider gates remain separate.
+`docs/lp-3b-4-merchant-operational-approval-register.md` records the merchant's selected launch-period operating approvals. The confirmed recipient mailbox is `info@getyours.online`; Shopify Contact-form delivery, supplier/provider facts, professional legal/tax questions and controlled tests remain separate open gates.
 
 ## Strict No-Change Confirmation
 

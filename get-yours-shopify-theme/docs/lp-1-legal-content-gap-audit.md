@@ -5,7 +5,7 @@
 | Page | Source/status | Key gap and dependency |
 | --- | --- | --- |
 | Help | Admin-ready draft; unpublished | Copy is aligned to R770; tracking process and support channel must match operations. |
-| Customer Service | Admin-ready draft; unpublished | Support inbox, owner, hours, and cancellation/refund process unconfirmed. |
+| Customer Service | Admin-ready draft; unpublished | Public and recipient mailbox, Store Owner, published hours and selected operating controls are approved. Controlled Contact delivery testing and final returns/payment/legal dependencies remain open. |
 | Shipping Information | Admin-ready draft; unpublished | Copy is aligned to R770; delivery timing remains route-dependent and unverified. |
 | Returns & Refunds | Admin-ready draft; unpublished | Reporting window, return eligibility, exclusions, and processing policy need approval. |
 | Payment Information | Admin-ready draft; unpublished | Public provider wording must match checkout; PayFast test/live and PayPal decision unresolved. |
@@ -14,7 +14,7 @@
 | Terms of Use | Shopify policy reference | Requires South African legal review and merchant approval. |
 | Refund Policy | Shopify policy reference | Must align with Returns & Refunds process and payment-provider handling. |
 | Shipping Policy | Shopify policy reference | Must align with approved rates, destinations, and delivery wording. |
-| Contact | Existing page unchanged | Form recipient, acknowledgement, privacy wording, and fallback channel unverified. |
+| Contact | Existing page unchanged | Public address, recipient mailbox and acknowledgement wording are approved. Form delivery, storefront success behaviour, spam routing and privacy wording still require controlled verification/review. |
 
 ## Mandatory Decision Register
 
@@ -26,9 +26,9 @@
 | PayPal public mention | Requires merchant approval | Merchant |
 | Return windows, exclusions, and cancellation rules | Requires merchant approval and legal review | Merchant / legal |
 | VAT, customs, and import wording | Requires professional confirmation | Accountant / legal |
-| Support inbox, hours, and response wording | Requires merchant approval | Support owner |
+| Support inbox, hours and response wording | Merchant-approved; controlled Contact-form delivery and privacy review remain | Store Owner / legal |
 
-The expanded LP-3B.2 package records the publication gates for tax, imported-goods, consumer-rights, cancellation, privacy, electronic communications and legal business-identity wording. LP-3B.3 separates recommended operational procedures from the professional review questions. No item is treated as legally approved.
+The expanded LP-3B.2 package records the publication gates for tax, imported-goods, consumer-rights, cancellation, privacy, electronic communications and legal business-identity wording. LP-3B.3 separates recommended operational procedures from the professional review questions, and LP-3B.4 records selected merchant operations. No item is treated as legally or tax approved.
 
 ## Wording Risks
 
