@@ -1,41 +1,34 @@
 <div class="gy-section gy-trust-grid color-{{ section.settings.color_scheme }}">
   <div class="page-width">
-    {%- if section.settings.heading != blank or section.settings.subtitle != blank -%}
-      <div class="gy-section__header gy-section__header--center">
-        <div>
-          {%- if section.settings.heading != blank -%}
-            <h2 class="gy-section__title">{{ section.settings.heading }}</h2>
-          {%- endif -%}
-          {%- if section.settings.subtitle != blank -%}
-            <div class="gy-section__subtitle rte">{{ section.settings.subtitle }}</div>
-          {%- endif -%}
-        </div>
-      </div>
-    {%- endif -%}
+    <h2 class="{% unless section.settings.show_heading %}visually-hidden{% else %}gy-section__title gy-trust-grid__heading{% endunless %}">
+      {{ section.settings.heading }}
+    </h2>
 
     <div class="gy-trust-grid__items">
       {%- for block in section.blocks -%}
-        <article class="gy-trust-card" {{ block.shopify_attributes }}>
-          <span class="gy-trust-card__icon" aria-hidden="true">
-            {%- case block.settings.icon -%}
-              {%- when 'delivery' -%}DL
-              {%- when 'support' -%}SP
-              {%- when 'secure' -%}SC
-              {%- else -%}GY
-            {%- endcase -%}
+        {%- capture card_content -%}
+          <span class="gy-trust-card__icon gy-trust-card__icon--{{ block.settings.icon }}">
+            {% render 'gy-icon', icon: block.settings.icon %}
           </span>
           <div>
             {%- if block.settings.title != blank -%}
               <h3 class="gy-trust-card__title">{{ block.settings.title }}</h3>
             {%- endif -%}
-            {%- if block.settings.text != blank -%}
-              <div class="gy-trust-card__text rte">{{ block.settings.text }}</div>
-            {%- endif -%}
-            {%- if block.settings.link_label != blank and block.settings.link != blank -%}
-              <a class="gy-link gy-trust-card__link" href="{{ block.settings.link }}">{{ block.settings.link_label }}</a>
+            {%- if block.settings.description != blank -%}
+              <div class="gy-trust-card__text rte">{{ block.settings.description }}</div>
             {%- endif -%}
           </div>
-        </article>
+        {%- endcapture -%}
+
+        {%- if block.settings.link != blank -%}
+          <a class="gy-trust-card gy-trust-card--link focus-inset" href="{{ block.settings.link }}" {{ block.shopify_attributes }}>
+            {{ card_content }}
+          </a>
+        {%- else -%}
+          <article class="gy-trust-card" {{ block.shopify_attributes }}>
+            {{ card_content }}
+          </article>
+        {%- endif -%}
       {%- endfor -%}
     </div>
   </div>
@@ -46,6 +39,7 @@
   "name": "Get Yours trust grid",
   "tag": "section",
   "class": "section",
+  "max_blocks": 3,
   "disabled_on": {
     "groups": ["header", "footer"]
   },
@@ -54,13 +48,13 @@
       "type": "inline_richtext",
       "id": "heading",
       "label": "Heading",
-      "default": "Delivery, support and checkout you can trust"
+      "default": "Why shop with Get Yours"
     },
     {
-      "type": "richtext",
-      "id": "subtitle",
-      "label": "Subtitle",
-      "default": "<p>Clear service details for everyday online shopping.</p>"
+      "type": "checkbox",
+      "id": "show_heading",
+      "label": "Show heading",
+      "default": false
     },
     {
       "type": "color_scheme",
@@ -79,42 +73,28 @@
           "id": "icon",
           "label": "Icon",
           "options": [
-            {
-              "value": "delivery",
-              "label": "Delivery"
-            },
-            {
-              "value": "support",
-              "label": "Support"
-            },
-            {
-              "value": "secure",
-              "label": "Secure"
-            }
+            { "value": "secure", "label": "Secure payments" },
+            { "value": "delivery", "label": "Delivery" },
+            { "value": "support", "label": "Support" }
           ],
-          "default": "delivery"
+          "default": "secure"
         },
         {
           "type": "inline_richtext",
           "id": "title",
           "label": "Title",
-          "default": "Reliable delivery"
+          "default": "Secure Payments"
         },
         {
           "type": "richtext",
-          "id": "text",
-          "label": "Text",
-          "default": "<p>Clear delivery updates and practical shipping options for everyday orders.</p>"
-        },
-        {
-          "type": "text",
-          "id": "link_label",
-          "label": "Link label"
+          "id": "description",
+          "label": "Description",
+          "default": "<p>Secure checkout through trusted payment providers.</p>"
         },
         {
           "type": "url",
           "id": "link",
-          "label": "Link"
+          "label": "Optional link"
         }
       ]
     }
@@ -126,25 +106,25 @@
         {
           "type": "trust_item",
           "settings": {
+            "icon": "secure",
+            "title": "Secure Payments",
+            "description": "<p>Secure checkout through trusted payment providers.</p>"
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
             "icon": "delivery",
-            "title": "Reliable delivery",
-            "text": "<p>Clear delivery updates and practical shipping options for everyday orders.</p>"
+            "title": "Clear Delivery",
+            "description": "<p>Clear delivery estimates and tracking updates where available.</p>"
           }
         },
         {
           "type": "trust_item",
           "settings": {
             "icon": "support",
-            "title": "Easy support",
-            "text": "<p>Need help before or after ordering? Get support through our customer service channels.</p>"
-          }
-        },
-        {
-          "type": "trust_item",
-          "settings": {
-            "icon": "secure",
-            "title": "Secure checkout",
-            "text": "<p>Shop with trusted Shopify checkout and supported payment methods.</p>"
+            "title": "WhatsApp Support",
+            "description": "<p>Get order help from the Get Yours support team on WhatsApp.</p>"
           }
         }
       ]
