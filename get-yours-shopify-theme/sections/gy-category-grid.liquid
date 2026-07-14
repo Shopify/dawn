@@ -9,48 +9,39 @@
           <div class="gy-section__subtitle rte">{{ section.settings.subtitle }}</div>
         {%- endif -%}
       </div>
-      {%- if section.settings.view_all_label != blank and section.settings.view_all_link != blank -%}
-        <a class="gy-link" href="{{ section.settings.view_all_link }}">{{ section.settings.view_all_label }}</a>
+      {%- if section.settings.show_view_all and section.settings.view_all_label != blank -%}
+        {%- assign view_all_url = section.settings.view_all_link | default: routes.collections_url -%}
+        <a class="gy-link gy-category-grid__view-all focus-inset" href="{{ view_all_url }}">
+          <span>{{ section.settings.view_all_label }}</span>
+          <span class="svg-wrapper" aria-hidden="true">{{- 'icon-arrow.svg' | inline_asset_content -}}</span>
+        </a>
       {%- endif -%}
     </div>
 
     <div class="gy-category-grid__items">
       {%- for block in section.blocks -%}
-        {%- assign category_link = block.settings.link -%}
-        {%- if block.settings.collection != blank -%}
-          {%- assign category_link = block.settings.collection.url -%}
+        {%- liquid
+          assign category_collection = block.settings.collection
+          assign category_label = block.settings.display_label
+          if category_label == blank and category_collection != blank
+            assign category_label = category_collection.title
+          endif
+        -%}
+        {%- if category_collection != blank -%}
+          <a class="gy-category-card focus-inset" href="{{ category_collection.url }}" {{ block.shopify_attributes }}>
+            <span class="gy-category-card__icon">
+              {% render 'gy-icon', icon: block.settings.icon %}
+            </span>
+            <span class="gy-category-card__title">{{ category_label | escape }}</span>
+          </a>
+        {%- else -%}
+          <div class="gy-category-card gy-category-card--placeholder" {{ block.shopify_attributes }}>
+            <span class="gy-category-card__icon">
+              {% render 'gy-icon', icon: block.settings.icon %}
+            </span>
+            <span class="gy-category-card__title">{{ category_label | default: 'Category' | escape }}</span>
+          </div>
         {%- endif -%}
-        <a
-          class="gy-category-card"
-          {% if category_link != blank %}
-            href="{{ category_link }}"
-          {% else %}
-            role="link"
-            aria-disabled="true"
-          {% endif %}
-          {{ block.shopify_attributes }}
-        >
-          <span class="gy-category-card__icon" aria-hidden="true">
-            {%- case block.settings.icon -%}
-              {%- when 'home' -%}HO
-              {%- when 'desk' -%}OD
-              {%- when 'kitchen' -%}KS
-              {%- when 'lifestyle' -%}LS
-              {%- when 'travel' -%}TR
-              {%- when 'tech' -%}TA
-              {%- else -%}GY
-            {%- endcase -%}
-          </span>
-          <span class="gy-category-card__body">
-            <span class="gy-category-card__title">{{ block.settings.title }}</span>
-            {%- if block.settings.text != blank -%}
-              <span class="gy-category-card__text">{{ block.settings.text }}</span>
-            {%- endif -%}
-            {%- if block.settings.badge != blank -%}
-              <span class="gy-category-card__badge">{{ block.settings.badge }}</span>
-            {%- endif -%}
-          </span>
-        </a>
       {%- endfor -%}
     </div>
   </div>
@@ -61,6 +52,7 @@
   "name": "Get Yours category grid",
   "tag": "section",
   "class": "section",
+  "max_blocks": 6,
   "disabled_on": {
     "groups": ["header", "footer"]
   },
@@ -74,19 +66,25 @@
     {
       "type": "richtext",
       "id": "subtitle",
-      "label": "Subtitle",
-      "default": "<p>Browse practical everyday finds by the way you use them.</p>"
+      "label": "Supporting text",
+      "default": "<p>Find exactly what you need to organise your life.</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show view all link",
+      "default": true
     },
     {
       "type": "text",
       "id": "view_all_label",
       "label": "View all label",
-      "default": "Browse all categories"
+      "default": "View all"
     },
     {
       "type": "url",
       "id": "view_all_link",
-      "label": "View all link"
+      "label": "Optional view all link"
     },
     {
       "type": "color_scheme",
@@ -101,63 +99,29 @@
       "name": "Category",
       "settings": [
         {
-          "type": "text",
-          "id": "title",
-          "label": "Title",
-          "default": "Home Organisation"
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
         },
         {
           "type": "text",
-          "id": "text",
-          "label": "Short text",
-          "default": "Storage and tidy-home finds"
+          "id": "display_label",
+          "label": "Display label",
+          "default": "Category"
         },
         {
           "type": "select",
           "id": "icon",
           "label": "Icon",
           "options": [
-            {
-              "value": "home",
-              "label": "Home"
-            },
-            {
-              "value": "desk",
-              "label": "Desk"
-            },
-            {
-              "value": "kitchen",
-              "label": "Kitchen"
-            },
-            {
-              "value": "lifestyle",
-              "label": "Lifestyle"
-            },
-            {
-              "value": "travel",
-              "label": "Travel"
-            },
-            {
-              "value": "tech",
-              "label": "Tech"
-            }
+            { "value": "home", "label": "Home storage" },
+            { "value": "desk", "label": "Desk" },
+            { "value": "kitchen", "label": "Kitchen storage" },
+            { "value": "lifestyle", "label": "Lifestyle" },
+            { "value": "travel", "label": "Travel" },
+            { "value": "tech", "label": "Tech" }
           ],
           "default": "home"
-        },
-        {
-          "type": "collection",
-          "id": "collection",
-          "label": "Collection"
-        },
-        {
-          "type": "url",
-          "id": "link",
-          "label": "Fallback link"
-        },
-        {
-          "type": "text",
-          "id": "badge",
-          "label": "Badge text"
         }
       ]
     }
@@ -166,54 +130,12 @@
     {
       "name": "Get Yours category grid",
       "blocks": [
-        {
-          "type": "category",
-          "settings": {
-            "title": "Home Organisation",
-            "text": "Storage and tidy-home finds",
-            "icon": "home"
-          }
-        },
-        {
-          "type": "category",
-          "settings": {
-            "title": "Office & Desk",
-            "text": "Work, study and desk upgrades",
-            "icon": "desk"
-          }
-        },
-        {
-          "type": "category",
-          "settings": {
-            "title": "Kitchen & Storage",
-            "text": "Practical kitchen helpers",
-            "icon": "kitchen"
-          }
-        },
-        {
-          "type": "category",
-          "settings": {
-            "title": "Lifestyle",
-            "text": "Everyday useful essentials",
-            "icon": "lifestyle"
-          }
-        },
-        {
-          "type": "category",
-          "settings": {
-            "title": "Travel",
-            "text": "Compact carry and trip finds",
-            "icon": "travel"
-          }
-        },
-        {
-          "type": "category",
-          "settings": {
-            "title": "Tech Accessories",
-            "text": "Simple add-ons for daily devices",
-            "icon": "tech"
-          }
-        }
+        { "type": "category", "settings": { "display_label": "Home Organisation", "icon": "home" } },
+        { "type": "category", "settings": { "display_label": "Office & Desk", "icon": "desk" } },
+        { "type": "category", "settings": { "display_label": "Kitchen & Storage", "icon": "kitchen" } },
+        { "type": "category", "settings": { "display_label": "Lifestyle", "icon": "lifestyle" } },
+        { "type": "category", "settings": { "display_label": "Travel", "icon": "travel" } },
+        { "type": "category", "settings": { "display_label": "Tech Accessories", "icon": "tech" } }
       ]
     }
   ]
