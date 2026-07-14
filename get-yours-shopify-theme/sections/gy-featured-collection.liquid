@@ -1,0 +1,253 @@
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign products_to_display = section.settings.collection.products.size
+  if products_to_display > section.settings.products_to_show
+    assign products_to_display = section.settings.products_to_show
+  endif
+-%}
+
+<div class="gy-section gy-product-rail gy-product-rail--{{ section.settings.background_style }} color-{{ section.settings.color_scheme }}">
+  <div class="page-width">
+    <div class="gy-section__header">
+      <div>
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="gy-section__eyebrow">{{ section.settings.eyebrow }}</p>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 class="gy-section__title">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+        {%- if section.settings.subtitle != blank -%}
+          <div class="gy-section__subtitle rte">{{ section.settings.subtitle }}</div>
+        {%- endif -%}
+      </div>
+      {%- if section.settings.show_view_all and section.settings.collection != blank -%}
+        <a class="gy-link" href="{{ section.settings.collection.url }}">
+          {{ section.settings.view_all_label }}
+        </a>
+      {%- endif -%}
+    </div>
+
+    <ul class="gy-product-rail__grid grid product-grid contains-card contains-card--product grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down" role="list">
+      {%- if section.settings.collection.products.size > 0 -%}
+        {%- assign skip_card_product_styles = false -%}
+        {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
+          <li class="grid__item">
+            {% render 'card-product',
+              card_product: product,
+              media_aspect_ratio: section.settings.image_ratio,
+              image_shape: 'default',
+              show_secondary_image: section.settings.show_secondary_image,
+              show_vendor: section.settings.show_vendor,
+              show_rating: section.settings.show_rating,
+              lazy_load: true,
+              skip_styles: skip_card_product_styles,
+              section_id: section.id,
+              quick_add: section.settings.quick_add,
+              product_view_context: 'home'
+            %}
+          </li>
+          {%- assign skip_card_product_styles = true -%}
+        {%- endfor -%}
+      {%- else -%}
+        {%- for i in (1..section.settings.products_to_show) -%}
+          <li class="grid__item">
+            {%- assign placeholder_index = forloop.index0 | modulo: 4 | plus: 1 -%}
+            {%- assign placeholder_image = 'product-apparel-' | append: placeholder_index -%}
+            {% render 'card-product',
+              show_vendor: section.settings.show_vendor,
+              media_aspect_ratio: section.settings.image_ratio,
+              image_shape: 'default',
+              lazy_load: true,
+              placeholder_image: placeholder_image
+            %}
+          </li>
+        {%- endfor -%}
+      {%- endif -%}
+    </ul>
+
+    {%- if section.settings.collection == blank -%}
+      <p class="gy-product-rail__placeholder">Choose a collection in the theme editor to show real products.</p>
+    {%- elsif products_to_display == 0 -%}
+      <p class="gy-product-rail__placeholder">This collection has no products yet.</p>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Get Yours product rail",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Featured Practical Finds"
+    },
+    {
+      "type": "richtext",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "<p>Simple, useful products selected for everyday value.</p>"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "label": "Maximum products to show",
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show view all link",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "View all label",
+      "default": "View all"
+    },
+    {
+      "type": "select",
+      "id": "background_style",
+      "label": "Background style",
+      "options": [
+        {
+          "value": "plain",
+          "label": "Plain"
+        },
+        {
+          "value": "soft",
+          "label": "Soft"
+        }
+      ],
+      "default": "plain"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "label": "Desktop columns",
+      "options": [
+        {
+          "value": "3",
+          "label": "3 columns"
+        },
+        {
+          "value": "4",
+          "label": "4 columns"
+        },
+        {
+          "value": "5",
+          "label": "5 columns"
+        }
+      ],
+      "default": "4"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Mobile columns",
+      "options": [
+        {
+          "value": "1",
+          "label": "1 column"
+        },
+        {
+          "value": "2",
+          "label": "2 columns"
+        }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Adapt to image"
+        },
+        {
+          "value": "portrait",
+          "label": "Portrait"
+        },
+        {
+          "value": "square",
+          "label": "Square"
+        }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "label": "Show second image on hover",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Show rating",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "quick_add",
+      "label": "Quick add",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "standard",
+          "label": "Standard"
+        },
+        {
+          "value": "bulk",
+          "label": "Bulk"
+        }
+      ],
+      "default": "none"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Get Yours product rail"
+    }
+  ]
+}
+{% endschema %}

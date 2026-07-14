@@ -1,0 +1,143 @@
+{% doc %}
+  Renders a Get Yours product card for homepage merchandising.
+
+  @param {product} [product] - Product to render.
+  @param {string} [section_id] - Parent section ID.
+  @param {boolean} [show_availability] - Show Shopify availability state.
+  @param {boolean} [show_quick_add] - Show a functional product action.
+  @param {number} [placeholder_index] - Placeholder image index.
+
+  @example
+  {% render 'gy-product-card', product: product, section_id: section.id, show_availability: true, show_quick_add: true %}
+{% enddoc %}
+
+{%- if product != blank -%}
+  {%- liquid
+    assign pricing_variant = product.selected_or_first_available_variant
+    for variant in product.variants
+      if variant.price == product.price
+        assign pricing_variant = variant
+        break
+      endif
+    endfor
+
+    assign is_sale = false
+    if pricing_variant.compare_at_price > pricing_variant.price
+      assign is_sale = true
+    endif
+
+    assign is_bestseller = false
+    assign collection_handles = product.collections | map: 'handle'
+    if collection_handles contains 'best-sellers'
+      assign is_bestseller = true
+    elsif product.tags contains 'Bestseller'
+      assign is_bestseller = true
+    endif
+
+    assign product_form_id = 'GyQuickAdd-' | append: section_id | append: '-' | append: product.id
+  -%}
+
+  <article class="gy-product-card">
+    <div class="gy-product-card__media">
+      {%- if is_sale -%}
+        <span class="gy-product-card__badge">{{ 'products.product.on_sale' | t }}</span>
+      {%- elsif is_bestseller -%}
+        <span class="gy-product-card__badge">{{ 'sections.gy_product_card.bestseller' | t }}</span>
+      {%- endif -%}
+
+      <a class="gy-product-card__image-link focus-inset" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
+        {%- if product.featured_media != blank -%}
+          {{
+            product.featured_media
+            | image_url: width: 720
+            | image_tag:
+              class: 'gy-product-card__image motion-reduce',
+              widths: '180, 280, 360, 540, 720',
+              sizes: '(min-width: 990px) calc((100vw - 160px) / 4), (min-width: 750px) calc((100vw - 96px) / 2), calc((100vw - 48px) / 2)',
+              loading: 'lazy'
+          }}
+        {%- else -%}
+          {{ 'product-apparel-1' | placeholder_svg_tag: 'gy-product-card__placeholder' }}
+        {%- endif -%}
+      </a>
+    </div>
+
+    <div class="gy-product-card__content">
+      {%- if show_availability -%}
+        <p class="gy-product-card__availability{% unless product.available %} gy-product-card__availability--sold-out{% endunless %}">
+          {% render 'gy-icon', icon: 'check' %}
+          <span>
+            {%- if product.available -%}
+              {{- 'sections.gy_product_card.in_stock' | t -}}
+            {%- else -%}
+              {{- 'products.product.sold_out' | t -}}
+            {%- endif -%}
+          </span>
+        </p>
+      {%- endif -%}
+
+      <h3 class="gy-product-card__title">
+        <a class="focus-inset" href="{{ product.url }}">{{ product.title | escape }}</a>
+      </h3>
+
+      <div class="gy-product-card__footer">
+        <div class="gy-product-card__price">
+          <span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>
+          {%- if product.price_varies -%}
+            <span class="gy-product-card__from">{{ 'sections.gy_product_card.from_price' | t }}</span>
+          {%- endif -%}
+          <span class="gy-product-card__current-price">{{ product.price | money }}</span>
+          {%- if is_sale -%}
+            <s class="gy-product-card__compare-price">
+              <span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>
+              {{ pricing_variant.compare_at_price | money }}
+            </s>
+          {%- endif -%}
+        </div>
+
+        {%- if show_quick_add -%}
+          {%- if product.available and product.has_only_default_variant and pricing_variant.available -%}
+            <product-form data-section-id="{{ section_id }}">
+              {%- form 'product', product, id: product_form_id, class: 'form', novalidate: 'novalidate', data-type: 'add-to-cart' -%}
+                <input type="hidden" name="id" value="{{ pricing_variant.id }}" class="product-variant-id">
+                <button
+                  id="{{ product_form_id }}-submit"
+                  type="submit"
+                  name="add"
+                  class="gy-product-card__action"
+                  aria-label="{{ 'sections.gy_product_card.add_to_cart' | t: product: product.title | escape }}"
+                >
+                  {% render 'gy-icon', icon: 'cart' %}
+                  {%- render 'loading-spinner' -%}
+                </button>
+              {%- endform -%}
+            </product-form>
+          {%- elsif product.available -%}
+            <a
+              class="gy-product-card__action"
+              href="{{ product.url }}"
+              aria-label="{{ 'sections.gy_product_card.choose_options' | t: product: product.title | escape }}"
+            >
+              {% render 'gy-icon', icon: 'cart' %}
+            </a>
+          {%- else -%}
+            <button class="gy-product-card__action" type="button" disabled aria-label="{{ 'products.product.sold_out' | t }}">
+              {% render 'gy-icon', icon: 'cart' %}
+            </button>
+          {%- endif -%}
+        {%- endif -%}
+      </div>
+    </div>
+  </article>
+{%- else -%}
+  {%- assign placeholder_name = 'product-apparel-' | append: placeholder_index | default: 'product-apparel-1' -%}
+  <article class="gy-product-card gy-product-card--placeholder">
+    <div class="gy-product-card__media">{{ placeholder_name | placeholder_svg_tag: 'gy-product-card__placeholder' }}</div>
+    <div class="gy-product-card__content">
+      <h3 class="gy-product-card__title">{{ 'onboarding.product_title' | t }}</h3>
+      <div class="gy-product-card__footer">
+        <span class="gy-product-card__current-price">{{ 1999 | money }}</span>
+      </div>
+    </div>
+  </article>
+{%- endif -%}

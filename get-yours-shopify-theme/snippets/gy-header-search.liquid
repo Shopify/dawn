@@ -1,0 +1,81 @@
+{% doc %}
+  Renders a Get Yours predictive search form with a category navigator.
+
+  @param {string} input_id - Unique ID for the search input.
+  @param {string} [class] - Additional wrapper classes.
+
+  @example
+  {% render 'gy-header-search', input_id: 'GyHeaderSearch' %}
+{% enddoc %}
+
+<div class="gy-header-search {{ class }}">
+  {%- if settings.predictive_search_enabled -%}
+    <predictive-search data-loading-text="{{ 'accessibility.loading' | t }}">
+  {%- else -%}
+    <search-form>
+  {%- endif -%}
+  <form action="{{ routes.search_url }}" method="get" role="search" class="gy-header-search__form">
+    <details class="gy-header-search__category-disclosure" data-gy-header-disclosure>
+      <summary
+        class="gy-header-search__category-summary focus-inset"
+        aria-expanded="false"
+        aria-controls="CategoryMenu-{{ input_id }}"
+      >
+        <span>{{ 'sections.header.all_categories' | t }}</span>
+        <span class="svg-wrapper" aria-hidden="true">{{- 'icon-caret.svg' | inline_asset_content -}}</span>
+      </summary>
+      <ul id="CategoryMenu-{{ input_id }}" class="gy-header-search__category-menu list-menu" role="list">
+        <li><a href="{{ routes.all_products_collection_url }}" class="gy-header-search__category-link link link--text focus-inset">{{ 'sections.header.shop_all' | t }}</a></li>
+        <li><a href="{{ collections['home-organisation'].url }}" class="gy-header-search__category-link link link--text focus-inset">{{ 'sections.header.home_organisation' | t }}</a></li>
+        <li><a href="{{ collections['office-desk-essentials'].url }}" class="gy-header-search__category-link link link--text focus-inset">{{ 'sections.header.office_desk_essentials' | t }}</a></li>
+        <li><a href="{{ collections['kitchen-storage'].url }}" class="gy-header-search__category-link link link--text focus-inset">{{ 'sections.header.kitchen_storage' | t }}</a></li>
+        <li><a href="{{ collections['lifestyle'].url }}" class="gy-header-search__category-link link link--text focus-inset">{{ 'sections.header.lifestyle' | t }}</a></li>
+        <li><a href="{{ collections['travel'].url }}" class="gy-header-search__category-link link link--text focus-inset">{{ 'sections.header.travel' | t }}</a></li>
+        <li><a href="{{ collections['tech-accessories'].url }}" class="gy-header-search__category-link link link--text focus-inset">{{ 'sections.header.tech_accessories' | t }}</a></li>
+      </ul>
+    </details>
+    <label class="visually-hidden" for="{{ input_id }}">{{ 'general.search.search' | t }}</label>
+    <input
+      id="{{ input_id }}"
+      class="gy-header-search__input"
+      type="search"
+      name="q"
+      value="{{ search.terms | escape }}"
+      placeholder="{{ 'sections.header.search_placeholder' | t }}"
+      {%- if settings.predictive_search_enabled -%}
+        role="combobox"
+        aria-expanded="false"
+        aria-owns="Results-{{ input_id }}"
+        aria-controls="Results-{{ input_id }}"
+        aria-haspopup="listbox"
+        aria-autocomplete="list"
+        autocorrect="off"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+      {%- endif -%}
+    >
+    <input type="hidden" name="options[prefix]" value="last">
+    <button
+      class="gy-header-search__reset reset__button hidden"
+      type="reset"
+      aria-label="{{ 'general.search.reset' | t }}"
+    >
+      <span class="svg-wrapper">{{- 'icon-reset.svg' | inline_asset_content -}}</span>
+    </button>
+    <button class="gy-header-search__button" type="submit" aria-label="{{ 'general.search.search' | t }}">
+      <span class="svg-wrapper">{{- 'icon-search.svg' | inline_asset_content -}}</span>
+    </button>
+    {%- if settings.predictive_search_enabled -%}
+      <div id="Results-{{ input_id }}" class="predictive-search predictive-search--header" tabindex="-1" data-predictive-search>
+        {%- render 'loading-spinner', class: 'predictive-search__loading-state' -%}
+      </div>
+      <span class="predictive-search-status visually-hidden" role="status" aria-hidden="true"></span>
+    {%- endif -%}
+  </form>
+  {%- if settings.predictive_search_enabled -%}
+    </predictive-search>
+  {%- else -%}
+    </search-form>
+  {%- endif -%}
+</div>
