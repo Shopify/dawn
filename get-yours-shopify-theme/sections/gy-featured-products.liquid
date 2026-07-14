@@ -1,0 +1,123 @@
+{%- if section.settings.show_quick_add -%}
+  <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+<div class="gy-section gy-featured-products color-{{ section.settings.color_scheme }}">
+  <div class="page-width">
+    <div class="gy-section__header">
+      <div>
+        {%- if section.settings.heading != blank -%}
+          <h2 class="gy-section__title">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+        {%- if section.settings.subtitle != blank -%}
+          <div class="gy-section__subtitle rte">{{ section.settings.subtitle }}</div>
+        {%- endif -%}
+      </div>
+      {%- if section.settings.show_view_all and section.settings.collection != blank -%}
+        <a class="gy-link gy-featured-products__view-all focus-inset" href="{{ section.settings.collection.url }}">
+          <span>{{ section.settings.view_all_label }}</span>
+          <span class="svg-wrapper" aria-hidden="true">{{- 'icon-arrow.svg' | inline_asset_content -}}</span>
+        </a>
+      {%- endif -%}
+    </div>
+
+    <ul class="gy-featured-products__grid" role="list">
+      {%- if section.settings.collection != blank and section.settings.collection.products_count > 0 -%}
+        {%- for product in section.settings.collection.products limit: section.settings.product_limit -%}
+          <li>
+            {% render 'gy-product-card',
+              product: product,
+              section_id: section.id,
+              show_availability: section.settings.show_availability,
+              show_quick_add: section.settings.show_quick_add
+            %}
+          </li>
+        {%- endfor -%}
+      {%- else -%}
+        {%- for i in (1..section.settings.product_limit) -%}
+          <li>{% render 'gy-product-card', placeholder_index: forloop.index %}</li>
+        {%- endfor -%}
+      {%- endif -%}
+    </ul>
+
+    {%- if section.settings.collection == blank -%}
+      <p class="gy-product-rail__placeholder">{{ 'sections.gy_product_card.choose_collection' | t }}</p>
+    {%- elsif section.settings.collection.products_count == 0 -%}
+      <p class="gy-product-rail__placeholder">{{ 'sections.gy_product_card.empty_collection' | t }}</p>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "GY featured products",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Featured Practical Finds"
+    },
+    {
+      "type": "richtext",
+      "id": "subtitle",
+      "label": "Supporting text",
+      "default": "<p>Our most popular solutions for everyday organisation.</p>"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "product_limit",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "label": "Product limit",
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "show_availability",
+      "label": "Show availability",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quick_add",
+      "label": "Show quick add",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show view all link",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "View all label",
+      "default": "View all"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    }
+  ],
+  "presets": [
+    {
+      "name": "GY featured products"
+    }
+  ]
+}
+{% endschema %}
