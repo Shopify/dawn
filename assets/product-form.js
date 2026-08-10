@@ -59,6 +59,7 @@ if (!customElements.get('product-form')) {
               this.handleErrorMessage(response.description);
               this.dispatchCartErrorEvent(response.description || response.message, 'INVALID');
               linesUpdateDeferred?.reject(new Error(response.description || response.message));
+              if (response.status == 422) this.refreshCartUIAfterAvailabilityError(response);
 
               const soldOutMessage = this.submitButton.querySelector('.sold-out-message');
               if (!soldOutMessage) return;
@@ -182,6 +183,74 @@ if (!customElements.get('product-form')) {
         const { CartErrorEvent } = window.StandardEvents || {};
         if (!CartErrorEvent) return;
         this.dispatchEvent(new CartErrorEvent({ error: message, code }));
+      }
+
+      // 422 inventory responses can partially mutate the cart without returning section
+      // HTML. Bundled sections are only returned from cart/add|change|update|clear POST
+      // bodies, not GET /cart.js?sections=, so fetch section HTML via section_id when needed.
+      refreshCartUIAfterAvailabilityError(response = null) {
+        const cartDrawer = this.cart?.tagName === 'CART-DRAWER' ? this.cart : null;
+        if (!cartDrawer?.renderContents) return;
+
+        const revealDrawer = () => {
+          CartPerformance.measure('add:paint-updated-sections', () => {
+            if (!cartDrawer.classList.contains('active')) cartDrawer.open();
+          });
+        };
+
+        const quickAddModal = this.closest('quick-add-modal');
+        const afterRefresh = (callback) => {
+          if (quickAddModal) {
+            document.body.addEventListener(
+              'modalClosed',
+              () => {
+                setTimeout(callback);
+              },
+              { once: true }
+            );
+            quickAddModal.hide(true);
+          } else {
+            callback();
+          }
+        };
+
+        if (response?.sections && response.item_count > 0) {
+          cartDrawer.classList.remove('is-empty');
+          afterRefresh(() => {
+            CartPerformance.measure('add:paint-updated-sections', () => {
+              cartDrawer.renderContents(response);
+            });
+          });
+          return;
+        }
+
+        fetch(`${routes.cart_url}.js`)
+          .then((res) => res.json())
+          .then((cartData) => {
+            if (!cartData?.item_count) return;
+
+            cartDrawer.classList.remove('is-empty');
+
+            const sectionsUrl = window.location.pathname;
+
+            return Promise.all([
+              fetch(`${sectionsUrl}?section_id=cart-drawer`).then((res) => res.text()),
+              fetch(`${sectionsUrl}?section_id=cart-icon-bubble`).then((res) => res.text()),
+            ]).then(([drawerText, bubbleText]) => {
+              const drawerDoc = new DOMParser().parseFromString(drawerText, 'text/html');
+              const sourceInner = drawerDoc.querySelector('cart-drawer .drawer__inner');
+              const targetInner = cartDrawer.querySelector('.drawer__inner');
+              if (sourceInner && targetInner) targetInner.replaceWith(sourceInner);
+
+              const bubbleDoc = new DOMParser().parseFromString(bubbleText, 'text/html');
+              const bubbleSource = bubbleDoc.querySelector('.shopify-section');
+              const bubbleTarget = document.getElementById('cart-icon-bubble');
+              if (bubbleSource && bubbleTarget) bubbleTarget.innerHTML = bubbleSource.innerHTML;
+
+              afterRefresh(revealDrawer);
+            });
+          })
+          .catch((e) => console.error(e));
       }
 
       get variantIdInput() {
