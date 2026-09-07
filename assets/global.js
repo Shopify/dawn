@@ -246,7 +246,7 @@ class QuantityInput extends HTMLElement {
     event.preventDefault();
     const previousValue = this.input.value;
 
-    if (event.target.name === 'plus') {
+    if (event.currentTarget.name === 'plus') {
       if (parseInt(this.input.dataset.min) > parseInt(this.input.step) && this.input.value == 0) {
         this.input.value = this.input.dataset.min;
       } else {
@@ -258,7 +258,7 @@ class QuantityInput extends HTMLElement {
 
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
 
-    if (this.input.dataset.min === previousValue && event.target.name === 'minus') {
+    if (this.input.dataset.min === previousValue && event.currentTarget.name === 'minus') {
       this.input.value = parseInt(this.input.min);
     }
   }
