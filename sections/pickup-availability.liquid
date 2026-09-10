@@ -3,7 +3,20 @@
 
 {%- if pick_up_availabilities.size > 0 -%}
   <pickup-availability-preview class="pickup-availability-preview">
-    {% assign closest_location = pick_up_availabilities.first %}
+    {%- comment -%}
+      Prefer the closest location that actually has stock. `pick_up_availabilities` is ordered by
+      distance from the buyer, or by city then name when the buyer location is unknown -- never by
+      stock. So `first` is regularly out of stock while a farther store has the variant, and leading
+      with `first` announced "currently unavailable" while the drawer below listed an available
+      store. Falling back to `first` keeps the unavailable copy naming the nearest location when no
+      store has stock.
+    {%- endcomment -%}
+    {%- assign closest_available_location = pick_up_availabilities | where: 'available', true | first -%}
+    {%- if closest_available_location -%}
+      {%- assign closest_location = closest_available_location -%}
+    {%- else -%}
+      {%- assign closest_location = pick_up_availabilities.first -%}
+    {%- endif -%}
 
     {% if closest_location.available %}
       <span class="svg-wrapper">{{ 'icon-tick.svg' | inline_asset_content }}</span>
