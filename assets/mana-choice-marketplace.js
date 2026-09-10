@@ -1,0 +1,1 @@
+document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('.mc-category-card,.mc-btn').forEach(el=>el.addEventListener('click',()=>{el.classList.add('mc-clicked');setTimeout(()=>el.classList.remove('mc-clicked'),180)}));});
