@@ -5,6 +5,9 @@ class CartDrawer extends HTMLElement {
     this.addEventListener('keyup', (evt) => evt.code === 'Escape' && this.close());
     this.querySelector('#CartDrawer-Overlay').addEventListener('click', this.close.bind(this));
     this.setHeaderCartIconAccessibility();
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) this.navigationPending = false;
+    });
   }
 
   setHeaderCartIconAccessibility() {
@@ -77,17 +80,34 @@ class CartDrawer extends HTMLElement {
   }
 
   renderContents(parsedState) {
-    this.querySelector('.drawer__inner').classList.contains('is-empty') &&
-      this.querySelector('.drawer__inner').classList.remove('is-empty');
+    let updates;
+    try {
+      updates = this.getSectionsToRender().map((section) => {
+        const element = section.selector
+          ? document.querySelector(section.selector)
+          : document.getElementById(section.id);
+        const html = parsedState.sections?.[section.id];
+        if (!element || typeof html !== 'string') throw new Error('Missing cart section');
+        const content = this.getSectionDOM(html, section.selector);
+        if (!content) throw new Error('Missing cart section content');
+        if (section.id === 'cart-drawer' &&
+            (!content.querySelector('.drawer__inner') || !content.querySelector('#CartDrawer-Overlay')))
+          throw new Error('Missing cart drawer structure');
+        return { element, html: content.innerHTML };
+      });
+    } catch {
+      // The add succeeded even when bundled section rendering failed.
+      // Show the cart without asking the customer to repeat the mutation.
+      this.navigationPending = true;
+      window.location.assign(routes.cart_url);
+      return;
+    }
     this.productId = parsedState.id;
-    this.getSectionsToRender().forEach((section) => {
-      const sectionElement = section.selector
-        ? document.querySelector(section.selector)
-        : document.getElementById(section.id);
-
-      if (!sectionElement) return;
-      sectionElement.innerHTML = this.getSectionInnerHTML(parsedState.sections[section.id], section.selector);
+    updates.forEach(({ element, html }) => {
+      element.innerHTML = html;
     });
+    this.classList.remove('is-empty');
+    this.querySelector('.drawer__inner').classList.remove('is-empty');
 
     setTimeout(() => {
       this.querySelector('#CartDrawer-Overlay').addEventListener('click', this.close.bind(this));
