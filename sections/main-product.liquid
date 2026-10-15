@@ -759,8 +759,18 @@
         endif
       -%}
 
+      {%- liquid
+        assign product_structured_data = product | structured_data
+        # Multi-variant products render as a ProductGroup whose hasVariant Products lack a description, which GSC flags
+        unless product.has_only_default_variant or product.description == blank
+          # strip_html leaves entities encoded; decode the common ones (&amp; last to avoid double-decoding)
+          assign variant_desc = product.description | strip_html | replace: '&nbsp;', ' ' | replace: '&quot;', '"' | replace: '&#39;', "'" | replace: '&amp;', '&' | strip | json
+          assign variant_desc_prop = '"@type":"Product","description":' | append: variant_desc | append: ','
+          assign product_structured_data = product_structured_data | replace: '"@type":"Product",', variant_desc_prop
+        endunless
+      -%}
       <script type="application/ld+json">
-        {{ product | structured_data }}
+        {{ product_structured_data }}
       </script>
     </div>
   </product-component>
