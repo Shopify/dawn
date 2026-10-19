@@ -1,0 +1,101 @@
+{% comment %}
+  Ron's Pijamas – sticky add to cart bar for the product page.
+
+  Appears once the main "Add to cart" button has scrolled out of view. It mirrors
+  the main button's state (sold out / unavailable), the selected variant and the
+  price, and clicking it submits Dawn's own product form, so the cart drawer and
+  all cart events behave exactly as with the main button.
+  Logic lives in assets/rons-custom.js (<rons-sticky-atc>).
+{% endcomment %}
+
+{%- if product -%}
+  {%- liquid
+    assign current_variant = product.selected_or_first_available_variant
+    assign featured_media = current_variant.featured_media | default: product.featured_media
+  -%}
+  <rons-sticky-atc
+    class="rons-sticky-atc color-{{ section.settings.color_scheme }} gradient{% unless section.settings.show_on_desktop %} rons-sticky-atc--desktop-hidden{% endunless %}"
+    data-product-id="{{ product.id }}"
+    aria-hidden="true"
+  >
+    <div class="rons-sticky-atc__inner page-width">
+      {%- if section.settings.show_image and featured_media -%}
+        <div class="rons-sticky-atc__media">
+          {{
+            featured_media
+            | image_url: width: 120
+            | image_tag: loading: 'lazy', sizes: '60px', widths: '60, 120', alt: featured_media.alt
+          }}
+        </div>
+      {%- endif -%}
+      <div class="rons-sticky-atc__info">
+        <p class="rons-sticky-atc__title">{{ product.title | escape }}</p>
+        <div class="rons-sticky-atc__meta">
+          <span class="rons-sticky-atc__price" data-sticky-price>
+            {{- current_variant.price | money -}}
+          </span>
+          {%- unless product.has_only_default_variant -%}
+            <span class="rons-sticky-atc__variant" data-sticky-variant>{{ current_variant.title | escape }}</span>
+          {%- endunless -%}
+        </div>
+      </div>
+      <button
+        type="button"
+        class="rons-sticky-atc__button button button--primary"
+        data-sticky-button
+        tabindex="-1"
+        {% unless current_variant.available %}
+          disabled
+        {% endunless %}
+      >
+        <span data-sticky-button-text>
+          {%- if current_variant.available -%}
+            {{ 'products.product.add_to_cart' | t }}
+          {%- else -%}
+            {{ 'products.product.sold_out' | t }}
+          {%- endif -%}
+        </span>
+      </button>
+    </div>
+  </rons-sticky-atc>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Sticky add to cart",
+  "tag": "section",
+  "class": "section rons-sticky-atc-section",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Shows a slim add to cart bar once the main Add to cart button scrolls out of view."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_on_desktop",
+      "label": "Show on desktop",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "label": "Show product image",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Sticky add to cart"
+    }
+  ]
+}
+{% endschema %}
