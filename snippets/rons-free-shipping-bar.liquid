@@ -1,0 +1,37 @@
+{% comment %}
+  Ron's Pijamas – free delivery progress bar for the cart drawer.
+  Driven by Theme settings > Cart drawer extras. Rendered inside .drawer__inner,
+  so Dawn's cart drawer refresh re-renders it after every cart change.
+
+  The threshold is entered in the store's default currency. Liquid has no
+  exchange rate, so the bar is hidden when a customer shops in another
+  currency rather than showing a wrong amount.
+
+  Usage:
+  {% render 'rons-free-shipping-bar' %}
+{% endcomment %}
+
+{%- if settings.rons_free_shipping_enable
+  and settings.rons_free_shipping_threshold > 0
+  and cart.item_count > 0
+  and cart.currency.iso_code == shop.currency
+-%}
+  {%- liquid
+    assign threshold = settings.rons_free_shipping_threshold | times: 100
+    assign remaining = threshold | minus: cart.total_price
+    assign progress = cart.total_price | times: 100.0 | divided_by: threshold | at_most: 100 | round: 1
+  -%}
+  <div class="rons-shipping-bar" role="status">
+    <p class="rons-shipping-bar__message">
+      {%- if remaining > 0 -%}
+        {%- capture amount -%}<strong>{{ remaining | money }}</strong>{%- endcapture -%}
+        {{ settings.rons_free_shipping_message | replace: '[amount]', amount }}
+      {%- else -%}
+        {{ settings.rons_free_shipping_success }}
+      {%- endif -%}
+    </p>
+    <div class="rons-shipping-bar__track" aria-hidden="true">
+      <span class="rons-shipping-bar__fill" style="--rons-progress: {{ progress }}%;"></span>
+    </div>
+  </div>
+{%- endif -%}

@@ -1,0 +1,101 @@
+{% comment %}
+  Ron's Pijamas – size guide modal for the main-product "Size guide" block.
+  Uses Dawn's <modal-dialog> and product popup styles.
+
+  Content priority:
+  1. Product metafield custom.size_guide (page reference or rich text)
+  2. The page selected on the block
+  3. The block's image, notes and (optionally) the built-in size table
+
+  Accepts:
+  - block: {Object} the size_guide block
+  - product: {Object} the current product
+
+  Usage:
+  {% render 'rons-size-guide-modal', block: block, product: product %}
+{% endcomment %}
+
+{%- liquid
+  assign size_guide_metafield = product.metafields.custom.size_guide
+  assign heading = block.settings.heading | default: block.settings.label
+-%}
+
+<modal-dialog
+  id="SizeGuideModal-{{ block.id }}"
+  class="product-popup-modal rons-size-guide"
+  {{ block.shopify_attributes }}
+>
+  <div
+    role="dialog"
+    aria-label="{{ heading | escape }}"
+    aria-modal="true"
+    class="product-popup-modal__content"
+    tabindex="-1"
+  >
+    <button
+      id="ModalClose-{{ block.id }}"
+      type="button"
+      class="product-popup-modal__toggle"
+      aria-label="{{ 'accessibility.close' | t }}"
+    >
+      {{- 'icon-close.svg' | inline_asset_content -}}
+    </button>
+    <div class="product-popup-modal__content-info">
+      <h2 class="h2">{{ heading | escape }}</h2>
+
+      {%- if size_guide_metafield != blank -%}
+        <div class="rte">
+          {%- if size_guide_metafield.type == 'page_reference' -%}
+            {{ size_guide_metafield.value.content }}
+          {%- else -%}
+            {{ size_guide_metafield | metafield_tag }}
+          {%- endif -%}
+        </div>
+      {%- elsif block.settings.page != blank -%}
+        <div class="rte">{{ block.settings.page.content }}</div>
+      {%- else -%}
+        {%- if block.settings.intro != blank -%}
+          <div class="rons-size-guide__intro rte">{{ block.settings.intro }}</div>
+        {%- endif -%}
+
+        {%- if block.settings.show_default_table -%}
+          <div class="rons-size-guide__table-wrapper">
+            <table class="rons-size-guide__table">
+              <thead>
+                <tr>
+                  <th scope="col">{{ block.settings.column_size | escape }}</th>
+                  <th scope="col">EU</th>
+                  <th scope="col">{{ block.settings.column_bust | escape }}</th>
+                  <th scope="col">{{ block.settings.column_waist | escape }}</th>
+                  <th scope="col">{{ block.settings.column_hips | escape }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">XS</th><td>34</td><td>80–84</td><td>62–66</td><td>88–92</td></tr>
+                <tr><th scope="row">S</th><td>36</td><td>84–88</td><td>66–70</td><td>92–96</td></tr>
+                <tr><th scope="row">M</th><td>38</td><td>88–92</td><td>70–74</td><td>96–100</td></tr>
+                <tr><th scope="row">L</th><td>40</td><td>92–96</td><td>74–78</td><td>100–104</td></tr>
+                <tr><th scope="row">XL</th><td>42</td><td>96–100</td><td>78–82</td><td>104–108</td></tr>
+                <tr><th scope="row">XXL</th><td>44</td><td>100–106</td><td>82–88</td><td>108–114</td></tr>
+              </tbody>
+            </table>
+          </div>
+        {%- endif -%}
+
+        {%- if block.settings.image != blank -%}
+          <div class="rons-size-guide__image">
+            {{
+              block.settings.image
+              | image_url: width: 1400
+              | image_tag: loading: 'lazy', widths: '600, 900, 1400', sizes: '(min-width: 750px) 70vw, 100vw'
+            }}
+          </div>
+        {%- endif -%}
+
+        {%- if block.settings.notes != blank -%}
+          <div class="rons-size-guide__intro rte">{{ block.settings.notes }}</div>
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+  </div>
+</modal-dialog>

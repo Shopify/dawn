@@ -1,0 +1,299 @@
+{% comment %}
+  Ron's Pijamas – shop by category.
+  Editorial portrait tiles. Each tile links to a collection (or any URL) and
+  uses a custom image, falling back to the collection's image.
+{% endcomment %}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- liquid
+  case section.settings.image_ratio
+    when 'square'
+      assign ratio = '1 / 1'
+    when 'tall'
+      assign ratio = '2 / 3'
+    else
+      assign ratio = '3 / 4'
+  endcase
+  assign columns = section.settings.columns_desktop
+  assign column_vw = 100 | divided_by: columns
+-%}
+{%- capture sizes -%}
+  (min-width: 750px) calc({{ column_vw }}vw - 3rem),
+  {%- if section.settings.swipe_on_mobile %} 72vw{% else %} calc(100vw / {{ section.settings.columns_mobile }}){% endif -%}
+{%- endcapture -%}
+
+<div class="rons-category-grid rons-category-grid--{{ section.settings.label_position }} color-{{ section.settings.color_scheme }} gradient">
+  <div class="page-width section-{{ section.id }}-padding">
+    {%- if section.settings.heading != blank or section.settings.caption != blank -%}
+      <div class="rons-category-grid__header rons-category-grid__header--{{ section.settings.heading_alignment }}">
+        <div>
+          {%- if section.settings.caption != blank -%}
+            <p class="rons-eyebrow">{{ section.settings.caption | escape }}</p>
+          {%- endif -%}
+          {%- if section.settings.heading != blank -%}
+            <h2 class="rons-category-grid__heading inline-richtext {{ section.settings.heading_size }}">
+              {{ section.settings.heading }}
+            </h2>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    <ul
+      class="rons-category-grid__list{% if section.settings.swipe_on_mobile %} rons-category-grid__list--swipe{% endif %}"
+      role="list"
+      style="--rons-columns: {{ columns }}; --rons-columns-mobile: {{ section.settings.columns_mobile }}; --rons-ratio: {{ ratio }}; --rons-overlay: {{ section.settings.overlay_opacity | divided_by: 100.0 }};"
+    >
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign tile_collection = block.settings.collection
+          assign tile_image = block.settings.image | default: tile_collection.featured_image
+          assign tile_title = block.settings.title | default: tile_collection.title
+          assign tile_link = block.settings.link | default: tile_collection.url
+          if tile_link != blank
+            assign tile_tag = 'a'
+          else
+            assign tile_tag = 'div'
+          endif
+          assign placeholder_index = forloop.index0 | modulo: 4 | plus: 1
+        -%}
+        <li
+          {% if settings.animations_reveal_on_scroll %}
+            class="scroll-trigger animate--slide-in"
+            data-cascade
+            style="--animation-order: {{ forloop.index }};"
+          {% endif %}
+          {{ block.shopify_attributes }}
+        >
+          <{{ tile_tag }}
+            class="rons-category-tile"
+            {% if tile_link != blank %}
+              href="{{ tile_link }}"
+            {% endif %}
+          >
+            <div class="rons-category-tile__media">
+              {%- if tile_image != blank -%}
+                {{
+                  tile_image
+                  | image_url: width: 1200
+                  | image_tag: loading: 'lazy', widths: '360, 540, 720, 900, 1200', sizes: sizes, alt: tile_title
+                }}
+              {%- else -%}
+                {{ 'collection-apparel-' | append: placeholder_index | placeholder_svg_tag: 'placeholder-svg' }}
+              {%- endif -%}
+            </div>
+            {%- if tile_title != blank or block.settings.cta != blank -%}
+              <span class="rons-category-tile__label">
+                {%- if tile_title != blank -%}
+                  <span class="rons-category-tile__title h3">{{ tile_title | escape }}</span>
+                {%- endif -%}
+                {%- if block.settings.cta != blank and tile_link != blank -%}
+                  <span class="rons-category-tile__cta">{{ block.settings.cta | escape }}</span>
+                {%- endif -%}
+              </span>
+            {%- endif -%}
+          </{{ tile_tag }}>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Shop by category",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "text",
+      "id": "caption",
+      "label": "Caption",
+      "default": "Shop by category"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Find your night ritual"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h1"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        { "value": "portrait", "label": "Portrait (3:4)" },
+        { "value": "tall", "label": "Tall (2:3)" },
+        { "value": "square", "label": "Square" }
+      ],
+      "default": "portrait"
+    },
+    {
+      "type": "select",
+      "id": "label_position",
+      "label": "Title position",
+      "options": [
+        { "value": "overlay", "label": "On image" },
+        { "value": "below", "label": "Below image" }
+      ],
+      "default": "overlay"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "label": "Image shade (title on image)",
+      "default": 35
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "label": "Columns on desktop",
+      "default": 4
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Mobile"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Columns on mobile",
+      "options": [
+        { "value": "1", "label": "1 column" },
+        { "value": "2", "label": "2 columns" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "checkbox",
+      "id": "swipe_on_mobile",
+      "label": "Swipe on mobile",
+      "info": "Shows tiles as a horizontal carousel instead of a grid.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 64
+    }
+  ],
+  "blocks": [
+    {
+      "type": "category",
+      "name": "Category",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image",
+          "info": "Defaults to the collection image. Portrait images work best."
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "info": "Defaults to the collection title."
+        },
+        {
+          "type": "text",
+          "id": "cta",
+          "label": "Link label",
+          "default": "Shop now"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Custom link",
+          "info": "Defaults to the collection."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shop by category",
+      "blocks": [
+        { "type": "category", "settings": { "title": "Pyjama sets" } },
+        { "type": "category", "settings": { "title": "Nightdresses" } },
+        { "type": "category", "settings": { "title": "Loungewear" } },
+        { "type": "category", "settings": { "title": "Robes" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

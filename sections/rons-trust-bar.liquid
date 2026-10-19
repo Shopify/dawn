@@ -1,0 +1,238 @@
+{% comment %}
+  Ron's Pijamas – trust bar.
+  A row of reassurance points (delivery, returns, fabric, secure checkout).
+  Swipes horizontally on mobile and becomes a grid on desktop.
+{% endcomment %}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div
+  class="rons-trust-bar rons-trust-bar--{{ section.settings.alignment }} color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_border %} rons-trust-bar--bordered{% endif %}"
+  style="--rons-columns: {{ section.blocks.size | at_most: 4 | at_least: 1 }};{% if section.settings.show_border %} border-top: 0.1rem solid var(--rons-hairline); border-bottom: 0.1rem solid var(--rons-hairline);{% endif %}"
+>
+  <div class="page-width section-{{ section.id }}-padding">
+    <ul class="rons-trust-bar__list" role="list">
+      {%- for block in section.blocks -%}
+        <li
+          class="rons-trust-bar__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+          {{ block.shopify_attributes }}
+          {% if settings.animations_reveal_on_scroll %}
+            data-cascade
+            style="--animation-order: {{ forloop.index }};"
+          {% endif %}
+        >
+          {%- if block.settings.image != blank -%}
+            <span class="rons-trust-bar__icon">
+              {{
+                block.settings.image
+                | image_url: width: 112
+                | image_tag: loading: 'lazy', widths: '56, 112', sizes: '28px'
+              }}
+            </span>
+          {%- elsif block.settings.icon != 'none' -%}
+            <span class="rons-trust-bar__icon" aria-hidden="true">
+              {%- render 'icon-accordion', icon: block.settings.icon -%}
+            </span>
+          {%- endif -%}
+          <div>
+            {%- if block.settings.heading != blank -%}
+              <p class="rons-trust-bar__heading">{{ block.settings.heading }}</p>
+            {%- endif -%}
+            {%- if block.settings.text != blank -%}
+              <p class="rons-trust-bar__text">{{ block.settings.text }}</p>
+            {%- endif -%}
+          </div>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Trust bar",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header"]
+  },
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Layout",
+      "options": [
+        { "value": "left", "label": "Icon beside text" },
+        { "value": "center", "label": "Icon above text (centered)" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_border",
+      "label": "Show top and bottom border",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 28
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Trust point",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "truck",
+              "label": "Truck"
+            },
+            {
+              "value": "return",
+              "label": "Return"
+            },
+            {
+              "value": "lock",
+              "label": "Lock"
+            },
+            {
+              "value": "heart",
+              "label": "Heart"
+            },
+            {
+              "value": "leaf",
+              "label": "Leaf"
+            },
+            {
+              "value": "washing",
+              "label": "Washing"
+            },
+            {
+              "value": "star",
+              "label": "Star"
+            },
+            {
+              "value": "check_mark",
+              "label": "Check mark"
+            },
+            {
+              "value": "chat_bubble",
+              "label": "Chat bubble"
+            },
+            {
+              "value": "plane",
+              "label": "Plane"
+            },
+            {
+              "value": "box",
+              "label": "Box"
+            },
+            {
+              "value": "price_tag",
+              "label": "Price tag"
+            },
+            {
+              "value": "ruler",
+              "label": "Ruler"
+            },
+            {
+              "value": "shirt",
+              "label": "Shirt"
+            },
+            {
+              "value": "silhouette",
+              "label": "Silhouette"
+            },
+            {
+              "value": "recycle",
+              "label": "Recycle"
+            },
+            {
+              "value": "snowflake",
+              "label": "Snowflake"
+            }
+          ],
+          "default": "truck"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Custom icon image",
+          "info": "Replaces the icon. Use a square, monochrome image."
+        },
+        {
+          "type": "inline_richtext",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Free delivery"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "On all orders over €60"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Trust bar",
+      "blocks": [
+        { "type": "item", "settings": { "icon": "truck", "heading": "Free delivery", "text": "On all orders over €60" } },
+        { "type": "item", "settings": { "icon": "return", "heading": "30-day returns", "text": "Easy, free exchanges" } },
+        { "type": "item", "settings": { "icon": "leaf", "heading": "Premium fabrics", "text": "Soft cotton, satin and modal" } },
+        { "type": "item", "settings": { "icon": "lock", "heading": "Secure checkout", "text": "Cards, Apple Pay and Google Pay" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
