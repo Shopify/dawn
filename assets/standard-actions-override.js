@@ -79,7 +79,7 @@ function collectCartSections() {
 // that isn't already refreshed by Dawn's own pubsub subscribers, then
 // publish 'cart-update' so the subscribers run.
 //
-// We always fetch /cart.js (with sections= when we have any) so that
+// We always fetch /cart.js so that
 // `cartData` is defined for subscribers. quick-add-bulk.js reads
 // `event.cartData.items` unconditionally — publishing without cartData
 // makes it throw.
@@ -90,14 +90,21 @@ async function refreshDawnCartUI() {
     : '';
   // `routes` is a Dawn global, but don't assume it's defined.
   const cartUrl = (typeof routes !== 'undefined' && routes?.cart_url) || '/cart';
-  const url = `${cartUrl}.js${sectionsQuery}`;
-  const cartData = await fetch(url, { headers: { Accept: 'application/json' } })
-    .then((r) => (r.ok ? r.json() : null))
-    .catch(() => null);
+  const [cartData, sectionsData] = await Promise.all([
+    fetch(`${cartUrl}.js`, { headers: { Accept: 'application/json' } })
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null),
+    // No JSON Accept header: with it, the storefront returns cart JSON and ignores `sections`.
+    sections.size
+      ? fetch(`${cartUrl}${sectionsQuery}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null)
+      : null,
+  ]);
 
-  if (cartData?.sections) {
+  if (sections.size) {
     for (const [id, { mount, extractSelector }] of sections) {
-      const html = cartData.sections[id];
+      const html = sectionsData?.[id];
       if (!html) continue;
       const source = new DOMParser()
         .parseFromString(html, 'text/html')
@@ -107,7 +114,7 @@ async function refreshDawnCartUI() {
   }
 
   // Hand off to Dawn's existing subscribers. cartData is the full
-  // Cart Ajax payload (items, item_count, token, …) plus sections;
+  // Cart Ajax payload (items, item_count, token, …);
   // quick-add-bulk.js and price-per-item.js read it directly.
   publish(PUB_SUB_EVENTS.cartUpdate, {
     source: 'external-refresh',
