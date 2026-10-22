@@ -1,0 +1,262 @@
+{% comment %}
+  Ron's Pijamas – customer reviews.
+  Hand-picked review cards (swipe on mobile, grid on desktop). Review apps that
+  provide app blocks (Judge.me, Okendo, Loox, Shopify Product Reviews…) can be
+  added to this section as well.
+{% endcomment %}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- capture star_icon -%}
+  <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M10 1.5l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L1.3 7.8l6.1-.7z"/></svg>
+{%- endcapture -%}
+
+{%- assign review_blocks = section.blocks | where: 'type', 'review' -%}
+{%- assign app_blocks = section.blocks | where: 'type', '@app' -%}
+
+<div class="rons-testimonials color-{{ section.settings.color_scheme }} gradient">
+  <div class="page-width section-{{ section.id }}-padding">
+    <div class="rons-testimonials__header">
+      {%- if section.settings.caption != blank -%}
+        <p class="rons-eyebrow">{{ section.settings.caption | escape }}</p>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="inline-richtext {{ section.settings.heading_size }}">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+      {%- if section.settings.summary != blank -%}
+        <p class="rons-testimonials__summary">
+          <span class="rons-stars" aria-hidden="true">
+            {%- for i in (1..5) -%}{{ star_icon }}{%- endfor -%}
+          </span>
+          <span>{{ section.settings.summary }}</span>
+        </p>
+      {%- endif -%}
+    </div>
+
+    {%- if review_blocks.size > 0 -%}
+      <ul class="rons-testimonials__list" role="list" style="--rons-columns: {{ section.settings.columns_desktop }};">
+        {%- for block in review_blocks -%}
+          <li
+            {% if settings.animations_reveal_on_scroll %}
+              class="scroll-trigger animate--slide-in"
+              data-cascade
+              style="--animation-order: {{ forloop.index }};"
+            {% endif %}
+            {{ block.shopify_attributes }}
+          >
+            <figure class="rons-review">
+              {%- assign rating = block.settings.rating -%}
+              <span class="rons-stars" role="img" aria-label="{{ rating }} / 5">
+                {%- for i in (1..5) -%}
+                  <span class="{% if i > rating %}rons-star--empty{% endif %}">{{ star_icon }}</span>
+                {%- endfor -%}
+              </span>
+              <blockquote class="rons-review__quote">{{ block.settings.quote }}</blockquote>
+              <figcaption>
+                {%- if block.settings.author != blank -%}
+                  <p class="rons-review__author">{{ block.settings.author | escape }}</p>
+                {%- endif -%}
+                {%- if block.settings.product != blank -%}
+                  <p class="rons-review__product">
+                    {%- if block.settings.product_link != blank -%}
+                      <a href="{{ block.settings.product_link }}" class="link">{{ block.settings.product | escape }}</a>
+                    {%- else -%}
+                      {{ block.settings.product | escape }}
+                    {%- endif -%}
+                  </p>
+                {%- endif -%}
+                {%- if block.settings.verified -%}
+                  <span class="rons-review__verified">
+                    {{- 'icon-checkmark.svg' | inline_asset_content -}}
+                    {{ section.settings.verified_label | escape }}
+                  </span>
+                {%- endif -%}
+              </figcaption>
+            </figure>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- for block in app_blocks -%}
+      <div class="rons-testimonials__app" {{ block.shopify_attributes }}>
+        {% render block %}
+      </div>
+    {%- endfor -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Customer reviews",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "caption",
+      "label": "Caption",
+      "default": "Loved by our customers"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Softness you can feel"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h1"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "summary",
+      "label": "Rating summary",
+      "info": "Shown with five stars, e.g. \"4.9 / 5 from 320 reviews\". Only use your real rating. Leave empty to hide."
+    },
+    {
+      "type": "text",
+      "id": "verified_label",
+      "label": "Verified buyer label",
+      "default": "Verified buyer"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "label": "Columns on desktop",
+      "default": 3
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-2"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 72
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    },
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        {
+          "type": "range",
+          "id": "rating",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "label": "Rating",
+          "default": 5
+        },
+        {
+          "type": "inline_richtext",
+          "id": "quote",
+          "label": "Review",
+          "default": "The softest pyjamas I have ever owned. They feel luxurious and still look beautiful after many washes."
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "Customer name",
+          "default": "Maria K."
+        },
+        {
+          "type": "text",
+          "id": "product",
+          "label": "Product name"
+        },
+        {
+          "type": "url",
+          "id": "product_link",
+          "label": "Product link"
+        },
+        {
+          "type": "checkbox",
+          "id": "verified",
+          "label": "Show verified buyer label",
+          "default": true
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Customer reviews",
+      "blocks": [
+        {
+          "type": "review",
+          "settings": {
+            "quote": "The softest pyjamas I have ever owned. They feel luxurious and still look beautiful after many washes.",
+            "author": "Maria K."
+          }
+        },
+        {
+          "type": "review",
+          "settings": {
+            "quote": "Elegant enough to wear all weekend. The fit is perfect and the fabric is so breathable.",
+            "author": "Elena P."
+          }
+        },
+        {
+          "type": "review",
+          "settings": {
+            "quote": "Beautifully packaged and arrived in two days. I bought a second set as a gift for my sister.",
+            "author": "Daniela S."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
