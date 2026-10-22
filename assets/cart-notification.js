@@ -5,6 +5,9 @@ class CartNotification extends HTMLElement {
     this.notification = document.getElementById('cart-notification');
     this.header = document.querySelector('sticky-header');
     this.onBodyClick = this.handleBodyClick.bind(this);
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) this.navigationPending = false;
+    });
 
     this.notification.addEventListener('keyup', (evt) => evt.code === 'Escape' && this.close());
     this.querySelectorAll('button[type="button"]').forEach((closeButton) =>
@@ -65,11 +68,23 @@ class CartNotification extends HTMLElement {
 
   renderContents(parsedState) {
     this.cartItemKey = parsedState.key;
-    this.getSectionsToRender().forEach((section) => {
-      document.getElementById(section.id).innerHTML = this.getSectionInnerHTML(
-        parsedState.sections[section.id],
-        section.selector
-      );
+    let updates;
+    try {
+      updates = this.getSectionsToRender().map((section) => {
+        const element = document.getElementById(section.id);
+        const html = parsedState.sections?.[section.id];
+        if (!element || typeof html !== 'string') throw new Error('Missing cart section');
+        return { element, html: this.getSectionInnerHTML(html, section.selector) };
+      });
+    } catch {
+      // The add succeeded even when bundled section rendering failed.
+      // Show the cart without asking the customer to repeat the mutation.
+      this.navigationPending = true;
+      window.location.assign(routes.cart_url);
+      return;
+    }
+    updates.forEach(({ element, html }) => {
+      element.innerHTML = html;
     });
 
     if (this.header) this.header.reveal();
