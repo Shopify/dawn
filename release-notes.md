@@ -11,6 +11,7 @@ Updates the header to use Shopify's customer account experience, adds a Customer
 ### Changed
 
 - [Customer accounts] The header account icon now opens Shopify's customer account popover instead of a separate login page.
+- [Typography] Added support for custom heading and body fonts using Google Fonts or direct WOFF2 font URLs.
 
 ### Fixes and improvements
 
