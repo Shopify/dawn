@@ -1,0 +1,112 @@
+{{ 'section-cellife-home.css' | asset_url | stylesheet_tag }}
+{%- liquid
+  assign hero_image = section.settings.image | default: section.settings.mobile_image
+  assign priority = 'auto'
+  assign image_loading = 'lazy'
+  if section.index == 1
+    assign priority = 'high'
+    assign image_loading = 'eager'
+  endif
+-%}
+<section class="cellife-home cellife-hero" aria-labelledby="CellifeHero-{{ section.id }}">
+  <div class="cellife-hero__copy">
+    {% if section.settings.eyebrow != blank %}<p class="cellife-eyebrow">{{ section.settings.eyebrow | escape }}</p>{% endif %}
+    <h1 id="CellifeHero-{{ section.id }}">{{ section.settings.heading | escape }}</h1>
+    {% if section.settings.text != blank %}<div class="cellife-copy rte">{{ section.settings.text }}</div>{% endif %}
+    <div class="cellife-actions">
+      {% if section.settings.button_label != blank and section.settings.button_link != blank %}<a class="cellife-action" href="{{ section.settings.button_link }}">{{ section.settings.button_label | escape }} <span aria-hidden="true">↗</span></a>{% endif %}
+      {% if section.settings.secondary_label != blank and section.settings.secondary_link != blank %}<a class="cellife-action cellife-action--outline" href="{{ section.settings.secondary_link }}">{{ section.settings.secondary_label | escape }} <span aria-hidden="true">↗</span></a>{% endif %}
+    </div>
+  </div>
+  <div class="cellife-hero__media" style="--cellife-desktop-focus: {{ hero_image.presentation.focal_point | default: 'center center' }}; --cellife-mobile-focus: {{ section.settings.mobile_image.presentation.focal_point | default: hero_image.presentation.focal_point | default: 'center center' }};">
+    {% if hero_image != blank %}
+      <picture>
+        {% if section.settings.mobile_image != blank %}
+          <source media="(max-width: 749px)" srcset="{{ section.settings.mobile_image | image_url: width: 400 }} 400w, {{ section.settings.mobile_image | image_url: width: 600 }} 600w, {{ section.settings.mobile_image | image_url: width: 900 }} 900w" sizes="100vw" width="{{ section.settings.mobile_image.width }}" height="{{ section.settings.mobile_image.height }}">
+        {% endif %}
+        {{ hero_image | image_url: width: 1800 | image_tag: widths: '400, 600, 900, 1200, 1500, 1800', sizes: '(min-width: 750px) 55vw, 100vw', loading: image_loading, fetchpriority: priority, class: 'cellife-hero__image' }}
+      </picture>
+    {% else %}
+      <div class="cellife-placeholder"><span class="cellife-placeholder__symbol" aria-hidden="true">c.</span><p>{{ section.settings.placeholder_label | escape }}</p></div>
+    {% endif %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Cellife photographic hero",
+  "tag": "div",
+  "class": "cellife-hero-section",
+  "limit": 1,
+  "enabled_on": {
+    "templates": [
+      "index"
+    ]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "CELLIFE HEALTHCARE"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Science for better everyday health."
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Description",
+      "default": "<p>Explore Cellife supplements and diagnostic tests.</p>"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Desktop image",
+      "info": "Recommended: 1800 \u00d7 1600px. Use the image focal point to set the crop."
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile image",
+      "info": "Optional separate crop, approximately 900 \u00d7 900px."
+    },
+    {
+      "type": "text",
+      "id": "placeholder_label",
+      "label": "Placeholder label",
+      "default": "Product photography placeholder"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Primary button label",
+      "default": "Explore supplements"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Primary button link"
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Secondary button label",
+      "default": "Explore test kits"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "Secondary button link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cellife photographic hero"
+    }
+  ]
+}
+{% endschema %}
