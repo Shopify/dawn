@@ -115,12 +115,30 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
         .then((response) => response.text())
         .then((responseText) => {
           const html = new DOMParser().parseFromString(responseText, 'text/html');
+          const drawerWrapper = document.querySelector('cart-drawer');
+          const sourceDrawer = html.querySelector('cart-drawer');
+          const drawerInner = drawerWrapper?.querySelector('.drawer__inner');
+          const wasEmpty = drawerWrapper?.classList.contains('is-empty');
           const selectors = ['cart-drawer-items', '.cart-drawer__footer'];
           for (const selector of selectors) {
             const targetElement = document.querySelector(selector);
             const sourceElement = html.querySelector(selector);
             if (targetElement && sourceElement) {
               targetElement.replaceWith(sourceElement);
+            }
+          }
+          if (drawerWrapper && sourceDrawer && drawerInner) {
+            const isEmpty = sourceDrawer.classList.contains('is-empty');
+            drawerWrapper.classList.toggle('is-empty', isEmpty);
+            const checkoutButton = document.getElementById('CartDrawer-Checkout');
+            if (checkoutButton) checkoutButton.disabled = isEmpty;
+            const sourceEmpty = sourceDrawer.querySelector('.drawer__inner-empty');
+            const liveEmpty = drawerInner.querySelector('.drawer__inner-empty');
+            if (liveEmpty && !sourceEmpty) liveEmpty.remove();
+            if (!liveEmpty && sourceEmpty) drawerInner.prepend(sourceEmpty);
+            if (drawerWrapper.classList.contains('active') && wasEmpty !== isEmpty) {
+              const container = isEmpty ? drawerInner.querySelector('.drawer__inner-empty') : drawerInner;
+              if (container) trapFocus(container, container.querySelector('.drawer__close') || container);
             }
           }
         })
