@@ -10,6 +10,9 @@
   {% endif %}
 >
   {{ 'section-main-product.css' | asset_url | stylesheet_tag }}
+  {%- if section.settings.info_style == 'cards' -%}
+    {{ 'section-product-bold.css' | asset_url | stylesheet_tag }}
+  {%- endif -%}
   {{ 'component-accordion.css' | asset_url | stylesheet_tag }}
   {{ 'component-price.css' | asset_url | stylesheet_tag }}
   {{ 'component-slider.css' | asset_url | stylesheet_tag }}
@@ -75,7 +78,7 @@
   {% assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src' %}
   <product-component view-event-payload="{{ product | standard_event_data: 'view', context: 'page' | escape }}">
     <div class="page-width">
-      <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} product--mobile-{{ section.settings.mobile_thumbnails }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
+      <div class="product{% if section.settings.info_style == 'cards' %} product--bold{% endif %} product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} product--mobile-{{ section.settings.mobile_thumbnails }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
         <div class="grid__item product__media-wrapper">
           {% render 'product-media-gallery', variant_images: variant_images %}
         </div>
@@ -86,6 +89,7 @@
           >
             {%- assign product_form_id = 'product-form-' | append: section.id -%}
 
+            {%- if section.settings.info_style == 'cards' -%}<div class="product-bold__card">{%- endif -%}
             {%- for block in section.blocks -%}
               {%- case block.type -%}
                 {%- when '@app' -%}
@@ -688,8 +692,13 @@
                   </product-recommendations>
                 {%- when 'icon-with-text' -%}
                   {% render 'icon-with-text', block: block %}
+                {%- when 'card_break' -%}
+                  {%- if section.settings.info_style == 'cards' -%}</div><div class="product-bold__card">{%- endif -%}
+                {%- when 'byline', 'product_type', 'more_designs', 'spec_bars', 'info_card', 'feature_grid', 'link_card' -%}
+                  {% render 'product-bold-block', block: block, product: product %}
               {%- endcase -%}
             {%- endfor -%}
+            {%- if section.settings.info_style == 'cards' -%}</div>{%- endif -%}
             <a href="{{ product.url }}" class="link product__view-details animate-arrow">
               {{ 'products.product.view_full_details' | t }}
               {{- 'icon-arrow.svg' | inline_asset_content -}}
@@ -699,6 +708,11 @@
       </div>
 
       {% render 'product-media-modal', variant_images: variant_images %}
+
+      {%- if section.settings.show_sticky_bar -%}
+        {%- assign sticky_form_id = 'product-form-' | append: section.id -%}
+        {% render 'product-sticky-bar', product: product, product_form_id: sticky_form_id, section_id: section.id %}
+      {%- endif -%}
 
       {% assign popups = section.blocks | where: 'type', 'popup' %}
       {%- for block in popups -%}
@@ -2144,9 +2158,358 @@
           "info": "t:sections.main-product.blocks.icon_with_text.settings.heading.info"
         }
       ]
+    },
+    {
+      "type": "card_break",
+      "name": "Card divider",
+      "limit": 10,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Starts a new white card when Product info style is set to Cards."
+        }
+      ]
+    },
+    {
+      "type": "product_type",
+      "name": "Product type line",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Shows the product's type, e.g. \"Impact Case MagSafe Compatible\"."
+        }
+      ]
+    },
+    {
+      "type": "byline",
+      "name": "Byline (vendor)",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "prefix",
+          "label": "Prefix",
+          "default": "By"
+        }
+      ]
+    },
+    {
+      "type": "more_designs",
+      "name": "More designs",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "More Designs"
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection",
+          "info": "Defaults to the product's first collection"
+        },
+        {
+          "type": "range",
+          "id": "limit",
+          "label": "Products to show",
+          "min": 4,
+          "max": 24,
+          "step": 1,
+          "default": 12
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Link label",
+          "default": "Expand"
+        }
+      ]
+    },
+    {
+      "type": "spec_bars",
+      "name": "Spec bars",
+      "limit": 2,
+      "settings": [
+        {
+          "type": "range",
+          "id": "segments",
+          "label": "Segments",
+          "min": 3,
+          "max": 10,
+          "step": 1,
+          "default": 6
+        },
+        {
+          "type": "header",
+          "content": "Bar 1"
+        },
+        {
+          "type": "text",
+          "id": "label_1",
+          "label": "Label",
+          "default": "Impact Level"
+        },
+        {
+          "type": "text",
+          "id": "value_1",
+          "label": "Filled segments",
+          "default": "4",
+          "info": "A number; can be connected to a product metafield"
+        },
+        {
+          "type": "text",
+          "id": "note_1",
+          "label": "Note",
+          "default": "8.2ft | 2.5m"
+        },
+        {
+          "type": "text",
+          "id": "min_1",
+          "label": "Min label",
+          "default": "Min."
+        },
+        {
+          "type": "text",
+          "id": "max_1",
+          "label": "Max label",
+          "default": "Max."
+        },
+        {
+          "type": "header",
+          "content": "Bar 2"
+        },
+        {
+          "type": "text",
+          "id": "label_2",
+          "label": "Label",
+          "default": "Thickness"
+        },
+        {
+          "type": "text",
+          "id": "value_2",
+          "label": "Filled segments",
+          "default": "2"
+        },
+        {
+          "type": "text",
+          "id": "note_2",
+          "label": "Note"
+        },
+        {
+          "type": "text",
+          "id": "min_2",
+          "label": "Min label",
+          "default": "Slim"
+        },
+        {
+          "type": "text",
+          "id": "max_2",
+          "label": "Max label",
+          "default": "Sturdy"
+        }
+      ]
+    },
+    {
+      "type": "info_card",
+      "name": "Info (icon + text)",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Product Warranty"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "shield",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "shield",
+              "label": "Shield"
+            },
+            {
+              "value": "truck",
+              "label": "Truck"
+            },
+            {
+              "value": "return",
+              "label": "Return box"
+            },
+            {
+              "value": "secure",
+              "label": "Secure checkout"
+            },
+            {
+              "value": "warranty",
+              "label": "Warranty badge"
+            },
+            {
+              "value": "gift",
+              "label": "Gift"
+            },
+            {
+              "value": "heart",
+              "label": "Heart"
+            }
+          ]
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Up to <strong>24 months</strong> warranty for club members. 6 months standard coverage.</p>"
+        }
+      ]
+    },
+    {
+      "type": "feature_grid",
+      "name": "Feature icons",
+      "limit": 2,
+      "settings": [
+        {
+          "type": "header",
+          "content": "Feature 1"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_1",
+          "label": "Icon image"
+        },
+        {
+          "type": "text",
+          "id": "text_1",
+          "label": "Text",
+          "default": "Duo-Lock Bonding"
+        },
+        {
+          "type": "header",
+          "content": "Feature 2"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_2",
+          "label": "Icon image"
+        },
+        {
+          "type": "text",
+          "id": "text_2",
+          "label": "Text",
+          "default": "8.2 ft. Drop Protection"
+        },
+        {
+          "type": "header",
+          "content": "Feature 3"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_3",
+          "label": "Icon image"
+        },
+        {
+          "type": "text",
+          "id": "text_3",
+          "label": "Text",
+          "default": "4x Military Grade Standard"
+        },
+        {
+          "type": "header",
+          "content": "Feature 4"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_4",
+          "label": "Icon image"
+        },
+        {
+          "type": "text",
+          "id": "text_4",
+          "label": "Text",
+          "default": "Charm-Ready Side Sockets"
+        },
+        {
+          "type": "header",
+          "content": "Feature 5"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_5",
+          "label": "Icon image"
+        },
+        {
+          "type": "text",
+          "id": "text_5",
+          "label": "Text",
+          "default": "Camera Control Button"
+        },
+        {
+          "type": "header",
+          "content": "Feature 6"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_6",
+          "label": "Icon image"
+        },
+        {
+          "type": "text",
+          "id": "text_6",
+          "label": "Text",
+          "default": "MagSafe & Wireless Charging"
+        }
+      ]
+    },
+    {
+      "type": "link_card",
+      "name": "Heading + button",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "About the artist"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label",
+          "default": "Browse Artist Gallery"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link",
+          "info": "Defaults to the product vendor's page"
+        }
+      ]
     }
   ],
   "settings": [
+    {
+      "type": "select",
+      "id": "info_style",
+      "label": "Product info style",
+      "options": [
+        { "value": "standard", "label": "Standard" },
+        { "value": "cards", "label": "Cards (bold)" }
+      ],
+      "default": "standard",
+      "info": "Cards groups blocks into white cards. Add \"Card divider\" blocks to start a new card"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sticky_bar",
+      "label": "Show sticky add to cart bar",
+      "default": false
+    },
     {
       "type": "checkbox",
       "id": "enable_sticky_info",

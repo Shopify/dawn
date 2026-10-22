@@ -1,0 +1,170 @@
+{% comment %}
+  Card-and-list style drawer menu content, rendered inside Dawn's header drawer
+  when the header "Menu drawer style" setting is "Mega". Reuses Dawn's MenuDrawer
+  (details/summary) behavior for the sliding submenus.
+{% endcomment %}
+{%- liquid
+  assign has_mega_blocks = false
+  for block in section.blocks
+    if block.type contains 'mega_'
+      assign has_mega_blocks = true
+      break
+    endif
+  endfor
+-%}
+
+<div class="mega-drawer">
+  <div class="mega-drawer__top">
+    <a href="#" role="button" class="mega-drawer__close" aria-label="{{ 'accessibility.close' | t }}">
+      <span class="svg-wrapper">{{- 'icon-close.svg' | inline_asset_content -}}</span>
+    </a>
+    <form action="{{ routes.search_url }}" method="get" role="search" class="mega-drawer__search">
+      <span class="svg-wrapper" aria-hidden="true">{{- 'icon-search.svg' | inline_asset_content -}}</span>
+      <input
+        type="search"
+        name="q"
+        placeholder="{{ 'general.search.search' | t }}"
+        aria-label="{{ 'general.search.search' | t }}"
+        autocomplete="off"
+      >
+      <input type="hidden" name="options[prefix]" value="last">
+    </form>
+    {%- if shop.customer_accounts_enabled -%}
+      <a
+        href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}"
+        class="mega-drawer__icon"
+        aria-label="{%- if customer -%}{{ 'customer.account.title' | t }}{%- else -%}{{ 'customer.log_in' | t }}{%- endif -%}"
+      >
+        <span class="svg-wrapper">{{- 'icon-account.svg' | inline_asset_content -}}</span>
+      </a>
+    {%- endif -%}
+  </div>
+
+  {%- if section.settings.device_menu != blank -%}
+    <div class="mega-drawer__device">
+      <label for="MegaDrawerDevice">{{ section.settings.device_label | escape }}</label>
+      <div class="mega-drawer__select">
+        <select id="MegaDrawerDevice" onchange="if (this.value) window.location.href = this.value;">
+          <option value="">{{ section.settings.device_placeholder | escape }}</option>
+          {%- for link in section.settings.device_menu.links -%}
+            {%- if link.links.size > 0 -%}
+              <optgroup label="{{ link.title | escape }}">
+                {%- for child in link.links -%}
+                  <option value="{{ child.url }}">{{ child.title | escape }}</option>
+                {%- endfor -%}
+              </optgroup>
+            {%- else -%}
+              <option value="{{ link.url }}">{{ link.title | escape }}</option>
+            {%- endif -%}
+          {%- endfor -%}
+        </select>
+        <span class="svg-wrapper" aria-hidden="true">{{- 'icon-caret.svg' | inline_asset_content -}}</span>
+      </div>
+    </div>
+  {%- endif -%}
+
+  <div class="mega-drawer__stage">
+    <nav class="mega-drawer__scroll menu-drawer__navigation has-submenu" aria-label="{{ 'sections.header.menu' | t }}">
+      {%- if has_mega_blocks -%}
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when 'mega_featured' -%}
+              <a
+                {% if block.settings.link != blank %}
+                  href="{{ block.settings.link }}"
+                {% else %}
+                  role="link" aria-disabled="true"
+                {% endif %}
+                class="mega-drawer__featured"
+                style="--featured-text: {{ block.settings.text_color }};"
+                {{ block.shopify_attributes }}
+              >
+                {%- if block.settings.image != blank -%}
+                  {{
+                    block.settings.image
+                    | image_url: width: 700
+                    | image_tag: loading: 'lazy', widths: '350, 700', sizes: '330px', alt: block.settings.title
+                  }}
+                {%- else -%}
+                  {{ 'collection-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                {%- endif -%}
+                <span class="mega-drawer__featured-title">{{ block.settings.title | escape }}</span>
+                <span class="mega-drawer__featured-icon" aria-hidden="true">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 3h4v4M13 3 7 9M11 9v4H3V5h4"/></svg>
+                </span>
+              </a>
+
+            {%- when 'mega_cards' -%}
+              {%- if block.settings.menu == blank and request.design_mode == false -%}
+                {%- continue -%}
+              {%- endif -%}
+              <div class="mega-drawer__group" {{ block.shopify_attributes }}>
+                {%- if block.settings.heading != blank -%}
+                  <h2 class="mega-drawer__heading">{{ block.settings.heading | escape }}</h2>
+                {%- endif -%}
+                <ul class="mega-drawer__cards" role="list">
+                  {%- for link in block.settings.menu.links -%}
+                    {%- assign image = link.object.image | default: link.object.featured_image -%}
+                    <li>
+                      <a href="{{ link.url }}" class="mega-drawer__card">
+                        {%- if image != blank -%}
+                          {{
+                            image
+                            | image_url: width: 200
+                            | image_tag: loading: 'lazy', widths: '100, 200', sizes: '100px', alt: ''
+                          }}
+                        {%- else -%}
+                          {%- assign placeholder_index = forloop.index0 | modulo: 6 | plus: 1 -%}
+                          {{ 'collection-' | append: placeholder_index | placeholder_svg_tag: 'placeholder-svg' }}
+                        {%- endif -%}
+                        <span class="mega-drawer__card-title">{% render 'mega-drawer-title', title: link.title %}</span>
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+
+            {%- when 'mega_list' -%}
+              {%- if block.settings.menu == blank and request.design_mode == false -%}
+                {%- continue -%}
+              {%- endif -%}
+              <div class="mega-drawer__group" {{ block.shopify_attributes }}>
+                {%- if block.settings.heading != blank -%}
+                  <h2 class="mega-drawer__heading">{{ block.settings.heading | escape }}</h2>
+                {%- endif -%}
+                {%- render 'mega-drawer-list', menu: block.settings.menu, key: block.id, show_images: block.settings.show_images -%}
+              </div>
+
+            {%- when 'mega_links' -%}
+              {%- if block.settings.menu == blank and request.design_mode == false -%}
+                {%- continue -%}
+              {%- endif -%}
+              <div class="mega-drawer__group mega-drawer__group--{{ block.settings.style }}" {{ block.shopify_attributes }}>
+                {%- if block.settings.heading != blank -%}
+                  <h2 class="mega-drawer__heading">{{ block.settings.heading | escape }}</h2>
+                {%- endif -%}
+                <ul class="mega-drawer__links" role="list">
+                  {%- for link in block.settings.menu.links -%}
+                    <li>
+                      <a
+                        href="{{ link.url }}"
+                        {% if link.current %}
+                          aria-current="page"
+                        {% endif %}
+                      >
+                        {%- render 'mega-drawer-title', title: link.title -%}
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+          {%- endcase -%}
+        {%- endfor -%}
+      {%- else -%}
+        <div class="mega-drawer__group">
+          {%- render 'mega-drawer-list', menu: section.settings.menu, key: 'main', show_images: true -%}
+        </div>
+      {%- endif -%}
+    </nav>
+  </div>
+</div>

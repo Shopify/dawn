@@ -12,6 +12,10 @@
   <link rel="stylesheet" href="{{ 'component-price.css' | asset_url }}" media="print" onload="this.media='all'">
 {%- endif -%}
 
+{%- if section.settings.drawer_style == 'mega' -%}
+  {{ 'component-mega-drawer.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
+
 {%- if section.settings.menu_type_desktop == 'mega' -%}
   <link rel="stylesheet" href="{{ 'component-mega-menu.css' | asset_url }}" media="print" onload="this.media='all'">
 {%- endif -%}
@@ -122,6 +126,60 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  /* Full-width bar: logo left, centred inline menu, icons right */
+  .header.page-width {
+    max-width: none;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .header__inline-menu .list-menu--inline > li > .header__menu-item,
+  .header__inline-menu .list-menu--inline > li > header-menu > details > .header__menu-item {
+    color: rgb(var(--color-foreground));
+    font-weight: 600;
+  }
+
+  @media screen and (max-width: 989px) {
+    .header--mobile-left {
+      grid-template-areas: 'heading icons left-icons';
+      grid-template-columns: 1fr auto auto;
+    }
+
+    .header--mobile-left header-drawer {
+      grid-area: left-icons;
+      margin-left: 0;
+      margin-right: -1.2rem;
+    }
+
+    .header--mobile-left .header__heading-link {
+      margin-left: -0.75rem;
+    }
+
+    .header--mobile-left .header__icons {
+      padding-right: 0;
+    }
+
+    /* The cart is no longer the last item, so drop its edge-alignment offset */
+    .header--mobile-left .header__icon--cart {
+      margin-right: 0;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .header.page-width {
+      padding-left: 5rem;
+      padding-right: 5rem;
+    }
+
+    .header--middle-left.header--has-menu {
+      grid-template-columns: 1fr auto 1fr;
+    }
+
+    .header--middle-left .header__inline-menu {
+      justify-self: center;
+    }
+  }
 {%- endstyle -%}
 
 <script src="{{ 'cart-notification.js' | asset_url }}" defer="defer"></script>
@@ -136,17 +194,82 @@
 
 {% liquid
   assign header_tag = 'div'
+  assign sticky_type = section.settings.sticky_header_type
 
   if section.settings.sticky_header_type != 'none'
     assign header_tag = 'sticky-header'
   endif
+
+  assign transparent_header = false
+  if section.settings.transparent_on_home and request.page_type == 'index'
+    assign transparent_header = true
+    assign header_tag = 'sticky-header'
+    assign sticky_type = 'on-scroll-up'
+  endif
 %}
+
+{%- if transparent_header -%}
+  {%- style -%}
+    /* Homepage only: header overlays the first section, turns frosted once scrolled */
+    #MainContent > .shopify-section:first-child {
+      margin-top: calc(-1 * var(--transparent-header-height, 0px));
+    }
+
+    .header-wrapper--transparent,
+    .header-wrapper--transparent.gradient {
+      background: none;
+    }
+
+    .header-wrapper--transparent::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: rgba(var(--color-background), 0.82);
+      -webkit-backdrop-filter: blur(1.6rem) saturate(1.6);
+      backdrop-filter: blur(1.6rem) saturate(1.6);
+      box-shadow: 0 0.1rem 0 rgba(var(--color-foreground), 0.08), 0 1rem 3rem rgba(0, 0, 0, 0.06);
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+
+    .header-wrapper--transparent .header__heading-logo,
+    .header-wrapper--transparent .header__icon,
+    .header-wrapper--transparent .header__heading-link .h2 {
+      transition: color 0.35s ease, filter 0.35s ease;
+    }
+
+    /* Solid while scrolled, or while a drawer, search or dropdown is open */
+    .section-header:is(.scrolled-past-header, .menu-open) .header-wrapper--transparent::before,
+    .header-wrapper--transparent:is(:focus-within, :has([aria-expanded='true']))::before {
+      opacity: 1;
+    }
+
+    .section-header:not(.scrolled-past-header, .menu-open)
+      .header-wrapper--transparent:not(:focus-within, :has([aria-expanded='true'])) {
+      --color-foreground: 255, 255, 255;
+      box-shadow: inset 0 -0.1rem 0 rgba(255, 255, 255, 0.18);
+    }
+
+    .section-header:not(.scrolled-past-header, .menu-open)
+      .header-wrapper--transparent:not(:focus-within, :has([aria-expanded='true']))
+      .header__heading-logo {
+      filter: brightness(0) invert(1) drop-shadow(0 0.1rem 0.4rem rgba(0, 0, 0, 0.25));
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .header-wrapper--transparent::before {
+        transition: none;
+      }
+    }
+  {%- endstyle -%}
+{%- endif -%}
 
 <{{ header_tag }}
   {% if header_tag == 'sticky-header' %}
-    data-sticky-type="{{ section.settings.sticky_header_type }}"
+    data-sticky-type="{{ sticky_type }}"
   {% endif %}
-  class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}"
+  class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}{% if transparent_header %} header-wrapper--transparent{% endif %}"
 >
   {%- liquid
     assign social_links = false
@@ -318,6 +441,22 @@
     </div>
   </header>
 </{{ header_tag }}>
+
+{%- if transparent_header -%}
+  <script>
+    // Exact (fractional) header height, set before <main> renders so the overlaid section neither shifts nor shows a gap
+    (() => {
+      const section = document.currentScript.parentElement;
+      const setHeight = () =>
+        document.documentElement.style.setProperty(
+          '--transparent-header-height',
+          `${section.getBoundingClientRect().height}px`
+        );
+      setHeight();
+      new ResizeObserver(setHeight).observe(section);
+    })();
+  </script>
+{%- endif -%}
 
 {%- if settings.cart_type == 'notification' -%}
   {%- render 'cart-notification',
@@ -573,6 +712,42 @@
     },
     {
       "type": "select",
+      "id": "drawer_style",
+      "label": "Menu drawer style",
+      "options": [
+        { "value": "standard", "label": "Standard" },
+        { "value": "mega", "label": "Mega (cards, thumbnails & badges)" }
+      ],
+      "default": "standard",
+      "info": "Mega style is built from the \"Mega menu\" blocks. Add a badge by ending a menu item title with [NEW], [TOP], [SALE] or [HOT]"
+    },
+    {
+      "type": "link_list",
+      "id": "device_menu",
+      "label": "Mega menu: device selector menu",
+      "info": "Nested items become groups, e.g. Apple > iPhone 17"
+    },
+    {
+      "type": "text",
+      "id": "device_label",
+      "label": "Mega menu: device selector label",
+      "default": "For Your Device"
+    },
+    {
+      "type": "text",
+      "id": "device_placeholder",
+      "label": "Mega menu: device selector placeholder",
+      "default": "Select Device"
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "Mega menu: \"View all\" link label",
+      "default": "View all",
+      "info": "Leave empty to hide the link at the end of each submenu"
+    },
+    {
+      "type": "select",
       "id": "sticky_header_type",
       "options": [
         {
@@ -594,6 +769,13 @@
       ],
       "default": "on-scroll-up",
       "label": "t:sections.header.settings.sticky_header_type.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "transparent_on_home",
+      "default": false,
+      "label": "Transparent header on homepage",
+      "info": "Overlays the first homepage section with a white logo and icons. On the homepage the header hides on scroll down and reappears with a frosted background on scroll up. Other pages are unaffected."
     },
     {
       "type": "checkbox",
@@ -681,6 +863,51 @@
   "blocks": [
     {
       "type": "@app"
+    },
+    {
+      "type": "mega_featured",
+      "name": "Mega menu: banner",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image", "info": "Recommended 700 × 220 px" },
+        { "type": "text", "id": "title", "label": "Title", "default": "NEW! Latest Cases" },
+        { "type": "url", "id": "link", "label": "Link" },
+        { "type": "color", "id": "text_color", "label": "Title color", "default": "#000000" }
+      ]
+    },
+    {
+      "type": "mega_cards",
+      "name": "Mega menu: image cards",
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Design" },
+        { "type": "link_list", "id": "menu", "label": "Menu", "info": "Card images come from the linked collections" }
+      ]
+    },
+    {
+      "type": "mega_list",
+      "name": "Mega menu: product list",
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Products" },
+        { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu", "info": "Thumbnails come from the linked collections. Nested items open a submenu" },
+        { "type": "checkbox", "id": "show_images", "label": "Show thumbnails", "default": true }
+      ]
+    },
+    {
+      "type": "mega_links",
+      "name": "Mega menu: text links",
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Discover" },
+        { "type": "link_list", "id": "menu", "label": "Menu" },
+        {
+          "type": "select",
+          "id": "style",
+          "label": "Style",
+          "options": [
+            { "value": "primary", "label": "Primary" },
+            { "value": "muted", "label": "Muted" }
+          ],
+          "default": "primary"
+        }
+      ]
     }
   ]
 }

@@ -1,5 +1,8 @@
 {{ 'template-collection.css' | asset_url | stylesheet_tag }}
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
+{%- if section.settings.grid_style == 'bold' -%}
+  {{ 'template-collection-bold.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
 
 {% if section.settings.image_shape == 'blob' %}
@@ -40,7 +43,12 @@
   view-event-payload="{{ collection | standard_event_data: 'view' | escape }}"
   data-collection-id="{{ collection.id }}"
 >
-  <div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}">
+  <div
+    class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}{% if section.settings.grid_style == 'bold' %} collection-bold{% endif %}"
+    {% if section.settings.grid_style == 'bold' %}
+      data-grid-view="{{ section.settings.default_view }}"
+    {% endif %}
+  >
     {%- paginate collection.products by section.settings.products_per_page -%}
       {% comment %} Sort is the first tabbable element when filter type is vertical {% endcomment %}
       {%- if section.settings.enable_sorting and section.settings.filter_type == 'vertical' -%}
@@ -118,6 +126,9 @@
               filter_type: section.settings.filter_type,
               paginate: paginate
             %}
+            {%- if section.settings.grid_style == 'bold' -%}
+              {% render 'grid-view-toggle' %}
+            {%- endif -%}
           </aside>
         {%- endif -%}
 
@@ -175,6 +186,7 @@
                       image_shape: section.settings.image_shape,
                       show_secondary_image: section.settings.show_secondary_image,
                       show_vendor: section.settings.show_vendor,
+                      show_subtitle: section.settings.show_subtitle,
                       show_rating: section.settings.show_rating,
                       lazy_load: lazy_load,
                       skip_styles: skip_card_product_styles,
@@ -184,6 +196,13 @@
                     %}
                   </li>
                   {%- assign skip_card_product_styles = true -%}
+                  {%- if section.settings.grid_style == 'bold'
+                    and section.settings.promo_enable
+                    and paginate.current_page == 1
+                    and forloop.index == section.settings.promo_position
+                  -%}
+                    {% render 'collection-promo-tile', settings_source: section.settings %}
+                  {%- endif -%}
                 {%- endfor -%}
               </ul>
 
@@ -206,6 +225,85 @@
   "name": "t:sections.main-collection-product-grid.name",
   "class": "section",
   "settings": [
+    {
+      "type": "select",
+      "id": "grid_style",
+      "label": "Grid style",
+      "options": [
+        { "value": "standard", "label": "Standard" },
+        { "value": "bold", "label": "Bold (pill toolbar, grid toggle, promo tile)" }
+      ],
+      "default": "standard"
+    },
+    {
+      "type": "select",
+      "id": "default_view",
+      "label": "Bold: default grid size",
+      "options": [
+        { "value": "large", "label": "Large" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "small", "label": "Small" }
+      ],
+      "default": "small",
+      "info": "Shoppers can switch sizes with the grid toggle"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_subtitle",
+      "label": "Show product type under title",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Bold: promo tile"
+    },
+    {
+      "type": "checkbox",
+      "id": "promo_enable",
+      "label": "Show promo tile",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "promo_position",
+      "label": "Show after product",
+      "min": 2,
+      "max": 24,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "image_picker",
+      "id": "promo_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "promo_heading",
+      "label": "Heading",
+      "default": "Create Your Set. Make It Yours."
+    },
+    {
+      "type": "textarea",
+      "id": "promo_text",
+      "label": "Text",
+      "default": "Your full custom setup for personal tech. Start with a personalized case, then build out the look with custom prints, MagSafe accessories and charms."
+    },
+    {
+      "type": "text",
+      "id": "promo_button_label",
+      "label": "Button label",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "promo_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
     {
       "type": "range",
       "id": "products_per_page",

@@ -1,0 +1,113 @@
+{% comment %}
+  Renders a menu as thumbnail rows. Items with children open a sliding submenu
+  (handled by Dawn's MenuDrawer); grandchildren open a second-level submenu.
+  Accepts:
+  - menu: {Object} linklist
+  - key: {String} unique id prefix
+  - show_images: {Boolean} show collection/product thumbnails
+{% endcomment %}
+<ul class="mega-drawer__list" role="list">
+  {%- for link in menu.links -%}
+    {%- assign image = link.object.image | default: link.object.featured_image -%}
+    {%- capture row_content -%}
+      {%- if show_images -%}
+        <span class="mega-drawer__thumb">
+          {%- if image != blank -%}
+            {{ image | image_url: width: 120 | image_tag: loading: 'lazy', widths: '60, 120', sizes: '48px', alt: '' }}
+          {%- else -%}
+            {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+          {%- endif -%}
+        </span>
+      {%- endif -%}
+      <span class="mega-drawer__row-title">{% render 'mega-drawer-title', title: link.title %}</span>
+    {%- endcapture -%}
+
+    <li>
+      {%- if link.links != blank -%}
+        <details id="MegaDrawer-{{ key }}-{{ forloop.index }}">
+          <summary class="mega-drawer__row menu-drawer__menu-item">
+            {{ row_content }}
+            <span class="mega-drawer__chevron" aria-hidden="true">{% render 'cs-icon', icon: 'chevron-right' %}</span>
+          </summary>
+          <div class="menu-drawer__submenu mega-drawer__submenu has-submenu motion-reduce" tabindex="-1">
+            <button class="menu-drawer__close-button mega-drawer__back" aria-expanded="true">
+              {% render 'cs-icon', icon: 'chevron-left' %}
+              {% render 'mega-drawer-title', title: link.title %}
+            </button>
+            <ul class="mega-drawer__list mega-drawer__list--sub" role="list" tabindex="-1">
+              {%- for child in link.links -%}
+                <li>
+                  {%- if child.links != blank -%}
+                    <details id="MegaDrawer-{{ key }}-{{ forloop.parentloop.index }}-{{ forloop.index }}">
+                      <summary class="mega-drawer__row menu-drawer__menu-item">
+                        <span class="mega-drawer__row-title">{% render 'mega-drawer-title', title: child.title %}</span>
+                        <span class="mega-drawer__chevron" aria-hidden="true">{% render 'cs-icon', icon: 'chevron-right' %}</span>
+                      </summary>
+                      <div class="menu-drawer__submenu mega-drawer__submenu has-submenu motion-reduce" tabindex="-1">
+                        <button class="menu-drawer__close-button mega-drawer__back" aria-expanded="true">
+                          {% render 'cs-icon', icon: 'chevron-left' %}
+                          {% render 'mega-drawer-title', title: child.title %}
+                        </button>
+                        <ul class="mega-drawer__list mega-drawer__list--sub" role="list" tabindex="-1">
+                          {%- for grandchild in child.links -%}
+                            <li>
+                              <a
+                                href="{{ grandchild.url }}"
+                                class="mega-drawer__row mega-drawer__row--plain"
+                                {% if grandchild.current %}
+                                  aria-current="page"
+                                {% endif %}
+                              >
+                                <span class="mega-drawer__row-title">
+                                  {%- render 'mega-drawer-title', title: grandchild.title -%}
+                                </span>
+                              </a>
+                            </li>
+                          {%- endfor -%}
+                          {%- if section.settings.view_all_label != blank -%}
+                          <li>
+                            <a href="{{ child.url }}" class="mega-drawer__row mega-drawer__row--all">
+                              {{ section.settings.view_all_label | escape }}
+                            </a>
+                          </li>
+                          {%- endif -%}
+                        </ul>
+                      </div>
+                    </details>
+                  {%- else -%}
+                    <a
+                      href="{{ child.url }}"
+                      class="mega-drawer__row mega-drawer__row--plain"
+                      {% if child.current %}
+                        aria-current="page"
+                      {% endif %}
+                    >
+                      <span class="mega-drawer__row-title">{% render 'mega-drawer-title', title: child.title %}</span>
+                    </a>
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+              {%- if section.settings.view_all_label != blank -%}
+              <li>
+                <a href="{{ link.url }}" class="mega-drawer__row mega-drawer__row--all">
+                  {{ section.settings.view_all_label | escape }}
+                </a>
+              </li>
+              {%- endif -%}
+            </ul>
+          </div>
+        </details>
+      {%- else -%}
+        <a
+          href="{{ link.url }}"
+          class="mega-drawer__row menu-drawer__menu-item"
+          {% if link.current %}
+            aria-current="page"
+          {% endif %}
+        >
+          {{ row_content }}
+        </a>
+      {%- endif -%}
+    </li>
+  {%- endfor -%}
+</ul>

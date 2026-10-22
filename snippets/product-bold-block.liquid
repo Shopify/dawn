@@ -1,0 +1,163 @@
+{% comment %}
+  Renders the extra product-page blocks used by main-product's "cards" info style.
+  Accepts:
+  - block: {Object} the section block
+  - product: {Object}
+{% endcomment %}
+{%- case block.type -%}
+  {%- when 'product_type' -%}
+    {%- if product.type != blank -%}
+      <p class="product-bold__type" {{ block.shopify_attributes }}>{{ product.type | escape }}</p>
+    {%- endif -%}
+
+  {%- when 'byline' -%}
+    {%- if product.vendor != blank -%}
+      <p class="product-bold__byline" {{ block.shopify_attributes }}>
+        {{ block.settings.prefix | escape }}
+        <a href="{{ product.vendor | url_for_vendor }}">{{ product.vendor | escape }}</a>
+      </p>
+    {%- endif -%}
+
+  {%- when 'more_designs' -%}
+    {%- liquid
+      assign source = block.settings.collection
+      if source == blank
+        for c in product.collections
+          if c.handle != 'all' and c.products_count > 1
+            assign source = c
+            break
+          endif
+        endfor
+      endif
+    -%}
+    {%- if source != blank -%}
+      <div class="product-bold__designs" {{ block.shopify_attributes }}>
+        <div class="product-bold__row-head">
+          <span class="product-bold__label">{{ block.settings.heading | escape }}</span>
+          {%- if block.settings.link_label != blank -%}
+            <a href="{{ source.url }}" class="product-bold__muted-link">{{ block.settings.link_label | escape }}</a>
+          {%- endif -%}
+        </div>
+        <ul class="product-bold__designs-list" role="list">
+          {%- for item in source.products limit: block.settings.limit -%}
+            <li>
+              <a
+                href="{{ item.url }}"
+                class="product-bold__design{% if item.id == product.id %} is-current{% endif %}"
+                title="{{ item.title | escape }}"
+                {% if item.id == product.id %}
+                  aria-current="page"
+                {% endif %}
+              >
+                {%- if item.featured_media -%}
+                  {{
+                    item.featured_media
+                    | image_url: width: 180
+                    | image_tag: loading: 'lazy', widths: '90, 180', sizes: '76px', alt: item.title
+                  }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                {%- endif -%}
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+
+  {%- when 'spec_bars' -%}
+    <div class="product-bold__specs" {{ block.shopify_attributes }}>
+      {%- for i in (1..2) -%}
+        {%- liquid
+          assign label_key = 'label_' | append: i
+          assign value_key = 'value_' | append: i
+          assign note_key = 'note_' | append: i
+          assign min_key = 'min_' | append: i
+          assign max_key = 'max_' | append: i
+          assign label = block.settings[label_key]
+          assign value = block.settings[value_key] | plus: 0
+          assign segments = block.settings.segments
+        -%}
+        {%- if label != blank -%}
+          <div class="product-bold__spec">
+            <div class="product-bold__spec-head">
+              <span>{{ label | escape }}</span>
+              {%- if block.settings[note_key] != blank -%}
+                <strong>{{ block.settings[note_key] | escape }}</strong>
+              {%- endif -%}
+            </div>
+            <div
+              class="product-bold__spec-bar"
+              role="meter"
+              aria-label="{{ label | escape }}"
+              aria-valuemin="0"
+              aria-valuemax="{{ segments }}"
+              aria-valuenow="{{ value }}"
+            >
+              {%- for s in (1..segments) -%}
+                <span{% if s <= value %} class="is-filled"{% endif %}></span>
+              {%- endfor -%}
+            </div>
+            <div class="product-bold__spec-scale">
+              <span>{{ block.settings[min_key] | escape }}</span>
+              <span>{{ block.settings[max_key] | escape }}</span>
+            </div>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+  {%- when 'info_card' -%}
+    <div class="product-bold__info" {{ block.shopify_attributes }}>
+      {%- if block.settings.heading != blank -%}
+        <h2 class="product-bold__info-heading">{{ block.settings.heading | escape }}</h2>
+      {%- endif -%}
+      <div class="product-bold__info-body">
+        {%- if block.settings.icon != 'none' -%}
+          <span class="product-bold__info-icon">{% render 'cs-icon', icon: block.settings.icon %}</span>
+        {%- endif -%}
+        <div class="product-bold__info-text">{{ block.settings.text }}</div>
+      </div>
+    </div>
+
+  {%- when 'feature_grid' -%}
+    <ul class="product-bold__features" role="list" {{ block.shopify_attributes }}>
+      {%- for i in (1..6) -%}
+        {%- liquid
+          assign image_key = 'image_' | append: i
+          assign text_key = 'text_' | append: i
+          assign image = block.settings[image_key]
+          assign text = block.settings[text_key]
+        -%}
+        {%- if image != blank or text != blank -%}
+          <li class="product-bold__feature">
+            <span class="product-bold__feature-media">
+              {%- if image != blank -%}
+                {{ image | image_url: width: 200 | image_tag: loading: 'lazy', widths: '100, 200', sizes: '80px', alt: '' }}
+              {%- else -%}
+                {% render 'cs-icon', icon: 'sparkle' %}
+              {%- endif -%}
+            </span>
+            <span class="product-bold__feature-text">{{ text | escape }}</span>
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+
+  {%- when 'link_card' -%}
+    <div class="product-bold__link-card" {{ block.shopify_attributes }}>
+      <h2 class="product-bold__info-heading">{{ block.settings.heading | escape }}</h2>
+      {%- if block.settings.button_label != blank -%}
+        <a
+          {% if block.settings.button_link != blank %}
+            href="{{ block.settings.button_link }}"
+          {% else %}
+            href="{{ product.vendor | url_for_vendor }}"
+          {% endif %}
+          class="cs-pill"
+        >
+          {{- block.settings.button_label | escape -}}
+        </a>
+      {%- endif -%}
+    </div>
+{%- endcase -%}

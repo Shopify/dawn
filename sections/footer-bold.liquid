@@ -1,0 +1,271 @@
+<footer
+  class="cs-footer"
+  style="--cs-bg: {{ section.settings.background }}; --cs-text: {{ section.settings.text_color }}; --cs-accent: {{ section.settings.accent_color }}; --footer-cols: {{ section.blocks.size | at_least: 1 }};"
+>
+  <div class="cs-container">
+    <div class="cs-footer__grid">
+      <div class="cs-footer__col cs-footer__col--brand">
+        {%- if section.settings.brand_image != blank or section.settings.brand_text != blank -%}
+          <div class="cs-footer__brand">
+            {%- if section.settings.brand_image != blank -%}
+              {{
+                section.settings.brand_image
+                | image_url: width: 240
+                | image_tag: loading: 'lazy', widths: '120, 240', sizes: '120px'
+              }}
+            {%- endif -%}
+            {%- if section.settings.brand_text != blank -%}
+              <div>{{ section.settings.brand_text }}</div>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.newsletter_enable -%}
+          <h2 class="cs-footer__heading">{{ section.settings.newsletter_heading | escape }}</h2>
+          {%- form 'customer', id: 'FooterBoldNewsletter' -%}
+            <input type="hidden" name="contact[tags]" value="newsletter">
+            {%- if form.posted_successfully? -%}
+              <p class="cs-footer__message" role="status">{{ 'newsletter.success' | t }}</p>
+            {%- else -%}
+              <div class="cs-footer__newsletter">
+                <label class="visually-hidden" for="FooterBoldEmail">{{ 'newsletter.label' | t }}</label>
+                <input
+                  id="FooterBoldEmail"
+                  type="email"
+                  name="contact[email]"
+                  autocomplete="email"
+                  required
+                  placeholder="{{ section.settings.newsletter_placeholder | escape }}"
+                  {% if form.errors %}
+                    aria-invalid="true" aria-describedby="FooterBoldError"
+                  {% endif %}
+                >
+                <button type="submit">{{ section.settings.newsletter_button | escape }}</button>
+              </div>
+              {%- if form.errors -%}
+                <p id="FooterBoldError" class="cs-footer__message" role="alert">
+                  {{ form.errors.translated_fields.email | capitalize }}
+                  {{ form.errors.messages.email }}
+                </p>
+              {%- endif -%}
+            {%- endif -%}
+          {%- endform -%}
+          {%- if section.settings.newsletter_legal != blank -%}
+            <div class="cs-footer__legal">{{ section.settings.newsletter_legal }}</div>
+          {%- endif -%}
+        {%- endif -%}
+
+        {%- if section.settings.show_social -%}
+          <div class="cs-footer__social">
+            {%- if section.settings.social_heading != blank -%}
+              <h2 class="cs-footer__heading">{{ section.settings.social_heading | escape }}</h2>
+            {%- endif -%}
+            {%- render 'social-icons' -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- for block in section.blocks -%}
+        {%- assign menu = block.settings.menu -%}
+        <nav
+          class="cs-footer__col"
+          aria-label="{{ block.settings.heading | default: menu.title | escape }}"
+          {{ block.shopify_attributes }}
+        >
+          {%- if block.settings.heading != blank -%}
+            <h2 class="cs-footer__heading">{{ block.settings.heading | escape }}</h2>
+          {%- endif -%}
+          {%- if menu != blank -%}
+            <ul class="cs-footer__links" role="list">
+              {%- for link in menu.links -%}
+                {%- if link.links.size > 0 -%}
+                  <li class="cs-footer__group-title">
+                    <a href="{{ link.url }}">{{ link.title | escape }}</a>
+                  </li>
+                  {%- for child in link.links -%}
+                    <li>
+                      <a
+                        href="{{ child.url }}"
+                        {% if child.current %}
+                          aria-current="page"
+                        {% endif %}
+                        >{{ child.title | escape }}</a
+                      >
+                    </li>
+                  {%- endfor -%}
+                {%- else -%}
+                  <li>
+                    <a
+                      href="{{ link.url }}"
+                      {% if link.current %}
+                        aria-current="page"
+                      {% endif %}
+                      >{{ link.title | escape }}</a
+                    >
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </nav>
+      {%- endfor -%}
+    </div>
+
+    {%- if section.settings.rating_text != blank -%}
+      <div class="cs-footer__rating">{{ section.settings.rating_text }}</div>
+    {%- endif -%}
+
+    <div class="cs-footer__bottom">
+      <span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name | link_to: routes.root_url }}</span>
+      {%- if shop.privacy_policy != blank -%}
+        <a href="{{ shop.privacy_policy.url }}">{{ shop.privacy_policy.title | escape }}</a>
+      {%- endif -%}
+      {%- if shop.terms_of_service != blank -%}
+        <a href="{{ shop.terms_of_service.url }}">{{ shop.terms_of_service.title | escape }}</a>
+      {%- endif -%}
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer (bold)",
+  "tag": "section",
+  "class": "section section-footer-bold",
+  "enabled_on": {
+    "groups": ["footer"]
+  },
+  "max_blocks": 5,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Brand"
+    },
+    {
+      "type": "image_picker",
+      "id": "brand_image",
+      "label": "Brand badge"
+    },
+    {
+      "type": "richtext",
+      "id": "brand_text",
+      "label": "Brand text",
+      "default": "<p>Protect your phone in style</p>"
+    },
+    {
+      "type": "header",
+      "content": "Newsletter"
+    },
+    {
+      "type": "checkbox",
+      "id": "newsletter_enable",
+      "label": "Show newsletter signup",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "newsletter_heading",
+      "label": "Heading",
+      "default": "Newsletter"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_placeholder",
+      "label": "Placeholder",
+      "default": "Enter your email"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_button",
+      "label": "Button label",
+      "default": "SIGN UP"
+    },
+    {
+      "type": "richtext",
+      "id": "newsletter_legal",
+      "label": "Small print",
+      "default": "<p>By continuing, you agree to our <a href=\"/policies/terms-of-service\" title=\"Terms of service\">Terms & Conditions</a> and <a href=\"/policies/privacy-policy\" title=\"Privacy policy\">Privacy Policy</a>.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Social"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social",
+      "label": "Show social icons",
+      "default": true,
+      "info": "Add your social links in Theme settings > Social media"
+    },
+    {
+      "type": "text",
+      "id": "social_heading",
+      "label": "Social heading",
+      "default": "Let's be friends"
+    },
+    {
+      "type": "header",
+      "content": "Bottom"
+    },
+    {
+      "type": "richtext",
+      "id": "rating_text",
+      "label": "Rating line",
+      "default": "<p>Rated <strong>Excellent</strong> ★★★★★ by our customers</p>"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Signup button color",
+      "default": "#2C5DAB"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "menu",
+      "name": "Menu column",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu",
+          "default": "footer",
+          "info": "Nested menu items show as bold group titles, like \"Apple\" and \"Samsung\""
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Footer (bold)",
+      "blocks": [
+        { "type": "menu" },
+        { "type": "menu", "settings": { "heading": "Device" } },
+        { "type": "menu", "settings": { "heading": "About us" } },
+        { "type": "menu", "settings": { "heading": "Get help" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

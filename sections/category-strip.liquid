@@ -1,0 +1,137 @@
+<div
+  class="category-strip cs-section"
+  style="--cs-bg: {{ section.settings.background }}; --cs-text: {{ section.settings.text_color }}; --cs-pad-top: {{ section.settings.padding_top }}px; --cs-pad-bottom: {{ section.settings.padding_bottom }}px; --cs-pad-top-mobile: {{ section.settings.padding_top | times: 0.75 | round }}px; --cs-pad-bottom-mobile: {{ section.settings.padding_bottom | times: 0.75 | round }}px;"
+>
+  <div class="cs-container category-strip__row">
+    <cs-scroller id="Scroller-{{ section.id }}" class="cs-scroller">
+      <ul class="cs-scroller__track" role="list">
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign collection = block.settings.collection
+            assign label = block.settings.label | default: collection.title
+            assign image = block.settings.image | default: collection.featured_image
+            assign link = block.settings.link | default: collection.url
+          -%}
+          <li {{ block.shopify_attributes }}>
+            <a
+              {% if link != blank %}
+                href="{{ link }}"
+              {% else %}
+                role="link" aria-disabled="true"
+              {% endif %}
+              class="category-strip__item"
+            >
+              <span class="category-strip__image">
+                {%- if image != blank -%}
+                  {{
+                    image
+                    | image_url: width: 200
+                    | image_tag: loading: 'lazy', widths: '100, 150, 200', sizes: '72px', alt: label
+                  }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                {%- endif -%}
+              </span>
+              <span class="category-strip__label">{{ label | escape }}</span>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </cs-scroller>
+    <button
+      type="button"
+      class="cs-arrow cs-arrow--round"
+      data-scroller-next="Scroller-{{ section.id }}"
+      aria-label="{{ 'general.slider.next_slide' | t }}"
+    >
+      {% render 'cs-icon', icon: 'chevron-right' %}
+    </button>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Category strip",
+  "tag": "section",
+  "class": "section section-category-strip",
+  "max_blocks": 30,
+  "settings": [
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 16
+    }
+  ],
+  "blocks": [
+    {
+      "type": "category",
+      "name": "Category",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection",
+          "info": "Fills in the image, label and link automatically"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image",
+          "info": "Transparent PNG works best. Overrides the collection image"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link",
+          "info": "Overrides the collection link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Category strip",
+      "blocks": [
+        { "type": "category", "settings": { "label": "Phone Cases" } },
+        { "type": "category", "settings": { "label": "Bundle Sets" } },
+        { "type": "category", "settings": { "label": "Phone Straps" } },
+        { "type": "category", "settings": { "label": "MagSafe" } },
+        { "type": "category", "settings": { "label": "Charms" } },
+        { "type": "category", "settings": { "label": "Travel" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,253 @@
+{{ 'section-hero-carousel.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'hero-carousel.js' | asset_url }}" defer="defer"></script>
+
+{%- style -%}
+  #HeroCarousel-{{ section.id }} {
+    --hero-overlay: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+  }
+{%- endstyle -%}
+
+<hero-carousel
+  id="HeroCarousel-{{ section.id }}"
+  class="hero-carousel"
+  role="region"
+  aria-roledescription="carousel"
+  aria-label="{{ section.settings.accessibility_info | escape }}"
+  data-autoplay="{{ section.settings.auto_rotate }}"
+  data-speed="{{ section.settings.change_slides_speed | times: 1000 }}"
+>
+  <ul class="hero-carousel__track" id="HeroCarouselTrack-{{ section.id }}">
+    {%- for block in section.blocks -%}
+      {%- liquid
+        assign desktop_image = block.settings.image
+        assign mobile_image = block.settings.mobile_image | default: desktop_image
+        assign heading_tag = 'h2'
+        assign loading = 'lazy'
+        assign priority = 'auto'
+        if forloop.first
+          assign heading_tag = 'h1'
+          assign loading = 'eager'
+          assign priority = 'high'
+        endif
+      -%}
+      <li
+        class="hero-carousel__slide{% if forloop.first %} is-active{% endif %}"
+        id="HeroSlide-{{ section.id }}-{{ forloop.index }}"
+        role="group"
+        aria-roledescription="slide"
+        aria-label="{{ forloop.index }} / {{ forloop.length }}"
+        style="--mobile-focus: {{ block.settings.mobile_focus }};"
+        {% unless forloop.first %}
+          inert aria-hidden="true"
+        {% endunless %}
+        {{ block.shopify_attributes }}
+      >
+        <div class="hero-carousel__media">
+          {%- if block.settings.video != blank -%}
+            {%- if desktop_image != blank -%}
+              {%- assign poster = desktop_image | image_url: width: 1920 -%}
+              {{
+                block.settings.video
+                | video_tag:
+                  loop: true,
+                  muted: true,
+                  playsinline: true,
+                  controls: false,
+                  preload: 'metadata',
+                  poster: poster,
+                  class: 'hero-carousel__video'
+              }}
+            {%- else -%}
+              {{
+                block.settings.video
+                | video_tag:
+                  loop: true,
+                  muted: true,
+                  playsinline: true,
+                  controls: false,
+                  preload: 'metadata',
+                  image_size: '1920x',
+                  class: 'hero-carousel__video'
+              }}
+            {%- endif -%}
+          {%- elsif desktop_image != blank -%}
+            <picture>
+              {%- if block.settings.mobile_image != blank -%}
+                <source
+                  media="(max-width: 749px)"
+                  srcset="
+                    {{ mobile_image | image_url: width: 375 }} 375w,
+                    {{ mobile_image | image_url: width: 750 }} 750w,
+                    {{ mobile_image | image_url: width: 1100 }} 1100w
+                  "
+                  sizes="100vw"
+                >
+              {%- endif -%}
+              {{
+                desktop_image
+                | image_url: width: 3840
+                | image_tag:
+                  widths: '375, 750, 1100, 1500, 1780, 2000, 3000, 3840',
+                  sizes: '100vw',
+                  loading: loading,
+                  fetchpriority: priority,
+                  class: 'hero-carousel__image'
+              }}
+            </picture>
+          {%- else -%}
+            {{ 'hero-apparel-1' | placeholder_svg_tag: 'hero-carousel__image placeholder-svg' }}
+          {%- endif -%}
+        </div>
+
+        <div class="hero-carousel__content">
+          {%- if block.settings.heading != blank -%}
+            {%- assign words = block.settings.heading | split: ' ' -%}
+            <{{ heading_tag }} class="hero-carousel__heading">
+              {%- for word in words -%}
+                <span class="hero-carousel__word"><span style="--i: {{ forloop.index0 }};">{{ word | escape }}</span></span>
+                {%- unless forloop.last %} {% endunless -%}
+              {%- endfor -%}
+            </{{ heading_tag }}>
+          {%- endif -%}
+          {%- if block.settings.subheading != blank -%}
+            <p class="hero-carousel__text">{{ block.settings.subheading | escape | newline_to_br }}</p>
+          {%- endif -%}
+          {%- if block.settings.button_label != blank and block.settings.link != blank -%}
+            <a href="{{ block.settings.link }}" class="button hero-carousel__cta">
+              {{- block.settings.button_label | escape -}}
+            </a>
+          {%- endif -%}
+        </div>
+      </li>
+    {%- endfor -%}
+  </ul>
+
+  {%- if section.blocks.size > 1 -%}
+    <div class="hero-carousel__dots" role="group" aria-label="{{ 'sections.slideshow.carousel' | t | escape }}">
+      {%- for block in section.blocks -%}
+        <button
+          type="button"
+          class="hero-carousel__dot{% if forloop.first %} is-active{% endif %}"
+          aria-label="{{ 'sections.slideshow.load_slide' | t }} {{ forloop.index }} {{ 'general.slider.of' | t }} {{ forloop.length }}"
+          aria-controls="HeroSlide-{{ section.id }}-{{ forloop.index }}"
+          {% if forloop.first %}
+            aria-current="true"
+          {% endif %}
+          data-index="{{ forloop.index0 }}"
+        ></button>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+</hero-carousel>
+
+{% schema %}
+{
+  "name": "Hero carousel",
+  "tag": "section",
+  "class": "section section-hero-carousel",
+  "max_blocks": 10,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "auto_rotate",
+      "label": "Autoplay slides",
+      "default": true,
+      "info": "Disabled automatically for visitors who prefer reduced motion"
+    },
+    {
+      "type": "range",
+      "id": "change_slides_speed",
+      "min": 3,
+      "max": 15,
+      "step": 1,
+      "unit": "s",
+      "label": "Change slides every",
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Overlay darkness",
+      "info": "Darkens the top and bottom of each slide so the header and text stay readable",
+      "default": 50
+    },
+    {
+      "type": "text",
+      "id": "accessibility_info",
+      "label": "Carousel description (for screen readers)",
+      "default": "Featured collections"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Video",
+          "info": "Upload in Shopify. Plays muted, looped and inline. Landscape 1920 × 1080 recommended"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Poster / fallback image",
+          "info": "Shown while the video loads, or instead of it when no video is set"
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Mobile fallback image",
+          "info": "Optional. Used on mobile when there is no video"
+        },
+        {
+          "type": "select",
+          "id": "mobile_focus",
+          "label": "Mobile crop focus",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right", "label": "Right" }
+          ],
+          "default": "center"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Slide heading"
+        },
+        {
+          "type": "textarea",
+          "id": "subheading",
+          "label": "Description",
+          "info": "Optional"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label",
+          "default": "Shop now"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Button link",
+          "info": "The button is hidden until both a label and a link are set"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero carousel",
+      "blocks": [{ "type": "slide" }, { "type": "slide" }, { "type": "slide" }]
+    }
+  ]
+}
+{% endschema %}

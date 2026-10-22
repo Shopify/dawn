@@ -1,0 +1,229 @@
+{%- liquid
+  assign description = collection.description | strip_html | strip
+-%}
+
+<div
+  class="collection-hero-bold cs-section"
+  style="--cs-bg: {{ section.settings.background }}; --cs-text: {{ section.settings.text_color }}; --cs-pad-top: {{ section.settings.padding_top }}px; --cs-pad-bottom: {{ section.settings.padding_bottom }}px; --cs-pad-top-mobile: {{ section.settings.padding_top | times: 0.75 | round }}px; --cs-pad-bottom-mobile: {{ section.settings.padding_bottom | times: 0.75 | round }}px;"
+>
+  <div class="cs-container">
+    {%- if section.settings.show_breadcrumbs -%}
+      <nav class="collection-hero-bold__breadcrumbs" aria-label="Breadcrumb">
+        <ol role="list">
+          <li><a href="{{ routes.root_url }}">{{ section.settings.home_label | escape }}</a></li>
+          {%- if section.settings.parent_label != blank -%}
+            <li>
+              {%- if section.settings.parent_link != blank -%}
+                <a href="{{ section.settings.parent_link }}">{{ section.settings.parent_label | escape }}</a>
+              {%- else -%}
+                {{ section.settings.parent_label | escape }}
+              {%- endif -%}
+            </li>
+          {%- endif -%}
+          <li aria-current="page">{{ collection.title | escape }}</li>
+        </ol>
+      </nav>
+    {%- endif -%}
+
+    {%- if section.settings.show_small_title -%}
+      <p class="collection-hero-bold__small-title">{{ collection.title | escape }}</p>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <ul class="collection-hero-bold__tiles" role="list">
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign tile_collection = block.settings.collection
+            assign label = block.settings.label | default: tile_collection.title
+            assign image = block.settings.image | default: tile_collection.image
+            assign link = block.settings.link | default: tile_collection.url
+          -%}
+          <li {{ block.shopify_attributes }}>
+            <a
+              {% if link != blank %}
+                href="{{ link }}"
+              {% else %}
+                role="link" aria-disabled="true"
+              {% endif %}
+              class="collection-hero-bold__tile"
+              style="--tile-bg: {{ block.settings.background }}; --tile-text: {{ block.settings.text_color }};"
+            >
+              {%- if image != blank -%}
+                {{
+                  image
+                  | image_url: width: 400
+                  | image_tag: loading: 'lazy', widths: '200, 400', sizes: '190px', alt: ''
+                }}
+              {%- endif -%}
+              <span class="collection-hero-bold__tile-label">{{ label | escape }}</span>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    <div class="collection-hero-bold__intro">
+      <h1 class="collection-hero-bold__title">{{ collection.title | escape }}</h1>
+      {%- if section.settings.show_description and description != blank -%}
+        <div
+          id="CollectionDescription-{{ section.id }}"
+          class="collection-hero-bold__description rte"
+        >
+          {{ collection.description }}
+        </div>
+        {%- if description.size > 180 -%}
+          <button
+            type="button"
+            class="collection-hero-bold__more"
+            data-clamp-toggle
+            aria-controls="CollectionDescription-{{ section.id }}"
+            aria-expanded="false"
+            data-more-label="{{ section.settings.more_label | escape }}"
+            data-less-label="{{ section.settings.less_label | escape }}"
+          >
+            {{- section.settings.more_label | escape -}}
+          </button>
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Collection header (bold)",
+  "tag": "section",
+  "class": "section section-collection-hero-bold",
+  "enabled_on": {
+    "templates": ["collection"]
+  },
+  "max_blocks": 24,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumbs",
+      "label": "Show breadcrumbs",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "home_label",
+      "label": "Home label",
+      "default": "Home"
+    },
+    {
+      "type": "text",
+      "id": "parent_label",
+      "label": "Middle breadcrumb label",
+      "info": "Optional, e.g. \"All Phones\""
+    },
+    {
+      "type": "url",
+      "id": "parent_link",
+      "label": "Middle breadcrumb link"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_small_title",
+      "label": "Show small title above tiles",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show collection description",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "more_label",
+      "label": "\"View more\" label",
+      "default": "View More"
+    },
+    {
+      "type": "text",
+      "id": "less_label",
+      "label": "\"View less\" label",
+      "default": "View Less"
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 8
+    }
+  ],
+  "blocks": [
+    {
+      "type": "tile",
+      "name": "Theme tile",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection",
+          "info": "Fills in the image, label and link automatically"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "color",
+          "id": "background",
+          "label": "Tile color",
+          "default": "#F6C9D3"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Label color",
+          "default": "#000000"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection header (bold)"
+    }
+  ]
+}
+{% endschema %}
