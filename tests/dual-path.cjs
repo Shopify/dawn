@@ -11,7 +11,7 @@ const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
 const gateway = read('sections/cellife-journey-gateway.liquid');
 const schema = JSON.parse(gateway.split('{% schema %}')[1].split('{% endschema %}')[0]);
 const defaults = Object.fromEntries(schema.settings.map(s => [s.id, s.default || '']));
-const supplements = '/pages/supplements';
+const supplements = '/';
 const diagnostics = '/pages/diagnostic-test-kits';
 function substitute(html, values = {}) {
   return html.replace(/{{\s*(.*?)\s*}}/g, (_, key) => {
@@ -91,12 +91,14 @@ const server = http.createServer((req, res) => {
       assert.equal(await open(returningTab), false, 'saved choice suppresses a new-tab homepage visit');
       assert.equal(new URL(returningTab.url()).pathname, '/', 'saved preference never redirects');
       await returningTab.close();
-      await page.goBack();
-      assert.equal(await open(page), false, 'Back does not reopen dialog');
+      assert.equal(await open(page), false, 'choosing Supplements on the homepage settles the dialog');
       await page.locator('.cellife-journeys a[data-cellife-choice="diagnostics"]').click();
       await page.waitForURL(base+diagnostics);
       assert.equal(await page.locator('h1').innerText(), 'Diagnostic Test Kits');
       assert.equal(await page.locator('nav a').count(),2);
+      await page.goBack();
+      await page.waitForURL(base+'/');
+      assert.equal(await open(page), false, 'Back from Diagnostics does not reopen the popup');
       await page.context().close();
 
       for (const direct of ['/products/sample','/collections/supplements']) {

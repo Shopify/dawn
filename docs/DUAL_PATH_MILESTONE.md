@@ -1,5 +1,31 @@
 # Dual-path shopping milestone
 
+## Updated direction: supplements is the homepage
+
+The owner subsequently selected a supplement-focused main homepage **with the
+first-visit selection popup retained**. This supersedes the equal-weight page
+architecture described in the original milestone below:
+
+- Supplements links in the popup and persistent navigation now resolve to
+  `routes.root_url`, including localized home routes. No Supplements page record
+  is needed. The optional older `page.supplements` template remains available but
+  is no longer a primary destination.
+- The existing homepage hero imagery, headline and visual styling are retained;
+  its summary now introduces supplements and its secondary link leads to diagnostics.
+- The homepage product grid selects the verified `supplements` collection.
+- The inline two-choice gateway is hidden with a new editable checkbox while its
+  independently configurable popup remains enabled. The old four-category section
+  is retained in JSON, disabled rather than deleted, for easy restoration.
+- Diagnostic Test Kits retains its standalone page template and category cards.
+  Its page record still needs assignment through the shared theme setting.
+- The popup script now lives in `layout/theme.liquid`, independently of optional
+  header section configuration. It still remembers explicit selection/dismissal,
+  skips direct catalog entries and never redirects based on a saved preference.
+
+The local browser suite was updated for Supplements → homepage. Original preview
+setup instructions referring to a required Supplements page are superseded by this
+section; only the Diagnostics page record is required for the primary navigation.
+
 ## Implementation plan
 
 Preserve the current Shopify-connected branch's homepage settings, hero, category
