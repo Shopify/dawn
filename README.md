@@ -1,4 +1,11 @@
-# Dawn
+# Cellife Shopify theme
+
+Start with [the project plan](PROJECT_PLAN.md) and [the Cellife development guide](docs/DEVELOPMENT.md)
+for baseline provenance, local checks and the safe preview workflow. The upstream
+Dawn documentation follows for reference; the Cellife guide takes precedence for
+project workflow and release safety.
+
+## Upstream Dawn
 
 [![Build status](https://github.com/shopify/dawn/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Shopify/dawn/actions/workflows/ci.yml?query=branch%3Amain)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?color=informational)](/.github/CONTRIBUTING.md)
