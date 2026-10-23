@@ -9,8 +9,10 @@ In an authorized development theme's Customize screen, open Home page:
 
 1. **Cellife photographic hero:** replace the marked placeholder using Desktop
    image; add Mobile image for a separate crop. Edit the eyebrow, heading,
-   description and two links. Desktop photography occupies the right-hand panel;
-   mobile photography sits below the copy so text contrast does not depend on art.
+   description and two links. Photography spans the full hero width behind a translucent text panel. The
+   panel uses backdrop blur where supported, a more opaque fallback otherwise,
+   and a solid background when reduced transparency is requested. On mobile it
+   sits toward the bottom; long copy grows the hero rather than being clipped.
 2. **Cellife shopping pathways:** replace each category image and edit its heading,
    description and destination. Reorder up to four cards. The section is limited
    to one homepage instance so its hero navigation anchor stays unique.
@@ -25,11 +27,11 @@ explicit placeholder. Final image alt text is managed in Shopify's image setting
 
 ## Image brief
 
-- Hero desktop: approximately 1800 × 1600px, product-focused still life with natural
-  daylight and platinum/neutral surroundings with brand-blue cues. Product sits in the image panel;
+- Hero desktop: approximately 2400 × 1400px, product-focused still life with natural
+  daylight and platinum/neutral surroundings with brand-blue cues. Keep the product toward the right, clear of the overlaid text panel;
   leave text out of the artwork. Target delivered desktop transfer ≤400KB.
-- Hero mobile: approximately 900 × 900px, a tighter composition with readable
-  packaging; target delivered transfer ≤250KB.
+- Hero mobile: approximately 900 × 1400px, a portrait composition with readable
+  packaging above the lower text panel; target delivered transfer ≤250KB.
 - Category images: 4:3, approximately 1200 × 900px, consistent lighting and product
   scale. Supplements, respiratory tests, drug/alcohol tests and women’s/urinary
   tests should be visually distinct without inventing packaging or credentials.
