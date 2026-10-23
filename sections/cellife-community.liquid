@@ -1,0 +1,167 @@
+<section class="cellife-section cellife-tone--{{ section.settings.tone }}" aria-labelledby="Editorial-{{ section.id }}">
+  <div class="cellife-container"><div class="cellife-section-heading">
+  {% if section.settings.eyebrow != blank %}<p class="cellife-kicker">{{ section.settings.eyebrow | escape }}</p>{% endif %}
+  <h2 id="Editorial-{{ section.id }}">{{ section.settings.heading | escape }}</h2>
+  {% if section.settings.text != blank %}<div class="rte">{{ section.settings.text }}</div>{% endif %}
+</div>
+    <div class="cellife-community-grid">
+      {% for block in section.blocks %}
+        {% if block.type == '@app' %}<div class="cellife-community-app" {{ block.shopify_attributes }}>{% render block %}</div>
+        {% else %}
+          <article class="cellife-community-card" {{ block.shopify_attributes }}>
+            <div class="cellife-community-card__media">
+              {% if block.settings.approved and block.settings.video != blank %}
+                {% assign story_poster = block.settings.video.preview_image | image_url: width: 800 %}
+                {% if block.settings.poster != blank %}{% assign story_poster = block.settings.poster | image_url: width: 800 %}{% endif %}
+                {{ block.settings.video | video_tag: controls: true, autoplay: false, loop: false, preload: 'none', image_size: '800x', poster: story_poster }}
+              {% elsif block.settings.approved and block.settings.poster != blank %}
+                {{ block.settings.poster | image_url: width: 800 | image_tag: widths: '400, 600, 800', sizes: '(min-width: 750px) 30vw, 85vw', loading: 'lazy' }}
+              {% else %}{% render 'cellife-media-placeholder', label: section.settings.placeholder_label %}{% endif %}
+            </div>
+            <div class="cellife-community-card__copy">
+              {% if block.settings.approved %}
+                {% if block.settings.quote != blank %}<blockquote>{{ block.settings.quote | escape }}</blockquote>{% endif %}
+                <p>{{ block.settings.attribution | escape }}</p>
+                {% if block.settings.transcript != blank %}<details><summary>{{ section.settings.transcript_label | escape }}</summary><div class="rte">{{ block.settings.transcript }}</div></details>{% endif %}
+                {% if block.settings.product != blank %}<a class="cellife-editorial-link" href="{{ block.settings.product.url }}">{{ block.settings.product.title | escape }}</a>{% endif %}
+              {% else %}<p class="cellife-draft-label">{{ section.settings.draft_label | escape }}</p><p>{{ section.settings.placeholder_text | escape }}</p>{% endif %}
+            </div>
+          </article>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Cellife community stories",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Section heading"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Introduction"
+    },
+    {
+      "type": "select",
+      "id": "tone",
+      "label": "Background",
+      "options": [
+        {
+          "value": "light",
+          "label": "White"
+        },
+        {
+          "value": "soft",
+          "label": "Soft platinum"
+        },
+        {
+          "value": "dark",
+          "label": "Brand blue"
+        }
+      ],
+      "default": "light"
+    },
+    {
+      "type": "text",
+      "id": "placeholder_label",
+      "label": "Missing-media label",
+      "default": "Video story placeholder"
+    },
+    {
+      "type": "text",
+      "id": "draft_label",
+      "label": "Unapproved content label",
+      "default": "Unpublished story placeholder"
+    },
+    {
+      "type": "text",
+      "id": "placeholder_text",
+      "label": "Placeholder description",
+      "default": "Add a consented customer story, accurate attribution and captions or transcript."
+    },
+    {
+      "type": "text",
+      "id": "transcript_label",
+      "label": "Transcript label",
+      "default": "Read transcript"
+    }
+  ],
+  "max_blocks": 8,
+  "blocks": [
+    {
+      "type": "story",
+      "name": "Video / customer story",
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "approved",
+          "label": "Content and consent approved",
+          "info": "Only enable after reviewing the story, attribution, usage consent and accessibility.",
+          "default": false
+        },
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Shopify-hosted video"
+        },
+        {
+          "type": "image_picker",
+          "id": "poster",
+          "label": "Poster image"
+        },
+        {
+          "type": "text",
+          "id": "quote",
+          "label": "Approved customer quote"
+        },
+        {
+          "type": "text",
+          "id": "attribution",
+          "label": "Approved attribution"
+        },
+        {
+          "type": "richtext",
+          "id": "transcript",
+          "label": "Transcript"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Related product"
+        }
+      ]
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cellife community stories",
+      "blocks": [
+        {
+          "type": "story"
+        },
+        {
+          "type": "story"
+        },
+        {
+          "type": "story"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
