@@ -111,6 +111,20 @@ The existing Contact page retains Shopify's native form.
   catalog rendering, native forms, app behavior, real video, cart mutations, Safari
   and field performance need development-theme testing with final content.
 
+Subsequent read-only verification of the actual preview confirmed the homepage,
+real supplement shelf, collection, product gallery, displayed price/quantity and
+purchase controls, first-entry popup, FAQ expansion and newsletter field at desktop
+and mobile sizes. No obvious Liquid errors, broken images or mobile overflow were
+observed. The Shopify preview toolbar covers the mobile bottom action; hide the
+toolbar when reviewing that action. This is a preview-environment overlay, not a
+reason to place theme controls above Shopify's toolbar.
+
+Inspected preview routes: `/`, `/collections/supplements`, and
+`/products/cellife-ampk-fatburst-60s` on
+`cc94u8jqife1m0hi-85851341113.shopifypreview.com`. Cart mutations, checkout, accounts,
+form submissions, third-party app compatibility, video with final media, Safari
+and field performance remain unverified. The published live theme was not changed.
+
 Temporary local tooling lives outside the repository. Reproduce checks with
 Shopify CLI and Node/Playwright/LiquidJS available:
 
