@@ -20,7 +20,15 @@ for directory in ("config", "locales", "templates", "sections"):
         elif path.suffix == ".liquid":
             for schema in re.findall(r"{%\s*schema\s*%}(.*?){%\s*endschema\s*%}", path.read_text(), re.S):
                 try:
-                    json.loads(schema)
+                    document = json.loads(schema)
+                    # Shopify only permits these static defaults for URL inputs.
+                    # Theme Check does not currently report arbitrary path defaults.
+                    groups = [document, *document.get("blocks", [])]
+                    for group in groups:
+                        for setting in group.get("settings", []):
+                            if setting.get("type") == "url" and "default" in setting:
+                                if setting["default"] not in ("/collections", "/collections/all"):
+                                    raise ValueError(f"Unsupported URL default in {path.relative_to(ROOT)}: {setting['id']}")
                 except json.JSONDecodeError as error:
                     raise ValueError(f"Invalid schema in {path.relative_to(ROOT)}: {error}") from error
                 count += 1
