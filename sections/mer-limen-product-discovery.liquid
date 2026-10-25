@@ -1,0 +1,62 @@
+{%- liquid
+  assign featured_collection = section.settings.collection
+  assign products_to_render = featured_collection.products
+  if section.settings.source == 'products'
+    assign products_to_render = section.settings.products
+  endif
+-%}
+{%- if products_to_render != blank and products_to_render.size > 0 -%}
+  <section class="ml-products ml-surface--{{ section.settings.background_treatment }} ml-align--{{ section.settings.text_alignment }}" style="--ml-section-space: {{ section.settings.section_space }}px;">
+    <div class="ml-products__inner page-width">
+      <div class="ml-section-heading"><div class="ml-section-heading__copy">
+        {%- if section.settings.eyebrow != blank -%}<p class="ml-eyebrow">{{ section.settings.eyebrow | escape }}</p>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="ml-display ml-section-heading__title">{{ section.settings.heading | escape | newline_to_br }}</h2>{%- endif -%}
+        {%- if section.settings.description != blank -%}<p class="ml-copy ml-section-heading__description">{{ section.settings.description | escape }}</p>{%- endif -%}
+      </div>{%- if section.settings.show_view_all -%}
+          {%- assign view_all_url = section.settings.view_all_url | default: featured_collection.url | default: routes.all_products_collection_url -%}
+          <a class="ml-text-link ml-products__view-all" href="{{ view_all_url }}">{{ section.settings.view_all_label | default: 'Explore collection' | escape }} <span aria-hidden="true">↗</span></a>
+        {%- endif -%}</div>
+      <div class="ml-product-grid ml-product-grid--{{ section.settings.columns_desktop }}">
+        {%- for product in featured_collection.products limit: section.settings.products_to_show -%}
+          <article class="ml-product-card">
+            <a class="ml-product-card__media ml-product-card__media--{{ section.settings.image_ratio }}" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
+              {%- if product.featured_media != blank -%}{{ product.featured_media.preview_image | image_url: width: 1000 | image_tag: widths: '320, 480, 640, 800, 1000', sizes: '(min-width: 1200px) 25vw, (min-width: 750px) 33vw, 50vw', loading: 'lazy', alt: product.featured_media.alt | default: product.title }}{%- else -%}<span class="ml-product-card__image-fallback" aria-hidden="true"></span>{%- endif -%}
+              {%- if section.settings.show_product_status and product.available == false -%}<span class="ml-product-card__status">{{ 'products.product.sold_out' | t }}</span>{%- endif -%}
+              <span class="ml-product-card__index" aria-hidden="true">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
+            </a>
+            <div class="ml-product-card__details"><div class="ml-product-card__title-row"><h3 class="ml-product-card__title"><a href="{{ product.url }}">{{ product.title | escape }}</a></h3>{% render 'price', product: product, price_class: 'ml-product-card__price', show_compare_at_price: true %}</div>
+              {%- if section.settings.show_vendor and product.vendor != blank -%}<p class="ml-product-card__vendor">{{ product.vendor | escape }}</p>{%- endif -%}
+            </div>
+          </article>
+        {%- endfor -%}
+      </div>
+    </div>
+  </section>
+{%- elsif request.design_mode -%}
+  <section class="ml-products ml-surface--midnight ml-products--empty"><div class="page-width"><p class="ml-eyebrow">MƎR LIMEN / PRODUCT DISCOVERY</p><p>Choose a collection in this section's settings to show live products here.</p></div></section>
+{%- endif -%}
+{% schema %}
+{
+  "name": "MƎR-LIMEN products",
+  "settings": [
+    {"type":"text","id":"eyebrow","label":"Eyebrow","default":"CONSIDERED ESSENTIALS"},
+    {"type":"text","id":"heading","label":"Heading","default":"Made for the hours between."},
+    {"type":"textarea","id":"description","label":"Supporting text"},
+    {"type":"select","id":"source","label":"Product source","default":"collection","options":[{"value":"collection","label":"Collection"},{"value":"products","label":"Hand-picked products"}]},
+    {"type":"collection","id":"collection","label":"Collection"},
+    {"type":"product_list","id":"products","label":"Hand-picked products","limit":12},
+    {"type":"range","id":"products_to_show","label":"Products to show","min":2,"max":12,"step":1,"default":4},
+    {"type":"select","id":"columns_desktop","label":"Desktop columns","default":"4","options":[{"value":"2","label":"2 columns"},{"value":"3","label":"3 columns"},{"value":"4","label":"4 columns"}]},
+    {"type":"select","id":"image_ratio","label":"Product image shape","default":"adapt","options":[{"value":"adapt","label":"Original proportions"},{"value":"square","label":"Square"},{"value":"portrait","label":"Portrait"}]},
+    {"type":"checkbox","id":"show_vendor","label":"Show product vendor","default":false},
+    {"type":"checkbox","id":"show_product_status","label":"Show sold-out label","default":true},
+    {"type":"checkbox","id":"show_view_all","label":"Show collection link","default":true},
+    {"type":"text","id":"view_all_label","label":"Collection link label","default":"View all objects"},
+    {"type":"url","id":"view_all_url","label":"Collection or product list destination"},
+    {"type":"select","id":"text_alignment","label":"Heading alignment","default":"left","options":[{"value":"left","label":"Left"},{"value":"center","label":"Center"}]},
+    {"type":"select","id":"background_treatment","label":"Background","default":"void","options":[{"value":"void","label":"Void"},{"value":"midnight","label":"Midnight"},{"value":"indigo","label":"Deep indigo"}]},
+    {"type":"range","id":"section_space","label":"Vertical spacing","min":40,"max":160,"step":20,"unit":"px","default":100}
+  ],
+  "presets": [{"name":"MƎR LIMEN products"}]
+}
+{% endschema %}

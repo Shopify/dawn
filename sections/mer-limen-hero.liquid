@@ -1,0 +1,63 @@
+{%- liquid
+  assign hero_image = section.settings.desktop_image | default: section.settings.mobile_image
+  assign hero_alt = section.settings.image_alt | default: hero_image.alt
+-%}
+<section class="ml-hero ml-hero--{{ section.settings.hero_height }} ml-hero--text-{{ section.settings.text_position }}{% if hero_image == blank %} ml-hero--no-image{% endif %}" style="--ml-hero-overlay: {{ section.settings.overlay_opacity | times: 0.01 }}; --ml-hero-image-position: {{ section.settings.image_position }};">
+  <div class="ml-hero__media" aria-hidden="{% if hero_image == blank %}true{% else %}false{% endif %}">
+    {%- if hero_image != blank -%}
+      <picture class="ml-hero__picture">
+        {%- if section.settings.mobile_image != blank -%}<source media="(max-width: 749px)" srcset="{{ section.settings.mobile_image | image_url: width: 900 }}">{%- endif -%}
+        {{ hero_image | image_url: width: 2400 | image_tag: widths: '750, 1100, 1500, 1900, 2400', sizes: '100vw', class: 'ml-hero__image', loading: 'eager', fetchpriority: 'high', alt: hero_alt }}
+      </picture>
+    {%- endif -%}
+    <span class="ml-hero__veil"></span><span class="ml-hero__planes" aria-hidden="true"><span></span></span>
+  </div>
+  <div class="ml-hero__content page-width">
+    {%- if section.settings.eyebrow != blank -%}<p class="ml-eyebrow">{{ section.settings.eyebrow | escape }}</p>{%- endif -%}
+    {%- if section.settings.heading != blank -%}<h1 class="ml-display ml-hero__heading">{{ section.settings.heading | escape | newline_to_br }}</h1>{%- endif -%}
+    {%- if section.settings.body != blank -%}<div class="ml-copy ml-hero__body">{{ section.settings.body | escape | newline_to_br }}</div>{%- endif -%}
+    <div class="ml-hero__actions">
+      {%- if section.settings.primary_label != blank -%}<a class="ml-button" href="{{ section.settings.primary_link | default: routes.all_products_collection_url }}"><span>{{ section.settings.primary_label | escape }}</span><span class="ml-button__arrow" aria-hidden="true">↗</span></a>{%- endif -%}
+      {%- if section.settings.secondary_label != blank and section.settings.secondary_link != blank -%}<a class="ml-text-link" href="{{ section.settings.secondary_link }}">{{ section.settings.secondary_label | escape }} <span aria-hidden="true">↗</span></a>{%- endif -%}
+    </div>
+  </div>
+  <div class="ml-hero__index" aria-hidden="true"><span>ML / 001</span><span>AN ENTRY POINT</span></div>
+  {%- if section.settings.show_scroll_cue -%}<button class="ml-hero__scroll" type="button" data-ml-scroll-next aria-label="Scroll to the next section"><span></span><span class="ml-eyebrow">SCROLL TO EXPLORE</span></button>{%- endif -%}
+</section>
+<script>
+  (() => {
+    const section = document.getElementById('shopify-section-{{ section.id }}');
+    const cue = section?.querySelector('[data-ml-scroll-next]');
+    if (!section || !cue || cue.dataset.mlBound === 'true') return;
+    cue.dataset.mlBound = 'true';
+    cue.addEventListener('click', () => {
+      const nextSection = section.nextElementSibling;
+      if (!nextSection) return;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      nextSection.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  })();
+</script>
+{% schema %}
+{
+  "name": "MƎR-LIMEN threshold",
+  "settings": [
+    {"type":"image_picker","id":"desktop_image","label":"Desktop hero image"},
+    {"type":"image_picker","id":"mobile_image","label":"Mobile hero image","info":"Optional image composed for small screens."},
+    {"type":"text","id":"image_alt","label":"Image alternative text","info":"Leave blank if the image is purely atmospheric."},
+    {"type":"text","id":"eyebrow","label":"Eyebrow","default":"THE HOURS BETWEEN"},
+    {"type":"textarea","id":"heading","label":"Heading","default":"THERE IS MORE\nTO SLEEP."},
+    {"type":"textarea","id":"body","label":"Supporting text","default":"Objects for the hours when the world grows quiet—and the inner world begins."},
+    {"type":"text","id":"primary_label","label":"Primary button label","default":"Explore the collection"},
+    {"type":"url","id":"primary_link","label":"Primary button link","default":"/collections/all"},
+    {"type":"text","id":"secondary_label","label":"Secondary link label","default":"Our point of view"},
+    {"type":"url","id":"secondary_link","label":"Secondary link destination"},
+    {"type":"select","id":"hero_height","label":"Hero height","default":"immersive","options":[{"value":"compact","label":"Compact"},{"value":"standard","label":"Standard"},{"value":"immersive","label":"Immersive"}]},
+    {"type":"select","id":"image_position","label":"Image focus","default":"center center","options":[{"value":"center center","label":"Center"},{"value":"left center","label":"Left"},{"value":"right center","label":"Right"},{"value":"center top","label":"Top center"},{"value":"center bottom","label":"Bottom center"}]},
+    {"type":"select","id":"text_position","label":"Text placement","default":"left","options":[{"value":"left","label":"Left"},{"value":"center","label":"Center"},{"value":"right","label":"Right"}]},
+    {"type":"range","id":"overlay_opacity","label":"Image overlay","min":0,"max":80,"step":5,"unit":"%","default":35},
+    {"type":"checkbox","id":"show_scroll_cue","label":"Show scroll cue","default":true}
+  ],
+  "presets": [{"name":"MƎR LIMEN threshold"}]
+}
+{% endschema %}
