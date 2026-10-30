@@ -5,7 +5,7 @@
   - card_product: {Object} Product Liquid object (optional)
   - media_aspect_ratio: {String} Size of the product image card. Values are "square" and "portrait". Default is "square" (optional)
   - image_shape: {String} Image mask to apply to the product image card. Values are "arch", "blob", "chevronleft", "chevronright", "diamond", "parallelogram", and "round". (optional)
-  - show_secondary_image: {Boolean} Show the secondary image on hover. Default: false (optional)
+  - show_secondary_image: {Boolean} Retained for Dawn callers; Cellife keeps the primary pack shot on hover.
   - show_vendor: {Boolean} Show the product vendor. Default: false
   - show_rating: {Boolean} Show the product rating. Default: false
   - extend_height: {Boolean} Card height extends to available container space. Default: true (optional)
@@ -30,6 +30,7 @@
 {%- endunless -%}
 {%- if card_product and card_product != empty -%}
   {%- liquid
+    assign show_secondary_image = false
     assign ratio = 1
     if card_product.featured_media and media_aspect_ratio == 'portrait'
       assign ratio = 0.8
@@ -207,6 +208,10 @@
               {%- endif -%}
 
               {% render 'price', product: card_product, price_class: '', show_compare_at_price: true %}
+              {% if settings.cellife_card_details %}
+                {% if card_product.metafields.cellife.short_summary != blank %}<p class="cellife-card-summary">{{ card_product.metafields.cellife.short_summary.value | escape }}</p>{% endif %}
+                <a class="cellife-card-action" href="{{ card_product.url }}">{{ 'products.product.view_full_details' | t }}</a>
+              {% endif %}
               {%- if card_product.quantity_price_breaks_configured? -%}
                 {% if card_product.variants_count == 1 and quick_add == 'bulk' %}
                   {% liquid

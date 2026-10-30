@@ -1,0 +1,73 @@
+{%- liquid
+  assign story_rating = block.settings.rating | default: 0 | at_least: 0 | at_most: 5
+  assign overlay_product = false
+  if portrait and block.settings.approved and block.settings.product != blank and block.settings.product_overlay
+    if block.settings.video != blank or block.settings.poster != blank
+      assign overlay_product = true
+    endif
+  endif
+  assign show_copy = false
+  if block.settings.approved != true or block.settings.quote != blank or block.settings.attribution != blank or block.settings.attribution_subtitle != blank or block.settings.transcript != blank
+    assign show_copy = true
+  elsif story_rating > 0 or block.settings.verified
+    assign show_copy = true
+  elsif block.settings.product != blank and overlay_product == false
+    assign show_copy = true
+  endif
+-%}
+<article class="cellife-community-card{% if portrait %} cellife-community-card--portrait{% else %} cellife-community-card--quote{% endif %}" style="--story-quote-scale: {{ block.settings.quote_text_scale | default: 100 | divided_by: 100.0 }};" {{ block.shopify_attributes }}{% unless portrait %} tabindex="0"{% endunless %}>
+  {% if portrait %}
+    <div class="cellife-community-card__media">
+      {% if block.settings.approved and block.settings.video != blank %}
+        {% assign story_poster = block.settings.video.preview_image | image_url: width: 800 %}
+        {% if block.settings.poster != blank %}{% assign story_poster = block.settings.poster | image_url: width: 800 %}{% endif %}
+        {{ block.settings.video | video_tag: controls: true, autoplay: false, loop: false, preload: 'none', image_size: '800x', poster: story_poster }}
+      {% elsif block.settings.approved and block.settings.poster != blank %}
+        {{ block.settings.poster | image_url: width: 800 | image_tag: widths: '400, 600, 800', sizes: '(min-width: 750px) 40vw, 85vw', loading: 'lazy' }}
+      {% else %}{% render 'cellife-media-placeholder', label: section.settings.placeholder_label %}{% endif %}
+      {% if overlay_product %}
+        <a class="cellife-story-product" href="{{ block.settings.product.url }}">
+          {% if block.settings.product.featured_image != blank %}
+            {{ block.settings.product.featured_image | image_url: width: 112 | image_tag: widths: '56, 112', sizes: '56px', loading: 'lazy', alt: '' }}
+          {% endif %}
+          <span class="cellife-story-product__details">
+            <span class="cellife-story-product__title">{{ block.settings.product.title | escape }}</span>
+            <span class="cellife-story-product__price">{% if block.settings.product.price_varies %}From {% endif %}{{ block.settings.product.price | money_with_currency }}</span>
+          </span>
+          <span class="cellife-story-product__arrow" aria-hidden="true">&rarr;</span>
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+  {% if show_copy %}
+    <div class="cellife-community-card__copy">
+      {% if block.settings.approved %}
+        {% if story_rating > 0 %}
+          <span class="cellife-story-rating" role="img" aria-label="{{ story_rating }} out of 5 stars">
+            <span aria-hidden="true">★★★★★</span>
+            <span class="cellife-story-rating__fill" style="width: {{ story_rating | times: 20 }}%;" aria-hidden="true">★★★★★</span>
+          </span>
+        {% endif %}
+        {% if block.settings.quote != blank %}<blockquote>{{ block.settings.quote | escape }}</blockquote>{% endif %}
+        {% if block.settings.attribution != blank or block.settings.attribution_subtitle != blank or block.settings.verified %}
+          <div class="cellife-story-attribution">
+            <div class="cellife-story-attribution__identity">
+              {% if block.settings.attribution != blank or block.settings.verified %}
+                <div class="cellife-story-attribution__name-row">
+                  {% if block.settings.attribution != blank %}<span class="cellife-story-attribution__name">{{ block.settings.attribution | escape }}</span>{% endif %}
+                  {% if block.settings.verified %}<span class="cellife-story-verified"><span aria-hidden="true">✓</span> Verified</span>{% endif %}
+                </div>
+              {% endif %}
+              {% if block.settings.attribution_subtitle != blank %}<span class="cellife-story-attribution__subtitle">{{ block.settings.attribution_subtitle | escape }}</span>{% endif %}
+            </div>
+          </div>
+        {% endif %}
+        {% if block.settings.transcript != blank %}<details><summary>{{ section.settings.transcript_label | escape }}</summary><div class="rte">{{ block.settings.transcript }}</div></details>{% endif %}
+        {% if block.settings.product != blank and overlay_product == false %}<a class="cellife-editorial-link" href="{{ block.settings.product.url }}">{{ block.settings.product.title | escape }}</a>{% endif %}
+      {% else %}
+        <p class="cellife-draft-label">{{ section.settings.draft_label | escape }}</p>
+        <p>{{ section.settings.placeholder_text | escape }}</p>
+      {% endif %}
+    </div>
+  {% endif %}
+</article>

@@ -1,5 +1,6 @@
 {% comment %}theme-check-disable UndefinedObject{% endcomment %}
 {{ 'section-footer.css' | asset_url | stylesheet_tag }}
+{% if section.settings.cellife_layout %}{{ 'section-cellife-footer.css' | asset_url | stylesheet_tag }}{% endif %}
 {{ 'component-newsletter.css' | asset_url | stylesheet_tag }}
 {{ 'component-list-menu.css' | asset_url | stylesheet_tag }}
 {{ 'component-list-payment.css' | asset_url | stylesheet_tag }}
@@ -27,7 +28,7 @@
   }
 {%- endstyle -%}
 
-<footer class="footer color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding">
+<footer class="footer{% if section.settings.cellife_layout %} footer--cellife{% endif %} color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding">
   {%- liquid
     assign has_social_icons = true
     if settings.social_facebook_link == blank and settings.social_instagram_link == blank and settings.social_youtube_link == blank and settings.social_tiktok_link == blank and settings.social_twitter_link == blank and settings.social_pinterest_link == blank and settings.social_snapchat_link == blank and settings.social_tumblr_link == blank and settings.social_vimeo_link == blank
@@ -68,7 +69,7 @@
           >
             {%- for block in section.blocks -%}
               <div
-                class="footer-block grid__item{% if block.type == 'link_list' %} footer-block--menu{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+                class="footer-block grid__item{% if block.type == 'cellife_brand' %} footer-block--cellife-brand{% endif %}{% if block.type == 'link_list' %} footer-block--menu{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
                 {{ block.shopify_attributes }}
                 {% if settings.animations_reveal_on_scroll %}
                   data-cascade
@@ -82,14 +83,30 @@
                 {%- case block.type -%}
                   {%- when '@app' -%}
                     {% render block %}
+                  {%- when 'cellife_brand' -%}
+                    {% render 'cellife-footer-brand', block: block %}
                   {%- when 'text' -%}
                     <div class="footer-block__details-content rte">
                       {{ block.settings.subtext }}
                     </div>
                   {%- when 'link_list' -%}
-                    {%- if block.settings.menu != blank -%}
+                    {%- liquid
+                      assign footer_menu = block.settings.menu
+                      if footer_menu == blank and section.settings.cellife_layout
+                        assign wanted_title = block.settings.heading | strip_html | strip | downcase
+                        for menu_entry in linklists
+                          assign candidate = menu_entry[1] | default: menu_entry
+                          assign candidate_title = candidate.title | strip | downcase
+                          if candidate_title == wanted_title
+                            assign footer_menu = candidate
+                            break
+                          endif
+                        endfor
+                      endif
+                    -%}
+                    {%- if footer_menu != blank -%}
                       <ul class="footer-block__details-content list-unstyled">
-                        {%- for link in block.settings.menu.links -%}
+                        {%- for link in footer_menu.links -%}
                           <li>
                             <a
                               href="{{ link.url }}"
@@ -299,10 +316,12 @@
     </div>
     <div class="footer__content-bottom-wrapper page-width{% if section.settings.enable_country_selector == false and section.settings.enable_language_selector == false %} footer__content-bottom-wrapper--center{% endif %}">
       <div class="footer__copyright caption">
-        <small class="copyright__content"
-          >&copy; {{ 'now' | date: '%Y' }}, {{ shop.name | link_to: routes.root_url -}}
-        </small>
-        <small class="copyright__content">{{ powered_by_link }}</small>
+        {% if section.settings.cellife_layout %}
+          <small class="copyright__content">&copy; {{ section.settings.cellife_copyright | default: shop.name | escape }}</small>
+        {% else %}
+          <small class="copyright__content">&copy; {{ 'now' | date: '%Y' }}, {{ shop.name | link_to: routes.root_url }}</small>
+          <small class="copyright__content">{{ powered_by_link }}</small>
+        {% endif %}
         {%- if section.settings.show_policy -%}
           <ul class="policies list-unstyled">
             {%- for policy in shop.policies -%}
@@ -317,6 +336,7 @@
           </ul>
         {%- endif -%}
       </div>
+      {% render 'cellife-icon-credits' %}
     </div>
   </div>
 </footer>
@@ -327,6 +347,41 @@
   "blocks": [
     {
       "type": "@app"
+    },
+    {
+      "type": "cellife_brand",
+      "name": "Cellife brand",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "logo",
+          "label": "Footer logo",
+          "info": "Leave blank to use the store logo."
+        },
+        {
+          "type": "range",
+          "id": "logo_width",
+          "label": "Logo width",
+          "min": 120,
+          "max": 360,
+          "step": 10,
+          "unit": "px",
+          "default": 240
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Brand blurb",
+          "default": "<p>Cellife’s commitment to scientific precision, performance, and leadership is more than a claim. It is a measurable impact, driven by a relentless pursuit of excellence. Unrelenting is more than a mindset — it defines how we innovate, how we lead, and how we earn trust without compromise.</p><p>And we do it with the utmost respect for the natural workings of the body. Because once you open the floodgates and unlock your body’s incredible potential, you will literally feel the vitality flowing from the source.</p>"
+        },
+        {
+          "type": "text",
+          "id": "tagline",
+          "label": "Tagline",
+          "default": "CELLIFE. THE FOUNTAIN OF YOU."
+        }
+      ]
     },
     {
       "type": "link_list",
@@ -424,6 +479,18 @@
     }
   ],
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "cellife_layout",
+      "label": "Cellife footer layout",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "cellife_copyright",
+      "label": "Copyright name",
+      "default": "Cellife Australia"
+    },
     {
       "type": "color_scheme",
       "id": "color_scheme",

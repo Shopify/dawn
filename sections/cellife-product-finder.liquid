@@ -1,0 +1,254 @@
+{{ 'section-cellife-product-finder.css' | asset_url | stylesheet_tag }}
+<script type="module" src="{{ 'cellife-product-finder.js' | asset_url }}"></script>
+{%- liquid
+  assign finder_mode = 'public'
+  assign finder_heading_tag = 'h2'
+  if template.suffix == 'product-finder'
+    assign finder_heading_tag = 'h1'
+  endif
+  if theme.role == 'unpublished' or request.design_mode
+    assign finder_mode = 'draft'
+  endif
+  assign finder_ids = 'stress,propolis,man,sugar,bq,rrr,coq10,detox,boost,vision,ampk,antioxidant' | split: ','
+-%}
+<cellife-product-finder class="cellife-finder" data-instance="{{ section.id }}" style="--finder-background: {{ section.settings.background }}; --finder-accent: {{ section.settings.accent }}; --finder-width: {{ section.settings.content_width }}px;">
+  <div class="cellife-finder__inner">
+    <header class="cellife-finder__header">
+      {% if section.settings.eyebrow != blank %}<p class="cellife-finder__eyebrow">{{ section.settings.eyebrow | escape }}</p>{% endif %}
+      <{{ finder_heading_tag }}>{{ section.settings.heading | escape }}</{{ finder_heading_tag }}>
+      {% if section.settings.intro != blank %}<div class="rte">{{ section.settings.intro }}</div>{% endif %}
+    </header>
+    <p class="cellife-finder__scope">For adults exploring wellbeing products. Check the product warnings before use.</p>
+    <div data-finder-stage>
+      {% if finder_mode == 'draft' %}
+        <p data-finder-loading role="status">Loading the product finder…</p>
+      {% else %}
+        <div class="cellife-finder__panel"><h3 class="cellife-finder__result-title">Product finder unavailable</h3><p>Please contact Cellife for help with product information.</p></div>
+      {% endif %}
+    </div>
+    <p class="cellife-finder__privacy">No email required. Your choices stay on this page and clear when you restart or leave.</p>
+    <noscript><p>This finder needs JavaScript. A pharmacist or healthcare professional can help you review suitable options.</p></noscript>
+  </div>
+  {% for finder_id in finder_ids %}
+    {% assign setting_id = 'product_' | append: finder_id %}
+    {% assign purchase_product = section.settings[setting_id] %}
+    {% if purchase_product != blank %}
+      {% assign purchase_variant = purchase_product.selected_or_first_available_variant %}
+      <template data-finder-purchase="{{ finder_id }}">
+        {% if purchase_product.available == false %}
+          <button type="button" disabled>Sold out</button>
+        {% elsif purchase_product.variants.size > 1 or purchase_product.requires_selling_plan or purchase_variant.quantity_rule.min > 1 or purchase_variant.quantity_rule.increment > 1 %}
+          <a class="cellife-finder__product-link" href="{{ purchase_product.url }}">Choose options</a>
+        {% else %}
+          <form action="{{ routes.cart_add_url }}" method="post" data-finder-cart-form>
+            <input type="hidden" name="id" value="{{ purchase_variant.id }}">
+            <input type="hidden" name="quantity" value="1">
+            <input type="hidden" name="return_to" value="{{ routes.cart_url }}">
+            <button type="submit">Add to cart</button>
+          </form>
+        {% endif %}
+      </template>
+    {% endif %}
+  {% endfor %}
+  {%- capture finder_config -%}
+  {
+    "mode": {{ finder_mode | json }},
+    "engineUrl": {% if finder_mode == 'draft' %}{{ 'cellife-finder-engine.js' | asset_url | json }}{% else %}null{% endif %},
+    "dataUrl": {% if finder_mode == 'draft' %}{{ 'cellife-finder-data.js' | asset_url | json }}{% else %}null{% endif %},
+    "categories": {
+      {% assign category_ids = 'energy,metabolic,resilience,care' | split: ',' %}
+      {% for category_id in category_ids %}
+        {% assign label_setting = 'category_' | append: category_id | append: '_label' %}
+        {% assign subtitle_setting = 'category_' | append: category_id | append: '_subtitle' %}
+        {{ category_id | json }}: {"label": {{ section.settings[label_setting] | json }}, "subtitle": {{ section.settings[subtitle_setting] | json }}}{% unless forloop.last %},{% endunless %}
+      {% endfor %}
+    },
+    "mappings": {
+      {%- for finder_id in finder_ids -%}
+        {%- assign setting_id = 'product_' | append: finder_id -%}
+        {%- assign finder_product = section.settings[setting_id] -%}
+        {{ finder_id | json }}:
+        {%- if finder_product != blank -%}
+          {"id": {{ finder_product.id | append: '' | json }}, "title": {{ finder_product.title | json }}, "url": {{ finder_product.url | json }}, "image": {% if finder_product.featured_image != blank %}{{ finder_product.featured_image | image_url: width: 480 | json }}{% else %}null{% endif %}, "price": {{ finder_product.price | money_with_currency | json }}, "priceVaries": {{ finder_product.price_varies | json }}}
+        {%- else -%}null{%- endif -%}{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    }
+  }
+  {%- endcapture -%}
+  <script type="application/json" data-finder-config>{{ finder_config | replace: '<', '\u003c' }}</script>
+</cellife-product-finder>
+
+{% schema %}
+{
+  "name": "Cellife Product Finder",
+  "tag": "section",
+  "class": "cellife-finder-section",
+  "limit": 1,
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Find a Cellife product to explore"
+    },
+    {
+      "type": "richtext",
+      "id": "intro",
+      "label": "Introductory text",
+      "default": "<p>2–3 quick questions about your wellbeing goals.</p>"
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Background",
+      "default": "#f4f3f2"
+    },
+    {
+      "type": "color",
+      "id": "accent",
+      "label": "Heading and button colour",
+      "default": "#3e2b62"
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "label": "Maximum content width",
+      "min": 640,
+      "max": 1120,
+      "step": 40,
+      "unit": "px",
+      "default": 880
+    },
+    {
+      "type": "header",
+      "content": "Discovery categories"
+    },
+    {
+      "type": "text",
+      "id": "category_energy_label",
+      "label": "Energy & vitality title",
+      "default": "Energy & vitality"
+    },
+    {
+      "type": "text",
+      "id": "category_energy_subtitle",
+      "label": "Energy & vitality subtitle",
+      "default": "Daily energy, endurance and cellular metabolism."
+    },
+    {
+      "type": "text",
+      "id": "category_metabolic_label",
+      "label": "Weight & metabolic wellbeing title",
+      "default": "Weight & metabolic wellbeing"
+    },
+    {
+      "type": "text",
+      "id": "category_metabolic_subtitle",
+      "label": "Weight & metabolic wellbeing subtitle",
+      "default": "Body-fat management and healthy blood-sugar support."
+    },
+    {
+      "type": "text",
+      "id": "category_resilience_label",
+      "label": "Everyday resilience title",
+      "default": "Everyday resilience"
+    },
+    {
+      "type": "text",
+      "id": "category_resilience_subtitle",
+      "label": "Everyday resilience subtitle",
+      "default": "Immune support, everyday stress and antioxidant wellbeing."
+    },
+    {
+      "type": "text",
+      "id": "category_care_label",
+      "label": "Skin, eyes & daily care title",
+      "default": "Skin, eyes & daily care"
+    },
+    {
+      "type": "text",
+      "id": "category_care_subtitle",
+      "label": "Skin, eyes & daily care subtitle",
+      "default": "Skin, hair, nails, eyes and general antioxidant wellbeing."
+    },
+    {
+      "type": "header",
+      "content": "Catalogue product connections"
+    },
+    {
+      "type": "paragraph",
+      "content": "Connect each stable quiz ID to its exact Shopify product. Mapping does not approve claims or current labels. Missing destinations are held; excluded products are never replaced by a commercial fallback."
+    },
+    {
+      "type": "product",
+      "id": "product_stress",
+      "label": "Stress Relief (stress)"
+    },
+    {
+      "type": "product",
+      "id": "product_propolis",
+      "label": "Royal Jelly (propolis ID; source hold)"
+    },
+    {
+      "type": "product",
+      "id": "product_man",
+      "label": "Man Power (man)"
+    },
+    {
+      "type": "product",
+      "id": "product_sugar",
+      "label": "Sugar Support (sugar)"
+    },
+    {
+      "type": "product",
+      "id": "product_bq",
+      "label": "Bromelains & Quercetin (bq)"
+    },
+    {
+      "type": "product",
+      "id": "product_rrr",
+      "label": "R.R.R. (rrr)"
+    },
+    {
+      "type": "product",
+      "id": "product_coq10",
+      "label": "CoQ10 (coq10)"
+    },
+    {
+      "type": "product",
+      "id": "product_detox",
+      "label": "Detox (detox)"
+    },
+    {
+      "type": "product",
+      "id": "product_boost",
+      "label": "R.R.R. Boost (boost)"
+    },
+    {
+      "type": "product",
+      "id": "product_vision",
+      "label": "Vision+ (vision)"
+    },
+    {
+      "type": "product",
+      "id": "product_ampk",
+      "label": "AMPK Fatburst (ampk)"
+    },
+    {
+      "type": "product",
+      "id": "product_antioxidant",
+      "label": "Antioxidant (antioxidant)"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cellife Product Finder"
+    }
+  ]
+}
+{% endschema %}
