@@ -33,9 +33,68 @@
       assign swatch_value = null
     endif
 
+    comment
+      Swatch colors from the block setting win; then the Shopify swatch; then the variant image.
+    endcomment
+    assign swatch_fallback = null
+    assign swatch_color = null
+    assign value_key = value | append: '' | downcase | strip
+    assign color_lines = block.settings.swatch_colors | newline_to_br | split: '<br />'
+    for line in color_lines
+      assign line_parts = line | strip | split: ':'
+      if line_parts.size > 1
+        assign line_name = line_parts[0] | downcase | strip
+        if line_name == value_key
+          assign swatch_color = line_parts[1] | strip
+          break
+        endif
+      endif
+    endfor
+    if value.swatch == blank and swatch_color == blank
+      assign option_index = option.position | minus: 1
+      assign value_name = value | append: ''
+      for v in product.variants
+        assign v_value = v.options[option_index] | append: ''
+        if v_value == value_name and v.featured_image
+          assign swatch_fallback = v.featured_image
+          break
+        endif
+      endfor
+    endif
+
     assign option_disabled = true
     if value.available
       assign option_disabled = false
+    endif
+
+    comment
+      Struck out only when neither the product on its own nor any kit
+      (douce_kits metafield) is available in this option value.
+    endcomment
+    if option_disabled
+      assign kits_list = product.metafields.douce.kits.value
+      if kits_list == blank
+        assign kits_list = product.metafields.custom.douce_kits.value
+      endif
+      assign option_index = option.position | minus: 1
+      assign value_name = value | append: '' | downcase | strip
+      for kit_item in kits_list
+        if kit_item.id == product.id
+          continue
+        endif
+        for kv in kit_item.variants
+          if kv.available
+            assign kv_value = kv.options[option_index] | append: '' | downcase | strip
+            if kv_value == value_name or kit_item.has_only_default_variant
+              assign option_disabled = false
+              break
+            endif
+          endif
+        endfor
+        if option_disabled == false
+          break
+        endif
+      endfor
     endif
   -%}
 
@@ -77,6 +136,8 @@
       checked: value.selected,
       visually_disabled: option_disabled,
       shape: block.settings.swatch_shape,
+      fallback_image: swatch_fallback,
+      fallback_color: swatch_color,
       help_text: help_text,
       additional_props: input_dataset
     %}

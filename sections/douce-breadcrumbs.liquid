@@ -1,0 +1,49 @@
+{%- comment -%} DOUCE: breadcrumb trail (Home / Shop / current page). {%- endcomment -%}
+{%- liquid
+  assign shop_link = section.settings.shop_link | default: routes.all_products_collection_url
+  assign current_label = section.settings.current_label
+  if current_label == blank
+    if product
+      assign current_label = product.title
+    elsif collection
+      assign current_label = collection.title
+    else
+      assign current_label = page_title
+    endif
+  endif
+-%}
+<nav
+  class="dc-breadcrumbs color-{{ section.settings.color_scheme }}"
+  aria-label="{{ section.settings.aria_label | escape }}"
+  style="--dc-pt: {{ section.settings.padding_top }}px;"
+>
+  <ol class="page-width" role="list">
+    <li><a href="{{ routes.root_url }}">{{ section.settings.home_label | escape }}</a></li>
+    {%- if section.settings.shop_label != blank -%}
+      <li><a href="{{ shop_link }}">{{ section.settings.shop_label | escape }}</a></li>
+    {%- endif -%}
+    <li><span aria-current="page">{{ current_label | escape }}</span></li>
+  </ol>
+</nav>
+
+{% schema %}
+{
+  "name": "DOUCE breadcrumbs",
+  "tag": "div",
+  "class": "section-douce-breadcrumbs",
+  "settings": [
+    { "type": "text", "id": "home_label", "label": "Home label", "default": "Home" },
+    { "type": "text", "id": "shop_label", "label": "Shop label", "info": "Leave empty to hide this step.", "default": "Shop" },
+    { "type": "url", "id": "shop_link", "label": "Shop link", "info": "Defaults to all products." },
+    { "type": "text", "id": "current_label", "label": "Current page label", "info": "Defaults to the product or page title." },
+    { "type": "text", "id": "aria_label", "label": "Accessible name", "default": "Breadcrumb" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 60, "step": 2, "unit": "px", "default": 20 }
+  ],
+  "presets": [
+    {
+      "name": "DOUCE breadcrumbs"
+    }
+  ]
+}
+{% endschema %}

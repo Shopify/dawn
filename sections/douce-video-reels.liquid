@@ -1,0 +1,111 @@
+{%- comment -%} DOUCE: vertical video / UGC grid ("Real showers", "Early showers"). {%- endcomment -%}
+<section
+  class="dc-section color-{{ section.settings.color_scheme }}{% if section.settings.accent_italic %} dc-accent-italic{% endif %}"
+  style="--dc-pt: {{ section.settings.padding_top }}px; --dc-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="dc-container">
+    {%- if section.settings.heading != blank or section.settings.eyebrow != blank or section.settings.text != blank -%}
+      <div class="dc-row-head">
+        <div class="dc-stack" style="--dc-stack-gap: 16px;">
+          {%- if section.settings.eyebrow != blank -%}
+            <p class="dc-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+          {%- endif -%}
+          {%- if section.settings.heading != blank -%}
+            <h2 class="dc-heading dc-heading--m">{{ section.settings.heading }}</h2>
+          {%- endif -%}
+        </div>
+        {%- if section.settings.text != blank -%}
+          <div class="dc-text dc-text--s">{{ section.settings.text }}</div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <ul
+      class="dc-reels{% if section.settings.mobile_rail %} dc-rail{% endif %}"
+      role="list"
+      style="--dc-cols: {{ section.settings.columns }};{% if section.settings.columns > 4 %} --dc-gap: 16px;{% endif %}"
+    >
+      {%- for block in section.blocks -%}
+        <li class="dc-reel" {{ block.shopify_attributes }}>
+          <div class="dc-media">
+            {%- if block.settings.video != blank -%}
+              <douce-video class="dc-media__fill">
+                {{ block.settings.video | video_tag: image_size: '720x', playsinline: true, preload: 'none', loop: true }}
+                <button type="button" class="dc-play dc-video-toggle" style="left: 14px; bottom: 14px; pointer-events: auto; border: 0; cursor: pointer;">
+                  {{- 'icon-play.svg' | inline_asset_content -}}
+                  <span class="visually-hidden">{{ section.settings.play_label | escape }}</span>
+                </button>
+              </douce-video>
+            {%- else -%}
+              {%- render 'douce-image',
+                image: block.settings.image,
+                sizes: '(min-width: 750px) 25vw, 78vw',
+                placeholder: 'lifestyle-2'
+              -%}
+              {%- if block.settings.link != blank -%}
+                <a href="{{ block.settings.link }}" class="dc-media__fill" target="_blank" rel="noopener">
+                  <span class="visually-hidden">{{ block.settings.caption | default: section.settings.play_label | escape }}</span>
+                </a>
+              {%- endif -%}
+              {%- if section.settings.show_play_icon -%}
+                <span class="dc-play" aria-hidden="true">{{- 'icon-play.svg' | inline_asset_content -}}</span>
+              {%- endif -%}
+            {%- endif -%}
+          </div>
+          {%- if block.settings.caption != blank -%}
+            <p class="dc-reel__caption">{{ block.settings.caption | escape }}</p>
+          {%- endif -%}
+          {%- if block.settings.handle != blank -%}
+            <p class="dc-reel__handle">{{ block.settings.handle | escape }}</p>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "DOUCE video reels",
+  "tag": "div",
+  "class": "section-douce-video-reels",
+  "max_blocks": 10,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Real showers" },
+    { "type": "inline_richtext", "id": "heading", "label": "Heading", "default": "See it <em>in their bathrooms.</em>" },
+    { "type": "richtext", "id": "text", "label": "Text", "info": "Shown on the right of the heading." },
+    { "type": "range", "id": "columns", "label": "Columns (desktop)", "min": 3, "max": 5, "step": 1, "default": 4 },
+    { "type": "checkbox", "id": "show_play_icon", "label": "Show play icon on images", "default": true },
+    { "type": "text", "id": "play_label", "label": "Play button label (screen readers)", "default": "Play video" },
+    { "type": "checkbox", "id": "mobile_rail", "label": "Swipe on mobile", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "checkbox", "id": "accent_italic", "label": "Accent colour on italic words", "default": false },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 120 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 0 }
+  ],
+  "blocks": [
+    {
+      "type": "reel",
+      "name": "Video",
+      "settings": [
+        { "type": "video", "id": "video", "label": "Video", "info": "Vertical (9:16) works best." },
+        { "type": "image_picker", "id": "image", "label": "Image", "info": "Used when there is no video." },
+        { "type": "url", "id": "link", "label": "Link", "info": "Optional, e.g. the original TikTok or Instagram post." },
+        { "type": "text", "id": "caption", "label": "Caption", "default": "Unboxing to first shower in two minutes" },
+        { "type": "text", "id": "handle", "label": "Creator", "default": "@creator · Austin, TX" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "DOUCE video reels",
+      "blocks": [
+        { "type": "reel", "settings": { "caption": "Unboxing to first shower in two minutes", "handle": "@creator · Austin, TX" } },
+        { "type": "reel", "settings": { "caption": "My filter after six weeks", "handle": "@creator · Phoenix, AZ" } },
+        { "type": "reel", "settings": { "caption": "Hard water hair, week two", "handle": "@creator · Chicago, IL" } },
+        { "type": "reel", "settings": { "caption": "Swapping the filter, start to finish", "handle": "@creator · Brooklyn, NY" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

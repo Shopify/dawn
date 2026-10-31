@@ -1,0 +1,132 @@
+{%- comment -%} DOUCE: journal article with full-bleed hero, byline, body and comments. {%- endcomment -%}
+{%- liquid
+  assign words = article.content | strip_html | split: ' ' | size
+  assign minutes = words | divided_by: 200 | at_least: 1
+-%}
+<article class="dc-section color-{{ section.settings.color_scheme }}{% if section.settings.accent_italic %} dc-accent-italic{% endif %}" style="--dc-pt: 0px; --dc-pb: {{ section.settings.padding_bottom }}px;">
+  <header class="dc-article-hero">
+    {%- render 'douce-image', image: article.image, sizes: '100vw', eager: true, placeholder: 'lifestyle-1' -%}
+    <div class="dc-article-hero__body">
+      {%- if section.settings.back_label != blank -%}
+        <a class="dc-back" href="{{ blog.url }}">← {{ section.settings.back_label | escape }}</a>
+      {%- endif -%}
+      <p class="dc-eyebrow">
+        {%- if article.tags.size > 0 -%}{{ article.tags.first | escape }} · {% endif -%}
+        {%- if section.settings.show_read_time -%}
+          {{ minutes }} {{ section.settings.read_time_label | escape }}
+        {%- else -%}
+          {{ article.published_at | time_tag: format: 'date' }}
+        {%- endif -%}
+      </p>
+      <h1 class="dc-heading">{{ article.title | escape }}</h1>
+    </div>
+  </header>
+
+  <div class="dc-container dc-container--text dc-article-body">
+    <div class="dc-article-body__byline">
+      <span>
+        {%- if section.settings.show_author -%}
+          {{ section.settings.byline_prefix | escape }} {{ article.author | escape }}
+        {%- else -%}
+          {{ section.settings.byline | escape }}
+        {%- endif -%}
+        {%- if section.settings.show_date %} · {{ article.published_at | time_tag: format: 'date' }}{% endif -%}
+      </span>
+      {%- if section.settings.reviewed_by != blank -%}
+        <span>{{ section.settings.reviewed_by | escape }}</span>
+      {%- endif -%}
+    </div>
+
+    <div class="rte">{{ article.content }}</div>
+
+    {%- if blog.comments_enabled? -%}
+      <div class="dc-comments" id="comments">
+        {%- if article.comments_count > 0 -%}
+          <h2 class="dc-heading dc-heading--xs">{{ 'blogs.article.comments' | t: count: article.comments_count }}</h2>
+          {%- paginate article.comments by 5 -%}
+            <div>
+              {%- for comment in article.comments -%}
+                <div class="dc-comment" id="{{ comment.id }}">
+                  {{ comment.content }}
+                  <p class="dc-comment__meta">
+                    {{ comment.author | escape }} · {{ comment.created_at | time_tag: format: 'date' }}
+                  </p>
+                </div>
+              {%- endfor -%}
+            </div>
+            {%- if paginate.pages > 1 -%}
+              {%- render 'pagination', paginate: paginate, anchor: '#comments' -%}
+            {%- endif -%}
+          {%- endpaginate -%}
+        {%- endif -%}
+
+        {%- form 'new_comment', article, class: 'dc-form' -%}
+          <h2 class="dc-heading dc-heading--xs" style="grid-column: 1 / -1;">{{ 'blogs.article.comment_form_title' | t }}</h2>
+          {%- if form.errors -%}
+            <p class="dc-form__msg" role="alert">{{ form.errors | default_errors }}</p>
+          {%- elsif form.posted_successfully? -%}
+            <p class="dc-form__msg" role="status">
+              {%- if blog.moderated? -%}
+                {{ 'blogs.article.success_moderated' | t }}
+              {%- else -%}
+                {{ 'blogs.article.success' | t }}
+              {%- endif -%}
+            </p>
+          {%- endif -%}
+          <label class="visually-hidden" for="CommentForm-author">{{ 'blogs.article.name' | t }}</label>
+          <input
+            id="CommentForm-author"
+            type="text"
+            name="comment[author]"
+            value="{{ form.author }}"
+            autocomplete="name"
+            required
+            placeholder="{{ 'blogs.article.name' | t }}"
+          >
+          <label class="visually-hidden" for="CommentForm-email">{{ 'blogs.article.email' | t }}</label>
+          <input
+            id="CommentForm-email"
+            type="email"
+            name="comment[email]"
+            value="{{ form.email }}"
+            autocomplete="email"
+            required
+            placeholder="{{ 'blogs.article.email' | t }}"
+          >
+          <label class="visually-hidden" for="CommentForm-body">{{ 'blogs.article.message' | t }}</label>
+          <textarea
+            id="CommentForm-body"
+            name="comment[body]"
+            required
+            placeholder="{{ 'blogs.article.message' | t }}"
+          >{{ form.body }}</textarea>
+          {%- if blog.moderated? -%}
+            <p class="dc-note" style="grid-column: 1 / -1;">{{ 'blogs.article.moderated' | t }}</p>
+          {%- endif -%}
+          <button type="submit" class="dc-btn dc-btn--dark dc-btn--m">{{ 'blogs.article.post' | t }}</button>
+        {%- endform -%}
+      </div>
+    {%- endif -%}
+  </div>
+</article>
+
+{% schema %}
+{
+  "name": "DOUCE article",
+  "tag": "section",
+  "class": "section-douce-main-article",
+  "settings": [
+    { "type": "text", "id": "back_label", "label": "Back link label", "default": "Journal" },
+    { "type": "checkbox", "id": "show_read_time", "label": "Show reading time", "default": true },
+    { "type": "text", "id": "read_time_label", "label": "Reading time label", "default": "min read" },
+    { "type": "checkbox", "id": "show_author", "label": "Show article author", "default": false },
+    { "type": "text", "id": "byline_prefix", "label": "Author prefix", "default": "By" },
+    { "type": "text", "id": "byline", "label": "Byline", "info": "Used when the author is hidden.", "default": "By the DOUCE team" },
+    { "type": "checkbox", "id": "show_date", "label": "Show date", "default": false },
+    { "type": "text", "id": "reviewed_by", "label": "Review note", "default": "Reviewed by a licensed esthetician" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "checkbox", "id": "accent_italic", "label": "Accent colour on italic words", "default": true },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 0 }
+  ]
+}
+{% endschema %}

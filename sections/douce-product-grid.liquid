@@ -1,0 +1,134 @@
+{%- comment -%}
+  DOUCE: hand-picked product cards ("Shop DOUCE", "Ready-made kits").
+  Add Product blocks to choose products one by one, or pick a collection.
+{%- endcomment -%}
+{%- liquid
+  case section.settings.image_ratio
+    when 'portrait'
+      assign ratio = '4 / 5'
+    when 'landscape'
+      assign ratio = '4 / 3'
+    else
+      assign ratio = '1 / 1'
+  endcase
+  assign col_count = section.settings.columns
+  assign col_vw = 100 | divided_by: col_count
+  assign card_sizes = '(min-width: 990px) ' | append: col_vw | append: 'vw, 100vw'
+-%}
+<section
+  class="dc-section color-{{ section.settings.color_scheme }}{% if section.settings.accent_italic %} dc-accent-italic{% endif %}"
+  style="--dc-pt: {{ section.settings.padding_top }}px; --dc-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="dc-container">
+    {%- if section.settings.heading != blank or section.settings.link_label != blank or section.settings.text != blank -%}
+      <div class="dc-row-head">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="dc-heading dc-heading--s">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+        {%- if section.settings.text != blank -%}
+          <div class="dc-text dc-text--xs">{{ section.settings.text }}</div>
+        {%- elsif section.settings.link_label != blank -%}
+          <a class="dc-link" href="{{ section.settings.link | default: routes.all_products_collection_url }}">
+            {{- section.settings.link_label | escape -}}
+          </a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <ul
+      class="dc-products{% if section.settings.mobile_rail %} dc-rail{% endif %}"
+      role="list"
+      style="--dc-cols: {{ col_count }}; --dc-ratio: {{ ratio }};"
+    >
+      {%- if section.blocks.size > 0 -%}
+        {%- for block in section.blocks -%}
+          <li {{ block.shopify_attributes }}>
+            {%- render 'douce-product-card',
+              product: block.settings.product,
+              title: block.settings.title,
+              subtitle: block.settings.subtitle,
+              badge: block.settings.badge,
+              sizes: card_sizes,
+              show_secondary: section.settings.show_secondary
+            -%}
+          </li>
+        {%- endfor -%}
+      {%- elsif section.settings.collection != blank -%}
+        {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
+          <li>
+            {%- render 'douce-product-card',
+              product: product,
+              sizes: card_sizes,
+              show_secondary: section.settings.show_secondary
+            -%}
+          </li>
+        {%- endfor -%}
+      {%- else -%}
+        {%- for i in (1..col_count) -%}
+          <li>{%- render 'douce-product-card' -%}</li>
+        {%- endfor -%}
+      {%- endif -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "DOUCE product grid",
+  "tag": "div",
+  "class": "section-douce-product-grid",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "inline_richtext", "id": "heading", "label": "Heading", "default": "Shop DOUCE" },
+    { "type": "richtext", "id": "text", "label": "Text", "info": "Shown on the right instead of the link." },
+    { "type": "text", "id": "link_label", "label": "Link label", "default": "View all" },
+    { "type": "url", "id": "link", "label": "Link" },
+    {
+      "type": "paragraph",
+      "content": "Add Product blocks to pick products and give each a badge and subtitle. Without blocks, products from the collection below are shown."
+    },
+    { "type": "collection", "id": "collection", "label": "Collection" },
+    { "type": "range", "id": "products_to_show", "label": "Products from collection", "min": 2, "max": 8, "step": 1, "default": 3 },
+    { "type": "range", "id": "columns", "label": "Columns (desktop)", "min": 2, "max": 4, "step": 1, "default": 3 },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image shape",
+      "options": [
+        { "value": "square", "label": "Square" },
+        { "value": "portrait", "label": "Portrait" },
+        { "value": "landscape", "label": "Landscape" }
+      ],
+      "default": "square"
+    },
+    { "type": "checkbox", "id": "show_secondary", "label": "Show second image on hover", "default": true },
+    { "type": "checkbox", "id": "mobile_rail", "label": "Swipe on mobile", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "checkbox", "id": "accent_italic", "label": "Accent colour on italic words", "default": false },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 120 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 0 }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        { "type": "product", "id": "product", "label": "Product" },
+        { "type": "text", "id": "title", "label": "Title override" },
+        { "type": "text", "id": "subtitle", "label": "Subtitle", "default": "From $69 with Subscribe & Save" },
+        { "type": "text", "id": "badge", "label": "Badge", "default": "Bestseller" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "DOUCE product grid",
+      "blocks": [
+        { "type": "product", "settings": { "badge": "Bestseller", "subtitle": "From $69 with Subscribe & Save" } },
+        { "type": "product", "settings": { "badge": "New finish", "subtitle": "From $69 with Subscribe & Save" } },
+        { "type": "product", "settings": { "badge": "Save $14", "subtitle": "Showerhead + 3 replacement filters" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

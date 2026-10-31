@@ -41,6 +41,8 @@
 
   <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+  {%- comment -%} DOUCE {%- endcomment -%}
+  <script src="{{ 'douce-product.js' | asset_url }}" defer="defer"></script>
   {%- if product.quantity_price_breaks_configured? -%}
     <script src="{{ 'show-more.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'price-per-item.js' | asset_url }}" defer="defer"></script>
@@ -77,7 +79,34 @@
     <div class="page-width">
       <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} product--mobile-{{ section.settings.mobile_thumbnails }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
         <div class="grid__item product__media-wrapper">
+          {%- comment -%} DOUCE: badge over the gallery {%- endcomment -%}
+          {%- if section.settings.douce_media_badge != blank -%}
+            <div class="dc-gallery-badge"><span class="dc-pill" style="background: var(--douce-mint); color: var(--douce-leaf);">{{ section.settings.douce_media_badge | escape }}</span></div>
+          {%- endif -%}
           {% render 'product-media-gallery', variant_images: variant_images %}
+          {%- comment -%} DOUCE: lifestyle images under the gallery (desktop) {%- endcomment -%}
+          {%- if section.settings.douce_media_image_1 != blank or section.settings.douce_media_image_2 != blank or request.design_mode -%}
+            <div class="dc-gallery-extras">
+              {%- if section.settings.douce_media_image_1 != blank or request.design_mode -%}
+                <div class="dc-media">{%- render 'douce-image', image: section.settings.douce_media_image_1, sizes: '(min-width: 990px) 25vw, 50vw', placeholder: 'lifestyle-1' -%}</div>
+              {%- endif -%}
+              {%- if section.settings.douce_media_image_2 != blank or request.design_mode -%}
+                <div class="dc-media">{%- render 'douce-image', image: section.settings.douce_media_image_2, sizes: '(min-width: 990px) 25vw, 50vw', placeholder: 'lifestyle-2' -%}</div>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+          {%- comment -%} DOUCE: accordions shown under the gallery on tablet/desktop {%- endcomment -%}
+          {%- capture douce_media_accordions -%}
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'collapsible_tab' and block.settings.douce_under_gallery -%}
+                {%- render 'douce-accordion', block: block, section_id: section.id, id_prefix: 'Media', editor_attributes: true -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endcapture -%}
+          {%- if douce_media_accordions != blank -%}
+            <div class="douce-media-accordions small-hide">{{ douce_media_accordions }}</div>
+          {%- endif -%}
+          {%- comment -%} /DOUCE {%- endcomment -%}
         </div>
         <div class="product__info-wrapper grid__item{% if settings.page_width > 1400 and section.settings.media_size == "small" %} product__info-wrapper--extra-padding{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
           <section
@@ -107,6 +136,28 @@
                     </a>
                   </div>
                 {%- when 'price' -%}
+                  {%- comment -%} DOUCE: optional purchase-option card around the native price {%- endcomment -%}
+                  {%- if block.settings.douce_card -%}
+                    <div class="douce-purchase-card" {{ block.shopify_attributes }}>
+                      <div class="douce-purchase-card__head">
+                        {%- if block.settings.douce_card_title != blank -%}
+                          <p class="douce-purchase-card__title">{{ block.settings.douce_card_title | escape }}</p>
+                        {%- endif -%}
+                        <div id="price-{{ section.id }}" class="douce-purchase-card__price" role="status">
+                          {%- render 'price',
+                            product: product,
+                            use_variant: true,
+                            show_badges: true,
+                            price_class: 'price--large'
+                          -%}
+                        </div>
+                      </div>
+                      {%- if block.settings.douce_card_includes != blank -%}
+                        <div class="douce-purchase-card__includes">{{ block.settings.douce_card_includes }}</div>
+                      {%- endif -%}
+                    </div>
+                  {%- else -%}
+                  {%- comment -%} /DOUCE {%- endcomment -%}
                   <div id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
                     {%- render 'price',
                       product: product,
@@ -115,6 +166,7 @@
                       price_class: 'price--large'
                     -%}
                   </div>
+                  {%- endif -%}
                   {%- if product.quantity_price_breaks_configured? -%}
                     <div class="volume-pricing-note" id="Volume-Note-{{ section.id }}">
                       <span>{{ 'products.product.volume_pricing.note' | t }}</span>
@@ -211,23 +263,18 @@
                 {%- when 'custom_liquid' -%}
                   {{ block.settings.custom_liquid }}
                 {%- when 'collapsible_tab' -%}
-                  <div class="product__accordion accordion quick-add-hidden" {{ block.shopify_attributes }}>
-                    <details id="Details-{{ block.id }}-{{ section.id }}">
-                      <summary>
-                        <div class="summary__title">
-                          {% render 'icon-accordion', icon: block.settings.icon %}
-                          <h2 class="h4 accordion__title inline-richtext">
-                            {{ block.settings.heading | default: block.settings.page.title | escape }}
-                          </h2>
-                        </div>
-                        {{- 'icon-caret.svg' | inline_asset_content -}}
-                      </summary>
-                      <div class="accordion__content rte" id="ProductAccordion-{{ block.id }}-{{ section.id }}">
-                        {{ block.settings.content }}
-                        {{ block.settings.page.content }}
-                      </div>
-                    </details>
-                  </div>
+                  {%- comment -%} DOUCE: under-gallery accordions repeat here on mobile only {%- endcomment -%}
+                  {%- if block.settings.douce_under_gallery -%}
+                    {%- capture douce_mobile_accordion -%}
+                      {%- render 'douce-accordion', block: block, section_id: section.id, id_prefix: 'Mobile', editor_attributes: false -%}
+                    {%- endcapture -%}
+                    {%- if douce_mobile_accordion != blank -%}
+                      <div class="douce-mobile-accordion medium-hide large-up-hide">{{ douce_mobile_accordion }}</div>
+                    {%- endif -%}
+                    {%- continue -%}
+                  {%- endif -%}
+                  {%- render 'douce-accordion', block: block, section_id: section.id, id_prefix: 'Info', editor_attributes: true -%}
+                  {%- comment -%} /DOUCE {%- endcomment -%}
                 {%- when 'quantity_selector' -%}
                   <div
                     id="Quantity-Form-{{ section.id }}"
@@ -688,6 +735,20 @@
                   </product-recommendations>
                 {%- when 'icon-with-text' -%}
                   {% render 'icon-with-text', block: block %}
+                {%- comment -%} DOUCE {%- endcomment -%}
+                {%- when 'douce_checklist' -%}
+                  {%- render 'douce-checklist', block: block -%}
+                {%- when 'douce_kit_picker' -%}
+                  {%- render 'douce-kit-picker', block: block, product: product -%}
+                {%- when 'douce_trust_badges' -%}
+                  {%- render 'douce-trust-badges', block: block -%}
+                {%- when 'douce_purchase_options' -%}
+                  {%- render 'douce-purchase-options',
+                    block: block,
+                    product: product,
+                    product_form_id: product_form_id,
+                    section_id: section.id
+                  -%}
               {%- endcase -%}
             {%- endfor -%}
             <a href="{{ product.url }}" class="link product__view-details animate-arrow">
@@ -802,7 +863,383 @@
     {
       "type": "price",
       "name": "t:sections.main-product.blocks.price.name",
-      "limit": 1
+      "limit": 1,
+      "settings": [
+        {
+          "type": "header",
+          "content": "DOUCE"
+        },
+        {
+          "type": "checkbox",
+          "id": "douce_card",
+          "label": "Show as purchase option card",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "douce_card_title",
+          "label": "Card title",
+          "default": "One-time purchase"
+        },
+        {
+          "type": "richtext",
+          "id": "douce_card_includes",
+          "label": "Card details",
+          "info": "Only list what is genuinely included."
+        }
+      ]
+    },
+    {
+      "type": "douce_trust_badges",
+      "name": "DOUCE trust badges",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Only show offers you actually provide. Free delivery and money-back claims must match your shipping and refund policies and your Google Merchant Center settings."
+        },
+        {
+          "type": "header",
+          "content": "Badge 1"
+        },
+        {
+          "type": "text",
+          "id": "text_1",
+          "label": "Text",
+          "info": "Leave empty to hide this badge."
+        },
+        {
+          "type": "select",
+          "id": "icon_1",
+          "label": "Icon",
+          "options": [
+            { "value": "none", "label": "None" },
+            { "value": "lock", "label": "Lock" },
+            { "value": "truck", "label": "Truck" },
+            { "value": "return", "label": "Return" },
+            { "value": "plane", "label": "Plane" },
+            { "value": "check_mark", "label": "Check mark" },
+            { "value": "chat_bubble", "label": "Chat bubble" },
+            { "value": "price_tag", "label": "Price tag" },
+            { "value": "box", "label": "Box" },
+            { "value": "leaf", "label": "Leaf" },
+            { "value": "heart", "label": "Heart" },
+            { "value": "star", "label": "Star" }
+          ],
+          "default": "lock"
+        },
+        {
+          "type": "select",
+          "id": "link_1",
+          "label": "Link",
+          "info": "Policy links only appear once the policy exists in Settings > Policies.",
+          "options": [
+            { "value": "none", "label": "No link" },
+            { "value": "refund_policy", "label": "Refund policy" },
+            { "value": "shipping_policy", "label": "Shipping policy" },
+            { "value": "terms", "label": "Terms of service" },
+            { "value": "custom", "label": "Custom link" }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "url",
+          "id": "url_1",
+          "label": "Custom link"
+        },
+        {
+          "type": "header",
+          "content": "Badge 2"
+        },
+        {
+          "type": "text",
+          "id": "text_2",
+          "label": "Text",
+          "info": "Leave empty to hide this badge."
+        },
+        {
+          "type": "select",
+          "id": "icon_2",
+          "label": "Icon",
+          "options": [
+            { "value": "none", "label": "None" },
+            { "value": "lock", "label": "Lock" },
+            { "value": "truck", "label": "Truck" },
+            { "value": "return", "label": "Return" },
+            { "value": "plane", "label": "Plane" },
+            { "value": "check_mark", "label": "Check mark" },
+            { "value": "chat_bubble", "label": "Chat bubble" },
+            { "value": "price_tag", "label": "Price tag" },
+            { "value": "box", "label": "Box" },
+            { "value": "leaf", "label": "Leaf" },
+            { "value": "heart", "label": "Heart" },
+            { "value": "star", "label": "Star" }
+          ],
+          "default": "truck"
+        },
+        {
+          "type": "select",
+          "id": "link_2",
+          "label": "Link",
+          "info": "Policy links only appear once the policy exists in Settings > Policies.",
+          "options": [
+            { "value": "none", "label": "No link" },
+            { "value": "refund_policy", "label": "Refund policy" },
+            { "value": "shipping_policy", "label": "Shipping policy" },
+            { "value": "terms", "label": "Terms of service" },
+            { "value": "custom", "label": "Custom link" }
+          ],
+          "default": "shipping_policy"
+        },
+        {
+          "type": "url",
+          "id": "url_2",
+          "label": "Custom link"
+        },
+        {
+          "type": "header",
+          "content": "Badge 3"
+        },
+        {
+          "type": "text",
+          "id": "text_3",
+          "label": "Text",
+          "info": "Leave empty to hide this badge."
+        },
+        {
+          "type": "select",
+          "id": "icon_3",
+          "label": "Icon",
+          "options": [
+            { "value": "none", "label": "None" },
+            { "value": "lock", "label": "Lock" },
+            { "value": "truck", "label": "Truck" },
+            { "value": "return", "label": "Return" },
+            { "value": "plane", "label": "Plane" },
+            { "value": "check_mark", "label": "Check mark" },
+            { "value": "chat_bubble", "label": "Chat bubble" },
+            { "value": "price_tag", "label": "Price tag" },
+            { "value": "box", "label": "Box" },
+            { "value": "leaf", "label": "Leaf" },
+            { "value": "heart", "label": "Heart" },
+            { "value": "star", "label": "Star" }
+          ],
+          "default": "return"
+        },
+        {
+          "type": "select",
+          "id": "link_3",
+          "label": "Link",
+          "info": "Policy links only appear once the policy exists in Settings > Policies.",
+          "options": [
+            { "value": "none", "label": "No link" },
+            { "value": "refund_policy", "label": "Refund policy" },
+            { "value": "shipping_policy", "label": "Shipping policy" },
+            { "value": "terms", "label": "Terms of service" },
+            { "value": "custom", "label": "Custom link" }
+          ],
+          "default": "refund_policy"
+        },
+        {
+          "type": "url",
+          "id": "url_3",
+          "label": "Custom link"
+        },
+        {
+          "type": "header",
+          "content": "Badge 4"
+        },
+        {
+          "type": "text",
+          "id": "text_4",
+          "label": "Text",
+          "info": "Leave empty to hide this badge."
+        },
+        {
+          "type": "select",
+          "id": "icon_4",
+          "label": "Icon",
+          "options": [
+            { "value": "none", "label": "None" },
+            { "value": "lock", "label": "Lock" },
+            { "value": "truck", "label": "Truck" },
+            { "value": "return", "label": "Return" },
+            { "value": "plane", "label": "Plane" },
+            { "value": "check_mark", "label": "Check mark" },
+            { "value": "chat_bubble", "label": "Chat bubble" },
+            { "value": "price_tag", "label": "Price tag" },
+            { "value": "box", "label": "Box" },
+            { "value": "leaf", "label": "Leaf" },
+            { "value": "heart", "label": "Heart" },
+            { "value": "star", "label": "Star" }
+          ],
+          "default": "check_mark"
+        },
+        {
+          "type": "select",
+          "id": "link_4",
+          "label": "Link",
+          "info": "Policy links only appear once the policy exists in Settings > Policies.",
+          "options": [
+            { "value": "none", "label": "No link" },
+            { "value": "refund_policy", "label": "Refund policy" },
+            { "value": "shipping_policy", "label": "Shipping policy" },
+            { "value": "terms", "label": "Terms of service" },
+            { "value": "custom", "label": "Custom link" }
+          ],
+          "default": "shipping_policy"
+        },
+        {
+          "type": "url",
+          "id": "url_4",
+          "label": "Custom link"
+        }
+      ]
+    },
+    {
+      "type": "douce_checklist",
+      "name": "DOUCE checklist",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [{"value":"checkmark","label":"Check"},{"value":"leaf","label":"Leaf"},{"value":"plant","label":"Plant"},{"value":"recycle","label":"Recycle"},{"value":"truck","label":"Truck"},{"value":"snowflake","label":"Snowflake"},{"value":"heart","label":"Heart"},{"value":"star","label":"Star"}],
+          "default": "checkmark"
+        },
+        {
+          "type": "select",
+          "id": "columns",
+          "label": "Columns",
+          "options": [{ "value": "1", "label": "1" }, { "value": "2", "label": "2" }],
+          "default": "2"
+        },
+        { "type": "text", "id": "item_1", "label": "Item 1", "default": "Reduces chlorine" },
+        { "type": "text", "id": "item_2", "label": "Item 2", "default": "Catches sediment & rust" },
+        { "type": "text", "id": "item_3", "label": "Item 3", "default": "Fits any ½\" hose" },
+        { "type": "text", "id": "item_4", "label": "Item 4", "default": "Steady pressure" },
+        { "type": "text", "id": "item_5", "label": "Item 5" },
+        { "type": "text", "id": "item_6", "label": "Item 6" }
+      ]
+    },
+    {
+      "type": "douce_kit_picker",
+      "name": "DOUCE kit picker",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Card 1 is this product on its own (texts below). The other cards are kits, managed in Shopify admin: on the product page, fill the \"Kits\" metafield (custom.douce_kits) with the kit products. Optional metafields on each kit product: kit_title, kit_subtitle, kit_tag (badge) and price_separated (price if bought separately, a Money or text metafield). The Kit 2-3 fields below are only a fallback when the Kits metafield is empty."
+        },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Choose your kit" },
+        { "type": "text", "id": "note", "label": "Note", "default": "Bundle and save" },
+        { "type": "text", "id": "separate_label", "label": "Label before the separate price", "default": "Bought separately", "info": "Shown with the kit's price_separated metafield." },
+        { "type": "text", "id": "save_label", "label": "Savings badge word", "default": "Save", "info": "Badge like \"Save $45\", shown when price_separated is a Money metafield higher than the kit price." },
+        { "type": "header", "content": "Card 1: this product on its own" },
+        { "type": "product", "id": "product_1", "label": "Product" },
+        { "type": "text", "id": "title_1", "label": "Title", "default": "Showerhead" },
+        { "type": "text", "id": "subtitle_1", "label": "Subtitle", "default": "Filters installed · 2 months" },
+        { "type": "text", "id": "tag_1", "label": "Tag" },
+        { "type": "header", "content": "Kit 2" },
+        { "type": "product", "id": "product_2", "label": "Product" },
+        { "type": "text", "id": "title_2", "label": "Title", "default": "Starter Kit" },
+        { "type": "text", "id": "subtitle_2", "label": "Subtitle", "default": "Showerhead + 3 replacement filters" },
+        { "type": "text", "id": "tag_2", "label": "Tag", "default": "Most popular" },
+        { "type": "header", "content": "Kit 3" },
+        { "type": "product", "id": "product_3", "label": "Product" },
+        { "type": "text", "id": "title_3", "label": "Title", "default": "Complete Kit" },
+        { "type": "text", "id": "subtitle_3", "label": "Subtitle", "default": "Starter Kit + stainless hose" },
+        { "type": "text", "id": "tag_3", "label": "Tag", "default": "Best value" }
+      ]
+    },
+    {
+      "type": "douce_purchase_options",
+      "name": "DOUCE purchase options",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Prices, compare-at prices and savings come from Shopify. Subscription options only appear when a subscription app has a selling plan on the product."
+        },
+        {
+          "type": "select",
+          "id": "default_option",
+          "label": "Selected by default",
+          "options": [
+            { "value": "subscription", "label": "Subscribe & Save" },
+            { "value": "one_time", "label": "One-time purchase" }
+          ],
+          "default": "subscription"
+        },
+        {
+          "type": "header",
+          "content": "Subscribe & Save"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_subscription",
+          "label": "Show subscription option",
+          "info": "Only shown when the product has a selling plan.",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "sub_banner",
+          "label": "Banner",
+          "default": "Most popular"
+        },
+        {
+          "type": "text",
+          "id": "sub_title",
+          "label": "Title",
+          "default": "Subscribe & Save"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_plan_name",
+          "label": "Show plan name",
+          "info": "The name set in your subscription app, e.g. delivery frequency.",
+          "default": true
+        },
+        {
+          "type": "richtext",
+          "id": "sub_description",
+          "label": "Description",
+          "info": "Describe the plan exactly as configured in your subscription app."
+        },
+        {
+          "type": "text",
+          "id": "sub_pill",
+          "label": "Highlight",
+          "info": "Only for a genuine included benefit."
+        },
+        {
+          "type": "select",
+          "id": "savings_format",
+          "label": "Savings badge",
+          "options": [
+            { "value": "amount", "label": "Amount (-$14)" },
+            { "value": "percent", "label": "Percentage (-15%)" },
+            { "value": "none", "label": "Hidden" }
+          ],
+          "default": "amount"
+        },
+        {
+          "type": "header",
+          "content": "One-time purchase"
+        },
+        {
+          "type": "text",
+          "id": "one_time_title",
+          "label": "Title",
+          "default": "One-time purchase"
+        },
+        {
+          "type": "richtext",
+          "id": "one_time_description",
+          "label": "Description"
+        }
+      ]
     },
     {
       "type": "sku",
@@ -919,6 +1356,12 @@
             }
           ],
           "default": "circle"
+        },
+        {
+          "type": "textarea",
+          "id": "swatch_colors",
+          "label": "Swatch colors",
+          "info": "One per line: Option name: #hex. Used for options that have no swatch in Shopify, for example Crystal White: #F2F4F5. Without a color, the variant photo is shown."
         }
       ]
     },
@@ -1020,6 +1463,13 @@
       "type": "collapsible_tab",
       "name": "t:sections.main-product.blocks.collapsible_tab.name",
       "settings": [
+        {
+          "type": "checkbox",
+          "id": "douce_under_gallery",
+          "label": "DOUCE: show under the gallery",
+          "info": "Desktop: below the product images. Mobile: in the product info column.",
+          "default": false
+        },
         {
           "type": "text",
           "id": "heading",
@@ -2158,6 +2608,28 @@
       "id": "color_scheme",
       "label": "t:sections.all.colors.label",
       "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "DOUCE gallery"
+    },
+    {
+      "type": "text",
+      "id": "douce_media_badge",
+      "label": "Badge over the main image",
+      "info": "Leave empty to hide.",
+      "default": "Launch edition"
+    },
+    {
+      "type": "image_picker",
+      "id": "douce_media_image_1",
+      "label": "Lifestyle image 1",
+      "info": "Shown under the gallery on desktop."
+    },
+    {
+      "type": "image_picker",
+      "id": "douce_media_image_2",
+      "label": "Lifestyle image 2"
     },
     {
       "type": "header",

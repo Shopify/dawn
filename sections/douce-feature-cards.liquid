@@ -1,0 +1,132 @@
+{%- comment -%} DOUCE: section header + image cards with tag, title and text (e.g. "The problem"). {%- endcomment -%}
+{%- liquid
+  assign cards = section.blocks | where: 'type', 'card'
+  case section.settings.image_ratio
+    when 'portrait'
+      assign ratio = '4 / 5'
+    when 'square'
+      assign ratio = '1 / 1'
+    else
+      assign ratio = '4 / 3'
+  endcase
+-%}
+<section
+  class="dc-section color-{{ section.settings.color_scheme }}{% if section.settings.accent_italic %} dc-accent-italic{% endif %}"
+  style="--dc-pt: {{ section.settings.padding_top }}px; --dc-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="dc-container">
+    {%- if section.settings.eyebrow != blank or section.settings.heading != blank or section.settings.text != blank -%}
+      <div class="dc-split-head">
+        <div class="dc-stack" style="--dc-stack-gap: 16px;">
+          {%- if section.settings.eyebrow != blank -%}
+            <p class="dc-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+          {%- endif -%}
+          {%- if section.settings.heading != blank -%}
+            <h2 class="dc-heading dc-heading--l">{{ section.settings.heading }}</h2>
+          {%- endif -%}
+        </div>
+        {%- if section.settings.text != blank -%}
+          <div class="dc-text">{{ section.settings.text }}</div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <ul
+      class="dc-feature-grid{% if section.settings.mobile_rail %} dc-rail{% endif %}"
+      role="list"
+      style="--dc-cols: {{ section.settings.columns }}; --dc-ratio: {{ ratio }};"
+    >
+      {%- for block in cards -%}
+        <li class="dc-feature" {{ block.shopify_attributes }}>
+          <div class="dc-media">
+            {%- render 'douce-image',
+              image: block.settings.image,
+              sizes: '(min-width: 750px) 33vw, 80vw',
+              placeholder: 'lifestyle-1'
+            -%}
+          </div>
+          <div class="dc-feature__body">
+            {%- if block.settings.tag != blank -%}
+              <p class="dc-eyebrow">{{ block.settings.tag | escape }}</p>
+            {%- endif -%}
+            {%- if block.settings.title != blank -%}
+              <h3 class="dc-title">{{ block.settings.title | escape }}</h3>
+            {%- endif -%}
+            {%- if block.settings.text != blank -%}
+              <div class="dc-text dc-text--s">{{ block.settings.text }}</div>
+            {%- endif -%}
+            {%- if block.settings.link_label != blank -%}
+              <a class="dc-link" href="{{ block.settings.link | default: '#' }}">{{ block.settings.link_label | escape }}</a>
+            {%- endif -%}
+          </div>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "DOUCE feature cards",
+  "tag": "div",
+  "class": "section-douce-feature-cards",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The problem" },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Italic words are set in the lighter italic style.",
+      "default": "Your shower water <em>isn't as soft as it looks.</em>"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Most US tap water is treated with chlorine, and around 85% of homes have hard water. In a hot shower, both land straight on your skin and scalp. For eczema-prone skin and thinning hair, that daily exposure adds up.</p>"
+    },
+    { "type": "range", "id": "columns", "label": "Columns (desktop)", "min": 2, "max": 4, "step": 1, "default": 3 },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image shape",
+      "options": [
+        { "value": "portrait", "label": "Portrait" },
+        { "value": "square", "label": "Square" },
+        { "value": "landscape", "label": "Landscape" }
+      ],
+      "default": "portrait"
+    },
+    { "type": "checkbox", "id": "mobile_rail", "label": "Swipe cards on mobile", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "checkbox", "id": "accent_italic", "label": "Accent colour on italic words", "default": false },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 120 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 0 }
+  ],
+  "blocks": [
+    {
+      "type": "card",
+      "name": "Card",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "tag", "label": "Tag", "default": "Chlorine" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Tight, dry skin" },
+        { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Chlorine strips the natural oils that keep skin calm. You feel it as tightness after you towel off.</p>" },
+        { "type": "text", "id": "link_label", "label": "Link label", "info": "Optional." },
+        { "type": "url", "id": "link", "label": "Link" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "DOUCE feature cards",
+      "blocks": [
+        { "type": "card", "settings": { "tag": "Chlorine", "title": "Tight, dry skin", "text": "<p>Chlorine strips the natural oils that keep skin calm. You feel it as tightness after you towel off.</p>" } },
+        { "type": "card", "settings": { "tag": "Hard water", "title": "Dull, brittle hair", "text": "<p>Calcium and magnesium build up on each strand, so hair feels coated, frizzy and harder to rinse.</p>" } },
+        { "type": "card", "settings": { "tag": "Sediment", "title": "Residue you can see", "text": "<p>Rust and sediment from older pipes leave film on glass, tile and your skin.</p>" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

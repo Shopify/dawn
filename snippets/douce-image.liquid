@@ -1,0 +1,36 @@
+{% doc %}
+  Renders a responsive image, or a Shopify placeholder when no image is set.
+
+  @param {image} [image] - Image object from an image_picker setting.
+  @param {string} [sizes] - The sizes attribute (default 100vw).
+  @param {string} [placeholder] - Placeholder name for placeholder_svg_tag (default 'image').
+  @param {string} [alt] - Alt text override.
+  @param {boolean} [eager] - Load eagerly (use for above-the-fold media).
+  @param {string} [class] - Extra class on the <img>.
+
+  @example
+  {% render 'douce-image', image: block.settings.image, sizes: '(min-width: 750px) 33vw, 80vw' %}
+{% enddoc %}
+{%- if image != blank -%}
+  {%- liquid
+    assign img_sizes = sizes | default: '100vw'
+    assign img_alt = alt | default: image.alt | escape
+    if eager
+      assign img_loading = 'eager'
+    else
+      assign img_loading = 'lazy'
+    endif
+  -%}
+  {{
+    image
+    | image_url: width: 2400
+    | image_tag:
+      widths: '320, 480, 640, 800, 1000, 1200, 1600, 2000, 2400',
+      sizes: img_sizes,
+      alt: img_alt,
+      loading: img_loading,
+      class: class
+  }}
+{%- else -%}
+  {{ placeholder | default: 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+{%- endif -%}

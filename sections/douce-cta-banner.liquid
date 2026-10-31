@@ -1,0 +1,146 @@
+{%- comment -%} DOUCE: call-to-action card (lime guarantee banner, compact dark banner, or product banner with image). {%- endcomment -%}
+{%- liquid
+  assign cta_class = 'dc-cta'
+  if section.settings.layout == 'compact'
+    assign cta_class = cta_class | append: ' dc-cta--compact'
+  elsif section.settings.layout == 'image'
+    assign cta_class = cta_class | append: ' dc-cta--with-image'
+  endif
+-%}
+<section
+  class="dc-section dc-section--transparent{% if section.settings.accent_italic %} dc-accent-italic{% endif %}"
+  style="--dc-pt: {{ section.settings.padding_top }}px; --dc-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="dc-container{% if section.settings.width == 'narrow' %} dc-container--narrow{% endif %}">
+    <div class="{{ cta_class }} color-{{ section.settings.color_scheme }}">
+      {%- if section.settings.layout == 'image' -%}
+        <div class="dc-media dc-cta__image">
+          {%- if section.settings.image != blank -%}
+            {%- render 'douce-image', image: section.settings.image, sizes: '200px' -%}
+          {%- elsif section.settings.product.featured_media != blank -%}
+            {{
+              section.settings.product.featured_media
+              | image_url: width: 600
+              | image_tag: widths: '200, 400, 600', sizes: '200px', loading: 'lazy'
+            }}
+          {%- else -%}
+            {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.layout == 'split' -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 class="dc-heading dc-heading--xl">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+        <div class="dc-cta__body">
+          {%- if section.settings.text != blank -%}
+            <div class="dc-text">{{ section.settings.text }}</div>
+          {%- endif -%}
+          {%- render 'douce-button',
+            label: section.settings.button_label,
+            link: section.settings.button_link,
+            style: section.settings.button_style
+          -%}
+        </div>
+      {%- else -%}
+        <div class="dc-cta__body">
+          {%- if section.settings.heading != blank -%}
+            <h2 class="dc-heading">{{ section.settings.heading }}</h2>
+          {%- endif -%}
+          {%- if section.settings.text != blank -%}
+            <div class="dc-text">{{ section.settings.text }}</div>
+          {%- endif -%}
+        </div>
+        {%- liquid
+          assign cta_link = section.settings.button_link
+          if cta_link == blank and section.settings.product != blank
+            assign cta_link = section.settings.product.url
+          endif
+        -%}
+        {%- render 'douce-button',
+          label: section.settings.button_label,
+          link: cta_link,
+          style: section.settings.button_style
+        -%}
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "DOUCE call to action",
+  "tag": "div",
+  "class": "section-douce-cta",
+  "settings": [
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        { "value": "split", "label": "Large: heading left, text and button right" },
+        { "value": "compact", "label": "Compact: text left, button right" },
+        { "value": "image", "label": "With image" }
+      ],
+      "default": "split"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Try it for 60 days. <em>Feel the difference or it's free.</em>"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>If your skin and hair don't feel better within 60 days, send it back for a full refund.</p>"
+    },
+    { "type": "text", "id": "button_label", "label": "Button label", "info": "Leave empty to hide.", "default": "Start your 60 days" },
+    { "type": "url", "id": "button_link", "label": "Button link" },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button style",
+      "options": [
+        { "value": "dark", "label": "Dark" },
+        { "value": "primary", "label": "Color scheme button" },
+        { "value": "lime", "label": "Lime" },
+        { "value": "light", "label": "White" },
+        { "value": "secondary", "label": "Outline" }
+      ],
+      "default": "dark"
+    },
+    {
+      "type": "header",
+      "content": "Image layout"
+    },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "product", "id": "product", "label": "Product", "info": "Its image and link are used when the image or button link is empty." },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Width",
+      "options": [
+        { "value": "page", "label": "Page" },
+        { "value": "narrow", "label": "Narrow" }
+      ],
+      "default": "page"
+    },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Card color scheme", "default": "scheme-4" },
+    { "type": "checkbox", "id": "accent_italic", "label": "Accent colour on italic words", "default": false },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 120 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 120 }
+  ],
+  "presets": [
+    {
+      "name": "DOUCE call to action"
+    }
+  ]
+}
+{% endschema %}

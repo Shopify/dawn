@@ -1,0 +1,186 @@
+{%- comment -%} DOUCE: journal index with a featured story, numbered list, topics and a product promo. {%- endcomment -%}
+{%- paginate blog.articles by section.settings.articles_per_page -%}
+  {%- liquid
+    assign show_feature = false
+    if section.settings.feature_first and paginate.current_page == 1 and blog.articles.size > 0 and current_tags == blank
+      assign show_feature = true
+    endif
+  -%}
+  <section
+    class="dc-section color-{{ section.settings.color_scheme }}{% if section.settings.accent_italic %} dc-accent-italic{% endif %}"
+    style="--dc-pt: {{ section.settings.padding_top }}px; --dc-pb: {{ section.settings.padding_bottom }}px;"
+  >
+    <div class="dc-container">
+      <h1 class="visually-hidden">{{ blog.title | escape }}</h1>
+
+      {%- if show_feature -%}
+        {%- assign feature = blog.articles.first -%}
+        <a class="dc-feature-post" href="{{ feature.url }}">
+          {%- render 'douce-image',
+            image: feature.image,
+            sizes: '(min-width: 1320px) 1240px, 100vw',
+            eager: true,
+            placeholder: 'lifestyle-1'
+          -%}
+          <div class="dc-feature-post__body">
+            <p class="dc-eyebrow">
+              {{- section.settings.featured_label | escape -}}
+              {%- if feature.tags.size > 0 %} · {{ feature.tags.first | escape }}{% endif -%}
+              {%- if section.settings.show_read_time -%}
+                {%- assign words = feature.content | strip_html | split: ' ' | size -%}
+                {%- assign minutes = words | divided_by: 200 | at_least: 1 %} · {{ minutes }} {{ section.settings.minutes_label | escape }}
+              {%- endif -%}
+            </p>
+            <h2 class="dc-heading">{{ feature.title | escape }}</h2>
+          </div>
+        </a>
+      {%- endif -%}
+    </div>
+
+    <div class="dc-container" style="padding-top: {% if show_feature %}96px{% else %}0{% endif %};">
+      <div class="dc-journal">
+        <div>
+          <div class="dc-row-head" style="margin-bottom: 12px; align-items: baseline;">
+            <h2 class="dc-heading dc-heading--xs">
+              {%- if current_tags != blank -%}
+                {{ current_tags.first | escape }}
+              {%- else -%}
+                {{ section.settings.list_heading | escape }}
+              {%- endif -%}
+            </h2>
+            <span class="dc-text dc-text--xs">{{ blog.articles_count }} {{ section.settings.count_label | escape }}</span>
+          </div>
+          <ol class="dc-posts" role="list">
+            {%- for article in blog.articles -%}
+              {%- if show_feature and forloop.first -%}{%- continue -%}{%- endif -%}
+              {%- liquid
+                assign offset = paginate.current_offset | plus: forloop.index
+                if show_feature
+                  assign offset = offset | minus: 1
+                endif
+              -%}
+              <li>
+                <a class="dc-post" href="{{ article.url }}">
+                  <span class="dc-post__num" aria-hidden="true">{% if offset < 10 %}0{% endif %}{{ offset }}</span>
+                  <span>
+                    <span class="dc-post__meta" style="display: block;">
+                      {%- if article.tags.size > 0 -%}{{ article.tags.first | escape }} · {% endif -%}
+                      {%- if section.settings.show_read_time -%}
+                        {%- assign words = article.content | strip_html | split: ' ' | size -%}
+                        {{- words | divided_by: 200 | at_least: 1 }} {{ section.settings.minutes_label | escape -}}
+                      {%- else -%}
+                        {{- article.published_at | time_tag: format: 'date' -}}
+                      {%- endif -%}
+                    </span>
+                    <span class="dc-title" style="display: block;">{{ article.title | escape }}</span>
+                  </span>
+                  <span class="dc-media">
+                    {%- render 'douce-image', image: article.image, sizes: '180px', placeholder: 'image' -%}
+                  </span>
+                </a>
+              </li>
+            {%- else -%}
+              <li class="dc-text">{{ section.settings.empty_text | escape }}</li>
+            {%- endfor -%}
+          </ol>
+          {%- if paginate.pages > 1 -%}
+            {%- render 'pagination', paginate: paginate -%}
+          {%- endif -%}
+        </div>
+
+        <aside class="dc-aside">
+          {%- if section.settings.show_tags and blog.all_tags.size > 0 -%}
+            <div class="dc-aside__box">
+              <p class="dc-eyebrow dc-eyebrow--muted">{{ section.settings.tags_heading | escape }}</p>
+              <ul class="dc-tags" role="list">
+                {%- for tag in blog.all_tags -%}
+                  <li>
+                    <a
+                      href="{{ blog.url }}/tagged/{{ tag | handleize }}"
+                      {% if current_tags contains tag %}
+                        aria-current="page"
+                      {% endif %}
+                    >
+                      {{- tag | escape -}}
+                    </a>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            </div>
+          {%- endif -%}
+
+          {%- if section.settings.promo_heading != blank or section.settings.promo_product != blank -%}
+            {%- liquid
+              assign promo = section.settings.promo_product
+              assign promo_link = section.settings.promo_link | default: promo.url
+            -%}
+            <div class="dc-aside__box dc-aside__box--dark">
+              <div class="dc-media">
+                {%- if section.settings.promo_image != blank -%}
+                  {%- render 'douce-image', image: section.settings.promo_image, sizes: '400px' -%}
+                {%- elsif promo.featured_media != blank -%}
+                  {{
+                    promo.featured_media
+                    | image_url: width: 800
+                    | image_tag: widths: '400, 800', sizes: '400px', loading: 'lazy'
+                  }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                {%- endif -%}
+              </div>
+              <p class="dc-title" style="--dc-t-size: 28px;">{{ section.settings.promo_heading | default: promo.title | escape }}</p>
+              {%- if section.settings.promo_text != blank -%}
+                <p class="dc-text dc-text--xs">{{ section.settings.promo_text | escape }}</p>
+              {%- endif -%}
+              {%- render 'douce-button',
+                label: section.settings.promo_button,
+                link: promo_link,
+                style: 'lime',
+                size: 'm',
+                full: true
+              -%}
+            </div>
+          {%- endif -%}
+        </aside>
+      </div>
+    </div>
+  </section>
+{%- endpaginate -%}
+
+{% schema %}
+{
+  "name": "DOUCE journal",
+  "tag": "div",
+  "class": "section-douce-main-blog",
+  "settings": [
+    { "type": "range", "id": "articles_per_page", "label": "Articles per page", "min": 4, "max": 24, "step": 1, "default": 10 },
+    { "type": "checkbox", "id": "feature_first", "label": "Feature the newest article", "default": true },
+    { "type": "text", "id": "featured_label", "label": "Featured label", "default": "Featured" },
+    { "type": "text", "id": "list_heading", "label": "List heading", "default": "Latest" },
+    { "type": "text", "id": "count_label", "label": "Article count label", "default": "articles" },
+    { "type": "checkbox", "id": "show_read_time", "label": "Show reading time", "default": true },
+    { "type": "text", "id": "minutes_label", "label": "Reading time label", "default": "min" },
+    { "type": "text", "id": "empty_text", "label": "Text when there are no articles", "default": "New articles are on the way." },
+    {
+      "type": "header",
+      "content": "Sidebar"
+    },
+    { "type": "checkbox", "id": "show_tags", "label": "Show topics (article tags)", "default": true },
+    { "type": "text", "id": "tags_heading", "label": "Topics heading", "default": "Topics" },
+    { "type": "product", "id": "promo_product", "label": "Promoted product" },
+    { "type": "image_picker", "id": "promo_image", "label": "Promo image", "info": "Defaults to the product image." },
+    { "type": "text", "id": "promo_heading", "label": "Promo heading", "default": "The DOUCE Filtered Showerhead" },
+    { "type": "text", "id": "promo_text", "label": "Promo text", "default": "$79 · $69 with Subscribe & Save" },
+    { "type": "text", "id": "promo_button", "label": "Promo button label", "default": "Shop now" },
+    { "type": "url", "id": "promo_link", "label": "Promo link", "info": "Defaults to the product." },
+    {
+      "type": "header",
+      "content": "Section"
+    },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "checkbox", "id": "accent_italic", "label": "Accent colour on italic words", "default": true },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 48 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 120 }
+  ]
+}
+{% endschema %}

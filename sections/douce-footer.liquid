@@ -1,0 +1,345 @@
+{%- comment -%} DOUCE footer: newsletter, menu columns, wordmark, legal row. {%- endcomment -%}
+{%- liquid
+  assign menu_count = 0
+  for block in section.blocks
+    assign menu_count = menu_count | plus: 1
+  endfor
+  if menu_count == 0
+    assign menu_count = 1
+  endif
+  assign current_year = 'now' | date: '%Y'
+  assign copyright_text = section.settings.copyright | replace: '[year]', current_year | replace: '[shop]', shop.name
+-%}
+<footer class="dc-footer color-{{ section.settings.color_scheme }}{% if section.settings.accent_italic %} dc-accent-italic{% endif %}">
+  <div class="dc-container dc-footer__top" style="--dc-footer-cols: {{ menu_count }};">
+    {%- if section.settings.show_newsletter -%}
+      <div class="dc-footer__signup">
+        {%- if section.settings.newsletter_heading != blank -%}
+          <h2 class="dc-heading">{{ section.settings.newsletter_heading }}</h2>
+        {%- endif -%}
+        {%- if section.settings.newsletter_text != blank -%}
+          <div class="dc-text">{{ section.settings.newsletter_text }}</div>
+        {%- endif -%}
+        {%- form 'customer', id: 'DouceFooterNewsletter' -%}
+          <input type="hidden" name="contact[tags]" value="newsletter">
+          <div class="dc-footer__form">
+            <label class="visually-hidden" for="DouceFooterEmail">{{ 'newsletter.label' | t }}</label>
+            <input
+              id="DouceFooterEmail"
+              class="dc-footer__input"
+              type="email"
+              name="contact[email]"
+              autocomplete="email"
+              autocorrect="off"
+              autocapitalize="off"
+              required
+              placeholder="{{ section.settings.newsletter_placeholder | escape }}"
+              {% if form.errors %}
+                aria-invalid="true" aria-describedby="DouceFooterNewsletterMsg"
+              {% endif %}
+            >
+            <button type="submit" class="dc-btn dc-btn--{{ section.settings.newsletter_button_style }} dc-btn--m">
+              {%- if section.settings.newsletter_button != blank -%}
+                {{ section.settings.newsletter_button | escape }}
+              {%- else -%}
+                {{ 'newsletter.button_label' | t }}
+              {%- endif -%}
+            </button>
+          </div>
+          {%- if form.errors -%}
+            <p id="DouceFooterNewsletterMsg" class="dc-footer__msg">
+              {{ form.errors.translated_fields.email | capitalize }}
+              {{ form.errors.messages.email }}
+            </p>
+          {%- elsif form.posted_successfully? -%}
+            <p class="dc-footer__msg" role="status">
+              {%- if section.settings.newsletter_success != blank -%}
+                {{ section.settings.newsletter_success | escape }}
+              {%- else -%}
+                {{ 'newsletter.success' | t }}
+              {%- endif -%}
+            </p>
+          {%- endif -%}
+        {%- endform -%}
+      </div>
+    {%- endif -%}
+
+    {%- for block in section.blocks -%}
+      {%- case block.type -%}
+        {%- when 'menu' -%}
+          <nav class="dc-footer__col" aria-label="{{ block.settings.heading | escape }}" {{ block.shopify_attributes }}>
+            {%- if block.settings.heading != blank -%}
+              <h2 class="dc-footer__col-title">{{ block.settings.heading | escape }}</h2>
+            {%- endif -%}
+            {%- if block.settings.menu != blank -%}
+              <ul role="list">
+                {%- for link in block.settings.menu.links -%}
+                  <li>
+                    <a href="{{ link.url }}" {% if link.current %} aria-current="page" {% endif %}>
+                      {{- link.title | escape -}}
+                    </a>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+          </nav>
+        {%- when 'text' -%}
+          <div class="dc-footer__col" {{ block.shopify_attributes }}>
+            {%- if block.settings.heading != blank -%}
+              <h2 class="dc-footer__col-title">{{ block.settings.heading | escape }}</h2>
+            {%- endif -%}
+            <div class="dc-text dc-text--xs">{{ block.settings.text }}</div>
+          </div>
+      {%- endcase -%}
+    {%- endfor -%}
+  </div>
+
+  {%- if section.settings.show_wordmark -%}
+    <div class="dc-container" aria-hidden="true">
+      <div class="dc-footer__wordmark">
+        {%- if section.settings.wordmark != blank -%}
+          {{ section.settings.wordmark | escape }}
+        {%- else -%}
+          {{ shop.name | escape }}
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endif -%}
+
+  <div class="dc-container">
+    <div class="dc-footer__bottom">
+      <ul class="dc-footer__legal" role="list">
+        {%- if copyright_text != blank -%}
+          <li>{{ copyright_text }}</li>
+        {%- endif -%}
+        {%- if section.settings.show_policies -%}
+          {%- for policy in shop.policies -%}
+            {%- if policy != blank -%}
+              <li>
+                <a href="{{ policy.url }}">{{ policy.title | escape }}</a>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+        {%- if section.settings.legal_menu != blank -%}
+          {%- for link in section.settings.legal_menu.links -%}
+            <li>
+              <a href="{{ link.url }}">{{ link.title | escape }}</a>
+            </li>
+          {%- endfor -%}
+        {%- endif -%}
+      </ul>
+
+      {%- if section.settings.show_payment and shop.enabled_payment_types.size > 0 -%}
+        <ul class="dc-footer__payments" role="list">
+          {%- for type in shop.enabled_payment_types -%}
+            <li>{{ type | payment_type_svg_tag: class: 'icon icon--full-color' }}</li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      {%- if section.settings.show_social -%}
+        <ul class="dc-footer__social" role="list">
+          {%- liquid
+            assign socials = 'instagram,tiktok,facebook,youtube,pinterest,twitter,snapchat,tumblr,vimeo' | split: ','
+          -%}
+          {%- for social in socials -%}
+            {%- assign social_key = 'social_' | append: social | append: '_link' -%}
+            {%- if settings[social_key] != blank -%}
+              <li>
+                <a href="{{ settings[social_key] }}" target="_blank" rel="noopener">
+                  {%- assign social_icon = 'icon-' | append: social | append: '.svg' -%}
+                  {{- social_icon | inline_asset_content -}}
+                  <span class="visually-hidden">{{ social | capitalize }}</span>
+                </a>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "DOUCE footer",
+  "class": "section-douce-footer",
+  "max_blocks": 4,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Newsletter"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_newsletter",
+      "label": "Show newsletter sign-up",
+      "default": true
+    },
+    {
+      "type": "inline_richtext",
+      "id": "newsletter_heading",
+      "label": "Heading",
+      "info": "Italic text is shown in the accent colour.",
+      "default": "Notes on <em>softer water.</em>"
+    },
+    {
+      "type": "richtext",
+      "id": "newsletter_text",
+      "label": "Text",
+      "default": "<p>Filter reminders, care guides and 10% off your first order.</p>"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_placeholder",
+      "label": "Email placeholder",
+      "default": "Email address"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_button",
+      "label": "Button label",
+      "default": "Subscribe"
+    },
+    {
+      "type": "select",
+      "id": "newsletter_button_style",
+      "label": "Button style",
+      "options": [
+        { "value": "lime", "label": "Lime" },
+        { "value": "light", "label": "White" },
+        { "value": "dark", "label": "Dark" },
+        { "value": "primary", "label": "Color scheme button" }
+      ],
+      "default": "lime"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_success",
+      "label": "Success message",
+      "default": "Thanks for subscribing. Check your inbox for your code."
+    },
+    {
+      "type": "header",
+      "content": "Wordmark"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_wordmark",
+      "label": "Show large wordmark",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "wordmark",
+      "label": "Wordmark text",
+      "info": "Defaults to the store name.",
+      "default": "DOUCE"
+    },
+    {
+      "type": "header",
+      "content": "Bottom row"
+    },
+    {
+      "type": "text",
+      "id": "copyright",
+      "label": "Copyright text",
+      "info": "Use [year] and [shop] to insert the current year and store name.",
+      "default": "© [year] DOUCE"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_policies",
+      "label": "Show policy links",
+      "default": true
+    },
+    {
+      "type": "link_list",
+      "id": "legal_menu",
+      "label": "Extra legal links",
+      "info": "For example Accessibility or Cookie settings."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social",
+      "label": "Show social icons",
+      "info": "Add links in Theme settings > Social media.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_payment",
+      "label": "Show payment icons",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-3"
+    },
+    {
+      "type": "checkbox",
+      "id": "accent_italic",
+      "label": "Accent colour on italic words",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "menu",
+      "name": "Menu column",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Shop"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu",
+          "default": "footer"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Text column",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Help"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Questions? Email hello@douceskin.com</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "DOUCE footer",
+      "blocks": [
+        { "type": "menu", "settings": { "heading": "Shop" } },
+        { "type": "menu", "settings": { "heading": "Learn" } },
+        { "type": "menu", "settings": { "heading": "Help" } }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "groups": ["footer"]
+  }
+}
+{% endschema %}

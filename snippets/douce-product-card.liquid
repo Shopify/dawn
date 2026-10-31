@@ -1,0 +1,83 @@
+{% doc %}
+  DOUCE product card: image (secondary image on hover), badge, title, subtitle and price.
+
+  @param {product} [product] - Product to show. Without one an editor placeholder is shown.
+  @param {string} [title] - Title override.
+  @param {string} [subtitle] - Line under the title.
+  @param {string} [badge] - Badge text over the image.
+  @param {string} [sizes] - The sizes attribute for the image.
+  @param {boolean} [show_secondary] - Swap to the second image on hover.
+
+  @example
+  {% render 'douce-product-card', product: block.settings.product, badge: block.settings.badge %}
+{% enddoc %}
+{%- liquid
+  assign card_title = title | default: product.title
+  if product == blank and card_title == blank
+    assign card_title = 'Product title'
+  endif
+  assign card_sizes = sizes | default: '(min-width: 990px) 33vw, (min-width: 750px) 50vw, 100vw'
+-%}
+<a
+  class="dc-pcard"
+  href="{% if product != blank %}{{ product.url }}{% else %}#{% endif %}"
+  {% if product == blank %}
+    aria-disabled="true"
+  {% endif %}
+>
+  <div class="dc-media dc-pcard__media">
+    {%- if badge != blank -%}
+      <div class="dc-pcard__badge"><span class="dc-pill">{{ badge | escape }}</span></div>
+    {%- elsif product != blank and product.available == false -%}
+      <div class="dc-pcard__badge"><span class="dc-pill">{{ 'products.product.sold_out' | t }}</span></div>
+    {%- endif -%}
+    {%- if product.featured_media != blank -%}
+      {{
+        product.featured_media
+        | image_url: width: 1600
+        | image_tag:
+          widths: '360, 540, 720, 960, 1200, 1600',
+          sizes: card_sizes,
+          loading: 'lazy',
+          alt: product.featured_media.alt
+      }}
+      {%- if show_secondary and product.media[1] != blank -%}
+        {{
+          product.media[1]
+          | image_url: width: 1600
+          | image_tag: widths: '360, 540, 720, 960, 1200, 1600', sizes: card_sizes, loading: 'lazy', alt: ''
+        }}
+      {%- endif -%}
+    {%- else -%}
+      {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+    {%- endif -%}
+  </div>
+  <div class="dc-pcard__info">
+    <div>
+      <h3 class="dc-pcard__title">{{ card_title | escape }}</h3>
+      {%- if subtitle != blank -%}
+        <p class="dc-pcard__sub">{{ subtitle | escape }}</p>
+      {%- endif -%}
+    </div>
+    <div class="dc-pcard__price">
+      {%- if product != blank -%}
+        <span>
+          {%- if product.price_varies -%}
+            {%- assign price_min = product.price_min | money -%}
+            {{ 'products.product.price.from_price_html' | t: price: price_min }}
+          {%- else -%}
+            {{ product.price | money }}
+          {%- endif -%}
+        </span>
+        {%- if product.compare_at_price > product.price -%}
+          <s class="dc-pcard__compare">
+            <span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>
+            {{- product.compare_at_price | money -}}
+          </s>
+        {%- endif -%}
+      {%- else -%}
+        <span>{{ 7900 | money }}</span>
+      {%- endif -%}
+    </div>
+  </div>
+</a>

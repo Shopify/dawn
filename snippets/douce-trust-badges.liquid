@@ -1,0 +1,54 @@
+{% comment %}
+  DOUCE: reassurance badges under the buy buttons (up to 4).
+
+  Each badge can link to a store policy. Policy links only render when
+  that policy exists (Settings > Policies), so a claim such as a money-back
+  guarantee always points to the page that defines its terms.
+
+  Accepts:
+  - block: {Object} douce_trust_badges block
+{% endcomment %}
+{%- liquid
+  assign badge_count = 0
+  for i in (1..4)
+    assign text_key = 'text_' | append: i
+    if block.settings[text_key] != blank
+      assign badge_count = badge_count | plus: 1
+    endif
+  endfor
+-%}
+{%- if badge_count > 0 -%}
+  <ul class="douce-trust list-unstyled" style="--douce-trust-count: {{ badge_count }};" {{ block.shopify_attributes }}>
+    {%- for i in (1..4) -%}
+      {%- liquid
+        assign text_key = 'text_' | append: i
+        assign icon_key = 'icon_' | append: i
+        assign link_key = 'link_' | append: i
+        assign url_key = 'url_' | append: i
+        assign text = block.settings[text_key]
+        assign icon = block.settings[icon_key]
+        assign href = blank
+        case block.settings[link_key]
+          when 'refund_policy'
+            assign href = shop.refund_policy.url
+          when 'shipping_policy'
+            assign href = shop.shipping_policy.url
+          when 'terms'
+            assign href = shop.terms_of_service.url
+          when 'custom'
+            assign href = block.settings[url_key]
+        endcase
+      -%}
+      {%- if text != blank -%}
+        <li class="douce-trust__item">
+          {%- if href != blank -%}<a class="douce-trust__link" href="{{ href }}">{%- endif -%}
+          {%- if icon != 'none' -%}
+            <span class="douce-trust__icon" aria-hidden="true">{% render 'icon-accordion', icon: icon %}</span>
+          {%- endif -%}
+          <span class="douce-trust__text">{{ text | escape }}</span>
+          {%- if href != blank -%}</a>{%- endif -%}
+        </li>
+      {%- endif -%}
+    {%- endfor -%}
+  </ul>
+{%- endif -%}

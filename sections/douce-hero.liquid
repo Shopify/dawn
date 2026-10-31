@@ -1,0 +1,201 @@
+{%- comment -%} DOUCE: full-bleed photo hero with eyebrow, headline, two buttons and a check row. {%- endcomment -%}
+{%- liquid
+  assign overlay = section.settings.overlay_opacity | divided_by: 100.0
+  assign checks = section.blocks | where: 'type', 'check'
+-%}
+<section
+  class="dc-section dc-hero color-{{ section.settings.color_scheme }}{% if section.settings.accent_italic %} dc-accent-italic{% endif %}"
+  style="--dc-pt: 0px; --dc-pb: 0px; --dc-hero-h: {{ section.settings.min_height }}px; --dc-overlay: {{ overlay }};"
+>
+  <div class="dc-hero__media">
+    {%- render 'douce-image',
+      image: section.settings.image,
+      eager: true,
+      placeholder: 'hero-apparel-1'
+    -%}
+  </div>
+  {%- if section.settings.overlay_opacity > 0 -%}
+    <div class="dc-hero__overlay" aria-hidden="true"></div>
+  {%- endif -%}
+
+  <div class="dc-container dc-hero__content">
+    {%- for block in section.blocks -%}
+      {%- case block.type -%}
+        {%- when 'eyebrow' -%}
+          <p class="dc-eyebrow" {{ block.shopify_attributes }}>{{ block.settings.text | escape }}</p>
+        {%- when 'heading' -%}
+          <h1 class="dc-heading dc-heading--hero" {{ block.shopify_attributes }}>{{ block.settings.heading }}</h1>
+        {%- when 'text' -%}
+          <div class="dc-text" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+        {%- when 'buttons' -%}
+          <div class="dc-btn-row dc-btn-row--stack" {{ block.shopify_attributes }}>
+            {%- render 'douce-button',
+              label: block.settings.button_label_1,
+              link: block.settings.button_link_1,
+              style: block.settings.button_style_1
+            -%}
+            {%- render 'douce-button',
+              label: block.settings.button_label_2,
+              link: block.settings.button_link_2,
+              style: block.settings.button_style_2
+            -%}
+          </div>
+      {%- endcase -%}
+    {%- endfor -%}
+
+    {%- if checks.size > 0 -%}
+      <ul class="dc-check-list dc-hero__checks" role="list">
+        {%- for block in checks -%}
+          <li {{ block.shopify_attributes }}>
+            {%- render 'douce-icon', name: 'checkmark', size: 15 -%}
+            {{ block.settings.text | escape }}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "DOUCE hero",
+  "tag": "div",
+  "class": "section-douce-hero",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Background image"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Side gradient strength",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "%",
+      "default": 92
+    },
+    {
+      "type": "range",
+      "id": "min_height",
+      "label": "Minimum height (desktop)",
+      "min": 400,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "default": 760
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "info": "The background colour is used for the gradient over the photo.",
+      "default": "scheme-3"
+    },
+    {
+      "type": "checkbox",
+      "id": "accent_italic",
+      "label": "Accent colour on italic words",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "eyebrow",
+      "name": "Eyebrow",
+      "limit": 1,
+      "settings": [
+        { "type": "text", "id": "text", "label": "Text", "default": "The filtered showerhead" }
+      ]
+    },
+    {
+      "type": "heading",
+      "name": "Heading",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "heading",
+          "label": "Heading",
+          "info": "Italicise words to give them the accent colour.",
+          "default": "Your skin notices <em>the water.</em>"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Text",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>DOUCE reduces chlorine and catches sediment before it reaches you. Two filters, one clear handle, two minutes to install.</p>"
+        }
+      ]
+    },
+    {
+      "type": "buttons",
+      "name": "Buttons",
+      "limit": 1,
+      "settings": [
+        { "type": "text", "id": "button_label_1", "label": "First button label", "info": "Leave empty to hide.", "default": "Shop now · from $69" },
+        { "type": "url", "id": "button_link_1", "label": "First button link" },
+        {
+          "type": "select",
+          "id": "button_style_1",
+          "label": "First button style",
+          "options": [
+            { "value": "primary", "label": "Color scheme button" },
+            { "value": "lime", "label": "Lime" },
+            { "value": "dark", "label": "Dark" },
+            { "value": "light", "label": "White" },
+            { "value": "secondary", "label": "Outline" }
+          ],
+          "default": "primary"
+        },
+        { "type": "text", "id": "button_label_2", "label": "Second button label", "info": "Leave empty to hide.", "default": "How it works" },
+        { "type": "url", "id": "button_link_2", "label": "Second button link" },
+        {
+          "type": "select",
+          "id": "button_style_2",
+          "label": "Second button style",
+          "options": [
+            { "value": "primary", "label": "Color scheme button" },
+            { "value": "lime", "label": "Lime" },
+            { "value": "dark", "label": "Dark" },
+            { "value": "light", "label": "White" },
+            { "value": "secondary", "label": "Outline" }
+          ],
+          "default": "light"
+        }
+      ]
+    },
+    {
+      "type": "check",
+      "name": "Check item",
+      "settings": [
+        { "type": "text", "id": "text", "label": "Text", "default": "Free US delivery" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "DOUCE hero",
+      "blocks": [
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "text" },
+        { "type": "buttons" },
+        { "type": "check", "settings": { "text": "Free US delivery" } },
+        { "type": "check", "settings": { "text": "60-day guarantee" } },
+        { "type": "check", "settings": { "text": "Fits any ½\" hose" } },
+        { "type": "check", "settings": { "text": "No tools" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,88 @@
+{%- comment -%} DOUCE: large image tiles linking to products or collections (e.g. Chrome / Smoke finishes). {%- endcomment -%}
+<section
+  class="dc-section color-{{ section.settings.color_scheme }}"
+  style="--dc-pt: {{ section.settings.padding_top }}px; --dc-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="dc-container">
+    {%- if section.settings.heading != blank -%}
+      <div class="dc-row-head">
+        <h2 class="dc-heading dc-heading--s">{{ section.settings.heading }}</h2>
+      </div>
+    {%- endif -%}
+    <ul class="dc-tiles" role="list" style="--dc-cols: {{ section.settings.columns }};">
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign tile_link = block.settings.link
+          if tile_link == blank and block.settings.product != blank
+            assign tile_link = block.settings.product.url
+          endif
+          assign tile_image = block.settings.image
+          if tile_image == blank and block.settings.product.featured_media != blank
+            assign tile_image = block.settings.product.featured_media.preview_image
+          endif
+          assign tile_title = block.settings.title | default: block.settings.product.title
+        -%}
+        <li {{ block.shopify_attributes }}>
+          <a class="dc-tile" href="{{ tile_link | default: '#' }}">
+            {%- render 'douce-image',
+              image: tile_image,
+              sizes: '(min-width: 750px) 50vw, 100vw',
+              placeholder: 'product-1'
+            -%}
+            <span class="dc-tile__bar">
+              <span class="dc-tile__label">
+                {%- if block.settings.tag != blank -%}
+                  <p class="dc-eyebrow">{{ block.settings.tag | escape }}</p>
+                {%- endif -%}
+                <p class="dc-title">{{ tile_title | escape }}</p>
+                {%- if block.settings.text != blank -%}
+                  <p>{{ block.settings.text | escape }}</p>
+                {%- endif -%}
+              </span>
+              <span class="dc-tile__arrow" aria-hidden="true">{{- 'icon-arrow.svg' | inline_asset_content -}}</span>
+            </span>
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "DOUCE image tiles",
+  "tag": "div",
+  "class": "section-douce-finish-tiles",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "inline_richtext", "id": "heading", "label": "Heading", "info": "Optional." },
+    { "type": "range", "id": "columns", "label": "Columns (desktop)", "min": 1, "max": 3, "step": 1, "default": 2 },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 24 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 0 }
+  ],
+  "blocks": [
+    {
+      "type": "tile",
+      "name": "Tile",
+      "settings": [
+        { "type": "product", "id": "product", "label": "Product", "info": "Its image, title and link are used when the fields below are empty." },
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "tag", "label": "Tag", "default": "Clear handle" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Chrome" },
+        { "type": "text", "id": "text", "label": "Text", "default": "$79 · $69 with Subscribe & Save" },
+        { "type": "url", "id": "link", "label": "Link" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "DOUCE image tiles",
+      "blocks": [
+        { "type": "tile", "settings": { "tag": "Clear handle", "title": "Chrome" } },
+        { "type": "tile", "settings": { "tag": "Tinted handle", "title": "Smoke" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,234 @@
+{%- comment -%}
+  DOUCE: build-your-bundle list with a live summary. Adds every chosen item to
+  the cart in one request. The tier discount itself must exist as an automatic
+  discount in Shopify admin; this section only shows the expected saving.
+{%- endcomment -%}
+{%- liquid
+  assign tier2 = section.settings.tier_2_percent
+  assign tier3 = section.settings.tier_3_percent
+-%}
+<section
+  class="dc-section color-{{ section.settings.color_scheme }}{% if section.settings.accent_italic %} dc-accent-italic{% endif %}"
+  style="--dc-pt: {{ section.settings.padding_top }}px; --dc-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <douce-bundle
+    class="dc-container dc-bundle"
+    data-money-format="{{ shop.money_format | escape }}"
+    data-tier2="{{ tier2 }}"
+    data-tier3="{{ tier3 }}"
+  >
+    <script type="application/json" data-bundle-strings>
+      {
+        "empty": {{ section.settings.empty_text | json }},
+        "add_more": {{ section.settings.add_more_text | json }},
+        "add_one": {{ section.settings.add_one_text | json }},
+        "best": {{ section.settings.best_text | json }},
+        "applied": {{ section.settings.applied_text | json }},
+        "none": {{ section.settings.none_text | json }}
+      }
+    </script>
+
+    <div class="dc-bundle__main">
+      <div class="dc-bundle__head">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="dc-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h1 class="dc-heading dc-heading--l">{{ section.settings.heading }}</h1>
+        {%- endif -%}
+        {%- if section.settings.text != blank -%}
+          <div class="dc-text">{{ section.settings.text }}</div>
+        {%- endif -%}
+      </div>
+
+      <ul class="dc-bundle__list" role="list">
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign item = block.settings.product
+            assign variant = item.selected_or_first_available_variant
+            assign item_title = block.settings.title | default: item.title | default: 'Product'
+            assign start_qty = block.settings.start_qty
+            if item == blank or variant.available == false
+              assign start_qty = 0
+            endif
+          -%}
+          <li
+            class="dc-bundle__item"
+            data-bundle-item
+            data-qty="{{ start_qty }}"
+            data-price="{{ variant.price | default: 0 }}"
+            data-variant="{{ variant.id }}"
+            data-title="{{ item_title | escape }}"
+            {{ block.shopify_attributes }}
+          >
+            <div class="dc-media">
+              {%- if item.featured_media != blank -%}
+                {{
+                  item.featured_media
+                  | image_url: width: 288
+                  | image_tag: widths: '96, 192, 288', sizes: '96px', loading: 'lazy', alt: ''
+                }}
+              {%- else -%}
+                {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+              {%- endif -%}
+            </div>
+            <div>
+              <p class="dc-bundle__name">
+                {%- if item != blank -%}
+                  <a href="{{ item.url }}">{{ item_title | escape }}</a>
+                {%- else -%}
+                  {{ item_title | escape }}
+                {%- endif -%}
+              </p>
+              {%- if block.settings.subtitle != blank -%}
+                <p class="dc-bundle__sub">{{ block.settings.subtitle | escape }}</p>
+              {%- endif -%}
+              <p class="dc-bundle__price">
+                {%- if item != blank -%}{{ variant.price | money }}{%- endif -%}
+              </p>
+            </div>
+            <div class="dc-bundle__actions">
+              {%- if item != blank and variant.available -%}
+                <div class="dc-qty">
+                  <button type="button" data-step="-1" aria-label="{{ 'products.product.quantity.decrease' | t: product: item_title | escape }}">−</button>
+                  <output aria-live="polite">{{ start_qty }}</output>
+                  <button type="button" data-step="1" aria-label="{{ 'products.product.quantity.increase' | t: product: item_title | escape }}">+</button>
+                </div>
+                <button type="button" class="dc-btn dc-btn--secondary dc-btn--s dc-bundle__add" data-step="1">
+                  {{- section.settings.add_label | escape -}}
+                </button>
+              {%- elsif item != blank -%}
+                <span class="dc-note">{{ 'products.product.sold_out' | t }}</span>
+              {%- endif -%}
+            </div>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+
+    <aside class="dc-bundle__summary color-{{ section.settings.summary_color_scheme }}">
+      <h2 class="dc-title">{{ section.settings.summary_heading | escape }}</h2>
+      <div class="dc-stack" style="--dc-stack-gap: 10px;">
+        <div class="dc-bundle__tier-row">
+          <span data-bundle-message></span>
+          <span data-bundle-tier></span>
+        </div>
+        <div class="dc-bundle__bar" data-bundle-bar><span></span></div>
+        <div class="dc-bundle__steps">
+          <span>{{ section.settings.step_1_label | escape }}</span>
+          <span>{{ section.settings.step_2_label | escape }}</span>
+          <span>{{ section.settings.step_3_label | escape }}</span>
+        </div>
+      </div>
+      <ul class="dc-bundle__lines" role="list" data-bundle-lines aria-live="polite"></ul>
+      <div class="dc-bundle__totals">
+        <div class="dc-bundle__saving">
+          <span>{{ section.settings.saving_label | escape }}</span>
+          <span data-bundle-saving></span>
+        </div>
+        <div class="dc-bundle__total">
+          <span>{{ section.settings.total_label | escape }}</span>
+          <span data-bundle-total></span>
+        </div>
+      </div>
+      <button type="button" class="dc-btn dc-btn--{{ section.settings.button_style }} dc-btn--full" data-bundle-submit>
+        {{- section.settings.button_label | escape -}}
+      </button>
+      <p class="dc-bundle__error" data-bundle-error role="alert" hidden></p>
+      {%- if section.settings.reassurance != blank -%}
+        <p class="dc-reassure">{{ section.settings.reassurance | escape }}</p>
+      {%- endif -%}
+    </aside>
+  </douce-bundle>
+</section>
+
+{% schema %}
+{
+  "name": "DOUCE bundle builder",
+  "tag": "div",
+  "class": "section-douce-bundle-builder",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Build your bundle" },
+    { "type": "inline_richtext", "id": "heading", "label": "Heading", "default": "Add more, <em>save more.</em>" },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Save 10% on 2 items and 15% on 3 or more. Mix showerheads, filters and accessories.</p>"
+    },
+    { "type": "text", "id": "add_label", "label": "Add button label", "default": "Add" },
+    {
+      "type": "header",
+      "content": "Discount tiers"
+    },
+    {
+      "type": "paragraph",
+      "content": "These percentages are only displayed. Create matching automatic discounts in Shopify admin > Discounts so checkout applies them."
+    },
+    { "type": "range", "id": "tier_2_percent", "label": "Discount for 2 items", "min": 0, "max": 50, "step": 1, "unit": "%", "default": 10 },
+    { "type": "range", "id": "tier_3_percent", "label": "Discount for 3+ items", "min": 0, "max": 50, "step": 1, "unit": "%", "default": 15 },
+    {
+      "type": "header",
+      "content": "Summary"
+    },
+    { "type": "text", "id": "summary_heading", "label": "Heading", "default": "Your bundle" },
+    { "type": "text", "id": "add_more_text", "label": "Message: under 2 items", "info": "Use [count] and [percent].", "default": "Add [count] more for [percent]% off" },
+    { "type": "text", "id": "add_one_text", "label": "Message: 2 items", "info": "Use [percent].", "default": "Add 1 more for [percent]% off" },
+    { "type": "text", "id": "best_text", "label": "Message: 3+ items", "default": "Best price unlocked" },
+    { "type": "text", "id": "applied_text", "label": "Discount applied label", "info": "Use [percent].", "default": "[percent]% off applied" },
+    { "type": "text", "id": "none_text", "label": "No discount label", "default": "No discount yet" },
+    { "type": "text", "id": "step_1_label", "label": "Progress label 1", "default": "1 item" },
+    { "type": "text", "id": "step_2_label", "label": "Progress label 2", "default": "2 · 10% off" },
+    { "type": "text", "id": "step_3_label", "label": "Progress label 3", "default": "3+ · 15% off" },
+    { "type": "text", "id": "empty_text", "label": "Empty bundle text", "default": "Add items to start your bundle." },
+    { "type": "text", "id": "saving_label", "label": "Savings label", "default": "Bundle savings" },
+    { "type": "text", "id": "total_label", "label": "Total label", "default": "Total" },
+    { "type": "text", "id": "button_label", "label": "Button label", "default": "Add bundle to cart" },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button style",
+      "options": [
+        { "value": "primary", "label": "Color scheme button" },
+        { "value": "lime", "label": "Lime" },
+        { "value": "light", "label": "White" }
+      ],
+      "default": "primary"
+    },
+    { "type": "text", "id": "reassurance", "label": "Small print", "default": "Free US delivery · 60-day money-back guarantee" },
+    { "type": "color_scheme", "id": "summary_color_scheme", "label": "Summary color scheme", "default": "scheme-3" },
+    {
+      "type": "header",
+      "content": "Section"
+    },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "checkbox", "id": "accent_italic", "label": "Accent colour on italic words", "default": true },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 112 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 0 }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Product",
+      "settings": [
+        { "type": "product", "id": "product", "label": "Product", "info": "The first available variant is added." },
+        { "type": "text", "id": "title", "label": "Title override" },
+        { "type": "text", "id": "subtitle", "label": "Subtitle", "default": "Clear handle · filters installed" },
+        { "type": "range", "id": "start_qty", "label": "Starting quantity", "min": 0, "max": 3, "step": 1, "default": 0 }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "DOUCE bundle builder",
+      "blocks": [
+        { "type": "item", "settings": { "subtitle": "Clear handle · filters installed", "start_qty": 1 } },
+        { "type": "item", "settings": { "subtitle": "Tinted handle · filters installed" } },
+        { "type": "item", "settings": { "subtitle": "About 6 months", "start_qty": 1 } },
+        { "type": "item", "settings": { "subtitle": "1.5m stainless · ½\" fittings" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

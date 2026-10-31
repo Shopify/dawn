@@ -1,0 +1,259 @@
+{%- comment -%}
+  DOUCE: long-form article with a sticky "On this page" menu built from the
+  chapters. Blocks: chapter, quote, levels, image, table, page content, banner.
+{%- endcomment -%}
+{%- liquid
+  assign chapters = section.blocks | where: 'type', 'chapter'
+  assign show_toc = false
+  if section.settings.show_toc and chapters.size > 0
+    assign show_toc = true
+  endif
+-%}
+<section
+  class="dc-section color-{{ section.settings.color_scheme }}{% if section.settings.accent_italic %} dc-accent-italic{% endif %}"
+  style="--dc-pt: {{ section.settings.padding_top }}px; --dc-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="dc-container dc-container--narrow">
+    <div class="dc-longform"{% unless show_toc %} style="grid-template-columns: minmax(0, 1fr);"{% endunless %}>
+      {%- if show_toc -%}
+        <douce-toc class="dc-toc">
+          <nav aria-labelledby="Toc-{{ section.id }}">
+            <p class="dc-eyebrow dc-eyebrow--muted" id="Toc-{{ section.id }}">{{ section.settings.toc_heading | escape }}</p>
+            <ul role="list">
+              {%- for block in chapters -%}
+                {%- liquid
+                  assign anchor = block.settings.anchor | default: block.settings.heading | handleize | default: block.id
+                  assign toc_label = block.settings.toc_label | default: block.settings.heading | strip_html
+                -%}
+                <li><a href="#{{ anchor }}">{{ toc_label | escape }}</a></li>
+              {%- endfor -%}
+            </ul>
+          </nav>
+        </douce-toc>
+      {%- endif -%}
+
+      <article class="dc-article">
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when 'chapter' -%}
+              {%- assign anchor = block.settings.anchor | default: block.settings.heading | handleize | default: block.id -%}
+              <div id="{{ anchor }}" class="dc-article__block" {{ block.shopify_attributes }}>
+                {%- if block.settings.heading != blank -%}
+                  <h2 class="dc-heading dc-heading--xs">{{ block.settings.heading }}</h2>
+                {%- endif -%}
+                <div class="rte">{{ block.settings.text }}</div>
+              </div>
+            {%- when 'quote' -%}
+              <blockquote class="dc-pullquote" {{ block.shopify_attributes }}>{{ block.settings.quote | escape }}</blockquote>
+            {%- when 'levels' -%}
+              <div class="dc-article__block" {{ block.shopify_attributes }}>
+                <ul class="dc-levels" role="list">
+                  {%- for i in (1..3) -%}
+                    {%- liquid
+                      assign label_key = 'label_' | append: i
+                      assign body_key = 'body_' | append: i
+                    -%}
+                    {%- if block.settings[label_key] != blank -%}
+                      <li class="dc-level">
+                        <span class="dc-level__dots" aria-hidden="true">
+                          {%- for d in (1..3) -%}
+                            <span{% if d <= i %} class="is-on"{% endif %}></span>
+                          {%- endfor -%}
+                        </span>
+                        <p class="dc-level__label">{{ block.settings[label_key] | escape }}</p>
+                        <p class="dc-level__body">{{ block.settings[body_key] | escape }}</p>
+                      </li>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- when 'image' -%}
+              <figure class="dc-figure" {{ block.shopify_attributes }}>
+                <div class="dc-figure__frame">
+                  {%- if block.settings.image != blank -%}
+                    {{
+                      block.settings.image
+                      | image_url: width: 1800
+                      | image_tag: widths: '600, 900, 1200, 1800', sizes: '(min-width: 990px) 800px, 100vw', loading: 'lazy'
+                    }}
+                  {%- else -%}
+                    <div class="dc-media" style="aspect-ratio: 3 / 2; border-radius: 0;">{{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}</div>
+                  {%- endif -%}
+                </div>
+                {%- if block.settings.caption != blank -%}
+                  <figcaption>{{ block.settings.caption | escape }}</figcaption>
+                {%- endif -%}
+              </figure>
+            {%- when 'table' -%}
+              <div class="dc-article__block" {{ block.shopify_attributes }}>
+                {%- if block.settings.heading != blank -%}
+                  <h2 class="dc-heading dc-heading--xs">{{ block.settings.heading }}</h2>
+                {%- endif -%}
+                {%- assign header_cells = block.settings.columns | split: '|' -%}
+                <table class="dc-table">
+                  <thead>
+                    <tr>
+                      {%- for cell in header_cells -%}
+                        <th scope="col">{{ cell | strip | escape }}</th>
+                      {%- endfor -%}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {%- assign rows = block.settings.rows | newline_to_br | split: '<br />' -%}
+                    {%- for row in rows -%}
+                      {%- assign row_clean = row | strip -%}
+                      {%- if row_clean != blank -%}
+                        <tr>
+                          {%- assign cells = row_clean | split: '|' -%}
+                          {%- for cell in cells -%}
+                            <td>{{ cell | strip | escape }}</td>
+                          {%- endfor -%}
+                        </tr>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </tbody>
+                </table>
+                {%- if block.settings.note != blank -%}
+                  <p class="dc-note" style="font-size: 14px;">{{ block.settings.note | escape }}</p>
+                {%- endif -%}
+              </div>
+            {%- when 'page_content' -%}
+              {%- if page.content != blank -%}
+                <div class="dc-article__block rte" {{ block.shopify_attributes }}>{{ page.content }}</div>
+              {%- endif -%}
+            {%- when 'banner' -%}
+              {%- liquid
+                assign banner_link = block.settings.button_link
+                if banner_link == blank
+                  assign banner_link = routes.all_products_collection_url
+                endif
+              -%}
+              <div class="dc-cta dc-cta--compact color-{{ block.settings.color_scheme }}" {{ block.shopify_attributes }}>
+                <div class="dc-cta__body">
+                  {%- if block.settings.heading != blank -%}
+                    <p class="dc-heading">{{ block.settings.heading }}</p>
+                  {%- endif -%}
+                  {%- if block.settings.text != blank -%}
+                    <div class="dc-text">{{ block.settings.text }}</div>
+                  {%- endif -%}
+                </div>
+                {%- render 'douce-button', label: block.settings.button_label, link: banner_link, style: 'primary' -%}
+              </div>
+          {%- endcase -%}
+        {%- endfor -%}
+      </article>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "DOUCE long-form article",
+  "tag": "div",
+  "class": "section-douce-longform",
+  "max_blocks": 30,
+  "settings": [
+    { "type": "checkbox", "id": "show_toc", "label": "Show \"On this page\" menu", "info": "Lists every chapter block.", "default": true },
+    { "type": "text", "id": "toc_heading", "label": "Menu heading", "default": "On this page" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "checkbox", "id": "accent_italic", "label": "Accent colour on italic words", "default": false },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 88 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 120 }
+  ],
+  "blocks": [
+    {
+      "type": "chapter",
+      "name": "Chapter",
+      "settings": [
+        { "type": "inline_richtext", "id": "heading", "label": "Heading", "default": "Why there's chlorine in your shower" },
+        { "type": "text", "id": "toc_label", "label": "Menu label", "info": "Short name in the \"On this page\" menu. Defaults to the heading." },
+        { "type": "text", "id": "anchor", "label": "Anchor ID", "info": "Optional, e.g. chlorine. Defaults to the heading." },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>US water utilities add chlorine or chloramine to treat tap water. In a hot shower, that chlorine meets warm skin, your scalp and steam, and it strips the natural oils that keep skin and hair comfortable.</p>"
+        }
+      ]
+    },
+    {
+      "type": "quote",
+      "name": "Pull quote",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "quote",
+          "label": "Quote",
+          "default": "\"If your skin flares or your hair sheds, start with the water it meets every day: your shower.\""
+        }
+      ]
+    },
+    {
+      "type": "levels",
+      "name": "Three levels",
+      "settings": [
+        { "type": "paragraph", "content": "Three cards with 1, 2 and 3 filled dots, e.g. water hardness." },
+        { "type": "text", "id": "label_1", "label": "Level 1 label", "default": "Soft" },
+        { "type": "text", "id": "body_1", "label": "Level 1 text", "default": "Under 60 mg/L. Lather comes easily." },
+        { "type": "text", "id": "label_2", "label": "Level 2 label", "default": "Moderately hard" },
+        { "type": "text", "id": "body_2", "label": "Level 2 text", "default": "60–120 mg/L. Some scale on fixtures." },
+        { "type": "text", "id": "label_3", "label": "Level 3 label", "default": "Hard to very hard" },
+        { "type": "text", "id": "body_3", "label": "Level 3 text", "default": "Over 120 mg/L. Visible scale, dull hair." }
+      ]
+    },
+    {
+      "type": "image",
+      "name": "Image",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "caption", "label": "Caption", "default": "The PP filter when new, after one month and after two months in a hard-water home." }
+      ]
+    },
+    {
+      "type": "table",
+      "name": "Table",
+      "settings": [
+        { "type": "inline_richtext", "id": "heading", "label": "Heading", "default": "What it filters" },
+        { "type": "text", "id": "columns", "label": "Column headings", "info": "Separate with |", "default": "Contaminant | Stage | Result" },
+        {
+          "type": "textarea",
+          "id": "rows",
+          "label": "Rows",
+          "info": "One row per line, cells separated with |",
+          "default": "Free chlorine | Stone cartridge | Reduced\nRust | PP filter | Reduced\nSediment & sand | PP filter | Reduced\nParticles over 5µm | PP filter | Captured\nCalcium & magnesium | Stone cartridge | Partly reduced"
+        },
+        { "type": "text", "id": "note", "label": "Note", "default": "Replace with your independent lab results and link the full report." }
+      ]
+    },
+    {
+      "type": "page_content",
+      "name": "Page content",
+      "limit": 1,
+      "settings": [
+        { "type": "paragraph", "content": "Shows the text written for this page in Online Store > Pages." }
+      ]
+    },
+    {
+      "type": "banner",
+      "name": "Banner",
+      "settings": [
+        { "type": "inline_richtext", "id": "heading", "label": "Heading", "default": "Try DOUCE for 60 days." },
+        { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Free delivery. Full refund if you don't feel the difference.</p>" },
+        { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop now · $79" },
+        { "type": "url", "id": "button_link", "label": "Button link" },
+        { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-3" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "DOUCE long-form article",
+      "blocks": [
+        { "type": "chapter" },
+        { "type": "quote" },
+        { "type": "banner" }
+      ]
+    }
+  ]
+}
+{% endschema %}

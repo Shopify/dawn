@@ -1,0 +1,37 @@
+{% comment %}
+  DOUCE: renders a main-product collapsible_tab block as an accordion.
+  Accepts:
+  - block: {Object} collapsible_tab block
+  - section_id: {String}
+  - id_prefix: {String} keeps IDs unique when the same block renders twice (desktop + mobile)
+  - editor_attributes: {Boolean} output block.shopify_attributes (only once per block)
+
+  Rows with no content (e.g. an empty product metafield) are hidden on the
+  storefront but kept in the theme editor so they stay selectable.
+{% endcomment %}
+{%- liquid
+  assign douce_row_content = block.settings.content | append: block.settings.page.content | strip_html | strip
+  assign douce_show_row = true
+  if douce_row_content == blank and request.design_mode == false
+    assign douce_show_row = false
+  endif
+-%}
+{%- if douce_show_row -%}
+<div class="product__accordion accordion douce-accordion quick-add-hidden" {% if editor_attributes %}{{ block.shopify_attributes }}{% endif %}>
+  <details id="Details-{{ id_prefix }}-{{ block.id }}-{{ section_id }}">
+    <summary>
+      <div class="summary__title">
+        {% render 'icon-accordion', icon: block.settings.icon %}
+        <h2 class="h4 accordion__title inline-richtext">
+          {{ block.settings.heading | default: block.settings.page.title | escape }}
+        </h2>
+      </div>
+      {{- 'icon-caret.svg' | inline_asset_content -}}
+    </summary>
+    <div class="accordion__content rte" id="ProductAccordion-{{ id_prefix }}-{{ block.id }}-{{ section_id }}">
+      {{ block.settings.content }}
+      {{ block.settings.page.content }}
+    </div>
+  </details>
+</div>
+{%- endif -%}

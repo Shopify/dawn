@@ -1,0 +1,266 @@
+{% doc %}
+  DOUCE kit picker: selectable cards that decide what "Add to cart" adds.
+  Nothing here navigates. Choosing a card swaps the variant id sent by the
+  product form (see douce-product.js).
+
+  Cards:
+  - Card 1 is always the current product on its own (the standalone item).
+    Its texts come from the block's Title 1 / Subtitle 1 / Tag 1 settings.
+  - The next cards are kits, which are other products. They come from (first
+    match wins):
+    1. Product metafield `douce.kits` (or `custom.douce_kits`), a list of
+       products, editable on the product page in Shopify admin. Add or remove
+       products there; the order is the order of the cards.
+    2. The "Kit 1-3" products picked in the theme editor block (fallback).
+
+  Kit card texts, per kit product (all optional):
+  - metafield `douce.kit_title` or `custom.kit_title` (single line text), defaults to the product title
+  - metafield `douce.kit_subtitle` or `custom.kit_subtitle` (single line text)
+  - metafield `douce.kit_tag` or `custom.kit_tag` (single line text), e.g. "Most popular" (shown as a badge)
+  - metafield `douce.price_separated` or `custom.price_separated` (Money or single line text):
+    the price if the kit's items are bought separately, shown struck through
+    under the kit price. Leave empty to show nothing. Use a real price only.
+  In the fallback mode the block's Title / Subtitle / Tag fields are used.
+
+  Finish matching: a kit card carries the kit variant whose options match the
+  finish selected on this page (e.g. Color: Smoky Black), so the shopper keeps
+  their choice. Cards are refreshed when the finish changes. A kit with no
+  matching finish is hidden (shown only in the theme editor). A sold-out kit
+  card is shown but cannot be selected.
+
+  @param {object} block - douce_kit_picker block.
+  @param {product} product - The product being viewed.
+{% enddoc %}
+{%- liquid
+  assign meta_kits = product.metafields.douce.kits.value
+  if meta_kits == blank
+    assign meta_kits = product.metafields.custom.douce_kits.value
+  endif
+  assign use_meta = false
+  if meta_kits != blank and meta_kits.size > 0
+    assign use_meta = true
+  endif
+
+  assign loop_max = 3
+  if use_meta
+    assign loop_max = meta_kits.size
+    if loop_max > 6
+      assign loop_max = 6
+    endif
+  endif
+
+  assign cur = product.selected_or_first_available_variant
+  assign c1 = cur.option1 | downcase
+  assign c2 = cur.option2 | downcase
+  assign c3 = cur.option3 | downcase
+-%}
+<div class="dc-kits" id="DouceKits-{{ block.id }}" {{ block.shopify_attributes }}>
+  {%- if block.settings.heading != blank or block.settings.note != blank -%}
+    <div class="dc-kits__head">
+      <p class="dc-kits__label" id="KitLabel-{{ block.id }}">{{ block.settings.heading | escape }}</p>
+      {%- if block.settings.note != blank -%}
+        <p class="dc-kits__note">{{ block.settings.note | escape }}</p>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+  <div class="dc-kits" role="radiogroup" aria-labelledby="KitLabel-{{ block.id }}">
+    {%- comment -%} Card 1: the current product on its own. {%- endcomment -%}
+    {%- liquid
+      assign self_title = block.settings.title_1 | default: product.title
+      assign self_media = cur.featured_media | default: product.featured_media
+    -%}
+    <label class="dc-kit" data-kit-card>
+      <input
+        type="radio"
+        class="dc-kit__input"
+        name="DouceKit-{{ block.id }}"
+        value="self"
+        data-variant-id="{{ cur.id }}"
+        data-price="{{ cur.price }}"
+        data-available="{{ cur.available }}"
+        checked
+      >
+      <span class="dc-kit__radio" aria-hidden="true"></span>
+      <span class="dc-media">
+        {%- if self_media != blank -%}
+          {{
+            self_media
+            | image_url: width: 192
+            | image_tag: widths: '64, 128, 192', sizes: '64px', loading: 'lazy', alt: ''
+          }}
+        {%- else -%}
+          {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+        {%- endif -%}
+      </span>
+      <span>
+        <span class="dc-kit__title">{{ self_title | escape }}</span>
+        {%- if block.settings.subtitle_1 != blank -%}
+          <span class="dc-kit__sub">{{ block.settings.subtitle_1 | escape }}</span>
+        {%- endif -%}
+      </span>
+      <span class="dc-kit__price">
+        {%- if cur.compare_at_price > cur.price -%}
+          <s>{{ cur.compare_at_price | money }}</s>
+        {%- endif -%}
+        <span class="dc-kit__now">{{ cur.price | money }}</span>
+      </span>
+      {%- if block.settings.tag_1 != blank -%}
+        <span class="dc-kit__tag">{{ block.settings.tag_1 | escape }}</span>
+      {%- endif -%}
+    </label>
+
+    {%- for i in (1..loop_max) -%}
+      {%- liquid
+        assign idx = i | minus: 1
+        if use_meta
+          assign kit = blank
+          for item in meta_kits
+            if forloop.index0 == idx
+              assign kit = item
+              break
+            endif
+          endfor
+          assign kit_title = kit.metafields.douce.kit_title.value | default: kit.metafields.custom.kit_title.value | default: kit.title
+          assign kit_sub = kit.metafields.douce.kit_subtitle.value | default: kit.metafields.custom.kit_subtitle.value
+          assign kit_tag = kit.metafields.douce.kit_tag.value | default: kit.metafields.custom.kit_tag.value
+          assign sep_mf = kit.metafields.douce.price_separated
+          if sep_mf == blank
+            assign sep_mf = kit.metafields.custom.price_separated
+          endif
+          assign kit_sep = sep_mf.value
+          assign sep_is_money = false
+          if sep_mf.type == 'money'
+            assign sep_is_money = true
+          endif
+        else
+          assign product_key = 'product_' | append: i
+          assign title_key = 'title_' | append: i
+          assign sub_key = 'subtitle_' | append: i
+          assign tag_key = 'tag_' | append: i
+          assign kit = block.settings[product_key]
+          assign kit_title = block.settings[title_key] | default: kit.title
+          assign kit_sub = block.settings[sub_key]
+          assign kit_tag = block.settings[tag_key]
+          assign kit_sep = blank
+          assign sep_is_money = false
+        endif
+
+        comment
+          price_separated: a Money metafield (Shopify gives the value in cents), or a plain number in dollars such as 99.
+          Any other text (for example "$99 value") is shown as typed.
+        endcomment
+        assign sep_cents = 0
+        if kit_sep != blank and sep_is_money
+          assign sep_cents = kit_sep | append: '' | plus: 0
+        elsif kit_sep != blank
+          assign sep_text = kit_sep | append: '' | strip
+          assign sep_num = sep_text | plus: 0
+          if sep_num > 0
+            assign sep_cents = sep_num | times: 100 | round
+          endif
+        endif
+
+        assign skip = false
+        if kit == blank or kit.id == product.id
+          assign skip = true
+        endif
+
+        comment
+          Find the kit variant that matches the finish selected on this page.
+        endcomment
+        assign match_v = blank
+        if skip == false
+          if kit.has_only_default_variant
+            assign match_v = kit.variants.first
+          else
+            for kv in kit.variants
+              assign k1 = kv.option1 | downcase
+              assign k2 = kv.option2 | downcase
+              assign k3 = kv.option3 | downcase
+              assign same = true
+              if c1 != blank and k1 != c1
+                assign same = false
+              endif
+              if c2 != blank and k2 != c2
+                assign same = false
+              endif
+              if c3 != blank and k3 != c3
+                assign same = false
+              endif
+              if same
+                assign match_v = kv
+                break
+              endif
+            endfor
+          endif
+        endif
+      -%}
+      {%- if skip == false and match_v != blank -%}
+        {%- liquid
+          assign kit_media = match_v.featured_media | default: kit.featured_media
+        -%}
+        <label class="dc-kit{% unless match_v.available %} dc-kit--soldout{% endunless %}" data-kit-card>
+          <input
+            type="radio"
+            class="dc-kit__input"
+            name="DouceKit-{{ block.id }}"
+            value="kit-{{ kit.id }}"
+            data-variant-id="{{ match_v.id }}"
+            data-price="{{ match_v.price }}"
+            data-available="{{ match_v.available }}"
+            data-title="{{ kit_title | default: kit.title | escape }}"
+            data-variant-title="{% unless kit.has_only_default_variant %}{{ match_v.title | escape }}{% endunless %}"
+            data-image="{% if kit_media != blank %}{{ kit_media | image_url: width: 156 }}{% endif %}"
+            {% unless match_v.available %}
+              disabled
+            {% endunless %}
+          >
+          <span class="dc-kit__radio" aria-hidden="true"></span>
+          <span class="dc-media">
+            {%- if kit_media != blank -%}
+              {{
+                kit_media
+                | image_url: width: 192
+                | image_tag: widths: '64, 128, 192', sizes: '64px', loading: 'lazy', alt: ''
+              }}
+            {%- else -%}
+              {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+            {%- endif -%}
+          </span>
+          <span>
+            <span class="dc-kit__title">{{ kit_title | default: 'Kit' | escape }}</span>
+            {%- if match_v.available == false -%}
+              <span class="dc-kit__sub">{{ 'products.product.sold_out' | t }}</span>
+            {%- elsif kit_sub != blank -%}
+              <span class="dc-kit__sub">{{ kit_sub | escape }}</span>
+            {%- endif -%}
+          </span>
+          <span class="dc-kit__price">
+            {%- if kit_sep != blank -%}
+              <span class="dc-kit__sep">
+                {{- block.settings.separate_label | default: 'Bought separately' | escape }}
+                <s>
+                  {%- if sep_cents > 0 -%}
+                    {{ sep_cents | money }}
+                  {%- else -%}
+                    {{ kit_sep }}
+                  {%- endif -%}
+                </s>
+              </span>
+            {%- elsif match_v.compare_at_price > match_v.price -%}
+              <s>{{ match_v.compare_at_price | money }}</s>
+            {%- endif -%}
+            <span class="dc-kit__now">{{ match_v.price | money }}</span>
+            {%- assign save_cents = sep_cents | minus: match_v.price -%}
+            {%- if sep_cents > 0 and save_cents > 0 -%}
+              <span class="dc-kit__save">{{ block.settings.save_label | default: 'Save' | escape }} {{ save_cents | money }}</span>
+            {%- endif -%}
+          </span>
+          {%- if kit_tag != blank -%}
+            <span class="dc-kit__tag">{{ kit_tag | escape }}</span>
+          {%- endif -%}
+        </label>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+</div>

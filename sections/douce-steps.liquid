@@ -1,0 +1,216 @@
+{%- comment -%} DOUCE: numbered steps beside an image or video ("How it works", "Install"). {%- endcomment -%}
+{%- liquid
+  assign is_card = false
+  if section.settings.layout == 'card'
+    assign is_card = true
+  endif
+  capture classes
+    echo 'dc-section dc-steps'
+    if is_card
+      echo ' dc-steps--card dc-section--transparent'
+    else
+      echo ' color-' | append: section.settings.color_scheme
+    endif
+    if section.settings.image_position == 'left'
+      echo ' dc-steps--image-left'
+    endif
+    if section.settings.number_style == 'circle'
+      echo ' dc-steps--circles'
+    endif
+    if section.settings.accent_italic
+      echo ' dc-accent-italic'
+    endif
+  endcapture
+  case section.settings.media_ratio
+    when 'square'
+      assign ratio = '1 / 1'
+    when 'portrait'
+      assign ratio = '4 / 5'
+    else
+      assign ratio = '16 / 11'
+  endcase
+-%}
+<section
+  id="{{ section.settings.anchor | default: section.id | handleize }}"
+  class="{{ classes }}"
+  style="--dc-pt: {{ section.settings.padding_top }}px; --dc-pb: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="dc-container">
+    <div class="dc-steps__card{% if is_card %} color-{{ section.settings.color_scheme }}{% endif %}">
+      <div class="dc-steps__content">
+        <div class="dc-steps__intro">
+          {%- if section.settings.eyebrow != blank -%}
+            <p class="dc-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+          {%- endif -%}
+          {%- if section.settings.heading != blank -%}
+            <h2 class="dc-heading dc-heading--m">{{ section.settings.heading }}</h2>
+          {%- endif -%}
+          {%- if section.settings.text != blank -%}
+            <div class="dc-text">{{ section.settings.text }}</div>
+          {%- endif -%}
+        </div>
+        {%- if section.blocks.size > 0 -%}
+          <ol class="dc-steps__list" role="list">
+            {%- for block in section.blocks -%}
+              <li class="dc-step" {{ block.shopify_attributes }}>
+                <span class="dc-step__num" aria-hidden="true">
+                  {%- if block.settings.number != blank -%}
+                    {{ block.settings.number | escape }}
+                  {%- else -%}
+                    {{ forloop.index }}
+                  {%- endif -%}
+                </span>
+                <div>
+                  {%- if block.settings.title != blank -%}
+                    <h3 class="dc-step__title">{{ block.settings.title | escape }}</h3>
+                  {%- endif -%}
+                  {%- if block.settings.text != blank -%}
+                    <div class="dc-step__body">{{ block.settings.text }}</div>
+                  {%- endif -%}
+                </div>
+              </li>
+            {%- endfor -%}
+          </ol>
+        {%- endif -%}
+      </div>
+
+      <div
+        class="dc-media dc-steps__media{% if section.settings.contain_image %} dc-media--contain{% endif %}"
+        style="--dc-ratio: {{ ratio }};"
+      >
+        {%- if section.settings.video != blank -%}
+          <douce-video class="dc-media__fill">
+            {%- if section.settings.video_autoplay -%}
+              {{
+                section.settings.video
+                | video_tag: image_size: '1600x', playsinline: true, muted: true, autoplay: true, loop: true
+              }}
+            {%- else -%}
+              {{
+                section.settings.video
+                | video_tag: image_size: '1600x', playsinline: true, preload: 'metadata'
+              }}
+            {%- endif -%}
+            {%- unless section.settings.video_autoplay -%}
+              <button type="button" class="dc-play dc-play--lime dc-video-toggle" style="left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: auto; border: 0; cursor: pointer;">
+                {{- 'icon-play.svg' | inline_asset_content -}}
+                <span class="visually-hidden">{{ section.settings.video_label | default: 'Play video' | escape }}</span>
+              </button>
+            {%- endunless -%}
+          </douce-video>
+        {%- else -%}
+          {%- render 'douce-image',
+            image: section.settings.image,
+            sizes: '(min-width: 750px) 50vw, 100vw',
+            placeholder: 'product-apparel-1'
+          -%}
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "DOUCE steps",
+  "tag": "div",
+  "class": "section-douce-steps",
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "text",
+      "id": "anchor",
+      "label": "Anchor ID",
+      "info": "Lets buttons link here, e.g. #how. Use lowercase letters and dashes.",
+      "default": "how"
+    },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "How it works" },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Two stages. <em>One clear handle.</em>"
+    },
+    { "type": "richtext", "id": "text", "label": "Text" },
+    {
+      "type": "header",
+      "content": "Media"
+    },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "checkbox", "id": "contain_image", "label": "Show the whole image (no cropping)", "default": true },
+    { "type": "video", "id": "video", "label": "Video", "info": "Replaces the image. Upload in Content > Files." },
+    { "type": "checkbox", "id": "video_autoplay", "label": "Autoplay video (muted, looped)", "default": false },
+    { "type": "text", "id": "video_label", "label": "Play button label (screen readers)", "default": "Play video" },
+    {
+      "type": "select",
+      "id": "media_ratio",
+      "label": "Media shape",
+      "options": [
+        { "value": "square", "label": "Square" },
+        { "value": "portrait", "label": "Portrait" },
+        { "value": "landscape", "label": "Landscape" }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        { "value": "card", "label": "Rounded card" },
+        { "value": "plain", "label": "Full-width band" }
+      ],
+      "default": "card"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Media position",
+      "options": [
+        { "value": "right", "label": "Right" },
+        { "value": "left", "label": "Left" }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "select",
+      "id": "number_style",
+      "label": "Step numbers",
+      "options": [
+        { "value": "text", "label": "Serif numbers" },
+        { "value": "circle", "label": "Circles" }
+      ],
+      "default": "text"
+    },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-3" },
+    { "type": "checkbox", "id": "accent_italic", "label": "Accent colour on italic words", "default": true },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 120 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 200, "step": 4, "unit": "px", "default": 0 }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "Step",
+      "settings": [
+        { "type": "text", "id": "number", "label": "Number", "info": "Leave empty to number automatically.", "default": "01" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Mineral-stone cartridge" },
+        { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Sits in the head and reduces chlorine as water passes through.</p>" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "DOUCE steps",
+      "blocks": [
+        { "type": "step", "settings": { "number": "01", "title": "Mineral-stone cartridge", "text": "<p>Sits in the head and reduces chlorine as water passes through.</p>" } },
+        { "type": "step", "settings": { "number": "02", "title": "5µm PP cotton filter", "text": "<p>Lines the clear handle and catches rust, sediment and fine particles.</p>" } },
+        { "type": "step", "settings": { "number": "03", "title": "Fine-mist spray", "text": "<p>Micro-nozzles keep pressure steady, even with the filters in.</p>" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

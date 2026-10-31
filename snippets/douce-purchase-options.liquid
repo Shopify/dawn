@@ -1,0 +1,191 @@
+{% comment %}
+  DOUCE: purchase options (Subscribe & Save + one-time purchase).
+
+  Subscription cards are built only from real Shopify selling plans
+  (variant.selling_plan_allocations), so they stay hidden until a
+  subscription app has a plan on this product. Prices, compare-at prices
+  and savings always come from Shopify; only the texts are editable.
+
+  The chosen plan is sent through a hidden `selling_plan` input attached to
+  the native product form (form attribute). One-time purchase disables it.
+
+  Accepts:
+  - block: {Object} douce_purchase_options block
+  - product: {Object}
+  - product_form_id: {String}
+  - section_id: {String}
+{% endcomment %}
+{%- liquid
+  assign variant = product.selected_or_first_available_variant
+
+  assign has_plans = false
+  if block.settings.show_subscription and variant.selling_plan_allocations.size > 0
+    assign has_plans = true
+  endif
+
+  assign show_one_time = true
+  if has_plans and product.requires_selling_plan
+    assign show_one_time = false
+  endif
+
+  assign selected_plan_id = ''
+  if has_plans
+    if block.settings.default_option == 'subscription' or show_one_time == false
+      assign selected_plan_id = variant.selling_plan_allocations.first.selling_plan.id
+    endif
+    if product.selected_selling_plan
+      assign selected_plan_id = product.selected_selling_plan.id
+    endif
+  endif
+-%}
+
+<div
+  id="DoucePurchase-{{ section_id }}"
+  class="douce-purchase{% unless has_plans %} douce-purchase--solo{% endunless %}"
+  data-section="{{ section_id }}"
+  data-money-format="{{ shop.money_format | escape }}"
+  {{ block.shopify_attributes }}
+>
+  <fieldset class="douce-purchase__options">
+    <legend class="visually-hidden">Purchase options</legend>
+
+    {%- if has_plans -%}
+      {%- for allocation in variant.selling_plan_allocations -%}
+        {%- liquid
+          assign plan = allocation.selling_plan
+          assign input_id = 'DoucePurchase-' | append: section_id | append: '-plan-' | append: plan.id
+          assign compare_price = allocation.compare_at_price | default: variant.price
+          assign savings = compare_price | minus: allocation.price
+        -%}
+        <div class="douce-purchase__option douce-purchase__option--subscription">
+          <input
+            type="radio"
+            class="douce-purchase__radio-input"
+            name="DoucePurchase-{{ section_id }}"
+            id="{{ input_id }}"
+            value="{{ plan.id }}"
+            data-price="{{ allocation.price }}"
+            {% if selected_plan_id == plan.id %}
+              checked
+            {% endif %}
+          >
+          <label class="douce-purchase__card" for="{{ input_id }}">
+            {%- if forloop.first and block.settings.sub_banner != blank -%}
+              <span class="douce-purchase__banner">{{ block.settings.sub_banner | escape }}</span>
+            {%- endif -%}
+            <span class="douce-purchase__head">
+              <span class="douce-purchase__radio" aria-hidden="true"></span>
+              <span class="douce-purchase__heading">
+                <span class="douce-purchase__title">{{ block.settings.sub_title | escape }}</span>
+                {%- if block.settings.show_plan_name -%}
+                  <span class="douce-purchase__plan">{{ plan.name | escape }}</span>
+                {%- endif -%}
+              </span>
+              <span class="douce-purchase__pricing">
+                <span class="douce-purchase__price">{% if settings.currency_code_enabled %}{{ allocation.price | money_with_currency }}{% else %}{{ allocation.price | money }}{% endif %}</span>
+                {%- if savings > 0 -%}
+                  <s class="douce-purchase__compare">
+                    <span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>
+                    {%- if settings.currency_code_enabled -%}{{ compare_price | money_with_currency }}{%- else -%}{{ compare_price | money }}{%- endif -%}
+                  </s>
+                  {%- if block.settings.savings_format != 'none' -%}
+                    <span class="douce-purchase__savings">
+                      {%- if block.settings.savings_format == 'percent' -%}
+                        -{{ savings | times: 100.0 | divided_by: compare_price | round }}%
+                      {%- else -%}
+                        -{{ savings | money_without_trailing_zeros }}
+                      {%- endif -%}
+                    </span>
+                  {%- endif -%}
+                {%- endif -%}
+              </span>
+            </span>
+            {%- if block.settings.sub_description != blank or block.settings.sub_pill != blank -%}
+              <span class="douce-purchase__body">
+                {%- if block.settings.sub_description != blank -%}
+                  <span class="douce-purchase__description rte">{{ block.settings.sub_description }}</span>
+                {%- endif -%}
+                {%- if block.settings.sub_pill != blank -%}
+                  <span class="douce-purchase__pill">
+                    <svg aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5l8-3zm-1.2 13.6l5.7-5.7-1.4-1.4-4.3 4.3-2.1-2.1-1.4 1.4 3.5 3.5z"/>
+                    </svg>
+                    {{ block.settings.sub_pill | escape }}
+                  </span>
+                {%- endif -%}
+              </span>
+            {%- endif -%}
+          </label>
+        </div>
+      {%- endfor -%}
+    {%- endif -%}
+
+    {%- if show_one_time -%}
+      {%- assign input_id = 'DoucePurchase-' | append: section_id | append: '-one-time' -%}
+      <div class="douce-purchase__option douce-purchase__option--one-time">
+        <input
+          type="radio"
+          class="douce-purchase__radio-input"
+          name="DoucePurchase-{{ section_id }}"
+          id="{{ input_id }}"
+          value=""
+          data-price="{{ variant.price }}"
+          {% if selected_plan_id == '' %}
+            checked
+          {% endif %}
+        >
+        <label class="douce-purchase__card" for="{{ input_id }}">
+          <span class="douce-purchase__head">
+            <span class="douce-purchase__radio" aria-hidden="true"></span>
+            <span class="douce-purchase__heading">
+              <span class="douce-purchase__title">{{ block.settings.one_time_title | escape }}</span>
+            </span>
+            <span class="douce-purchase__pricing">
+              <span class="douce-purchase__price">{% if settings.currency_code_enabled %}{{ variant.price | money_with_currency }}{% else %}{{ variant.price | money }}{% endif %}</span>
+              {%- if variant.compare_at_price > variant.price -%}
+                <s class="douce-purchase__compare">
+                  <span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>
+                  {%- if settings.currency_code_enabled -%}{{ variant.compare_at_price | money_with_currency }}{%- else -%}{{ variant.compare_at_price | money }}{%- endif -%}
+                </s>
+              {%- endif -%}
+              {%- unless variant.available -%}
+                <span class="douce-purchase__soldout">{{ 'products.product.sold_out' | t }}</span>
+              {%- endunless -%}
+            </span>
+          </span>
+          {%- if block.settings.one_time_description != blank -%}
+            <span class="douce-purchase__body">
+              <span class="douce-purchase__description rte">{{ block.settings.one_time_description }}</span>
+            </span>
+          {%- endif -%}
+        </label>
+      </div>
+    {%- endif -%}
+  </fieldset>
+
+  <input
+    type="hidden"
+    name="selling_plan"
+    class="douce-purchase__input"
+    form="{{ product_form_id }}"
+    value="{{ selected_plan_id }}"
+    {% if selected_plan_id == '' %}
+      disabled
+    {% endif %}
+  >
+
+  {%- if cart.taxes_included or cart.duties_included or shop.shipping_policy.body != blank -%}
+    <div class="douce-purchase__note caption rte">
+      {%- if cart.duties_included and cart.taxes_included -%}
+        {{ 'products.product.duties_and_taxes_included' | t }}
+      {%- elsif cart.taxes_included -%}
+        {{ 'products.product.taxes_included' | t }}
+      {%- elsif cart.duties_included -%}
+        {{ 'products.product.duties_included' | t }}
+      {%- endif -%}
+      {%- if shop.shipping_policy.body != blank -%}
+        {{ 'products.product.shipping_policy_html' | t: link: shop.shipping_policy.url }}
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</div>
