@@ -1,13 +1,14 @@
-{% comment %}
-  Renders product variant-picker
+{%- doc -%}
+  Renders a product variant picker as buttons, swatches, or dropdowns.
 
-  Accepts:
-  - product: {Object} product object.
-  - block: {Object} passing the block information.
-  - product_form_id: {String} Id of the product form to which the variant picker is associated.
-  Usage:
+  @param {product} product - The product whose options and selected variant are rendered.
+  @param {block} block - The variant-picker block and its picker settings.
+  @param {string} product_form_id - The ID of the product form associated with the picker inputs.
+  @param {object} [section] - The current product section context, supplied implicitly when rendered from that section and used to namespace picker controls.
+
+  @example
   {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
-{% endcomment %}
+{%- enddoc -%}
 {%- unless product.has_only_default_variant -%}
   <variant-selects
     id="variant-selects-{{ section.id }}"
@@ -16,9 +17,7 @@
     data-product-title="{{ product.title | escape }}"
     data-product-id="{{ product.id }}"
     data-currency-code="{{ cart.currency.iso_code }}"
-    {% # theme-check-disable %}
     data-selected-price-amount="{{ product.selected_or_first_available_variant.price | default: 0 | money_amount | escape }}"
-    {% # theme-check-enable %}
     {{ block.shopify_attributes }}
   >
     {%- for option in product.options_with_values -%}
@@ -37,13 +36,12 @@
       {%- if picker_type == 'swatch' -%}
         <fieldset class="js product-form__input product-form__input--swatch">
           <legend class="form__label">
-            {{ option.name }}:
+            {{ option.name | escape }}:
             <span data-selected-value>
-              {{- option.selected_value -}}
+              {{- option.selected_value | escape -}}
             </span>
           </legend>
           {% render 'product-variant-options',
-            product: product,
             option: option,
             block: block,
             picker_type: picker_type
@@ -51,9 +49,8 @@
         </fieldset>
       {%- elsif picker_type == 'button' -%}
         <fieldset class="js product-form__input product-form__input--pill">
-          <legend class="form__label">{{ option.name }}</legend>
+          <legend class="form__label">{{ option.name | escape }}</legend>
           {% render 'product-variant-options',
-            product: product,
             option: option,
             block: block,
             picker_type: picker_type
@@ -62,7 +59,7 @@
       {%- else -%}
         <div class="product-form__input product-form__input--dropdown">
           <label class="form__label" for="Option-{{ section.id }}-{{ forloop.index0 }}">
-            {{ option.name }}
+            {{ option.name | escape }}
           </label>
           <div class="select">
             {%- if picker_type == 'swatch_dropdown' -%}
@@ -80,7 +77,6 @@
               form="{{ product_form_id }}"
             >
               {% render 'product-variant-options',
-                product: product,
                 option: option,
                 block: block,
                 picker_type: picker_type

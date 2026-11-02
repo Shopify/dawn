@@ -1,5 +1,18 @@
+{%- doc -%}
+  Renders the product disclosures configured for a storefront surface.
+
+  @param {product} product - The product whose Shopify disclosure metafield is rendered.
+  @param {string} [heading] - A heading shown above the disclosures. No heading is rendered when blank.
+  @param {string} [heading_size] - The heading's size class. Expected values are `h2`, `h1`, or `h0`.
+  @param {boolean} [open_by_default] - Whether the disclosure details are initially open. Defaults to false.
+  @param {block} [block] - A section block whose Shopify attributes are added to the wrapper.
+  @param {string} [surface] - The disclosure surface to match. Defaults to `product_page`.
+
+  @example
+  {% render 'product-disclosures', product: product, heading: 'Product information', heading_size: 'h2', open_by_default: false, block: block, surface: 'product_page' %}
+{%- enddoc -%}
 {%- assign disclosure_surface = surface | default: 'product_page' -%}
-{%- assign disclosures = product.metafields.shopify.disclosure.value -%}
+{%- assign disclosures = product.metafields.shopify.disclosure.value | applicable_disclosures -%}
 {%- assign summary_html = '' -%}
 {%- assign details_html = '' -%}
 {%- assign rendered_disclosures_count = 0 -%}
@@ -28,6 +41,10 @@
               height="31"
               loading="lazy"
             >
+          {%- else -%}
+            <span class="disclosures__icon disclosures__icon--fallback" aria-hidden="true">
+              {{- 'icon-disclosure-info.svg' | inline_asset_content -}}
+            </span>
           {%- endif -%}
           <span class="disclosures-summary-item__title">{{ title }}</span>
           <span class="disclosures-summary-item__open-title">{{ title }}</span>
@@ -49,6 +66,10 @@
                     height="31"
                     loading="lazy"
                   >
+                {%- else -%}
+                  <span class="disclosures__icon disclosures__icon--fallback" aria-hidden="true">
+                    {{- 'icon-disclosure-info.svg' | inline_asset_content -}}
+                  </span>
                 {%- endif -%}
                 {%- if title != blank -%}
                   <span>{{ title }}</span>

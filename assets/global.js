@@ -281,10 +281,21 @@ customElements.define('quantity-input', QuantityInput);
 
 function debounce(fn, wait) {
   let t;
-  return (...args) => {
+  let pendingArgs;
+  const debounced = (...args) => {
     clearTimeout(t);
-    t = setTimeout(() => fn.apply(this, args), wait);
+    pendingArgs = args;
+    t = setTimeout(debounced.flush, wait);
   };
+  // Run the pending call now, if there is one.
+  debounced.flush = () => {
+    clearTimeout(t);
+    if (!pendingArgs) return;
+    const args = pendingArgs;
+    pendingArgs = undefined;
+    fn.apply(this, args);
+  };
+  return debounced;
 }
 
 
@@ -1145,6 +1156,7 @@ class VariantSelects extends HTMLElement {
     this.takePendingSelectPromise()?.reject(error);
   }
 
+  /** Keep swatch labels text-safe here and in product-variant-picker.liquid after section refreshes. */
   updateSelectionMetadata({ target }) {
     const { value, tagName } = target;
 
@@ -1173,7 +1185,7 @@ class VariantSelects extends HTMLElement {
       );
     } else if (tagName === 'INPUT' && target.type === 'radio') {
       const selectedSwatchValue = target.closest(`.product-form__input`).querySelector('[data-selected-value]');
-      if (selectedSwatchValue) selectedSwatchValue.innerHTML = value;
+      if (selectedSwatchValue) selectedSwatchValue.textContent = value;
     }
   }
 
@@ -1244,6 +1256,7 @@ customElements.define('product-recommendations', ProductRecommendations);
 
 class BulkAdd extends HTMLElement {
   static ASYNC_REQUEST_DELAY = 250;
+  static pendingCartUpdate = Promise.resolve();
 
   constructor() {
     super();
@@ -1275,7 +1288,7 @@ class BulkAdd extends HTMLElement {
     });
     this.queue = this.queue.filter((queueElement) => !queue.includes(queueElement));
 
-    this.updateMultipleQty(items);
+    return this.updateMultipleQty(items);
   }
 
   setRequestStarted(requestStarted) {
@@ -1286,31 +1299,110 @@ class BulkAdd extends HTMLElement {
     return this._requestStarted;
   }
 
-  getCartQuantityForLine(id) {
-    const input = this.querySelector(`#Quantity-${id}`);
-    return parseInt(input?.dataset.cartQuantity || input?.getAttribute('value') || '0', 10) || 0;
+  /**
+   * Convert variant totals to line-key changes without counting discount-split units twice.
+   * Bulk controls show one total across all variant lines, including selling plans and properties.
+   * Preserve cart order: add increases to the first line and take decreases from lines in order.
+   * @param {Object<string, number>} items Requested totals keyed by variant ID.
+   * @param {Array<object>} cartItems The current AJAX cart lines.
+   * @returns {Object<string, number>} Quantities keyed by line key, or variant ID for new items.
+   */
+  buildCartUpdates(items, cartItems) {
+    const updates = {};
+    for (const [variantId, quantity] of Object.entries(items)) {
+      const lines = cartItems.filter((item) => String(item.variant_id) === variantId);
+      if (!lines.length) {
+        if (quantity > 0) updates[variantId] = quantity;
+        continue;
+      }
+
+      const currentQuantity = lines.reduce((total, line) => total + line.quantity, 0);
+      const delta = quantity - currentQuantity;
+      if (delta > 0) {
+        updates[lines[0].key] = lines[0].quantity + delta;
+        continue;
+      }
+
+      let remaining = -delta;
+      for (const line of lines) {
+        if (remaining <= 0) break;
+        const removed = Math.min(line.quantity, remaining);
+        updates[line.key] = line.quantity - removed;
+        remaining -= removed;
+      }
+    }
+    return updates;
   }
 
-  startCartLinesUpdate(items) {
+  /**
+   * Serialize bulk mutations across components and read fresh line keys before each write.
+   * A queued edit can outlive its rendered row, and discounts can change line keys between writes.
+   * @param {Object<string, number>} items Requested totals keyed by variant ID.
+   * @param {string[]} sections Bundled section IDs to render with the cart mutation.
+   * @param {string} sectionsUrl Page context for bundled section rendering.
+   * @param {{removeProductId?: string}} [options] Remove this product's current lines instead of explicit targets.
+   * @returns {Promise<object>} The updated AJAX cart.
+   */
+  updateCart(items, sections, sectionsUrl, { removeProductId } = {}) {
+    const update = BulkAdd.pendingCartUpdate.then(async () => {
+      const cartResponse = await fetch(`${routes.cart_url}.js`, { cache: 'no-store' });
+      if (!cartResponse.ok) throw new Error(window.cartStrings.error);
+      const cart = await cartResponse.json();
+      const targets = removeProductId
+        ? Object.fromEntries(
+            cart.items
+              .filter((item) => String(item.product_id) === String(removeProductId))
+              .map((item) => [item.variant_id, 0])
+          )
+        : items;
+      const updates = this.buildCartUpdates(targets, cart.items);
+      const linesUpdate = this.startCartLinesUpdate(updates, cart.items);
+
+      try {
+        const response = await fetch(routes.cart_update_url, {
+          ...fetchConfig(),
+          body: JSON.stringify({ updates, sections, sections_url: sectionsUrl }),
+        });
+        const parsedState = await response.json();
+        if (parsedState.errors || !response.ok) {
+          throw Object.assign(new Error(parsedState.errors || window.cartStrings.error), { code: 'INVALID' });
+        }
+        linesUpdate?.resolve(parsedState);
+        return parsedState;
+      } catch (error) {
+        linesUpdate?.reject(error);
+        throw error;
+      }
+    });
+
+    BulkAdd.pendingCartUpdate = update.catch(() => undefined);
+    return update;
+  }
+
+  /**
+   * Publish changes from the same cart snapshot used to build the mutation.
+   * Keys absent from the snapshot are variant IDs for additions, not existing line keys.
+   * @param {Object<string, number>} updates Line-key quantities, or variant-ID quantities for new items, from buildCartUpdates().
+   * @param {Array<object>} cartItems The cart snapshot used to build updates.
+   * @returns {object|undefined} Deferred event completion handlers when Standard Events are available.
+   */
+  startCartLinesUpdate(updates, cartItems) {
     const { CartLinesUpdateEvent } = window.StandardEvents || {};
     if (!CartLinesUpdateEvent) return;
 
-    const linesByAction = Object.entries(items).reduce((groups, [variantId, quantity]) => {
+    const linesByAction = Object.entries(updates).reduce((groups, [id, quantity]) => {
       const nextQuantity = parseInt(quantity, 10);
-      const currentQuantity = this.getCartQuantityForLine(variantId);
+      const cartLine = cartItems.find((item) => item.key === id);
+      const currentQuantity = cartLine?.quantity || 0;
 
       if (Number.isNaN(nextQuantity) || currentQuantity === nextQuantity) return groups;
 
       const action = currentQuantity === 0 ? 'add' : nextQuantity === 0 ? 'remove' : 'update';
       let line;
       if (action === 'add') {
-        line = { merchandiseId: variantId, quantity: nextQuantity };
+        line = { merchandiseId: id, quantity: nextQuantity };
       } else {
-        const lineKey = this.querySelector(`[data-quantity-variant-id="${variantId}"]`)?.dataset.quantityLineKey;
-        // No AJAX line key on the row — likely cached HTML rendered before this
-        // attribute landed. Skip rather than emit an event with id: ''.
-        if (!lineKey) return groups;
-        line = { id: lineKey, quantity: nextQuantity };
+        line = { id, quantity: nextQuantity };
       }
 
       if (!groups[action]) groups[action] = [];

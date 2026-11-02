@@ -18,11 +18,23 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
     this.lineItemStatusElement =
       document.getElementById('shopping-cart-line-item-status') || document.getElementById('CartDrawer-LineItemStatus');
 
-    const debouncedOnChange = debounce((event) => {
+    this.debouncedOnChange = debounce((event) => {
       this.onChange(event);
     }, ON_CHANGE_DEBOUNCE_TIMER);
 
-    this.addEventListener('change', debouncedOnChange.bind(this));
+    this.addEventListener('change', this.debouncedOnChange);
+    this.addEventListener('submit', (event) => this.waitForQuantitySave(event));
+    this.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' || !event.target.matches('.quantity__input')) return;
+
+      event.preventDefault();
+      const input = event.target;
+      const onChange = () => (this.enterPressedInput = input);
+      input.addEventListener('change', onChange, { once: true });
+      input.blur();
+      input.removeEventListener('change', onChange);
+      if (this.enterPressedInput !== input) input.focus();
+    });
   }
 
   cartUpdateUnsubscriber = undefined;
@@ -64,6 +76,43 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
     }
   }
 
+  // Check out waits for a pending quantity save. A quantity edit saves through Ajax after a short wait. A form post
+  // at the same time makes iOS Safari cancel the save, and the store answers the post with no page and no message.
+  // This flushes the wait, cancels the post, and awaits the save. A saved quantity resumes the post. A rejected one
+  // shows its error on the line (updateQuantity), and the buyer stays on the cart. The cart page and the drawer share
+  // one wait, also after a re-render replaces the drawer, so a second tap does not post the form twice.
+  static pendingQuantitySaves = new Set();
+  static waitingForQuantitySave = false;
+  // Counts the saves that the store did not accept, also a save that ends while the wait awaits another one.
+  static failedQuantitySaves = 0;
+
+  async waitForQuantitySave(event) {
+    const { submitter } = event;
+    if (!submitter || event.defaultPrevented) return;
+    this.debouncedOnChange.flush();
+    if (!CartItems.pendingQuantitySaves.size) return;
+    event.preventDefault();
+    if (CartItems.waitingForQuantitySave) return;
+    CartItems.waitingForQuantitySave = true;
+    submitter.setAttribute('aria-disabled', 'true');
+
+    const failedSaves = CartItems.failedQuantitySaves;
+    try {
+      while (CartItems.pendingQuantitySaves.size) {
+        await Promise.all(CartItems.pendingQuantitySaves);
+        this.debouncedOnChange.flush();
+      }
+    } finally {
+      CartItems.waitingForQuantitySave = false;
+      submitter.removeAttribute('aria-disabled');
+    }
+    if (CartItems.failedQuantitySaves !== failedSaves) return;
+
+    // The save re-rendered the section, so the submitter can be a detached element.
+    const button = submitter.isConnected ? submitter : document.getElementById(submitter.id);
+    button?.click();
+  }
+
   resetQuantityInput(id) {
     const input = this.querySelector(`#Quantity-${id}`);
     input.value = input.getAttribute('value');
@@ -78,6 +127,9 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
   }
 
   validateQuantity(event) {
+    const name =
+      this.enterPressedInput === event.target ? event.target.name : document.activeElement.getAttribute('name');
+    this.enterPressedInput = null;
     const inputValue = parseInt(event.target.value);
     const index = event.target.dataset.index;
     let message = '';
@@ -99,7 +151,7 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
         index,
         inputValue,
         event,
-        document.activeElement.getAttribute('name'),
+        name,
         event.target.dataset.quantityVariantId
       );
     }
@@ -195,6 +247,7 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
     const lineVariantId = variantId || quantityInput?.dataset.quantityVariantId;
     const lineKey = quantityInput?.dataset.quantityLineKey;
     const linesUpdateDeferred = this.createCartLinesUpdateEvent(action, lineVariantId, quantity, lineKey);
+    let saved = false;
 
     // Cache sections before the fetch so we read dataset.id while elements still exist in the DOM
     const sectionsToRender = this.getSectionsToRender();
@@ -206,14 +259,16 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
       sections_url: window.location.pathname,
     });
 
-    fetch(`${routes.cart_change_url}`, { ...fetchConfig(), ...{ body } })
+    const save = fetch(`${routes.cart_change_url}`, { ...fetchConfig(), ...{ body } })
       .then((response) => {
+        saved = response.ok;
         return response.text();
       })
       .then((state) => {
         const parsedState = JSON.parse(state);
 
         if (parsedState.errors) {
+          saved = false;
           this.dispatchCartErrorEvent(parsedState.errors, 'INVALID');
           linesUpdateDeferred?.reject(new Error(parsedState.errors));
         } else {
@@ -228,6 +283,9 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
           if (parsedState.errors) {
             quantityElement.value = quantityElement.getAttribute('value');
             this.updateLiveRegions(line, parsedState.errors);
+            this.querySelector(`#CartItem-${line}, #CartDrawer-Item-${line}`)
+              ?.querySelector(`[name="${name}"]`)
+              ?.focus();
             return;
           }
 
@@ -281,9 +339,17 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
         linesUpdateDeferred?.reject(e);
       })
       .finally(() => {
+        CartItems.pendingQuantitySaves.delete(save);
+        // Only the store's answer decides the save. An error in the theme code around it does not.
+        if (!saved) CartItems.failedQuantitySaves++;
         this.disableLoading(line);
         CartPerformance.measureFromMarker(`${eventTarget}:user-action`, cartPerformanceUpdateMarker);
+      })
+      .catch((e) => {
+        // An error in the theme code above must not stop the Check out wait.
+        console.error(e);
       });
+    CartItems.pendingQuantitySaves.add(save);
   }
 
   createCartLinesUpdateEvent(action, variantId, quantity, lineKey) {

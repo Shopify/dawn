@@ -115,21 +115,12 @@ if (!customElements.get('quick-add-bulk')) {
         this.selectProgressBar().classList.remove('hidden');
 
         const ids = Object.keys(items);
-        const linesUpdate = this.startCartLinesUpdate(items);
-        const body = JSON.stringify({
-          updates: items,
-          sections: this.getSectionsToRender().map((section) => section.section),
-          sections_url: this.getSectionsUrl(),
-        });
-
-        fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } })
-          .then((response) => response.json())
+        return this.updateCart(
+          items,
+          this.getSectionsToRender().map((section) => section.section),
+          this.getSectionsUrl()
+        )
           .then((parsedState) => {
-            if (parsedState.errors) {
-              throw Object.assign(new Error(parsedState.errors), { code: 'INVALID' });
-            }
-
-            linesUpdate?.resolve(parsedState);
             this.renderSections(parsedState, ids);
             publish(PUB_SUB_EVENTS.cartUpdate, { source: 'quick-add', cartData: parsedState });
           })
@@ -139,14 +130,6 @@ if (!customElements.get('quick-add-bulk')) {
               e.code === 'INVALID' ? e.message : window.cartStrings.error,
               e.code || 'SERVICE_UNAVAILABLE'
             );
-            linesUpdate?.reject(e);
-            // Commented out for now and will be fixed when BE issue is done https://github.com/Shopify/shopify/issues/440605
-            // e.target.setCustomValidity(error);
-            // e.target.reportValidity();
-            // this.resetQuantityInput(ids[index]);
-            // this.selectProgressBar().classList.add('hidden');
-            // e.target.select();
-            // this.cleanErrorMessageOnType(e);
           })
           .finally(() => {
             this.selectProgressBar().classList.add('hidden');
@@ -178,19 +161,19 @@ if (!customElements.get('quick-add-bulk')) {
         const intersection = this.queue.filter((element) => ids.includes(element.id));
         if (intersection.length !== 0) return;
         this.getSectionsToRender().forEach((section) => {
+          const sectionHTML = parsedState.sections?.[section.section];
+          if (!sectionHTML) return;
           const sectionElement = document.getElementById(section.id);
+          if (!sectionElement) return;
           if (section.section === 'cart-drawer') {
-            sectionElement.closest('cart-drawer')?.classList.toggle('is-empty', parsedState.items.length.length === 0);
+            sectionElement.closest('cart-drawer')?.classList.toggle('is-empty', parsedState.items.length === 0);
           }
           const elementToReplace =
             sectionElement && sectionElement.querySelector(section.selector)
               ? sectionElement.querySelector(section.selector)
               : sectionElement;
           if (elementToReplace) {
-            elementToReplace.innerHTML = this.getSectionInnerHTML(
-              parsedState.sections[section.section],
-              section.selector
-            );
+            elementToReplace.innerHTML = this.getSectionInnerHTML(sectionHTML, section.selector);
           }
         });
 

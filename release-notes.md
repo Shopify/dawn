@@ -1,18 +1,7 @@
-Updates the header to use Shopify's customer account experience, adds a Customer accounts theme setting, and removes the legacy customer account pages.
-
-### Removed
-
-- Important: [Customer accounts] Removed the legacy customer account templates and sections. Stores on legacy customer accounts must upgrade to new customer accounts before publishing this version. See information on [upgrading to customer accounts from legacy customer accounts](https://help.shopify.com/manual/customers/customer-accounts/upgrade)
-
-### Added
-
-- [Customer accounts] New Customer accounts theme setting with a Menu setting for the customer account popover.
-
-### Changed
-
-- [Customer accounts] The header account icon now opens Shopify's customer account popover instead of a separate login page.
+This update includes various fixes for cart interactions. Notably, a fix to the quick order list section on product pages when variants are part of "Buy X, Get Y" type discounts.
 
 ### Fixes and improvements
 
-- [Mobile menu] Country/region and language selectors now respect their Header section settings, matching the desktop header.
-- [Mobile menu] Fixed footer spacing when social links aren't shown.
+- [Products] Fixed bulk quick-add and quick order list quantity changes and removals when discounts split a variant across multiple cart lines.
+- [Cart] Pressing Enter in a quantity field now updates the quantity and no longer starts checkout.
+- [Cart] The cart icon and cart drawer now refresh without a page reload when a storefront integration updates the cart.
