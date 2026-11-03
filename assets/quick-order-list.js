@@ -99,17 +99,6 @@ if (!customElements.get('quick-order-list')) {
         return this.querySelector('.pagination-wrapper')?.dataset?.page ?? '1';
       }
 
-      get cartVariantsForProduct() {
-        return JSON.parse(this.querySelector('[data-cart-contents]')?.innerHTML || '[]');
-      }
-
-      getCartQuantityForLine(id) {
-        const cartQuantity = super.getCartQuantityForLine(id);
-        if (cartQuantity > 0) return cartQuantity;
-
-        return this.cartVariantsForProduct.includes(parseInt(id, 10)) ? 1 : 0;
-      }
-
       onChange(event) {
         const inputValue = parseInt(event.target.value);
         this.cleanErrorMessageOnType(event);
@@ -205,6 +194,7 @@ if (!customElements.get('quick-order-list')) {
         const { items, sections } = parsedState;
 
         this.getSectionsToRender().forEach(({ id, selector, section }) => {
+          if (!sections?.[section]) return;
           const sectionElement = document.getElementById(id);
           if (!sectionElement) return;
 
@@ -330,30 +320,20 @@ if (!customElements.get('quick-order-list')) {
         this.allInputsArray[nextIndex]?.select();
       }
 
-      updateMultipleQty(items) {
+      updateMultipleQty(items, { removeAll = false } = {}) {
         if (this.queue.length == 0) this.hasPendingQuantityUpdate = false;
 
         this.toggleLoading(true);
         const url = this.dataset.url || window.location.pathname;
-        const linesUpdate = this.startCartLinesUpdate(items);
-
-        const body = JSON.stringify({
-          updates: items,
-          sections: this.getSectionsToRender().map(({ section }) => section),
-          sections_url: `${url}?page=${this.currentPage}`,
-        });
+        const sections = this.getSectionsToRender().map(({ section }) => section);
 
         this.updateMessage();
         this.setErrorMessage();
 
-        fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } })
-          .then((response) => response.json())
+        return this.updateCart(items, sections, `${url}?page=${this.currentPage}`, {
+          removeProductId: removeAll ? this.dataset.productId : undefined,
+        })
           .then((parsedState) => {
-            if (parsedState.errors) {
-              throw Object.assign(new Error(parsedState.errors), { code: 'INVALID' });
-            }
-
-            linesUpdate?.resolve(parsedState);
             this.renderSections(parsedState);
             publish(PUB_SUB_EVENTS.cartUpdate, {
               source: this.id,
@@ -366,7 +346,6 @@ if (!customElements.get('quick-order-list')) {
               e.code === 'INVALID' ? e.message : window.cartStrings.error,
               e.code || 'SERVICE_UNAVAILABLE'
             );
-            linesUpdate?.reject(e);
             this.setErrorMessage(e.code === 'INVALID' ? e.message : window.cartStrings.error);
           })
           .finally(() => {
@@ -476,12 +455,7 @@ if (!customElements.get('quick-order-list-remove-all-button')) {
           if (this.dataset.action === this.actions.confirm) {
             this.toggleConfirmation(false, true);
           } else if (this.dataset.action === this.actions.remove) {
-            const items = this.quickOrderList.cartVariantsForProduct.reduce(
-              (acc, variantId) => ({ ...acc, [variantId]: 0 }),
-              {}
-            );
-
-            this.quickOrderList.updateMultipleQty(items);
+            this.quickOrderList.updateMultipleQty({}, { removeAll: true });
             this.toggleConfirmation(true, false);
           } else if (this.dataset.action === this.actions.cancel) {
             this.toggleConfirmation(true, false);
