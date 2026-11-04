@@ -21,13 +21,13 @@ an explanation; typography size controls remain available.
 Broadacre sources are the five owner-supplied OTF files, converted with FontTools
 without subsetting. CSS weights map Hairline/Thin/Light/Regular/Medium to
 100/200/300/400/500 respectively (source metadata uses nonstandard lighter values).
-Headings default to Medium 500. No font licensing assessment is implied by the
+Headings default to Thin 200. No font licensing assessment is implied by the
 conversion. Retain the owner's original files outside the theme repository.
 
 Inter Latin normal/italic variable WOFF2 files come from @fontsource-variable/inter
 and include its SIL Open Font License in assets/inter-OFL.txt. They supply weights
 100–900. Browser fallback remains Arial/sans-serif for unsupported glyphs or
-failed font loads. Only Inter normal and Broadacre Medium are preloaded; remaining
+failed font loads. Only Inter normal and Broadacre Thin are preloaded; remaining
 faces load when used. Fonts are served by Shopify assets, without a third-party
 font service. Shopify checkout, email templates and image-embedded lettering are
 outside the theme typography scope.

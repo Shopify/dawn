@@ -22,8 +22,10 @@ Editor sessions start paused. App blocks disable automatic cycling. Native
 horizontal scrolling remains available without JavaScript.
 
 On mobile the three-quote group fits within one rail panel, followed by portrait
-video and stacked quote panels. Long quotes scroll within their focusable card;
-video controls, transcripts and related product links remain available.
+video and stacked quote panels. Quote groups and video captions grow to fit their text, with no internal scrolling
+or clipped attribution. The rail retains horizontal scrolling, while video controls,
+transcripts and related product links remain available. Portrait media keeps a
+minimum 280px height even with a long caption.
 
 ## Ratings, verification and product overlays
 
