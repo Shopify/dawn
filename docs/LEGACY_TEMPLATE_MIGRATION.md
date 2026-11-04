@@ -31,7 +31,7 @@ No Shopify Admin data, checkout configuration, homepage sections or unrelated te
 
 ## All Products collection paging
 
-Each collection displays four products per page with native numbered pagination. The small `cellife-paged-collection` section reuses the current product-card and pagination snippets. Images use a square media area, centred contain and no added image padding; cards stretch to equal heights. Its styles do not affect homepage shelves or other collection templates.
+Each collection displays four products per page with native numbered pagination. The small `cellife-paged-collection` section reuses the current product-card and pagination snippets. Images use a square media area, centred contain and light image padding (12px desktop / 8px mobile); cards stretch to equal heights. Titles and price blocks share the measured maximum height within each section, keeping regular/sale prices and detail buttons aligned without truncation. Alignment updates after pagination, width changes and font loading. Its styles do not affect homepage shelves or other collection templates.
 
 The section script fetches only the chosen section through Shopify Section Rendering, leaving other rows on their current pages. It does not change browser history. Without JavaScript (or if the endpoint fails), the native links navigate normally; Shopify may then apply its shared collection page parameter to all rows. Product and purchase logic is unchanged.
 

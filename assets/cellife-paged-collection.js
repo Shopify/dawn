@@ -30,6 +30,30 @@ if (!customElements.get('cellife-paged-collection')) {
         }
       };
       this.addEventListener('click', this.onPageClick);
+      this.resizeObserver = new ResizeObserver(([entry]) => {
+        if (this.cardWidth === entry.contentRect.width) return;
+        this.cardWidth = entry.contentRect.width;
+        this.alignCardContent();
+      });
+      this.resizeObserver.observe(this);
+      this.alignCardContent();
+      document.fonts.ready.then(() => { if (this.isConnected) this.alignCardContent(); });
+    }
+    alignCardContent() {
+      const groups = [
+        ['--cellife-card-title-height', '.card > .card__content .card__heading'],
+        ['--cellife-card-price-height', '.card > .card__content .price']
+      ];
+      for (const [property] of groups) this.style.setProperty(property, '0px');
+      const heights = groups.map(([, selector]) => Math.ceil(Math.max(0,
+        ...[...this.querySelectorAll(selector)].map(element => element.getBoundingClientRect().height)
+      )));
+      groups.forEach(([property], index) => this.style.setProperty(property, heights[index] + 'px'));
+    }
+    disconnectedCallback() {
+      this.resizeObserver?.disconnect();
+      this.removeEventListener('click', this.onPageClick);
+      this.onPageClick = null;
     }
   });
 }
