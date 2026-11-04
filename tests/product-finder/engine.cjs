@@ -34,7 +34,7 @@ test('missing records, rationale, warnings and unknown source data all fail clos
  const corruptions=[c=>c.products.pop(),c=>c.sources.pop(),c=>c.products[0]=null,c=>c.products[1].id=c.products[0].id,c=>c.evidence.pop(),c=>delete c.rationales.rationale_vision.claim,c=>c.rationales.rationale_vision.sourceClaimIds=[],c=>delete c.warnings.vision,c=>c.warnings.vision.warnings=[],c=>c.warnings.vision.sourceWarningIds=[],c=>c.warnings.vision.sourceWarningIds=['S01-C'],c=>c.questions=null,c=>c.guidance.scope='Suitable for you'];
  for(const damage of corruptions){const changed=structuredClone(catalog);damage(changed);const out=evaluate(answers('care','eyes'),changed,'draft');assert.equal(out.status,'DATA_HOLD');assert.deepEqual(out.productIds,[]);}
 });
-test('published builds remain disabled',async()=>{const {evaluate}=await modulePromise;for(const v of cases){const out=evaluate(answers(...v.slice(0,3)),catalog,'public');assert.equal(out.status,'DATA_HOLD');assert.deepEqual(out.productIds,[]);}});
+test('public routes match preview routes',async()=>{const {evaluate}=await modulePromise;for(const v of cases){const input=answers(...v.slice(0,3));assert.deepEqual(evaluate(input,catalog,'public'),evaluate(input,catalog,'draft'));}});
 test('warnings retain the material source distinctions',()=>{
  const text=id=>catalog.warnings[id].warnings.join(' ');
  assert(/asthma/i.test(text('coq10'))&&/asthma/i.test(text('propolis')));

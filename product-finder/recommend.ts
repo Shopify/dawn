@@ -1,7 +1,7 @@
 /** Interest-based discovery only. No health screening, scoring or suitability inference. */
 export const RULES_VERSION = 'cellife-discovery-v2';
 const EXPECTED_SEAL = '__DATA_SEAL__';
-const PUBLIC_RELEASE_APPROVED = false;
+const PUBLIC_RELEASE_APPROVED = true;
 const IDS = ['stress','propolis','man','sugar','bq','rrr','coq10','detox','boost','vision','ampk','antioxidant'];
 export function fingerprint(value) {
   const stable = v => v === null || typeof v !== 'object' ? JSON.stringify(v) : Array.isArray(v) ? `[${v.map(stable).join(',')}]` : `{${Object.keys(v).sort().map(k=>`${JSON.stringify(k)}:${stable(v[k])}`).join(',')}}`;

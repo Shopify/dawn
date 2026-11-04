@@ -65,10 +65,7 @@ Source evidence remains in the repository; the staff evidence panel and visible
 preview/review labels were removed at the owner’s request. Removing those labels
 does not approve evidence or publish the theme.
 
-Public release remains disabled in both Liquid and the evaluator. An unpublished
-preview can demonstrate routes without customer-facing draft/review labels. A public
-release requires current labels, claims/precautions/destinations review and
-explicit approval; no Theme Editor switch can grant those approvals.
+Published-theme operation is enabled at the merchant’s request on 4 November 2026. Quiz calls to action use `/pages/product-finder`. Public and preview modes use the same interest routes and protected warnings. This operational change does not change source review statuses or resolve the Royal Jelly identity hold.
 
 ## Interaction, privacy and validation
 
@@ -120,4 +117,4 @@ request, these controls sit above “Before you consider this product”.
 
 Browser tests submit only to a local fixture, never a real store cart. They check
 the exact native form fields and options/selling-plan/quantity/sold-out fallbacks.
-The published-theme and Royal Jelly evidence holds remain internal and unchanged.
+The Royal Jelly identity hold remains internal and unchanged; the published-theme restriction has been removed.

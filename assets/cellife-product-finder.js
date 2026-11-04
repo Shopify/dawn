@@ -10,7 +10,7 @@ if (!customElements.get('cellife-product-finder')) {
       this.showingResult = false;
       try {
         this.config = JSON.parse(this.querySelector('[data-finder-config]').textContent);
-        if (this.config.mode !== 'draft') return; // Liquid also holds published themes.
+        if (!['draft', 'public'].includes(this.config.mode)) return;
         const [engine,{catalog}] = await Promise.all([import(this.config.engineUrl),import(this.config.dataUrl)]);
         if (this.controller !== controller || controller.signal.aborted) return;
         this.engine = engine;
