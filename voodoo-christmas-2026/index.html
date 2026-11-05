@@ -21,6 +21,10 @@
   --graphite: #3A3A3C;
 
   --navy-deep: #0A4461;
+  /* Hero band: sampled from the backdrop of the collection photo so the two blend */
+  --wine: #3C0619;
+  --wine-deep: #22030E;
+  --wine-glow: #74122B;
   --magenta-deep: #C70D50;
   --paper: #FAFAF8;
   --mist: #EFF2F3;
@@ -53,7 +57,7 @@ body {
 }
 body::before {
   content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
-  z-index: 60; background: var(--paper);
+  z-index: 60; background: var(--wine-deep);
 }
 img { max-width: 100%; display: block; }
 a { color: inherit; }
@@ -96,9 +100,13 @@ p { margin: 0; }
   position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50;
   background: color-mix(in srgb, var(--paper) 88%, transparent);
   backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px);
-  border-bottom: 1px solid transparent; transition: border-color .3s;
+  border-bottom: 1px solid transparent;
 }
 .site-header.scrolled { border-bottom-color: var(--line); }
+.site-header { transition: border-color .3s, background-color .4s; }
+.site-header.on-hero { background: color-mix(in srgb, var(--wine-deep) 55%, transparent); border-bottom-color: color-mix(in srgb, var(--white) 10%, transparent); }
+.site-header.on-hero .nav a, .site-header.on-hero .logo__sub { color: var(--paper); }
+.site-header.on-hero .vlogo { --l1: var(--white); --l6: var(--white); }
 .site-header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 24px; height: 72px; }
 /* VOODOO mark (symbol #vlogo). Fills read --l1…--l6 so the mark can be recoloured per surface. */
 .vlogo { display: block; aspect-ratio: 652 / 423; height: auto; }
@@ -114,63 +122,50 @@ p { margin: 0; }
 .site-header .btn { padding: .8em 1.25em; font-size: .88rem; }
 @media (min-width: 760px) { .nav { display: flex; } }
 
-/* Hero */
-.hero { position: relative; padding-block: clamp(24px, 3.5vw, 48px) clamp(48px, 6vw, 88px); overflow: hidden; }
-.hero::before {
-  content: ""; position: absolute; right: -8%; top: -10%; width: 62%; height: 120%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--teal) 12%, var(--paper)), transparent 72%); pointer-events: none;
+/* Hero: dark wine band that melts into the collection photo, then curves into the page */
+.hero {
+  position: relative; overflow: hidden; color: var(--paper);
+  margin-top: -73px; padding-block: calc(73px + clamp(24px, 4vw, 56px)) clamp(72px, 8vw, 120px);
+  background:
+    radial-gradient(38% 55% at 30% 30%, color-mix(in srgb, var(--wine-glow) 55%, transparent), transparent 70%),
+    radial-gradient(40% 50% at 8% 90%, color-mix(in srgb, var(--magenta) 22%, transparent), transparent 70%),
+    linear-gradient(180deg, #2A0412, var(--wine) 50%, #3A0618);
 }
-.hero .wrap { position: relative; display: grid; gap: clamp(24px, 3vw, 40px); align-items: center; }
-@media (min-width: 980px) { .hero .wrap { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
+.hero::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: clamp(28px, 4vw, 56px);
+  background: var(--mist); clip-path: ellipse(60% 100% at 50% 100%);
+}
+.hero .wrap { position: relative; z-index: 1; display: grid; gap: clamp(8px, 2vw, 24px); align-items: center; }
+@media (min-width: 980px) { .hero .wrap { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); } }
 .hero .wrap > * { min-width: 0; }
 .hero__copy { display: grid; gap: 28px; min-width: 0; }
-.hero h1 { font-size: var(--s-2xl); font-weight: 500; }
-.hero h1 em { font-style: italic; color: var(--magenta); display: block; }
+.hero .eyebrow { color: color-mix(in srgb, var(--paper) 72%, transparent); }
+.hero h1 { font-size: var(--s-2xl); font-weight: 500; color: var(--white); }
+.hero h1 em { font-style: italic; color: var(--coral); display: block; }
+.hero .lead { color: color-mix(in srgb, var(--paper) 82%, transparent); }
 .hero__ctas { display: flex; flex-wrap: wrap; gap: 12px; }
-.hero__meta { display: flex; flex-wrap: wrap; gap: 10px 28px; font-size: var(--s-sm); color: var(--muted); padding-top: 8px; border-top: 1px solid var(--line); }
-.hero__meta strong { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.hero .btn--ghost { border-color: color-mix(in srgb, var(--paper) 55%, transparent); color: var(--paper); }
+.hero .btn--ghost:hover { background: var(--paper); color: var(--wine); }
+.hero__meta { display: flex; flex-wrap: wrap; gap: 10px 28px; font-size: var(--s-sm); color: color-mix(in srgb, var(--paper) 66%, transparent); padding-top: 14px; border-top: 1px solid color-mix(in srgb, var(--paper) 18%, transparent); }
+.hero__meta strong { color: var(--white); font-weight: 600; font-variant-numeric: tabular-nums; }
+/* The photo's own backdrop is the same wine, so feathering its edges dissolves the frame */
+.hero__art { position: relative; margin: 0 auto; width: min(100%, 720px); aspect-ratio: 1; }
+.hero__art img {
+  width: 100%; height: 100%; object-fit: cover;
+  --fx: linear-gradient(90deg, transparent, #000 16%, #000 86%, transparent);
+  --fy: linear-gradient(180deg, transparent, #000 14%, #000 84%, transparent);
+  -webkit-mask-image: var(--fx), var(--fy); -webkit-mask-composite: source-in;
+  mask-image: var(--fx), var(--fy); mask-composite: intersect;
+  animation: art-in 1.6s var(--ease) both;
+}
+.hero__art::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(40% 30% at 70% 18%, rgba(255,190,210,.16), transparent 70%);
+  mix-blend-mode: screen;
+}
+@media (min-width: 980px) { .hero__art { margin-right: calc(-1 * clamp(0px, 3vw, 48px)); } }
+@keyframes art-in { from { opacity: .001; transform: scale(1.04); } to { opacity: 1; transform: none; } }
 
-/* Hero collage: the five product photos as one bento composition */
-.collage {
-  position: relative; display: grid; gap: 10px; min-width: 0;
-  grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 170px;
-}
-.collage .tile { position: relative; overflow: hidden; border-radius: 6px; background: var(--mist); margin: 0; }
-.collage .tile img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease); }
-.collage .tile:hover img { transform: scale(1.05); }
-.collage .tile figcaption {
-  position: absolute; left: 10px; bottom: 10px; font-size: .72rem; font-weight: 500; line-height: 1.2;
-  background: color-mix(in srgb, var(--white) 92%, transparent); color: var(--ink);
-  padding: 6px 10px; border-radius: 999px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-}
-.collage .t-tri { grid-row: span 2; }
-.collage .t-tri img { object-position: 49% 50%; }
-.collage .t-planner, .collage .t-pyramid { grid-row: span 1; }
-@media (min-width: 560px) {
-  .collage { grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: repeat(12, minmax(0, 1fr)); grid-auto-rows: auto; height: clamp(440px, 46vw, 620px); }
-  .collage .t-tri { grid-column: 1 / 6; grid-row: 1 / 13; }
-  .collage .t-bag { grid-column: 6 / 10; grid-row: 1 / 8; }
-  .collage .t-notebook { grid-column: 10 / 13; grid-row: 1 / 8; }
-  .collage .t-planner { grid-column: 6 / 10; grid-row: 8 / 13; }
-  .collage .t-pyramid { grid-column: 10 / 13; grid-row: 8 / 13; }
-  .collage .t-notebook img { object-position: 50% 55%; }
-  .collage .t-pyramid img { object-position: 50% 62%; }
-}
-.collage .tile { animation: tile-in 1s var(--ease) both; }
-.collage .t-bag { animation-delay: .08s; } .collage .t-notebook { animation-delay: .16s; }
-.collage .t-planner { animation-delay: .24s; } .collage .t-pyramid { animation-delay: .32s; }
-@keyframes tile-in { from { translate: 0 18px; } to { translate: 0 0; } }
-
-/* Hanging baubles in logo colours: the one Christmas ornament on the page */
-.bauble { position: absolute; z-index: 3; top: -10px; font-size: 10px; width: 3.2em; display: grid; justify-items: center; transform-origin: top center; animation: sway 6s ease-in-out infinite alternate; pointer-events: none; }
-.bauble::before { content: ""; width: 1px; height: var(--len, 8em); background: color-mix(in srgb, var(--graphite) 55%, transparent); }
-.bauble i { width: .9em; height: .6em; background: linear-gradient(90deg, #8E9396, #E9ECEE, #8E9396); border-radius: .15em .15em 0 0; }
-.bauble b { width: 3.2em; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.6), transparent 38%), var(--c); box-shadow: 0 .8em 1.4em -.4em rgba(20,30,40,.45); }
-.bauble--a { left: calc(41.6% - 1.6em); --c: var(--teal); --len: 7em; }
-.bauble--b { left: calc(75% - 1.2em); --c: var(--yellow); --len: 3.5em; width: 2.4em; animation-delay: -2s; }
-.bauble--b b { width: 2.4em; }
-@media (max-width: 559px) { .bauble { display: none; } }
-@keyframes sway { from { rotate: -3deg; } to { rotate: 3deg; } }
 
 /* Section rhythm */
 section { position: relative; }
@@ -183,10 +178,6 @@ section { position: relative; }
 
 /* Collection overview */
 .collection { background: var(--mist); }
-.collection::before {
-  content: ""; position: absolute; left: 0; right: 0; top: -1px; height: clamp(28px, 4vw, 56px);
-  background: var(--paper); clip-path: ellipse(60% 100% at 50% 0);
-}
 .grid-5 { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 640px) { .grid-5 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 1040px) {
@@ -424,15 +415,7 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
         <span>Персонализиран дизайн</span>
       </div>
     </div>
-    <div class="collage" aria-label="Продуктите в колекцията">
-      <span class="bauble bauble--a" aria-hidden="true"><i></i><b></b></span>
-      <span class="bauble bauble--b" aria-hidden="true"><i></i><b></b></span>
-      <figure class="tile t-tri"><img src="images/tri-calendar.jpg" width="2000" height="1818" alt="Трисекционен календар 2027 VOODOO с тъмна рекламна глава и три месеца" decoding="async" fetchpriority="high"><figcaption>Трисекционен календар</figcaption></figure>
-      <figure class="tile t-bag"><img src="images/bag.jpg" width="2000" height="1333" alt="Бяла брандирана торбичка VOODOO с розова дръжка" decoding="async"><figcaption>Брандирана торбичка</figcaption></figure>
-      <figure class="tile t-notebook"><img src="images/notebook.jpg" width="2000" height="1333" alt="Тефтер със спирала VOODOO с корица 2027" decoding="async"><figcaption>Тефтер</figcaption></figure>
-      <figure class="tile t-planner"><img src="images/desk-planner.jpg" width="2000" height="1333" alt="Настолен планер с календар 2027 VOODOO със спирала" decoding="async"><figcaption>Планер 2027</figcaption></figure>
-      <figure class="tile t-pyramid"><img src="images/pyramid.jpg" width="2000" height="1333" alt="Настолен календар Пирамида 2027 VOODOO" decoding="async"><figcaption>Пирамида</figcaption></figure>
-    </div>
+    <figure class="hero__art"><img src="images/hero-collection.webp" width="1254" height="1254" alt="Коледната колекция на VOODOO: брандирана торбичка, тефтер, трисекционен календар, календар Пирамида и планер 2027" decoding="async" fetchpriority="high"></figure>
   </div>
 </section>
 
@@ -733,9 +716,11 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
 <script>
 (function () {
   // Header border + mobile CTA visibility
-  var header = document.querySelector(".site-header"), mcta = document.getElementById("m-cta"), quote = document.getElementById("quote");
+  var header = document.querySelector(".site-header"), mcta = document.getElementById("m-cta"), quote = document.getElementById("quote"), hero = document.querySelector(".hero");
   function onScroll() {
-    header.classList.toggle("scrolled", window.scrollY > 8);
+    var overHero = hero.getBoundingClientRect().bottom > header.offsetHeight;
+    header.classList.toggle("on-hero", overHero);
+    header.classList.toggle("scrolled", window.scrollY > 8 && !overHero);
     var r = quote.getBoundingClientRect();
     mcta.classList.toggle("hide", window.scrollY < 300 || (r.top < window.innerHeight && r.bottom > 0));
   }
