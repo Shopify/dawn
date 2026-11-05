@@ -122,6 +122,7 @@ p { margin: 0; }
 }
 .hero .wrap { position: relative; display: grid; gap: clamp(24px, 3vw, 40px); align-items: center; }
 @media (min-width: 980px) { .hero .wrap { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
+.hero .wrap > * { min-width: 0; }
 .hero__copy { display: grid; gap: 28px; min-width: 0; }
 .hero h1 { font-size: var(--s-2xl); font-weight: 500; }
 .hero h1 em { font-style: italic; color: var(--magenta); display: block; }
@@ -129,130 +130,47 @@ p { margin: 0; }
 .hero__meta { display: flex; flex-wrap: wrap; gap: 10px 28px; font-size: var(--s-sm); color: var(--muted); padding-top: 8px; border-top: 1px solid var(--line); }
 .hero__meta strong { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
 
-/* ---------- Product mock-ups (CSS/SVG placeholders) ----------
-   Every visual sits in a .visual[data-photo]. Set data-photo="path/to/photo.jpg"
-   and the script swaps the mock-up for a real <img>. Sizes inside mock-ups are in em,
-   so a mock-up scales with the font-size of its stage. */
-.visual { position: relative; }
-.visual > img.photo { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+/* Hero collage: the five product photos as one bento composition */
+.collage {
+  position: relative; display: grid; gap: 10px; min-width: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 170px;
+}
+.collage .tile { position: relative; overflow: hidden; border-radius: 6px; background: var(--mist); margin: 0; }
+.collage .tile img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease); }
+.collage .tile:hover img { transform: scale(1.05); }
+.collage .tile figcaption {
+  position: absolute; left: 10px; bottom: 10px; font-size: .72rem; font-weight: 500; line-height: 1.2;
+  background: color-mix(in srgb, var(--white) 92%, transparent); color: var(--ink);
+  padding: 6px 10px; border-radius: 999px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.collage .t-tri { grid-row: span 2; }
+.collage .t-tri img { object-position: 49% 50%; }
+.collage .t-planner, .collage .t-pyramid { grid-row: span 1; }
+@media (min-width: 560px) {
+  .collage { grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: repeat(12, minmax(0, 1fr)); grid-auto-rows: auto; height: clamp(440px, 46vw, 620px); }
+  .collage .t-tri { grid-column: 1 / 6; grid-row: 1 / 13; }
+  .collage .t-bag { grid-column: 6 / 10; grid-row: 1 / 8; }
+  .collage .t-notebook { grid-column: 10 / 13; grid-row: 1 / 8; }
+  .collage .t-planner { grid-column: 6 / 10; grid-row: 8 / 13; }
+  .collage .t-pyramid { grid-column: 10 / 13; grid-row: 8 / 13; }
+  .collage .t-notebook img { object-position: 50% 55%; }
+  .collage .t-pyramid img { object-position: 50% 62%; }
+}
+.collage .tile { animation: tile-in 1s var(--ease) both; }
+.collage .t-bag { animation-delay: .08s; } .collage .t-notebook { animation-delay: .16s; }
+.collage .t-planner { animation-delay: .24s; } .collage .t-pyramid { animation-delay: .32s; }
+@keyframes tile-in { from { translate: 0 18px; } to { translate: 0 0; } }
 
-.stage { position: relative; container-type: inline-size; width: 100%; max-width: 100%; }
-.hero .visual { container-type: inline-size; min-width: 0; }
-.hero-stage { height: 80cqw; font-size: 1.55cqw; }
-.hero-stage > *, .hero-stage > .mock { position: absolute; }
-/* Backdrop echoes the round shapes of the VOODOO mark */
-.hero-stage .disc { left: 14%; top: 4%; width: 80%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--white), color-mix(in srgb, var(--teal) 16%, var(--mist)) 70%); }
-.hero-stage .dot { border-radius: 50%; }
-.hero-stage .dot--y { left: 88%; top: 66%; width: 7%; aspect-ratio: 1; background: var(--yellow); }
-.hero-stage .dot--c { left: 9%; top: 2%; width: 4.5%; aspect-ratio: 1; background: var(--coral); }
-.hero-stage .tri-shape { left: 90%; top: 10%; width: 6%; aspect-ratio: 1.2; background: var(--navy); clip-path: polygon(0 0, 100% 0, 50% 100%); opacity: .9; }
 /* Hanging baubles in logo colours: the one Christmas ornament on the page */
-.bauble { top: 0; width: 3.2em; display: grid; justify-items: center; transform-origin: top center; animation: sway 6s ease-in-out infinite alternate; }
-.bauble::before { content: ""; width: 1px; height: var(--len, 8em); background: color-mix(in srgb, var(--graphite) 45%, transparent); }
+.bauble { position: absolute; z-index: 3; top: -10px; font-size: 10px; width: 3.2em; display: grid; justify-items: center; transform-origin: top center; animation: sway 6s ease-in-out infinite alternate; pointer-events: none; }
+.bauble::before { content: ""; width: 1px; height: var(--len, 8em); background: color-mix(in srgb, var(--graphite) 55%, transparent); }
 .bauble i { width: .9em; height: .6em; background: linear-gradient(90deg, #8E9396, #E9ECEE, #8E9396); border-radius: .15em .15em 0 0; }
-.bauble b { width: 3.2em; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.55), transparent 38%), var(--c); box-shadow: 0 .8em 1.4em -.4em color-mix(in srgb, var(--c) 60%, transparent); }
-.bauble--a { left: 47%; --c: var(--magenta); --len: 7em; }
-.bauble--b { left: 57%; --c: var(--teal); --len: 3.5em; width: 2.4em; animation-delay: -2s; }
+.bauble b { width: 3.2em; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.6), transparent 38%), var(--c); box-shadow: 0 .8em 1.4em -.4em rgba(20,30,40,.45); }
+.bauble--a { left: calc(41.6% - 1.6em); --c: var(--teal); --len: 7em; }
+.bauble--b { left: calc(75% - 1.2em); --c: var(--yellow); --len: 3.5em; width: 2.4em; animation-delay: -2s; }
 .bauble--b b { width: 2.4em; }
-@keyframes sway { from { rotate: -2.5deg; } to { rotate: 2.5deg; } }
-.hero-stage .m-bag { left: 3%; top: 9%; }
-.hero-stage .m-tri { left: 66%; top: 0; font-size: .88em; }
-.hero-stage .m-notebook { left: 25%; top: 24%; transform: rotate(-8deg); z-index: 2; }
-.hero-stage .m-pyramid { left: 40%; top: 61%; font-size: .92em; z-index: 3; }
-.hero-stage .m-sprig { left: 2%; top: 83%; width: 22em; z-index: 4; }
-.hero-stage .shadow-floor { left: 4%; right: 2%; top: 84%; height: 12%; background: radial-gradient(closest-side, rgba(20,30,40,.14), transparent); }
-
-.mock { position: relative; }
-.mock * { box-sizing: border-box; }
-
-/* Notebook with spiral */
-.m-notebook { width: 24em; height: 33em; filter: drop-shadow(0 2.4em 2.2em rgba(16,60,90,.22)); }
-.m-notebook .cover {
-  position: absolute; inset: 0 0 0 1.2em; border-radius: .25em 1em 1em .25em;
-  background:
-    radial-gradient(120% 80% at 20% 0%, rgba(255,255,255,.14), transparent 60%),
-    repeating-linear-gradient(115deg, rgba(255,255,255,.025) 0 .15em, transparent .15em .5em),
-    linear-gradient(160deg, #1A729B, var(--navy) 45%, var(--navy-deep));
-  display: grid; place-items: center; overflow: hidden;
-}
-.m-notebook .pages { position: absolute; inset: .5em -.35em .5em 1.4em; border-radius: .2em .9em .9em .2em; background: repeating-linear-gradient(0deg, #F6F7F6 0 .18em, #D9DDDF .18em .24em); z-index: -1; }
-.m-notebook .foil { text-align: center; color: var(--white); display: grid; justify-items: center; }
-.m-notebook .foil .vlogo { width: 9em; }
-.m-notebook .foil .line { width: 6em; height: 1px; margin: 1.6em auto 1.1em; background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent); }
-.m-notebook .foil .yr { font-family: var(--f-display); font-style: italic; font-size: 1.6em; color: var(--white); opacity: .9; }
-.m-notebook .spiral { position: absolute; left: 0; top: 1.4em; bottom: 1.4em; width: 2.6em; display: flex; flex-direction: column; justify-content: space-between; }
-.m-notebook .spiral i { display: block; height: .55em; width: 2.6em; border-radius: 1em; background: linear-gradient(180deg, #F3F0EA, #9C968E 55%, #5E5953); box-shadow: 0 .1em .15em rgba(0,0,0,.35); }
-
-/* Tri-section wall calendar */
-.m-tri { width: 22em; filter: drop-shadow(0 2em 2em rgba(20,30,40,.18)); }
-.m-tri .hook { width: 3.2em; height: 1.4em; margin: 0 auto -.3em; border: .28em solid #8F8A84; border-bottom: 0; border-radius: 2em 2em 0 0; }
-.m-tri .head {
-  height: 11em; background: linear-gradient(160deg, #3F3F42, var(--ink)); color: var(--paper);
-  display: grid; place-items: center; text-align: center; position: relative; overflow: hidden;
-}
-.m-tri .head::after { content: ""; position: absolute; inset: auto -20% -60% -20%; height: 90%; background: radial-gradient(closest-side, rgba(32,190,198,.3), transparent); }
-.m-tri .head .vlogo { width: 6.5em; margin: 0 auto; }
-.m-tri .head .slogan { font-family: var(--f-display); font-style: italic; font-size: 1.2em; color: var(--yellow); margin-top: .6em; position: relative; z-index: 1; }
-.m-tri .body { background: var(--white); padding: .7em .9em 1.2em; position: relative; }
-.m-tri .month { padding: .45em 0 .6em; border-bottom: 1px dashed var(--line); position: relative; }
-.m-tri .month:last-child { border-bottom: 0; }
-.m-tri .month.current { outline: .28em solid var(--magenta); outline-offset: .05em; border-radius: .1em; }
-.m-tri .month .mname { display: flex; justify-content: space-between; font-family: var(--f-mono); font-size: .62em; letter-spacing: .14em; color: var(--ink); padding: 0 .3em .3em; }
-.m-tri .month .mname b { font-weight: 500; color: var(--magenta); }
-.cal { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-variant-numeric: tabular-nums; font-family: var(--f-body); }
-.cal span { font-size: .56em; line-height: 1.75; color: var(--graphite); }
-.cal span.dow { font-family: var(--f-mono); font-size: .46em; color: var(--muted); letter-spacing: .05em; }
-.cal span.we { color: var(--magenta); font-weight: 600; }
-.m-tri .slider { position: absolute; right: -.9em; width: .7em; height: 3.2em; background: var(--magenta); border-radius: .2em; top: 50%; translate: 0 -50%; }
-
-/* Pyramid desk calendar */
-.m-pyramid { width: 30em; height: 21em; }
-.m-pyramid .back { position: absolute; left: 3em; right: 3em; top: 0; height: 18em; background: linear-gradient(180deg, #CDD3D6, #B4BCC0); clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%); }
-.m-pyramid .face {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 19.5em;
-  transform: perspective(60em) rotateX(16deg); transform-origin: bottom center;
-  background: var(--white); border-radius: .2em; overflow: hidden;
-  box-shadow: 0 1.6em 2.4em rgba(20,30,40,.2), 0 0 0 1px rgba(0,0,0,.04);
-  display: grid; grid-template-columns: 1fr 1.35fr;
-}
-.m-pyramid .face .brand { background: linear-gradient(170deg, var(--navy), var(--navy-deep)); color: var(--paper); display: grid; align-content: center; justify-items: center; gap: .6em; padding: 1em; }
-.m-pyramid .face .brand .vlogo { width: 6em; }
-.m-pyramid .face .brand .yr { font-family: var(--f-display); font-size: 3.4em; line-height: .9; color: var(--yellow); }
-.m-pyramid .face .cal-wrap { padding: 1.3em 1.2em; display: grid; align-content: center; gap: .4em; }
-.m-pyramid .face .cal-wrap .mname { font-family: var(--f-display); font-size: 1.7em; font-weight: 600; color: var(--ink); }
-.m-pyramid .face .cal span { font-size: .8em; }
-.m-pyramid .face .cal span.dow { font-size: .62em; }
-.m-pyramid .ring { position: absolute; top: .4em; left: 0; right: 0; display: flex; justify-content: center; gap: .6em; z-index: 2; transform: perspective(60em) rotateX(16deg); }
-.m-pyramid .ring i { width: .45em; height: .9em; border-radius: 1em; background: linear-gradient(90deg, #6C6761, #EDEAE5, #6C6761); }
-.m-pyramid .base-shadow { position: absolute; left: -2em; right: -2em; bottom: -1.6em; height: 2em; background: radial-gradient(closest-side, rgba(20,30,40,.22), transparent); z-index: -1; }
-
-/* Planner (open spread) */
-.m-planner { width: 46em; height: 30em; filter: drop-shadow(0 2.4em 2.4em rgba(20,30,40,.2)); }
-.m-planner .cover { position: absolute; inset: 0; border-radius: .9em; background: linear-gradient(160deg, #1A729B, var(--navy-deep)); }
-.m-planner .spread { position: absolute; inset: .8em .9em; display: grid; grid-template-columns: 1fr 1fr; background: #FFFFFF; border-radius: .3em; overflow: hidden; }
-.m-planner .spread::after { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 3em; translate: -50% 0; background: linear-gradient(90deg, transparent, rgba(0,0,0,.09) 48%, rgba(0,0,0,.14) 50%, rgba(0,0,0,.09) 52%, transparent); }
-.m-planner .page { padding: 1.6em 1.8em; display: grid; grid-template-rows: auto 1fr; gap: .9em; min-width: 0; }
-.m-planner .page h5 { margin: 0; font: 500 .7em/1 var(--f-mono); letter-spacing: .16em; color: var(--muted); display: flex; justify-content: space-between; }
-.m-planner .page h5 b { color: var(--magenta); font-weight: 500; }
-.m-planner .days { display: grid; grid-auto-rows: 1fr; }
-.m-planner .days div { border-top: 1px solid var(--line); display: flex; gap: .8em; padding-top: .3em; font-size: .7em; color: var(--graphite); }
-.m-planner .days div b { font-family: var(--f-display); font-size: 1.6em; line-height: 1; width: 1.4em; color: var(--ink); font-weight: 600; }
-.m-planner .days div.we b { color: var(--magenta); }
-.m-planner .days div .task { flex: 1; align-self: center; height: 1px; background: repeating-linear-gradient(90deg, var(--line) 0 .4em, transparent .4em .7em); }
-.m-planner .days div .hand { font-family: var(--f-display); font-style: italic; font-size: 1.35em; color: var(--navy); align-self: center; }
-.m-planner .mini { display: grid; gap: .8em; align-content: start; }
-.m-planner .mini .cal span { font-size: .62em; }
-.m-planner .mini .cal span.dow { font-size: .5em; }
-.m-planner .notes { display: grid; gap: 1.3em; margin-top: .6em; }
-.m-planner .notes i { display: block; height: 1px; background: var(--line); }
-.m-planner .ribbon { position: absolute; left: 62%; top: -.2em; width: 1em; height: calc(100% + 3em); background: var(--magenta); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 96%, 0 100%); z-index: 3; }
-
-/* Branded bag (placeholder until the real bag photo is supplied) */
-.m-bag { width: 26em; height: 38em; filter: drop-shadow(0 2.4em 2.4em rgba(20,30,40,.22)); }
-.m-bag svg { width: 100%; height: 100%; overflow: visible; }
-
-.m-sprig { pointer-events: none; }
-.m-sprig svg { width: 100%; height: auto; overflow: visible; }
+@media (max-width: 559px) { .bauble { display: none; } }
+@keyframes sway { from { rotate: -3deg; } to { rotate: 3deg; } }
 
 /* Section rhythm */
 section { position: relative; }
@@ -287,10 +205,9 @@ section { position: relative; }
   transition: transform .5s var(--ease), box-shadow .5s var(--ease);
 }
 .card:hover { transform: translateY(-4px); box-shadow: 0 30px 60px -30px rgba(16,94,131,.35); }
-.card__stage { aspect-ratio: 16 / 10; display: grid; place-items: center; overflow: hidden; background: linear-gradient(180deg, var(--white), var(--mist)); container-type: inline-size; }
-.card__stage .mock { font-size: 1.7cqw; transition: transform .7s var(--ease); }
-.card:hover .card__stage .mock { transform: scale(1.04) rotate(-1deg); }
-.card:nth-child(1) .card__stage .mock { font-size: 2.6cqw; }
+.card__stage { aspect-ratio: 16 / 10; overflow: hidden; background: var(--mist); }
+.card__stage img { width: 100%; height: 100%; object-fit: cover; transition: transform .9s var(--ease); }
+.card:hover .card__stage img { transform: scale(1.05); }
 .card__body { display: flex; justify-content: space-between; align-items: end; gap: 16px; padding: 20px 24px 24px; border-top: 1px solid var(--line); }
 .card__num { font-family: var(--f-mono); font-size: var(--s-xs); color: var(--navy); letter-spacing: .12em; }
 .card__title { font-family: var(--f-display); font-size: 1.6rem; font-weight: 600; line-height: 1.1; }
@@ -306,29 +223,9 @@ section { position: relative; }
   .product.flip .wrap { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
   .product.flip .product__visual { order: 2; }
 }
-.product__visual {
-  position: relative; background: var(--mist); aspect-ratio: 5 / 4; max-width: 100%;
-  display: grid; place-items: center; overflow: hidden; border-radius: 2px;
-}
-.product__visual .scene { position: absolute; inset: 0; }
-.product__visual .stage { height: 100%; display: grid; place-items: center; }
-.product__visual .mock { font-size: 1.5cqw; }
-.product__visual .tag {
-  position: absolute; left: 16px; bottom: 16px; z-index: 2; font-family: var(--f-mono); font-size: .68rem; letter-spacing: .12em;
-  text-transform: uppercase; background: var(--paper); color: var(--muted); padding: 6px 10px; border-radius: 2px;
-}
-.scene--desk { background:
-  linear-gradient(180deg, transparent 62%, rgba(20,40,60,.05) 62%),
-  radial-gradient(80% 60% at 30% 20%, #FFFFFF, transparent 70%),
-  linear-gradient(180deg, #EEF1F2, #DEE3E5); }
-.scene--wall { background:
-  linear-gradient(90deg, transparent 0 78%, rgba(20,30,40,.035) 78% 100%),
-  radial-gradient(70% 70% at 50% 30%, #FFFFFF, #E3E8EA); }
-.scene--office { background:
-  linear-gradient(180deg, #EDF0F1 0 58%, #D6DCDF 58% 100%); }
-.scene--office::after { content: ""; position: absolute; left: 0; right: 0; top: 58%; height: 1px; background: rgba(20,30,40,.12); }
-.scene--warm { background: radial-gradient(70% 70% at 50% 40%, #FFF6DD, #F3E2B4); }
-.scene--bag { background: linear-gradient(135deg, #E3F4F5, #C9E7EA); }
+.product__visual { position: relative; overflow: hidden; border-radius: 6px; background: var(--mist); max-width: 100%; margin: 0; }
+.product__visual img { width: 100%; height: auto; transition: transform 1.2s var(--ease); }
+.product__visual:hover img { transform: scale(1.03); }
 
 .product__copy { display: grid; gap: 22px; min-width: 0; }
 .product__index { font-family: var(--f-display); font-style: italic; font-size: 1.15rem; color: var(--navy); }
@@ -476,10 +373,6 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
 /* Reveal: content is visible at rest; JS only primes elements that are below the fold. */
 .reveal.primed { opacity: 0; transform: translateY(28px); }
 .reveal.in { opacity: 1; transform: none; transition: opacity 1s var(--ease), transform 1s var(--ease); }
-.hero-stage > .mock { animation: float-in 1.2s var(--ease) both; }
-.hero-stage > .m-tri { animation-delay: .1s; } .hero-stage > .m-bag { animation-delay: .2s; }
-.hero-stage > .m-notebook { animation-delay: .35s; } .hero-stage > .m-pyramid { animation-delay: .5s; }
-@keyframes float-in { from { translate: 0 24px; } to { translate: 0 0; } }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -499,101 +392,6 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
     <circle cx="552.5" cy="324" r="98" style="fill: var(--l6, #3A3A3C)"/>
   </symbol>
 </svg>
-
-<!-- ===== Reusable product mock-up templates (cloned by script) ===== -->
-<template id="tpl-notebook">
-  <div class="mock m-notebook" aria-hidden="true">
-    <div class="pages"></div>
-    <div class="cover"><div class="foil"><svg class="vlogo on-dark" viewBox="0 0 652 423" aria-hidden="true"><use href="#vlogo"/></svg><div class="line"></div><div class="yr">Notes 2027</div></div></div>
-    <div class="spiral"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  </div>
-</template>
-<template id="tpl-tri">
-  <div class="mock m-tri" aria-hidden="true">
-    <div class="hook"></div>
-    <div class="head"><div><svg class="vlogo on-dark" viewBox="0 0 652 423" aria-hidden="true"><use href="#vlogo"/></svg><div class="slogan">Вашият бранд тук</div></div></div>
-    <div class="body">
-      <div class="month" data-cal="2026-11"></div>
-      <div class="month current" data-cal="2027-0"></div>
-      <div class="month" data-cal="2027-1"></div>
-      <div class="slider"></div>
-    </div>
-  </div>
-</template>
-<template id="tpl-pyramid">
-  <div class="mock m-pyramid" aria-hidden="true">
-    <div class="back"></div>
-    <div class="ring"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-    <div class="face">
-      <div class="brand"><svg class="vlogo on-dark" viewBox="0 0 652 423" aria-hidden="true"><use href="#vlogo"/></svg><div class="yr">2027</div></div>
-      <div class="cal-wrap"><div class="mname">Януари</div><div class="cal" data-grid="2027-0"></div></div>
-    </div>
-    <div class="base-shadow"></div>
-  </div>
-</template>
-<template id="tpl-planner">
-  <div class="mock m-planner" aria-hidden="true">
-    <div class="cover"></div>
-    <div class="spread">
-      <div class="page">
-        <h5><span>СЕДМИЦА 02</span><b>ЯНУАРИ 2027</b></h5>
-        <div class="days">
-          <div><b>11</b><span>Пн</span><span class="hand">Среща с клиент</span></div>
-          <div><b>12</b><span>Вт</span><span class="task"></span></div>
-          <div><b>13</b><span>Ср</span><span class="hand">Бюджет Q1</span></div>
-          <div><b>14</b><span>Чт</span><span class="task"></span></div>
-          <div><b>15</b><span>Пт</span><span class="task"></span></div>
-          <div class="we"><b>16</b><span>Сб</span><span class="task"></span></div>
-          <div class="we"><b>17</b><span>Нд</span><span class="task"></span></div>
-        </div>
-      </div>
-      <div class="page">
-        <h5><span>ПЛАН ЗА МЕСЕЦА</span><b>2027</b></h5>
-        <div class="mini">
-          <div class="cal" data-grid="2027-0"></div>
-          <div class="notes"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-        </div>
-      </div>
-    </div>
-    <div class="ribbon"></div>
-  </div>
-</template>
-<template id="tpl-bag">
-  <!-- PLACEHOLDER: replace with a photo of the real enlarged VOODOO bag (see data-photo on .visual) -->
-  <div class="mock m-bag" aria-hidden="true">
-    <svg viewBox="0 0 260 380">
-      <defs>
-        <linearGradient id="bagFront" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#ECEFF0"/></linearGradient>
-        <linearGradient id="bagSide" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#D3D9DC"/><stop offset="1" stop-color="#E6EAEC"/></linearGradient>
-      </defs>
-      <path d="M78 98 C78 30, 168 30, 168 98" fill="none" stroke="#0A4461" stroke-width="7" stroke-linecap="round"/>
-      <rect x="20" y="96" width="196" height="276" fill="url(#bagFront)"/>
-      <polygon points="216,96 248,110 248,368 216,372" fill="url(#bagSide)"/>
-      <polygon points="216,96 248,110 236,122 216,112" fill="#C4CBCF"/>
-      <rect x="20" y="96" width="196" height="22" fill="#105E83" fill-opacity=".06"/>
-      <path d="M92 104 C92 48, 156 48, 156 104" fill="none" stroke="#105E83" stroke-width="7" stroke-linecap="round"/>
-      <circle cx="92" cy="110" r="4" fill="#3A3A3C"/><circle cx="156" cy="110" r="4" fill="#3A3A3C"/>
-      <use href="#vlogo" x="63" y="190" width="110" height="71.4"/>
-      <text x="118" y="290" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8" letter-spacing="4" fill="#3A3A3C">PRINT</text>
-      <rect x="20" y="352" width="196" height="20" fill="#ED1260"/>
-    </svg>
-  </div>
-</template>
-<template id="tpl-sprig">
-  <div class="mock m-sprig" aria-hidden="true">
-    <svg viewBox="0 0 220 90">
-      <path d="M8 70 C60 58, 120 44, 210 20" fill="none" stroke="#4E5A44" stroke-width="1.6" stroke-linecap="round"/>
-      <g fill="#5E6B52">
-        <path d="M40 62 q-6 -16 6 -22 q2 14 -6 22z"/><path d="M48 60 q14 -6 22 6 q-14 2 -22 -6z"/>
-        <path d="M86 50 q-6 -16 6 -22 q2 14 -6 22z"/><path d="M94 49 q14 -6 22 6 q-14 2 -22 -6z"/>
-        <path d="M132 39 q-6 -16 6 -22 q2 14 -6 22z"/><path d="M140 38 q14 -6 22 6 q-14 2 -22 -6z"/>
-        <path d="M176 29 q-6 -16 6 -22 q2 14 -6 22z"/>
-      </g>
-      <g fill="#ED1260"><circle cx="66" cy="62" r="4.2"/><circle cx="73" cy="66" r="3.6"/><circle cx="118" cy="50" r="4.2"/><circle cx="160" cy="40" r="3.8"/></g>
-      <g fill="#FFFFFF" fill-opacity=".45"><circle cx="65" cy="60.6" r="1.1"/><circle cx="117" cy="48.6" r="1.1"/></g>
-    </svg>
-  </div>
-</template>
 
 <header class="site-header" id="top">
   <div class="wrap">
@@ -626,21 +424,14 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
         <span>Персонализиран дизайн</span>
       </div>
     </div>
-    <div class="visual" data-photo="" data-alt="Коледната колекция на VOODOO PRINT: календари, тефтер и брандирана торбичка">
-      <div class="stage hero-stage" role="img" aria-label="Композиция от продуктите в колекцията">
-        <div class="disc"></div>
-        <div class="dot dot--c"></div>
-        <div class="tri-shape"></div>
-        <div class="dot dot--y"></div>
-        <div class="shadow-floor"></div>
-        <div class="bauble bauble--a" aria-hidden="true"><i></i><b></b></div>
-        <div class="bauble bauble--b" aria-hidden="true"><i></i><b></b></div>
-        <div data-tpl="bag"></div>
-        <div data-tpl="tri"></div>
-        <div data-tpl="notebook"></div>
-        <div data-tpl="pyramid"></div>
-        <div data-tpl="sprig"></div>
-      </div>
+    <div class="collage" aria-label="Продуктите в колекцията">
+      <span class="bauble bauble--a" aria-hidden="true"><i></i><b></b></span>
+      <span class="bauble bauble--b" aria-hidden="true"><i></i><b></b></span>
+      <figure class="tile t-tri"><img src="images/tri-calendar.jpg" width="2000" height="1818" alt="Трисекционен календар 2027 VOODOO с тъмна рекламна глава и три месеца" decoding="async" fetchpriority="high"><figcaption>Трисекционен календар</figcaption></figure>
+      <figure class="tile t-bag"><img src="images/bag.jpg" width="2000" height="1333" alt="Бяла брандирана торбичка VOODOO с розова дръжка" decoding="async"><figcaption>Брандирана торбичка</figcaption></figure>
+      <figure class="tile t-notebook"><img src="images/notebook.jpg" width="2000" height="1333" alt="Тефтер със спирала VOODOO с корица 2027" decoding="async"><figcaption>Тефтер</figcaption></figure>
+      <figure class="tile t-planner"><img src="images/desk-planner.jpg" width="2000" height="1333" alt="Настолен планер с календар 2027 VOODOO със спирала" decoding="async"><figcaption>Планер 2027</figcaption></figure>
+      <figure class="tile t-pyramid"><img src="images/pyramid.jpg" width="2000" height="1333" alt="Настолен календар Пирамида 2027 VOODOO" decoding="async"><figcaption>Пирамида</figcaption></figure>
     </div>
   </div>
 </section>
@@ -657,23 +448,23 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
     </div>
     <div class="grid-5">
       <a class="card reveal" href="#notebook">
-        <div class="card__stage"><div data-tpl="notebook"></div></div>
+        <div class="card__stage"><img src="images/notebook.jpg" width="2000" height="1333" alt="Тефтер със спирала VOODOO с корица 2027" loading="lazy" decoding="async"></div>
         <div class="card__body"><div><div class="card__num">№ 01</div><div class="card__title">Тефтер със спирала</div></div><span class="card__go" aria-hidden="true">→</span></div>
       </a>
       <a class="card reveal" href="#tri-calendar">
-        <div class="card__stage"><div data-tpl="tri" style="margin-top:28%"></div></div>
+        <div class="card__stage"><img src="images/tri-calendar.jpg" width="2000" height="1818" alt="Трисекционен календар 2027 VOODOO с тъмна рекламна глава и три месеца" loading="lazy" decoding="async"></div>
         <div class="card__body"><div><div class="card__num">№ 02</div><div class="card__title">Трисекционен календар 2027</div></div><span class="card__go" aria-hidden="true">→</span></div>
       </a>
       <a class="card reveal" href="#pyramid">
-        <div class="card__stage"><div data-tpl="pyramid"></div></div>
+        <div class="card__stage"><img src="images/pyramid.jpg" width="2000" height="1333" alt="Настолен календар Пирамида 2027 VOODOO" loading="lazy" decoding="async"></div>
         <div class="card__body"><div><div class="card__num">№ 03</div><div class="card__title">Календар Пирамида 2027</div></div><span class="card__go" aria-hidden="true">→</span></div>
       </a>
       <a class="card reveal" href="#planner">
-        <div class="card__stage"><div data-tpl="planner" style="font-size:1.25cqw"></div></div>
+        <div class="card__stage"><img src="images/desk-planner.jpg" width="2000" height="1333" alt="Настолен планер с календар 2027 VOODOO със спирала" loading="lazy" decoding="async"></div>
         <div class="card__body"><div><div class="card__num">№ 04</div><div class="card__title">Планер с календар 2027</div></div><span class="card__go" aria-hidden="true">→</span></div>
       </a>
       <a class="card reveal" href="#bag">
-        <div class="card__stage"><div data-tpl="bag" style="font-size:1.3cqw"></div></div>
+        <div class="card__stage"><img src="images/bag.jpg" width="2000" height="1333" alt="Бяла брандирана торбичка VOODOO с розова дръжка" loading="lazy" decoding="async"></div>
         <div class="card__body"><div><div class="card__num">№ 05</div><div class="card__title">Голяма брандирана торбичка</div></div><span class="card__go" aria-hidden="true">→</span></div>
       </a>
     </div>
@@ -685,11 +476,7 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
 
 <section class="product" id="notebook">
   <div class="wrap">
-    <div class="product__visual visual reveal" data-photo="" data-alt="Тефтер със спирала с брандирана корица върху бюро">
-      <div class="scene scene--desk"></div>
-      <div class="stage"><div data-tpl="notebook" style="transform:rotate(-6deg)"></div></div>
-      <span class="tag">Визуализация</span>
-    </div>
+    <figure class="product__visual reveal"><img src="images/notebook.jpg" width="2000" height="1333" alt="Тефтер със спирала VOODOO с корица 2027" loading="lazy" decoding="async"></figure>
     <div class="product__copy reveal">
       <span class="product__index">№ 01 — Тефтер</span>
       <h2>Тефтер със спирала</h2>
@@ -707,11 +494,7 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
 
 <section class="product flip" id="tri-calendar">
   <div class="wrap">
-    <div class="product__visual visual reveal" data-photo="" data-alt="Трисекционен календар 2027 на стена в модерен офис">
-      <div class="scene scene--wall"></div>
-      <div class="stage" style="align-items:start;padding-top:4%"><div data-tpl="tri" style="font-size:1.05cqw"></div></div>
-      <span class="tag">Визуализация</span>
-    </div>
+    <figure class="product__visual reveal"><img src="images/tri-calendar.jpg" width="2000" height="1818" alt="Трисекционен календар 2027 VOODOO с тъмна рекламна глава и три месеца" loading="lazy" decoding="async"></figure>
     <div class="product__copy reveal">
       <span class="product__index">№ 02 — Стенен календар</span>
       <h2>Трисекционен календар 2027</h2>
@@ -729,11 +512,7 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
 
 <section class="product" id="pyramid">
   <div class="wrap">
-    <div class="product__visual visual reveal" data-photo="" data-alt="Настолен календар Пирамида 2027 върху бюро в офис">
-      <div class="scene scene--office"></div>
-      <div class="stage" style="padding-top:12%"><div data-tpl="pyramid" style="font-size:1.9cqw"></div></div>
-      <span class="tag">Визуализация</span>
-    </div>
+    <figure class="product__visual reveal"><img src="images/pyramid.jpg" width="2000" height="1333" alt="Настолен календар Пирамида 2027 VOODOO" loading="lazy" decoding="async"></figure>
     <div class="product__copy reveal">
       <span class="product__index">№ 03 — Настолен календар</span>
       <h2>Календар Пирамида 2027</h2>
@@ -751,11 +530,7 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
 
 <section class="product flip" id="planner">
   <div class="wrap">
-    <div class="product__visual visual reveal" data-photo="" data-alt="Отворен планер 2027 с календарно разпределение">
-      <div class="scene scene--warm"></div>
-      <div class="stage"><div data-tpl="planner" style="font-size:1.75cqw;transform:rotate(-3deg)"></div></div>
-      <span class="tag">Визуализация</span>
-    </div>
+    <figure class="product__visual reveal"><img src="images/desk-planner.jpg" width="2000" height="1333" alt="Настолен планер с календар 2027 VOODOO със спирала" loading="lazy" decoding="async"></figure>
     <div class="product__copy reveal">
       <span class="product__index">№ 04 — Планер</span>
       <h2>Планер с календар 2027</h2>
@@ -773,12 +548,7 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
 
 <section class="product" id="bag">
   <div class="wrap">
-    <!-- Set data-photo to the real bag photo when it is available -->
-    <div class="product__visual visual reveal" data-photo="" data-alt="Голяма брандирана торбичка VOODOO">
-      <div class="scene scene--bag"></div>
-      <div class="stage"><div data-tpl="bag" style="font-size:1.55cqw"></div></div>
-      <span class="tag">Визуализация · реалната снимка предстои</span>
-    </div>
+    <figure class="product__visual reveal"><img src="images/bag.jpg" width="2000" height="1333" alt="Бяла брандирана торбичка VOODOO с розова дръжка" loading="lazy" decoding="async"></figure>
     <div class="product__copy reveal">
       <span class="product__index">№ 05 — Опаковка</span>
       <h2>Голяма брандирана торбичка VOODOO</h2>
@@ -962,45 +732,6 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
 
 <script>
 (function () {
-  var MONTHS = ["Януари","Февруари","Март","Април","Май","Юни","Юли","Август","Септември","Октомври","Ноември","Декември"];
-  var DOW = ["Пн","Вт","Ср","Чт","Пт","Сб","Нд"];
-
-  // Monday-first month grid, weekends highlighted (Bulgarian convention)
-  function grid(y, m) {
-    var html = DOW.map(function (d, i) { return '<span class="dow">' + d + '</span>'; }).join("");
-    var lead = (new Date(y, m, 1).getDay() + 6) % 7;
-    var days = new Date(y, m + 1, 0).getDate();
-    for (var i = 0; i < lead; i++) html += "<span></span>";
-    for (var d = 1; d <= days; d++) {
-      var wd = (lead + d - 1) % 7;
-      html += '<span' + (wd > 4 ? ' class="we"' : "") + ">" + d + "</span>";
-    }
-    return html;
-  }
-
-  // Clone mock-up templates into placeholders
-  document.querySelectorAll("[data-tpl]").forEach(function (slot) {
-    var tpl = document.getElementById("tpl-" + slot.dataset.tpl);
-    var node = tpl.content.firstElementChild.cloneNode(true);
-    if (slot.getAttribute("style")) node.setAttribute("style", (node.getAttribute("style") || "") + ";" + slot.getAttribute("style"));
-    slot.replaceWith(node);
-  });
-  document.querySelectorAll("[data-cal]").forEach(function (el) {
-    var p = el.dataset.cal.split("-"), y = +p[0], m = +p[1];
-    el.innerHTML = '<div class="mname"><b>' + MONTHS[m].toUpperCase() + "</b><span>" + y + '</span></div><div class="cal">' + grid(y, m) + "</div>";
-  });
-  document.querySelectorAll("[data-grid]").forEach(function (el) {
-    var p = el.dataset.grid.split("-"); el.innerHTML = grid(+p[0], +p[1]);
-  });
-
-  // Swap a mock-up for a real photo: <div class="visual" data-photo="images/notebook.jpg">
-  document.querySelectorAll(".visual[data-photo]").forEach(function (v) {
-    var src = v.dataset.photo; if (!src) return;
-    var img = new Image(); img.className = "photo"; img.loading = "lazy"; img.alt = v.dataset.alt || "";
-    img.onload = function () { v.innerHTML = ""; v.appendChild(img); };
-    img.src = src;
-  });
-
   // Header border + mobile CTA visibility
   var header = document.querySelector(".site-header"), mcta = document.getElementById("m-cta"), quote = document.getElementById("quote");
   function onScroll() {
