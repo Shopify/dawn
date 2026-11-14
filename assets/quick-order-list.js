@@ -409,6 +409,7 @@ if (!customElements.get('quick-order-list')) {
 
       updateLiveRegions(id, message) {
         const variantItemErrorDesktop = document.getElementById(`Quick-order-list-item-error-desktop-${id}`);
+        const variantItemErrorMobile = document.getElementById(`Quick-order-list-item-error-mobile-${id}`);
         if (variantItemErrorDesktop) {
           variantItemErrorDesktop.querySelector('.variant-item__error-text').innerHTML = message;
           variantItemErrorDesktop.closest('tr').classList.remove('hidden');
