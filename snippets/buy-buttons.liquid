@@ -120,15 +120,24 @@
   {%- if show_pickup_availability -%}
     {{ 'component-pickup-availability.css' | asset_url | stylesheet_tag }}
 
-    {%- assign pick_up_availabilities = product.selected_or_first_available_variant.store_availabilities
-      | where: 'pick_up_enabled', true
+    {%- liquid
+      assign show_physical_stores = block.settings.show_physical_stores
+      assign listed_store_count = 0
+      for availability in product.selected_or_first_available_variant.store_availabilities
+        if availability.pick_up_enabled
+          assign listed_store_count = listed_store_count | plus: 1
+        elsif show_physical_stores and availability.physical_storefront and availability.available_without_transfer
+          assign listed_store_count = listed_store_count | plus: 1
+        endif
+      endfor
     -%}
 
     <pickup-availability
       class="product__pickup-availabilities quick-add-hidden"
-      {% if product.selected_or_first_available_variant.available and pick_up_availabilities.size > 0 %}
+      {% if product.selected_or_first_available_variant.available and listed_store_count > 0 %}
         available
       {% endif %}
+      data-availability-section="{% if show_physical_stores %}store-availability{% else %}pickup-availability{% endif %}"
       data-root-url="{{ routes.root_url }}"
       data-variant-id="{{ product.selected_or_first_available_variant.id }}"
       data-has-only-default-variant="{{ product.has_only_default_variant }}"

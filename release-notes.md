@@ -1,7 +1,5 @@
-This update includes various fixes for cart interactions. Notably, a fix to the quick order list section on product pages when variants are part of "Buy X, Get Y" type discounts.
+This update adds the ability to display physical retail stores that have inventory in stock in the product page pickup availability drawer, including locations that do not offer in-store pickup.
 
-### Fixes and improvements
+### Added
 
-- [Products] Fixed bulk quick-add and quick order list quantity changes and removals when discounts split a variant across multiple cart lines.
-- [Cart] Pressing Enter in a quantity field now updates the quantity and no longer starts checkout.
-- [Cart] The cart icon and cart drawer now refresh without a page reload when a storefront integration updates the cart.
+- [Product] Added the option to show physical stores that have a product in stock in the product page pickup availability, including stores that don't offer pickup. The option is enabled by default.
