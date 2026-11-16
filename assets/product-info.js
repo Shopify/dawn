@@ -377,7 +377,7 @@ if (!customElements.get('product-info')) {
           const updated = quantityFormUpdated.querySelector(selector);
           if (!current || !updated) continue;
           if (selector === '.quantity__input') {
-            const attributes = ['data-cart-quantity', 'data-min', 'data-max', 'step'];
+            const attributes = ['data-cart-quantity', 'data-min', 'data-max', 'step', 'aria-labelledby'];
             for (let attribute of attributes) {
               const valueUpdated = updated.getAttribute(attribute);
               if (valueUpdated !== null) {
@@ -386,21 +386,18 @@ if (!customElements.get('product-info')) {
                 current.removeAttribute(attribute);
               }
             }
-          } else {
-            current.innerHTML = updated.innerHTML;
-            if (selector === '.quantity__label') {
-              const updatedAriaLabelledBy = updated.getAttribute('aria-labelledby');
-              if (updatedAriaLabelledBy) {
-                current.setAttribute('aria-labelledby', updatedAriaLabelledBy);
-                // Update the referenced visually hidden element
-                const labelId = updatedAriaLabelledBy;
-                const currentHiddenLabel = document.getElementById(labelId);
-                const updatedHiddenLabel = html.getElementById(labelId);
-                if (currentHiddenLabel && updatedHiddenLabel) {
-                  currentHiddenLabel.textContent = updatedHiddenLabel.textContent;
-                }
+            const updatedAriaLabelledBy = updated.getAttribute('aria-labelledby');
+            if (updatedAriaLabelledBy) {
+              // Update the referenced visually hidden element
+              const labelId = updatedAriaLabelledBy;
+              const currentHiddenLabel = document.getElementById(labelId);
+              const updatedHiddenLabel = html.getElementById(labelId);
+              if (currentHiddenLabel && updatedHiddenLabel) {
+                currentHiddenLabel.textContent = updatedHiddenLabel.textContent;
               }
             }
+          } else {
+            current.innerHTML = updated.innerHTML;
           }
         }
       }
