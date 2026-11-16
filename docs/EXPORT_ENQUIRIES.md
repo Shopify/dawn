@@ -60,11 +60,20 @@ is removed or changed. If storage fails, nothing is removed from Shopify.
 ## Contact delivery and confirmation
 
 The form uses Shopify's native `{% form 'contact' %}` endpoint and contact
-notification infrastructure, with `return_to: routes.cart_url`. It preserves the
+notification infrastructure and Shopify's default contact-form success redirect.
+An explicit `return_to` override is intentionally omitted so the native success
+state is retained. The preliminary asynchronous preparation submit is stopped
+in capture phase; only the completed payload reaches Shopify's normal submit
+handlers. It preserves the
 native submit lifecycle for Shopify spam protection/challenges. It collects name,
 email, optional company, destination country and optional additional information.
 Destination choices use `all_country_option_tags`, independent of configured
 shipping zones; choosing Australia is disabled and checked again at submission.
+
+Shopify sends contact submissions to the store's **Sender email** configured under
+Settings → Notifications. The customer's entered email is the reply/contact
+address, not an automatic receipt destination. This theme does not send a separate
+customer acknowledgement email.
 
 The request body automatically includes product/variant names and IDs, SKU,
 barcode, quantity, vendor, product type and product URL. Pricing/shipping are

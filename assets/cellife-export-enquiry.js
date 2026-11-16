@@ -133,7 +133,7 @@ if (!customElements.get('cellife-export-enquiry')) customElements.define('cellif
     country.addEventListener('change', () => country.setCustomValidity(country.value === 'Australia' ? 'Choose a destination outside Australia.' : ''));
     this.querySelector('[data-export-migrate]').addEventListener('click', () => this.migrate());
     this.handleChange = () => this.render(); document.addEventListener('cellife:export-change', this.handleChange);
-    this.form.addEventListener('submit', event => this.submit(event));
+    this.form.addEventListener('submit', event => this.submit(event), {capture:true});
     if (this.querySelector('[data-export-success]')) {
       try {
         const submitted = normalizeEntries(JSON.parse(sessionStorage.getItem(pendingKey) || '[]'));
@@ -184,6 +184,7 @@ if (!customElements.get('cellife-export-enquiry')) customElements.define('cellif
   async submit(event) {
     if (this.prepared) { this.prepared = false; return; }
     event.preventDefault();
+    event.stopImmediatePropagation(); // Only the fully prepared second submit reaches Shopify's handlers.
     if (this.submitting) return;
     const country = this.querySelector('#ExportCountry');
     if (!country.value || ['Australia','---'].includes(country.value) || this.native.items.length) {
