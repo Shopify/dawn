@@ -8,7 +8,6 @@ if (!customElements.get('quick-order-list')) {
         super();
         this.isListInsideModal = this.closest('bulk-modal');
 
-        this.stickyHeaderElement = document.querySelector('sticky-header');
         if (this.stickyHeaderElement) {
           this.stickyHeader = {
             height: this.stickyHeaderElement.offsetHeight,
@@ -25,6 +24,13 @@ if (!customElements.get('quick-order-list')) {
         }
 
         this.querySelector('form').addEventListener('submit', (event) => event.preventDefault());
+      }
+
+      get stickyHeaderElement() {
+        if (!this._stickyHeaderElement?.isConnected) {
+          this._stickyHeaderElement = document.querySelector('sticky-header');
+        }
+        return this._stickyHeaderElement;
       }
 
       connectedCallback() {

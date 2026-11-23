@@ -3,12 +3,15 @@ class PredictiveSearch extends SearchForm {
     super();
     this.cachedResults = {};
     this.predictiveSearchResults = this.querySelector('[data-predictive-search]');
-    this.allPredictiveSearchInstances = document.querySelectorAll('predictive-search');
     this.isOpen = false;
     this.abortController = new AbortController();
     this.searchTerm = '';
 
     this.setupEventListeners();
+  }
+
+  get allPredictiveSearchInstances() {
+    return document.querySelectorAll('predictive-search');
   }
 
   setupEventListeners() {

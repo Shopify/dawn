@@ -5,12 +5,15 @@ if (!customElements.get('price-per-item')) {
       constructor() {
         super();
         this.variantId = this.dataset.variantId;
-        this.input = document.getElementById(`Quantity-${this.dataset.sectionId || this.dataset.variantId}`);
         if (this.input) {
           this.input.addEventListener('change', this.onInputChange.bind(this));
         }
 
         this.getVolumePricingArray();
+      }
+
+      get input() {
+        return document.getElementById(`Quantity-${this.dataset.sectionId || this.dataset.variantId}`);
       }
 
       updatePricePerItemUnsubscriber = undefined;

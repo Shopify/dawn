@@ -1,8 +1,11 @@
 class MainSearch extends SearchForm {
   constructor() {
     super();
-    this.allSearchInputs = document.querySelectorAll('input[type="search"]');
     this.setupEventListeners();
+  }
+
+  get allSearchInputs() {
+    return document.querySelectorAll('input[type="search"]');
   }
 
   setupEventListeners() {

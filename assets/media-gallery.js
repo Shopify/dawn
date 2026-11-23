@@ -102,9 +102,9 @@ if (!customElements.get('media-gallery')) {
       }
 
       preventStickyHeader() {
-        this.stickyHeader = this.stickyHeader || document.querySelector('sticky-header');
-        if (!this.stickyHeader) return;
-        this.stickyHeader.dispatchEvent(new Event('preventHeaderReveal'));
+        const stickyHeader = document.querySelector('sticky-header');
+        if (!stickyHeader) return;
+        stickyHeader.dispatchEvent(new Event('preventHeaderReveal'));
       }
 
       removeListSemantic() {

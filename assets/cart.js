@@ -16,7 +16,7 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
   constructor() {
     super();
     this.lineItemStatusElement =
-      document.getElementById('shopping-cart-line-item-status') || document.getElementById('CartDrawer-LineItemStatus');
+      this.querySelector('#shopping-cart-line-item-status') || this.querySelector('#CartDrawer-LineItemStatus');
 
     this.debouncedOnChange = debounce((event) => {
       this.onChange(event);

@@ -5,7 +5,6 @@ if (!customElements.get('localization-form')) {
       constructor() {
         super();
         this.mql = window.matchMedia('(min-width: 750px)');
-        this.header = document.querySelector('.header-wrapper');
         this.elements = {
           input: this.querySelector('input[name="locale_code"], input[name="country_code"]'),
           button: this.querySelector('button.localization-form__select'),
@@ -36,6 +35,10 @@ if (!customElements.get('localization-form')) {
         }
 
         this.querySelectorAll('a').forEach((item) => item.addEventListener('click', this.onItemClick.bind(this)));
+      }
+
+      get header() {
+        return document.querySelector('.header-wrapper');
       }
 
       hidePanel() {
