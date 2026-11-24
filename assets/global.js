@@ -571,8 +571,14 @@ class HeaderDrawer extends MenuDrawer {
     super();
   }
 
+  get header() {
+    if (!this._header?.isConnected) {
+      this._header = document.querySelector('.section-header');
+    }
+    return this._header;
+  }
+
   openMenuDrawer(summaryElement) {
-    this.header = this.header || document.querySelector('.section-header');
     this.borderOffset =
       this.borderOffset || this.closest('.header-wrapper').classList.contains('header-wrapper--border-bottom') ? 1 : 0;
     document.documentElement.style.setProperty(
