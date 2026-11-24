@@ -8,13 +8,6 @@ if (!customElements.get('quick-order-list')) {
         super();
         this.isListInsideModal = this.closest('bulk-modal');
 
-        if (this.stickyHeaderElement) {
-          this.stickyHeader = {
-            height: this.stickyHeaderElement.offsetHeight,
-            type: `${this.stickyHeaderElement.getAttribute('data-sticky-type')}`,
-          };
-        }
-
         this.totalBar = this.getTotalBar();
         if (this.totalBar) {
           this.totalBarPosition = window.innerHeight - this.totalBar.offsetHeight;
@@ -31,6 +24,15 @@ if (!customElements.get('quick-order-list')) {
           this._stickyHeaderElement = document.querySelector('sticky-header');
         }
         return this._stickyHeaderElement;
+      }
+
+      get stickyHeader() {
+        const element = this.stickyHeaderElement;
+        if (!element) return undefined;
+        return {
+          height: element.offsetHeight,
+          type: `${element.getAttribute('data-sticky-type')}`,
+        };
       }
 
       connectedCallback() {
@@ -53,7 +55,6 @@ if (!customElements.get('quick-order-list')) {
 
       handleResize() {
         this.totalBarPosition = window.innerHeight - this.totalBar.offsetHeight;
-        this.stickyHeader.height = this.stickyHeaderElement ? this.stickyHeaderElement.offsetHeight : 0;
       }
 
       initEventListeners() {

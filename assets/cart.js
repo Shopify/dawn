@@ -15,8 +15,6 @@ customElements.define('cart-remove-button', CartRemoveButton);
 class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement) {
   constructor() {
     super();
-    this.lineItemStatusElement =
-      this.querySelector('#shopping-cart-line-item-status') || this.querySelector('#CartDrawer-LineItemStatus');
 
     this.debouncedOnChange = debounce((event) => {
       this.onChange(event);
@@ -35,6 +33,10 @@ class CartItems extends window.StandardEvents.createViewEventElement(HTMLElement
       input.removeEventListener('change', onChange);
       if (this.enterPressedInput !== input) input.focus();
     });
+  }
+
+  get lineItemStatusElement() {
+    return this.querySelector('#shopping-cart-line-item-status') || this.querySelector('#CartDrawer-LineItemStatus');
   }
 
   cartUpdateUnsubscriber = undefined;

@@ -33,10 +33,6 @@ class DetailsDisclosure extends HTMLElement {
 customElements.define('details-disclosure', DetailsDisclosure);
 
 class HeaderMenu extends DetailsDisclosure {
-  constructor() {
-    super();
-  }
-
   get header() {
     return document.querySelector('.header-wrapper');
   }
